@@ -1,0 +1,62 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.removeUnusedImports": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.css": "tailwindcss",
+    "*.heex": "phoenix-heex"
+  },
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/deps/**": true,
+    "**/_build/**": true
+  },
+  "files.readonlyInclude": {
+    "**/mise.lock": true,
+    "**/.git": true,
+    "**/deps/**": true,
+    "**/_build/**": true
+  },
+  "[elixir]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+  "[phoenix-heex]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+  "elixir.credo.configurationFile": ".credo.exs",
+  "elixir.credo.credoConfiguration": "default",
+  "elixir.credo.strictMode": true,
+  "elixir.credo.lintEverything": false,
+  "elixir.credo.enableDebug": true,
+  "elixirLS.dialyzerEnabled": true,
+  "elixirLS.suggestSpecs": false,
+  "elixirLS.fetchDeps": false,
+  "emmet.includeLanguages": {
+    "phoenix-heex": "html",
+    "elixir": "html",
+    "html-eex": "html"
+  },
+  "search.exclude": {
+    "**/mise.lock": true,
+    "**/mix.lock": true
+  },
+  "tailwindCSS.includeLanguages": {
+    "phoenix-heex": "html",
+    "elixir": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    [
+      "class[:=]\\s*\"([^\"]*)\""
+    ],
+    [
+      "~H\"\"\"([\\s\\S]*?)\"\"\"",
+      "class[:=]\\s*\"([^\"]*)\""
+    ]
+  ]
+}

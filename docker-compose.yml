@@ -1,0 +1,24 @@
+name: watch_club
+
+services:
+  db:
+    image: postgres:18.3-trixie
+    networks:
+      - watch_club
+    restart: unless-stopped
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: watch_club_dev
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/18/docker
+
+networks:
+  watch_club:
+    name: watch_club
+
+volumes:
+  pgdata:

@@ -1,0 +1,9 @@
+[tools]
+erlang = "latest"
+elixir = "latest"
+node = "latest"
+
+[settings]
+lockfile = true
+experimental = true # Required for monorepo
+unix_default_inline_shell_args = "bash -c" # Use shell for task variadic args support

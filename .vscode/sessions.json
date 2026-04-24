@@ -1,0 +1,37 @@
+{
+  "theme": "tribe",
+  "active": "default",
+  "activateOnStartup": true,
+  "keepExistingTerminals": true,
+  "sessions": {
+    "default": [
+      {
+        "name": "iex",
+        "autoExecuteCommands": true,
+        "icon": "run",
+        "color": "charts.purple",
+        "commands": [
+          "iex -S mix phx.server"
+        ]
+      },
+      {
+        "name": "psql",
+        "autoExecuteCommands": true,
+        "icon": "database",
+        "color": "terminal.ansiBlue",
+        "commands": [
+          "PGPASSWORD=postgres psql -h localhost -U postgres watch_club_dev"
+        ]
+      },
+      {
+        "name": "Docker Logs",
+        "autoExecuteCommands": true,
+        "icon": "server",
+        "color": "terminal.ansiCyan",
+        "commands": [
+          "docker compose logs -f"
+        ]
+      }
+    ]
+  }
+}
