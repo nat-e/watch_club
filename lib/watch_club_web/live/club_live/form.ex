@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.ClubLive.Form do
   alias WatchClub.Clubs
   use WatchClubWeb, :live_view
+  alias Ash.Error.Changes.{InvalidAttribute, Required}
 
   @impl true
   def render(assigns) do
@@ -49,12 +50,13 @@ defmodule WatchClubWeb.ClubLive.Form do
   defp return_to(_), do: "index"
 
   @impl true
-  def handle_event("validate", %{"club" => club_params}, socket) do
-    {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, club_params))}
+  def handle_event("validate", %{"form" => params}, socket) do
+    {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, params))}
   end
 
-  def handle_event("save", %{"club" => club_params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.form, params: club_params) do
+  @impl true
+  def handle_event("save", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, club} ->
         socket =
           socket
@@ -69,11 +71,27 @@ defmodule WatchClubWeb.ClubLive.Form do
   end
 
   defp assign_form(%{assigns: %{club: club}} = socket) do
+    opts = [
+      transform_errors: fn
+        _, %Required{field: :name} ->
+          {:name, "You must give your club a name", []}
+
+        _, %InvalidAttribute{field: :name, vars: [min: min]} ->
+          {:name, "Club name needs to be at least %{min} characters", min: min}
+
+        _, %InvalidAttribute{field: :name, vars: [max: max]} ->
+          {:name, "Club name can't be longer than %{max} characters", max: max}
+
+        _, err ->
+          err
+      end
+    ]
+
     form =
       if club do
-        AshPhoenix.Form.for_update(club, :update, as: "club")
+        Clubs.form_to_update_club(club, opts)
       else
-        AshPhoenix.Form.for_create(WatchClub.Clubs.Club, :create, as: "club")
+        Clubs.form_to_create_club(opts)
       end
 
     assign(socket, form: to_form(form))

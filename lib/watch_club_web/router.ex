@@ -32,7 +32,7 @@ defmodule WatchClubWeb.Router do
       live "/clubs/:id/edit", ClubLive.Form
     end
 
-    get "/", PageController, :home
+    get "/", LandingController, :home
     auth_routes AuthController, WatchClub.Accounts.User, path: "/auth"
 
     # Auth routes

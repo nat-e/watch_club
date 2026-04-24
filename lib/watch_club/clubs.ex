@@ -1,6 +1,7 @@
 defmodule WatchClub.Clubs do
   use Ash.Domain,
-    otp_app: :watch_club
+    otp_app: :watch_club,
+    extensions: [AshPhoenix]
 
   resources do
     resource WatchClub.Clubs.Club do

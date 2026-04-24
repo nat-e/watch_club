@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.PageControllerTest do
+defmodule WatchClubWeb.LandingControllerTest do
   use WatchClubWeb.ConnCase
 
   test "GET /", %{conn: conn} do

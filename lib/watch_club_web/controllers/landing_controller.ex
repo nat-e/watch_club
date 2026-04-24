@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.PageController do
+defmodule WatchClubWeb.LandingController do
   use WatchClubWeb, :controller
 
   def home(conn, _params) do
