@@ -1,4 +1,6 @@
 defmodule WatchClub.Accounts.User do
+  alias WatchClub.Clubs.{Club, Membership}
+
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Accounts,
@@ -231,7 +233,7 @@ defmodule WatchClub.Accounts.User do
   end
 
   attributes do
-    uuid_primary_key :id
+    uuid_v7_primary_key :id
 
     attribute :email, :ci_string do
       allow_nil? false
@@ -244,6 +246,11 @@ defmodule WatchClub.Accounts.User do
     end
 
     attribute :confirmed_at, :utc_datetime_usec
+  end
+
+  relationships do
+    has_many :memberships, Membership
+    many_to_many :clubs, Club, through: Membership
   end
 
   identities do

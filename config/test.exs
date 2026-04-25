@@ -2,6 +2,8 @@ import Config
 config :watch_club, token_signing_secret: "MZu4G2ZTbmfn3gr/cC0ByNzTEWMWqzIB"
 config :bcrypt_elixir, log_rounds: 1
 config :ash, policies: [show_policy_breakdowns?: true]
+config :ash, :disable_async?, true
+config :ash, :missed_notifications, :ignore
 
 # Configure your database
 #

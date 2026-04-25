@@ -42,6 +42,7 @@ defmodule WatchClub.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:ash_state_machine, "~> 0.2"},
       {:ash_postgres, "~> 2.0"},
       {:usage_rules, "~> 1.0", only: [:dev]},
       {:bcrypt_elixir, "~> 3.0"},

@@ -34,6 +34,6 @@ defmodule WatchClubWeb.ClubLive.Show do
     {:ok,
      socket
      |> assign(:page_title, "Show Club")
-     |> assign(:club, Clubs.get_club!(id))}
+     |> assign(:club, Clubs.get_club_by_id!(id))}
   end
 end

@@ -56,7 +56,7 @@ defmodule WatchClubWeb.ClubLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    club = Clubs.get_club!(id)
+    club = Clubs.get_club_by_id!(id)
     Clubs.destroy_club!(club)
 
     {:noreply, stream_delete(socket, :clubs, club)}

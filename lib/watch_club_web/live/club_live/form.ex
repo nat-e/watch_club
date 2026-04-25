@@ -32,7 +32,7 @@ defmodule WatchClubWeb.ClubLive.Form do
     club =
       case params["id"] do
         nil -> nil
-        id -> Clubs.get_club!(id)
+        id -> Clubs.get_club_by_id!(id)
       end
 
     action = if is_nil(club), do: "New", else: "Edit"

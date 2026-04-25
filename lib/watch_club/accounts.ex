@@ -4,6 +4,9 @@ defmodule WatchClub.Accounts do
 
   resources do
     resource WatchClub.Accounts.Token
-    resource WatchClub.Accounts.User
+
+    resource WatchClub.Accounts.User do
+      define :register_with_password
+    end
   end
 end

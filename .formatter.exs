@@ -1,5 +1,6 @@
 [
   import_deps: [
+    :ash_state_machine,
     :ash_authentication,
     :ash_authentication_phoenix,
     :ash_phoenix,
