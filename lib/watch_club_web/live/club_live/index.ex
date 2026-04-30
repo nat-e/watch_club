@@ -6,39 +6,41 @@ defmodule WatchClubWeb.ClubLive.Index do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <.header>
+      <%!-- <.header>
         Listing Clubs
         <:actions>
-          <.button variant="primary" navigate={~p"/clubs/new"}>
-            <.icon name="hero-plus" /> New Club
+          <.button navigate={~p"/clubs/new"}>
+            <Lucideicons.plus /> New Club
           </.button>
         </:actions>
-      </.header>
+      </.header> --%>
 
-      <.table
-        id="clubs"
-        rows={@streams.clubs}
-        row_click={fn {_id, club} -> JS.navigate(~p"/clubs/#{club}") end}
-      >
-        <:col :let={{_id, club}} label="name">{club.name}</:col>
-
-        <:action :let={{_id, club}}>
-          <div class="sr-only">
-            <.link navigate={~p"/clubs/#{club}"}>Show</.link>
-          </div>
-
-          <.link navigate={~p"/clubs/#{club}/edit"}>Edit</.link>
-        </:action>
-
-        <:action :let={{id, club}}>
-          <.link
-            phx-click={JS.push("delete", value: %{id: club.id}) |> hide("##{id}")}
-            data-confirm="Are you sure?"
-          >
-            Delete
-          </.link>
-        </:action>
-      </.table>
+      <%!-- <.table>
+        <.table_header>
+          <.table_row>
+            <.table_head>Name</.table_head>
+            <.table_head class="w-0">
+              <span class="sr-only">{gettext("Actions")}</span>
+            </.table_head>
+          </.table_row>
+        </.table_header>
+        <.table_body id="clubs" phx-update="stream">
+          <.table_row :for={{id, club} <- @streams.clubs} id={id} class="cursor-pointer">
+            <.table_cell phx-click={JS.navigate(~p"/clubs/#{club}")}>{club.name}</.table_cell>
+            <.table_cell class="font-semibold">
+              <div class="flex gap-4">
+                <.link navigate={~p"/clubs/#{club}/edit"}>Edit</.link>
+                <.link
+                  phx-click={JS.push("delete", value: %{id: club.id}) |> hide("##{id}")}
+                  data-confirm="Are you sure?"
+                >
+                  Delete
+                </.link>
+              </div>
+            </.table_cell>
+          </.table_row>
+        </.table_body>
+      </.table> --%>
     </Layouts.app>
     """
   end
@@ -50,7 +52,7 @@ defmodule WatchClubWeb.ClubLive.Index do
      |> assign(:page_title, "Listing Clubs")
      |> stream(
        :clubs,
-       Clubs.list_clubs!()
+       Clubs.list_clubs!(authorize?: false)
      )}
   end
 

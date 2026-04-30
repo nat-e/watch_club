@@ -48,9 +48,9 @@ defmodule WatchClub.Clubs.Club do
       forbid_if always()
     end
 
-    # Everyone can create a club
+    # Only the administrator can create clubs
     policy action(:create) do
-      authorize_if always()
+      authorize_if actor_attribute_equals(:administrator?, true)
     end
 
     # Users can read only the clubs they are a member of
@@ -71,7 +71,7 @@ defmodule WatchClub.Clubs.Club do
     attribute :name, :string do
       allow_nil? false
       public? true
-      constraints min_length: 2, max_length: 30
+      constraints min_length: 3, max_length: 30
     end
 
     timestamps()

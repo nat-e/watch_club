@@ -1,0 +1,57 @@
+@layer components.base {
+	[data-slot="carousel"] {
+		@apply relative;
+	}
+
+	[data-slot="carousel-viewport"] {
+		@apply overflow-hidden;
+	}
+
+	[data-slot="carousel"][data-orientation="vertical"]
+		[data-slot="carousel-viewport"] {
+		@apply h-full;
+	}
+
+	[data-slot="carousel-track"] {
+		@apply flex snap-x snap-mandatory scroll-smooth overflow-x-auto;
+		scrollbar-width: none;
+	}
+
+	[data-slot="carousel-track"]::-webkit-scrollbar {
+		display: none;
+	}
+
+	[data-slot="carousel"][data-orientation="vertical"]
+		[data-slot="carousel-track"] {
+		@apply h-full snap-y flex-col overflow-x-hidden overflow-y-auto;
+	}
+
+	[data-slot="carousel-slide"] {
+		@apply min-w-0 shrink-0 grow-0 basis-full snap-center;
+	}
+
+	[data-slot="carousel-prev"],
+	[data-slot="carousel-next"] {
+		@apply absolute inline-flex size-8 items-center justify-center rounded-full border bg-background shadow-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring [&_svg]:size-4;
+	}
+
+	[data-slot="carousel"][data-orientation="horizontal"]
+		[data-slot="carousel-prev"] {
+		@apply top-1/2 -left-3 -translate-y-1/2;
+	}
+
+	[data-slot="carousel"][data-orientation="horizontal"]
+		[data-slot="carousel-next"] {
+		@apply top-1/2 -right-3 -translate-y-1/2;
+	}
+
+	[data-slot="carousel"][data-orientation="vertical"]
+		[data-slot="carousel-prev"] {
+		@apply -top-3 left-1/2 -translate-x-1/2 rotate-90;
+	}
+
+	[data-slot="carousel"][data-orientation="vertical"]
+		[data-slot="carousel-next"] {
+		@apply -bottom-3 left-1/2 -translate-x-1/2 rotate-90;
+	}
+}

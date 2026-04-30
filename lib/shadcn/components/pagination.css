@@ -1,0 +1,13 @@
+@layer components.base {
+	[data-slot="pagination"] {
+		@apply mx-auto flex w-full justify-center;
+	}
+
+	[data-slot="pagination-content"] {
+		@apply flex items-center gap-1;
+	}
+
+	[data-slot="pagination-ellipsis"] {
+		@apply flex size-9 items-center justify-center [&_svg:not([class*='size-'])]:size-4;
+	}
+}

@@ -1,0 +1,108 @@
+@layer components.base {
+	[data-slot="combobox"] {
+		@apply relative inline-block w-full;
+	}
+
+	[data-slot="combobox-input"] {
+		@apply w-full;
+	}
+
+	[data-slot="combobox-input"] .combobox-trigger-toggle {
+		@apply data-pressed:bg-transparent;
+	}
+
+	[data-slot="combobox-input"] [data-slot="combobox-trigger-icon"] {
+		@apply pointer-events-none size-4 text-muted-foreground;
+	}
+
+	[data-slot="combobox-trigger-button"] {
+		@apply inline-flex shrink-0 items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+	}
+
+	[data-slot="combobox-trigger-button"] [data-slot="combobox-trigger-icon"] {
+		@apply size-4 text-muted-foreground;
+	}
+
+	[data-slot="combobox-clear"] {
+		@apply opacity-50 hover:opacity-100;
+	}
+
+	[data-slot="combobox-content"] {
+		@apply fixed top-0 left-0 isolate z-50 max-h-(--watch-club-popover-content-available-height) w-(--watch-club-popover-trigger-width) max-w-[calc(100vw-2rem)] min-w-[calc(var(--watch-club-popover-trigger-width)+--spacing(7))] origin-(--watch-club-popover-content-transform-origin) overflow-hidden rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 data-[state=closed]:invisible data-[state=closed]:pointer-events-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95;
+	}
+
+	[data-slot="combobox-content"] [data-slot="combobox-input"] {
+		@apply m-1 mb-0;
+	}
+
+	[data-slot="combobox-content"]
+		[data-slot="combobox-input"]
+		[data-slot="input-group"] {
+		@apply h-8 border-input/30 bg-input/30 shadow-none;
+	}
+
+	[data-slot="combobox-list"] {
+		@apply max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain p-1;
+	}
+
+	[data-slot="combobox-empty"] {
+		@apply w-full justify-center py-6 text-center text-sm text-muted-foreground;
+	}
+
+	[data-slot="combobox-empty"]:not([hidden]) {
+		@apply flex;
+	}
+
+	[data-slot="combobox-group"] {
+		@apply overflow-hidden p-1;
+	}
+
+	[data-slot="combobox-list"] > [data-slot="combobox-group"] {
+		@apply p-0;
+	}
+
+	[data-slot="combobox-label"] {
+		@apply px-2 py-1.5 text-xs text-muted-foreground;
+	}
+
+	[data-slot="combobox-separator"] {
+		@apply -mx-1 my-1 h-px bg-border;
+	}
+
+	[data-slot="combobox-item"] {
+		@apply relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+	}
+
+	[data-slot="combobox-item"][data-highlighted="true"] {
+		@apply bg-accent text-accent-foreground;
+	}
+
+	[data-slot="combobox-item-indicator"] {
+		@apply pointer-events-none absolute right-2 hidden size-4 items-center justify-center;
+	}
+
+	[data-slot="combobox-item"][aria-selected="true"]
+		[data-slot="combobox-item-indicator"] {
+		@apply flex;
+	}
+
+	[data-slot="combobox-chips"] {
+		@apply flex min-h-9 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-transparent bg-clip-padding px-2.5 py-1.5 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:bg-input/30 data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+	}
+
+	[data-slot="combobox-chips-list"] {
+		@apply contents;
+	}
+
+	[data-slot="combobox-chip"] {
+		@apply flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm bg-muted px-1.5 text-xs font-medium whitespace-nowrap text-foreground has-data-[slot=combobox-chip-remove]:pr-0;
+	}
+
+	[data-slot="combobox-chip-remove"] {
+		@apply -ml-1 inline-flex size-5 items-center justify-center rounded-sm opacity-50 hover:opacity-100 [&_svg]:size-3;
+	}
+
+	[data-slot="combobox-chips-input"] {
+		@apply min-w-16 flex-1 bg-transparent outline-none placeholder:text-muted-foreground;
+	}
+}

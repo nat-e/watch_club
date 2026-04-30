@@ -1,0 +1,61 @@
+@layer components.base {
+	[data-slot="drawer-trigger"] {
+		@apply contents;
+	}
+
+	[data-slot="drawer-content"][open] {
+		@apply z-50 flex h-auto flex-col bg-popover bg-clip-padding p-0 text-sm text-popover-foreground shadow-lg outline-none;
+	}
+
+	[data-slot="drawer-content"]::backdrop {
+		@apply bg-black/10;
+		backdrop-filter: blur(4px);
+	}
+
+	[data-slot="drawer-content"][data-direction="bottom"][open] {
+		@apply fixed inset-x-0 bottom-0 top-auto m-0 mt-24 max-h-[80vh] w-full max-w-none rounded-t-xl border-t;
+	}
+
+	[data-slot="drawer-content"][data-direction="top"][open] {
+		@apply fixed inset-x-0 top-0 bottom-auto m-0 mb-24 max-h-[80vh] w-full max-w-none rounded-b-xl border-b;
+	}
+
+	[data-slot="drawer-content"][data-direction="left"][open] {
+		@apply fixed inset-y-0 left-0 m-0 h-full max-h-none w-3/4 max-w-none rounded-r-xl border-r sm:max-w-sm;
+	}
+
+	[data-slot="drawer-content"][data-direction="right"][open] {
+		@apply fixed inset-y-0 right-0 left-auto m-0 h-full max-h-none w-3/4 max-w-none rounded-l-xl border-l sm:max-w-sm;
+	}
+
+	[data-slot="drawer-handle"] {
+		@apply mx-auto mt-4 h-1.5 w-[100px] shrink-0 rounded-full bg-muted;
+	}
+
+	[data-slot="drawer-header"] {
+		@apply flex flex-col gap-0.5 p-4 md:gap-1.5;
+	}
+
+	[data-slot="drawer-content"][data-direction="bottom"]
+		[data-slot="drawer-header"],
+	[data-slot="drawer-content"][data-direction="top"]
+		[data-slot="drawer-header"] {
+		@apply text-center md:text-left;
+	}
+
+	[data-slot="drawer-body"] {
+		@apply flex-1 overflow-y-auto px-4;
+	}
+
+	[data-slot="drawer-footer"] {
+		@apply mt-auto flex flex-col gap-2 p-4;
+	}
+
+	[data-slot="drawer-title"] {
+		@apply font-medium text-foreground;
+	}
+
+	[data-slot="drawer-description"] {
+		@apply text-sm text-muted-foreground;
+	}
+}

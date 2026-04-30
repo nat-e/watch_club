@@ -1,9 +1,15 @@
 defmodule WatchClubWeb.Router do
   use WatchClubWeb, :router
 
+  use Phoenix.VerifiedRoutes,
+    endpoint: WatchClubWeb.Endpoint,
+    router: WatchClubWeb.Router,
+    statics: WatchClubWeb.static_paths()
+
   use AshAuthentication.Phoenix.Router
 
   import AshAuthentication.Plug.Helpers
+  import PhoenixStorybook.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -13,6 +19,7 @@ defmodule WatchClubWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :load_from_session
+    plug :ensure_administrator_setup
   end
 
   pipeline :api do
@@ -26,36 +33,21 @@ defmodule WatchClubWeb.Router do
 
     ash_authentication_live_session :authenticated_routes,
       on_mount: {WatchClubWeb.LiveUserAuth, :live_user_required} do
+      live "/", HomeLive.Home
       live "/clubs", ClubLive.Index
       live "/clubs/new", ClubLive.Form
       live "/clubs/:id", ClubLive.Show
       live "/clubs/:id/edit", ClubLive.Form
     end
 
-    get "/", LandingController, :home
+    ash_authentication_live_session :unauthenticated_routes,
+      on_mount: {WatchClubWeb.LiveUserAuth, :live_no_user} do
+      live "/setup", AccountsLive.Setup
+      live "/sign-in", AccountsLive.Signin
+    end
+
+    # Auto-generated POST and callbacks routes from Ash Authentication
     auth_routes AuthController, WatchClub.Accounts.User, path: "/auth"
-
-    # Auth routes
-    sign_out_route AuthController
-
-    sign_in_route register_path: "/register",
-                  reset_path: "/reset",
-                  auth_routes_prefix: "/auth",
-                  on_mount: [{WatchClubWeb.LiveUserAuth, :live_no_user}],
-                  overrides: [
-                    WatchClubWeb.AuthOverrides,
-                    Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-                  ]
-
-    reset_route auth_routes_prefix: "/auth",
-                overrides: [
-                  WatchClubWeb.AuthOverrides,
-                  Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI
-                ]
-
-    confirm_route WatchClub.Accounts.User, :confirm_new_user,
-      auth_routes_prefix: "/auth",
-      overrides: [WatchClubWeb.AuthOverrides, Elixir.AshAuthentication.Phoenix.Overrides.DaisyUI]
   end
 
   # Other scopes may use custom stacks.
@@ -72,11 +64,33 @@ defmodule WatchClubWeb.Router do
     # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
+    scope "/" do
+      storybook_assets()
+    end
+
     scope "/dev" do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: WatchClubWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
+    end
+
+    live_storybook("/dev/storybook", backend_module: WatchClubWeb.Storybook)
+  end
+
+  defp ensure_administrator_setup(%Plug.Conn{request_path: "/setup"} = conn, _opts) do
+    if WatchClub.Accounts.administrator_exists?() do
+      conn |> redirect(to: ~p"/")
+    else
+      conn
+    end
+  end
+
+  defp ensure_administrator_setup(conn, _opts) do
+    if WatchClub.Accounts.administrator_exists?() do
+      conn
+    else
+      conn |> redirect(to: ~p"/setup")
     end
   end
 end

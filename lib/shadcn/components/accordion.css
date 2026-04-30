@@ -1,0 +1,41 @@
+@layer components.base {
+	[data-slot="accordion"] {
+		@apply flex w-full flex-col;
+	}
+
+	[data-slot="accordion-item"] {
+		@apply not-last:border-b;
+	}
+
+	[data-slot="accordion-trigger"] {
+		@apply relative flex w-full cursor-pointer items-start justify-between gap-4 rounded-md border border-transparent py-4 text-left text-sm font-medium transition-all outline-none hover:underline focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-disabled:pointer-events-none data-disabled:opacity-50 list-none [&::-webkit-details-marker]:hidden;
+	}
+
+	[data-slot="accordion-trigger-icon"] {
+		@apply pointer-events-none ml-auto size-4 shrink-0 text-muted-foreground transition-transform;
+	}
+
+	[data-slot="accordion-item"][open] [data-slot="accordion-trigger-icon"] {
+		@apply rotate-180;
+	}
+
+	[data-slot="accordion-content"] {
+		@apply overflow-hidden pt-0 pb-4 text-sm [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4;
+	}
+
+	[data-slot="accordion-item"] {
+		interpolate-size: allow-keywords;
+	}
+
+	[data-slot="accordion-item"]::details-content {
+		block-size: 0;
+		overflow: hidden;
+		transition:
+			block-size 200ms ease-out,
+			content-visibility 200ms ease-out allow-discrete;
+	}
+
+	[data-slot="accordion-item"][open]::details-content {
+		block-size: auto;
+	}
+}

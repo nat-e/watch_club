@@ -27,7 +27,8 @@ config :watch_club, WatchClubWeb.Endpoint,
   secret_key_base: "njSJCkt/QXSdzH9OqPHv8jYRdMQqoyH1ci2rewqHMl+ZZXSov0su8b6yuXs3b0HB",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:watch_club, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:watch_club, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:watch_club, ~w(--watch)]},
+    tailwind_storybook: {Tailwind, :install_and_run, [:storybook, ~w(--watch)]}
   ]
 
 # ## SSL Support

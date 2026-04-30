@@ -1,0 +1,15 @@
+@layer components.base {
+	[data-slot="menubar"] {
+		@apply flex h-9 items-center gap-1 rounded-md border bg-background p-1 shadow-xs;
+	}
+
+	[data-slot="menubar-trigger"] {
+		@apply flex cursor-default select-none items-center rounded-sm px-2 py-1 text-sm font-medium outline-hidden focus:bg-accent focus:text-accent-foreground;
+	}
+
+	[data-slot="menubar"]
+		[data-slot="dropdown-menu"][data-state="open"]
+		[data-slot="menubar-trigger"] {
+		@apply bg-accent text-accent-foreground;
+	}
+}

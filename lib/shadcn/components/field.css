@@ -1,0 +1,77 @@
+@layer components.base {
+	[data-slot="field-set"] {
+		@apply flex flex-col gap-6 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3;
+	}
+
+	[data-slot="field-legend"] {
+		@apply mb-3 font-medium;
+	}
+
+	[data-slot="field-legend"][data-variant="label"] {
+		@apply text-sm;
+	}
+
+	[data-slot="field-legend"][data-variant="legend"] {
+		@apply text-base;
+	}
+
+	[data-slot="field-group"] {
+		@apply @container/field-group flex w-full flex-col gap-7 *:data-[slot=field-group]:gap-4;
+	}
+
+	[data-slot="field"] {
+		@apply flex w-full gap-3;
+	}
+
+	[data-slot="field"][data-invalid="true"] {
+		@apply text-destructive;
+	}
+
+	[data-slot="field"][data-orientation="vertical"] {
+		@apply flex-col *:w-full;
+	}
+
+	[data-slot="field"][data-orientation="horizontal"] {
+		@apply flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px;
+	}
+
+	[data-slot="field"][data-orientation="responsive"] {
+		@apply flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px;
+	}
+
+	[data-slot="field-content"] {
+		@apply flex flex-1 flex-col gap-1 leading-snug;
+	}
+
+	[data-slot="field-label"] {
+		@apply flex w-fit items-center gap-2 text-sm font-medium leading-snug select-none has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-3 has-[:checked]:border-primary/30 has-[:checked]:bg-primary/5 dark:has-[:checked]:border-primary/20 dark:has-[:checked]:bg-primary/10;
+	}
+
+	[data-slot="field"][data-disabled="true"] [data-slot="field-label"] {
+		@apply opacity-50;
+	}
+
+	[data-slot="field-title"] {
+		@apply flex w-fit items-center gap-2 text-sm font-medium;
+	}
+
+	[data-slot="field-description"] {
+		@apply text-left text-sm leading-normal font-normal text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary;
+	}
+
+	[data-slot="field-separator"] {
+		@apply relative -my-2 h-5 text-sm;
+	}
+
+	[data-slot="field-separator-line"] {
+		@apply absolute inset-x-0 top-1/2 h-px bg-border;
+	}
+
+	[data-slot="field-separator-content"] {
+		@apply relative mx-auto block w-fit bg-background px-2 text-muted-foreground;
+	}
+
+	[data-slot="field-error"] {
+		@apply text-sm font-normal text-destructive;
+	}
+}

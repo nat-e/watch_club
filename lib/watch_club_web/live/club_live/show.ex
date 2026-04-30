@@ -6,25 +6,25 @@ defmodule WatchClubWeb.ClubLive.Show do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <.header>
+      <%!-- <.header>
         Club {@club.id}
         <:subtitle>This is a club record from your database.</:subtitle>
 
         <:actions>
           <.button navigate={~p"/clubs"}>
-            <.icon name="hero-arrow-left" />
+            <Lucideicons.arrow_left />
           </.button>
-          <.button variant="primary" navigate={~p"/clubs/#{@club}/edit?return_to=show"}>
-            <.icon name="hero-pencil-square" /> Edit Club
+          <.button navigate={~p"/clubs/#{@club}/edit?return_to=show"}>
+            <Lucideicons.pencil /> Edit Club
           </.button>
         </:actions>
-      </.header>
+      </.header> --%>
 
-      <.list>
+      <%!-- <.list>
         <:item title="Id">{@club.id}</:item>
 
         <:item title="Name">{@club.name}</:item>
-      </.list>
+      </.list> --%>
     </Layouts.app>
     """
   end

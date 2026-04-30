@@ -1,0 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code&family=Oxanium:wght@400;500;700&family=Reddit+Sans:wght@400;500;600;700&display=swap");
+
+@import "tailwindcss" source(none);
+@import "../vendor/tw-animate.css";
+@import "./themes/shadcn.css";
+@import "./themes/wc.css";
+@import "./phx.css";
+@import "./base.css";
+@import "./components.css";
+
+@source "../../lib/watch_club_web/components";
+@source "../css";
+@source "../js";
+@source "../../lib/watch_club_web";
+@source "../../storybook";
+
+.psb-sandbox {
+	@apply bg-background text-foreground font-sans rounded-lg p-8!;
+}
+
+/* Avoid unstyled content flash */
+.psb-sandbox:not(.light):not(.dark) {
+	visibility: hidden;
+}

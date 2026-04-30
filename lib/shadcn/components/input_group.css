@@ -1,0 +1,65 @@
+@layer components.base {
+	[data-slot="input-group"] {
+		@apply relative flex h-9 w-full min-w-0 items-center rounded-md border border-input shadow-xs transition-[color,box-shadow] outline-none has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid="true"]]:border-destructive has-[[data-slot][aria-invalid="true"]]:ring-3 has-[[data-slot][aria-invalid="true"]]:ring-destructive/20 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:bg-input/30 dark:has-[[data-slot][aria-invalid="true"]]:ring-destructive/40;
+	}
+
+	/*
+	 * Shadcn targets the inner control via `data-slot="input-group-control"`,
+	 * relying on React's spread to overwrite the inner Input/Textarea's own
+	 * `data-slot`. Phoenix renders both `data-slot` attributes (the browser
+	 * keeps the first), so that override never lands. We instead select the
+	 * inner control via a descendant selector — bumping specificity above
+	 * `[data-slot="input"]` / `[data-slot="textarea"]`.
+	 */
+	[data-slot="input-group"] [data-slot="input"],
+	[data-slot="input-group"] [data-slot="textarea"] {
+		@apply flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent;
+	}
+
+	[data-slot="input-group"] [data-slot="textarea"] {
+		@apply resize-none py-2;
+	}
+
+	[data-slot="input-group-addon"] {
+		@apply flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4;
+	}
+
+	[data-slot="input-group-addon"][data-align="inline-start"] {
+		@apply order-first pl-2 has-[>button]:-ml-1 has-[>kbd]:-ml-[0.15rem];
+	}
+
+	[data-slot="input-group-addon"][data-align="inline-end"] {
+		@apply order-last pr-2 has-[>button]:-mr-1 has-[>kbd]:-mr-[0.15rem];
+	}
+
+	[data-slot="input-group-addon"][data-align="block-start"] {
+		@apply order-first w-full justify-start px-2.5 pt-2;
+	}
+
+	[data-slot="input-group-addon"][data-align="block-end"] {
+		@apply order-last w-full justify-start px-2.5 pb-2;
+	}
+
+	[data-slot="input-group-text"] {
+		@apply flex items-center gap-2 text-sm text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4;
+	}
+
+	[data-slot="input-group"] .input-group-button {
+		@apply gap-2 text-sm shadow-none;
+	}
+
+	[data-slot="input-group"]
+		.input-group-button[data-input-group-button-size="xs"] {
+		@apply gap-1 rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-3.5;
+	}
+
+	[data-slot="input-group"]
+		.input-group-button[data-input-group-button-size="icon-xs"] {
+		@apply size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0;
+	}
+
+	[data-slot="input-group"]
+		.input-group-button[data-input-group-button-size="icon-sm"] {
+		@apply size-8 p-0 has-[>svg]:p-0;
+	}
+}

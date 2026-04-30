@@ -1,4 +1,7 @@
 defmodule WatchClub.Accounts.User do
+  require Ash.Query
+
+  alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Membership}
 
   use Ash.Resource,
@@ -11,6 +14,8 @@ defmodule WatchClub.Accounts.User do
   postgres do
     table "users"
     repo(WatchClub.Repo)
+
+    identity_wheres_to_sql(only_one_administrator: "is_administrator = true")
   end
 
   authentication do
@@ -40,7 +45,7 @@ defmodule WatchClub.Accounts.User do
 
     strategies do
       password :password do
-        identity_field :email
+        identity_field :username
         hash_provider AshAuthentication.BcryptProvider
 
         resettable do
@@ -57,6 +62,56 @@ defmodule WatchClub.Accounts.User do
 
   actions do
     defaults [:read]
+
+    create :create_administrator do
+      description "Creates the administrator for this instance."
+      accept [:email, :username]
+
+      argument :password, :string do
+        description "The proposed password for the user, in plain text."
+        allow_nil? false
+        constraints min_length: 8
+        sensitive? true
+      end
+
+      argument :password_confirmation, :string do
+        description "The proposed password for the user (again), in plain text."
+        allow_nil? false
+        sensitive? true
+      end
+
+      # validates that the password matches the confirmation
+      validate {AshAuthentication.Strategy.Password.PasswordConfirmationValidation,
+                strategy_name: :password}
+
+      change set_attribute(:administrator?, true)
+
+      # Hashes the provided password
+      change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
+
+      # Generates an authentication token for the user
+      change {AshAuthentication.GenerateTokenChange, strategy_name: :password}
+
+      metadata :token, :string do
+        description "A JWT that can be used to authenticate the user."
+        allow_nil? false
+      end
+    end
+
+    read :get_administrator do
+      description "Returns the administrator user, or nil if it was not setup yet"
+      get? true
+
+      filter expr(administrator? == true)
+    end
+
+    action :administrator_exists?, :boolean do
+      description "Returns whether or not the administrator account has been setup"
+
+      run fn _input, _ ->
+        User |> Ash.Query.filter(administrator? == true) |> Ash.exists(authorize?: false)
+      end
+    end
 
     read :get_by_subject do
       description "Get a user by the subject claim in a JWT"
@@ -89,11 +144,11 @@ defmodule WatchClub.Accounts.User do
     end
 
     read :sign_in_with_password do
-      description "Attempt to sign in using a email and password."
+      description "Attempt to sign in using a username and password."
       get? true
 
-      argument :email, :ci_string do
-        description "The email to use for retrieving the user."
+      argument :username, :string do
+        description "The username to use for retrieving the user."
         allow_nil? false
       end
 
@@ -141,10 +196,7 @@ defmodule WatchClub.Accounts.User do
 
     create :register_with_password do
       description "Register a new user with a email and password."
-
-      argument :email, :ci_string do
-        allow_nil? false
-      end
+      accept [:email, :username]
 
       argument :password, :string do
         description "The proposed password for the user, in plain text."
@@ -158,9 +210,6 @@ defmodule WatchClub.Accounts.User do
         allow_nil? false
         sensitive? true
       end
-
-      # Sets the email from the argument
-      change set_attribute(:email, arg(:email))
 
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
@@ -180,7 +229,7 @@ defmodule WatchClub.Accounts.User do
     action :request_password_reset_token do
       description "Send password reset instructions to a user if they exist."
 
-      argument :email, :ci_string do
+      argument :username, :string do
         allow_nil? false
       end
 
@@ -230,14 +279,34 @@ defmodule WatchClub.Accounts.User do
     bypass AshAuthentication.Checks.AshAuthenticationInteraction do
       authorize_if always()
     end
+
+    # Everyone can register and signin
+    policy action([:sign_in_with_password, :register_with_password]) do
+      authorize_if always()
+    end
+
+    policy action(:get_administrator) do
+      authorize_if actor_attribute_equals(:administrator?, true)
+    end
+
+    policy action([:administrator_exists?, :create_administrator]) do
+      authorize_if always()
+    end
   end
 
   attributes do
     uuid_v7_primary_key :id
 
+    attribute :username, :string do
+      allow_nil? false
+      public? true
+      constraints match: ~r/^[a-z0-9_]+$/, min_length: 3, max_length: 30
+    end
+
     attribute :email, :ci_string do
       allow_nil? false
       public? true
+      constraints match: ~r/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$/
     end
 
     attribute :hashed_password, :string do
@@ -246,6 +315,11 @@ defmodule WatchClub.Accounts.User do
     end
 
     attribute :confirmed_at, :utc_datetime_usec
+
+    attribute :administrator?, :boolean,
+      allow_nil?: false,
+      default: false,
+      source: :is_administrator
   end
 
   relationships do
@@ -255,5 +329,11 @@ defmodule WatchClub.Accounts.User do
 
   identities do
     identity :unique_email, [:email]
+    identity :unique_username, [:username]
+
+    identity :only_one_administrator, [:administrator?] do
+      where expr(administrator? == true)
+      message "a administrator already exists"
+    end
   end
 end

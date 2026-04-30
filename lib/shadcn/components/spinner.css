@@ -1,0 +1,5 @@
+@layer components.base {
+	[data-slot="spinner"] {
+		@apply size-4 animate-spin;
+	}
+}

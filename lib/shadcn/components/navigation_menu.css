@@ -1,0 +1,93 @@
+@layer components.base {
+	[data-slot="navigation-menu"] {
+		@apply relative flex max-w-max flex-1 items-center justify-center;
+	}
+
+	[data-slot="navigation-menu-list"] {
+		@apply flex flex-1 list-none items-center justify-center gap-0;
+	}
+
+	[data-slot="navigation-menu-item"] {
+		@apply relative;
+	}
+
+	[data-slot="navigation-menu-trigger"],
+	.navigation-menu-trigger-style {
+		@apply inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-foreground transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50;
+	}
+
+	[data-slot="navigation-menu-trigger"][data-state="open"] {
+		@apply bg-muted/50 hover:bg-muted focus:bg-muted;
+	}
+
+	[data-slot="navigation-menu-trigger-icon"] {
+		@apply relative top-px ml-1 size-3 transition-transform duration-300;
+	}
+
+	[data-slot="navigation-menu-trigger"][data-state="open"]
+		[data-slot="navigation-menu-trigger-icon"] {
+		@apply rotate-180;
+	}
+
+	[data-slot="navigation-menu-content"] {
+		@apply z-50 p-2 ease-[cubic-bezier(0.22,1,0.36,1)];
+	}
+
+	[data-slot="navigation-menu-content"][hidden] {
+		@apply hidden;
+	}
+
+	/* Inline mode: content drops down absolutely under the trigger. */
+	[data-slot="navigation-menu"][data-viewport="false"]
+		[data-slot="navigation-menu-content"] {
+		@apply mt-1.5 overflow-hidden rounded-md bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 duration-300;
+	}
+
+	[data-slot="navigation-menu"][data-viewport="false"]
+		[data-slot="navigation-menu-content"][data-state="open"] {
+		@apply animate-in fade-in-0 zoom-in-95;
+	}
+
+	[data-slot="navigation-menu"][data-viewport="false"]
+		[data-slot="navigation-menu-content"][data-state="closed"] {
+		@apply animate-out fade-out-0 zoom-out-95;
+	}
+
+	/* Shared viewport mode: a single panel below the list. */
+	[data-slot="navigation-menu-viewport-wrapper"] {
+		@apply absolute top-full left-0 isolate z-50 flex justify-center;
+	}
+
+	[data-slot="navigation-menu-viewport"] {
+		@apply origin-top relative mt-1.5 h-[var(--watch-club-navigation-menu-viewport-height,0)] w-[var(--watch-club-navigation-menu-viewport-width,0)] overflow-hidden rounded-lg bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[width,height] duration-200 ease-out;
+	}
+
+	[data-slot="navigation-menu-viewport"][data-state="closed"] {
+		@apply pointer-events-none opacity-0 duration-150;
+	}
+
+	[data-slot="navigation-menu-viewport"][data-state="open"] {
+		@apply opacity-100;
+	}
+
+	[data-slot="navigation-menu-viewport"] [data-slot="navigation-menu-content"] {
+		@apply w-full;
+	}
+
+	[data-slot="navigation-menu-link"] {
+		@apply flex items-center gap-1.5 rounded-md p-2 text-sm text-foreground transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1;
+	}
+
+	[data-slot="navigation-menu-link"][data-active="true"] {
+		@apply bg-muted/50 hover:bg-muted focus:bg-muted;
+	}
+
+	[data-slot="navigation-menu-link"] svg:not([class*="size-"]) {
+		@apply size-4;
+	}
+
+	/* Links nested inside content get tighter rounding. */
+	[data-slot="navigation-menu-content"] [data-slot="navigation-menu-link"] {
+		@apply rounded-sm focus:ring-0 focus:outline-none;
+	}
+}

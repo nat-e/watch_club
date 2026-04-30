@@ -20,16 +20,12 @@
 //
 // Feel free to adjust this configuration however you need.
 {
-  "compilerOptions": {
-    "paths": {
-      "*": [
-        "../deps/*"
-      ]
-    },
-    "allowJs": true,
-    "noEmit": true
-  },
-  "include": [
-    "js/**/*"
-  ]
+	"compilerOptions": {
+		"paths": {
+			"*": ["../deps/*"]
+		},
+		"allowJs": true,
+		"noEmit": true
+	},
+	"include": ["js/**/*"]
 }

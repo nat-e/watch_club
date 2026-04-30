@@ -3,8 +3,23 @@ defmodule WatchClub.Generator do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Invitation, Membership}
 
-  def email do
-    sequence(:email, fn i -> "user#{i}@test.com" end)
+  def email, do: sequence(:email, fn i -> "user#{i}@test.com" end)
+  def username, do: sequence(:username, fn i -> "user_#{i}" end)
+
+  def administrator(opts \\ []) do
+    changeset_generator(
+      User,
+      :create_administrator,
+      defaults: [
+        username: username(),
+        email: email(),
+        password: "passw0rd",
+        password_confirmation: "passw0rd"
+      ],
+      authorize?: false,
+      actor: opts[:actor],
+      overrides: opts
+    )
   end
 
   def user(opts \\ []) do
@@ -13,6 +28,7 @@ defmodule WatchClub.Generator do
       :register_with_password,
       defaults: [
         email: email(),
+        username: username(),
         password: "passw0rd",
         password_confirmation: "passw0rd"
       ],

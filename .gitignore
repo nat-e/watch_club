@@ -35,4 +35,9 @@ watch_club-*.tar
 npm-debug.log
 /assets/node_modules/
 
-.elixir_ls/
+.expert/
+
+.playwright-mcp/
+
+*.png
+*.jpg

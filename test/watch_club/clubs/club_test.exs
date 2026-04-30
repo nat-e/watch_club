@@ -5,7 +5,7 @@ defmodule WatchClub.Clubs.ClubTest do
   import WatchClub.Clubs
 
   setup do
-    admin = generate(user())
+    admin = generate(administrator())
     club = generate(club(actor: admin))
     # Add a member
     member = generate(user())
@@ -23,6 +23,14 @@ defmodule WatchClub.Clubs.ClubTest do
                memberships: [%Membership{user_id: ^admin_id, role: :admin}]
              } =
                create_club!(%{name: "My Club"}, actor: admin)
+    end
+
+    test "only administrator can create clubs" do
+      other_user = generate(user())
+
+      assert_raise Ash.Error.Forbidden, fn ->
+        create_club!(%{name: "My Club"}, actor: other_user)
+      end
     end
 
     test "cannot create a club without an actor" do

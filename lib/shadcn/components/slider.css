@@ -1,0 +1,41 @@
+@layer components.base {
+	[data-slot="slider"] {
+		@apply relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-40 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col;
+
+		[data-slot="slider-input"] {
+			@apply sr-only;
+		}
+
+		[data-slot="slider-track"] {
+			@apply relative grow overflow-hidden rounded-full bg-muted;
+		}
+
+		&[data-orientation="horizontal"] [data-slot="slider-track"] {
+			@apply h-1.5 w-full;
+		}
+
+		&[data-orientation="vertical"] [data-slot="slider-track"] {
+			@apply h-full w-1.5;
+		}
+
+		[data-slot="slider-range"] {
+			@apply absolute bg-primary select-none;
+		}
+
+		&[data-orientation="horizontal"] [data-slot="slider-range"] {
+			@apply h-full;
+		}
+
+		&[data-orientation="vertical"] [data-slot="slider-range"] {
+			@apply w-full;
+		}
+
+		[data-slot="slider-thumb"] {
+			@apply absolute block size-4 shrink-0 cursor-grab rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] select-none hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden;
+		}
+
+		&[data-disabled] [data-slot="slider-thumb"] {
+			@apply pointer-events-none cursor-not-allowed;
+		}
+	}
+}

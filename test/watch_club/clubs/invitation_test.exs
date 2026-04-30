@@ -5,7 +5,7 @@ defmodule WatchClub.Clubs.InvitationTest do
   import WatchClub.Clubs
 
   setup do
-    admin = generate(user())
+    admin = generate(administrator())
     club = generate(club(actor: admin))
     # Add a member
     member = generate(user())

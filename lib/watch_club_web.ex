@@ -85,7 +85,8 @@ defmodule WatchClubWeb do
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
-      import WatchClubWeb.CoreComponents
+      use Shadcn.Components
+      use WatchClubWeb.Components
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

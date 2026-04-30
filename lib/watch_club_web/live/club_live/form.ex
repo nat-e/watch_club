@@ -7,21 +7,33 @@ defmodule WatchClubWeb.ClubLive.Form do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <.header>
+      <%!-- <.header>
         {@page_title}
         <:subtitle>Use this form to manage club records in your database.</:subtitle>
-      </.header>
+      </.header> --%>
 
       <.form
         for={@form}
         id="club-form"
         phx-change="validate"
-        phx-submit="save"
+        phx-submit="submit"
+        class="flex flex-col gap-6"
       >
-        <.input field={@form[:name]} type="text" label="Name" phx-debounce="blur" />
+        <div class="flex flex-col gap-2">
+          <.label field={@form[:name]}>Name</.label>
+          <.input field={@form[:name]} type="text" phx-debounce="blur" />
+          <.field_errors field={@form[:name]} />
+        </div>
 
-        <.button phx-disable-with="Saving..." variant="primary">Save Club</.button>
-        <.button navigate={return_path(@return_to, @club)}>Cancel</.button>
+        <div class="flex gap-2">
+          <.button phx-disable-with="Saving...">Save Club</.button>
+          <.button
+            variant="outline"
+            navigate={return_path(@return_to, @club)}
+          >
+            Cancel
+          </.button>
+        </div>
       </.form>
     </Layouts.app>
     """
@@ -55,7 +67,7 @@ defmodule WatchClubWeb.ClubLive.Form do
   end
 
   @impl true
-  def handle_event("save", %{"form" => params}, socket) do
+  def handle_event("submit", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, club} ->
         socket =

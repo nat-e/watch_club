@@ -1,0 +1,13 @@
+/*
+Add variants based on LiveView classes.
+This allows to write stuff like: class="phx-submit-loading:opacity-50"
+*/
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session],
+[data-phx-teleported-src] {
+	display: contents;
+}

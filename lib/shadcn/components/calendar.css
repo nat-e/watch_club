@@ -1,0 +1,97 @@
+@layer components.base {
+	[data-slot="calendar"] {
+		@apply inline-flex w-fit flex-col gap-3 rounded-md border bg-background p-3;
+	}
+
+	[data-slot="calendar-nav"] {
+		@apply relative flex items-center justify-between gap-1;
+	}
+
+	[data-slot="calendar-nav-button"] {
+		@apply inline-flex size-7 shrink-0 items-center justify-center rounded-md text-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring [&_svg]:size-4 [&_svg]:shrink-0;
+	}
+
+	[data-slot="calendar-caption"] {
+		@apply flex flex-1 items-center justify-center gap-1.5 text-sm font-medium;
+	}
+
+	[data-slot="calendar-caption-month-label"],
+	[data-slot="calendar-caption-year-label"] {
+		@apply select-none;
+	}
+
+	[data-slot="calendar-caption-dropdown"] {
+		@apply relative inline-flex items-center;
+	}
+
+	[data-slot="calendar-caption-select"] {
+		@apply appearance-none rounded-md bg-transparent py-0.5 pr-5 pl-1.5 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring;
+	}
+
+	[data-slot="calendar-caption-chevron"] {
+		@apply pointer-events-none absolute right-1 size-3.5 text-muted-foreground;
+	}
+
+	[data-slot="calendar-table"] {
+		@apply w-full border-collapse;
+	}
+
+	[data-slot="calendar-weekday"] {
+		@apply h-9 w-9 text-center text-xs font-normal text-muted-foreground select-none;
+	}
+
+	[data-slot="calendar-week-number-header"],
+	[data-slot="calendar-week-number"] {
+		@apply h-9 w-9 pr-2 text-center text-xs font-normal text-muted-foreground select-none;
+	}
+
+	[data-slot="calendar-cell"] {
+		@apply relative p-0 text-center;
+	}
+
+	[data-slot="calendar-day"] {
+		@apply relative z-10 inline-flex size-9 items-center justify-center rounded-md text-sm font-normal transition-colors select-none hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring;
+	}
+
+	[data-slot="calendar-day"][data-today] {
+		@apply bg-accent text-accent-foreground;
+	}
+
+	[data-slot="calendar-day"][data-outside] {
+		@apply text-muted-foreground/40;
+	}
+
+	[data-slot="calendar"][data-show-outside-days="false"]
+		[data-slot="calendar-day"][data-outside] {
+		@apply invisible;
+	}
+
+	[data-slot="calendar-day"][data-disabled] {
+		@apply pointer-events-none text-muted-foreground/40;
+	}
+
+	[data-slot="calendar-day"][data-selected-single="true"] {
+		@apply bg-primary text-primary-foreground hover:bg-primary;
+	}
+
+	[data-slot="calendar-day"][data-range-start="true"],
+	[data-slot="calendar-day"][data-range-end="true"] {
+		@apply bg-primary text-primary-foreground hover:bg-primary;
+	}
+
+	[data-slot="calendar-day"][data-range-middle="true"] {
+		@apply rounded-none bg-muted text-foreground hover:bg-muted;
+	}
+
+	[data-slot="calendar-cell"]:has([data-range-middle="true"]) {
+		@apply bg-muted;
+	}
+
+	[data-slot="calendar-cell"]:has([data-range-start="true"]) {
+		@apply rounded-l-md bg-muted;
+	}
+
+	[data-slot="calendar-cell"]:has([data-range-end="true"]) {
+		@apply rounded-r-md bg-muted;
+	}
+}
