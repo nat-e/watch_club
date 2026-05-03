@@ -1,7 +1,76 @@
-<div class="relative grid min-h-svh place-items-center bg-gray-900 px-4 py-14">
-  <div class="relative z-10 w-full max-w-sm sm:max-w-md">
-    {render_slot(@inner_block)}
-  </div>
-</div>
+<.sidebar_provider id="sidebar">
+  <.sidebar collapsible="offcanvas">
+    <:header>
+      <div class="flex flex-row justify-between w-full items-center">
+        <h2 class="m-2">watch.club</h2>
+        <.button
+          variant="ghost"
+          class="block text-sidebar-foreground p-2 shadow md:hidden"
+          phx-click={JS.dispatch("wc:sidebar-toggle", to: "#sidebar")}
+        >
+          <Lucideicons.x />
+        </.button>
+      </div>
+    </:header>
+    <.sidebar_group class="flex flex-col gap-2">
+      <.sidebar_menu>
+        <.sidebar_nav_button url="/" current_url={@current_url}>
+          <:icon><Lucideicons.home /></:icon>
+          Dashboard
+        </.sidebar_nav_button>
+        <.sidebar_nav_button url="/watchlist" current_url={@current_url}>
+          <:icon><Lucideicons.bookmark /></:icon>
+          Watchlist
+        </.sidebar_nav_button>
+      </.sidebar_menu>
+    </.sidebar_group>
+    <.sidebar_group class="flex flex-col gap-2">
+      <:label>Clubs</:label>
+      <.sidebar_menu>
+        <.sidebar_membership_menu_item
+          :for={membership <- @current_user.memberships}
+          current_url={@current_url}
+          membership={membership}
+        />
+      </.sidebar_menu>
+      <.sidebar_menu :if={@current_user.administrator?}>
+        <.sidebar_menu_item
+          patch={
+            @current_url
+            |> Url.add_param(WatchClubWeb.Modals.CreateClub.modal_name(), true)
+            |> Url.to_url()
+          }
+          size="lg"
+        >
+          <:icon><Lucideicons.plus class="size-8 px-1" /></:icon>
+          Create new club
+        </.sidebar_menu_item>
+      </.sidebar_menu>
+    </.sidebar_group>
+  </.sidebar>
+  <.sidebar_inset>
+    <header class="flex h-16 items-center gap-2 border-b px-4">
+      <.button
+        variant="ghost"
+        size="icon-sm"
+        class="block md:hidden"
+        aria-label="Toggle sidebar"
+        phx-click={JS.dispatch("wc:sidebar-toggle", to: "#sidebar")}
+      >
+        <Lucideicons.panel_left />
+      </.button>
+      <span class="text-sm font-medium">Dashboard</span>
+    </header>
+    <div class="flex flex-1 flex-col gap-4 p-4">
+      <div class="aspect-video rounded-xl bg-muted/50"></div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="aspect-video rounded-xl bg-muted/30"></div>
+        <div class="aspect-video rounded-xl bg-muted/30"></div>
+      </div>
+    </div>
+  </.sidebar_inset>
+</.sidebar_provider>
 
 <.flash flash={@flash} />
+
+<.modals_portal current_url={@current_url} current_user={@current_user} />

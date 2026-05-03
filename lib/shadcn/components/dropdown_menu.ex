@@ -39,7 +39,7 @@ defmodule Shadcn.Components.DropdownMenu do
   """
   use Phoenix.Component
 
-  attr :id, :string, required: true
+  attr :id, :string, default: nil
   attr :class, :any, default: nil
   attr :side, :string, values: ~w(top right bottom left), default: "bottom"
   attr :align, :string, values: ~w(start center end), default: "start"
@@ -51,6 +51,9 @@ defmodule Shadcn.Components.DropdownMenu do
   slot :inner_block, required: true
 
   def dropdown_menu(assigns) do
+    id = assigns.id || "dropdown-menu-#{System.unique_integer([:positive])}"
+    assigns = assign(assigns, :id, id)
+
     ~H"""
     <div
       id={@id}

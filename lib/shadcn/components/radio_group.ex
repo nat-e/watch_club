@@ -23,7 +23,7 @@ defmodule Shadcn.Components.RadioGroup do
   attr :id, :any, default: nil
   attr :class, :any, default: nil
   attr :name, :any, default: nil
-  attr :value, :any, default: nil
+  attr :value, :string, default: nil
   attr :errors, :list, default: []
   attr :field, Phoenix.HTML.FormField, doc: "form field — derives id, name, value, errors"
   attr :rest, :global

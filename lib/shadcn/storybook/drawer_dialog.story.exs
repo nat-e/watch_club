@@ -23,7 +23,6 @@ defmodule Shadcn.Storybook.DrawerDialog do
     <div>
       <div class="hidden md:contents">
         <.dialog id={"#{@id}-dialog"}>
-          <:trigger><.button variant="outline">Edit Profile</.button></:trigger>
           <:title>Edit profile</:title>
           <:description>Make changes to your profile here. Click save when you're done.</:description>
           <.profile_form id={"#{@id}-dialog"} />

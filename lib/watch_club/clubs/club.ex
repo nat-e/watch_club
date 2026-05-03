@@ -15,7 +15,7 @@ defmodule WatchClub.Clubs.Club do
   end
 
   actions do
-    defaults [:read, :destroy, update: [:name]]
+    defaults [:read, update: [:name]]
 
     read :preview
 
@@ -38,6 +38,13 @@ defmodule WatchClub.Clubs.Club do
         changeset, _ ->
           changeset
       end
+    end
+
+    destroy :destroy do
+      # Manually delete the memberships before deleting the club and send the PubSub notifications
+      # This is done in the before_action hook so that we can keep the DB on_delete cascade
+      # (even though not used here)
+      change cascade_destroy(:memberships, return_notifications?: true, after_action?: false)
     end
   end
 

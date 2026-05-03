@@ -1,0 +1,14 @@
+@layer components.base {
+	[data-slot="modal"][open] {
+		@apply fixed w-full top-1/2 max-w-[calc(100%-2rem)] sm:max-w-md left-1/2 z-50 overflow-hidden -translate-x-1/2 -translate-y-1/2 rounded-xl bg-popover ring-1 ring-foreground/10 outline-none;
+	}
+
+	[data-slot="modal"]::backdrop {
+		@apply bg-black/10;
+		backdrop-filter: blur(4px);
+	}
+
+	[data-slot="modal-close"] {
+		@apply absolute top-4 right-4 inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none [&_svg]:size-4;
+	}
+}

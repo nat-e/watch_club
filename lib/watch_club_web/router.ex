@@ -32,18 +32,31 @@ defmodule WatchClubWeb.Router do
     pipe_through :browser
 
     ash_authentication_live_session :authenticated_routes,
-      on_mount: {WatchClubWeb.LiveUserAuth, :live_user_required} do
+      on_mount: [
+        WatchClubWeb.Hooks.CurrentUrl,
+        WatchClubWeb.Hooks.Flash,
+        {WatchClubWeb.LiveUserAuth, :live_user_required}
+      ] do
       live "/", HomeLive.Home
-      live "/clubs", ClubLive.Index
-      live "/clubs/new", ClubLive.Form
-      live "/clubs/:id", ClubLive.Show
-      live "/clubs/:id/edit", ClubLive.Form
     end
 
     ash_authentication_live_session :unauthenticated_routes,
-      on_mount: {WatchClubWeb.LiveUserAuth, :live_no_user} do
+      on_mount: [
+        WatchClubWeb.Hooks.CurrentUrl,
+        WatchClubWeb.Hooks.Flash,
+        {WatchClubWeb.LiveUserAuth, :live_no_user}
+      ] do
       live "/setup", AccountsLive.Setup
       live "/sign-in", AccountsLive.Signin
+    end
+
+    ash_authentication_live_session :optional_user_routes,
+      on_mount: [
+        WatchClubWeb.Hooks.CurrentUrl,
+        WatchClubWeb.Hooks.Flash,
+        {WatchClubWeb.LiveUserAuth, :live_user_optional}
+      ] do
+      live "/invitations/:invitation_id", InvitationsLive.Show
     end
 
     # Auto-generated POST and callbacks routes from Ash Authentication
@@ -72,7 +85,7 @@ defmodule WatchClubWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: WatchClubWeb.Telemetry
-      forward "/mailbox", Plug.Swoosh.MailboxPreview
+      # forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
 
     live_storybook("/dev/storybook", backend_module: WatchClubWeb.Storybook)

@@ -1,15 +1,6 @@
 @layer components.base {
-	[data-slot="dialog-trigger"] {
-		@apply contents;
-	}
-
-	[data-slot="dialog-content"][open] {
-		@apply fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-hidden rounded-xl bg-popover p-6 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none sm:max-w-md;
-	}
-
-	[data-slot="dialog-content"]::backdrop {
-		@apply bg-black/10;
-		backdrop-filter: blur(4px);
+	[data-slot="dialog"] {
+		@apply grid w-full gap-6 p-4 text-sm text-popover-foreground;
 	}
 
 	[data-slot="dialog-header"] {
@@ -26,9 +17,5 @@
 
 	[data-slot="dialog-footer"] {
 		@apply flex flex-col-reverse gap-2 sm:flex-row sm:justify-end;
-	}
-
-	[data-slot="dialog-close-icon"] {
-		@apply absolute top-4 right-4 inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none [&_svg]:size-4;
 	}
 }

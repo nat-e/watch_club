@@ -11,7 +11,6 @@ import {
 	ContextMenuHook,
 	ContextMenuSubHook,
 } from "../../lib/shadcn/components/context_menu";
-import { DialogHook } from "../../lib/shadcn/components/dialog";
 import { DrawerHook } from "../../lib/shadcn/components/drawer";
 import {
 	DropdownMenuHook,
@@ -20,6 +19,7 @@ import {
 import { HoverCardHook } from "../../lib/shadcn/components/hover_card";
 import { InputOtpHook } from "../../lib/shadcn/components/input_otp";
 import { MenubarHook } from "../../lib/shadcn/components/menubar";
+import { ModalHook } from "../../lib/shadcn/components/modal";
 import { NavigationMenuHook } from "../../lib/shadcn/components/navigation_menu";
 import { PopoverHook } from "../../lib/shadcn/components/popover";
 import { ResizableHook } from "../../lib/shadcn/components/resizable";
@@ -39,13 +39,13 @@ export default {
 	CommandHook,
 	ContextMenuHook,
 	ContextMenuSubHook,
-	DialogHook,
 	DrawerHook,
 	DropdownMenuHook,
 	DropdownMenuSubHook,
 	HoverCardHook,
 	InputOtpHook,
 	MenubarHook,
+	ModalHook,
 	NavigationMenuHook,
 	PopoverHook,
 	ResizableHook,

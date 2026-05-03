@@ -35,6 +35,29 @@ defmodule Shadcn.Components.Avatar do
   """
   use Phoenix.Component
 
+  @fallback_bg_colors {
+    "bg-blue-500",
+    "bg-emerald-500",
+    "bg-amber-500",
+    "bg-red-500",
+    "bg-violet-500",
+    "bg-cyan-500",
+    "bg-lime-500",
+    "bg-orange-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-teal-500",
+    "bg-purple-500",
+    "bg-green-500",
+    "bg-rose-500",
+    "bg-sky-500",
+    "bg-lime-600",
+    "bg-red-600",
+    "bg-violet-600",
+    "bg-emerald-600",
+    "bg-amber-600"
+  }
+
   attr :id, :string, default: nil
   attr :class, :any, default: nil
   attr :size, :string, values: ~w(sm default lg), default: "default"
@@ -83,7 +106,11 @@ defmodule Shadcn.Components.Avatar do
       class={["group/avatar", @class]}
       {@rest}
     >
-      <span :for={f <- @fallback} data-slot="avatar-fallback" class={f[:class]}>
+      <span
+        :for={f <- @fallback}
+        data-slot="avatar-fallback"
+        class={f[:class]}
+      >
         {render_slot(f)}
       </span>
       <img
@@ -118,5 +145,9 @@ defmodule Shadcn.Components.Avatar do
       </div>
     </div>
     """
+  end
+
+  def get_bg_color_class(id) when is_bitstring(id) do
+    elem(@fallback_bg_colors, :erlang.phash2(id, tuple_size(@fallback_bg_colors)))
   end
 end

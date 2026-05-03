@@ -1,10 +1,10 @@
-defmodule WatchClubWeb.Components.Forms.FieldErrors do
+defmodule WatchClubWeb.Components.Forms do
   @moduledoc """
   Styled component for displaying Form field errors.
   When errors are present (and the form has been interacted with per `Phoenix.Component.used_input?/1`),
   the errors will be rendered.
   """
-  use Phoenix.Component
+  use WatchClubWeb, :component
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Components.Forms.FieldErrors do
   attr :rest, :global
 
   def field_errors(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
-    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+    errors = if used_input?(field), do: field.errors, else: []
 
     assigns |> assign(:field, nil) |> assign(:errors, errors) |> field_errors()
   end

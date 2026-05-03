@@ -36,6 +36,7 @@ This contains all styles defined in our UI components
 @import "../../lib/shadcn/components/kbd.css";
 @import "../../lib/shadcn/components/label.css";
 @import "../../lib/shadcn/components/menubar.css";
+@import "../../lib/shadcn/components/modal.css";
 @import "../../lib/shadcn/components/native_select.css";
 @import "../../lib/shadcn/components/navigation_menu.css";
 @import "../../lib/shadcn/components/pagination.css";

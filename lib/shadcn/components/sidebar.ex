@@ -44,16 +44,25 @@ defmodule Shadcn.Components.Sidebar do
 
         <.sidebar_inset>
           <header class="flex h-12 items-center gap-2 border-b px-4">
-            <.sidebar_trigger />
+            <button phx-click={JS.dispatch("wc:sidebar-toggle", to: "#app-shell")}>
+              Toggle
+            </button>
             <span>Page title</span>
           </header>
           <main>{@inner_content}</main>
         </.sidebar_inset>
       </.sidebar_provider>
 
-  Toggle via `<.sidebar_trigger>`, the rail (`<.sidebar_rail>`), or
-  Cmd/Ctrl+B. Open state persists across navigations via the
-  `sidebar_state` cookie. RTL is not supported (project-wide policy).
+  Toggle from anywhere by dispatching a DOM event to the
+  `<.sidebar_provider>` element:
+
+      JS.dispatch("wc:sidebar-toggle", to: "#app-shell")
+      JS.dispatch("wc:sidebar-open",   to: "#app-shell")
+      JS.dispatch("wc:sidebar-close",  to: "#app-shell")
+
+  The rail (`<.sidebar_rail>`) and Cmd/Ctrl+B also toggle. Open state
+  persists across navigations via the `sidebar_state` cookie. RTL is
+  not supported (project-wide policy).
 
   Ported from Shadcn on 2026-04-29
   Commit: 68a69d81f7de95a9fa2e83c16486771e37252ff3
@@ -62,10 +71,9 @@ defmodule Shadcn.Components.Sidebar do
   """
   use Phoenix.Component
 
-  import Shadcn.Components.Button
   import Shadcn.Components.Skeleton
 
-  attr :id, :string, required: true
+  attr :id, :string, default: nil
   attr :class, :any, default: nil
   attr :default_open, :boolean, default: true
   attr :rest, :global
@@ -135,25 +143,6 @@ defmodule Shadcn.Components.Sidebar do
         </div>
       </div>
     </div>
-    """
-  end
-
-  attr :class, :any, default: nil
-  attr :rest, :global
-
-  def sidebar_trigger(assigns) do
-    ~H"""
-    <.button
-      data-slot="sidebar-trigger"
-      data-sidebar-toggle
-      variant="ghost"
-      size="icon-sm"
-      aria-label="Toggle sidebar"
-      class={@class}
-      {@rest}
-    >
-      <Lucideicons.panel_left />
-    </.button>
     """
   end
 

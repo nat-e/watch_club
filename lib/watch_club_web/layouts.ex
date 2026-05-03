@@ -15,6 +15,12 @@ defmodule WatchClubWeb.Layouts do
   The main app layout, used on most screens.
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :current_url, CurrentUrl, required: true, doc: "the url of the current page"
+
+  attr :current_user, User,
+    required: true,
+    doc: "the currently logged in user, with their club memberships"
+
   slot :inner_block, required: true
   def app(assigns)
 

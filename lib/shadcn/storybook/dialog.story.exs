@@ -1,4 +1,20 @@
 defmodule Shadcn.Storybook.Dialog do
+  @moduledoc """
+  `<.dialog>` is the content layout (header/title/description/body/footer)
+  used inside a `<.modal>`. Modal owns the native `<dialog>` element,
+  backdrop, and open/close behavior; Dialog owns what's rendered inside.
+
+  These variations render `<.dialog>` inline (no `<.modal>` wrapper) so
+  the layout is visible side-by-side. In real use, wrap it like:
+
+      <.modal id="invite" open={@open} on_close={JS.patch(~p"/clubs")}>
+        <.dialog>
+          <:title>...</:title>
+        </.dialog>
+      </.modal>
+
+  Inside a modal, any descendant with `data-modal-close` dismisses it.
+  """
   use PhoenixStorybook.Story, :component
 
   alias Shadcn.Components.Dialog
@@ -37,7 +53,6 @@ defmodule Shadcn.Storybook.Dialog do
         description: "Edit profile — labelled inputs, Cancel + Save changes",
         attributes: %{id: "dialog-default"},
         slots: [
-          ~s|<:trigger><.button variant="outline">Open Dialog</.button></:trigger>|,
           ~s|<:title>Edit profile</:title>|,
           ~s|<:description>Make changes to your profile here. Click save when you're done.</:description>|,
           """
@@ -54,7 +69,7 @@ defmodule Shadcn.Storybook.Dialog do
           """,
           """
           <:footer>
-            <.button variant="outline" data-dialog-close>Cancel</.button>
+            <.button variant="outline" data-modal-close>Cancel</.button>
             <.button type="submit">Save changes</.button>
           </:footer>
           """
@@ -65,7 +80,6 @@ defmodule Shadcn.Storybook.Dialog do
         description: "Custom close — single footer button replaces the default close control",
         attributes: %{id: "dialog-custom-close"},
         slots: [
-          ~s|<:trigger><.button variant="outline">Share</.button></:trigger>|,
           ~s|<:title>Share link</:title>|,
           ~s|<:description>Anyone who has this link will be able to view this.</:description>|,
           """
@@ -76,17 +90,15 @@ defmodule Shadcn.Storybook.Dialog do
             </div>
           </div>
           """,
-          ~s|<:footer class="sm:justify-start"><.button data-dialog-close>Close</.button></:footer>|
+          ~s|<:footer class="sm:justify-start"><.button data-modal-close>Close</.button></:footer>|
         ]
       },
       %Variation{
-        id: :no_close,
-        description: ~s|show_close={false} — hides the top-right close icon|,
-        attributes: %{id: "dialog-no-close", show_close: false},
+        id: :title_only,
+        description: "Title only — no description, no body, no footer",
+        attributes: %{id: "dialog-title-only"},
         slots: [
-          ~s|<:trigger><.button variant="outline">No Close Button</.button></:trigger>|,
-          ~s|<:title>No Close Button</:title>|,
-          ~s|<:description>This dialog doesn't have a close button in the top-right corner.</:description>|
+          ~s|<:title>Are you sure?</:title>|
         ]
       },
       %Variation{
@@ -94,11 +106,10 @@ defmodule Shadcn.Storybook.Dialog do
         description: "Sticky footer — body scrolls, footer stays visible",
         attributes: %{id: "dialog-sticky-footer"},
         slots: [
-          ~s|<:trigger><.button variant="outline">Sticky Footer</.button></:trigger>|,
           ~s|<:title>Sticky Footer</:title>|,
           ~s|<:description>This dialog has a sticky footer that stays visible while the content scrolls.</:description>|,
           scrollable_paragraphs(),
-          ~s|<:footer><.button variant="outline" data-dialog-close>Close</.button></:footer>|
+          ~s|<:footer><.button variant="outline" data-modal-close>Close</.button></:footer>|
         ]
       },
       %Variation{
@@ -106,7 +117,6 @@ defmodule Shadcn.Storybook.Dialog do
         description: "Scrollable content — long body scrolls, header stays in view",
         attributes: %{id: "dialog-scrollable-content"},
         slots: [
-          ~s|<:trigger><.button variant="outline">Scrollable Content</.button></:trigger>|,
           ~s|<:title>Scrollable Content</:title>|,
           ~s|<:description>This is a dialog with scrollable content.</:description>|,
           scrollable_paragraphs()

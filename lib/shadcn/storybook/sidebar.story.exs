@@ -19,8 +19,7 @@ defmodule Shadcn.Storybook.Sidebar do
          sidebar_menu_skeleton: 1,
          sidebar_menu_sub_item: 1,
          sidebar_rail: 1,
-         sidebar_separator: 1,
-         sidebar_trigger: 1
+         sidebar_separator: 1
        ]},
       {Lucideicons,
        [
@@ -66,7 +65,6 @@ defmodule Shadcn.Storybook.Sidebar do
     """
     <.sidebar_inset>
       <header class="flex h-12 items-center gap-2 border-b px-4">
-        <.sidebar_trigger />
         <span class="text-sm font-medium">#{label}</span>
       </header>
       <div class="flex flex-1 flex-col gap-4 p-4">

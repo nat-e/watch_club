@@ -22,6 +22,7 @@ defmodule WatchClubWeb do
   def router do
     quote do
       use Phoenix.Router, helpers: false
+      use WatchClubWeb.Hooks
 
       # Import common connection and controller functions to use in pipelines
       import Plug.Conn
@@ -51,6 +52,30 @@ defmodule WatchClubWeb do
   def live_view do
     quote do
       use Phoenix.LiveView
+      use WatchClubWeb.Components
+      use WatchClubWeb.Hooks
+      alias WatchClubWeb.Layouts
+      alias WatchClubWeb.Modals
+
+      unquote(html_helpers())
+
+      # Overridable no-op handle_params to allow patch from any LiveView
+      @impl true
+      def handle_params(_params, _uri, socket), do: {:noreply, socket}
+      defoverridable handle_params: 3
+
+      # Overridable no-op handle_info to avoid warnings when not defined
+      @impl true
+      def handle_info(_msg, socket), do: {:noreply, socket}
+      defoverridable handle_info: 2
+    end
+  end
+
+  def component do
+    quote do
+      use Phoenix.Component
+      use WatchClubWeb.Hooks
+      alias WatchClubWeb.Modals
 
       unquote(html_helpers())
     end
@@ -59,6 +84,9 @@ defmodule WatchClubWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+      use WatchClubWeb.Components
+      use WatchClubWeb.Hooks
+      alias WatchClubWeb.Modals
 
       unquote(html_helpers())
     end
@@ -67,6 +95,7 @@ defmodule WatchClubWeb do
   def html do
     quote do
       use Phoenix.Component
+      use WatchClubWeb.Components
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
@@ -86,11 +115,19 @@ defmodule WatchClubWeb do
       import Phoenix.HTML
       # Core UI components
       use Shadcn.Components
-      use WatchClubWeb.Components
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
-      alias WatchClubWeb.Layouts
+
+      # Import domains and basic models
+      alias WatchClub.{Accounts, Clubs}
+      alias WatchClub.Accounts.User
+      alias WatchClub.Clubs.{Club, Invitation, Membership}
+
+      alias WatchClubWeb.Helpers.Url
+
+      # Allow Logger calls
+      require Logger
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

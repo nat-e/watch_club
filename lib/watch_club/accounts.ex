@@ -13,6 +13,7 @@ defmodule WatchClub.Accounts do
       define :list_users, action: :read
       define :register_with_password
       define :sign_in, action: :sign_in_with_password
+      define :get_current_user
     end
   end
 

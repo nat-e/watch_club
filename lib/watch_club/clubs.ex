@@ -16,9 +16,8 @@ defmodule WatchClub.Clubs do
     end
 
     resource Invitation do
-      define :invite_user, action: :create
+      define :create_invitation, action: :create
       define :accept_invitation, action: :accept
-      define :resend_invitation, action: :resend
       define :cancel_invitation, action: :cancel
       define :list_club_invitations
       define :view_invitation, action: :view_invitation, args: [:id]

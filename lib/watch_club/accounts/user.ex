@@ -23,16 +23,6 @@ defmodule WatchClub.Accounts.User do
       log_out_everywhere do
         apply_on_password_change? true
       end
-
-      confirmation :confirm_new_user do
-        monitor_fields [:email]
-        confirm_on_create? true
-        confirm_on_update? false
-        require_interaction? true
-        confirmed_at_field :confirmed_at
-        auto_confirm_actions [:sign_in_with_magic_link, :reset_password_with_token]
-        sender WatchClub.Accounts.User.Senders.SendNewUserConfirmationEmail
-      end
     end
 
     tokens do
@@ -47,13 +37,6 @@ defmodule WatchClub.Accounts.User do
       password :password do
         identity_field :username
         hash_provider AshAuthentication.BcryptProvider
-
-        resettable do
-          sender WatchClub.Accounts.User.Senders.SendPasswordResetEmail
-          # these configurations will be the default in a future release
-          password_reset_action_name :reset_password_with_token
-          request_password_reset_action_name :request_password_reset_token
-        end
       end
 
       remember_me :remember_me
@@ -65,7 +48,7 @@ defmodule WatchClub.Accounts.User do
 
     create :create_administrator do
       description "Creates the administrator for this instance."
-      accept [:email, :username]
+      accept [:username]
 
       argument :password, :string do
         description "The proposed password for the user, in plain text."
@@ -118,6 +101,18 @@ defmodule WatchClub.Accounts.User do
       argument :subject, :string, allow_nil?: false
       get? true
       prepare AshAuthentication.Preparations.FilterBySubject
+
+      # Load the club memberships when loading the logged in user
+      prepare build(load: [memberships: [:club]], context: %{private: %{authorize?: false}})
+    end
+
+    read :get_current_user do
+      description "Gets the user and relationships corresponding to the actor"
+      get? true
+      filter expr(id == ^actor(:id))
+
+      # Load the club memberships when loading the logged in user
+      prepare build(load: [memberships: [:club]], context: %{private: %{authorize?: false}})
     end
 
     update :change_password do
@@ -158,8 +153,15 @@ defmodule WatchClub.Accounts.User do
         sensitive? true
       end
 
-      # validates the provided email and password and generates a token
+      argument :invitation_id, :uuid_v7 do
+        description "An invitation to accept upon signing in."
+        allow_nil? true
+      end
+
+      # validates the provided username and password and generates a token
       prepare AshAuthentication.Strategy.Password.SignInPreparation
+
+      prepare WatchClub.Accounts.Preparations.AcceptInvitation
 
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
@@ -169,7 +171,7 @@ defmodule WatchClub.Accounts.User do
 
     read :sign_in_with_token do
       # In the generated sign in components, we validate the
-      # email and password directly in the LiveView
+      # username and password directly in the LiveView
       # and generate a short-lived token that can be used to sign in over
       # a standard controller action, exchanging it for a standard token.
       # This action performs that exchange. If you do not use the generated
@@ -195,8 +197,8 @@ defmodule WatchClub.Accounts.User do
     end
 
     create :register_with_password do
-      description "Register a new user with a email and password."
-      accept [:email, :username]
+      description "Register a new user with a username and password."
+      accept [:username]
 
       argument :password, :string do
         description "The proposed password for the user, in plain text."
@@ -211,6 +213,11 @@ defmodule WatchClub.Accounts.User do
         sensitive? true
       end
 
+      argument :invitation_id, :uuid_v7 do
+        description "An invitation to accept upon signing up."
+        allow_nil? false
+      end
+
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
 
@@ -219,6 +226,9 @@ defmodule WatchClub.Accounts.User do
 
       # validates that the password matches the confirmation
       validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
+
+      # If there is an invitation, accept it in after_action hook
+      change WatchClub.Accounts.Changes.AcceptInvitation
 
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
@@ -234,12 +244,12 @@ defmodule WatchClub.Accounts.User do
       end
 
       # creates a reset token and invokes the relevant senders
-      run {AshAuthentication.Strategy.Password.RequestPasswordReset, action: :get_by_email}
+      run {AshAuthentication.Strategy.Password.RequestPasswordReset, action: :get_by_username}
     end
 
-    read :get_by_email do
-      description "Looks up a user by their email"
-      get_by :email
+    read :get_by_username do
+      description "Looks up a user by their username"
+      get_by :username
     end
 
     update :reset_password_with_token do
@@ -289,8 +299,12 @@ defmodule WatchClub.Accounts.User do
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
-    policy action([:administrator_exists?, :create_administrator]) do
+    policy action([:administrator_exists?, :create_administrator, :user_exists?]) do
       authorize_if always()
+    end
+
+    policy action(:get_current_user) do
+      authorize_if expr(id == ^actor(:id))
     end
   end
 
@@ -301,12 +315,6 @@ defmodule WatchClub.Accounts.User do
       allow_nil? false
       public? true
       constraints match: ~r/^[a-z0-9_]+$/, min_length: 3, max_length: 30
-    end
-
-    attribute :email, :ci_string do
-      allow_nil? false
-      public? true
-      constraints match: ~r/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$/
     end
 
     attribute :hashed_password, :string do
@@ -328,7 +336,6 @@ defmodule WatchClub.Accounts.User do
   end
 
   identities do
-    identity :unique_email, [:email]
     identity :unique_username, [:username]
 
     identity :only_one_administrator, [:administrator?] do

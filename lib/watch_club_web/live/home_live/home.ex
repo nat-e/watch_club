@@ -4,7 +4,7 @@ defmodule WatchClubWeb.HomeLive.Home do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}>
       Welcome Home
     </Layouts.app>
     """

@@ -19,19 +19,19 @@ defmodule WatchClub.Clubs.Invitation do
 
     references do
       reference(:club, on_delete: :delete, on_update: :update)
+      reference(:inviter, on_delete: :delete, on_update: :update)
     end
   end
 
   state_machine do
     state_attribute :status
-    initial_states [:sent]
-    default_initial_state :sent
+    initial_states [:available]
+    default_initial_state :available
 
     # There is no :expired status, it is computed from :expires_at > now()
     transitions do
-      transition :accept, from: :sent, to: :accepted
-      transition :resend, from: [:sent, :cancelled], to: :sent
-      transition :cancel, from: :sent, to: :cancelled
+      transition :accept, from: :available, to: :accepted
+      transition :cancel, from: :available, to: :cancelled
     end
   end
 
@@ -42,13 +42,18 @@ defmodule WatchClub.Clubs.Invitation do
       argument :id, :uuid_v7, allow_nil?: false
       get? true
       filter expr(id == ^arg(:id))
+
+      prepare build(
+                load: [club: [:name], inviter: [:username]],
+                context: %{private: %{authorize?: false}}
+              )
     end
 
     read :list_club_invitations do
       argument :club_id, :uuid_v7, allow_nil?: false
 
       argument :statuses, {:array, :atom} do
-        constraints items: [one_of: [:sent, :accepted, :cancelled]]
+        constraints items: [one_of: [:available, :accepted, :cancelled]]
       end
 
       filter expr(club_id == ^arg(:club_id))
@@ -56,18 +61,9 @@ defmodule WatchClub.Clubs.Invitation do
     end
 
     create :create do
-      accept [:email, :club_id, :role]
+      accept [:name, :club_id, :role]
 
-      validate {WatchClub.Clubs.Validations.UserNotInClub, [email: :email, club_id: :club_id]}
-    end
-
-    update :resend do
-      change atomic_set(
-               :expires_at,
-               expr(datetime_add(now(), ^@invitation_expiration_days, :day))
-             )
-
-      change transition_state(:sent)
+      change relate_actor(:inviter)
     end
 
     update :accept do
@@ -111,33 +107,27 @@ defmodule WatchClub.Clubs.Invitation do
       forbid_if always()
     end
 
-    # Only the invitee can accept an invitation
-    policy action(:accept) do
-      authorize_if expr(email == ^actor(:email))
-    end
-
     # All those actions can only be executed by club admin
-    policy action([:create, :resend, :cancel, :list_club_invitations]) do
+    policy action([:create, :cancel, :list_club_invitations]) do
       # So that :list_club_invitations raises Forbidden error instead of returning []
       access_type :strict
       authorize_if {ActorIsClubMember, role: :admin}
     end
 
     # Anyone with the link can view invitations
-    policy action(:view_invitation) do
+    policy action([:view_invitation, :accept]) do
       authorize_if always()
     end
 
     # Only club admins and invitees can read invitations
     policy action(:read) do
       authorize_if {ActorIsClubMemberFilter, role: :admin}
-      authorize_if expr(email == ^actor(:email))
     end
   end
 
   attributes do
     uuid_v7_primary_key :id
-    attribute :email, :ci_string, allow_nil?: false, public?: true
+    attribute :name, :string, public?: true
 
     attribute :role, MembershipRole, allow_nil?: false, public?: true
 
@@ -155,11 +145,11 @@ defmodule WatchClub.Clubs.Invitation do
 
   relationships do
     belongs_to :club, Club, allow_nil?: false
+    belongs_to :inviter, User, allow_nil?: false
     belongs_to :created_membership, Membership
   end
 
   identities do
-    identity :club_and_email, [:club_id, :email]
     identity :created_membership_id, [:created_membership_id]
   end
 end

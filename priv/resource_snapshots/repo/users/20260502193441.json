@@ -21,32 +21,44 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "name",
+      "source": "username",
       "type": "text"
     },
     {
       "allow_nil?": false,
-      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
+      "default": "nil",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "inserted_at",
+      "source": "hashed_password",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "confirmed_at",
       "type": "utc_datetime_usec"
     },
     {
       "allow_nil?": false,
-      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
+      "default": "false",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "updated_at",
-      "type": "utc_datetime_usec"
+      "source": "is_administrator",
+      "type": "boolean"
     }
   ],
   "base_filter": null,
@@ -55,8 +67,37 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "E1E5551CC62C7B89A92A80B21431B50D4BCB5273937023B149DEA271C2A44CB0",
-  "identities": [],
+  "hash": "4058D609B5B8FF54E1B1811F8FEEE7D79623B95B54C713A941111A262B7E4B9D",
+  "identities": [
+    {
+      "all_tenants?": false,
+      "base_filter": null,
+      "index_name": "users_only_one_administrator_index",
+      "keys": [
+        {
+          "type": "atom",
+          "value": "is_administrator"
+        }
+      ],
+      "name": "only_one_administrator",
+      "nils_distinct?": true,
+      "where": "is_administrator = true"
+    },
+    {
+      "all_tenants?": false,
+      "base_filter": null,
+      "index_name": "users_unique_username_index",
+      "keys": [
+        {
+          "type": "atom",
+          "value": "username"
+        }
+      ],
+      "name": "unique_username",
+      "nils_distinct?": true,
+      "where": null
+    }
+  ],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -64,5 +105,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "clubs"
+  "table": "users"
 }

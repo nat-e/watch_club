@@ -124,21 +124,10 @@ defmodule WatchClub.Clubs.ClubTest do
 
   describe "relationship: invitations" do
     test "admins can see club invitations", %{club: club, admin: admin} do
-      invitation(club) |> generate_many(2)
+      invitation(club, admin) |> generate_many(2)
 
       club = Ash.load!(club, :invitations, actor: admin)
       assert [%Invitation{}, %Invitation{}] = club.invitations
-    end
-
-    test "members can only see their invitation", %{club: club} do
-      invitation(club) |> generate_many(2)
-      other_user = generate(user())
-      invitation_id = generate(invitation(club, email: other_user.email)).id
-      generate(membership(club, other_user, role: :member))
-
-      club = Ash.load!(club, :invitations, actor: other_user)
-
-      assert [%Invitation{id: ^invitation_id}] = club.invitations
     end
   end
 

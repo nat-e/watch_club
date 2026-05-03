@@ -1,23 +1,27 @@
 defmodule Shadcn.Components.Dialog do
   @moduledoc """
-  Modal dialog overlaid on the page.
+  Content layout for a modal: header (title + description), body, and
+  footer. Renders no chrome of its own — wrap it in `<.modal>` for the
+  overlay, backdrop, focus trap, and ESC-to-close behavior.
 
-      <.dialog id="invite-dialog">
-        <:trigger><.button variant="outline">Invite</.button></:trigger>
-        <:title>Invite a teammate</:title>
-        <:description>Send an email invitation.</:description>
+      <.modal id="invite-modal" open={@open}>
+        <.dialog>
+          <:title>Invite a teammate</:title>
+          <:description>Send an email invitation.</:description>
 
-        <.input name="email" placeholder="you@example.com" />
+          <.input name="email" placeholder="you@example.com" />
 
-        <:footer>
-          <.button data-dialog-close>Cancel</.button>
-          <.button>Send invite</.button>
-        </:footer>
-      </.dialog>
+          <:footer>
+            <.button data-modal-close>Cancel</.button>
+            <.button>Send invite</.button>
+          </:footer>
+        </.dialog>
+      </.modal>
 
-  Built on the native `<dialog>` element, so focus trap and ESC-to-close
-  come from the browser. The `DialogHook` toggles `showModal()` / `close()`
-  on trigger click and on any descendant with `data-dialog-close`.
+  Closing is the modal's responsibility: any descendant with
+  `data-modal-close` will dismiss the surrounding `<.modal>`. Because
+  Dialog is just layout, it can also be used outside a modal (e.g.
+  inline panels) when you want the same header/body/footer rhythm.
 
   Ported from Shadcn on 2026-04-28
   Commit: 68a69d81f7de95a9fa2e83c16486771e37252ff3
@@ -27,13 +31,9 @@ defmodule Shadcn.Components.Dialog do
   """
   use Phoenix.Component
 
-  attr :id, :string, required: true
+  attr :id, :string, default: nil
   attr :class, :any, default: nil
-  attr :show_close, :boolean, default: true
-  attr :open, :boolean, default: false
   attr :rest, :global
-
-  slot :trigger
 
   slot :title, required: true do
     attr :class, :any
@@ -51,49 +51,28 @@ defmodule Shadcn.Components.Dialog do
 
   def dialog(assigns) do
     ~H"""
-    <div id={@id} data-slot="dialog" phx-hook="DialogHook" class={["group/dialog", @class]} {@rest}>
-      <div :if={@trigger != []} data-slot="dialog-trigger">
-        {render_slot(@trigger)}
-      </div>
-      <dialog
-        id={"#{@id}-content"}
-        data-slot="dialog-content"
-        aria-labelledby={"#{@id}-title"}
-        aria-describedby={if @description != [], do: "#{@id}-description", else: nil}
-        open={@open}
-      >
-        <div data-slot="dialog-header">
-          <h2 :for={t <- @title} id={"#{@id}-title"} data-slot="dialog-title" class={t[:class]}>
-            {render_slot(t)}
-          </h2>
-          <p
-            :for={d <- @description}
-            id={"#{@id}-description"}
-            data-slot="dialog-description"
-            class={d[:class]}
-          >
-            {render_slot(d)}
-          </p>
-        </div>
-
-        <div :if={@inner_block != []} data-slot="dialog-body">
-          {render_slot(@inner_block)}
-        </div>
-
-        <div :for={f <- @footer} data-slot="dialog-footer" class={f[:class]}>
-          {render_slot(f)}
-        </div>
-
-        <button
-          :if={@show_close}
-          type="button"
-          data-dialog-close
-          data-slot="dialog-close-icon"
-          aria-label="Close"
+    <div data-slot="dialog" class={["group/dialog", @class]}>
+      <div data-slot="dialog-header">
+        <h2 :for={t <- @title} data-slot="dialog-title" class={t[:class]}>
+          {render_slot(t)}
+        </h2>
+        <p
+          :for={d <- @description}
+          id={"#{@id}-description"}
+          data-slot="dialog-description"
+          class={d[:class]}
         >
-          <Lucideicons.x />
-        </button>
-      </dialog>
+          {render_slot(d)}
+        </p>
+      </div>
+
+      <div :if={@inner_block != []} data-slot="dialog-body">
+        {render_slot(@inner_block)}
+      </div>
+
+      <div :for={f <- @footer} data-slot="dialog-footer" class={f[:class]}>
+        {render_slot(f)}
+      </div>
     </div>
     """
   end

@@ -71,7 +71,6 @@ defmodule WatchClub.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:req, "~> 0.5"},
       {:sourceror, "~> 1.8", only: [:dev, :test]},
-      {:swoosh, "~> 1.16"},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},

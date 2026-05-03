@@ -42,6 +42,7 @@ defmodule Shadcn.Components do
       import Shadcn.Components.Kbd
       import Shadcn.Components.Label
       import Shadcn.Components.Menubar
+      import Shadcn.Components.Modal
       import Shadcn.Components.NativeSelect
       import Shadcn.Components.NavigationMenu
       import Shadcn.Components.Pagination

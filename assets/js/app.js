@@ -90,3 +90,11 @@ if (process.env.NODE_ENV === "development") {
 		},
 	);
 }
+
+// Copy to clipboard
+window.addEventListener("wc:copy_to_clipboard", (event) => {
+	if ("clipboard" in navigator) {
+		const text = event.target.textContent;
+		navigator.clipboard.writeText(text);
+	}
+});

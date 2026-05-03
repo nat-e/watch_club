@@ -6,7 +6,8 @@ defmodule WatchClub.Clubs.Membership do
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    notifiers: [Ash.Notifier.PubSub]
 
   postgres do
     table "memberships"
@@ -19,7 +20,7 @@ defmodule WatchClub.Clubs.Membership do
   end
 
   actions do
-    defaults [:read, create: [:*]]
+    defaults [:read, :destroy, create: [:*]]
   end
 
   policies do
@@ -33,10 +34,19 @@ defmodule WatchClub.Clubs.Membership do
       forbid_if always()
     end
 
-    policy action(:read) do
+    policy action([:read, :destroy]) do
       authorize_if {WatchClub.Clubs.Checks.ActorIsClubMemberFilter, role: :admin}
       authorize_if relates_to_actor_via(:user)
     end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    prefix "memberships"
+    publish_all :create, ["user", :user_id]
+    publish :destroy, ["user", :user_id]
   end
 
   attributes do

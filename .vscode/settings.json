@@ -1,11 +1,7 @@
 {
-	"editor.codeActionsOnSave": {
-		"source.removeUnusedImports": "explicit"
-	},
 	"editor.formatOnSave": true,
 	"files.associations": {
-		"*.css": "tailwindcss",
-		"*.heex": "phoenix-heex"
+		"*.css": "tailwindcss"
 	},
 	"editor.quickSuggestions": {
 		"strings": "on"
@@ -22,13 +18,21 @@
 		"**/_build/**": true,
 		"**/priv/static/assets/**": true
 	},
+	"[css]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "biomejs.biome"
+	},
 	"[elixir]": {
 		"editor.formatOnSave": true,
-		"editor.defaultFormatter": "ExpertLSP.expert"
+		"editor.defaultFormatter": "JakeBecker.elixir-ls"
 	},
 	"[phoenix-heex]": {
 		"editor.formatOnSave": true,
-		"editor.defaultFormatter": "ExpertLSP.expert"
+		"editor.defaultFormatter": "JakeBecker.elixir-ls"
+	},
+	"[javascript]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "biomejs.biome"
 	},
 	"[tailwindcss]": {
 		"editor.formatOnSave": true,
@@ -41,9 +45,13 @@
 	"elixir.credo.enableDebug": true,
 	"emmet.includeLanguages": {
 		"phoenix-heex": "html",
-		"elixir": "html",
+		// "elixir": "html",
 		"html-eex": "html"
 	},
+	// "expert.server.nightly": true,
+  // "expert.server.logLevel": "warning",
+  // "expert.server.fileLogLevel": "info",
+  // "expert.trace.server": "off",
 	"search.exclude": {
 		"**/mise.lock": true,
 		"**/mix.lock": true

@@ -3,6 +3,14 @@ defmodule WatchClub.Generator do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Invitation, Membership}
 
+  @default_password "passw0rd"
+  @default_hashed_password (
+                             {:ok, hash} =
+                               AshAuthentication.BcryptProvider.hash(@default_password)
+
+                             hash
+                           )
+
   def email, do: sequence(:email, fn i -> "user#{i}@test.com" end)
   def username, do: sequence(:username, fn i -> "user_#{i}" end)
 
@@ -23,17 +31,13 @@ defmodule WatchClub.Generator do
   end
 
   def user(opts \\ []) do
-    changeset_generator(
-      User,
-      :register_with_password,
-      defaults: [
-        email: email(),
+    # Use seed generator to skip invitation
+    seed_generator(
+      %User{
         username: username(),
-        password: "passw0rd",
-        password_confirmation: "passw0rd"
-      ],
-      authorize?: false,
-      actor: opts[:actor],
+        hashed_password: @default_hashed_password,
+        administrator?: false
+      },
       overrides: opts
     )
   end
@@ -51,17 +55,17 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def invitation(%Club{} = club, opts \\ []) do
+  def invitation(%Club{} = club, %User{} = inviter, opts \\ []) do
     changeset_generator(
       Invitation,
       :create,
       defaults: [
-        email: email(),
+        name: sequence(:invitation_name, fn i -> "Invitation #{i}" end),
         club_id: club.id,
         role: :member
       ],
       authorize?: false,
-      actor: opts[:actor],
+      actor: inviter,
       overrides: opts
     )
   end

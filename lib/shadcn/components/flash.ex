@@ -46,9 +46,11 @@ defmodule Shadcn.Components.Flash do
       id={@id}
       data-slot="flash"
       data-position={@position}
+      popover="manual"
       role="region"
       aria-label="Notifications"
       class={@class}
+      phx-hook=".TopLayer"
       {@rest}
     >
       <.flash_toast
@@ -58,6 +60,11 @@ defmodule Shadcn.Components.Flash do
         message={msg}
         duration={@duration}
       />
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".TopLayer">
+        export default {
+          mounted() { try { this.el.showPopover() } catch (_) {} },
+        }
+      </script>
     </div>
     """
   end

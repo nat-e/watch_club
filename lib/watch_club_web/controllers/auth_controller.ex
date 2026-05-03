@@ -36,7 +36,7 @@ defmodule WatchClubWeb.AuthController do
           """
 
         _ ->
-          "Incorrect email or password"
+          "Incorrect username or password"
       end
 
     conn
