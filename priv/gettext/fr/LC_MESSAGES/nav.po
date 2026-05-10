@@ -1,0 +1,48 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:36
+#, elixir-autogen, elixir-format
+msgid "Clubs"
+msgstr "Clubs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:52
+#, elixir-autogen, elixir-format
+msgid "Create new club"
+msgstr "Créer un nouveau club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:27
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr "Accueil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/navbar_component.ex:32
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Paramètres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/navbar_component.ex:35
+#, elixir-autogen, elixir-format
+msgid "Sign out"
+msgstr "Se déconnecter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:31
+#, elixir-autogen, elixir-format
+msgid "Watchlist"
+msgstr "Liste à voir"

@@ -7,11 +7,19 @@ defmodule WatchClubWeb.AccountsLive.Setup do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title="Welcome to watch.club!">
+    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome to watch.club!")}>
       <div class="flex flex-col text-muted-foreground gap-2">
-        <p>To configure your instance, you need to setup a unique administrator account.</p>
         <p>
-          Do not share the credentials of this account, you will be able to invite other users later.
+          {dgettext(
+            "auth",
+            "To configure your instance, you need to setup a unique administrator account."
+          )}
+        </p>
+        <p>
+          {dgettext(
+            "auth",
+            "Do not share the credentials of this account, you will be able to invite other users later."
+          )}
         </p>
       </div>
       <.registration_form form={@form} />
@@ -20,8 +28,9 @@ defmodule WatchClubWeb.AccountsLive.Setup do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    form = Accounts.form_to_create_administrator(registration_form_opts())
+  def mount(_params, session, socket) do
+    locale = WatchClubWeb.Plugs.BrowserLocale.get(session)
+    form = Accounts.form_to_create_administrator(registration_form_opts(locale))
     {:ok, socket |> assign(form: to_form(form))}
   end
 
@@ -36,7 +45,7 @@ defmodule WatchClubWeb.AccountsLive.Setup do
       {:ok, user} ->
         socket =
           socket
-          |> put_flash(:success, "Administrator created")
+          |> put_flash(:success, dgettext("auth", "Administrator created"))
           |> redirect(
             to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
           )

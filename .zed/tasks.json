@@ -1,0 +1,38 @@
+// Zed tasks for watch_club. Spawn via ⌥⇧T (task: spawn) and pick by label.
+// Each task opens its own terminal tab (use_new_terminal: true).
+//
+// Tip: spawn them in this order so the F1..F4 keymap aligns:
+//   F1 = plain zsh (open one manually with Ctrl-`)
+//   F2 = iex
+//   F3 = psql
+//   F4 = docker compose logs -f
+[
+  {
+    "label": "iex -S mix phx.server",
+    "command": "iex",
+    "args": ["-S", "mix", "phx.server"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "tags": ["watch-club-startup"]
+  },
+  {
+    "label": "psql watch_club_dev",
+    "command": "psql",
+    "args": ["-h", "localhost", "-U", "postgres", "watch_club_dev"],
+    "env": { "PGPASSWORD": "postgres" },
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "tags": ["watch-club-startup"]
+  },
+  {
+    "label": "docker compose logs -f",
+    "command": "docker",
+    "args": ["compose", "logs", "-f"],
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "tags": ["watch-club-startup"]
+  }
+]

@@ -11,10 +11,13 @@ defmodule WatchClubWeb.Components.Forms do
 
   attr :errors, :list, default: []
   attr :class, :any, default: nil
+  attr :show_untouched, :boolean, default: false
   attr :rest, :global
 
-  def field_errors(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
-    errors = if used_input?(field), do: field.errors, else: []
+  def field_errors(
+        %{show_untouched: show_untouched, field: %Phoenix.HTML.FormField{} = field} = assigns
+      ) do
+    errors = if show_untouched || used_input?(field), do: field.errors, else: []
 
     assigns |> assign(:field, nil) |> assign(:errors, errors) |> field_errors()
   end
@@ -29,6 +32,34 @@ defmodule WatchClubWeb.Components.Forms do
     >
       {translate(msg)}
     </p>
+    """
+  end
+
+  attr :field, :any, required: true
+  attr :label, :string, required: true
+  attr :class, :string, default: nil
+  attr :debounce, :string, default: "blur"
+
+  attr :rest, :global,
+    include:
+      ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required size step)
+
+  slot :inner_block
+
+  @spec input_with_label(map()) :: Phoenix.LiveView.Rendered.t()
+  def input_with_label(assigns) do
+    ~H"""
+    <div class={["flex flex-col gap-2", @class]}>
+      <.label field={@field}>{@label}</.label>
+      {render_slot(@inner_block)}
+      <.input
+        :if={@inner_block == []}
+        field={@field}
+        phx-debounce={@debounce}
+        {@rest}
+      />
+      <.field_errors field={@field} />
+    </div>
     """
   end
 

@@ -1,0 +1,49 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:70
+#: lib/watch_club_web/live/nav/components/search.ex:177
+#: lib/watch_club_web/live/nav/components/search.ex:326
+#, elixir-autogen, elixir-format
+msgid "Everywhere"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:407
+#, elixir-autogen, elixir-format
+msgid "Search %{content_type} in %{club_name}"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:395
+#, elixir-autogen, elixir-format
+msgid "Search all %{content_type}"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:275
+#, elixir-autogen, elixir-format
+msgid "See all results"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:236
+#, elixir-autogen, elixir-format
+msgid "Start typing to search"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:245
+#, elixir-autogen, elixir-format
+msgid "There was an error searching for your content"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:262
+#, elixir-autogen, elixir-format
+msgid "We didn't find any content for your search"
+msgstr ""

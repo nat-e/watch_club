@@ -11,7 +11,7 @@
 		}
 
 		&[data-variant="outline"] {
-			@apply border-border bg-background shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50;
+			@apply border-border shadow-xs hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:hover:bg-input/30;
 		}
 
 		&[data-variant="secondary"] {

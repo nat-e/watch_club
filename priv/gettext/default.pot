@@ -1,0 +1,46 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:179
+#: lib/watch_club_web/live/clubs_live/members.ex:215
+#: lib/watch_club_web/live/nav/components/modals.ex:79
+#: lib/watch_club_web/live/nav/components/modals.ex:129
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:310
+#, elixir-autogen, elixir-format
+msgid "Close"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:39
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:223
+#: lib/watch_club_web/live/nav/components/modals.ex:89
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/settings.ex:30
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/search.ex:252
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr ""

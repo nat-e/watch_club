@@ -32,6 +32,14 @@ config :watch_club, WatchClubWeb.Endpoint,
     tailwind_storybook: {Tailwind, :install_and_run, [:storybook, ~w(--watch)]}
   ]
 
+config :watch_club,
+  tmdb_req_options: [
+    auth:
+      {:bearer,
+       "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwOTAyMjdkNTVjMjNiZjI2YjU2YzkzZDc0YTdiM2YxYSIsIm5iZiI6MTQ0NzM3ODExNC40OTQwMDAyLCJzdWIiOiI1NjQ1M2NjMjkyNTE0MTBhNGMwMDcwZTYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.kvqKX4dRMEb_S2aagO3tBrc5ZAJgb5BedP0JK47-Zao"}
+    # auth: {:bearer, System.fetch_env!("TMDB_API_KEY")}
+  ]
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
@@ -64,9 +72,8 @@ config :watch_club, WatchClubWeb.Endpoint,
       ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$"E,
       # Gettext translations
       ~r"priv/gettext/.*\.po$"E,
-      # Router, Controllers, LiveViews and LiveComponents
-      ~r"lib/watch_club_web/router\.ex$"E,
-      ~r"lib/watch_club_web/(controllers|live|components)/.*\.(ex|heex)$"E
+      ~r"lib/watch_club/.*\.ex$"E,
+      ~r"lib/watch_club_web/.*\.(ex|heex)$"E
     ]
   ]
 

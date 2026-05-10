@@ -35,7 +35,7 @@ defmodule Shadcn.Components.Dialog do
   attr :class, :any, default: nil
   attr :rest, :global
 
-  slot :title, required: true do
+  slot :title do
     attr :class, :any
   end
 

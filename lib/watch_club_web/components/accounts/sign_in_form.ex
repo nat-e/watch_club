@@ -1,5 +1,4 @@
 defmodule WatchClubWeb.Components.Accounts.SignInForm do
-  alias Ash.Error.Query.Required
   use WatchClubWeb, :component
 
   import WatchClubWeb.Components.Forms
@@ -16,33 +15,21 @@ defmodule WatchClubWeb.Components.Accounts.SignInForm do
       class="flex flex-col gap-6"
       phx-mounted={JS.focus_first()}
     >
-      <.input
-        field={@form[:invitation_id]}
+      <.input_with_label
+        field={@form[:username]}
+        label={dgettext("auth", "Username")}
+        autocomplete="username"
         type="text"
-        class="hidden"
       />
-      <div class="flex flex-col gap-2">
-        <.label field={@form[:username]}>Username</.label>
-        <.input
-          field={@form[:username]}
-          type="text"
-          autocomplete="username"
-          phx-debounce="blur"
-        />
-        <.field_errors field={@form[:username]} />
-      </div>
-      <div class="flex flex-col gap-2">
-        <.label field={@form[:password]}>Password</.label>
-        <.input
-          field={@form[:password]}
-          type="password"
-          autocomplete="new-password"
-          phx-debounce="blur"
-        />
-        <.field_errors field={@form[:password]} />
-      </div>
+      <.input_with_label
+        field={@form[:password]}
+        label={dgettext("auth", "Password")}
+        autocomplete="password"
+        type="password"
+      />
+      <.field_errors field={@form[:invitation_id]} show_untouched={true} />
       <.button type="submit" class="w-full">
-        Sign in
+        {dgettext("auth", "Sign in")}
       </.button>
     </.form>
     """
@@ -54,17 +41,10 @@ defmodule WatchClubWeb.Components.Accounts.SignInForm do
       prepare_params: fn params, _ -> Map.put(params, :invitation_id, invitation_id) end,
       context: %{token_type: :sign_in},
       transform_errors: fn
-        _, %Required{field: :username} ->
-          {:username, "You must enter your username", []}
-
-        _, %Required{field: :password} ->
-          {:password, "You must enter your password", []}
-
         _, %AshAuthentication.Errors.AuthenticationFailed{} ->
-          {:password, "Your username or password was invalid", []}
+          {:password, dgettext("errors", "Your username or password is invalid"), []}
 
         _, err ->
-          Logger.warning("Unexpected form error: #{inspect(err)}")
           err
       end
     ]

@@ -1,13 +1,17 @@
 defmodule WatchClub.Clubs.Club do
-  require Ash.Resource.Change.Builtins
-  alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.{Invitation, Membership}
-
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    notifiers: [Ash.Notifier.PubSub]
+
+  use Gettext, backend: WatchClubWeb.Gettext
+
+  require Ash.Resource.Change.Builtins
+
+  alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.{Invitation, Membership}
 
   postgres do
     table "clubs"
@@ -18,6 +22,10 @@ defmodule WatchClub.Clubs.Club do
     defaults [:read, update: [:name]]
 
     read :preview
+
+    read :members_and_invitations do
+      prepare build(load: [:invitations, :memberships])
+    end
 
     create :create do
       accept [:name]
@@ -67,8 +75,30 @@ defmodule WatchClub.Clubs.Club do
     end
 
     # Only club admins can update and destroy it
-    policy action([:update, :destroy]) do
+    policy action([:update, :destroy, :members_and_invitations]) do
       authorize_if expr(exists(memberships, user_id == ^actor(:id) and role == :admin))
+    end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    prefix "clubs"
+    publish :update, [:id]
+  end
+
+  validations do
+    validate present(:name) do
+      message dgettext_noop("errors", "Club name is required")
+    end
+
+    validate string_length(:name, min: 3) do
+      message dgettext_noop("errors", "Club name must be at least %{min} characters")
+    end
+
+    validate string_length(:name, max: 30) do
+      message dgettext_noop("errors", "Club name cannot be longer than %{max} characters")
     end
   end
 
@@ -85,8 +115,14 @@ defmodule WatchClub.Clubs.Club do
   end
 
   relationships do
-    has_many :memberships, Membership
-    has_many :invitations, Invitation
+    has_many :memberships, Membership do
+      read_action :with_user_and_invitation
+    end
+
+    has_many :invitations, Invitation do
+      read_action :list_club_invitations
+    end
+
     many_to_many :members, User, through: Membership
   end
 end

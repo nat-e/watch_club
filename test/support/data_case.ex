@@ -17,6 +17,8 @@ defmodule WatchClub.DataCase do
   use ExUnit.CaseTemplate
   alias Ecto.Adapters.SQL.Sandbox
 
+  import Req.Test
+
   using do
     quote do
       alias WatchClub.Repo
@@ -29,6 +31,9 @@ defmodule WatchClub.DataCase do
       import WatchClub.Generator
     end
   end
+
+  setup :set_req_test_from_context
+  setup :verify_on_exit!
 
   setup tags do
     WatchClub.DataCase.setup_sandbox(tags)
@@ -57,5 +62,11 @@ defmodule WatchClub.DataCase do
         opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
       end)
     end)
+  end
+
+  def tmdb_fixture(name) do
+    Path.join([__DIR__, "fixtures", "tmdb", "#{name}.json"])
+    |> File.read!()
+    |> Jason.decode!()
   end
 end

@@ -20,6 +20,7 @@ defmodule WatchClubWeb.Router do
     plug :put_secure_browser_headers
     plug :load_from_session
     plug :ensure_administrator_setup
+    plug WatchClubWeb.Plugs.BrowserLocale
   end
 
   pipeline :api do
@@ -35,16 +36,22 @@ defmodule WatchClubWeb.Router do
       on_mount: [
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
-        {WatchClubWeb.LiveUserAuth, :live_user_required}
+        {WatchClubWeb.Hooks.Auth, :live_user_required},
+        WatchClubWeb.Hooks.Locale
       ] do
       live "/", HomeLive.Home
+      live "/settings", AccountsLive.Settings
+      live "/clubs/:club_id/members", ClubsLive.Members
+      live "/clubs/:club_id/settings", ClubsLive.Settings
+      live "/movies/:tmdb_id", ContentsLive.MovieDetails
     end
 
     ash_authentication_live_session :unauthenticated_routes,
       on_mount: [
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
-        {WatchClubWeb.LiveUserAuth, :live_no_user}
+        {WatchClubWeb.Hooks.Auth, :live_no_user},
+        WatchClubWeb.Hooks.Locale
       ] do
       live "/setup", AccountsLive.Setup
       live "/sign-in", AccountsLive.Signin
@@ -54,13 +61,15 @@ defmodule WatchClubWeb.Router do
       on_mount: [
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
-        {WatchClubWeb.LiveUserAuth, :live_user_optional}
+        {WatchClubWeb.Hooks.Auth, :live_user_optional},
+        WatchClubWeb.Hooks.Locale
       ] do
       live "/invitations/:invitation_id", InvitationsLive.Show
     end
 
     # Auto-generated POST and callbacks routes from Ash Authentication
     auth_routes AuthController, WatchClub.Accounts.User, path: "/auth"
+    sign_out_route AuthController, "/sign-out"
   end
 
   # Other scopes may use custom stacks.

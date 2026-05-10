@@ -1,0 +1,134 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:408
+#, elixir-autogen, elixir-format
+msgid "An administrator already exists"
+msgstr "Un administrateur existe déjà"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/club.ex:101
+#, elixir-autogen, elixir-format
+msgid "Club name cannot be longer than %{max} characters"
+msgstr "Le nom du club ne peut pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/club.ex:93
+#, elixir-autogen, elixir-format
+msgid "Club name is required"
+msgstr "Le nom du club est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/club.ex:97
+#, elixir-autogen, elixir-format
+msgid "Club name must be at least %{min} characters"
+msgstr "Le nom du club doit contenir au moins %{min} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/invitation.ex:124
+#, elixir-autogen, elixir-format
+msgid "Name cannot be longer than %{max} characters"
+msgstr "Le nom ne peut pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/invitation.ex:120
+#, elixir-autogen, elixir-format
+msgid "Name must be at least %{min} characters"
+msgstr "Le nom doit contenir au moins %{min} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:368
+#, elixir-autogen, elixir-format
+msgid "Password cannot be longer than %{max} characters"
+msgstr "Le mot de passe ne peut pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:180
+#, elixir-autogen, elixir-format
+msgid "Password is required"
+msgstr "Le mot de passe est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:372
+#, elixir-autogen, elixir-format
+msgid "Passwords do not match"
+msgstr "Les mots de passe ne correspondent pas"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/changes/accept_invitation.ex:49
+#: lib/watch_club/accounts/preparations/accept_invitation.ex:58
+#, elixir-autogen, elixir-format
+msgid "The invitation could not be accepted"
+msgstr "L'invitation n'a pas pu être acceptée"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/changes/accept_invitation.ex:38
+#: lib/watch_club/accounts/preparations/accept_invitation.ex:47
+#, elixir-autogen, elixir-format
+msgid "The invitation does not exist"
+msgstr "L'invitation n'existe pas"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/invitation.ex:63
+#, elixir-autogen, elixir-format
+msgid "The invitation has already been used"
+msgstr "L'invitation a déjà été utilisée"
+
+# AI-translated (Claude)
+#: lib/watch_club/clubs/invitation.ex:59
+#, elixir-autogen, elixir-format
+msgid "The invitation has expired"
+msgstr "L'invitation a expiré"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:364
+#, elixir-autogen, elixir-format
+msgid "The password is required"
+msgstr "Le mot de passe est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:345
+#, elixir-autogen, elixir-format
+msgid "The username is required"
+msgstr "Le nom d'utilisateur est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:357
+#, elixir-autogen, elixir-format
+msgid "Username can only contain lower case letters, numbers and _"
+msgstr "Le nom d'utilisateur ne peut contenir que des lettres minuscules, des chiffres et _"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:353
+#, elixir-autogen, elixir-format
+msgid "Username cannot be longer than %{max} characters"
+msgstr "Le nom d'utilisateur ne peut pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:176
+#, elixir-autogen, elixir-format
+msgid "Username is required"
+msgstr "Le nom d'utilisateur est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex:349
+#, elixir-autogen, elixir-format
+msgid "Username must be at least %{min} characters"
+msgstr "Le nom d'utilisateur doit contenir au moins %{min} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Your username or password is invalid"
+msgstr "Votre nom d'utilisateur ou votre mot de passe est invalide"

@@ -1,0 +1,282 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:259
+#, elixir-autogen, elixir-format
+msgid "Admin"
+msgstr "Administrateur"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:66
+#, elixir-autogen, elixir-format
+msgid "All the members will be removed and the data will be deleted permanently."
+msgstr "Tous les membres seront retirés et les données seront définitivement supprimées."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:58
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to delete %{club_name}?"
+msgstr "Êtes-vous sûr de vouloir supprimer %{club_name} ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:203
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to delete this invitation?"
+msgstr "Êtes-vous sûr de vouloir supprimer cette invitation ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:108
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to leave %{club_name}?"
+msgstr "Êtes-vous sûr de vouloir quitter %{club_name} ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:164
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to remove %{username}?"
+msgstr "Êtes-vous sûr de vouloir retirer %{username} ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/settings.ex:21
+#, elixir-autogen, elixir-format
+msgid "Club Name"
+msgstr "Nom du club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/settings.ex:13
+#: lib/watch_club_web/live/nav/components/sidebar.ex:74
+#, elixir-autogen, elixir-format
+msgid "Club Settings"
+msgstr "Paramètres du club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:30
+#, elixir-autogen, elixir-format
+msgid "Club name"
+msgstr "Nom du club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:292
+#, elixir-autogen, elixir-format
+msgid "Copy and share the invitation link below with anyone. It is only usable once."
+msgstr "Copiez et partagez le lien d'invitation ci-dessous avec qui vous voulez. Il n'est utilisable qu'une seule fois."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:15
+#, elixir-autogen, elixir-format
+msgid "Create a new club to share your favorite movies and TV shows with your friends."
+msgstr "Créez un nouveau club pour partager vos films et séries préférés avec vos amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:238
+#, elixir-autogen, elixir-format
+msgid "Create a shareable invitation link to join the club"
+msgstr "Créer un lien d'invitation partageable pour rejoindre le club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:236
+#: lib/watch_club_web/live/clubs_live/members.ex:263
+#, elixir-autogen, elixir-format
+msgid "Create invitation"
+msgstr "Créer une invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:13
+#, elixir-autogen, elixir-format
+msgid "Create new club"
+msgstr "Créer un nouveau club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:54
+#: lib/watch_club_web/live/nav/components/sidebar.ex:83
+#, elixir-autogen, elixir-format
+msgid "Delete club"
+msgstr "Supprimer le club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:148
+#: lib/watch_club_web/live/clubs_live/members.ex:200
+#, elixir-autogen, elixir-format
+msgid "Delete invitation"
+msgstr "Supprimer l'invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/settings.ex:30
+#, elixir-autogen, elixir-format
+msgid "Edit Club"
+msgstr "Modifier le club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:452
+#, elixir-autogen, elixir-format
+msgid "Invitation link copied to clipboard"
+msgstr "Lien d'invitation copié dans le presse-papiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:20
+#, elixir-autogen, elixir-format
+msgid "Invite member"
+msgstr "Inviter un membre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:29
+#, elixir-autogen, elixir-format
+msgid "Invited by"
+msgstr "Invité par"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:139
+#, elixir-autogen, elixir-format
+msgid "Leave"
+msgstr "Quitter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:105
+#: lib/watch_club_web/live/nav/components/sidebar.ex:96
+#, elixir-autogen, elixir-format
+msgid "Leave club"
+msgstr "Quitter le club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:17
+#, elixir-autogen, elixir-format
+msgid "Manage and invite new members"
+msgstr "Gérer et inviter de nouveaux membres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/sidebar.ex:71
+#, elixir-autogen, elixir-format
+msgid "Manage members"
+msgstr "Gérer les membres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:258
+#, elixir-autogen, elixir-format
+msgid "Member"
+msgstr "Membre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:430
+#, elixir-autogen, elixir-format
+msgid "Member removed"
+msgstr "Membre retiré"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:28
+#, elixir-autogen, elixir-format
+msgid "Member since"
+msgstr "Membre depuis"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:16
+#, elixir-autogen, elixir-format
+msgid "Members"
+msgstr "Membres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:187
+#, elixir-autogen, elixir-format
+msgid "Remove"
+msgstr "Retirer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:160
+#, elixir-autogen, elixir-format
+msgid "Remove club member"
+msgstr "Retirer un membre du club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:104
+#, elixir-autogen, elixir-format
+msgid "Remove member"
+msgstr "Retirer le membre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:27
+#, elixir-autogen, elixir-format
+msgid "Role"
+msgstr "Rôle"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:141
+#, elixir-autogen, elixir-format
+msgid "Share Invitation"
+msgstr "Partager l'invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:290
+#, elixir-autogen, elixir-format
+msgid "Share invitation"
+msgstr "Partager l'invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:458
+#: lib/watch_club_web/live/clubs_live/settings.ex:82
+#, elixir-autogen, elixir-format
+msgid "The club you were looking for does not exist"
+msgstr "Le club que vous cherchiez n'existe pas"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:206
+#, elixir-autogen, elixir-format
+msgid "The invitation link will not be active anymore."
+msgstr "Le lien d'invitation ne sera plus actif."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:171
+#, elixir-autogen, elixir-format
+msgid "They won't be able to join back without being re-invited."
+msgstr "Ils ne pourront pas revenir sans être réinvités."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/members.ex:26
+#, elixir-autogen, elixir-format
+msgid "User"
+msgstr "Utilisateur"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/modals.ex:116
+#, elixir-autogen, elixir-format
+msgid "You will loose access to the library and will not be able to join back unless re-invited"
+msgstr "Vous perdrez l'accès à la bibliothèque et ne pourrez pas revenir sans être réinvité"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:96
+#, elixir-autogen, elixir-format
+msgid "Club %{club_name} created"
+msgstr "Club %{club_name} créé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:121
+#, elixir-autogen, elixir-format
+msgid "Club %{club_name} deleted"
+msgstr "Club %{club_name} supprimé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:129
+#, elixir-autogen, elixir-format
+msgid "Error deleting club, try again later"
+msgstr "Erreur lors de la suppression du club, réessayez plus tard"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:159
+#, elixir-autogen, elixir-format
+msgid "Error leaving club, try again later"
+msgstr "Erreur lors de la sortie du club, réessayez plus tard"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:151
+#, elixir-autogen, elixir-format
+msgid "You left %{club_name}"
+msgstr "Vous avez quitté %{club_name}"

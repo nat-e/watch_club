@@ -50,7 +50,7 @@ config :spark,
 config :watch_club,
   ecto_repos: [WatchClub.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [WatchClub.Accounts, WatchClub.Clubs]
+  ash_domains: [WatchClub.Accounts, WatchClub.Clubs, WatchClub.Contents]
 
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,

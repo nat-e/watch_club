@@ -10,24 +10,24 @@ defmodule WatchClubWeb.Helpers.Url do
           scheme: String.t(),
           authority: String.t(),
           path: String.t(),
-          params: %{String.t() => String.t()}
+          query: %{String.t() => String.t()}
         }
-  @enforce_keys [:scheme, :authority, :path, :params]
-  defstruct [:scheme, :authority, :path, :params]
+  @enforce_keys [:scheme, :authority, :path, :query]
+  defstruct [:scheme, :authority, :path, :query]
 
   @spec add_param(t(), String.t(), any()) :: t()
   def add_param(%__MODULE__{} = url, key, value) do
-    %{url | params: Map.put(url.params, key, to_string(value))}
+    %{url | query: Map.put(url.query, key, to_string(value))}
   end
 
   @spec remove_param(t(), String.t()) :: t()
   def remove_param(%__MODULE__{} = url, key) do
-    %{url | params: Map.delete(url.params, key)}
+    %{url | query: Map.delete(url.query, key)}
   end
 
   @spec to_url(t(), absolute: boolean()) :: String.t()
-  def to_url(%__MODULE__{authority: authority, path: path, params: params}, opts \\ []) do
-    relative = path <> "?" <> URI.encode_query(params)
+  def to_url(%__MODULE__{authority: authority, path: path, query: query}, opts \\ []) do
+    relative = path <> "?" <> URI.encode_query(query)
 
     if Keyword.get(opts, :absolute) do
       "https://" <> authority <> relative
@@ -42,7 +42,7 @@ defmodule WatchClubWeb.Helpers.Url do
       scheme: url.scheme,
       authority: url.authority,
       path: ~p"/invitations/#{invitation.id}",
-      params: %{}
+      query: %{}
     }
   end
 end
