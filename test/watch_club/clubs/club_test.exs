@@ -3,7 +3,9 @@ defmodule WatchClub.Clubs.ClubTest do
 
   import WatchClub.Clubs
 
-  alias WatchClub.Clubs.{Club, Invitation, Membership}
+  alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
+
+  require Ash.Query
 
   setup do
     admin = generate(administrator())
@@ -88,6 +90,54 @@ defmodule WatchClub.Clubs.ClubTest do
 
     test "cannot access the club without an actor", %{club: club} do
       assert_raise Ash.Error.Forbidden, fn -> get_club_by_id!(club.id) end
+    end
+  end
+
+  describe "reorder_libraries/*" do
+    test "admins can reorder libraries", %{club: club, admin: admin} do
+      first = generate(library(club, name: "First", index: 0))
+      second = generate(library(club, name: "Second", index: 1))
+      third = generate(library(club, name: "Third", index: 2))
+
+      assert [
+               %Library{name: "Third", index: 0},
+               %Library{name: "First", index: 1},
+               %Library{name: "Second", index: 2}
+             ] =
+               reorder_libraries!(club.id, %{library_ids: [third.id, first.id, second.id]},
+                 actor: admin
+               )
+
+      assert [
+        %Library{name: "Third", index: 0},
+        %Library{name: "First", index: 1},
+        %Library{name: "Second", index: 2}
+             ] = list_club_libraries!(club.id)
+    end
+
+    test "rejects orders that do not include each library exactly once", %{
+      club: club,
+      admin: admin
+    } do
+      first = generate(library(club, index: 0))
+      second = generate(library(club, index: 1))
+      generate(library(club, index: 2))
+
+      reorder_libraries(club.id, %{library_ids: [first.id, second.id]}, actor: admin)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Action.InvalidArgument{field: :library_ids} -> true
+        _ -> false
+      end)
+    end
+
+    test "members cannot reorder libraries", %{club: club, member: member} do
+      reorder_libraries(club.id, %{}, actor: member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "cannot reorder libraries without an actor", %{club: club} do
+      reorder_libraries(club.id, %{})
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 

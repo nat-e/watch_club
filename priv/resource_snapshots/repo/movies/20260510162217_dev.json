@@ -30,18 +30,6 @@
       "size": null,
       "source": "id",
       "type": "uuid"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "tmdb_id",
-      "type": "bigint"
     }
   ],
   "base_filter": null,
@@ -50,7 +38,7 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "F740838C7C13B57FA57E7AB54E6A21CC15D649B4F94E04B0E60F43EAD2386163",
+  "hash": "72011776F024B2138326C13D5BB72794E549863CA45F86B9DB9E65CB8DA6EF99",
   "identities": [
     {
       "all_tenants?": false,
@@ -63,20 +51,6 @@
         }
       ],
       "name": "unique_content",
-      "nils_distinct?": true,
-      "where": null
-    },
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "movies_unique_tmdb_id_index",
-      "keys": [
-        {
-          "type": "atom",
-          "value": "tmdb_id"
-        }
-      ],
-      "name": "unique_tmdb_id",
       "nils_distinct?": true,
       "where": null
     }

@@ -43,6 +43,7 @@ defmodule WatchClubWeb.Router do
       live "/settings", AccountsLive.Settings
       live "/clubs/:club_id/members", ClubsLive.Members
       live "/clubs/:club_id/settings", ClubsLive.Settings
+      live "/clubs/:club_id/library", ClubsLive.Settings
       live "/movies/:tmdb_id", ContentsLive.MovieDetails
     end
 

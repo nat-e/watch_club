@@ -8,10 +8,14 @@ defmodule WatchClub.Repo.Migrations.MigrateResources2 do
   use Ecto.Migration
 
   def up do
-    rename table(:contents), :original_country, to: :origin_country
+    alter table(:libraries) do
+      add :index, :bigint, null: false, default: 0
+    end
   end
 
   def down do
-    rename table(:contents), :origin_country, to: :original_country
+    alter table(:libraries) do
+      remove :index
+    end
   end
 end

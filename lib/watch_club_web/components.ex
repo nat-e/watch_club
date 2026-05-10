@@ -6,8 +6,11 @@ defmodule WatchClubWeb.Components do
       import WatchClubWeb.Components.Avatars
       import WatchClubWeb.Components.Badges
       import WatchClubWeb.Components.Contents
+      import WatchClubWeb.Components.EditableLabel
       import WatchClubWeb.Components.Forms
       import WatchClubWeb.Components.Images
+      import WatchClubWeb.Components.ReorderableList
+      import WatchClubWeb.Components.Settings
     end
   end
 end

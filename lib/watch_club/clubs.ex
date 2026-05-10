@@ -3,7 +3,7 @@ defmodule WatchClub.Clubs do
     otp_app: :watch_club,
     extensions: [AshPhoenix]
 
-  alias WatchClub.Clubs.{Club, Invitation, LibraryItem, Membership}
+  alias WatchClub.Clubs.{Club, Invitation, Library, LibraryItem, Membership}
 
   resources do
     resource Club do
@@ -17,6 +17,7 @@ defmodule WatchClub.Clubs do
 
       define :create_club, action: :create
       define :destroy_club, action: :destroy
+      define :reorder_libraries, action: :reorder_libraries, args: [:club_id]
       define :update_club, action: :update
     end
 
@@ -28,10 +29,14 @@ defmodule WatchClub.Clubs do
       define :view_invitation, action: :view_invitation, args: [:id]
     end
 
-    resource LibraryItem do
-      define :add_content_to_club, action: :create, args: [:club_id, :content_id]
-      define :remove_content_from_club, action: :destroy
+    resource Library do
+      define :list_club_libraries, action: :by_club, args: [:club_id]
+      define :create_library, action: :create, args: [:club_id]
+      define :update_library, action: :update
+      define :destroy_library, action: :destroy
     end
+
+    resource LibraryItem
 
     resource Membership do
       define :get_club_membership_by_id, action: :with_club_and_user, get_by: [:id]

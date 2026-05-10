@@ -44,12 +44,14 @@ defmodule WatchClub.Clubs.Checks.ActorIsClubMember do
   def match?(_, _, _), do: false
 
   defp extract_club_id(%{changeset: %Ash.Changeset{} = changeset}) do
-    Ash.Changeset.get_attribute(changeset, :club_id) ||
-      Ash.Changeset.get_argument(changeset, :club_id)
+    Ash.Changeset.get_argument_or_attribute(changeset, :club_id)
   end
 
   defp extract_club_id(%{query: %Ash.Query{} = query}),
     do: Ash.Query.get_argument(query, :club_id)
+
+  defp extract_club_id(%{action_input: %Ash.ActionInput{} = input}),
+    do: Ash.ActionInput.get_argument(input, :club_id)
 
   defp extract_club_id(_), do: nil
 

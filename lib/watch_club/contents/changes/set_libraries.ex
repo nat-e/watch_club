@@ -1,16 +1,16 @@
-defmodule WatchClub.Contents.Changes.SetInClubLibraries do
+defmodule WatchClub.Contents.Changes.SetLibraries do
   use Ash.Resource.Change
 
   require Logger
 
   @impl true
   def change(changeset, _opts, context) do
-    club_ids = Ash.Changeset.get_argument(changeset, :club_ids)
-    Logger.info("Setting content to club libraries: #{inspect(club_ids)}")
+    library_ids = Ash.Changeset.get_argument(changeset, :library_ids)
+    Logger.info("Setting content to club libraries: #{inspect(library_ids)}")
 
     Ash.Changeset.after_action(changeset, fn _changeset, content ->
       content
-      |> Ash.Changeset.for_update(:set_in_club_libraries, %{club_ids: club_ids})
+      |> Ash.Changeset.for_update(:set_libraries, %{library_ids: library_ids})
       |> Ash.update(actor: context.actor)
       |> case do
         {:ok, updated_content} -> {:ok, updated_content}

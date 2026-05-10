@@ -13,54 +13,6 @@
       "type": "uuid"
     },
     {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "name",
-      "type": "text"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "role",
-      "type": "text"
-    },
-    {
-      "allow_nil?": false,
-      "default": "false",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "accepted",
-      "type": "boolean"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "expires_at",
-      "type": "utc_datetime_usec"
-    },
-    {
       "allow_nil?": false,
       "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
       "generated?": false,
@@ -103,16 +55,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "invitations_club_id_fkey",
+        "name": "library_items_library_id_fkey",
         "on_delete": "delete",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
-        "table": "clubs"
+        "table": "libraries"
       },
       "scale": null,
       "size": null,
-      "source": "club_id",
+      "source": "library_id",
       "type": "uuid"
     },
     {
@@ -134,7 +86,38 @@
           "global": null,
           "strategy": null
         },
-        "name": "invitations_inviter_id_fkey",
+        "name": "library_items_content_id_fkey",
+        "on_delete": null,
+        "on_update": null,
+        "primary_key?": true,
+        "schema": "public",
+        "table": "contents"
+      },
+      "scale": null,
+      "size": null,
+      "source": "content_id",
+      "type": "uuid"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": {
+        "deferrable": false,
+        "destination_attribute": "id",
+        "destination_attribute_default": null,
+        "destination_attribute_generated": null,
+        "index?": false,
+        "match_type": null,
+        "match_with": null,
+        "multitenancy": {
+          "attribute": null,
+          "global": null,
+          "strategy": null
+        },
+        "name": "library_items_added_by_id_fkey",
         "on_delete": "nilify",
         "on_update": "update",
         "primary_key?": true,
@@ -143,7 +126,7 @@
       },
       "scale": null,
       "size": null,
-      "source": "inviter_id",
+      "source": "added_by_id",
       "type": "uuid"
     }
   ],
@@ -153,8 +136,27 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "CF31CF201D696CA1A028BB0D1D8DA86DC8C25EAB1693F66B2A858CDA2C485106",
-  "identities": [],
+  "hash": "F1FB81079DC0C8CB2C98DE894328EAA7ED3BE21A7926837776AC397F4B5E4D46",
+  "identities": [
+    {
+      "all_tenants?": false,
+      "base_filter": null,
+      "index_name": "library_items_library_and_content_index",
+      "keys": [
+        {
+          "type": "atom",
+          "value": "library_id"
+        },
+        {
+          "type": "atom",
+          "value": "content_id"
+        }
+      ],
+      "name": "library_and_content",
+      "nils_distinct?": true,
+      "where": null
+    }
+  ],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -162,5 +164,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "invitations"
+  "table": "library_items"
 }

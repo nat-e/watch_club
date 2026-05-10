@@ -21,8 +21,68 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "role",
+      "source": "iso_639_1",
       "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "iso_3166_1",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "title",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "overview",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "poster_path",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "runtime",
+      "type": "bigint"
     },
     {
       "allow_nil?": false,
@@ -67,78 +127,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "memberships_club_id_fkey",
+        "name": "movie_localizations_movie_id_fkey",
         "on_delete": "delete",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
-        "table": "clubs"
+        "table": "movies"
       },
       "scale": null,
       "size": null,
-      "source": "club_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "memberships_user_id_fkey",
-        "on_delete": "delete",
-        "on_update": "update",
-        "primary_key?": true,
-        "schema": "public",
-        "table": "users"
-      },
-      "scale": null,
-      "size": null,
-      "source": "user_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "memberships_invitation_id_fkey",
-        "on_delete": null,
-        "on_update": null,
-        "primary_key?": true,
-        "schema": "public",
-        "table": "invitations"
-      },
-      "scale": null,
-      "size": null,
-      "source": "invitation_id",
+      "source": "movie_id",
       "type": "uuid"
     }
   ],
@@ -148,37 +146,27 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "C2523E9818EBA736902F24499D452DB57CAED07AC07F08A0E8928DD6553C8306",
+  "hash": "1E0A87988FDB1AFF18E1653A64A8960309A0F30972AC40093C7AF545BF3A03EA",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "memberships_club_and_user_index",
+      "index_name": "movie_localizations_unique_locale_per_movie_index",
       "keys": [
         {
           "type": "atom",
-          "value": "club_id"
+          "value": "movie_id"
         },
         {
           "type": "atom",
-          "value": "user_id"
-        }
-      ],
-      "name": "club_and_user",
-      "nils_distinct?": true,
-      "where": null
-    },
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "memberships_invitation_id_index",
-      "keys": [
+          "value": "iso_639_1"
+        },
         {
           "type": "atom",
-          "value": "invitation_id"
+          "value": "iso_3166_1"
         }
       ],
-      "name": "invitation_id",
+      "name": "unique_locale_per_movie",
       "nils_distinct?": true,
       "where": null
     }
@@ -190,5 +178,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "memberships"
+  "table": "movie_localizations"
 }

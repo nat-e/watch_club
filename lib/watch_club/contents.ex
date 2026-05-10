@@ -18,9 +18,8 @@ defmodule WatchClub.Contents do
       define :search_content, action: :search
       define :create_movie, args: [:tmdb_id]
 
-      define :set_in_club_libraries
+      define :set_club_libraries, action: :set_libraries
     end
-
 
     resource Movie do
       define :get_movie_details, action: :details, args: [:tmdb_id]

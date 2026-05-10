@@ -33,4 +33,16 @@ defmodule WatchClubWeb.Components.Contents do
     <Lucideicons.book_open class={@class} />
     """
   end
+
+  attr :class, :any, default: nil
+  attr :type, :atom, required: true
+
+  def content_type_badge(assigns) do
+    ~H"""
+    <.badge variant="secondary" class={["gap-1.5 whitespace-nowrap", @class]}>
+      <.content_type_icon type={@type} class="size-3.5" />
+      {ContentType.translated_label(@type)}
+    </.badge>
+    """
+  end
 end

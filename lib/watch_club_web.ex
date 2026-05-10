@@ -119,7 +119,7 @@ defmodule WatchClubWeb do
       # Import domains and basic models
       alias WatchClub.{Accounts, Clubs, Contents}
       alias WatchClub.Accounts.User
-      alias WatchClub.Clubs.{Club, Invitation, Membership}
+      alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
       alias WatchClub.Contents.{Book, Content, ContentType, Movie, SearchContentType, TvShow}
 
       alias WatchClubWeb.Helpers.Url

@@ -73,8 +73,8 @@
   "create_table_options": null,
   "custom_indexes": [],
   "custom_statements": [],
-  "has_create_action": false,
-  "hash": "D57F866FB41217ED854E1A489FAC34BE0D179440F1BB796B9CB82DAF4729CDB4",
+  "has_create_action": true,
+  "hash": "C5C7D59084B34F41792FBAFA9B97E2BF489079E5406819A5912A85C8776CF4DB",
   "identities": [
     {
       "all_tenants?": false,

@@ -43,7 +43,8 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:user_settings, [:user_id], name: "user_settings_unique_user_index")
@@ -79,12 +80,9 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
 
     create table(:movies, primary_key: false) do
       add :id, :uuid, null: false, primary_key: true
-      add :tmdb_id, :bigint, null: false
     end
 
     create unique_index(:movies, [:id], name: "movies_unique_content_index")
-
-    create unique_index(:movies, [:tmdb_id], name: "movies_unique_tmdb_id_index")
 
     create table(:movie_localizations, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v7()"), primary_key: true
@@ -111,7 +109,8 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:movie_localizations, [:movie_id, :iso_639_1, :iso_3166_1],
@@ -152,14 +151,45 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
         null: false,
         default: fragment("(now() AT TIME ZONE 'utc')")
 
-      add :club_id, :uuid, null: false
+      add :library_id, :uuid, null: false
       add :content_id, :uuid, null: false
       add :added_by_id, :uuid
     end
 
-    create unique_index(:library_items, [:club_id, :content_id],
-             name: "library_items_club_and_content_index"
+    create unique_index(:library_items, [:library_id, :content_id],
+             name: "library_items_library_and_content_index"
            )
+
+    create table(:libraries, primary_key: false) do
+      add :id, :uuid, null: false, default: fragment("uuid_generate_v7()"), primary_key: true
+    end
+
+    alter table(:library_items) do
+      modify :library_id,
+             references(:libraries,
+               column: :id,
+               name: "library_items_library_id_fkey",
+               type: :uuid,
+               prefix: "public",
+               on_delete: :delete_all,
+               on_update: :update_all
+             )
+    end
+
+    alter table(:libraries) do
+      add :name, :text, null: false
+      add :content_type, :text, null: false
+
+      add :inserted_at, :utc_datetime_usec,
+        null: false,
+        default: fragment("(now() AT TIME ZONE 'utc')")
+
+      add :updated_at, :utc_datetime_usec,
+        null: false,
+        default: fragment("(now() AT TIME ZONE 'utc')")
+
+      add :club_id, :uuid, null: false
+    end
 
     create table(:invitations, primary_key: false) do
       add :id, :uuid, null: false, default: fragment("uuid_generate_v7()"), primary_key: true
@@ -208,13 +238,33 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
              )
     end
 
+    alter table(:library_items) do
+      modify :content_id,
+             references(:contents,
+               column: :id,
+               name: "library_items_content_id_fkey",
+               type: :uuid,
+               prefix: "public"
+             )
+
+      modify :added_by_id,
+             references(:users,
+               column: :id,
+               name: "library_items_added_by_id_fkey",
+               type: :uuid,
+               prefix: "public",
+               on_delete: :nilify_all,
+               on_update: :update_all
+             )
+    end
+
     alter table(:contents) do
       add :type, :text, null: false
       add :external_id_source, :text, null: false
       add :external_id, :text, null: false
       add :original_title, :text, null: false
       add :original_language, :text, null: false
-      add :original_country, :text, null: false
+      add :origin_country, :text, null: false
       add :release_date, :date
 
       add :inserted_at, :utc_datetime_usec,
@@ -264,32 +314,14 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
              )
     end
 
-    alter table(:library_items) do
+    alter table(:libraries) do
       modify :club_id,
              references(:clubs,
                column: :id,
-               name: "library_items_club_id_fkey",
+               name: "libraries_club_id_fkey",
                type: :uuid,
                prefix: "public",
                on_delete: :delete_all,
-               on_update: :update_all
-             )
-
-      modify :content_id,
-             references(:contents,
-               column: :id,
-               name: "library_items_content_id_fkey",
-               type: :uuid,
-               prefix: "public"
-             )
-
-      modify :added_by_id,
-             references(:users,
-               column: :id,
-               name: "library_items_added_by_id_fkey",
-               type: :uuid,
-               prefix: "public",
-               on_delete: :nilify_all,
                on_update: :update_all
              )
     end
@@ -372,15 +404,9 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
       modify :club_id, :uuid
     end
 
-    drop constraint(:library_items, "library_items_club_id_fkey")
+    drop constraint(:libraries, "libraries_club_id_fkey")
 
-    drop constraint(:library_items, "library_items_content_id_fkey")
-
-    drop constraint(:library_items, "library_items_added_by_id_fkey")
-
-    alter table(:library_items) do
-      modify :added_by_id, :uuid
-      modify :content_id, :uuid
+    alter table(:libraries) do
       modify :club_id, :uuid
     end
 
@@ -406,12 +432,21 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
       remove :updated_at
       remove :inserted_at
       remove :release_date
-      remove :original_country
+      remove :origin_country
       remove :original_language
       remove :original_title
       remove :external_id
       remove :external_id_source
       remove :type
+    end
+
+    drop constraint(:library_items, "library_items_content_id_fkey")
+
+    drop constraint(:library_items, "library_items_added_by_id_fkey")
+
+    alter table(:library_items) do
+      modify :added_by_id, :uuid
+      modify :content_id, :uuid
     end
 
     drop constraint(:movies, "movies_id_fkey")
@@ -430,8 +465,24 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
 
     drop table(:invitations)
 
-    drop_if_exists unique_index(:library_items, [:club_id, :content_id],
-                     name: "library_items_club_and_content_index"
+    alter table(:libraries) do
+      remove :club_id
+      remove :updated_at
+      remove :inserted_at
+      remove :content_type
+      remove :name
+    end
+
+    drop constraint(:library_items, "library_items_library_id_fkey")
+
+    alter table(:library_items) do
+      modify :library_id, :uuid
+    end
+
+    drop table(:libraries)
+
+    drop_if_exists unique_index(:library_items, [:library_id, :content_id],
+                     name: "library_items_library_and_content_index"
                    )
 
     drop table(:library_items)
@@ -453,8 +504,6 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
                    )
 
     drop table(:movie_localizations)
-
-    drop_if_exists unique_index(:movies, [:tmdb_id], name: "movies_unique_tmdb_id_index")
 
     drop_if_exists unique_index(:movies, [:id], name: "movies_unique_content_index")
 

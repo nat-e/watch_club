@@ -7,9 +7,8 @@ defmodule WatchClub.Clubs.LibraryItem do
     notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.Checks.ActorIsClubMember
-  alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
-  alias WatchClub.Clubs.Club
+  alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
+  alias WatchClub.Clubs.Library
   alias WatchClub.Contents.Content
 
   postgres do
@@ -17,7 +16,7 @@ defmodule WatchClub.Clubs.LibraryItem do
     repo(WatchClub.Repo)
 
     references do
-      reference(:club, on_delete: :delete, on_update: :update)
+      reference(:library, on_delete: :delete, on_update: :update)
       reference(:added_by, on_delete: :nilify, on_update: :update)
     end
   end
@@ -27,7 +26,7 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     create :create do
       primary? true
-      accept [:club_id, :content_id]
+      accept [:library_id, :content_id]
 
       change relate_actor(:added_by)
     end
@@ -42,18 +41,19 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     policy action([:destroy]) do
       description "Only admins or members that have added the content can remove it"
-      authorize_if {ActorIsClubMemberFilter, role: :admin}
+      authorize_if {ActorIsClubMemberFilter, role: :admin, club_path: [:library, :club]}
       authorize_if relates_to_actor_via(:added_by)
     end
 
     policy action([:create]) do
       description "Only club members can create library items"
-      authorize_if ActorIsClubMember
+      authorize_if expr(exists(library.club))
+      authorize_if ActorCanCreateLibraryItem
     end
 
     policy action([:read]) do
       description "Only club members can read library items"
-      authorize_if ActorIsClubMemberFilter
+      authorize_if {ActorIsClubMemberFilter, club_path: [:library, :club]}
     end
   end
 
@@ -64,7 +64,7 @@ defmodule WatchClub.Clubs.LibraryItem do
   end
 
   relationships do
-    belongs_to :club, Club do
+    belongs_to :library, Library do
       public? true
       allow_nil? false
     end
@@ -80,6 +80,6 @@ defmodule WatchClub.Clubs.LibraryItem do
   end
 
   identities do
-    identity :club_and_content, [:club_id, :content_id]
+    identity :library_and_content, [:library_id, :content_id]
   end
 end

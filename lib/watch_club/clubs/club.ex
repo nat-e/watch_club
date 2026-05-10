@@ -9,9 +9,10 @@ defmodule WatchClub.Clubs.Club do
   use Gettext, backend: WatchClubWeb.Gettext
 
   require Ash.Resource.Change.Builtins
+  require Ash.Query
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.{Invitation, Membership}
+  alias WatchClub.Clubs.{Invitation, Library, Membership}
 
   postgres do
     table "clubs"
@@ -25,6 +26,18 @@ defmodule WatchClub.Clubs.Club do
 
     read :members_and_invitations do
       prepare build(load: [:invitations, :memberships])
+    end
+
+    action :reorder_libraries, {:array, :struct} do
+      description "Reorders the libraries that belong to a club"
+      constraints items: [instance_of: Library]
+      transaction? true
+      touches_resources [Library]
+
+      argument :club_id, :uuid_v7, allow_nil?: false
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
+
+      run WatchClub.Clubs.Actions.ReorderLibraries
     end
 
     create :create do
@@ -78,6 +91,10 @@ defmodule WatchClub.Clubs.Club do
     policy action([:update, :destroy, :members_and_invitations]) do
       authorize_if expr(exists(memberships, user_id == ^actor(:id) and role == :admin))
     end
+
+    policy action(:reorder_libraries) do
+      authorize_if {WatchClub.Clubs.Checks.ActorIsClubMember, role: :admin}
+    end
   end
 
   pub_sub do
@@ -122,6 +139,8 @@ defmodule WatchClub.Clubs.Club do
     has_many :invitations, Invitation do
       read_action :list_club_invitations
     end
+
+    has_many :libraries, Library
 
     many_to_many :members, User, through: Membership
   end

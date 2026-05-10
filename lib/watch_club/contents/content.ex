@@ -5,9 +5,7 @@ defmodule WatchClub.Contents.Content do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Clubs.LibraryItem
-
-  alias WatchClub.Clubs.Club
+  alias WatchClub.Clubs.{Library, LibraryItem}
 
   alias WatchClub.Contents.{
     Book,
@@ -38,13 +36,13 @@ defmodule WatchClub.Contents.Content do
       description "Fetches a Movie from TMDB and creates it in DB. Content and MovieLocalization will also be created"
       primary? true
       argument :tmdb_id, :integer, allow_nil?: false
-      argument :club_ids, {:array, :uuid_v7}, allow_nil?: true
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
 
       change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
 
-      change WatchClub.Contents.Changes.SetInClubLibraries,
+      change WatchClub.Contents.Changes.SetLibraries,
         only_when_valid?: true,
-        where: [present(:club_ids)]
+        where: [present(:library_ids)]
 
       change load([:implementation])
     end
@@ -59,12 +57,12 @@ defmodule WatchClub.Contents.Content do
       run WatchClub.Contents.Actions.SearchContent
     end
 
-    update :set_in_club_libraries do
-      description "Update the list of club libraries a content belongs to"
+    update :set_libraries do
+      description "Update the list of libraries a content belongs to"
       require_atomic? false
-      argument :club_ids, {:array, :uuid_v7}, allow_nil?: false
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
 
-      change manage_relationship(:club_ids, :clubs, type: :append_and_remove)
+      change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
       change load([:library_items])
     end
   end
@@ -128,8 +126,7 @@ defmodule WatchClub.Contents.Content do
     end
 
     has_many :library_items, LibraryItem
-
-    many_to_many :clubs, Club, through: LibraryItem
+    many_to_many :libraries, Library, through: LibraryItem
   end
 
   calculations do

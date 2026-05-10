@@ -31,9 +31,12 @@ defmodule WatchClub.Clubs.Checks.ActorIsClubMemberFilter do
 
   @impl true
   def filter(_actor, _context, options) do
+    club_path = Keyword.get(options, :club_path, [:club])
+    membership_path = List.wrap(club_path) ++ [:memberships]
+
     case options[:role] do
-      nil -> expr(exists(club.memberships, user_id == ^actor(:id)))
-      role -> expr(exists(club.memberships, user_id == ^actor(:id) and role == ^role))
+      nil -> expr(exists(^membership_path, user_id == ^actor(:id)))
+      role -> expr(exists(^membership_path, user_id == ^actor(:id) and role == ^role))
     end
   end
 end
