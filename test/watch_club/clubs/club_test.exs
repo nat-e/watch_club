@@ -1,8 +1,9 @@
 defmodule WatchClub.Clubs.ClubTest do
-  alias WatchClub.Clubs.{Club, Invitation, Membership}
   use WatchClub.DataCase
 
   import WatchClub.Clubs
+
+  alias WatchClub.Clubs.{Club, Invitation, Membership}
 
   setup do
     admin = generate(administrator())
@@ -93,6 +94,21 @@ defmodule WatchClub.Clubs.ClubTest do
   describe "update_club/*" do
     test "admins can modify the club", %{club: club, admin: admin} do
       %Club{name: "New name"} = update_club!(club, %{name: "New name"}, actor: admin)
+    end
+
+    test "sends a clubs:<club_id> pubsub event", %{club: club, admin: admin} do
+      club_id = club.id
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "clubs:#{club_id}")
+      %Club{name: "New name"} = update_club!(club, %{name: "New name"}, actor: admin)
+
+      assert_receive %Ash.Notifier.Notification{
+                       resource: Club,
+                       action: %Ash.Resource.Actions.Update{},
+                       data: %Club{
+                         id: ^club_id
+                       }
+                     },
+                     500
     end
 
     test "members cannot modify the club", %{club: club, member: member} do

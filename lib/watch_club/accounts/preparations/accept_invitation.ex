@@ -1,6 +1,8 @@
 defmodule WatchClub.Accounts.Preparations.AcceptInvitation do
   use Ash.Resource.Preparation
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   require Logger
 
   @impl true
@@ -30,7 +32,7 @@ defmodule WatchClub.Accounts.Preparations.AcceptInvitation do
   defp accept_invitation(invitation_id, user) do
     with {:ok, invitation} <-
            WatchClub.Clubs.view_invitation(invitation_id, actor: user),
-         {:ok, _accepted} <-
+         {:ok, _accepted?} <-
            WatchClub.Clubs.accept_invitation(invitation, actor: user) do
       :ok
     else
@@ -42,24 +44,18 @@ defmodule WatchClub.Accounts.Preparations.AcceptInvitation do
   defp to_invitation_error(error, invitation_id) do
     case error do
       %Ash.Error.Query.NotFound{} ->
-        invalid("invitation not found")
+        invalid(dgettext_noop("errors", "The invitation does not exist"))
 
-      %AshStateMachine.Errors.NoMatchingTransition{old_state: :accepted} ->
-        invalid("invitation has already been used")
-
-      %AshStateMachine.Errors.NoMatchingTransition{old_state: :cancelled} ->
-        invalid("invitation has been cancelled")
+      %Ash.Error.Changes.InvalidAttribute{message: message} ->
+        invalid(message)
 
       # Ash.Error.Invalid wraps a list of inner errors – unwrap and recurse
       %Ash.Error.Invalid{errors: [inner | _]} ->
         to_invitation_error(inner, invitation_id)
 
-      %Ash.Error.Changes.InvalidAttribute{field: :expires_at} ->
-        invalid("invitation has expired")
-
       other ->
         Logger.warning("Unexpected invitation error: #{inspect(other)}")
-        invalid("invitation could not be accepted")
+        invalid(dgettext_noop("errors", "The invitation could not be accepted"))
     end
   end
 

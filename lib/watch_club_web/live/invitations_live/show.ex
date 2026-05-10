@@ -5,26 +5,30 @@ defmodule WatchClubWeb.InvitationsLive.Show do
   def render(
         %{invitation: %Invitation{}, current_user: nil, form: %Phoenix.HTML.Form{}} = assigns
       ) do
-    assigns =
-      assigns
-      |> assign(
-        :title,
-        ["Hello", assigns.invitation.name, "!"] |> Enum.reject(&is_nil/1) |> Enum.join(" ")
-      )
+    title =
+      case assigns.invitation.name do
+        nil -> dgettext("invitations", "Hello!")
+        name -> dgettext("invitations", "Hello %{name}!", name: name)
+      end
+
+    assigns = assigns |> assign(:title, title)
 
     ~H"""
     <Layouts.centered_card flash={@flash} title={@title}>
       <div>
         <p>
-          <span class="font-bold">{@invitation.inviter.username}</span>
-          is inviting you to join <span class="font-bold">{@invitation.club.name}</span>
-          on watch.club.
+          {raw(
+            dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
+              inviter: gtbold(@invitation.inviter.username),
+              club_name: gtbold(@invitation.club.name)
+            )
+          )}
         </p>
-        <p>Create an account or sign-in to accept the invitation.</p>
+        <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </div>
       <.alert :if={@user_exists?} variant="secondary">
         <:icon><Lucideicons.info /></:icon>
-        Looks like you already have an account! Please login instead.
+        {dgettext("invitations", "Looks like you already have an account! Please login instead.")}
       </.alert>
       <.registration_form :if={@action == :register} form={@form} />
       <.sign_in_form :if={@action == :sign_in} form={@form} />
@@ -37,15 +41,18 @@ defmodule WatchClubWeb.InvitationsLive.Show do
     <Layouts.centered_card flash={@flash} title={"Hello #{@current_user.username}"}>
       <div>
         <p>
-          <span class="font-bold">{@invitation.inviter.username}</span>
-          is inviting you to join <span class="font-bold">{@invitation.club.name}</span>
-          on watch.club.
+          {raw(
+            dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
+              inviter: gtbold(@invitation.inviter.username),
+              club_name: gtbold(@invitation.club.name)
+            )
+          )}
         </p>
-        <p>Create an account or sign-in to accept the invitation.</p>
+        <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </div>
       <div class="flex flex-row items-center justify-end">
         <.button type="submit" variant="default" phx-click="accept_invitation">
-          Accept Invitation
+          {dgettext("invitations", "Accept Invitation")}
         </.button>
       </div>
     </Layouts.centered_card>
@@ -55,16 +62,20 @@ defmodule WatchClubWeb.InvitationsLive.Show do
   def render(assigns), do: ~H""
 
   @impl true
-  def mount(%{"invitation_id" => invitation_id}, _session, socket) do
+  def mount(%{"invitation_id" => invitation_id}, session, socket) do
     # Make sure the invitation belongs to the current user is logged in
     case Clubs.view_invitation(invitation_id, actor: socket.assigns.current_user) do
       {:ok, invitation} ->
-        {:ok, socket |> assign(:invitation, invitation)}
+        locale = WatchClubWeb.Plugs.BrowserLocale.get(session)
+        {:ok, socket |> assign(:invitation, invitation) |> assign(:locale, locale)}
 
       {:error, _} ->
         {:ok,
          socket
-         |> put_flash(:error, "The invitation you were trying to access does not exist")
+         |> put_flash(
+           :error,
+           dgettext("invitations", "The invitation you were trying to access does not exist")
+         )
          |> redirect(to: ~p"/")}
     end
   end
@@ -78,7 +89,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
         :register
       end
 
-    invitation_id = socket.assigns.invitation.id
+    %{invitation: %{id: invitation_id}, locale: locale} = socket.assigns
 
     form =
       case action do
@@ -86,7 +97,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
           Accounts.form_to_sign_in(sign_in_form_opts(invitation_id))
 
         :register ->
-          Accounts.form_to_register_with_password(registration_form_opts(invitation_id))
+          Accounts.form_to_register_with_password(registration_form_opts(locale, invitation_id))
       end
 
     {:noreply,
@@ -106,13 +117,21 @@ defmodule WatchClubWeb.InvitationsLive.Show do
       {:ok, invitation} ->
         {:noreply,
          socket
-         |> put_flash(:success, "You joined #{invitation.club.name}")
+         |> put_flash(
+           :success,
+           dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
+         )
          |> redirect(to: ~p"/")}
 
       {:error, _} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Couldn't join #{invitation.club.name}, try again later")}
+         |> put_flash(
+           :error,
+           dgettext("invitations", "Couldn't join %{club_name}, try again later",
+             club_name: invitation.club.name
+           )
+         )}
     end
   end
 
@@ -125,7 +144,10 @@ defmodule WatchClubWeb.InvitationsLive.Show do
       {:ok, user} ->
         socket =
           socket
-          |> put_flash(:success, "Your account has been created")
+          |> put_flash(
+            :success,
+            dgettext("invitations", "Your account has been created")
+          )
           |> redirect(
             to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
           )

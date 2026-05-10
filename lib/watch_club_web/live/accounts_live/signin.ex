@@ -5,7 +5,7 @@ defmodule WatchClubWeb.AccountsLive.Signin do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title="Welcome back!">
+    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome back!")}>
       <.sign_in_form form={@form} />
     </Layouts.centered_card>
     """

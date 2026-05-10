@@ -8,11 +8,12 @@ defmodule WatchClub.Accounts.UserTest do
 
   describe "create_administrator/*" do
     test "creates the administrator if there are none" do
-      assert %User{administrator?: true} =
+      assert %User{administrator?: true, settings: %{locale: :fr_FR}} =
                create_administrator!(%{
                  username: "nate",
                  password: "passw0rd",
-                 password_confirmation: "passw0rd"
+                 password_confirmation: "passw0rd",
+                 locale: :fr_FR
                })
     end
 
@@ -22,7 +23,8 @@ defmodule WatchClub.Accounts.UserTest do
       create_administrator(%{
         username: "nate",
         password: "passw0rd",
-        password_confirmation: "passw0rd"
+        password_confirmation: "passw0rd",
+        locale: :en_US
       })
       |> assert_has_error(Ash.Error.Invalid, fn
         %Ash.Error.Changes.InvalidAttribute{
@@ -32,6 +34,19 @@ defmodule WatchClub.Accounts.UserTest do
 
         _ ->
           false
+      end)
+    end
+
+    test "fails with an invalid locale" do
+      create_administrator(%{
+        username: "nate",
+        password: "passw0rd",
+        password_confirmation: "passw0rd",
+        locale: :it_IT
+      })
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Changes.InvalidArgument{field: :locale} -> true
+        _ -> false
       end)
     end
   end
@@ -96,7 +111,7 @@ defmodule WatchClub.Accounts.UserTest do
       user_id = user.id
 
       assert %Invitation{
-               status: :accepted,
+               accepted?: true,
                created_membership: %Membership{
                  user_id: ^user_id
                }
@@ -107,12 +122,12 @@ defmodule WatchClub.Accounts.UserTest do
                )
     end
 
-    test "users can't signin with a cancelled invitation", %{admin: admin, club: club} do
+    test "users can't signin with an already accepted? invitation", %{admin: admin, club: club} do
       password = "passw0rd"
 
       invitation =
         generate(invitation(club, admin))
-        |> Ash.Seed.update!(%{status: :cancelled})
+        |> Ash.Seed.update!(%{accepted?: true})
 
       user = generate(user(password: password, password_confirmation: password))
 
@@ -124,33 +139,7 @@ defmodule WatchClub.Accounts.UserTest do
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Query.InvalidArgument{
                  field: :invitation_id,
-                 message: "invitation has been cancelled"
-               } ->
-                 true
-
-               _ ->
-                 false
-             end)
-    end
-
-    test "users can't signin with an already accepted invitation", %{admin: admin, club: club} do
-      password = "passw0rd"
-
-      invitation =
-        generate(invitation(club, admin))
-        |> Ash.Seed.update!(%{status: :accepted})
-
-      user = generate(user(password: password, password_confirmation: password))
-
-      assert sign_in(%{
-               username: user.username,
-               password: password,
-               invitation_id: invitation.id
-             })
-             |> assert_has_error(Ash.Error.Invalid, fn
-               %Ash.Error.Query.InvalidArgument{
-                 field: :invitation_id,
-                 message: "invitation has already been used"
+                 message: "The invitation has already been used"
                } ->
                  true
 
@@ -176,7 +165,7 @@ defmodule WatchClub.Accounts.UserTest do
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Query.InvalidArgument{
                  field: :invitation_id,
-                 message: "invitation has expired"
+                 message: "The invitation has expired"
                } ->
                  true
 
@@ -226,19 +215,20 @@ defmodule WatchClub.Accounts.UserTest do
     end
 
     test "users can register with an invitation code", %{invitation: invitation} do
-      assert %User{} =
+      assert %User{settings: %{locale: :en_US}} =
                user =
                register_with_password!(%{
                  username: "nate",
                  password: "passw0rd",
                  password_confirmation: "passw0rd",
-                 invitation_id: invitation.id
+                 invitation_id: invitation.id,
+                 locale: :en_US
                })
 
       user_id = user.id
 
       assert %Invitation{
-               status: :accepted,
+               accepted?: true,
                created_membership: %Membership{
                  user_id: ^user_id
                }
@@ -266,44 +256,22 @@ defmodule WatchClub.Accounts.UserTest do
              end)
     end
 
-    test "users can't register with a cancelled invitation", %{admin: admin, club: club} do
+    test "users can't register with an already accepted? invitation", %{admin: admin, club: club} do
       invitation =
         generate(invitation(club, admin))
-        |> Ash.Seed.update!(%{status: :cancelled})
+        |> Ash.Seed.update!(%{accepted?: true})
 
       assert register_with_password(%{
                username: "nate",
                password: "passw0rd",
                password_confirmation: "passw0rd",
-               invitation_id: invitation.id
+               invitation_id: invitation.id,
+               locale: :en_US
              })
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{
                  field: :invitation_id,
-                 message: "invitation has been cancelled"
-               } ->
-                 true
-
-               _ ->
-                 false
-             end)
-    end
-
-    test "users can't register with an already accepted invitation", %{admin: admin, club: club} do
-      invitation =
-        generate(invitation(club, admin))
-        |> Ash.Seed.update!(%{status: :accepted})
-
-      assert register_with_password(%{
-               username: "nate",
-               password: "passw0rd",
-               password_confirmation: "passw0rd",
-               invitation_id: invitation.id
-             })
-             |> assert_has_error(Ash.Error.Invalid, fn
-               %Ash.Error.Changes.InvalidArgument{
-                 field: :invitation_id,
-                 message: "invitation has already been used"
+                 message: "The invitation has already been used"
                } ->
                  true
 
@@ -321,12 +289,13 @@ defmodule WatchClub.Accounts.UserTest do
                username: "nate",
                password: "passw0rd",
                password_confirmation: "passw0rd",
-               invitation_id: invitation.id
+               invitation_id: invitation.id,
+               locale: :en_US
              })
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{
                  field: :invitation_id,
-                 message: "invitation has expired"
+                 message: "The invitation has expired"
                } ->
                  true
 
@@ -340,12 +309,27 @@ defmodule WatchClub.Accounts.UserTest do
                username: "nate",
                password: "passw0rd",
                password_confirmation: "wrongpassword",
-               invitation_id: invitation.id
+               invitation_id: invitation.id,
+               locale: :en_US
              })
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{field: :password_confirmation} -> true
                _ -> false
              end)
+    end
+
+    test "fails with an invalid locale", %{invitation: invitation} do
+      register_with_password(%{
+        username: "nate",
+        password: "passw0rd",
+        password_confirmation: "passw0rd",
+        invitation_id: invitation.id,
+        locale: :it_IT
+      })
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Changes.InvalidArgument{field: :locale} -> true
+        _ -> false
+      end)
     end
   end
 end

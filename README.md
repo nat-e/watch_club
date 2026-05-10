@@ -16,3 +16,10 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 * Docs: https://hexdocs.pm/phoenix
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
+
+
+## Translation flow
+
+1. `mix gettext.extract`: Scans source code and extracts into .pot files
+2. `mix gettext.merge`: Update the locale `.po` files with the new messages
+3. Set the `msgstr` in the `.po` files

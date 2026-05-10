@@ -48,8 +48,9 @@ defmodule Shadcn.Components.Select do
   """
   use Phoenix.Component
 
-  attr :id, :string, required: true
+  attr :id, :string, default: nil
   attr :class, :any, default: nil
+  attr :button_class, :any, default: nil
   attr :name, :any, default: nil
   attr :value, :any, default: nil
   attr :placeholder, :string, default: "Select..."
@@ -80,6 +81,9 @@ defmodule Shadcn.Components.Select do
   end
 
   def select(assigns) do
+    id = assigns.id || "select-#{System.unique_integer([:positive])}"
+    assigns = assign(assigns, :id, id)
+
     ~H"""
     <div
       id={@id}
@@ -105,6 +109,7 @@ defmodule Shadcn.Components.Select do
         aria-expanded="false"
         aria-invalid={(@errors != [] && "true") || nil}
         disabled={@disabled}
+        class={@button_class}
       >
         <span data-slot="select-value">{@placeholder}</span>
         <Lucideicons.chevron_down data-slot="select-trigger-icon" aria-hidden="true" />

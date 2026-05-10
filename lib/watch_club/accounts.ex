@@ -15,6 +15,10 @@ defmodule WatchClub.Accounts do
       define :sign_in, action: :sign_in_with_password
       define :get_current_user
     end
+
+    resource WatchClub.Accounts.UserSettings do
+      define :update_user_settings, action: :update
+    end
   end
 
   def administrator_exists?, do: administrator_exists!()

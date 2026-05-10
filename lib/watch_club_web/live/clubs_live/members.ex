@@ -1,0 +1,461 @@
+defmodule WatchClubWeb.ClubsLive.Members do
+  use WatchClubWeb, :live_view
+
+  @impl true
+  def render(%{club: %Club{}} = assigns) do
+    ~H"""
+    <Layouts.app
+      flash={@flash}
+      current_url={@current_url}
+      current_user={@current_user}
+      class="p-4 flex flex-col gap-12"
+    >
+      <div class="flex flex-col gap-2 w-max-200">
+        <div class="flex flex-row justify-between items-end">
+          <div>
+            <h1>{dgettext("clubs", "Members")}</h1>
+            <p class="text-muted-foreground">{dgettext("clubs", "Manage and invite new members")}</p>
+          </div>
+          <.button phx-click="open_create_invitation_modal">
+            {dgettext("clubs", "Invite member")}
+          </.button>
+        </div>
+        <.table>
+          <.table_header>
+            <.table_row>
+              <.table_head>{dgettext("clubs", "User")}</.table_head>
+              <.table_head>{dgettext("clubs", "Role")}</.table_head>
+              <.table_head>{dgettext("clubs", "Member since")}</.table_head>
+              <.table_head>{dgettext("clubs", "Invited by")}</.table_head>
+              <.table_head class="text-right"></.table_head>
+            </.table_row>
+          </.table_header>
+          <.table_body>
+            <.member_row
+              :for={membership <- @club.memberships}
+              membership={membership}
+              current_url={@current_url}
+              current_user={@current_user}
+            />
+            <.invitation_row
+              :for={invitation <- @club.invitations}
+              invitation={invitation}
+              current_url={@current_url}
+              current_user={@current_user}
+            />
+          </.table_body>
+        </.table>
+      </div>
+      <.remove_member_modal :if={@membership_to_remove} membership={@membership_to_remove} />
+      <.create_invitation_modal :if={@create_invitation_form} form={@create_invitation_form} />
+      <.view_invitation_modal
+        :if={@invitation_to_view}
+        invitation={@invitation_to_view}
+        current_url={@current_url}
+      />
+      <.destroy_invitation_modal :if={@invitation_to_destroy} />
+    </Layouts.app>
+    """
+  end
+
+  def render(assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}></Layouts.app>
+    """
+  end
+
+  defp member_row(assigns) do
+    ~H"""
+    <.table_row>
+      <.table_cell>
+        <div class="flex gap-2 items-center font-bold">
+          <.generic_avatar id={@membership.user.id} name={@membership.user.username} />
+          {@membership.user.username}
+        </div>
+      </.table_cell>
+      <.table_cell>
+        <.role_badge role={@membership.role} />
+      </.table_cell>
+      <.table_cell>
+        {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
+      </.table_cell>
+      <.table_cell>
+        <div :if={@membership.invitation} class="flex gap-2 items-center font-bold">
+          <.generic_avatar
+            id={@membership.invitation.inviter.id}
+            name={@membership.invitation.inviter.username}
+          />
+          {@membership.invitation.inviter.username}
+        </div>
+      </.table_cell>
+      <.table_cell class="text-right">
+        <.dropdown_menu :if={@membership.user_id != @current_user.id}>
+          <:trigger>
+            <.button size="icon" variant="ghost">
+              <Lucideicons.ellipsis_vertical />
+            </.button>
+          </:trigger>
+          <.dropdown_menu_item
+            :if={@membership.user_id != @current_user.id}
+            variant="destructive"
+            phx-click="open_remove_member_modal"
+            phx-value-membership_id={@membership.id}
+          >
+            <Lucideicons.trash_2 />{dgettext("clubs", "Remove member")}
+          </.dropdown_menu_item>
+        </.dropdown_menu>
+      </.table_cell>
+    </.table_row>
+    """
+  end
+
+  defp invitation_row(assigns) do
+    ~H"""
+    <.table_row class="text-muted-foreground">
+      <.table_cell>
+        <div class="flex gap-2 items-center font-bold italic">
+          {@invitation.name}
+        </div>
+      </.table_cell>
+      <.table_cell>
+        <.invitation_status_badge invitation={@invitation} />
+      </.table_cell>
+      <.table_cell></.table_cell>
+      <.table_cell>
+        <div class="flex gap-2 items-center font-bold">
+          <.generic_avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
+          {@invitation.inviter.username}
+        </div>
+      </.table_cell>
+      <.table_cell class="text-right">
+        <.dropdown_menu>
+          <:trigger>
+            <.button size="icon" variant="ghost">
+              <Lucideicons.ellipsis_vertical />
+            </.button>
+          </:trigger>
+          <.dropdown_menu_item
+            phx-click="open_view_invitation_modal"
+            phx-value-invitation_id={@invitation.id}
+          >
+            <Lucideicons.user />{dgettext("clubs", "Share Invitation")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            variant="destructive"
+            phx-click="open_destroy_invitation_modal"
+            phx-value-invitation_id={@invitation.id}
+          >
+            <Lucideicons.trash_2 />{dgettext("clubs", "Delete invitation")}
+          </.dropdown_menu_item>
+        </.dropdown_menu>
+      </.table_cell>
+    </.table_row>
+    """
+  end
+
+  defp remove_member_modal(assigns) do
+    ~H"""
+    <.modal open={true} on_close={JS.push("close_modals")}>
+      <.dialog>
+        <:title>{dgettext("clubs", "Remove club member")}</:title>
+        <div class="flex flex-col gap-4">
+          <p>
+            {raw(
+              dgettext(
+                "clubs",
+                "Are you sure you want to remove %{username}?",
+                gtbold(@membership.user.username)
+              )
+            )}
+          </p>
+          <p>{dgettext("clubs", "They won't be able to join back without being re-invited.")}</p>
+          <div class="flex justify-end gap-2">
+            <.button
+              type="button"
+              class="w-fit self-end"
+              variant="outline"
+              phx-click="close_modals"
+            >
+              {dgettext("default", "Cancel")}
+            </.button>
+
+            <.button
+              class="w-fit self-end"
+              variant="destructive"
+              phx-click="confirm_remove_member"
+            >
+              {dgettext("clubs", "Remove")}
+            </.button>
+          </div>
+        </div>
+      </.dialog>
+    </.modal>
+    """
+  end
+
+  defp destroy_invitation_modal(assigns) do
+    ~H"""
+    <.modal open={true} on_close={JS.push("close_modals")}>
+      <.dialog>
+        <:title>{dgettext("clubs", "Delete invitation")}</:title>
+        <div class="flex flex-col gap-4">
+          <p>
+            {dgettext("clubs", "Are you sure you want to delete this invitation?")}
+          </p>
+          <p>
+            {dgettext("clubs", "The invitation link will not be active anymore.")}
+          </p>
+          <div class="flex justify-end gap-2">
+            <.button
+              type="button"
+              class="w-fit self-end"
+              variant="outline"
+              phx-click="close_modals"
+            >
+              {dgettext("default", "Cancel")}
+            </.button>
+
+            <.button
+              class="w-fit self-end"
+              variant="destructive"
+              phx-click="confirm_destroy_invitation"
+            >
+              {dgettext("default", "Delete")}
+            </.button>
+          </div>
+        </div>
+      </.dialog>
+    </.modal>
+    """
+  end
+
+  defp create_invitation_modal(assigns) do
+    ~H"""
+    <.modal open={true} on_close={JS.push("close_modals")}>
+      <.dialog>
+        <:title>{dgettext("clubs", "Create invitation")}</:title>
+        <:description>
+          {dgettext("clubs", "Create a shareable invitation link to join the club")}
+        </:description>
+        <.form
+          :if={@form}
+          for={@form}
+          id="create_invitation_form"
+          phx-change="validate_create_invitation"
+          phx-submit="submit_create_invitation"
+          class="flex flex-col gap-6"
+        >
+          <.input_with_label field={@form[:name]} label="Name">
+            <.input
+              field={@form[:name]}
+              type="name"
+              autocomplete="name"
+              phx-debounce="blur"
+            />
+          </.input_with_label>
+          <.input_with_label field={@form[:role]} label="Club Role">
+            <.radio_group field={@form[:role]}>
+              <:item value="member">{dgettext("clubs", "Member")}</:item>
+              <:item value="admin">{dgettext("clubs", "Admin")}</:item>
+            </.radio_group>
+          </.input_with_label>
+          <.button type="submit" class="w-full" phx-submit="submit_create_invitation">
+            {dgettext("clubs", "Create invitation")}
+          </.button>
+        </.form>
+      </.dialog>
+    </.modal>
+    """
+  end
+
+  defp view_invitation_modal(
+         %{
+           current_url: %Url{
+             authority: authority,
+             scheme: scheme
+           },
+           invitation: %Invitation{id: invitation_id}
+         } = assigns
+       ) do
+    assigns =
+      assigns
+      |> assign(
+        :invitation_link,
+        scheme <> "://" <> authority <> ~p"/invitations/#{invitation_id}"
+      )
+
+    ~H"""
+    <.modal open={true} on_close={JS.push("close_modals")}>
+      <.dialog>
+        <:title>{dgettext("clubs", "Share invitation")}</:title>
+        <:description>
+          {dgettext(
+            "clubs",
+            "Copy and share the invitation link below with anyone. It is only usable once."
+          )}
+        </:description>
+        <div class="flex flex-col gap-4 items-center">
+          <.alert class="items-center">
+            <span id="invitation_link">{@invitation_link}</span>
+            <:action>
+              <.button phx-click={
+                JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
+                |> JS.push("invitation_link_copied")
+              }>
+                <Lucideicons.copy />
+              </.button>
+            </:action>
+          </.alert>
+          <.button type="button" class="w-full" phx-click="close_modals">
+            {dgettext("default", "Close")}
+          </.button>
+        </div>
+      </.dialog>
+    </.modal>
+    """
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> assign(:membership_to_remove, nil)
+     |> assign(:invitation_to_destroy, nil)
+     |> assign(:create_invitation_form, nil)
+     |> assign(:invitation_to_view, nil)}
+  end
+
+  @impl true
+  def handle_params(%{"club_id" => club_id}, _uri, socket) do
+    case Clubs.get_members_and_invitations_by_id(club_id, actor: socket.assigns.current_user) do
+      {:ok, club} ->
+        {:noreply, socket |> assign(:club, club)}
+
+      {:error, %Ash.Error.Query.NotFound{}} ->
+        not_found(socket)
+
+      {:error, %Ash.Error.Invalid{}} ->
+        not_found(socket)
+
+      {:error, %Ash.Error.Forbidden{}} ->
+        not_found(socket)
+
+      {:error, error} ->
+        Logger.warning("Unexpected error loading members: #{inspect(error)}")
+        {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("open_remove_member_modal", %{"membership_id" => membership_id}, socket) do
+    %Membership{} =
+      membership = Enum.find(socket.assigns.club.memberships, fn i -> i.id == membership_id end)
+
+    {:noreply, socket |> assign(:membership_to_remove, membership)}
+  end
+
+  def handle_event("open_destroy_invitation_modal", %{"invitation_id" => invitation_id}, socket) do
+    %Invitation{} =
+      invitation = Enum.find(socket.assigns.club.invitations, fn i -> i.id == invitation_id end)
+
+    {:noreply, socket |> assign(:invitation_to_destroy, invitation)}
+  end
+
+  def handle_event("open_create_invitation_modal", _params, socket) do
+    %{current_user: current_user, club: club} = socket.assigns
+
+    form =
+      Clubs.form_to_create_invitation(
+        actor: current_user,
+        # Default role for the member
+        params: %{role: :member},
+        # Append club_id before validate/submit without requiring a hidden field
+        prepare_params: fn params, _ -> Map.put(params, :club_id, club.id) end,
+        transform_errors: fn
+          _, %Ash.Error.Changes.Required{field: :role} ->
+            {:role, "You must select a role", []}
+
+          _, err ->
+            Logger.warning("Unexpected form error: #{inspect(err)}")
+            err
+        end
+      )
+
+    {:noreply, socket |> assign(:create_invitation_form, to_form(form))}
+  end
+
+  def handle_event("validate_create_invitation", %{"form" => params}, socket) do
+    {:noreply,
+     assign(socket,
+       create_invitation_form:
+         AshPhoenix.Form.validate(socket.assigns.create_invitation_form, params)
+     )}
+  end
+
+  def handle_event("submit_create_invitation", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.create_invitation_form,
+           params: params,
+           read_one?: true
+         ) do
+      {:ok, invitation} ->
+        {:noreply,
+         socket
+         |> assign(:create_invitation_form, nil)
+         |> assign(:invitation_to_view, invitation)
+         |> put_flash(:success, "Invitation created")}
+
+      {:error, form} ->
+        {:noreply, assign(socket, create_invitation_form: form)}
+    end
+  end
+
+  def handle_event("close_modals", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:membership_to_remove, nil)
+     |> assign(:invitation_to_destroy, nil)
+     |> assign(:create_invitation_form, nil)
+     |> assign(:invitation_to_view, nil)}
+  end
+
+  def handle_event("confirm_remove_member", _params, socket) do
+    %{membership_to_remove: %Membership{} = membership, current_user: %User{} = user} =
+      socket.assigns
+
+    Clubs.remove_from_club!(membership, actor: user)
+
+    {:noreply,
+     socket
+     |> assign(:invitation_to_destroy, nil)
+     |> put_flash(:success, dgettext("clubs", "Member removed"))}
+  end
+
+  def handle_event("confirm_destroy_invitation", _params, socket) do
+    %{invitation_to_destroy: %Invitation{} = invitation, current_user: %User{} = user} =
+      socket.assigns
+
+    Clubs.destroy_invitation!(invitation, actor: user)
+
+    {:noreply,
+     socket |> assign(:invitation_to_destroy, nil) |> put_flash(:success, "Invitation deleted")}
+  end
+
+  def handle_event("open_view_invitation_modal", %{"invitation_id" => invitation_id}, socket) do
+    %Invitation{} =
+      invitation = Enum.find(socket.assigns.club.invitations, fn i -> i.id == invitation_id end)
+
+    {:noreply, socket |> assign(:invitation_to_view, invitation)}
+  end
+
+  def handle_event("invitation_link_copied", _params, socket) do
+    {:noreply,
+     socket |> put_flash(:info, dgettext("clubs", "Invitation link copied to clipboard"))}
+  end
+
+  defp not_found(socket) do
+    {:noreply,
+     socket
+     |> put_flash(:error, dgettext("clubs", "The club you were looking for does not exist"))
+     |> redirect(to: ~p"/")}
+  end
+end

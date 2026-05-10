@@ -1,14 +1,17 @@
 defmodule WatchClub.Clubs.Invitation do
-  alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.Checks.{ActorIsClubMember, ActorIsClubMemberFilter}
-  alias WatchClub.Clubs.{Club, Membership, MembershipRole}
-
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshStateMachine]
+    authorizers: [Ash.Policy.Authorizer]
+
+  use Gettext, backend: WatchClubWeb.Gettext
+
+  require Ash.Resource.Change.Builtins
+
+  alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.Checks.{ActorIsClubMember, ActorIsClubMemberFilter}
+  alias WatchClub.Clubs.{Club, Membership, MembershipRole}
 
   # 1 Week
   @invitation_expiration_days 7
@@ -19,24 +22,12 @@ defmodule WatchClub.Clubs.Invitation do
 
     references do
       reference(:club, on_delete: :delete, on_update: :update)
-      reference(:inviter, on_delete: :delete, on_update: :update)
-    end
-  end
-
-  state_machine do
-    state_attribute :status
-    initial_states [:available]
-    default_initial_state :available
-
-    # There is no :expired status, it is computed from :expires_at > now()
-    transitions do
-      transition :accept, from: :available, to: :accepted
-      transition :cancel, from: :available, to: :cancelled
+      reference(:inviter, on_delete: :nilify, on_update: :update)
     end
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy]
 
     read :view_invitation do
       argument :id, :uuid_v7, allow_nil?: false
@@ -50,14 +41,7 @@ defmodule WatchClub.Clubs.Invitation do
     end
 
     read :list_club_invitations do
-      argument :club_id, :uuid_v7, allow_nil?: false
-
-      argument :statuses, {:array, :atom} do
-        constraints items: [one_of: [:available, :accepted, :cancelled]]
-      end
-
-      filter expr(club_id == ^arg(:club_id))
-      filter expr(is_nil(^arg(:statuses)) or status in ^arg(:statuses))
+      prepare build(load: [:inviter], filter: [accepted?: false], sort: [updated_at: :desc])
     end
 
     create :create do
@@ -72,10 +56,14 @@ defmodule WatchClub.Clubs.Invitation do
 
       # Make sure the invitation is not expired
       validate compare(:expires_at, greater_than_or_equal_to: &DateTime.utc_now/0) do
-        message "invitation has expired"
+        message dgettext_noop("errors", "The invitation has expired")
       end
 
-      change transition_state(:accepted)
+      validate compare(:accepted?, is_equal: {:value, false}) do
+        message dgettext_noop("errors", "The invitation has already been used")
+      end
+
+      change set_attribute(:accepted?, true)
 
       # Create the membership as a result of accepting the invitation
       change fn changeset, %{actor: %User{} = actor} ->
@@ -94,10 +82,6 @@ defmodule WatchClub.Clubs.Invitation do
         )
       end
     end
-
-    update :cancel do
-      change transition_state(:cancelled)
-    end
   end
 
   policies do
@@ -108,10 +92,12 @@ defmodule WatchClub.Clubs.Invitation do
     end
 
     # All those actions can only be executed by club admin
-    policy action([:create, :cancel, :list_club_invitations]) do
-      # So that :list_club_invitations raises Forbidden error instead of returning []
-      access_type :strict
+    policy action([:create, :destroy]) do
       authorize_if {ActorIsClubMember, role: :admin}
+    end
+
+    policy action(:destroy) do
+      authorize_if expr(accepted? == false)
     end
 
     # Anyone with the link can view invitations
@@ -120,8 +106,22 @@ defmodule WatchClub.Clubs.Invitation do
     end
 
     # Only club admins and invitees can read invitations
-    policy action(:read) do
+    policy action([:read, :list_club_invitations]) do
       authorize_if {ActorIsClubMemberFilter, role: :admin}
+    end
+  end
+
+  preparations do
+    prepare build(load: [:expired?])
+  end
+
+  validations do
+    validate string_length(:name, min: 3) do
+      message dgettext_noop("errors", "Name must be at least %{min} characters")
+    end
+
+    validate string_length(:name, max: 30) do
+      message dgettext_noop("errors", "Name cannot be longer than %{max} characters")
     end
   end
 
@@ -130,6 +130,13 @@ defmodule WatchClub.Clubs.Invitation do
     attribute :name, :string, public?: true
 
     attribute :role, MembershipRole, allow_nil?: false, public?: true
+
+    attribute :accepted?, :boolean do
+      source :accepted
+      public? true
+      allow_nil? false
+      default false
+    end
 
     attribute :expires_at, :utc_datetime_usec do
       public? true
@@ -146,10 +153,15 @@ defmodule WatchClub.Clubs.Invitation do
   relationships do
     belongs_to :club, Club, allow_nil?: false
     belongs_to :inviter, User, allow_nil?: false
-    belongs_to :created_membership, Membership
+
+    has_one :created_membership, Membership do
+      destination_attribute :invitation_id
+    end
   end
 
-  identities do
-    identity :created_membership_id, [:created_membership_id]
+  calculations do
+    calculate :expired?, :boolean, expr(expires_at <= now()) do
+      public? true
+    end
   end
 end

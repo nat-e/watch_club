@@ -1,7 +1,7 @@
 defmodule WatchClub.Accounts.User do
   require Ash.Query
 
-  alias WatchClub.Accounts.User
+  alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
 
   use Ash.Resource,
@@ -10,6 +10,8 @@ defmodule WatchClub.Accounts.User do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
     extensions: [AshAuthentication]
+
+  use Gettext, backend: WatchClubWeb.Gettext
 
   postgres do
     table "users"
@@ -50,10 +52,13 @@ defmodule WatchClub.Accounts.User do
       description "Creates the administrator for this instance."
       accept [:username]
 
+      argument :locale, UserLocale do
+        allow_nil? false
+      end
+
       argument :password, :string do
         description "The proposed password for the user, in plain text."
         allow_nil? false
-        constraints min_length: 8
         sensitive? true
       end
 
@@ -75,6 +80,12 @@ defmodule WatchClub.Accounts.User do
       # Generates an authentication token for the user
       change {AshAuthentication.GenerateTokenChange, strategy_name: :password}
 
+      change manage_relationship(:locale, :settings,
+               type: :create,
+               value_is_key: :locale,
+               authorize?: false
+             )
+
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
         allow_nil? false
@@ -92,7 +103,7 @@ defmodule WatchClub.Accounts.User do
       description "Returns whether or not the administrator account has been setup"
 
       run fn _input, _ ->
-        User |> Ash.Query.filter(administrator? == true) |> Ash.exists(authorize?: false)
+        __MODULE__ |> Ash.Query.filter(administrator? == true) |> Ash.exists(authorize?: false)
       end
     end
 
@@ -103,7 +114,10 @@ defmodule WatchClub.Accounts.User do
       prepare AshAuthentication.Preparations.FilterBySubject
 
       # Load the club memberships when loading the logged in user
-      prepare build(load: [memberships: [:club]], context: %{private: %{authorize?: false}})
+      prepare build(
+                load: [:settings, memberships: [:club]],
+                context: %{private: %{authorize?: false}}
+              )
     end
 
     read :get_current_user do
@@ -112,7 +126,7 @@ defmodule WatchClub.Accounts.User do
       filter expr(id == ^actor(:id))
 
       # Load the club memberships when loading the logged in user
-      prepare build(load: [memberships: [:club]], context: %{private: %{authorize?: false}})
+      prepare build(load: [:settings, memberships: [:club]])
     end
 
     update :change_password do
@@ -156,6 +170,14 @@ defmodule WatchClub.Accounts.User do
       argument :invitation_id, :uuid_v7 do
         description "An invitation to accept upon signing in."
         allow_nil? true
+      end
+
+      validate present(:username) do
+        message dgettext_noop("errors", "Username is required")
+      end
+
+      validate present(:password) do
+        message dgettext_noop("errors", "Password is required")
       end
 
       # validates the provided username and password and generates a token
@@ -218,6 +240,10 @@ defmodule WatchClub.Accounts.User do
         allow_nil? false
       end
 
+      argument :locale, UserLocale do
+        allow_nil? false
+      end
+
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
 
@@ -229,6 +255,12 @@ defmodule WatchClub.Accounts.User do
 
       # If there is an invitation, accept it in after_action hook
       change WatchClub.Accounts.Changes.AcceptInvitation
+
+      change manage_relationship(:locale, :settings,
+               type: :create,
+               value_is_key: :locale,
+               authorize?: false
+             )
 
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
@@ -306,6 +338,43 @@ defmodule WatchClub.Accounts.User do
     policy action(:get_current_user) do
       authorize_if expr(id == ^actor(:id))
     end
+
+    policy action(:read) do
+      authorize_if always()
+    end
+  end
+
+  validations do
+    validate present(:username) do
+      message dgettext_noop("errors", "The username is required")
+    end
+
+    validate string_length(:username, min: 3) do
+      message dgettext_noop("errors", "Username must be at least %{min} characters")
+    end
+
+    validate string_length(:username, max: 30) do
+      message dgettext_noop("errors", "Username cannot be longer than %{max} characters")
+    end
+
+    validate match(:username, ~r/^[a-z0-9_]+$/) do
+      message dgettext_noop(
+                "errors",
+                "Username can only contain lower case letters, numbers and _"
+              )
+    end
+
+    validate present(:password) do
+      message dgettext_noop("errors", "The password is required")
+    end
+
+    validate string_length(:password, min: 8) do
+      message dgettext_noop("errors", "Password cannot be longer than %{max} characters")
+    end
+
+    validate confirm(:password, :password_confirmation) do
+      message dgettext_noop("errors", "Passwords do not match")
+    end
   end
 
   attributes do
@@ -314,7 +383,6 @@ defmodule WatchClub.Accounts.User do
     attribute :username, :string do
       allow_nil? false
       public? true
-      constraints match: ~r/^[a-z0-9_]+$/, min_length: 3, max_length: 30
     end
 
     attribute :hashed_password, :string do
@@ -333,6 +401,7 @@ defmodule WatchClub.Accounts.User do
   relationships do
     has_many :memberships, Membership
     many_to_many :clubs, Club, through: Membership
+    has_one :settings, UserSettings
   end
 
   identities do
@@ -340,7 +409,7 @@ defmodule WatchClub.Accounts.User do
 
     identity :only_one_administrator, [:administrator?] do
       where expr(administrator? == true)
-      message "a administrator already exists"
+      message dgettext_noop("errors", "An administrator already exists")
     end
   end
 end

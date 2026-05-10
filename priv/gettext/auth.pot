@@ -1,0 +1,64 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/setup.ex:48
+#, elixir-autogen, elixir-format
+msgid "Administrator created"
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/registration_form.ex:32
+#, elixir-autogen, elixir-format
+msgid "Confirm password"
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/registration_form.ex:38
+#, elixir-autogen, elixir-format
+msgid "Create account"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/setup.ex:19
+#, elixir-autogen, elixir-format
+msgid "Do not share the credentials of this account, you will be able to invite other users later."
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/registration_form.ex:26
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:26
+#, elixir-autogen, elixir-format
+msgid "Password"
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:32
+#, elixir-autogen, elixir-format
+msgid "Sign in"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/setup.ex:13
+#, elixir-autogen, elixir-format
+msgid "To configure your instance, you need to setup a unique administrator account."
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/registration_form.ex:20
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:20
+#, elixir-autogen, elixir-format
+msgid "Username"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/signin.ex:8
+#, elixir-autogen, elixir-format
+msgid "Welcome back!"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/setup.ex:10
+#, elixir-autogen, elixir-format
+msgid "Welcome to watch.club!"
+msgstr ""

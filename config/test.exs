@@ -25,6 +25,11 @@ config :watch_club, WatchClubWeb.Endpoint,
   secret_key_base: "ybQLLsVG2eqE4I9pIAjfTe/n++rk1G3fZw/DxsIeTxkYX2lRNitqtxzMyAjqxxP1",
   server: false
 
+config :watch_club,
+  tmdb_req_options: [
+    plug: {Req.Test, WatchClub.Integrations.Tmdb.Client}
+  ]
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

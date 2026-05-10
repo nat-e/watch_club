@@ -1,109 +1,114 @@
-## This is a PO Template file.
+## This file is a PO Template file.
 ##
-## `msgid`s here are often extracted from source code.
-## Add new translations manually only if they're dynamic
-## translations that can't be statically extracted.
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
 ##
-## Run `mix gettext.extract` to bring this file up to
-## date. Leave `msgstr`s empty as changing them here has no
-## effect: edit them in PO (`.po`) files instead.
-## From Ecto.Changeset.cast/4
-msgid "can't be blank"
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
 msgstr ""
 
-## From Ecto.Changeset.unique_constraint/3
-msgid "has already been taken"
+#: lib/watch_club/accounts/user.ex:408
+#, elixir-autogen, elixir-format
+msgid "An administrator already exists"
 msgstr ""
 
-## From Ecto.Changeset.put_change/3
-msgid "is invalid"
+#: lib/watch_club/clubs/club.ex:101
+#, elixir-autogen, elixir-format
+msgid "Club name cannot be longer than %{max} characters"
 msgstr ""
 
-## From Ecto.Changeset.validate_acceptance/3
-msgid "must be accepted"
+#: lib/watch_club/clubs/club.ex:93
+#, elixir-autogen, elixir-format
+msgid "Club name is required"
 msgstr ""
 
-## From Ecto.Changeset.validate_format/3
-msgid "has invalid format"
+#: lib/watch_club/clubs/club.ex:97
+#, elixir-autogen, elixir-format
+msgid "Club name must be at least %{min} characters"
 msgstr ""
 
-## From Ecto.Changeset.validate_subset/3
-msgid "has an invalid entry"
+#: lib/watch_club/clubs/invitation.ex:124
+#, elixir-autogen, elixir-format
+msgid "Name cannot be longer than %{max} characters"
 msgstr ""
 
-## From Ecto.Changeset.validate_exclusion/3
-msgid "is reserved"
+#: lib/watch_club/clubs/invitation.ex:120
+#, elixir-autogen, elixir-format
+msgid "Name must be at least %{min} characters"
 msgstr ""
 
-## From Ecto.Changeset.validate_confirmation/3
-msgid "does not match confirmation"
+#: lib/watch_club/accounts/user.ex:368
+#, elixir-autogen, elixir-format
+msgid "Password cannot be longer than %{max} characters"
 msgstr ""
 
-## From Ecto.Changeset.no_assoc_constraint/3
-msgid "is still associated with this entry"
+#: lib/watch_club/accounts/user.ex:180
+#, elixir-autogen, elixir-format
+msgid "Password is required"
 msgstr ""
 
-msgid "are still associated with this entry"
+#: lib/watch_club/accounts/user.ex:372
+#, elixir-autogen, elixir-format
+msgid "Passwords do not match"
 msgstr ""
 
-## From Ecto.Changeset.validate_length/3
-msgid "should have %{count} item(s)"
-msgid_plural "should have %{count} item(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be %{count} character(s)"
-msgid_plural "should be %{count} character(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be %{count} byte(s)"
-msgid_plural "should be %{count} byte(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should have at least %{count} item(s)"
-msgid_plural "should have at least %{count} item(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be at least %{count} character(s)"
-msgid_plural "should be at least %{count} character(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be at least %{count} byte(s)"
-msgid_plural "should be at least %{count} byte(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should have at most %{count} item(s)"
-msgid_plural "should have at most %{count} item(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be at most %{count} character(s)"
-msgid_plural "should be at most %{count} character(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "should be at most %{count} byte(s)"
-msgid_plural "should be at most %{count} byte(s)"
-msgstr[0] ""
-msgstr[1] ""
-
-## From Ecto.Changeset.validate_number/3
-msgid "must be less than %{number}"
+#: lib/watch_club/accounts/changes/accept_invitation.ex:49
+#: lib/watch_club/accounts/preparations/accept_invitation.ex:58
+#, elixir-autogen, elixir-format
+msgid "The invitation could not be accepted"
 msgstr ""
 
-msgid "must be greater than %{number}"
+#: lib/watch_club/accounts/changes/accept_invitation.ex:38
+#: lib/watch_club/accounts/preparations/accept_invitation.ex:47
+#, elixir-autogen, elixir-format
+msgid "The invitation does not exist"
 msgstr ""
 
-msgid "must be less than or equal to %{number}"
+#: lib/watch_club/clubs/invitation.ex:63
+#, elixir-autogen, elixir-format
+msgid "The invitation has already been used"
 msgstr ""
 
-msgid "must be greater than or equal to %{number}"
+#: lib/watch_club/clubs/invitation.ex:59
+#, elixir-autogen, elixir-format
+msgid "The invitation has expired"
 msgstr ""
 
-msgid "must be equal to %{number}"
+#: lib/watch_club/accounts/user.ex:364
+#, elixir-autogen, elixir-format
+msgid "The password is required"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:345
+#, elixir-autogen, elixir-format
+msgid "The username is required"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:357
+#, elixir-autogen, elixir-format
+msgid "Username can only contain lower case letters, numbers and _"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:353
+#, elixir-autogen, elixir-format
+msgid "Username cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:176
+#, elixir-autogen, elixir-format
+msgid "Username is required"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:349
+#, elixir-autogen, elixir-format
+msgid "Username must be at least %{min} characters"
+msgstr ""
+
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Your username or password is invalid"
 msgstr ""

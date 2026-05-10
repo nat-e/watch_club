@@ -1,0 +1,36 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+
+#: lib/watch_club/content/content_type.ex:12
+#, elixir-autogen, elixir-format
+msgid "Book"
+msgstr "Livre"
+
+#: lib/watch_club/content/content_type.ex:13
+#, elixir-autogen, elixir-format
+msgid "Movie"
+msgstr "Film"
+
+#: lib/watch_club/content/content_type.ex:14
+#, elixir-autogen, elixir-format
+msgid "TV Show"
+msgstr "Série TV"
+
+#: lib/watch_club/content/search_content_type.ex:11
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Books"
+msgstr "Livres"
+
+#: lib/watch_club/content/search_content_type.ex:10
+#, elixir-autogen, elixir-format
+msgid "Movies and Shows"
+msgstr "Films et Séries"

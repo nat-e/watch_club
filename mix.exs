@@ -42,6 +42,7 @@ defmodule WatchClub.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:accept_language, "~> 0.1.0"},
       {:ash, "~> 3.0"},
       {:ash_authentication, "~> 4.0"},
       {:ash_authentication_phoenix, "~> 2.0"},
@@ -59,6 +60,7 @@ defmodule WatchClub.MixProject do
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:jason, "~> 1.2"},
       {:lazy_html, ">= 0.1.0"},
+      {:live_debugger, "~> 1.0.0", only: :dev},
       {:lucide_icons, "~> 2.0"},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},

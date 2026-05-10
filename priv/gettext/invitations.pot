@@ -1,0 +1,64 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:21
+#: lib/watch_club_web/live/invitations_live/show.ex:45
+#, elixir-autogen, elixir-format
+msgid "%{inviter} is inviting you to join %{club_name} on watch.club"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:55
+#, elixir-autogen, elixir-format
+msgid "Accept Invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:131
+#, elixir-autogen, elixir-format
+msgid "Couldn't join %{club_name}, try again later"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:27
+#: lib/watch_club_web/live/invitations_live/show.ex:51
+#, elixir-autogen, elixir-format
+msgid "Create an account or sign-in to accept the invitation."
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:11
+#, elixir-autogen, elixir-format
+msgid "Hello %{name}!"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:10
+#, elixir-autogen, elixir-format
+msgid "Hello!"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:31
+#, elixir-autogen, elixir-format
+msgid "Looks like you already have an account! Please login instead."
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:77
+#, elixir-autogen, elixir-format
+msgid "The invitation you were trying to access does not exist"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:122
+#, elixir-autogen, elixir-format
+msgid "You joined %{club_name}"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations_live/show.ex:149
+#, elixir-autogen, elixir-format
+msgid "Your account has been created"
+msgstr ""

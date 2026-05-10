@@ -1,0 +1,238 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:259
+#, elixir-autogen, elixir-format
+msgid "Admin"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:66
+#, elixir-autogen, elixir-format
+msgid "All the members will be removed and the data will be deleted permanently."
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:58
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to delete %{club_name}?"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:203
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to delete this invitation?"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:108
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to leave %{club_name}?"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:164
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to remove %{username}?"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/settings.ex:21
+#, elixir-autogen, elixir-format
+msgid "Club Name"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/settings.ex:13
+#: lib/watch_club_web/live/nav/components/sidebar.ex:74
+#, elixir-autogen, elixir-format
+msgid "Club Settings"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:30
+#, elixir-autogen, elixir-format
+msgid "Club name"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:292
+#, elixir-autogen, elixir-format
+msgid "Copy and share the invitation link below with anyone. It is only usable once."
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:15
+#, elixir-autogen, elixir-format
+msgid "Create a new club to share your favorite movies and TV shows with your friends."
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:238
+#, elixir-autogen, elixir-format
+msgid "Create a shareable invitation link to join the club"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:236
+#: lib/watch_club_web/live/clubs_live/members.ex:263
+#, elixir-autogen, elixir-format
+msgid "Create invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:13
+#, elixir-autogen, elixir-format
+msgid "Create new club"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:54
+#: lib/watch_club_web/live/nav/components/sidebar.ex:83
+#, elixir-autogen, elixir-format
+msgid "Delete club"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:148
+#: lib/watch_club_web/live/clubs_live/members.ex:200
+#, elixir-autogen, elixir-format
+msgid "Delete invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/settings.ex:30
+#, elixir-autogen, elixir-format
+msgid "Edit Club"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:452
+#, elixir-autogen, elixir-format
+msgid "Invitation link copied to clipboard"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:20
+#, elixir-autogen, elixir-format
+msgid "Invite member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:29
+#, elixir-autogen, elixir-format
+msgid "Invited by"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:139
+#, elixir-autogen, elixir-format
+msgid "Leave"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:105
+#: lib/watch_club_web/live/nav/components/sidebar.ex:96
+#, elixir-autogen, elixir-format
+msgid "Leave club"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:17
+#, elixir-autogen, elixir-format
+msgid "Manage and invite new members"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/sidebar.ex:71
+#, elixir-autogen, elixir-format
+msgid "Manage members"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:258
+#, elixir-autogen, elixir-format
+msgid "Member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:430
+#, elixir-autogen, elixir-format
+msgid "Member removed"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:28
+#, elixir-autogen, elixir-format
+msgid "Member since"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:16
+#, elixir-autogen, elixir-format
+msgid "Members"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:187
+#, elixir-autogen, elixir-format
+msgid "Remove"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:160
+#, elixir-autogen, elixir-format
+msgid "Remove club member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:104
+#, elixir-autogen, elixir-format
+msgid "Remove member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:27
+#, elixir-autogen, elixir-format
+msgid "Role"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:141
+#, elixir-autogen, elixir-format
+msgid "Share Invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:290
+#, elixir-autogen, elixir-format
+msgid "Share invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:458
+#: lib/watch_club_web/live/clubs_live/settings.ex:82
+#, elixir-autogen, elixir-format
+msgid "The club you were looking for does not exist"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:206
+#, elixir-autogen, elixir-format
+msgid "The invitation link will not be active anymore."
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:171
+#, elixir-autogen, elixir-format
+msgid "They won't be able to join back without being re-invited."
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/members.ex:26
+#, elixir-autogen, elixir-format
+msgid "User"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/components/modals.ex:116
+#, elixir-autogen, elixir-format
+msgid "You will loose access to the library and will not be able to join back unless re-invited"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:96
+#, elixir-autogen, elixir-format
+msgid "Club %{club_name} created"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:121
+#, elixir-autogen, elixir-format
+msgid "Club %{club_name} deleted"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:129
+#, elixir-autogen, elixir-format
+msgid "Error deleting club, try again later"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:159
+#, elixir-autogen, elixir-format
+msgid "Error leaving club, try again later"
+msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:151
+#, elixir-autogen, elixir-format
+msgid "You left %{club_name}"
+msgstr ""

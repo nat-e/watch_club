@@ -21,5 +21,23 @@ defmodule WatchClubWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext.Backend, otp_app: :watch_club
+  use Gettext.Backend,
+    otp_app: :watch_club,
+    default_locale: :en_US
+
+  defmodule Helpers do
+    def gtbold(text) do
+      text
+      |> Phoenix.HTML.html_escape()
+      |> Phoenix.HTML.safe_to_string()
+      |> then(&~s(<span class="font-bold">#{&1}</span>))
+    end
+
+    def gtboldunder(text) do
+      text
+      |> Phoenix.HTML.html_escape()
+      |> Phoenix.HTML.safe_to_string()
+      |> then(&~s(<span class="font-bold underline">#{&1}</span>))
+    end
+  end
 end

@@ -22,7 +22,6 @@ defmodule WatchClubWeb do
   def router do
     quote do
       use Phoenix.Router, helpers: false
-      use WatchClubWeb.Hooks
 
       # Import common connection and controller functions to use in pipelines
       import Plug.Conn
@@ -53,7 +52,6 @@ defmodule WatchClubWeb do
     quote do
       use Phoenix.LiveView
       use WatchClubWeb.Components
-      use WatchClubWeb.Hooks
       alias WatchClubWeb.Layouts
       alias WatchClubWeb.Modals
 
@@ -74,8 +72,6 @@ defmodule WatchClubWeb do
   def component do
     quote do
       use Phoenix.Component
-      use WatchClubWeb.Hooks
-      alias WatchClubWeb.Modals
 
       unquote(html_helpers())
     end
@@ -85,8 +81,6 @@ defmodule WatchClubWeb do
     quote do
       use Phoenix.LiveComponent
       use WatchClubWeb.Components
-      use WatchClubWeb.Hooks
-      alias WatchClubWeb.Modals
 
       unquote(html_helpers())
     end
@@ -111,6 +105,9 @@ defmodule WatchClubWeb do
       # Translation
       use Gettext, backend: WatchClubWeb.Gettext
 
+      # Gettext helpers
+      import WatchClubWeb.Gettext.Helpers
+
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
@@ -120,9 +117,10 @@ defmodule WatchClubWeb do
       alias Phoenix.LiveView.JS
 
       # Import domains and basic models
-      alias WatchClub.{Accounts, Clubs}
+      alias WatchClub.{Accounts, Clubs, Contents}
       alias WatchClub.Accounts.User
       alias WatchClub.Clubs.{Club, Invitation, Membership}
+      alias WatchClub.Contents.{Book, Content, ContentType, Movie, SearchContentType, TvShow}
 
       alias WatchClubWeb.Helpers.Url
 
