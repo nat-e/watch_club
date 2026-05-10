@@ -41,7 +41,11 @@ defmodule WatchClub.Contents.Content do
       argument :club_ids, {:array, :uuid_v7}, allow_nil?: true
 
       change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
-      change WatchClub.Contents.Changes.SetInClubLibraries, where: [present(:club_ids)]
+
+      change WatchClub.Contents.Changes.SetInClubLibraries,
+        only_when_valid?: true,
+        where: [present(:club_ids)]
+
       change load([:implementation])
     end
 

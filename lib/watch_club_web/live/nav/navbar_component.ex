@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="flex h-16 items-center gap-2 border-b px-2 justify-between sm:gap-4 sm:px-4">
+    <header class="flex h-16 items-center gap-2 border-b px-2 justify-between sm:gap-4 sm:px-4 z-10">
       <div class="flex gap-2 w-full items-center">
         <.button
           variant="ghost"
