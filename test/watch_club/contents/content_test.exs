@@ -1,4 +1,4 @@
-defmodule WatchClub.Clubs.MovieTest do
+defmodule WatchClub.Clubs.ContentTest do
   use WatchClub.DataCase
 
   import WatchClub.Contents
@@ -21,19 +21,19 @@ defmodule WatchClub.Clubs.MovieTest do
 
   describe "create_movie/*" do
     test "creates a movie" do
-      assert %Movie{
-               tmdb_id: 11,
-               content: %Content{
-                 type: :movie,
-                 external_id_source: :tmdb,
-                 external_id: "11",
-                 original_language: "en",
-                 origin_country: "US"
-               },
-               localizations: [_en, _fr]
-             } = movie = create_movie!("11")
-
-      IO.inspect(movie)
+      assert %Content{
+               type: :movie,
+               external_id_source: :tmdb,
+               external_id: "11",
+               original_language: "en",
+               origin_country: "US",
+               implementation: %Movie{
+                 localizations: [
+                   %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
+                   %MovieLocalization{iso_639_1: "fr", iso_3166_1: "FR"}
+                 ]
+               }
+             } = create_movie!("11")
     end
   end
 end

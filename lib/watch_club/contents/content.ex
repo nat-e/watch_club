@@ -11,7 +11,6 @@ defmodule WatchClub.Contents.Content do
 
   alias WatchClub.Contents.{
     Book,
-    ContentImplementation,
     ContentType,
     ContentView,
     ExternalIdSource,
@@ -28,11 +27,22 @@ defmodule WatchClub.Contents.Content do
   end
 
   actions do
-    defaults [:read, :destroy, create: [:*], update: [:*]]
+    defaults [:read]
 
     read :for_view do
       description "Read action that loads all data needed to build ContentViews"
       prepare build(load: [:library_items])
+    end
+
+    create :create_movie do
+      description "Fetches a Movie from TMDB and creates it in DB. Content and MovieLocalization will also be created"
+      primary? true
+      argument :tmdb_id, :integer, allow_nil?: false
+      argument :club_ids, {:array, :uuid_v7}, allow_nil?: true
+
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
+      change WatchClub.Contents.Changes.SetInClubLibraries, where: [present(:club_ids)]
+      change load([:implementation])
     end
 
     action :search, {:array, :struct} do
@@ -53,6 +63,10 @@ defmodule WatchClub.Contents.Content do
       change manage_relationship(:club_ids, :clubs, type: :append_and_remove)
       change load([:library_items])
     end
+  end
+
+  preparations do
+    prepare build(load: [:implementation])
   end
 
   attributes do
@@ -115,7 +129,13 @@ defmodule WatchClub.Contents.Content do
   end
 
   calculations do
-    calculate :implementation, ContentImplementation, GetContentImplementation do
+    calculate :implementation, :union, GetContentImplementation do
+      constraints types: [
+                    book: [type: :struct, constraints: [instance_of: Book]],
+                    movie: [type: :struct, constraints: [instance_of: Movie]],
+                    tv_show: [type: :struct, constraints: [instance_of: TvShow]]
+                  ]
+
       allow_nil? false
     end
   end

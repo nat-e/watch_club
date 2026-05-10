@@ -3,7 +3,7 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
 
   @impl true
   def load(_, _, _) do
-    [:book, :movie, :tv_show]
+    [:book, :tv_show, movie: [:localizations]]
   end
 
   # This ensures that all attributes are selected by default
@@ -15,16 +15,16 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
     Enum.map(records, fn record ->
       cond do
         record.book ->
-          %Ash.Union{type: :book, value: record.book}
+          record.book
 
         record.movie ->
-          %Ash.Union{type: :movie, value: record.movie}
+          record.movie
 
         record.tv_show ->
-          %Ash.Union{type: :tv_show, value: record.tv_show}
+          record.tv_show
 
         true ->
-          nil
+          raise "Unknown content type: #{inspect(record)}"
       end
     end)
   end

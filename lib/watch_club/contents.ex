@@ -16,23 +16,19 @@ defmodule WatchClub.Contents do
   resources do
     resource Content do
       define :search_content, action: :search
+      define :create_movie, args: [:tmdb_id]
 
       define :set_in_club_libraries
     end
 
-    resource Book do
-      # define :create_book, action: :create
-    end
 
     resource Movie do
-      define :create_movie, action: :create, args: [:tmdb_id]
       define :get_movie_details, action: :details, args: [:tmdb_id]
     end
 
+    resource Book
     resource MovieLocalization
-
-    resource TvShow do
-    end
+    resource TvShow
   end
 
   @spec get_context_by_external_id(ExternalIdSource.t(), String.t(), keyword()) ::

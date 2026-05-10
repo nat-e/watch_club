@@ -16,14 +16,12 @@ defmodule WatchClub.Contents.Movie do
   end
 
   actions do
-    create :create do
-      description "Fetches a Movie from TMDB and creates it in DB. Content and MovieLocalization will also be created"
-      primary? true
-      accept [:tmdb_id]
-      argument :club_ids, {:array, :uuid_v7}, allow_nil?: true
+    defaults [:read, :destroy, update: []]
 
-      change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
-      change WatchClub.Contents.Changes.SetInClubLibraries, where: [present(:club_ids)]
+    create :create do
+      primary? true
+      argument :localizations, {:array, :map}, allow_nil?: false
+      change manage_relationship(:localizations, type: :direct_control)
     end
 
     action :details, :struct do
@@ -38,12 +36,6 @@ defmodule WatchClub.Contents.Movie do
     attribute :id, :uuid_v7 do
       primary_key? true
       allow_nil? false
-      public? true
-    end
-
-    attribute :tmdb_id, :integer do
-      allow_nil? false
-      public? true
     end
   end
 
@@ -60,6 +52,5 @@ defmodule WatchClub.Contents.Movie do
 
   identities do
     identity :unique_content, [:id]
-    identity :unique_tmdb_id, [:tmdb_id]
   end
 end

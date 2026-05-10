@@ -15,6 +15,10 @@ defmodule WatchClub.Contents.TvShow do
     end
   end
 
+  actions do
+    defaults [:read, :destroy, create: [], update: []]
+  end
+
   attributes do
     attribute :id, :uuid_v7 do
       primary_key? true

@@ -3,8 +3,6 @@ defmodule WatchClub.Integrations.Tmdb.Client do
 
   @spec request(keyword()) :: {:ok, Req.Response.t()} | {:error, any()}
   def request(opts) do
-    IO.inspect(Application.get_env(:watch_club, :tmdb_req_options, []))
-
     [
       base_url: "https://api.themoviedb.org/3",
       retry: :transient,
