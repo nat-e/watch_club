@@ -155,7 +155,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
   defp remove_member_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals")}>
+    <.modal id="remove-member-modal" open={true} on_close={JS.push("close_modals")}>
       <.dialog>
         <:title>{dgettext("clubs", "Remove club member")}</:title>
         <div class="flex flex-col gap-4">
@@ -195,7 +195,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
   defp destroy_invitation_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals")}>
+    <.modal id="destroy-invitation-modal" open={true} on_close={JS.push("close_modals")}>
       <.dialog>
         <:title>{dgettext("clubs", "Delete invitation")}</:title>
         <div class="flex flex-col gap-4">
@@ -231,7 +231,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
   defp create_invitation_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals")}>
+    <.modal id="create-invitation-modal" open={true} on_close={JS.push("close_modals")}>
       <.dialog>
         <:title>{dgettext("clubs", "Create invitation")}</:title>
         <:description>
@@ -285,7 +285,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
       )
 
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals")}>
+    <.modal id="view-invitation-modal" open={true} on_close={JS.push("close_modals")}>
       <.dialog>
         <:title>{dgettext("clubs", "Share invitation")}</:title>
         <:description>

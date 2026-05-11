@@ -22,7 +22,7 @@ defmodule Shadcn.Components.Modal do
   alias Phoenix.LiveView.JS
   use Phoenix.Component
 
-  attr :id, :string, default: nil
+  attr :id, :string, required: true
   attr :class, :any, default: nil
   attr :show_close, :boolean, default: true
   attr :open, :boolean, default: false
@@ -32,8 +32,6 @@ defmodule Shadcn.Components.Modal do
   slot :inner_block, required: true
 
   def modal(assigns) do
-    assigns = assigns |> assign(:id, assigns.id || "modal-#{System.unique_integer([:positive])}")
-
     ~H"""
     <dialog
       id={@id}

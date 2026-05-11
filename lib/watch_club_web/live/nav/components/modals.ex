@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
 
   def create_club_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="create-club-modal" open={true} on_close={JS.push("close_modals", target: @myself)}>
       <.dialog>
         <:title>{dgettext("clubs", "Create new club")}</:title>
         <:description>
@@ -49,7 +49,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
 
   def delete_club_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="delete-club-modal" open={true} on_close={JS.push("close_modals", target: @myself)}>
       <.dialog>
         <:title>{dgettext("clubs", "Delete club")}</:title>
         <div class="flex flex-col gap-4">
@@ -100,7 +100,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
 
   def leave_club_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="leave-club-modal" open={true} on_close={JS.push("close_modals", target: @myself)}>
       <.dialog>
         <:title>{dgettext("clubs", "Leave club")}</:title>
         <p>

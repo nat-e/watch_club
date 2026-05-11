@@ -98,7 +98,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def create_library_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={push_to_target("close_modals", @target)}>
+    <.modal id="create-library-modal" open={true} on_close={push_to_target("close_modals", @target)}>
       <.dialog>
         <:title>{dgettext("clubs", "Create library")}</:title>
         <:description>
@@ -155,7 +155,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def delete_library_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={push_to_target("close_modals", @target)}>
+    <.modal id="delete-library-modal" open={true} on_close={push_to_target("close_modals", @target)}>
       <.dialog>
         <:title>{dgettext("clubs", "Delete %{library_name}?", library_name: @library.name)}</:title>
         <div class="flex flex-col gap-4">

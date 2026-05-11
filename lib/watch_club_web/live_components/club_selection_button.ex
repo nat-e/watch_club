@@ -82,7 +82,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
   defp club_selection_modal(assigns) do
     ~H"""
-    <.modal open={true} on_close={JS.push("close", target: @myself)}>
+    <.modal id="club-selection-modal" open={true} on_close={JS.push("close", target: @myself)}>
       <.dialog>
         <:title>{dgettext("contents", "Select clubs")}</:title>
         <div class="relative w-full max-w-lg p-0">
