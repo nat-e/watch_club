@@ -12,8 +12,8 @@
     },
     "HEEx": {
       "language_servers": [
-        "!expert",
-        "elixir-ls",
+        "expert",
+        "!elixir-ls",
         "!dexter",
         "!next-ls",
         "!lexical",

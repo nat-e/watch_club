@@ -6,6 +6,8 @@ defmodule WatchClub.Clubs.Library do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.{Club, LibraryItem}
@@ -97,6 +99,24 @@ defmodule WatchClub.Clubs.Library do
 
   preparations do
     prepare build(sort: [club_id: :asc, index: :asc, inserted_at: :asc])
+  end
+
+  validations do
+    validate present(:name) do
+      message dgettext_noop("errors", "Library name is required")
+    end
+
+    validate string_length(:name, min: 3) do
+      message dgettext_noop("errors", "Library name must be at least %{min} characters")
+    end
+
+    validate string_length(:name, max: 30) do
+      message dgettext_noop("errors", "Library name cannot be longer than %{max} characters")
+    end
+
+    validate present(:content_type) do
+      message dgettext_noop("errors", "Library content type is required")
+    end
   end
 
   attributes do

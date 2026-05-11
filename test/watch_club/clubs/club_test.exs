@@ -112,7 +112,7 @@ defmodule WatchClub.Clubs.ClubTest do
         %Library{name: "Third", index: 0},
         %Library{name: "First", index: 1},
         %Library{name: "Second", index: 2}
-             ] = list_club_libraries!(club.id)
+             ] = list_club_libraries!(club.id, actor: admin)
     end
 
     test "rejects orders that do not include each library exactly once", %{
