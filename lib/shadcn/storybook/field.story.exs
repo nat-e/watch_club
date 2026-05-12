@@ -19,7 +19,7 @@ defmodule Shadcn.Storybook.Field do
          field_set: 1,
          field_title: 1
        ]},
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Checkbox, [checkbox: 1]},
       {Shadcn.Components.Input, [input: 1]},
       {Shadcn.Components.RadioGroup, [radio_group: 1]},

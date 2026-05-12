@@ -11,7 +11,6 @@ This contains all styles defined in our UI components
 @import "../../lib/shadcn/components/avatar.css";
 @import "../../lib/shadcn/components/badge.css";
 @import "../../lib/shadcn/components/breadcrumb.css";
-@import "../../lib/shadcn/components/button.css";
 @import "../../lib/shadcn/components/button_group.css";
 @import "../../lib/shadcn/components/calendar.css";
 @import "../../lib/shadcn/components/card.css";
@@ -61,3 +60,4 @@ This contains all styles defined in our UI components
 @import "../../lib/shadcn/components/tooltip.css";
 
 @source "../../lib/shadcn";
+@source "../../lib/watch_club_web/ui";

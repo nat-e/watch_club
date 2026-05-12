@@ -17,7 +17,6 @@ defmodule Shadcn.Components do
       import Shadcn.Components.Avatar
       import Shadcn.Components.Badge
       import Shadcn.Components.Breadcrumb
-      import Shadcn.Components.Button
       import Shadcn.Components.ButtonGroup
       import Shadcn.Components.Calendar
       import Shadcn.Components.Card

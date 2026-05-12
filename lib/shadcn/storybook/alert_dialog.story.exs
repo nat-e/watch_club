@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.AlertDialog do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Lucideicons, [circle_fading_plus: 1, bluetooth: 1, trash_2: 1]}
     ]
 

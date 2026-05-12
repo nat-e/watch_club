@@ -9,7 +9,7 @@ defmodule Shadcn.Storybook.Item do
     do: [
       {Shadcn.Components.Item, [item_group: 1]},
       {Shadcn.Components.Avatar, [avatar: 1]},
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.DropdownMenu,
        [dropdown_menu: 1, dropdown_menu_group: 1, dropdown_menu_item: 1]},
       {Lucideicons,

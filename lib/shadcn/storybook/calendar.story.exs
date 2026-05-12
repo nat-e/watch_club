@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.Calendar do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Card, [card: 1]},
       {Shadcn.Components.Field, [field: 1, field_label: 1, field_group: 1]},
       {Shadcn.Components.InputGroup, [input_group: 1, input_group_input: 1, input_group_addon: 1]}

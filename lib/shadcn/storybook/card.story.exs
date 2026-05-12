@@ -5,7 +5,7 @@ defmodule Shadcn.Storybook.Card do
 
   def function, do: &Card.card/1
 
-  def imports, do: [{Shadcn.Components.Button, [button: 1]}]
+  def imports, do: [{WatchClubWeb.UI.Button, [button: 1]}]
 
   @meta Card.__components__().card
   @sizes Enum.find(@meta.attrs, &(&1.name == :size)).opts[:values]

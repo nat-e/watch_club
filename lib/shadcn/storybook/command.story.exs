@@ -31,7 +31,7 @@ defmodule Shadcn.Storybook.Command do
          tags: 1,
          bookmark: 1
        ]},
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Dialog, [dialog: 1]}
     ]
 

@@ -72,7 +72,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
             <.button
               type="button"
               class="w-fit self-end"
-              variant="outline"
+              variant="secondary"
               phx-click="close_modals"
               phx-target={@myself}
             >
@@ -81,7 +81,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
 
             <.button
               class="w-fit self-end"
-              variant="destructive"
+              variant="danger"
               phx-click="delete_club"
               phx-value-club_id={@club.id}
               phx-target={@myself}
@@ -122,7 +122,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
           <.button
             type="button"
             class="w-fit self-end"
-            variant="outline"
+            variant="secondary"
             phx-click="close_modals"
             phx-target={@myself}
           >
@@ -131,7 +131,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
 
           <.button
             class="w-fit self-end"
-            variant="destructive"
+            variant="danger"
             phx-click="leave_club"
             phx-value-membership_id={@membership.id}
             phx-target={@myself}

@@ -7,4 +7,5 @@ defmodule Shadcn.Storybook.DesignSystem do
   def folder_index, do: 0
 
   def entry("design_tokens"), do: [name: "Foundation", icon: {:fa, "palette"}, index: 0]
+  def entry("button"), do: [name: "Button", icon: {:fa, "square"}, index: 1]
 end

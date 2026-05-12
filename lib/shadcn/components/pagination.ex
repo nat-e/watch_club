@@ -21,7 +21,7 @@ defmodule Shadcn.Components.Pagination do
   """
   use Phoenix.Component
 
-  import Shadcn.Components.Button
+  import WatchClubWeb.UI.Button
 
   attr :class, :any, default: nil
   attr :rest, :global
@@ -39,7 +39,7 @@ defmodule Shadcn.Components.Pagination do
 
   attr :class, :any, default: nil
   attr :active, :boolean, default: false
-  attr :size, :string, values: ~w(default sm icon), default: "icon"
+  attr :size, :string, values: ~w(sm md icon), default: "icon"
   attr :rest, :global, include: ~w(href navigate patch method download replace target)
   slot :inner_block, required: true
 
@@ -47,7 +47,7 @@ defmodule Shadcn.Components.Pagination do
     ~H"""
     <li data-slot="pagination-item">
       <.button
-        variant={if @active, do: "outline", else: "ghost"}
+        variant={if @active, do: "secondary", else: "ghost"}
         size={@size}
         aria-current={if @active, do: "page"}
         data-slot="pagination-link"
@@ -70,7 +70,7 @@ defmodule Shadcn.Components.Pagination do
     <li data-slot="pagination-item">
       <.button
         variant="ghost"
-        size="default"
+        size="md"
         aria-label="Go to previous page"
         data-slot="pagination-link"
         class={["pl-2!", @class]}
@@ -92,7 +92,7 @@ defmodule Shadcn.Components.Pagination do
     <li data-slot="pagination-item">
       <.button
         variant="ghost"
-        size="default"
+        size="md"
         aria-label="Go to next page"
         data-slot="pagination-link"
         class={["pr-2!", @class]}

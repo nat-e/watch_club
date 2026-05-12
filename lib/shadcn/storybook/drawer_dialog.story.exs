@@ -8,7 +8,7 @@ defmodule Shadcn.Storybook.DrawerDialog do
   use PhoenixStorybook.Story, :component
   use Phoenix.Component
 
-  import Shadcn.Components.Button
+  import WatchClubWeb.UI.Button
   import Shadcn.Components.Dialog
   import Shadcn.Components.Drawer
   import Shadcn.Components.Input

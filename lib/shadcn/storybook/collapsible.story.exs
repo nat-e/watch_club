@@ -7,7 +7,7 @@ defmodule Storybook.UI.Collapsible do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Card, [card: 1]},
       {Lucideicons, [chevron_down: 1, chevron_right: 1, file: 1, folder: 1]}
     ]

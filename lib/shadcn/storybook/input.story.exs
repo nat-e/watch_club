@@ -6,7 +6,7 @@ defmodule Shadcn.Storybook.Input do
   def imports,
     do: [
       {Shadcn.Components.Badge, [badge: 1]},
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.ButtonGroup, [button_group: 1]},
       {Shadcn.Components.Field,
        [

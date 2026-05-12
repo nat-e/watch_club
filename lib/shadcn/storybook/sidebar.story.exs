@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.Sidebar do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Sidebar,
        [
          sidebar: 1,

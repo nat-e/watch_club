@@ -4,7 +4,7 @@ defmodule Shadcn.Storybook.HoverCard do
   alias Shadcn.Components.HoverCard
 
   def function, do: &HoverCard.hover_card/1
-  def imports, do: [{Shadcn.Components.Button, [button: 1]}]
+  def imports, do: [{WatchClubWeb.UI.Button, [button: 1]}]
 
   defp container_template(content) do
     """

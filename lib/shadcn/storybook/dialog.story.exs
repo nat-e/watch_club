@@ -23,7 +23,7 @@ defmodule Shadcn.Storybook.Dialog do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Input, [input: 1]},
       {Shadcn.Components.Label, [label: 1]}
     ]

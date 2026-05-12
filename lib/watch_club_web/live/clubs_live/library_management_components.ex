@@ -80,7 +80,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       <.button
         variant="ghost"
         size="icon-sm"
-        class="text-destructive hover:text-destructive"
+        class="text-danger hover:text-danger"
         phx-click="open_delete_library_modal"
         phx-target={@target}
         phx-value-library_id={@library.id}
@@ -137,7 +137,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
           </div>
 
           <div class="flex justify-end gap-2">
-            <.button type="button" variant="outline" phx-click="close_modals" phx-target={@target}>
+            <.button type="button" variant="secondary" phx-click="close_modals" phx-target={@target}>
               {dgettext("default", "Cancel")}
             </.button>
             <.button type="submit">
@@ -169,11 +169,11 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
             )}
           </p>
           <div class="flex justify-end gap-2">
-            <.button type="button" variant="outline" phx-click="close_modals" phx-target={@target}>
+            <.button type="button" variant="secondary" phx-click="close_modals" phx-target={@target}>
               {dgettext("default", "Cancel")}
             </.button>
             <.button
-              variant="destructive"
+              variant="danger"
               phx-click="confirm_delete_library"
               phx-target={@target}
             >

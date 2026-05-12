@@ -144,10 +144,7 @@ defmodule Shadcn.Storybook.DesignSystem.DesignTokens do
 
   defp page_shell(assigns) do
     ~H"""
-    <div
-      class="-m-8 min-h-screen rounded-lg bg-[#0f0d19] p-8 text-slate-100"
-      style={token_story_style()}
-    >
+    <div class="theme-wc dark -m-8 min-h-screen rounded-lg bg-canvas p-8 text-text">
       <div class="mx-auto flex max-w-7xl flex-col gap-8">
         {render_slot(@inner_block)}
       </div>
@@ -1150,62 +1147,6 @@ defmodule Shadcn.Storybook.DesignSystem.DesignTokens do
 
   defp shadow_token(name, meaning, use_cases) do
     %{name: name, kind: :shadow, meaning: meaning, use_cases: use_cases}
-  end
-
-  defp token_values do
-    %{
-      "color.canvas" => "#11101a",
-      "color.surface" => "#1b1728",
-      "color.surface-raised" => "#27213a",
-      "color.surface-inset" => "#15121f",
-      "color.surface-overlay" => "#302747",
-      "color.surface-hover" => "#31294a",
-      "color.surface-active" => "#3a3157",
-      "color.surface-selected" => "#403064",
-      "color.text" => "#f6f0ff",
-      "color.text-muted" => "#c9bedc",
-      "color.text-subtle" => "#a99bbb",
-      "color.text-disabled" => "#786d89",
-      "color.border" => "#463a61",
-      "color.border-subtle" => "#342b49",
-      "color.border-strong" => "#6f5a92",
-      "color.border-focus" => "#a78bfa",
-      "color.primary" => "#a78bfa",
-      "color.primary-hover" => "#bda8ff",
-      "color.primary-active" => "#9271e8",
-      "color.on-primary" => "#130d22",
-      "color.accent" => "#ff79c6",
-      "color.on-accent" => "#1f0d1a",
-      "color.danger" => "#ff5555",
-      "color.on-danger" => "#2b0505",
-      "color.success" => "#6ee7a7",
-      "color.success-bg" => "#102d1e",
-      "color.success-border" => "#2d8a57",
-      "color.warning" => "#f5d06f",
-      "color.warning-bg" => "#33260b",
-      "color.warning-border" => "#a47722",
-      "color.info" => "#8be9fd",
-      "color.info-bg" => "#102b3a",
-      "color.info-border" => "#23708a",
-      "color.danger-bg" => "#3a0d12",
-      "color.danger-border" => "#d84a55",
-      "radius.control" => "0.875rem",
-      "radius.card" => "1.5rem",
-      "radius.full" => "9999px",
-      "size.control-sm" => "2rem",
-      "size.control-md" => "2.5rem",
-      "size.control-lg" => "3rem",
-      "size.icon" => "1.25rem",
-      "shadow.card" => "0 14px 40px rgb(0 0 0 / 28%)",
-      "shadow.overlay" => "0 28px 80px rgb(0 0 0 / 58%)",
-      "shadow.glow" => "0 16px 44px rgb(167 139 250 / 26%)"
-    }
-  end
-
-  defp token_story_style do
-    token_values()
-    |> Enum.map(fn {name, value} -> "#{token_var(name)}: #{value}" end)
-    |> Enum.join("; ")
   end
 
   defp token_var(%{name: name}), do: token_var(name)

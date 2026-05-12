@@ -173,7 +173,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
             <.button
               type="button"
               class="w-fit self-end"
-              variant="outline"
+              variant="secondary"
               phx-click="close_modals"
             >
               {dgettext("default", "Cancel")}
@@ -181,7 +181,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
             <.button
               class="w-fit self-end"
-              variant="destructive"
+              variant="danger"
               phx-click="confirm_remove_member"
             >
               {dgettext("clubs", "Remove")}
@@ -209,7 +209,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
             <.button
               type="button"
               class="w-fit self-end"
-              variant="outline"
+              variant="secondary"
               phx-click="close_modals"
             >
               {dgettext("default", "Cancel")}
@@ -217,7 +217,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
             <.button
               class="w-fit self-end"
-              variant="destructive"
+              variant="danger"
               phx-click="confirm_destroy_invitation"
             >
               {dgettext("default", "Delete")}

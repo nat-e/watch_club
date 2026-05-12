@@ -30,7 +30,7 @@ defmodule Shadcn.Components.InputGroup do
   """
   use Phoenix.Component
 
-  import Shadcn.Components.Button
+  import WatchClubWeb.UI.Button
   import Shadcn.Components.Input
   import Shadcn.Components.Textarea
 
@@ -105,7 +105,7 @@ defmodule Shadcn.Components.InputGroup do
 
   attr :class, :any, default: nil
   attr :variant, :string, default: "ghost"
-  attr :size, :string, values: ~w(xs sm icon-xs icon-sm), default: "xs"
+  attr :size, :string, values: ~w(sm icon-sm), default: "sm"
   attr :rest, :global, include: ~w(disabled type name value)
   slot :inner_block, required: true
 

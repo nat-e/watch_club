@@ -108,7 +108,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         />
         <.button
           type="submit"
-          variant="outline"
+          variant="secondary"
           class="bg-popover group-data-open/desktop-search:rounded-b-none"
         >
           <Lucideicons.search />
@@ -244,7 +244,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       <Lucideicons.triangle_alert size="8" />
       <p>{dgettext("search", "There was an error searching for your content")}</p>
       <.button
-        variant="outline"
+        variant="secondary"
         size="sm"
         phx-target={@myself}
         phx-click="search"
@@ -315,7 +315,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       <div class="gap-x-4 gap-y-2 flex flex-wrap">
         <.input id="mobile-search-input-location" field={@form[:location]} class="hidden" />
         <.button
-          variant="outline"
+          variant="secondary"
           class="flex-1 gap-2 min-w-38 items-center justify-between shrink"
           phx-click={
             JS.hide(to: "#mobile-overlay-search-content-type")
@@ -340,7 +340,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         </.button>
         <.input id="mobile-search-input-content-type" field={@form[:content_type]} class="hidden" />
         <.button
-          variant="outline"
+          variant="secondary"
           class="flex gap-2 w-46 items-center justify-between"
           phx-click={
             JS.hide(to: "#mobile-overlay-search-location")

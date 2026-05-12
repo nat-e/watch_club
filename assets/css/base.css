@@ -68,6 +68,53 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+
+	--color-canvas: var(--wc-color-canvas);
+	--color-surface: var(--wc-color-surface);
+	--color-surface-raised: var(--wc-color-surface-raised);
+	--color-surface-inset: var(--wc-color-surface-inset);
+	--color-surface-overlay: var(--wc-color-surface-overlay);
+	--color-surface-hover: var(--wc-color-surface-hover);
+	--color-surface-active: var(--wc-color-surface-active);
+	--color-surface-selected: var(--wc-color-surface-selected);
+	--color-text: var(--wc-color-text);
+	--color-text-muted: var(--wc-color-text-muted);
+	--color-text-subtle: var(--wc-color-text-subtle);
+	--color-text-disabled: var(--wc-color-text-disabled);
+	--color-border-subtle: var(--wc-color-border-subtle);
+	--color-border-strong: var(--wc-color-border-strong);
+	--color-border-focus: var(--wc-color-border-focus);
+	--color-primary-hover: var(--wc-color-primary-hover);
+	--color-primary-active: var(--wc-color-primary-active);
+	--color-on-primary: var(--wc-color-on-primary);
+	--color-on-accent: var(--wc-color-on-accent);
+	--color-danger: var(--wc-color-danger);
+	--color-danger-bg: var(--wc-color-danger-bg);
+	--color-danger-border: var(--wc-color-danger-border);
+	--color-on-danger: var(--wc-color-on-danger);
+	--color-success: var(--wc-color-success);
+	--color-success-bg: var(--wc-color-success-bg);
+	--color-success-border: var(--wc-color-success-border);
+	--color-warning: var(--wc-color-warning);
+	--color-warning-bg: var(--wc-color-warning-bg);
+	--color-warning-border: var(--wc-color-warning-border);
+	--color-info: var(--wc-color-info);
+	--color-info-bg: var(--wc-color-info-bg);
+	--color-info-border: var(--wc-color-info-border);
+
+	--radius-control: var(--wc-radius-control);
+	--radius-card: var(--wc-radius-card);
+	--radius-full: var(--wc-radius-full);
+
+	--spacing-control-sm: var(--wc-size-control-sm);
+	--spacing-control-md: var(--wc-size-control-md);
+	--spacing-control-lg: var(--wc-size-control-lg);
+	--spacing-icon: var(--wc-size-icon);
+
+	--shadow-card: var(--wc-shadow-card);
+	--shadow-overlay: var(--wc-shadow-overlay);
+	--shadow-glow: var(--wc-shadow-glow);
+
 	--radius-sm: var(--radius-sm);
 	--radius-md: var(--radius-md);
 	--radius-lg: var(--radius);

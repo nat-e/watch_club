@@ -51,7 +51,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </div>
       <div class="flex flex-row items-center justify-end">
-        <.button type="submit" variant="default" phx-click="accept_invitation">
+        <.button type="submit" phx-click="accept_invitation">
           {dgettext("invitations", "Accept Invitation")}
         </.button>
       </div>

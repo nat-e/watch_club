@@ -32,7 +32,6 @@ defmodule Shadcn.Storybook do
   def entry("avatar"), do: [icon: {:fa, "circle-dot"}]
   def entry("badge"), do: [icon: {:fa, "circle-half-stroke"}]
   def entry("breadcrumb"), do: [icon: {:fa, "angle-right"}]
-  def entry("button"), do: [icon: {:fa, "rectangle-ad"}]
   def entry("button_group"), do: [icon: {:fa, "icons"}]
   def entry("calendar"), do: [icon: {:fa, "table"}]
   def entry("card"), do: [icon: {:fa, "copy"}]

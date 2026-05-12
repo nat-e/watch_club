@@ -14,7 +14,6 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     ~H"""
     <div>
       <.button
-        variant="default"
         size="lg"
         class={@class}
         phx-target={@myself}

@@ -4,7 +4,7 @@ defmodule Shadcn.Storybook.Tooltip do
   alias Shadcn.Components.Tooltip
 
   def function, do: &Tooltip.tooltip/1
-  def imports, do: [{Shadcn.Components.Button, [button: 1]}, {Lucideicons, [info: 1]}]
+  def imports, do: [{WatchClubWeb.UI.Button, [button: 1]}, {Lucideicons, [info: 1]}]
 
   defp container_template(content) do
     """

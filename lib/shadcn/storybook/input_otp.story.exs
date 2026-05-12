@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.InputOtp do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Card, [card: 1]},
       {Shadcn.Components.Field, [field: 1, field_description: 1, field_label: 1]},
       {Lucideicons, [refresh_cw: 1]}

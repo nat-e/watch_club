@@ -112,6 +112,7 @@ defmodule WatchClubWeb do
       import Phoenix.HTML
       # Core UI components
       use Shadcn.Components
+      use WatchClubWeb.UI
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

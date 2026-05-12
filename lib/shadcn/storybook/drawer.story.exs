@@ -4,7 +4,7 @@ defmodule Shadcn.Storybook.Drawer do
   alias Shadcn.Components.Drawer
 
   def function, do: &Drawer.drawer/1
-  def imports, do: [{Shadcn.Components.Button, [button: 1]}]
+  def imports, do: [{WatchClubWeb.UI.Button, [button: 1]}]
 
   @lorem """
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod \

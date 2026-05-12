@@ -28,7 +28,7 @@ defmodule Shadcn.Components.AlertDialog do
   """
   use Phoenix.Component
 
-  import Shadcn.Components.Button
+  import WatchClubWeb.UI.Button
 
   attr :class, :any, default: nil
   attr :size, :string, values: ~w(default sm), default: "default"
@@ -97,7 +97,7 @@ defmodule Shadcn.Components.AlertDialog do
       <div data-slot="alert-dialog-footer">
         <.button
           :for={c <- @cancel}
-          variant={c[:variant] || "outline"}
+          variant={c[:variant] || "secondary"}
           data-alert-dialog-cancel
           class={c[:class]}
         >
@@ -105,7 +105,7 @@ defmodule Shadcn.Components.AlertDialog do
         </.button>
         <.button
           :for={a <- @action}
-          variant={a[:variant] || "default"}
+          variant={a[:variant] || "primary"}
           data-alert-dialog-action
           class={a[:class]}
         >

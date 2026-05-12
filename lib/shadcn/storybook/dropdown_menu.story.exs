@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.DropdownMenu do
 
   def imports,
     do: [
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.DropdownMenu,
        [
          dropdown_menu_checkbox_item: 1,

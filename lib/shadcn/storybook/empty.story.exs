@@ -8,7 +8,7 @@ defmodule Shadcn.Storybook.Empty do
   def imports,
     do: [
       {Shadcn.Components.Avatar, [avatar: 1]},
-      {Shadcn.Components.Button, [button: 1]},
+      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.InputGroup,
        [input_group: 1, input_group_addon: 1, input_group_input: 1]},
       {Shadcn.Components.Kbd, [kbd: 1]},
