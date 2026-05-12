@@ -22,7 +22,7 @@ Rules:
 - Start by interviewing the user to understand their needs and requirements
 - Focus on code architecture and design, not implementation details
 - When multiple viable approaches are available and there is no clear project guidelines to decide, ask the user
-- Use the `/plannotator` command to present the design to the user and iterate on feedback
+- Use the `/plannotator` extension to present the design to the user and iterate on feedback
 
 ## Coding style
 

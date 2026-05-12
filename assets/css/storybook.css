@@ -12,13 +12,10 @@
 @source "../css";
 @source "../js";
 @source "../../lib/watch_club_web";
+@source "../../lib/shadcn/storybook";
 @source "../../storybook";
 
 .psb-sandbox {
 	@apply bg-background text-foreground font-sans rounded-lg p-8!;
 }
 
-/* Avoid unstyled content flash */
-.psb-sandbox:not(.light):not(.dark) {
-	visibility: hidden;
-}
