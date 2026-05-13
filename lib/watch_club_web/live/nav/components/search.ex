@@ -63,25 +63,29 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       <div class="flex w-full items-stretch overflow-hidden rounded-control border border-border bg-surface-inset transition-colors group-data-open/desktop-search:rounded-b-none">
         <.select
           field={@form[:location]}
-          class="shrink-0"
-          button_class="h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+          class="w-48 shrink-0"
+          trigger_class={desktop_select_trigger_class()}
         >
           <.select_item value="">
-            <div class="flex gap-2 items-center">
-              <Lucideicons.globe class="size-5" />{dgettext("search", "Everywhere")}
+            <div class={desktop_select_option_class()}>
+              <Lucideicons.globe class="size-5 shrink-0" />
+              <span class={desktop_select_option_label_class()}>
+                {dgettext("search", "Everywhere")}
+              </span>
             </div>
           </.select_item>
           <.select_item
             :for={membership <- @current_user.memberships}
             value={membership.club.id}
           >
-            <div class="flex gap-2 items-center min-w-0 max-w-36">
+            <div class={desktop_select_option_class()}>
               <.avatar
                 id={membership.club.id}
                 name={membership.club.name}
-                class="size-5 shrink-0"
+                size="xs"
+                class="shrink-0"
               />
-              <span class="flex-1 truncate">
+              <span class={desktop_select_option_label_class()}>
                 {membership.club.name}
               </span>
             </div>
@@ -89,16 +93,18 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         </.select>
         <.select
           field={@form[:content_type]}
-          class="shrink-0"
-          button_class="h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+          class="w-44 shrink-0"
+          trigger_class={desktop_select_trigger_class()}
         >
           <.select_item
             :for={content_type <- SearchContentType.values()}
             value={content_type}
           >
-            <div class="flex gap-2 items-center">
-              <.content_type_icon type={content_type} />
-              {SearchContentType.translated_label(content_type)}
+            <div class={desktop_select_option_class()}>
+              <.content_type_icon type={content_type} class="size-5 shrink-0" />
+              <span class={desktop_select_option_label_class()}>
+                {SearchContentType.translated_label(content_type)}
+              </span>
             </div>
           </.select_item>
         </.select>
@@ -198,7 +204,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
                 :if={membership.club}
                 id={membership.club.id}
                 name={membership.club.name}
-                class="size-6"
+                size="sm"
               />
               <span class="truncate">{membership.club.name}</span>
             </button>
@@ -335,7 +341,8 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             <.avatar
               id={get_club(@current_user, @form[:location].value).id}
               name={get_club(@current_user, @form[:location].value).name}
-              class="size-5 shrink-0"
+              size="xs"
+              class="shrink-0"
             />
             <span class="flex-1 truncate">
               {get_club(@current_user, @form[:location].value).name}
@@ -417,6 +424,16 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         )
     end
   end
+
+  defp desktop_select_trigger_class do
+    [
+      "h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none",
+      "focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+    ]
+  end
+
+  defp desktop_select_option_class, do: "flex h-5 min-w-0 items-center gap-2"
+  defp desktop_select_option_label_class, do: "min-w-0 flex-1 truncate leading-none"
 
   defp hide_overlay_and_change_value(overlay_selector, field_selector, value) do
     JS.hide(to: overlay_selector)

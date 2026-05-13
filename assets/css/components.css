@@ -4,11 +4,7 @@ This contains all styles defined in our UI components
 */
 @layer components.base, components.variants;
 
-@import "../../lib/shadcn/components/flash.css";
-@import "../../lib/shadcn/components/kbd.css";
-@import "../../lib/shadcn/components/label.css";
 @import "../../lib/shadcn/components/radio_group.css";
-@import "../../lib/shadcn/components/select.css";
 @import "../../lib/shadcn/components/sidebar.css";
 @import "../../lib/shadcn/components/skeleton.css";
 @import "../../lib/shadcn/components/table.css";

@@ -7,6 +7,11 @@ defmodule WatchClubWeb.UI.Avatar do
 
   attr :id, :string, required: true
   attr :name, :string, required: true
+
+  attr :size, :string,
+    values: ~w(xs sm md lg),
+    default: "md"
+
   attr :class, :any, default: nil
   attr :rest, :global, include: ~w(title aria-label)
 
@@ -22,7 +27,8 @@ defmodule WatchClubWeb.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border font-bold text-white select-none",
+        "relative flex shrink-0 items-center justify-center rounded-full border border-border font-bold text-white select-none",
+        avatar_size_class(@size),
         @background_class,
         @class
       ]}
@@ -35,6 +41,11 @@ defmodule WatchClubWeb.UI.Avatar do
 
   attr :avatars, :list, required: true
   attr :class, :any, default: nil
+
+  attr :avatar_size, :string,
+    values: ~w(xs sm md lg),
+    default: "md"
+
   attr :avatar_class, :any, default: nil
   attr :rest, :global
 
@@ -53,13 +64,15 @@ defmodule WatchClubWeb.UI.Avatar do
         :for={avatar <- @visible_avatars}
         id={avatar.id}
         name={avatar.name}
+        size={@avatar_size}
         class={["ring-2 ring-background", @avatar_class]}
       />
       <span
         :if={@overflow_count > 0}
         aria-label={"#{@overflow_count} more"}
         class={[
-          "relative flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white ring-2 ring-background select-none",
+          "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white ring-2 ring-background select-none",
+          avatar_size_class(@avatar_size),
           @avatar_class
         ]}
       >
@@ -68,6 +81,11 @@ defmodule WatchClubWeb.UI.Avatar do
     </div>
     """
   end
+
+  defp avatar_size_class("xs"), do: "size-5 text-[0.625rem] leading-none"
+  defp avatar_size_class("sm"), do: "size-6 text-xs leading-none"
+  defp avatar_size_class("md"), do: "size-8 text-base"
+  defp avatar_size_class("lg"), do: "size-10 text-lg"
 
   defp initial(name) do
     name

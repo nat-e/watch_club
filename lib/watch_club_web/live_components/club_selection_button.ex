@@ -41,7 +41,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
   defp inner(assigns) do
     ~H"""
-    <.avatar_group avatars={@clubs} avatar_class="size-6 text-xs" />
+    <.avatar_group avatars={@clubs} avatar_size="sm" />
     <.count_label count={length(@clubs)} />
     """
   end

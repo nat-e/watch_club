@@ -10,11 +10,7 @@ defmodule Shadcn.Components do
 
   defmacro __using__(_opts) do
     quote do
-      import Shadcn.Components.Flash
-      import Shadcn.Components.Kbd
-      import Shadcn.Components.Label
       import Shadcn.Components.RadioGroup
-      import Shadcn.Components.Select
       import Shadcn.Components.Sidebar
       import Shadcn.Components.Skeleton
       import Shadcn.Components.Table

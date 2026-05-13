@@ -18,7 +18,7 @@ defmodule WatchClubWeb.AccountsLive.Settings do
           label={dgettext("settings", "Language")}
           class="w-full"
         >
-          <.select field={@user_settings_form[:locale]} button_class="w-full" class="w-full">
+          <.select field={@user_settings_form[:locale]} trigger_class="w-full" class="w-full">
             <.select_item
               :for={locale <- UserLocale.values()}
               value={locale}

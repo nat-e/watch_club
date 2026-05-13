@@ -15,8 +15,12 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Checkbox
       import WatchClubWeb.UI.DropdownMenu
       import WatchClubWeb.UI.Empty
+      import WatchClubWeb.UI.Flash
       import WatchClubWeb.UI.Input
+      import WatchClubWeb.UI.Kbd
+      import WatchClubWeb.UI.Label
       import WatchClubWeb.UI.Modal
+      import WatchClubWeb.UI.Select
     end
   end
 end
