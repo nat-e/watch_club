@@ -7,12 +7,12 @@ defmodule WatchClubWeb.Components.Images do
 
   def tmdb_poster(%{path: nil} = assigns) do
     ~H"""
-    <.aspect_ratio
-      ratio={2 / 3}
-      class={["flex items-center justify-center bg-input/30 border rounded-md", @class]}
-    >
+    <div class={[
+      "relative flex size-full aspect-[2/3] items-center justify-center rounded-md border-border-subtle bg-surface-inset",
+      @class
+    ]}>
       <Lucideicons.image />
-    </.aspect_ratio>
+    </div>
     """
   end
 

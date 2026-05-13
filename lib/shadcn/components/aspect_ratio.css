@@ -1,5 +1,0 @@
-@layer components.base {
-	[data-slot="aspect-ratio"] {
-		@apply relative size-full;
-	}
-}
