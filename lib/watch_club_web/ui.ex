@@ -9,6 +9,7 @@ defmodule WatchClubWeb.UI do
   defmacro __using__(_opts) do
     quote do
       import WatchClubWeb.UI.Alert
+      import WatchClubWeb.UI.Avatar
       import WatchClubWeb.UI.Button
     end
   end

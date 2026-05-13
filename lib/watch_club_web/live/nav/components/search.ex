@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Live.Nav.Components.Search do
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.{Avatars, Contents, Images}
+  import WatchClubWeb.Components.{Contents, Images}
 
   alias WatchClub.Contents.ContentView
 
@@ -75,7 +75,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             value={membership.club.id}
           >
             <div class="flex gap-2 items-center min-w-0 max-w-36">
-              <.generic_avatar
+              <.avatar
                 id={membership.club.id}
                 name={membership.club.name}
                 class="size-5 shrink-0"
@@ -192,7 +192,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               }
               phx-target={@myself}
             >
-              <.generic_avatar
+              <.avatar
                 :if={membership.club}
                 id={membership.club.id}
                 name={membership.club.name}
@@ -327,7 +327,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           </div>
 
           <div :if={@form[:location].value != nil} class="flex gap-2 min-w-0">
-            <.generic_avatar
+            <.avatar
               id={get_club(@current_user, @form[:location].value).id}
               name={get_club(@current_user, @form[:location].value).name}
               class="size-5 shrink-0"

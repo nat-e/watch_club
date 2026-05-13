@@ -39,32 +39,9 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     """
   end
 
-  # 1–3 clubs: render them all stacked
-  defp inner(%{clubs: clubs} = assigns) when length(clubs) <= 3 do
-    ~H"""
-    <div :for={{club, index} <- Enum.with_index(@clubs)} class={index > 0 && "ml-[-20px]"}>
-      <.generic_avatar id={club.id} name={club.name} size="sm" />
-    </div>
-    <.count_label count={length(@clubs)} />
-    """
-  end
-
-  # 4+ clubs: first 2 avatars + "+N" overflow chip
   defp inner(assigns) do
     ~H"""
-    <div
-      :for={{club, index} <- Enum.take(@clubs, 2) |> Enum.with_index()}
-      class={index > 0 && "ml-[-20px]"}
-    >
-      <.generic_avatar id={club.id} name={club.name} size="sm" />
-    </div>
-    <div class="ml-[-20px]">
-      <.avatar size="sm">
-        <:fallback class="bg-gray-500 text-sm font-bold text-white">
-          +{length(@clubs) - 2}
-        </:fallback>
-      </.avatar>
-    </div>
+    <.avatar_group avatars={@clubs} avatar_class="size-6 text-xs" />
     <.count_label count={length(@clubs)} />
     """
   end
@@ -130,7 +107,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
       @selected? && "bg-secondary text-secondary-foreground"
     ]}>
       <div class="flex gap-2 items-center font-bold">
-        <.generic_avatar id={@club.id} name={@club.name} />
+        <.avatar id={@club.id} name={@club.name} />
         {@club.name}
       </div>
       <.checkbox
@@ -161,7 +138,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
       @selected? && "bg-secondary text-secondary-foreground"
     ]}>
       <div class="flex gap-2 items-center font-bold">
-        <.generic_avatar id={@club.id} name={@club.name} />
+        <.avatar id={@club.id} name={@club.name} />
         {@club.name}
       </div>
       <.checkbox

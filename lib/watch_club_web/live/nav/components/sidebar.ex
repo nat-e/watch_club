@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Live.Nav.Components.Sidebar do
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Avatars
-
   attr :url, :string, required: true
   attr :current_url, Url, required: true
 
@@ -58,7 +56,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Sidebar do
         </.dropdown_menu>
       </:action>
       <:icon>
-        <.generic_avatar id={@membership.club.id} name={@membership.club.name} />
+        <.avatar id={@membership.club.id} name={@membership.club.name} />
       </:icon>
       {@membership.club.name}
     </.sidebar_menu_item>

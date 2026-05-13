@@ -7,7 +7,7 @@ defmodule Shadcn.Storybook.Empty do
 
   def imports,
     do: [
-      {Shadcn.Components.Avatar, [avatar: 1]},
+      {WatchClubWeb.UI.Avatar, [avatar: 1, avatar_group: 1]},
       {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Kbd, [kbd: 1]},
       {Lucideicons,
@@ -75,10 +75,7 @@ defmodule Shadcn.Storybook.Empty do
         slots: [
           """
           <:media variant="default">
-            <.avatar class="size-12">
-              <:image src="https://github.com/shadcn.png" alt="@shadcn" class="grayscale" />
-              <:fallback>LR</:fallback>
-            </.avatar>
+            <.avatar id="user-lr" name="Lena Rivers" class="size-12 text-base" />
           </:media>
           """,
           ~s|<:title>User Offline</:title>|,
@@ -92,20 +89,14 @@ defmodule Shadcn.Storybook.Empty do
         slots: [
           """
           <:media>
-            <div class="flex -space-x-2 *:data-[slot=avatar]:size-12 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background *:data-[slot=avatar]:grayscale">
-              <.avatar>
-                <:image src="https://github.com/shadcn.png" alt="@shadcn" />
-                <:fallback>CN</:fallback>
-              </.avatar>
-              <.avatar>
-                <:image src="https://github.com/maxleiter.png" alt="@maxleiter" />
-                <:fallback>LR</:fallback>
-              </.avatar>
-              <.avatar>
-                <:image src="https://github.com/evilrabbit.png" alt="@evilrabbit" />
-                <:fallback>ER</:fallback>
-              </.avatar>
-            </div>
+            <.avatar_group
+              avatars={[
+                %{id: "team-cn", name: "Casey Nguyen"},
+                %{id: "team-lr", name: "Lena Rivers"},
+                %{id: "team-er", name: "Eli Rowan"}
+              ]}
+              avatar_class="size-12 text-base"
+            />
           </:media>
           """,
           ~s|<:title>No Team Members</:title>|,

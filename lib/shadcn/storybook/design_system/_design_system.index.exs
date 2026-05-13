@@ -9,4 +9,5 @@ defmodule Shadcn.Storybook.DesignSystem do
   def entry("design_tokens"), do: [name: "Foundation", icon: {:fa, "palette"}, index: 0]
   def entry("button"), do: [name: "Button", icon: {:fa, "square"}, index: 1]
   def entry("alert"), do: [name: "Alert", icon: {:fa, "circle-exclamation"}, index: 2]
+  def entry("avatar"), do: [name: "Avatar", icon: {:fa, "circle-dot"}, index: 3]
 end

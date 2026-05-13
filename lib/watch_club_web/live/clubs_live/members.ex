@@ -69,7 +69,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
     <.table_row>
       <.table_cell>
         <div class="flex gap-2 items-center font-bold">
-          <.generic_avatar id={@membership.user.id} name={@membership.user.username} />
+          <.avatar id={@membership.user.id} name={@membership.user.username} />
           {@membership.user.username}
         </div>
       </.table_cell>
@@ -81,7 +81,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
       </.table_cell>
       <.table_cell>
         <div :if={@membership.invitation} class="flex gap-2 items-center font-bold">
-          <.generic_avatar
+          <.avatar
             id={@membership.invitation.inviter.id}
             name={@membership.invitation.inviter.username}
           />
@@ -123,7 +123,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
       <.table_cell></.table_cell>
       <.table_cell>
         <div class="flex gap-2 items-center font-bold">
-          <.generic_avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
+          <.avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
           {@invitation.inviter.username}
         </div>
       </.table_cell>

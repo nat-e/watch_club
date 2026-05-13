@@ -3,7 +3,6 @@ defmodule WatchClubWeb.Components do
     quote do
       import WatchClubWeb.Components.Accounts.RegistrationForm
       import WatchClubWeb.Components.Accounts.SignInForm
-      import WatchClubWeb.Components.Avatars
       import WatchClubWeb.Components.Badges
       import WatchClubWeb.Components.Contents
       import WatchClubWeb.Components.EditableLabel
