@@ -18,7 +18,7 @@ defmodule Shadcn.Storybook.Field do
          field_set: 1,
          field_title: 1
        ]},
-      {Shadcn.Components.Checkbox, [checkbox: 1]},
+      {WatchClubWeb.UI.Checkbox, [checkbox: 1]},
       {Shadcn.Components.RadioGroup, [radio_group: 1]},
       {Shadcn.Components.Select, [select: 1, select_item: 1]}
     ]

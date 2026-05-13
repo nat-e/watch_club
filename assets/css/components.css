@@ -4,7 +4,6 @@ This contains all styles defined in our UI components
 */
 @layer components.base, components.variants;
 
-@import "../../lib/shadcn/components/checkbox.css";
 @import "../../lib/shadcn/components/dropdown_menu.css";
 @import "../../lib/shadcn/components/empty.css";
 @import "../../lib/shadcn/components/field.css";
