@@ -15,7 +15,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
 
     ~H"""
     <Layouts.centered_card flash={@flash} title={@title}>
-      <div>
+      <.stack space="related">
         <p>
           {raw(
             dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
@@ -25,7 +25,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
           )}
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
-      </div>
+      </.stack>
       <.alert :if={@user_exists?} variant="info">
         <:icon><Lucideicons.info /></:icon>
         {dgettext("invitations", "Looks like you already have an account! Please login instead.")}
@@ -39,7 +39,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
   def render(%{invitation: %Invitation{}, current_user: %User{}} = assigns) do
     ~H"""
     <Layouts.centered_card flash={@flash} title={"Hello #{@current_user.username}"}>
-      <div>
+      <.stack space="related">
         <p>
           {raw(
             dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
@@ -49,12 +49,12 @@ defmodule WatchClubWeb.InvitationsLive.Show do
           )}
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
-      </div>
-      <div class="flex flex-row items-center justify-end">
+      </.stack>
+      <.inline class="justify-end">
         <.button type="submit" phx-click="accept_invitation">
           {dgettext("invitations", "Accept Invitation")}
         </.button>
-      </div>
+      </.inline>
     </Layouts.centered_card>
     """
   end

@@ -50,7 +50,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
   defp count_label(assigns) do
     ~H"""
-    <span class="mr-1">
+    <span class="mr-tight">
       {dngettext("contents", "In %{count} club", "In %{count} clubs", @count)}
     </span>
     """
@@ -60,7 +60,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     ~H"""
     <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
       <:title>{dgettext("contents", "Select clubs")}</:title>
-      <div class="relative w-full max-w-lg p-0">
+      <.stack space="group" class="relative w-full max-w-lg">
         <.alert variant="default">
           <:icon><Lucideicons.users class="size-8" /></:icon>
           <p class="text-white">
@@ -73,15 +73,14 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
             )}
           </p>
         </.alert>
-        <div class="mt-4 flex flex-col gap-4">
-          <div class="mr-6 flex flex-row items-center justify-around w-full">
+        <.stack space="group">
+          <.inline class="justify-around">
             <h2 class="text-lg font-bold">{dgettext("contents", "Select clubs")}</h2>
-          </div>
+          </.inline>
           <.form
             for={@form}
             phx-target={@myself}
             phx-submit="submit"
-            class="flex flex-col gap-6 items-end"
           >
             <.club_selection_checkbox
               :for={membership <- @current_user.memberships}
@@ -90,10 +89,12 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
               content={@content}
               selected?={in_club?(@content, membership.club.id)}
             />
-            <.button type="submit">{dgettext("default", "Save")}</.button>
+            <:action>
+              <.button type="submit">{dgettext("default", "Save")}</.button>
+            </:action>
           </.form>
-        </div>
-      </div>
+        </.stack>
+      </.stack>
     </.modal>
     """
   end
@@ -101,13 +102,13 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
   defp club_selection_checkbox(%{selected?: false} = assigns) do
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-surface-raised/50",
+      "flex h-16 w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
       @selected? && "bg-surface-selected text-text"
     ]}>
-      <div class="flex gap-2 items-center font-bold">
+      <.inline class="font-bold">
         <.avatar id={@club.id} name={@club.name} />
         {@club.name}
-      </div>
+      </.inline>
       <.checkbox
         name="form[club_ids][]"
         value={@club.id}
@@ -132,13 +133,13 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-surface-raised/50",
+      "flex h-16 w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
       @selected? && "bg-surface-selected text-text"
     ]}>
-      <div class="flex gap-2 items-center font-bold">
+      <.inline class="font-bold">
         <.avatar id={@club.id} name={@club.name} />
         {@club.name}
-      </div>
+      </.inline>
       <.checkbox
         name="form[club_ids][]"
         value={@club.id}

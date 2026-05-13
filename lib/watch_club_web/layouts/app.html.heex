@@ -20,9 +20,9 @@
       current_url={@current_url}
       current_user={@current_user}
     />
-    <div class={["flex flex-col p-4 gap-6 z-1", @class]}>
+    <.page width="full" space={@space} class={["relative z-1", @class]}>
       {render_slot(@inner_block)}
-    </div>
+    </.page>
   </main>
 </div>
 

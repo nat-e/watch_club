@@ -54,6 +54,18 @@
 	--wc-size-control-lg: 3rem;
 	--wc-size-icon: 1.25rem;
 
+	--wc-space-tight: 0.25rem;
+	--wc-space-related: 0.5rem;
+	--wc-space-group: 1rem;
+	--wc-space-cluster: 1.5rem;
+	--wc-space-section: 3rem;
+	--wc-space-page: clamp(1rem, 3vw, 2rem);
+	--wc-space-page-y: clamp(1.5rem, 4vw, 3rem);
+
+	--wc-layout-readable: 42rem;
+	--wc-layout-panel: 56rem;
+	--wc-layout-page: 72rem;
+
 	--wc-shadow-card: 0 14px 40px rgb(0 0 0 / 28%);
 	--wc-shadow-overlay: 0 28px 80px rgb(0 0 0 / 58%);
 	--wc-shadow-glow: 0 16px 44px rgb(167 139 250 / 26%);

@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Live.Nav.Components.Modals do
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Forms
-
   attr :form, Phoenix.HTML.Form, required: true
   attr :myself, :any, required: true
 
@@ -23,20 +21,13 @@ defmodule WatchClubWeb.Live.Nav.Components.Modals do
         phx-change="validate_create_club"
         phx-submit="create_club"
         phx-target={@myself}
-        class="flex flex-col gap-6"
       >
-        <div class="flex flex-col gap-2">
-          <.label field={@form[:name]}>{dgettext("clubs", "Club name")}</.label>
-          <.input
-            field={@form[:name]}
-            type="text"
-            phx-debounce="blur"
-          />
-          <.field_errors field={@form[:name]} />
-        </div>
-        <.button type="submit" class="w-full">
-          {dgettext("default", "Create")}
-        </.button>
+        <.field field={@form[:name]} label={dgettext("clubs", "Club name")} type="text" />
+        <:action>
+          <.button type="submit" class="w-full">
+            {dgettext("default", "Create")}
+          </.button>
+        </:action>
       </.form>
     </.modal>
     """

@@ -80,7 +80,7 @@ defmodule WatchClubWeb.UI.Flash do
       data-duration={@duration}
       role={if @kind == :error, do: "alert", else: "status"}
       class={[
-        "pointer-events-auto relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-3 rounded-control border px-4 py-3 text-sm shadow-overlay transition-opacity duration-200",
+        "pointer-events-auto relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-related rounded-control border px-group py-related text-sm shadow-overlay transition-opacity duration-200",
         @kind == :success && "border-success-border bg-success-bg text-success",
         @kind == :info && "border-info-border bg-info-bg text-info",
         @kind == :warning && "border-warning-border bg-warning-bg text-warning",
@@ -92,7 +92,7 @@ defmodule WatchClubWeb.UI.Flash do
     >
       <.toast_icon kind={@kind} />
 
-      <div data-slot="flash-toast-content" class="flex min-w-0 flex-col gap-0.5">
+      <div data-slot="flash-toast-content" class="flex min-w-0 flex-col gap-tight">
         <div data-slot="flash-toast-title" class="font-medium break-words">{@message}</div>
       </div>
 

@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Components.Accounts.SignInForm do
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Forms
-
   attr :form, Phoenix.HTML.Form, required: true
 
   def sign_in_form(assigns) do
@@ -12,25 +10,26 @@ defmodule WatchClubWeb.Components.Accounts.SignInForm do
       id="signin-form"
       phx-change="validate_sign_in"
       phx-submit="submit_sign_in"
-      class="flex flex-col gap-6"
       phx-mounted={JS.focus_first()}
     >
-      <.input_with_label
+      <.field
         field={@form[:username]}
         label={dgettext("auth", "Username")}
         autocomplete="username"
         type="text"
       />
-      <.input_with_label
+      <.field
         field={@form[:password]}
         label={dgettext("auth", "Password")}
         autocomplete="password"
         type="password"
       />
       <.field_errors field={@form[:invitation_id]} show_untouched={true} />
-      <.button type="submit" class="w-full">
-        {dgettext("auth", "Sign in")}
-      </.button>
+      <:action>
+        <.button type="submit" class="w-full">
+          {dgettext("auth", "Sign in")}
+        </.button>
+      </:action>
     </.form>
     """
   end

@@ -10,7 +10,7 @@ defmodule WatchClubWeb.ClubsLive.Settings do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
-      class="p-4 flex flex-col gap-12"
+      space="section"
     >
       <h1 class="text-2xl font-bold">{dgettext("clubs", "Club Settings")}</h1>
 
@@ -18,25 +18,25 @@ defmodule WatchClubWeb.ClubsLive.Settings do
         title={dgettext("clubs", "General")}
         description={dgettext("clubs", "Update the basic club information.")}
       >
-        <form
+        <.form
+          for={@form}
           id="update_club_form"
           phx-change="validate_update_club"
           phx-submit="submit_update_club"
-          class="flex flex-col gap-6"
           phx-mounted={JS.focus_first()}
         >
-          <.input_with_label field={@form[:name]} label={dgettext("clubs", "Club Name")}>
-            <.input
-              field={@form[:name]}
-              type="text"
-              phx-debounce="blur"
-              class="w-full sm:w-80"
-            />
-          </.input_with_label>
-          <.button type="submit" class="w-fit">
-            {dgettext("clubs", "Edit Club")}
-          </.button>
-        </form>
+          <.field
+            field={@form[:name]}
+            label={dgettext("clubs", "Club Name")}
+            type="text"
+            input_class="w-full sm:w-80"
+          />
+          <:action class="sm:justify-start">
+            <.button type="submit" class="w-fit">
+              {dgettext("clubs", "Edit Club")}
+            </.button>
+          </:action>
+        </.form>
       </.settings_section>
 
       <.live_component

@@ -17,6 +17,7 @@ defmodule WatchClubWeb.Layouts do
   attr :flash, :map, required: true, doc: "the map of flash messages"
   attr :current_url, CurrentUrl, required: true, doc: "the url of the current page"
   attr :class, :any, default: nil
+  attr :space, :string, values: ~w(none tight related group cluster section), default: "cluster"
 
   attr :current_user, User,
     required: true,

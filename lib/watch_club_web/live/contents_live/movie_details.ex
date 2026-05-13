@@ -18,31 +18,33 @@ defmodule WatchClubWeb.ContentsLive.MovieDetails do
           path={@movie.details.backdrop_path}
         />
       </:backdrop>
-      <div class="flex flex-col items-center gap-2">
+      <.stack space="related" class="items-center">
         <.tmdb_poster
           size="w500"
           path={@movie.details.poster_path}
-          class="mb-4 w-46 rounded-md shadow-lg"
+          class="mb-group w-46 rounded-control shadow-lg"
         />
         <h1 class="text-xl font-semibold xl:text-3xl">
           {@movie.title}
           <span :if={@movie.details.release_date.year}>({@movie.details.release_date.year})</span>
         </h1>
 
-        <div class="flex flex-row items-center justify-center text-sm text-gray-400 divide-x">
-          <span :if={@movie.details.runtime} class="px-2">{@movie.details.runtime} minutes</span>
-          <span :for={genre <- @movie.details.genres} class="px-2">{genre.name}</span>
-        </div>
+        <.inline space="none" class="justify-center divide-x text-sm text-text-muted">
+          <span :if={@movie.details.runtime} class="px-related">
+            {@movie.details.runtime} minutes
+          </span>
+          <span :for={genre <- @movie.details.genres} class="px-related">{genre.name}</span>
+        </.inline>
 
-        <div class="relative mt-4 flex shrink-0 flex-wrap items-center justify-center gap-2 xl:mt-0 xl:flex-nowrap">
+        <.cluster class="relative mt-group shrink-0 justify-center xl:mt-0 xl:flex-nowrap">
           <.live_component
             id="club_selection_button"
             module={ClubSelectionButton}
             content={@movie}
             current_user={@current_user}
           />
-        </div>
-      </div>
+        </.cluster>
+      </.stack>
     </Layouts.app>
     """
   end

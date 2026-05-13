@@ -8,7 +8,7 @@ defmodule WatchClubWeb.AccountsLive.Setup do
   def render(assigns) do
     ~H"""
     <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome to watch.club!")}>
-      <div class="flex flex-col text-text-muted gap-2">
+      <.stack space="related" class="text-text-muted">
         <p>
           {dgettext(
             "auth",
@@ -21,7 +21,7 @@ defmodule WatchClubWeb.AccountsLive.Setup do
             "Do not share the credentials of this account, you will be able to invite other users later."
           )}
         </p>
-      </div>
+      </.stack>
       <.registration_form form={@form} />
     </Layouts.centered_card>
     """

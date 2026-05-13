@@ -1,13 +1,21 @@
-<div class="relative grid min-h-svh place-items-center bg-canvas px-4 py-14">
+<div class="relative grid min-h-svh place-items-center bg-canvas px-page py-page-y">
   <div class="relative z-10 w-full max-w-sm sm:max-w-md">
-    <section class="flex w-full flex-col gap-6 rounded-xl bg-surface/50 p-6 text-text shadow-xs ring-1 ring-border-subtle backdrop-blur-sm">
-      <h1 :if={@title} class="flex flex-row items-center gap-2 font-heading text-xl font-medium">
+    <.card
+      surface="transparent"
+      padding="cluster"
+      shadow={false}
+      class="grid gap-cluster bg-surface/50 shadow-xs ring-1 ring-border-subtle backdrop-blur-sm"
+    >
+      <h1
+        :if={@title}
+        class="inline-flex items-center gap-related font-heading text-xl font-medium"
+      >
         {@title}
       </h1>
-      <div class={["flex flex-col gap-6", @class]}>
+      <.stack space="cluster" class={@class}>
         {render_slot(@inner_block)}
-      </div>
-    </section>
+      </.stack>
+    </.card>
   </div>
 </div>
 

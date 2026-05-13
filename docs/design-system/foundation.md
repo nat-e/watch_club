@@ -118,6 +118,61 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | `size.control-lg` | Large/auth/mobile controls |
 | `size.icon` | Default icon size |
 
+### Spacing
+
+Spacing tokens name the relationship created by empty space. Prefer these tokens over raw Tailwind values in product screens.
+
+| Token | CSS variable | Tailwind utility examples | Meaning |
+| --- | --- | --- | --- |
+| `space.tight` | `--wc-space-tight` | `gap-tight`, `p-tight` | Dense spacing inside small component parts, such as icon/text pairs |
+| `space.related` | `--wc-space-related` | `gap-related`, `p-related` | Closely related elements, such as label/helper text or repeated controls |
+| `space.group` | `--wc-space-group` | `gap-group`, `p-group` | Default card/form grouping and medium component padding |
+| `space.cluster` | `--wc-space-cluster` | `gap-cluster`, `p-cluster` | Subsections inside a surface or modal |
+| `space.section` | `--wc-space-section` | `gap-section`, `py-section` | Major page sections |
+| `space.page` | `--wc-space-page` | `px-page` | Responsive horizontal page gutter |
+| `space.page-y` | `--wc-space-page-y` | `py-page-y` | Responsive vertical page gutter |
+
+### Layout
+
+| Token | CSS variable | Tailwind utility examples | Meaning |
+| --- | --- | --- | --- |
+| `layout.readable` | `--wc-layout-readable` | `max-w-readable` | Long-form readable content width |
+| `layout.panel` | `--wc-layout-panel` | `max-w-panel` | Forms, settings panels, and focused workflows |
+| `layout.page` | `--wc-layout-page` | `max-w-layout-page` | Standard page content width |
+
+Validated layout primitives:
+
+| Primitive | Meaning |
+| --- | --- |
+| `<.page>` | Responsive page gutters, page max-width, and default page rhythm |
+| `<.section>` | Major content section with semantic vertical rhythm |
+| `<.stack>` | Vertical rhythm between related children |
+| `<.inline>` | Single-line horizontal rhythm |
+| `<.cluster>` | Wrapping horizontal rhythm, such as badges and action groups |
+| `<.card>` | Standard surface, radius, border, padding, and elevation |
+
+### Forms
+
+Forms use two validated primitives before adding larger layout components:
+
+| Primitive | Meaning |
+| --- | --- |
+| `<.form>` | Watch Club wrapper around `Phoenix.Component.form/1`; default field rhythm is `gap-cluster` and actions render through `<:action>` |
+| `<.field>` | Replaces `<.input_with_label>`; owns label, control, hint, and error rhythm |
+
+Form spacing rules:
+
+| Relationship | Token |
+| --- | --- |
+| Label to control | `space.related` |
+| Control to hint or error | `space.tight` or `space.related` |
+| Field to field | `space.cluster` via the form wrapper |
+| Action to action | `space.related` |
+
+Use `layout="none"` for forms that are already custom layouts, such as search bars and full-screen overlays.
+
+Defer `<.form_group>`, `<.form_section>`, and `<.fieldset>` until repeated screens prove those meanings.
+
 ### Shadow
 
 | Token | Meaning |
@@ -136,8 +191,8 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 Initial UI primitive order:
 
 1. Button
-2. Card
-3. Field/Input
+2. Form/Field/Input
+3. Card
 4. Badge
 5. Alert
 6. Dialog/Modal

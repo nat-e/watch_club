@@ -24,7 +24,7 @@ defmodule WatchClubWeb.UI.Label do
       data-slot="label"
       for={@for}
       class={[
-        "flex w-fit items-center gap-2 text-sm font-medium leading-none text-text select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:text-text-disabled peer-disabled:cursor-not-allowed peer-disabled:text-text-disabled",
+        "flex w-fit items-center gap-related text-sm font-medium leading-none text-text select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:text-text-disabled peer-disabled:cursor-not-allowed peer-disabled:text-text-disabled",
         @class
       ]}
       {@rest}

@@ -9,7 +9,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def libraries_empty_state(assigns) do
     ~H"""
-    <.empty class="py-10">
+    <.empty class="py-section">
       <:icon>
         <Lucideicons.library />
       </:icon>
@@ -39,8 +39,8 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       item_id={:id}
       event="reorder_libraries"
       target={@target}
-      class="flex flex-col gap-2"
-      item_class="border-border bg-surface group flex flex-col gap-3 rounded-lg border p-3 shadow-xs transition-colors hover:bg-surface-hover sm:flex-row sm:items-start"
+      class="grid gap-related"
+      item_class="group flex flex-col gap-related rounded-control border border-border bg-surface p-group shadow-xs transition-colors hover:bg-surface-hover sm:flex-row sm:items-start"
     >
       <:item :let={{library, _index}}>
         <.library_list_item library={library} target={@target} />
@@ -57,7 +57,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
     <button
       type="button"
       data-sortable-handle
-      class="text-text-muted hover:text-text mt-1 inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-md active:cursor-grabbing"
+      class="mt-tight inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:text-text active:cursor-grabbing"
       aria-label={dgettext("clubs", "Drag to reorder")}
     >
       <Lucideicons.grip_vertical class="size-5" />
@@ -70,11 +70,11 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       payload={%{library_id: @library.id}}
       target={@target}
       label={dgettext("clubs", "Rename library")}
-      class="min-w-0 flex-1 sm:pt-1"
+      class="min-w-0 flex-1 sm:pt-tight"
       text_class="truncate font-medium"
     />
 
-    <div class="flex shrink-0 items-center gap-2 sm:pt-1">
+    <.inline class="shrink-0 sm:pt-tight">
       <.content_type_badge type={@library.content_type} />
 
       <.button
@@ -88,7 +88,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       >
         <Lucideicons.trash_2 class="size-4" />
       </.button>
-    </div>
+    </.inline>
     """
   end
 
@@ -112,36 +112,36 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
         phx-change="validate_create_library"
         phx-submit="submit_create_library"
         phx-target={@target}
-        class="flex flex-col gap-6"
       >
-        <.input_with_label field={@form[:name]} label={dgettext("clubs", "Library name")}>
-          <.input field={@form[:name]} type="text" phx-debounce="blur" />
-        </.input_with_label>
+        <.field field={@form[:name]} label={dgettext("clubs", "Library name")} type="text" />
 
-        <div class="flex flex-col gap-2">
-          <.label field={@form[:content_type]}>{dgettext("clubs", "Content type")}</.label>
-          <.radio_group field={@form[:content_type]} class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <:item
-              :for={content_type <- @content_types}
-              value={to_string(content_type)}
-              class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
+        <.field field={@form[:content_type]} label={dgettext("clubs", "Content type")}>
+          <:control>
+            <.radio_group
+              field={@form[:content_type]}
+              class="grid grid-cols-1 gap-related sm:grid-cols-3"
             >
-              <.content_type_icon type={content_type} class="size-5 text-text-muted" />
-              <span class="font-medium">{ContentType.translated_label(content_type)}</span>
-              <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-            </:item>
-          </.radio_group>
-          <.field_errors field={@form[:content_type]} />
-        </div>
+              <:item
+                :for={content_type <- @content_types}
+                value={to_string(content_type)}
+                class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
+              >
+                <.content_type_icon type={content_type} class="size-5 text-text-muted" />
+                <span class="font-medium">{ContentType.translated_label(content_type)}</span>
+                <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
+              </:item>
+            </.radio_group>
+          </:control>
+        </.field>
 
-        <div class="flex justify-end gap-2">
+        <:action>
           <.button type="button" variant="secondary" data-modal-close>
             {dgettext("default", "Cancel")}
           </.button>
           <.button type="submit">
             {dgettext("clubs", "Create library")}
           </.button>
-        </div>
+        </:action>
       </.form>
     </.modal>
     """

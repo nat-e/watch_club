@@ -81,6 +81,17 @@
 	--spacing-control-md: var(--wc-size-control-md);
 	--spacing-control-lg: var(--wc-size-control-lg);
 	--spacing-icon: var(--wc-size-icon);
+	--spacing-tight: var(--wc-space-tight);
+	--spacing-related: var(--wc-space-related);
+	--spacing-group: var(--wc-space-group);
+	--spacing-cluster: var(--wc-space-cluster);
+	--spacing-section: var(--wc-space-section);
+	--spacing-page: var(--wc-space-page);
+	--spacing-page-y: var(--wc-space-page-y);
+
+	--container-readable: var(--wc-layout-readable);
+	--container-panel: var(--wc-layout-panel);
+	--container-layout-page: var(--wc-layout-page);
 
 	--shadow-card: var(--wc-shadow-card);
 	--shadow-overlay: var(--wc-shadow-overlay);

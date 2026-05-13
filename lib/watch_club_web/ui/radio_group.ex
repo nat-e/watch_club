@@ -46,7 +46,7 @@ defmodule WatchClubWeb.UI.RadioGroup do
       role="radiogroup"
       data-slot="radio-group"
       aria-invalid={@errors != [] && "true"}
-      class={["grid w-full gap-3", @class]}
+      class={["grid w-full gap-related", @class]}
       {@rest}
     >
       <label
@@ -56,7 +56,7 @@ defmodule WatchClubWeb.UI.RadioGroup do
           if item[:class] do
             "cursor-pointer rounded-control text-sm text-text transition-colors select-none"
           else
-            "inline-flex cursor-pointer items-center gap-2 rounded-control text-sm text-text transition-colors select-none"
+            "inline-flex cursor-pointer items-center gap-related rounded-control text-sm text-text transition-colors select-none"
           end,
           "has-[:disabled]:cursor-not-allowed has-[:disabled]:text-text-disabled has-[:disabled]:opacity-50",
           item[:class]

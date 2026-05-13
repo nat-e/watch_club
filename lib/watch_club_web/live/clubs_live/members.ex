@@ -8,18 +8,18 @@ defmodule WatchClubWeb.ClubsLive.Members do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
-      class="p-4 flex flex-col gap-12"
+      space="section"
     >
-      <div class="flex flex-col gap-2 w-max-200">
-        <div class="flex flex-row justify-between items-end">
-          <div>
+      <.stack space="related" class="max-w-layout-page">
+        <.inline space="group" class="items-end justify-between">
+          <.stack space="tight">
             <h1>{dgettext("clubs", "Members")}</h1>
             <p class="text-text-muted">{dgettext("clubs", "Manage and invite new members")}</p>
-          </div>
+          </.stack>
           <.button phx-click="open_create_invitation_modal">
             {dgettext("clubs", "Invite member")}
           </.button>
-        </div>
+        </.inline>
         <.table>
           <.table_header>
             <.table_row>
@@ -45,7 +45,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
             />
           </.table_body>
         </.table>
-      </div>
+      </.stack>
       <.remove_member_modal :if={@membership_to_remove} membership={@membership_to_remove} />
       <.create_invitation_modal :if={@create_invitation_form} form={@create_invitation_form} />
       <.view_invitation_modal
@@ -68,10 +68,10 @@ defmodule WatchClubWeb.ClubsLive.Members do
     ~H"""
     <.table_row>
       <.table_cell>
-        <div class="flex items-center justify-center gap-2 font-bold">
+        <.inline class="justify-center font-bold">
           <.avatar id={@membership.user.id} name={@membership.user.username} />
           {@membership.user.username}
-        </div>
+        </.inline>
       </.table_cell>
       <.table_cell>
         <.role_badge role={@membership.role} />
@@ -80,13 +80,13 @@ defmodule WatchClubWeb.ClubsLive.Members do
         {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
       </.table_cell>
       <.table_cell>
-        <div :if={@membership.invitation} class="flex items-center justify-center gap-2 font-bold">
+        <.inline :if={@membership.invitation} class="justify-center font-bold">
           <.avatar
             id={@membership.invitation.inviter.id}
             name={@membership.invitation.inviter.username}
           />
           {@membership.invitation.inviter.username}
-        </div>
+        </.inline>
       </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu :if={@membership.user_id != @current_user.id}>
@@ -113,19 +113,19 @@ defmodule WatchClubWeb.ClubsLive.Members do
     ~H"""
     <.table_row class="text-text-muted">
       <.table_cell>
-        <div class="flex items-center justify-center gap-2 font-bold italic">
+        <.inline class="justify-center font-bold italic">
           {@invitation.name}
-        </div>
+        </.inline>
       </.table_cell>
       <.table_cell>
         <.invitation_status_badge invitation={@invitation} />
       </.table_cell>
       <.table_cell></.table_cell>
       <.table_cell>
-        <div class="flex items-center justify-center gap-2 font-bold">
+        <.inline class="justify-center font-bold">
           <.avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
           {@invitation.inviter.username}
-        </div>
+        </.inline>
       </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu>
@@ -216,25 +216,21 @@ defmodule WatchClubWeb.ClubsLive.Members do
         id="create_invitation_form"
         phx-change="validate_create_invitation"
         phx-submit="submit_create_invitation"
-        class="flex flex-col gap-6"
       >
-        <.input_with_label field={@form[:name]} label="Name">
-          <.input
-            field={@form[:name]}
-            type="name"
-            autocomplete="name"
-            phx-debounce="blur"
-          />
-        </.input_with_label>
-        <.input_with_label field={@form[:role]} label="Club Role">
-          <.radio_group field={@form[:role]}>
-            <:item value="member">{dgettext("clubs", "Member")}</:item>
-            <:item value="admin">{dgettext("clubs", "Admin")}</:item>
-          </.radio_group>
-        </.input_with_label>
-        <.button type="submit" class="w-full" phx-submit="submit_create_invitation">
-          {dgettext("clubs", "Create invitation")}
-        </.button>
+        <.field field={@form[:name]} label="Name" type="name" autocomplete="name" />
+        <.field field={@form[:role]} label="Club Role">
+          <:control>
+            <.radio_group field={@form[:role]}>
+              <:item value="member">{dgettext("clubs", "Member")}</:item>
+              <:item value="admin">{dgettext("clubs", "Admin")}</:item>
+            </.radio_group>
+          </:control>
+        </.field>
+        <:action>
+          <.button type="submit" class="w-full">
+            {dgettext("clubs", "Create invitation")}
+          </.button>
+        </:action>
       </.form>
     </.modal>
     """
@@ -265,7 +261,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
           "Copy and share the invitation link below with anyone. It is only usable once."
         )}
       </:description>
-      <div class="flex flex-col gap-4 items-center">
+      <.stack space="group" class="items-center">
         <.alert class="items-center">
           <span id="invitation_link">{@invitation_link}</span>
           <:action>
@@ -280,7 +276,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
         <.button type="button" class="w-full" data-modal-close>
           {dgettext("default", "Close")}
         </.button>
-      </div>
+      </.stack>
     </.modal>
     """
   end

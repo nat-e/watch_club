@@ -36,27 +36,27 @@ defmodule WatchClubWeb.Components.EditableLabel do
       class={@class}
       {@rest}
     >
-      <div data-editable-label-display class="flex min-w-0 items-center gap-2">
+      <.inline data-editable-label-display class="min-w-0">
         <span data-editable-label-text class={@text_class}>{@value}</span>
         <button
           type="button"
           data-editable-label-edit
           class={[
-            "text-text-muted hover:text-text inline-flex size-8 shrink-0 items-center justify-center rounded-md",
+            "inline-flex size-8 shrink-0 items-center justify-center rounded-control text-text-muted hover:text-text",
             @button_class
           ]}
           aria-label={@input_label}
         >
           <Lucideicons.pencil class="size-4" />
         </button>
-      </div>
+      </.inline>
 
       <input
         data-editable-label-input
         type="text"
         value={@value}
         class={[
-          "h-9 w-full min-w-0 rounded-md border border-border bg-transparent px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "h-9 w-full min-w-0 rounded-control border border-border bg-transparent px-related py-tight text-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @input_class
         ]}
         aria-label={@input_label}

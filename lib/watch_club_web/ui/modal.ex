@@ -52,9 +52,9 @@ defmodule WatchClubWeb.UI.Modal do
     >
       <div
         data-slot="modal-content"
-        class="grid max-h-[calc(100dvh-2rem)] gap-6 overflow-y-auto p-6 text-sm text-text"
+        class="grid max-h-[calc(100dvh-2rem)] gap-cluster overflow-y-auto p-cluster text-sm text-text"
       >
-        <header data-slot="modal-header" class="grid gap-2 pr-10">
+        <header data-slot="modal-header" class="grid gap-related pr-10">
           <h2
             :for={title <- @title}
             id={"#{@id}-title"}
@@ -77,14 +77,14 @@ defmodule WatchClubWeb.UI.Modal do
           </p>
         </header>
 
-        <div data-slot="modal-body" class="grid gap-4 text-sm/relaxed text-text">
+        <div data-slot="modal-body" class="grid gap-group text-sm/relaxed text-text">
           {render_slot(@inner_block)}
         </div>
 
         <footer
           :for={footer <- @footer}
           data-slot="modal-footer"
-          class={["flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", footer[:class]]}
+          class={["flex flex-col-reverse gap-related sm:flex-row sm:justify-end", footer[:class]]}
         >
           {render_slot(footer)}
         </footer>
@@ -95,7 +95,7 @@ defmodule WatchClubWeb.UI.Modal do
         data-modal-close
         data-slot="modal-close"
         aria-label="Close"
-        class="absolute top-4 right-4 inline-flex size-8 items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 [&_svg]:size-4"
+        class="absolute top-group right-group inline-flex size-8 items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 [&_svg]:size-4"
       >
         <Lucideicons.x />
       </button>

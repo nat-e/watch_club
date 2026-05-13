@@ -13,25 +13,24 @@ defmodule WatchClubWeb.Components.Settings do
 
   def settings_section(assigns) do
     ~H"""
-    <section class={[
-      "flex w-full max-w-3xl flex-col gap-6 p-6",
-      @class
-    ]}>
-      <div class="flex flex-col gap-4 sm:flex-row items-end sm:justify-between">
-        <div class="flex flex-col gap-1">
-          <h2 class="text-lg font-semibold leading-none tracking-tight">{@title}</h2>
-          <p :if={@description} class="text-text-muted text-sm">
-            {@description}
-          </p>
-        </div>
-        <div :if={@action != []} class="shrink-0">
-          {render_slot(@action)}
-        </div>
-      </div>
-      <div class="flex flex-col gap-6">
-        {render_slot(@inner_block)}
-      </div>
-    </section>
+    <.card padding="cluster" class={["w-full max-w-panel", @class]}>
+      <.stack space="cluster">
+        <.inline space="group" class="flex-col items-end sm:flex-row sm:justify-between">
+          <.stack space="tight">
+            <h2 class="text-lg font-semibold leading-none tracking-tight">{@title}</h2>
+            <p :if={@description} class="text-sm text-text-muted">
+              {@description}
+            </p>
+          </.stack>
+          <div :if={@action != []} class="shrink-0">
+            {render_slot(@action)}
+          </div>
+        </.inline>
+        <.stack space="cluster">
+          {render_slot(@inner_block)}
+        </.stack>
+      </.stack>
+    </.card>
     """
   end
 end

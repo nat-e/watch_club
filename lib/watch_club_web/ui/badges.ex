@@ -27,9 +27,9 @@ defmodule WatchClubWeb.UI.Badges do
     ~H"""
     <span
       class={[
-        "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent font-medium whitespace-nowrap",
-        @size == "sm" && "h-5 px-2 py-0.5 text-xs",
-        @size == "md" && "h-6 px-2.5 py-1 text-sm",
+        "inline-flex w-fit shrink-0 items-center justify-center gap-tight overflow-hidden rounded-full border border-transparent font-medium whitespace-nowrap",
+        @size == "sm" && "h-5 px-related py-0.5 text-xs",
+        @size == "md" && "h-6 px-related py-tight text-sm",
         @variant == "default" && "bg-primary text-on-primary",
         @variant == "secondary" && "border-border bg-surface-raised text-text",
         @variant == "success" && "border-success-border bg-success-bg text-success",

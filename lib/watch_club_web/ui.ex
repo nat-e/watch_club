@@ -14,10 +14,14 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Checkbox
       import WatchClubWeb.UI.DropdownMenu
       import WatchClubWeb.UI.Empty
+      import Phoenix.Component, except: [form: 1]
+
       import WatchClubWeb.UI.Flash
+      import WatchClubWeb.UI.Form
       import WatchClubWeb.UI.Input
       import WatchClubWeb.UI.Kbd
       import WatchClubWeb.UI.Label
+      import WatchClubWeb.UI.Layout
       import WatchClubWeb.UI.Modal
       import WatchClubWeb.UI.RadioGroup
       import WatchClubWeb.UI.Select

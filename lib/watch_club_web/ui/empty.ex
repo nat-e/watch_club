@@ -27,7 +27,7 @@ defmodule WatchClubWeb.UI.Empty do
     <section
       data-slot="empty"
       class={[
-        "flex w-full min-w-0 flex-col items-center justify-center gap-4 rounded-card border border-dashed border-border-subtle bg-surface p-8 text-center text-balance",
+        "flex w-full min-w-0 flex-col items-center justify-center gap-group rounded-card border border-dashed border-border-subtle bg-surface p-cluster text-center text-balance",
         @class
       ]}
       {@rest}
@@ -43,7 +43,7 @@ defmodule WatchClubWeb.UI.Empty do
         {render_slot(icon)}
       </div>
 
-      <div data-slot="empty-header" class="grid max-w-sm gap-2">
+      <div data-slot="empty-header" class="grid max-w-sm gap-related">
         <h3
           :for={title <- @title}
           data-slot="empty-title"
@@ -67,7 +67,7 @@ defmodule WatchClubWeb.UI.Empty do
       <div
         :if={@inner_block != []}
         data-slot="empty-content"
-        class="flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm text-balance"
+        class="flex w-full max-w-sm min-w-0 flex-col items-center gap-group text-sm text-balance"
       >
         {render_slot(@inner_block)}
       </div>

@@ -107,7 +107,7 @@ defmodule WatchClubWeb.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-10 px-3 text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
+        "h-10 px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
         @class
       ]}
       {@rest}
@@ -125,7 +125,10 @@ defmodule WatchClubWeb.UI.Table do
     ~H"""
     <td
       data-slot="table-cell"
-      class={["p-3 text-center align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0", @class]}
+      class={[
+        "p-group text-center align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        @class
+      ]}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -139,7 +142,7 @@ defmodule WatchClubWeb.UI.Table do
 
   def table_caption(assigns) do
     ~H"""
-    <caption data-slot="table-caption" class={["mt-4 text-sm text-text-muted", @class]} {@rest}>
+    <caption data-slot="table-caption" class={["mt-group text-sm text-text-muted", @class]} {@rest}>
       {render_slot(@inner_block)}
     </caption>
     """

@@ -5,7 +5,6 @@ defmodule WatchClubWeb.Components do
       import WatchClubWeb.Components.Accounts.SignInForm
       import WatchClubWeb.Components.Contents
       import WatchClubWeb.Components.EditableLabel
-      import WatchClubWeb.Components.Forms
       import WatchClubWeb.Components.Images
       import WatchClubWeb.Components.ReorderableList
       import WatchClubWeb.Components.Settings

@@ -74,7 +74,7 @@ defmodule WatchClubWeb.UI.Select do
         aria-invalid={(@errors != [] && "true") || nil}
         disabled={@disabled}
         class={[
-          "flex w-full min-w-0 items-center justify-between gap-2 rounded-control border border-border bg-surface-inset px-3 text-left text-sm text-text shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
+          "flex w-full min-w-0 items-center justify-between gap-related rounded-control border border-border bg-surface-inset px-group text-left text-sm text-text shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
           "hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
           "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
@@ -105,7 +105,7 @@ defmodule WatchClubWeb.UI.Select do
         popover="manual"
         role="listbox"
         tabindex="-1"
-        class="fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-control border border-border bg-surface-overlay p-1 text-text shadow-overlay outline-none"
+        class="fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-control border border-border bg-surface-overlay p-tight text-text shadow-overlay outline-none"
       >
         <div data-slot="select-viewport" class="scroll-my-1">
           {render_slot(@inner_block)}
@@ -454,7 +454,7 @@ defmodule WatchClubWeb.UI.Select do
     ~H"""
     <div
       data-slot="select-label"
-      class={["px-2 py-1.5 text-xs font-semibold text-text-muted", @class]}
+      class={["px-related py-tight text-xs font-semibold text-text-muted", @class]}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -480,7 +480,7 @@ defmodule WatchClubWeb.UI.Select do
       aria-disabled={@disabled || nil}
       tabindex="-1"
       class={[
-        "group/select-item relative flex h-9 w-full cursor-default items-center gap-2 overflow-hidden rounded-control pr-8 pl-2.5 text-left text-sm outline-none transition-colors select-none",
+        "group/select-item relative flex h-9 w-full cursor-default items-center gap-related overflow-hidden rounded-control pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
         "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
         "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

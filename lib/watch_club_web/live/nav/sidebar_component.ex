@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
         id="sidebar-panel"
         class="fixed inset-y-0 left-0 z-50 flex w-[80vw] -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
       >
-        <header class="flex h-16 shrink-0 items-center justify-between border-b border-border-subtle px-5">
+        <header class="flex h-16 shrink-0 items-center justify-between px-cluster">
           <h2 class="font-heading text-xl font-semibold">watch.club</h2>
           <.button
             variant="ghost"
@@ -60,9 +60,9 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
 
         <nav
           aria-label={dgettext("nav", "Main navigation")}
-          class="flex flex-1 flex-col gap-4 overflow-y-auto p-3"
+          class="flex flex-1 flex-col gap-group overflow-y-auto p-group"
         >
-          <ul class="flex list-none flex-col gap-1 p-0">
+          <ul class="flex list-none flex-col gap-tight p-0">
             <li>
               <.sidebar_item href="/" active={active?(@current_path, "/")}>
                 <Lucideicons.home />
@@ -77,11 +77,11 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
             </li>
           </ul>
 
-          <h3 class="px-3 pt-2 text-xs font-semibold tracking-wide text-text-subtle uppercase">
+          <h3 class="px-group pt-related text-xs font-semibold tracking-wide text-text-subtle uppercase">
             {dgettext("nav", "Clubs")}
           </h3>
 
-          <ul class="flex list-none flex-col gap-1 p-0">
+          <ul class="flex list-none flex-col gap-tight p-0">
             <.club_nav_item
               :for={membership <- @current_user.memberships}
               membership={membership}
@@ -175,7 +175,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
         <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
       </.button>
 
-      <.dropdown_menu class="shrink-0 pr-1">
+      <.dropdown_menu class="shrink-0 pr-tight">
         <:trigger>
           <.button
             size="icon-sm"

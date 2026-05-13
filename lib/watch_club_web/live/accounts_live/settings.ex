@@ -10,24 +10,28 @@ defmodule WatchClubWeb.AccountsLive.Settings do
       <h1>{dgettext("settings", "Settings")}</h1>
       <.form
         for={@user_settings_form}
-        class="max-w-80 flex flex-col items-end gap-4"
+        class="max-w-80 items-end"
         phx-submit="submit_update_settings"
       >
-        <.input_with_label
+        <.field
           field={@user_settings_form[:locale]}
           label={dgettext("settings", "Language")}
           class="w-full"
         >
-          <.select field={@user_settings_form[:locale]} trigger_class="w-full" class="w-full">
-            <.select_item
-              :for={locale <- UserLocale.values()}
-              value={locale}
-            >
-              {UserLocale.translated_label(locale)}
-            </.select_item>
-          </.select>
-        </.input_with_label>
-        <.button type="submit">{dgettext("default", "Save")}</.button>
+          <:control>
+            <.select field={@user_settings_form[:locale]} trigger_class="w-full" class="w-full">
+              <.select_item
+                :for={locale <- UserLocale.values()}
+                value={locale}
+              >
+                {UserLocale.translated_label(locale)}
+              </.select_item>
+            </.select>
+          </:control>
+        </.field>
+        <:action>
+          <.button type="submit">{dgettext("default", "Save")}</.button>
+        </:action>
       </.form>
     </Layouts.app>
     """

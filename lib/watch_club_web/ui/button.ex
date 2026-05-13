@@ -49,9 +49,9 @@ defmodule WatchClubWeb.UI.Button do
           "bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
         @variant == "danger" &&
           "bg-danger text-on-danger hover:bg-danger/90 active:bg-danger/80 focus-visible:border-danger-border focus-visible:ring-danger/30",
-        @size == "sm" && "h-control-sm gap-1.5 px-3 text-xs",
-        @size == "md" && "h-control-md gap-2 px-4 text-sm",
-        @size == "lg" && "h-control-lg gap-2.5 px-5 text-base",
+        @size == "sm" && "h-control-sm gap-tight px-group text-xs",
+        @size == "md" && "h-control-md gap-related px-group text-sm",
+        @size == "lg" && "h-control-lg gap-related px-cluster text-base",
         @size == "icon" && "size-control-md p-0",
         @size == "icon-sm" && "size-control-sm p-0",
         @class
@@ -91,9 +91,9 @@ defmodule WatchClubWeb.UI.Button do
           "bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
         @variant == "danger" &&
           "bg-danger text-on-danger hover:bg-danger/90 active:bg-danger/80 focus-visible:border-danger-border focus-visible:ring-danger/30",
-        @size == "sm" && "h-control-sm gap-1.5 px-3 text-xs",
-        @size == "md" && "h-control-md gap-2 px-4 text-sm",
-        @size == "lg" && "h-control-lg gap-2.5 px-5 text-base",
+        @size == "sm" && "h-control-sm gap-tight px-group text-xs",
+        @size == "md" && "h-control-md gap-related px-group text-sm",
+        @size == "lg" && "h-control-lg gap-related px-cluster text-base",
         @size == "icon" && "size-control-md p-0",
         @size == "icon-sm" && "size-control-sm p-0",
         @class
