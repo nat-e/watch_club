@@ -14,7 +14,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
         <div class="flex flex-row justify-between items-end">
           <div>
             <h1>{dgettext("clubs", "Members")}</h1>
-            <p class="text-muted-foreground">{dgettext("clubs", "Manage and invite new members")}</p>
+            <p class="text-text-muted">{dgettext("clubs", "Manage and invite new members")}</p>
           </div>
           <.button phx-click="open_create_invitation_modal">
             {dgettext("clubs", "Invite member")}
@@ -68,7 +68,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
     ~H"""
     <.table_row>
       <.table_cell>
-        <div class="flex gap-2 items-center font-bold">
+        <div class="flex items-center justify-center gap-2 font-bold">
           <.avatar id={@membership.user.id} name={@membership.user.username} />
           {@membership.user.username}
         </div>
@@ -80,7 +80,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
         {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
       </.table_cell>
       <.table_cell>
-        <div :if={@membership.invitation} class="flex gap-2 items-center font-bold">
+        <div :if={@membership.invitation} class="flex items-center justify-center gap-2 font-bold">
           <.avatar
             id={@membership.invitation.inviter.id}
             name={@membership.invitation.inviter.username}
@@ -111,9 +111,9 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
   defp invitation_row(assigns) do
     ~H"""
-    <.table_row class="text-muted-foreground">
+    <.table_row class="text-text-muted">
       <.table_cell>
-        <div class="flex gap-2 items-center font-bold italic">
+        <div class="flex items-center justify-center gap-2 font-bold italic">
           {@invitation.name}
         </div>
       </.table_cell>
@@ -122,7 +122,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
       </.table_cell>
       <.table_cell></.table_cell>
       <.table_cell>
-        <div class="flex gap-2 items-center font-bold">
+        <div class="flex items-center justify-center gap-2 font-bold">
           <.avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
           {@invitation.inviter.username}
         </div>

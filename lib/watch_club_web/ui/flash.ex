@@ -154,5 +154,4 @@ defmodule WatchClubWeb.UI.Flash do
   defp visible_toasts(flash, kinds) do
     for kind <- kinds, message = Phoenix.Flash.get(flash, kind), do: {kind, message}
   end
-
 end

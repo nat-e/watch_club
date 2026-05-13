@@ -12,7 +12,6 @@ defmodule Shadcn.Components do
     quote do
       import Shadcn.Components.Sidebar
       import Shadcn.Components.Skeleton
-      import Shadcn.Components.Table
     end
   end
 end

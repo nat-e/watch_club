@@ -27,5 +27,4 @@ defmodule Shadcn.Storybook do
 
   def entry("sidebar"), do: [icon: {:fa, "navicon"}]
   def entry("skeleton"), do: [icon: {:fa, "bars"}]
-  def entry("table"), do: [icon: {:fa, "table"}]
 end

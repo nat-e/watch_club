@@ -1,35 +1,12 @@
-defmodule Shadcn.Components.Table do
+defmodule WatchClubWeb.UI.Table do
   @moduledoc """
-  Tabular data, with header / body / footer / caption helpers.
+  Token-driven Watch Club table primitive.
 
-      <.table>
-        <.table_caption>Recent invoices</.table_caption>
-        <.table_header>
-          <.table_row>
-            <.table_head>Invoice</.table_head>
-            <.table_head>Status</.table_head>
-            <.table_head class="text-right">Amount</.table_head>
-          </.table_row>
-        </.table_header>
-        <.table_body>
-          <.table_row :for={inv <- @invoices}>
-            <.table_cell>{inv.id}</.table_cell>
-            <.table_cell>{inv.status}</.table_cell>
-            <.table_cell class="text-right">${inv.amount}</.table_cell>
-          </.table_row>
-        </.table_body>
-      </.table>
-
-  Unlike most components in this library, the table elements (`thead`,
-  `tbody`, `tr`, `th`, `td`, `caption`) cannot be remodeled as slots —
-  HTML requires the literal element nesting — so each is its own
-  component, and authors compose them directly.
-
-  Ported from Shadcn on 2026-04-28
-  Commit: 68a69d81f7de95a9fa2e83c16486771e37252ff3
-  Source: https://github.com/shadcn-ui/ui/blob/68a69d81f7de95a9fa2e83c16486771e37252ff3/apps/v4/styles/radix-vega/ui/table.tsx
-  Doc: https://ui.shadcn.com/docs/components/radix/table
+  Table elements (`table`, `thead`, `tbody`, `tr`, `th`, `td`, `caption`)
+  must keep their literal HTML nesting, so each is exposed as a composable
+  component.
   """
+
   use Phoenix.Component
 
   attr :class, :any, default: nil
@@ -38,8 +15,15 @@ defmodule Shadcn.Components.Table do
 
   def table(assigns) do
     ~H"""
-    <div data-slot="table-container">
-      <table data-slot="table" class={@class} {@rest}>
+    <div
+      data-slot="table-container"
+      class="relative w-full overflow-x-auto rounded-control border border-border bg-surface shadow-card"
+    >
+      <table
+        data-slot="table"
+        class={["w-full caption-bottom text-sm text-text", @class]}
+        {@rest}
+      >
         {render_slot(@inner_block)}
       </table>
     </div>
@@ -52,7 +36,11 @@ defmodule Shadcn.Components.Table do
 
   def table_header(assigns) do
     ~H"""
-    <thead data-slot="table-header" class={@class} {@rest}>
+    <thead
+      data-slot="table-header"
+      class={["border-b border-border-subtle bg-surface-raised/60 [&_tr]:border-b-0", @class]}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </thead>
     """
@@ -64,7 +52,7 @@ defmodule Shadcn.Components.Table do
 
   def table_body(assigns) do
     ~H"""
-    <tbody data-slot="table-body" class={@class} {@rest}>
+    <tbody data-slot="table-body" class={["[&_tr:last-child]:border-0", @class]} {@rest}>
       {render_slot(@inner_block)}
     </tbody>
     """
@@ -76,7 +64,14 @@ defmodule Shadcn.Components.Table do
 
   def table_footer(assigns) do
     ~H"""
-    <tfoot data-slot="table-footer" class={@class} {@rest}>
+    <tfoot
+      data-slot="table-footer"
+      class={[
+        "border-t border-border-subtle bg-surface-raised/60 font-medium [&>tr]:last:border-b-0",
+        @class
+      ]}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </tfoot>
     """
@@ -92,7 +87,10 @@ defmodule Shadcn.Components.Table do
     <tr
       data-slot="table-row"
       data-state={if @selected, do: "selected"}
-      class={@class}
+      class={[
+        "border-b border-border-subtle transition-colors hover:bg-surface-hover has-aria-expanded:bg-surface-hover data-[state=selected]:bg-surface-selected",
+        @class
+      ]}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -106,7 +104,14 @@ defmodule Shadcn.Components.Table do
 
   def table_head(assigns) do
     ~H"""
-    <th data-slot="table-head" class={@class} {@rest}>
+    <th
+      data-slot="table-head"
+      class={[
+        "h-10 px-3 text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
+        @class
+      ]}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </th>
     """
@@ -118,7 +123,11 @@ defmodule Shadcn.Components.Table do
 
   def table_cell(assigns) do
     ~H"""
-    <td data-slot="table-cell" class={@class} {@rest}>
+    <td
+      data-slot="table-cell"
+      class={["p-3 text-center align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0", @class]}
+      {@rest}
+    >
       {render_slot(@inner_block)}
     </td>
     """
@@ -130,7 +139,7 @@ defmodule Shadcn.Components.Table do
 
   def table_caption(assigns) do
     ~H"""
-    <caption data-slot="table-caption" class={@class} {@rest}>
+    <caption data-slot="table-caption" class={["mt-4 text-sm text-text-muted", @class]} {@rest}>
       {render_slot(@inner_block)}
     </caption>
     """

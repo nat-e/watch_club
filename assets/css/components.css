@@ -6,7 +6,6 @@ This contains all styles defined in our UI components
 
 @import "../../lib/shadcn/components/sidebar.css";
 @import "../../lib/shadcn/components/skeleton.css";
-@import "../../lib/shadcn/components/table.css";
 
 @source "../../lib/shadcn";
 @source "../../lib/watch_club_web/ui";

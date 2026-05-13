@@ -22,6 +22,7 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Modal
       import WatchClubWeb.UI.RadioGroup
       import WatchClubWeb.UI.Select
+      import WatchClubWeb.UI.Table
     end
   end
 end
