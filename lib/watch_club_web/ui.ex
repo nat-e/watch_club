@@ -12,6 +12,8 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Avatar
       import WatchClubWeb.UI.Badges
       import WatchClubWeb.UI.Button
+      import WatchClubWeb.UI.Input
+      import WatchClubWeb.UI.Modal
     end
   end
 end

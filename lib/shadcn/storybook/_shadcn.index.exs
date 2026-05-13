@@ -26,12 +26,10 @@ defmodule Shadcn.Storybook do
   def folder_icon, do: {:fa, "palette"}
 
   def entry("checkbox"), do: [icon: {:fa, "box-check"}]
-  def entry("dialog"), do: [icon: {:fa, "rectangle-ad"}]
   def entry("dropdown_menu"), do: [icon: {:fa, "list"}]
   def entry("empty"), do: [icon: {:fa, "ghost"}]
   def entry("field"), do: [icon: {:fa, "input-text"}]
   def entry("flash"), do: [icon: {:fa, "bell"}]
-  def entry("input"), do: [icon: {:fa, "input-text"}]
   def entry("kbd"), do: [icon: {:fa, "code"}]
   def entry("label"), do: [icon: {:fa, "heading"}]
   def entry("radio_group"), do: [icon: {:fa, "circle-dot"}]

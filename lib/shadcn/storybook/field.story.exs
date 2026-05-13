@@ -11,7 +11,6 @@ defmodule Shadcn.Storybook.Field do
        [
          field_content: 1,
          field_description: 1,
-         field_error: 1,
          field_group: 1,
          field_label: 1,
          field_legend: 1,
@@ -19,9 +18,7 @@ defmodule Shadcn.Storybook.Field do
          field_set: 1,
          field_title: 1
        ]},
-      {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.Checkbox, [checkbox: 1]},
-      {Shadcn.Components.Input, [input: 1]},
       {Shadcn.Components.RadioGroup, [radio_group: 1]},
       {Shadcn.Components.Select, [select: 1, select_item: 1]}
     ]
@@ -38,26 +35,6 @@ defmodule Shadcn.Storybook.Field do
 
   def variations do
     [
-      %Variation{
-        id: :input,
-        description: "Inputs with labels and descriptions",
-        template: """
-        <.field_set class="w-full max-w-xs">
-          <.field_group>
-            <.field>
-              <.field_label for="username">Username</.field_label>
-              <.input id="username" type="text" placeholder="Max Leiter" />
-              <.field_description>Choose a unique username for your account.</.field_description>
-            </.field>
-            <.field>
-              <.field_label for="password">Password</.field_label>
-              <.field_description>Must be at least 8 characters long.</.field_description>
-              <.input id="password" type="password" placeholder="••••••••" />
-            </.field>
-          </.field_group>
-        </.field_set>
-        """
-      },
       %Variation{
         id: :select,
         description: "Select field",
@@ -174,32 +151,6 @@ defmodule Shadcn.Storybook.Field do
         """
       },
       %Variation{
-        id: :fieldset,
-        description: "Fieldset with grid layout",
-        template: """
-        <.field_set class="w-full max-w-sm">
-          <.field_legend>Address Information</.field_legend>
-          <.field_description>We need your address to deliver your order.</.field_description>
-          <.field_group>
-            <.field>
-              <.field_label for="street">Street Address</.field_label>
-              <.input id="street" type="text" placeholder="123 Main St" />
-            </.field>
-            <div class="grid grid-cols-2 gap-4">
-              <.field>
-                <.field_label for="city">City</.field_label>
-                <.input id="city" type="text" placeholder="New York" />
-              </.field>
-              <.field>
-                <.field_label for="zip">Postal Code</.field_label>
-                <.input id="zip" type="text" placeholder="90502" />
-              </.field>
-            </div>
-          </.field_group>
-        </.field_set>
-        """
-      },
-      %Variation{
         id: :field_group,
         description: "Grouped fieldsets separated",
         template: """
@@ -233,59 +184,6 @@ defmodule Shadcn.Storybook.Field do
               </.field>
             </.field_group>
           </.field_set>
-        </.field_group>
-        """
-      },
-      %Variation{
-        id: :responsive,
-        description: "Responsive orientation (label+description on the side at sm+)",
-        template: """
-        <form class="w-full max-w-lg">
-          <.field_set>
-            <.field_legend>Profile</.field_legend>
-            <.field_description>Fill in your profile information.</.field_description>
-            <.field_group>
-              <.field orientation="responsive">
-                <.field_content>
-                  <.field_label for="name">Name</.field_label>
-                  <.field_description>Provide your full name for identification.</.field_description>
-                </.field_content>
-                <.input id="name" placeholder="Evil Rabbit" required />
-              </.field>
-              <.field orientation="responsive">
-                <.button type="submit">Submit</.button>
-                <.button type="button" variant="outline">Cancel</.button>
-              </.field>
-            </.field_group>
-          </.field_set>
-        </form>
-        """
-      },
-      %Variation{
-        id: :error,
-        description: "Field with validation error",
-        template: """
-        <.field invalid class="w-full max-w-xs">
-          <.field_label for="username-err">Username</.field_label>
-          <.input id="username-err" aria-invalid="true" value="x" />
-          <.field_error errors={["Must be at least 3 characters"]} />
-        </.field>
-        """
-      },
-      %Variation{
-        id: :separator,
-        description: "Field separator with content",
-        template: """
-        <.field_group class="w-full max-w-xs">
-          <.field>
-            <.field_label for="username2">Username</.field_label>
-            <.input id="username2" />
-          </.field>
-          <.field_separator>OR</.field_separator>
-          <.field>
-            <.field_label for="email2">Email</.field_label>
-            <.input id="email2" type="email" />
-          </.field>
         </.field_group>
         """
       }

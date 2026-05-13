@@ -1,26 +1,8 @@
-defmodule Shadcn.Components.Input do
+defmodule WatchClubWeb.UI.Input do
   @moduledoc """
-  Single-line form input. Renders a native `<input>` for any type
-  (text, email, password, file, number, etc.) with consistent styling,
-  focus, disabled, and `aria-invalid` states.
-
-      <.input name="email" type="email" placeholder="you@example.com" />
-      <.input name="password" type="password" required />
-      <.input name="avatar" type="file" accept="image/*" />
-      <.input name="title" aria-invalid="true" />
-
-  Or pass a `Phoenix.HTML.FormField` via `field` to derive `id`, `name`, and
-  `value` from the form:
-
-      <.input field={@form[:email]} type="email" />
-
-  Pair with `<.label>` for accessible form fields.
-
-  Ported from Shadcn on 2026-04-27
-  Commit: 7d718ddaa9c32b9c3d489bc3f6ca3994bf049570
-  Source: https://github.com/shadcn-ui/ui/blob/7d718ddaa9c32b9c3d489bc3f6ca3994bf049570/apps/v4/styles/radix-vega/ui/input.tsx
-  Doc: https://ui.shadcn.com/docs/components/radix/input
+  Token-driven Watch Club input primitive.
   """
+
   use Phoenix.Component
 
   attr :id, :any, default: nil
@@ -58,7 +40,14 @@ defmodule Shadcn.Components.Input do
       value={Phoenix.HTML.Form.normalize_value(@type, @value)}
       aria-invalid={@errors != [] && "true"}
       data-slot="input"
-      class={@class}
+      class={[
+        "h-control-md w-full min-w-0 rounded-control border border-border bg-surface-inset px-3 py-2 text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
+        "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:placeholder:text-text-disabled",
+        "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
+        "file:mr-3 file:inline-flex file:h-7 file:border-0 file:bg-transparent file:px-0 file:text-sm file:font-medium file:text-text disabled:file:text-text-disabled",
+        @class
+      ]}
       {@rest}
     />
     """

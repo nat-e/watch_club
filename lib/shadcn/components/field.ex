@@ -5,7 +5,7 @@ defmodule Shadcn.Components.Field do
 
       <.field>
         <.field_label for="email">Email</.field_label>
-        <.input id="email" type="email" />
+        <WatchClubWeb.UI.Input.input id="email" type="email" />
         <.field_description>We'll never share your email.</.field_description>
       </.field>
 

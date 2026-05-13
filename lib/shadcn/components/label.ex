@@ -3,12 +3,12 @@ defmodule Shadcn.Components.Label do
   Form field label. Tie text to an input via `for`.
 
       <.label for="email">Email</.label>
-      <.input id="email" name="email" type="email" />
+      <WatchClubWeb.UI.Input.input id="email" name="email" type="email" />
 
   Or pass a `Phoenix.HTML.FormField` via `field` to derive the `for` attribute:
 
       <.label field={@form[:email]}>Email</.label>
-      <.input field={@form[:email]} type="email" />
+      <WatchClubWeb.UI.Input.input field={@form[:email]} type="email" />
 
   The label dims when its associated input is disabled (via `peer-disabled:*`
   on a sibling `peer` input).

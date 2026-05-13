@@ -58,44 +58,42 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
   defp club_selection_modal(assigns) do
     ~H"""
-    <.modal id="club-selection-modal" open={true} on_close={JS.push("close", target: @myself)}>
-      <.dialog>
-        <:title>{dgettext("contents", "Select clubs")}</:title>
-        <div class="relative w-full max-w-lg p-0">
-          <.alert variant="default">
-            <:icon><Lucideicons.users class="size-8" /></:icon>
-            <p class="text-white">
-              {raw(
-                dgettext(
-                  "contents",
-                  "Select the clubs in which you want to add %{content_name}. Adding the content to the club will make it available for everyone.",
-                  content_name: gtboldunder(@content.title)
-                )
-              )}
-            </p>
-          </.alert>
-          <div class="mt-4 flex flex-col gap-4">
-            <div class="mr-6 flex flex-row items-center justify-around w-full">
-              <h2 class="text-lg font-bold">{dgettext("contents", "Select clubs")}</h2>
-            </div>
-            <.form
-              for={@form}
-              phx-target={@myself}
-              phx-submit="submit"
-              class="flex flex-col gap-6 items-end"
-            >
-              <.club_selection_checkbox
-                :for={membership <- @current_user.memberships}
-                club={membership.club}
-                current_user={@current_user}
-                content={@content}
-                selected?={in_club?(@content, membership.club.id)}
-              />
-              <.button type="submit">{dgettext("default", "Save")}</.button>
-            </.form>
+    <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
+      <:title>{dgettext("contents", "Select clubs")}</:title>
+      <div class="relative w-full max-w-lg p-0">
+        <.alert variant="default">
+          <:icon><Lucideicons.users class="size-8" /></:icon>
+          <p class="text-white">
+            {raw(
+              dgettext(
+                "contents",
+                "Select the clubs in which you want to add %{content_name}. Adding the content to the club will make it available for everyone.",
+                content_name: gtboldunder(@content.title)
+              )
+            )}
+          </p>
+        </.alert>
+        <div class="mt-4 flex flex-col gap-4">
+          <div class="mr-6 flex flex-row items-center justify-around w-full">
+            <h2 class="text-lg font-bold">{dgettext("contents", "Select clubs")}</h2>
           </div>
+          <.form
+            for={@form}
+            phx-target={@myself}
+            phx-submit="submit"
+            class="flex flex-col gap-6 items-end"
+          >
+            <.club_selection_checkbox
+              :for={membership <- @current_user.memberships}
+              club={membership.club}
+              current_user={@current_user}
+              content={@content}
+              selected?={in_club?(@content, membership.club.id)}
+            />
+            <.button type="submit">{dgettext("default", "Save")}</.button>
+          </.form>
         </div>
-      </.dialog>
+      </div>
     </.modal>
     """
   end

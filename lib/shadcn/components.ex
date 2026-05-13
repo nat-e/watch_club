@@ -11,15 +11,12 @@ defmodule Shadcn.Components do
   defmacro __using__(_opts) do
     quote do
       import Shadcn.Components.Checkbox
-      import Shadcn.Components.Dialog
       import Shadcn.Components.DropdownMenu
       import Shadcn.Components.Empty
       import Shadcn.Components.Field
       import Shadcn.Components.Flash
-      import Shadcn.Components.Input
       import Shadcn.Components.Kbd
       import Shadcn.Components.Label
-      import Shadcn.Components.Modal
       import Shadcn.Components.RadioGroup
       import Shadcn.Components.Select
       import Shadcn.Components.Sidebar

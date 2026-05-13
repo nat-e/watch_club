@@ -155,115 +155,87 @@ defmodule WatchClubWeb.ClubsLive.Members do
 
   defp remove_member_modal(assigns) do
     ~H"""
-    <.modal id="remove-member-modal" open={true} on_close={JS.push("close_modals")}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Remove club member")}</:title>
-        <div class="flex flex-col gap-4">
-          <p>
-            {raw(
-              dgettext(
-                "clubs",
-                "Are you sure you want to remove %{username}?",
-                gtbold(@membership.user.username)
-              )
-            )}
-          </p>
-          <p>{dgettext("clubs", "They won't be able to join back without being re-invited.")}</p>
-          <div class="flex justify-end gap-2">
-            <.button
-              type="button"
-              class="w-fit self-end"
-              variant="secondary"
-              phx-click="close_modals"
-            >
-              {dgettext("default", "Cancel")}
-            </.button>
+    <.modal id="remove-member-modal" on_close={JS.push("close_modals")}>
+      <:title>{dgettext("clubs", "Remove club member")}</:title>
+      <p>
+        {raw(
+          dgettext(
+            "clubs",
+            "Are you sure you want to remove %{username}?",
+            gtbold(@membership.user.username)
+          )
+        )}
+      </p>
+      <p>{dgettext("clubs", "They won't be able to join back without being re-invited.")}</p>
+      <:footer>
+        <.button type="button" variant="secondary" data-modal-close>
+          {dgettext("default", "Cancel")}
+        </.button>
 
-            <.button
-              class="w-fit self-end"
-              variant="danger"
-              phx-click="confirm_remove_member"
-            >
-              {dgettext("clubs", "Remove")}
-            </.button>
-          </div>
-        </div>
-      </.dialog>
+        <.button variant="danger" phx-click="confirm_remove_member">
+          {dgettext("clubs", "Remove")}
+        </.button>
+      </:footer>
     </.modal>
     """
   end
 
   defp destroy_invitation_modal(assigns) do
     ~H"""
-    <.modal id="destroy-invitation-modal" open={true} on_close={JS.push("close_modals")}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Delete invitation")}</:title>
-        <div class="flex flex-col gap-4">
-          <p>
-            {dgettext("clubs", "Are you sure you want to delete this invitation?")}
-          </p>
-          <p>
-            {dgettext("clubs", "The invitation link will not be active anymore.")}
-          </p>
-          <div class="flex justify-end gap-2">
-            <.button
-              type="button"
-              class="w-fit self-end"
-              variant="secondary"
-              phx-click="close_modals"
-            >
-              {dgettext("default", "Cancel")}
-            </.button>
+    <.modal id="destroy-invitation-modal" on_close={JS.push("close_modals")}>
+      <:title>{dgettext("clubs", "Delete invitation")}</:title>
+      <p>
+        {dgettext("clubs", "Are you sure you want to delete this invitation?")}
+      </p>
+      <p>
+        {dgettext("clubs", "The invitation link will not be active anymore.")}
+      </p>
+      <:footer>
+        <.button type="button" variant="secondary" data-modal-close>
+          {dgettext("default", "Cancel")}
+        </.button>
 
-            <.button
-              class="w-fit self-end"
-              variant="danger"
-              phx-click="confirm_destroy_invitation"
-            >
-              {dgettext("default", "Delete")}
-            </.button>
-          </div>
-        </div>
-      </.dialog>
+        <.button variant="danger" phx-click="confirm_destroy_invitation">
+          {dgettext("default", "Delete")}
+        </.button>
+      </:footer>
     </.modal>
     """
   end
 
   defp create_invitation_modal(assigns) do
     ~H"""
-    <.modal id="create-invitation-modal" open={true} on_close={JS.push("close_modals")}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Create invitation")}</:title>
-        <:description>
-          {dgettext("clubs", "Create a shareable invitation link to join the club")}
-        </:description>
-        <.form
-          :if={@form}
-          for={@form}
-          id="create_invitation_form"
-          phx-change="validate_create_invitation"
-          phx-submit="submit_create_invitation"
-          class="flex flex-col gap-6"
-        >
-          <.input_with_label field={@form[:name]} label="Name">
-            <.input
-              field={@form[:name]}
-              type="name"
-              autocomplete="name"
-              phx-debounce="blur"
-            />
-          </.input_with_label>
-          <.input_with_label field={@form[:role]} label="Club Role">
-            <.radio_group field={@form[:role]}>
-              <:item value="member">{dgettext("clubs", "Member")}</:item>
-              <:item value="admin">{dgettext("clubs", "Admin")}</:item>
-            </.radio_group>
-          </.input_with_label>
-          <.button type="submit" class="w-full" phx-submit="submit_create_invitation">
-            {dgettext("clubs", "Create invitation")}
-          </.button>
-        </.form>
-      </.dialog>
+    <.modal id="create-invitation-modal" on_close={JS.push("close_modals")}>
+      <:title>{dgettext("clubs", "Create invitation")}</:title>
+      <:description>
+        {dgettext("clubs", "Create a shareable invitation link to join the club")}
+      </:description>
+      <.form
+        :if={@form}
+        for={@form}
+        id="create_invitation_form"
+        phx-change="validate_create_invitation"
+        phx-submit="submit_create_invitation"
+        class="flex flex-col gap-6"
+      >
+        <.input_with_label field={@form[:name]} label="Name">
+          <.input
+            field={@form[:name]}
+            type="name"
+            autocomplete="name"
+            phx-debounce="blur"
+          />
+        </.input_with_label>
+        <.input_with_label field={@form[:role]} label="Club Role">
+          <.radio_group field={@form[:role]}>
+            <:item value="member">{dgettext("clubs", "Member")}</:item>
+            <:item value="admin">{dgettext("clubs", "Admin")}</:item>
+          </.radio_group>
+        </.input_with_label>
+        <.button type="submit" class="w-full" phx-submit="submit_create_invitation">
+          {dgettext("clubs", "Create invitation")}
+        </.button>
+      </.form>
     </.modal>
     """
   end
@@ -285,32 +257,30 @@ defmodule WatchClubWeb.ClubsLive.Members do
       )
 
     ~H"""
-    <.modal id="view-invitation-modal" open={true} on_close={JS.push("close_modals")}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Share invitation")}</:title>
-        <:description>
-          {dgettext(
-            "clubs",
-            "Copy and share the invitation link below with anyone. It is only usable once."
-          )}
-        </:description>
-        <div class="flex flex-col gap-4 items-center">
-          <.alert class="items-center">
-            <span id="invitation_link">{@invitation_link}</span>
-            <:action>
-              <.button phx-click={
-                JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
-                |> JS.push("invitation_link_copied")
-              }>
-                <Lucideicons.copy />
-              </.button>
-            </:action>
-          </.alert>
-          <.button type="button" class="w-full" phx-click="close_modals">
-            {dgettext("default", "Close")}
-          </.button>
-        </div>
-      </.dialog>
+    <.modal id="view-invitation-modal" on_close={JS.push("close_modals")}>
+      <:title>{dgettext("clubs", "Share invitation")}</:title>
+      <:description>
+        {dgettext(
+          "clubs",
+          "Copy and share the invitation link below with anyone. It is only usable once."
+        )}
+      </:description>
+      <div class="flex flex-col gap-4 items-center">
+        <.alert class="items-center">
+          <span id="invitation_link">{@invitation_link}</span>
+          <:action>
+            <.button phx-click={
+              JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
+              |> JS.push("invitation_link_copied")
+            }>
+              <Lucideicons.copy />
+            </.button>
+          </:action>
+        </.alert>
+        <.button type="button" class="w-full" data-modal-close>
+          {dgettext("default", "Close")}
+        </.button>
+      </div>
     </.modal>
     """
   end

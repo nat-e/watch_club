@@ -98,54 +98,52 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def create_library_modal(assigns) do
     ~H"""
-    <.modal id="create-library-modal" open={true} on_close={push_to_target("close_modals", @target)}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Create library")}</:title>
-        <:description>
-          {dgettext(
-            "clubs",
-            "Add a new library to this club. Multiple libraries can use the same content type."
-          )}
-        </:description>
-        <.form
-          for={@form}
-          id="create-library-form"
-          phx-change="validate_create_library"
-          phx-submit="submit_create_library"
-          phx-target={@target}
-          class="flex flex-col gap-6"
-        >
-          <.input_with_label field={@form[:name]} label={dgettext("clubs", "Library name")}>
-            <.input field={@form[:name]} type="text" phx-debounce="blur" />
-          </.input_with_label>
+    <.modal id="create-library-modal" on_close={push_to_target("close_modals", @target)}>
+      <:title>{dgettext("clubs", "Create library")}</:title>
+      <:description>
+        {dgettext(
+          "clubs",
+          "Add a new library to this club. Multiple libraries can use the same content type."
+        )}
+      </:description>
+      <.form
+        for={@form}
+        id="create-library-form"
+        phx-change="validate_create_library"
+        phx-submit="submit_create_library"
+        phx-target={@target}
+        class="flex flex-col gap-6"
+      >
+        <.input_with_label field={@form[:name]} label={dgettext("clubs", "Library name")}>
+          <.input field={@form[:name]} type="text" phx-debounce="blur" />
+        </.input_with_label>
 
-          <div class="flex flex-col gap-2">
-            <.label field={@form[:content_type]}>{dgettext("clubs", "Content type")}</.label>
-            <.radio_group field={@form[:content_type]} class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <:item
-                :for={content_type <- @content_types}
-                value={to_string(content_type)}
-                class="border-border hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3"
-              >
-                <div class="flex flex-col gap-1">
-                  <.content_type_icon type={content_type} class="size-5" />
-                  <span class="font-medium">{ContentType.translated_label(content_type)}</span>
-                </div>
-              </:item>
-            </.radio_group>
-            <.field_errors field={@form[:content_type]} />
-          </div>
+        <div class="flex flex-col gap-2">
+          <.label field={@form[:content_type]}>{dgettext("clubs", "Content type")}</.label>
+          <.radio_group field={@form[:content_type]} class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <:item
+              :for={content_type <- @content_types}
+              value={to_string(content_type)}
+              class="border-border hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+            >
+              <div class="flex flex-col gap-1">
+                <.content_type_icon type={content_type} class="size-5" />
+                <span class="font-medium">{ContentType.translated_label(content_type)}</span>
+              </div>
+            </:item>
+          </.radio_group>
+          <.field_errors field={@form[:content_type]} />
+        </div>
 
-          <div class="flex justify-end gap-2">
-            <.button type="button" variant="secondary" phx-click="close_modals" phx-target={@target}>
-              {dgettext("default", "Cancel")}
-            </.button>
-            <.button type="submit">
-              {dgettext("clubs", "Create library")}
-            </.button>
-          </div>
-        </.form>
-      </.dialog>
+        <div class="flex justify-end gap-2">
+          <.button type="button" variant="secondary" data-modal-close>
+            {dgettext("default", "Cancel")}
+          </.button>
+          <.button type="submit">
+            {dgettext("clubs", "Create library")}
+          </.button>
+        </div>
+      </.form>
     </.modal>
     """
   end
@@ -155,33 +153,29 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def delete_library_modal(assigns) do
     ~H"""
-    <.modal id="delete-library-modal" open={true} on_close={push_to_target("close_modals", @target)}>
-      <.dialog>
-        <:title>{dgettext("clubs", "Delete %{library_name}?", library_name: @library.name)}</:title>
-        <div class="flex flex-col gap-4">
-          <p>
-            {dgettext("clubs", "This will remove the library from the club.")}
-          </p>
-          <p class="text-muted-foreground text-sm">
-            {dgettext(
-              "clubs",
-              "The underlying content records will not be deleted."
-            )}
-          </p>
-          <div class="flex justify-end gap-2">
-            <.button type="button" variant="secondary" phx-click="close_modals" phx-target={@target}>
-              {dgettext("default", "Cancel")}
-            </.button>
-            <.button
-              variant="danger"
-              phx-click="confirm_delete_library"
-              phx-target={@target}
-            >
-              {dgettext("clubs", "Delete library")}
-            </.button>
-          </div>
-        </div>
-      </.dialog>
+    <.modal id="delete-library-modal" on_close={push_to_target("close_modals", @target)}>
+      <:title>{dgettext("clubs", "Delete %{library_name}?", library_name: @library.name)}</:title>
+      <p>
+        {dgettext("clubs", "This will remove the library from the club.")}
+      </p>
+      <p class="text-text-muted text-sm">
+        {dgettext(
+          "clubs",
+          "The underlying content records will not be deleted."
+        )}
+      </p>
+      <:footer>
+        <.button type="button" variant="secondary" data-modal-close>
+          {dgettext("default", "Cancel")}
+        </.button>
+        <.button
+          variant="danger"
+          phx-click="confirm_delete_library"
+          phx-target={@target}
+        >
+          {dgettext("clubs", "Delete library")}
+        </.button>
+      </:footer>
     </.modal>
     """
   end
