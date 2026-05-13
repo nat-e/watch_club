@@ -39,8 +39,8 @@ defmodule WatchClubWeb.Components.Contents do
 
   def content_type_badge(assigns) do
     ~H"""
-    <.badge variant="secondary" class={["gap-1.5 whitespace-nowrap", @class]}>
-      <.content_type_icon type={@type} class="size-3.5" />
+    <.badge variant="secondary" class={["whitespace-nowrap", @class]}>
+      <:icon><.content_type_icon type={@type} /></:icon>
       {ContentType.translated_label(@type)}
     </.badge>
     """

@@ -10,6 +10,7 @@ defmodule WatchClubWeb.UI do
     quote do
       import WatchClubWeb.UI.Alert
       import WatchClubWeb.UI.Avatar
+      import WatchClubWeb.UI.Badges
       import WatchClubWeb.UI.Button
     end
   end

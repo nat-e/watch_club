@@ -11,7 +11,6 @@ defmodule Shadcn.Components do
   defmacro __using__(_opts) do
     quote do
       import Shadcn.Components.AspectRatio
-      import Shadcn.Components.Badge
       import Shadcn.Components.ButtonGroup
       import Shadcn.Components.Card
       import Shadcn.Components.Checkbox

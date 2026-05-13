@@ -17,7 +17,7 @@ defmodule Shadcn.Storybook.Table do
          table_header: 1,
          table_row: 1
        ]},
-      {Shadcn.Components.Badge, [badge: 1]}
+      {WatchClubWeb.UI.Badges, [badge: 1]}
     ]
 
   defp container_template(content) do
@@ -60,7 +60,7 @@ defmodule Shadcn.Storybook.Table do
             </.table_row>
             <.table_row selected>
               <.table_cell class="font-medium">INV003</.table_cell>
-              <.table_cell><.badge variant="destructive">Failed</.badge></.table_cell>
+              <.table_cell><.badge variant="danger">Failed</.badge></.table_cell>
               <.table_cell>Bank Transfer</.table_cell>
               <.table_cell class="text-right">$350.00</.table_cell>
             </.table_row>

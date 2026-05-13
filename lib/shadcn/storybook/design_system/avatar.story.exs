@@ -13,29 +13,9 @@ defmodule WatchClubWeb.Storybook.DesignSystem.Avatar do
         id: :default,
         attributes: %{id: "user-jane", name: "Jane Doe"}
       },
-      %VariationGroup{
-        id: :sizes,
-        description: "Sizes via class",
-        template: """
-        <div class="flex items-center gap-3">
-          <.psb-variation />
-        </div>
-        """,
-        variations: [
-          %Variation{
-            id: :small,
-            attributes: %{id: "club-small", name: "Small Club", class: "size-6 text-xs"}
-          },
-          %Variation{id: :default, attributes: %{id: "club-default", name: "Default Club"}},
-          %Variation{
-            id: :large,
-            attributes: %{id: "club-large", name: "Large Club", class: "size-12 text-base"}
-          }
-        ]
-      },
       %Variation{
         id: :group,
-        description: "1–3 avatars render all; 4+ renders the first two and an overflow count.",
+        description: "Avatar group",
         template: """
         <.avatar_group
           avatars={[
@@ -44,7 +24,6 @@ defmodule WatchClubWeb.Storybook.DesignSystem.Avatar do
             %{id: "club-series", name: "Series Club"},
             %{id: "club-games", name: "Game Club"}
           ]}
-          avatar_class="size-6 text-xs"
         />
         """
       }
