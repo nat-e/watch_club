@@ -124,12 +124,11 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
             <:item
               :for={content_type <- @content_types}
               value={to_string(content_type)}
-              class="border-border hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+              class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
             >
-              <div class="flex flex-col gap-1">
-                <.content_type_icon type={content_type} class="size-5" />
-                <span class="font-medium">{ContentType.translated_label(content_type)}</span>
-              </div>
+              <.content_type_icon type={content_type} class="size-5 text-text-muted" />
+              <span class="font-medium">{ContentType.translated_label(content_type)}</span>
+              <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
             </:item>
           </.radio_group>
           <.field_errors field={@form[:content_type]} />

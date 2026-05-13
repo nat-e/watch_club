@@ -64,12 +64,15 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         <.select
           field={@form[:location]}
           class="w-48 shrink-0"
-          trigger_class={desktop_select_trigger_class()}
+          trigger_class={[
+            "h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none",
+            "focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+          ]}
         >
           <.select_item value="">
-            <div class={desktop_select_option_class()}>
+            <div class="flex h-5 min-w-0 items-center gap-2">
               <Lucideicons.globe class="size-5 shrink-0" />
-              <span class={desktop_select_option_label_class()}>
+              <span class="min-w-0 flex-1 truncate leading-none">
                 {dgettext("search", "Everywhere")}
               </span>
             </div>
@@ -78,14 +81,14 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             :for={membership <- @current_user.memberships}
             value={membership.club.id}
           >
-            <div class={desktop_select_option_class()}>
+            <div class="flex h-5 min-w-0 items-center gap-2">
               <.avatar
                 id={membership.club.id}
                 name={membership.club.name}
                 size="xs"
                 class="shrink-0"
               />
-              <span class={desktop_select_option_label_class()}>
+              <span class="min-w-0 flex-1 truncate leading-none">
                 {membership.club.name}
               </span>
             </div>
@@ -94,15 +97,18 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         <.select
           field={@form[:content_type]}
           class="w-44 shrink-0"
-          trigger_class={desktop_select_trigger_class()}
+          trigger_class={[
+            "h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none",
+            "focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+          ]}
         >
           <.select_item
             :for={content_type <- SearchContentType.values()}
             value={content_type}
           >
-            <div class={desktop_select_option_class()}>
+            <div class="flex h-5 min-w-0 items-center gap-2">
               <.content_type_icon type={content_type} class="size-5 shrink-0" />
-              <span class={desktop_select_option_label_class()}>
+              <span class="min-w-0 flex-1 truncate leading-none">
                 {SearchContentType.translated_label(content_type)}
               </span>
             </div>
@@ -424,16 +430,6 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         )
     end
   end
-
-  defp desktop_select_trigger_class do
-    [
-      "h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none",
-      "focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
-    ]
-  end
-
-  defp desktop_select_option_class, do: "flex h-5 min-w-0 items-center gap-2"
-  defp desktop_select_option_label_class, do: "min-w-0 flex-1 truncate leading-none"
 
   defp hide_overlay_and_change_value(overlay_selector, field_selector, value) do
     JS.hide(to: overlay_selector)

@@ -28,7 +28,10 @@ defmodule WatchClubWeb.UI.Avatar do
       title={@name}
       class={[
         "relative flex shrink-0 items-center justify-center rounded-full border border-border font-bold text-white select-none",
-        avatar_size_class(@size),
+        @size == "xs" && "size-5 text-[0.625rem] leading-none",
+        @size == "sm" && "size-6 text-xs leading-none",
+        @size == "md" && "size-8 text-base",
+        @size == "lg" && "size-10 text-lg",
         @background_class,
         @class
       ]}
@@ -72,7 +75,10 @@ defmodule WatchClubWeb.UI.Avatar do
         aria-label={"#{@overflow_count} more"}
         class={[
           "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white ring-2 ring-background select-none",
-          avatar_size_class(@avatar_size),
+          @avatar_size == "xs" && "size-5 text-[0.625rem] leading-none",
+          @avatar_size == "sm" && "size-6 text-xs leading-none",
+          @avatar_size == "md" && "size-8 text-base",
+          @avatar_size == "lg" && "size-10 text-lg",
           @avatar_class
         ]}
       >
@@ -81,11 +87,6 @@ defmodule WatchClubWeb.UI.Avatar do
     </div>
     """
   end
-
-  defp avatar_size_class("xs"), do: "size-5 text-[0.625rem] leading-none"
-  defp avatar_size_class("sm"), do: "size-6 text-xs leading-none"
-  defp avatar_size_class("md"), do: "size-8 text-base"
-  defp avatar_size_class("lg"), do: "size-10 text-lg"
 
   defp initial(name) do
     name

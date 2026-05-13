@@ -20,6 +20,7 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Kbd
       import WatchClubWeb.UI.Label
       import WatchClubWeb.UI.Modal
+      import WatchClubWeb.UI.RadioGroup
       import WatchClubWeb.UI.Select
     end
   end

@@ -73,9 +73,22 @@ defmodule WatchClubWeb.UI.Select do
         aria-expanded="false"
         aria-invalid={(@errors != [] && "true") || nil}
         disabled={@disabled}
-        class={trigger_class(@size, @trigger_class)}
+        class={[
+          "flex w-full min-w-0 items-center justify-between gap-2 rounded-control border border-border bg-surface-inset px-3 text-left text-sm text-text shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
+          "hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
+          "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
+          "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          @size == "sm" && "h-control-sm text-xs",
+          @size == "md" && "h-control-md",
+          @size == "lg" && "h-control-lg text-base",
+          @trigger_class
+        ]}
       >
-        <div data-slot="select-value" class={value_class()}>
+        <div
+          data-slot="select-value"
+          class="flex min-w-0 flex-1 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text-subtle [&>*]:min-w-0 [&>*]:max-w-full"
+        >
           {@placeholder}
         </div>
         <Lucideicons.chevron_down
@@ -92,7 +105,7 @@ defmodule WatchClubWeb.UI.Select do
         popover="manual"
         role="listbox"
         tabindex="-1"
-        class={content_class()}
+        class="fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-control border border-border bg-surface-overlay p-1 text-text shadow-overlay outline-none"
       >
         <div data-slot="select-viewport" class="scroll-my-1">
           {render_slot(@inner_block)}
@@ -466,13 +479,19 @@ defmodule WatchClubWeb.UI.Select do
       aria-selected="false"
       aria-disabled={@disabled || nil}
       tabindex="-1"
-      class={item_class(@class)}
+      class={[
+        "group/select-item relative flex h-9 w-full cursor-default items-center gap-2 overflow-hidden rounded-control pr-8 pl-2.5 text-left text-sm outline-none transition-colors select-none",
+        "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
+        "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        @class
+      ]}
       {@rest}
     >
       <span
         data-slot="select-item-indicator"
         aria-hidden="true"
-        class={item_indicator_class()}
+        class="pointer-events-none absolute right-2 flex size-4 items-center justify-center text-primary opacity-0 transition-opacity group-data-[selected=true]/select-item:opacity-100"
       >
         <Lucideicons.check />
       </span>
@@ -492,49 +511,11 @@ defmodule WatchClubWeb.UI.Select do
       data-slot="select-separator"
       role="separator"
       aria-orientation="horizontal"
-      class={separator_class(@class)}
+      class={["-mx-1 my-1 h-px bg-border-subtle", @class]}
       {@rest}
     />
     """
   end
-
-  defp trigger_class(size, class) do
-    [
-      "flex w-full min-w-0 items-center justify-between gap-2 rounded-control border border-border bg-surface-inset px-3 text-left text-sm text-text shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
-      "hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
-      "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
-      "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
-      "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-      size == "sm" && "h-control-sm text-xs",
-      size == "md" && "h-control-md",
-      size == "lg" && "h-control-lg text-base",
-      class
-    ]
-  end
-
-  defp value_class do
-    "flex min-w-0 flex-1 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text-subtle [&>*]:min-w-0 [&>*]:max-w-full"
-  end
-
-  defp content_class do
-    "fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-control border border-border bg-surface-overlay p-1 text-text shadow-overlay outline-none"
-  end
-
-  defp item_class(class) do
-    [
-      "group/select-item relative flex h-9 w-full cursor-default items-center gap-2 overflow-hidden rounded-control pr-8 pl-2.5 text-left text-sm outline-none transition-colors select-none",
-      "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
-      "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
-      "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-      class
-    ]
-  end
-
-  defp item_indicator_class do
-    "pointer-events-none absolute right-2 flex size-4 items-center justify-center text-primary opacity-0 transition-opacity group-data-[selected=true]/select-item:opacity-100"
-  end
-
-  defp separator_class(class), do: ["-mx-1 my-1 h-px bg-border-subtle", class]
 
   defp input_value(nil), do: ""
   defp input_value(value), do: to_string(value)
