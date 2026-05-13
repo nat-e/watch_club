@@ -26,7 +26,6 @@ defmodule Shadcn.Storybook do
   def folder_icon, do: {:fa, "palette"}
 
   def entry("button_group"), do: [icon: {:fa, "icons"}]
-  def entry("card"), do: [icon: {:fa, "copy"}]
   def entry("checkbox"), do: [icon: {:fa, "box-check"}]
   def entry("dialog"), do: [icon: {:fa, "rectangle-ad"}]
   def entry("dropdown_menu"), do: [icon: {:fa, "list"}]

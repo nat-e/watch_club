@@ -2,7 +2,6 @@ defmodule Shadcn.Storybook.Skeleton do
   use PhoenixStorybook.Story, :component
 
   def function, do: &Shadcn.Components.Skeleton.skeleton/1
-  def imports, do: [{Shadcn.Components.Card, [card: 1]}]
 
   def variations do
     [
@@ -31,14 +30,16 @@ defmodule Shadcn.Storybook.Skeleton do
         """
       },
       %Variation{
-        id: :card,
-        description: "Card",
+        id: :panel,
+        description: "Panel",
         template: """
-        <.card class="w-full max-w-xs">
-          <:title><.skeleton class="h-4 w-2/3" /></:title>
-          <:description><.skeleton class="h-4 w-1/2" /></:description>
+        <div class="flex w-full max-w-xs flex-col gap-4 rounded-xl bg-card p-4 shadow-xs ring-1 ring-foreground/10">
+          <div class="grid gap-2">
+            <.skeleton class="h-4 w-2/3" />
+            <.skeleton class="h-4 w-1/2" />
+          </div>
           <.skeleton class="aspect-video w-full" />
-        </.card>
+        </div>
         """
       }
     ]
