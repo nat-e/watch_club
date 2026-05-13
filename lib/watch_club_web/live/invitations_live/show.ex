@@ -26,7 +26,7 @@ defmodule WatchClubWeb.InvitationsLive.Show do
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </div>
-      <.alert :if={@user_exists?} variant="secondary">
+      <.alert :if={@user_exists?} variant="info">
         <:icon><Lucideicons.info /></:icon>
         {dgettext("invitations", "Looks like you already have an account! Please login instead.")}
       </.alert>

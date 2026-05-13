@@ -25,7 +25,6 @@ defmodule Shadcn.Storybook do
   def folder_name, do: "Shadcn"
   def folder_icon, do: {:fa, "palette"}
 
-  def entry("alert"), do: [icon: {:fa, "circle-exclamation"}]
   def entry("aspect_ratio"), do: [icon: {:fa, "table"}]
   def entry("avatar"), do: [icon: {:fa, "circle-dot"}]
   def entry("badge"), do: [icon: {:fa, "circle-half-stroke"}]

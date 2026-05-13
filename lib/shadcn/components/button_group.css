@@ -22,21 +22,18 @@
 	}
 
 	/*
-	 * Shadcn relies on Radix's `asChild` + `Slot` to render a dropdown / popover
-	 * trigger button directly as a child of the button-group, so the rules
-	 * above reach it. Phoenix wraps the trigger in `<div data-slot="…-trigger">`
-	 * inside the dropdown / popover container, breaking the `>` selectors.
-	 * Mirror the same rounded/border treatment on the inner trigger button.
+	 * Phoenix wraps dropdown / popover triggers, so the direct-child rules above
+	 * do not reach their inner button or link.
 	 */
 	[data-slot="button-group"][data-orientation="horizontal"] {
 		&
 			> [data-slot="dropdown-menu"]:not(:first-child)
 			> [data-slot="dropdown-menu-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		&
 			> [data-slot="popover"]:not(:first-child)
 			> [data-slot="popover-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		& > [data-slot="select"]:not(:first-child) > [data-slot="select-trigger"] {
 			@apply rounded-l-none border-l-0;
 		}
@@ -44,11 +41,11 @@
 		&
 			> [data-slot="dropdown-menu"]:not(:last-child)
 			> [data-slot="dropdown-menu-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		&
 			> [data-slot="popover"]:not(:last-child)
 			> [data-slot="popover-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		& > [data-slot="select"]:not(:last-child) > [data-slot="select-trigger"] {
 			@apply rounded-r-none;
 		}
@@ -58,11 +55,11 @@
 		&
 			> [data-slot="dropdown-menu"]:not(:first-child)
 			> [data-slot="dropdown-menu-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		&
 			> [data-slot="popover"]:not(:first-child)
 			> [data-slot="popover-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		& > [data-slot="select"]:not(:first-child) > [data-slot="select-trigger"] {
 			@apply rounded-t-none border-t-0;
 		}
@@ -70,11 +67,11 @@
 		&
 			> [data-slot="dropdown-menu"]:not(:last-child)
 			> [data-slot="dropdown-menu-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		&
 			> [data-slot="popover"]:not(:last-child)
 			> [data-slot="popover-trigger"]
-			> [data-slot="wc-button"],
+			> :is(button, a),
 		& > [data-slot="select"]:not(:last-child) > [data-slot="select-trigger"] {
 			@apply rounded-b-none;
 		}

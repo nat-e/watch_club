@@ -10,7 +10,6 @@ defmodule Shadcn.Components do
 
   defmacro __using__(_opts) do
     quote do
-      import Shadcn.Components.Alert
       import Shadcn.Components.AspectRatio
       import Shadcn.Components.Avatar
       import Shadcn.Components.Badge
