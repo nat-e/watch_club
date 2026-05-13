@@ -1,9 +1,0 @@
-@layer components.base {
-	[data-slot="collapsible"] {
-		@apply block;
-
-		[data-slot="collapsible-trigger"] {
-			@apply cursor-pointer list-none [&::-webkit-details-marker]:hidden;
-		}
-	}
-}

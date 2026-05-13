@@ -9,8 +9,6 @@ defmodule Shadcn.Storybook.Empty do
     do: [
       {Shadcn.Components.Avatar, [avatar: 1]},
       {WatchClubWeb.UI.Button, [button: 1]},
-      {Shadcn.Components.InputGroup,
-       [input_group: 1, input_group_addon: 1, input_group_input: 1]},
       {Shadcn.Components.Kbd, [kbd: 1]},
       {Lucideicons,
        [
@@ -117,28 +115,6 @@ defmodule Shadcn.Storybook.Empty do
             <Lucideicons.plus />
             Invite Members
           </.button>
-          """
-        ]
-      },
-      %Variation{
-        id: :input_group,
-        description: "404 with search input",
-        slots: [
-          ~s|<:title>404 - Not Found</:title>|,
-          ~s|<:description>The page you're looking for doesn't exist. Try searching for what you need below.</:description>|,
-          """
-          <.input_group class="sm:w-3/4">
-            <.input_group_input placeholder="Try searching for pages..." />
-            <.input_group_addon>
-              <Lucideicons.search />
-            </.input_group_addon>
-            <.input_group_addon align="inline-end">
-              <.kbd>/</.kbd>
-            </.input_group_addon>
-          </.input_group>
-          <div data-slot="empty-description" class="text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary">
-            Need help? <a href="#">Contact support</a>
-          </div>
           """
         ]
       }

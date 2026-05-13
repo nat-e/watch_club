@@ -23,10 +23,7 @@ defmodule Shadcn.Storybook.Field do
       {Shadcn.Components.Checkbox, [checkbox: 1]},
       {Shadcn.Components.Input, [input: 1]},
       {Shadcn.Components.RadioGroup, [radio_group: 1]},
-      {Shadcn.Components.Select, [select: 1, select_item: 1]},
-      {Shadcn.Components.Slider, [slider: 1]},
-      {Shadcn.Components.Switch, [switch: 1]},
-      {Shadcn.Components.Textarea, [textarea: 1]}
+      {Shadcn.Components.Select, [select: 1, select_item: 1]}
     ]
 
   defp container_template(content) do
@@ -56,21 +53,6 @@ defmodule Shadcn.Storybook.Field do
               <.field_label for="password">Password</.field_label>
               <.field_description>Must be at least 8 characters long.</.field_description>
               <.input id="password" type="password" placeholder="••••••••" />
-            </.field>
-          </.field_group>
-        </.field_set>
-        """
-      },
-      %Variation{
-        id: :textarea,
-        description: "Textarea field",
-        template: """
-        <.field_set class="w-full max-w-xs">
-          <.field_group>
-            <.field>
-              <.field_label for="feedback">Feedback</.field_label>
-              <.textarea id="feedback" placeholder="Your feedback helps us improve..." rows="4" />
-              <.field_description>Share your thoughts about our service.</.field_description>
             </.field>
           </.field_group>
         </.field_set>
@@ -134,27 +116,6 @@ defmodule Shadcn.Storybook.Field do
             </.field_content>
           </.field>
         </.field_group>
-        """
-      },
-      %Variation{
-        id: :switch,
-        description: "Horizontal field with switch",
-        template: """
-        <.field orientation="horizontal" class="w-fit">
-          <.field_label for="2fa">Multi-factor authentication</.field_label>
-          <.switch id="2fa" />
-        </.field>
-        """
-      },
-      %Variation{
-        id: :slider,
-        description: "Slider field with title",
-        template: """
-        <.field class="w-full max-w-xs">
-          <.field_title>Price Range</.field_title>
-          <.field_description>Set your budget range ($200 - $800).</.field_description>
-          <.slider id="price-range" min={0} max={1000} step={10} value={500} class="mt-2 w-full" aria-label="Price Range" />
-        </.field>
         """
       },
       %Variation{

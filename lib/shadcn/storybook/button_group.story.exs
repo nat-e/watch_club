@@ -10,12 +10,9 @@ defmodule Shadcn.Storybook.ButtonGroup do
       {WatchClubWeb.UI.Button, [button: 1]},
       {Shadcn.Components.ButtonGroup, [button_group_separator: 1, button_group_text: 1]},
       {Shadcn.Components.Input, [input: 1]},
-      {Shadcn.Components.InputGroup,
-       [input_group: 1, input_group_addon: 1, input_group_input: 1]},
       {Shadcn.Components.DropdownMenu,
        [dropdown_menu: 1, dropdown_menu_item: 1, dropdown_menu_separator: 1]},
       {Shadcn.Components.Select, [select: 1, select_item: 1]},
-      {Shadcn.Components.Popover, [popover: 1]},
       {Lucideicons,
        [
          arrow_right: 1,
@@ -148,28 +145,6 @@ defmodule Shadcn.Storybook.ButtonGroup do
         ]
       },
       %Variation{
-        id: :with_input_group,
-        description: "Nested input group — pill-shaped composer",
-        attributes: %{class: "[--radius:9999rem]"},
-        slots: [
-          """
-          <Shadcn.Components.ButtonGroup.button_group>
-            <.button variant="outline" size="icon" aria-label="Add"><Lucideicons.plus /></.button>
-          </Shadcn.Components.ButtonGroup.button_group>
-          """,
-          """
-          <Shadcn.Components.ButtonGroup.button_group>
-            <.input_group>
-              <.input_group_input placeholder="Send a message..." />
-              <.input_group_addon align="inline-end">
-                <Lucideicons.audio_lines />
-              </.input_group_addon>
-            </.input_group>
-          </Shadcn.Components.ButtonGroup.button_group>
-          """
-        ]
-      },
-      %Variation{
         id: :with_dropdown,
         description: "Split button with dropdown menu",
         slots: [
@@ -208,25 +183,6 @@ defmodule Shadcn.Storybook.ButtonGroup do
           <Shadcn.Components.ButtonGroup.button_group>
             <.button variant="outline" size="icon" aria-label="Send"><Lucideicons.arrow_right /></.button>
           </Shadcn.Components.ButtonGroup.button_group>
-          """
-        ]
-      },
-      %Variation{
-        id: :with_popover,
-        description: "Button group with a popover trigger",
-        slots: [
-          ~s|<.button variant="outline">Edit</.button>|,
-          ~s|<.button variant="outline">Duplicate</.button>|,
-          """
-          <.popover id="bg-popover" align="end">
-            <:trigger>
-              <.button variant="outline" size="icon" aria-label="Settings">
-                <Lucideicons.settings_2 />
-              </.button>
-            </:trigger>
-            <:title>Display options</:title>
-            <:description>Customize what shows up in this view.</:description>
-          </.popover>
           """
         ]
       }
