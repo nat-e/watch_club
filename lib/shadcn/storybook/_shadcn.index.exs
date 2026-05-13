@@ -25,7 +25,6 @@ defmodule Shadcn.Storybook do
   def folder_name, do: "Shadcn"
   def folder_icon, do: {:fa, "palette"}
 
-  def entry("empty"), do: [icon: {:fa, "ghost"}]
   def entry("field"), do: [icon: {:fa, "input-text"}]
   def entry("flash"), do: [icon: {:fa, "bell"}]
   def entry("kbd"), do: [icon: {:fa, "code"}]

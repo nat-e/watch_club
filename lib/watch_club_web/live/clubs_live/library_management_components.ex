@@ -9,10 +9,10 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
 
   def libraries_empty_state(assigns) do
     ~H"""
-    <.empty class="border-border rounded-lg border border-dashed py-10">
-      <:media variant="icon">
-        <Lucideicons.library class="size-8" />
-      </:media>
+    <.empty class="py-10">
+      <:icon>
+        <Lucideicons.library />
+      </:icon>
       <:title>{dgettext("clubs", "No libraries yet")}</:title>
       <:description>
         {dgettext(
