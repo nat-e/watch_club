@@ -52,6 +52,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Sidebar do
             :if={@membership.role == :member}
             membership={@membership}
             current_url={@current_url}
+            myself={@myself}
           />
         </.dropdown_menu>
       </:action>

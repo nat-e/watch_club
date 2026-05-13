@@ -26,7 +26,14 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
       </div>
       <.dropdown_menu>
         <:trigger>
-          <.avatar id={@current_user.id} name={@current_user.username} class="cursor-pointer" />
+          <.button
+            size="icon-sm"
+            variant="ghost"
+            class="rounded-full p-0"
+            aria-label={dgettext("nav", "User menu")}
+          >
+            <.avatar id={@current_user.id} name={@current_user.username} />
+          </.button>
         </:trigger>
         <.dropdown_menu_item href={~p"/settings"}>
           <Lucideicons.settings /> {dgettext("nav", "Settings")}

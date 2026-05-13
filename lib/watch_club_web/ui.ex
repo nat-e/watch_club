@@ -13,6 +13,7 @@ defmodule WatchClubWeb.UI do
       import WatchClubWeb.UI.Badges
       import WatchClubWeb.UI.Button
       import WatchClubWeb.UI.Checkbox
+      import WatchClubWeb.UI.DropdownMenu
       import WatchClubWeb.UI.Input
       import WatchClubWeb.UI.Modal
     end
