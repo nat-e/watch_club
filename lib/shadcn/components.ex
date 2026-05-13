@@ -10,7 +10,6 @@ defmodule Shadcn.Components do
 
   defmacro __using__(_opts) do
     quote do
-      import Shadcn.Components.ButtonGroup
       import Shadcn.Components.Checkbox
       import Shadcn.Components.Dialog
       import Shadcn.Components.DropdownMenu

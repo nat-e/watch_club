@@ -60,10 +60,11 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       phx-hook=".DesktopSearchHook"
       class="hidden sm:block group/desktop-search relative"
     >
-      <.button_group class="w-full group-data-open/desktop-search:border-b-red-500">
+      <div class="flex w-full items-stretch overflow-hidden rounded-control border border-border bg-surface-inset transition-colors group-data-open/desktop-search:rounded-b-none">
         <.select
           field={@form[:location]}
-          button_class="bg-popover group-data-open/desktop-search:rounded-b-none"
+          class="shrink-0"
+          button_class="h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
         >
           <.select_item value="">
             <div class="flex gap-2 items-center">
@@ -88,7 +89,8 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         </.select>
         <.select
           field={@form[:content_type]}
-          button_class="bg-popover"
+          class="shrink-0"
+          button_class="h-control-md rounded-none border-0 border-r border-border-subtle bg-surface-inset shadow-none focus-visible:relative focus-visible:z-10 focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
         >
           <.select_item
             :for={content_type <- SearchContentType.values()}
@@ -104,19 +106,19 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           id="desktop-search-query"
           field={@form[:query]}
           placeholder={placeholder(assigns)}
-          class="ring-0 focus-visible:border-input bg-popover"
+          class="h-control-md flex-1 rounded-none border-0 bg-surface-inset text-text shadow-none ring-0 placeholder:text-text-subtle focus-visible:border-transparent focus-visible:ring-0"
         />
-        <.button
+        <button
           type="submit"
-          variant="secondary"
-          class="bg-popover group-data-open/desktop-search:rounded-b-none"
+          aria-label={dgettext("search", "Search")}
+          class="inline-flex h-control-md shrink-0 items-center justify-center border-l border-border-subtle bg-surface-inset px-3 text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 focus-visible:outline-none"
         >
-          <Lucideicons.search />
-        </.button>
-      </.button_group>
+          <Lucideicons.search class="size-4" />
+        </button>
+      </div>
       <div
         id="desktop-search-preview"
-        class="hidden group-data-open/desktop-search:block absolute z-50 w-full border border-t-0 rounded-b-md bg-popover divide-y overflow-y-auto min-h-0 "
+        class="hidden group-data-open/desktop-search:block absolute z-50 w-full border border-t-0 border-border rounded-b-control bg-surface-inset divide-y divide-border-subtle shadow-overlay overflow-y-auto min-h-0"
       >
         <.search_overlay_results {assigns} />
       </div>
@@ -144,7 +146,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
         phx-change="preview_search"
         phx-submit="open_search"
         phx-target={@myself}
-        class="hidden flex-col z-50 fixed inset-0 bg-card border-b p-2"
+        class="hidden flex-col z-50 fixed inset-0 bg-surface border-b border-border p-2"
       >
         <.search_overlay_header
           current_user={@current_user}
@@ -159,11 +161,11 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               search_results={@search_results}
             />
           </div>
-          <div id="mobile-overlay-search-location" class="hidden absolute inset-0 bg-card">
+          <div id="mobile-overlay-search-location" class="hidden absolute inset-0 bg-surface">
             <button
               class={[
-                "flex p-4 gap-4 items-center w-full hover:bg-popover",
-                @form[:location].value == nil && "bg-secondary hover:bg-secondary"
+                "flex p-4 gap-4 items-center w-full hover:bg-surface-hover",
+                @form[:location].value == nil && "bg-surface-selected"
               ]}
               phx-click={
                 hide_overlay_and_change_value(
@@ -179,9 +181,9 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             <button
               :for={membership <- @current_user.memberships}
               class={[
-                "flex p-4 gap-4 items-center w-full hover:bg-popover",
+                "flex p-4 gap-4 items-center w-full hover:bg-surface-hover",
                 @form[:location].value == membership.club.id &&
-                  "bg-secondary hover:bg-secondary"
+                  "bg-surface-selected"
               ]}
               phx-click={
                 hide_overlay_and_change_value(
@@ -201,13 +203,16 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               <span class="truncate">{membership.club.name}</span>
             </button>
           </div>
-          <div id="mobile-overlay-search-content-type" class="hidden h-full absolute inset-0 bg-card">
+          <div
+            id="mobile-overlay-search-content-type"
+            class="hidden h-full absolute inset-0 bg-surface"
+          >
             <button
               :for={content_type <- SearchContentType.values()}
               class={[
-                "flex p-4 gap-4 items-center w-full hover:bg-popover",
+                "flex p-4 gap-4 items-center w-full hover:bg-surface-hover",
                 @form[:content_type].value == content_type &&
-                  "bg-secondary hover:bg-secondary"
+                  "bg-surface-selected"
               ]}
               phx-click={
                 hide_overlay_and_change_value(
@@ -267,7 +272,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
   defp search_overlay_results(assigns) do
     ~H"""
     <.button
-      class="shrink-0 flex justify-center p-2 items-center w-full"
+      class="shrink-0 flex justify-center p-2 items-center w-full border-b-border rounded-none"
       type="submit"
       variant="ghost"
     >
@@ -298,7 +303,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           <.input
             field={@form[:query]}
             placeholder={placeholder(assigns)}
-            class="peer rounded-full bg-input/30 p-4 h-10 items-center pr-8 truncate"
+            class="peer rounded-full bg-surface-inset p-4 h-10 items-center pr-8 truncate"
             phx-debounce="300"
           />
           <.button
@@ -336,7 +341,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               {get_club(@current_user, @form[:location].value).name}
             </span>
           </div>
-          <Lucideicons.chevron_down class="size-5 text-muted-foreground shrink-0" />
+          <Lucideicons.chevron_down class="size-5 text-text-muted shrink-0" />
         </.button>
         <.input id="mobile-search-input-content-type" field={@form[:content_type]} class="hidden" />
         <.button
@@ -351,7 +356,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             <.content_type_icon type={@form[:content_type].value} class="size-5" />
             {SearchContentType.translated_label(@form[:content_type].value)}
           </div>
-          <Lucideicons.chevron_down class="size-5 text-muted-foreground" />
+          <Lucideicons.chevron_down class="size-5 text-text-muted" />
         </.button>
       </div>
     </div>
@@ -362,7 +367,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
 
   defp search_preview_card(assigns) do
     ~H"""
-    <.link class="flex gap-2 hover:bg-accent p-2" href={details_url(@content)}>
+    <.link class="flex gap-2 hover:bg-surface-hover p-2" href={details_url(@content)}>
       <.tmdb_poster
         path={@content.image_path}
         size="w154"
@@ -370,7 +375,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       />
       <div class="flex flex-col h-full gap-2 flex-1">
         <span class="font-bold">{search_preview_title(@content)}</span>
-        <p class="text-muted-foreground line-clamp-2 text-sm">{@content.description}</p>
+        <p class="text-text-muted line-clamp-2 text-sm">{@content.description}</p>
       </div>
     </.link>
     """

@@ -7,7 +7,6 @@ defmodule Shadcn.Storybook.Input do
     do: [
       {WatchClubWeb.UI.Badges, [badge: 1]},
       {WatchClubWeb.UI.Button, [button: 1]},
-      {Shadcn.Components.ButtonGroup, [button_group: 1]},
       {Shadcn.Components.Field,
        [
          field: 1,
@@ -115,15 +114,19 @@ defmodule Shadcn.Storybook.Input do
         """
       },
       %Variation{
-        id: :button_group,
+        id: :with_button,
         description: "Input attached to a trailing button",
         template: """
         <.field>
-          <.field_label for="input-button-group">Search</.field_label>
-          <.button_group>
-            <.input id="input-button-group" placeholder="Type to search..." />
-            <.button variant="outline">Search</.button>
-          </.button_group>
+          <.field_label for="input-with-button">Search</.field_label>
+          <div class="flex w-full items-stretch overflow-hidden rounded-control border border-border bg-surface-inset">
+            <.input
+              id="input-with-button"
+              placeholder="Type to search..."
+              class="h-control-md flex-1 rounded-none border-0 bg-surface-inset text-text shadow-none ring-0 placeholder:text-text-subtle focus-visible:border-transparent focus-visible:ring-0"
+            />
+            <.button variant="secondary" class="rounded-l-none border-y-0 border-r-0 border-border-subtle shadow-none">Search</.button>
+          </div>
         </.field>
         """
       },
