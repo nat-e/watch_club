@@ -10,7 +10,6 @@ defmodule Shadcn.Components do
 
   defmacro __using__(_opts) do
     quote do
-      import Shadcn.Components.Field
       import Shadcn.Components.Flash
       import Shadcn.Components.Kbd
       import Shadcn.Components.Label
