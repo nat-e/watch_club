@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
         id="sidebar-backdrop"
         type="button"
         aria-label={dgettext("nav", "Close navigation")}
-        class="invisible fixed inset-0 z-40 pointer-events-none bg-background/70 opacity-0 backdrop-blur-sm transition-opacity duration-200 ease-out md:hidden"
+        class="invisible fixed inset-0 z-40 pointer-events-none bg-canvas/70 opacity-0 backdrop-blur-sm transition-opacity duration-200 ease-out md:hidden"
         phx-click={hide_sidebar()}
       />
 

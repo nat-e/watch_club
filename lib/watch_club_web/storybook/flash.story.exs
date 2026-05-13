@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Flash do
+defmodule WatchClubWeb.Storybook.Flash do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Flash

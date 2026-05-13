@@ -2,7 +2,6 @@
 
 @import "tailwindcss" source(none);
 @import "../vendor/tw-animate.css";
-@import "./themes/shadcn.css";
 @import "./themes/wc.css";
 @import "./phx.css";
 @import "./base.css";
@@ -12,10 +11,8 @@
 @source "../css";
 @source "../js";
 @source "../../lib/watch_club_web";
-@source "../../lib/shadcn/storybook";
-@source "../../storybook";
 
 .psb-sandbox {
-	@apply bg-background text-foreground font-sans rounded-lg p-8!;
+	@apply bg-canvas text-text font-sans rounded-lg p-8!;
 }
 

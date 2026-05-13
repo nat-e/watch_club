@@ -27,7 +27,7 @@ defmodule WatchClubWeb.Components.Forms do
     <p
       :for={msg <- @errors}
       data-slot="field-error"
-      class={["text-destructive text-sm", @class]}
+      class={["text-danger text-sm", @class]}
       {@rest}
     >
       {translate(msg)}

@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.RadioGroup do
+defmodule WatchClubWeb.Storybook.RadioGroup do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.RadioGroup

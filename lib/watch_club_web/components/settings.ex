@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Components.Settings do
       <div class="flex flex-col gap-4 sm:flex-row items-end sm:justify-between">
         <div class="flex flex-col gap-1">
           <h2 class="text-lg font-semibold leading-none tracking-tight">{@title}</h2>
-          <p :if={@description} class="text-muted-foreground text-sm">
+          <p :if={@description} class="text-text-muted text-sm">
             {@description}
           </p>
         </div>

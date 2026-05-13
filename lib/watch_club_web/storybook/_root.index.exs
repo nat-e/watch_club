@@ -1,8 +1,8 @@
-defmodule Shadcn.Storybook.DesignSystem do
+defmodule WatchClubWeb.Storybook.Root do
   use PhoenixStorybook.Index
 
   def folder_open?, do: true
-  def folder_name, do: "Watch Club Design"
+  def folder_name, do: "Watch Club"
   def folder_icon, do: {:fa, "palette"}
   def folder_index, do: 0
 

@@ -101,8 +101,8 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
   defp club_selection_checkbox(%{selected?: false} = assigns) do
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-secondary/50",
-      @selected? && "bg-secondary text-secondary-foreground"
+      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-surface-raised/50",
+      @selected? && "bg-surface-selected text-text"
     ]}>
       <div class="flex gap-2 items-center font-bold">
         <.avatar id={@club.id} name={@club.name} />
@@ -132,8 +132,8 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-secondary/50",
-      @selected? && "bg-secondary text-secondary-foreground"
+      "flex h-16 w-full flex-row justify-between items-center border rounded-md p-4 hover:bg-surface-raised/50",
+      @selected? && "bg-surface-selected text-text"
     ]}>
       <div class="flex gap-2 items-center font-bold">
         <.avatar id={@club.id} name={@club.name} />

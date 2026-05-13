@@ -1,4 +1,4 @@
-<div class="min-h-svh bg-background text-text [--wc-sidebar-width:16rem]">
+<div class="min-h-svh bg-canvas text-text [--wc-sidebar-width:16rem]">
   <.live_component
     id="sidebar"
     module={WatchClubWeb.Live.Nav.SidebarComponent}
@@ -12,7 +12,7 @@
       class="absolute z-0 h-[400px] w-full xl:h-[500px] bg-emerald-400"
     >
       {render_slot(@backdrop)}
-      <div class="to-background from-background/50 absolute inset-0 bg-linear-to-b"></div>
+      <div class="to-canvas from-canvas/50 absolute inset-0 bg-linear-to-b"></div>
     </div>
     <.live_component
       id="nabar"

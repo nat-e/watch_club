@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Label do
+defmodule WatchClubWeb.Storybook.Label do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Label

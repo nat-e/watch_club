@@ -2,8 +2,7 @@ defmodule WatchClubWeb.UI do
   @moduledoc """
   Watch Club UI primitives.
 
-  This namespace is the token-driven replacement layer for new UI code. Import it
-  explicitly while legacy shadcn components are still globally available.
+  This namespace contains the token-driven UI primitives used by the app.
   """
 
   defmacro __using__(_opts) do

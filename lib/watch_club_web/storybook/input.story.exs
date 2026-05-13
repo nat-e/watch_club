@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Input do
+defmodule WatchClubWeb.Storybook.Input do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Input

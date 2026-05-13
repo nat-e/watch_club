@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Checkbox do
+defmodule WatchClubWeb.Storybook.Checkbox do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Checkbox

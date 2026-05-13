@@ -1,4 +1,4 @@
-defmodule Shadcn.Storybook.DesignSystem.Button do
+defmodule WatchClubWeb.Storybook.Button do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Button

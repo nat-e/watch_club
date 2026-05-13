@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Empty do
+defmodule WatchClubWeb.Storybook.Empty do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Empty

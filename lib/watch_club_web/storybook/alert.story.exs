@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Alert do
+defmodule WatchClubWeb.Storybook.Alert do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Alert

@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Badge do
+defmodule WatchClubWeb.Storybook.Badge do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Badges

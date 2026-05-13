@@ -42,7 +42,7 @@ defmodule WatchClubWeb.Components.EditableLabel do
           type="button"
           data-editable-label-edit
           class={[
-            "text-muted-foreground hover:text-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-md",
+            "text-text-muted hover:text-text inline-flex size-8 shrink-0 items-center justify-center rounded-md",
             @button_class
           ]}
           aria-label={@input_label}
@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Components.EditableLabel do
         type="text"
         value={@value}
         class={[
-          "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "h-9 w-full min-w-0 rounded-md border border-border bg-transparent px-2 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @input_class
         ]}
         aria-label={@input_label}

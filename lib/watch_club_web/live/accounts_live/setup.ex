@@ -8,7 +8,7 @@ defmodule WatchClubWeb.AccountsLive.Setup do
   def render(assigns) do
     ~H"""
     <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome to watch.club!")}>
-      <div class="flex flex-col text-muted-foreground gap-2">
+      <div class="flex flex-col text-text-muted gap-2">
         <p>
           {dgettext(
             "auth",

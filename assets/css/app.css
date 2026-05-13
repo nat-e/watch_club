@@ -4,7 +4,6 @@
 
 @import "tailwindcss" source(none);
 @import "../vendor/tw-animate.css";
-@import "./themes/shadcn.css";
 @import "./themes/wc.css";
 @import "./phx.css";
 @import "./base.css";

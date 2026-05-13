@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Table do
+defmodule WatchClubWeb.Storybook.Table do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Table

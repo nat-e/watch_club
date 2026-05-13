@@ -1,5 +1,0 @@
-@layer components.base {
-	[data-slot="skeleton"] {
-		@apply animate-pulse rounded-md bg-muted;
-	}
-}

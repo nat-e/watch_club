@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Kbd do
+defmodule WatchClubWeb.Storybook.Kbd do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Kbd

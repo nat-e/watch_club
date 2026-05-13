@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.DropdownMenu do
+defmodule WatchClubWeb.Storybook.DropdownMenu do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.DropdownMenu

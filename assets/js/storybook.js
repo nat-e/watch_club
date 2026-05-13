@@ -7,7 +7,7 @@ import componentsHooks from "./components";
 
 // Mirror theme + color-mode classes from `.psb-sandbox` onto `<body>`.
 //
-// Phoenix Storybook scopes theme variables (`--popover`, `--shadow-md`, …)
+// Phoenix Storybook scopes theme variables (`--wc-color-surface-overlay`, `--shadow-md`, …)
 // to the `.psb-sandbox` container so the sidebar / chrome aren't themed.
 // But popover-style overlays (select, dropdown_menu, popover, …) portal
 // their floating content to `<body>` to escape transformed ancestors —

@@ -1,4 +1,4 @@
-defmodule Shadcn.Storybook.DesignSystem.DesignTokens do
+defmodule WatchClubWeb.Storybook.DesignTokens do
   use PhoenixStorybook.Story, :page
   use Phoenix.Component
 

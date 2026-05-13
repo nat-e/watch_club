@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Avatar do
+defmodule WatchClubWeb.Storybook.Avatar do
   use PhoenixStorybook.Story, :component
 
   alias WatchClubWeb.UI.Avatar

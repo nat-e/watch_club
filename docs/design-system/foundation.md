@@ -129,7 +129,7 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 ## Component strategy
 
 - Build `WatchClubWeb.UI` primitives on top of these tokens.
-- Feature code should use Watch Club components, not raw shadcn components.
+- Feature code should use Watch Club UI primitives instead of raw styling when a primitive exists.
 - Tokens are allowed in UI primitive implementations.
 - Product/domain components should compose UI primitives.
 
@@ -144,4 +144,4 @@ Initial UI primitive order:
 
 ## Migration rule
 
-Existing shadcn components are legacy. New or migrated screens should use Watch Club UI primitives. Migrate one component family or screen at a time.
+New or migrated screens should use Watch Club UI primitives. Migrate one component family or screen at a time.

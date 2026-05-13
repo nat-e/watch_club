@@ -4,7 +4,7 @@ defmodule WatchClubWeb.Storybook do
     otp_app: :watch_club,
 
     # Path to your storybook stories (required).
-    content_path: Path.expand("../shadcn/storybook", __DIR__),
+    content_path: Path.expand("storybook", __DIR__),
 
     # Path to your JS asset, which will be loaded just before PhoenixStorybook&#39;s own
     # JS. It&#39;s mainly intended to define your LiveView Hooks in `window.storybook.Hooks`.
@@ -40,8 +40,7 @@ defmodule WatchClubWeb.Storybook do
     #
     # If no theme has been selected or if no theme is present in the URL the first one is enabled.
     themes: [
-      wc: [name: "Watch Club"],
-      shadcn: [name: "Shadcn"]
+      wc: [name: "Watch Club"]
     ],
 
     # Color mode settings. Defaults to false and &#39;dark&#39;.

@@ -111,7 +111,6 @@ defmodule WatchClubWeb do
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
-      use Shadcn.Components
       use WatchClubWeb.UI
 
       # Common modules used in templates

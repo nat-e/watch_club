@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Storybook.DesignSystem.Modal do
+defmodule WatchClubWeb.Storybook.Modal do
   use PhoenixStorybook.Story, :example
 
   import WatchClubWeb.UI.Alert

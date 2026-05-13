@@ -40,7 +40,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       event="reorder_libraries"
       target={@target}
       class="flex flex-col gap-2"
-      item_class="border-border bg-background group flex flex-col gap-3 rounded-lg border p-3 shadow-xs transition-colors hover:bg-muted/40 sm:flex-row sm:items-start"
+      item_class="border-border bg-surface group flex flex-col gap-3 rounded-lg border p-3 shadow-xs transition-colors hover:bg-surface-hover sm:flex-row sm:items-start"
     >
       <:item :let={{library, _index}}>
         <.library_list_item library={library} target={@target} />
@@ -57,7 +57,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
     <button
       type="button"
       data-sortable-handle
-      class="text-muted-foreground hover:text-foreground mt-1 inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-md active:cursor-grabbing"
+      class="text-text-muted hover:text-text mt-1 inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-md active:cursor-grabbing"
       aria-label={dgettext("clubs", "Drag to reorder")}
     >
       <Lucideicons.grip_vertical class="size-5" />
