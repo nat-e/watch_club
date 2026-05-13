@@ -26,7 +26,10 @@ Rules:
 
 ## Coding style
 
-- 
+### CSS
+
+- Inline the CSS styles directly in the HEEX templates. Do not extract them to elixir functions, this makes the code harder to read and comprehend. If you find yourself duplicating them, it is often a sign that you need to extract a function component.
+- Use tailwind classes based onsemantic token from our design system as defined in `@docs/design-system/foundations.md`
 
 ## Coding guidelines
 

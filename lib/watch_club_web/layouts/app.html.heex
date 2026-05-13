@@ -1,11 +1,12 @@
-<.sidebar_provider id="sidebar">
+<div class="min-h-svh bg-background text-text [--wc-sidebar-width:16rem]">
   <.live_component
     id="sidebar"
     module={WatchClubWeb.Live.Nav.SidebarComponent}
     current_url={@current_url}
     current_user={@current_user}
   />
-  <.sidebar_inset class="relative">
+
+  <main class="relative min-h-svh md:pl-[var(--wc-sidebar-width)]">
     <div
       :if={@backdrop != []}
       class="absolute z-0 h-[400px] w-full xl:h-[500px] bg-emerald-400"
@@ -22,7 +23,7 @@
     <div class={["flex flex-col p-4 gap-6 z-1", @class]}>
       {render_slot(@inner_block)}
     </div>
-  </.sidebar_inset>
-</.sidebar_provider>
+  </main>
+</div>
 
 <.flash flash={@flash} />

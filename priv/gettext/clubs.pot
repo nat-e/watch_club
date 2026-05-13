@@ -47,7 +47,7 @@ msgid "Club Name"
 msgstr ""
 
 #: lib/watch_club_web/live/clubs_live/settings.ex:13
-#: lib/watch_club_web/live/nav/components/sidebar.ex:74
+#: lib/watch_club_web/live/nav/sidebar_component.ex:201
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr ""
@@ -84,7 +84,7 @@ msgid "Create new club"
 msgstr ""
 
 #: lib/watch_club_web/live/nav/components/modals.ex:54
-#: lib/watch_club_web/live/nav/components/sidebar.ex:83
+#: lib/watch_club_web/live/nav/sidebar_component.ex:215
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr ""
@@ -121,7 +121,7 @@ msgid "Leave"
 msgstr ""
 
 #: lib/watch_club_web/live/nav/components/modals.ex:105
-#: lib/watch_club_web/live/nav/components/sidebar.ex:96
+#: lib/watch_club_web/live/nav/sidebar_component.ex:228
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr ""
@@ -131,7 +131,7 @@ msgstr ""
 msgid "Manage and invite new members"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/sidebar.ex:71
+#: lib/watch_club_web/live/nav/sidebar_component.ex:194
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr ""

@@ -3,6 +3,8 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
 
   import WatchClubWeb.Live.Nav.Components.Search
 
+  alias WatchClubWeb.Live.Nav.SidebarComponent
+
   @max_search_results 5
 
   @impl true
@@ -14,8 +16,9 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
           variant="ghost"
           size="icon-sm"
           class="block md:hidden"
-          aria-label="Toggle sidebar"
-          phx-click={JS.dispatch("wc:sidebar-toggle", to: "#sidebar")}
+          aria-label={dgettext("nav", "Open navigation")}
+          aria-controls="sidebar-panel"
+          phx-click={SidebarComponent.show_sidebar()}
         >
           <Lucideicons.menu class="size-6 font-bold" />
         </.button>
