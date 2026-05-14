@@ -32,6 +32,7 @@ defmodule WatchClubWeb.Components.ReorderableList do
         id={"#{@id}-#{item_id(item, @item_id)}"}
         data-sortable-id={item_id(item, @item_id)}
         class={@item_class}
+        :key={item.id}
       >
         {render_slot(@item, {item, index})}
       </li>

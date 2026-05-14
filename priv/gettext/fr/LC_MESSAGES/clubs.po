@@ -276,19 +276,19 @@ msgid "You left %{club_name}"
 msgstr "Vous avez quitté %{club_name}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:104
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:122
 #, elixir-autogen, elixir-format
 msgid "Add a new library to this club. Multiple libraries can use the same content type."
 msgstr "Ajoutez une nouvelle bibliothèque à ce club. Plusieurs bibliothèques peuvent utiliser le même type de contenu."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:118
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:136
 #, elixir-autogen, elixir-format
 msgid "Content type"
 msgstr "Type de contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:194
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:216
 #, elixir-autogen, elixir-format
 msgid "Could not load club libraries"
 msgstr "Impossible de charger les bibliothèques du club"
@@ -302,8 +302,8 @@ msgstr "Créez des bibliothèques pour ajouter des films, des séries TV ou des 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs_live/library_management_component.ex:27
 #: lib/watch_club_web/live/clubs_live/library_management_components.ex:25
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:102
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:142
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:120
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:160
 #, elixir-autogen, elixir-format
 msgid "Create library"
 msgstr "Créer une bibliothèque"
@@ -315,14 +315,19 @@ msgid "Create, rename, delete, and reorder club libraries. Multiple libraries ca
 msgstr "Créez, renommez, supprimez et réorganisez les bibliothèques du club. Plusieurs bibliothèques peuvent utiliser le même type de contenu."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:156
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:204
 #, elixir-autogen, elixir-format
 msgid "Delete %{library_name}?"
 msgstr "Supprimer %{library_name} ?"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:87
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:175
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:107
+#, elixir-autogen, elixir-format
+msgid "Delete Library"
+msgstr "Supprimer la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:223
 #, elixir-autogen, elixir-format
 msgid "Delete library"
 msgstr "Supprimer la bibliothèque"
@@ -334,19 +339,13 @@ msgid "Drag to reorder"
 msgstr "Faire glisser pour réordonner"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:146
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:180
 #, elixir-autogen, elixir-format
 msgid "Error deleting library, try again later"
 msgstr "Erreur lors de la suppression de la bibliothèque, réessayez plus tard"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:181
-#, elixir-autogen, elixir-format
-msgid "Error renaming library, try again later"
-msgstr "Erreur lors du renommage de la bibliothèque, réessayez plus tard"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:121
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:155
 #, elixir-autogen, elixir-format
 msgid "Error reordering libraries, try again later"
 msgstr "Erreur lors de la réorganisation des bibliothèques, réessayez plus tard"
@@ -364,19 +363,26 @@ msgid "Libraries"
 msgstr "Bibliothèques"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:91
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:97
 #, elixir-autogen, elixir-format
 msgid "Library created"
 msgstr "Bibliothèque créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:137
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:171
 #, elixir-autogen, elixir-format
 msgid "Library deleted"
 msgstr "Bibliothèque supprimée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:116
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:88
+#, elixir-autogen, elixir-format
+msgid "Library actions"
+msgstr "Actions de la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:134
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "Library name"
 msgstr "Nom de la bibliothèque"
@@ -394,19 +400,21 @@ msgid "No libraries yet"
 msgstr "Aucune bibliothèque pour le moment"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:72
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:99
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:174
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:190
 #, elixir-autogen, elixir-format
-msgid "Rename library"
+msgid "Rename Library"
 msgstr "Renommer la bibliothèque"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:161
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:209
 #, elixir-autogen, elixir-format
 msgid "The underlying content records will not be deleted."
 msgstr "Les contenus sous-jacents ne seront pas supprimés."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:158
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:206
 #, elixir-autogen, elixir-format
 msgid "This will remove the library from the club."
 msgstr "Cela retirera la bibliothèque du club."

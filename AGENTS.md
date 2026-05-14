@@ -16,13 +16,13 @@ Rules:
 - Comment messages with `# AI-translated (Claude)` when translating in the .po files
 
 
-
-## Planning changes
+## Brainstorming
 
 - Start by interviewing the user to understand their needs and requirements
 - Focus on code architecture and design, not implementation details
 - When multiple viable approaches are available and there is no clear project guidelines to decide, ask the user
 - Use the `/plannotator` extension to present the design to the user and iterate on feedback
+- When asked to brainstorm UI/UX, create a temporary storybook page to illustrate your design ideas.
 
 ## Coding style
 

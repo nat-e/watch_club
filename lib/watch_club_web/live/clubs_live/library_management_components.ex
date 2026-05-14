@@ -40,7 +40,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
       event="reorder_libraries"
       target={@target}
       class="grid gap-related"
-      item_class="group flex flex-col gap-related rounded-control border border-border bg-surface p-group shadow-xs transition-colors hover:bg-surface-hover sm:flex-row sm:items-start"
+      item_class="group grid gap-group rounded-card border border-border bg-surface-raised p-group shadow-xs transition-colors hover:bg-surface-hover sm:grid-cols-[auto_auto_1fr_auto] sm:items-center"
     >
       <:item :let={{library, _index}}>
         <.library_list_item library={library} target={@target} />
@@ -57,38 +57,56 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
     <button
       type="button"
       data-sortable-handle
-      class="mt-tight inline-flex size-control-sm shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:text-text active:cursor-grabbing"
+      class="inline-flex size-control-sm shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:bg-surface-hover hover:text-text active:cursor-grabbing"
       aria-label={dgettext("clubs", "Drag to reorder")}
     >
       <Lucideicons.grip_vertical class="size-icon" />
     </button>
 
-    <.editable_label
-      id={"library-name-#{@library.id}"}
-      value={@library.name}
-      event="rename_library"
-      payload={%{library_id: @library.id}}
-      target={@target}
-      label={dgettext("clubs", "Rename library")}
-      class="min-w-0 flex-1 sm:pt-tight"
-      text_class="truncate font-medium"
-    />
+    <div class={[
+      "grid min-w-28 justify-self-start gap-tight rounded-control border p-related text-center sm:min-h-touch-target sm:place-items-center",
+      @library.content_type == :movie && "border-[#FF9F6E]/40 bg-[#FF9F6E]/10 text-[#FFB38A]",
+      @library.content_type == :tv_show && "border-[#7DA6FF]/40 bg-[#7DA6FF]/10 text-[#9AB8FF]",
+      @library.content_type == :book && "border-[#B8D87A]/40 bg-[#B8D87A]/10 text-[#CBE88B]"
+    ]}>
+      <.content_type_icon type={@library.content_type} class="mx-auto size-icon-lg" />
+      <span class="text-sm font-semibold leading-none">
+        {ContentType.translated_label(@library.content_type)}
+      </span>
+    </div>
 
-    <.inline class="shrink-0 sm:pt-tight">
-      <.content_type_badge type={@library.content_type} />
+    <div class="min-w-0">
+      <h3 class="truncate text-base font-semibold">{@library.name}</h3>
+    </div>
 
-      <.button
-        variant="ghost"
-        size="icon-sm"
-        class="text-danger hover:text-danger"
+    <.dropdown_menu class="justify-self-start sm:justify-self-end">
+      <:trigger>
+        <.button
+          variant="ghost"
+          size="icon-sm"
+          class="text-text-muted hover:text-text"
+          aria-label={dgettext("clubs", "Library actions")}
+        >
+          <Lucideicons.ellipsis_vertical />
+        </.button>
+      </:trigger>
+
+      <.dropdown_menu_item
+        phx-click="open_rename_library_modal"
+        phx-target={@target}
+        phx-value-library_id={@library.id}
+      >
+        <Lucideicons.pencil />{dgettext("clubs", "Rename Library")}
+      </.dropdown_menu_item>
+      <.dropdown_menu_item
+        variant="destructive"
         phx-click="open_delete_library_modal"
         phx-target={@target}
         phx-value-library_id={@library.id}
-        aria-label={dgettext("clubs", "Delete library")}
       >
-        <Lucideicons.trash_2 class="size-icon-sm" />
-      </.button>
-    </.inline>
+        <Lucideicons.trash_2 />{dgettext("clubs", "Delete Library")}
+      </.dropdown_menu_item>
+    </.dropdown_menu>
     """
   end
 
@@ -140,6 +158,36 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
           </.button>
           <.button type="submit">
             {dgettext("clubs", "Create library")}
+          </.button>
+        </:action>
+      </.form>
+    </.modal>
+    """
+  end
+
+  attr :form, Phoenix.HTML.Form, required: true
+  attr :target, :any, default: nil
+
+  def rename_library_modal(assigns) do
+    ~H"""
+    <.modal id="rename-library-modal" on_close={push_to_target("close_modals", @target)}>
+      <:title>{dgettext("clubs", "Rename Library")}</:title>
+      <.form
+        for={@form}
+        id="rename-library-form"
+        phx-change="validate_rename_library"
+        phx-submit="submit_rename_library"
+        phx-target={@target}
+        phx-mounted={JS.focus_first()}
+      >
+        <.field field={@form[:name]} label={dgettext("clubs", "Library name")} type="text" />
+
+        <:action>
+          <.button type="button" variant="secondary" data-modal-close>
+            {dgettext("default", "Cancel")}
+          </.button>
+          <.button type="submit">
+            {dgettext("clubs", "Rename Library")}
           </.button>
         </:action>
       </.form>

@@ -232,17 +232,17 @@ msgstr ""
 msgid "You left %{club_name}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:104
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:122
 #, elixir-autogen, elixir-format
 msgid "Add a new library to this club. Multiple libraries can use the same content type."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:118
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:136
 #, elixir-autogen, elixir-format
 msgid "Content type"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:194
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:216
 #, elixir-autogen, elixir-format
 msgid "Could not load club libraries"
 msgstr ""
@@ -254,8 +254,8 @@ msgstr ""
 
 #: lib/watch_club_web/live/clubs_live/library_management_component.ex:27
 #: lib/watch_club_web/live/clubs_live/library_management_components.ex:25
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:102
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:142
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:120
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:160
 #, elixir-autogen, elixir-format
 msgid "Create library"
 msgstr ""
@@ -265,13 +265,17 @@ msgstr ""
 msgid "Create, rename, delete, and reorder club libraries. Multiple libraries can use the same content type."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:156
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:204
 #, elixir-autogen, elixir-format
 msgid "Delete %{library_name}?"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:87
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:175
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:107
+#, elixir-autogen, elixir-format
+msgid "Delete Library"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:223
 #, elixir-autogen, elixir-format
 msgid "Delete library"
 msgstr ""
@@ -281,17 +285,12 @@ msgstr ""
 msgid "Drag to reorder"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:146
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:180
 #, elixir-autogen, elixir-format
 msgid "Error deleting library, try again later"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:181
-#, elixir-autogen, elixir-format
-msgid "Error renaming library, try again later"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:121
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:155
 #, elixir-autogen, elixir-format
 msgid "Error reordering libraries, try again later"
 msgstr ""
@@ -306,17 +305,23 @@ msgstr ""
 msgid "Libraries"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:91
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:97
 #, elixir-autogen, elixir-format
 msgid "Library created"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:137
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:171
 #, elixir-autogen, elixir-format
 msgid "Library deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:116
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:88
+#, elixir-autogen, elixir-format
+msgid "Library actions"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:134
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:183
 #, elixir-autogen, elixir-format
 msgid "Library name"
 msgstr ""
@@ -331,17 +336,19 @@ msgstr ""
 msgid "No libraries yet"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:72
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:99
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:174
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:190
 #, elixir-autogen, elixir-format
-msgid "Rename library"
+msgid "Rename Library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:161
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:209
 #, elixir-autogen, elixir-format
 msgid "The underlying content records will not be deleted."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:158
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:206
 #, elixir-autogen, elixir-format
 msgid "This will remove the library from the club."
 msgstr ""

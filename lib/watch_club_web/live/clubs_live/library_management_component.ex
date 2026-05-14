@@ -38,6 +38,11 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
         content_types={ContentType.values()}
         target={@myself}
       />
+      <.rename_library_modal
+        :if={@rename_library_form}
+        form={@rename_library_form}
+        target={@myself}
+      />
       <.delete_library_modal
         :if={@library_to_delete}
         library={@library_to_delete}
@@ -53,6 +58,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
      assign(socket,
        libraries: [],
        create_library_form: nil,
+       rename_library_form: nil,
        library_to_delete: nil,
        loaded_club_id: nil
      )}
@@ -100,12 +106,45 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
     end
   end
 
-  def handle_event("rename_library", %{"library_id" => library_id, "value" => name}, socket) do
-    socket.assigns.libraries
-    |> Enum.find(&(&1.id == library_id))
-    |> case do
-      %Library{} = library -> rename_library(socket, library, name)
-      nil -> {:noreply, socket}
+  def handle_event("open_rename_library_modal", %{"library_id" => library_id}, socket) do
+    form =
+      socket.assigns.libraries
+      |> Enum.find(&(&1.id == library_id))
+      |> case do
+        %Library{} = library ->
+          library
+          |> Clubs.form_to_update_library(actor: socket.assigns.current_user)
+          |> to_form()
+
+        nil ->
+          nil
+      end
+
+    {:noreply, assign(socket, :rename_library_form, form)}
+  end
+
+  def handle_event("validate_rename_library", %{"form" => params}, socket) do
+    {:noreply,
+     assign(
+       socket,
+       :rename_library_form,
+       AshPhoenix.Form.validate(socket.assigns.rename_library_form, params)
+     )}
+  end
+
+  def handle_event("submit_rename_library", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.rename_library_form,
+           params: params,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, %Library{} = library} ->
+        {:noreply,
+         socket
+         |> assign(:rename_library_form, nil)
+         |> assign(:libraries, replace_library(socket.assigns.libraries, library))}
+
+      {:error, form} ->
+        {:noreply, assign(socket, :rename_library_form, form)}
     end
   end
 
@@ -157,6 +196,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
     {:noreply,
      socket
      |> assign(:create_library_form, nil)
+     |> assign(:rename_library_form, nil)
      |> assign(:library_to_delete, nil)}
   end
 
@@ -169,19 +209,6 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
     socket
     |> assign(:loaded_club_id, club_id)
     |> reload_libraries()
-  end
-
-  defp rename_library(socket, library, name) do
-    case Clubs.update_library(library, %{name: name}, actor: socket.assigns.current_user) do
-      {:ok, %Library{} = library} ->
-        {:noreply, assign(socket, :libraries, replace_library(socket.assigns.libraries, library))}
-
-      {:error, error} ->
-        Logger.warning("Error renaming library: #{inspect(error)}")
-        Flash.send_flash(:error, dgettext("clubs", "Error renaming library, try again later"))
-
-        {:noreply, socket}
-    end
   end
 
   defp reload_libraries(socket) do
