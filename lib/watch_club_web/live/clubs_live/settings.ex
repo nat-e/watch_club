@@ -11,8 +11,14 @@ defmodule WatchClubWeb.ClubsLive.Settings do
       current_url={@current_url}
       current_user={@current_user}
       space="section"
+      class="max-w-panel"
     >
-      <h1 class="text-2xl font-bold">{dgettext("clubs", "Club Settings")}</h1>
+      <.settings_header
+        title={dgettext("clubs", "Club Settings")}
+        description={
+          dgettext("clubs", "Manage %{club_name}'s profile and libraries.", club_name: @club.name)
+        }
+      />
 
       <.settings_section
         title={dgettext("clubs", "General")}
@@ -21,6 +27,7 @@ defmodule WatchClubWeb.ClubsLive.Settings do
         <.form
           for={@form}
           id="update_club_form"
+          class="w-full sm:max-w-sm"
           phx-change="validate_update_club"
           phx-submit="submit_update_club"
           phx-mounted={JS.focus_first()}
@@ -29,7 +36,6 @@ defmodule WatchClubWeb.ClubsLive.Settings do
             field={@form[:name]}
             label={dgettext("clubs", "Club Name")}
             type="text"
-            input_class="w-full sm:w-80"
           />
           <:action class="sm:justify-start">
             <.button type="submit" class="w-fit">

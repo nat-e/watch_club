@@ -11,17 +11,32 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/settings.ex:54
+#: lib/watch_club_web/live/accounts_live/settings.ex:73
 #, elixir-autogen, elixir-format
 msgid "Error updating settings"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/settings.ex:18
+#: lib/watch_club_web/live/accounts_live/settings.ex:32
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/settings.ex:10
+#: lib/watch_club_web/live/accounts_live/settings.ex:17
 #, elixir-autogen, elixir-format
 msgid "Settings"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/settings.ex:23
+#, elixir-autogen, elixir-format
+msgid "Choose the language used across Watch Club."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/settings.ex:18
+#, elixir-autogen, elixir-format
+msgid "Manage your account preferences."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts_live/settings.ex:22
+#, elixir-autogen, elixir-format
+msgid "Preferences"
 msgstr ""

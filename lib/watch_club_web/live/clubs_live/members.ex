@@ -9,24 +9,38 @@ defmodule WatchClubWeb.ClubsLive.Members do
       current_url={@current_url}
       current_user={@current_user}
       space="section"
+      class="max-w-layout-page"
     >
-      <.stack space="related" class="max-w-layout-page">
-        <.inline space="group" class="items-end justify-between">
-          <.stack space="tight">
-            <h1>{dgettext("clubs", "Members")}</h1>
-            <p class="text-text-muted">{dgettext("clubs", "Manage and invite new members")}</p>
-          </.stack>
+      <.settings_header
+        title={dgettext("clubs", "Members")}
+        description={
+          dgettext("clubs", "Manage %{club_name}'s members and invitations.", club_name: @club.name)
+        }
+      />
+
+      <.settings_section
+        title={dgettext("clubs", "Members and invitations")}
+        description={
+          dgettext(
+            "clubs",
+            "Review who can access the club and share one-time invitation links."
+          )
+        }
+      >
+        <:action>
           <.button phx-click="open_create_invitation_modal">
+            <Lucideicons.plus />
             {dgettext("clubs", "Invite member")}
           </.button>
-        </.inline>
+        </:action>
+
         <.table>
           <.table_header>
             <.table_row>
-              <.table_head>{dgettext("clubs", "User")}</.table_head>
+              <.table_head class="text-left">{dgettext("clubs", "User")}</.table_head>
               <.table_head>{dgettext("clubs", "Role")}</.table_head>
               <.table_head>{dgettext("clubs", "Member since")}</.table_head>
-              <.table_head>{dgettext("clubs", "Invited by")}</.table_head>
+              <.table_head class="text-left">{dgettext("clubs", "Invited by")}</.table_head>
               <.table_head class="text-right"></.table_head>
             </.table_row>
           </.table_header>
@@ -45,7 +59,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
             />
           </.table_body>
         </.table>
-      </.stack>
+      </.settings_section>
       <.remove_member_modal :if={@membership_to_remove} membership={@membership_to_remove} />
       <.create_invitation_modal :if={@create_invitation_form} form={@create_invitation_form} />
       <.view_invitation_modal
@@ -67,8 +81,8 @@ defmodule WatchClubWeb.ClubsLive.Members do
   defp member_row(assigns) do
     ~H"""
     <.table_row>
-      <.table_cell>
-        <.inline class="justify-center font-bold">
+      <.table_cell class="text-left">
+        <.inline class="font-bold">
           <.avatar id={@membership.user.id} name={@membership.user.username} />
           {@membership.user.username}
         </.inline>
@@ -79,8 +93,8 @@ defmodule WatchClubWeb.ClubsLive.Members do
       <.table_cell>
         {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
       </.table_cell>
-      <.table_cell>
-        <.inline :if={@membership.invitation} class="justify-center font-bold">
+      <.table_cell class="text-left">
+        <.inline :if={@membership.invitation} class="font-bold">
           <.avatar
             id={@membership.invitation.inviter.id}
             name={@membership.invitation.inviter.username}
@@ -112,8 +126,8 @@ defmodule WatchClubWeb.ClubsLive.Members do
   defp invitation_row(assigns) do
     ~H"""
     <.table_row class="text-text-muted">
-      <.table_cell>
-        <.inline class="justify-center font-bold italic">
+      <.table_cell class="text-left">
+        <.inline class="font-bold italic">
           {@invitation.name}
         </.inline>
       </.table_cell>
@@ -121,8 +135,8 @@ defmodule WatchClubWeb.ClubsLive.Members do
         <.invitation_status_badge invitation={@invitation} />
       </.table_cell>
       <.table_cell></.table_cell>
-      <.table_cell>
-        <.inline class="justify-center font-bold">
+      <.table_cell class="text-left">
+        <.inline class="font-bold">
           <.avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
           {@invitation.inviter.username}
         </.inline>
@@ -217,12 +231,29 @@ defmodule WatchClubWeb.ClubsLive.Members do
         phx-change="validate_create_invitation"
         phx-submit="submit_create_invitation"
       >
-        <.field field={@form[:name]} label="Name" type="name" autocomplete="name" />
-        <.field field={@form[:role]} label="Club Role">
+        <.field
+          field={@form[:name]}
+          label={dgettext("clubs", "Name")}
+          type="text"
+          autocomplete="name"
+        />
+        <.field field={@form[:role]} label={dgettext("clubs", "Club Role")}>
           <:control>
-            <.radio_group field={@form[:role]}>
-              <:item value="member">{dgettext("clubs", "Member")}</:item>
-              <:item value="admin">{dgettext("clubs", "Admin")}</:item>
+            <.radio_group field={@form[:role]} class="grid-cols-1 sm:grid-cols-2">
+              <:item
+                value="member"
+                class="group/radio-card grid cursor-pointer grid-cols-[1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
+              >
+                <span class="font-medium">{dgettext("clubs", "Member")}</span>
+                <Lucideicons.check class="size-icon-sm text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
+              </:item>
+              <:item
+                value="admin"
+                class="group/radio-card grid cursor-pointer grid-cols-[1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
+              >
+                <span class="font-medium">{dgettext("clubs", "Admin")}</span>
+                <Lucideicons.check class="size-icon-sm text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
+              </:item>
             </.radio_group>
           </:control>
         </.field>
@@ -368,7 +399,7 @@ defmodule WatchClubWeb.ClubsLive.Members do
          socket
          |> assign(:create_invitation_form, nil)
          |> assign(:invitation_to_view, invitation)
-         |> put_flash(:success, "Invitation created")}
+         |> put_flash(:success, dgettext("clubs", "Invitation created"))}
 
       {:error, form} ->
         {:noreply, assign(socket, create_invitation_form: form)}
@@ -403,7 +434,9 @@ defmodule WatchClubWeb.ClubsLive.Members do
     Clubs.destroy_invitation!(invitation, actor: user)
 
     {:noreply,
-     socket |> assign(:invitation_to_destroy, nil) |> put_flash(:success, "Invitation deleted")}
+     socket
+     |> assign(:invitation_to_destroy, nil)
+     |> put_flash(:success, dgettext("clubs", "Invitation deleted"))}
   end
 
   def handle_event("open_view_invitation_modal", %{"invitation_id" => invitation_id}, socket) do
