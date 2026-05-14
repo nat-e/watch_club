@@ -33,6 +33,18 @@ defmodule WatchClub.Clubs.Library do
       filter expr(club_id == ^arg(:club_id))
     end
 
+    read :view_library do
+      prepare fn query, context ->
+        Ash.Query.load(query, [
+          :club,
+          items: [
+            :library,
+            content: Ash.Query.for_read(Content, :for_view, %{}, scope: context)
+          ]
+        ])
+      end
+    end
+
     update :set_index do
       accept [:index]
     end
@@ -91,7 +103,7 @@ defmodule WatchClub.Clubs.Library do
       authorize_if ActorIsClubMember
     end
 
-    policy action(:read) do
+    policy action([:read, :view_library]) do
       description "Only club members can read library"
       authorize_if ActorIsClubMemberFilter
     end
@@ -156,6 +168,11 @@ defmodule WatchClub.Clubs.Library do
     belongs_to :club, Club do
       public? true
       allow_nil? false
+    end
+
+    has_many :items, LibraryItem do
+      public? true
+      sort inserted_at: :desc
     end
 
     many_to_many :contents, Content, through: LibraryItem

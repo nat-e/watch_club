@@ -36,6 +36,7 @@ defmodule WatchClub.Contents.Actions.GetMovieDetails do
       title: details.title,
       description: details.overview,
       image_path: details.poster_path,
+      origin_country: List.first(details.origin_country),
       release_date: details.release_date,
       details: details,
       in_libraries: (content && content.library_items) || []

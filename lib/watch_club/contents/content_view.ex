@@ -45,6 +45,10 @@ defmodule WatchClub.Contents.ContentView do
       allow_nil?: true,
       description: "A path to the localized image of the content for the current user"
 
+    field :origin_country, :string,
+      allow_nil?: true,
+      description: "The ISO 3166_1 code of the main production country of the content"
+
     field :release_date, :struct,
       constraints: [instance_of: Date],
       allow_nil?: true,
@@ -68,16 +72,32 @@ defmodule WatchClub.Contents.ContentView do
           title: String.t(),
           description: String.t(),
           image_path: String.t() | nil,
+          origin_country: String.t() | nil,
           release_date: Date.t() | nil,
           details: MovieDetailsResponse | nil,
           in_libraries: [LibraryItem.t()]
         }
 
-  def in_clubs(context, current_user) do
+  def unique_id(content), do: "#{content.external_id_source}-#{content.external_id}"
+
+  def details_url(%ContentView{type: :book} = content), do: "/books/#{content.external_id}"
+  def details_url(%ContentView{type: :movie} = content), do: "/movies/#{content.external_id}"
+  def details_url(%ContentView{type: :tv_show} = content), do: "/shows/#{content.external_id}"
+
+  def country_flag(%ContentView{origin_country: country}) do
+    country
+    |> String.upcase()
+    |> String.to_charlist()
+    |> Enum.map(&(&1 + 127_397))
+    |> List.to_string()
+  end
+
+  def in_clubs(content, current_user) do
     memberships_by_club_id = Map.new(current_user.memberships, fn m -> {m.club_id, m} end)
 
-    context.in_libraries
-    |> Enum.map(fn item -> Map.fetch!(memberships_by_club_id, item.club_id).club end)
+    content.in_libraries
+    |> Enum.map(fn item -> Map.fetch!(memberships_by_club_id, item.library.club_id).club end)
+    |> Enum.uniq_by(& &1.id)
   end
 
   def from_content(%Content{implementation: %Movie{} = movie} = content, locale) do
@@ -100,6 +120,7 @@ defmodule WatchClub.Contents.ContentView do
       title: title,
       description: overview,
       image_path: poster_path,
+      origin_country: content.origin_country,
       release_date: content.release_date,
       details: nil,
       in_libraries: content.library_items

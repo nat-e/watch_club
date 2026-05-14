@@ -3,6 +3,7 @@ defmodule WatchClub.Clubs.ContentTest do
 
   import WatchClub.Contents
 
+  alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Contents.{Content, Movie, MovieLocalization}
 
   setup do
@@ -13,7 +14,8 @@ defmodule WatchClub.Clubs.ContentTest do
     generate(membership(club, member, role: :member))
 
     Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-      Req.Test.json(conn, tmdb_fixture("movie_details_11"))
+      tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+      Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", tmdb_id))
     end)
 
     {:ok, admin: admin, club: club, member: member}
@@ -34,6 +36,19 @@ defmodule WatchClub.Clubs.ContentTest do
                  ]
                }
              } = create_movie!("11")
+    end
+  end
+
+  describe "set_club_libraries/*" do
+    test "adds content to selected club libraries", %{club: club, member: member} do
+      library = generate(library(club, content_type: :movie))
+      library_id = library.id
+      content = generate(movie())
+
+      assert %Content{library_items: [%LibraryItem{library_id: ^library_id} = item]} =
+               set_club_libraries!(content, %{library_ids: [library.id]}, actor: member)
+
+      assert item.library.club_id == club.id
     end
   end
 end

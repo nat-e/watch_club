@@ -47,7 +47,6 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     policy action([:create]) do
       description "Only club members can create library items"
-      authorize_if expr(exists(library.club))
       authorize_if ActorCanCreateLibraryItem
     end
 

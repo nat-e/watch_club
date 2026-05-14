@@ -35,12 +35,15 @@ Rules:
 
 - Focus on readability and maintainability of the code and clear separation of concerns.
 - Don't code defensively, follow Elixir's mantra and "let it crash". Only handle "expected" errors explicitely
+- On the frontend, all components must deal with `ContentView` objects instead of Content, which is an abstraction for a Content that can be or not be backed in DB.
+- Refrain from splitting small helper functions too often, this creates a lot of indirections which makes the code harder to read and reason about. Only extract code to helper functions when it will be reused, or when it is substantial enough that it makes the code harder to reason about.
 
 ## Tests
 
 We write tests for all the functions exposed in our Ash domains and only for those.
 
 - Do not create resources and domain actions only to be used by tests. Tests can use `seed_generator` when they need to do something not exposed by the domain.
+- Do not write tests to test simple read actions
 - One test per resource, that tests all the functions defined in this resource
 - One `describe <function_name/*>` block per function
 - Write one test for the happy case, and tests for valuable error cases (e.g. invalid inputs, policies...). Do not write error cases for tests that would just verify the framework (e.g., testing that a required field is present, or that a simple constraint is matched)

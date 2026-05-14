@@ -466,3 +466,45 @@ msgstr "Nom"
 #, elixir-autogen, elixir-format
 msgid "Review who can access the club and share one-time invitation links."
 msgstr "Vérifiez qui peut accéder au club et partagez des liens d'invitation à usage unique."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents.ex:121
+#, elixir-autogen, elixir-format
+msgid "Actions coming soon"
+msgstr "Actions bientôt disponibles"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents.ex:114
+#, elixir-autogen, elixir-format
+msgid "Content actions"
+msgstr "Actions du contenu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:61
+#, elixir-autogen, elixir-format
+msgid "Could not load library"
+msgstr "Impossible de charger la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:23
+#, elixir-autogen, elixir-format
+msgid "Library is empty"
+msgstr "La bibliothèque est vide"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents.ex:134
+#, elixir-autogen, elixir-format
+msgid "Play"
+msgstr "Lire"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents.ex:95
+#, elixir-autogen, elixir-format
+msgid "Reveal details for %{title}"
+msgstr "Afficher les détails de %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:25
+#, elixir-autogen, elixir-format
+msgid "This library does not have any content yet."
+msgstr "Cette bibliothèque ne contient encore aucun contenu."

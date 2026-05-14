@@ -392,3 +392,38 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Review who can access the club and share one-time invitation links."
 msgstr ""
+
+#: lib/watch_club_web/components/contents.ex:121
+#, elixir-autogen, elixir-format
+msgid "Actions coming soon"
+msgstr ""
+
+#: lib/watch_club_web/components/contents.ex:114
+#, elixir-autogen, elixir-format
+msgid "Content actions"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:61
+#, elixir-autogen, elixir-format
+msgid "Could not load library"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:23
+#, elixir-autogen, elixir-format
+msgid "Library is empty"
+msgstr ""
+
+#: lib/watch_club_web/components/contents.ex:134
+#, elixir-autogen, elixir-format
+msgid "Play"
+msgstr ""
+
+#: lib/watch_club_web/components/contents.ex:95
+#, elixir-autogen, elixir-format
+msgid "Reveal details for %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:25
+#, elixir-autogen, elixir-format
+msgid "This library does not have any content yet."
+msgstr ""

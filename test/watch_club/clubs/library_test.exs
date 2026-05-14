@@ -79,9 +79,9 @@ defmodule WatchClub.Clubs.LibraryTest do
     end
 
     test "recomputes indexes of remaining libraries", %{club: club, admin: admin} do
-      first = generate(library(club, index: 0, name: "First"))
+      _first = generate(library(club, index: 0, name: "First"))
       second = generate(library(club, index: 1, name: "Second"))
-      third = generate(library(club, index: 2, name: "Third"))
+      _third = generate(library(club, index: 2, name: "Third"))
 
       assert :ok = destroy_library!(second, actor: admin)
 

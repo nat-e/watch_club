@@ -2,7 +2,7 @@ defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
-  alias WatchClub.Contents.{Book, Movie, TvShow}
+  alias WatchClub.Contents.{Book, Content, TvShow}
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -116,14 +116,15 @@ defmodule WatchClub.Generator do
 
   def movie(opts \\ []) do
     changeset_generator(
-      Movie,
-      :create,
+      Content,
+      :create_movie,
       defaults: [
-        original_title: sequence(:movie_title, fn i -> "Movie #{i}" end),
-        tmdb_id: sequence(:tmdb_id, fn i -> i end)
+        tmdb_id: Keyword.get(opts, :tmdb_id, sequence(:tmdb_id, fn i -> i end)),
+        library_ids: Keyword.get(opts, :library_ids)
       ],
+      authorize?: false,
       actor: opts[:actor],
-      overrides: opts
+      overrides: Keyword.take(opts, [:tmdb_id, :library_ids])
     )
   end
 

@@ -52,6 +52,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       title: result.title,
       description: result.overview,
       image_path: result.poster_path,
+      origin_country: nil,
       release_date: result.release_date,
       details: nil,
       in_libraries: (content && content.library_items) || []
@@ -67,6 +68,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       title: result.name,
       description: result.overview,
       image_path: result.poster_path,
+      origin_country: nil,
       release_date: result.first_air_date,
       details: nil,
       in_libraries: (content && content.library_items) || []

@@ -3,7 +3,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.{Content, ContentView}
 
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
@@ -59,19 +59,17 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
   defp club_selection_modal(assigns) do
     ~H"""
     <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
-      <:title>{dgettext("contents", "Select clubs")}</:title>
+      <:title>{dgettext("contents", "Select libraries")}</:title>
       <.stack space="group" class="relative w-full max-w-lg">
         <.alert variant="default">
           <:icon><Lucideicons.users class="size-icon-xl" /></:icon>
-          <p class="text-white">
-            {raw(
-              dgettext(
-                "contents",
-                "Select the clubs in which you want to add %{content_name}. Adding the content to the club will make it available for everyone.",
-                content_name: gtboldunder(@content.title)
-              )
-            )}
-          </p>
+          {raw(
+            dgettext(
+              "contents",
+              "Add %{content_name} to club libraries to share it with the members of your clubs.",
+              content_name: gtboldunder(@content.title)
+            )
+          )}
         </.alert>
         <.stack space="group">
           <.inline class="justify-around">
@@ -82,12 +80,11 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
             phx-target={@myself}
             phx-submit="submit"
           >
-            <.club_selection_checkbox
-              :for={membership <- @current_user.memberships}
-              club={membership.club}
-              current_user={@current_user}
-              content={@content}
-              selected?={in_club?(@content, membership.club.id)}
+            <.library_selection_checkbox
+              :for={option <- libraries_for_content(@current_user, @content)}
+              club={option.club}
+              library={option.library}
+              selected?={in_library?(@content, option.library.id)}
             />
             <:action>
               <.button type="submit">{dgettext("default", "Save")}</.button>
@@ -99,52 +96,23 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     """
   end
 
-  defp club_selection_checkbox(%{selected?: false} = assigns) do
+  defp library_selection_checkbox(assigns) do
     ~H"""
     <label class={[
       "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
       @selected? && "bg-surface-selected text-text"
     ]}>
-      <.inline class="font-bold">
+      <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
-        {@club.name}
-      </.inline>
+        <div class="min-w-0">
+          <p class="truncate font-bold">{@club.name}</p>
+          <p class="truncate text-sm text-text-muted">{@library.name}</p>
+        </div>
+      </div>
       <.checkbox
-        name="form[club_ids][]"
-        value={@club.id}
+        name="form[library_ids][]"
+        value={@library.id}
         checked={@selected?}
-      />
-    </label>
-    """
-  end
-
-  defp club_selection_checkbox(%{selected?: true} = assigns) do
-    actor = assigns.current_user
-
-    library_item =
-      Enum.find(assigns.content.in_libraries, fn item -> item.club_id == assigns.club.id end)
-
-    assigns =
-      assigns
-      |> assign(
-        :can_remove?,
-        Clubs.can_remove_content_from_club?(actor, library_item)
-      )
-
-    ~H"""
-    <label class={[
-      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
-      @selected? && "bg-surface-selected text-text"
-    ]}>
-      <.inline class="font-bold">
-        <.avatar id={@club.id} name={@club.name} />
-        {@club.name}
-      </.inline>
-      <.checkbox
-        name="form[club_ids][]"
-        value={@club.id}
-        checked={@selected?}
-        disabled={!@can_remove?}
       />
     </label>
     """
@@ -172,7 +140,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
           )
 
         %ContentView{content: content, type: :movie} ->
-          Contents.form_to_set_in_club_libraries(content, actor: actor)
+          Contents.form_to_set_club_libraries(content, actor: actor)
       end
 
     {:noreply, socket |> assign(:form, form)}
@@ -184,12 +152,17 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
   end
 
   def handle_event("submit", params, socket) do
-    club_ids = (params["form"] && params["form"]["club_ids"]) || []
+    library_ids = (params["form"] && params["form"]["library_ids"]) || []
     actor = socket.assigns.current_user
 
-    case AshPhoenix.Form.submit(socket.assigns.form, params: %{club_ids: club_ids}, actor: actor) do
-      {:ok, _content} ->
-        {:noreply, socket |> assign(:form, nil)}
+    case AshPhoenix.Form.submit(socket.assigns.form,
+           params: %{library_ids: library_ids},
+           actor: actor
+         ) do
+      {:ok, %Content{} = content} ->
+        content_view = ContentView.from_content(content, actor.settings.locale)
+
+        {:noreply, socket |> assign(:form, nil) |> assign(:content, content_view)}
 
       {:error, form} ->
         Logger.warning("Error selecting clubs: #{inspect(form.source.errors)}")
@@ -203,7 +176,16 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     end
   end
 
-  defp in_club?(%ContentView{} = content, club_id) do
-    Enum.any?(content.in_libraries, fn library_item -> library_item.club_id == club_id end)
+  defp libraries_for_content(%User{} = user, %ContentView{} = content) do
+    user.memberships
+    |> Enum.flat_map(fn membership ->
+      membership.club.libraries
+      |> Enum.filter(&(&1.content_type == content.type))
+      |> Enum.map(&%{club: membership.club, library: &1})
+    end)
+  end
+
+  defp in_library?(%ContentView{} = content, library_id) do
+    Enum.any?(content.in_libraries, &(&1.library_id == library_id))
   end
 end

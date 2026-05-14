@@ -109,9 +109,9 @@ defmodule WatchClub.Clubs.ClubTest do
                )
 
       assert [
-        %Library{name: "Third", index: 0},
-        %Library{name: "First", index: 1},
-        %Library{name: "Second", index: 2}
+               %Library{name: "Third", index: 0},
+               %Library{name: "First", index: 1},
+               %Library{name: "Second", index: 2}
              ] = list_club_libraries!(club.id, actor: admin)
     end
 

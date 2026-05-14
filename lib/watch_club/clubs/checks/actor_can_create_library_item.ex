@@ -6,6 +6,9 @@ defmodule WatchClub.Clubs.Checks.ActorCanCreateLibraryItem do
 
   require Ash.Query
 
+  alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.Library
+
   @impl true
   def init(options) do
     {:ok, options}
@@ -17,12 +20,12 @@ defmodule WatchClub.Clubs.Checks.ActorCanCreateLibraryItem do
   end
 
   @impl true
-  def match?(_actor, %{changeset: %Ash.Changeset{} = changeset}, _options) do
-    library_id = Ash.Changeset.get_argument(:library_id, changeset)
+  def match?(%User{} = actor, %{changeset: %Ash.Changeset{} = changeset}, _options) do
+    library_id = Ash.Changeset.get_argument_or_attribute(changeset, :library_id)
 
     Library
     |> Ash.Query.filter(id == ^library_id)
-    |> Ash.Query.filter(exists(club.memerships.user_id == ^actor(:id)))
+    |> Ash.Query.filter(exists(club.memberships, user_id == ^actor.id))
     |> Ash.exists?(authorize?: false)
   end
 end

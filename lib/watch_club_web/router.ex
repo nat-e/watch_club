@@ -44,6 +44,7 @@ defmodule WatchClubWeb.Router do
       live "/clubs/:club_id/members", ClubsLive.Members
       live "/clubs/:club_id/settings", ClubsLive.Settings
       live "/clubs/:club_id/library", ClubsLive.Settings
+      live "/libraries/:library_id", ClubsLive.LibraryShow
       live "/movies/:tmdb_id", ContentsLive.MovieDetails
     end
 

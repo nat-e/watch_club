@@ -27,7 +27,7 @@ defmodule WatchClubWeb.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex shrink-0 items-center justify-center rounded-full border border-border font-bold text-white select-none",
+        "relative flex shrink-0 items-center justify-center rounded-full font-bold text-white select-none",
         @size == "xs" && "size-5 text-[0.625rem] leading-none",
         @size == "sm" && "size-6 text-xs leading-none",
         @size == "md" && "size-8 text-base",
@@ -68,13 +68,13 @@ defmodule WatchClubWeb.UI.Avatar do
         id={avatar.id}
         name={avatar.name}
         size={@avatar_size}
-        class={["ring-2 ring-canvas", @avatar_class]}
+        class={@avatar_class}
       />
       <span
         :if={@overflow_count > 0}
         aria-label={"#{@overflow_count} more"}
         class={[
-          "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white ring-2 ring-canvas select-none",
+          "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white select-none",
           @avatar_size == "xs" && "size-5 text-[0.625rem] leading-none",
           @avatar_size == "sm" && "size-6 text-xs leading-none",
           @avatar_size == "md" && "size-8 text-base",

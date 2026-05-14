@@ -29,7 +29,7 @@ defmodule WatchClub.Contents.Content do
 
     read :for_view do
       description "Read action that loads all data needed to build ContentViews"
-      prepare build(load: [:library_items])
+      prepare build(load: [library_items: [:library, :added_by]])
     end
 
     create :create_movie do
@@ -63,7 +63,7 @@ defmodule WatchClub.Contents.Content do
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
 
       change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
-      change load([:library_items])
+      change load(library_items: [:library])
     end
   end
 
