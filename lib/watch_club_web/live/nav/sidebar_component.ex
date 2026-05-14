@@ -161,7 +161,8 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
     <li class={[
       "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
       @active && "bg-surface-selected text-text shadow-sm",
-      !@active && "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active"
+      !@active &&
+        "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
     ]}>
       <.button
         href={@url}
@@ -180,7 +181,9 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
           <.button
             size="icon-sm"
             variant="ghost"
-            class="!text-inherit hover:bg-surface-hover hover:!text-inherit"
+            aria-label={dgettext("nav", "Club actions")}
+            data-club-nav-actions
+            class="!text-inherit hover:!bg-surface-hover hover:!text-text active:!bg-surface-active"
           >
             <Lucideicons.ellipsis_vertical />
           </.button>
