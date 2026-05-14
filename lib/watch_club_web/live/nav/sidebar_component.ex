@@ -155,82 +155,125 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
     assigns =
       assigns
       |> assign(:url, url)
+      |> assign(:libraries, assigns.membership.club.libraries)
       |> assign(:active, active?(assigns.current_path, url))
 
     ~H"""
+    <%!--
+      Align the submenu rail with the center of the club avatar:
+      club row left padding (space.group) + half the avatar size (2rem / 2).
+    --%>
     <li class={[
-      "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
-      @active && "bg-surface-selected text-text shadow-sm",
-      !@active &&
-        "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
+      "flex flex-col gap-tight",
+      "[--club-nav-avatar-size:2rem]",
+      "[--club-nav-rail-offset:calc(var(--wc-space-group)_+_(var(--club-nav-avatar-size)_/_2))]"
     ]}>
-      <.button
-        href={@url}
-        variant="ghost"
-        size="md"
-        aria-current={@active && "page"}
-        class="min-h-touch-target min-w-0 flex-1 justify-start rounded-none !bg-transparent !text-inherit hover:!bg-transparent hover:!text-inherit active:!bg-transparent"
-        phx-click={hide_sidebar()}
-      >
-        <.avatar id={@membership.club.id} name={@membership.club.name} />
-        <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
-      </.button>
+      <div class={[
+        "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
+        @active && "bg-surface-selected text-text shadow-sm",
+        !@active &&
+          "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
+      ]}>
+        <.button
+          href={@url}
+          variant="ghost"
+          size="md"
+          aria-current={@active && "page"}
+          class="min-h-touch-target min-w-0 flex-1 justify-start rounded-none !bg-transparent !text-inherit hover:!bg-transparent hover:!text-inherit active:!bg-transparent"
+          phx-click={hide_sidebar()}
+        >
+          <.avatar id={@membership.club.id} name={@membership.club.name} size="md" />
+          <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
+        </.button>
 
-      <.dropdown_menu class="shrink-0 pr-tight">
-        <:trigger>
-          <.button
-            size="icon-sm"
-            variant="ghost"
-            aria-label={dgettext("nav", "Club actions")}
-            data-club-nav-actions
-            class="!text-inherit hover:!bg-surface-hover hover:!text-text active:!bg-surface-active"
+        <.dropdown_menu class="shrink-0 pr-tight">
+          <:trigger>
+            <.button
+              size="icon-sm"
+              variant="ghost"
+              aria-label={dgettext("nav", "Club actions")}
+              data-club-nav-actions
+              class="!text-inherit hover:!bg-surface-hover hover:!text-text active:!bg-surface-active"
+            >
+              <Lucideicons.ellipsis_vertical />
+            </.button>
+          </:trigger>
+
+          <.dropdown_menu_item
+            :if={@membership.role == :admin}
+            href={"#{@url}/members"}
+            phx-click={hide_sidebar()}
           >
-            <Lucideicons.ellipsis_vertical />
-          </.button>
-        </:trigger>
+            <Lucideicons.user />{dgettext("clubs", "Manage members")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            :if={@membership.role == :admin}
+            href={"#{@url}/settings"}
+            phx-click={hide_sidebar()}
+          >
+            <Lucideicons.settings />{dgettext("clubs", "Club Settings")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_separator :if={@membership.role == :admin} />
+          <.dropdown_menu_item
+            :if={@membership.role == :admin}
+            phx-click={
+              JS.push("open_delete_club_modal",
+                target: @myself,
+                value: %{club_id: @membership.club.id}
+              )
+              |> hide_sidebar()
+            }
+            variant="destructive"
+          >
+            <Lucideicons.trash />{dgettext("clubs", "Delete club")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            :if={@membership.role == :member}
+            phx-click={
+              JS.push("open_leave_club_modal",
+                target: @myself,
+                value: %{membership_id: @membership.id}
+              )
+              |> hide_sidebar()
+            }
+            variant="destructive"
+          >
+            <Lucideicons.door_open />{dgettext("clubs", "Leave club")}
+          </.dropdown_menu_item>
+        </.dropdown_menu>
+      </div>
 
-        <.dropdown_menu_item
-          :if={@membership.role == :admin}
-          href={"#{@url}/members"}
-          phx-click={hide_sidebar()}
-        >
-          <Lucideicons.user />{dgettext("clubs", "Manage members")}
-        </.dropdown_menu_item>
-        <.dropdown_menu_item
-          :if={@membership.role == :admin}
-          href={"#{@url}/settings"}
-          phx-click={hide_sidebar()}
-        >
-          <Lucideicons.settings />{dgettext("clubs", "Club Settings")}
-        </.dropdown_menu_item>
-        <.dropdown_menu_separator :if={@membership.role == :admin} />
-        <.dropdown_menu_item
-          :if={@membership.role == :admin}
-          phx-click={
-            JS.push("open_delete_club_modal",
-              target: @myself,
-              value: %{club_id: @membership.club.id}
-            )
-            |> hide_sidebar()
-          }
-          variant="destructive"
-        >
-          <Lucideicons.trash />{dgettext("clubs", "Delete club")}
-        </.dropdown_menu_item>
-        <.dropdown_menu_item
-          :if={@membership.role == :member}
-          phx-click={
-            JS.push("open_leave_club_modal",
-              target: @myself,
-              value: %{membership_id: @membership.id}
-            )
-            |> hide_sidebar()
-          }
-          variant="destructive"
-        >
-          <Lucideicons.door_open />{dgettext("clubs", "Leave club")}
-        </.dropdown_menu_item>
-      </.dropdown_menu>
+      <ul
+        :if={@libraries != []}
+        class="ml-[var(--club-nav-rail-offset)] flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related"
+      >
+        <.library_nav_item
+          :for={library <- @libraries}
+          library={library}
+          current_path={@current_path}
+        />
+      </ul>
+    </li>
+    """
+  end
+
+  attr :library, Library, required: true
+  attr :current_path, :string, required: true
+
+  defp library_nav_item(assigns) do
+    url = "/libraries/#{assigns.library.id}"
+
+    assigns =
+      assigns
+      |> assign(:url, url)
+      |> assign(:active, active?(assigns.current_path, url))
+
+    ~H"""
+    <li>
+      <.sidebar_item href={@url} active={@active}>
+        <.content_type_icon type={@library.content_type} />
+        <span class="min-w-0 flex-1 truncate">{@library.name}</span>
+      </.sidebar_item>
     </li>
     """
   end

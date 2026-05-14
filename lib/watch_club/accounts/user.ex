@@ -115,7 +115,7 @@ defmodule WatchClub.Accounts.User do
 
       # Load the club memberships when loading the logged in user
       prepare build(
-                load: [:settings, memberships: [:club]],
+                load: [:settings, memberships: [club: [:libraries]]],
                 context: %{private: %{authorize?: false}}
               )
     end
@@ -126,7 +126,7 @@ defmodule WatchClub.Accounts.User do
       filter expr(id == ^actor(:id))
 
       # Load the club memberships when loading the logged in user
-      prepare build(load: [:settings, memberships: [:club]])
+      prepare build(load: [:settings, memberships: [club: [:libraries]]])
     end
 
     update :change_password do

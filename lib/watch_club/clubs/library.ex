@@ -97,6 +97,16 @@ defmodule WatchClub.Clubs.Library do
     end
   end
 
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish :create, ["clubs", :club_id]
+    publish :update, ["clubs", :club_id]
+    publish :set_index, ["clubs", :club_id]
+    publish :destroy, ["clubs", :club_id]
+  end
+
   preparations do
     prepare build(sort: [club_id: :asc, index: :asc, inserted_at: :asc])
   end
