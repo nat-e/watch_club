@@ -62,7 +62,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
       <:title>{dgettext("contents", "Select clubs")}</:title>
       <.stack space="group" class="relative w-full max-w-lg">
         <.alert variant="default">
-          <:icon><Lucideicons.users class="size-8" /></:icon>
+          <:icon><Lucideicons.users class="size-icon-xl" /></:icon>
           <p class="text-white">
             {raw(
               dgettext(
@@ -102,7 +102,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
   defp club_selection_checkbox(%{selected?: false} = assigns) do
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
+      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
       @selected? && "bg-surface-selected text-text"
     ]}>
       <.inline class="font-bold">
@@ -133,7 +133,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
 
     ~H"""
     <label class={[
-      "flex h-16 w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
+      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
       @selected? && "bg-surface-selected text-text"
     ]}>
       <.inline class="font-bold">

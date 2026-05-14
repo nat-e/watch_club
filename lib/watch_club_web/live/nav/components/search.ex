@@ -64,8 +64,8 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             trigger_class="rounded-none border-0 border-r border-border-subtle shadow-none focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:!border-border-subtle focus-visible:!ring-0"
           >
             <.select_item value="">
-              <div class="flex h-5 min-w-0 items-center gap-related">
-                <Lucideicons.globe class="size-5 shrink-0" />
+              <div class="flex h-icon min-w-0 items-center gap-related">
+                <Lucideicons.globe class="size-icon shrink-0" />
                 <span class="min-w-0 flex-1 truncate leading-none">
                   {dgettext("search", "Everywhere")}
                 </span>
@@ -75,7 +75,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               :for={membership <- @current_user.memberships}
               value={membership.club.id}
             >
-              <div class="flex h-5 min-w-0 items-center gap-related">
+              <div class="flex h-icon min-w-0 items-center gap-related">
                 <.avatar
                   id={membership.club.id}
                   name={membership.club.name}
@@ -97,8 +97,8 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               :for={content_type <- SearchContentType.values()}
               value={content_type}
             >
-              <div class="flex h-5 min-w-0 items-center gap-related">
-                <.content_type_icon type={content_type} class="size-5 shrink-0" />
+              <div class="flex h-icon min-w-0 items-center gap-related">
+                <.content_type_icon type={content_type} class="size-icon shrink-0" />
                 <span class="min-w-0 flex-1 truncate leading-none">
                   {SearchContentType.translated_label(content_type)}
                 </span>
@@ -116,7 +116,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
             aria-label={dgettext("search", "Search")}
             class="inline-flex h-control-md shrink-0 items-center justify-center border-l border-border-subtle bg-surface-inset px-group text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:text-text focus-visible:!ring-0 focus-visible:outline-none"
           >
-            <Lucideicons.search class="size-4" />
+            <Lucideicons.search class="size-icon-sm" />
           </button>
         </div>
         <div
@@ -142,7 +142,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           |> JS.focus(to: "#search-overlay-input")
         }
       >
-        <Lucideicons.search class="size-6" />
+        <Lucideicons.search class="size-icon-lg" />
       </.button>
       <.form
         id="mobile-search-overlay"
@@ -181,7 +181,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               }
               phx-target={@myself}
             >
-              <Lucideicons.globe class="size-6" />{dgettext("search", "Everywhere")}
+              <Lucideicons.globe class="size-icon-lg" />{dgettext("search", "Everywhere")}
             </button>
             <button
               :for={membership <- @current_user.memberships}
@@ -228,7 +228,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               }
               phx-target={@myself}
             >
-              <.content_type_icon type={content_type} class="size-5" />{SearchContentType.translated_label(
+              <.content_type_icon type={content_type} class="size-icon" />{SearchContentType.translated_label(
                 content_type
               )}
             </button>
@@ -306,9 +306,9 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
   defp search_overlay_header(assigns) do
     ~H"""
     <div class="border-b p-related">
-      <.inline class="h-16">
+      <.inline class="h-row-lg">
         <.button variant="ghost" size="icon" phx-click={JS.hide(to: "#mobile-search-overlay")}>
-          <Lucideicons.arrow_left class="size-5" />
+          <Lucideicons.arrow_left />
         </.button>
         <div
           class="relative flex-1"
@@ -320,7 +320,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           <.input
             field={@form[:query]}
             placeholder={placeholder(assigns)}
-            class="peer rounded-full bg-surface-inset p-group h-10 items-center pr-8 truncate"
+            class="peer h-control-md rounded-full bg-surface-inset p-group items-center pr-8 truncate"
             phx-debounce="300"
           />
           <.button
@@ -345,7 +345,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           }
         >
           <.inline :if={@form[:location].value == nil}>
-            <Lucideicons.globe class="size-5" /> {dgettext("search", "Everywhere")}
+            <Lucideicons.globe class="size-icon" /> {dgettext("search", "Everywhere")}
           </.inline>
 
           <.inline :if={@form[:location].value != nil} class="min-w-0">
@@ -359,7 +359,7 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
               {get_club(@current_user, @form[:location].value).name}
             </span>
           </.inline>
-          <Lucideicons.chevron_down class="size-5 text-text-muted shrink-0" />
+          <Lucideicons.chevron_down class="size-icon text-text-muted shrink-0" />
         </.button>
         <.input id="mobile-search-input-content-type" field={@form[:content_type]} class="hidden" />
         <.button
@@ -371,10 +371,10 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
           }
         >
           <.inline>
-            <.content_type_icon type={@form[:content_type].value} class="size-5" />
+            <.content_type_icon type={@form[:content_type].value} class="size-icon" />
             {SearchContentType.translated_label(@form[:content_type].value)}
           </.inline>
-          <Lucideicons.chevron_down class="size-5 text-text-muted" />
+          <Lucideicons.chevron_down class="size-icon text-text-muted" />
         </.button>
       </.cluster>
     </div>

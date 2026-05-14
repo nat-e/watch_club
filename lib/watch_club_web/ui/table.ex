@@ -107,7 +107,7 @@ defmodule WatchClubWeb.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-10 px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
+        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
         @class
       ]}
       {@rest}

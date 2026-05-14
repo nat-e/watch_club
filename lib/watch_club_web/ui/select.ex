@@ -78,7 +78,7 @@ defmodule WatchClubWeb.UI.Select do
           "hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
           "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
-          "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
           @size == "sm" && "h-control-sm text-xs",
           @size == "md" && "h-control-md",
           @size == "lg" && "h-control-lg text-base",
@@ -94,7 +94,7 @@ defmodule WatchClubWeb.UI.Select do
         <Lucideicons.chevron_down
           data-slot="select-trigger-icon"
           aria-hidden="true"
-          class="size-4 text-text-subtle"
+          class="size-icon-sm text-text-subtle"
         />
       </button>
 
@@ -483,7 +483,7 @@ defmodule WatchClubWeb.UI.Select do
         "group/select-item relative flex h-9 w-full cursor-default items-center gap-related overflow-hidden rounded-control pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
         "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
         "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
-        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
         @class
       ]}
       {@rest}
@@ -491,7 +491,7 @@ defmodule WatchClubWeb.UI.Select do
       <span
         data-slot="select-item-indicator"
         aria-hidden="true"
-        class="pointer-events-none absolute right-2 flex size-4 items-center justify-center text-primary opacity-0 transition-opacity group-data-[selected=true]/select-item:opacity-100"
+        class="pointer-events-none absolute right-2 flex size-icon-sm items-center justify-center text-primary opacity-0 transition-opacity group-data-[selected=true]/select-item:opacity-100"
       >
         <Lucideicons.check />
       </span>

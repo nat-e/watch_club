@@ -51,8 +51,8 @@ defmodule WatchClubWeb.UI.Empty do
         data-slot="empty-icon"
         class={[
           "flex shrink-0 items-center justify-center rounded-control text-text-muted [&_svg]:pointer-events-none [&_svg]:shrink-0",
-          @size == "default" && "size-12 [&_svg:not([class*='size-'])]:size-6",
-          @size == "sm" && "size-8 [&_svg:not([class*='size-'])]:size-5",
+          @size == "default" && "size-control-lg [&_svg:not([class*='size-'])]:size-icon-lg",
+          @size == "sm" && "size-control-sm [&_svg:not([class*='size-'])]:size-icon",
           @border && "border border-border bg-surface-raised",
           !@border && "bg-transparent",
           icon[:class]

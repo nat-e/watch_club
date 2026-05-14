@@ -57,10 +57,10 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
     <button
       type="button"
       data-sortable-handle
-      class="mt-tight inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:text-text active:cursor-grabbing"
+      class="mt-tight inline-flex size-control-sm shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:text-text active:cursor-grabbing"
       aria-label={dgettext("clubs", "Drag to reorder")}
     >
-      <Lucideicons.grip_vertical class="size-5" />
+      <Lucideicons.grip_vertical class="size-icon" />
     </button>
 
     <.editable_label
@@ -86,7 +86,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
         phx-value-library_id={@library.id}
         aria-label={dgettext("clubs", "Delete library")}
       >
-        <Lucideicons.trash_2 class="size-4" />
+        <Lucideicons.trash_2 class="size-icon-sm" />
       </.button>
     </.inline>
     """
@@ -126,9 +126,9 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponents do
                 value={to_string(content_type)}
                 class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
               >
-                <.content_type_icon type={content_type} class="size-5 text-text-muted" />
+                <.content_type_icon type={content_type} class="size-icon text-text-muted" />
                 <span class="font-medium">{ContentType.translated_label(content_type)}</span>
-                <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
+                <Lucideicons.check class="size-icon-sm text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
               </:item>
             </.radio_group>
           </:control>

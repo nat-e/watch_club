@@ -80,7 +80,12 @@
 	--spacing-control-sm: var(--wc-size-control-sm);
 	--spacing-control-md: var(--wc-size-control-md);
 	--spacing-control-lg: var(--wc-size-control-lg);
+	--spacing-icon-sm: var(--wc-size-icon-sm);
 	--spacing-icon: var(--wc-size-icon);
+	--spacing-icon-lg: var(--wc-size-icon-lg);
+	--spacing-icon-xl: var(--wc-size-icon-xl);
+	--spacing-touch-target: var(--wc-size-touch-target);
+	--spacing-row-lg: var(--wc-size-row-lg);
 	--spacing-tight: var(--wc-space-tight);
 	--spacing-related: var(--wc-space-related);
 	--spacing-group: var(--wc-space-group);

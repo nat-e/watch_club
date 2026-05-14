@@ -101,7 +101,7 @@ defmodule WatchClubWeb.UI.Flash do
         data-slot="flash-toast-close"
         aria-label="Close"
         class={[
-          "-mt-0.5 -mr-1 inline-flex size-6 shrink-0 items-center justify-center rounded-control transition-colors outline-none focus-visible:ring-2 [&_svg]:size-4",
+          "-mt-0.5 -mr-1 inline-flex size-icon-lg shrink-0 items-center justify-center rounded-control transition-colors outline-none focus-visible:ring-2 [&_svg]:size-icon-sm",
           @kind == :error && "text-danger hover:bg-danger/10 focus-visible:ring-danger/30",
           @kind != :error &&
             "text-text-muted hover:bg-surface-hover hover:text-text focus-visible:ring-border-focus/40"
@@ -136,18 +136,19 @@ defmodule WatchClubWeb.UI.Flash do
 
   defp toast_icon(%{kind: :success} = assigns),
     do:
-      ~H|<Lucideicons.circle_check data-slot="flash-toast-icon" class="mt-0.5 size-4 text-success" />|
+      ~H|<Lucideicons.circle_check data-slot="flash-toast-icon" class="mt-0.5 size-icon-sm text-success" />|
 
   defp toast_icon(%{kind: :info} = assigns),
-    do: ~H|<Lucideicons.info data-slot="flash-toast-icon" class="mt-0.5 size-4 text-info" />|
+    do:
+      ~H|<Lucideicons.info data-slot="flash-toast-icon" class="mt-0.5 size-icon-sm text-info" />|
 
   defp toast_icon(%{kind: :warning} = assigns),
     do:
-      ~H|<Lucideicons.triangle_alert data-slot="flash-toast-icon" class="mt-0.5 size-4 text-warning" />|
+      ~H|<Lucideicons.triangle_alert data-slot="flash-toast-icon" class="mt-0.5 size-icon-sm text-warning" />|
 
   defp toast_icon(%{kind: :error} = assigns),
     do:
-      ~H|<Lucideicons.octagon_x data-slot="flash-toast-icon" class="mt-0.5 size-4 text-danger" />|
+      ~H|<Lucideicons.octagon_x data-slot="flash-toast-icon" class="mt-0.5 size-icon-sm text-danger" />|
 
   defp toast_icon(assigns), do: ~H||
 

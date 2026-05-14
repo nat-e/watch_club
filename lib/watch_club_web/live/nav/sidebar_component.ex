@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
         id="sidebar-panel"
         class="fixed inset-y-0 left-0 z-50 flex w-[80vw] -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
       >
-        <header class="flex h-16 shrink-0 items-center justify-between px-cluster">
+        <header class="flex h-row-lg shrink-0 items-center justify-between px-cluster">
           <h2 class="font-heading text-xl font-semibold">watch.club</h2>
           <.button
             variant="ghost"
@@ -132,7 +132,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
       type="button"
       aria-current={@active && "page"}
       class={[
-        "min-h-11 w-full justify-start overflow-hidden text-left font-medium",
+        "min-h-touch-target w-full justify-start overflow-hidden text-left font-medium",
         @active &&
           "!bg-surface-selected !text-text shadow-sm hover:!bg-surface-selected active:!bg-surface-selected",
         @class
@@ -159,7 +159,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
 
     ~H"""
     <li class={[
-      "flex min-h-11 items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
+      "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
       @active && "bg-surface-selected text-text shadow-sm",
       !@active && "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active"
     ]}>
@@ -168,7 +168,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
         variant="ghost"
         size="md"
         aria-current={@active && "page"}
-        class="min-h-11 min-w-0 flex-1 justify-start rounded-none !bg-transparent !text-inherit hover:!bg-transparent hover:!text-inherit active:!bg-transparent"
+        class="min-h-touch-target min-w-0 flex-1 justify-start rounded-none !bg-transparent !text-inherit hover:!bg-transparent hover:!text-inherit active:!bg-transparent"
         phx-click={hide_sidebar()}
       >
         <.avatar id={@membership.club.id} name={@membership.club.name} />

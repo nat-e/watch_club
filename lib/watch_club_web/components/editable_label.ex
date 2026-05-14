@@ -42,12 +42,12 @@ defmodule WatchClubWeb.Components.EditableLabel do
           type="button"
           data-editable-label-edit
           class={[
-            "inline-flex size-8 shrink-0 items-center justify-center rounded-control text-text-muted hover:text-text",
+            "inline-flex size-control-sm shrink-0 items-center justify-center rounded-control text-text-muted hover:text-text",
             @button_class
           ]}
           aria-label={@input_label}
         >
-          <Lucideicons.pencil class="size-4" />
+          <Lucideicons.pencil class="size-icon-sm" />
         </button>
       </.inline>
 

@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="z-10 flex h-16 items-center justify-between gap-related border-b px-related sm:gap-group sm:px-group">
+    <header class="z-10 flex h-row-lg items-center justify-between gap-related border-b px-related sm:gap-group sm:px-group">
       <div class="flex w-full items-center gap-related">
         <.button
           variant="ghost"
@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Live.Nav.NavbarComponent do
           aria-controls="sidebar-panel"
           phx-click={SidebarComponent.show_sidebar()}
         >
-          <Lucideicons.menu class="size-6 font-bold" />
+          <Lucideicons.menu class="size-icon-lg font-bold" />
         </.button>
         <div class="w-full">
           <.desktop_search {assigns} />

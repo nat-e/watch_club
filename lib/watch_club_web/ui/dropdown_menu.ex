@@ -222,7 +222,7 @@ defmodule WatchClubWeb.UI.DropdownMenu do
 
   defp item_class(variant, disabled, class) do
     [
-      "flex min-h-9 w-full items-center gap-related rounded-control px-related py-related text-left text-sm outline-none transition-colors select-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      "flex min-h-9 w-full items-center gap-related rounded-control px-related py-related text-left text-sm outline-none transition-colors select-none [&_svg]:pointer-events-none [&_svg]:size-icon-sm [&_svg]:shrink-0",
       disabled && "pointer-events-none text-text-disabled opacity-50",
       !disabled && variant == "default" &&
         "text-text hover:bg-surface-hover focus-visible:bg-surface-hover",

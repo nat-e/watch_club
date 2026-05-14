@@ -95,7 +95,7 @@ defmodule WatchClubWeb.UI.Modal do
         data-modal-close
         data-slot="modal-close"
         aria-label="Close"
-        class="absolute top-group right-group inline-flex size-8 items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 [&_svg]:size-4"
+        class="absolute top-group right-group inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 [&_svg]:size-icon-sm"
       >
         <Lucideicons.x />
       </button>

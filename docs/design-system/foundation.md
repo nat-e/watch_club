@@ -111,12 +111,27 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 
 ### Size
 
-| Token | Meaning |
-| --- | --- |
-| `size.control-sm` | Compact controls |
-| `size.control-md` | Default controls |
-| `size.control-lg` | Large/auth/mobile controls |
-| `size.icon` | Default icon size |
+Size tokens cover repeated, non-content dimensions. Prefer them over raw Tailwind numbers for icons, controls, touch targets, and repeated row/header heights.
+
+| Token | CSS variable | Tailwind utility examples | Meaning |
+| --- | --- | --- | --- |
+| `size.control-sm` | `--wc-size-control-sm` | `h-control-sm`, `size-control-sm` | Compact controls |
+| `size.control-md` | `--wc-size-control-md` | `h-control-md`, `size-control-md` | Default controls |
+| `size.control-lg` | `--wc-size-control-lg` | `h-control-lg`, `size-control-lg` | Large/auth/mobile controls |
+| `size.icon-sm` | `--wc-size-icon-sm` | `size-icon-sm` | Dense/supporting icons |
+| `size.icon` | `--wc-size-icon` | `size-icon` | Default app icon size |
+| `size.icon-lg` | `--wc-size-icon-lg` | `size-icon-lg` | Prominent/mobile/nav icons |
+| `size.icon-xl` | `--wc-size-icon-xl` | `size-icon-xl` | Extra-prominent icons in callouts or empty states |
+| `size.touch-target` | `--wc-size-touch-target` | `min-h-touch-target`, `size-touch-target` | Minimum interactive target for nav/list/icon rows |
+| `size.row-lg` | `--wc-size-row-lg` | `h-row-lg`, `min-h-row-lg` | App bars, overlay headers, and roomy selectable rows |
+
+Size usage rules:
+
+- Omit icon sizes inside UI primitives when the primitive already owns icon sizing.
+- Use `size-icon-sm`, `size-icon`, `size-icon-lg`, or `size-icon-xl` instead of raw `size-4`, `size-5`, `size-6`, or `size-8` on standalone icons.
+- Use `min-h-touch-target` instead of raw minimum row heights for interactive rows.
+- Use `h-row-lg` or `min-h-row-lg` instead of raw `h-16` for repeated app bars, overlay headers, and large selectable rows.
+- Keep content-specific media dimensions, such as poster widths, in the media component API instead of adding global size tokens.
 
 ### Spacing
 
