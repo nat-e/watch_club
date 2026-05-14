@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Hooks.Locale do
   require Logger
 
   alias WatchClub.Accounts.UserSettings
+  alias WatchClubWeb.Helpers.Url
 
   def on_mount(:default, _params, session, socket) do
     locale =
@@ -37,9 +38,14 @@ defmodule WatchClubWeb.Hooks.Locale do
          socket
        ) do
     language = extract_language(locale)
-    Logger.info("Set language to #{language}")
-    Gettext.put_locale(WatchClubWeb.Gettext, language)
-    {:cont, socket}
+
+    if Gettext.get_locale(WatchClubWeb.Gettext) == language do
+      {:cont, socket}
+    else
+      Logger.info("Set language to #{language}")
+      Gettext.put_locale(WatchClubWeb.Gettext, language)
+      {:halt, redirect(socket, to: current_path(socket.assigns.current_url))}
+    end
   end
 
   defp reload_locale_on_change(_notification, socket) do
@@ -48,5 +54,11 @@ defmodule WatchClubWeb.Hooks.Locale do
 
   defp extract_language(locale) do
     Atom.to_string(locale) |> String.split("_") |> List.first()
+  end
+
+  defp current_path(%Url{path: path, query: query}) when query == %{}, do: path
+
+  defp current_path(%Url{path: path, query: query}) do
+    path <> "?" <> URI.encode_query(query)
   end
 end

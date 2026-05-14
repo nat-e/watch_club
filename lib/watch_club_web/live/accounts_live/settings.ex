@@ -63,7 +63,7 @@ defmodule WatchClubWeb.AccountsLive.Settings do
   def handle_event("submit_update_settings", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.user_settings_form, params: params) do
       {:ok, _settings} ->
-        # Reload the page to apply the new locale
+        # Locale hook reloads connected LiveViews when the persisted locale changes.
         {:noreply, socket}
 
       {:error, form} ->
