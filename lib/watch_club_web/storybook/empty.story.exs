@@ -45,13 +45,32 @@ defmodule WatchClubWeb.Storybook.Empty do
         ]
       },
       %Variation{
+        id: :compact,
+        description: "Compact empty state for constrained surfaces",
+        attributes: %{size: "sm"},
+        slots: [
+          ~s|<:icon><Lucideicons.search /></:icon>|,
+          ~s|<:title>No results found</:title>|,
+          ~s|<:description>Try adjusting your search terms.</:description>|
+        ]
+      },
+      %Variation{
         id: :quiet,
         description: "Lower-emphasis empty state",
-        attributes: %{class: "border-transparent bg-transparent shadow-none"},
+        attributes: %{border: false},
         slots: [
           ~s|<:icon class="bg-surface-inset"><Lucideicons.bell /></:icon>|,
           ~s|<:title>No notifications</:title>|,
           ~s|<:description>You're all caught up. New club updates will appear here.</:description>|
+        ]
+      },
+      %Variation{
+        id: :compact_quiet,
+        description: "Compact borderless empty state for popovers",
+        attributes: %{border: false, size: "sm"},
+        slots: [
+          ~s|<:icon><Lucideicons.search /></:icon>|,
+          ~s|<:title class="font-normal text-text-muted">Start typing to search</:title>|
         ]
       },
       %Variation{

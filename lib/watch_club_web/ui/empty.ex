@@ -6,13 +6,23 @@ defmodule WatchClubWeb.UI.Empty do
   use Phoenix.Component
 
   attr :class, :any, default: nil
+
+  attr :border, :boolean,
+    default: true,
+    doc: "renders the default bordered surface and icon frame"
+
+  attr :size, :string,
+    values: ~w(default sm),
+    default: "default",
+    doc: "controls the empty state's spacing and typography density"
+
   attr :rest, :global
 
   slot :icon do
     attr :class, :any
   end
 
-  slot :title, required: true do
+  slot :title do
     attr :class, :any
   end
 
@@ -27,7 +37,11 @@ defmodule WatchClubWeb.UI.Empty do
     <section
       data-slot="empty"
       class={[
-        "flex w-full min-w-0 flex-col items-center justify-center gap-group rounded-card border border-dashed border-border-subtle bg-surface p-cluster text-center text-balance",
+        "flex w-full min-w-0 flex-col items-center justify-center rounded-card text-center text-balance",
+        @size == "default" && "gap-group p-cluster",
+        @size == "sm" && "gap-related p-group",
+        @border && "border border-dashed border-border-subtle bg-surface",
+        !@border && "bg-transparent",
         @class
       ]}
       {@rest}
@@ -36,18 +50,34 @@ defmodule WatchClubWeb.UI.Empty do
         :for={icon <- @icon}
         data-slot="empty-icon"
         class={[
-          "flex size-12 shrink-0 items-center justify-center rounded-control border border-border bg-surface-raised text-text-muted [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-6",
+          "flex shrink-0 items-center justify-center rounded-control text-text-muted [&_svg]:pointer-events-none [&_svg]:shrink-0",
+          @size == "default" && "size-12 [&_svg:not([class*='size-'])]:size-6",
+          @size == "sm" && "size-8 [&_svg:not([class*='size-'])]:size-5",
+          @border && "border border-border bg-surface-raised",
+          !@border && "bg-transparent",
           icon[:class]
         ]}
       >
         {render_slot(icon)}
       </div>
 
-      <div data-slot="empty-header" class="grid max-w-sm gap-related">
+      <div
+        data-slot="empty-header"
+        class={[
+          "grid max-w-sm",
+          @size == "default" && "gap-related",
+          @size == "sm" && "gap-tight"
+        ]}
+      >
         <h3
           :for={title <- @title}
           data-slot="empty-title"
-          class={["text-lg font-semibold tracking-tight text-text", title[:class]]}
+          class={[
+            "font-semibold tracking-tight text-text",
+            @size == "default" && "text-lg",
+            @size == "sm" && "text-md",
+            title[:class]
+          ]}
         >
           {render_slot(title)}
         </h3>
@@ -56,7 +86,9 @@ defmodule WatchClubWeb.UI.Empty do
           :for={description <- @description}
           data-slot="empty-description"
           class={[
-            "text-sm/relaxed text-text-muted [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
+            "text-text-muted [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
+            @size == "default" && "text-sm/relaxed",
+            @size == "sm" && "text-sm/relaxed",
             description[:class]
           ]}
         >
@@ -67,7 +99,11 @@ defmodule WatchClubWeb.UI.Empty do
       <div
         :if={@inner_block != []}
         data-slot="empty-content"
-        class="flex w-full max-w-sm min-w-0 flex-col items-center gap-group text-sm text-balance"
+        class={[
+          "flex w-full max-w-sm min-w-0 flex-col items-center text-balance",
+          @size == "default" && "gap-group text-sm",
+          @size == "sm" && "gap-related text-sm"
+        ]}
       >
         {render_slot(@inner_block)}
       </div>

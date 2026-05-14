@@ -241,18 +241,26 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
 
   defp search_overlay_results(%{search_results: nil, form: %{errors: []}} = assigns) do
     ~H"""
-    <.inline class="w-full justify-center p-group">
-      <Lucideicons.search size="8" />
-      <p>{dgettext("search", "Start typing to search")}</p>
-    </.inline>
+    <.empty border={false} size="sm">
+      <:icon>
+        <Lucideicons.search />
+      </:icon>
+      <:description>
+        {dgettext("search", "Start typing to search")}
+      </:description>
+    </.empty>
     """
   end
 
   defp search_overlay_results(%{search_results: nil} = assigns) do
     ~H"""
-    <.stack space="related" class="items-center p-group">
-      <Lucideicons.triangle_alert size="8" />
-      <p>{dgettext("search", "There was an error searching for your content")}</p>
+    <.empty border={false} size="sm">
+      <:icon>
+        <Lucideicons.triangle_alert />
+      </:icon>
+      <:description>
+        {dgettext("search", "There was an error searching for your content")}
+      </:description>
       <.button
         variant="secondary"
         size="sm"
@@ -261,16 +269,20 @@ defmodule WatchClubWeb.Live.Nav.Components.Search do
       >
         {dgettext("default", "Try again")}
       </.button>
-    </.stack>
+    </.empty>
     """
   end
 
   defp search_overlay_results(%{search_results: []} = assigns) do
     ~H"""
-    <.stack space="related" class="items-center p-group">
-      <Lucideicons.search_x size="8" />
-      <p>{dgettext("search", "We didn't find any content for your search")}</p>
-    </.stack>
+    <.empty border={false} size="sm">
+      <:icon>
+        <Lucideicons.search_x />
+      </:icon>
+      <:description>
+        {dgettext("search", "We didn't find any content for your search")}
+      </:description>
+    </.empty>
     """
   end
 
