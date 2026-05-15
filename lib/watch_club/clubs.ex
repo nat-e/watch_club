@@ -30,6 +30,7 @@ defmodule WatchClub.Clubs do
     end
 
     resource Library do
+      define :get_library_by_id, action: :read, get_by: [:id]
       define :list_club_libraries, action: :by_club, args: [:club_id]
       define :create_library, action: :create, args: [:club_id]
       define :update_library, action: :update

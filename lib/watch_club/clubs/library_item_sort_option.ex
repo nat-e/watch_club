@@ -1,6 +1,9 @@
 defmodule WatchClub.Clubs.LibraryItemsSortOption do
+  @values [:added_date, :release_date, :title]
+  @sort_by_params Map.new(@values, &{Atom.to_string(&1), &1})
+
   use Ash.Type.Enum,
-    values: [:added_date, :release_date, :title]
+    values: @values
 
   alias WatchClub.Shared.SortOrder
 
@@ -11,15 +14,16 @@ defmodule WatchClub.Clubs.LibraryItemsSortOption do
   def parse_param(sort) when is_nil(sort) or sort == "", do: default()
 
   def parse_param(sort) when is_binary(sort) do
-    with [sort_by, sort_order] <-
-           String.split(sort, ".", parts: 2) |> Enum.map(&String.to_atom/1),
-         true <- sort_by in __MODULE__.values(),
-         true <- sort_order in SortOrder.values() do
+    with [sort_by_param, sort_order_param] <- String.split(sort, ".", parts: 2),
+         {:ok, sort_by} <- Map.fetch(@sort_by_params, sort_by_param),
+         {:ok, sort_order} <- SortOrder.parse_param(sort_order_param) do
       {sort_by, sort_order}
     else
-      e -> IO.inspect(e)
+      _ -> default()
     end
   end
+
+  def parse_param(_sort), do: default()
 
   def to_param(sort_by, sort_order), do: "#{sort_by}.#{sort_order}"
 

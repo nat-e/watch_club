@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.ClubsLive.LibraryShow do
   use WatchClubWeb, :live_view
 
-  require Logger
-
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.ContentView
   alias WatchClub.Shared.SortOrder
@@ -164,16 +162,6 @@ defmodule WatchClubWeb.ClubsLive.LibraryShow do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:library, nil)
-     |> assign(:contents, [])
-     |> assign(:sort_by, LibraryItemsSortOption.default_option())
-     |> assign(:sort_order, LibraryItemsSortOption.default_order())}
-  end
-
-  @impl true
   def handle_params(%{"library_id" => library_id} = params, _uri, socket) do
     {sort_by, sort_order} = LibraryItemsSortOption.parse_param(params["sort"])
 
@@ -188,44 +176,22 @@ defmodule WatchClubWeb.ClubsLive.LibraryShow do
 
   defp load_library(socket, library_id, sort_by, sort_order) do
     current_user = socket.assigns.current_user
+    library = Clubs.get_library_by_id!(library_id, actor: current_user)
 
-    with %Library{} = library <- library_from_current_user(current_user, library_id),
-         {:ok, items} <-
-           Clubs.get_library_items(library.id, %{sort_by: sort_by, sort_order: sort_order},
-             actor: current_user
-           ) do
-      locale = current_user.settings.locale
-      contents = Enum.map(items, fn item -> ContentView.from_content(item.content, locale) end)
+    items =
+      Clubs.get_library_items!(library.id, %{sort_by: sort_by, sort_order: sort_order},
+        actor: current_user
+      )
 
-      {:noreply,
-       socket
-       |> assign(:library, library)
-       |> assign(:contents, contents)
-       |> assign(:sort_by, sort_by)
-       |> assign(:sort_order, sort_order)}
-    else
-      nil ->
-        Logger.warning("Library not found in current user's memberships: #{library_id}")
+    locale = current_user.settings.locale
+    contents = Enum.map(items, fn item -> ContentView.from_content(item.content, locale) end)
 
-        {:noreply,
-         socket
-         |> put_flash(:error, dgettext("clubs", "Could not load library"))
-         |> redirect(to: ~p"/")}
-
-      {:error, error} ->
-        Logger.warning("Error loading library items: #{inspect(error)}")
-
-        {:noreply,
-         socket
-         |> put_flash(:error, dgettext("clubs", "Could not load library"))
-         |> redirect(to: ~p"/")}
-    end
-  end
-
-  defp library_from_current_user(current_user, library_id) do
-    current_user.memberships
-    |> Enum.flat_map(& &1.club.libraries)
-    |> Enum.find(&(&1.id == library_id))
+    {:noreply,
+     socket
+     |> assign(:library, library)
+     |> assign(:contents, contents)
+     |> assign(:sort_by, sort_by)
+     |> assign(:sort_order, sort_order)}
   end
 
   defp library_sort_path(library_id, sort_by, sort_order) do

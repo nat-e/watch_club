@@ -480,13 +480,7 @@ msgid "Content actions"
 msgstr "Actions du contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:197
-#, elixir-autogen, elixir-format
-msgid "Could not load library"
-msgstr "Impossible de charger la bibliothèque"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:32
+#: lib/watch_club_web/live/clubs_live/library_show.ex:31
 #, elixir-autogen, elixir-format
 msgid "Library is empty"
 msgstr "La bibliothèque est vide"
@@ -504,49 +498,37 @@ msgid "Reveal details for %{title}"
 msgstr "Afficher les détails de %{title}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:34
+#: lib/watch_club_web/live/clubs_live/library_show.ex:33
 #, elixir-autogen, elixir-format
 msgid "This library does not have any content yet."
 msgstr "Cette bibliothèque ne contient encore aucun contenu."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:108
+#: lib/watch_club_web/live/clubs_live/library_show.ex:88
 #, elixir-autogen, elixir-format
 msgid "Added date"
 msgstr "Date d'ajout"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:91
+#: lib/watch_club_web/live/clubs_live/library_show.ex:67
 #, elixir-autogen, elixir-format
 msgid "Library sort order"
 msgstr "Ordre de tri de la bibliothèque"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:116
+#: lib/watch_club_web/live/clubs_live/library_show.ex:98
 #, elixir-autogen, elixir-format
 msgid "Release date"
 msgstr "Date de sortie"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:88
-#, elixir-autogen, elixir-format
-msgid "Sort by"
-msgstr "Trier par"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:215
-#, elixir-autogen, elixir-format
-msgid "Sort by %{field} ascending"
-msgstr "Trier par %{field} croissant"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:219
-#, elixir-autogen, elixir-format
-msgid "Sort by %{field} descending"
-msgstr "Trier par %{field} décroissant"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:100
+#: lib/watch_club_web/live/clubs_live/library_show.ex:78
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Titre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:150
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} %{order}"
+msgstr "Trier par %{field} (%{order})"

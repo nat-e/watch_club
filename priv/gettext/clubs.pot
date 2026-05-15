@@ -403,12 +403,7 @@ msgstr ""
 msgid "Content actions"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:197
-#, elixir-autogen, elixir-format
-msgid "Could not load library"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs_live/library_show.ex:32
+#: lib/watch_club_web/live/clubs_live/library_show.ex:31
 #, elixir-autogen, elixir-format
 msgid "Library is empty"
 msgstr ""
@@ -423,42 +418,32 @@ msgstr ""
 msgid "Reveal details for %{title}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:34
+#: lib/watch_club_web/live/clubs_live/library_show.ex:33
 #, elixir-autogen, elixir-format
 msgid "This library does not have any content yet."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:108
+#: lib/watch_club_web/live/clubs_live/library_show.ex:88
 #, elixir-autogen, elixir-format
 msgid "Added date"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:91
+#: lib/watch_club_web/live/clubs_live/library_show.ex:67
 #, elixir-autogen, elixir-format
 msgid "Library sort order"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:116
+#: lib/watch_club_web/live/clubs_live/library_show.ex:98
 #, elixir-autogen, elixir-format
 msgid "Release date"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:88
-#, elixir-autogen, elixir-format
-msgid "Sort by"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs_live/library_show.ex:215
-#, elixir-autogen, elixir-format
-msgid "Sort by %{field} ascending"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs_live/library_show.ex:219
-#, elixir-autogen, elixir-format
-msgid "Sort by %{field} descending"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs_live/library_show.ex:100
+#: lib/watch_club_web/live/clubs_live/library_show.ex:78
 #, elixir-autogen, elixir-format
 msgid "Title"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:150
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} %{order}"
 msgstr ""

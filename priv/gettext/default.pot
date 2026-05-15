@@ -44,6 +44,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
+#: lib/watch_club_web/controllers/error_html.ex:52
 #: lib/watch_club_web/live/nav/components/search.ex:270
 #, elixir-autogen, elixir-format
 msgid "Try again"
@@ -52,4 +53,33 @@ msgstr ""
 #: lib/watch_club_web/live_components/club_selection_button.ex:172
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
+msgstr ""
+
+#: lib/watch_club_web/controllers/error_html.ex:89
+#, elixir-autogen, elixir-format
+msgid "Could not load page"
+msgstr ""
+
+#: lib/watch_club_web/controllers/error_html.ex:64
+#, elixir-autogen, elixir-format
+msgid "Go home"
+msgstr ""
+
+#: lib/watch_club_web/controllers/error_html.ex:86
+#: lib/watch_club_web/controllers/error_html.ex:87
+#: lib/watch_club_web/controllers/error_html.ex:88
+#, elixir-autogen, elixir-format
+msgid "Page not found"
+msgstr ""
+
+#: lib/watch_club_web/controllers/error_html.ex:113
+#, elixir-autogen, elixir-format
+msgid "Something went wrong while loading this page."
+msgstr ""
+
+#: lib/watch_club_web/controllers/error_html.ex:93
+#: lib/watch_club_web/controllers/error_html.ex:99
+#: lib/watch_club_web/controllers/error_html.ex:106
+#, elixir-autogen, elixir-format
+msgid "The page you are looking for does not exist or you do not have access to it."
 msgstr ""
