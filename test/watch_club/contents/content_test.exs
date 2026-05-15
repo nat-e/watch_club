@@ -3,8 +3,11 @@ defmodule WatchClub.Clubs.ContentTest do
 
   import WatchClub.Contents
 
+  alias WatchClub.Accounts
   alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Contents.{Content, Movie, MovieLocalization}
+
+  require Ash.Query
 
   setup do
     admin = generate(administrator())
@@ -22,7 +25,10 @@ defmodule WatchClub.Clubs.ContentTest do
   end
 
   describe "create_movie/*" do
-    test "creates a movie" do
+    test "creates a movie", %{admin: admin} do
+      settings = Accounts.update_user_settings!(admin.settings, %{locale: :fr_FR}, actor: admin)
+      actor = %{admin | settings: settings}
+
       assert %Content{
                type: :movie,
                external_id_source: :tmdb,
@@ -30,12 +36,28 @@ defmodule WatchClub.Clubs.ContentTest do
                original_language: "en",
                origin_country: "US",
                implementation: %Movie{
-                 localizations: [
-                   %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
-                   %MovieLocalization{iso_639_1: "fr", iso_3166_1: "FR"}
-                 ]
+                 best_localization: %MovieLocalization{
+                   iso_639_1: "fr",
+                   iso_3166_1: "FR",
+                   title: "La Guerre des étoiles"
+                 }
                }
-             } = create_movie!("11")
+             } = content = create_movie!("11", actor: actor)
+
+      assert [
+               %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
+               %MovieLocalization{iso_639_1: "fr", iso_3166_1: "FR"}
+             ] =
+               MovieLocalization
+               |> Ash.Query.filter(movie_id == ^content.id)
+               |> Ash.Query.sort(iso_639_1: :asc)
+               |> Ash.read!(authorize?: false)
+
+      assert %Content{localized_title_key: "la guerre des etoiles"} =
+               Content
+               |> Ash.Query.filter(id == ^content.id)
+               |> Ash.Query.load(:localized_title_key)
+               |> Ash.read_one!(actor: actor, authorize?: false)
     end
   end
 

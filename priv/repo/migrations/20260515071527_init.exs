@@ -1,4 +1,4 @@
-defmodule WatchClub.Repo.Migrations.MigrateResources1 do
+defmodule WatchClub.Repo.Migrations.Init do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -43,8 +43,7 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ),
-          null: false
+          ), null: false
     end
 
     create unique_index(:user_settings, [:user_id], name: "user_settings_unique_user_index")
@@ -61,6 +60,37 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
     create unique_index(:tv_shows, [:tmdb_id], name: "tv_shows_unique_tmdb_id_index")
 
     create unique_index(:tv_shows, [:tvdb_id], name: "tv_shows_unique_tvdb_id_index")
+
+    create table(:tv_show_localizations, primary_key: false) do
+      add :id, :uuid, null: false, default: fragment("uuid_generate_v7()"), primary_key: true
+      add :iso_639_1, :text, null: false
+      add :iso_3166_1, :text, null: false
+      add :title, :text, null: false
+      add :overview, :text
+      add :poster_path, :text
+
+      add :inserted_at, :utc_datetime_usec,
+        null: false,
+        default: fragment("(now() AT TIME ZONE 'utc')")
+
+      add :updated_at, :utc_datetime_usec,
+        null: false,
+        default: fragment("(now() AT TIME ZONE 'utc')")
+
+      add :tv_show_id,
+          references(:tv_shows,
+            column: :id,
+            name: "tv_show_localizations_tv_show_id_fkey",
+            type: :uuid,
+            prefix: "public",
+            on_delete: :delete_all,
+            on_update: :update_all
+          ), null: false
+    end
+
+    create unique_index(:tv_show_localizations, [:tv_show_id, :iso_639_1, :iso_3166_1],
+             name: "tv_show_localizations_unique_locale_per_tv_show_index"
+           )
 
     create table(:tokens, primary_key: false) do
       add :jti, :text, null: false, primary_key: true
@@ -109,8 +139,7 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ),
-          null: false
+          ), null: false
     end
 
     create unique_index(:movie_localizations, [:movie_id, :iso_639_1, :iso_3166_1],
@@ -179,6 +208,7 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
     alter table(:libraries) do
       add :name, :text, null: false
       add :content_type, :text, null: false
+      add :index, :bigint, null: false, default: 0
 
       add :inserted_at, :utc_datetime_usec,
         null: false,
@@ -469,6 +499,7 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
       remove :club_id
       remove :updated_at
       remove :inserted_at
+      remove :index
       remove :content_type
       remove :name
     end
@@ -510,6 +541,14 @@ defmodule WatchClub.Repo.Migrations.MigrateResources1 do
     drop table(:movies)
 
     drop table(:tokens)
+
+    drop constraint(:tv_show_localizations, "tv_show_localizations_tv_show_id_fkey")
+
+    drop_if_exists unique_index(:tv_show_localizations, [:tv_show_id, :iso_639_1, :iso_3166_1],
+                     name: "tv_show_localizations_unique_locale_per_tv_show_index"
+                   )
+
+    drop table(:tv_show_localizations)
 
     drop_if_exists unique_index(:tv_shows, [:tvdb_id], name: "tv_shows_unique_tvdb_id_index")
 

@@ -4,7 +4,7 @@ defmodule WatchClub.Contents.TvShow do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, TvShowLocalization}
 
   postgres do
     table "tv_shows"
@@ -48,6 +48,12 @@ defmodule WatchClub.Contents.TvShow do
       allow_nil? false
       define_attribute? false
       source_attribute :id
+    end
+
+    has_many :localizations, TvShowLocalization
+
+    has_one :best_localization, TvShowLocalization do
+      from_many? true
     end
   end
 

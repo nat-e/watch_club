@@ -3,7 +3,7 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
 
   @impl true
   def load(_, _, _) do
-    [:book, :tv_show, movie: [:localizations]]
+    [:book, movie: [:best_localization], tv_show: [:best_localization]]
   end
 
   # This ensures that all attributes are selected by default

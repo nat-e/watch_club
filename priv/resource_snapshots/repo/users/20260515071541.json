@@ -2,30 +2,11 @@
   "attributes": [
     {
       "allow_nil?": false,
-      "default": "nil",
+      "default": "fragment(\"uuid_generate_v7()\")",
       "generated?": false,
       "precision": null,
       "primary_key?": true,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "books_id_fkey",
-        "on_delete": "delete",
-        "on_update": "update",
-        "primary_key?": true,
-        "schema": "public",
-        "table": "contents"
-      },
+      "references": null,
       "scale": null,
       "size": null,
       "source": "id",
@@ -40,7 +21,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "title",
+      "source": "username",
       "type": "text"
     },
     {
@@ -52,8 +33,32 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "hardcover_id",
-      "type": "bigint"
+      "source": "hashed_password",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "confirmed_at",
+      "type": "utc_datetime_usec"
+    },
+    {
+      "allow_nil?": false,
+      "default": "false",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "is_administrator",
+      "type": "boolean"
     }
   ],
   "base_filter": null,
@@ -62,33 +67,33 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "3BE63D87C943D88FDFF0EEC02DB550392B93B4213BD99E96EC52F9C1F78C8AFA",
+  "hash": "7CCEC4ECB45C035AB4B8F9449C2E5E819073C20F876E16A776D8F8329706CDE7",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "books_unique_content_index",
+      "index_name": "users_only_one_administrator_index",
       "keys": [
         {
           "type": "atom",
-          "value": "id"
+          "value": "is_administrator"
         }
       ],
-      "name": "unique_content",
+      "name": "only_one_administrator",
       "nils_distinct?": true,
-      "where": null
+      "where": "is_administrator = true"
     },
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "books_unique_hardcover_id_index",
+      "index_name": "users_unique_username_index",
       "keys": [
         {
           "type": "atom",
-          "value": "hardcover_id"
+          "value": "username"
         }
       ],
-      "name": "unique_hardcover_id",
+      "name": "unique_username",
       "nils_distinct?": true,
       "where": null
     }
@@ -100,5 +105,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "books"
+  "table": "users"
 }

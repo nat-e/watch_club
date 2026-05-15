@@ -2,14 +2,13 @@ defmodule WatchClub.Contents.ContentView do
   use Ash.TypedStruct
 
   alias WatchClub.Clubs.LibraryItem
-  alias WatchClub.Accounts.UserLocale
 
   alias WatchClub.Contents.{
     Content,
     ContentType,
     ContentView,
     Movie,
-    MovieLocalization,
+    TvShow,
     ExternalIdSource
   }
 
@@ -100,26 +99,31 @@ defmodule WatchClub.Contents.ContentView do
     |> Enum.uniq_by(& &1.id)
   end
 
-  def from_content(%Content{implementation: %Movie{} = movie} = content, locale) do
-    %MovieLocalization{
-      title: title,
-      overview: overview,
-      poster_path: poster_path
-    } =
-      Enum.find(
-        movie.localizations,
-        &(&1.iso_639_1 == UserLocale.iso_639_1(locale) and
-            &1.iso_3166_1 == UserLocale.iso_3166_1(locale))
-      )
-
+  def from_content(%Content{implementation: %Movie{} = movie} = content, _locale) do
     ContentView.new!(%{
       external_id_source: content.external_id_source,
       external_id: content.external_id,
       type: content.type,
       content: content,
-      title: title,
-      description: overview,
-      image_path: poster_path,
+      title: movie.best_localization.title,
+      description: movie.best_localization.overview,
+      image_path: movie.best_localization.poster_path,
+      origin_country: content.origin_country,
+      release_date: content.release_date,
+      details: nil,
+      in_libraries: content.library_items
+    })
+  end
+
+  def from_content(%Content{implementation: %TvShow{} = tv_show} = content, _locale) do
+    ContentView.new!(%{
+      external_id_source: content.external_id_source,
+      external_id: content.external_id,
+      type: content.type,
+      content: content,
+      title: tv_show.best_localization.title,
+      description: tv_show.best_localization.overview,
+      image_path: tv_show.best_localization.poster_path,
       origin_country: content.origin_country,
       release_date: content.release_date,
       details: nil,

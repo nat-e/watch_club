@@ -13,6 +13,18 @@
       "type": "uuid"
     },
     {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "name",
+      "type": "text"
+    },
+    {
       "allow_nil?": false,
       "default": "nil",
       "generated?": false,
@@ -23,6 +35,30 @@
       "size": null,
       "source": "role",
       "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "false",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "accepted",
+      "type": "boolean"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "expires_at",
+      "type": "utc_datetime_usec"
     },
     {
       "allow_nil?": false,
@@ -67,7 +103,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "memberships_club_id_fkey",
+        "name": "invitations_club_id_fkey",
         "on_delete": "delete",
         "on_update": "update",
         "primary_key?": true,
@@ -98,8 +134,8 @@
           "global": null,
           "strategy": null
         },
-        "name": "memberships_user_id_fkey",
-        "on_delete": "delete",
+        "name": "invitations_inviter_id_fkey",
+        "on_delete": "nilify",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
@@ -107,38 +143,7 @@
       },
       "scale": null,
       "size": null,
-      "source": "user_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "memberships_invitation_id_fkey",
-        "on_delete": null,
-        "on_update": null,
-        "primary_key?": true,
-        "schema": "public",
-        "table": "invitations"
-      },
-      "scale": null,
-      "size": null,
-      "source": "invitation_id",
+      "source": "inviter_id",
       "type": "uuid"
     }
   ],
@@ -148,41 +153,8 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "22D8FC28ACD132EB12107F95C49971C2C37266BF0E33069CD2D50EF01B2DB3BF",
-  "identities": [
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "memberships_club_and_user_index",
-      "keys": [
-        {
-          "type": "atom",
-          "value": "club_id"
-        },
-        {
-          "type": "atom",
-          "value": "user_id"
-        }
-      ],
-      "name": "club_and_user",
-      "nils_distinct?": true,
-      "where": null
-    },
-    {
-      "all_tenants?": false,
-      "base_filter": null,
-      "index_name": "memberships_invitation_id_index",
-      "keys": [
-        {
-          "type": "atom",
-          "value": "invitation_id"
-        }
-      ],
-      "name": "invitation_id",
-      "nils_distinct?": true,
-      "where": null
-    }
-  ],
+  "hash": "3546092CA5FD5B526477FE9E7880F20AFCD40F6E47394469008AD0198B078FFC",
+  "identities": [],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -190,5 +162,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "memberships"
+  "table": "invitations"
 }

@@ -21,8 +21,68 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "locale",
+      "source": "iso_639_1",
       "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "iso_3166_1",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "title",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "overview",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "poster_path",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "runtime",
+      "type": "bigint"
     },
     {
       "allow_nil?": false,
@@ -67,16 +127,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "user_settings_user_id_fkey",
+        "name": "movie_localizations_movie_id_fkey",
         "on_delete": "delete",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
-        "table": "users"
+        "table": "movies"
       },
       "scale": null,
       "size": null,
-      "source": "user_id",
+      "source": "movie_id",
       "type": "uuid"
     }
   ],
@@ -86,19 +146,27 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "E91A2960ACF44C68AB5199E0D3451899854A32AFBD0CDDA09FA60E7C4FB1823E",
+  "hash": "C46A120D326B0CEDF0B0BE0249E0408E5BC0E8729E61EB827AC238956DD059C5",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "user_settings_unique_user_index",
+      "index_name": "movie_localizations_unique_locale_per_movie_index",
       "keys": [
         {
           "type": "atom",
-          "value": "user_id"
+          "value": "movie_id"
+        },
+        {
+          "type": "atom",
+          "value": "iso_639_1"
+        },
+        {
+          "type": "atom",
+          "value": "iso_3166_1"
         }
       ],
-      "name": "unique_user",
+      "name": "unique_locale_per_movie",
       "nils_distinct?": true,
       "where": null
     }
@@ -110,5 +178,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "user_settings"
+  "table": "movie_localizations"
 }

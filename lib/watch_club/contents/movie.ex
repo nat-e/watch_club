@@ -48,6 +48,10 @@ defmodule WatchClub.Contents.Movie do
     end
 
     has_many :localizations, MovieLocalization
+
+    has_one :best_localization, MovieLocalization do
+      from_many? true
+    end
   end
 
   identities do

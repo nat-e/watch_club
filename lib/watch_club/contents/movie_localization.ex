@@ -4,7 +4,8 @@ defmodule WatchClub.Contents.MovieLocalization do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.Movie
+  alias WatchClub.Contents.{Movie, Calculations.LocalizationRank}
+  alias WatchClub.Contents.Preparations.SortLocalizationsByRank
 
   postgres do
     table "movie_localizations"
@@ -17,6 +18,10 @@ defmodule WatchClub.Contents.MovieLocalization do
 
   actions do
     defaults [:read, :destroy, create: :*, update: :*]
+  end
+
+  preparations do
+    prepare SortLocalizationsByRank
   end
 
   attributes do
@@ -57,6 +62,14 @@ defmodule WatchClub.Contents.MovieLocalization do
 
   relationships do
     belongs_to :movie, Movie do
+      allow_nil? false
+    end
+  end
+
+  calculations do
+    calculate :rank, :integer, LocalizationRank do
+      argument :preferred_iso_639_1, :string, allow_nil?: false
+      argument :preferred_iso_3166_1, :string, allow_nil?: false
       allow_nil? false
     end
   end

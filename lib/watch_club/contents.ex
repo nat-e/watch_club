@@ -10,7 +10,8 @@ defmodule WatchClub.Contents do
     ExternalIdSource,
     Movie,
     MovieLocalization,
-    TvShow
+    TvShow,
+    TvShowLocalization
   }
 
   resources do
@@ -28,6 +29,7 @@ defmodule WatchClub.Contents do
     resource Book
     resource MovieLocalization
     resource TvShow
+    resource TvShowLocalization
   end
 
   @spec get_context_by_external_id(ExternalIdSource.t(), String.t(), keyword()) ::

@@ -19,6 +19,8 @@ defmodule WatchClub.Contents.Content do
 
   alias WatchClub.Contents.Calculations.GetContentImplementation
 
+  import Ash.Expr
+
   postgres do
     table "contents"
     repo(WatchClub.Repo)
@@ -137,6 +139,29 @@ defmodule WatchClub.Contents.Content do
                     tv_show: [type: :struct, constraints: [instance_of: TvShow]]
                   ]
 
+      allow_nil? false
+    end
+
+    calculate :localized_title_key,
+              :string,
+              expr(
+                cond do
+                  type == :movie ->
+                    fragment(
+                      "trim(unaccent(lower(coalesce(?, ?))))",
+                      movie.best_localization.title,
+                      original_title
+                    )
+
+                  type == :tv_show ->
+                    fragment(
+                      "trim(unaccent(lower(coalesce(?, ?))))",
+                      tv_show.best_localization.title,
+                      original_title
+                    )
+                end
+              ) do
+      public? true
       allow_nil? false
     end
   end

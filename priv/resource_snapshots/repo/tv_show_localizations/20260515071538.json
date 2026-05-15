@@ -21,7 +21,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "name",
+      "source": "iso_639_1",
       "type": "text"
     },
     {
@@ -33,7 +33,43 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "content_type",
+      "source": "iso_3166_1",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "title",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "overview",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "poster_path",
       "type": "text"
     },
     {
@@ -79,16 +115,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "libraries_club_id_fkey",
+        "name": "tv_show_localizations_tv_show_id_fkey",
         "on_delete": "delete",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
-        "table": "clubs"
+        "table": "tv_shows"
       },
       "scale": null,
       "size": null,
-      "source": "club_id",
+      "source": "tv_show_id",
       "type": "uuid"
     }
   ],
@@ -98,8 +134,31 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "3ABA8E58480AC98279E388B9D931C14269F8C06346F85E5A67555AF141E9F603",
-  "identities": [],
+  "hash": "A858A3722F3B270D512693C08E9381210FE69AAE48E45CF6DDF351CCDE62C670",
+  "identities": [
+    {
+      "all_tenants?": false,
+      "base_filter": null,
+      "index_name": "tv_show_localizations_unique_locale_per_tv_show_index",
+      "keys": [
+        {
+          "type": "atom",
+          "value": "tv_show_id"
+        },
+        {
+          "type": "atom",
+          "value": "iso_639_1"
+        },
+        {
+          "type": "atom",
+          "value": "iso_3166_1"
+        }
+      ],
+      "name": "unique_locale_per_tv_show",
+      "nils_distinct?": true,
+      "where": null
+    }
+  ],
   "multitenancy": {
     "attribute": null,
     "global": null,
@@ -107,5 +166,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "libraries"
+  "table": "tv_show_localizations"
 }
