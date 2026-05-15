@@ -16,12 +16,12 @@ msgstr ""
 msgid "Administrator created"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:32
+#: lib/watch_club_web/components/accounts/registration_form.ex:29
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:38
+#: lib/watch_club_web/components/accounts/registration_form.ex:36
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr ""
@@ -31,13 +31,13 @@ msgstr ""
 msgid "Do not share the credentials of this account, you will be able to invite other users later."
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:26
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:26
+#: lib/watch_club_web/components/accounts/registration_form.ex:23
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:23
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:32
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:30
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr ""
@@ -47,8 +47,8 @@ msgstr ""
 msgid "To configure your instance, you need to setup a unique administrator account."
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:20
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:20
+#: lib/watch_club_web/components/accounts/registration_form.ex:17
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:17
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""

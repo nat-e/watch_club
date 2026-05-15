@@ -9,7 +9,13 @@ defmodule WatchClub.Clubs.LibraryItem do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
+  alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.Content
+  alias WatchClub.Shared.SortOrder
+
+  import Ash.Expr
+
+  require Ash.Query
 
   postgres do
     table "library_items"
@@ -22,7 +28,37 @@ defmodule WatchClub.Clubs.LibraryItem do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:destroy]
+
+    read :read do
+      primary? true
+    end
+
+    read :for_library do
+      argument :library_id, :uuid_v7, allow_nil?: false
+
+      argument :sort_by, LibraryItemsSortOption do
+        allow_nil? false
+        default LibraryItemsSortOption.default_option()
+      end
+
+      argument :sort_order, SortOrder do
+        allow_nil? false
+        default LibraryItemsSortOption.default_order()
+      end
+
+      filter expr(library_id == ^arg(:library_id))
+
+      prepare fn query, context ->
+        sort_by = Ash.Query.get_argument(query, :sort_by)
+        sort_order = Ash.Query.get_argument(query, :sort_order)
+        content_for_view_query = Ash.Query.for_read(Content, :for_view, %{}, scope: context)
+
+        query
+        |> LibraryItemsSortOption.sort_query(sort_by, sort_order)
+        |> Ash.Query.load([:library, content: content_for_view_query], scope: context)
+      end
+    end
 
     create :create do
       primary? true
@@ -50,7 +86,7 @@ defmodule WatchClub.Clubs.LibraryItem do
       authorize_if ActorCanCreateLibraryItem
     end
 
-    policy action([:read]) do
+    policy action([:read, :for_library]) do
       description "Only club members can read library items"
       authorize_if {ActorIsClubMemberFilter, club_path: [:library, :club]}
     end

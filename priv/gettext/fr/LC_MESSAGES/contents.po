@@ -1,0 +1,44 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:67
+#, elixir-autogen, elixir-format
+msgid "Add %{content_name} to club libraries to share it with the members of your clubs."
+msgstr "Ajoutez %{content_name} aux bibliothèques du club pour le partager avec les membres de vos clubs."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:38
+#, elixir-autogen, elixir-format
+msgid "Add to club"
+msgstr "Ajouter au club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:54
+#, elixir-autogen, elixir-format
+msgid "In %{count} club"
+msgid_plural "In %{count} clubs"
+msgstr[0] "Dans %{count} club"
+msgstr[1] "Dans %{count} clubs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:76
+#, elixir-autogen, elixir-format
+msgid "Select clubs"
+msgstr "Sélectionner des clubs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:62
+#, elixir-autogen, elixir-format
+msgid "Select libraries"
+msgstr "Sélectionner des bibliothèques"

@@ -13,6 +13,8 @@ defmodule WatchClub.Clubs.Library do
   alias WatchClub.Clubs.{Club, LibraryItem}
   alias WatchClub.Contents.{Content, ContentType}
 
+  import Ash.Expr
+
   require Ash.Query
 
   postgres do
@@ -31,18 +33,6 @@ defmodule WatchClub.Clubs.Library do
       argument :club_id, :uuid_v7, allow_nil?: false
 
       filter expr(club_id == ^arg(:club_id))
-    end
-
-    read :view_library do
-      prepare fn query, context ->
-        Ash.Query.load(query, [
-          :club,
-          items: [
-            :library,
-            content: Ash.Query.for_read(Content, :for_view, %{}, scope: context)
-          ]
-        ])
-      end
     end
 
     update :set_index do
@@ -103,7 +93,7 @@ defmodule WatchClub.Clubs.Library do
       authorize_if ActorIsClubMember
     end
 
-    policy action([:read, :view_library]) do
+    policy action(:read) do
       description "Only club members can read library"
       authorize_if ActorIsClubMemberFilter
     end

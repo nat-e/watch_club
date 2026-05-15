@@ -144,6 +144,7 @@ defmodule WatchClub.Repo.Migrations.InitExtensions1 do
     """)
 
     execute("CREATE EXTENSION IF NOT EXISTS \"citext\"")
+    execute(~s|CREATE EXTENSION IF NOT EXISTS "unaccent"|)
   end
 
   def down do
@@ -153,6 +154,7 @@ defmodule WatchClub.Repo.Migrations.InitExtensions1 do
       "DROP FUNCTION IF EXISTS uuid_generate_v7(), timestamp_from_uuid_v7(uuid), ash_raise_error(jsonb), ash_raise_error(jsonb, ANYCOMPATIBLE), ash_elixir_and(BOOLEAN, ANYCOMPATIBLE), ash_elixir_and(ANYCOMPATIBLE, ANYCOMPATIBLE), ash_elixir_or(ANYCOMPATIBLE, ANYCOMPATIBLE), ash_elixir_or(BOOLEAN, ANYCOMPATIBLE), ash_trim_whitespace(text[]), ash_required(ANYCOMPATIBLE, jsonb)"
     )
 
-    # execute("DROP EXTENSION IF EXISTS \"citext\"")
+    execute("DROP EXTENSION IF EXISTS \"citext\"")
+    execute(~s|DROP EXTENSION IF EXISTS "unaccent"|)
   end
 end

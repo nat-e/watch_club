@@ -18,13 +18,13 @@ msgid "Administrator created"
 msgstr "Administrateur créé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/registration_form.ex:32
+#: lib/watch_club_web/components/accounts/registration_form.ex:29
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/registration_form.ex:38
+#: lib/watch_club_web/components/accounts/registration_form.ex:36
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr "Créer un compte"
@@ -36,14 +36,14 @@ msgid "Do not share the credentials of this account, you will be able to invite 
 msgstr "Ne partagez pas les identifiants de ce compte, vous pourrez inviter d'autres utilisateurs plus tard."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/registration_form.ex:26
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:26
+#: lib/watch_club_web/components/accounts/registration_form.ex:23
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:23
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr "Mot de passe"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:32
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:30
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr "Se connecter"
@@ -55,8 +55,8 @@ msgid "To configure your instance, you need to setup a unique administrator acco
 msgstr "Pour configurer votre instance, vous devez créer un compte administrateur unique."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/registration_form.ex:20
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:20
+#: lib/watch_club_web/components/accounts/registration_form.ex:17
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:17
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr "Nom d'utilisateur"

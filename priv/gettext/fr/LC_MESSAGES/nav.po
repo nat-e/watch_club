@@ -71,3 +71,9 @@ msgstr "Menu utilisateur"
 #, elixir-autogen, elixir-format
 msgid "Watchlist"
 msgstr "Liste à voir"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/sidebar_component.ex:194
+#, elixir-autogen, elixir-format
+msgid "Club actions"
+msgstr "Actions du club"

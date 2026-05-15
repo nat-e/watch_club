@@ -55,7 +55,7 @@ msgstr "Nom du club"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs_live/settings.ex:17
-#: lib/watch_club_web/live/nav/sidebar_component.ex:204
+#: lib/watch_club_web/live/nav/sidebar_component.ex:214
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr "Paramètres du club"
@@ -99,7 +99,7 @@ msgstr "Créer un nouveau club"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/nav/components/modals.ex:42
-#: lib/watch_club_web/live/nav/sidebar_component.ex:218
+#: lib/watch_club_web/live/nav/sidebar_component.ex:228
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr "Supprimer le club"
@@ -143,13 +143,13 @@ msgstr "Quitter"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/nav/components/modals.ex:82
-#: lib/watch_club_web/live/nav/sidebar_component.ex:231
+#: lib/watch_club_web/live/nav/sidebar_component.ex:241
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr "Quitter le club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:197
+#: lib/watch_club_web/live/nav/sidebar_component.ex:207
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr "Gérer les membres"
@@ -246,31 +246,31 @@ msgid "You will loose access to the library and will not be able to join back un
 msgstr "Vous perdrez l'accès à la bibliothèque et ne pourrez pas revenir sans être réinvité"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:266
+#: lib/watch_club_web/live/nav/sidebar_component.ex:309
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} created"
 msgstr "Club %{club_name} créé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:291
+#: lib/watch_club_web/live/nav/sidebar_component.ex:334
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} deleted"
 msgstr "Club %{club_name} supprimé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:299
+#: lib/watch_club_web/live/nav/sidebar_component.ex:342
 #, elixir-autogen, elixir-format
 msgid "Error deleting club, try again later"
 msgstr "Erreur lors de la suppression du club, réessayez plus tard"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:329
+#: lib/watch_club_web/live/nav/sidebar_component.ex:372
 #, elixir-autogen, elixir-format
 msgid "Error leaving club, try again later"
 msgstr "Erreur lors de la sortie du club, réessayez plus tard"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:321
+#: lib/watch_club_web/live/nav/sidebar_component.ex:364
 #, elixir-autogen, elixir-format
 msgid "You left %{club_name}"
 msgstr "Vous avez quitté %{club_name}"
@@ -288,7 +288,7 @@ msgid "Content type"
 msgstr "Type de contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:216
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:221
 #, elixir-autogen, elixir-format
 msgid "Could not load club libraries"
 msgstr "Impossible de charger les bibliothèques du club"
@@ -339,13 +339,13 @@ msgid "Drag to reorder"
 msgstr "Faire glisser pour réordonner"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:180
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:185
 #, elixir-autogen, elixir-format
 msgid "Error deleting library, try again later"
 msgstr "Erreur lors de la suppression de la bibliothèque, réessayez plus tard"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:155
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:160
 #, elixir-autogen, elixir-format
 msgid "Error reordering libraries, try again later"
 msgstr "Erreur lors de la réorganisation des bibliothèques, réessayez plus tard"
@@ -369,7 +369,7 @@ msgid "Library created"
 msgstr "Bibliothèque créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:171
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:176
 #, elixir-autogen, elixir-format
 msgid "Library deleted"
 msgstr "Bibliothèque supprimée"
@@ -468,43 +468,85 @@ msgid "Review who can access the club and share one-time invitation links."
 msgstr "Vérifiez qui peut accéder au club et partagez des liens d'invitation à usage unique."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents.ex:121
+#: lib/watch_club_web/components/contents.ex:103
 #, elixir-autogen, elixir-format
 msgid "Actions coming soon"
 msgstr "Actions bientôt disponibles"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents.ex:114
+#: lib/watch_club_web/components/contents.ex:96
 #, elixir-autogen, elixir-format
 msgid "Content actions"
 msgstr "Actions du contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:61
+#: lib/watch_club_web/live/clubs_live/library_show.ex:197
 #, elixir-autogen, elixir-format
 msgid "Could not load library"
 msgstr "Impossible de charger la bibliothèque"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:23
+#: lib/watch_club_web/live/clubs_live/library_show.ex:32
 #, elixir-autogen, elixir-format
 msgid "Library is empty"
 msgstr "La bibliothèque est vide"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents.ex:134
+#: lib/watch_club_web/components/contents.ex:135
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr "Lire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents.ex:95
+#: lib/watch_club_web/components/contents.ex:78
 #, elixir-autogen, elixir-format
 msgid "Reveal details for %{title}"
 msgstr "Afficher les détails de %{title}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_show.ex:25
+#: lib/watch_club_web/live/clubs_live/library_show.ex:34
 #, elixir-autogen, elixir-format
 msgid "This library does not have any content yet."
 msgstr "Cette bibliothèque ne contient encore aucun contenu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:108
+#, elixir-autogen, elixir-format
+msgid "Added date"
+msgstr "Date d'ajout"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:91
+#, elixir-autogen, elixir-format
+msgid "Library sort order"
+msgstr "Ordre de tri de la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:116
+#, elixir-autogen, elixir-format
+msgid "Release date"
+msgstr "Date de sortie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:88
+#, elixir-autogen, elixir-format
+msgid "Sort by"
+msgstr "Trier par"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:215
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} ascending"
+msgstr "Trier par %{field} croissant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:219
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} descending"
+msgstr "Trier par %{field} décroissant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs_live/library_show.ex:100
+#, elixir-autogen, elixir-format
+msgid "Title"
+msgstr "Titre"

@@ -13,44 +13,50 @@ msgstr ""
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/nav/components/search.ex:70
-#: lib/watch_club_web/live/nav/components/search.ex:177
-#: lib/watch_club_web/live/nav/components/search.ex:326
+#: lib/watch_club_web/live/nav/components/search.ex:184
+#: lib/watch_club_web/live/nav/components/search.ex:348
 #, elixir-autogen, elixir-format
 msgid "Everywhere"
 msgstr "Partout"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:407
+#: lib/watch_club_web/live/nav/components/search.ex:432
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type} in %{club_name}"
 msgstr "Rechercher %{content_type} dans %{club_name}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:395
+#: lib/watch_club_web/live/nav/components/search.ex:420
 #, elixir-autogen, elixir-format
 msgid "Search all %{content_type}"
 msgstr "Rechercher tous les %{content_type}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:275
+#: lib/watch_club_web/live/nav/components/search.ex:297
 #, elixir-autogen, elixir-format
 msgid "See all results"
 msgstr "Voir tous les résultats"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:236
+#: lib/watch_club_web/live/nav/components/search.ex:249
 #, elixir-autogen, elixir-format
 msgid "Start typing to search"
 msgstr "Commencez à taper pour rechercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:245
+#: lib/watch_club_web/live/nav/components/search.ex:262
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr "Une erreur est survenue lors de la recherche de votre contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:262
+#: lib/watch_club_web/live/nav/components/search.ex:283
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for your search"
 msgstr "Nous n'avons trouvé aucun contenu pour votre recherche"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/nav/components/search.ex:116
+#, elixir-autogen, elixir-format
+msgid "Search"
+msgstr "Rechercher"

@@ -19,7 +19,7 @@ defmodule WatchClubWeb.UI.Button do
 
   attr :rest, :global,
     include:
-      ~w(disabled form name value autofocus href navigate patch method download replace target aria-label aria-busy)
+      ~w(disabled form name value autofocus href navigate patch method download replace target aria-label aria-busy aria-pressed)
 
   slot :icon do
     attr :position, :string, values: ~w(start end)

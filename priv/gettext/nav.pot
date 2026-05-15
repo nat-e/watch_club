@@ -61,3 +61,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Watchlist"
 msgstr ""
+
+#: lib/watch_club_web/live/nav/sidebar_component.ex:194
+#, elixir-autogen, elixir-format
+msgid "Club actions"
+msgstr ""

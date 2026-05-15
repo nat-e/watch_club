@@ -1,6 +1,6 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
-  alias WatchClub.Accounts.User
+  alias WatchClub.Accounts.{User, UserSettings}
   alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
   alias WatchClub.Contents.{Book, Content, TvShow}
 
@@ -33,6 +33,8 @@ defmodule WatchClub.Generator do
   end
 
   def user(opts \\ []) do
+    {locale, opts} = Keyword.pop(opts, :locale, :en_US)
+
     # Use seed generator to skip invitation
     seed_generator(
       %User{
@@ -40,7 +42,16 @@ defmodule WatchClub.Generator do
         hashed_password: @default_hashed_password,
         administrator?: false
       },
-      overrides: opts
+      overrides: opts,
+      after_action: fn user ->
+        settings =
+          Ash.Seed.seed!(UserSettings, %{
+            user_id: user.id,
+            locale: locale
+          })
+
+        %{user | settings: settings}
+      end
     )
   end
 

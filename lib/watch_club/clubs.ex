@@ -31,13 +31,14 @@ defmodule WatchClub.Clubs do
 
     resource Library do
       define :list_club_libraries, action: :by_club, args: [:club_id]
-      define :view_library, action: :view_library, get_by: [:id]
       define :create_library, action: :create, args: [:club_id]
       define :update_library, action: :update
       define :destroy_library, action: :destroy
     end
 
-    resource LibraryItem
+    resource LibraryItem do
+      define :get_library_items, action: :for_library, args: [:library_id]
+    end
 
     resource Membership do
       define :get_club_membership_by_id, action: :with_club_and_user, get_by: [:id]

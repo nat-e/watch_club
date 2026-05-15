@@ -12,41 +12,51 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/members.ex:179
-#: lib/watch_club_web/live/clubs_live/members.ex:215
-#: lib/watch_club_web/live/nav/components/modals.ex:79
-#: lib/watch_club_web/live/nav/components/modals.ex:129
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:157
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:187
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:216
+#: lib/watch_club_web/live/clubs_live/members.ex:186
+#: lib/watch_club_web/live/clubs_live/members.ex:209
+#: lib/watch_club_web/live/nav/components/modals.ex:60
+#: lib/watch_club_web/live/nav/components/modals.ex:100
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "Annuler"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/members.ex:310
+#: lib/watch_club_web/live/clubs_live/members.ex:308
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Fermer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/modals.ex:39
+#: lib/watch_club_web/live/nav/components/modals.ex:28
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "Créer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/members.ex:223
-#: lib/watch_club_web/live/nav/components/modals.ex:89
+#: lib/watch_club_web/live/clubs_live/members.ex:213
+#: lib/watch_club_web/live/nav/components/modals.ex:69
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts_live/settings.ex:30
+#: lib/watch_club_web/live/accounts_live/settings.ex:47
+#: lib/watch_club_web/live_components/club_selection_button.ex:90
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/components/search.ex:252
+#: lib/watch_club_web/live/nav/components/search.ex:270
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live_components/club_selection_button.ex:172
+#, elixir-autogen, elixir-format
+msgid "Something went wrong, try again later"
+msgstr "Une erreur est survenue, réessayez plus tard"

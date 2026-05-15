@@ -47,7 +47,7 @@ msgid "Club Name"
 msgstr ""
 
 #: lib/watch_club_web/live/clubs_live/settings.ex:17
-#: lib/watch_club_web/live/nav/sidebar_component.ex:204
+#: lib/watch_club_web/live/nav/sidebar_component.ex:214
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr ""
@@ -84,7 +84,7 @@ msgid "Create new club"
 msgstr ""
 
 #: lib/watch_club_web/live/nav/components/modals.ex:42
-#: lib/watch_club_web/live/nav/sidebar_component.ex:218
+#: lib/watch_club_web/live/nav/sidebar_component.ex:228
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr ""
@@ -121,12 +121,12 @@ msgid "Leave"
 msgstr ""
 
 #: lib/watch_club_web/live/nav/components/modals.ex:82
-#: lib/watch_club_web/live/nav/sidebar_component.ex:231
+#: lib/watch_club_web/live/nav/sidebar_component.ex:241
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:197
+#: lib/watch_club_web/live/nav/sidebar_component.ex:207
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr ""
@@ -207,27 +207,27 @@ msgstr ""
 msgid "You will loose access to the library and will not be able to join back unless re-invited"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:266
+#: lib/watch_club_web/live/nav/sidebar_component.ex:309
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} created"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:291
+#: lib/watch_club_web/live/nav/sidebar_component.ex:334
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:299
+#: lib/watch_club_web/live/nav/sidebar_component.ex:342
 #, elixir-autogen, elixir-format
 msgid "Error deleting club, try again later"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:329
+#: lib/watch_club_web/live/nav/sidebar_component.ex:372
 #, elixir-autogen, elixir-format
 msgid "Error leaving club, try again later"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/sidebar_component.ex:321
+#: lib/watch_club_web/live/nav/sidebar_component.ex:364
 #, elixir-autogen, elixir-format
 msgid "You left %{club_name}"
 msgstr ""
@@ -242,7 +242,7 @@ msgstr ""
 msgid "Content type"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:216
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:221
 #, elixir-autogen, elixir-format
 msgid "Could not load club libraries"
 msgstr ""
@@ -285,12 +285,12 @@ msgstr ""
 msgid "Drag to reorder"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:180
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:185
 #, elixir-autogen, elixir-format
 msgid "Error deleting library, try again later"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:155
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:160
 #, elixir-autogen, elixir-format
 msgid "Error reordering libraries, try again later"
 msgstr ""
@@ -310,7 +310,7 @@ msgstr ""
 msgid "Library created"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_management_component.ex:171
+#: lib/watch_club_web/live/clubs_live/library_management_component.ex:176
 #, elixir-autogen, elixir-format
 msgid "Library deleted"
 msgstr ""
@@ -393,37 +393,72 @@ msgstr ""
 msgid "Review who can access the club and share one-time invitation links."
 msgstr ""
 
-#: lib/watch_club_web/components/contents.ex:121
+#: lib/watch_club_web/components/contents.ex:103
 #, elixir-autogen, elixir-format
 msgid "Actions coming soon"
 msgstr ""
 
-#: lib/watch_club_web/components/contents.ex:114
+#: lib/watch_club_web/components/contents.ex:96
 #, elixir-autogen, elixir-format
 msgid "Content actions"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:61
+#: lib/watch_club_web/live/clubs_live/library_show.ex:197
 #, elixir-autogen, elixir-format
 msgid "Could not load library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:23
+#: lib/watch_club_web/live/clubs_live/library_show.ex:32
 #, elixir-autogen, elixir-format
 msgid "Library is empty"
 msgstr ""
 
-#: lib/watch_club_web/components/contents.ex:134
+#: lib/watch_club_web/components/contents.ex:135
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
 
-#: lib/watch_club_web/components/contents.ex:95
+#: lib/watch_club_web/components/contents.ex:78
 #, elixir-autogen, elixir-format
 msgid "Reveal details for %{title}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs_live/library_show.ex:25
+#: lib/watch_club_web/live/clubs_live/library_show.ex:34
 #, elixir-autogen, elixir-format
 msgid "This library does not have any content yet."
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:108
+#, elixir-autogen, elixir-format
+msgid "Added date"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:91
+#, elixir-autogen, elixir-format
+msgid "Library sort order"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:116
+#, elixir-autogen, elixir-format
+msgid "Release date"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:88
+#, elixir-autogen, elixir-format
+msgid "Sort by"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:215
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} ascending"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:219
+#, elixir-autogen, elixir-format
+msgid "Sort by %{field} descending"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs_live/library_show.ex:100
+#, elixir-autogen, elixir-format
+msgid "Title"
 msgstr ""

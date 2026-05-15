@@ -3,7 +3,6 @@ defmodule WatchClub.Clubs.ContentTest do
 
   import WatchClub.Contents
 
-  alias WatchClub.Accounts
   alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Contents.{Content, Movie, MovieLocalization}
 
@@ -25,9 +24,8 @@ defmodule WatchClub.Clubs.ContentTest do
   end
 
   describe "create_movie/*" do
-    test "creates a movie", %{admin: admin} do
-      settings = Accounts.update_user_settings!(admin.settings, %{locale: :fr_FR}, actor: admin)
-      actor = %{admin | settings: settings}
+    test "creates a movie" do
+      actor = generate(user(locale: :fr_FR))
 
       assert %Content{
                type: :movie,
@@ -51,7 +49,7 @@ defmodule WatchClub.Clubs.ContentTest do
                MovieLocalization
                |> Ash.Query.filter(movie_id == ^content.id)
                |> Ash.Query.sort(iso_639_1: :asc)
-               |> Ash.read!(authorize?: false)
+               |> Ash.read!(actor: actor, authorize?: false)
 
       assert %Content{localized_title_key: "la guerre des etoiles"} =
                Content
@@ -62,10 +60,10 @@ defmodule WatchClub.Clubs.ContentTest do
   end
 
   describe "set_club_libraries/*" do
-    test "adds content to selected club libraries", %{club: club, member: member} do
+    test "adds content to selected club libraries", %{club: club, admin: admin, member: member} do
       library = generate(library(club, content_type: :movie))
       library_id = library.id
-      content = generate(movie())
+      content = generate(movie(actor: admin))
 
       assert %Content{library_items: [%LibraryItem{library_id: ^library_id} = item]} =
                set_club_libraries!(content, %{library_ids: [library.id]}, actor: member)

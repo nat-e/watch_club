@@ -4,14 +4,89 @@ defmodule WatchClub.Clubs.LibraryTest do
   import WatchClub.Clubs
 
   alias WatchClub.Clubs.Library
+  alias WatchClub.Contents.ContentView
 
   require Ash.Query
+
+  @library_sort_movies [
+    %{
+      tmdb_id: 101,
+      original_title: "ZZZ Original",
+      title: "Zulu",
+      release_date: "2020-01-01",
+      translations: [{"en", "US", "Zulu"}, {"fr", "FR", "Abricot"}]
+    },
+    %{
+      tmdb_id: 102,
+      original_title: "YYY Original",
+      title: "Banana",
+      release_date: "2021-01-01",
+      translations: [{"en", "US", "Banana"}, {"fr", "FR", "Banana"}]
+    },
+    %{
+      tmdb_id: 103,
+      original_title: "XXX Original",
+      title: "Alpha",
+      release_date: "2022-01-01",
+      translations: [{"en", "US", "Alpha"}, {"fr", "FR", "Cerise"}]
+    },
+    %{
+      tmdb_id: 104,
+      original_title: "WWW Original",
+      title: "Dattel",
+      release_date: "2023-01-01",
+      translations: [{"en", "US", "Dattel"}, {"fr", "FR", "Dattel"}]
+    },
+    %{
+      tmdb_id: 105,
+      original_title: "VVV Original",
+      title: "Eclair",
+      release_date: "2024-01-01",
+      translations: [{"en", "US", "Eclair"}, {"fr", "FR", "Éclair"}]
+    },
+    %{
+      tmdb_id: 106,
+      original_title: "UUU Original",
+      title: "Eden",
+      release_date: "2025-01-01",
+      translations: [{"en", "US", "Eden"}, {"fr", "FR", "Eden"}]
+    }
+  ]
 
   setup do
     admin = generate(administrator())
     club = generate(club(actor: admin))
     member = generate(user())
     generate(membership(club, member, role: :member))
+
+    Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+      tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+      details = Enum.find(@library_sort_movies, &(&1.tmdb_id == tmdb_id))
+
+      translations =
+        Enum.map(details.translations, fn {iso_639_1, iso_3166_1, title} ->
+          %{
+            "iso_639_1" => iso_639_1,
+            "iso_3166_1" => iso_3166_1,
+            "name" => title,
+            "english_name" => title,
+            "data" => %{"title" => title}
+          }
+        end)
+
+      response =
+        "movie_details_11"
+        |> tmdb_fixture()
+        |> Map.merge(%{
+          "id" => tmdb_id,
+          "original_title" => details.original_title,
+          "title" => details.title,
+          "release_date" => details.release_date,
+          "translations" => %{"translations" => translations}
+        })
+
+      Req.Test.json(conn, response)
+    end)
 
     {:ok, admin: admin, club: club, member: member}
   end
@@ -33,6 +108,27 @@ defmodule WatchClub.Clubs.LibraryTest do
     test "members cannot create libraries", %{club: club, member: member} do
       create_library(club.id, %{content_type: :movie, name: "Movies"}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "get_library_items/*" do
+    test "sorts items by localized title", %{club: club, admin: admin} do
+      actor = generate(user(locale: :fr_FR))
+      generate(membership(club, actor, role: :member))
+      library = generate(library(club, content_type: :movie))
+
+      Enum.each(@library_sort_movies, fn movie_details ->
+        generate(movie(tmdb_id: movie_details.tmdb_id, library_ids: [library.id], actor: admin))
+      end)
+
+      items = get_library_items!(library.id, %{sort_by: :title, sort_order: :asc}, actor: actor)
+
+      assert ["Abricot", "Banana", "Cerise", "Dattel", "Éclair", "Eden"] =
+               Enum.map(items, fn item ->
+                 item.content
+                 |> ContentView.from_content(:fr_FR)
+                 |> Map.fetch!(:title)
+               end)
     end
   end
 

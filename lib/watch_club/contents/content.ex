@@ -159,6 +159,9 @@ defmodule WatchClub.Contents.Content do
                       tv_show.best_localization.title,
                       original_title
                     )
+
+                  true ->
+                    fragment("trim(unaccent(lower(?)))", original_title)
                 end
               ) do
       public? true
