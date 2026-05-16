@@ -52,7 +52,8 @@ defmodule WatchClub.Clubs.Invitation do
     end
 
     update :accept do
-      # Creating the membership cannot be done atomically
+      # Accepting an invitation creates a membership from the invitation and actor,
+      # so this action intentionally orchestrates related data.
       require_atomic? false
 
       # Make sure the invitation is not expired

@@ -64,6 +64,9 @@ defmodule WatchClub.Contents.Content do
 
     update :set_libraries do
       description "Update the list of libraries a content belongs to"
+
+      # Setting libraries validates selected libraries and manages join records,
+      # so this action intentionally coordinates related data.
       require_atomic? false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
 

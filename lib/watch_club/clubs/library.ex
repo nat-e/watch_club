@@ -51,6 +51,9 @@ defmodule WatchClub.Clubs.Library do
 
     update :update do
       primary? true
+
+      # Updating accepted content types may remove incompatible library items,
+      # which is cross-resource cleanup and cannot be expressed as a single atomic update.
       require_atomic? false
       accept [:name, :accepted_content_types]
 
@@ -66,6 +69,8 @@ defmodule WatchClub.Clubs.Library do
     end
 
     destroy :destroy do
+      # Destroying a library reorders sibling libraries after deletion,
+      # which performs follow-up updates across multiple records.
       require_atomic? false
 
       change ReorderLibrariesAfterDestroy

@@ -136,6 +136,8 @@ defmodule WatchClub.Accounts.User do
       # Use this action to allow users to change their password by providing
       # their current password and a new password.
 
+      # Password validation checks the current password against the stored hash,
+      # which cannot be expressed as a database-atomic update.
       require_atomic? false
       accept []
       argument :current_password, :string, sensitive?: true, allow_nil?: false
