@@ -131,6 +131,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
           }
         >
           <.input
+            id="search-overlay-input"
             field={@form[:query]}
             placeholder={placeholder(assigns)}
             class="peer h-control-md rounded-full bg-surface-inset p-group items-center pr-8 truncate"
@@ -141,7 +142,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
             variant="ghost"
             size="icon-sm"
             class="absolute right-2 top-1 peer-placeholder-shown:hidden"
-            phx-click={JS.dispatch("change", to: "#overlay-search-form")}
+            phx-click={JS.dispatch("change", to: "#mobile-search-overlay")}
           >
             <Lucideicons.x />
           </.button>
