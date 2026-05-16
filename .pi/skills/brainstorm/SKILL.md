@@ -36,25 +36,35 @@ Before proposing a design:
 
 ## PRD artifact
 
-Write a concise PRD to `tmp/brainstorm/<slug>/prd.md`. Omit sections that add no decision value. Use this structure:
+Write a short PRD to `tmp/brainstorm/<slug>/prd.md`. The user should be able to skim it quickly; remove everything that does not change.
 
-1. **Problem / goal** — 3 bullets max.
-2. **Non-goals** — only if needed.
-3. **Key decisions to validate** — short checklist.
-4. **Domain Changes**
-   - Domain functions table with exactly: `name` | `description` | `Usage example`.
-   - Ash resource actions table listing resource/action, arguments, one-sentence implementation approach, and short policy description.
-   - Other Ash resource changes: attributes, relationships, calculations, validations, constraints.
-   - PubSub events.
+Use this structure, omitting any section that adds no decision value:
+
+1. **Problem / goal** — one sentence.
+2. **Non-goals** — omit unless the user explicitly specified non-goals in the conversation.
+3. **Key decisions to validate** — short checklist of decisions that materially shape the domain model, UX, or architecture.
+4. **Domain Changes** — only changed domain functions/resources/actions/attributes/relationships/policies/PubSub events. If nothing changes, write one sentence saying no domain changes and what existing behavior is reused.
 5. **Web App Changes**
-   - Hierarchy of LiveViews, LiveComponents, and function components being changed.
-   - For LiveViews/LiveComponents, include events, params, assigns, PubSub subscriptions, and parent/child responsibilities.
-6. **Mockups**
-   - Link to Storybook mockups, or a short “No mockup needed” note for backend-only changes.
-   - Include 1–3 variants when there is a real design choice.
-   - If mobile and desktop UI differ, show both.
-7. **Risks / open questions** — max 5 bullets.
-8. **Acceptance criteria** — concise user-visible and technical checks.
+   - Start with the affected UI's component tree, not the file/module hierarchy.
+   - Show it as a `diff` fenced block so `+`, `-`, and `~` lines are colorized.
+   - Use component names and short same-line comments only; do not show HEEX/code, attributes, params, or implementation snippets.
+   - Show only structural changes that help the user understand the page/modal layout.
+   - Example format:
+
+     ```diff
+       Layouts.centered_card
+       ├─ <.stack>                         # header / context
+     ~ │  └─ instructions                  # copy changes
+     + ├─ <.segmented_control>             # mode switch
+     + │  ├─ item: Create account
+     + │  └─ item: Sign in
+       ├─ <.registration_form>             # registration mode only
+     ~ └─ <.sign_in_form>                  # sign-in behavior changes
+     ```
+
+   - Then list only changed params/events/assigns/components in concise bullets.
+6. **Mockups** — Storybook path/link, or “No mockup needed” for backend-only changes. Mention variants only when they represent a real design choice.
+7. **Validated implementation notes** — use instead of “Risks / open questions”. Research and validate uncertainties before writing the PRD; summarize the chosen solution in one short paragraph or bullets.
 
 Avoid implementation detail unless it helps the user validate a design decision.
 

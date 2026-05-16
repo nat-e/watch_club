@@ -12,13 +12,21 @@ defmodule WatchClubWeb.AuthController do
         _ -> "You are now signed in"
       end
 
-    conn
-    |> delete_session(:return_to)
-    |> store_in_session(user)
-    # If your resource has a different name, update the assign name here (i.e :current_admin)
-    |> assign(:current_user, user)
-    |> put_flash(:info, message)
-    |> redirect(to: return_to)
+    conn =
+      conn
+      |> delete_session(:return_to)
+      |> store_in_session(user)
+      # If your resource has a different name, update the assign name here (i.e :current_admin)
+      |> assign(:current_user, user)
+
+    conn =
+      if Phoenix.Flash.get(conn.assigns.flash, :success) do
+        conn
+      else
+        put_flash(conn, :info, message)
+      end
+
+    redirect(conn, to: return_to)
   end
 
   def failure(conn, activity, reason) do

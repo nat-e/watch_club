@@ -26,4 +26,7 @@ defmodule WatchClubWeb.Storybook.Root do
   def entry("badge"), do: [name: "Badge", icon: {:fa, "circle-half-stroke"}, index: 14]
   def entry("flash"), do: [name: "Flash", icon: {:fa, "circle-exclamation"}, index: 15]
   def entry("modal"), do: [name: "Modal", icon: {:fa, "rectangle-ad"}, index: 16]
+
+  def entry("segmented_control"),
+    do: [name: "Segmented control", icon: {:fa, "grip-lines"}, index: 17]
 end

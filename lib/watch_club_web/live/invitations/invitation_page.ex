@@ -29,6 +29,17 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
+      <.segmented_control aria-label={dgettext("invitations", "Invitation action")}>
+        <:item patch={~p"/invitations/#{@invitation.id}"} selected={@action == :register}>
+          {dgettext("auth", "Create account")}
+        </:item>
+        <:item
+          patch={~p"/invitations/#{@invitation.id}?action=sign_in"}
+          selected={@action == :sign_in}
+        >
+          {dgettext("auth", "Sign in")}
+        </:item>
+      </.segmented_control>
       <.alert :if={@user_exists?} variant="info">
         <:icon><Lucideicons.info /></:icon>
         {dgettext("invitations", "Looks like you already have an account! Please login instead.")}
@@ -157,11 +168,39 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
   def handle_event("submit_registration", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, user} ->
+        %{invitation: invitation} = socket.assigns
+
         socket =
           socket
           |> put_flash(
             :success,
-            dgettext("invitations", "Your account has been created")
+            dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
+          )
+          |> redirect(
+            to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
+          )
+
+        {:noreply, socket}
+
+      {:error, form} ->
+        {:noreply, assign(socket, form: form)}
+    end
+  end
+
+  def handle_event("validate_sign_in", %{"form" => params}, socket) do
+    {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, params))}
+  end
+
+  def handle_event("submit_sign_in", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.form, params: params, read_one?: true) do
+      {:ok, user} ->
+        %{invitation: invitation} = socket.assigns
+
+        socket =
+          socket
+          |> put_flash(
+            :success,
+            dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
           )
           |> redirect(
             to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
