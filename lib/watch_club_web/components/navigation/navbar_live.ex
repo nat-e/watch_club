@@ -72,23 +72,12 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
 
   @impl true
   def handle_event("preview_search", %{"form" => params}, socket) do
-    # Validate is used to update the form values after an input changes.
-    # This is necessary after calling change in JS for our location/content-type buttons to update on mobile
-    # Errors are handled manually
-    form = AshPhoenix.Form.validate(socket.assigns.form, params, errors: false)
-    socket = assign(socket, :form, form)
+    {:noreply, preview_search(socket, params)}
+  end
 
-    if params["query"] == "" do
-      {:noreply,
-       socket
-       |> cancel_async(:preview_search, :cancel)
-       |> assign(:search_results, nil)}
-    else
-      {:noreply,
-       start_async(socket, :preview_search, fn ->
-         AshPhoenix.Form.submit!(form, params: params)
-       end)}
-    end
+  def handle_event("retry_preview_search", _params, socket) do
+    params = AshPhoenix.Form.params(socket.assigns.form, only_touched?: false)
+    {:noreply, preview_search(socket, params)}
   end
 
   def handle_event("open_search", %{"form" => %{"query" => ""}}, socket) do
@@ -106,6 +95,24 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
       end
 
     {:noreply, socket |> redirect(to: search_url)}
+  end
+
+  defp preview_search(socket, params) do
+    # Validate is used to update the form values after an input changes.
+    # This is necessary after calling change in JS for our location/content-type buttons to update on mobile
+    # Errors are handled manually
+    form = AshPhoenix.Form.validate(socket.assigns.form, params, errors: false)
+    socket = assign(socket, :form, form)
+
+    if params["query"] in [nil, ""] do
+      socket
+      |> cancel_async(:preview_search, :cancel)
+      |> assign(:search_results, nil)
+    else
+      start_async(socket, :preview_search, fn ->
+        AshPhoenix.Form.submit!(form, params: params)
+      end)
+    end
   end
 
   @impl true

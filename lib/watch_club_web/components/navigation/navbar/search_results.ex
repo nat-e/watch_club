@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
         variant="secondary"
         size="sm"
         phx-target={@myself}
-        phx-click="search"
+        phx-click="retry_preview_search"
       >
         {dgettext("default", "Try again")}
       </.button>
