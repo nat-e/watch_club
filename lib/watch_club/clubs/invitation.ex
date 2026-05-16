@@ -10,6 +10,7 @@ defmodule WatchClub.Clubs.Invitation do
   require Ash.Resource.Change.Builtins
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.Changes.CreateMembershipFromInvitation
   alias WatchClub.Clubs.Checks.{ActorIsClubMember, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.{Club, Membership, MembershipRole}
 
@@ -65,22 +66,7 @@ defmodule WatchClub.Clubs.Invitation do
 
       change set_attribute(:accepted?, true)
 
-      # Create the membership as a result of accepting the invitation
-      change fn changeset, %{actor: %User{} = actor} ->
-        Ash.Changeset.manage_relationship(
-          changeset,
-          :created_membership,
-          [
-            %{
-              club_id: Ash.Changeset.get_attribute(changeset, :club_id),
-              user_id: actor.id,
-              role: Ash.Changeset.get_attribute(changeset, :role)
-            }
-          ],
-          type: :create,
-          authorize?: false
-        )
-      end
+      change CreateMembershipFromInvitation
     end
   end
 

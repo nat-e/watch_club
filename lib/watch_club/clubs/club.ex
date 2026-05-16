@@ -12,6 +12,7 @@ defmodule WatchClub.Clubs.Club do
   require Ash.Query
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.Changes.CreateAdminMembershipForActor
   alias WatchClub.Clubs.{Invitation, Library, Membership}
 
   postgres do
@@ -43,22 +44,7 @@ defmodule WatchClub.Clubs.Club do
     create :create do
       accept [:name]
 
-      # This is OK to do in an anonymous function because adding a row in another table
-      # cannot be made atomic anyway
-      change fn
-        changeset, %{actor: %User{} = actor} ->
-          Ash.Changeset.manage_relationship(
-            changeset,
-            :memberships,
-            [%{user_id: actor.id, role: :admin}],
-            type: :create,
-            authorize?: false
-          )
-
-        # The changeset is still being executed when the actor is nil, even if policy forbids it
-        changeset, _ ->
-          changeset
-      end
+      change CreateAdminMembershipForActor
     end
 
     destroy :destroy do

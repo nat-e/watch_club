@@ -8,7 +8,13 @@ defmodule WatchClub.Clubs.Library do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
-  alias WatchClub.Clubs.Changes.RemoveUnacceptedLibraryItems
+  alias WatchClub.Clubs.Changes.{
+    RemoveUnacceptedLibraryItems,
+    ReorderLibrariesAfterDestroy,
+    SetDefaultLibraryIcon,
+    SetNextLibraryIndex
+  }
+
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.{Club, LibraryIcon, LibraryItem}
@@ -16,8 +22,6 @@ defmodule WatchClub.Clubs.Library do
   alias WatchClub.Contents.{Content, ContentType}
 
   import Ash.Expr
-
-  require Ash.Query
 
   postgres do
     table "libraries"
@@ -57,43 +61,14 @@ defmodule WatchClub.Clubs.Library do
       primary? true
       accept [:club_id, :name, :accepted_content_types]
 
-      change fn changeset, _context ->
-        accepted_content_types =
-          Ash.Changeset.get_attribute(changeset, :accepted_content_types) || []
-
-        Ash.Changeset.force_change_attribute(
-          changeset,
-          :icon,
-          LibraryIcon.default_for_accepted_content_types(accepted_content_types)
-        )
-      end
-
-      change before_action(fn changeset, context ->
-               club_id = Ash.Changeset.get_attribute(changeset, :club_id)
-
-               max_index =
-                 __MODULE__
-                 |> Ash.Query.for_read(:read, %{}, scope: context)
-                 |> Ash.Query.filter(club_id == ^club_id)
-                 |> Ash.max!(:index)
-
-               Ash.Changeset.force_change_attribute(changeset, :index, (max_index || -1) + 1)
-             end)
+      change SetDefaultLibraryIcon
+      change SetNextLibraryIndex
     end
 
     destroy :destroy do
       require_atomic? false
 
-      change after_action(fn _changeset, record, context ->
-               case WatchClub.Clubs.reorder_libraries(
-                      record.club_id,
-                      %{},
-                      scope: context
-                    ) do
-                 {:ok, _} -> {:ok, record}
-                 {:error, _} -> {:ok, record}
-               end
-             end)
+      change ReorderLibrariesAfterDestroy
     end
   end
 

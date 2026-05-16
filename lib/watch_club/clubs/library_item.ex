@@ -12,13 +12,12 @@ defmodule WatchClub.Clubs.LibraryItem do
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
   alias WatchClub.Clubs.LibraryItemsSortOption
+  alias WatchClub.Clubs.Preparations.PrepareLibraryItemsForView
   alias WatchClub.Clubs.Validations.LibraryAcceptsContentType
   alias WatchClub.Contents.Content
   alias WatchClub.Shared.SortOrder
 
   import Ash.Expr
-
-  require Ash.Query
 
   postgres do
     table "library_items"
@@ -52,15 +51,7 @@ defmodule WatchClub.Clubs.LibraryItem do
 
       filter expr(library_id == ^arg(:library_id))
 
-      prepare fn query, context ->
-        sort_by = Ash.Query.get_argument(query, :sort_by)
-        sort_order = Ash.Query.get_argument(query, :sort_order)
-        content_for_view_query = Ash.Query.for_read(Content, :for_view, %{}, scope: context)
-
-        query
-        |> LibraryItemsSortOption.sort_query(sort_by, sort_order)
-        |> Ash.Query.load([:library, content: content_for_view_query], scope: context)
-      end
+      prepare PrepareLibraryItemsForView
     end
 
     create :create do
