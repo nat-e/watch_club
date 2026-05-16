@@ -1,9 +1,9 @@
 defmodule WatchClubWeb.Storybook.Badge do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Badges
+  alias WatchClubWeb.Components.UI.Badge
 
-  def function, do: &Badges.badge/1
+  def function, do: &Badge.badge/1
   def imports, do: [{Lucideicons, [check: 1, circle_alert: 1]}]
 
   def variations do

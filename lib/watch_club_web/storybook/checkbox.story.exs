@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Storybook.Checkbox do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Checkbox
+  alias WatchClubWeb.Components.UI.Checkbox
 
   def function, do: &Checkbox.checkbox/1
 

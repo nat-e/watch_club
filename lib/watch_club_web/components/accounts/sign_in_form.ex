@@ -1,15 +1,20 @@
 defmodule WatchClubWeb.Components.Accounts.SignInForm do
   use WatchClubWeb, :component
 
+  attr :change, :string, required: true
   attr :form, Phoenix.HTML.Form, required: true
+  attr :id, :string, required: true
+  attr :submit, :string, required: true
+  attr :target, :any, default: nil
 
   def sign_in_form(assigns) do
     ~H"""
     <.form
       for={@form}
-      id="signin-form"
-      phx-change="validate_sign_in"
-      phx-submit="submit_sign_in"
+      id={@id}
+      phx-change={@change}
+      phx-submit={@submit}
+      phx-target={@target}
       phx-mounted={JS.focus_first()}
     >
       <.field

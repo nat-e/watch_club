@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Storybook.Flash do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Flash
+  alias WatchClubWeb.Components.UI.Flash
 
   def function, do: &Flash.flash/1
 

@@ -51,9 +51,7 @@ defmodule WatchClubWeb do
   def live_view do
     quote do
       use Phoenix.LiveView
-      use WatchClubWeb.Components
       alias WatchClubWeb.Layouts
-      alias WatchClubWeb.Modals
 
       unquote(html_helpers())
 
@@ -80,7 +78,6 @@ defmodule WatchClubWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
-      use WatchClubWeb.Components
 
       unquote(html_helpers())
     end
@@ -89,7 +86,6 @@ defmodule WatchClubWeb do
   def html do
     quote do
       use Phoenix.Component
-      use WatchClubWeb.Components
 
       # Import convenience functions from controllers
       import Phoenix.Controller,
@@ -111,7 +107,7 @@ defmodule WatchClubWeb do
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
-      use WatchClubWeb.UI
+      use WatchClubWeb.Components.UI
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

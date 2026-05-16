@@ -2,9 +2,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   use PhoenixStorybook.Story, :page
   use Phoenix.Component
 
-  import WatchClubWeb.UI.Badges
-  import WatchClubWeb.UI.Button
-  import WatchClubWeb.UI.Layout
+  import WatchClubWeb.Components.UI.Badge
+  import WatchClubWeb.Components.UI.Button
+  import WatchClubWeb.Components.UI.Layout
 
   def doc do
     "Validated spacing, layout, and form guidelines for Watch Club."

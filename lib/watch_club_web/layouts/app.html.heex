@@ -1,7 +1,7 @@
 <div class="min-h-svh bg-canvas text-text [--wc-sidebar-width:16rem]">
   <.live_component
     id="sidebar"
-    module={WatchClubWeb.Live.Nav.SidebarComponent}
+    module={WatchClubWeb.Components.Navigation.SidebarLive}
     current_url={@current_url}
     current_user={@current_user}
   />
@@ -16,7 +16,7 @@
     </div>
     <.live_component
       id="nabar"
-      module={WatchClubWeb.Live.Nav.NavbarComponent}
+      module={WatchClubWeb.Components.Navigation.NavbarLive}
       current_url={@current_url}
       current_user={@current_user}
     />

@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Storybook.Input do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Input
+  alias WatchClubWeb.Components.UI.Input
 
   def function, do: &Input.input/1
 

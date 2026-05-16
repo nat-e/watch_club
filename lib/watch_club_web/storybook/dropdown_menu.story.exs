@@ -1,14 +1,15 @@
 defmodule WatchClubWeb.Storybook.DropdownMenu do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.DropdownMenu
+  alias WatchClubWeb.Components.UI.DropdownMenu
 
   def function, do: &DropdownMenu.dropdown_menu/1
 
   def imports do
     [
-      {WatchClubWeb.UI.Button, [button: 1]},
-      {WatchClubWeb.UI.DropdownMenu, [dropdown_menu_item: 1, dropdown_menu_separator: 1]},
+      {WatchClubWeb.Components.UI.Button, [button: 1]},
+      {WatchClubWeb.Components.UI.DropdownMenu,
+       [dropdown_menu_item: 1, dropdown_menu_separator: 1]},
       {Lucideicons, [ellipsis_vertical: 1, log_out: 1, settings: 1, trash_2: 1, user: 1]}
     ]
   end

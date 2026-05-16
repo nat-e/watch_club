@@ -1,13 +1,13 @@
 defmodule WatchClubWeb.Storybook.RadioGroup do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.RadioGroup
+  alias WatchClubWeb.Components.UI.RadioGroup
 
   def function, do: &RadioGroup.radio_group/1
 
   def imports do
     [
-      {WatchClubWeb.Components.Contents, [content_type_icon: 1]},
+      {WatchClubWeb.Components.Contents.ContentTypeIcon, [content_type_icon: 1]},
       {Lucideicons, [check: 1]}
     ]
   end

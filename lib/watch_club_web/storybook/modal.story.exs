@@ -1,10 +1,10 @@
 defmodule WatchClubWeb.Storybook.Modal do
   use PhoenixStorybook.Story, :example
 
-  import WatchClubWeb.UI.Alert
-  import WatchClubWeb.UI.Button
-  import WatchClubWeb.UI.Input
-  import WatchClubWeb.UI.Modal
+  import WatchClubWeb.Components.UI.Alert
+  import WatchClubWeb.Components.UI.Button
+  import WatchClubWeb.Components.UI.Input
+  import WatchClubWeb.Components.UI.Modal
 
   alias Phoenix.LiveView.JS
 

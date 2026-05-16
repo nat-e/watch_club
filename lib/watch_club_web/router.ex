@@ -39,13 +39,13 @@ defmodule WatchClubWeb.Router do
         {WatchClubWeb.Hooks.Auth, :live_user_required},
         WatchClubWeb.Hooks.Locale
       ] do
-      live "/", HomeLive.Home
-      live "/settings", AccountsLive.Settings
-      live "/clubs/:club_id/members", ClubsLive.Members
-      live "/clubs/:club_id/settings", ClubsLive.Settings
-      live "/clubs/:club_id/library", ClubsLive.Settings
-      live "/libraries/:library_id", ClubsLive.LibraryShow
-      live "/movies/:tmdb_id", ContentsLive.MovieDetails
+      live "/", HomePage
+      live "/settings", Accounts.SettingsPage
+      live "/clubs/:club_id/members", Clubs.MembersPage
+      live "/clubs/:club_id/settings", Clubs.SettingsPage
+      live "/clubs/:club_id/library", Clubs.SettingsPage
+      live "/libraries/:library_id", Clubs.LibraryPage
+      live "/movies/:tmdb_id", Contents.MovieDetailsPage
     end
 
     ash_authentication_live_session :unauthenticated_routes,
@@ -55,8 +55,8 @@ defmodule WatchClubWeb.Router do
         {WatchClubWeb.Hooks.Auth, :live_no_user},
         WatchClubWeb.Hooks.Locale
       ] do
-      live "/setup", AccountsLive.Setup
-      live "/sign-in", AccountsLive.Signin
+      live "/setup", Accounts.SetupPage
+      live "/sign-in", Accounts.SignInPage
     end
 
     ash_authentication_live_session :optional_user_routes,
@@ -66,7 +66,7 @@ defmodule WatchClubWeb.Router do
         {WatchClubWeb.Hooks.Auth, :live_user_optional},
         WatchClubWeb.Hooks.Locale
       ] do
-      live "/invitations/:invitation_id", InvitationsLive.Show
+      live "/invitations/:invitation_id", Invitations.InvitationPage
     end
 
     # Auto-generated POST and callbacks routes from Ash Authentication

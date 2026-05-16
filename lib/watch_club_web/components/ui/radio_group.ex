@@ -1,0 +1,100 @@
+defmodule WatchClubWeb.Components.UI.RadioGroup do
+  @moduledoc """
+  Token-driven Watch Club radio group primitive.
+
+  Renders native radio inputs so groups integrate with forms, LiveView change
+  events, and `Phoenix.HTML.FormField`.
+  """
+
+  use Phoenix.Component
+
+  attr :id, :any, default: nil
+  attr :class, :any, default: nil
+  attr :name, :any, default: nil
+  attr :value, :any, default: nil
+  attr :errors, :list, default: []
+  attr :field, Phoenix.HTML.FormField, doc: "form field — derives id, name, value, and errors"
+  attr :rest, :global
+
+  slot :item, required: true do
+    attr :value, :any, required: true
+    attr :disabled, :boolean
+    attr :class, :any
+  end
+
+  def radio_group(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
+    assigns
+    |> assign(
+      field: nil,
+      id: assigns.id || field.id,
+      name: field.name,
+      value: input_value(field.value),
+      errors: errors
+    )
+    |> radio_group()
+  end
+
+  def radio_group(assigns) do
+    assigns =
+      assign(assigns, :id, assigns.id || "radio-group-#{System.unique_integer([:positive])}")
+
+    ~H"""
+    <div
+      id={@id}
+      role="radiogroup"
+      data-slot="radio-group"
+      aria-invalid={@errors != [] && "true"}
+      class={["grid w-full gap-related", @class]}
+      {@rest}
+    >
+      <label
+        :for={item <- @item}
+        data-slot="radio-group-item-wrapper"
+        class={[
+          if item[:class] do
+            "cursor-pointer rounded-control text-sm text-text transition-colors select-none"
+          else
+            "inline-flex cursor-pointer items-center gap-related rounded-control text-sm text-text transition-colors select-none"
+          end,
+          "has-[:disabled]:cursor-not-allowed has-[:disabled]:text-text-disabled has-[:disabled]:opacity-50",
+          item[:class]
+        ]}
+      >
+        <span
+          data-slot="radio-group-item"
+          class={[
+            "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
+            "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
+            "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-border-focus/40",
+            "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger/30"
+          ]}
+        >
+          <input
+            type="radio"
+            name={@name}
+            value={input_value(item.value)}
+            checked={input_value(@value) == input_value(item.value)}
+            disabled={item[:disabled]}
+            aria-invalid={@errors != [] && "true"}
+            data-slot="radio-group-input"
+            class="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          />
+          <span
+            data-slot="radio-group-indicator"
+            aria-hidden="true"
+            class="pointer-events-none grid size-full place-items-center opacity-0 transition-opacity group-has-[:checked]/radio-control:opacity-100"
+          >
+            <span data-slot="radio-group-dot" class="size-2 rounded-full bg-on-primary" />
+          </span>
+        </span>
+        {render_slot(item)}
+      </label>
+    </div>
+    """
+  end
+
+  defp input_value(nil), do: ""
+  defp input_value(value), do: to_string(value)
+end

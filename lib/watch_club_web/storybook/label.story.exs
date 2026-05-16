@@ -1,11 +1,11 @@
 defmodule WatchClubWeb.Storybook.Label do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Label
+  alias WatchClubWeb.Components.UI.Label
 
   def function, do: &Label.label/1
 
-  def imports, do: [{WatchClubWeb.UI.Input, [input: 1]}]
+  def imports, do: [{WatchClubWeb.Components.UI.Input, [input: 1]}]
 
   defp container_template(content) do
     """

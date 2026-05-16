@@ -1,13 +1,13 @@
 defmodule WatchClubWeb.Storybook.Select do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Select
+  alias WatchClubWeb.Components.UI.Select
 
   def function, do: &Select.select/1
 
   def imports,
     do: [
-      {WatchClubWeb.UI.Select,
+      {WatchClubWeb.Components.UI.Select,
        [
          select_group: 1,
          select_item: 1,

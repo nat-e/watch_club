@@ -1,10 +1,10 @@
 defmodule WatchClubWeb.Storybook.Kbd do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Kbd
+  alias WatchClubWeb.Components.UI.Kbd
 
   def function, do: &Kbd.kbd/1
-  def imports, do: [{WatchClubWeb.UI.Kbd, [kbd_group: 1]}]
+  def imports, do: [{WatchClubWeb.Components.UI.Kbd, [kbd_group: 1]}]
 
   defp container_template(content) do
     """

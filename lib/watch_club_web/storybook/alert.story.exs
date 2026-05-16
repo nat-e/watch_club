@@ -1,13 +1,13 @@
 defmodule WatchClubWeb.Storybook.Alert do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Alert
+  alias WatchClubWeb.Components.UI.Alert
 
   def function, do: &Alert.alert/1
 
   def imports,
     do: [
-      {WatchClubWeb.UI.Button, [button: 1]},
+      {WatchClubWeb.Components.UI.Button, [button: 1]},
       {Lucideicons, [circle_alert: 1, circle_check: 1, info: 1, triangle_alert: 1]}
     ]
 

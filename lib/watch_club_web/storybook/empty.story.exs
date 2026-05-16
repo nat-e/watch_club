@@ -1,13 +1,13 @@
 defmodule WatchClubWeb.Storybook.Empty do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Empty
+  alias WatchClubWeb.Components.UI.Empty
 
   def function, do: &Empty.empty/1
 
   def imports do
     [
-      {WatchClubWeb.UI.Button, [button: 1]},
+      {WatchClubWeb.Components.UI.Button, [button: 1]},
       {Lucideicons, [bell: 1, library: 1, plus: 1, refresh_ccw: 1, search: 1]}
     ]
   end

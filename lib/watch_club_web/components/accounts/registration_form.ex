@@ -1,15 +1,20 @@
 defmodule WatchClubWeb.Components.Accounts.RegistrationForm do
   use WatchClubWeb, :component
 
+  attr :change, :string, required: true
   attr :form, Phoenix.HTML.Form, required: true
+  attr :id, :string, required: true
+  attr :submit, :string, required: true
+  attr :target, :any, default: nil
 
   def registration_form(assigns) do
     ~H"""
     <.form
       for={@form}
-      id="setup-form"
-      phx-change="validate_registration"
-      phx-submit="submit_registration"
+      id={@id}
+      phx-change={@change}
+      phx-submit={@submit}
+      phx-target={@target}
       phx-mounted={JS.focus_first()}
     >
       <.field

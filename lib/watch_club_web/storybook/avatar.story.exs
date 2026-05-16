@@ -1,11 +1,11 @@
 defmodule WatchClubWeb.Storybook.Avatar do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Avatar
+  alias WatchClubWeb.Components.UI.Avatar
 
   def function, do: &Avatar.avatar/1
 
-  def imports, do: [{WatchClubWeb.UI.Avatar, [avatar_group: 1]}]
+  def imports, do: [{WatchClubWeb.Components.UI.Avatar, [avatar_group: 1]}]
 
   def variations do
     [

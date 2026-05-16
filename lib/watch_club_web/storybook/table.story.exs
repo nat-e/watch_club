@@ -1,13 +1,13 @@
 defmodule WatchClubWeb.Storybook.Table do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Table
+  alias WatchClubWeb.Components.UI.Table
 
   def function, do: &Table.table/1
 
   def imports,
     do: [
-      {WatchClubWeb.UI.Table,
+      {WatchClubWeb.Components.UI.Table,
        [
          table_body: 1,
          table_caption: 1,
@@ -17,10 +17,10 @@ defmodule WatchClubWeb.Storybook.Table do
          table_header: 1,
          table_row: 1
        ]},
-      {WatchClubWeb.UI.Avatar, [avatar: 1]},
-      {WatchClubWeb.UI.Badges, [badge: 1]},
-      {WatchClubWeb.UI.Button, [button: 1]},
-      {WatchClubWeb.UI.DropdownMenu, [dropdown_menu: 1, dropdown_menu_item: 1]},
+      {WatchClubWeb.Components.UI.Avatar, [avatar: 1]},
+      {WatchClubWeb.Components.UI.Badge, [badge: 1]},
+      {WatchClubWeb.Components.UI.Button, [button: 1]},
+      {WatchClubWeb.Components.UI.DropdownMenu, [dropdown_menu: 1, dropdown_menu_item: 1]},
       {Lucideicons, [ellipsis_vertical: 1, trash_2: 1, user: 1]}
     ]
 

@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Storybook.Button do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.UI.Button
+  alias WatchClubWeb.Components.UI.Button
 
   def function, do: &Button.button/1
 
