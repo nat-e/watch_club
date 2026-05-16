@@ -48,6 +48,10 @@ defmodule WatchClubWeb.Clubs.MembersPage do
             </.table_row>
           </.table_header>
           <.table_body>
+            <%!--
+              Club memberships and invitations are intentionally low-cardinality,
+              so a regular assign is simpler than LiveView streams here.
+            --%>
             <.member_row
               :for={membership <- @club.memberships}
               membership={membership}

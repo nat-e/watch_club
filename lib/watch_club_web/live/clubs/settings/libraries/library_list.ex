@@ -33,6 +33,10 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
 
   def library_list(assigns) do
     ~H"""
+    <%!--
+      Club libraries are intentionally low-cardinality, and reordering needs the
+      complete ordered list, so this deliberately uses a regular list assign.
+    --%>
     <.reorderable_list
       id="club-libraries-list"
       items={@libraries}

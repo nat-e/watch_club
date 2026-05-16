@@ -1,6 +1,10 @@
 defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
   @moduledoc """
   Stateful library management section for a club settings page.
+
+  Club libraries are intentionally low-cardinality, and reorder interactions
+  work on the complete ordered list, so this component keeps them as a regular
+  assign instead of a LiveView stream.
   """
   use WatchClubWeb, :live_component
 

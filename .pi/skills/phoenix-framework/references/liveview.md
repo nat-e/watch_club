@@ -59,11 +59,13 @@ Example shape:
 
 ### LiveView streams
 
-- **Always** use LiveView streams for collections for assigning regular lists to avoid memory ballooning and runtime termination with the following operations:
+- Use LiveView streams for potentially unbounded or high-cardinality collections to avoid memory ballooning and runtime termination, especially with the following operations:
   - basic append of N items - `stream(socket, :messages, [new_msg])`
   - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for filtering items)
   - prepend to stream - `stream(socket, :messages, [new_msg], at: -1)`
   - deleting items - `stream_delete(socket, :messages, msg)`
+
+- Regular list assigns are acceptable for intentionally bounded, low-cardinality collections where streams would add more complexity than value (for example club memberships, invitations, club libraries, and navigation lists). Add a nearby source comment explaining that the collection is intentionally low-cardinality.
 
 - When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set `phx-update="stream"` on the parent element, with a DOM id on the parent element like `id="messages"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the template would be:
 
