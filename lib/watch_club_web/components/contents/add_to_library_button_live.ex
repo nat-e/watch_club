@@ -148,7 +148,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
           Contents.form_to_set_club_libraries(content, actor: actor)
       end
 
-    {:noreply, socket |> assign(:form, form)}
+    {:noreply, socket |> assign(:form, to_form(form))}
   end
 
   @impl true
@@ -177,7 +177,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
           dgettext("default", "Something went wrong, try again later")
         )
 
-        {:noreply, socket |> assign(:form, form)}
+        {:noreply, socket |> assign(:form, to_form(form))}
     end
   end
 
