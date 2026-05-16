@@ -114,7 +114,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
     {:noreply,
      socket
      |> put_flash(:error, dgettext("clubs", "The club you were looking for does not exist"))
-     |> redirect(to: ~p"/")}
+     |> push_navigate(to: ~p"/")}
   end
 
   defp form_opts(actor) do

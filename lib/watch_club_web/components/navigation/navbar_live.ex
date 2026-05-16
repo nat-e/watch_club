@@ -94,7 +94,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
           ~p"/search?type=#{type}&club_id=#{club_id}&query=#{query}"
       end
 
-    {:noreply, socket |> redirect(to: search_url)}
+    {:noreply, socket |> push_navigate(to: search_url)}
   end
 
   defp preview_search(socket, params) do

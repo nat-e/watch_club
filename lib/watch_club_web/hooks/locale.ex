@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Hooks.Locale do
     else
       Logger.info("Set language to #{language}")
       Gettext.put_locale(WatchClubWeb.Gettext, language)
-      {:halt, redirect(socket, to: current_path(socket.assigns.current_url))}
+      {:halt, push_navigate(socket, to: current_path(socket.assigns.current_url), replace: true)}
     end
   end
 
