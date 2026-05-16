@@ -40,12 +40,17 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Locale
       ] do
       live "/", HomePage
+      live "/search", SearchPage
       live "/settings", Accounts.SettingsPage
+      live "/watchlist", WatchlistPage
+      live "/clubs/:club_id", Clubs.ClubPage
       live "/clubs/:club_id/members", Clubs.MembersPage
       live "/clubs/:club_id/settings", Clubs.SettingsPage
       live "/clubs/:club_id/library", Clubs.SettingsPage
       live "/libraries/:library_id", Clubs.LibraryPage
+      live "/books/:hardcover_id", Contents.BookDetailsPage
       live "/movies/:tmdb_id", Contents.MovieDetailsPage
+      live "/shows/:tmdb_id", Contents.TvShowDetailsPage
     end
 
     ash_authentication_live_session :unauthenticated_routes,
