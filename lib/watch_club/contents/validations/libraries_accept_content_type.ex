@@ -30,9 +30,10 @@ defmodule WatchClub.Contents.Validations.LibrariesAcceptContentType do
     unique_library_ids = Enum.uniq(library_ids)
 
     Library
+    |> Ash.Query.for_read(:read, %{}, authorize?: false)
     |> Ash.Query.filter(id in ^unique_library_ids)
     |> Ash.Query.filter(^content_type in accepted_content_types)
-    |> Ash.count(authorize?: false)
+    |> Ash.count()
     |> case do
       {:ok, accepted_count} -> {:ok, accepted_count == length(unique_library_ids)}
       {:error, error} -> {:error, error}

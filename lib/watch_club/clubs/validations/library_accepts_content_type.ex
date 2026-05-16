@@ -31,10 +31,11 @@ defmodule WatchClub.Clubs.Validations.LibraryAcceptsContentType do
 
   defp library_accepts_content_type?(library_id, content_id) do
     Library
+    |> Ash.Query.for_read(:read, %{}, authorize?: false)
     |> Ash.Query.filter(id == ^library_id)
     |> Ash.Query.filter(
       exists(Content, id == ^content_id and type in parent(accepted_content_types))
     )
-    |> Ash.exists(authorize?: false)
+    |> Ash.exists()
   end
 end

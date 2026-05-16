@@ -57,9 +57,10 @@ defmodule WatchClub.Clubs.Checks.ActorIsClubMember do
 
   defp has_club_membership(club_id, user_id, role) do
     Membership
+    |> Ash.Query.for_read(:read, %{}, authorize?: false)
     |> Ash.Query.filter(club_id == ^club_id and user_id == ^user_id)
     |> filter_by_role(role)
-    |> Ash.exists?(authorize?: false)
+    |> Ash.exists?()
   end
 
   defp filter_by_role(filter, nil), do: filter

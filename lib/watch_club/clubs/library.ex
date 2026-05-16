@@ -73,8 +73,9 @@ defmodule WatchClub.Clubs.Library do
 
                max_index =
                  __MODULE__
+                 |> Ash.Query.for_read(:read, %{}, scope: context)
                  |> Ash.Query.filter(club_id == ^club_id)
-                 |> Ash.max!(:index, scope: context)
+                 |> Ash.max!(:index)
 
                Ash.Changeset.force_change_attribute(changeset, :index, (max_index || -1) + 1)
              end)

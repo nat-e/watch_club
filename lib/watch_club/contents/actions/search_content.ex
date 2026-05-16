@@ -41,8 +41,9 @@ defmodule WatchClub.Contents.Actions.SearchContent do
     external_ids = results |> Enum.map(&external_id/1)
 
     Content
+    |> Ash.Query.for_read(:for_view, %{}, actor: user)
     |> Ash.Query.filter(external_id_source == :tmdb and external_id in ^external_ids)
-    |> Ash.read(action: :for_view, actor: user)
+    |> Ash.read()
   end
 
   defp external_id(result), do: Integer.to_string(result.id)

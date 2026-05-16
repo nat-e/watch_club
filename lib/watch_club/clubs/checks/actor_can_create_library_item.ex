@@ -32,8 +32,9 @@ defmodule WatchClub.Clubs.Checks.ActorCanCreateLibraryItem do
 
   defp actor_is_library_club_member?(library_id, %User{} = actor) do
     Library
+    |> Ash.Query.for_read(:read, %{}, authorize?: false)
     |> Ash.Query.filter(id == ^library_id)
     |> Ash.Query.filter(exists(club.memberships, user_id == ^actor.id))
-    |> Ash.exists?(authorize?: false)
+    |> Ash.exists?()
   end
 end

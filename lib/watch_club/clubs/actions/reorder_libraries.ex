@@ -70,7 +70,9 @@ defmodule WatchClub.Clubs.Actions.ReorderLibraries do
     if index == library.index do
       {:ok, library}
     else
-      Ash.update(library, %{index: index}, action: :set_index, scope: scope)
+      library
+      |> Ash.Changeset.for_update(:set_index, %{index: index}, scope: scope)
+      |> Ash.update()
     end
   end
 end

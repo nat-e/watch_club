@@ -23,8 +23,9 @@ defmodule WatchClub.Contents.Actions.GetMovieDetails do
 
   defp get_content(tmdb_id, user) do
     Content
+    |> Ash.Query.for_read(:for_view, %{}, actor: user)
     |> Ash.Query.filter(external_id_source == :tmdb and external_id == ^tmdb_id)
-    |> Ash.read_first(action: :for_view, actor: user)
+    |> Ash.read_first()
   end
 
   defp to_content_view(%Tmdb.MovieDetailsResponse{} = details, content) do

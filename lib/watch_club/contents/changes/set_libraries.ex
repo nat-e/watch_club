@@ -10,8 +10,8 @@ defmodule WatchClub.Contents.Changes.SetLibraries do
 
     Ash.Changeset.after_action(changeset, fn _changeset, content ->
       content
-      |> Ash.Changeset.for_update(:set_libraries, %{library_ids: library_ids})
-      |> Ash.update(actor: context.actor)
+      |> Ash.Changeset.for_update(:set_libraries, %{library_ids: library_ids}, scope: context)
+      |> Ash.update()
       |> case do
         {:ok, updated_content} -> {:ok, updated_content}
         {:error, error} -> {:error, error}

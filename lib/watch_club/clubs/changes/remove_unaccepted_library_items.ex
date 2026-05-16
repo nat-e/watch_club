@@ -12,10 +12,15 @@ defmodule WatchClub.Clubs.Changes.RemoveUnacceptedLibraryItems do
       accepted_content_types = library.accepted_content_types
 
       LibraryItem
+      |> Ash.Query.for_read(:read, %{}, scope: context)
       |> Ash.Query.filter(library_id == ^library.id)
       |> Ash.Query.filter(content.type not in ^accepted_content_types)
-      |> Ash.read!(scope: context)
-      |> Enum.each(&Ash.destroy!(&1, scope: context))
+      |> Ash.read!()
+      |> Enum.each(fn item ->
+        item
+        |> Ash.Changeset.for_destroy(:destroy, %{}, scope: context)
+        |> Ash.destroy!()
+      end)
 
       {:ok, library}
     end)

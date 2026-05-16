@@ -103,7 +103,10 @@ defmodule WatchClub.Accounts.User do
       description "Returns whether or not the administrator account has been setup"
 
       run fn _input, _ ->
-        __MODULE__ |> Ash.Query.filter(administrator? == true) |> Ash.exists(authorize?: false)
+        __MODULE__
+        |> Ash.Query.for_read(:read, %{}, authorize?: false)
+        |> Ash.Query.filter(administrator? == true)
+        |> Ash.exists()
       end
     end
 
