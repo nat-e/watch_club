@@ -6,9 +6,12 @@ defmodule WatchClub.Clubs.LibraryItem do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
+  alias WatchClub.Clubs.Validations.LibraryAcceptsContentType
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.Content
   alias WatchClub.Shared.SortOrder
@@ -63,6 +66,11 @@ defmodule WatchClub.Clubs.LibraryItem do
     create :create do
       primary? true
       accept [:library_id, :content_id]
+
+      validate LibraryAcceptsContentType do
+        only_when_valid? true
+        message dgettext_noop("errors", "Library does not accept this content type")
+      end
 
       change relate_actor(:added_by)
     end

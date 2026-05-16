@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:12
+#: lib/watch_club/contents/content_type.ex:16
 #, elixir-autogen, elixir-format
 msgid "Book"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:13
+#: lib/watch_club/contents/content_type.ex:17
 #, elixir-autogen, elixir-format
 msgid "Movie"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:14
+#: lib/watch_club/contents/content_type.ex:18
 #, elixir-autogen, elixir-format
 msgid "TV Show"
 msgstr ""

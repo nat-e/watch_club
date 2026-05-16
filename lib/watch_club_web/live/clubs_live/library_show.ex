@@ -17,7 +17,12 @@ defmodule WatchClubWeb.ClubsLive.LibraryShow do
     >
       <.stack space="group" class="w-full">
         <header class="flex w-full flex-col gap-related sm:flex-row sm:items-center sm:justify-between">
-          <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
+          <div class="flex min-w-0 flex-1 items-center gap-related">
+            <span class="grid size-control-md shrink-0 place-items-center rounded-control border border-border bg-surface-raised text-text-muted">
+              <.library_icon library={@library} class="size-icon" />
+            </span>
+            <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
+          </div>
           <.library_sort_controls
             :if={@contents != []}
             library_id={@library.id}

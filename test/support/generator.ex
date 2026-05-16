@@ -1,7 +1,7 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{User, UserSettings}
-  alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
+  alias WatchClub.Clubs.{Club, Invitation, Library, LibraryIcon, Membership}
   alias WatchClub.Contents.{Book, Content, TvShow}
 
   @default_password "passw0rd"
@@ -100,14 +100,23 @@ defmodule WatchClub.Generator do
   end
 
   def library(%Club{} = club, opts \\ []) do
+    accepted_content_types =
+      Keyword.get(opts, :accepted_content_types, [Keyword.get(opts, :content_type, :movie)])
+
     seed_generator(
       %Library{
         name: sequence(:library_name, fn i -> "Library #{i}" end),
         club_id: club.id,
-        content_type: :movie,
+        accepted_content_types: accepted_content_types,
+        icon:
+          Keyword.get(
+            opts,
+            :icon,
+            LibraryIcon.default_for_accepted_content_types(accepted_content_types)
+          ),
         index: sequence(:library_index, fn i -> i end)
       },
-      overrides: opts
+      overrides: opts |> Keyword.drop([:content_type])
     )
   end
 

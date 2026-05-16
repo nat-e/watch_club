@@ -8,9 +8,10 @@ defmodule WatchClub.Clubs.Library do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
+  alias WatchClub.Clubs.Changes.RemoveUnacceptedLibraryItems
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
-  alias WatchClub.Clubs.{Club, LibraryItem}
+  alias WatchClub.Clubs.{Club, LibraryIcon, LibraryItem}
   alias WatchClub.Contents.{Content, ContentType}
 
   import Ash.Expr
@@ -27,7 +28,7 @@ defmodule WatchClub.Clubs.Library do
   end
 
   actions do
-    defaults [:read, update: [:name]]
+    defaults [:read]
 
     read :by_club do
       argument :club_id, :uuid_v7, allow_nil?: false
@@ -39,9 +40,32 @@ defmodule WatchClub.Clubs.Library do
       accept [:index]
     end
 
+    update :update_icon do
+      accept [:icon]
+    end
+
+    update :update do
+      primary? true
+      require_atomic? false
+      accept [:name, :accepted_content_types]
+
+      change RemoveUnacceptedLibraryItems
+    end
+
     create :create do
       primary? true
-      accept [:club_id, :name, :content_type]
+      accept [:club_id, :name, :accepted_content_types]
+
+      change fn changeset, _context ->
+        accepted_content_types =
+          Ash.Changeset.get_attribute(changeset, :accepted_content_types) || []
+
+        Ash.Changeset.force_change_attribute(
+          changeset,
+          :icon,
+          LibraryIcon.default_for_accepted_content_types(accepted_content_types)
+        )
+      end
 
       change before_action(fn changeset, context ->
                club_id = Ash.Changeset.get_attribute(changeset, :club_id)
@@ -51,8 +75,7 @@ defmodule WatchClub.Clubs.Library do
                  |> Ash.Query.filter(club_id == ^club_id)
                  |> Ash.max!(:index, scope: context)
 
-               new_index = (max_index || -1) + 1
-               Ash.Changeset.force_change_attribute(changeset, :index, new_index)
+               Ash.Changeset.force_change_attribute(changeset, :index, (max_index || -1) + 1)
              end)
     end
 
@@ -78,7 +101,7 @@ defmodule WatchClub.Clubs.Library do
       forbid_if always()
     end
 
-    policy action([:update, :destroy, :set_index]) do
+    policy action([:update, :update_icon, :destroy, :set_index]) do
       description "Only club admins can manage libraries"
       authorize_if {ActorIsClubMember, role: :admin}
     end
@@ -105,6 +128,7 @@ defmodule WatchClub.Clubs.Library do
 
     publish :create, ["clubs", :club_id]
     publish :update, ["clubs", :club_id]
+    publish :update_icon, ["clubs", :club_id]
     publish :set_index, ["clubs", :club_id]
     publish :destroy, ["clubs", :club_id]
   end
@@ -126,8 +150,12 @@ defmodule WatchClub.Clubs.Library do
       message dgettext_noop("errors", "Library name cannot be longer than %{max} characters")
     end
 
-    validate present(:content_type) do
-      message dgettext_noop("errors", "Library content type is required")
+    validate present(:accepted_content_types) do
+      message dgettext_noop("errors", "Library accepted content types are required")
+    end
+
+    validate one_of(:icon, LibraryIcon.names()) do
+      message dgettext_noop("errors", "Library icon is invalid")
     end
   end
 
@@ -140,7 +168,13 @@ defmodule WatchClub.Clubs.Library do
       constraints min_length: 3, max_length: 30
     end
 
-    attribute :content_type, ContentType do
+    attribute :accepted_content_types, {:array, ContentType} do
+      allow_nil? false
+      public? true
+      constraints min_length: 1
+    end
+
+    attribute :icon, :string do
       allow_nil? false
       public? true
     end

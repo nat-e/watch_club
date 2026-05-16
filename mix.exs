@@ -115,12 +115,12 @@ defmodule WatchClub.MixProject do
       # rules to include directly in CLAUDE.md
       # :usage_rules itself provides rules for search_docs, docs, etc.
       # use a regex to match multiple deps, or atoms/strings for specific ones
-      usage_rules: [:usage_rules, :ash, ~r/^ash_/],
+      usage_rules: ["usage_rules:all"],
       # If your CLAUDE.md is getting too big, link instead of inlining:
       usage_rules: [:ash, {~r/^ash_/, link: :markdown}],
       # or use skills
       skills: [
-        location: ".claude/skills",
+        location: ".pi/skills",
         # build skills that combine multiple usage rules
         build: [
           "ash-framework": [

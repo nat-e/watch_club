@@ -17,7 +17,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
         description={
           dgettext(
             "clubs",
-            "Create, rename, delete, and reorder club libraries. Multiple libraries can use the same content type."
+            "Create, edit, delete, and reorder club libraries. Libraries can accept multiple content types."
           )
         }
       >
@@ -32,16 +32,42 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
         <.library_list :if={@libraries != []} libraries={@libraries} target={@myself} />
       </.settings_section>
 
-      <.create_library_modal
+      <.library_form_modal
         :if={@create_library_form}
+        mode={:create}
         form={@create_library_form}
-        content_types={ContentType.values()}
+        content_types={ContentType.library_display_order()}
         target={@myself}
       />
-      <.rename_library_modal
-        :if={@rename_library_form}
-        form={@rename_library_form}
+      <.library_form_modal
+        :if={@edit_library_form}
+        mode={:edit}
+        form={@edit_library_form}
+        library={@edit_library}
+        content_types={ContentType.library_display_order()}
         target={@myself}
+      />
+      <.live_component
+        :if={@library_to_update_icon}
+        module={WatchClubWeb.LiveComponents.IconPickerComponent}
+        id={"library-icon-picker-#{@library_to_update_icon.id}"}
+        selected_icon={@library_to_update_icon.icon}
+        title={dgettext("clubs", "Change icon")}
+        description={
+          raw(
+            dgettext("clubs", "Select a new icon for the %{library_name} library",
+              library_name: gtbold(@library_to_update_icon.name)
+            )
+          )
+        }
+        on_select={
+          fn icon ->
+            Phoenix.LiveView.send_update(@myself,
+              selected_library_icon: %{library_id: @library_to_update_icon.id, icon: icon}
+            )
+          end
+        }
+        on_close={fn -> Phoenix.LiveView.send_update(@myself, close_icon_picker: true) end}
       />
       <.delete_library_modal
         :if={@library_to_delete}
@@ -55,16 +81,45 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
   @impl true
   def mount(socket) do
     {:ok,
-     assign(socket,
+      socket |>
+     assign(
        libraries: [],
        create_library_form: nil,
-       rename_library_form: nil,
+       edit_library: nil,
+       edit_library_form: nil,
        library_to_delete: nil,
+       library_to_update_icon: nil,
        loaded_club_id: nil
      )}
   end
 
   @impl true
+  def update(%{close_icon_picker: true}, socket) do
+    {:ok, assign(socket, :library_to_update_icon, nil)}
+  end
+
+  def update(%{selected_library_icon: %{library_id: library_id, icon: icon}}, socket) do
+    library = Enum.find(socket.assigns.libraries, &(&1.id == library_id))
+
+    case Clubs.update_library_icon(library, %{icon: icon}, actor: socket.assigns.current_user) do
+      {:ok, %Library{} = library} ->
+        {:ok,
+         socket
+         |> assign(:libraries, replace_library(socket.assigns.libraries, library))
+         |> assign(:library_to_update_icon, nil)}
+
+      {:error, error} ->
+        Logger.warning("Error updating library icon: #{inspect(error)}")
+
+        Flash.send_flash(
+          :error,
+          dgettext("clubs", "Error updating library icon, try again later")
+        )
+
+        {:ok, socket}
+    end
+  end
+
   def update(%{club: %Club{} = club, current_user: current_user} = assigns, socket) do
     socket =
       socket
@@ -84,13 +139,16 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
      assign(
        socket,
        :create_library_form,
-       AshPhoenix.Form.validate(socket.assigns.create_library_form, params)
+       AshPhoenix.Form.validate(
+         socket.assigns.create_library_form,
+         normalize_library_params(params)
+       )
      )}
   end
 
   def handle_event("submit_create_library", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.create_library_form,
-           params: params,
+           params: normalize_library_params(params),
            actor: socket.assigns.current_user
          ) do
       {:ok, _library} ->
@@ -106,46 +164,40 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
     end
   end
 
-  def handle_event("open_rename_library_modal", %{"library_id" => library_id}, socket) do
-    form =
+  def handle_event("open_edit_library_modal", %{"library_id" => library_id}, socket) do
+    {library, form} =
       socket.assigns.libraries
       |> Enum.find(&(&1.id == library_id))
       |> case do
         %Library{} = library ->
-          library
-          |> Clubs.form_to_update_library(actor: socket.assigns.current_user)
-          |> to_form()
+          form =
+            library
+            |> Clubs.form_to_update_library(actor: socket.assigns.current_user)
+            |> to_form()
+
+          {library, form}
 
         nil ->
-          nil
+          {nil, nil}
       end
 
-    {:noreply, assign(socket, :rename_library_form, form)}
+    {:noreply, assign(socket, edit_library: library, edit_library_form: form)}
   end
 
-  def handle_event("validate_rename_library", %{"form" => params}, socket) do
+  def handle_event("validate_edit_library", %{"form" => params}, socket) do
     {:noreply,
      assign(
        socket,
-       :rename_library_form,
-       AshPhoenix.Form.validate(socket.assigns.rename_library_form, params)
+       :edit_library_form,
+       AshPhoenix.Form.validate(
+         socket.assigns.edit_library_form,
+         normalize_library_params(params)
+       )
      )}
   end
 
-  def handle_event("submit_rename_library", %{"form" => params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.rename_library_form,
-           params: params,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, %Library{} = library} ->
-        {:noreply,
-         socket
-         |> assign(:rename_library_form, nil)
-         |> assign(:libraries, replace_library(socket.assigns.libraries, library))}
-
-      {:error, form} ->
-        {:noreply, assign(socket, :rename_library_form, form)}
-    end
+  def handle_event("submit_edit_library", %{"form" => params}, socket) do
+    submit_edit_library(socket, normalize_library_params(params))
   end
 
   def handle_event("reorder_libraries", %{"ids" => ordered_ids}, socket) do
@@ -161,6 +213,11 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
 
         {:noreply, reload_libraries(socket)}
     end
+  end
+
+  def handle_event("open_icon_picker", %{"library_id" => library_id}, socket) do
+    library = Enum.find(socket.assigns.libraries, &(&1.id == library_id))
+    {:noreply, assign(socket, :library_to_update_icon, library)}
   end
 
   def handle_event("open_delete_library_modal", %{"library_id" => library_id}, socket) do
@@ -196,8 +253,35 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
     {:noreply,
      socket
      |> assign(:create_library_form, nil)
-     |> assign(:rename_library_form, nil)
-     |> assign(:library_to_delete, nil)}
+     |> assign(:edit_library, nil)
+     |> assign(:edit_library_form, nil)
+     |> assign(:library_to_delete, nil)
+     |> assign(:library_to_update_icon, nil)}
+  end
+
+  defp submit_edit_library(socket, params) do
+    case AshPhoenix.Form.submit(socket.assigns.edit_library_form,
+           params: params,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, %Library{} = library} ->
+        {:noreply,
+         socket
+         |> assign(:edit_library, nil)
+         |> assign(:edit_library_form, nil)
+         |> assign(:libraries, replace_library(socket.assigns.libraries, library))}
+
+      {:error, form} ->
+        {:noreply, assign(socket, :edit_library_form, form)}
+    end
+  end
+
+  defp normalize_library_params(params) do
+    Map.update(params, "accepted_content_types", [], fn accepted_content_types ->
+      accepted_content_types
+      |> List.wrap()
+      |> Enum.reject(&(&1 == ""))
+    end)
   end
 
   defp load_libraries_if_needed(socket, club_id, _current_user)
@@ -231,7 +315,7 @@ defmodule WatchClubWeb.ClubsLive.LibraryManagementComponent do
 
     Clubs.form_to_create_library(
       actor: actor,
-      params: %{content_type: :movie},
+      params: %{accepted_content_types: [:movie]},
       prepare_params: fn params, _ ->
         Map.put(params, :club_id, club_id)
       end

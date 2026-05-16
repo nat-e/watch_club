@@ -12,9 +12,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:157
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:187
-#: lib/watch_club_web/live/clubs_live/library_management_components.ex:216
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:199
+#: lib/watch_club_web/live/clubs_live/library_management_components.ex:260
 #: lib/watch_club_web/live/clubs_live/members.ex:186
 #: lib/watch_club_web/live/clubs_live/members.ex:209
 #: lib/watch_club_web/live/nav/components/modals.ex:60

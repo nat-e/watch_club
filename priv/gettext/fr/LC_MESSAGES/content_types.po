@@ -10,17 +10,17 @@ msgid ""
 msgstr ""
 "Language: fr\n"
 
-#: lib/watch_club/contents/content_type.ex:12
+#: lib/watch_club/contents/content_type.ex:16
 #, elixir-autogen, elixir-format
 msgid "Book"
 msgstr "Livre"
 
-#: lib/watch_club/contents/content_type.ex:13
+#: lib/watch_club/contents/content_type.ex:17
 #, elixir-autogen, elixir-format
 msgid "Movie"
 msgstr "Film"
 
-#: lib/watch_club/contents/content_type.ex:14
+#: lib/watch_club/contents/content_type.ex:18
 #, elixir-autogen, elixir-format
 msgid "TV Show"
 msgstr "Série TV"

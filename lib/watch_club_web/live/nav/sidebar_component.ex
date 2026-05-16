@@ -271,7 +271,7 @@ defmodule WatchClubWeb.Live.Nav.SidebarComponent do
     ~H"""
     <li>
       <.sidebar_item href={@url} active={@active}>
-        <.content_type_icon type={@library.content_type} />
+        <.library_icon library={@library} />
         <span class="min-w-0 flex-1 truncate">{@library.name}</span>
       </.sidebar_item>
     </li>

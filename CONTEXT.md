@@ -45,11 +45,11 @@ A member’s permission level within a club.
 _Avoid_: Rank, status
 
 **Club Admin**:
-A member who can manage the club, its club libraries, members, invitations, and library items.
+A member who can manage the club, its libraries, members, invitations, and library items.
 _Avoid_: Admin, owner
 
 **Club Member**:
-A member who can view club libraries and add content to them.
+A member who can view libraries and add content to them.
 _Avoid_: Regular user, participant
 
 **Invitation**:
@@ -72,25 +72,25 @@ _Avoid_: Accepted invitation, redeemed invitation
 Remove an unused invitation so its link can no longer be accepted.
 _Avoid_: Revoke invitation, cancel invitation
 
-**Club Library**:
+**Library**:
 A named collection of content inside a club that accepts one or more content types.
-_Avoid_: Library, list, shelf, playlist
+_Avoid_: Club library, list, shelf, playlist
 
 **Library Item**:
-A piece of content included in a club library.
+A piece of content included in a library.
 _Avoid_: Recommendation, availability, selection
 
-**Add to Club Library**:
-Include content in a club library so it is visible to club members.
-_Avoid_: Add to library, add to club, recommend, make available
+**Add to Library**:
+Include content in a library so it is visible to club members.
+_Avoid_: Add to club library, add to club, recommend, make available
 
-**Remove from Club Library**:
-Remove a library item from a club library without deleting the underlying content.
-_Avoid_: Delete content, remove content
+**Remove from Library**:
+Remove a library item from a library without deleting the underlying content.
+_Avoid_: Remove from club library, delete content, remove content
 
-**Delete Club Library**:
-Permanently remove a club library and its library items without deleting the underlying content.
-_Avoid_: Delete library, remove library
+**Delete Library**:
+Permanently remove a library and its library items without deleting the underlying content.
+_Avoid_: Delete club library, remove library
 
 **Leave Club**:
 A member ends their own membership in a club.
@@ -107,12 +107,16 @@ _Avoid_: Archive club, close club
 ### Contents
 
 **Content**:
-A creative work that can be added to a club library, such as a movie, TV show, book, video, or podcast.
+A creative work that can be added to a library, such as a movie, TV show, book, video, or podcast.
 _Avoid_: Media, title, item, recommendation
 
 **Content Type**:
 The kind of content, such as movie, TV show, book, video, or podcast.
 _Avoid_: Media type, category
+
+**Accepted Content Type**:
+A **Content Type** that a **Library** allows its **Library Items** to reference.
+_Avoid_: Library content type, allowed media type
 
 **Movie**:
 Content whose content type is movie.
@@ -174,31 +178,34 @@ _Avoid_: Best localization, current localization
 - A **Used Invitation** cannot be accepted again
 - **Delete Invitation** applies only to an unused **Invitation**
 - Only a **Club Admin** can **Delete Club**
-- **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Club Libraries**, and **Library Items**
-- A **Club** has zero or more **Club Libraries**
-- A **Club Library** belongs to exactly one **Club**
-- Only **Members** can view a **Club**’s **Club Libraries** and **Library Items**
-- A **Club Library** accepts one or more **Content Types**
-- A **Club Library** must accept at least one **Content Type**
-- Accepted **Content Types** are a strict whitelist for which **Content** can become **Library Items** in that **Club Library**
-- Adding an accepted **Content Type** to a **Club Library** does not affect existing **Library Items**
-- Removing an accepted **Content Type** from a **Club Library** requires confirmation when existing **Library Items** of that **Content Type** would no longer be accepted; after confirmation those **Library Items** are removed, but their **Content** is not deleted
-- A **Club Library** contains zero or more **Library Items**
-- Any **Member** can add **Library Items** to a **Club Library** when the **Content**’s **Content Type** is accepted by that **Club Library**
-- **Add to Club Library** creates a **Library Item**
-- A **Club Library** can contain a given **Content** at most once
-- The same **Content** can appear in multiple **Club Libraries**
-- A **Library Item** belongs to exactly one **Club Library** and references exactly one **Content**
+- **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Libraries**, and **Library Items**
+- A **Club** has zero or more **Libraries**
+- A **Library** belongs to exactly one **Club**
+- Only **Members** can view a **Club**’s **Libraries** and **Library Items**
+- A **Library** has one or more **Accepted Content Types**
+- A **Library** must have at least one **Accepted Content Type**
+- A **Library** remains one collection of **Library Items** even when it has multiple **Accepted Content Types**
+- **Accepted Content Types** are a strict whitelist for which **Content** can become **Library Items** in that **Library**
+- An **Accepted Content Type** is a **Content Type**
+- Adding an **Accepted Content Type** to a **Library** does not affect existing **Library Items**
+- Removing an **Accepted Content Type** from a **Library** removes existing **Library Items** of that **Content Type**, but their **Content** is not deleted; the admin UI displays an inline warning before submitting such removals
+- A **Library** contains zero or more **Library Items**
+- Any **Member** can add **Library Items** to a **Library** when the **Content** matches one of that **Library**’s **Accepted Content Types**
+- **Add to Library** creates a **Library Item**
+- A **Library** can contain a given **Content** at most once
+- The same **Content** can appear in multiple **Libraries**
+- A **Library Item** belongs to exactly one **Library** and references exactly one **Content**
 - A **Library Item** is visible to all **Members** of its **Club**
 - A **Library Item** is added by a **Member**
-- If the adding **Member** later leaves the **Club**, the **Library Item** remains in the **Club Library**
-- If a **User** is deleted, **Library Items** they added remain in their **Club Libraries** without an adding **Member**
-- **Remove from Club Library** removes a **Library Item** but not its **Content**
-- A **Club Admin** can **Remove from Club Library** for any **Library Item**
-- The **Member** who added a **Library Item** can **Remove from Club Library** for that item
-- If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Club Library** for it
-- Only a **Club Admin** can **Delete Club Library**
-- **Delete Club Library** removes the **Club Library** and its **Library Items**, but not their **Content**
+- If the adding **Member** later leaves the **Club**, the **Library Item** remains in the **Library**
+- If a **User** is deleted, **Library Items** they added remain in their **Libraries** without an adding **Member**
+- **Remove from Library** removes a **Library Item** but not its **Content**
+- A **Club Admin** can **Remove from Library** for any **Library Item**
+- The **Member** who added a **Library Item** can **Remove from Library** for that item
+- If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
+- Only a **Club Admin** can change a **Library**’s **Accepted Content Types**
+- Only a **Club Admin** can **Delete Library**
+- **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 
 ### Contents
 
@@ -221,16 +228,17 @@ _Avoid_: Best localization, current localization
 
 ## Example dialogue
 
-> **Dev:** "When a **Member** adds a movie to a **Club Library**, are they recommending it?"
-> **Domain expert:** "No — **Add to Club Library** creates a **Library Item** so the **Content** is visible to the **Club**."
-> **Dev:** "Can they add it to any club library?"
-> **Domain expert:** "Only if the **Content Type** is accepted by that **Club Library**."
+> **Dev:** "When a **Member** adds a movie to a **Library**, are they recommending it?"
+> **Domain expert:** "No — **Add to Library** creates a **Library Item** so the **Content** is visible to the **Club**."
+> **Dev:** "Can they add it to any library?"
+> **Domain expert:** "Only if it matches one of the **Library**’s **Accepted Content Types**."
 
 ## Flagged ambiguities
 
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
 - "Media" is not the canonical term for **Content**.
-- "Library" may appear as shorthand for **Club Library**; resolved: the canonical term is **Club Library**.
+- "Club Library" may appear where the domain means **Library**; resolved: the canonical term is **Library**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
-- "Club Library content type" was discussed as singular; resolved: a **Club Library** accepts one or more **Content Types**.
-- Adding **Content** to a **Club Library** creates a **Library Item**; it is not a recommendation or endorsement.
+- "Library content type" was discussed as singular; resolved: a **Library** has one or more **Accepted Content Types**.
+- "All content types" is not a **Content Type**; resolved: a **Library** explicitly accepts one or more concrete **Accepted Content Types**.
+- Adding **Content** to a **Library** creates a **Library Item**; it is not a recommendation or endorsement.

@@ -5,6 +5,8 @@ defmodule WatchClub.Contents.Content do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.Clubs.{Library, LibraryItem}
 
   alias WatchClub.Contents.{
@@ -18,6 +20,7 @@ defmodule WatchClub.Contents.Content do
   }
 
   alias WatchClub.Contents.Calculations.GetContentImplementation
+  alias WatchClub.Contents.Validations.LibrariesAcceptContentType
 
   import Ash.Expr
 
@@ -63,6 +66,11 @@ defmodule WatchClub.Contents.Content do
       description "Update the list of libraries a content belongs to"
       require_atomic? false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
+
+      validate LibrariesAcceptContentType do
+        only_when_valid? true
+        message dgettext_noop("errors", "Library does not accept this content type")
+      end
 
       change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
       change load(library_items: [:library])

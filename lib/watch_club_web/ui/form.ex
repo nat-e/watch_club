@@ -107,6 +107,14 @@ defmodule WatchClubWeb.UI.Form do
     <div data-slot="field" class={["grid gap-related", @class]}>
       <.label field={@field}>{@label}</.label>
 
+      <p
+        :for={hint <- @hint}
+        data-slot="field-hint"
+        class="text-sm leading-6 text-text-muted"
+      >
+        {render_slot(hint)}
+      </p>
+
       <%= if @control == [] do %>
         <.input
           field={@field}
@@ -118,14 +126,6 @@ defmodule WatchClubWeb.UI.Form do
       <% else %>
         {render_slot(@control)}
       <% end %>
-
-      <p
-        :for={hint <- @hint}
-        data-slot="field-hint"
-        class="text-sm leading-6 text-text-muted"
-      >
-        {render_slot(hint)}
-      </p>
 
       <p
         :for={msg <- @errors}

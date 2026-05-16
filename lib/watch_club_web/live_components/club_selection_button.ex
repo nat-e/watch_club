@@ -180,7 +180,7 @@ defmodule WatchClubWeb.LiveComponents.ClubSelectionButton do
     user.memberships
     |> Enum.flat_map(fn membership ->
       membership.club.libraries
-      |> Enum.filter(&(&1.content_type == content.type))
+      |> Enum.filter(&(content.type in &1.accepted_content_types))
       |> Enum.map(&%{club: membership.club, library: &1})
     end)
   end

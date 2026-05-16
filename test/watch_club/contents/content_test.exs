@@ -61,7 +61,7 @@ defmodule WatchClub.Clubs.ContentTest do
 
   describe "set_club_libraries/*" do
     test "adds content to selected club libraries", %{club: club, admin: admin, member: member} do
-      library = generate(library(club, content_type: :movie))
+      library = generate(library(club, accepted_content_types: [:movie]))
       library_id = library.id
       content = generate(movie(actor: admin))
 
@@ -69,6 +69,26 @@ defmodule WatchClub.Clubs.ContentTest do
                set_club_libraries!(content, %{library_ids: [library.id]}, actor: member)
 
       assert item.library.club_id == club.id
+    end
+
+    test "rejects selected club libraries that do not accept the content type", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      library = generate(library(club, accepted_content_types: [:book]))
+      content = generate(movie(actor: admin))
+
+      set_club_libraries(content, %{library_ids: [library.id]}, actor: member)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Changes.InvalidChanges{
+          message: "Library does not accept this content type"
+        } ->
+          true
+
+        _ ->
+          false
+      end)
     end
   end
 end
