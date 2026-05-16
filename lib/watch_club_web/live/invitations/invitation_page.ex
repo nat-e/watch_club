@@ -20,12 +20,7 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
     <Layouts.centered_card flash={@flash} title={@title}>
       <.stack space="related">
         <p>
-          {raw(
-            dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
-              inviter: gtbold(@invitation.inviter.username),
-              club_name: gtbold(@invitation.club.name)
-            )
-          )}
+          <.invitation_intro invitation={@invitation} />
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
@@ -67,12 +62,7 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
     <Layouts.centered_card flash={@flash} title={"Hello #{@current_user.username}"}>
       <.stack space="related">
         <p>
-          {raw(
-            dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
-              inviter: gtbold(@invitation.inviter.username),
-              club_name: gtbold(@invitation.club.name)
-            )
-          )}
+          <.invitation_intro invitation={@invitation} />
         </p>
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
@@ -86,6 +76,29 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
   end
 
   def render(assigns), do: ~H""
+
+  attr :invitation, Invitation, required: true
+
+  defp invitation_intro(%{invitation: %Invitation{inviter: %User{}}} = assigns) do
+    ~H"""
+    {raw(
+      dgettext("invitations", "%{inviter} is inviting you to join %{club_name} on watch.club",
+        inviter: gtbold(@invitation.inviter.username),
+        club_name: gtbold(@invitation.club.name)
+      )
+    )}
+    """
+  end
+
+  defp invitation_intro(assigns) do
+    ~H"""
+    {raw(
+      dgettext("invitations", "You are invited to join %{club_name} on watch.club",
+        club_name: gtbold(@invitation.club.name)
+      )
+    )}
+    """
+  end
 
   @impl true
   def mount(%{"invitation_id" => invitation_id}, session, socket) do

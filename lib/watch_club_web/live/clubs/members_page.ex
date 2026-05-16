@@ -97,13 +97,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
       </.table_cell>
       <.table_cell class="text-left">
-        <.inline :if={@membership.invitation} class="font-bold">
-          <.avatar
-            id={@membership.invitation.inviter.id}
-            name={@membership.invitation.inviter.username}
-          />
-          {@membership.invitation.inviter.username}
-        </.inline>
+        <.inviter_label :if={@membership.invitation} inviter={@membership.invitation.inviter} />
       </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu :if={@membership.user_id != @current_user.id}>
@@ -139,10 +133,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
       </.table_cell>
       <.table_cell></.table_cell>
       <.table_cell class="text-left">
-        <.inline class="font-bold">
-          <.avatar id={@invitation.inviter.id} name={@invitation.inviter.username} />
-          {@invitation.inviter.username}
-        </.inline>
+        <.inviter_label inviter={@invitation.inviter} />
       </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu>
@@ -167,6 +158,25 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         </.dropdown_menu>
       </.table_cell>
     </.table_row>
+    """
+  end
+
+  attr :inviter, :any, required: true
+
+  defp inviter_label(%{inviter: %User{}} = assigns) do
+    ~H"""
+    <.inline class="font-bold">
+      <.avatar id={@inviter.id} name={@inviter.username} />
+      {@inviter.username}
+    </.inline>
+    """
+  end
+
+  defp inviter_label(assigns) do
+    ~H"""
+    <.inline class="font-bold italic text-text-muted">
+      {dgettext("clubs", "Deleted user")}
+    </.inline>
     """
   end
 

@@ -138,7 +138,7 @@ defmodule WatchClub.Clubs.Invitation do
 
   relationships do
     belongs_to :club, Club, allow_nil?: false
-    belongs_to :inviter, User, allow_nil?: false
+    belongs_to :inviter, User, allow_nil?: true
 
     has_one :created_membership, Membership do
       destination_attribute :invitation_id

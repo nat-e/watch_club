@@ -14,8 +14,8 @@ msgstr ""
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:31
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:31
-#: lib/watch_club_web/live/clubs/members_page.ex:223
-#: lib/watch_club_web/live/clubs/members_page.ex:246
+#: lib/watch_club_web/live/clubs/members_page.ex:233
+#: lib/watch_club_web/live/clubs/members_page.ex:256
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:78
 #: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:25
 #, elixir-autogen, elixir-format
@@ -23,7 +23,7 @@ msgid "Cancel"
 msgstr "Annuler"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/members_page.ex:348
+#: lib/watch_club_web/live/clubs/members_page.ex:358
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Fermer"
@@ -36,7 +36,7 @@ msgstr "Créer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:40
-#: lib/watch_club_web/live/clubs/members_page.ex:250
+#: lib/watch_club_web/live/clubs/members_page.ex:260
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"

@@ -140,5 +140,13 @@ defmodule WatchClub.Clubs.InvitationTest do
 
       assert %Invitation{} = view_invitation!(invitation.id)
     end
+
+    test "can view an invitation without its inviter", %{club: club, admin: admin} do
+      invitation =
+        generate(invitation(club, admin))
+        |> Ash.Seed.update!(%{inviter_id: nil})
+
+      assert %Invitation{inviter: nil} = view_invitation!(invitation.id)
+    end
   end
 end

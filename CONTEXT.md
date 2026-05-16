@@ -168,10 +168,11 @@ _Avoid_: Best localization, current localization
 - **Leave Club** ends the acting **Member**’s **Membership** without removing **Library Items** they added
 - **Remove Member** ends another **Member**’s **Membership** without removing **Library Items** they added
 - An **Invitation** belongs to exactly one **Club**
-- An **Invitation** is created by exactly one **Club Admin**
+- An **Invitation** is created by a **Club Admin**
+- An **Invitation** may remain without its creating **Club Admin** if that **User** is deleted
 - Accepting an **Invitation** creates exactly one **Membership**
 - An **Invitation** grants either the **Club Admin** or **Club Member** role when accepted
-- Anyone with an **Invitation** link can view the invitation, including the **Club** and the **Club Admin** who created it
+- Anyone with an **Invitation** link can view the invitation, including the **Club** and, when available, the **Club Admin** who created it
 - An **Invitation** is link-based and is not tied to a specific **User** before acceptance
 - An **Invitation** may have one **Invitee Name**
 - An **Expired Invitation** cannot be accepted
@@ -242,3 +243,4 @@ _Avoid_: Best localization, current localization
 - "Library content type" was discussed as singular; resolved: a **Library** has one or more **Accepted Content Types**.
 - "All content types" is not a **Content Type**; resolved: a **Library** explicitly accepts one or more concrete **Accepted Content Types**.
 - Adding **Content** to a **Library** creates a **Library Item**; it is not a recommendation or endorsement.
+- An **Invitation** is created by a **Club Admin**, but does not permanently require that **User** to exist; if the creating **User** is deleted, the **Invitation** remains without its creating **Club Admin**.
