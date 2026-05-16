@@ -183,6 +183,44 @@ defmodule WatchClub.Clubs.LibraryTest do
                  |> Map.fetch!(:title)
                end)
     end
+
+    test "paginates items with keysets", %{club: club, admin: admin} do
+      library = generate(library(club, accepted_content_types: [:movie]))
+
+      Enum.each([203, 201, 202], fn tmdb_id ->
+        generate(movie(tmdb_id: tmdb_id, library_ids: [library.id], actor: admin))
+      end)
+
+      first_page =
+        get_library_items!(library.id, %{sort_by: :title, sort_order: :asc},
+          actor: admin,
+          page: [limit: 2]
+        )
+
+      assert %Ash.Page.Keyset{results: first_items, more?: true} = first_page
+
+      assert ["Movie 201", "Movie 202"] =
+               Enum.map(first_items, fn item ->
+                 item.content
+                 |> ContentView.from_content(:en_US)
+                 |> Map.fetch!(:title)
+               end)
+
+      second_page =
+        get_library_items!(library.id, %{sort_by: :title, sort_order: :asc},
+          actor: admin,
+          page: [limit: 2, after: List.last(first_items).__metadata__.keyset]
+        )
+
+      assert %Ash.Page.Keyset{results: second_items, more?: false} = second_page
+
+      assert ["Movie 203"] =
+               Enum.map(second_items, fn item ->
+                 item.content
+                 |> ContentView.from_content(:en_US)
+                 |> Map.fetch!(:title)
+               end)
+    end
   end
 
   describe "list_club_libraries/*" do

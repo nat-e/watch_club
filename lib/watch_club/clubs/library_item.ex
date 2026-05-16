@@ -37,6 +37,8 @@ defmodule WatchClub.Clubs.LibraryItem do
     end
 
     read :for_library do
+      pagination keyset?: true, required?: false, stable_sort: [:id]
+
       argument :library_id, :uuid_v7, allow_nil?: false
 
       argument :sort_by, LibraryItemsSortOption do

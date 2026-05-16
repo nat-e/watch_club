@@ -7,6 +7,17 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.ContentView
   alias WatchClub.Shared.SortOrder
+  alias WatchClubWeb.Clubs.LibraryPage.ContentStreamState
+
+  @contents_page_size 40
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")
+     |> assign(:content_stream, ContentStreamState.initial())}
+  end
 
   @impl true
   def render(%{library: %Library{}} = assigns) do
@@ -27,14 +38,14 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
             <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
           </div>
           <.library_sort_controls
-            :if={@contents != []}
+            :if={!ContentStreamState.empty?(@content_stream)}
             library_id={@library.id}
             current_sort_by={@sort_by}
             current_sort_order={@sort_order}
           />
         </header>
 
-        <.empty :if={@contents == []}>
+        <.empty :if={ContentStreamState.empty?(@content_stream)}>
           <:icon><Lucideicons.library /></:icon>
           <:title>{dgettext("clubs", "Library is empty")}</:title>
           <:description>
@@ -43,14 +54,17 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         </.empty>
 
         <div
-          :if={@contents != []}
+          :if={!ContentStreamState.empty?(@content_stream)}
+          id="library-content-stream"
+          phx-update="stream"
+          phx-viewport-bottom={
+            ContentStreamState.can_load_more?(@content_stream) && JS.push("load_more_contents")
+          }
           class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-group"
         >
-          <.content_card
-            :for={content <- @contents}
-            content={content}
-            library_id_context={@library.id}
-          />
+          <div :for={{dom_id, content} <- @streams.contents} id={dom_id} class="w-full">
+            <.content_card content={content} library_id_context={@library.id} />
+          </div>
         </div>
       </.stack>
     </Layouts.app>
@@ -182,24 +196,73 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     end
   end
 
+  @impl true
+  def handle_event("load_more_contents", _params, socket) do
+    %{
+      content_stream: content_stream,
+      current_user: current_user,
+      library: library,
+      sort_by: sort_by,
+      sort_order: sort_order
+    } = socket.assigns
+
+    if ContentStreamState.can_load_more?(content_stream) do
+      page =
+        load_contents_page(
+          library.id,
+          sort_by,
+          sort_order,
+          content_stream.next_keyset,
+          current_user
+        )
+
+      {:noreply,
+       socket
+       |> assign(:content_stream, ContentStreamState.append(content_stream, page))
+       |> stream(:contents, page.contents, at: -1)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp load_library(socket, library_id, sort_by, sort_order) do
     current_user = socket.assigns.current_user
     library = Clubs.get_library_by_id!(library_id, actor: current_user)
-
-    items =
-      Clubs.get_library_items!(library.id, %{sort_by: sort_by, sort_order: sort_order},
-        actor: current_user
-      )
-
-    locale = current_user.settings.locale
-    contents = Enum.map(items, fn item -> ContentView.from_content(item.content, locale) end)
+    page = load_contents_page(library.id, sort_by, sort_order, nil, current_user)
 
     {:noreply,
      socket
-     |> assign(:library, library)
-     |> assign(:contents, contents)
-     |> assign(:sort_by, sort_by)
-     |> assign(:sort_order, sort_order)}
+     |> assign(
+       library: library,
+       content_stream: ContentStreamState.reset(page),
+       sort_by: sort_by,
+       sort_order: sort_order
+     )
+     |> stream(:contents, page.contents, reset: true)}
+  end
+
+  defp load_contents_page(library_id, sort_by, sort_order, after_keyset, current_user) do
+    page_opts = [limit: @contents_page_size]
+    page_opts = if after_keyset, do: Keyword.put(page_opts, :after, after_keyset), else: page_opts
+
+    page =
+      Clubs.get_library_items!(library_id, %{sort_by: sort_by, sort_order: sort_order},
+        actor: current_user,
+        page: page_opts
+      )
+
+    locale = current_user.settings.locale
+
+    contents =
+      Enum.map(page.results, fn item -> ContentView.from_content(item.content, locale) end)
+
+    next_keyset =
+      case List.last(page.results) do
+        nil -> nil
+        item -> item.__metadata__.keyset
+      end
+
+    %{contents: contents, more?: page.more?, next_keyset: next_keyset}
   end
 
   defp library_sort_path(library_id, sort_by, sort_order) do
