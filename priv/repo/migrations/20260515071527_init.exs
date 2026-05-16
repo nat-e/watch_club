@@ -43,7 +43,8 @@ defmodule WatchClub.Repo.Migrations.Init do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:user_settings, [:user_id], name: "user_settings_unique_user_index")
@@ -85,7 +86,8 @@ defmodule WatchClub.Repo.Migrations.Init do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:tv_show_localizations, [:tv_show_id, :iso_639_1, :iso_3166_1],
@@ -139,7 +141,8 @@ defmodule WatchClub.Repo.Migrations.Init do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:movie_localizations, [:movie_id, :iso_639_1, :iso_3166_1],

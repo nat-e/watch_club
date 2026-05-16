@@ -11,44 +11,46 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:70
-#: lib/watch_club_web/live/nav/components/search.ex:184
-#: lib/watch_club_web/live/nav/components/search.ex:348
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:72
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:61
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:162
 #, elixir-autogen, elixir-format
 msgid "Everywhere"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:432
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:152
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:220
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type} in %{club_name}"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:420
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:140
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:208
 #, elixir-autogen, elixir-format
 msgid "Search all %{content_type}"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:297
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:66
 #, elixir-autogen, elixir-format
 msgid "See all results"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:249
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:18
 #, elixir-autogen, elixir-format
 msgid "Start typing to search"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:262
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:31
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:283
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:52
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for your search"
 msgstr ""
 
-#: lib/watch_club_web/live/nav/components/search.ex:116
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:118
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""

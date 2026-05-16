@@ -131,9 +131,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal do
     do: to_string(value) == to_string(content_type)
 
   defp removed_content_type_labels(content_types) do
-    content_types
-    |> Enum.map(&ContentType.translated_label/1)
-    |> Enum.join(", ")
+    Enum.map_join(content_types, ", ", &ContentType.translated_label/1)
   end
 
   defp removed_content_types(nil, _accepted_content_type_value), do: []

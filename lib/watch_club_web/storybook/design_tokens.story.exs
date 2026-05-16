@@ -1172,10 +1172,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Book",
         "nate",
         false,
-        "Shadow",
-        "#5a3d2b",
-        "#17101c",
-        "#f5d06f"
+        {"Shadow", "#5a3d2b", "#17101c", "#f5d06f"}
       ),
       rec(
         "Three Billboards Outside Ebbing",
@@ -1183,10 +1180,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         true,
-        "Three",
-        "#d8562b",
-        "#211222",
-        "#ff5555"
+        {"Three", "#d8562b", "#211222", "#ff5555"}
       ),
       rec(
         "The Usual Suspects",
@@ -1194,10 +1188,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         true,
-        "Usual",
-        "#e8e1d5",
-        "#11101a",
-        "#8be9fd"
+        {"Usual", "#e8e1d5", "#11101a", "#8be9fd"}
       ),
       rec(
         "Blood Diamond",
@@ -1205,10 +1196,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         false,
-        "Blood",
-        "#f97316",
-        "#2a0d14",
-        "#ff5555"
+        {"Blood", "#f97316", "#2a0d14", "#ff5555"}
       ),
       rec(
         "Silicon Valley",
@@ -1216,10 +1204,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Show",
         "Jeremy",
         true,
-        "SV",
-        "#f7f2e8",
-        "#16121f",
-        "#ff6b3d"
+        {"SV", "#f7f2e8", "#16121f", "#ff6b3d"}
       ),
       rec(
         "Ex Machina",
@@ -1227,10 +1212,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         true,
-        "EX",
-        "#dce5ea",
-        "#11101a",
-        "#8be9fd"
+        {"EX", "#dce5ea", "#11101a", "#8be9fd"}
       ),
       rec(
         "Poor Things",
@@ -1238,10 +1220,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         true,
-        "Poor",
-        "#9fd2f3",
-        "#2b1638",
-        "#ff79c6"
+        {"Poor", "#9fd2f3", "#2b1638", "#ff79c6"}
       ),
       rec(
         "Parasite",
@@ -1249,15 +1228,12 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         "Movie",
         "nate",
         true,
-        "Parasite",
-        "#6ea37b",
-        "#10121e",
-        "#6ee7a7"
+        {"Parasite", "#6ea37b", "#10121e", "#6ee7a7"}
       )
     ]
   end
 
-  defp rec(title, subtitle, kind, by, watched, poster_label, poster_a, poster_b, accent) do
+  defp rec(title, subtitle, kind, by, watched, {poster_label, poster_a, poster_b, accent}) do
     %{
       title: title,
       subtitle: subtitle,

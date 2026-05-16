@@ -11,8 +11,8 @@ defmodule WatchClub.Clubs.LibraryItem do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
-  alias WatchClub.Clubs.Validations.LibraryAcceptsContentType
   alias WatchClub.Clubs.LibraryItemsSortOption
+  alias WatchClub.Clubs.Validations.LibraryAcceptsContentType
   alias WatchClub.Contents.Content
   alias WatchClub.Shared.SortOrder
 

@@ -7,9 +7,9 @@ defmodule WatchClub.Contents.ContentView do
     Content,
     ContentType,
     ContentView,
+    ExternalIdSource,
     Movie,
-    TvShow,
-    ExternalIdSource
+    TvShow
   }
 
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse

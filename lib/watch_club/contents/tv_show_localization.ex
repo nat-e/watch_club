@@ -4,7 +4,7 @@ defmodule WatchClub.Contents.TvShowLocalization do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{TvShow, Calculations.LocalizationRank}
+  alias WatchClub.Contents.{Calculations.LocalizationRank, TvShow}
   alias WatchClub.Contents.Preparations.SortLocalizationsByRank
 
   postgres do

@@ -108,12 +108,12 @@ msgstr ""
 msgid "Username must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:44
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:49
 #, elixir-autogen, elixir-format
 msgid "Your username or password is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:157
+#: lib/watch_club/clubs/library.ex:155
 #, elixir-autogen, elixir-format
 msgid "Library accepted content types are required"
 msgstr ""
@@ -124,27 +124,27 @@ msgstr ""
 msgid "Library does not accept this content type"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:219
+#: lib/watch_club/clubs/library.ex:161
 #, elixir-autogen, elixir-format
 msgid "Library accepted content types must be unique"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:163
+#: lib/watch_club/clubs/library.ex:164
 #, elixir-autogen, elixir-format
 msgid "Library icon is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:153
+#: lib/watch_club/clubs/library.ex:151
 #, elixir-autogen, elixir-format
 msgid "Library name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:145
+#: lib/watch_club/clubs/library.ex:143
 #, elixir-autogen, elixir-format
 msgid "Library name is required"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:149
+#: lib/watch_club/clubs/library.ex:147
 #, elixir-autogen, elixir-format
 msgid "Library name must be at least %{min} characters"
 msgstr ""

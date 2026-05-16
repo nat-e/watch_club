@@ -11,54 +11,56 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/setup.ex:48
+#: lib/watch_club_web/live/accounts/setup_page.ex:55
 #, elixir-autogen, elixir-format
 msgid "Administrator created"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:29
+#: lib/watch_club_web/components/accounts/registration_form.ex:34
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:36
+#: lib/watch_club_web/components/accounts/registration_form.ex:41
+#: lib/watch_club_web/live/invitations/invitation_page.ex:34
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/setup.ex:19
+#: lib/watch_club_web/live/accounts/setup_page.ex:21
 #, elixir-autogen, elixir-format
 msgid "Do not share the credentials of this account, you will be able to invite other users later."
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:23
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:23
+#: lib/watch_club_web/components/accounts/registration_form.ex:28
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:28
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:30
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:35
+#: lib/watch_club_web/live/invitations/invitation_page.ex:40
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/setup.ex:13
+#: lib/watch_club_web/live/accounts/setup_page.ex:15
 #, elixir-autogen, elixir-format
 msgid "To configure your instance, you need to setup a unique administrator account."
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/registration_form.ex:17
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:17
+#: lib/watch_club_web/components/accounts/registration_form.ex:22
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:22
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/signin.ex:8
+#: lib/watch_club_web/live/accounts/sign_in_page.ex:10
 #, elixir-autogen, elixir-format
 msgid "Welcome back!"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts_live/setup.ex:10
+#: lib/watch_club_web/live/accounts/setup_page.ex:12
 #, elixir-autogen, elixir-format
 msgid "Welcome to watch.club!"
 msgstr ""
