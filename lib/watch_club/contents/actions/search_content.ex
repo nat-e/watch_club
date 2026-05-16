@@ -23,7 +23,9 @@ defmodule WatchClub.Contents.Actions.SearchContent do
            Map.new(contents, fn content -> {content.external_id, content} end) do
       {:ok,
        results
-       |> Enum.map(fn res -> to_content_view(res, Map.get(contents_by_external_id, res.id)) end)}
+       |> Enum.map(fn res ->
+         to_content_view(res, Map.get(contents_by_external_id, external_id(res)))
+       end)}
     end
   end
 
@@ -36,17 +38,19 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   end
 
   defp get_contents_by_external_id(:movies_and_shows, results, user) do
-    external_ids = results |> Enum.map(fn r -> r.id end)
+    external_ids = results |> Enum.map(&external_id/1)
 
     Content
     |> Ash.Query.filter(external_id_source == :tmdb and external_id in ^external_ids)
     |> Ash.read(action: :for_view, actor: user)
   end
 
+  defp external_id(result), do: Integer.to_string(result.id)
+
   defp to_content_view(%MovieSearchResult{} = result, content) do
     ContentView.new!(%{
       external_id_source: :tmdb,
-      external_id: Integer.to_string(result.id),
+      external_id: external_id(result),
       type: :movie,
       content: content,
       title: result.title,
@@ -62,7 +66,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   defp to_content_view(%TvSearchResult{} = result, content) do
     ContentView.new!(%{
       external_id_source: :tmdb,
-      external_id: Integer.to_string(result.id),
+      external_id: external_id(result),
       type: :tv_show,
       content: content,
       title: result.name,

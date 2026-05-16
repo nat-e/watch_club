@@ -5,7 +5,7 @@ defmodule WatchClub.Clubs.ContentTest do
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
-  alias WatchClub.Contents.{Content, Movie, MovieLocalization}
+  alias WatchClub.Contents.{Content, ContentView, Movie, MovieLocalization}
 
   require Ash.Query
 
@@ -99,6 +99,33 @@ defmodule WatchClub.Clubs.ContentTest do
                  best_localization: %MovieLocalization{title: "Star Wars"}
                }
              } = create_movie!("12", actor: generate(user()))
+    end
+  end
+
+  describe "search_content/*" do
+    test "attaches existing TMDB content to matching search results", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      library_id = library.id
+      content = create_movie!("11", %{library_ids: [library.id]}, actor: admin)
+      content_id = content.id
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, %{
+          "results" => [%{"id" => 11, "media_type" => "movie", "title" => "Star Wars"}]
+        })
+      end)
+
+      assert [
+               %ContentView{
+                 content: %Content{id: ^content_id},
+                 external_id: "11",
+                 in_libraries: [%LibraryItem{library_id: ^library_id}]
+               }
+             ] = search_content!(%{query: "star", content_type: :movies_and_shows}, actor: member)
     end
   end
 
