@@ -369,7 +369,7 @@ defmodule WatchClub.Accounts.User do
     end
 
     validate string_length(:password, min: 8) do
-      message dgettext_noop("errors", "Password cannot be longer than %{max} characters")
+      message dgettext_noop("errors", "Password must be at least %{min} characters")
     end
 
     validate confirm(:password, :password_confirmation) do

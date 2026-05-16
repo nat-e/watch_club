@@ -41,11 +41,6 @@ msgstr ""
 msgid "Name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:372
-#, elixir-autogen, elixir-format
-msgid "Password cannot be longer than %{max} characters"
-msgstr ""
-
 #: lib/watch_club/accounts/user.ex:180
 #, elixir-autogen, elixir-format
 msgid "Password is required"
@@ -147,4 +142,9 @@ msgstr ""
 #: lib/watch_club/clubs/library.ex:147
 #, elixir-autogen, elixir-format
 msgid "Library name must be at least %{min} characters"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:372
+#, elixir-autogen, elixir-format
+msgid "Password must be at least %{min} characters"
 msgstr ""

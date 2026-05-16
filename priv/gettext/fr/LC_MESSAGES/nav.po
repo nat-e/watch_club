@@ -12,68 +12,68 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:81
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:84
 #, elixir-autogen, elixir-format
 msgid "Clubs"
 msgstr "Clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:39
-#: lib/watch_club_web/live/nav/sidebar_component.ex:54
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:42
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:57
 #, elixir-autogen, elixir-format
 msgid "Close navigation"
 msgstr "Fermer la navigation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:97
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:100
 #, elixir-autogen, elixir-format
 msgid "Create new club"
 msgstr "Créer un nouveau club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:69
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:72
 #, elixir-autogen, elixir-format
 msgid "Home"
 msgstr "Accueil"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:62
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:65
 #, elixir-autogen, elixir-format
 msgid "Main navigation"
 msgstr "Navigation principale"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/navbar_component.ex:19
+#: lib/watch_club_web/components/navigation/navbar_live.ex:20
 #, elixir-autogen, elixir-format
 msgid "Open navigation"
 msgstr "Ouvrir la navigation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/navbar_component.ex:42
+#: lib/watch_club_web/components/navigation/navbar_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/navbar_component.ex:45
+#: lib/watch_club_web/components/navigation/navbar_live.ex:46
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr "Se déconnecter"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/navbar_component.ex:36
+#: lib/watch_club_web/components/navigation/navbar_live.ex:37
 #, elixir-autogen, elixir-format
 msgid "User menu"
 msgstr "Menu utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:75
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:78
 #, elixir-autogen, elixir-format
 msgid "Watchlist"
 msgstr "Liste à voir"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/nav/sidebar_component.ex:194
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:197
 #, elixir-autogen, elixir-format
 msgid "Club actions"
 msgstr "Actions du club"
