@@ -1,6 +1,9 @@
 defmodule WatchClubWeb.Components.Navigation.Sidebar.DeleteClubModal do
   @moduledoc """
   Delete club modal owned by the sidebar.
+
+  Owner-private to `SidebarLive`. The hardcoded phx-click is a global sidebar
+  event handled by the owning LiveComponent rather than reusable component API.
   """
   use WatchClubWeb, :component
 

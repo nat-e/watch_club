@@ -1,6 +1,10 @@
 defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
   @moduledoc """
   Desktop search control for the navigation bar.
+
+  Owner-private to `NavbarLive`. The hardcoded phx-* event names are global
+  navbar events handled by the owning LiveComponent rather than reusable
+  component API.
   """
   use WatchClubWeb, :component
 

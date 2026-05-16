@@ -1,6 +1,10 @@
 defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
   @moduledoc """
   Search result states for the navigation search.
+
+  Owner-private to `NavbarLive`. The hardcoded retry phx-click is a global
+  navbar event handled by the owning LiveComponent rather than reusable
+  component API.
   """
   use WatchClubWeb, :component
 
