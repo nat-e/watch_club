@@ -115,6 +115,8 @@ defmodule WatchClub.Clubs.Library do
   end
 
   validations do
+    # Customer-facing validations own localized messages for form errors.
+    # Keep shape rules here instead of duplicating them as attribute constraints.
     validate present(:name) do
       message dgettext_noop("errors", "Library name is required")
     end
@@ -128,6 +130,12 @@ defmodule WatchClub.Clubs.Library do
     end
 
     validate present(:accepted_content_types) do
+      where action_is([:create, :update])
+      message dgettext_noop("errors", "Library accepted content types are required")
+    end
+
+    validate compare(:accepted_content_types, is_not_equal: []) do
+      where action_is([:create, :update])
       message dgettext_noop("errors", "Library accepted content types are required")
     end
 
@@ -147,13 +155,11 @@ defmodule WatchClub.Clubs.Library do
     attribute :name, :string do
       public? true
       allow_nil? false
-      constraints min_length: 3, max_length: 30
     end
 
     attribute :accepted_content_types, {:array, ContentType} do
       allow_nil? false
       public? true
-      constraints min_length: 1
     end
 
     attribute :icon, :string do

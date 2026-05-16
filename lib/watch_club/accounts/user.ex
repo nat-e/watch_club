@@ -142,8 +142,7 @@ defmodule WatchClub.Accounts.User do
 
       argument :password, :string,
         sensitive?: true,
-        allow_nil?: false,
-        constraints: [min_length: 8]
+        allow_nil?: false
 
       argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
 
@@ -228,7 +227,6 @@ defmodule WatchClub.Accounts.User do
       argument :password, :string do
         description "The proposed password for the user, in plain text."
         allow_nil? false
-        constraints min_length: 8
         sensitive? true
       end
 
@@ -296,7 +294,6 @@ defmodule WatchClub.Accounts.User do
       argument :password, :string do
         description "The proposed password for the user, in plain text."
         allow_nil? false
-        constraints min_length: 8
         sensitive? true
       end
 
@@ -348,6 +345,8 @@ defmodule WatchClub.Accounts.User do
   end
 
   validations do
+    # Customer-facing validations own localized messages for form errors.
+    # Keep shape rules here instead of duplicating them as argument or attribute constraints.
     validate present(:username) do
       message dgettext_noop("errors", "The username is required")
     end

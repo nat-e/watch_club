@@ -92,6 +92,8 @@ defmodule WatchClub.Clubs.Club do
   end
 
   validations do
+    # Customer-facing validations own localized messages for form errors.
+    # Keep shape rules here instead of duplicating them as attribute constraints.
     validate present(:name) do
       message dgettext_noop("errors", "Club name is required")
     end
@@ -111,7 +113,6 @@ defmodule WatchClub.Clubs.Club do
     attribute :name, :string do
       allow_nil? false
       public? true
-      constraints min_length: 3, max_length: 30
     end
 
     timestamps()

@@ -149,7 +149,8 @@ end
   end
   ```
 
-- **Avoid redundant validations** - Don't add validations that duplicate attribute constraints:
+- **Avoid redundant validations** - Don't add validations that duplicate attribute constraints.
+  For internal/non-customer-facing data, let attribute and argument constraints handle basic validation:
   ```elixir
   # WRONG - redundant validation
   attribute :name, :string do
@@ -169,6 +170,32 @@ end
   attribute :name, :string do
     allow_nil? false
     constraints min_length: 1
+  end
+  ```
+
+- **Customer-facing validations with localized messages** - For fields shown in forms or surfaced directly to users,
+  make explicit validations the source of truth for shape rules that need domain-specific or localized messages.
+  Do not duplicate the same min/max/format rule as an attribute or argument constraint. Keep `allow_nil? false` when it
+  represents the persistence/input contract, and add a short comment explaining that localized validations own the
+  user-facing error message.
+  ```elixir
+  validations do
+    # Customer-facing validations own localized messages for form errors.
+    # Keep shape rules here instead of duplicating them as attribute constraints.
+    validate present(:name) do
+      message dgettext_noop("errors", "Club name is required")
+    end
+
+    validate string_length(:name, min: 3) do
+      message dgettext_noop("errors", "Club name must be at least %{min} characters")
+    end
+  end
+
+  attributes do
+    attribute :name, :string do
+      allow_nil? false
+      public? true
+    end
   end
   ```
 
