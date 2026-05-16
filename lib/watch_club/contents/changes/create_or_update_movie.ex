@@ -41,7 +41,8 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
 
     changeset
     |> Ash.Changeset.manage_relationship(:movie, %{localizations: localizations},
-      type: :direct_control
+      type: :direct_control,
+      authorize?: false
     )
   end
 

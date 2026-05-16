@@ -3,6 +3,7 @@ defmodule WatchClub.Contents.Content do
     otp_app: :watch_club,
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
@@ -77,6 +78,29 @@ defmodule WatchClub.Contents.Content do
 
       change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
       change load(library_items: [:library])
+    end
+  end
+
+  policies do
+    policy actor_absent() do
+      description "Content actions require an authenticated actor"
+      access_type :strict
+      forbid_if always()
+    end
+
+    policy action([:read, :for_view, :search]) do
+      description "Content metadata is visible to authenticated users"
+      authorize_if always()
+    end
+
+    policy action(:create_movie) do
+      description "Authenticated users can create catalog content and only select libraries they can access"
+      authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
+    end
+
+    policy action(:set_libraries) do
+      description "Users can only set content libraries they can access"
+      authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
     end
   end
 

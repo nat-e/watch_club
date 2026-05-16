@@ -100,6 +100,14 @@ defmodule WatchClub.Clubs.ContentTest do
                }
              } = create_movie!("12", actor: generate(user()))
     end
+
+    test "requires membership in selected libraries", %{club: club} do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      non_member = generate(user())
+
+      create_movie("13", %{library_ids: [library.id]}, actor: non_member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
   end
 
   describe "search_content/*" do
@@ -159,6 +167,15 @@ defmodule WatchClub.Clubs.ContentTest do
         _ ->
           false
       end)
+    end
+
+    test "requires membership in selected libraries", %{club: club, admin: admin} do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = generate(movie(actor: admin))
+      non_member = generate(user())
+
+      set_club_libraries(content, %{library_ids: [library.id]}, actor: non_member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 end
