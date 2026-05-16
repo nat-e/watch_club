@@ -84,7 +84,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
     ~H"""
     <.page_shell>
       <.intro eyebrow="Selected direction" title="Velvet Club: simplified semantic tokens">
-        Dark aubergine surfaces, lavender primary actions, restrained Dracula-inspired accents, comfortable
+        Dark aubergine surfaces, pink primary actions, lavender supporting accents, comfortable
         rounded shapes, and readable contrast — with a smaller token set.
       </.intro>
 
@@ -969,8 +969,20 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           ]),
           fill_token(
             "color.accent",
-            "Expressive pink accent fill or foreground.",
-            ["new labels", "special club night", "editorial flourish"],
+            "Supporting action/accent fill or foreground.",
+            ["secondary CTA", "selected lower-emphasis action", "editorial flourish"],
+            on: "var(--wc-color-on-accent)"
+          ),
+          fill_token(
+            "color.accent-hover",
+            "Hover state for accent actions.",
+            ["accent button hover", "accent link-card hover", "supporting CTA hover"],
+            on: "var(--wc-color-on-accent)"
+          ),
+          fill_token(
+            "color.accent-active",
+            "Pressed state for accent actions.",
+            ["accent button active", "mouse-down accent action", "supporting CTA active"],
             on: "var(--wc-color-on-accent)"
           ),
           text_token("color.on-accent", "Foreground on accent fills.", [

@@ -174,7 +174,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
   defp role_badge(%{role: :admin} = assigns) do
     ~H"""
-    <.badge>Admin</.badge>
+    <.badge variant="accent">Admin</.badge>
     """
   end
 
@@ -194,7 +194,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
   defp invitation_status_badge(%{invitation: %Invitation{expired?: false}} = assigns) do
     ~H"""
-    <.badge variant="success">Invited</.badge>
+    <.badge variant="accent">Invited</.badge>
     """
   end
 
@@ -330,18 +330,21 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         )}
       </:description>
       <.stack space="group" class="items-center">
-        <.alert class="items-center">
+        <.alert variant="accent" class="items-center">
           <span id="invitation_link">{@invitation_link}</span>
           <:action>
-            <.button phx-click={
-              JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
-              |> JS.push("invitation_link_copied")
-            }>
+            <.button
+              variant="accent"
+              phx-click={
+                JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
+                |> JS.push("invitation_link_copied")
+              }
+            >
               <Lucideicons.copy />
             </.button>
           </:action>
         </.alert>
-        <.button type="button" class="w-full" data-modal-close>
+        <.button type="button" variant="secondary" class="w-full" data-modal-close>
           {dgettext("default", "Close")}
         </.button>
       </.stack>

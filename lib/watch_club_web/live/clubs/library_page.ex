@@ -152,7 +152,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     <.button
       patch={library_sort_path(@library_id, @sort_by, @target_sort_order)}
       replace
-      variant={(@active? && "primary") || "secondary"}
+      variant={(@active? && "accent") || "secondary"}
       aria-pressed={to_string(@active?)}
       aria-label={
         dgettext("clubs", "Sort by %{field} %{order}",

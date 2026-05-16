@@ -6,7 +6,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
   use Phoenix.Component
 
   attr :class, :any, default: nil
-  attr :variant, :string, values: ~w(default info warning danger), default: "default"
+  attr :variant, :string, values: ~w(default accent info warning danger), default: "default"
   attr :rest, :global
 
   slot :icon
@@ -30,6 +30,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
         @icon != [] && "grid-cols-[auto_1fr] gap-x-related",
         @action != [] && "pr-18",
         @variant == "default" && "border-border bg-surface text-text",
+        @variant == "accent" && "border-accent/40 bg-accent/10 text-accent",
         @variant == "info" && "border-info-border bg-info-bg text-info",
         @variant == "warning" && "border-warning-border bg-warning-bg text-warning",
         @variant == "danger" && "border-danger-border bg-danger-bg text-danger",

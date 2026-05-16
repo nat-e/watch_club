@@ -24,6 +24,16 @@ defmodule WatchClubWeb.Storybook.Alert do
         ]
       },
       %Variation{
+        id: :accent,
+        description: "Accent callout",
+        attributes: %{variant: "accent", class: "max-w-md"},
+        slots: [
+          "<:icon><Lucideicons.info /></:icon>",
+          "<:title>Featured club night</:title>",
+          "Use accent callouts for supporting emphasis that is not a status message."
+        ]
+      },
+      %Variation{
         id: :info,
         description: "Informational callout",
         attributes: %{variant: "info", class: "max-w-md"},

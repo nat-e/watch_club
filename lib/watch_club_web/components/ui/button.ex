@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Components.UI.Button do
   attr :class, :any, default: nil
 
   attr :variant, :string,
-    values: ~w(primary secondary ghost danger),
+    values: ~w(primary accent secondary ghost danger),
     default: "primary"
 
   attr :size, :string,
@@ -43,6 +43,8 @@ defmodule WatchClubWeb.Components.UI.Button do
         "inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
           "bg-primary text-on-primary shadow-glow hover:bg-primary-hover active:bg-primary-active",
+        @variant == "accent" &&
+          "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active",
         @variant == "secondary" &&
           "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active",
         @variant == "ghost" &&
@@ -85,6 +87,8 @@ defmodule WatchClubWeb.Components.UI.Button do
         "inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
           "bg-primary text-on-primary shadow-glow hover:bg-primary-hover active:bg-primary-active",
+        @variant == "accent" &&
+          "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active",
         @variant == "secondary" &&
           "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active",
         @variant == "ghost" &&

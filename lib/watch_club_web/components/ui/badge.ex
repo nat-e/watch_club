@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Components.UI.Badge do
   attr :class, :any, default: nil
 
   attr :variant, :string,
-    values: ~w(default secondary success muted danger),
+    values: ~w(default accent secondary success muted danger),
     default: "default"
 
   attr :size, :string, values: ~w(sm md), default: "md"
@@ -29,6 +29,7 @@ defmodule WatchClubWeb.Components.UI.Badge do
         @size == "sm" && "h-5 px-related py-0.5 text-xs",
         @size == "md" && "h-6 px-related py-tight text-sm",
         @variant == "default" && "bg-primary text-on-primary",
+        @variant == "accent" && "bg-accent text-on-accent",
         @variant == "secondary" && "border-border bg-surface-raised text-text",
         @variant == "success" && "border-success-border bg-success-bg text-success",
         @variant == "muted" && "border-border-subtle bg-surface-inset text-text-muted",

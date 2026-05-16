@@ -22,6 +22,7 @@ defmodule WatchClubWeb.Storybook.Badge do
         """,
         variations: [
           %Variation{id: :default, attributes: %{variant: "default"}, slots: ["Default"]},
+          %Variation{id: :accent, attributes: %{variant: "accent"}, slots: ["Accent"]},
           %Variation{id: :secondary, attributes: %{variant: "secondary"}, slots: ["Secondary"]},
           %Variation{id: :success, attributes: %{variant: "success"}, slots: ["Success"]},
           %Variation{id: :muted, attributes: %{variant: "muted"}, slots: ["Muted"]},

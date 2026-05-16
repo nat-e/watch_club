@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Storybook.Button do
         description: "Variants",
         variations: [
           %Variation{id: :primary, attributes: %{variant: "primary"}, slots: ["Primary"]},
+          %Variation{id: :accent, attributes: %{variant: "accent"}, slots: ["Accent"]},
           %Variation{id: :secondary, attributes: %{variant: "secondary"}, slots: ["Secondary"]},
           %Variation{id: :ghost, attributes: %{variant: "ghost"}, slots: ["Ghost"]},
           %Variation{id: :danger, attributes: %{variant: "danger"}, slots: ["Delete"]}

@@ -78,7 +78,9 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | `color.primary-hover` | Hover state for primary actions |
 | `color.primary-active` | Pressed state for primary actions |
 | `color.on-primary` | Foreground on primary fills |
-| `color.accent` | Expressive pink accent for rare emphasis |
+| `color.accent` | Supporting action/accent fill |
+| `color.accent-hover` | Hover state for accent actions |
+| `color.accent-active` | Pressed state for accent actions |
 | `color.on-accent` | Foreground on accent fills |
 | `color.danger` | Destructive action/error color |
 | `color.on-danger` | Foreground on danger fills |

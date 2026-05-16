@@ -11,15 +11,18 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   @impl true
   def render(assigns) do
+    assigns = assign(assigns, :clubs, ContentView.in_clubs(assigns.content, assigns.current_user))
+
     ~H"""
     <div>
       <.button
         size="lg"
+        variant={if @clubs == [], do: "primary", else: "accent"}
         class={@class}
         phx-target={@myself}
         phx-click="open"
       >
-        <.inner clubs={ContentView.in_clubs(@content, @current_user)} />
+        <.inner clubs={@clubs} />
       </.button>
       <.club_selection_modal
         :if={@form}
@@ -61,7 +64,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
       <:title>{dgettext("contents", "Select libraries")}</:title>
       <.stack space="group" class="relative w-full max-w-lg">
-        <.alert variant="default">
+        <.alert variant="accent">
           <:icon><Lucideicons.users class="size-icon-xl" /></:icon>
           {raw(
             dgettext(

@@ -12,6 +12,7 @@ defmodule WatchClub.Clubs.Library do
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.{Club, LibraryIcon, LibraryItem}
+  alias WatchClub.Clubs.Validations.UniqueAcceptedContentTypes
   alias WatchClub.Contents.{Content, ContentType}
 
   import Ash.Expr
@@ -153,6 +154,11 @@ defmodule WatchClub.Clubs.Library do
     validate present(:accepted_content_types) do
       message dgettext_noop("errors", "Library accepted content types are required")
     end
+
+    validate UniqueAcceptedContentTypes,
+      on: [:create, :update],
+      where: [action_is([:create, :update])],
+      message: dgettext_noop("errors", "Library accepted content types must be unique")
 
     validate one_of(:icon, LibraryIcon.names()) do
       message dgettext_noop("errors", "Library icon is invalid")

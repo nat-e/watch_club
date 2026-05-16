@@ -20,13 +20,15 @@
   --wc-color-border-strong: #6f5a92;
   --wc-color-border-focus: #a78bfa;
 
-  --wc-color-primary: #a78bfa;
-  --wc-color-primary-hover: #bda8ff;
-  --wc-color-primary-active: #9271e8;
-  --wc-color-on-primary: #130d22;
+  --wc-color-primary: #ff79c6;
+  --wc-color-primary-hover: #ff92d0;
+  --wc-color-primary-active: #e85fb3;
+  --wc-color-on-primary: #1f0d1a;
 
-  --wc-color-accent: #ff79c6;
-  --wc-color-on-accent: #1f0d1a;
+  --wc-color-accent: #a78bfa;
+  --wc-color-accent-hover: #bda8ff;
+  --wc-color-accent-active: #9271e8;
+  --wc-color-on-accent: #130d22;
 
   --wc-color-danger: #ff5555;
   --wc-color-danger-bg: #3a0d12;
@@ -73,7 +75,7 @@
 
   --wc-shadow-card: 0 14px 40px rgb(0 0 0 / 28%);
   --wc-shadow-overlay: 0 28px 80px rgb(0 0 0 / 58%);
-  --wc-shadow-glow: 0 8px 20px rgb(149 100 255 / 18%);
+  --wc-shadow-glow: 0 8px 20px rgb(255 121 198 / 18%);
 
   --font-sans: "Reddit Sans", "Raleway", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Oxanium", serif;
