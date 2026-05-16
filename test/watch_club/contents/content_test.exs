@@ -1,4 +1,4 @@
-defmodule WatchClub.Clubs.ContentTest do
+defmodule WatchClub.Contents.ContentTest do
   use WatchClub.DataCase
 
   import ExUnit.CaptureLog
