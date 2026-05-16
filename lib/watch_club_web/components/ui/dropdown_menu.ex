@@ -8,7 +8,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
 
   use Phoenix.Component
 
-  attr :id, :string, default: nil
+  alias Phoenix.LiveView.JS
+
+  attr :id, :string, required: true
   attr :class, :any, default: nil
   attr :rest, :global
 
@@ -16,15 +18,18 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   slot :inner_block, required: true
 
   def dropdown_menu(assigns) do
-    assigns =
-      assign(assigns, :id, assigns.id || "dropdown-menu-#{System.unique_integer([:positive])}")
-
     ~H"""
+    <%!--
+      The hook owns popover positioning only. Menu content remains
+      LiveView-owned so conditional items can patch; ignore only the inline
+      style written while positioning the popover.
+    --%>
     <div
       id={@id}
       data-slot="dropdown-menu"
       class={["relative inline-flex", @class]}
       phx-hook=".DropdownMenu"
+      phx-mounted={JS.ignore_attributes("style", to: "##{@id}-content")}
       {@rest}
     >
       <span id={"#{@id}-trigger"} data-slot="dropdown-menu-trigger" class="contents">

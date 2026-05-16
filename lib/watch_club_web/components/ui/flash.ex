@@ -24,6 +24,11 @@ defmodule WatchClubWeb.Components.UI.Flash do
 
   def flash(assigns) do
     ~H"""
+    <%!--
+      The TopLayer hook only promotes this container to the browser top layer;
+      LiveView still owns the toast children, so this intentionally avoids
+      phx-update="ignore".
+    --%>
     <div
       id={@id}
       data-slot="flash"
@@ -73,6 +78,10 @@ defmodule WatchClubWeb.Components.UI.Flash do
 
   defp flash_toast(assigns) do
     ~H"""
+    <%!--
+      The AutoDismiss hook owns only a timer. The toast markup remains
+      LiveView-owned, so this intentionally avoids phx-update="ignore".
+    --%>
     <div
       id={@id}
       data-slot="flash-toast"

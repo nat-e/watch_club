@@ -89,7 +89,10 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       </div>
     </div>
 
-    <.dropdown_menu class="justify-self-start sm:justify-self-end">
+    <.dropdown_menu
+      id={"library-actions-#{@library.id}"}
+      class="justify-self-start sm:justify-self-end"
+    >
       <:trigger>
         <.button
           variant="ghost"

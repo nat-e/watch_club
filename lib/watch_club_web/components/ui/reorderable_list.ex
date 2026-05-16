@@ -19,6 +19,11 @@ defmodule WatchClubWeb.Components.UI.ReorderableList do
     assigns = assign(assigns, :items_with_index, Enum.with_index(assigns.items))
 
     ~H"""
+    <%!--
+      SortableJS owns only the transient drag order. The server remains
+      authoritative after the reorder event, so the list subtree must continue
+      to patch instead of using phx-update="ignore".
+    --%>
     <ul
       id={@id}
       class={@class}

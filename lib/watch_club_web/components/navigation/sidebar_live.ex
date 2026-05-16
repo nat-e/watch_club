@@ -189,7 +189,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
         </.button>
 
-        <.dropdown_menu class="shrink-0 pr-tight">
+        <.dropdown_menu id={"club-nav-actions-#{@membership.club.id}"} class="shrink-0 pr-tight">
           <:trigger>
             <.button
               size="icon-sm"

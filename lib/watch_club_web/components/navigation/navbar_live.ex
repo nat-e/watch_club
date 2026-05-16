@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
           <.mobile_search {assigns} />
         </div>
       </div>
-      <.dropdown_menu>
+      <.dropdown_menu id="navbar-user-menu">
         <:trigger>
           <.button
             size="icon-sm"

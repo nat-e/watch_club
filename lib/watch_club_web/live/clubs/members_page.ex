@@ -104,7 +104,10 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         <.inviter_label :if={@membership.invitation} inviter={@membership.invitation.inviter} />
       </.table_cell>
       <.table_cell class="text-right">
-        <.dropdown_menu :if={@membership.user_id != @current_user.id}>
+        <.dropdown_menu
+          :if={@membership.user_id != @current_user.id}
+          id={"member-actions-#{@membership.id}"}
+        >
           <:trigger>
             <.button size="icon" variant="ghost">
               <Lucideicons.ellipsis_vertical />
@@ -140,7 +143,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         <.inviter_label inviter={@invitation.inviter} />
       </.table_cell>
       <.table_cell class="text-right">
-        <.dropdown_menu>
+        <.dropdown_menu id={"invitation-actions-#{@invitation.id}"}>
           <:trigger>
             <.button size="icon" variant="ghost">
               <Lucideicons.ellipsis_vertical />

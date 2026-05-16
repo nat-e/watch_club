@@ -8,6 +8,8 @@ defmodule WatchClubWeb.Components.UI.Select do
 
   use Phoenix.Component
 
+  alias Phoenix.LiveView.JS
+
   attr :id, :string, default: nil
   attr :class, :any, default: nil
   attr :trigger_class, :any, default: nil
@@ -48,6 +50,11 @@ defmodule WatchClubWeb.Components.UI.Select do
     assigns = assign(assigns, :id, assigns.id || "select-#{System.unique_integer([:positive])}")
 
     ~H"""
+    <%!--
+      The hook owns open/closed state and floating-position attributes. Options,
+      input value, and validation state remain LiveView-owned, so avoid
+      phx-update="ignore" on the full select subtree.
+    --%>
     <div
       id={@id}
       data-slot="select"
@@ -58,6 +65,13 @@ defmodule WatchClubWeb.Components.UI.Select do
       data-align-offset={@align_offset}
       data-disabled={@disabled || nil}
       phx-hook=".Select"
+      phx-mounted={
+        JS.ignore_attributes("data-state")
+        |> JS.ignore_attributes("aria-expanded", to: "##{@id} [data-slot='select-trigger']")
+        |> JS.ignore_attributes(["data-state", "data-side", "data-align", "style"],
+          to: "##{@id}-content"
+        )
+      }
       class={["relative inline-block", @class]}
       {@rest}
     >

@@ -48,6 +48,10 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
         }
       }
     </script>
+    <%!--
+      The hook owns only the client-side data-open attribute. The form inputs
+      and search results remain LiveView-owned, so do not ignore the subtree.
+    --%>
     <.form
       id="desktop-search-form"
       for={@form}
@@ -56,6 +60,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       phx-submit="open_search"
       phx-target={@myself}
       phx-hook=".DesktopSearchHook"
+      phx-mounted={JS.ignore_attributes("data-open")}
       class="hidden h-control-md md:block group/desktop-search relative"
     >
       <div class="absolute inset-x-0 top-0 overflow-hidden rounded-control border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-border-focus/40 group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">

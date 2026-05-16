@@ -48,6 +48,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
         @class
       ]}
       phx-hook=".Modal"
+      phx-mounted={JS.ignore_attributes("open")}
       {@rest}
     >
       <div
