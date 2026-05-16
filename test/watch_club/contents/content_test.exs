@@ -2,6 +2,7 @@ defmodule WatchClub.Clubs.ContentTest do
   use WatchClub.DataCase
 
   import ExUnit.CaptureLog
+  import WatchClub.Clubs, only: [get_library_items!: 2]
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
@@ -167,6 +168,54 @@ defmodule WatchClub.Clubs.ContentTest do
         _ ->
           false
       end)
+    end
+
+    test "does not remove library items from clubs the actor cannot access", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      member_library = generate(library(club, accepted_content_types: [:movie]))
+      other_club = generate(club(actor: admin))
+      other_library = generate(library(other_club, accepted_content_types: [:movie]))
+
+      content =
+        create_movie!("13", %{library_ids: [member_library.id, other_library.id]}, actor: admin)
+
+      assert %Content{} =
+               set_club_libraries!(content, %{library_ids: [member_library.id]}, actor: member)
+
+      other_library_id = other_library.id
+
+      assert %LibraryItem{library_id: ^other_library_id} =
+               LibraryItem
+               |> Ash.Query.filter(content_id == ^content.id and library_id == ^other_library.id)
+               |> Ash.read_one!(authorize?: false)
+    end
+
+    test "preserves omitted library items the actor can access but cannot remove", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = create_movie!("14", %{library_ids: [library.id]}, actor: admin)
+
+      admin_id = admin.id
+
+      assert %LibraryItem{added_by_id: ^admin_id} =
+               library.id
+               |> get_library_items!(actor: member)
+               |> Enum.find(&(&1.content_id == content.id))
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
+
+      library_id = library.id
+
+      assert %LibraryItem{library_id: ^library_id, added_by_id: ^admin_id} =
+               library.id
+               |> get_library_items!(actor: member)
+               |> Enum.find(&(&1.content_id == content.id))
     end
 
     test "requires membership in selected libraries", %{club: club, admin: admin} do

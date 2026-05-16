@@ -76,6 +76,9 @@ defmodule WatchClub.Contents.Content do
         message dgettext_noop("errors", "Library does not accept this content type")
       end
 
+      # Keep relationship authorization enabled: this action syncs the actor's
+      # selected libraries, not the content's global library list. Omitted library
+      # items outside the actor's removal rights are preserved.
       change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
       change load(library_items: [:library])
     end
