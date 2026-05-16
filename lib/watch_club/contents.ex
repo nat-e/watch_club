@@ -6,8 +6,6 @@ defmodule WatchClub.Contents do
   alias WatchClub.Contents.{
     Book,
     Content,
-    ContentView,
-    ExternalIdSource,
     Movie,
     MovieLocalization,
     TvShow,
@@ -30,24 +28,5 @@ defmodule WatchClub.Contents do
     resource MovieLocalization
     resource TvShow
     resource TvShowLocalization
-  end
-
-  @spec get_context_by_external_id(ExternalIdSource.t(), String.t(), keyword()) ::
-          {:ok, ContentView.t()} | {:error, term()}
-  def get_context_by_external_id(external_id_source, external_id, opts \\ []) do
-    result =
-      Ash.ActionInput.for_action(Content, :context, %{
-        external_id_source: external_id_source,
-        external_ids: [external_id]
-      })
-      |> Ash.run_action(opts)
-
-    case result do
-      {:ok, contexts} ->
-        {:ok, Map.fetch!(contexts, external_id)}
-
-      {:error, error} ->
-        {:error, error}
-    end
   end
 end
