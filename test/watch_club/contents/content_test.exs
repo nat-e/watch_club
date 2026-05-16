@@ -1,6 +1,7 @@
 defmodule WatchClub.Clubs.ContentTest do
   use WatchClub.DataCase
 
+  import ExUnit.CaptureLog
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
@@ -56,6 +57,48 @@ defmodule WatchClub.Clubs.ContentTest do
                |> Ash.Query.filter(id == ^content.id)
                |> Ash.Query.load(:localized_title_key)
                |> Ash.read_one!(actor: actor, authorize?: false)
+    end
+
+    test "returns an invalid error when TMDB fetch fails" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(404)
+        |> Req.Test.json(%{"status_message" => "Not found"})
+      end)
+
+      capture_log(fn ->
+        create_movie("404", actor: generate(user()))
+        |> assert_has_error(Ash.Error.Invalid, fn
+          %Ash.Error.Changes.InvalidChanges{message: "Failed to fetch movie from TMDB"} -> true
+          _ -> false
+        end)
+      end)
+    end
+
+    test "creates a movie when optional TMDB details are missing" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+
+        response =
+          "movie_details_11"
+          |> tmdb_fixture()
+          |> Map.merge(%{
+            "id" => tmdb_id,
+            "images" => nil,
+            "origin_country" => ["CA"],
+            "production_countries" => [],
+            "translations" => %{"translations" => []}
+          })
+
+        Req.Test.json(conn, response)
+      end)
+
+      assert %Content{
+               origin_country: "CA",
+               implementation: %Movie{
+                 best_localization: %MovieLocalization{title: "Star Wars"}
+               }
+             } = create_movie!("12", actor: generate(user()))
     end
   end
 

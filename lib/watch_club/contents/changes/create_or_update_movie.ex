@@ -27,7 +27,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
           changeset
           |> Ash.Changeset.add_error(
             message: "Failed to fetch movie from TMDB",
-            private_vars: [tmdb_error: error.reason]
+            private_vars: [tmdb_error: error]
           )
       end
     end)
@@ -46,7 +46,11 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   end
 
   defp set_base_content(%Ash.Changeset{} = changeset, %MovieDetailsResponse{} = movie) do
-    production_country = movie.production_countries |> List.first() |> Map.get(:iso_3166_1)
+    production_country =
+      case movie.production_countries do
+        [%{iso_3166_1: iso_3166_1} | _] -> iso_3166_1
+        _ -> List.first(movie.origin_country)
+      end
 
     changeset
     |> Ash.Changeset.force_change_attribute(:type, :movie)
@@ -65,17 +69,19 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
       movie.translations
       |> Enum.find(fn t -> t.iso_639_1 == iso_639_1 and t.iso_3166_1 == iso_3166_1 end)
 
+    translation_data = if translation, do: translation.data
+
     best_poster =
-      movie.images.posters
+      ((movie.images && movie.images.posters) || [])
       |> Enum.find(fn p -> p.iso_639_1 == iso_639_1 end)
 
     %{
       iso_639_1: iso_639_1,
       iso_3166_1: iso_3166_1,
-      title: translated_or_default(translation.data, :title, movie.title),
-      overview: translated_or_default(translation.data, :overview, movie.overview),
+      title: translated_or_default(translation_data, :title, movie.title),
+      overview: translated_or_default(translation_data, :overview, movie.overview),
       poster_path: translated_or_default(best_poster, :file_path, movie.poster_path),
-      runtime: translated_or_default(translation.data, :runtime, movie.runtime)
+      runtime: translated_or_default(translation_data, :runtime, movie.runtime)
     }
   end
 
