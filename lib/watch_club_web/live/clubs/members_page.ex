@@ -213,7 +213,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
           dgettext(
             "clubs",
             "Are you sure you want to remove %{username}?",
-            gtbold(@membership.user.username)
+            username: gtbold(@membership.user.username)
           )
         )}
       </p>
@@ -463,7 +463,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
     {:noreply,
      socket
-     |> assign(:invitation_to_destroy, nil)
+     |> assign(:membership_to_remove, nil)
      |> put_flash(:success, dgettext("clubs", "Member removed"))}
   end
 
