@@ -26,6 +26,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
       </.button>
       <.club_selection_modal
         :if={@form}
+        component_id={@id}
         content={@content}
         current_user={@current_user}
         form={@form}
@@ -80,6 +81,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
           </.inline>
           <.form
             for={@form}
+            id={"#{@component_id}-club-selection-form"}
             phx-target={@myself}
             phx-submit="submit"
           >

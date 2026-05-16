@@ -925,7 +925,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp form_wrapper_code do
     """
-    <.form for={@form} phx-submit="save">
+    <.form for={@form} id="example-form" phx-submit="save">
       ...fields...
 
       <:action>

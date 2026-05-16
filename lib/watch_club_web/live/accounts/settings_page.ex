@@ -27,6 +27,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       >
         <.form
           for={@user_settings_form}
+          id="user-settings-form"
           class="w-full sm:max-w-sm"
           phx-submit="submit_update_settings"
         >
