@@ -17,7 +17,7 @@
 - Each component file exposes one public component by default. Tightly coupled semantic families may live together when their API is naturally one family, such as tables, dropdown menus, or avatar groups.
 - Owner-private subcomponents usually stay as private function components in the owning file. They may be extracted for readability, especially once the subcomponent starts having its own subcomponents or meaningful helper logic.
 - Extracted owner-private modules are imported only by their owner and are not globally registered.
-- Shared function components must **never** hardcode events. If a shared function component needs behavior, the caller must pass explicit assigns such as event names, targets, callbacks, or JS commands; otherwise the component should be a LiveComponent that owns the interaction.
+- Shared function components must not hardcode LiveView server events. If a shared function component needs behavior, the caller must pass explicit assigns such as event names, targets, callbacks or JS commands; otherwise the component should be a LiveComponent that owns the interaction. Hardcoding client side JS commands that are scoped internally is allowed.
 - Page-local components may hardcode page events because their event contract is owned by the page.
 - `WatchClubWeb.Components` must not be used as a broad auto-import registry. UI primitives are globally available through the UI facade; shared domain components are explicit dependencies of the modules that use them.
 
