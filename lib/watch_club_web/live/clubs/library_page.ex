@@ -39,6 +39,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           </div>
           <.library_sort_controls
             :if={!ContentStreamState.empty?(@content_stream)}
+            club_id={@library.club_id}
             library_id={@library.id}
             current_sort_by={@sort_by}
             current_sort_order={@sort_order}
@@ -77,6 +78,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     """
   end
 
+  attr :club_id, :string, required: true
   attr :current_sort_by, :atom, required: true
   attr :current_sort_order, :atom, required: true
   attr :library_id, :string, required: true
@@ -90,6 +92,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         class="flex shrink-0 gap-tight"
       >
         <.sort_toggle_button
+          club_id={@club_id}
           library_id={@library_id}
           current_sort_by={@current_sort_by}
           current_sort_order={@current_sort_order}
@@ -100,6 +103,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           label={dgettext("clubs", "Title")}
         />
         <.sort_toggle_button
+          club_id={@club_id}
           library_id={@library_id}
           current_sort_by={@current_sort_by}
           current_sort_order={@current_sort_order}
@@ -110,6 +114,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           label={dgettext("clubs", "Added date")}
         />
         <.sort_toggle_button
+          club_id={@club_id}
           library_id={@library_id}
           current_sort_by={@current_sort_by}
           current_sort_order={@current_sort_order}
@@ -124,6 +129,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     """
   end
 
+  attr :club_id, :string, required: true
   attr :current_sort_by, :atom, required: true
   attr :current_sort_order, :atom, required: true
   attr :sort_by, :atom, required: true
@@ -164,7 +170,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
     ~H"""
     <.button
-      patch={library_sort_path(@library_id, @sort_by, @target_sort_order)}
+      patch={library_sort_path(@club_id, @library_id, @sort_by, @target_sort_order)}
       replace
       variant={(@active? && "accent") || "secondary"}
       aria-pressed={to_string(@active?)}
@@ -184,15 +190,18 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   @impl true
-  def handle_params(%{"library_id" => library_id} = params, _uri, socket) do
+  def handle_params(%{"club_id" => club_id, "library_id" => library_id} = params, _uri, socket) do
     {sort_by, sort_order} = LibraryItemsSortOption.parse_param(params["sort"])
 
     if params["sort"] != LibraryItemsSortOption.to_param(sort_by, sort_order) and
          connected?(socket) do
       {:noreply,
-       push_patch(socket, to: library_sort_path(library_id, sort_by, sort_order), replace: true)}
+       push_patch(socket,
+         to: library_sort_path(club_id, library_id, sort_by, sort_order),
+         replace: true
+       )}
     else
-      load_library(socket, library_id, sort_by, sort_order)
+      load_library(socket, club_id, library_id, sort_by, sort_order)
     end
   end
 
@@ -225,20 +234,35 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     end
   end
 
-  defp load_library(socket, library_id, sort_by, sort_order) do
+  defp load_library(socket, club_id, library_id, sort_by, sort_order) do
     current_user = socket.assigns.current_user
-    library = Clubs.get_library_by_id!(library_id, actor: current_user)
-    page = load_contents_page(library.id, sort_by, sort_order, nil, current_user)
 
-    {:noreply,
-     socket
-     |> assign(
-       library: library,
-       content_stream: ContentStreamState.reset(page),
-       sort_by: sort_by,
-       sort_order: sort_order
-     )
-     |> stream(:contents, page.contents, reset: true)}
+    case Clubs.get_library_by_id(library_id, actor: current_user) do
+      {:ok, %Library{club_id: ^club_id} = library} ->
+        page = load_contents_page(library.id, sort_by, sort_order, nil, current_user)
+
+        {:noreply,
+         socket
+         |> assign(
+           library: library,
+           content_stream: ContentStreamState.reset(page),
+           sort_by: sort_by,
+           sort_order: sort_order
+         )
+         |> stream(:contents, page.contents, reset: true)}
+
+      {:ok, %Library{}} ->
+        not_found(socket)
+
+      {:error, %Ash.Error.Query.NotFound{}} ->
+        not_found(socket)
+
+      {:error, %Ash.Error.Invalid{}} ->
+        not_found(socket)
+
+      {:error, %Ash.Error.Forbidden{}} ->
+        not_found(socket)
+    end
   end
 
   defp load_contents_page(library_id, sort_by, sort_order, after_keyset, current_user) do
@@ -265,7 +289,14 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     %{contents: contents, more?: page.more?, next_keyset: next_keyset}
   end
 
-  defp library_sort_path(library_id, sort_by, sort_order) do
-    ~p"/libraries/#{library_id}?#{[sort: LibraryItemsSortOption.to_param(sort_by, sort_order)]}"
+  defp library_sort_path(club_id, library_id, sort_by, sort_order) do
+    ~p"/clubs/#{club_id}/libraries/#{library_id}?#{[sort: LibraryItemsSortOption.to_param(sort_by, sort_order)]}"
+  end
+
+  defp not_found(socket) do
+    {:noreply,
+     socket
+     |> put_flash(:error, dgettext("clubs", "The library you were looking for does not exist"))
+     |> push_navigate(to: ~p"/")}
   end
 end

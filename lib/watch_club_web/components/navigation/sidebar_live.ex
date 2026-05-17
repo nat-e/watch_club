@@ -272,7 +272,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   attr :current_path, :string, required: true
 
   defp library_nav_item(assigns) do
-    url = ~p"/libraries/#{assigns.library.id}"
+    url = ~p"/clubs/#{assigns.library.club_id}/libraries/#{assigns.library.id}"
 
     assigns =
       assigns

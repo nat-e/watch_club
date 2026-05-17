@@ -74,7 +74,7 @@ _Avoid_: Revoke invitation, cancel invitation
 
 **Library**:
 A named collection of content inside a club that accepts one or more content types.
-_Avoid_: Club library, list, shelf, playlist
+_Avoid_: list, shelf, playlist
 
 **Library Item**:
 A piece of content included in a library.
@@ -82,7 +82,7 @@ _Avoid_: Recommendation, availability, selection
 
 **Add to Library**:
 Include content in a library so it is visible to club members.
-_Avoid_: Add to club library, add to club, recommend, make available
+_Avoid_: add to club, recommend, make available
 
 **Remove from Library**:
 Remove a library item from a library without deleting the underlying content.
