@@ -64,7 +64,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </div>
 
           <.link
-            href={ContentView.details_url(@content)}
+            navigate={ContentView.details_url(@content)}
             class="min-h-0 flex-1 overflow-hidden text-left"
           >
             <div class="flex h-full w-full items-end">

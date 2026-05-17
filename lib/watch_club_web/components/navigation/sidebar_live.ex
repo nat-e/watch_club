@@ -67,13 +67,13 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         >
           <ul class="flex list-none flex-col gap-tight p-0">
             <li>
-              <.sidebar_item href="/" active={active?(@current_path, "/")}>
+              <.sidebar_item navigate={~p"/"} active={active?(@current_path, "/")}>
                 <Lucideicons.home />
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Home")}</span>
               </.sidebar_item>
             </li>
             <li>
-              <.sidebar_item href="/watchlist" active={active?(@current_path, "/watchlist")}>
+              <.sidebar_item navigate={~p"/watchlist"} active={active?(@current_path, "/watchlist")}>
                 <Lucideicons.bookmark />
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Watchlist")}</span>
               </.sidebar_item>
@@ -116,6 +116,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   end
 
   attr :href, :string, default: nil
+  attr :navigate, :string, default: nil
   attr :active, :boolean, default: false
   attr :class, :any, default: nil
   attr :on_click, :any, default: nil
@@ -126,7 +127,14 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     assigns =
       assigns
       |> assign(:on_click, assigns.on_click || hide_sidebar())
-      |> assign(:rest, if(assigns.href, do: %{href: assigns.href}, else: %{}))
+      |> assign(
+        :rest,
+        cond do
+          assigns.href -> %{href: assigns.href}
+          assigns.navigate -> %{navigate: assigns.navigate}
+          true -> %{}
+        end
+      )
 
     ~H"""
     <.button
@@ -178,7 +186,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
       ]}>
         <.button
-          href={@url}
+          navigate={@url}
           variant="ghost"
           size="md"
           aria-current={@active && "page"}
@@ -204,14 +212,14 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
           <.dropdown_menu_item
             :if={@membership.role == :admin}
-            href={"#{@url}/members"}
+            navigate={"#{@url}/members"}
             phx-click={hide_sidebar()}
           >
             <Lucideicons.user />{dgettext("clubs", "Manage members")}
           </.dropdown_menu_item>
           <.dropdown_menu_item
             :if={@membership.role == :admin}
-            href={"#{@url}/settings"}
+            navigate={"#{@url}/settings"}
             phx-click={hide_sidebar()}
           >
             <Lucideicons.settings />{dgettext("clubs", "Club Settings")}
@@ -273,7 +281,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
     ~H"""
     <li>
-      <.sidebar_item href={@url} active={@active}>
+      <.sidebar_item navigate={@url} active={@active}>
         <.library_icon library={@library} />
         <span class="min-w-0 flex-1 truncate">{@library.name}</span>
       </.sidebar_item>

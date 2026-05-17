@@ -39,7 +39,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
             <.avatar id={@current_user.id} name={@current_user.username} />
           </.button>
         </:trigger>
-        <.dropdown_menu_item href={~p"/settings"}>
+        <.dropdown_menu_item navigate={~p"/settings"}>
           <Lucideicons.settings /> {dgettext("nav", "Settings")}
         </.dropdown_menu_item>
         <.dropdown_menu_item href={~p"/sign-out"} method="delete" variant="destructive">

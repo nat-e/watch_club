@@ -80,7 +80,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   defp search_preview_card(assigns) do
     ~H"""
-    <.link class="flex gap-related hover:bg-surface-hover p-related" href={details_url(@content)}>
+    <.link class="flex gap-related hover:bg-surface-hover p-related" navigate={details_url(@content)}>
       <.tmdb_poster
         path={@content.image_path}
         size="w154"
