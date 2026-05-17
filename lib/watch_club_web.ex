@@ -54,16 +54,6 @@ defmodule WatchClubWeb do
       alias WatchClubWeb.Layouts
 
       unquote(html_helpers())
-
-      # Overridable no-op handle_params to allow patch from any LiveView
-      @impl true
-      def handle_params(_params, _uri, socket), do: {:noreply, socket}
-      defoverridable handle_params: 3
-
-      # Overridable no-op handle_info to avoid warnings when not defined
-      @impl true
-      def handle_info(_msg, socket), do: {:noreply, socket}
-      defoverridable handle_info: 2
     end
   end
 
