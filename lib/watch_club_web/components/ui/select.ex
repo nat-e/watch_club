@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Components.UI.Select do
 
   alias Phoenix.LiveView.JS
 
-  attr :id, :string, default: nil
+  attr :id, :string, required: true
   attr :class, :any, default: nil
   attr :trigger_class, :any, default: nil
   attr :name, :any, default: nil
@@ -23,7 +23,7 @@ defmodule WatchClubWeb.Components.UI.Select do
 
   attr :disabled, :boolean, default: false
   attr :errors, :list, default: []
-  attr :field, Phoenix.HTML.FormField, doc: "form field — derives id, name, value, and errors"
+  attr :field, Phoenix.HTML.FormField, doc: "form field — derives name, value, and errors"
   attr :side, :string, values: ~w(top right bottom left), default: "bottom"
   attr :align, :string, values: ~w(start center end), default: "start"
   attr :side_offset, :integer, default: 6
@@ -38,7 +38,6 @@ defmodule WatchClubWeb.Components.UI.Select do
     assigns
     |> assign(
       field: nil,
-      id: assigns.id || field.id,
       name: field.name,
       value: input_value(field.value),
       errors: errors
@@ -47,8 +46,6 @@ defmodule WatchClubWeb.Components.UI.Select do
   end
 
   def select(assigns) do
-    assigns = assign(assigns, :id, assigns.id || "select-#{System.unique_integer([:positive])}")
-
     ~H"""
     <%!--
       The hook owns open/closed state and floating-position attributes. Options,

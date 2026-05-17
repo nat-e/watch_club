@@ -37,7 +37,12 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
             class="w-full"
           >
             <:control>
-              <.select field={@user_settings_form[:locale]} trigger_class="w-full" class="w-full">
+              <.select
+                id="user-settings-locale-select"
+                field={@user_settings_form[:locale]}
+                trigger_class="w-full"
+                class="w-full"
+              >
                 <.select_item
                   :for={locale <- UserLocale.values()}
                   value={locale}

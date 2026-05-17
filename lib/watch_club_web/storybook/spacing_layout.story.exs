@@ -943,7 +943,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
     <.field field={@form[:role]} label="Role">
       <:control>
-        <.select field={@form[:role]} options={@roles} />
+        <.select id="role-select" field={@form[:role]} options={@roles} />
       </:control>
       <:hint>Admins can invite members.</:hint>
     </.field>

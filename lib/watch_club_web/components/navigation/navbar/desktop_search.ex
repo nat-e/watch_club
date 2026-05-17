@@ -70,6 +70,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       <div class="absolute inset-x-0 top-0 overflow-hidden rounded-control border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-border-focus/40 group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
         <div class="flex w-full items-stretch">
           <.select
+            id="desktop-search-location-select"
             field={@form[:location]}
             class="min-w-20 shrink-1"
             trigger_class="rounded-none border-0 border-r border-border-subtle shadow-none focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:!border-border-subtle focus-visible:!ring-0"
@@ -100,6 +101,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
             </.select_item>
           </.select>
           <.select
+            id="desktop-search-content-type-select"
             field={@form[:content_type]}
             class="min-w-20 shrink-1"
             trigger_class="rounded-none border-0 border-r border-border-subtle shadow-none focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:!border-border-subtle focus-visible:!ring-0"
