@@ -83,19 +83,26 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal do
 
   defp content_type_field(assigns) do
     assigns =
-      assign(
-        assigns,
+      assigns
+      |> assign(
         :content_type_value,
         case assigns.mode do
           :create -> assigns.form[:content_type].value
           :edit -> assigns.library.content_type
         end
       )
+      |> assign(
+        :content_type_locked_message,
+        dgettext("clubs", "A library's content type cannot be changed after creation.")
+      )
 
     ~H"""
     <.field field={@form[:content_type]} label={dgettext("clubs", "Content type")}>
-      <:hint :if={@mode == :edit}>
-        {dgettext("clubs", "A library's content type cannot be changed after creation.")}
+      <:hint>
+        {dgettext(
+          "clubs",
+          "Users will only be able to add this type of content to the library"
+        )}
       </:hint>
       <:control>
         <.radio_group
@@ -107,6 +114,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal do
             :for={content_type <- @content_types}
             value={to_string(content_type)}
             disabled={@mode == :edit}
+            tooltip={@mode == :edit && @content_type_locked_message}
             class={[
               "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors has-[:checked]:border-accent has-[:checked]:bg-surface-selected has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 [&>[data-slot=radio-group-item]]:sr-only",
               @mode == :create && "hover:bg-surface-hover"

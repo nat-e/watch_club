@@ -489,14 +489,19 @@ msgstr ""
 msgid "Select a new icon for the %{library_name} library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:96
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:100
 #, elixir-autogen, elixir-format
 msgid "Content type"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:98
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:96
 #, elixir-autogen, elixir-format
 msgid "A library's content type cannot be changed after creation."
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:102
+#, elixir-autogen, elixir-format
+msgid "Users will only be able to add this type of content to the library"
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/members_page.ex:188
