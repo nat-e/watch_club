@@ -191,13 +191,13 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
   defp role_badge(%{role: :admin} = assigns) do
     ~H"""
-    <.badge variant="accent">Admin</.badge>
+    <.badge variant="accent">{dgettext("clubs", "Admin")}</.badge>
     """
   end
 
   defp role_badge(%{role: :member} = assigns) do
     ~H"""
-    <.badge variant="secondary">Member</.badge>
+    <.badge variant="secondary">{dgettext("clubs", "Member")}</.badge>
     """
   end
 
@@ -205,19 +205,19 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
   defp invitation_status_badge(%{invitation: %Invitation{accepted?: true}} = assigns) do
     ~H"""
-    <.badge variant="success">Accepted</.badge>
+    <.badge variant="success">{dgettext("clubs", "Accepted")}</.badge>
     """
   end
 
   defp invitation_status_badge(%{invitation: %Invitation{expired?: false}} = assigns) do
     ~H"""
-    <.badge variant="accent">Invited</.badge>
+    <.badge variant="accent">{dgettext("clubs", "Invited")}</.badge>
     """
   end
 
   defp invitation_status_badge(%{invitation: %Invitation{}} = assigns) do
     ~H"""
-    <.badge variant="muted">Expired</.badge>
+    <.badge variant="muted">{dgettext("clubs", "Expired")}</.badge>
     """
   end
 

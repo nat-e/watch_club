@@ -105,8 +105,9 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   defp library_selection_checkbox(assigns) do
     ~H"""
     <label class={[
-      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border p-group hover:bg-surface-raised/50",
-      @selected? && "bg-surface-selected text-text"
+      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border p-group transition-colors",
+      @selected? && "bg-surface-selected text-text",
+      !@selected? && "hover:bg-surface-hover active:bg-surface-active"
     ]}>
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />

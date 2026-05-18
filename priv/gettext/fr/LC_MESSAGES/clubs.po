@@ -12,6 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/clubs/members_page.ex:194
 #: lib/watch_club_web/live/clubs/members_page.ex:308
 #, elixir-autogen, elixir-format
 msgid "Admin"
@@ -155,6 +156,7 @@ msgid "Manage members"
 msgstr "Gérer les membres"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/clubs/members_page.ex:200
 #: lib/watch_club_web/live/clubs/members_page.ex:301
 #, elixir-autogen, elixir-format
 msgid "Member"
@@ -303,7 +305,7 @@ msgid "Delete %{library_name}?"
 msgstr "Supprimer %{library_name} ?"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:120
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:123
 #, elixir-autogen, elixir-format
 msgid "Delete Library"
 msgstr "Supprimer la bibliothèque"
@@ -315,7 +317,7 @@ msgid "Delete library"
 msgstr "Supprimer la bibliothèque"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:65
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:67
 #, elixir-autogen, elixir-format
 msgid "Drag to reorder"
 msgstr "Faire glisser pour réordonner"
@@ -357,7 +359,7 @@ msgid "Library deleted"
 msgstr "Bibliothèque supprimée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:101
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:104
 #, elixir-autogen, elixir-format
 msgid "Library actions"
 msgstr "Actions de la bibliothèque"
@@ -514,7 +516,7 @@ msgid "Add a new library to this club. Choose one or more accepted content types
 msgstr "Ajoutez une nouvelle bibliothèque à ce club. Choisissez un ou plusieurs types de contenu acceptés."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:76
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:79
 #, elixir-autogen, elixir-format
 msgid "Change %{library_name} icon"
 msgstr "Changer l’icône de %{library_name}"
@@ -527,7 +529,7 @@ msgstr "Créez, modifiez, supprimez et réordonnez les bibliothèques du club. L
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:33
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:112
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:115
 #, elixir-autogen, elixir-format
 msgid "Edit Library"
 msgstr "Modifier la bibliothèque"
@@ -615,3 +617,21 @@ msgstr "Utilisateur supprimé"
 #, elixir-autogen, elixir-format
 msgid "The library you were looking for does not exist"
 msgstr "La bibliothèque que vous cherchiez n'existe pas"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs/members_page.ex:208
+#, elixir-autogen, elixir-format
+msgid "Accepted"
+msgstr "Acceptée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs/members_page.ex:220
+#, elixir-autogen, elixir-format
+msgid "Expired"
+msgstr "Expirée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/clubs/members_page.ex:214
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "Invitée"

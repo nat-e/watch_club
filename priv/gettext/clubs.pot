@@ -11,6 +11,7 @@
 msgid ""
 msgstr ""
 
+#: lib/watch_club_web/live/clubs/members_page.ex:194
 #: lib/watch_club_web/live/clubs/members_page.ex:308
 #, elixir-autogen, elixir-format
 msgid "Admin"
@@ -131,6 +132,7 @@ msgstr ""
 msgid "Manage members"
 msgstr ""
 
+#: lib/watch_club_web/live/clubs/members_page.ex:200
 #: lib/watch_club_web/live/clubs/members_page.ex:301
 #, elixir-autogen, elixir-format
 msgid "Member"
@@ -255,7 +257,7 @@ msgstr ""
 msgid "Delete %{library_name}?"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:120
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:123
 #, elixir-autogen, elixir-format
 msgid "Delete Library"
 msgstr ""
@@ -265,7 +267,7 @@ msgstr ""
 msgid "Delete library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:65
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:67
 #, elixir-autogen, elixir-format
 msgid "Drag to reorder"
 msgstr ""
@@ -300,7 +302,7 @@ msgstr ""
 msgid "Library deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:101
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:104
 #, elixir-autogen, elixir-format
 msgid "Library actions"
 msgstr ""
@@ -431,7 +433,7 @@ msgstr ""
 msgid "Add a new library to this club. Choose one or more accepted content types."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:76
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:79
 #, elixir-autogen, elixir-format
 msgid "Change %{library_name} icon"
 msgstr ""
@@ -442,7 +444,7 @@ msgid "Create, edit, delete, and reorder club libraries. Libraries can accept mu
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:33
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:112
+#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:115
 #, elixir-autogen, elixir-format
 msgid "Edit Library"
 msgstr ""
@@ -515,4 +517,19 @@ msgstr ""
 #: lib/watch_club_web/live/clubs/library_page.ex:299
 #, elixir-autogen, elixir-format
 msgid "The library you were looking for does not exist"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members_page.ex:208
+#, elixir-autogen, elixir-format
+msgid "Accepted"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members_page.ex:220
+#, elixir-autogen, elixir-format
+msgid "Expired"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members_page.ex:214
+#, elixir-autogen, elixir-format
+msgid "Invited"
 msgstr ""

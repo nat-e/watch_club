@@ -19,6 +19,7 @@ Watch Club uses the **Velvet Club** direction:
 - Do not add component-specific tokens until semantic tokens are insufficient.
 - Neutral surfaces share one text hierarchy.
 - Strong fills use paired `on-*` foreground tokens.
+- Primitive scales define raw values; semantic tokens alias those primitives; UI primitives consume semantic tokens; product code composes UI primitives.
 
 ## Tailwind mapping
 
@@ -83,6 +84,8 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | `color.accent-active` | Pressed state for accent actions |
 | `color.on-accent` | Foreground on accent fills |
 | `color.danger` | Destructive action/error color |
+| `color.danger-hover` | Hover state for destructive action fills |
+| `color.danger-active` | Pressed state for destructive action fills |
 | `color.on-danger` | Foreground on danger fills |
 
 ### Status

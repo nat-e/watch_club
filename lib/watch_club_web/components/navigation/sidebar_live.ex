@@ -145,7 +145,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       class={[
         "min-h-touch-target w-full justify-start overflow-hidden text-left font-medium",
         @active &&
-          "!bg-surface-selected !text-text shadow-sm hover:!bg-surface-selected active:!bg-surface-selected",
+          "!bg-surface-selected !text-text hover:!bg-surface-selected active:!bg-surface-selected",
         @class
       ]}
       phx-click={@on_click}
@@ -181,7 +181,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     ]}>
       <div class={[
         "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
-        @active && "bg-surface-selected text-text shadow-sm",
+        @active && "bg-surface-selected text-text",
         !@active &&
           "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
       ]}>

@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
   """
 
   use Phoenix.Component
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias Phoenix.LiveView.JS
 
@@ -35,7 +36,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
       data-position={@position}
       popover="manual"
       role="region"
-      aria-label="Notifications"
+      aria-label={dgettext("default", "Notifications")}
       class={@class}
       style={
         "pointer-events: none; position: fixed; inset: auto; z-index: 100; margin: 0; display: flex; width: 360px; max-width: calc(100% - 2rem); flex-direction: column; gap: 0.5rem; overflow: visible; border: 0; background: transparent; padding: 0; " <>
@@ -108,7 +109,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
       <button
         type="button"
         data-slot="flash-toast-close"
-        aria-label="Close"
+        aria-label={dgettext("default", "Close")}
         class={[
           "-mt-0.5 -mr-1 inline-flex size-icon-lg shrink-0 items-center justify-center rounded-control transition-colors outline-none focus-visible:ring-2 [&_svg]:size-icon-sm",
           @kind == :error && "text-danger hover:bg-danger/10 focus-visible:ring-danger/30",

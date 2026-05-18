@@ -24,7 +24,7 @@ defmodule WatchClubWeb.ErrorHTML do
 
     ~H"""
     <!DOCTYPE html>
-    <html lang="en" class="theme-wc dark">
+    <html lang={Gettext.get_locale(WatchClubWeb.Gettext)} class="theme-wc dark">
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -44,25 +44,16 @@ defmodule WatchClubWeb.ErrorHTML do
               </p>
             </div>
             <div class="flex flex-wrap justify-center gap-related">
-              <a
-                :if={@retry?}
-                href=""
-                class="inline-flex h-control-md items-center justify-center rounded-control border border-transparent bg-primary px-group text-sm font-semibold text-on-primary shadow-glow transition-colors duration-150 hover:bg-primary-hover active:bg-primary-active"
-              >
+              <.button :if={@retry?} href={Phoenix.Controller.current_path(@conn)} emphasis>
                 {dgettext("default", "Try again")}
-              </a>
-              <a
+              </.button>
+              <.button
                 href={~p"/"}
-                class={[
-                  "inline-flex h-control-md items-center justify-center rounded-control border px-group text-sm font-semibold transition-colors duration-150",
-                  @retry? &&
-                    "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active",
-                  !@retry? &&
-                    "border-transparent bg-primary text-on-primary shadow-glow hover:bg-primary-hover active:bg-primary-active"
-                ]}
+                variant={if @retry?, do: "secondary", else: "primary"}
+                emphasis={!@retry?}
               >
                 {dgettext("default", "Go home")}
-              </a>
+              </.button>
             </div>
           </section>
         </main>

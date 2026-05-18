@@ -25,7 +25,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         <.tmdb_poster
           size="w500"
           path={@movie.details.poster_path}
-          class="mb-group w-46 rounded-control shadow-lg"
+          class="mb-group w-46 rounded-control shadow-card"
         />
         <h1 class="text-xl font-semibold xl:text-3xl">
           {@movie.title}

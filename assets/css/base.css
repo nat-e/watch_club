@@ -62,6 +62,8 @@
 	--color-accent-active: var(--wc-color-accent-active);
 	--color-on-accent: var(--wc-color-on-accent);
 	--color-danger: var(--wc-color-danger);
+	--color-danger-hover: var(--wc-color-danger-hover);
+	--color-danger-active: var(--wc-color-danger-active);
 	--color-danger-bg: var(--wc-color-danger-bg);
 	--color-danger-border: var(--wc-color-danger-border);
 	--color-on-danger: var(--wc-color-on-danger);

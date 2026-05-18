@@ -53,7 +53,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
       class={[
         "grow basis-0 !rounded-none !border-0 text-center",
         @selected? &&
-          "pointer-events-none !bg-surface-raised !text-text shadow-xs hover:!bg-surface-raised active:!bg-surface-raised",
+          "pointer-events-none !bg-surface-selected !text-text hover:!bg-surface-selected active:!bg-surface-selected",
         @item[:class]
       ]}
       {@item_attrs}

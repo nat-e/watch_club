@@ -18,6 +18,13 @@ defmodule WatchClubWeb.Plugs.BrowserLocale do
 
   def call(conn, _default) do
     locale = conn |> get_req_header("accept-language") |> List.first() |> negotiate()
+    language = locale |> Atom.to_string() |> String.split("_") |> List.first()
+
+    # Controller/error-page rendering happens in the Plug request process, so locale
+    # from `WatchClubWeb.Hooks.Locale` will not be available.
+    # This is necessary to set the locale for error pages and other non-LiveView pages
+    Gettext.put_locale(WatchClubWeb.Gettext, language)
+
     conn |> put_session(:browser_locale, locale)
   end
 

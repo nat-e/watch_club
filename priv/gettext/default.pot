@@ -21,6 +21,8 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+#: lib/watch_club_web/components/ui/flash.ex:112
+#: lib/watch_club_web/components/ui/modal.ex:99
 #: lib/watch_club_web/live/clubs/members_page.ex:365
 #, elixir-autogen, elixir-format
 msgid "Close"
@@ -44,41 +46,46 @@ msgid "Save"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/navbar/search_results.ex:43
-#: lib/watch_club_web/controllers/error_html.ex:52
+#: lib/watch_club_web/controllers/error_html.ex:48
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:179
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:180
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:89
+#: lib/watch_club_web/controllers/error_html.ex:80
 #, elixir-autogen, elixir-format
 msgid "Could not load page"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:64
+#: lib/watch_club_web/controllers/error_html.ex:55
 #, elixir-autogen, elixir-format
 msgid "Go home"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:86
-#: lib/watch_club_web/controllers/error_html.ex:87
-#: lib/watch_club_web/controllers/error_html.ex:88
+#: lib/watch_club_web/controllers/error_html.ex:77
+#: lib/watch_club_web/controllers/error_html.ex:78
+#: lib/watch_club_web/controllers/error_html.ex:79
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:113
+#: lib/watch_club_web/controllers/error_html.ex:104
 #, elixir-autogen, elixir-format
 msgid "Something went wrong while loading this page."
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:93
-#: lib/watch_club_web/controllers/error_html.ex:99
-#: lib/watch_club_web/controllers/error_html.ex:106
+#: lib/watch_club_web/controllers/error_html.ex:84
+#: lib/watch_club_web/controllers/error_html.ex:90
+#: lib/watch_club_web/controllers/error_html.ex:97
 #, elixir-autogen, elixir-format
 msgid "The page you are looking for does not exist or you do not have access to it."
+msgstr ""
+
+#: lib/watch_club_web/components/ui/flash.ex:39
+#, elixir-autogen, elixir-format
+msgid "Notifications"
 msgstr ""

@@ -58,25 +58,28 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
 
   defp library_list_item(assigns) do
     ~H"""
-    <button
+    <.button
       type="button"
+      variant="ghost"
+      size="icon-sm"
       data-sortable-handle
-      class="inline-flex size-control-sm shrink-0 cursor-grab items-center justify-center rounded-control text-text-muted hover:bg-surface-hover hover:text-text active:cursor-grabbing"
+      class="cursor-grab active:cursor-grabbing"
       aria-label={dgettext("clubs", "Drag to reorder")}
     >
       <Lucideicons.grip_vertical class="size-icon" />
-    </button>
+    </.button>
 
-    <button
+    <.button
       type="button"
-      class="inline-grid size-control-lg shrink-0 place-items-center rounded-control border border-border bg-surface-inset text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40"
+      variant="secondary"
+      size="icon"
       phx-click="open_icon_picker"
       phx-target={@target}
       phx-value-library_id={@library.id}
       aria-label={dgettext("clubs", "Change %{library_name} icon", library_name: @library.name)}
     >
       <.library_icon library={@library} class="size-icon-lg" />
-    </button>
+    </.button>
 
     <div class="grid min-w-0 gap-tight">
       <h3 class="truncate text-base font-semibold">{@library.name}</h3>

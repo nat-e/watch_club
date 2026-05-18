@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
   """
 
   use Phoenix.Component
+  use Gettext, backend: WatchClubWeb.Gettext
 
   attr :id, :string, required: true
   attr :name, :string, required: true
@@ -72,7 +73,14 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       />
       <span
         :if={@overflow_count > 0}
-        aria-label={"#{@overflow_count} more"}
+        aria-label={
+          dngettext(
+            "default",
+            "%{count} more avatar",
+            "%{count} more avatars",
+            @overflow_count
+          )
+        }
         class={[
           "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-gray-500 font-bold text-white select-none",
           @avatar_size == "xs" && "size-5 text-[0.625rem] leading-none",

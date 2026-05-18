@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     default: "md"
 
   attr :type, :string, values: ~w(button submit reset), default: "button"
+  attr :emphasis, :boolean, default: false, doc: "Adds rare brand glow emphasis."
 
   attr :rest, :global,
     include:
@@ -42,7 +43,8 @@ defmodule WatchClubWeb.Components.UI.Button do
       class={[
         "inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
-          "bg-primary text-on-primary shadow-glow hover:bg-primary-hover active:bg-primary-active",
+          "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
+        @variant == "primary" && @emphasis && "shadow-glow",
         @variant == "accent" &&
           "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active",
         @variant == "secondary" &&
@@ -50,7 +52,7 @@ defmodule WatchClubWeb.Components.UI.Button do
         @variant == "ghost" &&
           "bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
         @variant == "danger" &&
-          "bg-danger text-on-danger hover:bg-danger/90 active:bg-danger/80 focus-visible:border-danger-border focus-visible:ring-danger/30",
+          "bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active focus-visible:border-danger-border focus-visible:ring-danger-border/40",
         @size == "sm" && "h-control-sm gap-tight px-group text-xs",
         @size == "md" && "h-control-md gap-related px-group text-sm",
         @size == "lg" && "h-control-lg gap-related px-cluster text-base",
@@ -86,7 +88,8 @@ defmodule WatchClubWeb.Components.UI.Button do
       class={[
         "inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40 disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
-          "bg-primary text-on-primary shadow-glow hover:bg-primary-hover active:bg-primary-active",
+          "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
+        @variant == "primary" && @emphasis && "shadow-glow",
         @variant == "accent" &&
           "bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active",
         @variant == "secondary" &&
@@ -94,7 +97,7 @@ defmodule WatchClubWeb.Components.UI.Button do
         @variant == "ghost" &&
           "bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
         @variant == "danger" &&
-          "bg-danger text-on-danger hover:bg-danger/90 active:bg-danger/80 focus-visible:border-danger-border focus-visible:ring-danger/30",
+          "bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active focus-visible:border-danger-border focus-visible:ring-danger-border/40",
         @size == "sm" && "h-control-sm gap-tight px-group text-xs",
         @size == "md" && "h-control-md gap-related px-group text-sm",
         @size == "lg" && "h-control-lg gap-related px-cluster text-base",
