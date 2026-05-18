@@ -74,10 +74,15 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal do
         </.alert>
 
         <:action>
-          <.button type="button" variant="secondary" data-modal-close>
+          <.button
+            id="cancel-create-or-edit-library-button"
+            type="button"
+            variant="secondary"
+            data-modal-close
+          >
             {dgettext("default", "Cancel")}
           </.button>
-          <.button type="submit">
+          <.button id={"#{@mode}-library-submit-button"} type="submit">
             {@submit_label}
           </.button>
         </:action>
@@ -102,9 +107,11 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal do
         <div class="grid grid-cols-1 gap-related sm:grid-cols-3">
           <label
             :for={content_type <- @content_types}
+            for={"#{@form[:accepted_content_types].id}-#{content_type}"}
             class="group/checkbox-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected"
           >
             <input
+              id={"#{@form[:accepted_content_types].id}-#{content_type}"}
               type="checkbox"
               name={@form[:accepted_content_types].name <> "[]"}
               value={to_string(content_type)}

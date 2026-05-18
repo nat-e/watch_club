@@ -82,9 +82,16 @@ defmodule WatchClubWeb.Components.UI.Select do
       class={["relative inline-block", @class]}
       {@rest}
     >
-      <input type="hidden" name={@name} value={input_value(@value)} data-slot="select-input" />
+      <input
+        id={"#{@id}-input"}
+        type="hidden"
+        name={@name}
+        value={input_value(@value)}
+        data-slot="select-input"
+      />
 
       <button
+        id={"#{@id}-trigger"}
         type="button"
         data-slot="select-trigger"
         data-size={@size}
@@ -97,7 +104,7 @@ defmodule WatchClubWeb.Components.UI.Select do
         class={[
           "flex w-full min-w-0 items-center justify-between gap-related px-group text-left text-text transition-[background-color,border-color,box-shadow,color] outline-none",
           @trigger_variant == "default" &&
-            "rounded-control border border-border bg-surface-inset shadow-xs hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+            "rounded-control border border-border bg-surface-inset hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
           @trigger_variant == "attached" &&
             "border-r border-border-subtle bg-surface-inset hover:bg-surface-hover focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:border-border-subtle",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
@@ -504,7 +511,7 @@ defmodule WatchClubWeb.Components.UI.Select do
       aria-disabled={@disabled || nil}
       tabindex="-1"
       class={[
-        "group/select-item relative flex h-9 w-full cursor-default items-center gap-related overflow-hidden rounded-control pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
+        "group/select-item relative flex h-control-sm w-full cursor-default items-center gap-related overflow-hidden rounded-control pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
         "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
         "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",

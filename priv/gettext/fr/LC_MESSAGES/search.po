@@ -13,52 +13,52 @@ msgstr ""
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:82
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:66
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:169
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:69
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:182
 #, elixir-autogen, elixir-format
 msgid "Everywhere"
 msgstr "Partout"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:163
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:227
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:169
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:241
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type} in %{club_name}"
 msgstr "Rechercher %{content_type} dans %{club_name}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:151
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:215
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:157
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:229
 #, elixir-autogen, elixir-format
 msgid "Search all %{content_type}"
 msgstr "Rechercher tous les %{content_type}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:70
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:76
 #, elixir-autogen, elixir-format
 msgid "See all results"
 msgstr "Voir tous les résultats"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:22
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:27
 #, elixir-autogen, elixir-format
 msgid "Start typing to search"
 msgstr "Commencez à taper pour rechercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:35
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:40
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr "Une erreur est survenue lors de la recherche de votre contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:56
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:62
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for your search"
 msgstr "Nous n'avons trouvé aucun contenu pour votre recherche"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:129
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:130
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Rechercher"

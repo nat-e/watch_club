@@ -112,12 +112,12 @@ defmodule WatchClubWeb.Storybook.Table do
               <.table_cell class="text-right">
                 <.dropdown_menu id="table-story-actions">
                   <:trigger>
-                    <.button size="icon" variant="ghost" aria-label="Member actions">
+                    <.button id="table-story-member-actions-trigger" size="icon" variant="ghost" aria-label="Member actions">
                       <Lucideicons.ellipsis_vertical />
                     </.button>
                   </:trigger>
-                  <.dropdown_menu_item><Lucideicons.user />View profile</.dropdown_menu_item>
-                  <.dropdown_menu_item variant="destructive"><Lucideicons.trash_2 />Remove member</.dropdown_menu_item>
+                  <.dropdown_menu_item id="table-story-view-profile-item"><Lucideicons.user />View profile</.dropdown_menu_item>
+                  <.dropdown_menu_item id="table-story-remove-member-item" variant="destructive"><Lucideicons.trash_2 />Remove member</.dropdown_menu_item>
                 </.dropdown_menu>
               </.table_cell>
             </.table_row>

@@ -33,6 +33,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
     >
       <.tmdb_poster size="w342" path={@content.image_path} class="w-full">
         <button
+          id={"content-card-reveal-#{ContentView.unique_id(@content)}"}
           type="button"
           class="absolute inset-0 z-20 md:hidden group-data-[state=revealed]/content-card:hidden"
           aria-label={dgettext("clubs", "Reveal details for %{title}", title: @content.title)}
@@ -51,6 +52,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             <.dropdown_menu id={"content-card-menu-#{ContentView.unique_id(@content)}"}>
               <:trigger>
                 <.button
+                  id={"content-card-actions-trigger-#{ContentView.unique_id(@content)}"}
                   variant="secondary"
                   size="icon"
                   aria-label={dgettext("clubs", "Content actions")}
@@ -58,7 +60,10 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
                   <Lucideicons.ellipsis_vertical />
                 </.button>
               </:trigger>
-              <.dropdown_menu_item disabled>
+              <.dropdown_menu_item
+                id={"content-card-actions-coming-soon-#{ContentView.unique_id(@content)}"}
+                disabled
+              >
                 <Lucideicons.circle_ellipsis />
                 {dgettext("clubs", "Actions coming soon")}
               </.dropdown_menu_item>
@@ -66,6 +71,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </div>
 
           <.link
+            id={"content-card-details-link-#{ContentView.unique_id(@content)}"}
             navigate={ContentView.details_url(@content)}
             class="min-h-0 flex-1 overflow-hidden text-left"
           >
@@ -86,7 +92,12 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </.link>
 
           <div class="mb-tight flex w-full flex-row gap-tight px-tight">
-            <.button type="button" variant="primary" class="w-full">
+            <.button
+              id={"content-card-play-button-#{ContentView.unique_id(@content)}"}
+              type="button"
+              variant="primary"
+              class="w-full"
+            >
               <Lucideicons.play />
               {dgettext("clubs", "Play")}
             </.button>

@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
             type="text"
           />
           <:action class="sm:justify-start">
-            <.button type="submit" class="w-fit">
+            <.button id="club-settings-submit-button" type="submit" class="w-fit">
               {dgettext("clubs", "Edit Club")}
             </.button>
           </:action>

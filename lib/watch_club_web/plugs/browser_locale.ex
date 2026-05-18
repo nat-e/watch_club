@@ -17,15 +17,21 @@ defmodule WatchClubWeb.Plugs.BrowserLocale do
   end
 
   def call(conn, _default) do
-    locale = conn |> get_req_header("accept-language") |> List.first() |> negotiate()
-    language = locale |> Atom.to_string() |> String.split("_") |> List.first()
+    browser_locale = conn |> get_req_header("accept-language") |> List.first() |> negotiate()
 
-    # Controller/error-page rendering happens in the Plug request process, so locale
-    # from `WatchClubWeb.Hooks.Locale` will not be available.
-    # This is necessary to set the locale for error pages and other non-LiveView pages
+    # Controller/error-page rendering happens in the Plug request process, while
+    # LiveViews run in their own processes and set the same effective locale in
+    # `WatchClubWeb.Hooks.Locale`.
+    locale =
+      case conn.assigns.current_user do
+        nil -> browser_locale
+        user -> user.settings.locale
+      end
+
+    language = locale |> Atom.to_string() |> String.split("_") |> List.first()
     Gettext.put_locale(WatchClubWeb.Gettext, language)
 
-    conn |> put_session(:browser_locale, locale)
+    conn |> put_session(:browser_locale, browser_locale)
   end
 
   defp negotiate(nil), do: @default_locale

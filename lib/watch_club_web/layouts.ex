@@ -26,8 +26,6 @@ defmodule WatchClubWeb.Layouts do
   slot :inner_block, required: true
 
   slot :backdrop
-
-  slot :navbar
   def app(assigns)
 
   @doc """

@@ -9,31 +9,33 @@ defmodule WatchClubWeb.Storybook.Button do
     [
       %Variation{
         id: :default,
+        attributes: %{id: "button-default"},
         slots: ["Save changes"]
       },
       %VariationGroup{
         id: :variants,
         description: "Variants",
         variations: [
-          %Variation{id: :primary, attributes: %{variant: "primary"}, slots: ["Primary"]},
-          %Variation{id: :accent, attributes: %{variant: "accent"}, slots: ["Accent"]},
-          %Variation{id: :secondary, attributes: %{variant: "secondary"}, slots: ["Secondary"]},
-          %Variation{id: :ghost, attributes: %{variant: "ghost"}, slots: ["Ghost"]},
-          %Variation{id: :danger, attributes: %{variant: "danger"}, slots: ["Delete"]}
+          %Variation{id: :primary, attributes: %{id: "button-primary", variant: "primary"}, slots: ["Primary"]},
+          %Variation{id: :accent, attributes: %{id: "button-accent", variant: "accent"}, slots: ["Accent"]},
+          %Variation{id: :secondary, attributes: %{id: "button-secondary", variant: "secondary"}, slots: ["Secondary"]},
+          %Variation{id: :ghost, attributes: %{id: "button-ghost", variant: "ghost"}, slots: ["Ghost"]},
+          %Variation{id: :danger, attributes: %{id: "button-danger", variant: "danger"}, slots: ["Delete"]}
         ]
       },
       %VariationGroup{
         id: :sizes,
         description: "Sizes",
         variations: [
-          %Variation{id: :sm, attributes: %{size: "sm"}, slots: ["Small"]},
-          %Variation{id: :md, attributes: %{size: "md"}, slots: ["Medium"]},
-          %Variation{id: :lg, attributes: %{size: "lg"}, slots: ["Large"]}
+          %Variation{id: :sm, attributes: %{id: "button-small", size: "sm"}, slots: ["Small"]},
+          %Variation{id: :md, attributes: %{id: "button-medium", size: "md"}, slots: ["Medium"]},
+          %Variation{id: :lg, attributes: %{id: "button-large", size: "lg"}, slots: ["Large"]}
         ]
       },
       %Variation{
         id: :with_icon,
         description: "With leading icon",
+        attributes: %{id: "button-with-icon"},
         slots: [
           ~s(<:icon><span aria-hidden="true">+</span></:icon>),
           "New recommendation"
@@ -45,12 +47,12 @@ defmodule WatchClubWeb.Storybook.Button do
         variations: [
           %Variation{
             id: :icon,
-            attributes: %{:size => "icon", "aria-label" => "Add recommendation"},
+            attributes: %{id: "button-icon", :size => "icon", "aria-label" => "Add recommendation"},
             slots: [~s(<:icon><span aria-hidden="true">+</span></:icon>)]
           },
           %Variation{
             id: :icon_sm,
-            attributes: %{:size => "icon-sm", "aria-label" => "Add recommendation"},
+            attributes: %{id: "button-icon-sm", :size => "icon-sm", "aria-label" => "Add recommendation"},
             slots: [~s(<:icon><span aria-hidden="true">+</span></:icon>)]
           }
         ]
@@ -58,13 +60,13 @@ defmodule WatchClubWeb.Storybook.Button do
       %Variation{
         id: :disabled,
         description: "Disabled",
-        attributes: %{disabled: true},
+        attributes: %{id: "button-disabled", disabled: true},
         slots: ["Unavailable"]
       },
       %Variation{
         id: :link,
         description: "Rendered as a link when href/navigate/patch is passed",
-        attributes: %{href: "#", variant: "secondary"},
+        attributes: %{id: "button-link", href: "#", variant: "secondary"},
         slots: ["Open club"]
       }
     ]

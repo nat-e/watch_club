@@ -12,6 +12,11 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   alias WatchClub.Contents.ContentView
 
+  attr :form, :any, required: true
+  attr :id_prefix, :string, required: true
+  attr :myself, :any, required: true
+  attr :search_results, :any, required: true
+
   def search_results(%{search_results: nil, form: %{errors: []}} = assigns) do
     ~H"""
     <.empty border={false} size="sm">
@@ -35,6 +40,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
         {dgettext("search", "There was an error searching for your content")}
       </:description>
       <.button
+        id={"#{@id_prefix}-retry-button"}
         variant="secondary"
         size="sm"
         phx-target={@myself}
@@ -61,26 +67,35 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   def search_results(assigns) do
     ~H"""
-    <.button
-      class="shrink-0 flex justify-center p-related items-center w-full border-b-border rounded-none"
+    <button
+      id={"#{@id_prefix}-see-all-results-button"}
       type="submit"
-      variant="ghost"
+      class="flex w-full shrink-0 items-center justify-center gap-related border-b border-border-subtle p-related text-sm font-semibold text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:bg-surface-hover focus-visible:text-text focus-visible:outline-none"
     >
       <span>
         {dgettext("search", "See all results")}
         <.kbd>Enter ⏎</.kbd>
       </span>
-      <Lucideicons.chevron_right />
-    </.button>
-    <.search_preview_card :for={result <- @search_results} content={result} />
+      <Lucideicons.chevron_right class="size-icon" />
+    </button>
+    <.search_preview_card
+      :for={result <- @search_results}
+      id_prefix={@id_prefix}
+      content={result}
+    />
     """
   end
 
   attr :content, ContentView, required: true
+  attr :id_prefix, :string, required: true
 
   defp search_preview_card(assigns) do
     ~H"""
-    <.link class="flex gap-related hover:bg-surface-hover p-related" navigate={details_url(@content)}>
+    <.link
+      id={"#{@id_prefix}-preview-link-#{ContentView.unique_id(@content)}"}
+      class="flex gap-related hover:bg-surface-hover p-related"
+      navigate={details_url(@content)}
+    >
       <.tmdb_poster
         path={@content.image_path}
         size="w154"

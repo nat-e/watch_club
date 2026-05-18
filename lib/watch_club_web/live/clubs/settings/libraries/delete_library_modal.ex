@@ -21,10 +21,11 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.DeleteLibraryModal do
         )}
       </p>
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>
+        <.button id="cancel-delete-library-button" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
         </.button>
         <.button
+          id="confirm-delete-library-button"
           variant="danger"
           phx-click="confirm_delete_library"
           phx-target={@target}

@@ -12,6 +12,7 @@ defmodule WatchClubWeb.Components.UI.Form do
   import WatchClubWeb.Components.UI.Input
   import WatchClubWeb.Components.UI.Label
 
+  attr :id, :string, required: true
   attr :for, :any, required: true
   attr :class, :any, default: nil
 
@@ -35,6 +36,7 @@ defmodule WatchClubWeb.Components.UI.Form do
   def form(assigns) do
     ~H"""
     <Phoenix.Component.form
+      id={@id}
       for={@for}
       class={[@layout == "stack" && "grid gap-cluster", @class]}
       {@rest}

@@ -22,7 +22,7 @@ msgid "Confirm password"
 msgstr ""
 
 #: lib/watch_club_web/components/accounts/registration_form.ex:41
-#: lib/watch_club_web/live/invitations/invitation_page.ex:29
+#: lib/watch_club_web/live/invitations/invitation_page.ex:33
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr ""
@@ -39,7 +39,7 @@ msgid "Password"
 msgstr ""
 
 #: lib/watch_club_web/components/accounts/sign_in_form.ex:35
-#: lib/watch_club_web/live/invitations/invitation_page.ex:35
+#: lib/watch_club_web/live/invitations/invitation_page.ex:40
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr ""

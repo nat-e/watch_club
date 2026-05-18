@@ -2,6 +2,7 @@
 .theme-wc {
   /* Source tokens */
   --wc-color-canvas: #11101a;
+  --wc-color-scrim: rgb(17 16 26 / 70%);
   --wc-color-surface: #1b1728;
   --wc-color-surface-raised: #27213a;
   --wc-color-surface-inset: #15121f;
@@ -19,6 +20,7 @@
   --wc-color-border-subtle: #342b49;
   --wc-color-border-strong: #6f5a92;
   --wc-color-border-focus: #a78bfa;
+  --wc-color-focus-ring: rgb(167 139 250 / 40%);
 
   --wc-color-primary: #ff79c6;
   --wc-color-primary-hover: #ff92d0;

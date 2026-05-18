@@ -35,7 +35,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
   def checkbox(assigns) do
     if is_nil(Map.get(assigns, :id)) do
       raise ArgumentError, """
-      <.checkbox> requires an `id` when no `field` is provided.
+      Checkbox requires an `id` when no `field` is provided.
       Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
       """
     end
@@ -44,9 +44,9 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     <span
       data-slot="checkbox"
       class={[
-        "relative inline-grid size-4 shrink-0 place-items-center rounded-[4px] border border-border bg-surface-inset text-transparent shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
+        "relative inline-grid size-4 shrink-0 place-items-center rounded-control border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
         "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
-        "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-border-focus/40",
+        "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring",
         "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring",
         "has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50",
         @class

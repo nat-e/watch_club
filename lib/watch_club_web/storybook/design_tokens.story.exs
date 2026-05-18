@@ -329,6 +329,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
       style="border-color: var(--wc-color-border-subtle); background: var(--wc-color-surface)"
     >
       <button
+        id={"token-preview-fill-#{String.replace(@token.name, ".", "-")}"}
         class="w-full rounded-[var(--wc-radius-control)] px-4 py-3 text-sm font-semibold"
         style={"background: var(#{token_var(@token)}); color: #{Map.get(@token, :on, "var(--wc-color-on-primary)")}"}
       >
@@ -457,7 +458,13 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             </p>
 
             <div class="mt-6 grid gap-5 lg:grid-cols-2">
-              <.field label="Club name" value="Kflix" helper="Visible to invited members." focused />
+              <.field
+                id="design-token-club-name-input"
+                label="Club name"
+                value="Kflix"
+                helper="Visible to invited members."
+                focused
+              />
               <.select_field
                 label="Default visibility"
                 value="Members only"
@@ -500,6 +507,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
                 </p>
               </div>
               <button
+                id="design-token-warning-review-archive-button"
                 class="rounded-[var(--wc-radius-control)] border px-4 py-2 text-sm font-semibold"
                 style="border-color: var(--wc-color-warning-border); color: var(--wc-color-warning); background: var(--wc-color-surface)"
               >
@@ -532,6 +540,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
 
   defp nav_item_style(false), do: "color: var(--wc-color-text-muted)"
 
+  attr :id, :string, required: true
   attr :label, :string, required: true
   attr :value, :string, required: true
   attr :helper, :string, required: true
@@ -539,9 +548,10 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
 
   defp field(assigns) do
     ~H"""
-    <label class="grid gap-2">
+    <label for={@id} class="grid gap-2">
       <span class="text-sm font-medium" style="color: var(--wc-color-text)">{@label}</span>
       <input
+        id={@id}
         value={@value}
         class="h-[var(--wc-size-control-md)] rounded-[var(--wc-radius-control)] border px-3 text-sm outline-none"
         style={field_style(@focused)}
@@ -682,8 +692,14 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Sign in to continue to your clubs.
           </p>
           <div class="mt-8 grid gap-5">
-            <.field label="Email" value="nate@kflix.club" helper="" />
-            <.field label="Password" value="••••••••••••" helper="" focused />
+            <.field id="design-token-email-input" label="Email" value="nate@kflix.club" helper="" />
+            <.field
+              id="design-token-password-input"
+              label="Password"
+              value="••••••••••••"
+              helper=""
+              focused
+            />
             <div
               class="rounded-[var(--wc-radius-card)] border p-3 text-sm"
               style="background: var(--wc-color-info-bg); border-color: var(--wc-color-info-border); color: var(--wc-color-info)"
@@ -691,6 +707,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
               New device sign-ins require email confirmation for club safety.
             </div>
             <button
+              id="design-token-sign-in-button"
               class="h-[var(--wc-size-control-lg)] rounded-[var(--wc-radius-control)] text-sm font-semibold shadow-[var(--wc-shadow-glow)]"
               style="background: var(--wc-color-primary); color: var(--wc-color-on-primary)"
             >
@@ -740,6 +757,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Include media I’ve watched
           </label>
           <button
+            id="design-token-filter-button"
             class="h-[var(--wc-size-control-sm)] rounded-[var(--wc-radius-control)] border px-3 text-sm"
             style="background: var(--wc-color-surface-raised); border-color: var(--wc-color-border); color: var(--wc-color-text)"
           >
@@ -778,6 +796,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           </p>
         </div>
         <button
+          id={"recommendation-card-actions-#{String.replace(@item.title, " ", "-")}"}
           class="grid size-8 shrink-0 place-items-center rounded-lg border text-lg leading-none"
           style="background: var(--wc-color-surface-inset); border-color: var(--wc-color-border-subtle); color: var(--wc-color-text-muted)"
         >

@@ -107,6 +107,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
       </div>
 
       <button
+        id={"#{@id}-close"}
         type="button"
         data-slot="flash-toast-close"
         aria-label={dgettext("default", "Close")}
@@ -114,7 +115,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
           "-mt-0.5 -mr-1 inline-flex size-icon-lg shrink-0 items-center justify-center rounded-control transition-colors outline-none focus-visible:ring-2 [&_svg]:size-icon-sm",
           @kind == :error && "text-danger hover:bg-danger-bg focus-visible:ring-danger-ring",
           @kind != :error &&
-            "text-text-muted hover:bg-surface-hover hover:text-text focus-visible:ring-border-focus/40"
+            "text-text-muted hover:bg-surface-hover hover:text-text focus-visible:ring-focus-ring"
         ]}
         phx-click={
           JS.push("lv:clear-flash", value: %{key: @kind})

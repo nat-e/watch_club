@@ -170,6 +170,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
     """
   end
 
+  attr :id, :string, required: true
   attr :class, :any, default: nil
   attr :variant, :string, values: ~w(default destructive), default: "default"
   attr :disabled, :boolean, default: false
@@ -182,6 +183,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
       when is_map_key(rest, :href) or is_map_key(rest, :navigate) or is_map_key(rest, :patch) do
     ~H"""
     <.link
+      id={@id}
       role="menuitem"
       data-slot="dropdown-menu-item"
       data-variant={@variant}
@@ -197,6 +199,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   def dropdown_menu_item(assigns) do
     ~H"""
     <button
+      id={@id}
       type="button"
       role="menuitem"
       data-slot="dropdown-menu-item"
@@ -227,7 +230,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
 
   defp item_class(variant, disabled, class) do
     [
-      "flex min-h-9 w-full items-center gap-related rounded-control px-related py-related text-left text-sm outline-none transition-colors select-none [&_svg]:pointer-events-none [&_svg]:size-icon-sm [&_svg]:shrink-0",
+      "flex min-h-control-sm w-full items-center gap-related rounded-control px-related py-related text-left text-sm outline-none transition-colors select-none [&_svg]:pointer-events-none [&_svg]:size-icon-sm [&_svg]:shrink-0",
       disabled && "pointer-events-none text-text-disabled opacity-50",
       !disabled && variant == "default" &&
         "text-text hover:bg-surface-hover focus-visible:bg-surface-hover",

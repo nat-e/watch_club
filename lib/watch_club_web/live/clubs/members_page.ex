@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         }
       >
         <:action>
-          <.button phx-click="open_create_invitation_modal">
+          <.button id="open-create-invitation-modal-button" phx-click="open_create_invitation_modal">
             <Lucideicons.plus />
             {dgettext("clubs", "Invite member")}
           </.button>
@@ -109,12 +109,13 @@ defmodule WatchClubWeb.Clubs.MembersPage do
           id={"member-actions-#{@membership.id}"}
         >
           <:trigger>
-            <.button size="icon" variant="ghost">
+            <.button id={"member-actions-trigger-#{@membership.id}"} size="icon" variant="ghost">
               <Lucideicons.ellipsis_vertical />
             </.button>
           </:trigger>
           <.dropdown_menu_item
             :if={@membership.user_id != @current_user.id}
+            id={"remove-member-menu-item-#{@membership.id}"}
             variant="destructive"
             phx-click="open_remove_member_modal"
             phx-value-membership_id={@membership.id}
@@ -145,17 +146,19 @@ defmodule WatchClubWeb.Clubs.MembersPage do
       <.table_cell class="text-right">
         <.dropdown_menu id={"invitation-actions-#{@invitation.id}"}>
           <:trigger>
-            <.button size="icon" variant="ghost">
+            <.button id={"invitation-actions-trigger-#{@invitation.id}"} size="icon" variant="ghost">
               <Lucideicons.ellipsis_vertical />
             </.button>
           </:trigger>
           <.dropdown_menu_item
+            id={"view-invitation-menu-item-#{@invitation.id}"}
             phx-click="open_view_invitation_modal"
             phx-value-invitation_id={@invitation.id}
           >
             <Lucideicons.user />{dgettext("clubs", "Share Invitation")}
           </.dropdown_menu_item>
           <.dropdown_menu_item
+            id={"destroy-invitation-menu-item-#{@invitation.id}"}
             variant="destructive"
             phx-click="open_destroy_invitation_modal"
             phx-value-invitation_id={@invitation.id}
@@ -236,11 +239,11 @@ defmodule WatchClubWeb.Clubs.MembersPage do
       </p>
       <p>{dgettext("clubs", "They won't be able to join back without being re-invited.")}</p>
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>
+        <.button id="cancel-remove-member-button" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
         </.button>
 
-        <.button variant="danger" phx-click="confirm_remove_member">
+        <.button id="confirm-remove-member-button" variant="danger" phx-click="confirm_remove_member">
           {dgettext("clubs", "Remove")}
         </.button>
       </:footer>
@@ -259,11 +262,20 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         {dgettext("clubs", "The invitation link will not be active anymore.")}
       </p>
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>
+        <.button
+          id="cancel-destroy-invitation-button"
+          type="button"
+          variant="secondary"
+          data-modal-close
+        >
           {dgettext("default", "Cancel")}
         </.button>
 
-        <.button variant="danger" phx-click="confirm_destroy_invitation">
+        <.button
+          id="confirm-destroy-invitation-button"
+          variant="danger"
+          phx-click="confirm_destroy_invitation"
+        >
           {dgettext("default", "Delete")}
         </.button>
       </:footer>
@@ -312,7 +324,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
           </:control>
         </.field>
         <:action>
-          <.button type="submit" class="w-full">
+          <.button id="create-invitation-submit-button" type="submit" class="w-full">
             {dgettext("clubs", "Create invitation")}
           </.button>
         </:action>
@@ -351,6 +363,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
           <span id="invitation_link">{@invitation_link}</span>
           <:action>
             <.button
+              id="copy-invitation-link-button"
               variant="accent"
               phx-click={
                 JS.dispatch("wc:copy_to_clipboard", to: "#invitation_link")
@@ -361,7 +374,13 @@ defmodule WatchClubWeb.Clubs.MembersPage do
             </.button>
           </:action>
         </.alert>
-        <.button type="button" variant="secondary" class="w-full" data-modal-close>
+        <.button
+          id="close-view-invitation-modal-button"
+          type="button"
+          variant="secondary"
+          class="w-full"
+          data-modal-close
+        >
           {dgettext("default", "Close")}
         </.button>
       </.stack>

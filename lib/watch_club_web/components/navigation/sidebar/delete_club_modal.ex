@@ -30,11 +30,12 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar.DeleteClubModal do
         )}
       </p>
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>
+        <.button id="cancel-delete-club-button" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
         </.button>
 
         <.button
+          id="confirm-delete-club-button"
           variant="danger"
           phx-click="delete_club"
           phx-value-club_id={@club.id}

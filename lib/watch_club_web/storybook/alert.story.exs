@@ -70,7 +70,7 @@ defmodule WatchClubWeb.Storybook.Alert do
         slots: [
           "<:title>Dark mode is available</:title>",
           "Enable it under your profile settings.",
-          ~s|<:action><.button size="sm">Enable</.button></:action>|
+          ~s|<:action><.button id="alert-story-enable-button" size="sm">Enable</.button></:action>|
         ]
       }
     ]

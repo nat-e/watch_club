@@ -120,7 +120,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
             <.badge variant="secondary">Drama</.badge>
             <.badge variant="secondary">Comedy</.badge>
             <.badge variant="secondary">Recently added</.badge>
-            <.button size="sm" variant="secondary">Edit filters</.button>
+            <.button id="spacing-inline-edit-filters-button" size="sm" variant="secondary">
+              Edit filters
+            </.button>
           </.cluster>
         </.primitive_card>
 
@@ -618,7 +620,10 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp form_mock(assigns) do
     ~H"""
-    <form class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+    <form
+      id="spacing-form-mock"
+      class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card"
+    >
       <div class="grid gap-related">
         <h3 class="text-xl font-semibold">Create library</h3>
         <p class="text-sm leading-6 text-text-muted">
@@ -626,7 +631,11 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </p>
       </div>
 
-      <.field_mock label="Library name" hint="Use a name members will recognize." />
+      <.field_mock
+        id="spacing-layout-library-name-input"
+        label="Library name"
+        hint="Use a name members will recognize."
+      />
       <.field_mock
         label="Accepted content types"
         control="checkbox"
@@ -634,13 +643,16 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       />
 
       <div class="flex flex-col-reverse gap-related border-t border-border-subtle pt-group sm:flex-row sm:justify-end">
-        <.button type="button" variant="secondary">Cancel</.button>
-        <.button type="button">Create library</.button>
+        <.button id="spacing-form-mock-cancel-button" type="button" variant="secondary">
+          Cancel
+        </.button>
+        <.button id="spacing-form-mock-create-library-button" type="button">Create library</.button>
       </div>
     </form>
     """
   end
 
+  attr :id, :string, default: nil
   attr :label, :string, required: true
   attr :hint, :string, default: nil
   attr :error, :string, default: nil
@@ -649,10 +661,11 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   defp field_mock(assigns) do
     ~H"""
     <div class="grid gap-related">
-      <label class="text-sm font-medium leading-none text-text">{@label}</label>
+      <label for={@id} class="text-sm font-medium leading-none text-text">{@label}</label>
 
       <input
         :if={@control == "input"}
+        id={@id}
         class="h-control-md rounded-control border border-border bg-surface-inset px-3 py-2 text-sm text-text outline-none"
         value="Weekend watchlist"
         readonly
@@ -894,7 +907,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     <.cluster space="related">
       <.badge>Drama</.badge>
       <.badge>Comedy</.badge>
-      <.button size="sm" variant="secondary">Edit filters</.button>
+      <.button id="edit-filters-button" size="sm" variant="secondary">Edit filters</.button>
     </.cluster>
     """
     |> String.trim()
@@ -929,8 +942,8 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       ...fields...
 
       <:action>
-        <.button variant="secondary">Cancel</.button>
-        <.button>Save</.button>
+        <.button id="example-cancel-button" variant="secondary">Cancel</.button>
+        <.button id="example-save-button">Save</.button>
       </:action>
     </.form>
     """
@@ -972,8 +985,8 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       </.field>
 
       <:action>
-        <.button type="button" variant="secondary">Cancel</.button>
-        <.button type="submit">Create library</.button>
+        <.button id="create-library-cancel-button" type="button" variant="secondary">Cancel</.button>
+        <.button id="create-library-submit-button" type="submit">Create library</.button>
       </:action>
     </.form>
     """

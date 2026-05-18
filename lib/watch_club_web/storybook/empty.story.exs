@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Storybook.Empty do
           ~s|<:icon><Lucideicons.library /></:icon>|,
           ~s|<:title>No libraries yet</:title>|,
           ~s|<:description>Create libraries to add movies, TV shows, or books to your club.</:description>|,
-          ~s|<.button><Lucideicons.plus />Create library</.button>|
+          ~s|<.button id="empty-story-create-library-button"><Lucideicons.plus />Create library</.button>|
         ]
       },
       %Variation{
@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Storybook.Empty do
           ~s|<:icon><Lucideicons.search /></:icon>|,
           ~s|<:title>No results found</:title>|,
           ~s|<:description>Try adjusting your search terms or clearing active filters.</:description>|,
-          ~s|<.button variant="secondary"><Lucideicons.refresh_ccw />Clear filters</.button>|
+          ~s|<.button id="empty-story-clear-filters-button" variant="secondary"><Lucideicons.refresh_ccw />Clear filters</.button>|
         ]
       },
       %Variation{
@@ -79,7 +79,7 @@ defmodule WatchClubWeb.Storybook.Empty do
         slots: [
           ~s|<:title>Nothing here yet</:title>|,
           ~s|<:description>Once activity starts, the latest club updates will appear here.</:description>|,
-          ~s|<.button variant="secondary">Refresh</.button>|
+          ~s|<.button id="empty-story-refresh-button" variant="secondary">Refresh</.button>|
         ]
       }
     ]

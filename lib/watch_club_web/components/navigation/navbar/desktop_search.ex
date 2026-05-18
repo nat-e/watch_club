@@ -67,7 +67,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       phx-mounted={JS.ignore_attributes("data-open")}
       class="hidden h-control-md md:block group/desktop-search relative"
     >
-      <div class="absolute inset-x-0 top-0 overflow-hidden rounded-control border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-border-focus/40 group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
+      <div class="absolute inset-x-0 top-0 overflow-hidden rounded-control border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-focus-ring group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
         <div class="flex w-full items-stretch">
           <.select
             id="desktop-search-location-select"
@@ -125,6 +125,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
             class="min-w-48 h-control-md flex-1 rounded-none border-0 bg-surface-inset text-text shadow-none ring-0 placeholder:text-text-subtle focus-visible:bg-surface-hover focus-visible:!border-transparent focus-visible:!ring-0"
           />
           <button
+            id="desktop-search-submit-button"
             type="submit"
             aria-label={dgettext("search", "Search")}
             class="inline-flex h-control-md shrink-0 items-center justify-center border-l border-border-subtle bg-surface-inset px-group text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:text-text focus-visible:!ring-0 focus-visible:outline-none"
@@ -136,7 +137,12 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
           id="desktop-search-preview"
           class="hidden min-h-0 divide-y divide-border-subtle overflow-y-auto border-t border-border-subtle bg-surface-inset group-data-open/desktop-search:block"
         >
-          <.search_results {assigns} />
+          <.search_results
+            id_prefix="desktop-search-results"
+            myself={@myself}
+            form={@form}
+            search_results={@search_results}
+          />
         </div>
       </div>
     </.form>

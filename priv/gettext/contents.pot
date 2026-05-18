@@ -11,29 +11,29 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:71
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:72
 #, elixir-autogen, elixir-format
 msgid "Add %{content_name} to club libraries to share it with the members of your clubs."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:42
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Add to club"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:58
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:59
 #, elixir-autogen, elixir-format
 msgid "In %{count} club"
 msgid_plural "In %{count} clubs"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:80
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:81
 #, elixir-autogen, elixir-format
 msgid "Select clubs"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:66
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Select libraries"
 msgstr ""

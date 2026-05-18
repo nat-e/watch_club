@@ -170,6 +170,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
     ~H"""
     <.button
+      id={"library-sort-#{@sort_by}-button"}
       patch={library_sort_path(@club_id, @library_id, @sort_by, @target_sort_order)}
       replace
       variant={(@active? && "accent") || "secondary"}

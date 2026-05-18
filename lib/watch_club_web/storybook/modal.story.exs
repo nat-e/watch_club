@@ -92,7 +92,12 @@ defmodule WatchClubWeb.Storybook.Modal do
       <div class="rounded-control border border-border-subtle bg-surface-inset p-3 text-sm text-text-muted">
         {render_slot(@inner_block)}
       </div>
-      <.button variant="secondary" phx-click="open_modal" phx-value-modal={@modal}>
+      <.button
+        id={"open-#{@modal}-modal-button"}
+        variant="secondary"
+        phx-click="open_modal"
+        phx-value-modal={@modal}
+      >
         {@button_label}
       </.button>
     </section>
@@ -121,8 +126,15 @@ defmodule WatchClubWeb.Storybook.Modal do
       </div>
 
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>Cancel</.button>
-        <.button type="button">Create invitation</.button>
+        <.button
+          id="storybook-invite-cancel-button"
+          type="button"
+          variant="secondary"
+          data-modal-close
+        >
+          Cancel
+        </.button>
+        <.button id="storybook-invite-create-button" type="button">Create invitation</.button>
       </:footer>
     </.modal>
     """
@@ -140,8 +152,17 @@ defmodule WatchClubWeb.Storybook.Modal do
       </.alert>
 
       <:footer>
-        <.button type="button" variant="secondary" data-modal-close>Cancel</.button>
-        <.button type="button" variant="danger">Delete library</.button>
+        <.button
+          id="storybook-danger-cancel-button"
+          type="button"
+          variant="secondary"
+          data-modal-close
+        >
+          Cancel
+        </.button>
+        <.button id="storybook-danger-delete-button" type="button" variant="danger">
+          Delete library
+        </.button>
       </:footer>
     </.modal>
     """
@@ -161,7 +182,9 @@ defmodule WatchClubWeb.Storybook.Modal do
       </div>
 
       <:footer>
-        <.button type="button" data-modal-close>Got it</.button>
+        <.button id="storybook-scrollable-confirm-button" type="button" data-modal-close>
+          Got it
+        </.button>
       </:footer>
     </.modal>
     """

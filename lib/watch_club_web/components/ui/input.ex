@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Components.UI.Input do
   def input(assigns) do
     if is_nil(Map.get(assigns, :id)) do
       raise ArgumentError, """
-      <.input> requires an `id` when no `field` is provided.
+      Input requires an `id` when no `field` is provided.
       Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
       """
     end
@@ -52,7 +52,7 @@ defmodule WatchClubWeb.Components.UI.Input do
       data-slot="input"
       class={[
         "h-control-md w-full min-w-0 rounded-control border border-border bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
-        "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+        "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
         "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:placeholder:text-text-disabled",
         "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger-ring",
         "file:mr-3 file:inline-flex file:h-7 file:border-0 file:bg-transparent file:px-0 file:text-sm file:font-medium file:text-text disabled:file:text-text-disabled",

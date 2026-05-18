@@ -14,6 +14,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
     <header class="z-10 flex h-row-lg items-center justify-between gap-related border-b px-related sm:gap-group sm:px-group">
       <div class="flex w-full items-center gap-related">
         <.button
+          id="navbar-open-sidebar-button"
           variant="ghost"
           size="icon-sm"
           class="block md:hidden"
@@ -31,18 +32,23 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
       <.dropdown_menu id="navbar-user-menu">
         <:trigger>
           <.button
-            size="icon-sm"
+            id="navbar-user-menu-trigger"
+            size="icon"
             variant="ghost"
-            class="rounded-full p-0"
             aria-label={dgettext("nav", "User menu")}
           >
             <.avatar id={@current_user.id} name={@current_user.username} />
           </.button>
         </:trigger>
-        <.dropdown_menu_item navigate={~p"/settings"}>
+        <.dropdown_menu_item id="navbar-settings-link" navigate={~p"/settings"}>
           <Lucideicons.settings /> {dgettext("nav", "Settings")}
         </.dropdown_menu_item>
-        <.dropdown_menu_item href={~p"/sign-out"} method="delete" variant="destructive">
+        <.dropdown_menu_item
+          id="navbar-sign-out-link"
+          href={~p"/sign-out"}
+          method="delete"
+          variant="destructive"
+        >
           <Lucideicons.log_out /> {dgettext("nav", "Sign out")}
         </.dropdown_menu_item>
       </.dropdown_menu>
@@ -124,7 +130,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
     {:noreply, socket |> assign(:form, form) |> assign(:search_results, nil)}
   end
 
-  def handle_async(:preview_search, {:exit, _reason}, socket) do
+  def handle_async(:preview_search, {:exit, :cancel}, socket) do
     {:noreply, socket}
   end
 end

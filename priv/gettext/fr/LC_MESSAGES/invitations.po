@@ -12,33 +12,33 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:88
+#: lib/watch_club_web/live/invitations/invitation_page.ex:93
 #, elixir-autogen, elixir-format
 msgid "%{inviter} is inviting you to join %{club_name} on watch.club"
 msgstr "%{inviter} vous invite à rejoindre %{club_name} sur watch.club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:74
+#: lib/watch_club_web/live/invitations/invitation_page.ex:79
 #, elixir-autogen, elixir-format
 msgid "Accept Invitation"
 msgstr "Accepter l'invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:173
+#: lib/watch_club_web/live/invitations/invitation_page.ex:178
 #, elixir-autogen, elixir-format
 msgid "Couldn't join %{club_name}, try again later"
 msgstr "Impossible de rejoindre %{club_name}, réessayez plus tard"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex:25
-#: lib/watch_club_web/live/invitations/invitation_page.ex:70
+#: lib/watch_club_web/live/invitations/invitation_page.ex:75
 #, elixir-autogen, elixir-format
 msgid "Create an account or sign-in to accept the invitation."
 msgstr "Créez un compte ou connectez-vous pour accepter l'invitation."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex:14
-#: lib/watch_club_web/live/invitations/invitation_page.ex:64
+#: lib/watch_club_web/live/invitations/invitation_page.ex:69
 #, elixir-autogen, elixir-format
 msgid "Hello %{name}!"
 msgstr "Bonjour %{name} !"
@@ -50,21 +50,21 @@ msgid "Hello!"
 msgstr "Bonjour !"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:40
+#: lib/watch_club_web/live/invitations/invitation_page.ex:45
 #, elixir-autogen, elixir-format
 msgid "Looks like you already have an account! Please login instead."
 msgstr "Il semble que vous avez déjà un compte ! Veuillez vous connecter à la place."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:119
+#: lib/watch_club_web/live/invitations/invitation_page.ex:124
 #, elixir-autogen, elixir-format
 msgid "The invitation you were trying to access does not exist"
 msgstr "L'invitation à laquelle vous essayez d'accéder n'existe pas"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:164
-#: lib/watch_club_web/live/invitations/invitation_page.ex:193
-#: lib/watch_club_web/live/invitations/invitation_page.ex:219
+#: lib/watch_club_web/live/invitations/invitation_page.ex:169
+#: lib/watch_club_web/live/invitations/invitation_page.ex:198
+#: lib/watch_club_web/live/invitations/invitation_page.ex:224
 #, elixir-autogen, elixir-format
 msgid "You joined %{club_name}"
 msgstr "Vous avez rejoint %{club_name}"
@@ -76,7 +76,7 @@ msgid "Invitation action"
 msgstr "Action pour l'invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:99
+#: lib/watch_club_web/live/invitations/invitation_page.ex:104
 #, elixir-autogen, elixir-format
 msgid "You are invited to join %{club_name} on watch.club"
 msgstr "Vous êtes invité à rejoindre %{club_name} sur watch.club"

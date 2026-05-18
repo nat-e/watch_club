@@ -11,6 +11,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
   attr :rest, :global
 
   slot :item, required: true do
+    attr :id, :string, required: true
     attr :selected, :boolean
     attr :href, :string
     attr :navigate, :string
@@ -46,6 +47,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
 
     ~H"""
     <.button
+      id={@item[:id]}
       type="button"
       variant="ghost"
       aria-current={@link? && @selected? && "page"}

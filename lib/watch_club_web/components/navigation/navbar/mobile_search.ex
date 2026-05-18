@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
     <div class="flex md:hidden w-full flex-row justify-between items-center min-w-0">
       <h2 class="font-heading text-xl font-semibold">watch.club</h2>
       <.button
+        id="mobile-search-open-button"
         class="block md:hidden shrink-0"
         variant="ghost"
         phx-click={
@@ -42,6 +43,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
         <div class="relative flex-1 flex flex-col min-h-0">
           <div class="flex-1 divide-y overflow-y-auto min-h-0">
             <.search_results
+              id_prefix="mobile-search-results"
               myself={@myself}
               form={@form}
               search_results={@search_results}
@@ -49,6 +51,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
           </div>
           <div id="mobile-overlay-search-location" class="hidden absolute inset-0 bg-surface">
             <button
+              id="mobile-search-location-everywhere-button"
               type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
@@ -67,6 +70,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
             </button>
             <button
               :for={membership <- @current_user.memberships}
+              id={"mobile-search-location-#{membership.club.id}-button"}
               type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
@@ -97,6 +101,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
           >
             <button
               :for={content_type <- SearchContentType.values()}
+              id={"mobile-search-content-type-#{content_type}-button"}
               type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
@@ -127,10 +132,16 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
     ~H"""
     <div class="border-b p-related">
       <.inline class="h-row-lg">
-        <.button variant="ghost" size="icon" phx-click={JS.hide(to: "#mobile-search-overlay")}>
+        <.button
+          id="mobile-search-back-button"
+          variant="ghost"
+          size="icon"
+          phx-click={JS.hide(to: "#mobile-search-overlay")}
+        >
           <Lucideicons.arrow_left />
         </.button>
         <div
+          id="mobile-search-input-wrapper"
           class="relative flex-1"
           phx-click={
             JS.hide(to: "#mobile-overlay-search-location")
@@ -145,6 +156,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
             phx-debounce="300"
           />
           <.button
+            id="mobile-search-clear-button"
             type="reset"
             variant="ghost"
             size="icon-sm"
@@ -158,6 +170,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
       <.cluster class="gap-x-group gap-y-related">
         <.input id="mobile-search-input-location" field={@form[:location]} class="hidden" />
         <.button
+          id="mobile-search-location-filter-button"
           variant="secondary"
           class="flex-1 gap-related min-w-38 items-center justify-between shrink"
           phx-click={
@@ -184,6 +197,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
         </.button>
         <.input id="mobile-search-input-content-type" field={@form[:content_type]} class="hidden" />
         <.button
+          id="mobile-search-content-type-filter-button"
           variant="secondary"
           class="flex gap-related w-46 items-center justify-between"
           phx-click={

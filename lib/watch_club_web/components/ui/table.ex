@@ -38,7 +38,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     ~H"""
     <thead
       data-slot="table-header"
-      class={["border-b border-border-subtle bg-surface-raised/60 [&_tr]:border-b-0", @class]}
+      class={["border-b border-border-subtle bg-surface-raised [&_tr]:border-b-0", @class]}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -67,7 +67,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <tfoot
       data-slot="table-footer"
       class={[
-        "border-t border-border-subtle bg-surface-raised/60 font-medium [&>tr]:last:border-b-0",
+        "border-t border-border-subtle bg-surface-raised font-medium [&>tr]:last:border-b-0",
         @class
       ]}
       {@rest}

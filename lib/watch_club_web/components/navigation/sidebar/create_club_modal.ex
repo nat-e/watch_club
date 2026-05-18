@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar.CreateClubModal do
       >
         <.field field={@form[:name]} label={dgettext("clubs", "Club name")} type="text" />
         <:action>
-          <.button type="submit" class="w-full">
+          <.button id="create-club-submit-button" type="submit" class="w-full">
             {dgettext("default", "Create")}
           </.button>
         </:action>

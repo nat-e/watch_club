@@ -30,7 +30,11 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
         }
       >
         <:action>
-          <.button phx-click="open_create_library_modal" phx-target={@myself}>
+          <.button
+            id="open-create-library-modal-button"
+            phx-click="open_create_library_modal"
+            phx-target={@myself}
+          >
             <Lucideicons.plus />
             {dgettext("clubs", "Create library")}
           </.button>

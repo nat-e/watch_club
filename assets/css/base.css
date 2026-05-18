@@ -38,6 +38,7 @@
 
 @theme inline {
 	--color-canvas: var(--wc-color-canvas);
+	--color-scrim: var(--wc-color-scrim);
 	--color-surface: var(--wc-color-surface);
 	--color-surface-raised: var(--wc-color-surface-raised);
 	--color-surface-inset: var(--wc-color-surface-inset);
@@ -53,6 +54,7 @@
 	--color-border-subtle: var(--wc-color-border-subtle);
 	--color-border-strong: var(--wc-color-border-strong);
 	--color-border-focus: var(--wc-color-border-focus);
+	--color-focus-ring: var(--wc-color-focus-ring);
 	--color-primary: var(--wc-color-primary);
 	--color-primary-hover: var(--wc-color-primary-hover);
 	--color-primary-active: var(--wc-color-primary-active);

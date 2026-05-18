@@ -31,11 +31,11 @@ defmodule WatchClubWeb.Storybook.DropdownMenu do
         description: "Simple action menu",
         attributes: %{id: "wc-dropdown-default"},
         slots: [
-          ~s(<:trigger><.button variant="secondary">Open menu</.button></:trigger>),
-          ~s(<.dropdown_menu_item><Lucideicons.user />Profile</.dropdown_menu_item>),
-          ~s(<.dropdown_menu_item><Lucideicons.settings />Settings</.dropdown_menu_item>),
+          ~s(<:trigger><.button id="dropdown-story-default-trigger" variant="secondary">Open menu</.button></:trigger>),
+          ~s(<.dropdown_menu_item id="dropdown-story-profile-item"><Lucideicons.user />Profile</.dropdown_menu_item>),
+          ~s(<.dropdown_menu_item id="dropdown-story-settings-item"><Lucideicons.settings />Settings</.dropdown_menu_item>),
           ~s(<.dropdown_menu_separator />),
-          ~s(<.dropdown_menu_item variant="destructive"><Lucideicons.log_out />Sign out</.dropdown_menu_item>)
+          ~s(<.dropdown_menu_item id="dropdown-story-sign-out-item" variant="destructive"><Lucideicons.log_out />Sign out</.dropdown_menu_item>)
         ]
       },
       %Variation{
@@ -43,9 +43,9 @@ defmodule WatchClubWeb.Storybook.DropdownMenu do
         description: "Icon-only trigger used in tables and sidebars",
         attributes: %{id: "wc-dropdown-icon-trigger"},
         slots: [
-          ~s(<:trigger><.button size="icon" variant="ghost" aria-label="Open menu"><Lucideicons.ellipsis_vertical /></.button></:trigger>),
-          ~s(<.dropdown_menu_item><Lucideicons.user />Share invitation</.dropdown_menu_item>),
-          ~s(<.dropdown_menu_item variant="destructive"><Lucideicons.trash_2 />Delete invitation</.dropdown_menu_item>)
+          ~s(<:trigger><.button id="dropdown-story-icon-trigger" size="icon" variant="ghost" aria-label="Open menu"><Lucideicons.ellipsis_vertical /></.button></:trigger>),
+          ~s(<.dropdown_menu_item id="dropdown-story-share-invitation-item"><Lucideicons.user />Share invitation</.dropdown_menu_item>),
+          ~s(<.dropdown_menu_item id="dropdown-story-delete-invitation-item" variant="destructive"><Lucideicons.trash_2 />Delete invitation</.dropdown_menu_item>)
         ]
       },
       %Variation{
@@ -53,11 +53,11 @@ defmodule WatchClubWeb.Storybook.DropdownMenu do
         description: "Disabled item",
         attributes: %{id: "wc-dropdown-disabled"},
         slots: [
-          ~s(<:trigger><.button variant="secondary">Club actions</.button></:trigger>),
-          ~s(<.dropdown_menu_item>Manage members</.dropdown_menu_item>),
-          ~s(<.dropdown_menu_item disabled>Transfer ownership</.dropdown_menu_item>),
+          ~s(<:trigger><.button id="dropdown-story-disabled-trigger" variant="secondary">Club actions</.button></:trigger>),
+          ~s(<.dropdown_menu_item id="dropdown-story-manage-members-item">Manage members</.dropdown_menu_item>),
+          ~s(<.dropdown_menu_item id="dropdown-story-transfer-ownership-item" disabled>Transfer ownership</.dropdown_menu_item>),
           ~s(<.dropdown_menu_separator />),
-          ~s(<.dropdown_menu_item variant="destructive">Delete club</.dropdown_menu_item>)
+          ~s(<.dropdown_menu_item id="dropdown-story-delete-club-item" variant="destructive">Delete club</.dropdown_menu_item>)
         ]
       }
     ]

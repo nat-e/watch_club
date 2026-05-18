@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     ~H"""
     <div>
       <.button
+        id={"#{@id}-open-button"}
         size="lg"
         variant={if @clubs == [], do: "primary", else: "accent"}
         class={@class}
@@ -93,7 +94,9 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
               selected?={in_library?(@content, option.library.id)}
             />
             <:action>
-              <.button type="submit">{dgettext("default", "Save")}</.button>
+              <.button id={"#{@component_id}-club-selection-submit-button"} type="submit">
+                {dgettext("default", "Save")}
+              </.button>
             </:action>
           </.form>
         </.stack>

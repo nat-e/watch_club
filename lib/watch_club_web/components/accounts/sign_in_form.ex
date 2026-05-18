@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Components.Accounts.SignInForm do
       />
       <.field_errors field={@form[:invitation_id]} show_untouched={true} />
       <:action>
-        <.button type="submit" class="w-full">
+        <.button id={"#{@id}-submit-button"} type="submit" class="w-full">
           {dgettext("auth", "Sign in")}
         </.button>
       </:action>

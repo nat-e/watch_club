@@ -52,7 +52,9 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
             </:control>
           </.field>
           <:action class="sm:justify-start">
-            <.button type="submit">{dgettext("default", "Save")}</.button>
+            <.button id="account-settings-submit-button" type="submit">
+              {dgettext("default", "Save")}
+            </.button>
           </:action>
         </.form>
       </.settings_section>

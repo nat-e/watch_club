@@ -13,17 +13,17 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:34
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:34
-#: lib/watch_club_web/live/clubs/members_page.ex:240
-#: lib/watch_club_web/live/clubs/members_page.ex:263
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:78
+#: lib/watch_club_web/live/clubs/members_page.ex:243
+#: lib/watch_club_web/live/clubs/members_page.ex:271
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:83
 #: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:25
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
 
-#: lib/watch_club_web/components/ui/flash.ex:112
-#: lib/watch_club_web/components/ui/modal.ex:108
-#: lib/watch_club_web/live/clubs/members_page.ex:365
+#: lib/watch_club_web/components/ui/flash.ex:113
+#: lib/watch_club_web/components/ui/modal.ex:109
+#: lib/watch_club_web/live/clubs/members_page.ex:384
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr ""
@@ -33,54 +33,54 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:43
-#: lib/watch_club_web/live/clubs/members_page.ex:267
+#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:44
+#: lib/watch_club_web/live/clubs/members_page.ex:279
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:96
-#: lib/watch_club_web/live/accounts/settings_page.ex:55
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:98
+#: lib/watch_club_web/live/accounts/settings_page.ex:56
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:43
-#: lib/watch_club_web/controllers/error_html.ex:48
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:49
+#: lib/watch_club_web/controllers/error_html.ex:53
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:180
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:183
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:80
+#: lib/watch_club_web/controllers/error_html.ex:86
 #, elixir-autogen, elixir-format
 msgid "Could not load page"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:55
+#: lib/watch_club_web/controllers/error_html.ex:61
 #, elixir-autogen, elixir-format
 msgid "Go home"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:77
-#: lib/watch_club_web/controllers/error_html.ex:78
-#: lib/watch_club_web/controllers/error_html.ex:79
+#: lib/watch_club_web/controllers/error_html.ex:83
+#: lib/watch_club_web/controllers/error_html.ex:84
+#: lib/watch_club_web/controllers/error_html.ex:85
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:104
+#: lib/watch_club_web/controllers/error_html.ex:110
 #, elixir-autogen, elixir-format
 msgid "Something went wrong while loading this page."
 msgstr ""
 
-#: lib/watch_club_web/controllers/error_html.ex:84
 #: lib/watch_club_web/controllers/error_html.ex:90
-#: lib/watch_club_web/controllers/error_html.ex:97
+#: lib/watch_club_web/controllers/error_html.ex:96
+#: lib/watch_club_web/controllers/error_html.ex:103
 #, elixir-autogen, elixir-format
 msgid "The page you are looking for does not exist or you do not have access to it."
 msgstr ""

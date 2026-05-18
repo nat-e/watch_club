@@ -43,6 +43,7 @@ Watch Club source variables may use a project prefix internally, e.g. `--wc-colo
 | Token | Meaning |
 | --- | --- |
 | `color.canvas` | App/page canvas |
+| `color.scrim` | Modal/sidebar backdrop scrim |
 | `color.surface` | Default card or panel surface |
 | `color.surface-raised` | Interactive or visually lifted neutral surface |
 | `color.surface-inset` | Recessed surface inside a parent, such as inputs/search/code |
@@ -70,6 +71,7 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | `color.border-subtle` | Low-emphasis structural border/divider |
 | `color.border-strong` | High-emphasis neutral border |
 | `color.border-focus` | Focus and focused input border |
+| `color.focus-ring` | Neutral focus ring |
 
 ### Fills
 

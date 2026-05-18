@@ -44,10 +44,16 @@ defmodule WatchClubWeb.ErrorHTML do
               </p>
             </div>
             <div class="flex flex-wrap justify-center gap-related">
-              <.button :if={@retry?} href={Phoenix.Controller.current_path(@conn)} emphasis>
+              <.button
+                :if={@retry?}
+                id="error-page-retry-button"
+                href={Phoenix.Controller.current_path(@conn)}
+                emphasis
+              >
                 {dgettext("default", "Try again")}
               </.button>
               <.button
+                id="error-page-home-button"
                 href={~p"/"}
                 variant={if @retry?, do: "secondary", else: "primary"}
                 emphasis={!@retry?}

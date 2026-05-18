@@ -25,10 +25,15 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
       <.segmented_control aria-label={dgettext("invitations", "Invitation action")}>
-        <:item patch={~p"/invitations/#{@invitation.id}"} selected={@action == :register}>
+        <:item
+          id="invitation-register-tab"
+          patch={~p"/invitations/#{@invitation.id}"}
+          selected={@action == :register}
+        >
           {dgettext("auth", "Create account")}
         </:item>
         <:item
+          id="invitation-sign-in-tab"
           patch={~p"/invitations/#{@invitation.id}?action=sign_in"}
           selected={@action == :sign_in}
         >

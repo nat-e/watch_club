@@ -23,7 +23,11 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
           "Create libraries to add movies, TV shows, or books to your club."
         )}
       </:description>
-      <.button phx-click="open_create_library_modal" phx-target={@target}>
+      <.button
+        id="empty-create-library-button"
+        phx-click="open_create_library_modal"
+        phx-target={@target}
+      >
         <Lucideicons.plus />
         {dgettext("clubs", "Create library")}
       </.button>
@@ -63,6 +67,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       class="grid gap-group sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:items-center"
     >
       <.button
+        id={"library-reorder-handle-#{@library.id}"}
         type="button"
         variant="ghost"
         size="icon"
@@ -74,6 +79,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       </.button>
 
       <.button
+        id={"library-icon-picker-button-#{@library.id}"}
         type="button"
         variant="secondary"
         size="icon"
@@ -102,6 +108,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       >
         <:trigger>
           <.button
+            id={"library-actions-trigger-#{@library.id}"}
             variant="ghost"
             size="icon-sm"
             class="text-text-muted hover:text-text"
@@ -112,6 +119,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
         </:trigger>
 
         <.dropdown_menu_item
+          id={"edit-library-menu-item-#{@library.id}"}
           phx-click="open_edit_library_modal"
           phx-target={@target}
           phx-value-library_id={@library.id}
@@ -119,6 +127,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
           <Lucideicons.pencil />{dgettext("clubs", "Edit Library")}
         </.dropdown_menu_item>
         <.dropdown_menu_item
+          id={"delete-library-menu-item-#{@library.id}"}
           variant="destructive"
           phx-click="open_delete_library_modal"
           phx-target={@target}

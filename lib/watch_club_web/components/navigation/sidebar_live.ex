@@ -40,7 +40,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         id="sidebar-backdrop"
         type="button"
         aria-label={dgettext("nav", "Close navigation")}
-        class="invisible fixed inset-0 z-40 pointer-events-none bg-canvas/70 opacity-0 backdrop-blur-sm transition-opacity duration-200 ease-out md:hidden"
+        class="invisible fixed inset-0 z-40 pointer-events-none bg-scrim opacity-0 backdrop-blur-sm transition-opacity duration-200 ease-out md:hidden"
         phx-click={hide_sidebar()}
       />
 
@@ -51,6 +51,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         <header class="flex h-row-lg shrink-0 items-center justify-between px-cluster">
           <h2 class="font-heading text-xl font-semibold">watch.club</h2>
           <.button
+            id="sidebar-close-button"
             variant="ghost"
             size="icon-sm"
             class="md:hidden"
@@ -67,13 +68,21 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         >
           <ul class="flex list-none flex-col gap-tight p-0">
             <li>
-              <.sidebar_item navigate={~p"/"} active={active?(@current_path, "/")}>
+              <.sidebar_item
+                id="sidebar-home-link"
+                navigate={~p"/"}
+                active={active?(@current_path, "/")}
+              >
                 <Lucideicons.home />
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Home")}</span>
               </.sidebar_item>
             </li>
             <li>
-              <.sidebar_item navigate={~p"/watchlist"} active={active?(@current_path, "/watchlist")}>
+              <.sidebar_item
+                id="sidebar-watchlist-link"
+                navigate={~p"/watchlist"}
+                active={active?(@current_path, "/watchlist")}
+              >
                 <Lucideicons.bookmark />
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Watchlist")}</span>
               </.sidebar_item>
@@ -93,9 +102,10 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
             />
 
             <li :if={@current_user.administrator?}>
-              <.sidebar_item on_click={
-                JS.push("open_create_club_modal", target: @myself) |> hide_sidebar()
-              }>
+              <.sidebar_item
+                id="sidebar-create-club-button"
+                on_click={JS.push("open_create_club_modal", target: @myself) |> hide_sidebar()}
+              >
                 <Lucideicons.plus />
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Create new club")}</span>
               </.sidebar_item>
@@ -115,6 +125,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     """
   end
 
+  attr :id, :string, required: true
   attr :href, :string, default: nil
   attr :navigate, :string, default: nil
   attr :active, :boolean, default: false
@@ -138,16 +149,13 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
     ~H"""
     <.button
+      id={@id}
       variant="ghost"
       size="md"
       type="button"
       aria-current={@active && "page"}
-      class={[
-        "min-h-touch-target w-full justify-start overflow-hidden text-left font-medium",
-        @active &&
-          "!bg-surface-selected !text-text hover:!bg-surface-selected active:!bg-surface-selected",
-        @class
-      ]}
+      selected={@active}
+      class={["min-h-touch-target w-full justify-start overflow-hidden text-left font-medium", @class]}
       phx-click={@on_click}
       {@rest}
     >
@@ -183,35 +191,41 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
         @active && "bg-surface-selected text-text",
         !@active &&
-          "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active [&:has([data-club-nav-actions]:hover)]:!bg-transparent [&:has([data-club-nav-actions]:hover)]:!text-text-muted"
+          "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active focus-within:bg-surface-hover focus-within:text-text"
       ]}>
-        <.button
+        <.link
+          id={"club-nav-link-#{@membership.club.id}"}
           navigate={@url}
-          variant="ghost"
-          size="md"
           aria-current={@active && "page"}
-          class="min-h-touch-target min-w-0 flex-1 justify-start rounded-none !bg-transparent !text-inherit hover:!bg-transparent hover:!text-inherit active:!bg-transparent"
+          class="flex min-h-touch-target min-w-0 flex-1 items-center gap-related px-group text-left text-sm font-semibold text-inherit transition-colors outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon"
           phx-click={hide_sidebar()}
         >
           <.avatar id={@membership.club.id} name={@membership.club.name} size="md" />
           <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
-        </.button>
+        </.link>
 
         <.dropdown_menu id={"club-nav-actions-#{@membership.club.id}"} class="shrink-0 pr-tight">
           <:trigger>
-            <.button
-              size="icon-sm"
-              variant="ghost"
+            <button
+              id={"club-nav-actions-trigger-#{@membership.club.id}"}
+              type="button"
               aria-label={dgettext("nav", "Club actions")}
               data-club-nav-actions
-              class="!text-inherit hover:!bg-surface-hover hover:!text-text active:!bg-surface-active"
+              class={[
+                "inline-flex size-control-sm shrink-0 items-center justify-center rounded-control text-inherit transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm",
+                @active &&
+                  "hover:bg-surface-hover hover:text-text active:bg-surface-active focus-visible:bg-surface-hover focus-visible:text-text",
+                !@active &&
+                  "hover:bg-surface-active hover:text-text active:bg-surface-active focus-visible:bg-surface-active focus-visible:text-text"
+              ]}
             >
               <Lucideicons.ellipsis_vertical />
-            </.button>
+            </button>
           </:trigger>
 
           <.dropdown_menu_item
             :if={@membership.role == :admin}
+            id={"club-nav-members-link-#{@membership.club.id}"}
             navigate={"#{@url}/members"}
             phx-click={hide_sidebar()}
           >
@@ -219,6 +233,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           </.dropdown_menu_item>
           <.dropdown_menu_item
             :if={@membership.role == :admin}
+            id={"club-nav-settings-link-#{@membership.club.id}"}
             navigate={"#{@url}/settings"}
             phx-click={hide_sidebar()}
           >
@@ -227,6 +242,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           <.dropdown_menu_separator :if={@membership.role == :admin} />
           <.dropdown_menu_item
             :if={@membership.role == :admin}
+            id={"club-nav-delete-club-button-#{@membership.club.id}"}
             phx-click={
               JS.push("open_delete_club_modal",
                 target: @myself,
@@ -240,6 +256,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           </.dropdown_menu_item>
           <.dropdown_menu_item
             :if={@membership.role == :member}
+            id={"club-nav-leave-club-button-#{@membership.id}"}
             phx-click={
               JS.push("open_leave_club_modal",
                 target: @myself,
@@ -281,7 +298,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
     ~H"""
     <li>
-      <.sidebar_item navigate={@url} active={@active}>
+      <.sidebar_item id={"sidebar-library-link-#{@library.id}"} navigate={@url} active={@active}>
         <.library_icon library={@library} />
         <span class="min-w-0 flex-1 truncate">{@library.name}</span>
       </.sidebar_item>

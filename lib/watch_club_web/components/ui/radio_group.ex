@@ -42,7 +42,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
   def radio_group(assigns) do
     if is_nil(Map.get(assigns, :id)) do
       raise ArgumentError, """
-      <.radio_group> requires an `id` when no `field` is provided.
+      Radio group requires an `id` when no `field` is provided.
       Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
       """
     end
@@ -72,13 +72,14 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
         <span
           data-slot="radio-group-item"
           class={[
-            "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
+            "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
             "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
-            "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-border-focus/40",
+            "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring",
             "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring"
           ]}
         >
           <input
+            id={"#{@id}-#{input_value(item.value)}"}
             type="radio"
             name={@name}
             value={input_value(item.value)}
