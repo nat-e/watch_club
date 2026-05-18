@@ -5,6 +5,7 @@ defmodule WatchClub.Integrations.Tmdb do
     MovieDetailsResponse,
     MovieSearchResult,
     PersonSearchResult,
+    TvDetailsResponse,
     TvSearchResult
   }
 
@@ -73,6 +74,21 @@ defmodule WatchClub.Integrations.Tmdb do
            ]
          ) do
       {:ok, body} -> {:ok, MovieDetailsResponse.from_api(body)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec get_tv_details(integer() | String.t(), locale: atom()) ::
+          {:ok, TvDetailsResponse.t()} | {:error, term()}
+  def get_tv_details(tmdb_id, opts \\ []) do
+    case request(
+           url: "/tv/#{tmdb_id}",
+           params: [
+             language: format_language(opts[:locale]),
+             append_to_response: "translations,images,external_ids"
+           ]
+         ) do
+      {:ok, body} -> {:ok, TvDetailsResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end

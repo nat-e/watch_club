@@ -6,7 +6,16 @@ defmodule WatchClub.Contents.ContentTest do
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
-  alias WatchClub.Contents.{Content, ContentView, Movie, MovieLocalization}
+
+  alias WatchClub.Contents.{
+    Content,
+    ContentView,
+    Movie,
+    MovieLocalization,
+    TvShow,
+    TvShowEpisode,
+    TvShowLocalization
+  }
 
   require Ash.Query
 
@@ -107,6 +116,73 @@ defmodule WatchClub.Contents.ContentTest do
       non_member = generate(user())
 
       create_movie("13", %{library_ids: [library.id]}, actor: non_member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "create_tv_show/*" do
+    test "creates a TV show with all available episodes" do
+      actor = generate(user(locale: :fr_FR))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+        Req.Test.json(conn, Map.put(tv_details_fixture(), "id", tmdb_id))
+      end)
+
+      assert %Content{
+               type: :tv_show,
+               external_id_source: :tmdb,
+               external_id: "42",
+               original_title: "The Expanse",
+               original_language: "en",
+               origin_country: "US",
+               release_date: ~D[2015-12-14],
+               implementation: %TvShow{
+                 best_localization: %TvShowLocalization{
+                   iso_639_1: "fr",
+                   iso_3166_1: "FR",
+                   title: "The Expanse FR"
+                 }
+               }
+             } = content = create_tv_show!("42", actor: actor)
+
+      assert [
+               %TvShowEpisode{season_number: 1, episode_number: 1},
+               %TvShowEpisode{season_number: 1, episode_number: 2},
+               %TvShowEpisode{season_number: 1, episode_number: 3},
+               %TvShowEpisode{season_number: 2, episode_number: 1},
+               %TvShowEpisode{season_number: 2, episode_number: 2}
+             ] =
+               TvShowEpisode
+               |> Ash.Query.filter(tv_show_id == ^content.id)
+               |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
+               |> Ash.read!(actor: actor, authorize?: false)
+    end
+
+    test "returns an invalid error when TMDB fetch fails" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(404)
+        |> Req.Test.json(%{"status_message" => "Not found"})
+      end)
+
+      capture_log(fn ->
+        create_tv_show("404", actor: generate(user()))
+        |> assert_has_error(Ash.Error.Invalid, fn
+          %Ash.Error.Changes.InvalidChanges{message: "Failed to fetch TV show from TMDB"} ->
+            true
+
+          _ ->
+            false
+        end)
+      end)
+    end
+
+    test "requires membership in selected libraries", %{club: club} do
+      library = generate(library(club, content_type: :tv_show))
+      non_member = generate(user())
+
+      create_tv_show("43", %{library_ids: [library.id]}, actor: non_member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -303,5 +379,42 @@ defmodule WatchClub.Contents.ContentTest do
       set_club_libraries(content, %{library_ids: [library.id]}, actor: non_member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+  end
+
+  defp tv_details_fixture do
+    %{
+      "id" => 42,
+      "name" => "The Expanse",
+      "original_name" => "The Expanse",
+      "original_language" => "en",
+      "origin_country" => ["US"],
+      "first_air_date" => "2015-12-14",
+      "overview" => "A mystery unfolds across the solar system.",
+      "poster_path" => "/poster.jpg",
+      "external_ids" => %{"tvdb_id" => 280_619},
+      "images" => %{
+        "posters" => [
+          %{"iso_639_1" => "fr", "file_path" => "/poster-fr.jpg"}
+        ]
+      },
+      "seasons" => [
+        %{"season_number" => 0, "episode_count" => 1},
+        %{"season_number" => 1, "episode_count" => 3},
+        %{"season_number" => 2, "episode_count" => 2},
+        %{"season_number" => 3, "episode_count" => 0}
+      ],
+      "translations" => %{
+        "translations" => [
+          %{
+            "iso_639_1" => "fr",
+            "iso_3166_1" => "FR",
+            "data" => %{
+              "name" => "The Expanse FR",
+              "overview" => "Un mystère se déroule dans le système solaire."
+            }
+          }
+        ]
+      }
+    }
   end
 end

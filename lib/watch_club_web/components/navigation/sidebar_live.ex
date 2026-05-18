@@ -328,9 +328,9 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   end
 
   def handle_event("create_club", %{"form" => params}, socket) do
-    %{create_club_form: form, current_user: user} = socket.assigns
+    %{create_club_form: form} = socket.assigns
 
-    case AshPhoenix.Form.submit(form, params: params, read_one?: true, actor: user) do
+    case AshPhoenix.Form.submit(form, params: params, read_one?: true) do
       {:ok, club} ->
         WatchClubWeb.Hooks.Flash.send_flash(
           :success,

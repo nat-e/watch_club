@@ -159,8 +159,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
 
   def handle_event("submit_create_library", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.create_library_form,
-           params: params,
-           actor: socket.assigns.current_user
+           params: params
          ) do
       {:ok, _library} ->
         Flash.send_flash(:success, dgettext("clubs", "Library created"))
@@ -272,8 +271,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
 
   defp submit_edit_library(socket, params) do
     case AshPhoenix.Form.submit(socket.assigns.edit_library_form,
-           params: params,
-           actor: socket.assigns.current_user
+           params: params
          ) do
       {:ok, %Library{} = library} ->
         {:noreply,

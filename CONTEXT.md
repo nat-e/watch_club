@@ -142,17 +142,13 @@ _Avoid_: Media, title, item, recommendation
 The kind of content, such as movie, TV show, book, video, or podcast.
 _Avoid_: Media type, category
 
-**Media**:
-A playable or downloadable unit that belongs to content, such as a movie or a TV show episode.
-_Avoid_: Playable item, file, episode item
-
 **Media Version**:
-A specific playable or downloadable variant of media available in WatchClub.
+A specific playable or downloadable variant of a movie, book, or TV show episode available in WatchClub.
 _Avoid_: File, stream, copy, media item, MediaVersion
 
-**Episode**:
-Media that belongs to TV show content.
-_Avoid_: TV media, show item
+**TV Show Episode**:
+A numbered part of TV show content.
+_Avoid_: Episode, TV media, show item
 
 **Movie**:
 Content whose content type is movie.
@@ -185,7 +181,7 @@ _Avoid_: Best localization, current localization
 ### Automation Services
 
 **Automation Service**:
-A service that WatchClub can ask to make media available.
+A service that WatchClub can ask to make content available.
 _Avoid_: Acquisition service, media server, metadata provider, download client
 
 **Request Profile**:
@@ -248,11 +244,11 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
 - If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
 - A **Member** can **Play Library Item** and **Download Library Item** only for **Library Items** visible to them in WatchClub
-- A **Member** can **Play Library Item** or **Download Library Item** using **Media Versions** of the **Library Item**’s **Content**
+- A **Member** can **Play Library Item** or **Download Library Item** using **Media Versions** of the **Library Item**’s **Movie**, **Book**, or **TV Show Episodes**
 - When multiple **Media Versions** are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
-- A **Library Item** can exist when none of its **Content**’s **Media** has a **Media Version**
+- A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Media Versions**
 - **Add to Library** requests the **Library Item**’s **Content** as a whole
-- For **TV Show** content, **Add to Library** requests the entire **TV Show**, not a season or **Episode**
+- For **TV Show** content, **Add to Library** requests the entire **TV Show**, not a season or **TV Show Episode**
 - **Add to Library** creates one **Content Request** for each **Request Profile** configured on the **Library**
 - **Add to Library** creates no **Content Requests** when the **Library** has no **Request Profiles**
 - **Add to Library** creates the **Library Item** even when one or more **Content Requests** cannot make progress
@@ -282,15 +278,17 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **Content** can have multiple **Content Localizations**
 - A **Content** has at most one **Content Localization** per **Locale**
 - A **Content** has exactly one **Content Type**
-- A **Media** belongs to exactly one **Content**
-- A **Content** has one or more **Media**
-- A **Movie** has exactly one **Media**
-- A **Book** has exactly one **Media**
-- A **TV Show** has one or more **Episodes**
-- An **Episode** is a kind of **Media**
-- A **Media** may have zero or more **Media Versions**
-- A **Media Version** belongs to exactly one **Media**
-- A **Media** can have multiple **Media Versions** when multiple selectable variants are available
+- A **TV Show** has zero or more **TV Show Episodes**
+- A **TV Show** may have zero **TV Show Episodes** when none are known yet
+- A **TV Show Episode** belongs to exactly one **TV Show**
+- A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
+- A **TV Show Episode** has a season number greater than or equal to 1
+- A **TV Show Episode** has an episode number greater than or equal to 1
+- A **Movie** may have zero or more **Media Versions**
+- A **Book** may have zero or more **Media Versions**
+- A **TV Show Episode** may have zero or more **Media Versions**
+- A **Media Version** belongs to exactly one **Movie**, **Book**, or **TV Show Episode**
+- A **Movie**, **Book**, or **TV Show Episode** can have multiple **Media Versions** when multiple selectable variants are available
 
 ### Automation Services
 
@@ -322,7 +320,10 @@ _Avoid_: Request target, request settings, automation settings, service settings
 ## Flagged ambiguities
 
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
-- "Media" was previously ambiguous; resolved: **Content** is the creative work, **Library Item** is content included in a **Library**, and **Media** is a playable or downloadable unit belonging to **Content**.
+- "Media" was previously ambiguous; resolved: **Media** is no longer a domain term; **Content** is the creative work, **Library Item** is content included in a **Library**, and **Media Version** is a playable or downloadable variant of a **Movie**, **Book**, or **TV Show Episode**.
+- "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
+- External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
+- Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
 - "Club Library" may appear where the domain means **Library**; resolved: the canonical term is **Library**.
 - "Media Server Library" was considered but is no longer part of the domain; resolved: WatchClub does not manage media server libraries separately.
 - "Watch Club Media Server" was considered as a term but is no longer part of the domain language; resolved: media versions are simply available in WatchClub.

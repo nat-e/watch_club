@@ -164,7 +164,15 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
             actor: actor
           )
 
-        %ContentView{content: content, type: :movie} ->
+        %ContentView{content: nil, type: :tv_show} ->
+          Contents.form_to_create_tv_show(
+            prepare_params: fn params, _ ->
+              Map.put(params, :tmdb_id, String.to_integer(content_view.external_id))
+            end,
+            actor: actor
+          )
+
+        %ContentView{content: content, type: type} when type in [:movie, :tv_show] ->
           Contents.form_to_set_club_libraries(content, actor: actor)
       end
 
@@ -181,8 +189,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     actor = socket.assigns.current_user
 
     case AshPhoenix.Form.submit(socket.assigns.form,
-           params: %{library_ids: library_ids},
-           actor: actor
+           params: %{library_ids: library_ids}
          ) do
       {:ok, %Content{} = content} ->
         content_view = ContentView.from_content(content, actor.settings.locale)

@@ -4,7 +4,7 @@ defmodule WatchClub.Contents.TvShow do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{Content, TvShowLocalization}
+  alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
 
   postgres do
     table "tv_shows"
@@ -16,7 +16,18 @@ defmodule WatchClub.Contents.TvShow do
   end
 
   actions do
-    defaults [:read, :destroy, create: [], update: []]
+    defaults [:read, :destroy, update: []]
+
+    create :create do
+      primary? true
+      accept [:original_name, :tmdb_id, :tvdb_id]
+
+      argument :localizations, {:array, :map}, allow_nil?: false, default: []
+      argument :episodes, {:array, :map}, allow_nil?: false, default: []
+
+      change manage_relationship(:localizations, type: :direct_control)
+      change manage_relationship(:episodes, type: :direct_control)
+    end
   end
 
   attributes do
@@ -51,6 +62,7 @@ defmodule WatchClub.Contents.TvShow do
     end
 
     has_many :localizations, TvShowLocalization
+    has_many :episodes, TvShowEpisode
 
     has_one :best_localization, TvShowLocalization do
       from_many? true

@@ -9,6 +9,7 @@ defmodule WatchClub.Contents do
     Movie,
     MovieLocalization,
     TvShow,
+    TvShowEpisode,
     TvShowLocalization
   }
 
@@ -16,6 +17,7 @@ defmodule WatchClub.Contents do
     resource Content do
       define :search_content, action: :search
       define :create_movie, args: [:tmdb_id]
+      define :create_tv_show, args: [:tmdb_id]
 
       define :set_club_libraries, action: :set_libraries
     end
@@ -27,6 +29,7 @@ defmodule WatchClub.Contents do
     resource Book
     resource MovieLocalization
     resource TvShow
+    resource TvShowEpisode
     resource TvShowLocalization
   end
 end

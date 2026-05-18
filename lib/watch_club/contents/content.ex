@@ -50,6 +50,20 @@ defmodule WatchClub.Contents.Content do
       change load([:implementation])
     end
 
+    create :create_tv_show do
+      description "Fetches a TV Show from TMDB and creates it in DB. Content, TvShowLocalization, and TV Show Episodes will also be created"
+      argument :tmdb_id, :integer, allow_nil?: false
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
+
+      change WatchClub.Contents.Changes.CreateOrUpdateTvShow, only_when_valid?: true
+
+      change WatchClub.Contents.Changes.SetLibraries,
+        only_when_valid?: true,
+        where: [present(:library_ids)]
+
+      change load([:implementation])
+    end
+
     action :search, {:array, :struct} do
       constraints items: [instance_of: ContentView]
 
@@ -102,7 +116,7 @@ defmodule WatchClub.Contents.Content do
       authorize_if always()
     end
 
-    policy action(:create_movie) do
+    policy action([:create_movie, :create_tv_show]) do
       description "Authenticated users can create catalog content and only select libraries they can access"
       authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
     end
