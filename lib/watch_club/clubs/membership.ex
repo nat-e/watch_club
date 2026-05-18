@@ -22,13 +22,13 @@ defmodule WatchClub.Clubs.Membership do
   actions do
     defaults [:read, :destroy, create: [:*]]
 
-    read :with_user_and_invitation do
-      prepare build(load: [:user, invitation: [:inviter]])
+    read :with_user do
+      prepare build(load: [:user])
     end
 
     read :with_club_and_user do
       prepare build(
-                load: [:club, :user, invitation: [:inviter]],
+                load: [:club, :user],
                 context: %{private: %{authorize?: false}}
               )
     end
@@ -47,17 +47,18 @@ defmodule WatchClub.Clubs.Membership do
       forbid_if always()
     end
 
-    policy action([:read, :with_user_and_invitation, :with_club_and_user]) do
+    policy action([:read, :with_user, :with_club_and_user]) do
       authorize_if {WatchClub.Clubs.Checks.ActorIsClubMemberFilter, role: :admin}
       authorize_if relates_to_actor_via(:user)
     end
 
     policy action(:destroy) do
+      forbid_if expr(role == :admin)
       authorize_if {WatchClub.Clubs.Checks.ActorIsClubMemberFilter, role: :admin}
     end
 
     policy action(:leave_club) do
-      forbid_if actor_attribute_equals(:administrator?, true)
+      forbid_if expr(role == :admin)
       authorize_if expr(user_id == ^actor(:id))
     end
   end

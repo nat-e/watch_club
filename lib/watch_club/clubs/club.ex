@@ -120,7 +120,7 @@ defmodule WatchClub.Clubs.Club do
 
   relationships do
     has_many :memberships, Membership do
-      read_action :with_user_and_invitation
+      read_action :with_user
     end
 
     has_many :invitations, Invitation do

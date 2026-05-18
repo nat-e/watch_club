@@ -3,7 +3,7 @@ defmodule WatchClub.Clubs.InvitationTest do
 
   import WatchClub.Clubs
 
-  alias WatchClub.Clubs.{Invitation, Membership, MembershipRole}
+  alias WatchClub.Clubs.{Invitation, Membership}
 
   setup do
     admin = generate(administrator())
@@ -22,39 +22,33 @@ defmodule WatchClub.Clubs.InvitationTest do
       assert %Invitation{
                club_id: ^club_id,
                accepted?: false,
-               role: :admin,
                expires_at: %DateTime{} = expires_at
              } =
-               create_invitation!(%{name: "Nate", club_id: club.id, role: :admin},
-                 actor: admin
-               )
+               create_invitation!(%{name: "Nate", club_id: club.id}, actor: admin)
 
       assert DateTime.after?(expires_at, DateTime.utc_now())
     end
 
     test "only club admins can create invitations", %{club: club, member: member} do
-      create_invitation(%{name: "Nate", club_id: club.id, role: :admin}, actor: member)
+      create_invitation(%{name: "Nate", club_id: club.id}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
   describe "accept_invitation/*" do
-    for role <- MembershipRole.values() do
-      test "accepts an invitation and creates a :#{role} membership", %{club: club, admin: admin} do
-        invitation_role = unquote(role)
-        invitation = generate(invitation(club, admin, role: invitation_role))
-        invitee = generate(user())
-        invitee_id = invitee.id
+    test "accepts an invitation and creates a club member membership", %{club: club, admin: admin} do
+      invitation = generate(invitation(club, admin))
+      invitee = generate(user())
+      invitee_id = invitee.id
 
-        assert %Invitation{
-                 accepted?: true,
-                 created_membership: %Membership{user_id: ^invitee_id, role: ^invitation_role}
-               } =
-                 accept_invitation!(invitation,
-                   load: [:created_membership],
-                   actor: invitee
-                 )
-      end
+      assert %Invitation{
+               accepted?: true,
+               created_membership: %Membership{user_id: ^invitee_id, role: :member}
+             } =
+               accept_invitation!(invitation,
+                 load: [:created_membership],
+                 actor: invitee
+               )
     end
 
     test "accepts an invitation sends a user::<user_id> pubsub event", %{club: club, admin: admin} do
@@ -139,14 +133,6 @@ defmodule WatchClub.Clubs.InvitationTest do
       invitation = generate(invitation(club, admin))
 
       assert %Invitation{} = view_invitation!(invitation.id)
-    end
-
-    test "can view an invitation without its inviter", %{club: club, admin: admin} do
-      invitation =
-        generate(invitation(club, admin))
-        |> Ash.Seed.update!(%{inviter_id: nil})
-
-      assert %Invitation{inviter: nil} = view_invitation!(invitation.id)
     end
   end
 end

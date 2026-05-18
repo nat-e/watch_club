@@ -72,8 +72,19 @@ defmodule WatchClub.Clubs.MembershipTest do
                      500
     end
 
-    test "administrator cannot leave a club", %{admin_membership: membership, admin: admin} do
+    test "club admin cannot leave a club", %{admin_membership: membership, admin: admin} do
       assert leave_club(membership, actor: admin)
+             |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "remove_from_club/*" do
+    test "club admin can remove a club member", %{membership: membership, admin: admin} do
+      assert :ok = remove_from_club!(membership, actor: admin)
+    end
+
+    test "club admin cannot be removed from a club", %{admin_membership: membership, admin: admin} do
+      assert remove_from_club(membership, actor: admin)
              |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

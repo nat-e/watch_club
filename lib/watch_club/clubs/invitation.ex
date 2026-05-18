@@ -9,10 +9,9 @@ defmodule WatchClub.Clubs.Invitation do
 
   require Ash.Resource.Change.Builtins
 
-  alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Changes.CreateMembershipFromInvitation
   alias WatchClub.Clubs.Checks.{ActorIsClubMember, ActorIsClubMemberFilter}
-  alias WatchClub.Clubs.{Club, Membership, MembershipRole}
+  alias WatchClub.Clubs.{Club, Membership}
 
   # 1 Week
   @invitation_expiration_days 7
@@ -23,7 +22,6 @@ defmodule WatchClub.Clubs.Invitation do
 
     references do
       reference(:club, on_delete: :delete, on_update: :update)
-      reference(:inviter, on_delete: :nilify, on_update: :update)
     end
   end
 
@@ -36,19 +34,17 @@ defmodule WatchClub.Clubs.Invitation do
       filter expr(id == ^arg(:id))
 
       prepare build(
-                load: [club: [:name], inviter: [:username]],
+                load: [club: [:name]],
                 context: %{private: %{authorize?: false}}
               )
     end
 
     read :list_club_invitations do
-      prepare build(load: [:inviter], filter: [accepted?: false], sort: [updated_at: :desc])
+      prepare build(filter: [accepted?: false], sort: [updated_at: :desc])
     end
 
     create :create do
-      accept [:name, :club_id, :role]
-
-      change relate_actor(:inviter)
+      accept [:name, :club_id]
     end
 
     update :accept do
@@ -116,8 +112,6 @@ defmodule WatchClub.Clubs.Invitation do
     uuid_v7_primary_key :id
     attribute :name, :string, public?: true
 
-    attribute :role, MembershipRole, allow_nil?: false, public?: true
-
     attribute :accepted?, :boolean do
       source :accepted
       public? true
@@ -139,7 +133,6 @@ defmodule WatchClub.Clubs.Invitation do
 
   relationships do
     belongs_to :club, Club, allow_nil?: false
-    belongs_to :inviter, User, allow_nil?: true
 
     has_one :created_membership, Membership do
       destination_attribute :invitation_id

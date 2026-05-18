@@ -15,7 +15,7 @@ defmodule WatchClub.Clubs.Changes.CreateMembershipFromInvitation do
         %{
           club_id: Ash.Changeset.get_attribute(changeset, :club_id),
           user_id: actor.id,
-          role: Ash.Changeset.get_attribute(changeset, :role)
+          role: :member
         }
       ],
       type: :create,

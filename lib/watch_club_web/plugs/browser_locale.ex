@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Plugs.BrowserLocale do
   alias WatchClub.Accounts.UserLocale
 
   @locales UserLocale.values()
-  @default_locale List.first(UserLocale.values())
+  @default_locale UserLocale.default()
 
   @spec get(map()) :: :atom
   def get(session), do: session["browser_locale"]

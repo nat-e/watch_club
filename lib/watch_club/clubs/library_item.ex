@@ -77,9 +77,13 @@ defmodule WatchClub.Clubs.LibraryItem do
     end
 
     policy action([:destroy]) do
-      description "Only admins or members that have added the content can remove it"
+      description "Only admins or current members that have added the content can remove it"
       authorize_if {ActorIsClubMemberFilter, role: :admin, club_path: [:library, :club]}
-      authorize_if relates_to_actor_via(:added_by)
+
+      authorize_if expr(
+                     added_by_id == ^actor(:id) and
+                       exists(library.club.memberships, user_id == ^actor(:id))
+                   )
     end
 
     policy action([:create]) do

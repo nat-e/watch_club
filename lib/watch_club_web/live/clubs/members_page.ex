@@ -43,7 +43,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
               <.table_head class="text-left">{dgettext("clubs", "User")}</.table_head>
               <.table_head>{dgettext("clubs", "Role")}</.table_head>
               <.table_head>{dgettext("clubs", "Member since")}</.table_head>
-              <.table_head class="text-left">{dgettext("clubs", "Invited by")}</.table_head>
               <.table_head class="text-right"></.table_head>
             </.table_row>
           </.table_header>
@@ -98,10 +97,10 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         <.role_badge role={@membership.role} />
       </.table_cell>
       <.table_cell>
-        {WatchClubWeb.Helpers.Time.relative_from_now(@membership.inserted_at)}
-      </.table_cell>
-      <.table_cell class="text-left">
-        <.inviter_label :if={@membership.invitation} inviter={@membership.invitation.inviter} />
+        {WatchClubWeb.Helpers.Time.relative_from_now(
+          @membership.inserted_at,
+          @current_user.settings.locale
+        )}
       </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu
@@ -140,9 +139,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         <.invitation_status_badge invitation={@invitation} />
       </.table_cell>
       <.table_cell></.table_cell>
-      <.table_cell class="text-left">
-        <.inviter_label inviter={@invitation.inviter} />
-      </.table_cell>
       <.table_cell class="text-right">
         <.dropdown_menu id={"invitation-actions-#{@invitation.id}"}>
           <:trigger>
@@ -168,25 +164,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         </.dropdown_menu>
       </.table_cell>
     </.table_row>
-    """
-  end
-
-  attr :inviter, :any, required: true
-
-  defp inviter_label(%{inviter: %User{}} = assigns) do
-    ~H"""
-    <.inline class="font-bold">
-      <.avatar id={@inviter.id} name={@inviter.username} />
-      {@inviter.username}
-    </.inline>
-    """
-  end
-
-  defp inviter_label(assigns) do
-    ~H"""
-    <.inline class="font-bold italic text-text-muted">
-      {dgettext("clubs", "Deleted user")}
-    </.inline>
     """
   end
 
@@ -303,26 +280,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
           type="text"
           autocomplete="name"
         />
-        <.field field={@form[:role]} label={dgettext("clubs", "Club Role")}>
-          <:control>
-            <.radio_group field={@form[:role]} class="grid-cols-1 sm:grid-cols-2">
-              <:item
-                value="member"
-                class="group/radio-card grid cursor-pointer grid-cols-[1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
-              >
-                <span class="font-medium">{dgettext("clubs", "Member")}</span>
-                <Lucideicons.check class="size-icon-sm text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-              </:item>
-              <:item
-                value="admin"
-                class="group/radio-card grid cursor-pointer grid-cols-[1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only"
-              >
-                <span class="font-medium">{dgettext("clubs", "Admin")}</span>
-                <Lucideicons.check class="size-icon-sm text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-              </:item>
-            </.radio_group>
-          </:control>
-        </.field>
         <:action>
           <.button id="create-invitation-submit-button" type="submit" class="w-full">
             {dgettext("clubs", "Create invitation")}
@@ -412,10 +369,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
 
       {:error, %Ash.Error.Forbidden{}} ->
         not_found(socket)
-
-      {:error, error} ->
-        Logger.warning("Unexpected error loading members: #{inspect(error)}")
-        {:noreply, socket}
     end
   end
 
@@ -440,18 +393,8 @@ defmodule WatchClubWeb.Clubs.MembersPage do
     form =
       Clubs.form_to_create_invitation(
         actor: current_user,
-        # Default role for the member
-        params: %{role: :member},
         # Append club_id before validate/submit without requiring a hidden field
-        prepare_params: fn params, _ -> Map.put(params, :club_id, club.id) end,
-        transform_errors: fn
-          _, %Ash.Error.Changes.Required{field: :role} ->
-            {:role, dgettext("clubs", "You must select a role"), []}
-
-          _, err ->
-            Logger.warning("Unexpected form error: #{inspect(err)}")
-            err
-        end
+        prepare_params: fn params, _ -> Map.put(params, :club_id, club.id) end
       )
 
     {:noreply, socket |> assign(:create_invitation_form, to_form(form))}

@@ -13,8 +13,8 @@ Use this skill to turn a brief feature or technical-change idea into a concise P
 - The user should invoke this manually, preferably with a short brief: `/skill:brainstorm <idea>`.
 - If no brief is provided, ask for a one-paragraph description before exploring.
 - Treat invocation as permission to create only temporary brainstorm artifacts:
-  - `tmp/brainstorm/<slug>/prd.md`
-  - `lib/watch_club_web/storybook/brainstorm/<slug>.story.exs`
+  - Always: `tmp/brainstorm/<slug>/prd.md`
+  - Optional, only for meaningful UX changes: `lib/watch_club_web/storybook/brainstorm/<slug>.story.exs`
 - Do not modify real app/domain code unless the user separately approves implementation.
 
 ## Required context pass
@@ -70,19 +70,28 @@ Avoid implementation detail unless it helps the user validate a design decision.
 
 ## Storybook mockups
 
-- Create Storybook mockups for user-facing UI/UX changes.
+- Create Storybook mockups only when there is a meaningful UX decision to validate visually, such as new layout, flow, interaction model, information hierarchy, or visual treatment.
+- Do not create Storybook mockups for backend-only changes, copy-only changes, small helper changes, or UI changes whose visible effect can be explained with examples in the PRD.
 - Use temporary files under `lib/watch_club_web/storybook/brainstorm/` and label them temporary in module docs/comments.
 - Follow existing PhoenixStorybook patterns in `lib/watch_club_web/storybook`.
 - Use WatchClub design-system tokens from `docs/design-system/foundation.md` and existing UI primitives where practical.
-- Include Storybook links in the PRD, normally `http://localhost:4000/dev/storybook/brainstorm/<slug>`.
+- Include Storybook links in the PRD when a mockup exists, normally `http://localhost:4000/dev/storybook/brainstorm/<slug>`.
 - If the dev server is not running, still include the link and note that it requires the Phoenix dev server.
+
+## Direction validation before Plannotator
+
+After writing the first PRD draft and any useful mockups, pause and summarize the main direction for the user before running Plannotator.
+
+- Ask the user to validate the key architecture/product direction, especially any decision that changes domain language, UX behavior, user-visible copy, or implementation architecture.
+- Keep this checkpoint concise: recommended direction, alternatives considered, and the smallest set of decisions needed to proceed.
+- Do not run Plannotator until the user confirms the direction or asks to continue.
 
 ## Plannotator review
 
-After writing the PRD and any mockups:
+After the user validates the main direction:
 
 1. Run `plannotator annotate tmp/brainstorm/<slug>/prd.md`.
-2. Ensure the PRD contains the Storybook mockup links before review.
+2. Ensure the PRD contains the Storybook mockup links before review when a mockup exists.
 3. Incorporate returned annotations into the PRD and/or proposed design.
 4. Summarize final artifacts and remaining decisions for the user.
 
@@ -92,5 +101,5 @@ End with:
 
 - PRD path.
 - Storybook mockup path and link, if created.
-- What changed after Plannotator review.
+- What changed after Plannotator review, if it ran.
 - The smallest set of decisions still needed before implementation.

@@ -68,18 +68,16 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def invitation(%Club{} = club, %User{} = inviter, opts \\ []) do
+  def invitation(%Club{} = club, %User{} = actor, opts \\ []) do
     changeset_generator(
       Invitation,
       :create,
       defaults: [
         name: sequence(:invitation_name, fn i -> "Invitation #{i}" end),
-        club_id: club.id,
-        accepted?: false,
-        role: :member
+        club_id: club.id
       ],
       authorize?: false,
-      actor: inviter,
+      actor: actor,
       overrides: opts
     )
   end

@@ -2,7 +2,7 @@ defmodule WatchClub.Contents.ContentTest do
   use WatchClub.DataCase
 
   import ExUnit.CaptureLog
-  import WatchClub.Clubs, only: [get_library_items!: 2]
+  import WatchClub.Clubs, only: [get_library_items!: 2, leave_club!: 2]
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
@@ -15,14 +15,14 @@ defmodule WatchClub.Contents.ContentTest do
     club = generate(club(actor: admin))
     # Add a member
     member = generate(user())
-    generate(membership(club, member, role: :member))
+    membership = generate(membership(club, member, role: :member))
 
     Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
       tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
       Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", tmdb_id))
     end)
 
-    {:ok, admin: admin, club: club, member: member}
+    {:ok, admin: admin, club: club, member: member, membership: membership}
   end
 
   describe "create_movie/*" do
@@ -193,13 +193,24 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.read_one!(authorize?: false)
     end
 
+    test "removes omitted library items added by the actor", %{club: club, member: member} do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = create_movie!("14", %{library_ids: [library.id]}, actor: member)
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
+
+      refute LibraryItem
+             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+             |> Ash.exists?(authorize?: false)
+    end
+
     test "preserves omitted library items the actor can access but cannot remove", %{
       club: club,
       admin: admin,
       member: member
     } do
       library = generate(library(club, accepted_content_types: [:movie]))
-      content = create_movie!("14", %{library_ids: [library.id]}, actor: admin)
+      content = create_movie!("15", %{library_ids: [library.id]}, actor: admin)
 
       admin_id = admin.id
 
@@ -216,6 +227,74 @@ defmodule WatchClub.Contents.ContentTest do
                library.id
                |> get_library_items!(actor: member)
                |> Enum.find(&(&1.content_id == content.id))
+    end
+
+    test "preserves omitted library items added by a former member", %{
+      club: club,
+      member: member,
+      membership: membership
+    } do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = create_movie!("16", %{library_ids: [library.id]}, actor: member)
+
+      leave_club!(membership, actor: member)
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
+
+      member_id = member.id
+      library_id = library.id
+
+      assert %LibraryItem{library_id: ^library_id, added_by_id: ^member_id} =
+               LibraryItem
+               |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+               |> Ash.read_one!(authorize?: false)
+    end
+
+    test "allows a rejoined member to remove library items they added before leaving", %{
+      club: club,
+      member: member,
+      membership: membership
+    } do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = create_movie!("17", %{library_ids: [library.id]}, actor: member)
+
+      leave_club!(membership, actor: member)
+      generate(membership(club, member, role: :member))
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
+
+      refute LibraryItem
+             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+             |> Ash.exists?(authorize?: false)
+    end
+
+    test "only club admins can remove orphaned library items", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      library = generate(library(club, accepted_content_types: [:movie]))
+      content = create_movie!("18", %{library_ids: [library.id]}, actor: member)
+
+      LibraryItem
+      |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+      |> Ash.read_one!(authorize?: false)
+      |> Ash.Seed.update!(%{added_by_id: nil})
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
+
+      library_id = library.id
+
+      assert %LibraryItem{library_id: ^library_id, added_by_id: nil} =
+               LibraryItem
+               |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+               |> Ash.read_one!(authorize?: false)
+
+      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: admin)
+
+      refute LibraryItem
+             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
+             |> Ash.exists?(authorize?: false)
     end
 
     test "requires membership in selected libraries", %{club: club, admin: admin} do

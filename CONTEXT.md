@@ -37,23 +37,19 @@ A user who belongs to a specific club.
 _Avoid_: Participant, club user
 
 **Membership**:
-A user’s belonging to a club, including their role within that club.
+A user’s belonging to a club as either a **Club Admin** or **Club Member**.
 _Avoid_: Subscription, enrolment
-
-**Role**:
-A member’s permission level within a club.
-_Avoid_: Rank, status
 
 **Club Admin**:
 A member who can manage the club, its libraries, members, invitations, and library items.
 _Avoid_: Admin, owner
 
 **Club Member**:
-A member who can view libraries and add content to them.
+A member who can view libraries, add content to them, and remove library items they added.
 _Avoid_: Regular user, participant
 
 **Invitation**:
-A one-time link created by a club admin that lets one person join a club with a chosen role.
+A one-time link created by a **Club Admin** that lets one person join a club.
 _Avoid_: Invite, invitation code
 
 **Invitee Name**:
@@ -73,7 +69,7 @@ Remove an unused invitation so its link can no longer be accepted.
 _Avoid_: Revoke invitation, cancel invitation
 
 **Library**:
-A named collection of content inside a club that accepts one or more content types.
+A named collection of content inside a club for exactly one content type.
 _Avoid_: list, shelf, playlist
 
 **Library Item**:
@@ -97,7 +93,7 @@ A member ends their own membership in a club.
 _Avoid_: Quit club, unsubscribe
 
 **Remove Member**:
-A club admin ends another member’s membership in a club.
+A **Club Admin** ends another member’s membership in a club.
 _Avoid_: Delete member, ban
 
 **Delete Club**:
@@ -113,10 +109,6 @@ _Avoid_: Media, title, item, recommendation
 **Content Type**:
 The kind of content, such as movie, TV show, book, video, or podcast.
 _Avoid_: Media type, category
-
-**Accepted Content Type**:
-A **Content Type** that a **Library** allows its **Library Items** to reference.
-_Avoid_: Library content type, allowed media type
 
 **Movie**:
 Content whose content type is movie.
@@ -161,18 +153,18 @@ _Avoid_: Best localization, current localization
 - A **Club** is visible only to its **Members**, except through an **Invitation**
 - A **Club** has one or more **Members**
 - A **Membership** may originate from an **Invitation**
-- A **Membership** has exactly one **Role**
-- A **Club** must always have at least one **Club Admin**
-- A **Club Admin** cannot leave, be removed, or lose the **Club Admin** role if that would leave the **Club** without any **Club Admin**
+- A **Club** has exactly one **Club Admin**
 - A **Club Admin** and a **Club Member** are both **Members**
-- **Leave Club** ends the acting **Member**’s **Membership** without removing **Library Items** they added
+- The **Club Admin** cannot **Leave Club** or be the target of **Remove Member**
+- Only a **Club Admin** can view the full member and invitation list for a **Club**
+- A **Club Member** can view only their own **Membership**
+- **Leave Club** ends the acting **Club Member**’s **Membership** without removing **Library Items** they added
 - **Remove Member** ends another **Member**’s **Membership** without removing **Library Items** they added
 - An **Invitation** belongs to exactly one **Club**
-- An **Invitation** is created by a **Club Admin**
-- An **Invitation** may remain without its creating **Club Admin** if that **User** is deleted
+- An **Invitation** is created by a **Club Admin** but identifies only its **Club**, not the **User** who created it
 - Accepting an **Invitation** creates exactly one **Membership**
-- An **Invitation** grants either the **Club Admin** or **Club Member** role when accepted
-- Anyone with an **Invitation** link can view the invitation, including the **Club** and, when available, the **Club Admin** who created it
+- Accepting an **Invitation** creates a **Membership** as a **Club Member**
+- Anyone with an **Invitation** link can view the invitation, including the **Club**
 - An **Invitation** is link-based and is not tied to a specific **User** before acceptance
 - An **Invitation** may have one **Invitee Name**
 - An **Expired Invitation** cannot be accepted
@@ -183,15 +175,11 @@ _Avoid_: Best localization, current localization
 - A **Club** has zero or more **Libraries**
 - A **Library** belongs to exactly one **Club**
 - Only **Members** can view a **Club**’s **Libraries** and **Library Items**
-- A **Library** has one or more **Accepted Content Types**
-- A **Library** must have at least one **Accepted Content Type**
-- A **Library** remains one collection of **Library Items** even when it has multiple **Accepted Content Types**
-- **Accepted Content Types** are a strict whitelist for which **Content** can become **Library Items** in that **Library**
-- An **Accepted Content Type** is a **Content Type**
-- Adding an **Accepted Content Type** to a **Library** does not affect existing **Library Items**
-- Removing an **Accepted Content Type** from a **Library** removes existing **Library Items** of that **Content Type**, but their **Content** is not deleted; the admin UI displays an inline warning before submitting such removals
+- A **Library** has exactly one **Content Type**
+- A **Club** can have multiple **Libraries** with the same **Content Type**
+- A **Library** contains only **Library Items** whose **Content** has the same **Content Type** as the **Library**
 - A **Library** contains zero or more **Library Items**
-- Any **Member** can add **Library Items** to a **Library** when the **Content** matches one of that **Library**’s **Accepted Content Types**
+- Any **Member** can add **Library Items** to a **Library** when the **Content** matches that **Library**’s **Content Type**
 - **Add to Library** creates a **Library Item**
 - A **Library** can contain a given **Content** at most once
 - The same **Content** can appear in multiple **Libraries**
@@ -202,9 +190,10 @@ _Avoid_: Best localization, current localization
 - If a **User** is deleted, **Library Items** they added remain in their **Libraries** without an adding **Member**
 - **Remove from Library** removes a **Library Item** but not its **Content**
 - A **Club Admin** can **Remove from Library** for any **Library Item**
-- The **Member** who added a **Library Item** can **Remove from Library** for that item
+- A current **Member** who added a **Library Item** can **Remove from Library** for that item
+- A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
 - If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
-- Only a **Club Admin** can change a **Library**’s **Accepted Content Types**
+- A **Library**’s **Content Type** is chosen when the **Library** is created and cannot be changed later
 - Only a **Club Admin** can **Delete Library**
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 
@@ -222,7 +211,8 @@ _Avoid_: Best localization, current localization
 
 - A **User** can have memberships in many **Clubs**
 - A **Membership** belongs to exactly one **User** and exactly one **Club**
-- A **Club** is created by the **Instance Administrator**, who becomes a **Club Admin** of that **Club**
+- A **Club** is created by the **Instance Administrator**, who becomes its **Club Admin**
+- The **Club Admin** cannot be replaced
 - A **User** cannot accept an **Invitation** to a **Club** where they are already a **Member**
 - **Delete Club** does not delete **Content**
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
@@ -232,15 +222,16 @@ _Avoid_: Best localization, current localization
 > **Dev:** "When a **Member** adds a movie to a **Library**, are they recommending it?"
 > **Domain expert:** "No — **Add to Library** creates a **Library Item** so the **Content** is visible to the **Club**."
 > **Dev:** "Can they add it to any library?"
-> **Domain expert:** "Only if it matches one of the **Library**’s **Accepted Content Types**."
+> **Domain expert:** "Only if the **Content** has the same **Content Type** as the **Library**."
 
 ## Flagged ambiguities
 
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
-- "Media" is not the canonical term for **Content**.
+- "Media" is not canonical; use **Content** for a creative work and **Library Item** for content included in a **Library**.
 - "Club Library" may appear where the domain means **Library**; resolved: the canonical term is **Library**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
-- "Library content type" was discussed as singular; resolved: a **Library** has one or more **Accepted Content Types**.
-- "All content types" is not a **Content Type**; resolved: a **Library** explicitly accepts one or more concrete **Accepted Content Types**.
+- "Library content type" is singular; resolved: a **Library** has exactly one **Content Type**.
+- "Accepted Content Types" is no longer canonical; resolved: use the **Library**’s **Content Type**.
 - Adding **Content** to a **Library** creates a **Library Item**; it is not a recommendation or endorsement.
-- An **Invitation** is created by a **Club Admin**, but does not permanently require that **User** to exist; if the creating **User** is deleted, the **Invitation** remains without its creating **Club Admin**.
+- An **Invitation** does not identify the **User** who created it; the **Invitee Name** personalizes the link but does not tie it to a known **User** before acceptance.
+- "Admin" was used ambiguously; resolved: use **Instance Administrator** for the instance-level user and **Club Admin** for the privileged club membership assigned at club creation; UI may use "Admin" only as a shorthand label for **Club Admin**.

@@ -85,9 +85,6 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
 
       {:error, %Ash.Error.Forbidden{}} ->
         not_found(socket)
-
-      {:error, _} ->
-        {:noreply, socket}
     end
   end
 
