@@ -7,15 +7,22 @@ defmodule WatchClubWeb.Components.UI.Select do
   """
 
   use Phoenix.Component
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias Phoenix.LiveView.JS
 
   attr :id, :string, required: true
   attr :class, :any, default: nil
   attr :trigger_class, :any, default: nil
+
+  attr :trigger_variant, :string,
+    values: ~w(default attached),
+    default: "default",
+    doc: "Use `attached` when the trigger is visually attached to a compound control."
+
   attr :name, :any, default: nil
   attr :value, :any, default: nil
-  attr :placeholder, :string, default: "Select..."
+  attr :placeholder, :string, default: nil
 
   attr :size, :string,
     values: ~w(sm md lg),
@@ -46,6 +53,9 @@ defmodule WatchClubWeb.Components.UI.Select do
   end
 
   def select(assigns) do
+    assigns =
+      assign(assigns, :placeholder, assigns.placeholder || dgettext("default", "Select..."))
+
     ~H"""
     <%!--
       The hook owns open/closed state and floating-position attributes. Options,
@@ -85,13 +95,16 @@ defmodule WatchClubWeb.Components.UI.Select do
         aria-invalid={(@errors != [] && "true") || nil}
         disabled={@disabled}
         class={[
-          "flex w-full min-w-0 items-center justify-between gap-related rounded-control border border-border bg-surface-inset px-group text-left text-sm text-text shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
-          "hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+          "flex w-full min-w-0 items-center justify-between gap-related px-group text-left text-text transition-[background-color,border-color,box-shadow,color] outline-none",
+          @trigger_variant == "default" &&
+            "rounded-control border border-border bg-surface-inset shadow-xs hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-border-focus/40",
+          @trigger_variant == "attached" &&
+            "border-r border-border-subtle bg-surface-inset hover:bg-surface-hover focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:border-border-subtle",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
           "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
           "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
           @size == "sm" && "h-control-sm text-xs",
-          @size == "md" && "h-control-md",
+          @size == "md" && "h-control-md text-sm",
           @size == "lg" && "h-control-lg text-base",
           @trigger_class
         ]}

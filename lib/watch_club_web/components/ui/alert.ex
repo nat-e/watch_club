@@ -30,7 +30,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
         @icon != [] && "grid-cols-[auto_1fr] gap-x-related",
         @action != [] && "pr-18",
         @variant == "default" && "border-border bg-surface text-text",
-        @variant == "accent" && "border-accent/40 bg-accent/10 text-accent",
+        @variant == "accent" && "border-accent-border bg-accent-bg text-accent",
         @variant == "info" && "border-info-border bg-info-bg text-info",
         @variant == "warning" && "border-warning-border bg-warning-bg text-warning",
         @variant == "danger" && "border-danger-border bg-danger-bg text-danger",

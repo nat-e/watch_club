@@ -73,7 +73,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
             id="desktop-search-location-select"
             field={@form[:location]}
             class="min-w-20 shrink-1"
-            trigger_class="rounded-none border-0 border-r border-border-subtle shadow-none focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:!border-border-subtle focus-visible:!ring-0"
+            trigger_variant="attached"
           >
             <.select_item value="">
               <div class="flex h-icon min-w-0 items-center gap-related">
@@ -104,7 +104,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
             id="desktop-search-content-type-select"
             field={@form[:content_type]}
             class="min-w-20 shrink-1"
-            trigger_class="rounded-none border-0 border-r border-border-subtle shadow-none focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:!border-border-subtle focus-visible:!ring-0"
+            trigger_variant="attached"
           >
             <.select_item
               :for={content_type <- SearchContentType.values()}

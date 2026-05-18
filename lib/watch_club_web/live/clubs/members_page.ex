@@ -427,7 +427,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         prepare_params: fn params, _ -> Map.put(params, :club_id, club.id) end,
         transform_errors: fn
           _, %Ash.Error.Changes.Required{field: :role} ->
-            {:role, "You must select a role", []}
+            {:role, dgettext("clubs", "You must select a role"), []}
 
           _, err ->
             Logger.warning("Unexpected form error: #{inspect(err)}")

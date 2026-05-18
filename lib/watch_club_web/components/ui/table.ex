@@ -88,7 +88,9 @@ defmodule WatchClubWeb.Components.UI.Table do
       data-slot="table-row"
       data-state={if @selected, do: "selected"}
       class={[
-        "border-b border-border-subtle transition-colors hover:bg-surface-hover has-aria-expanded:bg-surface-hover data-[state=selected]:bg-surface-selected",
+        "border-b border-border-subtle transition-colors",
+        @selected && "bg-surface-selected",
+        !@selected && "hover:bg-surface-hover has-aria-expanded:bg-surface-hover",
         @class
       ]}
       {@rest}

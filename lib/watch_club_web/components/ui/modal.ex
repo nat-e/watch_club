@@ -16,6 +16,12 @@ defmodule WatchClubWeb.Components.UI.Modal do
 
   attr :id, :string, required: true
   attr :class, :any, default: nil
+
+  attr :size, :string,
+    values: ~w(sm md lg),
+    default: "md",
+    doc: "Maximum modal width."
+
   attr :on_close, JS, required: true
   attr :rest, :global
 
@@ -45,7 +51,10 @@ defmodule WatchClubWeb.Components.UI.Modal do
       data-slot="modal"
       data-on-close={@on_close}
       class={[
-        "fixed top-1/2 left-1/2 z-50 m-0 max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-card border border-border bg-surface-overlay p-0 text-text shadow-overlay outline-none backdrop:bg-canvas/70 backdrop:backdrop-blur-sm sm:max-w-lg",
+        "fixed top-1/2 left-1/2 z-50 m-0 max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-card border border-border bg-surface-overlay p-0 text-text shadow-overlay outline-none backdrop:bg-canvas/70 backdrop:backdrop-blur-sm",
+        @size == "sm" && "sm:max-w-md",
+        @size == "md" && "sm:max-w-lg",
+        @size == "lg" && "sm:max-w-2xl",
         @class
       ]}
       phx-hook=".Modal"

@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
     <div id={"#{@id}-root"} class="contents">
       <.modal
         id={"#{@id}-modal"}
-        class="sm:max-w-2xl"
+        size="lg"
         on_close={JS.push("close", target: @myself)}
       >
         <:title>{@title}</:title>

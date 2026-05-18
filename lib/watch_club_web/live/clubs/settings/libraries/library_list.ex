@@ -44,7 +44,6 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       event="reorder_libraries"
       target={@target}
       class="grid gap-related"
-      item_class="group grid gap-group rounded-card border border-border bg-surface-raised p-group shadow-xs transition-colors hover:bg-surface-hover sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:items-center"
     >
       <:item :let={{library, _index}}>
         <.library_list_item library={library} target={@target} />
@@ -58,71 +57,77 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
 
   defp library_list_item(assigns) do
     ~H"""
-    <.button
-      type="button"
-      variant="ghost"
-      size="icon-sm"
-      data-sortable-handle
-      class="cursor-grab active:cursor-grabbing"
-      aria-label={dgettext("clubs", "Drag to reorder")}
+    <.card
+      as="div"
+      surface="raised"
+      class="grid gap-group sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:items-center"
     >
-      <Lucideicons.grip_vertical class="size-icon" />
-    </.button>
+      <.button
+        type="button"
+        variant="ghost"
+        size="icon"
+        data-sortable-handle
+        class="cursor-grab active:cursor-grabbing"
+        aria-label={dgettext("clubs", "Drag to reorder")}
+      >
+        <Lucideicons.grip_vertical class="size-icon" />
+      </.button>
 
-    <.button
-      type="button"
-      variant="secondary"
-      size="icon"
-      phx-click="open_icon_picker"
-      phx-target={@target}
-      phx-value-library_id={@library.id}
-      aria-label={dgettext("clubs", "Change %{library_name} icon", library_name: @library.name)}
-    >
-      <.library_icon library={@library} class="size-icon-lg" />
-    </.button>
+      <.button
+        type="button"
+        variant="secondary"
+        size="icon"
+        phx-click="open_icon_picker"
+        phx-target={@target}
+        phx-value-library_id={@library.id}
+        aria-label={dgettext("clubs", "Change %{library_name} icon", library_name: @library.name)}
+      >
+        <.library_icon library={@library} class="size-icon-lg" />
+      </.button>
 
-    <div class="grid min-w-0 gap-tight">
-      <h3 class="truncate text-base font-semibold">{@library.name}</h3>
-      <div class="flex flex-wrap gap-tight">
-        <.accepted_content_type_badge
-          :for={content_type <- ContentType.library_display_order()}
-          :if={content_type in @library.accepted_content_types}
-          content_type={content_type}
-        />
+      <div class="grid min-w-0 gap-tight">
+        <h3 class="truncate text-base font-semibold">{@library.name}</h3>
+        <div class="flex flex-wrap gap-tight">
+          <.accepted_content_type_badge
+            :for={content_type <- ContentType.library_display_order()}
+            :if={content_type in @library.accepted_content_types}
+            content_type={content_type}
+          />
+        </div>
       </div>
-    </div>
 
-    <.dropdown_menu
-      id={"library-actions-#{@library.id}"}
-      class="justify-self-start sm:justify-self-end"
-    >
-      <:trigger>
-        <.button
-          variant="ghost"
-          size="icon-sm"
-          class="text-text-muted hover:text-text"
-          aria-label={dgettext("clubs", "Library actions")}
+      <.dropdown_menu
+        id={"library-actions-#{@library.id}"}
+        class="justify-self-start sm:justify-self-end"
+      >
+        <:trigger>
+          <.button
+            variant="ghost"
+            size="icon-sm"
+            class="text-text-muted hover:text-text"
+            aria-label={dgettext("clubs", "Library actions")}
+          >
+            <Lucideicons.ellipsis_vertical />
+          </.button>
+        </:trigger>
+
+        <.dropdown_menu_item
+          phx-click="open_edit_library_modal"
+          phx-target={@target}
+          phx-value-library_id={@library.id}
         >
-          <Lucideicons.ellipsis_vertical />
-        </.button>
-      </:trigger>
-
-      <.dropdown_menu_item
-        phx-click="open_edit_library_modal"
-        phx-target={@target}
-        phx-value-library_id={@library.id}
-      >
-        <Lucideicons.pencil />{dgettext("clubs", "Edit Library")}
-      </.dropdown_menu_item>
-      <.dropdown_menu_item
-        variant="destructive"
-        phx-click="open_delete_library_modal"
-        phx-target={@target}
-        phx-value-library_id={@library.id}
-      >
-        <Lucideicons.trash_2 />{dgettext("clubs", "Delete Library")}
-      </.dropdown_menu_item>
-    </.dropdown_menu>
+          <Lucideicons.pencil />{dgettext("clubs", "Edit Library")}
+        </.dropdown_menu_item>
+        <.dropdown_menu_item
+          variant="destructive"
+          phx-click="open_delete_library_modal"
+          phx-target={@target}
+          phx-value-library_id={@library.id}
+        >
+          <Lucideicons.trash_2 />{dgettext("clubs", "Delete Library")}
+        </.dropdown_menu_item>
+      </.dropdown_menu>
+    </.card>
     """
   end
 

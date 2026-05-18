@@ -24,7 +24,7 @@ msgstr "Annuler"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/ui/flash.ex:112
-#: lib/watch_club_web/components/ui/modal.ex:99
+#: lib/watch_club_web/components/ui/modal.ex:108
 #: lib/watch_club_web/live/clubs/members_page.ex:365
 #, elixir-autogen, elixir-format
 msgid "Close"
@@ -45,7 +45,7 @@ msgstr "Supprimer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/add_to_library_button_live.ex:96
-#: lib/watch_club_web/live/accounts/settings_page.ex:56
+#: lib/watch_club_web/live/accounts/settings_page.ex:55
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
@@ -102,3 +102,15 @@ msgstr "La page que vous recherchez n’existe pas ou vous n’y avez pas accès
 #, elixir-autogen, elixir-format
 msgid "Notifications"
 msgstr "Notifications"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/avatar.ex:76
+#, elixir-autogen, elixir-format
+msgid "%{count} more"
+msgstr "%{count} de plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/select.ex:57
+#, elixir-autogen, elixir-format
+msgid "Select..."
+msgstr "Sélectionner..."

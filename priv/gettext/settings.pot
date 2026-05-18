@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page.ex:82
+#: lib/watch_club_web/live/accounts/settings_page.ex:81
 #, elixir-autogen, elixir-format
 msgid "Error updating settings"
 msgstr ""

@@ -176,7 +176,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       aria-pressed={to_string(@active?)}
       aria-label={
         dgettext("clubs", "Sort by %{field} %{order}",
-          field: @sort_by,
+          field: @label,
           order: SortOrder.translated_label(@target_sort_order)
         )
       }

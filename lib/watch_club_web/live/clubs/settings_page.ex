@@ -122,7 +122,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
       actor: actor,
       transform_errors: fn
         _, %Ash.Error.Changes.Required{field: :name} ->
-          {:name, "You must enter a club name", []}
+          {:name, dgettext("clubs", "You must enter a club name"), []}
 
         _, err ->
           Logger.warning("Unexpected form error: #{inspect(err)}")
