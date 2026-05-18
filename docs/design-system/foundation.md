@@ -71,40 +71,26 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | `color.border-strong` | High-emphasis neutral border |
 | `color.border-focus` | Focus and focused input border |
 
-### Actions
+### Fills
 
-| Token | Meaning |
+All semantic fills use the same token API. Valid fill names are `primary`, `accent`, `danger`, `success`, `warning`, and `info`.
+
+| Token pattern | Meaning |
 | --- | --- |
-| `color.primary` | Main Watch Club action fill |
-| `color.primary-hover` | Hover state for primary actions |
-| `color.primary-active` | Pressed state for primary actions |
-| `color.on-primary` | Foreground on primary fills |
-| `color.accent` | Supporting action/accent fill and accent callout foreground |
-| `color.accent-hover` | Hover state for accent actions |
-| `color.accent-active` | Pressed state for accent actions |
-| `color.accent-bg` | Accent tinted background |
-| `color.accent-border` | Accent tinted border |
-| `color.on-accent` | Foreground on accent fills |
-| `color.danger` | Destructive action/error color |
-| `color.danger-hover` | Hover state for destructive action fills |
-| `color.danger-active` | Pressed state for destructive action fills |
-| `color.on-danger` | Foreground on danger fills |
+| `color.<fill>` | Strong fill color or tinted-surface foreground |
+| `color.<fill>-hover` | Hover state for strong fills |
+| `color.<fill>-active` | Pressed state for strong fills |
+| `color.<fill>-bg` | Tinted background for callouts, badges, and quiet fill-related controls |
+| `color.<fill>-border` | Border for tinted fill surfaces and fill-related invalid/focus states |
+| `color.<fill>-ring` | Ring color for fill-related focus or invalid states |
+| `color.on-<fill>` | Foreground on strong fills |
 
-### Status
+Fill usage rules:
 
-| Token | Meaning |
-| --- | --- |
-| `color.success` | Success foreground |
-| `color.success-bg` | Success tinted background |
-| `color.success-border` | Success border |
-| `color.warning` | Warning foreground |
-| `color.warning-bg` | Warning tinted background |
-| `color.warning-border` | Warning border |
-| `color.info` | Information foreground |
-| `color.info-bg` | Information tinted background |
-| `color.info-border` | Information border |
-| `color.danger-bg` | Danger tinted background |
-| `color.danger-border` | Danger border |
+- Strong fills use `bg-<fill> text-on-<fill> hover:bg-<fill>-hover active:bg-<fill>-active`.
+- Tinted fill surfaces use `border-<fill>-border bg-<fill>-bg text-<fill>`.
+- Fill-related focus or invalid rings use `ring-<fill>-ring`.
+- Do not derive fill states with opacity utilities such as `bg-danger/10` or `ring-danger/30`.
 
 ## Non-color tokens
 

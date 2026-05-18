@@ -101,7 +101,7 @@ defmodule WatchClubWeb.Components.UI.Select do
           @trigger_variant == "attached" &&
             "border-r border-border-subtle bg-surface-inset hover:bg-surface-hover focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:border-border-subtle",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
-          "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger/30",
+          "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger-ring",
           "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
           @size == "sm" && "h-control-sm text-xs",
           @size == "md" && "h-control-md text-sm",

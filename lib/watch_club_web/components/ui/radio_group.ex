@@ -75,7 +75,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
             "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent shadow-xs transition-[background-color,border-color,box-shadow,color] outline-none",
             "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
             "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-border-focus/40",
-            "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger/30"
+            "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring"
           ]}
         >
           <input
