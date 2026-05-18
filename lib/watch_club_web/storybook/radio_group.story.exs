@@ -27,7 +27,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
       %Variation{
         id: :default,
         description: "Default stacked radio group",
-        attributes: %{name: "plan", value: "club"},
+        attributes: %{id: "wc-radio-group-default", name: "plan", value: "club"},
         slots: [
           ~s(<:item value="solo">Solo watcher</:item>),
           ~s(<:item value="club">Club member</:item>),
@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
       %Variation{
         id: :empty,
         description: "Nothing selected",
-        attributes: %{name: "cadence"},
+        attributes: %{id: "wc-radio-group-empty", name: "cadence"},
         slots: [
           ~s(<:item value="weekly">Weekly</:item>),
           ~s(<:item value="monthly">Monthly</:item>),
@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
       %Variation{
         id: :with_disabled,
         description: "Disabled item",
-        attributes: %{name: "tier", value: "basic"},
+        attributes: %{id: "wc-radio-group-disabled", name: "tier", value: "basic"},
         slots: [
           ~s(<:item value="basic">Basic</:item>),
           ~s|<:item value="premiere" disabled>Premiere room (coming soon)</:item>|,
@@ -57,7 +57,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
       %Variation{
         id: :invalid,
         description: "Validation state mirrors field errors through `aria-invalid`",
-        attributes: %{name: "role", errors: ["Choose a role"]},
+        attributes: %{id: "wc-radio-group-invalid", name: "role", errors: ["Choose a role"]},
         slots: [
           ~s(<:item value="member">Member</:item>),
           ~s(<:item value="admin">Admin</:item>)
@@ -76,6 +76,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             id: :horizontal_icon,
             description: "Horizontal icon — compact and keeps the radio affordance clear",
             attributes: %{
+              id: "wc-radio-group-horizontal-icon",
               name: "content_type_horizontal",
               value: "movie",
               class: "grid grid-cols-1 gap-3"
@@ -105,6 +106,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             id: :stacked_centered,
             description: "Stacked centered — more visual, but taller",
             attributes: %{
+              id: "wc-radio-group-stacked-centered",
               name: "content_type_stacked",
               value: "tv_show",
               class: "grid grid-cols-3 gap-3"
@@ -134,6 +136,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             id: :corner_radio_tile,
             description: "Corner radio tile — visual tile with the radio in the corner",
             attributes: %{
+              id: "wc-radio-group-corner-tile",
               name: "content_type_corner",
               value: "book",
               class: "grid grid-cols-3 gap-3"
@@ -164,6 +167,7 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             description:
               "Check-card — clean selected-card pattern, less explicit as a radio group",
             attributes: %{
+              id: "wc-radio-group-check-card",
               name: "content_type_check_card",
               value: "movie",
               class: "grid grid-cols-1 gap-3"

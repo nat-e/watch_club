@@ -8,7 +8,10 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
 
   use Phoenix.Component
 
-  attr :id, :any, default: nil
+  attr :id, :any,
+    default: nil,
+    doc: "required unless `field` is provided; must be stable across renders"
+
   attr :class, :any, default: nil
   attr :name, :any, default: nil
   attr :value, :any, default: nil
@@ -28,7 +31,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
     assigns
     |> assign(
       field: nil,
-      id: assigns.id || field.id,
+      id: Map.get(assigns, :id) || field.id,
       name: field.name,
       value: input_value(field.value),
       errors: errors
@@ -37,8 +40,12 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
   end
 
   def radio_group(assigns) do
-    assigns =
-      assign(assigns, :id, assigns.id || "radio-group-#{System.unique_integer([:positive])}")
+    if is_nil(Map.get(assigns, :id)) do
+      raise ArgumentError, """
+      <.radio_group> requires an `id` when no `field` is provided.
+      Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
+      """
+    end
 
     ~H"""
     <div
