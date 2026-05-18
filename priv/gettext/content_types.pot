@@ -26,6 +26,7 @@ msgstr ""
 msgid "TV Show"
 msgstr ""
 
+#: lib/watch_club/contents/content_type.ex:20
 #: lib/watch_club/contents/search_content_type.ex:11
 #, elixir-autogen, elixir-format
 msgid "Books"
@@ -34,4 +35,14 @@ msgstr ""
 #: lib/watch_club/contents/search_content_type.ex:10
 #, elixir-autogen, elixir-format
 msgid "Movies and Shows"
+msgstr ""
+
+#: lib/watch_club/contents/content_type.ex:21
+#, elixir-autogen, elixir-format
+msgid "Movies"
+msgstr ""
+
+#: lib/watch_club/contents/content_type.ex:22
+#, elixir-autogen, elixir-format
+msgid "TV Shows"
 msgstr ""

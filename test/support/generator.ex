@@ -98,23 +98,17 @@ defmodule WatchClub.Generator do
   end
 
   def library(%Club{} = club, opts \\ []) do
-    accepted_content_types =
-      Keyword.get(opts, :accepted_content_types, [Keyword.get(opts, :content_type, :movie)])
+    content_type = Keyword.get(opts, :content_type, :movie)
 
     seed_generator(
       %Library{
         name: sequence(:library_name, fn i -> "Library #{i}" end),
         club_id: club.id,
-        accepted_content_types: accepted_content_types,
-        icon:
-          Keyword.get(
-            opts,
-            :icon,
-            LibraryIcon.default_for_accepted_content_types(accepted_content_types)
-          ),
+        content_type: content_type,
+        icon: Keyword.get(opts, :icon, LibraryIcon.default_for_content_type(content_type)),
         index: sequence(:library_index, fn i -> i end)
       },
-      overrides: opts |> Keyword.drop([:content_type])
+      overrides: opts
     )
   end
 

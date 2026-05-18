@@ -9,7 +9,6 @@ defmodule WatchClub.Clubs.Library do
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Clubs.Changes.{
-    RemoveUnacceptedLibraryItems,
     ReorderLibrariesAfterDestroy,
     SetDefaultLibraryIcon,
     SetNextLibraryIndex
@@ -18,7 +17,6 @@ defmodule WatchClub.Clubs.Library do
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.{Club, LibraryIcon, LibraryItem}
-  alias WatchClub.Clubs.Validations.UniqueAcceptedContentTypes
   alias WatchClub.Contents.{Content, ContentType}
 
   import Ash.Expr
@@ -45,24 +43,14 @@ defmodule WatchClub.Clubs.Library do
       accept [:index]
     end
 
-    update :update_icon do
-      accept [:icon]
-    end
-
     update :update do
       primary? true
-
-      # Updating accepted content types may remove incompatible library items,
-      # which is cross-resource cleanup and cannot be expressed as a single atomic update.
-      require_atomic? false
-      accept [:name, :accepted_content_types]
-
-      change RemoveUnacceptedLibraryItems
+      accept [:name, :icon]
     end
 
     create :create do
       primary? true
-      accept [:club_id, :name, :accepted_content_types]
+      accept [:club_id, :name, :content_type]
 
       change SetDefaultLibraryIcon
       change SetNextLibraryIndex
@@ -83,7 +71,7 @@ defmodule WatchClub.Clubs.Library do
       forbid_if always()
     end
 
-    policy action([:update, :update_icon, :destroy, :set_index]) do
+    policy action([:update, :destroy, :set_index]) do
       description "Only club admins can manage libraries"
       authorize_if {ActorIsClubMember, role: :admin}
     end
@@ -110,7 +98,6 @@ defmodule WatchClub.Clubs.Library do
 
     publish :create, ["clubs", :club_id]
     publish :update, ["clubs", :club_id]
-    publish :update_icon, ["clubs", :club_id]
     publish :set_index, ["clubs", :club_id]
     publish :destroy, ["clubs", :club_id]
   end
@@ -134,20 +121,10 @@ defmodule WatchClub.Clubs.Library do
       message dgettext_noop("errors", "Library name cannot be longer than %{max} characters")
     end
 
-    validate present(:accepted_content_types) do
-      where action_is([:create, :update])
-      message dgettext_noop("errors", "Library accepted content types are required")
+    validate present(:content_type) do
+      where action_is(:create)
+      message dgettext_noop("errors", "Library content type is required")
     end
-
-    validate compare(:accepted_content_types, is_not_equal: []) do
-      where action_is([:create, :update])
-      message dgettext_noop("errors", "Library accepted content types are required")
-    end
-
-    validate UniqueAcceptedContentTypes,
-      on: [:create, :update],
-      where: [action_is([:create, :update])],
-      message: dgettext_noop("errors", "Library accepted content types must be unique")
 
     validate one_of(:icon, LibraryIcon.names()) do
       message dgettext_noop("errors", "Library icon is invalid")
@@ -162,7 +139,7 @@ defmodule WatchClub.Clubs.Library do
       allow_nil? false
     end
 
-    attribute :accepted_content_types, {:array, ContentType} do
+    attribute :content_type, ContentType do
       allow_nil? false
       public? true
     end

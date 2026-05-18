@@ -627,7 +627,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       <div class="grid gap-related">
         <h3 class="text-xl font-semibold">Create library</h3>
         <p class="text-sm leading-6 text-text-muted">
-          Add a new library to this club. Choose one or more accepted content types.
+          Add a new library to this club. Choose which content type it will contain.
         </p>
       </div>
 
@@ -637,9 +637,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         hint="Use a name members will recognize."
       />
       <.field_mock
-        label="Accepted content types"
-        control="checkbox"
-        error="Choose at least one accepted content type."
+        label="Content type"
+        control="radio"
+        error="Choose a content type."
       />
 
       <div class="flex flex-col-reverse gap-related border-t border-border-subtle pt-group sm:flex-row sm:justify-end">
@@ -656,7 +656,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   attr :label, :string, required: true
   attr :hint, :string, default: nil
   attr :error, :string, default: nil
-  attr :control, :string, values: ~w(input checkbox), default: "input"
+  attr :control, :string, values: ~w(input radio), default: "input"
 
   defp field_mock(assigns) do
     ~H"""
@@ -671,15 +671,15 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         readonly
       />
 
-      <div :if={@control == "checkbox"} class="grid gap-related sm:grid-cols-3">
-        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-primary bg-surface-selected p-group text-sm">
-          <span class="size-3 rounded-[3px] border border-primary bg-primary"></span> Movies
-        </label>
-        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-primary bg-surface-selected p-group text-sm">
-          <span class="size-3 rounded-[3px] border border-primary bg-primary"></span> Shows
+      <div :if={@control == "radio"} class="grid gap-related sm:grid-cols-3">
+        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
+          <span class="size-3 rounded-full border border-border"></span> Movies
         </label>
         <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
-          <span class="size-3 rounded-[3px] border border-border"></span> Books
+          <span class="size-3 rounded-full border border-border"></span> Shows
+        </label>
+        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
+          <span class="size-3 rounded-full border border-border"></span> Books
         </label>
       </div>
 
@@ -976,7 +976,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <:hint>Use a name members will recognize.</:hint>
       </.field>
 
-      <.field field={@form[:accepted_content_types]} label="Accepted content types">
+      <.field field={@form[:content_type]} label="Content type">
         <:control>
           <div class="grid grid-cols-1 gap-related sm:grid-cols-3">
             ...

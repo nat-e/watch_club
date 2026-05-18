@@ -512,8 +512,8 @@ msgstr "Trier par %{field} (%{order})"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:22
 #, elixir-autogen, elixir-format
-msgid "Add a new library to this club. Choose one or more accepted content types."
-msgstr "Ajoutez une nouvelle bibliothèque à ce club. Choisissez un ou plusieurs types de contenu acceptés."
+msgid "Add a new library to this club. Choose which content type it will contain."
+msgstr "Ajoutez une nouvelle bibliothèque à ce club. Choisissez le type de contenu qu’elle contiendra."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:89
@@ -524,8 +524,8 @@ msgstr "Changer l’icône de %{library_name}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries_live.ex:26
 #, elixir-autogen, elixir-format
-msgid "Create, edit, delete, and reorder club libraries. Libraries can accept multiple content types."
-msgstr "Créez, modifiez, supprimez et réordonnez les bibliothèques du club. Les bibliothèques peuvent accepter plusieurs types de contenu."
+msgid "Create, edit, delete, and reorder club libraries. Each library contains one content type."
+msgstr "Créez, modifiez, supprimez et réordonnez les bibliothèques du club. Chaque bibliothèque contient un seul type de contenu."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:33
@@ -571,18 +571,6 @@ msgid "Try a different search term."
 msgstr "Essayez un autre terme de recherche."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:65
-#, elixir-autogen, elixir-format
-msgid "Accepted content types removed"
-msgstr "Types de contenu acceptés supprimés"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:67
-#, elixir-autogen, elixir-format
-msgid "Saving will remove any existing library items of %{content_types} from this library."
-msgstr "L’enregistrement retirera de cette bibliothèque tous les éléments existants de %{content_types}."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/libraries_live.ex:66
 #, elixir-autogen, elixir-format
 msgid "Change icon"
@@ -595,16 +583,16 @@ msgid "Select a new icon for the %{library_name} library"
 msgstr "Sélectionnez une nouvelle icône pour la bibliothèque %{library_name}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:99
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:96
 #, elixir-autogen, elixir-format
-msgid "Content types"
-msgstr "Types de contenu"
+msgid "Content type"
+msgstr "Type de contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:101
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:98
 #, elixir-autogen, elixir-format
-msgid "Select which content types are allowed in this library. Members will only be able to add content of these types to the library"
-msgstr "Sélectionnez les types de contenu autorisés dans cette bibliothèque. Les membres ne pourront ajouter à la bibliothèque que du contenu de ces types"
+msgid "A library's content type cannot be changed after creation."
+msgstr "Le type de contenu d’une bibliothèque ne peut pas être modifié après sa création."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members_page.ex:188

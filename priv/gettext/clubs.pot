@@ -430,7 +430,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:22
 #, elixir-autogen, elixir-format
-msgid "Add a new library to this club. Choose one or more accepted content types."
+msgid "Add a new library to this club. Choose which content type it will contain."
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:89
@@ -440,7 +440,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/clubs/settings/libraries_live.ex:26
 #, elixir-autogen, elixir-format
-msgid "Create, edit, delete, and reorder club libraries. Libraries can accept multiple content types."
+msgid "Create, edit, delete, and reorder club libraries. Each library contains one content type."
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:33
@@ -479,16 +479,6 @@ msgstr ""
 msgid "Try a different search term."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:65
-#, elixir-autogen, elixir-format
-msgid "Accepted content types removed"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:67
-#, elixir-autogen, elixir-format
-msgid "Saving will remove any existing library items of %{content_types} from this library."
-msgstr ""
-
 #: lib/watch_club_web/live/clubs/settings/libraries_live.ex:66
 #, elixir-autogen, elixir-format
 msgid "Change icon"
@@ -499,14 +489,14 @@ msgstr ""
 msgid "Select a new icon for the %{library_name} library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:99
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:96
 #, elixir-autogen, elixir-format
-msgid "Content types"
+msgid "Content type"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:101
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:98
 #, elixir-autogen, elixir-format
-msgid "Select which content types are allowed in this library. Members will only be able to add content of these types to the library"
+msgid "A library's content type cannot be changed after creation."
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/members_page.ex:188

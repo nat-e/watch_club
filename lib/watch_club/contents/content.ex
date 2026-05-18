@@ -6,8 +6,6 @@ defmodule WatchClub.Contents.Content do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  use Gettext, backend: WatchClubWeb.Gettext
-
   alias WatchClub.Clubs.{Library, LibraryItem}
 
   alias WatchClub.Contents.{
@@ -21,7 +19,6 @@ defmodule WatchClub.Contents.Content do
   }
 
   alias WatchClub.Contents.Calculations.GetContentImplementation
-  alias WatchClub.Contents.Validations.LibrariesAcceptContentType
 
   import Ash.Expr
 
@@ -71,15 +68,24 @@ defmodule WatchClub.Contents.Content do
       require_atomic? false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
 
-      validate LibrariesAcceptContentType do
-        only_when_valid? true
-        message dgettext_noop("errors", "Library does not accept this content type")
-      end
-
       # Keep relationship authorization enabled: this action syncs the actor's
       # selected libraries, not the content's global library list. Omitted library
       # items outside the actor's removal rights are preserved.
-      change manage_relationship(:library_ids, :libraries, type: :append_and_remove)
+      change fn changeset, _context ->
+        library_inputs =
+          changeset
+          |> Ash.Changeset.get_argument(:library_ids)
+          |> Enum.map(fn library_id ->
+            %{id: library_id, content_id: changeset.data.id, library_id: library_id}
+          end)
+
+        Ash.Changeset.manage_relationship(changeset, :libraries, library_inputs,
+          type: :append_and_remove,
+          join_keys: [:content_id, :library_id],
+          meta: [id: :library_ids]
+        )
+      end
+
       change load(library_items: [:library])
     end
   end

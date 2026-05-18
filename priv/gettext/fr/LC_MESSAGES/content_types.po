@@ -25,8 +25,10 @@ msgstr "Film"
 msgid "TV Show"
 msgstr "Série TV"
 
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex:20
 #: lib/watch_club/contents/search_content_type.ex:11
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Books"
 msgstr "Livres"
 
@@ -34,3 +36,15 @@ msgstr "Livres"
 #, elixir-autogen, elixir-format
 msgid "Movies and Shows"
 msgstr "Films et Séries"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex:21
+#, elixir-autogen, elixir-format
+msgid "Movies"
+msgstr "Films"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex:22
+#, elixir-autogen, elixir-format
+msgid "TV Shows"
+msgstr "Séries TV"

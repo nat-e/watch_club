@@ -1,6 +1,6 @@
 defmodule WatchClub.Clubs.Changes.SetDefaultLibraryIcon do
   @moduledoc """
-  Sets a default library icon based on the accepted content types.
+  Sets a default library icon based on the content type.
   """
   use Ash.Resource.Change
 
@@ -8,12 +8,16 @@ defmodule WatchClub.Clubs.Changes.SetDefaultLibraryIcon do
 
   @impl true
   def change(changeset, _opts, _context) do
-    accepted_content_types = Ash.Changeset.get_attribute(changeset, :accepted_content_types) || []
+    case Ash.Changeset.get_attribute(changeset, :content_type) do
+      nil ->
+        changeset
 
-    Ash.Changeset.force_change_attribute(
-      changeset,
-      :icon,
-      LibraryIcon.default_for_accepted_content_types(accepted_content_types)
-    )
+      content_type ->
+        Ash.Changeset.force_change_attribute(
+          changeset,
+          :icon,
+          LibraryIcon.default_for_content_type(content_type)
+        )
+    end
   end
 end

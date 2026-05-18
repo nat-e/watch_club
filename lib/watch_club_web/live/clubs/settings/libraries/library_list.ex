@@ -94,11 +94,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       <div class="grid min-w-0 gap-tight">
         <h3 class="truncate text-base font-semibold">{@library.name}</h3>
         <div class="flex flex-wrap gap-tight">
-          <.accepted_content_type_badge
-            :for={content_type <- ContentType.library_display_order()}
-            :if={content_type in @library.accepted_content_types}
-            content_type={content_type}
-          />
+          <.content_type_badge content_type={@library.content_type} />
         </div>
       </div>
 
@@ -142,7 +138,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
 
   attr :content_type, :atom, required: true
 
-  defp accepted_content_type_badge(assigns) do
+  defp content_type_badge(assigns) do
     ~H"""
     <.badge variant="secondary" class="whitespace-nowrap">
       <:icon><.content_type_icon type={@content_type} /></:icon>

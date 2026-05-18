@@ -34,7 +34,6 @@ defmodule WatchClub.Clubs do
       define :list_club_libraries, action: :by_club, args: [:club_id]
       define :create_library, action: :create, args: [:club_id]
       define :update_library, action: :update
-      define :update_library_icon, action: :update_icon
       define :destroy_library, action: :destroy
     end
 

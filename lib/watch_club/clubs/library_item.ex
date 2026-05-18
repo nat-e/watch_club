@@ -13,7 +13,7 @@ defmodule WatchClub.Clubs.LibraryItem do
   alias WatchClub.Clubs.Library
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Clubs.Preparations.PrepareLibraryItemsForView
-  alias WatchClub.Clubs.Validations.LibraryAcceptsContentType
+  alias WatchClub.Clubs.Validations.LibraryAllowsContentType
   alias WatchClub.Contents.Content
   alias WatchClub.Shared.SortOrder
 
@@ -60,9 +60,9 @@ defmodule WatchClub.Clubs.LibraryItem do
       primary? true
       accept [:library_id, :content_id]
 
-      validate LibraryAcceptsContentType do
+      validate LibraryAllowsContentType do
         only_when_valid? true
-        message dgettext_noop("errors", "Library does not accept this content type")
+        message dgettext_noop("errors", "Library does not allow this content type")
       end
 
       change relate_actor(:added_by)

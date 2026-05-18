@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
       field: nil,
       id: Map.get(assigns, :id) || field.id,
       name: field.name,
-      value: input_value(field.value),
+      value: Map.get(assigns, :value) || input_value(field.value),
       errors: errors
     )
     |> radio_group()

@@ -62,6 +62,13 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   end
 
   defp club_selection_modal(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :library_options,
+        libraries_for_content(assigns.current_user, assigns.content)
+      )
+
     ~H"""
     <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
       <:title>{dgettext("contents", "Select libraries")}</:title>
@@ -87,14 +94,19 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
             phx-submit="submit"
           >
             <.library_selection_checkbox
-              :for={option <- libraries_for_content(@current_user, @content)}
+              :for={option <- @library_options}
               component_id={@component_id}
               club={option.club}
               library={option.library}
               selected?={in_library?(@content, option.library.id)}
+              disabled?={option.disabled?}
             />
             <:action>
-              <.button id={"#{@component_id}-club-selection-submit-button"} type="submit">
+              <.button
+                id={"#{@component_id}-club-selection-submit-button"}
+                type="submit"
+                disabled={Enum.all?(@library_options, & &1.disabled?)}
+              >
                 {dgettext("default", "Save")}
               </.button>
             </:action>
@@ -109,8 +121,9 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     ~H"""
     <label class={[
       "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border p-group transition-colors",
+      @disabled? && "cursor-not-allowed opacity-50",
       @selected? && "bg-surface-selected text-text",
-      !@selected? && "hover:bg-surface-hover active:bg-surface-active"
+      !@selected? && !@disabled? && "hover:bg-surface-hover active:bg-surface-active"
     ]}>
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
@@ -124,6 +137,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
         name="form[library_ids][]"
         value={@library.id}
         checked={@selected?}
+        disabled={@disabled?}
       />
     </label>
     """
@@ -191,8 +205,13 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     user.memberships
     |> Enum.flat_map(fn membership ->
       membership.club.libraries
-      |> Enum.filter(&(content.type in &1.accepted_content_types))
-      |> Enum.map(&%{club: membership.club, library: &1})
+      |> Enum.map(fn library ->
+        %{
+          club: membership.club,
+          library: library,
+          disabled?: library.content_type != content.type
+        }
+      end)
     end)
   end
 

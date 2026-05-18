@@ -3,8 +3,8 @@ defmodule WatchClub.Clubs.LibraryTest do
 
   import WatchClub.Clubs
 
-  alias WatchClub.Clubs.{Library, LibraryItem}
-  alias WatchClub.Contents.{Content, ContentView}
+  alias WatchClub.Clubs.Library
+  alias WatchClub.Contents.ContentView
 
   require Ash.Query
 
@@ -107,59 +107,37 @@ defmodule WatchClub.Clubs.LibraryTest do
 
       assert %Library{
                club_id: ^club_id,
-               accepted_content_types: [:movie],
+               content_type: :movie,
                icon: "film",
                name: "Movies",
                index: 2
              } =
-               create_library!(club.id, %{accepted_content_types: [:movie], name: "Movies"},
-                 actor: admin
-               )
+               create_library!(club.id, %{content_type: :movie, name: "Movies"}, actor: admin)
     end
 
-    test "creates a library with multiple accepted content types", %{club: club, admin: admin} do
-      assert %Library{accepted_content_types: [:movie, :tv_show], icon: "film"} =
-               create_library!(
-                 club.id,
-                 %{accepted_content_types: [:movie, :tv_show], name: "Screen Club"},
-                 actor: admin
-               )
+    test "sets the default icon from the content type", %{club: club, admin: admin} do
+      assert %Library{content_type: :book, icon: "book_open"} =
+               create_library!(club.id, %{content_type: :book, name: "Books"}, actor: admin)
     end
 
-    test "uses the first accepted content type in display order for the default icon", %{
-      club: club,
-      admin: admin
-    } do
-      assert %Library{accepted_content_types: [:book, :movie], icon: "film"} =
-               create_library!(
-                 club.id,
-                 %{accepted_content_types: [:book, :movie], name: "Mixed"},
-                 actor: admin
-               )
+    test "allows multiple libraries with the same content type", %{club: club, admin: admin} do
+      assert %Library{content_type: :movie, name: "Candidates"} =
+               create_library!(club.id, %{content_type: :movie, name: "Candidates"}, actor: admin)
+
+      assert %Library{content_type: :movie, name: "Favorites"} =
+               create_library!(club.id, %{content_type: :movie, name: "Favorites"}, actor: admin)
     end
 
-    test "rejects empty accepted content types", %{club: club, admin: admin} do
-      create_library(club.id, %{accepted_content_types: [], name: "Movies"}, actor: admin)
+    test "rejects missing content type", %{club: club, admin: admin} do
+      create_library(club.id, %{name: "Movies"}, actor: admin)
       |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Changes.InvalidAttribute{field: :accepted_content_types} -> true
-        _ -> false
-      end)
-    end
-
-    test "rejects duplicate accepted content types", %{club: club, admin: admin} do
-      create_library(
-        club.id,
-        %{accepted_content_types: [:movie, :movie], name: "Movies"},
-        actor: admin
-      )
-      |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Changes.InvalidAttribute{field: :accepted_content_types} -> true
+        %Ash.Error.Changes.InvalidAttribute{field: :content_type} -> true
         _ -> false
       end)
     end
 
     test "members cannot create libraries", %{club: club, member: member} do
-      create_library(club.id, %{accepted_content_types: [:movie], name: "Movies"}, actor: member)
+      create_library(club.id, %{content_type: :movie, name: "Movies"}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -168,7 +146,7 @@ defmodule WatchClub.Clubs.LibraryTest do
     test "sorts items by localized title", %{club: club, admin: admin} do
       actor = generate(user(locale: :fr_FR))
       generate(membership(club, actor, role: :member))
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
 
       Enum.each(@library_sort_movies, fn movie_details ->
         generate(movie(tmdb_id: movie_details.tmdb_id, library_ids: [library.id], actor: admin))
@@ -185,7 +163,7 @@ defmodule WatchClub.Clubs.LibraryTest do
     end
 
     test "paginates items with keysets", %{club: club, admin: admin} do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
 
       Enum.each([203, 201, 202], fn tmdb_id ->
         generate(movie(tmdb_id: tmdb_id, library_ids: [library.id], actor: admin))
@@ -244,95 +222,34 @@ defmodule WatchClub.Clubs.LibraryTest do
   end
 
   describe "update_library/*" do
-    test "admins can edit library name and accepted content types", %{club: club, admin: admin} do
-      library = generate(library(club))
+    test "admins can edit library name", %{club: club, admin: admin} do
+      library = generate(library(club, content_type: :movie))
 
-      assert %Library{name: "Screens", accepted_content_types: [:movie, :tv_show]} =
-               update_library!(
-                 library,
-                 %{name: "Screens", accepted_content_types: [:movie, :tv_show]},
-                 actor: admin
-               )
+      assert %Library{name: "Screens", content_type: :movie} =
+               update_library!(library, %{name: "Screens"}, actor: admin)
     end
 
-    test "admins can remove accepted content types when no library items are affected", %{
-      club: club,
-      admin: admin
-    } do
-      library = generate(library(club, accepted_content_types: [:movie, :tv_show]))
-
-      assert %Library{accepted_content_types: [:movie]} =
-               update_library!(library, %{accepted_content_types: [:movie]}, actor: admin)
-    end
-
-    test "removes incompatible library items when accepted content types are removed", %{
-      club: club,
-      admin: admin
-    } do
-      library = generate(library(club, accepted_content_types: [:movie, :book]))
-      content = generate(movie(library_ids: [library.id], actor: admin))
-
-      assert %Library{accepted_content_types: [:book]} =
-               update_library!(library, %{accepted_content_types: [:book]}, actor: admin)
-
-      assert [] =
-               LibraryItem
-               |> Ash.Query.filter(content_id == ^content.id)
-               |> Ash.read!(actor: admin)
-
-      assert %Content{} =
-               Content |> Ash.Query.filter(id == ^content.id) |> Ash.read_one!(actor: admin)
-    end
-
-    test "removes any library items whose content type is not accepted", %{
-      club: club,
-      admin: admin
-    } do
-      library = generate(library(club, accepted_content_types: [:book]))
-      content = generate(movie(actor: admin))
-      Ash.Seed.seed!(LibraryItem, %{library_id: library.id, content_id: content.id})
-
-      assert %Library{name: "Books"} = update_library!(library, %{name: "Books"}, actor: admin)
-
-      assert [] =
-               LibraryItem
-               |> Ash.Query.filter(content_id == ^content.id)
-               |> Ash.read!(actor: admin)
-
-      assert %Content{} =
-               Content |> Ash.Query.filter(id == ^content.id) |> Ash.read_one!(actor: admin)
-    end
-
-    test "members cannot edit libraries", %{club: club, member: member} do
-      library = generate(library(club))
-
-      update_library(library, %{name: "Films"}, actor: member)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-  end
-
-  describe "update_library_icon/*" do
     test "admins can update library icons", %{club: club, admin: admin} do
       library = generate(library(club))
 
       assert %Library{icon: "library"} =
-               update_library_icon!(library, %{icon: "library"}, actor: admin)
+               update_library!(library, %{icon: "library"}, actor: admin)
     end
 
     test "rejects invalid library icons", %{club: club, admin: admin} do
       library = generate(library(club))
 
-      update_library_icon(library, %{icon: "not_a_lucide_icon"}, actor: admin)
+      update_library(library, %{icon: "not_a_lucide_icon"}, actor: admin)
       |> assert_has_error(Ash.Error.Invalid, fn
         %Ash.Error.Changes.InvalidAttribute{field: :icon} -> true
         _ -> false
       end)
     end
 
-    test "members cannot update library icons", %{club: club, member: member} do
+    test "members cannot edit libraries", %{club: club, member: member} do
       library = generate(library(club))
 
-      update_library_icon(library, %{icon: "library"}, actor: member)
+      update_library(library, %{name: "Films"}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

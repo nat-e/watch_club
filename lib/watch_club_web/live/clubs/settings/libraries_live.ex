@@ -25,7 +25,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
         description={
           dgettext(
             "clubs",
-            "Create, edit, delete, and reorder club libraries. Libraries can accept multiple content types."
+            "Create, edit, delete, and reorder club libraries. Each library contains one content type."
           )
         }
       >
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
   def update(%{selected_library_icon: %{library_id: library_id, icon: icon}}, socket) do
     library = Enum.find(socket.assigns.libraries, &(&1.id == library_id))
 
-    case Clubs.update_library_icon(library, %{icon: icon}, actor: socket.assigns.current_user) do
+    case Clubs.update_library(library, %{icon: icon}, actor: socket.assigns.current_user) do
       {:ok, %Library{} = library} ->
         {:ok,
          socket
@@ -152,14 +152,14 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
        :create_library_form,
        AshPhoenix.Form.validate(
          socket.assigns.create_library_form,
-         normalize_library_params(params)
+         params
        )
      )}
   end
 
   def handle_event("submit_create_library", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.create_library_form,
-           params: normalize_library_params(params),
+           params: params,
            actor: socket.assigns.current_user
          ) do
       {:ok, _library} ->
@@ -202,13 +202,13 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
        :edit_library_form,
        AshPhoenix.Form.validate(
          socket.assigns.edit_library_form,
-         normalize_library_params(params)
+         library_name_params(params)
        )
      )}
   end
 
   def handle_event("submit_edit_library", %{"form" => params}, socket) do
-    submit_edit_library(socket, normalize_library_params(params))
+    submit_edit_library(socket, library_name_params(params))
   end
 
   def handle_event("reorder_libraries", %{"ids" => ordered_ids}, socket) do
@@ -287,13 +287,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
     end
   end
 
-  defp normalize_library_params(params) do
-    Map.update(params, "accepted_content_types", [], fn accepted_content_types ->
-      accepted_content_types
-      |> List.wrap()
-      |> Enum.reject(&(&1 == ""))
-    end)
-  end
+  defp library_name_params(params), do: Map.take(params, ["name"])
 
   defp load_libraries_if_needed(socket, club_id, _current_user)
        when socket.assigns.loaded_club_id == club_id do
@@ -326,7 +320,6 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
 
     Clubs.form_to_create_library(
       actor: actor,
-      params: %{accepted_content_types: [:movie]},
       prepare_params: fn params, _ ->
         Map.put(params, :club_id, club_id)
       end

@@ -103,7 +103,7 @@ defmodule WatchClub.Contents.ContentTest do
     end
 
     test "requires membership in selected libraries", %{club: club} do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       non_member = generate(user())
 
       create_movie("13", %{library_ids: [library.id]}, actor: non_member)
@@ -117,7 +117,7 @@ defmodule WatchClub.Contents.ContentTest do
       admin: admin,
       member: member
     } do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       library_id = library.id
       content = create_movie!("11", %{library_ids: [library.id]}, actor: admin)
       content_id = content.id
@@ -140,7 +140,7 @@ defmodule WatchClub.Contents.ContentTest do
 
   describe "set_club_libraries/*" do
     test "adds content to selected club libraries", %{club: club, admin: admin, member: member} do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       library_id = library.id
       content = generate(movie(actor: admin))
 
@@ -150,19 +150,17 @@ defmodule WatchClub.Contents.ContentTest do
       assert item.library.club_id == club.id
     end
 
-    test "rejects selected club libraries that do not accept the content type", %{
+    test "rejects selected club libraries that do not allow the content type", %{
       club: club,
       admin: admin,
       member: member
     } do
-      library = generate(library(club, accepted_content_types: [:book]))
+      library = generate(library(club, name: "Books", content_type: :book))
       content = generate(movie(actor: admin))
 
       set_club_libraries(content, %{library_ids: [library.id]}, actor: member)
       |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Changes.InvalidChanges{
-          message: "Library does not accept this content type"
-        } ->
+        %Ash.Error.Changes.InvalidChanges{message: "Library does not allow this content type"} ->
           true
 
         _ ->
@@ -175,9 +173,9 @@ defmodule WatchClub.Contents.ContentTest do
       admin: admin,
       member: member
     } do
-      member_library = generate(library(club, accepted_content_types: [:movie]))
+      member_library = generate(library(club, content_type: :movie))
       other_club = generate(club(actor: admin))
-      other_library = generate(library(other_club, accepted_content_types: [:movie]))
+      other_library = generate(library(other_club, content_type: :movie))
 
       content =
         create_movie!("13", %{library_ids: [member_library.id, other_library.id]}, actor: admin)
@@ -194,7 +192,7 @@ defmodule WatchClub.Contents.ContentTest do
     end
 
     test "removes omitted library items added by the actor", %{club: club, member: member} do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = create_movie!("14", %{library_ids: [library.id]}, actor: member)
 
       assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
@@ -209,7 +207,7 @@ defmodule WatchClub.Contents.ContentTest do
       admin: admin,
       member: member
     } do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = create_movie!("15", %{library_ids: [library.id]}, actor: admin)
 
       admin_id = admin.id
@@ -234,7 +232,7 @@ defmodule WatchClub.Contents.ContentTest do
       member: member,
       membership: membership
     } do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = create_movie!("16", %{library_ids: [library.id]}, actor: member)
 
       leave_club!(membership, actor: member)
@@ -255,7 +253,7 @@ defmodule WatchClub.Contents.ContentTest do
       member: member,
       membership: membership
     } do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = create_movie!("17", %{library_ids: [library.id]}, actor: member)
 
       leave_club!(membership, actor: member)
@@ -273,7 +271,7 @@ defmodule WatchClub.Contents.ContentTest do
       admin: admin,
       member: member
     } do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = create_movie!("18", %{library_ids: [library.id]}, actor: member)
 
       LibraryItem
@@ -298,7 +296,7 @@ defmodule WatchClub.Contents.ContentTest do
     end
 
     test "requires membership in selected libraries", %{club: club, admin: admin} do
-      library = generate(library(club, accepted_content_types: [:movie]))
+      library = generate(library(club, content_type: :movie))
       content = generate(movie(actor: admin))
       non_member = generate(user())
 
