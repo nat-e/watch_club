@@ -12,13 +12,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:76
+#: lib/watch_club_web/live/accounts/settings_page.ex:82
 #, elixir-autogen, elixir-format
 msgid "Error updating settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:35
+#: lib/watch_club_web/live/accounts/settings_page.ex:36
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Langue"

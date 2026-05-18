@@ -74,3 +74,9 @@ msgstr "Bon retour !"
 #, elixir-autogen, elixir-format
 msgid "Welcome to watch.club!"
 msgstr "Bienvenue sur watch.club !"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/auth_controller.ex:10
+#, elixir-autogen, elixir-format
+msgid "Your password has successfully been reset"
+msgstr "Votre mot de passe a bien été réinitialisé"

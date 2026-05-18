@@ -7,9 +7,8 @@ defmodule WatchClubWeb.AuthController do
 
     message =
       case activity do
-        {:confirm_new_user, :confirm} -> "Your email address has now been confirmed"
-        {:password, :reset} -> "Your password has successfully been reset"
-        _ -> "You are now signed in"
+        {:password, :reset} -> dgettext("auth", "Your password has successfully been reset")
+        _ -> nil
       end
 
     conn =
@@ -20,10 +19,10 @@ defmodule WatchClubWeb.AuthController do
       |> assign(:current_user, user)
 
     conn =
-      if Phoenix.Flash.get(conn.assigns.flash, :success) do
-        conn
-      else
+      if message && !Phoenix.Flash.get(conn.assigns.flash, :success) do
         put_flash(conn, :info, message)
+      else
+        conn
       end
 
     redirect(conn, to: return_to)

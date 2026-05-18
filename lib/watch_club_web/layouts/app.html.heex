@@ -9,7 +9,7 @@
   <main class="relative min-h-svh md:pl-[var(--wc-sidebar-width)]">
     <div
       :if={@backdrop != []}
-      class="absolute z-0 h-[400px] w-full xl:h-[500px] bg-emerald-400"
+      class="absolute z-0 h-[400px] w-full bg-canvas xl:h-[500px]"
     >
       {render_slot(@backdrop)}
       <div class="to-canvas from-canvas/50 absolute inset-0 bg-linear-to-b"></div>

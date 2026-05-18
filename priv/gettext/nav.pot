@@ -62,7 +62,7 @@ msgstr ""
 msgid "Watchlist"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:197
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "Club actions"
 msgstr ""

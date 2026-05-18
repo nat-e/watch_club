@@ -5,7 +5,10 @@ defmodule WatchClubWeb.Components.UI.Input do
 
   use Phoenix.Component
 
-  attr :id, :any, default: nil
+  attr :id, :any,
+    default: nil,
+    doc: "required unless `field` is provided; must be stable across renders"
+
   attr :class, :any, default: nil
   attr :type, :string, default: "text"
   attr :name, :any, default: nil
@@ -23,7 +26,7 @@ defmodule WatchClubWeb.Components.UI.Input do
     assigns
     |> assign(
       field: nil,
-      id: assigns.id || field.id,
+      id: Map.get(assigns, :id) || field.id,
       name: field.name,
       value: field.value,
       errors: errors
@@ -32,6 +35,13 @@ defmodule WatchClubWeb.Components.UI.Input do
   end
 
   def input(assigns) do
+    if is_nil(Map.get(assigns, :id)) do
+      raise ArgumentError, """
+      <.input> requires an `id` when no `field` is provided.
+      Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
+      """
+    end
+
     ~H"""
     <input
       id={@id}

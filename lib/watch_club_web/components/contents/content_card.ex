@@ -68,7 +68,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             class="min-h-0 flex-1 overflow-hidden text-left"
           >
             <div class="flex h-full w-full items-end">
-              <div class="px-related pb-related text-white">
+              <div class="px-related pb-related text-text">
                 <div class="flex flex-row items-center gap-tight leading-none">
                   <span :if={@content.origin_country}>{ContentView.country_flag(@content)}</span>
                   <span :if={@content.release_date} class="font-medium">
@@ -76,7 +76,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
                   </span>
                 </div>
 
-                <h2 class="mt-tight line-clamp-3 text-xl leading-tight font-bold whitespace-normal text-white">
+                <h2 class="mt-tight line-clamp-3 text-xl leading-tight font-bold whitespace-normal text-text">
                   {@content.title}
                 </h2>
               </div>

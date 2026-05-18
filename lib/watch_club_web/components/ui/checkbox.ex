@@ -5,7 +5,10 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
 
   use Phoenix.Component
 
-  attr :id, :any, default: nil
+  attr :id, :any,
+    default: nil,
+    doc: "required unless `field` is provided; must be stable across renders"
+
   attr :class, :any, default: nil
   attr :name, :any, default: nil
   attr :value, :any, default: "true"
@@ -21,7 +24,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     assigns
     |> assign(
       field: nil,
-      id: assigns.id || field.id,
+      id: Map.get(assigns, :id) || field.id,
       name: field.name,
       checked: Phoenix.HTML.Form.normalize_value("checkbox", field.value),
       errors: errors
@@ -30,6 +33,13 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
   end
 
   def checkbox(assigns) do
+    if is_nil(Map.get(assigns, :id)) do
+      raise ArgumentError, """
+      <.checkbox> requires an `id` when no `field` is provided.
+      Pass `field={@form[:field]}` to derive it from the form field, or pass a stable explicit `id`.
+      """
+    end
+
     ~H"""
     <span
       data-slot="checkbox"

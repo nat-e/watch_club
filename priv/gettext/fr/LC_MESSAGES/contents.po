@@ -12,19 +12,19 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:70
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:71
 #, elixir-autogen, elixir-format
 msgid "Add %{content_name} to club libraries to share it with the members of your clubs."
 msgstr "Ajoutez %{content_name} aux bibliothèques du club pour le partager avec les membres de vos clubs."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:41
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:42
 #, elixir-autogen, elixir-format
 msgid "Add to club"
 msgstr "Ajouter au club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:57
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:58
 #, elixir-autogen, elixir-format
 msgid "In %{count} club"
 msgid_plural "In %{count} clubs"
@@ -32,13 +32,13 @@ msgstr[0] "Dans %{count} club"
 msgstr[1] "Dans %{count} clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:79
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:80
 #, elixir-autogen, elixir-format
 msgid "Select clubs"
 msgstr "Sélectionner des clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:65
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:66
 #, elixir-autogen, elixir-format
 msgid "Select libraries"
 msgstr "Sélectionner des bibliothèques"

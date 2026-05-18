@@ -12,10 +12,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:31
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:31
-#: lib/watch_club_web/live/clubs/members_page.ex:233
-#: lib/watch_club_web/live/clubs/members_page.ex:256
+#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:34
+#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:34
+#: lib/watch_club_web/live/clubs/members_page.ex:240
+#: lib/watch_club_web/live/clubs/members_page.ex:263
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:78
 #: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:25
 #, elixir-autogen, elixir-format
@@ -23,40 +23,40 @@ msgid "Cancel"
 msgstr "Annuler"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/members_page.ex:358
+#: lib/watch_club_web/live/clubs/members_page.ex:365
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Fermer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex:31
+#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex:35
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "Créer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:40
-#: lib/watch_club_web/live/clubs/members_page.ex:260
+#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:43
+#: lib/watch_club_web/live/clubs/members_page.ex:267
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:93
-#: lib/watch_club_web/live/accounts/settings_page.ex:50
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:96
+#: lib/watch_club_web/live/accounts/settings_page.ex:56
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:39
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex:43
 #: lib/watch_club_web/controllers/error_html.ex:52
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:175
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:179
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
 msgstr "Une erreur est survenue, réessayez plus tard"

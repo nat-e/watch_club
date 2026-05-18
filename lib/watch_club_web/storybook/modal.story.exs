@@ -108,7 +108,12 @@ defmodule WatchClubWeb.Storybook.Modal do
       <div class="grid gap-4">
         <label class="grid gap-2">
           <span class="text-sm font-medium text-text">Email address</span>
-          <.input name="email" type="email" placeholder="friend@example.com" />
+          <.input
+            id="storybook-invite-email"
+            name="email"
+            type="email"
+            placeholder="friend@example.com"
+          />
         </label>
         <p class="text-sm text-text-muted">
           Invitation links can only be used once and inherit the selected club role.

@@ -64,3 +64,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Welcome to watch.club!"
 msgstr ""
+
+#: lib/watch_club_web/controllers/auth_controller.ex:10
+#, elixir-autogen, elixir-format
+msgid "Your password has successfully been reset"
+msgstr ""

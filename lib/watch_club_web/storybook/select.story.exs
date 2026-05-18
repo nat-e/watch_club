@@ -176,14 +176,16 @@ defmodule WatchClubWeb.Storybook.Select do
         </div>
         """,
         variations:
-          for size <- ~w(sm md lg) do
+          for size <- ~w(sm md lg)a do
+            size_string = Atom.to_string(size)
+
             %Variation{
-              id: String.to_atom(size),
+              id: size,
               attributes: %{
-                id: "wc-select-size-#{size}",
+                id: "wc-select-size-#{size_string}",
                 name: "size",
-                size: size,
-                placeholder: "Size #{size}"
+                size: size_string,
+                placeholder: "Size #{size_string}"
               },
               slots: [
                 ~s(<.select_item value="movie">Movie</.select_item>),

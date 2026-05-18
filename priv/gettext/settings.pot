@@ -11,12 +11,12 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page.ex:76
+#: lib/watch_club_web/live/accounts/settings_page.ex:82
 #, elixir-autogen, elixir-format
 msgid "Error updating settings"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page.ex:35
+#: lib/watch_club_web/live/accounts/settings_page.ex:36
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr ""

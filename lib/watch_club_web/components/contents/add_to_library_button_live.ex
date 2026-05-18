@@ -87,6 +87,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
           >
             <.library_selection_checkbox
               :for={option <- libraries_for_content(@current_user, @content)}
+              component_id={@component_id}
               club={option.club}
               library={option.library}
               selected?={in_library?(@content, option.library.id)}
@@ -115,6 +116,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
         </div>
       </div>
       <.checkbox
+        id={"#{@component_id}-library-checkbox-#{@library.id}"}
         name="form[library_ids][]"
         value={@library.id}
         checked={@selected?}
