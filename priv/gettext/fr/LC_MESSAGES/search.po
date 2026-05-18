@@ -13,22 +13,22 @@ msgstr ""
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:82
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:65
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:166
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:66
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:169
 #, elixir-autogen, elixir-format
 msgid "Everywhere"
 msgstr "Partout"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:163
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:224
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:227
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type} in %{club_name}"
 msgstr "Rechercher %{content_type} dans %{club_name}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:151
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:212
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:215
 #, elixir-autogen, elixir-format
 msgid "Search all %{content_type}"
 msgstr "Rechercher tous les %{content_type}"

@@ -371,12 +371,12 @@ msgstr ""
 msgid "Review who can access the club and share one-time invitation links."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:61
+#: lib/watch_club_web/components/contents/content_card.ex:63
 #, elixir-autogen, elixir-format
 msgid "Actions coming soon"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:54
+#: lib/watch_club_web/components/contents/content_card.ex:56
 #, elixir-autogen, elixir-format
 msgid "Content actions"
 msgstr ""
@@ -386,12 +386,12 @@ msgstr ""
 msgid "Library is empty"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:93
+#: lib/watch_club_web/components/contents/content_card.ex:91
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:36
+#: lib/watch_club_web/components/contents/content_card.ex:38
 #, elixir-autogen, elixir-format
 msgid "Reveal details for %{title}"
 msgstr ""

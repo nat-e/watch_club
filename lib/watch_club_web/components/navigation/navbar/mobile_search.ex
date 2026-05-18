@@ -49,6 +49,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
           </div>
           <div id="mobile-overlay-search-location" class="hidden absolute inset-0 bg-surface">
             <button
+              type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
                 @form[:location].value == nil && "bg-surface-selected"
@@ -66,6 +67,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
             </button>
             <button
               :for={membership <- @current_user.memberships}
+              type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
                 @form[:location].value == membership.club.id &&
@@ -95,6 +97,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
           >
             <button
               :for={content_type <- SearchContentType.values()}
+              type="button"
               class={[
                 "flex p-group gap-group items-center w-full hover:bg-surface-hover",
                 @form[:content_type].value == content_type &&

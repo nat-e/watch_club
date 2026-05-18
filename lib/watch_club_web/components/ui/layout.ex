@@ -164,14 +164,22 @@ defmodule WatchClubWeb.Components.UI.Layout do
     default: "default"
 
   attr :shadow, :boolean, default: true
+
+  attr :as, :string,
+    values: ~w(section article div),
+    default: "section",
+    doc: "HTML tag used for the card root."
+
+  attr :data_slot, :string, default: "card"
   attr :class, :any, default: nil
   attr :rest, :global
   slot :inner_block, required: true
 
   def card(assigns) do
     ~H"""
-    <section
-      data-slot="card"
+    <.dynamic_tag
+      tag_name={@as}
+      data-slot={@data_slot}
       class={[
         "rounded-card border text-text",
         @surface == "default" && "border-border-subtle bg-surface",
@@ -189,7 +197,7 @@ defmodule WatchClubWeb.Components.UI.Layout do
       {@rest}
     >
       {render_slot(@inner_block)}
-    </section>
+    </.dynamic_tag>
     """
   end
 end

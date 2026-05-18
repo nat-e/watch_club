@@ -59,7 +59,10 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
 
   def render(%{invitation: %Invitation{}, current_user: %User{}} = assigns) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title={"Hello #{@current_user.username}"}>
+    <Layouts.centered_card
+      flash={@flash}
+      title={dgettext("invitations", "Hello %{name}!", name: @current_user.username)}
+    >
       <.stack space="related">
         <p>
           <.invitation_intro invitation={@invitation} />
@@ -67,7 +70,7 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
         <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
       <.inline class="justify-end">
-        <.button type="submit" phx-click="accept_invitation">
+        <.button id="accept-invitation-button" phx-click="accept_invitation">
           {dgettext("invitations", "Accept Invitation")}
         </.button>
       </.inline>

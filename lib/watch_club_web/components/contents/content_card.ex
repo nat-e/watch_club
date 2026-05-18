@@ -24,12 +24,14 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
     assigns = assigns |> assign(:library_item, library_item)
 
     ~H"""
-    <article
+    <.card
+      as="article"
       id={"content-card-#{ContentView.unique_id(@content)}"}
-      data-slot="content-card"
-      class="group/content-card relative w-full overflow-hidden rounded-xl border border-border-subtle bg-surface-inset shadow transition-shadow duration-300 outline-none hover:shadow-lg focus-within:ring-border-strong"
+      data_slot="content-card"
+      padding="none"
+      class="group/content-card w-full overflow-hidden"
     >
-      <.tmdb_poster size="w342" path={@content.image_path} class="w-full rounded-xl">
+      <.tmdb_poster size="w342" path={@content.image_path} class="w-full">
         <button
           type="button"
           class="absolute inset-0 z-20 md:hidden group-data-[state=revealed]/content-card:hidden"
@@ -37,7 +39,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           phx-click={reveal_content_card()}
         />
 
-        <div class="pointer-events-none absolute inset-0 z-30 flex h-full w-full flex-col overflow-hidden rounded-xl bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100">
+        <div class="pointer-events-none absolute inset-0 z-30 flex h-full w-full flex-col overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100">
           <div class="flex translate-y-[-0.25rem] items-center justify-between gap-related p-tight transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
             <.avatar
               :if={@library_item && @library_item.added_by}
@@ -84,18 +86,14 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </.link>
 
           <div class="mb-tight flex w-full flex-row gap-tight px-tight">
-            <.button
-              type="button"
-              variant="secondary"
-              class="w-full border-0 bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active"
-            >
+            <.button type="button" variant="primary" class="w-full">
               <Lucideicons.play />
               {dgettext("clubs", "Play")}
             </.button>
           </div>
         </div>
       </.tmdb_poster>
-    </article>
+    </.card>
     """
   end
 

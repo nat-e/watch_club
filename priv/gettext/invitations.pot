@@ -11,28 +11,29 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:85
+#: lib/watch_club_web/live/invitations/invitation_page.ex:88
 #, elixir-autogen, elixir-format
 msgid "%{inviter} is inviting you to join %{club_name} on watch.club"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:71
+#: lib/watch_club_web/live/invitations/invitation_page.ex:74
 #, elixir-autogen, elixir-format
 msgid "Accept Invitation"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:170
+#: lib/watch_club_web/live/invitations/invitation_page.ex:173
 #, elixir-autogen, elixir-format
 msgid "Couldn't join %{club_name}, try again later"
 msgstr ""
 
 #: lib/watch_club_web/live/invitations/invitation_page.ex:25
-#: lib/watch_club_web/live/invitations/invitation_page.ex:67
+#: lib/watch_club_web/live/invitations/invitation_page.ex:70
 #, elixir-autogen, elixir-format
 msgid "Create an account or sign-in to accept the invitation."
 msgstr ""
 
 #: lib/watch_club_web/live/invitations/invitation_page.ex:14
+#: lib/watch_club_web/live/invitations/invitation_page.ex:64
 #, elixir-autogen, elixir-format
 msgid "Hello %{name}!"
 msgstr ""
@@ -47,14 +48,14 @@ msgstr ""
 msgid "Looks like you already have an account! Please login instead."
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:116
+#: lib/watch_club_web/live/invitations/invitation_page.ex:119
 #, elixir-autogen, elixir-format
 msgid "The invitation you were trying to access does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:161
-#: lib/watch_club_web/live/invitations/invitation_page.ex:190
-#: lib/watch_club_web/live/invitations/invitation_page.ex:216
+#: lib/watch_club_web/live/invitations/invitation_page.ex:164
+#: lib/watch_club_web/live/invitations/invitation_page.ex:193
+#: lib/watch_club_web/live/invitations/invitation_page.ex:219
 #, elixir-autogen, elixir-format
 msgid "You joined %{club_name}"
 msgstr ""
@@ -64,7 +65,7 @@ msgstr ""
 msgid "Invitation action"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:96
+#: lib/watch_club_web/live/invitations/invitation_page.ex:99
 #, elixir-autogen, elixir-format
 msgid "You are invited to join %{club_name} on watch.club"
 msgstr ""

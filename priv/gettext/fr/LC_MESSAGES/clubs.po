@@ -442,13 +442,13 @@ msgid "Review who can access the club and share one-time invitation links."
 msgstr "Vérifiez qui peut accéder au club et partagez des liens d'invitation à usage unique."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex:61
+#: lib/watch_club_web/components/contents/content_card.ex:63
 #, elixir-autogen, elixir-format
 msgid "Actions coming soon"
 msgstr "Actions bientôt disponibles"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex:54
+#: lib/watch_club_web/components/contents/content_card.ex:56
 #, elixir-autogen, elixir-format
 msgid "Content actions"
 msgstr "Actions du contenu"
@@ -460,13 +460,13 @@ msgid "Library is empty"
 msgstr "La bibliothèque est vide"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex:93
+#: lib/watch_club_web/components/contents/content_card.ex:91
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr "Lire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex:36
+#: lib/watch_club_web/components/contents/content_card.ex:38
 #, elixir-autogen, elixir-format
 msgid "Reveal details for %{title}"
 msgstr "Afficher les détails de %{title}"
