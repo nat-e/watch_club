@@ -76,6 +76,38 @@ _Avoid_: list, shelf, playlist
 A piece of content included in a library.
 _Avoid_: Recommendation, availability, selection
 
+**Play Library Item**:
+Play media for a library item through WatchClub.
+_Avoid_: Stream content, watch media, play media server item
+
+**Download Library Item**:
+Download media version for a library item through WatchClub.
+_Avoid_: Download content, download media, download media server item
+
+**Content Request**:
+A request to make a library item’s content available through one request profile.
+_Avoid_: Media Request, Request Content, Request Media, download request, fetch request, acquisition request
+
+**Content Request Status**:
+The progress of a content request toward making content available.
+_Avoid_: Request state, automation status
+
+**Pending Content Request**:
+A content request that WatchClub has created but has not confirmed as accepted by an automation service.
+_Avoid_: Queued request, waiting request
+
+**Requested Content Request**:
+A content request accepted by an automation service.
+_Avoid_: Sent request, grabbed request
+
+**Available Content Request**:
+A content request whose content has at least one media version available in WatchClub.
+_Avoid_: Complete request, fulfilled request
+
+**Failed Content Request**:
+A content request that WatchClub cannot currently progress.
+_Avoid_: Errored request, rejected request
+
 **Add to Library**:
 Include content in a library so it is visible to club members.
 _Avoid_: add to club, recommend, make available
@@ -110,6 +142,18 @@ _Avoid_: Media, title, item, recommendation
 The kind of content, such as movie, TV show, book, video, or podcast.
 _Avoid_: Media type, category
 
+**Media**:
+A playable or downloadable unit that belongs to content, such as a movie or a TV show episode.
+_Avoid_: Playable item, file, episode item
+
+**Media Version**:
+A specific playable or downloadable variant of media available in WatchClub.
+_Avoid_: File, stream, copy, media item, MediaVersion
+
+**Episode**:
+Media that belongs to TV show content.
+_Avoid_: TV media, show item
+
 **Movie**:
 Content whose content type is movie.
 _Avoid_: Film
@@ -122,12 +166,12 @@ _Avoid_: Show, series
 Content whose content type is book.
 _Avoid_: Volume
 
-**External Source**:
-A third-party catalog where content metadata comes from.
-_Avoid_: Provider, integration, source
+**Metadata Provider**:
+A catalog where content metadata comes from, such as TMDB or Hardcover.
+_Avoid_: External source, provider, integration, source
 
 **External ID**:
-The identifier of content within one external source.
+The identifier of content within one metadata provider.
 _Avoid_: Provider ID, remote ID
 
 **Content Localization**:
@@ -137,6 +181,16 @@ _Avoid_: Localization, translation, localized content
 **Preferred Content Localization**:
 The content localization selected for a user based on their preferred locale.
 _Avoid_: Best localization, current localization
+
+### Automation Services
+
+**Automation Service**:
+A service that WatchClub can ask to make media available.
+_Avoid_: Acquisition service, media server, metadata provider, download client
+
+**Request Profile**:
+A configuration of how a library can request content through an automation service.
+_Avoid_: Request target, request settings, automation settings, service settings
 
 ## Relationships
 
@@ -193,19 +247,60 @@ _Avoid_: Best localization, current localization
 - A current **Member** who added a **Library Item** can **Remove from Library** for that item
 - A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
 - If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
+- A **Member** can **Play Library Item** and **Download Library Item** only for **Library Items** visible to them in WatchClub
+- A **Member** can **Play Library Item** or **Download Library Item** using **Media Versions** of the **Library Item**’s **Content**
+- When multiple **Media Versions** are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
+- A **Library Item** can exist when none of its **Content**’s **Media** has a **Media Version**
+- **Add to Library** requests the **Library Item**’s **Content** as a whole
+- For **TV Show** content, **Add to Library** requests the entire **TV Show**, not a season or **Episode**
+- **Add to Library** creates one **Content Request** for each **Request Profile** configured on the **Library**
+- **Add to Library** creates no **Content Requests** when the **Library** has no **Request Profiles**
+- **Add to Library** creates the **Library Item** even when one or more **Content Requests** cannot make progress
+- A **Content Request** belongs to exactly one **Library Item**
+- A **Content Request** uses exactly one **Request Profile**
+- A **Library Item** has at most one **Content Request** for a given **Request Profile**
+- A **Content Request** has exactly one **Content Request Status**
+- A **Content Request Status** is **Pending Content Request**, **Requested Content Request**, **Available Content Request**, or **Failed Content Request**
+- **Content Requests** created by the same **Add to Library** may have different **Content Request Statuses**
 - A **Library**’s **Content Type** is chosen when the **Library** is created and cannot be changed later
 - Only a **Club Admin** can **Delete Library**
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
+- Only a **Club Admin** can manage **Request Profiles** for a **Library** in their **Club**
+- A **Library** may have zero or more **Request Profiles**
+- A **Request Profile** belongs to exactly one **Library**
+- A **Library** can have multiple **Request Profiles** that use the same **Automation Service**
+- Adding a **Request Profile** to a **Library** does not create **Content Requests** for existing **Library Items**
+- Deleting a **Request Profile** deletes its **Content Requests**
+- **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
 ### Contents
 
 - A **Movie**, **TV Show**, and **Book** are kinds of **Content**
-- A **Content** is identified in an **External Source** by an **External ID**
-- The same real-world work from two **External Sources** may be represented as separate **Content** until explicitly reconciled
+- A **Content** is identified in a **Metadata Provider** by an **External ID**
+- The same real-world work from two **Metadata Providers** may be represented as separate **Content** until explicitly reconciled
 - **Content Localization** applies to any **Content**
 - A **Content** can have multiple **Content Localizations**
 - A **Content** has at most one **Content Localization** per **Locale**
 - A **Content** has exactly one **Content Type**
+- A **Media** belongs to exactly one **Content**
+- A **Content** has one or more **Media**
+- A **Movie** has exactly one **Media**
+- A **Book** has exactly one **Media**
+- A **TV Show** has one or more **Episodes**
+- An **Episode** is a kind of **Media**
+- A **Media** may have zero or more **Media Versions**
+- A **Media Version** belongs to exactly one **Media**
+- A **Media** can have multiple **Media Versions** when multiple selectable variants are available
+
+### Automation Services
+
+- An **Automation Service** can be asked to make **Content** available in WatchClub
+- An **Automation Service** supports one or more **Content Types**
+- Only the **Instance Administrator** can manage **Automation Services**
+- **Automation Services** are configured for the WatchClub instance by the **Instance Administrator**
+- A **Request Profile** uses exactly one **Automation Service**
+- A **Request Profile** can only use an **Automation Service** that supports its **Library**’s **Content Type**
+- An **Automation Service** may be used by many **Request Profiles**
 
 ### Cross-domain
 
@@ -227,8 +322,15 @@ _Avoid_: Best localization, current localization
 ## Flagged ambiguities
 
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
-- "Media" is not canonical; use **Content** for a creative work and **Library Item** for content included in a **Library**.
+- "Media" was previously ambiguous; resolved: **Content** is the creative work, **Library Item** is content included in a **Library**, and **Media** is a playable or downloadable unit belonging to **Content**.
 - "Club Library" may appear where the domain means **Library**; resolved: the canonical term is **Library**.
+- "Media Server Library" was considered but is no longer part of the domain; resolved: WatchClub does not manage media server libraries separately.
+- "Watch Club Media Server" was considered as a term but is no longer part of the domain language; resolved: media versions are simply available in WatchClub.
+- External media server integrations were considered but are no longer part of the domain; resolved: WatchClub provides play and download itself.
+- "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
+- Radarr and Sonarr are **Automation Services**, not media servers or metadata providers.
+- "Request settings" is not canonical; use **Request Profile** for the library-specific way to request content through an **Automation Service**.
+- "Request Media" and "Request Content" are not canonical actions; resolved: **Add to Library** is the user action and it may create **Content Requests**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
 - "Library content type" is singular; resolved: a **Library** has exactly one **Content Type**.
 - "Accepted Content Types" is no longer canonical; resolved: use the **Library**’s **Content Type**.
