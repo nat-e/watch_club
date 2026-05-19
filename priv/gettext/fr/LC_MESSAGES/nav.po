@@ -49,19 +49,19 @@ msgid "Open navigation"
 msgstr "Ouvrir la navigation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar_live.ex:45
+#: lib/watch_club_web/components/navigation/navbar_live.ex:44
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar_live.ex:53
+#: lib/watch_club_web/components/navigation/navbar_live.ex:52
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr "Se déconnecter"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar_live.ex:39
+#: lib/watch_club_web/components/navigation/navbar_live.ex:38
 #, elixir-autogen, elixir-format
 msgid "User menu"
 msgstr "Menu utilisateur"
@@ -73,7 +73,7 @@ msgid "Watchlist"
 msgstr "Liste à voir"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:219
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Club actions"
 msgstr "Actions du club"

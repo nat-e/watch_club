@@ -196,11 +196,104 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
     end
   end
 
+  defmodule Credit do
+    @moduledoc false
+    @type t :: %__MODULE__{
+            id: integer(),
+            name: String.t(),
+            character: String.t() | nil,
+            job: String.t() | nil,
+            profile_path: String.t() | nil,
+            order: integer() | nil
+          }
+
+    defstruct [:id, :name, :character, :job, :profile_path, :order]
+
+    @spec from_cast_api(map()) :: t()
+    def from_cast_api(data) do
+      %__MODULE__{
+        id: data["id"],
+        name: data["name"],
+        character: data["character"],
+        profile_path: data["profile_path"],
+        order: data["order"]
+      }
+    end
+
+    @spec from_crew_api(map()) :: t()
+    def from_crew_api(data) do
+      %__MODULE__{
+        id: data["id"],
+        name: data["name"],
+        job: data["job"],
+        profile_path: data["profile_path"]
+      }
+    end
+  end
+
+  defmodule Credits do
+    @moduledoc false
+    @type t :: %__MODULE__{cast: [Credit.t()], crew: [Credit.t()]}
+
+    defstruct cast: [], crew: []
+
+    @spec from_api(map() | nil) :: t() | nil
+    def from_api(nil), do: nil
+
+    def from_api(data) do
+      %__MODULE__{
+        cast: Enum.map(data["cast"] || [], &Credit.from_cast_api/1),
+        crew: Enum.map(data["crew"] || [], &Credit.from_crew_api/1)
+      }
+    end
+  end
+
+  defmodule Video do
+    @moduledoc false
+    @type t :: %__MODULE__{
+            id: String.t(),
+            key: String.t(),
+            name: String.t(),
+            official: boolean(),
+            site: String.t(),
+            type: String.t()
+          }
+
+    defstruct [:id, :key, :name, :official, :site, :type]
+
+    @spec from_api(map()) :: t()
+    def from_api(data) do
+      %__MODULE__{
+        id: data["id"],
+        key: data["key"],
+        name: data["name"],
+        official: data["official"],
+        site: data["site"],
+        type: data["type"]
+      }
+    end
+  end
+
+  defmodule Videos do
+    @moduledoc false
+    @type t :: %__MODULE__{results: [Video.t()]}
+
+    defstruct results: []
+
+    @spec from_api(map() | nil) :: t() | nil
+    def from_api(nil), do: nil
+
+    def from_api(data) do
+      %__MODULE__{results: Enum.map(data["results"] || [], &Video.from_api/1)}
+    end
+  end
+
   @type t :: %__MODULE__{
           adult: boolean(),
           backdrop_path: String.t() | nil,
           belongs_to_collection: Collection.t() | nil,
           budget: integer(),
+          credits: Credits.t() | nil,
           genres: [Genre.t()],
           homepage: String.t() | nil,
           id: integer(),
@@ -223,6 +316,7 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
           title: String.t(),
           translations: [Translation.t()],
           video: boolean(),
+          videos: Videos.t() | nil,
           vote_average: float(),
           vote_count: integer()
         }
@@ -232,6 +326,7 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
     :backdrop_path,
     :belongs_to_collection,
     :budget,
+    :credits,
     :genres,
     :homepage,
     :id,
@@ -254,6 +349,7 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
     :title,
     :translations,
     :video,
+    :videos,
     :vote_average,
     :vote_count
   ]
@@ -265,6 +361,7 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
       backdrop_path: data["backdrop_path"],
       belongs_to_collection: Collection.from_api(data["belongs_to_collection"]),
       budget: data["budget"],
+      credits: Credits.from_api(data["credits"]),
       genres: Enum.map(data["genres"] || [], &Genre.from_api/1),
       homepage: data["homepage"],
       id: data["id"],
@@ -293,6 +390,7 @@ defmodule WatchClub.Integrations.Tmdb.MovieDetailsResponse do
           &Translation.from_api/1
         ),
       video: data["video"],
+      videos: Videos.from_api(data["videos"]),
       vote_average: data["vote_average"],
       vote_count: data["vote_count"]
     }

@@ -13,9 +13,9 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:34
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:34
-#: lib/watch_club_web/live/clubs/members_page.ex:243
-#: lib/watch_club_web/live/clubs/members_page.ex:271
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:83
+#: lib/watch_club_web/live/clubs/members_page.ex:220
+#: lib/watch_club_web/live/clubs/members_page.ex:248
+#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:68
 #: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:25
 #, elixir-autogen, elixir-format
 msgid "Cancel"
@@ -23,7 +23,7 @@ msgstr ""
 
 #: lib/watch_club_web/components/ui/flash.ex:113
 #: lib/watch_club_web/components/ui/modal.ex:109
-#: lib/watch_club_web/live/clubs/members_page.ex:384
+#: lib/watch_club_web/live/clubs/members_page.ex:341
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr ""
@@ -34,12 +34,12 @@ msgid "Create"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:44
-#: lib/watch_club_web/live/clubs/members_page.ex:279
+#: lib/watch_club_web/live/clubs/members_page.ex:256
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:98
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:111
 #: lib/watch_club_web/live/accounts/settings_page.ex:56
 #, elixir-autogen, elixir-format
 msgid "Save"
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:183
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:210
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
 msgstr ""

@@ -42,17 +42,17 @@ msgstr ""
 msgid "Open navigation"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:45
+#: lib/watch_club_web/components/navigation/navbar_live.ex:44
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:53
+#: lib/watch_club_web/components/navigation/navbar_live.ex:52
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:39
+#: lib/watch_club_web/components/navigation/navbar_live.ex:38
 #, elixir-autogen, elixir-format
 msgid "User menu"
 msgstr ""
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Watchlist"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:219
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Club actions"
 msgstr ""

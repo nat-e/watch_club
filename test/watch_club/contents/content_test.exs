@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.ContentTest do
   import WatchClub.Contents
 
   alias WatchClub.Clubs.LibraryItem
+  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   alias WatchClub.Contents.{
     Content,
@@ -184,6 +185,64 @@ defmodule WatchClub.Contents.ContentTest do
 
       create_tv_show("43", %{library_ids: [library.id]}, actor: non_member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "get_tv_show_details/*" do
+    test "returns TV show details with season summaries" do
+      actor = generate(user(locale: :en_US))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        if String.ends_with?(conn.request_path, "/tv/42") do
+          Req.Test.json(conn, tv_details_fixture())
+        else
+          conn
+          |> Plug.Conn.put_status(500)
+          |> Req.Test.json(%{})
+        end
+      end)
+
+      assert %ContentView{
+               type: :tv_show,
+               external_id: "42",
+               title: "The Expanse",
+               details: %TvDetailsResponse{
+                 backdrop_path: "/backdrop.jpg",
+                 status: "Ended",
+                 season_details: [],
+                 seasons: [
+                   %TvDetailsResponse.Season{season_number: 0, episode_count: 1},
+                   %TvDetailsResponse.Season{season_number: 1, episode_count: 3},
+                   %TvDetailsResponse.Season{season_number: 2, episode_count: 2},
+                   %TvDetailsResponse.Season{season_number: 3, episode_count: 0}
+                 ]
+               }
+             } = get_tv_show_details!("42", actor: actor)
+    end
+  end
+
+  describe "get_tv_show_season_details/*" do
+    test "returns TV Show Episode metadata for one season" do
+      actor = generate(user(locale: :en_US))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, tv_season_details_fixture(1))
+      end)
+
+      assert %TvDetailsResponse.SeasonDetails{
+               season_number: 1,
+               name: "Season 1",
+               episodes: [
+                 %TvDetailsResponse.SeasonDetails.Episode{
+                   episode_number: 1,
+                   name: "Dulcinea",
+                   overview: "The Canterbury answers a distress call.",
+                   runtime: 48,
+                   still_path: "/dulcinea.jpg"
+                 },
+                 %TvDetailsResponse.SeasonDetails.Episode{episode_number: 2}
+               ]
+             } = get_tv_show_season_details!("42", 1, actor: actor)
     end
   end
 
@@ -389,9 +448,20 @@ defmodule WatchClub.Contents.ContentTest do
       "original_language" => "en",
       "origin_country" => ["US"],
       "first_air_date" => "2015-12-14",
+      "backdrop_path" => "/backdrop.jpg",
+      "genres" => [%{"id" => 18, "name" => "Drama"}],
+      "homepage" => "https://www.syfy.com/the-expanse",
       "overview" => "A mystery unfolds across the solar system.",
       "poster_path" => "/poster.jpg",
-      "external_ids" => %{"tvdb_id" => 280_619},
+      "production_countries" => [%{"iso_3166_1" => "US", "name" => "United States"}],
+      "spoken_languages" => [
+        %{"iso_639_1" => "en", "english_name" => "English", "name" => "English"}
+      ],
+      "status" => "Ended",
+      "tagline" => "The future is closer than you think.",
+      "vote_average" => 8.4,
+      "vote_count" => 2_900,
+      "external_ids" => %{"imdb_id" => "tt3230854", "tvdb_id" => 280_619},
       "images" => %{
         "posters" => [
           %{"iso_639_1" => "fr", "file_path" => "/poster-fr.jpg"}
@@ -415,6 +485,76 @@ defmodule WatchClub.Contents.ContentTest do
           }
         ]
       }
+    }
+  end
+
+  defp tv_season_details_fixture(1) do
+    %{
+      "id" => 10_001,
+      "name" => "Season 1",
+      "season_number" => 1,
+      "air_date" => "2015-12-14",
+      "overview" => "The Canterbury crew uncovers a conspiracy.",
+      "poster_path" => "/season-1.jpg",
+      "vote_average" => 7.9,
+      "episodes" => [
+        %{
+          "id" => 100_101,
+          "episode_number" => 1,
+          "episode_type" => "standard",
+          "name" => "Dulcinea",
+          "overview" => "The Canterbury answers a distress call.",
+          "runtime" => 48,
+          "season_number" => 1,
+          "show_id" => 42,
+          "still_path" => "/dulcinea.jpg",
+          "vote_average" => 7.7,
+          "vote_count" => 154,
+          "air_date" => "2015-12-14"
+        },
+        %{
+          "id" => 100_102,
+          "episode_number" => 2,
+          "episode_type" => "standard",
+          "name" => "The Big Empty",
+          "overview" => "Holden and crew are trapped in a damaged shuttle.",
+          "runtime" => 46,
+          "season_number" => 1,
+          "show_id" => 42,
+          "still_path" => "/big-empty.jpg",
+          "vote_average" => 7.6,
+          "vote_count" => 85,
+          "air_date" => "2015-12-15"
+        }
+      ]
+    }
+  end
+
+  defp tv_season_details_fixture(2) do
+    %{
+      "id" => 10_002,
+      "name" => "Season 2",
+      "season_number" => 2,
+      "air_date" => "2017-02-01",
+      "overview" => "Interplanetary tensions reach an all-time high.",
+      "poster_path" => "/season-2.jpg",
+      "vote_average" => 8.1,
+      "episodes" => [
+        %{
+          "id" => 100_201,
+          "episode_number" => 1,
+          "episode_type" => "standard",
+          "name" => "Safe",
+          "overview" => "The Rocinante crew learns more about the protomolecule.",
+          "runtime" => 48,
+          "season_number" => 2,
+          "show_id" => 42,
+          "still_path" => "/safe.jpg",
+          "vote_average" => 7.7,
+          "vote_count" => 63,
+          "air_date" => "2017-02-01"
+        }
+      ]
     }
   end
 end

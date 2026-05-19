@@ -2,9 +2,11 @@ defmodule WatchClub.Contents.TvShow do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
+  alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
+  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   postgres do
     table "tv_shows"
@@ -27,6 +29,34 @@ defmodule WatchClub.Contents.TvShow do
 
       change manage_relationship(:localizations, type: :direct_control)
       change manage_relationship(:episodes, type: :direct_control)
+    end
+
+    action :details, :struct do
+      constraints instance_of: ContentView
+      argument :tmdb_id, :integer, allow_nil?: false
+
+      run WatchClub.Contents.Actions.GetTvShowDetails
+    end
+
+    action :season_details, :struct do
+      constraints instance_of: TvDetailsResponse.SeasonDetails
+      argument :tmdb_id, :integer, allow_nil?: false
+      argument :season_number, :integer, allow_nil?: false
+
+      run WatchClub.Contents.Actions.GetTvShowSeasonDetails
+    end
+  end
+
+  policies do
+    policy actor_absent() do
+      description "TV Show actions require an authenticated actor"
+      access_type :strict
+      forbid_if always()
+    end
+
+    policy action([:read, :details, :season_details]) do
+      description "TV Show metadata and details are visible to authenticated users"
+      authorize_if always()
     end
   end
 

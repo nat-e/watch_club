@@ -36,13 +36,13 @@ msgid "Club name must be at least %{min} characters"
 msgstr "Le nom du club doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:111
+#: lib/watch_club/clubs/invitation.ex:107
 #, elixir-autogen, elixir-format
 msgid "Name cannot be longer than %{max} characters"
 msgstr "Le nom ne peut pas dépasser %{max} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:107
+#: lib/watch_club/clubs/invitation.ex:103
 #, elixir-autogen, elixir-format
 msgid "Name must be at least %{min} characters"
 msgstr "Le nom doit contenir au moins %{min} caractères"
@@ -74,13 +74,13 @@ msgid "The invitation does not exist"
 msgstr "L'invitation n'existe pas"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:65
+#: lib/watch_club/clubs/invitation.ex:61
 #, elixir-autogen, elixir-format
 msgid "The invitation has already been used"
 msgstr "L'invitation a déjà été utilisée"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:61
+#: lib/watch_club/clubs/invitation.ex:57
 #, elixir-autogen, elixir-format
 msgid "The invitation has expired"
 msgstr "L'invitation a expiré"
@@ -128,25 +128,25 @@ msgid "Your username or password is invalid"
 msgstr "Votre nom d'utilisateur ou votre mot de passe est invalide"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library.ex:135
+#: lib/watch_club/clubs/library.ex:130
 #, elixir-autogen, elixir-format
 msgid "Library icon is invalid"
 msgstr "L’icône de la bibliothèque est invalide"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library.ex:126
+#: lib/watch_club/clubs/library.ex:121
 #, elixir-autogen, elixir-format
 msgid "Library name cannot be longer than %{max} characters"
 msgstr "Le nom de la bibliothèque ne peut pas dépasser %{max} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library.ex:118
+#: lib/watch_club/clubs/library.ex:113
 #, elixir-autogen, elixir-format
 msgid "Library name is required"
 msgstr "Le nom de la bibliothèque est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library.ex:122
+#: lib/watch_club/clubs/library.ex:117
 #, elixir-autogen, elixir-format
 msgid "Library name must be at least %{min} characters"
 msgstr "Le nom de la bibliothèque doit contenir au moins %{min} caractères"
@@ -164,7 +164,7 @@ msgid "Library does not allow this content type"
 msgstr "Cette bibliothèque n’autorise pas ce type de contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library.ex:131
+#: lib/watch_club/clubs/library.ex:126
 #, elixir-autogen, elixir-format
 msgid "Library content type is required"
 msgstr "Le type de contenu de la bibliothèque est obligatoire"

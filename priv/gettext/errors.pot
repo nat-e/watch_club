@@ -31,12 +31,12 @@ msgstr ""
 msgid "Club name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/invitation.ex:111
+#: lib/watch_club/clubs/invitation.ex:107
 #, elixir-autogen, elixir-format
 msgid "Name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/invitation.ex:107
+#: lib/watch_club/clubs/invitation.ex:103
 #, elixir-autogen, elixir-format
 msgid "Name must be at least %{min} characters"
 msgstr ""
@@ -63,12 +63,12 @@ msgstr ""
 msgid "The invitation does not exist"
 msgstr ""
 
-#: lib/watch_club/clubs/invitation.ex:65
+#: lib/watch_club/clubs/invitation.ex:61
 #, elixir-autogen, elixir-format
 msgid "The invitation has already been used"
 msgstr ""
 
-#: lib/watch_club/clubs/invitation.ex:61
+#: lib/watch_club/clubs/invitation.ex:57
 #, elixir-autogen, elixir-format
 msgid "The invitation has expired"
 msgstr ""
@@ -108,22 +108,22 @@ msgstr ""
 msgid "Your username or password is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:135
+#: lib/watch_club/clubs/library.ex:130
 #, elixir-autogen, elixir-format
 msgid "Library icon is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:126
+#: lib/watch_club/clubs/library.ex:121
 #, elixir-autogen, elixir-format
 msgid "Library name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:118
+#: lib/watch_club/clubs/library.ex:113
 #, elixir-autogen, elixir-format
 msgid "Library name is required"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:122
+#: lib/watch_club/clubs/library.ex:117
 #, elixir-autogen, elixir-format
 msgid "Library name must be at least %{min} characters"
 msgstr ""
@@ -138,7 +138,7 @@ msgstr ""
 msgid "Library does not allow this content type"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:131
+#: lib/watch_club/clubs/library.ex:126
 #, elixir-autogen, elixir-format
 msgid "Library content type is required"
 msgstr ""

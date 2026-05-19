@@ -16,11 +16,31 @@ defmodule WatchClubWeb.Storybook.Button do
         id: :variants,
         description: "Variants",
         variations: [
-          %Variation{id: :primary, attributes: %{id: "button-primary", variant: "primary"}, slots: ["Primary"]},
-          %Variation{id: :accent, attributes: %{id: "button-accent", variant: "accent"}, slots: ["Accent"]},
-          %Variation{id: :secondary, attributes: %{id: "button-secondary", variant: "secondary"}, slots: ["Secondary"]},
-          %Variation{id: :ghost, attributes: %{id: "button-ghost", variant: "ghost"}, slots: ["Ghost"]},
-          %Variation{id: :danger, attributes: %{id: "button-danger", variant: "danger"}, slots: ["Delete"]}
+          %Variation{
+            id: :primary,
+            attributes: %{id: "button-primary", variant: "primary"},
+            slots: ["Primary"]
+          },
+          %Variation{
+            id: :accent,
+            attributes: %{id: "button-accent", variant: "accent"},
+            slots: ["Accent"]
+          },
+          %Variation{
+            id: :secondary,
+            attributes: %{id: "button-secondary", variant: "secondary"},
+            slots: ["Secondary"]
+          },
+          %Variation{
+            id: :ghost,
+            attributes: %{id: "button-ghost", variant: "ghost"},
+            slots: ["Ghost"]
+          },
+          %Variation{
+            id: :danger,
+            attributes: %{id: "button-danger", variant: "danger"},
+            slots: ["Delete"]
+          }
         ]
       },
       %VariationGroup{
@@ -47,12 +67,20 @@ defmodule WatchClubWeb.Storybook.Button do
         variations: [
           %Variation{
             id: :icon,
-            attributes: %{:id => "button-icon", :size => "icon", "aria-label" => "Add recommendation"},
+            attributes: %{
+              :id => "button-icon",
+              :size => "icon",
+              "aria-label" => "Add recommendation"
+            },
             slots: [~s(<:icon><span aria-hidden="true">+</span></:icon>)]
           },
           %Variation{
             id: :icon_sm,
-            attributes: %{:id => "button-icon-sm", :size => "icon-sm", "aria-label" => "Add recommendation"},
+            attributes: %{
+              :id => "button-icon-sm",
+              :size => "icon-sm",
+              "aria-label" => "Add recommendation"
+            },
             slots: [~s(<:icon><span aria-hidden="true">+</span></:icon>)]
           }
         ]

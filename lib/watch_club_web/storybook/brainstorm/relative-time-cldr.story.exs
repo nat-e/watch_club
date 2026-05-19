@@ -19,18 +19,88 @@ defmodule WatchClubWeb.Storybook.Brainstorm.RelativeTimeCldr do
     assigns =
       assign(assigns,
         english_rows: [
-          %{id: "ada", user: "Ada Lovelace", role: "Admin", since: "now", invited_by_id: "grace", invited_by: "Grace Hopper"},
-          %{id: "alan", user: "Alan Turing", role: "Member", since: "1 minute ago", invited_by_id: "ada", invited_by: "Ada Lovelace"},
-          %{id: "katherine", user: "Katherine Johnson", role: "Member", since: "2 hours ago", invited_by_id: "grace", invited_by: "Grace Hopper"},
-          %{id: "mary", user: "Mary Jackson", role: "Member", since: "3 weeks ago", invited_by_id: "ada", invited_by: "Ada Lovelace"},
-          %{id: "dorothy", user: "Dorothy Vaughan", role: "Member", since: "Apr 19, 2026", invited_by_id: "grace", invited_by: "Grace Hopper"}
+          %{
+            id: "ada",
+            user: "Ada Lovelace",
+            role: "Admin",
+            since: "now",
+            invited_by_id: "grace",
+            invited_by: "Grace Hopper"
+          },
+          %{
+            id: "alan",
+            user: "Alan Turing",
+            role: "Member",
+            since: "1 minute ago",
+            invited_by_id: "ada",
+            invited_by: "Ada Lovelace"
+          },
+          %{
+            id: "katherine",
+            user: "Katherine Johnson",
+            role: "Member",
+            since: "2 hours ago",
+            invited_by_id: "grace",
+            invited_by: "Grace Hopper"
+          },
+          %{
+            id: "mary",
+            user: "Mary Jackson",
+            role: "Member",
+            since: "3 weeks ago",
+            invited_by_id: "ada",
+            invited_by: "Ada Lovelace"
+          },
+          %{
+            id: "dorothy",
+            user: "Dorothy Vaughan",
+            role: "Member",
+            since: "Apr 19, 2026",
+            invited_by_id: "grace",
+            invited_by: "Grace Hopper"
+          }
         ],
         french_rows: [
-          %{id: "ada-fr", user: "Ada Lovelace", role: "Administrateur", since: "maintenant", invited_by_id: "grace-fr", invited_by: "Grace Hopper"},
-          %{id: "alan-fr", user: "Alan Turing", role: "Membre", since: "il y a 1 minute", invited_by_id: "ada-fr", invited_by: "Ada Lovelace"},
-          %{id: "katherine-fr", user: "Katherine Johnson", role: "Membre", since: "il y a 2 heures", invited_by_id: "grace-fr", invited_by: "Grace Hopper"},
-          %{id: "mary-fr", user: "Mary Jackson", role: "Membre", since: "il y a 3 semaines", invited_by_id: "ada-fr", invited_by: "Ada Lovelace"},
-          %{id: "dorothy-fr", user: "Dorothy Vaughan", role: "Membre", since: "19 avr. 2026", invited_by_id: "grace-fr", invited_by: "Grace Hopper"}
+          %{
+            id: "ada-fr",
+            user: "Ada Lovelace",
+            role: "Administrateur",
+            since: "maintenant",
+            invited_by_id: "grace-fr",
+            invited_by: "Grace Hopper"
+          },
+          %{
+            id: "alan-fr",
+            user: "Alan Turing",
+            role: "Membre",
+            since: "il y a 1 minute",
+            invited_by_id: "ada-fr",
+            invited_by: "Ada Lovelace"
+          },
+          %{
+            id: "katherine-fr",
+            user: "Katherine Johnson",
+            role: "Membre",
+            since: "il y a 2 heures",
+            invited_by_id: "grace-fr",
+            invited_by: "Grace Hopper"
+          },
+          %{
+            id: "mary-fr",
+            user: "Mary Jackson",
+            role: "Membre",
+            since: "il y a 3 semaines",
+            invited_by_id: "ada-fr",
+            invited_by: "Ada Lovelace"
+          },
+          %{
+            id: "dorothy-fr",
+            user: "Dorothy Vaughan",
+            role: "Membre",
+            since: "19 avr. 2026",
+            invited_by_id: "grace-fr",
+            invited_by: "Grace Hopper"
+          }
         ]
       )
 
@@ -94,14 +164,19 @@ defmodule WatchClubWeb.Storybook.Brainstorm.RelativeTimeCldr do
               </div>
             </.table_cell>
             <.table_cell>
-              <.badge variant={if row.role in ["Admin", "Administrateur"], do: "default", else: "secondary"}>
+              <.badge variant={
+                if row.role in ["Admin", "Administrateur"], do: "default", else: "secondary"
+              }>
                 {row.role}
               </.badge>
             </.table_cell>
             <.table_cell class="text-text-subtle">{row.since}</.table_cell>
             <.table_cell class="text-left">
               <div class="flex items-center gap-related font-bold">
-                <.avatar id={"brainstorm-relative-time-inviter-#{row.invited_by_id}"} name={row.invited_by} />
+                <.avatar
+                  id={"brainstorm-relative-time-inviter-#{row.invited_by_id}"}
+                  name={row.invited_by}
+                />
                 {row.invited_by}
               </div>
             </.table_cell>

@@ -28,7 +28,15 @@ defmodule WatchClub.Contents do
 
     resource Book
     resource MovieLocalization
-    resource TvShow
+
+    resource TvShow do
+      define :get_tv_show_details, action: :details, args: [:tmdb_id]
+
+      define :get_tv_show_season_details,
+        action: :season_details,
+        args: [:tmdb_id, :season_number]
+    end
+
     resource TvShowEpisode
     resource TvShowLocalization
   end

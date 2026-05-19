@@ -7,6 +7,7 @@ defmodule WatchClubWeb.Components.Contents.TmdbPoster do
   attr :class, :any, default: nil
   attr :path, :string, default: nil
   attr :size, :string, values: ~w(w92 w154 w185 w342 w500 w780 original), required: true
+  attr :alt, :string, default: ""
 
   slot :inner_block
 
@@ -19,6 +20,7 @@ defmodule WatchClubWeb.Components.Contents.TmdbPoster do
       <img
         :if={@path}
         src={"https://image.tmdb.org/t/p/#{@size}/#{@path}"}
+        alt={@alt}
         class="absolute inset-0 h-full w-full object-cover"
       />
       <div

@@ -70,7 +70,7 @@ defmodule WatchClub.Integrations.Tmdb do
            url: "/movie/#{tmdb_id}",
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images"
+             append_to_response: "translations,images,credits,videos"
            ]
          ) do
       {:ok, body} -> {:ok, MovieDetailsResponse.from_api(body)}
@@ -85,10 +85,22 @@ defmodule WatchClub.Integrations.Tmdb do
            url: "/tv/#{tmdb_id}",
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images,external_ids"
+             append_to_response: "translations,images,external_ids,credits,videos"
            ]
          ) do
       {:ok, body} -> {:ok, TvDetailsResponse.from_api(body)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom()) ::
+          {:ok, TvDetailsResponse.SeasonDetails.t()} | {:error, term()}
+  def get_tv_season_details(tmdb_id, season_number, opts \\ []) do
+    case request(
+           url: "/tv/#{tmdb_id}/season/#{season_number}",
+           params: [language: format_language(opts[:locale])]
+         ) do
+      {:ok, body} -> {:ok, TvDetailsResponse.SeasonDetails.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end

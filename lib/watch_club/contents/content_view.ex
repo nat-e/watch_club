@@ -12,7 +12,7 @@ defmodule WatchClub.Contents.ContentView do
     TvShow
   }
 
-  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
+  alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
 
   typed_struct do
     field :external_id_source, ExternalIdSource,
@@ -73,7 +73,7 @@ defmodule WatchClub.Contents.ContentView do
           image_path: String.t() | nil,
           origin_country: String.t() | nil,
           release_date: Date.t() | nil,
-          details: MovieDetailsResponse | nil,
+          details: MovieDetailsResponse.t() | TvDetailsResponse.t() | nil,
           in_libraries: [LibraryItem.t()]
         }
 

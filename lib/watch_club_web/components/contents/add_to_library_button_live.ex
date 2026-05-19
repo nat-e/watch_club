@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
+  attr :on_content_updated, {:fun, 1}, required: true
 
   @impl true
   def render(assigns) do
@@ -39,8 +40,8 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   defp inner(%{clubs: []} = assigns) do
     ~H"""
-    <Lucideicons.download />
-    <span>{dgettext("contents", "Add to club")}</span>
+    <Lucideicons.list_plus />
+    <span>{dgettext("contents", "Add to Library")}</span>
     """
   end
 
@@ -78,7 +79,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
           {raw(
             dgettext(
               "contents",
-              "Add %{content_name} to club libraries to share it with the members of your clubs.",
+              "Add %{content_name} to Libraries to share it with the Members of your clubs.",
               content_name: gtboldunder(@content.title)
             )
           )}
@@ -192,9 +193,14 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
            params: %{library_ids: library_ids}
          ) do
       {:ok, %Content{} = content} ->
-        content_view = ContentView.from_content(content, actor.settings.locale)
+        content_view =
+          content
+          |> ContentView.from_content(actor.settings.locale)
+          |> Map.put(:details, socket.assigns.content.details)
 
-        {:noreply, socket |> assign(:form, nil) |> assign(:content, content_view)}
+        socket.assigns.on_content_updated.(content_view)
+
+        {:noreply, socket |> assign(:form, nil)}
 
       {:error, form} ->
         Logger.warning("Error selecting clubs: #{inspect(form.source.errors)}")
