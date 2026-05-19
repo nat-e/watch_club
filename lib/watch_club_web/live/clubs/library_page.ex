@@ -58,15 +58,18 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           :if={!ContentStreamState.empty?(@content_stream)}
           id="library-content-stream"
           phx-update="stream"
-          phx-viewport-bottom={
-            ContentStreamState.can_load_more?(@content_stream) && JS.push("load_more_contents")
-          }
           class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-group"
         >
           <div :for={{dom_id, content} <- @streams.contents} id={dom_id} class="w-full">
             <.content_card content={content} library_id_context={@library.id} />
           </div>
         </div>
+
+        <.infinite_scroll_trigger
+          :if={ContentStreamState.can_load_more?(@content_stream)}
+          id="library-content-load-more"
+          event="load_more_contents"
+        />
       </.stack>
     </Layouts.app>
     """

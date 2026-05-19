@@ -18,6 +18,7 @@ defmodule WatchClubWeb.Components.UI do
 
       import WatchClubWeb.Components.UI.Flash
       import WatchClubWeb.Components.UI.Form
+      import WatchClubWeb.Components.UI.InfiniteScroll
       import WatchClubWeb.Components.UI.Input
       import WatchClubWeb.Components.UI.Kbd
       import WatchClubWeb.Components.UI.Label
