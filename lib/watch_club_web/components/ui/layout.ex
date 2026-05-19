@@ -8,6 +8,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
 
   use Phoenix.Component
 
+  import WatchClubWeb.Components.UI.LucideIcon
+
   attr :space, :string,
     values: ~w(none tight related group cluster section),
     default: "group"
@@ -127,18 +129,43 @@ defmodule WatchClubWeb.Components.UI.Layout do
     """
   end
 
+  attr :title, :string, default: nil
+  attr :description, :string, default: nil
+  attr :icon, :any, default: nil
+
   attr :space, :string,
     values: ~w(none tight related group cluster section),
     default: "cluster"
 
+  attr :padding, :string,
+    values: ~w(none tight related group cluster),
+    default: "cluster"
+
+  attr :surface, :string,
+    values: ~w(default raised inset overlay transparent),
+    default: "default"
+
+  attr :shadow, :boolean, default: true
   attr :class, :any, default: nil
   attr :rest, :global
+  slot :action
   slot :inner_block, required: true
 
   def section(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :header?,
+        !!(assigns.title || assigns.description || assigns.icon || assigns.action != [])
+      )
+
     ~H"""
-    <section
-      data-slot="section"
+    <.card
+      as="section"
+      data_slot="section"
+      padding={@padding}
+      surface={@surface}
+      shadow={@shadow}
       class={[
         "grid",
         @space == "tight" && "gap-tight",
@@ -150,8 +177,37 @@ defmodule WatchClubWeb.Components.UI.Layout do
       ]}
       {@rest}
     >
+      <div
+        :if={@header?}
+        class="flex flex-col items-start gap-group sm:flex-row sm:items-start sm:justify-between"
+      >
+        <div class={[
+          "flex min-w-0 gap-tight",
+          @description && "items-start",
+          !@description && "items-center"
+        ]}>
+          <span
+            :if={@icon}
+            class="inline-flex size-control-md shrink-0 items-center justify-center text-accent"
+          >
+            <.lucide_icon name={@icon} class="size-icon" />
+          </span>
+          <div class="grid min-w-0 gap-tight">
+            <h2 :if={@title} class="text-xl font-heading font-semibold tracking-tight text-text">
+              {@title}
+            </h2>
+            <p :if={@description} class="max-w-readable text-sm leading-6 text-text-muted">
+              {@description}
+            </p>
+          </div>
+        </div>
+        <div :if={@action != []} class="shrink-0">
+          {render_slot(@action)}
+        </div>
+      </div>
+
       {render_slot(@inner_block)}
-    </section>
+    </.card>
     """
   end
 

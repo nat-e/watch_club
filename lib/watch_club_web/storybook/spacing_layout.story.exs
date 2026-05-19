@@ -148,17 +148,19 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </.primitive_card>
 
         <.primitive_card
-          name="Section / Card"
-          purpose="Section rhythm and surface padding"
+          name="Section"
+          purpose="Carded semantic content section"
           code={section_code()}
         >
-          <.section
-            space="section"
-            class="rounded-control border border-border-subtle bg-surface-inset p-group"
-          >
-            <.demo_section title="Profile" />
-            <.demo_section title="Watch preferences" />
-          </.section>
+          <.stack space="group">
+            <.section title="Profile" icon={:user}>
+              <.demo_item label="Display name" />
+              <.demo_item label="Avatar" />
+            </.section>
+            <.section title="Watch preferences" icon={:sliders_horizontal}>
+              <.demo_item label="Language" />
+            </.section>
+          </.stack>
         </.primitive_card>
       </div>
     </.page_shell>
@@ -170,9 +172,10 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     <.page_shell>
       <.intro eyebrow="Forms" title="Start with two form primitives, not a full layout framework">
         I agree with keeping this narrower. Forms are where spacing consistency matters most, but
-        we can get most of the benefit with a Watch Club <code>&lt;.form&gt;</code> wrapper and an
-        improved <code>&lt;.field&gt;</code>. Sections and form groups can wait until repeated form
-        structure proves they are needed.
+        we can get most of the benefit with a Watch Club <code>&lt;.form&gt;</code>
+        wrapper, an
+        improved <code>&lt;.field&gt;</code>, and the shared carded <code>&lt;.section&gt;</code>
+        primitive.
       </.intro>
 
       <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
@@ -585,20 +588,6 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   end
 
   attr :title, :string, required: true
-
-  defp demo_section(assigns) do
-    ~H"""
-    <section class="grid gap-related rounded-control border border-border-subtle bg-surface p-group">
-      <h3 class="font-semibold">{@title}</h3>
-      <div class="grid gap-related">
-        <div class="h-3 w-2/3 rounded-full bg-surface-raised"></div>
-        <div class="h-3 w-1/2 rounded-full bg-surface-raised"></div>
-      </div>
-    </section>
-    """
-  end
-
-  attr :title, :string, required: true
   attr :badge, :string, required: true
   attr :code, :string, required: true
   slot :inner_block, required: true
@@ -894,9 +883,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   defp stack_code do
     """
     <.stack space="group">
-      <.settings_section />
-      <.permissions_section />
-      <.danger_zone />
+      <.section title="Settings" />
+      <.section title="Permissions" />
+      <.section title="Danger zone" />
     </.stack>
     """
     |> String.trim()
@@ -925,12 +914,12 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp section_code do
     """
-    <.section space="section">
-      <.card>
-        <.stack space="cluster">
-          ...
-        </.stack>
-      </.card>
+    <.section title="Libraries" description="Create and reorder club libraries." icon={:library}>
+      <:action>
+        <.button id="create-library-button">Create library</.button>
+      </:action>
+
+      ...
     </.section>
     """
     |> String.trim()
@@ -1008,9 +997,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     <.page width="panel">
       <.stack space="section">
         <.page_header />
-        <.card>
-          <.stack space="group">...</.stack>
-        </.card>
+        <.section title="Settings">
+          ...
+        </.section>
       </.stack>
     </.page>
     """

@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Settings.SettingsHeader
-  import WatchClubWeb.Components.Settings.SettingsSection
 
   alias WatchClubWeb.Clubs.Settings.LibrariesLive
 
@@ -23,7 +22,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
         }
       />
 
-      <.settings_section
+      <.section
         title={dgettext("clubs", "General")}
         description={dgettext("clubs", "Update the basic club information.")}
       >
@@ -46,7 +45,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
             </.button>
           </:action>
         </.form>
-      </.settings_section>
+      </.section>
 
       <.live_component
         module={LibrariesLive}

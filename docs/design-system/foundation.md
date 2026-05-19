@@ -155,11 +155,11 @@ Validated layout primitives:
 | Primitive | Meaning |
 | --- | --- |
 | `<.page>` | Responsive page gutters, page max-width, and default page rhythm |
-| `<.section>` | Major content section with semantic vertical rhythm |
+| `<.section>` | Carded semantic content section with optional title, icon, description, and action |
 | `<.stack>` | Vertical rhythm between related children |
 | `<.inline>` | Single-line horizontal rhythm |
 | `<.cluster>` | Wrapping horizontal rhythm, such as badges and action groups |
-| `<.card>` | Standard surface, radius, border, padding, and elevation |
+| `<.card>` | Lower-level surface primitive: radius, border, padding, and elevation |
 
 ### Forms
 

@@ -11,7 +11,6 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
   import WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal
   import WatchClubWeb.Clubs.Settings.Libraries.DeleteLibraryModal
   import WatchClubWeb.Clubs.Settings.Libraries.LibraryList
-  import WatchClubWeb.Components.Settings.SettingsSection
 
   alias WatchClubWeb.Components.UI.IconPickerLive
   alias WatchClubWeb.Hooks.Flash
@@ -20,7 +19,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
   def render(assigns) do
     ~H"""
     <div id={@id} class="contents">
-      <.settings_section
+      <.section
         title={dgettext("clubs", "Libraries")}
         description={
           dgettext(
@@ -41,7 +40,7 @@ defmodule WatchClubWeb.Clubs.Settings.LibrariesLive do
         </:action>
 
         <.library_list libraries={@libraries} target={@myself} />
-      </.settings_section>
+      </.section>
 
       <.create_or_edit_library_modal
         :if={@create_library_form}

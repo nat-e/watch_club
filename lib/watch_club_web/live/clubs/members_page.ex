@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Settings.SettingsHeader
-  import WatchClubWeb.Components.Settings.SettingsSection
 
   @impl true
   def render(%{club: %Club{}} = assigns) do
@@ -21,7 +20,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
         }
       />
 
-      <.settings_section
+      <.section
         title={dgettext("clubs", "Members and invitations")}
         description={
           dgettext(
@@ -65,7 +64,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
             />
           </.table_body>
         </.table>
-      </.settings_section>
+      </.section>
       <.remove_member_modal :if={@membership_to_remove} membership={@membership_to_remove} />
       <.create_invitation_modal :if={@create_invitation_form} form={@create_invitation_form} />
       <.view_invitation_modal

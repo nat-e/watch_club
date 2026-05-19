@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Settings.SettingsHeader
-  import WatchClubWeb.Components.Settings.SettingsSection
 
   alias WatchClub.Accounts.UserLocale
 
@@ -21,7 +20,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
         description={dgettext("settings", "Manage your account preferences.")}
       />
 
-      <.settings_section
+      <.section
         title={dgettext("settings", "Preferences")}
         description={dgettext("settings", "Choose the language used across Watch Club.")}
       >
@@ -57,7 +56,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
             </.button>
           </:action>
         </.form>
-      </.settings_section>
+      </.section>
     </Layouts.app>
     """
   end

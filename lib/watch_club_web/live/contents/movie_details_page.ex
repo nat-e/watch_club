@@ -106,7 +106,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         />
 
         <div class="grid gap-cluster">
-          <.section_card
+          <.section
             :if={@details.overview}
             title={dgettext("contents", "Overview")}
             icon={:film}
@@ -114,9 +114,9 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
             <p class="leading-7 text-text-muted">
               {@details.overview}
             </p>
-          </.section_card>
+          </.section>
 
-          <.section_card
+          <.section
             :if={@cast_and_crew != []}
             title={dgettext("contents", "Cast")}
             icon={:users}
@@ -124,7 +124,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
             <ul class="flex max-h-[calc(33.5rem+var(--wc-space-group)+var(--wc-space-tight))] flex-wrap justify-center gap-group overflow-hidden sm:max-h-[calc(36.5rem+var(--wc-space-group)+var(--wc-space-tight))] sm:justify-start">
               <.cast_card :for={person <- @cast_and_crew} person={person} />
             </ul>
-          </.section_card>
+          </.section>
         </div>
 
         <aside
@@ -316,7 +316,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   defp reviews_card(assigns) do
     ~H"""
-    <.section_card title={dgettext("contents", "Reviews")} icon={:star}>
+    <.section title={dgettext("contents", "Reviews")} icon={:star}>
       <div class="grid place-items-center gap-related text-center">
         <div
           class="grid size-24 place-items-center rounded-full p-1"
@@ -339,7 +339,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
           )}
         </p>
       </div>
-    </.section_card>
+    </.section>
     """
   end
 
@@ -347,31 +347,13 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   defp external_links_card(assigns) do
     ~H"""
-    <.section_card title={dgettext("contents", "External links")} icon={:external_link}>
+    <.section title={dgettext("contents", "External links")} icon={:external_link}>
       <ul class="grid gap-related">
         <li :for={link <- @links}>
           <.external_link_button link={link} />
         </li>
       </ul>
-    </.section_card>
-    """
-  end
-
-  attr :title, :string, required: true
-  attr :icon, :atom, required: true
-  slot :inner_block, required: true
-
-  defp section_card(assigns) do
-    ~H"""
-    <.card padding="cluster" class="grid gap-cluster">
-      <div class="flex items-center gap-related">
-        <span class="inline-flex size-control-md items-center justify-center text-accent">
-          {apply(Lucideicons, @icon, [%{class: "size-icon", __changed__: %{}}])}
-        </span>
-        <h2 class="text-xl font-semibold tracking-tight text-text">{@title}</h2>
-      </div>
-      {render_slot(@inner_block)}
-    </.card>
+    </.section>
     """
   end
 
