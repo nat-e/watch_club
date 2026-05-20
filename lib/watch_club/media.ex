@@ -26,9 +26,8 @@ defmodule WatchClub.Media do
       define :list_media_imports, action: :read
       define :get_media_import_by_id, action: :read, get_by: [:id]
       define :trigger_media_import, action: :trigger_manually, args: [:configuration_id]
-      define :start_media_import, action: :start
-      define :complete_media_import, action: :complete
-      define :fail_media_import, action: :fail
+      define :mark_media_import_completed, action: :mark_completed
+      define :mark_media_import_failed, action: :mark_failed
     end
 
     resource WatchClub.Media.MediaImportResult do

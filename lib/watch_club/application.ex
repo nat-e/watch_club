@@ -10,6 +10,11 @@ defmodule WatchClub.Application do
     children = [
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
+      {Oban,
+       AshOban.config(
+         Application.fetch_env!(:watch_club, :ash_domains),
+         Application.fetch_env!(:watch_club, Oban)
+       )},
       {DNSCluster, query: Application.get_env(:watch_club, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WatchClub.PubSub},
       # Start a worker by calling: WatchClub.Worker.start_link(arg)

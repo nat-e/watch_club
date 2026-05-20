@@ -52,6 +52,13 @@ config :watch_club,
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [WatchClub.Accounts, WatchClub.Clubs, WatchClub.Contents, WatchClub.Media]
 
+config :watch_club, Oban,
+  engine: Oban.Engines.Basic,
+  repo: WatchClub.Repo,
+  queues: [media_imports: 1]
+
+config :ash_oban, :actor_persister, WatchClub.AshObanActorPersister
+
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,
   url: [host: "localhost"],

@@ -71,6 +71,25 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     end
   end
 
+  describe "list_media_import_configurations/*" do
+    test "lists Media Import Configurations for the Instance Administrator" do
+      admin = generate(administrator())
+      configuration = generate(media_import_configuration(actor: admin))
+
+      assert [%MediaImportConfiguration{id: configuration_id}] =
+               list_media_import_configurations!(actor: admin)
+
+      assert configuration_id == configuration.id
+    end
+
+    test "only the Instance Administrator can list Media Import Configurations" do
+      user = generate(user())
+
+      list_media_import_configurations(actor: user)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "update_media_import_configuration/*" do
     test "updates only the filesystem path and regenerates the name" do
       admin = generate(administrator())
@@ -94,14 +113,28 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
       assert name == "Movie Video Filesystem: #{normalized_path}"
     end
 
-    test "rejects attempts to change the Content Type" do
+    test "rejects attempts to update source type, content type, media type, or disabled status" do
       admin = generate(administrator())
       configuration = generate(media_import_configuration(actor: admin))
 
-      update_media_import_configuration(configuration, %{content_type: :book}, actor: admin)
+      update_media_import_configuration(
+        configuration,
+        %{
+          source_type: :filesystem,
+          content_type: :book,
+          media_type: :audiobook,
+          disabled?: true,
+          filesystem_path: "tmp/type-change-attempt"
+        },
+        actor: admin
+      )
       |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Invalid.NoSuchInput{input: :content_type} -> true
-        _ -> false
+        %Ash.Error.Invalid.NoSuchInput{input: input}
+        when input in [:source_type, :content_type, :media_type, :disabled?] ->
+          true
+
+        _ ->
+          false
       end)
     end
 
@@ -158,7 +191,6 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     test "destroys a Media Import Configuration without deleting past Media Imports" do
       admin = generate(administrator())
       configuration = generate(media_import_configuration(actor: admin))
-
       media_import = generate(media_import(configuration))
 
       assert :ok = destroy_media_import_configuration!(configuration, actor: admin)

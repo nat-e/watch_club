@@ -4,9 +4,15 @@ defmodule WatchClub.Media.MediaImport do
     domain: WatchClub.Media,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshStateMachine]
+    extensions: [AshOban, AshStateMachine]
 
-  alias WatchClub.Media.Changes.SnapshotMediaImportConfiguration
+  import Ash.Expr
+
+  alias WatchClub.Media.Changes.{
+    EnqueueMediaImportProcess,
+    ProcessMediaImport,
+    SnapshotMediaImportConfiguration
+  }
 
   alias WatchClub.Media.{
     MediaImportConfiguration,
@@ -20,6 +26,36 @@ defmodule WatchClub.Media.MediaImport do
     references do
       reference(:configuration, on_delete: :nilify, on_update: :update)
     end
+
+    custom_indexes do
+      index([:configuration_id],
+        unique: true,
+        name: "media_imports_one_processing_per_configuration_index",
+        where: "status = 'processing' AND configuration_id IS NOT NULL"
+      )
+    end
+  end
+
+  oban do
+    triggers do
+      trigger :process do
+        action :process
+
+        where expr(
+                status == :pending and
+                  not exists(
+                    WatchClub.Media.MediaImport,
+                    configuration_id == parent(configuration_id) and status == :processing
+                  )
+              )
+
+        queue(:media_imports)
+        max_attempts(1)
+        on_error(:mark_failed)
+        scheduler_cron(false)
+        worker_module_name(WatchClub.Media.Workers.ProcessMediaImport)
+      end
+    end
   end
 
   state_machine do
@@ -28,9 +64,9 @@ defmodule WatchClub.Media.MediaImport do
     state_attribute :status
 
     transitions do
-      transition :start, from: :pending, to: :running
-      transition :complete, from: :running, to: :completed
-      transition :fail, from: [:pending, :running], to: :failed
+      transition :process, from: :pending, to: :processing
+      transition :mark_completed, from: :processing, to: :completed
+      transition :mark_failed, from: [:pending, :processing], to: :failed
     end
   end
 
@@ -43,21 +79,24 @@ defmodule WatchClub.Media.MediaImport do
 
       change set_attribute(:triggered_manually?, true)
       change SnapshotMediaImportConfiguration
+      change EnqueueMediaImportProcess
     end
 
-    update :start do
+    update :process do
+      require_atomic? false
       accept []
 
-      change transition_state(:running)
+      change transition_state(:processing)
+      change ProcessMediaImport
     end
 
-    update :complete do
+    update :mark_completed do
       accept []
 
       change transition_state(:completed)
     end
 
-    update :fail do
+    update :mark_failed do
       accept []
 
       change transition_state(:failed)
@@ -71,9 +110,20 @@ defmodule WatchClub.Media.MediaImport do
       forbid_if always()
     end
 
-    policy action([:read, :trigger_manually, :start, :complete, :fail]) do
-      description "Only the Instance Administrator can inspect and manage Media Imports"
+    policy action(:read) do
+      description "The Instance Administrator and system actor can inspect Media Imports"
       authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if actor_attribute_equals(:system?, true)
+    end
+
+    policy action(:trigger_manually) do
+      description "Only the Instance Administrator can manually trigger Media Imports"
+      authorize_if actor_attribute_equals(:administrator?, true)
+    end
+
+    policy action([:process, :mark_completed, :mark_failed]) do
+      description "Only the system actor can process Media Imports in the background"
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

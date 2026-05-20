@@ -43,7 +43,7 @@ Acceptance:
 - Deleting configuration preserves past imports.
 - Manual trigger can create a pending `MediaImport`.
 - Duplicate/overlapping configurations are allowed.
-- One running import per configuration is enforced.
+- One processing import per configuration is enforced.
 
 ## 3. Oban setup + import worker skeleton
 
@@ -52,7 +52,7 @@ Acceptance:
 Includes:
 - dependency/config/migrations
 - worker module for `MediaImport`
-- transition `Pending → Running → Completed/Failed`
+- transition `Pending → Processing → Completed/Failed`
 - no real file processing yet, maybe a no-op worker
 
 Acceptance:
