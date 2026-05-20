@@ -70,7 +70,7 @@ _Avoid_: Revoke invitation, cancel invitation
 
 **Library**:
 A named collection of content inside a club for exactly one content type.
-_Avoid_: list, shelf, playlist
+_Avoid_: Club Library, list, shelf, playlist
 
 **Library Item**:
 A piece of content included in a library.
@@ -81,7 +81,7 @@ Play media for a library item through WatchClub.
 _Avoid_: Stream content, watch media, play media server item
 
 **Download Library Item**:
-Download media version for a library item through WatchClub.
+Download a video, ebook, or audiobook for a library item through WatchClub.
 _Avoid_: Download content, download media, download media server item
 
 **Content Request**:
@@ -101,7 +101,7 @@ A content request accepted by an automation service.
 _Avoid_: Sent request, grabbed request
 
 **Available Content Request**:
-A content request whose content has at least one media version available in WatchClub.
+A content request whose content has at least one video, ebook, or audiobook available in WatchClub.
 _Avoid_: Complete request, fulfilled request
 
 **Failed Content Request**:
@@ -132,19 +132,49 @@ _Avoid_: Delete member, ban
 Permanently remove a club and everything that exists only inside it, without deleting content that may be used elsewhere.
 _Avoid_: Archive club, close club
 
+### Media
+
+**Media**:
+An instance-wide local file available in WatchClub as a video, ebook, or audiobook.
+_Avoid_: Content, Media Version, media item
+
+**Media Source**:
+A configured origin used to import local media into WatchClub.
+_Avoid_: Playback source, streaming source, media library, sync source, media server library
+
+**Filesystem Media Source**:
+A media source whose origin is one filesystem location.
+_Avoid_: Folder media source, disk media source, path source
+
+**Media Source Import**:
+One execution that imports media availability from a media source and records discovered, deleted, conflicted, and unmatched media.
+_Avoid_: Media Source Sync, Media Scan Run, scan job, scan execution
+
+**Media Source Import Result**:
+The outcome for one file or item considered during a media source import.
+_Avoid_: Import line, scan result, import log entry
+
+**Video**:
+Media that can be played and is attached to a movie or TV show episode.
+_Avoid_: Media Version, video version
+
+**Ebook**:
+Media that can be read or downloaded and is attached to a book.
+_Avoid_: Media Version, digital book copy
+
+**Audiobook**:
+Media that can be played and is attached to a book.
+_Avoid_: Media Version, audio media version
+
 ### Contents
 
 **Content**:
-A creative work that can be added to a library, such as a movie, TV show, book, video, or podcast.
+A creative work that can be added to a library, such as a movie, TV show, or book.
 _Avoid_: Media, title, item, recommendation
 
 **Content Type**:
-The kind of content, such as movie, TV show, book, video, or podcast.
+The kind of content, such as movie, TV show, or book.
 _Avoid_: Media type, category
-
-**Media Version**:
-A specific playable or downloadable variant of a movie, book, or TV show episode available in WatchClub.
-_Avoid_: File, stream, copy, media item, MediaVersion
 
 **TV Show Episode**:
 A numbered part of TV show content.
@@ -244,9 +274,9 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
 - If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
 - A **Member** can **Play Library Item** and **Download Library Item** only for **Library Items** visible to them in WatchClub
-- A **Member** can **Play Library Item** or **Download Library Item** using **Media Versions** of the **Library Item**’s **Movie**, **Book**, or **TV Show Episodes**
-- When multiple **Media Versions** are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
-- A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Media Versions**
+- A **Member** can **Play Library Item** or **Download Library Item** using **Videos**, **Ebooks**, or **Audiobooks** attached to the **Library Item**’s **Movie**, **Book**, or **TV Show Episodes**
+- When multiple **Videos**, **Ebooks**, or **Audiobooks** are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
+- A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Videos**, **Ebooks**, or **Audiobooks**
 - **Add to Library** requests the **Library Item**’s **Content** as a whole
 - For **TV Show** content, **Add to Library** requests the entire **TV Show**, not a season or **TV Show Episode**
 - **Add to Library** creates one **Content Request** for each **Request Profile** configured on the **Library**
@@ -269,6 +299,45 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - Deleting a **Request Profile** deletes its **Content Requests**
 - **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
+### Media
+
+- **Media** is instance-wide
+- **Video**, **Ebook**, and **Audiobook** are kinds of **Media**
+- A **Library** does not own **Media**
+- A **Media Source** is not scoped to a **Library**
+- A **Media Source** has exactly one **Content Type**
+- A single external system can be represented by multiple **Media Sources** when it provides multiple **Content Types**
+- A **Media Source** can be imported manually or by a schedule
+- A **Media Source** may represent a filesystem location, an external media server, or an automation service
+- A **Filesystem Media Source** is a **Media Source**
+- A **Filesystem Media Source** has exactly one filesystem location
+- Multiple filesystem locations are represented by multiple **Filesystem Media Sources**
+- A **Media Source Import** belongs to exactly one **Media Source**
+- A **Media Source Import** discovers instance-wide **Media**
+- A **Media Source Import** is retained after it finishes
+- A **Media Source Import** records its status and outcome
+- A **Media Source Import** has one **Media Source Import Result** for each file or item it considered
+- A **Media Source Import** does not create **Media** for files or items it cannot match to **Content**
+- A **Media Source Import** keeps existing **Media** when its path is still present but cannot be rematched to **Content**
+- A filesystem-backed **Media Source Import** recursively examines its **Media Source**’s selected location
+- A **Media Source** is used only to import **Media**, not to play or download it
+- A **Media Source Import** identifies **Media** by local filesystem path
+- A **Media** has exactly one local filesystem path
+- A **Media** path is globally unique
+- A **Media Source Import** reports a conflict when it finds an existing **Media** path for a different **Content Type**
+- A **Media Source Import** conflict does not replace the existing **Media**
+- Moving a file deletes the old **Media** and creates new **Media** at the new path
+- A filesystem-backed **Media Source Import** deletes previously discovered **Media** under the source path when that **Media** path is no longer present
+- Deleting **Media** does not delete **Content**, **Movies**, **Books**, or **TV Show Episodes**
+- A **Media Source Import** uses its **Media Source**’s **Content Type** to choose which **Metadata Provider** can identify discovered files as **Content**
+- A **Media Source** for **Book** content can discover both **Ebooks** and **Audiobooks**
+- A discovered book file’s format determines whether it becomes an **Ebook** or an **Audiobook**
+- Only the **Instance Administrator** can manually trigger a **Media Source Import**
+- Only the **Instance Administrator** can configure scheduled **Media Sources**
+- A **Video** may be attached to exactly one **Movie** or exactly one **TV Show Episode**
+- An **Ebook** may be attached to exactly one **Book**
+- An **Audiobook** may be attached to exactly one **Book**
+
 ### Contents
 
 - A **Movie**, **TV Show**, and **Book** are kinds of **Content**
@@ -284,11 +353,12 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1
-- A **Movie** may have zero or more **Media Versions**
-- A **Book** may have zero or more **Media Versions**
-- A **TV Show Episode** may have zero or more **Media Versions**
-- A **Media Version** belongs to exactly one **Movie**, **Book**, or **TV Show Episode**
-- A **Movie**, **Book**, or **TV Show Episode** can have multiple **Media Versions** when multiple selectable variants are available
+- A **Movie** may have zero or more **Videos**
+- A **Book** may have zero or more **Ebooks** and **Audiobooks**
+- A **TV Show Episode** may have zero or more **Videos**
+- A **Video** may be attached to exactly one **Movie** or exactly one **TV Show Episode**
+- An **Ebook** or **Audiobook** may be attached to exactly one **Book**
+- A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
 
 ### Automation Services
 
@@ -297,7 +367,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - Only the **Instance Administrator** can manage **Automation Services**
 - **Automation Services** are configured for the WatchClub instance by the **Instance Administrator**
 - A **Request Profile** uses exactly one **Automation Service**
-- A **Request Profile** can only use an **Automation Service** that supports its **Library**’s **Content Type**
+- A **Request Profile** can only use an **Automation Service** that supports the **Content Type** it requests
 - An **Automation Service** may be used by many **Request Profiles**
 
 ### Cross-domain
@@ -314,22 +384,36 @@ _Avoid_: Request target, request settings, automation settings, service settings
 
 > **Dev:** "When a **Member** adds a movie to a **Library**, are they recommending it?"
 > **Domain expert:** "No — **Add to Library** creates a **Library Item** so the **Content** is visible to the **Club**."
-> **Dev:** "Can they add it to any library?"
-> **Domain expert:** "Only if the **Content** has the same **Content Type** as the **Library**."
+> **Dev:** "Does **Scan Library** refresh one club’s **Library**?"
+> **Domain expert:** "No — call the configuration **Media Source**. A **Media Source Import** imports media availability from that source and updates instance-wide **Videos**, **Ebooks**, or **Audiobooks**."
 
 ## Flagged ambiguities
 
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
-- "Media" was previously ambiguous; resolved: **Media** is no longer a domain term; **Content** is the creative work, **Library Item** is content included in a **Library**, and **Media Version** is a playable or downloadable variant of a **Movie**, **Book**, or **TV Show Episode**.
+- "Media Version" is no longer canonical; resolved: use **Video**, **Ebook**, or **Audiobook** for concrete playable or downloadable media.
+- "Scan Library" is not canonical; resolved: use **Media Source** for the configuration and **Media Source Import** for the operation that discovers instance-wide **Videos**, **Ebooks**, and **Audiobooks**.
+- "Sync" is not canonical because it implies two-way synchronization; resolved: use **Media Source Import** for one-way discovery from a **Media Source**.
+- "Media type" is ambiguous for imports; resolved: a **Media Source** is configured by **Content Type**, not by media type.
+- **Media Source** and **Media Source Import** are distinct; resolved: **Media Source** is the configuration and **Media Source Import** is one execution.
+- **Media** identity is its local filesystem path; resolved: **Media Source** is only an import mechanism, not part of **Media** identity or playback.
+- **Media** paths are globally unique; resolved: the same local path cannot produce multiple **Media** records.
+- Cross-content-type path conflicts do not replace existing **Media**; resolved: the **Media Source Import** reports the conflict and leaves existing **Media** unchanged.
+- Unmatched files or items do not create **Media**; resolved: they are recorded only as **Media Source Import Results**.
+- Match failure does not delete existing **Media**; resolved: deletion is based on source absence, not rematching failure.
+- Missing imported files are deleted rather than retained; resolved: metadata and history live on **Content**, **Movies**, **Books**, and **TV Show Episodes**, not on **Media**.
+- **Filesystem Media Source Import** deletion is scoped by path prefix; resolved: an import only deletes missing **Media** whose path is under the source path.
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
-- "Club Library" may appear where the domain means **Library**; resolved: the canonical term is **Library**.
-- "Media Server Library" was considered but is no longer part of the domain; resolved: WatchClub does not manage media server libraries separately.
-- "Watch Club Media Server" was considered as a term but is no longer part of the domain language; resolved: media versions are simply available in WatchClub.
-- External media server integrations were considered but are no longer part of the domain; resolved: WatchClub provides play and download itself.
+- "Club Library" is not canonical; resolved: the canonical term is **Library**.
+- Instance-wide libraries were considered but rejected; resolved: a **Library** belongs to one **Club**.
+- "Media Server Library" is not canonical; resolved: use **Media Source** for origins of media availability and **Library** for club-owned collections.
+- **Media** is a generic domain concept, but **Video**, **Ebook**, and **Audiobook** are preferred when referring to concrete media.
+- **Media** is instance-wide even though **Library** is club-owned.
+- "Watch Club Media Server" is not a domain term; resolved: **Videos**, **Ebooks**, and **Audiobooks** are available in WatchClub.
+- External media servers such as Jellyfin can be **Media Sources**.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
-- Radarr and Sonarr are **Automation Services**, not media servers or metadata providers.
+- Radarr and Sonarr can be **Automation Services** when WatchClub asks them to make content available, and **Media Sources** when WatchClub imports already-available media from them.
 - "Request settings" is not canonical; use **Request Profile** for the library-specific way to request content through an **Automation Service**.
 - "Request Media" and "Request Content" are not canonical actions; resolved: **Add to Library** is the user action and it may create **Content Requests**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
