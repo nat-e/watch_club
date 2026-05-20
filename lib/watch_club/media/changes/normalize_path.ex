@@ -24,4 +24,23 @@ defmodule WatchClub.Media.Changes.NormalizePath do
         Ash.Changeset.change_attribute(changeset, attribute, Path.expand(path))
     end
   end
+
+  @impl true
+  def atomic(changeset, opts, _context) do
+    attribute = Keyword.fetch!(opts, :attribute)
+
+    case Map.get(changeset.params, attribute) ||
+           Map.get(changeset.params, Atom.to_string(attribute)) do
+      nil ->
+        :ok
+
+      path when is_binary(path) ->
+        atomics = %{attribute => Path.expand(path)}
+
+        case changeset.action.type do
+          :create -> {:atomic_set, atomics}
+          :update -> {:atomic, atomics}
+        end
+    end
+  end
 end

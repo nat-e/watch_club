@@ -350,9 +350,12 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - Only the **Instance Administrator** can manage **Media Import Configurations**
 - A **Media Import Configuration** is not scoped to a **Library**
 - A **Media Import Configuration** is used only to import **Media**, not to play or download it
-- A **Media Import Configuration**’s name is generated from its configuration
-- A **Media Import Configuration** can be edited after it has past **Media Imports**
+- A **Media Import Configuration**’s name is calculated from its configuration
+- A **Media Import Configuration**’s **Content Type**, **Media Type**, and **Media Import Source Type** cannot be edited after creation
+- A filesystem **Media Import Configuration**’s filesystem location can be edited after it has past **Media Imports**
 - A **Media Import Configuration** can be disabled to pause scheduled imports
+- A disabled **Media Import Configuration** can still be imported manually
+- A disabled **Media Import Configuration** can be enabled again
 - Deleting a **Media Import Configuration** does not delete **Media** or past **Media Imports**
 - A **Media Import Configuration** has exactly one **Content Type**, one **Media Type**, and one **Media Import Source Type**
 - Valid **Media Import Configuration** combinations are Movie and Video, TV Show and Video, Book and Ebook, and Book and Audiobook
