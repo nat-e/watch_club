@@ -375,8 +375,8 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A past **Media Import** remains after its **Media Import Configuration** is deleted
 - A **Media Import** keeps a snapshot of the **Media Import Configuration** that ran
 - A **Media Import** has **Refresh Metadata** off by default
-- A **Media Import** has one **Media Import Status**: Pending, Running, Completed, or Failed
-- A **Media Import Configuration** can have at most one Running **Media Import** at a time
+- A **Media Import** has one **Media Import Status**: Pending, Processing, Completed, or Failed
+- A **Media Import Configuration** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
 - A **Completed** **Media Import** may have **Media Import Results** with No Match or Failed statuses
 - A **Failed** **Media Import** is one that cannot finish processing its source

@@ -40,7 +40,15 @@ defmodule WatchClub.Media.MediaImport do
     triggers do
       trigger :process do
         action :process
-        where expr(status == :pending)
+
+        where expr(
+                status == :pending and
+                  not exists(
+                    WatchClub.Media.MediaImport,
+                    configuration_id == parent(configuration_id) and status == :processing
+                  )
+              )
+
         queue(:media_imports)
         max_attempts(1)
         on_error(:mark_failed)

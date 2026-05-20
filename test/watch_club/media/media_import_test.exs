@@ -1,7 +1,6 @@
 defmodule WatchClub.Media.MediaImportTest do
   use WatchClub.DataCase
 
-  import ExUnit.CaptureLog
   import WatchClub.Media
 
   alias WatchClub.Media.MediaImport
@@ -85,24 +84,20 @@ defmodule WatchClub.Media.MediaImportTest do
                get_media_import_by_id!(media_import.id, actor: admin)
     end
 
-    test "background processing marks the Media Import as Failed when another import is Processing" do
+    test "background processing completes queued Media Imports for one configuration" do
       admin = generate(administrator())
       configuration = generate(media_import_configuration(actor: admin))
 
-      Ash.Seed.seed!(MediaImport, %{
-        configuration_id: configuration.id,
-        status: :processing,
-        refresh_metadata?: false,
-        triggered_manually?: true,
-        configuration_snapshot: %{"id" => configuration.id}
-      })
+      first_import = trigger_media_import!(configuration.id, actor: admin)
+      second_import = trigger_media_import!(configuration.id, actor: admin)
 
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      Oban.drain_queue(queue: :media_imports)
 
-      capture_log(fn -> Oban.drain_queue(queue: :media_imports) end)
+      assert %MediaImport{status: :completed} =
+               get_media_import_by_id!(first_import.id, actor: admin)
 
-      assert %MediaImport{status: :failed} =
-               get_media_import_by_id!(media_import.id, actor: admin)
+      assert %MediaImport{status: :completed} =
+               get_media_import_by_id!(second_import.id, actor: admin)
     end
 
     test "only the Instance Administrator can trigger Media Imports" do
