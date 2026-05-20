@@ -26,7 +26,7 @@ defmodule WatchClub.Media.TextTrack do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
 
     create :create do
       primary? true
@@ -43,7 +43,7 @@ defmodule WatchClub.Media.TextTrack do
       forbid_if always()
     end
 
-    policy action([:read, :create, :destroy]) do
+    policy action([:read, :create]) do
       description "Only the Instance Administrator can manage Text Tracks directly"
       authorize_if actor_attribute_equals(:administrator?, true)
     end

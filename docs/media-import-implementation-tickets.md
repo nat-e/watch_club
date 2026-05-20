@@ -31,8 +31,8 @@ Includes:
 - `MediaImportResult`
 - enum types:
   - `MediaImportSourceType`
-  - `MediaImportStatus`
   - `MediaImportResultStatus`
+- Ash StateMachine-backed status on `MediaImport`
 - config snapshot on `MediaImport`
 - `refresh_metadata`
 - last successful import tracking on `Media`
