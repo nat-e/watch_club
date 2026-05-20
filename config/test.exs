@@ -5,6 +5,8 @@ config :ash, policies: [show_policy_breakdowns?: true]
 config :ash, :disable_async?, true
 config :ash, :missed_notifications, :ignore
 
+config :watch_club, Oban, testing: :manual
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
