@@ -29,6 +29,16 @@ defmodule WatchClubWeb.Router do
     plug :set_actor, :user
   end
 
+  scope "/play", WatchClubWeb do
+    get "/hls/:session_id/master.m3u8", PlayerController, :master_playlist
+    get "/hls/:session_id/video/:variant/index.m3u8", PlayerController, :video_playlist
+    get "/hls/:session_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
+    get "/hls/:session_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
+    get "/hls/:session_id/video/:variant/:segment", PlayerController, :video_segment
+    get "/hls/:session_id/audio/:track_id/:segment", PlayerController, :audio_segment
+    get "/hls/:session_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
+  end
+
   scope "/", WatchClubWeb do
     pipe_through :browser
 
@@ -40,6 +50,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Locale
       ] do
       live "/", HomePage
+      live "/play", PlayerPage
       live "/search", SearchPage
       live "/settings", Accounts.SettingsPage
       live "/watchlist", WatchlistPage

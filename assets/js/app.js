@@ -25,6 +25,7 @@ import { LiveSocket } from "phoenix_live_view";
 import { hooks as colocatedHooks } from "phoenix-colocated/watch_club";
 import topbar from "../vendor/topbar";
 import componentsHooks from "./components";
+import playerHooks from "./player";
 
 const setTheme = (theme) => {
 	if (theme === "system") {
@@ -55,7 +56,7 @@ const csrfToken = document
 const liveSocket = new LiveSocket("/live", Socket, {
 	longPollFallbackMs: 2500,
 	params: { _csrf_token: csrfToken },
-	hooks: { ...colocatedHooks, ...componentsHooks },
+	hooks: { ...colocatedHooks, ...componentsHooks, ...playerHooks },
 });
 
 // Show progress bar on live navigation and form submits
