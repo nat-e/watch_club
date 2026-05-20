@@ -32,6 +32,7 @@ defmodule WatchClub.Media do
 
     resource WatchClub.Media.MediaImportResult do
       define :media_import_results_for_import, action: :by_media_import, args: [:media_import_id]
+      define :create_media_import_result, action: :create
     end
 
     resource WatchClub.Media.Video

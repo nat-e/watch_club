@@ -43,9 +43,15 @@ defmodule WatchClub.Media.MediaImportResult do
       forbid_if always()
     end
 
-    policy action([:read, :by_media_import, :create]) do
-      description "Only the Instance Administrator can inspect and manage Media Import Results"
+    policy action([:read, :by_media_import]) do
+      description "Only the Instance Administrator can inspect Media Import Results"
       authorize_if actor_attribute_equals(:administrator?, true)
+    end
+
+    policy action(:create) do
+      description "The Instance Administrator and system actor can create Media Import Results"
+      authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

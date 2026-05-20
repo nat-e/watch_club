@@ -2,6 +2,7 @@ defmodule WatchClub.Media.Changes.ProcessMediaImport do
   use Ash.Resource.Change
 
   alias WatchClub.Media, as: MediaDomain
+  alias WatchClub.Media.Importer
   alias WatchClub.Media.MediaImport
 
   @impl true
@@ -28,24 +29,16 @@ defmodule WatchClub.Media.Changes.ProcessMediaImport do
 
   defp process_and_mark_completed(media_import, actor) do
     try do
-      :ok = process(media_import)
-
-      media_import
-      |> mark_completed(actor)
-      |> case do
-        {:ok, completed_import} ->
-          {:ok, completed_import}
-
-        {:error, error} ->
-          mark_failed_after_error(media_import, actor, error)
+      with :ok <- Importer.process_import(media_import),
+           {:ok, completed_import} <- mark_completed(media_import, actor) do
+        {:ok, completed_import}
+      else
+        {:error, error} -> mark_failed_after_error(media_import, actor, error)
       end
     rescue
-      error ->
-        mark_failed_after_error(media_import, actor, error)
+      error -> mark_failed_after_error(media_import, actor, error)
     end
   end
-
-  defp process(%MediaImport{}), do: :ok
 
   defp mark_failed_after_error(media_import, actor, error) do
     media_import

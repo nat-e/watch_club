@@ -3,6 +3,8 @@ defmodule WatchClub.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  @compile {:no_warn_undefined, {AshOban, :config, 3}}
+
   use Application
 
   @impl true
@@ -10,10 +12,12 @@ defmodule WatchClub.Application do
     children = [
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
+      WatchClub.Media.Importer.Probe,
       {Oban,
        AshOban.config(
          Application.fetch_env!(:watch_club, :ash_domains),
-         Application.fetch_env!(:watch_club, Oban)
+         Application.fetch_env!(:watch_club, Oban),
+         []
        )},
       {DNSCluster, query: Application.get_env(:watch_club, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WatchClub.PubSub},

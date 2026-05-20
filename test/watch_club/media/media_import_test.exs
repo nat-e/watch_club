@@ -3,7 +3,7 @@ defmodule WatchClub.Media.MediaImportTest do
 
   import WatchClub.Media
 
-  alias WatchClub.Media.MediaImport
+  alias WatchClub.Media.{MediaImport, MediaImportResult}
   alias WatchClub.SystemActor
 
   describe "trigger_media_import/*" do
@@ -83,7 +83,12 @@ defmodule WatchClub.Media.MediaImportTest do
 
     test "background processing completes the Media Import" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+
+      configuration =
+        generate(
+          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
+        )
+
       media_import = trigger_media_import!(configuration.id, actor: admin)
 
       Oban.drain_queue(queue: :media_imports)
@@ -94,7 +99,11 @@ defmodule WatchClub.Media.MediaImportTest do
 
     test "background processing completes queued Media Imports for one configuration" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+
+      configuration =
+        generate(
+          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
+        )
 
       first_import = trigger_media_import!(configuration.id, actor: admin)
       second_import = trigger_media_import!(configuration.id, actor: admin)
@@ -108,6 +117,73 @@ defmodule WatchClub.Media.MediaImportTest do
                get_media_import_by_id!(second_import.id, actor: admin)
     end
 
+    test "background processing uses the Media Import Configuration snapshot" do
+      admin = generate(administrator())
+
+      configuration =
+        generate(
+          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
+        )
+
+      media_import = trigger_media_import!(configuration.id, actor: admin)
+
+      update_media_import_configuration!(
+        configuration,
+        %{
+          filesystem_path:
+            Path.join(
+              System.tmp_dir!(),
+              "watch-club-missing-import-path-#{System.unique_integer([:positive])}"
+            )
+        },
+        actor: admin
+      )
+
+      Oban.drain_queue(queue: :media_imports)
+
+      assert %MediaImport{status: :completed} =
+               get_media_import_by_id!(media_import.id, actor: admin)
+    end
+
+    test "background processing records No Match results for unmatched candidate files" do
+      admin = generate(administrator())
+      directory = empty_import_directory!()
+      file_path = Path.join(directory, "WatchClub Guide.pdf")
+      File.write!(file_path, "not a real pdf")
+
+      configuration =
+        generate(
+          media_import_configuration(
+            actor: admin,
+            content_type: :book,
+            media_type: :ebook,
+            filesystem_path: directory
+          )
+        )
+
+      media_import = trigger_media_import!(configuration.id, actor: admin)
+
+      Oban.drain_queue(queue: :media_imports)
+
+      assert %MediaImport{status: :completed} =
+               get_media_import_by_id!(media_import.id, actor: admin)
+
+      assert [
+               %MediaImportResult{
+                 status: :no_match,
+                 path: ^file_path,
+                 message: "Could not confidently match file to Content or TV Show Episode",
+                 metadata: %{
+                   "stage" => "content_matching",
+                   "content_type" => "book",
+                   "media_type" => "ebook",
+                   "relative_path" => "WatchClub Guide.pdf",
+                   "existing_media_id" => nil
+                 }
+               }
+             ] = media_import_results_for_import!(media_import.id, actor: admin)
+    end
+
     test "only the Instance Administrator can trigger Media Imports" do
       admin = generate(administrator())
       user = generate(user())
@@ -116,6 +192,19 @@ defmodule WatchClub.Media.MediaImportTest do
       trigger_media_import(configuration.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+  end
+
+  defp empty_import_directory! do
+    path =
+      Path.join(
+        System.tmp_dir!(),
+        "watch-club-media-import-#{System.unique_integer([:positive])}"
+      )
+
+    File.mkdir_p!(path)
+    on_exit(fn -> File.rm_rf!(path) end)
+
+    path
   end
 
   describe "mark_media_import_completed/*" do
