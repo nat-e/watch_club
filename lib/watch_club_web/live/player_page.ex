@@ -3,6 +3,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   alias WatchClub.Playback.HlsSession
 
+  require Logger
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -13,9 +15,8 @@ defmodule WatchClubWeb.PlayerPage do
       >
         <div :if={@player_error} class="max-w-readable space-y-related">
           <p class="text-lg font-semibold text-danger">
-            {dgettext("player", "Could not start player session")}
+            {dgettext("player", "Error loading video")}
           </p>
-          <p class="text-sm text-white/65">{@player_error}</p>
           <.link
             navigate={~p"/"}
             class="inline-flex h-control-md items-center justify-center rounded-control border border-white/15 bg-white/10 px-group text-sm font-medium text-white hover:bg-white/20"
@@ -24,7 +25,7 @@ defmodule WatchClubWeb.PlayerPage do
           </.link>
         </div>
 
-        <div :if={is_nil(@player_error)} class="flex flex-col items-center gap-related text-white/80">
+        <div :if={not @player_error} class="flex flex-col items-center gap-related text-white/80">
           <Lucideicons.loader_circle class="size-icon-xl animate-spin" />
           <div class="space-y-tight">
             <p class="text-lg font-semibold text-white">{dgettext("player", "Starting player…")}</p>
@@ -37,331 +38,284 @@ defmodule WatchClubWeb.PlayerPage do
 
       <section
         :if={@player_session}
-        id="watch-club-player"
-        phx-hook="Player"
-        phx-update="ignore"
-        data-session={Jason.encode!(@player_session)}
-        data-hls-src={~p"/assets/js/player_hls.js"}
-        data-controls="visible"
-        data-playing="false"
-        data-buffering="true"
-        data-muted="false"
-        data-menu="closed"
-        data-fullscreen="false"
-        data-ended="false"
-        class="group relative h-dvh w-dvw overflow-hidden bg-black text-white data-[controls=hidden]:cursor-none"
+        id="watch-club-player-shell"
+        class="relative h-dvh w-dvw bg-black text-white"
       >
-        <video
-          id="player-video"
-          data-player-video
-          class="absolute inset-0 size-full bg-black object-contain"
-          playsinline
-          preload="metadata"
-        >
-        </video>
-
-        <div data-player-surface class="absolute inset-0 z-10" aria-hidden="true"></div>
-
         <div
-          class="pointer-events-none absolute inset-0 z-20 grid place-items-center opacity-0 transition-opacity duration-200 group-data-[buffering=true]:opacity-100"
-          aria-hidden="true"
+          id="watch-club-player"
+          phx-hook="Player"
+          phx-update="ignore"
+          data-session={Jason.encode!(@player_session)}
+          data-vidstack-src={~p"/assets/js/player_vidstack.js"}
+          class="h-dvh w-dvw bg-black text-white"
         >
-          <div class="grid size-24 place-items-center rounded-full bg-black/55 backdrop-blur-sm">
-            <Lucideicons.loader_circle class="size-14 animate-spin text-white/90" />
-          </div>
-        </div>
-
-        <div
-          data-player-controls
-          class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-gradient-to-t from-black/75 via-black/5 to-black/70 opacity-100 transition-opacity duration-200 group-data-[controls=hidden]:opacity-0"
-        >
-          <header
-            class="pointer-events-auto flex w-full items-start justify-between gap-related px-4 pb-4 sm:px-8"
-            style="padding-top: max(1rem, env(safe-area-inset-top));"
+          <media-player
+            id="watch-club-vidstack-player"
+            data-player-media
+            data-src={@player_session.master_url}
+            title={@player_session.title}
+            duration={@player_session.duration}
+            preload="metadata"
+            playsinline
+            data-controls="true"
+            data-buffering="true"
+            class="group/player relative block h-dvh w-dvw overflow-hidden bg-black text-white outline-none [&[data-started]:not([data-controls])]:cursor-none"
           >
+            <media-provider class="absolute inset-0 block size-full overflow-hidden bg-black [&_video]:size-full [&_video]:bg-black [&_video]:object-contain [&_video]:outline-none">
+            </media-provider>
+
+            <media-gesture
+              event="pointerup"
+              action="toggle:paused"
+              class="absolute inset-0 z-10 block"
+              aria-hidden="true"
+            >
+            </media-gesture>
+
+            <media-captions class="pointer-events-none absolute inset-x-4 bottom-32 z-20 mx-auto block max-w-[80%] text-center text-lg font-semibold text-white [text-shadow:0_2px_4px_rgb(0_0_0_/_0.85)] sm:text-2xl">
+            </media-captions>
+
+            <div
+              class="pointer-events-none absolute inset-0 z-20 grid place-items-center opacity-0 transition-opacity duration-200 group-data-[buffering]/player:opacity-100"
+              aria-hidden="true"
+            >
+              <div class="grid size-24 place-items-center rounded-full bg-black/55 backdrop-blur-sm">
+                <Lucideicons.loader_circle class="size-14 animate-spin text-white/90" />
+              </div>
+            </div>
+
+            <media-controls
+              data-visible="true"
+              hide-delay="3000"
+              class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-gradient-to-t from-black/75 via-black/5 to-black/70 opacity-0 transition-opacity duration-200 data-[visible]:opacity-100"
+            >
+              <header
+                class="pointer-events-auto flex w-full items-start justify-between gap-related px-4 pb-4 sm:px-8"
+                style="padding-top: max(1rem, env(safe-area-inset-top));"
+              >
+                <button
+                  type="button"
+                  data-player-command="back"
+                  class="inline-flex size-12 shrink-0 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
+                  aria-label={dgettext("player", "Back")}
+                >
+                  <Lucideicons.arrow_left class="size-8" />
+                </button>
+
+                <div class="min-w-0 flex-1 pt-1 text-center sm:pt-2">
+                  <h1 class="truncate text-base font-semibold text-white sm:text-xl">
+                    {@player_session.title}
+                  </h1>
+                  <p class="mx-auto mt-tight flex max-w-readable flex-wrap items-center justify-center gap-tight text-xs text-white/65 sm:text-sm">
+                    <span>
+                      {@player_session.video.width}×{@player_session.video.height}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span>{format_duration(@player_session.duration)}</span>
+                    <span aria-hidden="true" class="hidden sm:inline">·</span>
+                    <span class="hidden sm:inline">
+                      {dgettext("player", "source %{codec}", codec: @player_session.video.codec)}
+                    </span>
+                  </p>
+                </div>
+
+                <div class="flex shrink-0 items-center gap-tight">
+                  <media-menu class="contents">
+                    <media-menu-button
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      aria-label={dgettext("player", "Quality")}
+                    >
+                      <Lucideicons.settings class="size-6 sm:size-7" />
+                    </media-menu-button>
+
+                    <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-40 sm:w-64">
+                      <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
+                        {dgettext("player", "Quality")}
+                      </p>
+                      <media-quality-radio-group auto-label={dgettext("player", "Auto")} hide-bitrate>
+                        <template>
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
+                            <span data-part="label" class="ml-related"></span>
+                          </media-radio>
+                        </template>
+                      </media-quality-radio-group>
+                    </media-menu-items>
+                  </media-menu>
+
+                  <media-menu class="contents">
+                    <media-menu-button
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      aria-label={dgettext("player", "Audio")}
+                    >
+                      <Lucideicons.languages class="size-6 sm:size-7" />
+                    </media-menu-button>
+
+                    <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-28 sm:w-72">
+                      <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
+                        {dgettext("player", "Audio")}
+                      </p>
+                      <media-audio-radio-group>
+                        <template>
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
+                            <span data-part="label" class="ml-related"></span>
+                          </media-radio>
+                        </template>
+                      </media-audio-radio-group>
+                    </media-menu-items>
+                  </media-menu>
+
+                  <media-menu class="contents">
+                    <media-menu-button
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      aria-label={dgettext("player", "Subtitles")}
+                    >
+                      <Lucideicons.captions class="size-6 sm:size-7" />
+                    </media-menu-button>
+
+                    <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-16 sm:w-72">
+                      <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
+                        {dgettext("player", "Subtitles")}
+                      </p>
+                      <media-captions-radio-group off-label={dgettext("player", "Off")}>
+                        <template>
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
+                            <span data-part="label" class="ml-related"></span>
+                          </media-radio>
+                        </template>
+                      </media-captions-radio-group>
+                    </media-menu-items>
+                  </media-menu>
+
+                  <media-mute-button
+                    class="group/mute inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                    aria-label={dgettext("player", "Mute")}
+                  >
+                    <Lucideicons.volume_2 class="size-6 group-data-[muted]/mute:hidden sm:size-7" />
+                    <Lucideicons.volume_x class="hidden size-6 group-data-[muted]/mute:block sm:size-7" />
+                  </media-mute-button>
+
+                  <media-fullscreen-button
+                    target="media"
+                    class="group/fullscreen inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                    aria-label={dgettext("player", "Fullscreen")}
+                  >
+                    <Lucideicons.maximize class="size-6 group-data-[active]/fullscreen:hidden sm:size-7" />
+                    <Lucideicons.minimize class="hidden size-6 group-data-[active]/fullscreen:block sm:size-7" />
+                  </media-fullscreen-button>
+                </div>
+              </header>
+
+              <div class="pointer-events-none flex flex-1 items-center justify-center px-page">
+                <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity duration-200 group-data-[buffering]/player:opacity-0">
+                  <media-seek-button
+                    seconds="-10"
+                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-24"
+                    aria-label={dgettext("player", "Seek backward 10 seconds")}
+                  >
+                    <Lucideicons.rotate_ccw class="size-12 sm:size-16" />
+                    <span class="absolute mt-1 text-xs font-bold">10</span>
+                  </media-seek-button>
+
+                  <media-play-button
+                    data-paused="true"
+                    class="group/play inline-flex size-24 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-28"
+                    aria-label={dgettext("player", "Play or pause")}
+                  >
+                    <Lucideicons.play class="hidden size-20 group-data-[paused]/play:block sm:size-24" />
+                    <Lucideicons.pause class="size-20 group-data-[paused]/play:hidden sm:size-24" />
+                  </media-play-button>
+
+                  <media-seek-button
+                    seconds="10"
+                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-24"
+                    aria-label={dgettext("player", "Seek forward 10 seconds")}
+                  >
+                    <Lucideicons.rotate_cw class="size-12 sm:size-16" />
+                    <span class="absolute mt-1 text-xs font-bold">10</span>
+                  </media-seek-button>
+                </div>
+              </div>
+
+              <footer
+                class="pointer-events-auto flex w-full flex-col gap-related px-4 pt-4 sm:px-8"
+                style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
+              >
+                <media-time-slider
+                  key-step="10"
+                  shift-key-multiplier="1"
+                  aria-label={dgettext("player", "Seek")}
+                  class="group/timeline relative block h-10 w-full cursor-pointer touch-none outline-none"
+                >
+                  <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-data-[focus]/timeline:ring-2 group-data-[focus]/timeline:ring-white/70">
+                    <div
+                      class="absolute h-full rounded-full bg-white/45"
+                      style="width: var(--slider-progress, 0%);"
+                    >
+                    </div>
+                    <div
+                      class="absolute h-full rounded-full bg-primary"
+                      style="width: var(--slider-fill, 0%);"
+                    >
+                    </div>
+                  </div>
+                  <div
+                    class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-[active]/timeline:scale-125 group-data-[dragging]/timeline:ring-4"
+                    style="left: var(--slider-fill, 0%);"
+                  >
+                  </div>
+                </media-time-slider>
+
+                <div class="relative flex min-h-control-sm items-center justify-center text-sm font-medium text-white/90 tabular-nums">
+                  <div class="flex items-center justify-center gap-tight">
+                    <media-time type="current">0:00</media-time>
+                    <span class="text-white/60">/</span>
+                    <media-time type="duration">
+                      {format_duration(@player_session.duration)}
+                    </media-time>
+                  </div>
+
+                  <button
+                    type="button"
+                    data-player-next
+                    hidden
+                    class="absolute right-0 inline-flex h-control-sm items-center gap-tight rounded-control px-related text-sm font-medium text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
+                  >
+                    <Lucideicons.skip_forward class="size-icon" />
+                    <span class="hidden sm:inline">{dgettext("player", "Next episode")}</span>
+                  </button>
+                </div>
+              </footer>
+            </media-controls>
+
             <button
               type="button"
-              data-player-command="back"
-              class="inline-flex size-12 shrink-0 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
-              aria-label={dgettext("player", "Back")}
+              data-player-skip-segment
+              hidden
+              class="absolute right-4 bottom-28 z-40 inline-flex items-center gap-tight overflow-hidden rounded-control border border-white/15 bg-black/80 px-group py-related text-sm font-medium text-white shadow-overlay backdrop-blur-sm hover:bg-black/90 focus-visible:ring-2 focus-visible:ring-white/70 sm:right-8 sm:bottom-32"
             >
-              <Lucideicons.arrow_left class="size-8" />
+              <Lucideicons.skip_forward class="size-icon" />
+              <span data-player-skip-label>{dgettext("player", "Skip")}</span>
             </button>
 
-            <div class="min-w-0 flex-1 pt-1 text-center sm:pt-2">
-              <h1 class="truncate text-base font-semibold text-white sm:text-xl">
-                {@player_session.title}
-              </h1>
-              <p class="mx-auto mt-tight flex max-w-readable flex-wrap items-center justify-center gap-tight text-xs text-white/65 sm:text-sm">
-                <span>
-                  {@player_session.video.width}×{@player_session.video.height}
-                </span>
-                <span aria-hidden="true">·</span>
-                <span>{format_duration(@player_session.duration)}</span>
-                <span aria-hidden="true" class="hidden sm:inline">·</span>
-                <span class="hidden sm:inline">
-                  {dgettext("player", "source %{codec}", codec: @player_session.video.codec)}
-                </span>
-                <span data-player-status class="basis-full text-white/55 sm:basis-auto">
-                  {dgettext("player", "Starting…")}
-                </span>
-              </p>
-            </div>
+            <media-announcer></media-announcer>
+          </media-player>
+        </div>
 
-            <div class="flex shrink-0 items-center gap-tight">
-              <button
-                type="button"
-                data-player-menu-button="quality"
-                class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-12"
-                aria-label={dgettext("player", "Quality")}
-                aria-haspopup="menu"
-              >
-                <Lucideicons.settings class="size-6 sm:size-7" />
-              </button>
-
-              <button
-                type="button"
-                data-player-menu-button="audio"
-                disabled={length(@player_session.audio_tracks) <= 1}
-                class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 disabled:pointer-events-none disabled:opacity-40 sm:size-12"
-                aria-label={dgettext("player", "Audio")}
-                aria-haspopup="menu"
-              >
-                <Lucideicons.languages class="size-6 sm:size-7" />
-              </button>
-
-              <button
-                type="button"
-                data-player-menu-button="subtitles"
-                disabled={Enum.empty?(@player_session.subtitle_tracks)}
-                class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 disabled:pointer-events-none disabled:opacity-40 sm:size-12"
-                aria-label={dgettext("player", "Subtitles")}
-                aria-haspopup="menu"
-              >
-                <Lucideicons.captions class="size-6 sm:size-7" />
-              </button>
-
-              <button
-                type="button"
-                data-player-command="mute-toggle"
-                class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-12"
-                aria-label={dgettext("player", "Mute")}
-              >
-                <Lucideicons.volume_2 data-player-unmuted-icon class="size-6 sm:size-7" />
-                <Lucideicons.volume_x data-player-muted-icon class="hidden size-6 sm:size-7" />
-              </button>
-
-              <button
-                type="button"
-                data-player-command="fullscreen-toggle"
-                class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-12"
-                aria-label={dgettext("player", "Fullscreen")}
-              >
-                <Lucideicons.maximize data-player-fullscreen-enter-icon class="size-6 sm:size-7" />
-                <Lucideicons.minimize
-                  data-player-fullscreen-exit-icon
-                  class="hidden size-6 sm:size-7"
-                />
-              </button>
-            </div>
-          </header>
-
-          <div class="pointer-events-none flex flex-1 items-center justify-center px-page">
-            <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity duration-200 group-data-[buffering=true]:opacity-0">
-              <button
-                type="button"
-                data-player-command="seek-back"
-                data-seconds="-10"
-                class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-24"
-                aria-label={dgettext("player", "Seek backward 10 seconds")}
-              >
-                <Lucideicons.rotate_ccw class="size-12 sm:size-16" />
-                <span class="absolute mt-1 text-xs font-bold">10</span>
-              </button>
-
-              <button
-                type="button"
-                data-player-command="play-toggle"
-                class="inline-flex size-24 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-28"
-                aria-label={dgettext("player", "Play or pause")}
-              >
-                <Lucideicons.play data-player-play-icon class="size-20 sm:size-24" />
-                <Lucideicons.pause data-player-pause-icon class="hidden size-20 sm:size-24" />
-              </button>
-
-              <button
-                type="button"
-                data-player-command="seek-forward"
-                data-seconds="10"
-                class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70 sm:size-24"
-                aria-label={dgettext("player", "Seek forward 10 seconds")}
-              >
-                <Lucideicons.rotate_cw class="size-12 sm:size-16" />
-                <span class="absolute mt-1 text-xs font-bold">10</span>
-              </button>
-            </div>
+        <div
+          :if={@playback_error}
+          id="watch-club-player-error"
+          class="pointer-events-none absolute inset-0 z-50 grid place-items-center bg-scrim px-page text-center"
+          role="alert"
+          aria-live="assertive"
+        >
+          <div class="max-w-readable rounded-card border border-border bg-surface-overlay p-group text-text shadow-overlay">
+            <p class="text-lg font-semibold">
+              {dgettext("player", "Error loading video")}
+            </p>
           </div>
-
-          <footer
-            class="pointer-events-auto flex w-full flex-col gap-related px-4 pt-4 sm:px-8"
-            style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
-          >
-            <div
-              data-player-timeline
-              role="slider"
-              tabindex="0"
-              aria-label={dgettext("player", "Seek")}
-              aria-valuemin="0"
-              aria-valuemax={trunc(@player_session.duration)}
-              aria-valuenow="0"
-              class="group/timeline relative h-10 w-full cursor-pointer touch-none outline-none"
-            >
-              <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-focus-visible/timeline:ring-2 group-focus-visible/timeline:ring-white/70">
-                <div
-                  data-player-buffered-bar
-                  class="absolute h-full rounded-full bg-white/45"
-                  style="width: 0%;"
-                >
-                </div>
-                <div
-                  data-player-progress-bar
-                  class="absolute h-full rounded-full bg-primary"
-                  style="width: 0%;"
-                >
-                </div>
-              </div>
-              <div
-                data-player-timeline-thumb
-                class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-[dragging=true]/timeline:scale-125 group-data-[dragging=true]/timeline:ring-4"
-                style="left: 0%;"
-              >
-              </div>
-            </div>
-
-            <div class="relative flex min-h-control-sm items-center justify-center text-sm font-medium text-white/90 tabular-nums">
-              <div class="flex items-center justify-center gap-tight">
-                <span data-player-current-time>0:00</span>
-                <span class="text-white/60">/</span>
-                <span data-player-duration>{format_duration(@player_session.duration)}</span>
-              </div>
-
-              <button
-                type="button"
-                data-player-next
-                hidden
-                class="absolute right-0 inline-flex h-control-sm items-center gap-tight rounded-control px-related text-sm font-medium text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
-              >
-                <Lucideicons.skip_forward class="size-icon" />
-                <span class="hidden sm:inline">{dgettext("player", "Next episode")}</span>
-              </button>
-            </div>
-          </footer>
-        </div>
-
-        <button
-          type="button"
-          data-player-skip-segment
-          hidden
-          class="absolute right-4 bottom-28 z-40 inline-flex items-center gap-tight overflow-hidden rounded-control border border-white/15 bg-black/80 px-group py-related text-sm font-medium text-white shadow-overlay backdrop-blur-sm hover:bg-black/90 focus-visible:ring-2 focus-visible:ring-white/70 sm:right-8 sm:bottom-32"
-        >
-          <Lucideicons.skip_forward class="size-icon" />
-          <span data-player-skip-label>{dgettext("player", "Skip")}</span>
-        </button>
-
-        <div
-          data-player-menu-panel="quality"
-          hidden
-          class="fixed inset-x-4 bottom-4 z-50 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-40 sm:w-64"
-          role="menu"
-          aria-label={dgettext("player", "Quality")}
-        >
-          <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
-            {dgettext("player", "Quality")}
-          </p>
-          <button
-            type="button"
-            data-player-quality-option="auto"
-            data-selected="true"
-            class="group flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 data-[selected=true]:bg-white/15"
-            role="menuitemradio"
-            aria-checked="true"
-          >
-            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[selected=true]:opacity-100" />
-            <span class="ml-related">{dgettext("player", "Auto")}</span>
-          </button>
-          <button
-            :for={quality <- @player_session.qualities}
-            type="button"
-            data-player-quality-option={quality.id}
-            data-quality-width={quality.width}
-            data-quality-height={quality.height}
-            data-selected="false"
-            class="group flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 data-[selected=true]:bg-white/15"
-            role="menuitemradio"
-            aria-checked="false"
-          >
-            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[selected=true]:opacity-100" />
-            <span class="ml-related">{quality.label}</span>
-          </button>
-        </div>
-
-        <div
-          data-player-menu-panel="audio"
-          hidden
-          class="fixed inset-x-4 bottom-4 z-50 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-28 sm:w-72"
-          role="menu"
-          aria-label={dgettext("player", "Audio")}
-        >
-          <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
-            {dgettext("player", "Audio")}
-          </p>
-          <button
-            :for={{track, index} <- Enum.with_index(@player_session.audio_tracks)}
-            type="button"
-            data-player-audio-option={index}
-            data-selected={if track.default?, do: "true", else: "false"}
-            class="group flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 data-[selected=true]:bg-white/15"
-            role="menuitemradio"
-            aria-checked={if track.default?, do: "true", else: "false"}
-          >
-            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[selected=true]:opacity-100" />
-            <span class="ml-related">{track.label}</span>
-          </button>
-        </div>
-
-        <div
-          data-player-menu-panel="subtitles"
-          hidden
-          class="fixed inset-x-4 bottom-4 z-50 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-card border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-16 sm:w-72"
-          role="menu"
-          aria-label={dgettext("player", "Subtitles")}
-        >
-          <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
-            {dgettext("player", "Subtitles")}
-          </p>
-          <button
-            type="button"
-            data-player-subtitle-option="-1"
-            data-selected="true"
-            class="group flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 data-[selected=true]:bg-white/15"
-            role="menuitemradio"
-            aria-checked="true"
-          >
-            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[selected=true]:opacity-100" />
-            <span class="ml-related">{dgettext("player", "Off")}</span>
-          </button>
-          <button
-            :for={{track, index} <- Enum.with_index(@player_session.subtitle_tracks)}
-            type="button"
-            data-player-subtitle-option={index}
-            data-selected="false"
-            class="group flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/70 data-[selected=true]:bg-white/15"
-            role="menuitemradio"
-            aria-checked="false"
-          >
-            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[selected=true]:opacity-100" />
-            <span class="ml-related">{track.label}</span>
-          </button>
         </div>
       </section>
     </main>
@@ -374,7 +328,8 @@ defmodule WatchClubWeb.PlayerPage do
       socket
       |> assign(:page_title, "WatchClub Player")
       |> assign(:player_session, nil)
-      |> assign(:player_error, nil)
+      |> assign(:player_error, false)
+      |> assign(:playback_error, false)
 
     if connected?(socket) do
       Process.flag(:trap_exit, true)
@@ -382,6 +337,16 @@ defmodule WatchClubWeb.PlayerPage do
     else
       {:ok, socket}
     end
+  end
+
+  @impl true
+  def handle_event("player_ready", _params, socket) do
+    {:noreply, assign(socket, :playback_error, false)}
+  end
+
+  @impl true
+  def handle_event("player_failed", _params, socket) do
+    {:noreply, assign(socket, :playback_error, true)}
   end
 
   @impl true
@@ -397,8 +362,18 @@ defmodule WatchClubWeb.PlayerPage do
 
   defp start_player_session(socket) do
     case HlsSession.start_session() do
-      {:ok, session} -> {:ok, assign(socket, :player_session, session)}
-      {:error, reason} -> {:ok, assign(socket, :player_error, inspect(reason))}
+      {:ok, session} ->
+        socket =
+          socket
+          |> assign(:player_session, session)
+          |> assign(:player_error, false)
+          |> assign(:playback_error, false)
+
+        {:ok, socket}
+
+      {:error, reason} ->
+        Logger.warning("Could not start HLS player session: #{inspect(reason)}")
+        {:ok, assign(socket, :player_error, true)}
     end
   end
 

@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "hls.js": "^1.6.16",
-    "sortablejs": "^1.15.7"
+    "sortablejs": "^1.15.7",
+    "vidstack": "^1.12.13"
   }
 }
