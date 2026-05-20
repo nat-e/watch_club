@@ -5,6 +5,7 @@ defmodule WatchClub.Contents.Book do
     data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.Content
+  alias WatchClub.Media.{Audiobook, Ebook}
 
   postgres do
     table "books"
@@ -44,6 +45,9 @@ defmodule WatchClub.Contents.Book do
       define_attribute? false
       source_attribute :id
     end
+
+    has_many :ebooks, Ebook
+    has_many :audiobooks, Audiobook
   end
 
   identities do

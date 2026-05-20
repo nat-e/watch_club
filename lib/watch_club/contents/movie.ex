@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.Movie do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Content, ContentView, MovieLocalization}
+  alias WatchClub.Media.Video
 
   postgres do
     table "movies"
@@ -66,6 +67,8 @@ defmodule WatchClub.Contents.Movie do
     has_one :best_localization, MovieLocalization do
       from_many? true
     end
+
+    has_many :videos, Video
   end
 
   identities do

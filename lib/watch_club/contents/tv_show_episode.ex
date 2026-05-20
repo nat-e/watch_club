@@ -5,6 +5,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.TvShow
+  alias WatchClub.Media.Video
 
   postgres do
     table "tv_show_episodes"
@@ -39,6 +40,8 @@ defmodule WatchClub.Contents.TvShowEpisode do
     belongs_to :tv_show, TvShow do
       allow_nil? false
     end
+
+    has_many :videos, Video
   end
 
   identities do
