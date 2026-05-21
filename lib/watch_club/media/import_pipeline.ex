@@ -31,6 +31,7 @@ defmodule WatchClub.Media.ImportPipeline do
   alias WatchClub.Media.ImportRun
 
   @concurrency 2
+  @candidate_timeout_ms :timer.seconds(30)
 
   def process_import(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
     with {:ok, candidates} <- Scan.stream(configuration) do
@@ -39,9 +40,21 @@ defmodule WatchClub.Media.ImportPipeline do
         |> Task.async_stream(&process_candidate(&1, import_run),
           max_concurrency: @concurrency,
           ordered: false,
-          timeout: :infinity
+          timeout: @candidate_timeout_ms,
+          on_timeout: :kill_task,
+          zip_input_on_exit: true
         )
-        |> Stream.map(fn {:ok, %Candidate{} = candidate} -> candidate end)
+        |> Stream.map(fn
+          {:ok, %Candidate{} = candidate} ->
+            candidate
+
+          {:exit, {%Candidate{} = candidate, :timeout}} ->
+            Candidate.set_halted_outcome(
+              candidate,
+              :failed,
+              "Processing exceeded #{@candidate_timeout_ms}ms"
+            )
+        end)
 
       {:ok, stream}
     end
