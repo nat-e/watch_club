@@ -1,296 +1,184 @@
 defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
-  @moduledoc false
+  @moduledoc """
+  Populates `candidate.identity` with what the file claims to be.
+
+  Orchestration only. Dispatches on `configuration.content_type`, runs the
+  `FilenameParser` (what the path claims) and the matching `NfoParser` entry
+  point (what the sidecar XML claims), then merges the two into the
+  `Candidate.Identity` struct.
+
+  Merge policy, mirroring Jellyfin's provider precedence (NFOs are authored
+  intent, filenames are heuristics):
+
+    * Scalar fields: the NFO value overwrites the filename value when present.
+    * `external_ids`: unioned slot-by-slot (filename `[tmdb-123]` + NFO
+      `<imdbid>tt456</imdbid>` both land).
+    * `sources`: per-field map tracking which source (`:filename`,
+      `:nfo_sidecar`, `:nfo_show`) filled each value.
+  """
 
   @behaviour WatchClub.Media.ImportPipeline.Stage
 
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.Identity
+  alias WatchClub.Media.ImportPipeline.Candidate.{ExternalIds, Identity}
+  alias WatchClub.Media.ImportPipeline.ExtractIdentity.{FilenameParser, NfoParser}
+  alias WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor
+  alias WatchClub.Media.ImportPipeline.ExtractIdentity.NfoParser.{BookResult, EpisodeResult, MovieResult}
   alias WatchClub.Media.ImportRun
-
-  @external_attribute_regex ~r/[\[\(\{]\s*(tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)\s*[=-]\s*([^\]\)\}]+?)\s*[\]\)\}]/i
-  @imdb_regex ~r/tt\d{7,8}/i
-  @quality_token_regex ~r/\b(480p|576p|720p|1080p|2160p|4320p|bluray|blu-ray|bdrip|brrip|web-dl|webdl|webrip|hdtv|dvdrip|x264|x265|h264|h265|hevc|avc|proper|repack|limited|unrated|extended|remux)\b/i
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
-    external_ids =
-      candidate.path
-      |> external_ids_from_text()
-      |> Map.merge(external_ids_from_nfo(candidate, configuration))
-
     identity =
       case configuration.content_type do
-        :movie -> movie_identity(candidate, external_ids)
-        :tv_show -> tv_show_identity(candidate, configuration, external_ids)
-        :book -> book_identity(candidate, external_ids)
+        :movie -> build_movie(candidate, configuration)
+        :tv_show -> build_tv_show(candidate, configuration)
+        :book -> build_book(candidate, configuration)
       end
 
     {:ok, %{candidate | identity: identity}}
   end
 
-  defp movie_identity(candidate, external_ids) do
-    {title, year} = title_and_year(candidate.path)
+  # ----------------------------------------------------------------------
+  # Per-content-type builders. Each one: start with the filename's claims,
+  # then layer the NFO's claims on top.
 
-    %Identity{
-      title: title,
-      year: year,
-      external_ids: external_ids,
-      sources: sources(external_ids, title)
-    }
+  defp build_movie(candidate, configuration) do
+    {title, year} = FilenameParser.title_and_year(candidate.path)
+    path_ids = ExternalIdExtractor.from_text(candidate.path)
+
+    base =
+      %Identity{}
+      |> overwrite(:title, title, :filename)
+      |> overwrite(:year, year, :filename)
+      |> union_external_ids(:external_ids, path_ids, :filename)
+
+    apply_movie_nfo(base, NfoParser.parse_movie(candidate, configuration))
   end
 
-  defp tv_show_identity(candidate, configuration, external_ids) do
-    episode = parse_episode(candidate.path)
+  defp build_tv_show(candidate, configuration) do
+    episode = FilenameParser.parse_episode(candidate.path)
 
-    tv_show_title =
+    show_title =
       episode[:tv_show_title] ||
-        tv_show_title_from_path(candidate.path, configuration.filesystem_path)
+        FilenameParser.clean_title(
+          FilenameParser.tv_show_title_from_path(candidate.path, configuration.filesystem_path)
+        )
 
-    %Identity{
-      tv_show_title: clean_title(tv_show_title),
-      season_number: episode[:season_number],
-      episode_number: episode[:episode_number],
-      episode_title: clean_title(episode[:episode_title]),
-      external_ids: external_ids,
-      sources: sources(external_ids, episode[:episode_number])
+    path_ids = ExternalIdExtractor.from_text(candidate.path)
+    show_path_ids = ExternalIdExtractor.from_text(Path.dirname(candidate.path))
+
+    base =
+      %Identity{}
+      |> overwrite(:episode_title, episode[:episode_title], :filename)
+      |> overwrite(:season_number, episode[:season_number], :filename)
+      |> overwrite(:episode_number, episode[:episode_number], :filename)
+      |> overwrite(:show_title, show_title, :filename)
+      |> union_external_ids(:external_ids, path_ids, :filename)
+      |> union_external_ids(:show_external_ids, show_path_ids, :filename)
+
+    apply_episode_nfo(base, NfoParser.parse_episode(candidate, configuration))
+  end
+
+  defp build_book(candidate, configuration) do
+    {title, year} = FilenameParser.title_and_year(candidate.path)
+    path_ids = ExternalIdExtractor.from_text(candidate.path)
+
+    base =
+      %Identity{}
+      |> overwrite(:title, title, :filename)
+      |> overwrite(:year, year, :filename)
+      |> union_external_ids(:external_ids, path_ids, :filename)
+
+    apply_book_nfo(base, NfoParser.parse_book(candidate, configuration))
+  end
+
+  # ----------------------------------------------------------------------
+  # NFO application. NFO wins for scalars; external IDs are unioned.
+
+  defp apply_movie_nfo(identity, %MovieResult{} = nfo) do
+    identity
+    |> overwrite(:title, nfo.title, :nfo_sidecar)
+    |> overwrite(:original_title, nfo.original_title, :nfo_sidecar)
+    |> overwrite(:year, nfo.year, :nfo_sidecar)
+    |> overwrite(:premiered, nfo.premiered, :nfo_sidecar)
+    |> overwrite(:plot, nfo.plot, :nfo_sidecar)
+    |> overwrite(:runtime_minutes, nfo.runtime_minutes, :nfo_sidecar)
+    |> overwrite(:tagline, nfo.tagline, :nfo_sidecar)
+    |> overwrite(:set_name, nfo.set_name, :nfo_sidecar)
+    |> overwrite_list(:genres, nfo.genres, :nfo_sidecar)
+    |> overwrite_list(:studios, nfo.studios, :nfo_sidecar)
+    |> overwrite_list(:countries, nfo.countries, :nfo_sidecar)
+    |> union_external_ids(:external_ids, nfo.external_ids, :nfo_sidecar)
+  end
+
+  defp apply_episode_nfo(identity, %EpisodeResult{} = nfo) do
+    identity
+    |> overwrite(:episode_title, nfo.episode_title, :nfo_sidecar)
+    |> overwrite(:season_number, nfo.season_number, :nfo_sidecar)
+    |> overwrite(:episode_number, nfo.episode_number, :nfo_sidecar)
+    |> overwrite(:aired, nfo.aired, :nfo_sidecar)
+    |> overwrite(:plot, nfo.plot, :nfo_sidecar)
+    |> overwrite(:runtime_minutes, nfo.runtime_minutes, :nfo_sidecar)
+    |> overwrite(:show_title, nfo.show_title, :nfo_show)
+    |> overwrite(:show_year, nfo.show_year, :nfo_show)
+    |> overwrite_list(:show_genres, nfo.show_genres, :nfo_show)
+    |> union_external_ids(:external_ids, nfo.external_ids, :nfo_sidecar)
+    |> union_external_ids(:show_external_ids, nfo.show_external_ids, :nfo_show)
+  end
+
+  defp apply_book_nfo(identity, %BookResult{} = nfo) do
+    identity
+    |> overwrite(:title, nfo.title, :nfo_sidecar)
+    |> overwrite(:year, nfo.year, :nfo_sidecar)
+    |> overwrite(:author, nfo.author, :nfo_sidecar)
+    |> overwrite(:isbn, nfo.isbn, :nfo_sidecar)
+    |> union_external_ids(:external_ids, nfo.external_ids, :nfo_sidecar)
+  end
+
+  # ----------------------------------------------------------------------
+  # Merge helpers.
+
+  defp overwrite(%Identity{} = identity, _key, nil, _source), do: identity
+
+  defp overwrite(%Identity{} = identity, key, value, source) do
+    identity
+    |> Map.put(key, value)
+    |> record_source(key, source)
+  end
+
+  defp overwrite_list(%Identity{} = identity, _key, [], _source), do: identity
+
+  defp overwrite_list(%Identity{} = identity, key, values, source) when is_list(values) do
+    identity
+    |> Map.put(key, values)
+    |> record_source(key, source)
+  end
+
+  defp union_external_ids(%Identity{} = identity, key, %ExternalIds{} = incoming, source) do
+    current = Map.fetch!(identity, key)
+
+    merged = %ExternalIds{
+      tmdb: current.tmdb || incoming.tmdb,
+      imdb: current.imdb || incoming.imdb,
+      tvdb: current.tvdb || incoming.tvdb
     }
-  end
 
-  defp book_identity(candidate, external_ids) do
-    {title, year} = title_and_year(candidate.path)
+    identity = Map.put(identity, key, merged)
 
-    %Identity{
-      title: title,
-      book_title: title,
-      year: year,
-      external_ids: external_ids,
-      sources: sources(external_ids, title)
-    }
-  end
-
-  defp external_ids_from_nfo(candidate, configuration) do
-    candidate
-    |> nfo_paths(configuration)
-    |> Enum.reduce(%{}, fn path, external_ids ->
-      case File.read(path) do
-        {:ok, text} -> Map.merge(external_ids, external_ids_from_text(text))
-        {:error, _reason} -> external_ids
-      end
-    end)
-  end
-
-  defp nfo_paths(candidate, configuration) do
-    sidecar = candidate.path |> Path.rootname() |> Kernel.<>(".nfo")
-    parent = Path.dirname(candidate.path)
-
-    candidates =
-      case configuration.content_type do
-        :movie -> [sidecar, Path.join(parent, "movie.nfo")]
-        :tv_show -> [sidecar] ++ tv_show_nfo_paths(parent, configuration.filesystem_path)
-        :book -> [sidecar]
-      end
-
-    candidates
-    |> Enum.uniq()
-    |> Enum.filter(&regular_file?/1)
-  end
-
-  defp tv_show_nfo_paths(path, root_path) do
-    path
-    |> ancestors_until(root_path)
-    |> Enum.flat_map(fn ancestor ->
-      [Path.join(ancestor, "tvshow.nfo"), Path.join(ancestor, "season.nfo")]
-    end)
-  end
-
-  defp ancestors_until(path, root_path) do
-    expanded_root = Path.expand(root_path)
-
-    path
-    |> Path.expand()
-    |> Stream.iterate(&Path.dirname/1)
-    |> Enum.reduce_while([], fn current, ancestors ->
-      cond do
-        current == Path.dirname(current) ->
-          {:halt, ancestors}
-
-        current == expanded_root ->
-          {:halt, [current | ancestors]}
-
-        String.starts_with?(current, expanded_root) ->
-          {:cont, [current | ancestors]}
-
-        true ->
-          {:halt, ancestors}
-      end
-    end)
-  end
-
-  defp regular_file?(path) do
-    case File.lstat(path) do
-      {:ok, %{type: :regular}} -> true
-      _ -> false
-    end
-  end
-
-  defp external_ids_from_text(text) do
-    text
-    |> external_ids_from_attributes()
-    |> Map.merge(external_ids_from_xml_tags(text))
-    |> Map.merge(external_ids_from_urls(text))
-  end
-
-  defp external_ids_from_attributes(text) do
-    @external_attribute_regex
-    |> Regex.scan(text)
-    |> Enum.reduce(%{}, fn [_match, external, value], external_ids ->
-      put_external_id(external_ids, external, String.trim(value))
-    end)
-    |> put_imdb_id_from_text(text)
-  end
-
-  defp external_ids_from_xml_tags(text) do
-    %{}
-    |> put_xml_tag(text, :tmdb, ~r/<tmdbid>\s*([^<]+)\s*<\/tmdbid>/i)
-    |> put_xml_tag(text, :imdb, ~r/<imdbid>\s*([^<]+)\s*<\/imdbid>/i)
-    |> put_xml_tag(text, :tvdb, ~r/<tvdbid>\s*([^<]+)\s*<\/tvdbid>/i)
-    |> put_unique_id(text, :tmdb)
-    |> put_unique_id(text, :imdb)
-    |> put_unique_id(text, :tvdb)
-  end
-
-  defp external_ids_from_urls(text) do
-    %{}
-    |> put_regex_capture(:tmdb, text, ~r/themoviedb\.org\/(?:movie|tv)\/(\d+)/i)
-    |> put_regex_capture(:tvdb, text, ~r/thetvdb\.com\/.*?[?&]id=(\d+)/i)
-    |> put_imdb_id_from_text(text)
-  end
-
-  defp put_xml_tag(external_ids, text, external, regex) do
-    put_regex_capture(external_ids, external, text, regex)
-  end
-
-  defp put_unique_id(external_ids, text, external) do
-    regex = ~r/<uniqueid[^>]+type=["']#{external}["'][^>]*>\s*([^<]+)\s*<\/uniqueid>/i
-    put_regex_capture(external_ids, external, text, regex)
-  end
-
-  defp put_regex_capture(external_ids, external, text, regex) do
-    case Regex.run(regex, text) do
-      [_match, value] -> Map.put(external_ids, external, String.trim(value))
-      _ -> external_ids
-    end
-  end
-
-  defp put_imdb_id_from_text(external_ids, text) do
-    case Regex.run(@imdb_regex, text) do
-      [imdb_id] -> Map.put_new(external_ids, :imdb, String.downcase(imdb_id))
-      _ -> external_ids
-    end
-  end
-
-  defp put_external_id(external_ids, external, value) do
-    external = external |> String.downcase() |> normalize_external()
-    Map.put(external_ids, external, value)
-  end
-
-  defp normalize_external(external) when external in ["tmdb", "tmdbid"], do: :tmdb
-  defp normalize_external(external) when external in ["imdb", "imdbid"], do: :imdb
-  defp normalize_external(external) when external in ["tvdb", "tvdbid"], do: :tvdb
-
-  defp title_and_year(path) do
-    stem = path |> Path.basename(Path.extname(path)) |> remove_external_attributes()
-    year = parse_year(stem)
-    title = stem |> remove_year(year) |> clean_title()
-
-    {title, year}
-  end
-
-  defp parse_year(text) do
-    case Regex.run(~r/(?:^|[^\d])((?:19|20)\d{2})(?:[^\d]|$)/, text) do
-      [_match, year] -> String.to_integer(year)
-      _ -> nil
-    end
-  end
-
-  defp remove_year(text, nil), do: text
-  defp remove_year(text, year), do: Regex.replace(~r/(?:^|[^\d])#{year}(?:[^\d]|$)/, text, " ")
-
-  defp remove_external_attributes(text) do
-    Regex.replace(~r/[\[\(\{][^\]\)\}]+[\]\)\}]/, text, " ")
-  end
-
-  defp parse_episode(path) do
-    stem = path |> Path.basename(Path.extname(path)) |> remove_external_attributes()
-
-    cond do
-      match = Regex.run(~r/^(.*?)[\s._-]+S(\d{1,3})[\s._-]*E(\d{1,3})(?:[\s._-]+(.+))?$/i, stem) ->
-        [_full, tv_show_title, season, episode | rest] = match
-
-        %{
-          tv_show_title: tv_show_title,
-          season_number: String.to_integer(season),
-          episode_number: String.to_integer(episode),
-          episode_title: List.first(rest)
-        }
-
-      match = Regex.run(~r/^(.*?)[\s._-]+(\d{1,3})x(\d{1,3})(?:[\s._-]+(.+))?$/i, stem) ->
-        [_full, tv_show_title, season, episode | rest] = match
-
-        %{
-          tv_show_title: tv_show_title,
-          season_number: String.to_integer(season),
-          episode_number: String.to_integer(episode),
-          episode_title: List.first(rest)
-        }
-
-      true ->
-        %{}
-    end
-  end
-
-  defp tv_show_title_from_path(path, root_path) do
-    path
-    |> Path.dirname()
-    |> tv_show_directory(root_path)
-    |> Path.basename()
-  end
-
-  defp tv_show_directory(directory, root_path) do
-    parent = Path.dirname(directory)
-
-    if season_directory?(Path.basename(directory)) and parent != directory and
-         String.starts_with?(Path.expand(parent), Path.expand(root_path)) do
-      parent
+    if added_any?(current, incoming) do
+      record_source(identity, key, source)
     else
-      directory
+      identity
     end
   end
 
-  defp season_directory?(name) do
-    Regex.match?(~r/^(season\s*)?\d{1,3}$/i, name) or Regex.match?(~r/^s\d{1,3}$/i, name)
+  defp added_any?(%ExternalIds{} = current, %ExternalIds{} = incoming) do
+    (is_nil(current.tmdb) and not is_nil(incoming.tmdb)) or
+      (is_nil(current.imdb) and not is_nil(incoming.imdb)) or
+      (is_nil(current.tvdb) and not is_nil(incoming.tvdb))
   end
 
-  defp clean_title(nil), do: nil
-
-  defp clean_title(text) do
-    text
-    |> String.replace(@quality_token_regex, " ")
-    |> String.replace([".", "_"], " ")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim(" -")
-    |> empty_to_nil()
+  defp record_source(%Identity{sources: sources} = identity, key, source) do
+    %{identity | sources: Map.put_new(sources, key, source)}
   end
-
-  defp empty_to_nil(""), do: nil
-  defp empty_to_nil(value), do: value
-
-  defp sources(external_ids, parsed_value) do
-    []
-    |> maybe_add_source(:external_id, map_size(external_ids) > 0)
-    |> maybe_add_source(:path, not is_nil(parsed_value))
-  end
-
-  defp maybe_add_source(sources, source, true), do: [source | sources]
-  defp maybe_add_source(sources, _source, false), do: sources
 end

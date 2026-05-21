@@ -48,26 +48,90 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     defstruct [:size, :modified_at]
   end
 
-  defmodule Identity do
+  defmodule ExternalIds do
     @moduledoc """
-    What the file looks like it represents — title, year, season/episode,
-    embedded provider IDs. Extracted from the filename and sibling NFO files.
-    Consumed by `Match` to resolve the file to a `Content` row.
+    Metadata-provider identifiers found for a candidate. All three slots are
+    strings (IMDB IDs aren't numeric, and stringifying TMDB/TVDB IDs keeps the
+    shape homogeneous with how downstream URL builders use them).
     """
 
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            tmdb: String.t() | nil,
+            imdb: String.t() | nil,
+            tvdb: String.t() | nil
+          }
 
-    defstruct [
-      :title,
-      :year,
-      :tv_show_title,
-      :season_number,
-      :episode_number,
-      :episode_title,
-      :book_title,
-      external_ids: %{},
-      sources: []
-    ]
+    defstruct [:tmdb, :imdb, :tvdb]
+  end
+
+  defmodule Identity do
+    @moduledoc """
+    What the file looks like it represents. Filled in by `ExtractIdentity` from
+    the filename, the directory structure, and any sibling NFO files. Consumed
+    by downstream matching to resolve the candidate to a `Content` row.
+
+    The same struct is used for every content type — a movie populates the
+    top group of fields, an episode populates the TV group, a book populates
+    title/author/isbn. Unused fields stay `nil`.
+
+    `sources` records, per field, where each value came from
+    (`:filename | :nfo_sidecar | :nfo_show | :nfo_season`). Useful for
+    debugging and for downstream confidence scoring.
+    """
+
+    alias WatchClub.Media.ImportPipeline.Candidate.ExternalIds
+
+    @type source :: :filename | :nfo_sidecar | :nfo_show | :nfo_season
+
+    @type t :: %__MODULE__{
+            title: String.t() | nil,
+            original_title: String.t() | nil,
+            year: integer() | nil,
+            premiered: Date.t() | nil,
+            plot: String.t() | nil,
+            runtime_minutes: integer() | nil,
+            tagline: String.t() | nil,
+            set_name: String.t() | nil,
+            genres: [String.t()],
+            studios: [String.t()],
+            countries: [String.t()],
+            author: String.t() | nil,
+            isbn: String.t() | nil,
+            episode_title: String.t() | nil,
+            season_number: integer() | nil,
+            episode_number: integer() | nil,
+            aired: Date.t() | nil,
+            show_title: String.t() | nil,
+            show_year: integer() | nil,
+            show_genres: [String.t()],
+            show_external_ids: ExternalIds.t(),
+            external_ids: ExternalIds.t(),
+            sources: %{atom() => source()}
+          }
+
+    defstruct title: nil,
+              original_title: nil,
+              year: nil,
+              premiered: nil,
+              plot: nil,
+              runtime_minutes: nil,
+              tagline: nil,
+              set_name: nil,
+              genres: [],
+              studios: [],
+              countries: [],
+              author: nil,
+              isbn: nil,
+              episode_title: nil,
+              season_number: nil,
+              episode_number: nil,
+              aired: nil,
+              show_title: nil,
+              show_year: nil,
+              show_genres: [],
+              show_external_ids: %ExternalIds{},
+              external_ids: %ExternalIds{},
+              sources: %{}
   end
 
   defmodule MediaStructure do
