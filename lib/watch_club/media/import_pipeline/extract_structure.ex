@@ -1,88 +1,71 @@
 defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
-  @moduledoc false
+  @moduledoc """
+  Inspects the candidate's bytes (and extension) to produce its `MediaStructure`
+  — container, duration, tracks. Dispatches by `configuration.media_type`:
+  videos and audiobooks go through `ffprobe`; ebooks use the file extension
+  only.
+  """
 
+  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportPipeline.Candidate.Outcome
 
-  alias WatchClub.Media.ImportPipeline.Candidate.{
-    AudioTrackProbe,
-    TextTrackSpec,
-    VideoTrackProbe
+  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
+
+  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.{
+    AudioTrack,
+    TextTrack,
+    VideoTrack
   }
 
-  alias WatchClub.Media.ImportPipeline.Candidate.Probe, as: CandidateProbe
+  alias __MODULE__.Sidecars
 
-  @probe_concurrency 2
-  @supervisor __MODULE__.Supervisor
+  @stage "extract_structure"
 
-  def child_spec(_opts) do
-    Supervisor.child_spec(
-      {Task.Supervisor, name: @supervisor},
-      id: @supervisor
-    )
-  end
+  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :video}),
+    do: probe_video(candidate)
 
-  def stream(candidates) do
-    Task.Supervisor.async_stream(
-      @supervisor,
-      candidates,
-      __MODULE__,
-      :candidate,
-      [],
-      max_concurrency: @probe_concurrency,
-      ordered: false,
-      timeout: :infinity,
-      zip_input_on_exit: true
-    )
-    |> Stream.map(&normalize_result/1)
-  end
+  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :audiobook}),
+    do: probe_audiobook(candidate)
 
-  def candidate(%Candidate{} = candidate) do
-    case candidate.media_type do
-      :video -> probe_video(candidate)
-      :audiobook -> probe_audiobook(candidate)
-      :ebook -> probe_ebook(candidate)
-    end
-  rescue
-    exception ->
-      {:error, candidate, Exception.message(exception)}
-  end
-
-  defp normalize_result({:ok, {:ok, candidate}}), do: {:ok, candidate}
-  defp normalize_result({:ok, {:error, candidate, message}}), do: {:error, candidate, message}
-
-  defp normalize_result({:exit, {candidate, reason}}) do
-    {:error, candidate, "Probe task exited: #{inspect(reason)}"}
-  end
-
-  defp normalize_result({:exit, reason}) do
-    {:fatal, "Probe task exited before returning a candidate: #{inspect(reason)}"}
-  end
+  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :ebook}),
+    do: probe_ebook(candidate)
 
   defp probe_video(candidate) do
     with {:ok, metadata} <- run_ffprobe(candidate.path),
-         {:ok, probe} <- build_video_probe(metadata, candidate) do
-      {:ok, %{candidate | probe: probe}}
+         {:ok, structure} <- build_video_structure(metadata) do
+      {:ok, Sidecars.append(%{candidate | media_structure: structure})}
     else
-      {:error, message} -> {:error, candidate, message_for(candidate, message)}
+      {:error, message} -> {:error, fail(candidate, message)}
     end
   end
 
   defp probe_audiobook(candidate) do
     with {:ok, metadata} <- run_ffprobe(candidate.path),
-         {:ok, probe} <- build_audiobook_probe(metadata) do
-      {:ok, %{candidate | probe: probe}}
+         {:ok, structure} <- build_audiobook_structure(metadata) do
+      {:ok, %{candidate | media_structure: structure}}
     else
-      {:error, message} -> {:error, candidate, message_for(candidate, message)}
+      {:error, message} -> {:error, fail(candidate, message)}
     end
   end
 
   defp probe_ebook(candidate) do
-    probe = %CandidateProbe{
-      media_type: :ebook,
+    structure = %MediaStructure{
       container: candidate.extension |> String.trim_leading(".") |> empty_to_nil()
     }
 
-    {:ok, %{candidate | probe: probe}}
+    {:ok, %{candidate | media_structure: structure}}
+  end
+
+  defp fail(candidate, message) do
+    %{
+      candidate
+      | outcome: %Outcome{
+          status: :failed,
+          message: "#{Path.basename(candidate.path)}: #{message}",
+          metadata: %{stage: @stage}
+        }
+    }
   end
 
   defp run_ffprobe(path) do
@@ -120,53 +103,51 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     end
   end
 
-  defp build_video_probe(%{"streams" => streams, "format" => format}, candidate) do
+  defp build_video_structure(%{"streams" => streams, "format" => format}) do
     video_tracks = video_tracks(streams)
 
     if video_tracks == [] do
       {:error, "ffprobe found no video tracks"}
     else
-      probe = %CandidateProbe{
-        media_type: :video,
+      structure = %MediaStructure{
         container: format["format_name"],
         duration_seconds: parse_float(format["duration"]) || stream_duration(streams),
         bit_rate: parse_int(format["bit_rate"]) || video_bit_rate(video_tracks),
         video_tracks: video_tracks,
         audio_tracks: audio_tracks(streams),
-        text_tracks: text_tracks(streams) ++ candidate.sidecar_text_tracks
+        text_tracks: text_tracks(streams)
       }
 
-      {:ok, probe}
+      {:ok, structure}
     end
   end
 
-  defp build_video_probe(_metadata, _candidate), do: {:error, "ffprobe output was incomplete"}
+  defp build_video_structure(_metadata), do: {:error, "ffprobe output was incomplete"}
 
-  defp build_audiobook_probe(%{"streams" => streams, "format" => format}) do
+  defp build_audiobook_structure(%{"streams" => streams, "format" => format}) do
     audio_tracks = audio_tracks(streams)
 
     if audio_tracks == [] do
       {:error, "ffprobe found no audio tracks"}
     else
-      probe = %CandidateProbe{
-        media_type: :audiobook,
+      structure = %MediaStructure{
         container: format["format_name"],
         duration_seconds: parse_float(format["duration"]) || stream_duration(streams),
         bit_rate: parse_int(format["bit_rate"]),
         audio_tracks: audio_tracks
       }
 
-      {:ok, probe}
+      {:ok, structure}
     end
   end
 
-  defp build_audiobook_probe(_metadata), do: {:error, "ffprobe output was incomplete"}
+  defp build_audiobook_structure(_metadata), do: {:error, "ffprobe output was incomplete"}
 
   defp video_tracks(streams) do
     streams
     |> Enum.filter(&(&1["codec_type"] == "video"))
     |> Enum.map(fn stream ->
-      %VideoTrackProbe{
+      %VideoTrack{
         stream_index: stream["index"],
         codec: stream["codec_name"],
         width: stream["width"],
@@ -181,7 +162,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     streams
     |> Enum.filter(&(&1["codec_type"] == "audio"))
     |> Enum.map(fn stream ->
-      %AudioTrackProbe{
+      %AudioTrack{
         stream_index: stream["index"],
         codec: stream["codec_name"],
         language: get_in(stream, ["tags", "language"]),
@@ -196,7 +177,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     streams
     |> Enum.filter(&(&1["codec_type"] == "subtitle"))
     |> Enum.map(fn stream ->
-      %TextTrackSpec{
+      %TextTrack{
         stream_index: stream["index"],
         codec: stream["codec_name"],
         language: get_in(stream, ["tags", "language"]),
@@ -212,7 +193,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     |> Enum.find_value(fn stream -> parse_float(stream["duration"]) end)
   end
 
-  defp video_bit_rate([%VideoTrackProbe{bit_rate: bit_rate} | _]), do: bit_rate
+  defp video_bit_rate([%VideoTrack{bit_rate: bit_rate} | _]), do: bit_rate
   defp video_bit_rate(_tracks), do: nil
 
   defp frame_rate(nil), do: nil
@@ -255,9 +236,6 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
       :error -> nil
     end
   end
-
-  defp message_for(candidate, message),
-    do: "#{Path.basename(candidate.path)}: #{message}"
 
   defp empty_to_nil(""), do: nil
   defp empty_to_nil(value), do: value

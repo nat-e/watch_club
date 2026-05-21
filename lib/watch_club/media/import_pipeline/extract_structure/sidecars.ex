@@ -1,8 +1,14 @@
 defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
-  @moduledoc false
+  @moduledoc """
+  Internal helper for `ExtractStructure`. Discovers sidecar subtitle files
+  alongside a video candidate and appends them to its `MediaStructure.text_tracks`.
+
+  Only called from the video branch of `ExtractStructure`; never called from
+  the pipeline orchestrator.
+  """
 
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.TextTrackSpec
+  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.TextTrack
 
   @subtitle_extensions MapSet.new([".ass", ".srt", ".ssa", ".sub", ".vtt"])
 
@@ -39,11 +45,11 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
     "chi" => "zho"
   }
 
-  def apply(%Candidate{media_type: :video} = candidate) do
-    %{candidate | sidecar_text_tracks: discover(candidate)}
+  def append(%Candidate{} = candidate) do
+    sidecars = discover(candidate)
+    structure = candidate.media_structure
+    %{candidate | media_structure: %{structure | text_tracks: structure.text_tracks ++ sidecars}}
   end
-
-  def apply(%Candidate{} = candidate), do: candidate
 
   defp discover(candidate) do
     directory = Path.dirname(candidate.path)
@@ -77,7 +83,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
       parsed = parse_suffix(suffix)
 
       [
-        %TextTrackSpec{
+        %TextTrack{
           sidecar_path: Path.expand(path),
           codec: codec_for_extension(extension),
           language: parsed.language,

@@ -68,7 +68,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
              not MediaTypeFilter.accepted?(path, configuration) do
           {[], rest}
         else
-          {[Candidate.new(path, root_path, stat, configuration)], rest}
+          {[Candidate.new(path, root_path, stat)], rest}
         end
 
       {:ok, _stat} ->

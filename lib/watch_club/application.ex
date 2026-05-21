@@ -12,7 +12,6 @@ defmodule WatchClub.Application do
     children = [
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
-      WatchClub.Media.ImportPipeline.ExtractStructure,
       {Oban,
        AshOban.config(
          Application.fetch_env!(:watch_club, :ash_domains),

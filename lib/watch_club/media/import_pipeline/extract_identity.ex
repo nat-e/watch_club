@@ -2,7 +2,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   @moduledoc false
 
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.ContentHints
+  alias WatchClub.Media.ImportPipeline.Candidate.Identity
   alias WatchClub.Media.ImportConfiguration
 
   @external_attribute_regex ~r/[\[\(\{]\s*(tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)\s*[=-]\s*([^\]\)\}]+?)\s*[\]\)\}]/i
@@ -15,20 +15,20 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
       |> external_ids_from_text()
       |> Map.merge(external_ids_from_nfo(candidate, configuration))
 
-    hints =
+    identity =
       case configuration.content_type do
-        :movie -> movie_hints(candidate, external_ids)
-        :tv_show -> tv_show_hints(candidate, configuration, external_ids)
-        :book -> book_hints(candidate, external_ids)
+        :movie -> movie_identity(candidate, external_ids)
+        :tv_show -> tv_show_identity(candidate, configuration, external_ids)
+        :book -> book_identity(candidate, external_ids)
       end
 
-    %{candidate | content_hints: hints}
+    {:ok, %{candidate | identity: identity}}
   end
 
-  defp movie_hints(candidate, external_ids) do
+  defp movie_identity(candidate, external_ids) do
     {title, year} = title_and_year(candidate.path)
 
-    %ContentHints{
+    %Identity{
       title: title,
       year: year,
       external_ids: external_ids,
@@ -36,14 +36,14 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
     }
   end
 
-  defp tv_show_hints(candidate, configuration, external_ids) do
+  defp tv_show_identity(candidate, configuration, external_ids) do
     episode = parse_episode(candidate.path)
 
     tv_show_title =
       episode[:tv_show_title] ||
         tv_show_title_from_path(candidate.path, configuration.filesystem_path)
 
-    %ContentHints{
+    %Identity{
       tv_show_title: clean_title(tv_show_title),
       season_number: episode[:season_number],
       episode_number: episode[:episode_number],
@@ -53,10 +53,10 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
     }
   end
 
-  defp book_hints(candidate, external_ids) do
+  defp book_identity(candidate, external_ids) do
     {title, year} = title_and_year(candidate.path)
 
-    %ContentHints{
+    %Identity{
       title: title,
       book_title: title,
       year: year,
