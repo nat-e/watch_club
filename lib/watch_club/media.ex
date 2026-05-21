@@ -25,9 +25,9 @@ defmodule WatchClub.Media do
     resource WatchClub.Media.ImportRun do
       define :list_import_runs, action: :read
       define :get_import_run_by_id, action: :read, get_by: [:id]
-      define :trigger_import_run, action: :trigger_manually, args: [:configuration_id]
-      define :mark_import_run_completed, action: :mark_completed
-      define :mark_import_run_failed, action: :mark_failed
+      define :start_import_run, action: :start, args: [:configuration_id]
+      define :complete_import_run, action: :complete
+      define :fail_import_run, action: :fail
     end
 
     resource WatchClub.Media.ImportResult do

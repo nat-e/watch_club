@@ -12,7 +12,7 @@ defmodule WatchClub.Media.ImportRun do
   alias WatchClub.Media.ImportRun.Changes
 
   postgres do
-    table "media_imports"
+    table "media_import_runs"
     repo WatchClub.Repo
 
     references do
@@ -22,15 +22,15 @@ defmodule WatchClub.Media.ImportRun do
     custom_indexes do
       index [:configuration_id],
         unique: true,
-        name: "media_imports_one_processing_per_configuration_index",
+        name: "media_import_runs_one_processing_per_configuration_index",
         where: "status = 'processing' AND configuration_id IS NOT NULL"
     end
   end
 
   oban do
     triggers do
-      trigger :process do
-        action :process
+      trigger :run do
+        action :run
 
         where expr(
                 status == :pending and
@@ -42,9 +42,9 @@ defmodule WatchClub.Media.ImportRun do
 
         queue :media_imports
         max_attempts 1
-        on_error :mark_failed
+        on_error :fail
         scheduler_cron false
-        worker_module_name WatchClub.Media.Workers.ProcessMediaImport
+        worker_module_name WatchClub.Media.Workers.ExecuteImportRun
       end
     end
   end
@@ -55,39 +55,39 @@ defmodule WatchClub.Media.ImportRun do
     state_attribute :status
 
     transitions do
-      transition :process, from: :pending, to: :processing
-      transition :mark_completed, from: :processing, to: :completed
-      transition :mark_failed, from: [:pending, :processing], to: :failed
+      transition :run, from: :pending, to: :processing
+      transition :complete, from: :processing, to: :completed
+      transition :fail, from: [:pending, :processing], to: :failed
     end
   end
 
   actions do
     defaults [:read]
 
-    create :trigger_manually do
+    create :start do
       primary? true
       accept [:configuration_id, :refresh_metadata?]
 
       change set_attribute(:triggered_manually?, true)
       change Changes.SnapshotConfiguration
-      change Changes.EnqueueProcess
+      change Changes.ScheduleRun
     end
 
-    update :process do
+    update :run do
       require_atomic? false
       accept []
 
       change transition_state(:processing)
-      change Changes.InvokePipeline
+      change Changes.ExecuteRun
     end
 
-    update :mark_completed do
+    update :complete do
       accept []
 
       change transition_state(:completed)
     end
 
-    update :mark_failed do
+    update :fail do
       accept []
 
       change transition_state(:failed)
@@ -107,12 +107,12 @@ defmodule WatchClub.Media.ImportRun do
       authorize_if actor_attribute_equals(:system?, true)
     end
 
-    policy action(:trigger_manually) do
+    policy action(:start) do
       description "Only the Instance Administrator can manually trigger Media Imports"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
-    policy action([:process, :mark_completed, :mark_failed]) do
+    policy action([:run, :complete, :fail]) do
       description "Only the system actor can process Media Imports in the background"
       authorize_if actor_attribute_equals(:system?, true)
     end
