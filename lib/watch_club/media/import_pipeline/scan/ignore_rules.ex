@@ -67,19 +67,36 @@ defmodule WatchClub.Media.ImportPipeline.Scan.IgnoreRules do
     "other"
   ]
 
-  def ignored?(path, root_path, type) do
-    expanded_path = Path.expand(path)
+  def directory_ignored?(path, root_path) do
+    path_ignored?(path, root_path) or
+      MapSet.member?(@ignored_directory_names, basename_downcased(path))
+  end
 
-    if expanded_path == root_path do
+  def file_ignored?(path, root_path) do
+    path_ignored?(path, root_path) or file_basename_ignored?(path)
+  end
+
+  defp path_ignored?(path, root_path) do
+    if path == root_path do
       false
     else
-      segments = path_segments_under_root(expanded_path, root_path)
-
-      hidden_path?(segments) or
-        ignored_by_type?(expanded_path, type) or
-        trickplay_path?(segments)
+      segments = path_segments_under_root(path, root_path)
+      hidden_path?(segments) or trickplay_path?(segments)
     end
   end
+
+  defp file_basename_ignored?(path) do
+    basename = basename_downcased(path)
+    stem = path |> Path.basename(Path.extname(path)) |> String.downcase()
+    extension = path |> Path.extname() |> String.downcase()
+
+    MapSet.member?(@ignored_file_names, basename) or
+      MapSet.member?(@ignored_file_extensions, extension) or
+      sample_file?(stem) or
+      extra_file?(stem)
+  end
+
+  defp basename_downcased(path), do: path |> Path.basename() |> String.downcase()
 
   defp path_segments_under_root(path, root_path) do
     path
@@ -90,26 +107,6 @@ defmodule WatchClub.Media.ImportPipeline.Scan.IgnoreRules do
   defp hidden_path?(segments) do
     Enum.any?(segments, fn segment -> String.starts_with?(segment, ".") end)
   end
-
-  defp ignored_by_type?(path, :directory) do
-    path
-    |> Path.basename()
-    |> String.downcase()
-    |> then(&MapSet.member?(@ignored_directory_names, &1))
-  end
-
-  defp ignored_by_type?(path, :regular) do
-    basename = path |> Path.basename() |> String.downcase()
-    stem = path |> Path.basename(Path.extname(path)) |> String.downcase()
-    extension = path |> Path.extname() |> String.downcase()
-
-    MapSet.member?(@ignored_file_names, basename) or
-      MapSet.member?(@ignored_file_extensions, extension) or
-      sample_file?(stem) or
-      extra_file?(stem)
-  end
-
-  defp ignored_by_type?(_path, _type), do: false
 
   defp sample_file?(stem) do
     stem == "sample" or

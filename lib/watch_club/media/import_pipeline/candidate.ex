@@ -126,14 +126,13 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
   end
 
   @doc """
-  Builds a fresh `Candidate` for a discovered file during `Scan`.
+  Builds a fresh `Candidate` for a discovered file during `Scan`. `path` and
+  `root_path` are expected to be absolute paths.
   """
   def new(path, root_path, stat) do
-    expanded_path = Path.expand(path)
-
     %__MODULE__{
-      path: expanded_path,
-      relative_path: Path.relative_to(expanded_path, root_path),
+      path: path,
+      relative_path: Path.relative_to(path, root_path),
       extension: path |> Path.extname() |> String.downcase(),
       file_info: %FileInfo{size: stat.size, modified_at: stat.mtime}
     }
