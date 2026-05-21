@@ -1,49 +1,28 @@
 defmodule WatchClub.Media.ImportPipeline.FilterExisting do
   @moduledoc """
   Decides whether a candidate continues through the pipeline based on whether
-  Media already exists at its path.
+  it has a pre-loaded `existing_media` and whether the run requests a refresh.
 
     * No existing Media → continue.
-    * Existing Media and refresh on → continue, tagged for refresh via
-      `:existing_media`.
-    * Existing Media and refresh off → halt as `:skipped` (no result row,
-      per `CONTEXT.md`).
-    * Lookup error → halt as `:failed`.
+    * Existing Media and refresh on → continue.
+    * Existing Media and refresh off → halt as `:skipped`.
+
+  The `existing_media` field is populated by the pipeline before this stage
+  runs; this stage performs no I/O.
   """
 
   @behaviour WatchClub.Media.ImportPipeline.Stage
 
-  alias WatchClub.Media, as: MediaDomain
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportRun
-  alias WatchClub.Media.Media
-  alias WatchClub.SystemActor
 
   @impl true
-  def apply(%Candidate{} = candidate, %ImportRun{refresh_metadata?: refresh_metadata?}) do
-    case existing_media(candidate.path) do
-      {:ok, nil} ->
-        {:ok, candidate}
+  def apply(%Candidate{existing_media: nil} = candidate, %ImportRun{}),
+    do: {:ok, candidate}
 
-      {:ok, %Media{id: id, type: type}} when refresh_metadata? ->
-        {:ok, %{candidate | existing_media: %{id: id, type: type}}}
+  def apply(%Candidate{} = candidate, %ImportRun{refresh_metadata?: true}),
+    do: {:ok, candidate}
 
-      {:ok, %Media{}} ->
-        {:halt, candidate, :skipped, nil}
-
-      {:error, error} ->
-        {:halt, candidate, :failed, "Could not check for existing Media: #{inspect(error)}"}
-    end
-  end
-
-  defp existing_media(path) do
-    case MediaDomain.list_media(
-           actor: SystemActor.actor(),
-           query: [filter: [path: path], limit: 1]
-         ) do
-      {:ok, [media]} -> {:ok, media}
-      {:ok, []} -> {:ok, nil}
-      {:error, error} -> {:error, error}
-    end
-  end
+  def apply(%Candidate{} = candidate, %ImportRun{refresh_metadata?: false}),
+    do: {:halt, candidate, :skipped, nil}
 end

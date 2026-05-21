@@ -8,6 +8,9 @@ defmodule WatchClub.Media.Media do
   alias WatchClub.Media.{Audiobook, Ebook, ImportRun, MediaType, Video}
   alias WatchClub.Shared.Changes.NormalizePath
 
+  import Ash.Expr
+  require Ash.Query
+
   postgres do
     table "media"
     repo WatchClub.Repo
@@ -19,6 +22,15 @@ defmodule WatchClub.Media.Media do
 
   actions do
     defaults [:read, :destroy]
+
+    read :under_path_prefix do
+      argument :prefix, :string, allow_nil?: false
+
+      prepare fn query, _context ->
+        prefix = Ash.Query.get_argument(query, :prefix)
+        Ash.Query.filter(query, expr(fragment("? LIKE ?", path, ^(prefix <> "%"))))
+      end
+    end
 
     create :create_video do
       primary? true
@@ -65,7 +77,7 @@ defmodule WatchClub.Media.Media do
       forbid_if always()
     end
 
-    policy action(:read) do
+    policy action([:read, :under_path_prefix]) do
       description "The Instance Administrator and system actor can read Media"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if actor_attribute_equals(:system?, true)

@@ -18,7 +18,13 @@ defmodule WatchClub.Media.ImportPipeline do
   The pipeline emits one candidate per processed item, always with `:outcome`
   set. The caller (`ImportRun.Changes.ExecuteRun`) decides what to persist —
   notably, `:skipped` outcomes do not produce a result row.
+
+  Before per-candidate processing starts the pipeline loads every existing
+  `Media` under the configured filesystem path in one query, then tags each
+  candidate with its `existing_media` (if any) for `FilterExisting` to act on.
   """
+
+  alias WatchClub.Media, as: MediaDomain
 
   alias WatchClub.Media.ImportPipeline.{
     Candidate,
@@ -28,13 +34,15 @@ defmodule WatchClub.Media.ImportPipeline do
     Scan
   }
 
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.{ImportRun, Media}
+  alias WatchClub.SystemActor
 
   @concurrency 2
   @candidate_timeout_ms :timer.seconds(30)
 
   def process_import(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
-    with {:ok, candidates} <- Scan.stream(configuration) do
+    with {:ok, candidates} <- Scan.stream(configuration),
+         {:ok, candidates} <- load_existing_media(candidates, configuration) do
       stream =
         candidates
         |> Task.async_stream(&process_candidate(&1, import_run),
@@ -60,6 +68,25 @@ defmodule WatchClub.Media.ImportPipeline do
     end
   rescue
     error in [Scan.Error] -> {:error, error.message}
+  end
+
+  defp load_existing_media(candidates, configuration) do
+    with {:ok, media} <-
+           MediaDomain.list_media_under_path_prefix(configuration.filesystem_path,
+             actor: SystemActor.actor()
+           ) do
+      by_path = Map.new(media, fn %Media{path: path} = m -> {path, m} end)
+
+      tagged =
+        Stream.map(candidates, fn %Candidate{path: path} = candidate ->
+          case Map.get(by_path, path) do
+            %Media{id: id, type: type} -> %{candidate | existing_media: %{id: id, type: type}}
+            nil -> candidate
+          end
+        end)
+
+      {:ok, tagged}
+    end
   end
 
   defp process_candidate(%Candidate{} = candidate, %ImportRun{} = import_run) do
