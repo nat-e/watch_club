@@ -1,4 +1,15 @@
 defmodule WatchClub.Media.Ebook do
+  @moduledoc """
+  Concrete Media for a readable book file. Attached to exactly one `Book`.
+
+  `Ebook.id` is the same value as its parent `Media.id` (shared primary key,
+  no separate `media_id` column).
+
+  Direct creation is reserved for Instance Administrator access; the production
+  path goes through `WatchClub.Media.create_ebook/2`, which uses relationship
+  management to create the Ebook alongside its parent Media.
+  """
+
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -62,7 +73,4 @@ defmodule WatchClub.Media.Ebook do
     end
   end
 
-  identities do
-    identity :unique_media, [:id]
-  end
 end

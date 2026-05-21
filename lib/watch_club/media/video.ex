@@ -1,4 +1,16 @@
 defmodule WatchClub.Media.Video do
+  @moduledoc """
+  Concrete Media for a playable video file. Attached to exactly one `Movie` or
+  `TvShowEpisode`. Owns its video, audio, and text tracks.
+
+  `Video.id` is the same value as its parent `Media.id` (shared primary key,
+  no separate `media_id` column).
+
+  Direct creation is reserved for Instance Administrator access; the production
+  path goes through `WatchClub.Media.create_video/2`, which uses relationship
+  management to create the Video alongside its parent Media and tracks.
+  """
+
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -122,7 +134,4 @@ defmodule WatchClub.Media.Video do
     end
   end
 
-  identities do
-    identity :unique_media, [:id]
-  end
 end
