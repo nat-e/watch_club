@@ -4,7 +4,6 @@ defmodule WatchClub.Media.ImportPipeline do
   require Logger
 
   alias WatchClub.Media, as: MediaDomain
-  alias WatchClub.Media.ImportConfiguration
 
   alias WatchClub.Media.ImportPipeline.{
     ExtractIdentity,
@@ -17,9 +16,8 @@ defmodule WatchClub.Media.ImportPipeline do
   alias WatchClub.Media.ImportRun
   alias WatchClub.SystemActor
 
-  def process_import(%ImportRun{} = import_run) do
-    with {:ok, configuration} <- configuration_from_snapshot(import_run),
-         {:ok, candidates} <- Scan.stream(configuration) do
+  def process_import(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
+    with {:ok, candidates} <- Scan.stream(configuration) do
       candidates
       |> filter_existing_media(import_run)
       |> add_content_hints(configuration)
@@ -35,24 +33,6 @@ defmodule WatchClub.Media.ImportPipeline do
   rescue
     error in [Scan.Error] ->
       {:error, error.message}
-  end
-
-  defp configuration_from_snapshot(%ImportRun{configuration_snapshot: snapshot}) do
-    configuration = %ImportConfiguration{
-      id: Map.fetch!(snapshot, "id"),
-      source_type: snapshot_atom(snapshot, "source_type"),
-      content_type: snapshot_atom(snapshot, "content_type"),
-      media_type: snapshot_atom(snapshot, "media_type"),
-      filesystem_path: Map.fetch!(snapshot, "filesystem_path")
-    }
-
-    {:ok, configuration}
-  end
-
-  defp snapshot_atom(snapshot, key) do
-    snapshot
-    |> Map.fetch!(key)
-    |> String.to_existing_atom()
   end
 
   defp filter_existing_media(candidates, import_run) do

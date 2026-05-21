@@ -29,8 +29,9 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
 
   defp run_pipeline_and_complete(run, actor) do
     try do
-      with :ok <- ImportPipeline.process_import(run),
-           {:ok, completed_run} <- complete(run, actor) do
+      with {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, actor: actor),
+           :ok <- ImportPipeline.process_import(loaded_run),
+           {:ok, completed_run} <- complete(loaded_run, actor) do
         {:ok, completed_run}
       else
         {:error, error} -> fail_after_error(run, actor, error)

@@ -159,4 +159,13 @@ defmodule WatchClub.Media.ImportRun do
       sort media_import_id: :desc, inserted_at: :desc
     end
   end
+
+  calculations do
+    calculate :snapshot_configuration,
+              :struct,
+              WatchClub.Media.ImportRun.Calculations.SnapshotConfiguration do
+      constraints instance_of: ImportConfiguration
+      public? true
+    end
+  end
 end
