@@ -10,5 +10,5 @@ defmodule WatchClub.AshObanActorPersister do
 
   @impl true
   def lookup(%{"type" => "system"}), do: {:ok, SystemActor.actor()}
-  def lookup(nil), do: {:ok, nil}
+  def lookup(nil), do: {:ok, SystemActor.actor()}
 end

@@ -64,6 +64,8 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.stopped = false;
+		this.playing = false;
+		this.heartbeatTimer = undefined;
 
 		this.bindDomEvents();
 		this.boot();
@@ -77,6 +79,7 @@ const Player = {
 		if (this.disposed) return;
 		this.disposed = true;
 		this.abortController.abort();
+		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
 		this.stopSession();
 	},
 
@@ -141,6 +144,7 @@ const Player = {
 				keys: "ArrowLeft",
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
+					this.reportHeartbeat();
 					remote.seek(clamp(player.currentTime - 10, 0, player.duration || this.session.duration), event);
 				},
 			},
@@ -148,6 +152,7 @@ const Player = {
 				keys: "ArrowRight",
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
+					this.reportHeartbeat();
 					remote.seek(clamp(player.currentTime + 10, 0, player.duration || this.session.duration), event);
 				},
 			},
@@ -179,7 +184,22 @@ const Player = {
 		);
 
 		this.player.addEventListener("can-play", () => this.reportReady(), { signal });
-		this.player.addEventListener("playing", () => this.reportReady(), { signal });
+		this.player.addEventListener("playing", () => {
+			this.playing = true;
+			this.reportReady();
+			this.reportHeartbeat();
+			this.restartHeartbeatTimer();
+		}, { signal });
+		this.player.addEventListener("play", () => this.reportHeartbeat(), { signal });
+		this.player.addEventListener("pause", () => {
+			this.playing = false;
+			this.reportHeartbeat();
+		}, { signal });
+		this.player.addEventListener("ended", () => {
+			this.playing = false;
+			this.reportHeartbeat();
+		}, { signal });
+		this.player.addEventListener("seeked", () => this.reportHeartbeat(), { signal });
 		this.player.addEventListener("play-fail", () => this.reportFailure(), { signal });
 		this.player.addEventListener("hls-unsupported", () => this.reportFailure(), { signal });
 		this.player.addEventListener(
@@ -194,7 +214,10 @@ const Player = {
 			signal,
 		});
 		this.player.addEventListener("hls-cues-parsed", () => this.syncCaptionLayer(), { signal });
-		this.player.addEventListener("volume-change", () => this.storeLocalPreferences(), { signal });
+		this.player.addEventListener("volume-change", () => {
+			this.storeLocalPreferences();
+			this.reportHeartbeat();
+		}, { signal });
 
 		this.el
 			.querySelectorAll("media-quality-radio-group, media-audio-radio-group, media-captions-radio-group")
@@ -260,8 +283,22 @@ const Player = {
 		});
 	},
 
+	restartHeartbeatTimer() {
+		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
+
+		this.heartbeatTimer = window.setInterval(() => {
+			if (!this.disposed && !this.stopped && this.playing) {
+				this.reportHeartbeat();
+			}
+		}, 5000);
+	},
+
 	reportReady() {
 		this.pushEvent("player_ready", {}, () => {});
+	},
+
+	reportHeartbeat() {
+		this.pushEvent("player_heartbeat", {}, () => {});
 	},
 
 	reportFailure() {
@@ -271,6 +308,7 @@ const Player = {
 	stopSession() {
 		if (this.stopped) return;
 		this.stopped = true;
+		this.playing = false;
 		this.pushEvent("player_stop", {}, () => {});
 	},
 };

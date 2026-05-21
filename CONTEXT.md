@@ -329,8 +329,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **User** may have multiple active **Playback Sessions** for the same **Media**
 - A later viewing attempt for the same **Media** creates a separate **Playback Session**
 - A **Playback Session** can exist even when playback later fails
-- A **Playback Session** records the selected **Media** path at the time it starts
-- A **Playback Session** records when it started and when the **Player** was last active
+- A **Playback Session** records when it was created and when the **Player** was last active
 - The **Player** is active when it is playing or when the **User** interacts with playback controls
 - Only **Player** heartbeats update a **Playback Session**'s last active time
 - While the **Player** is playing, it sends a heartbeat about every five seconds
@@ -338,8 +337,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - HLS playlist and segment requests do not update a **Playback Session**'s last active time
 - A **Playback Session** has no explicit ended state; WatchClub determines whether it is active from its last active time
 - A **User** can inspect their own **Playback Sessions**
-- The **Instance Administrator** can inspect **Playback Sessions** by **User**, **Media**, media path, start time, and last active time
-- Only the **Instance Administrator** can inspect the **Media** path recorded on a **Playback Session**
+- The **Instance Administrator** can inspect **Playback Sessions** by **User**, **Media**, creation time, and last active time
 - If the same **Content** is visible to a **User** through multiple **Library Items**, one **Playback Session** for its **Media** may be relevant to each corresponding club activity feed
 - A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Media**
 - Adding **Content** to a **Library** and playing available **Media** are independent member actions

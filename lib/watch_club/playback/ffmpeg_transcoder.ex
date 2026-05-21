@@ -4,7 +4,7 @@ defmodule WatchClub.Playback.FfmpegTranscoder do
 
   The player asks for virtual HLS playlists. Individual audio, video, and
   subtitle files are generated on demand by ffmpeg and cached on disk by the
-  session process.
+  Playback Session server process.
   """
 
   require Logger
