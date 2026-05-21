@@ -51,3 +51,8 @@ We write tests for all the functions exposed in our Ash domains and only for tho
 - For the error cases, write one test per case, do not write a single test that verifies multiple error cases
 - Use the non ! version of functions and `assert_has_error` to verify the errors
 - Use generators to seed test data and only call the function being tested. Only override the generator parameters that are relevant to the test case to value brievity and readability.
+
+
+## Documentation
+
+- Comments and docs should only document and explain the current system. Conversation details or changes compared to past implementations should not leak into it.

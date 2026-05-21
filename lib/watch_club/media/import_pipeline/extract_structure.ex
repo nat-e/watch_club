@@ -6,10 +6,9 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
   only.
   """
 
-  alias WatchClub.Media.ImportConfiguration
-  alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.Outcome
+  @behaviour WatchClub.Media.ImportPipeline.Stage
 
+  alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
 
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.{
@@ -18,25 +17,24 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     VideoTrack
   }
 
+  alias WatchClub.Media.ImportRun
   alias __MODULE__.Sidecars
 
-  @stage "extract_structure"
-
-  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :video}),
-    do: probe_video(candidate)
-
-  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :audiobook}),
-    do: probe_audiobook(candidate)
-
-  def apply(%Candidate{} = candidate, %ImportConfiguration{media_type: :ebook}),
-    do: probe_ebook(candidate)
+  @impl true
+  def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+    case configuration.media_type do
+      :video -> probe_video(candidate)
+      :audiobook -> probe_audiobook(candidate)
+      :ebook -> probe_ebook(candidate)
+    end
+  end
 
   defp probe_video(candidate) do
     with {:ok, metadata} <- run_ffprobe(candidate.path),
          {:ok, structure} <- build_video_structure(metadata) do
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}
     else
-      {:error, message} -> {:error, fail(candidate, message)}
+      {:error, message} -> {:halt, candidate, :failed, halt_message(candidate, message)}
     end
   end
 
@@ -45,7 +43,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
          {:ok, structure} <- build_audiobook_structure(metadata) do
       {:ok, %{candidate | media_structure: structure}}
     else
-      {:error, message} -> {:error, fail(candidate, message)}
+      {:error, message} -> {:halt, candidate, :failed, halt_message(candidate, message)}
     end
   end
 
@@ -57,16 +55,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
     {:ok, %{candidate | media_structure: structure}}
   end
 
-  defp fail(candidate, message) do
-    %{
-      candidate
-      | outcome: %Outcome{
-          status: :failed,
-          message: "#{Path.basename(candidate.path)}: #{message}",
-          metadata: %{stage: @stage}
-        }
-    }
-  end
+  defp halt_message(candidate, message), do: "#{Path.basename(candidate.path)}: #{message}"
 
   defp run_ffprobe(path) do
     args = [

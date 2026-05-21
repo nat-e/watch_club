@@ -1,24 +1,35 @@
 defmodule WatchClub.Media.ImportPipeline.Candidate do
   @moduledoc """
   A file that the pipeline is processing. Stages enrich the candidate with one
-  field each as it flows through the pipeline; the final stage assigns an
-  `:outcome` representing the terminal verdict (`:created`, `:updated`,
-  `:no_match`, or `:failed`).
+  field each as it flows through the pipeline; once every stage has run (or
+  the pipeline halts), the candidate is finalized with an `Outcome`.
 
   Field-by-stage progression:
 
-    * after `Scan`:            `path`, `relative_path`, `extension`, `file_info`
-    * after `FilterExisting`:  `existing_media`
-    * after `ExtractIdentity`: `identity`
-    * after `ExtractStructure` and `Sidecars`: `media_structure`
-    * after `ComputeOutcome`:  `outcome`
+    * after `Scan`:             `path`, `relative_path`, `extension`, `file_info`
+    * after `FilterExisting`:   `existing_media`
+    * after `ExtractIdentity`:  `identity`
+    * after `ExtractStructure`: `media_structure`
+    * after finalization:       `outcome` (or `nil` for skipped candidates)
 
-  Stages return `{:ok, candidate}` on success, or `{:error, candidate}` on
-  failure with the candidate's `:outcome` set to a failed `Outcome`. The
-  pipeline composes stages with `with/1`, short-circuiting on the first error.
+  Stages do not construct outcomes themselves — they return
+  `{:ok, candidate}` or `{:halt, candidate, reason, message}`. The pipeline
+  calls `set_outcome/1` on success or `set_halted_outcome/3` on halt to set
+  the terminal `Outcome`.
   """
 
-  alias WatchClub.Media.ImportPipeline.Candidate.FileInfo
+  alias WatchClub.Media.ImportPipeline.Candidate.{FileInfo, Outcome}
+
+  @type t :: %__MODULE__{
+          path: String.t() | nil,
+          relative_path: String.t() | nil,
+          extension: String.t() | nil,
+          file_info: FileInfo.t() | nil,
+          existing_media: %{id: term(), type: atom()} | nil,
+          identity: __MODULE__.Identity.t() | nil,
+          media_structure: __MODULE__.MediaStructure.t() | nil,
+          outcome: Outcome.t() | nil
+        }
 
   defstruct [
     :path,
@@ -33,6 +44,7 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
 
   defmodule FileInfo do
     @moduledoc false
+    @type t :: %__MODULE__{size: non_neg_integer() | nil, modified_at: integer() | nil}
     defstruct [:size, :modified_at]
   end
 
@@ -42,6 +54,9 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     embedded provider IDs. Extracted from the filename and sibling NFO files.
     Consumed by `Match` to resolve the file to a `Content` row.
     """
+
+    @type t :: %__MODULE__{}
+
     defstruct [
       :title,
       :year,
@@ -61,6 +76,8 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     streams. Extracted by probing the file bytes (and discovering sidecar
     text-track files for videos).
     """
+
+    @type t :: %__MODULE__{}
 
     defstruct [
       :container,
@@ -100,13 +117,17 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
   defmodule Outcome do
     @moduledoc """
     The terminal verdict for a candidate. `status` maps to
-    `WatchClub.Media.ImportResultStatus`. `metadata` captures stage-specific
-    context (which stage produced the outcome, any structured detail).
+    `WatchClub.Media.ImportResultStatus`.
     """
 
-    defstruct [:status, :message, metadata: %{}]
+    @type t :: %__MODULE__{status: atom(), message: String.t() | nil}
+
+    defstruct [:status, :message]
   end
 
+  @doc """
+  Builds a fresh `Candidate` for a discovered file during `Scan`.
+  """
   def new(path, root_path, stat) do
     expanded_path = Path.expand(path)
 
@@ -117,4 +138,25 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
       file_info: %FileInfo{size: stat.size, modified_at: stat.mtime}
     }
   end
+
+  @doc """
+  Finalizes a candidate that made it through every stage successfully.
+  """
+  def set_outcome(%__MODULE__{} = candidate) do
+    %{
+      candidate
+      | outcome: %Outcome{
+          status: :no_match,
+          message: "Could not confidently match file to Content or TV Show Episode"
+        }
+    }
+  end
+
+  @doc """
+  Finalizes a candidate that halted mid-pipeline with the given status and
+  message.
+  """
+  def set_halted_outcome(%__MODULE__{} = candidate, status, message)
+      when status in [:skipped, :failed],
+      do: %{candidate | outcome: %Outcome{status: status, message: message}}
 end

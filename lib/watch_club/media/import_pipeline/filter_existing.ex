@@ -6,20 +6,20 @@ defmodule WatchClub.Media.ImportPipeline.FilterExisting do
     * No existing Media → continue.
     * Existing Media and refresh on → continue, tagged for refresh via
       `:existing_media`.
-    * Existing Media and refresh off → `:skip` (no Outcome row, per
-      `CONTEXT.md`: existing media skipped without refresh produces no result).
-    * Lookup error → fail the candidate.
+    * Existing Media and refresh off → halt as `:skipped` (no result row,
+      per `CONTEXT.md`).
+    * Lookup error → halt as `:failed`.
   """
+
+  @behaviour WatchClub.Media.ImportPipeline.Stage
 
   alias WatchClub.Media, as: MediaDomain
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.Outcome
   alias WatchClub.Media.ImportRun
   alias WatchClub.Media.Media
   alias WatchClub.SystemActor
 
-  @stage "filter_existing"
-
+  @impl true
   def apply(%Candidate{} = candidate, %ImportRun{refresh_metadata?: refresh_metadata?}) do
     case existing_media(candidate.path) do
       {:ok, nil} ->
@@ -29,10 +29,10 @@ defmodule WatchClub.Media.ImportPipeline.FilterExisting do
         {:ok, %{candidate | existing_media: %{id: id, type: type}}}
 
       {:ok, %Media{}} ->
-        :skip
+        {:halt, candidate, :skipped, nil}
 
       {:error, error} ->
-        {:error, fail(candidate, error)}
+        {:halt, candidate, :failed, "Could not check for existing Media: #{inspect(error)}"}
     end
   end
 
@@ -45,16 +45,5 @@ defmodule WatchClub.Media.ImportPipeline.FilterExisting do
       {:ok, []} -> {:ok, nil}
       {:error, error} -> {:error, error}
     end
-  end
-
-  defp fail(candidate, error) do
-    %{
-      candidate
-      | outcome: %Outcome{
-          status: :failed,
-          message: "Could not check for existing Media: #{inspect(error)}",
-          metadata: %{stage: @stage}
-        }
-    }
   end
 end

@@ -1,9 +1,6 @@
 defmodule WatchClub.Media.ImportSourceType do
   @moduledoc """
   The kind of source a Media Import Configuration imports from.
-
-  Only `:filesystem` is implemented today. External media servers and automation
-  services are planned (see `CONTEXT.md`); they will be added here when supported.
   """
 
   use Gettext, backend: WatchClubWeb.Gettext

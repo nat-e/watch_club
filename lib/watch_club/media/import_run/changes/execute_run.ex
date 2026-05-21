@@ -50,6 +50,10 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
     :ok
   end
 
+  # Skipped candidates do not produce a result row (per CONTEXT.md: existing
+  # Media re-encountered without refresh writes nothing).
+  defp record_outcome(%Candidate{outcome: %{status: :skipped}}, _run, _actor), do: :ok
+
   defp record_outcome(%Candidate{outcome: outcome} = candidate, run, actor) do
     MediaDomain.create_import_result(
       %{
@@ -57,31 +61,25 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
         status: outcome.status,
         path: candidate.path,
         message: outcome.message,
-        metadata: result_metadata(candidate, run, outcome)
+        metadata: result_metadata(candidate, run)
       },
       actor: actor
     )
   end
 
-  defp result_metadata(%Candidate{} = candidate, %ImportRun{} = run, outcome) do
+  defp result_metadata(%Candidate{} = candidate, %ImportRun{} = run) do
     configuration = run.snapshot_configuration
 
-    outcome.metadata
-    |> stringify_keys()
-    |> Map.merge(%{
+    %{
       "content_type" => Atom.to_string(configuration.content_type),
       "media_type" => Atom.to_string(configuration.media_type),
       "relative_path" => candidate.relative_path,
       "existing_media_id" => existing_media_id(candidate)
-    })
+    }
   end
 
   defp existing_media_id(%Candidate{existing_media: %{id: id}}), do: id
   defp existing_media_id(%Candidate{}), do: nil
-
-  defp stringify_keys(map) do
-    Map.new(map, fn {key, value} -> {to_string(key), value} end)
-  end
 
   defp fail_after_error(run, actor, error) do
     run

@@ -168,7 +168,6 @@ defmodule WatchClub.Media.ImportRunTest do
                  path: ^file_path,
                  message: "Could not confidently match file to Content or TV Show Episode",
                  metadata: %{
-                   "stage" => "content_matching",
                    "content_type" => "book",
                    "media_type" => "ebook",
                    "relative_path" => "WatchClub Guide.pdf",
