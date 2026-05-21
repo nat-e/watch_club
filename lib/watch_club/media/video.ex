@@ -10,20 +10,19 @@ defmodule WatchClub.Media.Video do
 
   postgres do
     table "videos"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:media, on_delete: :delete, on_update: :update)
-      reference(:movie, on_delete: :restrict, on_update: :update)
-      reference(:tv_show_episode, on_delete: :restrict, on_update: :update)
+      reference :media, on_delete: :delete, on_update: :update
+      reference :movie, on_delete: :restrict, on_update: :update
+      reference :tv_show_episode, on_delete: :restrict, on_update: :update
     end
 
     check_constraints do
-      check_constraint([:movie_id, :tv_show_episode_id],
+      check_constraint [:movie_id, :tv_show_episode_id],
         name: "videos_exactly_one_content_attachment_check",
         check: "num_nonnulls(movie_id, tv_show_episode_id) = 1",
         message: "Video must be attached to exactly one Movie or TV Show Episode"
-      )
     end
   end
 

@@ -1,21 +1,21 @@
-defmodule WatchClub.Media.MediaImportResult do
+defmodule WatchClub.Media.ImportResult do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Media.Changes.NormalizePath
-  alias WatchClub.Media.{MediaImport, MediaImportResultStatus}
+  alias WatchClub.Media.{ImportResultStatus, ImportRun}
+  alias WatchClub.Shared.Changes.NormalizePath
 
   import Ash.Expr
 
   postgres do
     table "media_import_results"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:media_import, on_delete: :delete, on_update: :update)
+      reference :media_import, on_delete: :delete, on_update: :update
     end
   end
 
@@ -62,7 +62,7 @@ defmodule WatchClub.Media.MediaImportResult do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :status, MediaImportResultStatus do
+    attribute :status, ImportResultStatus do
       allow_nil? false
       public? true
     end
@@ -92,7 +92,7 @@ defmodule WatchClub.Media.MediaImportResult do
   end
 
   relationships do
-    belongs_to :media_import, MediaImport do
+    belongs_to :media_import, ImportRun do
       allow_nil? false
       public? true
     end

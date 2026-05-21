@@ -9,10 +9,10 @@ defmodule WatchClub.Contents.MovieLocalization do
 
   postgres do
     table "movie_localizations"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:movie, on_delete: :delete, on_update: :update)
+      reference :movie, on_delete: :delete, on_update: :update
     end
   end
 

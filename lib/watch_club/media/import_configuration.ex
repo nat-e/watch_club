@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.MediaImportConfiguration do
+defmodule WatchClub.Media.ImportConfiguration do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -6,22 +6,17 @@ defmodule WatchClub.Media.MediaImportConfiguration do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.ContentType
-  alias WatchClub.Media.Changes.NormalizePath
-  alias WatchClub.Media.Calculations.MediaImportConfigurationName
-
-  alias WatchClub.Media.{
-    MediaImport,
-    MediaImportSourceType,
-    MediaType,
-    Validations.ValidMediaImportConfigurationCombination
-  }
+  alias WatchClub.Media.ImportConfiguration.Calculations
+  alias WatchClub.Media.ImportConfiguration.Validations
+  alias WatchClub.Media.{ImportRun, ImportSourceType, MediaType}
+  alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
     table "media_import_configurations"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     check_constraints do
-      check_constraint([:content_type, :media_type],
+      check_constraint [:content_type, :media_type],
         name: "media_import_configurations_valid_content_media_type_check",
         check: """
         (content_type = 'movie' AND media_type = 'video') OR
@@ -29,7 +24,6 @@ defmodule WatchClub.Media.MediaImportConfiguration do
         (content_type = 'book' AND media_type IN ('ebook', 'audiobook'))
         """,
         message: "Media Import Configuration content type and media type are incompatible"
-      )
     end
   end
 
@@ -40,7 +34,7 @@ defmodule WatchClub.Media.MediaImportConfiguration do
       primary? true
       accept [:content_type, :media_type, :filesystem_path]
 
-      validate ValidMediaImportConfigurationCombination
+      validate Validations.ValidCombination
 
       change set_attribute(:source_type, :filesystem)
       change {NormalizePath, attribute: :filesystem_path}
@@ -86,7 +80,7 @@ defmodule WatchClub.Media.MediaImportConfiguration do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :source_type, MediaImportSourceType do
+    attribute :source_type, ImportSourceType do
       allow_nil? false
       public? true
       default :filesystem
@@ -118,7 +112,7 @@ defmodule WatchClub.Media.MediaImportConfiguration do
   end
 
   relationships do
-    has_many :imports, MediaImport do
+    has_many :imports, ImportRun do
       destination_attribute :configuration_id
       public? true
       sort inserted_at: :desc
@@ -126,7 +120,7 @@ defmodule WatchClub.Media.MediaImportConfiguration do
   end
 
   calculations do
-    calculate :name, :string, MediaImportConfigurationName do
+    calculate :name, :string, Calculations.Name do
       allow_nil? false
       public? true
     end

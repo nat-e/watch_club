@@ -9,10 +9,10 @@ defmodule WatchClub.Contents.TvShowLocalization do
 
   postgres do
     table "tv_show_localizations"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:tv_show, on_delete: :delete, on_update: :update)
+      reference :tv_show, on_delete: :delete, on_update: :update
     end
   end
 

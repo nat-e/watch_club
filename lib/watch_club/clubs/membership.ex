@@ -11,11 +11,11 @@ defmodule WatchClub.Clubs.Membership do
 
   postgres do
     table "memberships"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:club, on_delete: :delete, on_update: :update)
-      reference(:user, on_delete: :delete, on_update: :update)
+      reference :club, on_delete: :delete, on_update: :update
+      reference :user, on_delete: :delete, on_update: :update
     end
   end
 

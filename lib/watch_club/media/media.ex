@@ -5,15 +5,15 @@ defmodule WatchClub.Media.Media do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Media.{Audiobook, Ebook, MediaImport, MediaType, Video}
-  alias WatchClub.Media.Changes.NormalizePath
+  alias WatchClub.Media.{Audiobook, Ebook, ImportRun, MediaType, Video}
+  alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
     table "media"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:last_successful_media_import, on_delete: :nilify, on_update: :update)
+      reference :last_successful_media_import, on_delete: :nilify, on_update: :update
     end
   end
 
@@ -106,7 +106,7 @@ defmodule WatchClub.Media.Media do
       destination_attribute :id
     end
 
-    belongs_to :last_successful_media_import, MediaImport do
+    belongs_to :last_successful_media_import, ImportRun do
       allow_nil? true
       public? true
     end

@@ -1,15 +1,15 @@
-defmodule WatchClub.Media.Importer.PathHints do
+defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   @moduledoc false
 
-  alias WatchClub.Media.Importer.MediaCandidate
-  alias WatchClub.Media.Importer.MediaCandidate.ContentHints
-  alias WatchClub.Media.MediaImportConfiguration
+  alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportPipeline.Candidate.ContentHints
+  alias WatchClub.Media.ImportConfiguration
 
   @external_attribute_regex ~r/[\[\(\{]\s*(tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)\s*[=-]\s*([^\]\)\}]+?)\s*[\]\)\}]/i
   @imdb_regex ~r/tt\d{7,8}/i
   @quality_token_regex ~r/\b(480p|576p|720p|1080p|2160p|4320p|bluray|blu-ray|bdrip|brrip|web-dl|webdl|webrip|hdtv|dvdrip|x264|x265|h264|h265|hevc|avc|proper|repack|limited|unrated|extended|remux)\b/i
 
-  def apply(%MediaCandidate{} = candidate, %MediaImportConfiguration{} = configuration) do
+  def apply(%Candidate{} = candidate, %ImportConfiguration{} = configuration) do
     external_ids =
       candidate.path
       |> external_ids_from_text()

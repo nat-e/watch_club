@@ -9,10 +9,10 @@ defmodule WatchClub.Contents.Book do
 
   postgres do
     table "books"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:content, on_delete: :delete, on_update: :update)
+      reference :content, on_delete: :delete, on_update: :update
     end
   end
 

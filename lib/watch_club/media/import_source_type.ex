@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.MediaImportSourceType do
+defmodule WatchClub.Media.ImportSourceType do
   use Ash.Type.Enum,
     values: [
       filesystem: [

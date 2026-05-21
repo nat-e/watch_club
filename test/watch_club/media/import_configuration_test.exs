@@ -1,18 +1,18 @@
-defmodule WatchClub.Media.MediaImportConfigurationTest do
+defmodule WatchClub.Media.ImportConfigurationTest do
   use WatchClub.DataCase
 
   import WatchClub.Media
 
-  alias WatchClub.Media.{MediaImport, MediaImportConfiguration}
+  alias WatchClub.Media.{ImportConfiguration, ImportRun}
 
   require Ash.Query
 
-  describe "create_filesystem_media_import_configuration/*" do
+  describe "create_filesystem_import_configuration/*" do
     test "creates a filesystem Media Import Configuration" do
       admin = generate(administrator())
       path = "tmp/media-imports/../movies"
 
-      assert %MediaImportConfiguration{
+      assert %ImportConfiguration{
                source_type: :filesystem,
                content_type: :movie,
                media_type: :video,
@@ -20,7 +20,7 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
                disabled?: false,
                name: name
              } =
-               create_filesystem_media_import_configuration!(
+               create_filesystem_import_configuration!(
                  %{content_type: :movie, media_type: :video, filesystem_path: path},
                  actor: admin,
                  load: [:name]
@@ -34,14 +34,14 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
       admin = generate(administrator())
       path = "tmp/media-imports/duplicates"
 
-      assert %MediaImportConfiguration{} =
-               create_filesystem_media_import_configuration!(
+      assert %ImportConfiguration{} =
+               create_filesystem_import_configuration!(
                  %{content_type: :movie, media_type: :video, filesystem_path: path},
                  actor: admin
                )
 
-      assert %MediaImportConfiguration{} =
-               create_filesystem_media_import_configuration!(
+      assert %ImportConfiguration{} =
+               create_filesystem_import_configuration!(
                  %{content_type: :movie, media_type: :video, filesystem_path: path},
                  actor: admin
                )
@@ -50,7 +50,7 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     test "rejects incompatible Content Type and Media Type combinations" do
       admin = generate(administrator())
 
-      create_filesystem_media_import_configuration(
+      create_filesystem_import_configuration(
         %{content_type: :movie, media_type: :ebook, filesystem_path: "tmp/imports/books"},
         actor: admin
       )
@@ -63,7 +63,7 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     test "only the Instance Administrator can create Media Import Configurations" do
       user = generate(user())
 
-      create_filesystem_media_import_configuration(
+      create_filesystem_import_configuration(
         %{content_type: :movie, media_type: :video, filesystem_path: "tmp/imports/movies"},
         actor: user
       )
@@ -71,13 +71,13 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     end
   end
 
-  describe "list_media_import_configurations/*" do
+  describe "list_import_configurations/*" do
     test "lists Media Import Configurations for the Instance Administrator" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      assert [%MediaImportConfiguration{id: configuration_id}] =
-               list_media_import_configurations!(actor: admin)
+      assert [%ImportConfiguration{id: configuration_id}] =
+               list_import_configurations!(actor: admin)
 
       assert configuration_id == configuration.id
     end
@@ -85,18 +85,18 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     test "only the Instance Administrator can list Media Import Configurations" do
       user = generate(user())
 
-      list_media_import_configurations(actor: user)
+      list_import_configurations(actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "update_media_import_configuration/*" do
+  describe "update_import_configuration/*" do
     test "updates only the filesystem path and regenerates the name" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
       path = "tmp/media-imports/../movie-updates"
 
-      assert %MediaImportConfiguration{
+      assert %ImportConfiguration{
                source_type: :filesystem,
                content_type: :movie,
                media_type: :video,
@@ -104,7 +104,7 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
                filesystem_path: normalized_path,
                name: name
              } =
-               update_media_import_configuration!(configuration, %{filesystem_path: path},
+               update_import_configuration!(configuration, %{filesystem_path: path},
                  actor: admin,
                  load: [:name]
                )
@@ -115,9 +115,9 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
 
     test "rejects attempts to update source type, content type, media type, or disabled status" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      update_media_import_configuration(
+      update_import_configuration(
         configuration,
         %{
           source_type: :filesystem,
@@ -141,74 +141,72 @@ defmodule WatchClub.Media.MediaImportConfigurationTest do
     test "only the Instance Administrator can update Media Import Configurations" do
       admin = generate(administrator())
       user = generate(user())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      update_media_import_configuration(configuration, %{filesystem_path: "tmp/other"},
-        actor: user
-      )
+      update_import_configuration(configuration, %{filesystem_path: "tmp/other"}, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "disable_media_import_configuration/*" do
+  describe "disable_import_configuration/*" do
     test "disables a Media Import Configuration" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      assert %MediaImportConfiguration{disabled?: true} =
-               disable_media_import_configuration!(configuration, actor: admin)
+      assert %ImportConfiguration{disabled?: true} =
+               disable_import_configuration!(configuration, actor: admin)
     end
 
     test "only the Instance Administrator can disable Media Import Configurations" do
       admin = generate(administrator())
       user = generate(user())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      disable_media_import_configuration(configuration, actor: user)
+      disable_import_configuration(configuration, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "enable_media_import_configuration/*" do
+  describe "enable_import_configuration/*" do
     test "enables a Media Import Configuration" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(disabled?: true))
+      configuration = generate(import_configuration(disabled?: true))
 
-      assert %MediaImportConfiguration{disabled?: false} =
-               enable_media_import_configuration!(configuration, actor: admin)
+      assert %ImportConfiguration{disabled?: false} =
+               enable_import_configuration!(configuration, actor: admin)
     end
 
     test "only the Instance Administrator can enable Media Import Configurations" do
       user = generate(user())
-      configuration = generate(media_import_configuration(disabled?: true))
+      configuration = generate(import_configuration(disabled?: true))
 
-      enable_media_import_configuration(configuration, actor: user)
+      enable_import_configuration(configuration, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "destroy_media_import_configuration/*" do
+  describe "destroy_import_configuration/*" do
     test "destroys a Media Import Configuration without deleting past Media Imports" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = generate(media_import(configuration))
+      configuration = generate(import_configuration(actor: admin))
+      run = generate(import_run(configuration))
 
-      assert :ok = destroy_media_import_configuration!(configuration, actor: admin)
+      assert :ok = destroy_import_configuration!(configuration, actor: admin)
 
-      refute MediaImportConfiguration
+      refute ImportConfiguration
              |> Ash.Query.filter(id == ^configuration.id)
              |> Ash.exists?(authorize?: false)
 
-      assert %MediaImport{configuration_id: nil} =
-               Ash.get!(MediaImport, media_import.id, authorize?: false)
+      assert %ImportRun{configuration_id: nil} =
+               Ash.get!(ImportRun, run.id, authorize?: false)
     end
 
     test "only the Instance Administrator can destroy Media Import Configurations" do
       admin = generate(administrator())
       user = generate(user())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      destroy_media_import_configuration(configuration, actor: user)
+      destroy_import_configuration(configuration, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

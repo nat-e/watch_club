@@ -1,7 +1,7 @@
-defmodule WatchClub.Media.Importer.MediaTypeFilter do
+defmodule WatchClub.Media.ImportPipeline.Scan.MediaTypeFilter do
   @moduledoc false
 
-  alias WatchClub.Media.MediaImportConfiguration
+  alias WatchClub.Media.ImportConfiguration
 
   @video_extensions MapSet.new([
                       ".001",
@@ -87,7 +87,7 @@ defmodule WatchClub.Media.Importer.MediaTypeFilter do
                           ".wma"
                         ])
 
-  def accepted?(path, %MediaImportConfiguration{} = configuration) do
+  def accepted?(path, %ImportConfiguration{} = configuration) do
     extension = path |> Path.extname() |> String.downcase()
 
     MapSet.member?(extensions_for(configuration.media_type), extension)

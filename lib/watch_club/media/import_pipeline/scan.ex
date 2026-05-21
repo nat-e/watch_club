@@ -1,15 +1,16 @@
-defmodule WatchClub.Media.Importer.FilesystemDiscovery do
+defmodule WatchClub.Media.ImportPipeline.Scan do
   @moduledoc false
 
-  alias WatchClub.Media.Importer.{IgnoreRules, MediaCandidate, MediaTypeFilter}
-  alias WatchClub.Media.MediaImportConfiguration
+  alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
+  alias WatchClub.Media.ImportConfiguration
 
   defmodule Error do
     defexception [:message]
   end
 
   def stream(
-        %MediaImportConfiguration{source_type: :filesystem, filesystem_path: root_path} =
+        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} =
           configuration
       ) do
     root_path = Path.expand(root_path)
@@ -30,7 +31,7 @@ defmodule WatchClub.Media.Importer.FilesystemDiscovery do
     end
   end
 
-  def stream(%MediaImportConfiguration{source_type: source_type}) do
+  def stream(%ImportConfiguration{source_type: source_type}) do
     {:error, "Unsupported Media Import Source Type: #{inspect(source_type)}"}
   end
 
@@ -67,7 +68,7 @@ defmodule WatchClub.Media.Importer.FilesystemDiscovery do
              not MediaTypeFilter.accepted?(path, configuration) do
           {[], rest}
         else
-          {[MediaCandidate.new(path, root_path, stat, configuration)], rest}
+          {[Candidate.new(path, root_path, stat, configuration)], rest}
         end
 
       {:ok, _stat} ->

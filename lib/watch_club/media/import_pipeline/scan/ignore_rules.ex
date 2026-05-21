@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.Importer.IgnoreRules do
+defmodule WatchClub.Media.ImportPipeline.Scan.IgnoreRules do
   @moduledoc false
 
   @ignored_directory_names MapSet.new([

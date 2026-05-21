@@ -9,10 +9,10 @@ defmodule WatchClub.Media.AudioTrack do
 
   postgres do
     table "audio_tracks"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:video, on_delete: :delete, on_update: :update)
+      reference :video, on_delete: :delete, on_update: :update
     end
   end
 

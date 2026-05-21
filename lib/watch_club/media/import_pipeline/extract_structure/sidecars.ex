@@ -1,8 +1,8 @@
-defmodule WatchClub.Media.Importer.SidecarTextTracks do
+defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
   @moduledoc false
 
-  alias WatchClub.Media.Importer.MediaCandidate
-  alias WatchClub.Media.Importer.MediaCandidate.TextTrackSpec
+  alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportPipeline.Candidate.TextTrackSpec
 
   @subtitle_extensions MapSet.new([".ass", ".srt", ".ssa", ".sub", ".vtt"])
 
@@ -39,11 +39,11 @@ defmodule WatchClub.Media.Importer.SidecarTextTracks do
     "chi" => "zho"
   }
 
-  def apply(%MediaCandidate{media_type: :video} = candidate) do
+  def apply(%Candidate{media_type: :video} = candidate) do
     %{candidate | sidecar_text_tracks: discover(candidate)}
   end
 
-  def apply(%MediaCandidate{} = candidate), do: candidate
+  def apply(%Candidate{} = candidate), do: candidate
 
   defp discover(candidate) do
     directory = Path.dirname(candidate.path)

@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.Calculations.MediaImportConfigurationName do
+defmodule WatchClub.Media.ImportConfiguration.Calculations.Name do
   use Ash.Resource.Calculation
 
   alias WatchClub.Contents.ContentType

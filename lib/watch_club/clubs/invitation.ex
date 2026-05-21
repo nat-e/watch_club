@@ -18,10 +18,10 @@ defmodule WatchClub.Clubs.Invitation do
 
   postgres do
     table "invitations"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:club, on_delete: :delete, on_update: :update)
+      reference :club, on_delete: :delete, on_update: :update
     end
   end
 

@@ -17,7 +17,7 @@ defmodule WatchClub.Clubs.Club do
 
   postgres do
     table "clubs"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
   end
 
   actions do

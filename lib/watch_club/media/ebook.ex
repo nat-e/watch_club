@@ -10,11 +10,11 @@ defmodule WatchClub.Media.Ebook do
 
   postgres do
     table "ebooks"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:media, on_delete: :delete, on_update: :update)
-      reference(:book, on_delete: :restrict, on_update: :update)
+      reference :media, on_delete: :delete, on_update: :update
+      reference :book, on_delete: :restrict, on_update: :update
     end
   end
 

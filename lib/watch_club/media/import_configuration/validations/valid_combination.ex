@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.Validations.ValidMediaImportConfigurationCombination do
+defmodule WatchClub.Media.ImportConfiguration.Validations.ValidCombination do
   use Ash.Resource.Validation
 
   @impl true

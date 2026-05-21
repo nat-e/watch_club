@@ -24,7 +24,7 @@ defmodule WatchClub.Contents.Content do
 
   postgres do
     table "contents"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
   end
 
   actions do

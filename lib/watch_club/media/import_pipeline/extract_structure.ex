@@ -1,15 +1,15 @@
-defmodule WatchClub.Media.Importer.Probe do
+defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
   @moduledoc false
 
-  alias WatchClub.Media.Importer.MediaCandidate
+  alias WatchClub.Media.ImportPipeline.Candidate
 
-  alias WatchClub.Media.Importer.MediaCandidate.{
+  alias WatchClub.Media.ImportPipeline.Candidate.{
     AudioTrackProbe,
     TextTrackSpec,
     VideoTrackProbe
   }
 
-  alias WatchClub.Media.Importer.MediaCandidate.Probe, as: CandidateProbe
+  alias WatchClub.Media.ImportPipeline.Candidate.Probe, as: CandidateProbe
 
   @probe_concurrency 2
   @supervisor __MODULE__.Supervisor
@@ -36,7 +36,7 @@ defmodule WatchClub.Media.Importer.Probe do
     |> Stream.map(&normalize_result/1)
   end
 
-  def candidate(%MediaCandidate{} = candidate) do
+  def candidate(%Candidate{} = candidate) do
     case candidate.media_type do
       :video -> probe_video(candidate)
       :audiobook -> probe_audiobook(candidate)

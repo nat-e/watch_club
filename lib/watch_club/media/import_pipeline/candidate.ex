@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.Importer.MediaCandidate do
+defmodule WatchClub.Media.ImportPipeline.Candidate do
   @moduledoc false
 
   defmodule FileInfo do
@@ -64,8 +64,8 @@ defmodule WatchClub.Media.Importer.MediaCandidate do
     ]
   end
 
-  alias WatchClub.Media.Importer.MediaCandidate.FileInfo
-  alias WatchClub.Media.MediaImportConfiguration
+  alias WatchClub.Media.ImportPipeline.Candidate.FileInfo
+  alias WatchClub.Media.ImportConfiguration
 
   defstruct [
     :path,
@@ -80,7 +80,7 @@ defmodule WatchClub.Media.Importer.MediaCandidate do
     sidecar_text_tracks: []
   ]
 
-  def new(path, root_path, stat, %MediaImportConfiguration{} = configuration) do
+  def new(path, root_path, stat, %ImportConfiguration{} = configuration) do
     expanded_path = Path.expand(path)
 
     %__MODULE__{

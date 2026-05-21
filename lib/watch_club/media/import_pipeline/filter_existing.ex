@@ -1,13 +1,13 @@
-defmodule WatchClub.Media.Importer.ExistingMediaGate do
+defmodule WatchClub.Media.ImportPipeline.FilterExisting do
   @moduledoc false
 
   alias WatchClub.Media, as: MediaDomain
-  alias WatchClub.Media.Importer.MediaCandidate
+  alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportRun
   alias WatchClub.Media.Media
-  alias WatchClub.Media.MediaImport
   alias WatchClub.SystemActor
 
-  def apply(%MediaCandidate{} = candidate, %MediaImport{refresh_metadata?: refresh_metadata?}) do
+  def apply(%Candidate{} = candidate, %ImportRun{refresh_metadata?: refresh_metadata?}) do
     case existing_media(candidate.path) do
       {:ok, nil} ->
         {:ok, candidate}

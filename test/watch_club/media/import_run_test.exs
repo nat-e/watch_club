@@ -1,33 +1,33 @@
-defmodule WatchClub.Media.MediaImportTest do
+defmodule WatchClub.Media.ImportRunTest do
   use WatchClub.DataCase
 
   import WatchClub.Media
 
-  alias WatchClub.Media.{MediaImport, MediaImportResult}
+  alias WatchClub.Media.{ImportResult, ImportRun}
   alias WatchClub.SystemActor
 
-  describe "trigger_media_import/*" do
+  describe "trigger_import_run/*" do
     test "creates a Pending Media Import with a configuration snapshot and enqueues processing" do
       admin = generate(administrator())
 
       configuration =
         generate(
-          media_import_configuration(
+          import_configuration(
             actor: admin,
             content_type: :book,
             media_type: :ebook
           )
         )
 
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      run = trigger_import_run!(configuration.id, actor: admin)
 
-      assert %MediaImport{
+      assert %ImportRun{
                status: :pending,
                configuration_id: configuration_id,
                refresh_metadata?: false,
                triggered_manually?: true,
                configuration_snapshot: snapshot
-             } = media_import
+             } = run
 
       assert configuration_id == configuration.id
 
@@ -40,30 +40,30 @@ defmodule WatchClub.Media.MediaImportTest do
                "filesystem_path" => configuration.filesystem_path
              }
 
-      assert_triggered(media_import, :process, queue: :media_imports)
+      assert_triggered(run, :process, queue: :media_imports)
     end
 
     test "can refresh metadata for manually triggered imports" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      assert %MediaImport{refresh_metadata?: true} =
-               trigger_media_import!(configuration.id, %{refresh_metadata?: true}, actor: admin)
+      assert %ImportRun{refresh_metadata?: true} =
+               trigger_import_run!(configuration.id, %{refresh_metadata?: true}, actor: admin)
     end
 
     test "creates a Pending Media Import for a disabled Media Import Configuration" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(disabled?: true))
+      configuration = generate(import_configuration(disabled?: true))
 
-      assert %MediaImport{status: :pending} =
-               trigger_media_import!(configuration.id, actor: admin)
+      assert %ImportRun{status: :pending} =
+               trigger_import_run!(configuration.id, actor: admin)
     end
 
     test "rejects attempts to mark manually triggered imports as scheduled" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      trigger_media_import(configuration.id, %{triggered_manually?: false}, actor: admin)
+      trigger_import_run(configuration.id, %{triggered_manually?: false}, actor: admin)
       |> assert_has_error(Ash.Error.Invalid, fn
         %Ash.Error.Invalid.NoSuchInput{input: :triggered_manually?} -> true
         _ -> false
@@ -72,62 +72,56 @@ defmodule WatchClub.Media.MediaImportTest do
 
     test "allows multiple Pending Media Imports for one configuration" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      assert %MediaImport{status: :pending} =
-               trigger_media_import!(configuration.id, actor: admin)
+      assert %ImportRun{status: :pending} =
+               trigger_import_run!(configuration.id, actor: admin)
 
-      assert %MediaImport{status: :pending} =
-               trigger_media_import!(configuration.id, actor: admin)
+      assert %ImportRun{status: :pending} =
+               trigger_import_run!(configuration.id, actor: admin)
     end
 
     test "background processing completes the Media Import" do
       admin = generate(administrator())
 
       configuration =
-        generate(
-          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
-        )
+        generate(import_configuration(actor: admin, filesystem_path: empty_import_directory!()))
 
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      run = trigger_import_run!(configuration.id, actor: admin)
 
       Oban.drain_queue(queue: :media_imports)
 
-      assert %MediaImport{status: :completed} =
-               get_media_import_by_id!(media_import.id, actor: admin)
+      assert %ImportRun{status: :completed} =
+               get_import_run_by_id!(run.id, actor: admin)
     end
 
     test "background processing completes queued Media Imports for one configuration" do
       admin = generate(administrator())
 
       configuration =
-        generate(
-          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
-        )
+        generate(import_configuration(actor: admin, filesystem_path: empty_import_directory!()))
 
-      first_import = trigger_media_import!(configuration.id, actor: admin)
-      second_import = trigger_media_import!(configuration.id, actor: admin)
+      first_run = trigger_import_run!(configuration.id, actor: admin)
+      second_run = trigger_import_run!(configuration.id, actor: admin)
 
       Oban.drain_queue(queue: :media_imports)
 
-      assert %MediaImport{status: :completed} =
-               get_media_import_by_id!(first_import.id, actor: admin)
+      assert %ImportRun{status: :completed} =
+               get_import_run_by_id!(first_run.id, actor: admin)
 
-      assert %MediaImport{status: :completed} =
-               get_media_import_by_id!(second_import.id, actor: admin)
+      assert %ImportRun{status: :completed} =
+               get_import_run_by_id!(second_run.id, actor: admin)
     end
 
     test "background processing uses the Media Import Configuration snapshot" do
       admin = generate(administrator())
 
       configuration =
-        generate(
-          media_import_configuration(actor: admin, filesystem_path: empty_import_directory!())
-        )
+        generate(import_configuration(actor: admin, filesystem_path: empty_import_directory!()))
 
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      run = trigger_import_run!(configuration.id, actor: admin)
 
-      update_media_import_configuration!(
+      update_import_configuration!(
         configuration,
         %{
           filesystem_path:
@@ -141,8 +135,8 @@ defmodule WatchClub.Media.MediaImportTest do
 
       Oban.drain_queue(queue: :media_imports)
 
-      assert %MediaImport{status: :completed} =
-               get_media_import_by_id!(media_import.id, actor: admin)
+      assert %ImportRun{status: :completed} =
+               get_import_run_by_id!(run.id, actor: admin)
     end
 
     test "background processing records No Match results for unmatched candidate files" do
@@ -153,7 +147,7 @@ defmodule WatchClub.Media.MediaImportTest do
 
       configuration =
         generate(
-          media_import_configuration(
+          import_configuration(
             actor: admin,
             content_type: :book,
             media_type: :ebook,
@@ -161,15 +155,15 @@ defmodule WatchClub.Media.MediaImportTest do
           )
         )
 
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      run = trigger_import_run!(configuration.id, actor: admin)
 
       Oban.drain_queue(queue: :media_imports)
 
-      assert %MediaImport{status: :completed} =
-               get_media_import_by_id!(media_import.id, actor: admin)
+      assert %ImportRun{status: :completed} =
+               get_import_run_by_id!(run.id, actor: admin)
 
       assert [
-               %MediaImportResult{
+               %ImportResult{
                  status: :no_match,
                  path: ^file_path,
                  message: "Could not confidently match file to Content or TV Show Episode",
@@ -181,15 +175,15 @@ defmodule WatchClub.Media.MediaImportTest do
                    "existing_media_id" => nil
                  }
                }
-             ] = media_import_results_for_import!(media_import.id, actor: admin)
+             ] = import_results_for_run!(run.id, actor: admin)
     end
 
     test "only the Instance Administrator can trigger Media Imports" do
       admin = generate(administrator())
       user = generate(user())
-      configuration = generate(media_import_configuration(actor: admin))
+      configuration = generate(import_configuration(actor: admin))
 
-      trigger_media_import(configuration.id, actor: user)
+      trigger_import_run(configuration.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -207,60 +201,60 @@ defmodule WatchClub.Media.MediaImportTest do
     path
   end
 
-  describe "mark_media_import_completed/*" do
+  describe "mark_import_run_completed/*" do
     test "completes a Processing Media Import for the system actor" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = generate(media_import(configuration, status: :processing))
+      configuration = generate(import_configuration(actor: admin))
+      run = generate(import_run(configuration, status: :processing))
 
-      assert %MediaImport{status: :completed} =
-               mark_media_import_completed!(media_import, actor: SystemActor.actor())
+      assert %ImportRun{status: :completed} =
+               mark_import_run_completed!(run, actor: SystemActor.actor())
     end
 
     test "only the system actor can complete Media Imports" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = generate(media_import(configuration, status: :processing))
+      configuration = generate(import_configuration(actor: admin))
+      run = generate(import_run(configuration, status: :processing))
 
-      mark_media_import_completed(media_import, actor: admin)
+      mark_import_run_completed(run, actor: admin)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "mark_media_import_failed/*" do
+  describe "mark_import_run_failed/*" do
     test "fails a Pending Media Import for the system actor" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = generate(media_import(configuration, status: :pending))
+      configuration = generate(import_configuration(actor: admin))
+      run = generate(import_run(configuration, status: :pending))
 
-      assert %MediaImport{status: :failed} =
-               mark_media_import_failed!(media_import, actor: SystemActor.actor())
+      assert %ImportRun{status: :failed} =
+               mark_import_run_failed!(run, actor: SystemActor.actor())
     end
 
     test "only the system actor can fail Media Imports" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = generate(media_import(configuration, status: :pending))
+      configuration = generate(import_configuration(actor: admin))
+      run = generate(import_run(configuration, status: :pending))
 
-      mark_media_import_failed(media_import, actor: admin)
+      mark_import_run_failed(run, actor: admin)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "list_media_imports/*" do
+  describe "list_import_runs/*" do
     test "lists Media Imports for the Instance Administrator" do
       admin = generate(administrator())
-      configuration = generate(media_import_configuration(actor: admin))
-      media_import = trigger_media_import!(configuration.id, actor: admin)
+      configuration = generate(import_configuration(actor: admin))
+      run = trigger_import_run!(configuration.id, actor: admin)
 
-      assert [%MediaImport{id: media_import_id}] = list_media_imports!(actor: admin)
-      assert media_import_id == media_import.id
+      assert [%ImportRun{id: run_id}] = list_import_runs!(actor: admin)
+      assert run_id == run.id
     end
 
     test "only the Instance Administrator can list Media Imports" do
       user = generate(user())
 
-      list_media_imports(actor: user)
+      list_import_runs(actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

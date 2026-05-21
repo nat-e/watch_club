@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.MediaImport do
+defmodule WatchClub.Media.ImportRun do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -8,31 +8,22 @@ defmodule WatchClub.Media.MediaImport do
 
   import Ash.Expr
 
-  alias WatchClub.Media.Changes.{
-    EnqueueMediaImportProcess,
-    ProcessMediaImport,
-    SnapshotMediaImportConfiguration
-  }
-
-  alias WatchClub.Media.{
-    MediaImportConfiguration,
-    MediaImportResult
-  }
+  alias WatchClub.Media.{ImportConfiguration, ImportResult}
+  alias WatchClub.Media.ImportRun.Changes
 
   postgres do
     table "media_imports"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:configuration, on_delete: :nilify, on_update: :update)
+      reference :configuration, on_delete: :nilify, on_update: :update
     end
 
     custom_indexes do
-      index([:configuration_id],
+      index [:configuration_id],
         unique: true,
         name: "media_imports_one_processing_per_configuration_index",
         where: "status = 'processing' AND configuration_id IS NOT NULL"
-      )
     end
   end
 
@@ -44,16 +35,16 @@ defmodule WatchClub.Media.MediaImport do
         where expr(
                 status == :pending and
                   not exists(
-                    WatchClub.Media.MediaImport,
+                    WatchClub.Media.ImportRun,
                     configuration_id == parent(configuration_id) and status == :processing
                   )
               )
 
-        queue(:media_imports)
-        max_attempts(1)
-        on_error(:mark_failed)
-        scheduler_cron(false)
-        worker_module_name(WatchClub.Media.Workers.ProcessMediaImport)
+        queue :media_imports
+        max_attempts 1
+        on_error :mark_failed
+        scheduler_cron false
+        worker_module_name WatchClub.Media.Workers.ProcessMediaImport
       end
     end
   end
@@ -78,8 +69,8 @@ defmodule WatchClub.Media.MediaImport do
       accept [:configuration_id, :refresh_metadata?]
 
       change set_attribute(:triggered_manually?, true)
-      change SnapshotMediaImportConfiguration
-      change EnqueueMediaImportProcess
+      change Changes.SnapshotConfiguration
+      change Changes.EnqueueProcess
     end
 
     update :process do
@@ -87,7 +78,7 @@ defmodule WatchClub.Media.MediaImport do
       accept []
 
       change transition_state(:processing)
-      change ProcessMediaImport
+      change Changes.InvokePipeline
     end
 
     update :mark_completed do
@@ -157,13 +148,14 @@ defmodule WatchClub.Media.MediaImport do
   end
 
   relationships do
-    belongs_to :configuration, MediaImportConfiguration do
+    belongs_to :configuration, ImportConfiguration do
       allow_nil? true
       public? true
     end
 
-    has_many :results, MediaImportResult do
+    has_many :results, ImportResult do
       public? true
+      destination_attribute :media_import_id
       sort media_import_id: :desc, inserted_at: :desc
     end
   end

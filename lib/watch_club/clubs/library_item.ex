@@ -21,11 +21,11 @@ defmodule WatchClub.Clubs.LibraryItem do
 
   postgres do
     table "library_items"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:library, on_delete: :delete, on_update: :update)
-      reference(:added_by, on_delete: :nilify, on_update: :update)
+      reference :library, on_delete: :delete, on_update: :update
+      reference :added_by, on_delete: :nilify, on_update: :update
     end
   end
 

@@ -23,10 +23,10 @@ defmodule WatchClub.Clubs.Library do
 
   postgres do
     table "libraries"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:club, on_delete: :delete, on_update: :update)
+      reference :club, on_delete: :delete, on_update: :update
     end
   end
 

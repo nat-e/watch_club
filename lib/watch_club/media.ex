@@ -12,27 +12,27 @@ defmodule WatchClub.Media do
       define :destroy_media, action: :destroy
     end
 
-    resource WatchClub.Media.MediaImportConfiguration do
-      define :list_media_import_configurations, action: :read
-      define :get_media_import_configuration_by_id, action: :read, get_by: [:id]
-      define :create_filesystem_media_import_configuration, action: :create_filesystem
-      define :update_media_import_configuration, action: :update
-      define :disable_media_import_configuration, action: :disable
-      define :enable_media_import_configuration, action: :enable
-      define :destroy_media_import_configuration, action: :destroy
+    resource WatchClub.Media.ImportConfiguration do
+      define :list_import_configurations, action: :read
+      define :get_import_configuration_by_id, action: :read, get_by: [:id]
+      define :create_filesystem_import_configuration, action: :create_filesystem
+      define :update_import_configuration, action: :update
+      define :disable_import_configuration, action: :disable
+      define :enable_import_configuration, action: :enable
+      define :destroy_import_configuration, action: :destroy
     end
 
-    resource WatchClub.Media.MediaImport do
-      define :list_media_imports, action: :read
-      define :get_media_import_by_id, action: :read, get_by: [:id]
-      define :trigger_media_import, action: :trigger_manually, args: [:configuration_id]
-      define :mark_media_import_completed, action: :mark_completed
-      define :mark_media_import_failed, action: :mark_failed
+    resource WatchClub.Media.ImportRun do
+      define :list_import_runs, action: :read
+      define :get_import_run_by_id, action: :read, get_by: [:id]
+      define :trigger_import_run, action: :trigger_manually, args: [:configuration_id]
+      define :mark_import_run_completed, action: :mark_completed
+      define :mark_import_run_failed, action: :mark_failed
     end
 
-    resource WatchClub.Media.MediaImportResult do
-      define :media_import_results_for_import, action: :by_media_import, args: [:media_import_id]
-      define :create_media_import_result, action: :create
+    resource WatchClub.Media.ImportResult do
+      define :import_results_for_run, action: :by_media_import, args: [:media_import_id]
+      define :create_import_result, action: :create
     end
 
     resource WatchClub.Media.Video

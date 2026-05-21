@@ -4,6 +4,8 @@
     :ash_authentication,
     :ash_authentication_phoenix,
     :ash_phoenix,
+    :ash_oban,
+    :ash_postgres,
     :ash,
     :reactor,
     :ecto,

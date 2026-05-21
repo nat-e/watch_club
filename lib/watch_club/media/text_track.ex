@@ -5,23 +5,22 @@ defmodule WatchClub.Media.TextTrack do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Media.Changes.NormalizePath
   alias WatchClub.Media.Video
+  alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
     table "text_tracks"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:video, on_delete: :delete, on_update: :update)
+      reference :video, on_delete: :delete, on_update: :update
     end
 
     check_constraints do
-      check_constraint([:stream_index, :sidecar_path],
+      check_constraint [:stream_index, :sidecar_path],
         name: "text_tracks_exactly_one_text_track_source_check",
         check: "num_nonnulls(stream_index, sidecar_path) = 1",
         message: "Text Track must be embedded or provided by a sidecar file"
-      )
     end
   end
 

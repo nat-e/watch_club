@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.Changes.NormalizePath do
+defmodule WatchClub.Shared.Changes.NormalizePath do
   use Ash.Resource.Change
 
   @impl true

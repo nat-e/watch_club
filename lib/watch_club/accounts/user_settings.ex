@@ -12,10 +12,10 @@ defmodule WatchClub.Accounts.UserSettings do
 
   postgres do
     table "user_settings"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
     references do
-      reference(:user, on_delete: :delete, on_update: :update)
+      reference :user, on_delete: :delete, on_update: :update
     end
   end
 

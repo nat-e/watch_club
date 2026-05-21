@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.MediaImportResultStatus do
+defmodule WatchClub.Media.ImportResultStatus do
   use Ash.Type.Enum,
     values: [
       created: [description: "A Media was created for the file", label: "Created"],

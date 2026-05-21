@@ -1,17 +1,17 @@
-defmodule WatchClub.Media.Changes.SnapshotMediaImportConfiguration do
+defmodule WatchClub.Media.ImportRun.Changes.SnapshotConfiguration do
   use Ash.Resource.Change
 
-  alias WatchClub.Media.MediaImportConfiguration
+  alias WatchClub.Media.ImportConfiguration
 
   @impl true
   def change(changeset, _opts, _context) do
     configuration_id = Ash.Changeset.get_attribute(changeset, :configuration_id)
 
-    case WatchClub.Media.get_media_import_configuration_by_id(configuration_id,
+    case WatchClub.Media.get_import_configuration_by_id(configuration_id,
            authorize?: false,
            load: [:name]
          ) do
-      {:ok, %MediaImportConfiguration{} = configuration} ->
+      {:ok, %ImportConfiguration{} = configuration} ->
         Ash.Changeset.change_attribute(changeset, :configuration_snapshot, %{
           "id" => configuration.id,
           "name" => configuration.name,

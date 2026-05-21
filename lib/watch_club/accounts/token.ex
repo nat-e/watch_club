@@ -8,7 +8,7 @@ defmodule WatchClub.Accounts.Token do
 
   postgres do
     table "tokens"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
   end
 
   actions do

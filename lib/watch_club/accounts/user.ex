@@ -15,9 +15,9 @@ defmodule WatchClub.Accounts.User do
 
   postgres do
     table "users"
-    repo(WatchClub.Repo)
+    repo WatchClub.Repo
 
-    identity_wheres_to_sql(only_one_administrator: "is_administrator = true")
+    identity_wheres_to_sql only_one_administrator: "is_administrator = true"
   end
 
   authentication do
