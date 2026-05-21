@@ -1,23 +1,22 @@
 defmodule WatchClub.Media.ImportPipeline.Scan do
   @moduledoc false
 
+  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
-  alias WatchClub.Media.ImportConfiguration
 
   defmodule Error do
     defexception [:message]
   end
 
-  def stream(
-        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} =
-          configuration
+  def list_candidate_files(
+        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} = configuration
       ) do
     root_path = Path.expand(root_path)
 
     case File.lstat(root_path, time: :posix) do
       {:ok, %{type: :directory}} ->
-        {:ok, walk(root_path, configuration)}
+        {:ok, walk([root_path], root_path, configuration, [])}
 
       {:ok, %{type: :symlink}} ->
         {:error, "Media Import filesystem location cannot be a symbolic link: #{root_path}"}
@@ -31,48 +30,44 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
     end
   end
 
-  def stream(%ImportConfiguration{source_type: source_type}) do
+  def list_candidate_files(%ImportConfiguration{source_type: source_type}) do
     {:error, "Unsupported Media Import Source Type: #{inspect(source_type)}"}
   end
 
-  defp walk(root_path, configuration) do
-    Stream.resource(
-      fn -> [root_path] end,
-      fn
-        [] ->
-          {:halt, []}
+  defp walk([], _root_path, _configuration, candidates), do: Enum.reverse(candidates)
 
-        [path | rest] ->
-          path
-          |> Path.expand()
-          |> next_path(root_path, rest, configuration)
-      end,
-      fn _state -> :ok end
-    )
+  defp walk([path | rest], root_path, configuration, candidates) do
+    expanded = Path.expand(path)
+
+    case inspect_path(expanded, root_path, configuration) do
+      :drop -> walk(rest, root_path, configuration, candidates)
+      {:enqueue, children} -> walk(children ++ rest, root_path, configuration, candidates)
+      {:emit, candidate} -> walk(rest, root_path, configuration, [candidate | candidates])
+    end
   end
 
-  defp next_path(path, root_path, rest, configuration) do
+  defp inspect_path(path, root_path, configuration) do
     case File.lstat(path, time: :posix) do
       {:ok, %{type: :symlink}} ->
-        {[], rest}
+        :drop
 
       {:ok, %{type: :directory} = stat} ->
         if IgnoreRules.ignored?(path, root_path, stat.type) do
-          {[], rest}
+          :drop
         else
-          {[], children(path) ++ rest}
+          {:enqueue, children(path)}
         end
 
       {:ok, %{type: :regular} = stat} ->
         if IgnoreRules.ignored?(path, root_path, stat.type) or
              not MediaTypeFilter.accepted?(path, configuration) do
-          {[], rest}
+          :drop
         else
-          {[Candidate.new(path, root_path, stat)], rest}
+          {:emit, Candidate.new(path, root_path, stat)}
         end
 
       {:ok, _stat} ->
-        {[], rest}
+        :drop
 
       {:error, reason} ->
         raise Error, message: "Cannot inspect filesystem path #{path}: #{inspect(reason)}"

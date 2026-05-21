@@ -41,7 +41,7 @@ defmodule WatchClub.Media.ImportPipeline do
   @candidate_timeout_ms :timer.seconds(30)
 
   def process_import(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
-    with {:ok, candidates} <- Scan.stream(configuration),
+    with {:ok, candidates} <- Scan.list_candidate_files(configuration),
          {:ok, to_import, skipped} <- load_existing_media(candidates, configuration, import_run) do
       imported =
         to_import
