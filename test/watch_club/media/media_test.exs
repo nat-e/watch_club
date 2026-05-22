@@ -15,11 +15,12 @@ defmodule WatchClub.Media.MediaTest do
     VideoTrack
   }
 
+  alias WatchClub.SystemActor
+
   require Ash.Query
 
   describe "create_video/*" do
     test "creates video media with tracks" do
-      admin = generate(administrator())
       movie = seed_movie()
       path = "tmp/media/../movies/star-wars.mkv"
       sidecar_path = "tmp/media/../movies/star-wars.en.srt"
@@ -121,7 +122,7 @@ defmodule WatchClub.Media.MediaTest do
                      ]
                    }
                  },
-                 actor: admin,
+                 actor: SystemActor.actor(),
                  load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
                )
 
@@ -132,7 +133,6 @@ defmodule WatchClub.Media.MediaTest do
     end
 
     test "creates video media for a TV Show Episode" do
-      admin = generate(administrator())
       tv_show_episode = seed_tv_show_episode()
 
       assert %Media{
@@ -145,7 +145,7 @@ defmodule WatchClub.Media.MediaTest do
                }
              } =
                create_video!(video_input("tmp/tv-show-episode.mkv", tv_show_episode),
-                 actor: admin,
+                 actor: SystemActor.actor(),
                  load: [:video]
                )
 
@@ -154,20 +154,19 @@ defmodule WatchClub.Media.MediaTest do
     end
 
     test "rejects duplicate normalized paths" do
-      admin = generate(administrator())
       movie = seed_movie()
       path = "tmp/media/../movies/duplicate.mkv"
 
-      create_video!(video_input(path, movie), actor: admin)
+      create_video!(video_input(path, movie), actor: SystemActor.actor())
 
-      create_video(video_input(Path.expand(path), movie), actor: admin)
+      create_video(video_input(Path.expand(path), movie), actor: SystemActor.actor())
       |> assert_has_error(Ash.Error.Invalid, fn
         %Ash.Error.Changes.InvalidAttribute{field: :path} -> true
         _ -> false
       end)
     end
 
-    test "only the Instance Administrator can create video media" do
+    test "forbids non-system actors from creating video media" do
       user = generate(user())
       movie = seed_movie()
 
@@ -178,7 +177,6 @@ defmodule WatchClub.Media.MediaTest do
 
   describe "create_ebook/*" do
     test "creates ebook media" do
-      admin = generate(administrator())
       book = seed_book()
       path = "tmp/books/../books/book.epub"
 
@@ -189,7 +187,7 @@ defmodule WatchClub.Media.MediaTest do
                ebook: %Ebook{id: ebook_id, book_id: book_id}
              } =
                create_ebook!(%{path: path, ebook: %{book_id: book.id}},
-                 actor: admin,
+                 actor: SystemActor.actor(),
                  load: [:ebook]
                )
 
@@ -201,7 +199,6 @@ defmodule WatchClub.Media.MediaTest do
 
   describe "create_audiobook/*" do
     test "creates audiobook media" do
-      admin = generate(administrator())
       book = seed_book()
       path = "tmp/audiobooks/../audiobooks/book.m4b"
 
@@ -212,7 +209,7 @@ defmodule WatchClub.Media.MediaTest do
                audiobook: %Audiobook{id: audiobook_id, book_id: book_id}
              } =
                create_audiobook!(%{path: path, audiobook: %{book_id: book.id}},
-                 actor: admin,
+                 actor: SystemActor.actor(),
                  load: [:audiobook]
                )
 
@@ -223,34 +220,26 @@ defmodule WatchClub.Media.MediaTest do
   end
 
   describe "list_media/*" do
-    test "lists media for the Instance Administrator" do
-      admin = generate(administrator())
+    test "lists media for any authenticated actor" do
+      user = generate(user())
       movie = seed_movie()
-      media = create_video!(video_input("tmp/list-media.mkv", movie), actor: admin)
+      media = create_video!(video_input("tmp/list-media.mkv", movie), actor: SystemActor.actor())
 
       assert [%Media{id: media_id, video: %Video{id: video_id}}] =
-               list_media!(actor: admin, load: [:video])
+               list_media!(actor: user, load: [:video])
 
       assert media_id == media.id
       assert video_id == media.id
-    end
-
-    test "only the Instance Administrator can list media" do
-      user = generate(user())
-
-      list_media(actor: user)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
   describe "destroy_media/*" do
     test "destroys media with its concrete media and track details" do
-      admin = generate(administrator())
       movie = seed_movie()
 
       media =
         create_video!(video_input("tmp/destroy-media.mkv", movie),
-          actor: admin,
+          actor: SystemActor.actor(),
           load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
         )
 
@@ -258,7 +247,7 @@ defmodule WatchClub.Media.MediaTest do
       audio_track_id = media.video.audio_tracks |> List.first() |> Map.fetch!(:id)
       text_track_id = media.video.text_tracks |> List.first() |> Map.fetch!(:id)
 
-      assert :ok = destroy_media!(media, actor: admin)
+      assert :ok = destroy_media!(media, actor: SystemActor.actor())
 
       refute Media
              |> Ash.Query.filter(id == ^media.id)

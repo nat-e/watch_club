@@ -2,92 +2,77 @@ defmodule WatchClubWeb.PlayerController do
   use WatchClubWeb, :controller
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Playback.PlaybackSessionManager
+  alias WatchClub.Playback
 
   plug :require_current_user
 
-  def master_playlist(conn, %{"session_id" => session_id}) do
+  def master_playlist(conn, %{"stream_id" => stream_id}) do
     conn
     |> put_resp_header("cache-control", "no-store")
     |> send_text_result(
-      PlaybackSessionManager.master_playlist(conn.assigns.current_user.id, session_id),
+      Playback.get_master_playlist(stream_id, actor: conn.assigns.current_user),
       "application/vnd.apple.mpegurl"
     )
   end
 
-  def video_playlist(conn, %{"session_id" => session_id, "variant" => variant}) do
+  def video_playlist(conn, %{"stream_id" => stream_id, "variant" => variant}) do
     conn
     |> put_resp_header("cache-control", "no-store")
     |> send_text_result(
-      PlaybackSessionManager.video_playlist(conn.assigns.current_user.id, session_id, variant),
+      Playback.get_video_playlist(stream_id, variant, actor: conn.assigns.current_user),
       "application/vnd.apple.mpegurl"
     )
   end
 
-  def audio_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
+  def audio_playlist(conn, %{"stream_id" => stream_id, "track_id" => track_id}) do
     conn
     |> put_resp_header("cache-control", "no-store")
     |> send_text_result(
-      PlaybackSessionManager.audio_playlist(conn.assigns.current_user.id, session_id, track_id),
+      Playback.get_audio_playlist(stream_id, track_id, actor: conn.assigns.current_user),
       "application/vnd.apple.mpegurl"
     )
   end
 
-  def subtitle_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
+  def subtitle_playlist(conn, %{"stream_id" => stream_id, "track_id" => track_id}) do
     conn
     |> put_resp_header("cache-control", "no-store")
     |> send_text_result(
-      PlaybackSessionManager.subtitle_playlist(conn.assigns.current_user.id, session_id, track_id),
+      Playback.get_subtitle_playlist(stream_id, track_id, actor: conn.assigns.current_user),
       "application/vnd.apple.mpegurl"
     )
   end
 
   def video_segment(conn, %{
-        "session_id" => session_id,
+        "stream_id" => stream_id,
         "variant" => variant,
         "segment" => segment
       }) do
     conn
     |> put_resp_header("cache-control", "public, max-age=3600")
     |> send_file_result(
-      PlaybackSessionManager.video_segment(
-        conn.assigns.current_user.id,
-        session_id,
-        variant,
-        segment
-      ),
+      Playback.get_video_segment(stream_id, variant, segment, actor: conn.assigns.current_user),
       "video/mp2t"
     )
   end
 
   def audio_segment(conn, %{
-        "session_id" => session_id,
+        "stream_id" => stream_id,
         "track_id" => track_id,
         "segment" => segment
       }) do
     conn
     |> put_resp_header("cache-control", "public, max-age=3600")
     |> send_file_result(
-      PlaybackSessionManager.audio_segment(
-        conn.assigns.current_user.id,
-        session_id,
-        track_id,
-        segment
-      ),
+      Playback.get_audio_segment(stream_id, track_id, segment, actor: conn.assigns.current_user),
       "video/mp2t"
     )
   end
 
-  def subtitle_file(conn, %{"session_id" => session_id, "track_id" => track_id, "file" => file}) do
+  def subtitle_file(conn, %{"stream_id" => stream_id, "track_id" => track_id, "file" => file}) do
     conn
     |> put_resp_header("cache-control", "public, max-age=3600")
     |> send_file_result(
-      PlaybackSessionManager.subtitle_file(
-        conn.assigns.current_user.id,
-        session_id,
-        track_id,
-        file
-      ),
+      Playback.get_subtitle_file(stream_id, track_id, file, actor: conn.assigns.current_user),
       "text/vtt"
     )
   end
