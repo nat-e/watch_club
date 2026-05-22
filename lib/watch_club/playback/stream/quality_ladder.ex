@@ -1,4 +1,4 @@
-defmodule WatchClub.Playback.VideoQualityLadder do
+defmodule WatchClub.Playback.Stream.QualityLadder do
   @moduledoc """
   Builds the list of HLS variants offered for a source video.
 
@@ -40,8 +40,12 @@ defmodule WatchClub.Playback.VideoQualityLadder do
       |> min(@max_original_bitrate)
 
     [
-      %{id: "original", label: "Original (#{source_height}p)", height: source_height,
-        video_bitrate: original_bitrate},
+      %{
+        id: "original",
+        label: "Original (#{source_height}p)",
+        height: source_height,
+        video_bitrate: original_bitrate
+      },
       %{id: "720p", label: "720p", height: 720, video_bitrate: 2_800_000},
       %{id: "480p", label: "480p", height: 480, video_bitrate: 1_400_000},
       %{id: "360p", label: "360p", height: 360, video_bitrate: 800_000}

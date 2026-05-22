@@ -1,10 +1,16 @@
-defmodule WatchClub.Playback.FfmpegTranscoder do
+defmodule WatchClub.Media.Ffmpeg do
   @moduledoc """
-  Small ffmpeg wrapper used by the `/play` prototype.
+  ffmpeg CLI wrapper.
 
-  The player asks for virtual HLS playlists. Individual audio, video, and
-  subtitle files are generated on demand by ffmpeg and cached on disk by the
-  Playback Session server process.
+  Currently exposes a small set of HLS-shaped transcodes (mpegts segments
+  and webvtt subtitle files); the entry points encode the ffmpeg flag
+  choices so callers don't have to know them. Add new entry points here
+  when new ffmpeg use cases appear.
+
+  Each transcode writes to a `.tmp` sibling first, then atomically renames
+  into the requested output path on success. Concurrent requests for the
+  same path are therefore safe: at worst they duplicate CPU work, but the
+  final file is never seen partially written.
   """
 
   require Logger
@@ -23,6 +29,7 @@ defmodule WatchClub.Playback.FfmpegTranscoder do
 
   defp run_ffmpeg(%{type: :video} = job) do
     File.mkdir_p!(Path.dirname(job.output_path))
+    tmp_path = tmp_path(job.output_path)
 
     filters = "scale=#{job.width}:#{job.height},setsar=1,format=yuv420p"
 
@@ -67,14 +74,15 @@ defmodule WatchClub.Playback.FfmpegTranscoder do
       "0",
       "-f",
       "mpegts",
-      job.output_path
+      tmp_path
     ]
 
-    run_command(args, job.output_path)
+    run_command(args, tmp_path, job.output_path)
   end
 
   defp run_ffmpeg(%{type: :audio} = job) do
     File.mkdir_p!(Path.dirname(job.output_path))
+    tmp_path = tmp_path(job.output_path)
 
     args = [
       "-hide_banner",
@@ -107,14 +115,15 @@ defmodule WatchClub.Playback.FfmpegTranscoder do
       "0",
       "-f",
       "mpegts",
-      job.output_path
+      tmp_path
     ]
 
-    run_command(args, job.output_path)
+    run_command(args, tmp_path, job.output_path)
   end
 
   defp run_ffmpeg(%{type: :subtitle} = job) do
     File.mkdir_p!(Path.dirname(job.output_path))
+    tmp_path = tmp_path(job.output_path)
 
     args = [
       "-hide_banner",
@@ -127,26 +136,33 @@ defmodule WatchClub.Playback.FfmpegTranscoder do
       "0:#{job.stream_index}",
       "-c:s",
       "webvtt",
-      job.output_path
+      tmp_path
     ]
 
-    run_command(args, job.output_path)
+    run_command(args, tmp_path, job.output_path)
   end
 
-  defp run_command(args, output_path) do
+  defp run_command(args, tmp_path, output_path) do
     Logger.debug("Running HLS ffmpeg job: ffmpeg #{Enum.join(args, " ")}")
 
     case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
       {_output, 0} ->
+        File.rename!(tmp_path, output_path)
         {:ok, output_path}
 
       {output, status} ->
-        File.rm(output_path)
+        File.rm(tmp_path)
         {:error, "ffmpeg exited with #{status}: #{String.trim(output)}"}
     end
   rescue
     exception ->
+      File.rm(tmp_path)
       {:error, Exception.message(exception)}
+  end
+
+  defp tmp_path(output_path) do
+    suffix = :erlang.unique_integer([:positive])
+    "#{output_path}.#{suffix}.tmp"
   end
 
   defp seconds(value) when is_integer(value), do: Integer.to_string(value)

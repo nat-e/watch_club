@@ -45,9 +45,14 @@ defmodule WatchClub.Media.Audiobook do
       forbid_if always()
     end
 
-    policy action([:read, :create]) do
-      description "Only the Instance Administrator can manage Audiobooks directly"
-      authorize_if actor_attribute_equals(:administrator?, true)
+    policy action_type(:read) do
+      description "Any authenticated actor can read Audiobooks"
+      authorize_if always()
+    end
+
+    policy action_type([:create, :update, :destroy]) do
+      description "Only the system actor can write Audiobooks"
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

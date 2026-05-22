@@ -77,15 +77,14 @@ defmodule WatchClub.Media.Media do
       forbid_if always()
     end
 
-    policy action([:read, :under_path_prefix]) do
-      description "The Instance Administrator and system actor can read Media"
-      authorize_if actor_attribute_equals(:administrator?, true)
-      authorize_if actor_attribute_equals(:system?, true)
+    policy action_type(:read) do
+      description "Any authenticated actor can read Media"
+      authorize_if always()
     end
 
-    policy action([:destroy, :create_video, :create_ebook, :create_audiobook]) do
-      description "Only the Instance Administrator can manage Media directly"
-      authorize_if actor_attribute_equals(:administrator?, true)
+    policy action_type([:create, :update, :destroy]) do
+      description "Only the system actor can write Media"
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

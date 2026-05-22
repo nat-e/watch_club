@@ -42,9 +42,14 @@ defmodule WatchClub.Media.TextTrack do
       forbid_if always()
     end
 
-    policy action([:read, :create]) do
-      description "Only the Instance Administrator can manage Text Tracks directly"
-      authorize_if actor_attribute_equals(:administrator?, true)
+    policy action_type(:read) do
+      description "Any authenticated actor can read Text Tracks"
+      authorize_if always()
+    end
+
+    policy action_type([:create, :update, :destroy]) do
+      description "Only the system actor can write Text Tracks"
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

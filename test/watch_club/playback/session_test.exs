@@ -1,4 +1,4 @@
-defmodule WatchClub.Playback.PlaybackSessionTest do
+defmodule WatchClub.Playback.SessionTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Accounts.User
@@ -6,16 +6,16 @@ defmodule WatchClub.Playback.PlaybackSessionTest do
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.Media.{Media, Video}
   alias WatchClub.Playback
-  alias WatchClub.Playback.PlaybackSession
+  alias WatchClub.Playback.Session
   alias WatchClub.SystemActor
 
-  describe "start_playback_session/*" do
+  describe "start_session/*" do
     test "creates a Playback Session for a selected Media" do
       user = generate(user())
       media = accessible_media(user, "tmp/playback-session-start.mkv")
 
-      assert %PlaybackSession{started_by_id: user_id, media_id: media_id} =
-               Playback.start_playback_session!(media.id, actor: user)
+      assert %Session{started_by_id: user_id, media_id: media_id} =
+               Playback.start_session!(media.id, actor: user)
 
       assert user_id == user.id
       assert media_id == media.id
@@ -25,7 +25,7 @@ defmodule WatchClub.Playback.PlaybackSessionTest do
       user = generate(user())
       orphan_media = orphan_media("tmp/playback-session-orphan.mkv")
 
-      Playback.start_playback_session(orphan_media.id, actor: user)
+      Playback.start_session(orphan_media.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
 
@@ -33,26 +33,24 @@ defmodule WatchClub.Playback.PlaybackSessionTest do
       admin = generate(administrator())
       orphan_media = orphan_media("tmp/playback-session-admin-start.mkv")
 
-      assert %PlaybackSession{} =
-               Playback.start_playback_session!(orphan_media.id, actor: admin)
+      assert %Session{} = Playback.start_session!(orphan_media.id, actor: admin)
     end
 
     test "forbids the system actor" do
       orphan_media = orphan_media("tmp/playback-session-system-start.mkv")
 
-      Playback.start_playback_session(orphan_media.id, actor: SystemActor.actor())
+      Playback.start_session(orphan_media.id, actor: SystemActor.actor())
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "get_playback_session_by_id/*" do
+  describe "get_session_by_id/*" do
     test "returns the actor's own Playback Session" do
       user = generate(user())
       media = accessible_media(user, "tmp/playback-session-own.mkv")
-      session = Playback.start_playback_session!(media.id, actor: user)
+      session = Playback.start_session!(media.id, actor: user)
 
-      assert %PlaybackSession{id: session_id} =
-               Playback.get_playback_session_by_id!(session.id, actor: user)
+      assert %Session{id: session_id} = Playback.get_session_by_id!(session.id, actor: user)
 
       assert session_id == session.id
     end
@@ -61,38 +59,37 @@ defmodule WatchClub.Playback.PlaybackSessionTest do
       user = generate(user())
       admin = generate(administrator())
       media = accessible_media(user, "tmp/playback-session-admin.mkv")
-      session = Playback.start_playback_session!(media.id, actor: user)
+      session = Playback.start_session!(media.id, actor: user)
 
-      assert %PlaybackSession{id: session_id} =
-               Playback.get_playback_session_by_id!(session.id, actor: admin)
+      assert %Session{id: session_id} = Playback.get_session_by_id!(session.id, actor: admin)
 
       assert session_id == session.id
     end
   end
 
-  describe "get_playback_session_for_playback/*" do
+  describe "get_session_for_playback/*" do
     test "loads the selected Media for the actor's own Playback Session" do
       user = generate(user())
       media = accessible_media(user, "tmp/playback-session-for-playback.mkv")
-      session = Playback.start_playback_session!(media.id, actor: user)
+      session = Playback.start_session!(media.id, actor: user)
 
-      assert %PlaybackSession{media: %Media{id: media_id}} =
-               Playback.get_playback_session_for_playback!(session.id, actor: user)
+      assert %Session{media: %Media{id: media_id}} =
+               Playback.get_session_for_playback!(session.id, actor: user)
 
       assert media_id == media.id
     end
   end
 
-  describe "heartbeat_playback_session/*" do
+  describe "heartbeat_session/*" do
     test "updates the last active time" do
       user = generate(user())
       media = accessible_media(user, "tmp/playback-session-heartbeat.mkv")
-      session = Playback.start_playback_session!(media.id, actor: user)
+      session = Playback.start_session!(media.id, actor: user)
 
       Process.sleep(2)
 
-      assert %PlaybackSession{last_active_at: last_active_at} =
-               Playback.heartbeat_playback_session!(session, actor: user)
+      assert %Session{last_active_at: last_active_at} =
+               Playback.heartbeat_session!(session, actor: user)
 
       assert DateTime.after?(last_active_at, session.last_active_at)
     end
@@ -101,9 +98,9 @@ defmodule WatchClub.Playback.PlaybackSessionTest do
       user = generate(user())
       other_user = generate(user())
       media = accessible_media(user, "tmp/playback-session-other-user.mkv")
-      session = Playback.start_playback_session!(media.id, actor: user)
+      session = Playback.start_session!(media.id, actor: user)
 
-      Playback.heartbeat_playback_session(session, actor: other_user)
+      Playback.heartbeat_session(session, actor: other_user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

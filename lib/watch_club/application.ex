@@ -21,7 +21,6 @@ defmodule WatchClub.Application do
       {DNSCluster, query: Application.get_env(:watch_club, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WatchClub.PubSub},
       {AshAuthentication.Supervisor, [otp_app: :watch_club]},
-      WatchClub.Playback.Supervisor,
       # Start to serve requests, typically the last entry
       WatchClubWeb.Endpoint
     ]

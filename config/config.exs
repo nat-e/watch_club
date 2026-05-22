@@ -64,14 +64,12 @@ config :watch_club, Oban,
   plugins: [
     {Oban.Plugins.Cron,
      crontab: [
-       {"*/15 * * * *", WatchClub.Playback.Workers.CleanupPlaybackSessionCache}
+       {"*/15 * * * *", WatchClub.Playback.Workers.PruneSegmentCache}
      ]}
   ],
   queues: [media_imports: 1, playback_cache_maintenance: 1]
 
 config :ash_oban, :actor_persister, WatchClub.AshObanActorPersister
-
-config :watch_club, WatchClub.Playback, stale_session_age_seconds: 6 * 60 * 60
 
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,

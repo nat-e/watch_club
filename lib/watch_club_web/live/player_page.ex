@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.PlayerPage do
   use WatchClubWeb, :live_view
 
-  alias WatchClub.Playback.PlaybackSessionManager
+  alias WatchClub.Playback
 
   require Logger
 
@@ -328,6 +328,8 @@ defmodule WatchClubWeb.PlayerPage do
       socket
       |> assign(:page_title, "WatchClub Player")
       |> assign(:player_session, nil)
+      |> assign(:playback_session, nil)
+      |> assign(:playback_stream, nil)
       |> assign(:player_error, false)
       |> assign(:playback_error, false)
 
@@ -351,8 +353,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   @impl true
   def handle_event("player_heartbeat", _params, socket) do
-    with %{id: session_id} <- socket.assigns.player_session do
-      PlaybackSessionManager.heartbeat(socket.assigns.current_user.id, session_id)
+    with %{} = session <- socket.assigns.playback_session do
+      Playback.heartbeat_session(session, actor: socket.assigns.current_user)
     end
 
     {:noreply, socket}
@@ -360,42 +362,62 @@ defmodule WatchClubWeb.PlayerPage do
 
   @impl true
   def handle_event("player_stop", _params, socket) do
-    {:reply, stop_player_session(socket.assigns.current_user, socket.assigns.player_session),
+    {:reply, stop_player_session(socket.assigns.current_user, socket.assigns.playback_stream),
      socket}
   end
 
   @impl true
   def terminate(_reason, socket) do
-    stop_player_session(socket.assigns[:current_user], socket.assigns[:player_session])
+    stop_player_session(socket.assigns[:current_user], socket.assigns[:playback_stream])
     :ok
   end
 
   defp start_player_session(socket, media_id) do
-    case PlaybackSessionManager.start_session(socket.assigns.current_user, media_id) do
-      {:ok, session} ->
-        socket =
-          socket
-          |> assign(:player_session, session)
-          |> assign(:player_error, false)
-          |> assign(:playback_error, false)
+    actor = socket.assigns.current_user
 
-        {:ok, socket}
+    with {:ok, session} <- Playback.start_session(media_id, actor: actor),
+         {:ok, stream} <- Playback.start_stream(session.id, actor: actor) do
+      socket =
+        socket
+        |> assign(:playback_session, session)
+        |> assign(:playback_stream, stream)
+        |> assign(:player_session, player_session(stream))
+        |> assign(:player_error, false)
+        |> assign(:playback_error, false)
 
+      {:ok, socket}
+    else
       {:error, reason} ->
         Logger.warning("Could not start Playback Session: #{inspect(reason)}")
         {:ok, assign(socket, :player_error, true)}
     end
   end
 
-  defp stop_player_session(%{id: user_id}, %{id: session_id}) do
-    case PlaybackSessionManager.stop(user_id, session_id) do
+  defp player_session(stream) do
+    %{
+      id: stream.id,
+      title: stream.title,
+      duration: stream.duration,
+      segment_duration: stream.segment_duration,
+      segment_count: stream.segment_count,
+      video: stream.video,
+      qualities: stream.qualities,
+      audio_tracks: stream.audio_tracks,
+      subtitle_tracks: stream.subtitle_tracks,
+      master_url: "/hls/#{stream.id}/master.m3u8"
+    }
+  end
+
+  defp stop_player_session(actor, %{id: stream_id}) when not is_nil(actor) do
+    case Playback.close_stream(stream_id, actor: actor) do
       :ok -> %{ok: true}
-      {:error, :not_found} -> %{ok: true}
+      {:ok, _} -> %{ok: true}
+      {:error, %Ash.Error.Forbidden{}} -> %{ok: true}
       {:error, reason} -> %{ok: false, error: inspect(reason)}
     end
   end
 
-  defp stop_player_session(_user, _session), do: %{ok: true}
+  defp stop_player_session(_actor, _stream), do: %{ok: true}
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)

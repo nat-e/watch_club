@@ -1,6 +1,6 @@
-defmodule WatchClub.Playback.HlsPlaylistGenerator do
+defmodule WatchClub.Playback.Stream.Playlist do
   @moduledoc """
-  Serializes the HLS master and per-track media playlists for a Playback Session.
+  Serializes the HLS master and per-track media playlists for a Stream.
 
   Pure module — callers pass the probed metadata, the quality ladder, the
   segment duration, and the segment count. Nothing here touches disk or
@@ -12,13 +12,18 @@ defmodule WatchClub.Playback.HlsPlaylistGenerator do
   alias ExM3U8.MultivariantPlaylist
   alias ExM3U8.Tags.{Discontinuity, Media, Segment, Stream}
 
-  alias WatchClub.Media.MediaProbe
-  alias WatchClub.Playback.VideoQualityLadder.Quality
+  alias WatchClub.Playback.Stream.QualityLadder.Quality
 
   @hls_video_codec "avc1.4d401f"
   @hls_audio_codec "mp4a.40.2"
 
-  @spec master(MediaProbe.Metadata.t(), [Quality.t()]) :: iodata()
+  @type metadata :: %{
+          video: %{frame_rate: float()},
+          audio_tracks: [map()],
+          subtitle_tracks: [map()]
+        }
+
+  @spec master(metadata(), [Quality.t()]) :: iodata()
   def master(metadata, qualities) do
     subtitle_group = if metadata.subtitle_tracks == [], do: nil, else: "subs"
 
@@ -70,7 +75,7 @@ defmodule WatchClub.Playback.HlsPlaylistGenerator do
     |> ExM3U8.serialize()
   end
 
-  @spec subtitle(MediaProbe.SubtitleTrack.t(), float()) :: iodata()
+  @spec subtitle(map(), float()) :: iodata()
   def subtitle(track, duration) do
     target_duration = duration |> Float.ceil() |> trunc()
 

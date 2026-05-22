@@ -1,4 +1,4 @@
-defmodule WatchClub.Playback.PlaybackSession do
+defmodule WatchClub.Playback.Session do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Playback,
@@ -31,7 +31,7 @@ defmodule WatchClub.Playback.PlaybackSession do
           Ash.load(
             records,
             [media: [video: [:video_tracks, :audio_tracks, :text_tracks]]],
-            authorize?: false
+            actor: WatchClub.SystemActor.actor()
           )
         end)
       end
