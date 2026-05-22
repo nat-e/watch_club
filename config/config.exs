@@ -50,14 +50,28 @@ config :spark,
 config :watch_club,
   ecto_repos: [WatchClub.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [WatchClub.Accounts, WatchClub.Clubs, WatchClub.Contents, WatchClub.Media]
+  ash_domains: [
+    WatchClub.Accounts,
+    WatchClub.Clubs,
+    WatchClub.Contents,
+    WatchClub.Media,
+    WatchClub.Playback
+  ]
 
 config :watch_club, Oban,
   engine: Oban.Engines.Basic,
   repo: WatchClub.Repo,
-  queues: [media_imports: 1]
+  plugins: [
+    {Oban.Plugins.Cron,
+     crontab: [
+       {"*/15 * * * *", WatchClub.Playback.Workers.CleanupPlaybackSessionCache}
+     ]}
+  ],
+  queues: [media_imports: 1, playback_cache_maintenance: 1]
 
 config :ash_oban, :actor_persister, WatchClub.AshObanActorPersister
+
+config :watch_club, WatchClub.Playback, stale_session_age_seconds: 6 * 60 * 60
 
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,

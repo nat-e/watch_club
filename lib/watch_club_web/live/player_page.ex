@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.PlayerPage do
   use WatchClubWeb, :live_view
 
-  alias WatchClub.Playback.HlsSession
+  alias WatchClub.Playback.PlaybackSessionManager
 
   require Logger
 
@@ -323,7 +323,7 @@ defmodule WatchClubWeb.PlayerPage do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(%{"media_id" => media_id}, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "WatchClub Player")
@@ -333,7 +333,7 @@ defmodule WatchClubWeb.PlayerPage do
 
     if connected?(socket) do
       Process.flag(:trap_exit, true)
-      start_player_session(socket)
+      start_player_session(socket, media_id)
     else
       {:ok, socket}
     end
@@ -350,18 +350,28 @@ defmodule WatchClubWeb.PlayerPage do
   end
 
   @impl true
+  def handle_event("player_heartbeat", _params, socket) do
+    with %{id: session_id} <- socket.assigns.player_session do
+      PlaybackSessionManager.heartbeat(socket.assigns.current_user.id, session_id)
+    end
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("player_stop", _params, socket) do
-    {:reply, stop_player_session(socket.assigns.player_session), socket}
+    {:reply, stop_player_session(socket.assigns.current_user, socket.assigns.player_session),
+     socket}
   end
 
   @impl true
   def terminate(_reason, socket) do
-    stop_player_session(socket.assigns[:player_session])
+    stop_player_session(socket.assigns[:current_user], socket.assigns[:player_session])
     :ok
   end
 
-  defp start_player_session(socket) do
-    case HlsSession.start_session() do
+  defp start_player_session(socket, media_id) do
+    case PlaybackSessionManager.start_session(socket.assigns.current_user, media_id) do
       {:ok, session} ->
         socket =
           socket
@@ -372,20 +382,20 @@ defmodule WatchClubWeb.PlayerPage do
         {:ok, socket}
 
       {:error, reason} ->
-        Logger.warning("Could not start HLS player session: #{inspect(reason)}")
+        Logger.warning("Could not start Playback Session: #{inspect(reason)}")
         {:ok, assign(socket, :player_error, true)}
     end
   end
 
-  defp stop_player_session(%{id: session_id}) do
-    case HlsSession.stop(session_id) do
+  defp stop_player_session(%{id: user_id}, %{id: session_id}) do
+    case PlaybackSessionManager.stop(user_id, session_id) do
       :ok -> %{ok: true}
       {:error, :not_found} -> %{ok: true}
       {:error, reason} -> %{ok: false, error: inspect(reason)}
     end
   end
 
-  defp stop_player_session(_session), do: %{ok: true}
+  defp stop_player_session(_user, _session), do: %{ok: true}
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)

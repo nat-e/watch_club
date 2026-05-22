@@ -6,7 +6,6 @@ This is a web application written using the following tech stack:
 - Tailwind CSS for styling
 
 Rules:
-- Do not modify any source code without being prompted to explicitely. Your role is to explain and provide guidance
 - Always read source code and docs before answering. Use `mix usage_rules.docs` and `mix usage_rules.search_docs` for searching docs
 - When asked about a bug or issue, always debug and verify your hypothesis, do not guess
 
@@ -14,15 +13,6 @@ Rules:
 
 - We use Gettext for internationalization. The app is currently translated in English (default) and French
 - Comment messages with `# AI-translated (Claude)` when translating in the .po files
-
-
-## Brainstorming
-
-- Start by interviewing the user to understand their needs and requirements
-- Focus on code architecture and design, not implementation details
-- When multiple viable approaches are available and there is no clear project guidelines to decide, ask the user
-- Use the `/plannotator` extension to present the design to the user and iterate on feedback
-- When asked to brainstorm UI/UX, create a temporary storybook page to illustrate your design ideas.
 
 ## Coding style
 

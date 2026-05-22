@@ -7,6 +7,8 @@
     :ash_oban,
     :ash_postgres,
     :ash,
+    :ash_oban,
+    :ash_postgres,
     :reactor,
     :ecto,
     :ecto_sql,
