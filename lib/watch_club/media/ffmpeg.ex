@@ -15,6 +15,50 @@ defmodule WatchClub.Media.Ffmpeg do
 
   require Logger
 
+  @doc """
+  Inspects a media file with `ffprobe` and returns the decoded JSON metadata
+  (streams + format). Returns `{:error, message}` if `ffprobe` is missing,
+  exits non-zero, or returns invalid JSON.
+  """
+  def probe(path) when is_binary(path) do
+    args = [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-print_format",
+      "json",
+      "-show_format",
+      "-show_streams",
+      path
+    ]
+
+    with {:ok, ffprobe} <- find_executable("ffprobe"),
+         {:ok, json} <- run_probe(ffprobe, args) do
+      decode_probe_json(json)
+    end
+  end
+
+  defp run_probe(ffprobe, args) do
+    case System.cmd(ffprobe, args, stderr_to_stdout: true) do
+      {json, 0} -> {:ok, json}
+      {output, status} -> {:error, "ffprobe exited with #{status}: #{String.trim(output)}"}
+    end
+  end
+
+  defp decode_probe_json(json) do
+    case Jason.decode(json) do
+      {:ok, metadata} -> {:ok, metadata}
+      {:error, error} -> {:error, "ffprobe returned invalid JSON: #{Exception.message(error)}"}
+    end
+  end
+
+  defp find_executable(name) do
+    case System.find_executable(name) do
+      nil -> {:error, "#{name} executable was not found"}
+      path -> {:ok, path}
+    end
+  end
+
   def transcode_video_segment(job) do
     run_ffmpeg(Map.put(job, :type, :video))
   end
