@@ -2,10 +2,13 @@ defmodule WatchClub.Integrations.Tmdb do
   import WatchClub.Integrations.Tmdb.Client
 
   alias WatchClub.Integrations.Tmdb.{
+    FindByExternalIdResponse,
     MovieDetailsResponse,
+    MovieSearchResponse,
     MovieSearchResult,
     PersonSearchResult,
     TvDetailsResponse,
+    TvSearchResponse,
     TvSearchResult
   }
 
@@ -59,6 +62,54 @@ defmodule WatchClub.Integrations.Tmdb do
            ]
          ) do
       {:ok, body} -> {:ok, MultiSearchResponse.from_api(body)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec search_movie(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+          {:ok, MovieSearchResponse.t()} | {:error, term()}
+  def search_movie(query, opts \\ []) do
+    case request(
+           url: "/search/movie",
+           params:
+             [
+               query: query,
+               page: opts[:page] || 1,
+               include_adult: false,
+               language: format_language(opts[:locale])
+             ] ++ if(opts[:year], do: [primary_release_year: opts[:year]], else: [])
+         ) do
+      {:ok, body} -> {:ok, MovieSearchResponse.from_api(body)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec search_tv(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+          {:ok, TvSearchResponse.t()} | {:error, term()}
+  def search_tv(query, opts \\ []) do
+    case request(
+           url: "/search/tv",
+           params:
+             [
+               query: query,
+               page: opts[:page] || 1,
+               include_adult: false,
+               language: format_language(opts[:locale])
+             ] ++ if(opts[:year], do: [first_air_date_year: opts[:year]], else: [])
+         ) do
+      {:ok, body} -> {:ok, TvSearchResponse.from_api(body)}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @spec find_by_external_id(String.t(), :imdb_id | :tvdb_id) ::
+          {:ok, FindByExternalIdResponse.t()} | {:error, term()}
+  def find_by_external_id(external_id, source) when source in [:imdb_id, :tvdb_id] do
+    case request(
+           url: "/find/#{external_id}",
+           params: [external_source: Atom.to_string(source)]
+         ) do
+      {:ok, body} -> {:ok, FindByExternalIdResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end

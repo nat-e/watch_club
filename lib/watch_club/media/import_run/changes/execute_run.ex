@@ -45,26 +45,24 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
     |> Enum.map(&result_input(&1, run))
   end
 
-  defp result_input(%Candidate{outcome: outcome} = candidate, run) do
-    %{
-      status: outcome.status,
-      path: candidate.path,
-      message: outcome.message,
-      metadata: result_metadata(candidate, run)
-    }
-  end
-
-  defp result_metadata(%Candidate{} = candidate, %ImportRun{} = run) do
+  defp result_input(%Candidate{} = candidate, %ImportRun{} = run) do
     configuration = run.snapshot_configuration
+    match = candidate.match
+    existing_media = candidate.existing_media
 
     %{
-      "content_type" => Atom.to_string(configuration.content_type),
-      "media_type" => Atom.to_string(configuration.media_type),
-      "relative_path" => candidate.relative_path,
-      "existing_media_id" => existing_media_id(candidate)
+      status: candidate.outcome.status,
+      path: candidate.path,
+      media_id: match && match.media_id,
+      message: candidate.outcome.message,
+      metadata: %{
+        "content_type" => Atom.to_string(configuration.content_type),
+        "media_type" => Atom.to_string(configuration.media_type),
+        "relative_path" => candidate.relative_path,
+        "existing_media_id" => existing_media && existing_media.id,
+        "content_id" => match && match.content_id,
+        "content_action" => match && Atom.to_string(match.content_action)
+      }
     }
   end
-
-  defp existing_media_id(%Candidate{existing_media: %{id: id}}), do: id
-  defp existing_media_id(%Candidate{}), do: nil
 end

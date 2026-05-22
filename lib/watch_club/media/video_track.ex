@@ -17,7 +17,7 @@ defmodule WatchClub.Media.VideoTrack do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy, update: [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate]]
 
     create :create do
       primary? true

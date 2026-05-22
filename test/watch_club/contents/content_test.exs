@@ -119,6 +119,11 @@ defmodule WatchClub.Contents.ContentTest do
       create_movie("13", %{library_ids: [library.id]}, actor: non_member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+
+    test "system actor can create a movie without selecting libraries" do
+      assert %Content{type: :movie, external_id: "11"} =
+               create_movie!("11", actor: WatchClub.SystemActor.actor())
+    end
   end
 
   describe "create_tv_show/*" do
@@ -184,6 +189,81 @@ defmodule WatchClub.Contents.ContentTest do
       non_member = generate(user())
 
       create_tv_show("43", %{library_ids: [library.id]}, actor: non_member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "system actor can create a TV show without selecting libraries" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, tv_details_fixture())
+      end)
+
+      assert %Content{type: :tv_show, external_id: "42"} =
+               create_tv_show!("42", actor: WatchClub.SystemActor.actor())
+    end
+  end
+
+  describe "refresh_tv_show/*" do
+    test "mirrors TMDB: inserts missing episodes, preserves existing ones, destroys vanished ones" do
+      actor = generate(user(locale: :en_US))
+      system = WatchClub.SystemActor.actor()
+
+      # Initial create with the standard fixture (S1: 3 eps, S2: 2 eps).
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, tv_details_fixture())
+      end)
+
+      content = create_tv_show!("42", actor: actor)
+
+      original_episodes =
+        TvShowEpisode
+        |> Ash.Query.filter(tv_show_id == ^content.id)
+        |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
+        |> Ash.read!(authorize?: false)
+
+      assert length(original_episodes) == 5
+
+      # Capture the id of S1E1 so we can verify it survives the refresh.
+      s1e1_id =
+        Enum.find(original_episodes, &(&1.season_number == 1 and &1.episode_number == 1)).id
+
+      # Refresh returns: S1 grows to 4 eps, S2 shrinks to 1 ep.
+      refreshed_fixture =
+        tv_details_fixture()
+        |> Map.put("seasons", [
+          %{"season_number" => 0, "episode_count" => 1},
+          %{"season_number" => 1, "episode_count" => 4},
+          %{"season_number" => 2, "episode_count" => 1}
+        ])
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, refreshed_fixture)
+      end)
+
+      assert %Content{type: :tv_show} = refresh_tv_show!(content, 42, actor: system)
+
+      assert [
+               %TvShowEpisode{season_number: 1, episode_number: 1, id: ^s1e1_id},
+               %TvShowEpisode{season_number: 1, episode_number: 2},
+               %TvShowEpisode{season_number: 1, episode_number: 3},
+               %TvShowEpisode{season_number: 1, episode_number: 4},
+               %TvShowEpisode{season_number: 2, episode_number: 1}
+             ] =
+               TvShowEpisode
+               |> Ash.Query.filter(tv_show_id == ^content.id)
+               |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
+               |> Ash.read!(authorize?: false)
+    end
+
+    test "forbids non-system actors" do
+      actor = generate(user(locale: :en_US))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, tv_details_fixture())
+      end)
+
+      content = create_tv_show!("42", actor: actor)
+
+      refresh_tv_show(content, 42, actor: actor)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

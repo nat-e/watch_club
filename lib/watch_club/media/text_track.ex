@@ -25,7 +25,7 @@ defmodule WatchClub.Media.TextTrack do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy, update: [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?]]
 
     create :create do
       primary? true

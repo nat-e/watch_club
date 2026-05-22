@@ -5,6 +5,8 @@ defmodule WatchClub.Media.ImportRunTest do
 
   alias WatchClub.Media.{ImportResult, ImportRun}
 
+  require Ash.Query
+
   describe "start_import_run/*" do
     test "creates a Pending Media Import with a configuration snapshot and schedules the run" do
       admin = generate(administrator())
@@ -165,12 +167,15 @@ defmodule WatchClub.Media.ImportRunTest do
                %ImportResult{
                  status: :no_match,
                  path: ^file_path,
-                 message: "Could not confidently match file to Content or TV Show Episode",
+                 media_id: nil,
+                 message: "Book matching not yet implemented",
                  metadata: %{
                    "content_type" => "book",
                    "media_type" => "ebook",
                    "relative_path" => "WatchClub Guide.pdf",
-                   "existing_media_id" => nil
+                   "existing_media_id" => nil,
+                   "content_id" => nil,
+                   "content_action" => nil
                  }
                }
              ] = import_results_for_run!(run.id, actor: admin)
@@ -183,6 +188,65 @@ defmodule WatchClub.Media.ImportRunTest do
 
       start_import_run(configuration.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "background processing creates Media for a matched movie candidate" do
+      admin = generate(administrator())
+      directory = empty_import_directory!()
+      file_path = Path.join(directory, "Star Wars (1977) [tmdbid-11].mkv")
+      write_tiny_mkv!(file_path)
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, tmdb_fixture("movie_details_11"))
+      end)
+
+      Req.Test.set_req_test_to_shared(self())
+
+      configuration =
+        generate(
+          import_configuration(
+            actor: admin,
+            content_type: :movie,
+            media_type: :video,
+            filesystem_path: directory
+          )
+        )
+
+      run = start_import_run!(configuration.id, actor: admin)
+      run_id = run.id
+
+      Oban.drain_queue(queue: :media_imports)
+
+      assert %ImportRun{status: :completed} = get_import_run_by_id!(run.id, actor: admin)
+
+      assert [
+               %ImportResult{
+                 status: :created,
+                 path: ^file_path,
+                 media_id: media_id,
+                 metadata: %{
+                   "content_type" => "movie",
+                   "media_type" => "video",
+                   "content_action" => "created"
+                 }
+               }
+             ] = import_results_for_run!(run.id, actor: admin)
+
+      assert is_binary(media_id)
+
+      media =
+        WatchClub.Media.Media
+        |> Ash.Query.filter(id == ^media_id)
+        |> Ash.Query.load(:video)
+        |> Ash.read_one!(authorize?: false)
+
+      assert %WatchClub.Media.Media{
+               type: :video,
+               last_successful_media_import_id: ^run_id,
+               video: %WatchClub.Media.Video{movie_id: movie_id}
+             } = media
+
+      assert is_binary(movie_id)
     end
   end
 
@@ -197,6 +261,36 @@ defmodule WatchClub.Media.ImportRunTest do
     on_exit(fn -> File.rm_rf!(path) end)
 
     path
+  end
+
+  # Generates a 1-second silent black video with one h264 video track and one aac
+  # audio track so `Ffmpeg.probe/1` returns the structure MatchContent needs.
+  defp write_tiny_mkv!(path) do
+    args = [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-y",
+      "-f",
+      "lavfi",
+      "-i",
+      "color=c=black:s=64x64:d=1:r=24",
+      "-f",
+      "lavfi",
+      "-i",
+      "anullsrc=channel_layout=stereo:sample_rate=48000",
+      "-shortest",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "ultrafast",
+      "-c:a",
+      "aac",
+      path
+    ]
+
+    {_, 0} = System.cmd("ffmpeg", args, stderr_to_stdout: true)
+    :ok
   end
 
   describe "list_import_runs/*" do

@@ -17,7 +17,7 @@ defmodule WatchClub.Media.AudioTrack do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy, update: [:stream_index, :codec, :language, :title, :channels, :default?]]
 
     create :create do
       primary? true

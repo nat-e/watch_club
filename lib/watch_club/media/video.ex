@@ -39,7 +39,7 @@ defmodule WatchClub.Media.Video do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy]
 
     create :create do
       primary? true
@@ -63,6 +63,31 @@ defmodule WatchClub.Media.Video do
       change manage_relationship(:video_tracks, type: :create, authorize?: false)
       change manage_relationship(:audio_tracks, type: :create, authorize?: false)
       change manage_relationship(:text_tracks, type: :create, authorize?: false)
+    end
+
+    update :update do
+      primary? true
+      require_atomic? false
+      accept [:movie_id, :tv_show_episode_id, :duration_seconds, :container, :bit_rate]
+
+      argument :video_tracks, {:array, :map} do
+        allow_nil? false
+        constraints min_length: 1
+      end
+
+      argument :audio_tracks, {:array, :map} do
+        allow_nil? false
+        default []
+      end
+
+      argument :text_tracks, {:array, :map} do
+        allow_nil? false
+        default []
+      end
+
+      change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
+      change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
+      change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
     end
   end
 

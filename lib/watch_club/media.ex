@@ -10,6 +10,8 @@ defmodule WatchClub.Media do
       define :create_video
       define :create_ebook
       define :create_audiobook
+      define :update_video
+      define :assign_last_successful_import
       define :destroy_media, action: :destroy
     end
 

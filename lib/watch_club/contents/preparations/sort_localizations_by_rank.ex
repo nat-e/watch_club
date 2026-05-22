@@ -7,8 +7,7 @@ defmodule WatchClub.Contents.Preparations.SortLocalizationsByRank do
   def prepare(query, _opts, %{actor: %{settings: %{locale: locale}}}) do
     [preferred_iso_639_1, preferred_iso_3166_1] = UserLocale.split(locale)
 
-    query
-    |> Ash.Query.default_sort(
+    Ash.Query.default_sort(query,
       rank:
         {%{
            preferred_iso_639_1: preferred_iso_639_1,
@@ -17,5 +16,9 @@ defmodule WatchClub.Contents.Preparations.SortLocalizationsByRank do
       iso_639_1: :asc,
       iso_3166_1: :asc
     )
+  end
+
+  def prepare(query, _opts, _context) do
+    Ash.Query.default_sort(query, iso_639_1: :asc, iso_3166_1: :asc)
   end
 end

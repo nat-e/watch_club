@@ -18,6 +18,7 @@ defmodule WatchClub.Contents do
       define :search_content, action: :search
       define :create_movie, args: [:tmdb_id]
       define :create_tv_show, args: [:tmdb_id]
+      define :refresh_tv_show, action: :refresh_tv_show, args: [:tmdb_id]
 
       define :set_club_libraries, action: :set_libraries
     end

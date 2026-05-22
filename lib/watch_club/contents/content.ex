@@ -64,6 +64,15 @@ defmodule WatchClub.Contents.Content do
       change load([:implementation])
     end
 
+    update :refresh_tv_show do
+      description "Re-fetches TMDB details for an existing TV Show Content, mirroring TMDB exactly: localizations and episodes are inserted, updated, or destroyed to match the current TMDB payload."
+      require_atomic? false
+      argument :tmdb_id, :integer, allow_nil?: false
+
+      change WatchClub.Contents.Changes.CreateOrUpdateTvShow, only_when_valid?: true
+      change load([:implementation])
+    end
+
     action :search, {:array, :struct} do
       constraints items: [instance_of: ContentView]
 
@@ -117,13 +126,19 @@ defmodule WatchClub.Contents.Content do
     end
 
     policy action([:create_movie, :create_tv_show]) do
-      description "Authenticated users can create catalog content and only select libraries they can access"
+      description "Authenticated users can create catalog content and only select libraries they can access; the system actor can create content during Media Imports"
+      authorize_if actor_attribute_equals(:system?, true)
       authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
     end
 
     policy action(:set_libraries) do
       description "Users can only set content libraries they can access"
       authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
+    end
+
+    policy action(:refresh_tv_show) do
+      description "Only the system actor can refresh TV Show Content during Media Imports"
+      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

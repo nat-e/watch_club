@@ -18,7 +18,7 @@ defmodule WatchClub.Contents.TvShow do
   end
 
   actions do
-    defaults [:read, :destroy, update: []]
+    defaults [:read, :destroy]
 
     create :create do
       primary? true
@@ -27,8 +27,30 @@ defmodule WatchClub.Contents.TvShow do
       argument :localizations, {:array, :map}, allow_nil?: false, default: []
       argument :episodes, {:array, :map}, allow_nil?: false, default: []
 
-      change manage_relationship(:localizations, type: :direct_control)
-      change manage_relationship(:episodes, type: :direct_control)
+      change manage_relationship(:localizations, type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_tv_show]
+             )
+
+      change manage_relationship(:episodes, type: :direct_control,
+               use_identities: [:_primary_key, :unique_position_per_tv_show]
+             )
+    end
+
+    update :update do
+      primary? true
+      require_atomic? false
+      accept [:original_name, :tmdb_id, :tvdb_id]
+
+      argument :localizations, {:array, :map}, allow_nil?: false, default: []
+      argument :episodes, {:array, :map}, allow_nil?: false, default: []
+
+      change manage_relationship(:localizations, type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_tv_show]
+             )
+
+      change manage_relationship(:episodes, type: :direct_control,
+               use_identities: [:_primary_key, :unique_position_per_tv_show]
+             )
     end
 
     action :details, :struct do

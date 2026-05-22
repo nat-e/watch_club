@@ -8,11 +8,11 @@ defmodule WatchClub.Media.ImportPipeline do
 
       ExtractIdentity   → describe what the file represents
       ExtractStructure  → describe how the file is shaped (sidecars included for videos)
+      MatchContent      → resolve identity to Content, persist Media, finalize outcome
 
   Stages return `{:ok, candidate}` to continue or `{:halt, candidate, reason, message}`
-  to short-circuit. On success the pipeline finalizes via `Candidate.set_outcome/1`;
-  on halt it finalizes via `Candidate.set_halted_outcome/3`. Stages do not construct
-  outcomes themselves.
+  to short-circuit. The final stage (`MatchContent`) sets the candidate's outcome
+  itself; on halt the pipeline finalizes via `Candidate.set_halted_outcome/3`.
 
   Before per-candidate processing starts the pipeline loads every existing
   `Media` under the configured filesystem path in one query and partitions
@@ -31,6 +31,7 @@ defmodule WatchClub.Media.ImportPipeline do
     Candidate,
     ExtractIdentity,
     ExtractStructure,
+    MatchContent,
     Scan
   }
 
@@ -97,8 +98,9 @@ defmodule WatchClub.Media.ImportPipeline do
 
   defp process_candidate(%Candidate{} = candidate, %ImportRun{} = import_run) do
     with {:ok, candidate} <- ExtractIdentity.apply(candidate, import_run),
-         {:ok, candidate} <- ExtractStructure.apply(candidate, import_run) do
-      Candidate.set_outcome(candidate)
+         {:ok, candidate} <- ExtractStructure.apply(candidate, import_run),
+         {:ok, candidate} <- MatchContent.apply(candidate, import_run) do
+      candidate
     else
       {:halt, candidate, reason, message} ->
         Candidate.set_halted_outcome(candidate, reason, message)

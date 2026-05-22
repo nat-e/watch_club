@@ -9,6 +9,8 @@ defmodule WatchClub.Media.MediaTest do
     AudioTrack,
     Audiobook,
     Ebook,
+    ImportConfiguration,
+    ImportRun,
     Media,
     TextTrack,
     Video,
@@ -233,6 +235,101 @@ defmodule WatchClub.Media.MediaTest do
     end
   end
 
+  describe "update_video/*" do
+    test "updates the concrete Video in place and rebuilds tracks" do
+      movie = seed_movie()
+
+      media =
+        create_video!(video_input("tmp/media/refresh.mkv", movie),
+          actor: SystemActor.actor(),
+          load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+        )
+
+      original_media_id = media.id
+      original_video_id = media.video.id
+      original_path = media.path
+      old_track_id = media.video.video_tracks |> List.first() |> Map.fetch!(:id)
+
+      assert %Media{video: %Video{video_tracks: [%VideoTrack{codec: "av1"}]}} =
+               updated_media =
+               update_video!(
+                 media,
+                 %{
+                   video: %{
+                     movie_id: movie.id,
+                     duration_seconds: 7000.0,
+                     container: "matroska",
+                     bit_rate: 5_000_000,
+                     video_tracks: [
+                       %{stream_index: 0, codec: "av1", width: 3840, height: 2160}
+                     ],
+                     audio_tracks: [
+                       %{
+                         stream_index: 1,
+                         codec: "opus",
+                         language: "eng",
+                         channels: 2,
+                         default?: true
+                       }
+                     ],
+                     text_tracks: []
+                   }
+                 },
+                 actor: SystemActor.actor(),
+                 load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+               )
+
+      assert updated_media.id == original_media_id
+      assert updated_media.path == original_path
+      assert updated_media.video.id == original_video_id
+
+      refute VideoTrack
+             |> Ash.Query.filter(id == ^old_track_id)
+             |> Ash.exists?(authorize?: false)
+    end
+
+    test "forbids non-system actors" do
+      user = generate(user())
+      movie = seed_movie()
+
+      media = create_video!(video_input("tmp/forbid-update.mkv", movie), actor: SystemActor.actor())
+
+      update_video(media, %{video: %{movie_id: movie.id, video_tracks: []}}, actor: user)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "assign_last_successful_import/*" do
+    test "sets the last successful Media Import for a Media" do
+      movie = seed_movie()
+      media = create_video!(video_input("tmp/assign.mkv", movie), actor: SystemActor.actor())
+      run = seed_import_run()
+
+      assert %Media{last_successful_media_import_id: run_id} =
+               assign_last_successful_import!(
+                 media,
+                 %{last_successful_media_import_id: run.id},
+                 actor: SystemActor.actor()
+               )
+
+      assert run_id == run.id
+    end
+
+    test "forbids non-system actors" do
+      user = generate(user())
+      movie = seed_movie()
+      media = create_video!(video_input("tmp/forbid-assign.mkv", movie), actor: SystemActor.actor())
+      run = seed_import_run()
+
+      assign_last_successful_import(
+        media,
+        %{last_successful_media_import_id: run.id},
+        actor: user
+      )
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "destroy_media/*" do
     test "destroys media with its concrete media and track details" do
       movie = seed_movie()
@@ -342,6 +439,24 @@ defmodule WatchClub.Media.MediaTest do
       })
 
     Ash.Seed.seed!(Book, %{id: content.id, title: "Book #{unique}", hardcover_id: unique})
+  end
+
+  defp seed_import_run do
+    config =
+      Ash.Seed.seed!(ImportConfiguration, %{
+        source_type: :filesystem,
+        content_type: :movie,
+        media_type: :video,
+        filesystem_path: "tmp/media-imports/#{System.unique_integer([:positive])}"
+      })
+
+    Ash.Seed.seed!(ImportRun, %{
+      configuration_id: config.id,
+      status: :pending,
+      refresh_metadata?: false,
+      triggered_manually?: true,
+      configuration_snapshot: %{"id" => config.id}
+    })
   end
 
   defp seed_tv_show_episode do

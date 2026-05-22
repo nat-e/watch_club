@@ -10,24 +10,25 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     * after `FilterExisting`:   `existing_media`
     * after `ExtractIdentity`:  `identity`
     * after `ExtractStructure`: `media_structure`
+    * after `MatchContent`:     `match` (set only when the candidate resolved to a `Content`)
     * after finalization:       `outcome` (or `nil` for skipped candidates)
 
   Stages do not construct outcomes themselves — they return
   `{:ok, candidate}` or `{:halt, candidate, reason, message}`. The pipeline
-  calls `set_outcome/1` on success or `set_halted_outcome/3` on halt to set
-  the terminal `Outcome`.
+  finalizes candidates via the dedicated `set_*_outcome/*` helpers.
   """
 
-  alias WatchClub.Media.ImportPipeline.Candidate.{FileInfo, Outcome}
+  alias WatchClub.Media.ImportPipeline.Candidate.{FileInfo, MatchInfo, Outcome}
 
   @type t :: %__MODULE__{
           path: String.t() | nil,
           relative_path: String.t() | nil,
           extension: String.t() | nil,
           file_info: FileInfo.t() | nil,
-          existing_media: %{id: term(), type: atom()} | nil,
+          existing_media: %{id: Ash.UUIDv7.t(), type: WatchClub.Media.MediaType.t()} | nil,
           identity: __MODULE__.Identity.t() | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
+          match: MatchInfo.t() | nil,
           outcome: Outcome.t() | nil
         }
 
@@ -39,6 +40,7 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     :existing_media,
     :identity,
     :media_structure,
+    :match,
     :outcome
   ]
 
@@ -181,12 +183,32 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
   defmodule Outcome do
     @moduledoc """
     The terminal verdict for a candidate. `status` maps to
-    `WatchClub.Media.ImportResultStatus`.
+    `WatchClub.Media.ImportResultStatus`, plus `:skipped` for candidates the
+    pipeline finalizes without writing a result row.
     """
 
-    @type t :: %__MODULE__{status: atom(), message: String.t() | nil}
+    @type status :: WatchClub.Media.ImportResultStatus.t() | :skipped
+    @type t :: %__MODULE__{status: status(), message: String.t() | nil}
 
     defstruct [:status, :message]
+  end
+
+  defmodule MatchInfo do
+    @moduledoc """
+    Set by `MatchContent` after a candidate has been resolved to a `Content`
+    and a `Media` row has been created or updated. Used by `ExecuteRun` to
+    populate the import result's metadata.
+    """
+
+    @type t :: %__MODULE__{
+            media_id: Ash.UUIDv7.t(),
+            content_id: Ash.UUIDv7.t(),
+            attachment:
+              {:movie, Ash.UUIDv7.t()} | {:episode, Ash.UUIDv7.t()},
+            content_action: :created | :found | :refreshed
+          }
+
+    defstruct [:media_id, :content_id, :attachment, :content_action]
   end
 
   @doc """
@@ -203,23 +225,30 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
   end
 
   @doc """
-  Finalizes a candidate that made it through every stage successfully.
+  Finalizes a candidate whose file became a new `Media`.
   """
-  def set_outcome(%__MODULE__{} = candidate) do
-    %{
-      candidate
-      | outcome: %Outcome{
-          status: :no_match,
-          message: "Could not confidently match file to Content or TV Show Episode"
-        }
-    }
-  end
+  def set_created_outcome(%__MODULE__{} = candidate),
+    do: %{candidate | outcome: %Outcome{status: :created}}
+
+  @doc """
+  Finalizes a candidate whose existing `Media` was rematched and re-probed
+  (Refresh Metadata on).
+  """
+  def set_updated_outcome(%__MODULE__{} = candidate),
+    do: %{candidate | outcome: %Outcome{status: :updated}}
+
+  @doc """
+  Finalizes a candidate that could not be confidently matched to `Content` or
+  a `TV Show Episode`.
+  """
+  def set_no_match_outcome(%__MODULE__{} = candidate, message),
+    do: %{candidate | outcome: %Outcome{status: :no_match, message: message}}
 
   @doc """
   Finalizes a candidate that halted mid-pipeline with the given status and
   message.
   """
   def set_halted_outcome(%__MODULE__{} = candidate, status, message)
-      when status in [:skipped, :failed],
+      when status in [:skipped, :failed, :no_match],
       do: %{candidate | outcome: %Outcome{status: status, message: message}}
 end
