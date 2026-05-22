@@ -7,46 +7,19 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
   alias WatchClub.Media.ImportRun
 
   @impl true
-  def change(changeset, _opts, context) do
-    Ash.Changeset.after_transaction(changeset, after_transaction(context.actor))
-  end
-
-  defp after_transaction(actor) do
-    fn changeset, result ->
-      case result do
-        {:ok, %ImportRun{} = run} ->
-          run_pipeline_and_complete(run, actor)
-
-        {:error, error} ->
-          changeset.data
-          |> fail(actor)
-          |> case do
-            {:ok, _run} -> {:error, error}
-            {:error, fail_error} -> {:error, fail_error}
-          end
-      end
-    end
-  end
-
-  defp run_pipeline_and_complete(run, actor) do
-    try do
-      with {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, actor: actor),
+  def change(changeset, _opts, %{actor: actor}) do
+    Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
+      with {:ok, %ImportRun{} = run} <- result,
+           {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, actor: actor),
            {:ok, candidates} <- ImportPipeline.process_import(loaded_run),
-           :ok <- record_outcomes(candidates, loaded_run, actor),
-           {:ok, completed_run} <- complete(loaded_run, actor) do
-        {:ok, completed_run}
-      else
-        {:error, error} -> fail_after_error(run, actor, error)
+           :ok <- record_outcomes(candidates, loaded_run, actor) do
+        MediaDomain.complete_import_run(loaded_run, actor: actor)
       end
-    rescue
-      error -> fail_after_error(run, actor, error)
-    end
+    end)
   end
 
   defp record_outcomes(candidates, run, actor) do
-    candidates
-    |> Enum.each(&record_outcome(&1, run, actor))
-
+    Enum.each(candidates, &record_outcome(&1, run, actor))
     :ok
   end
 
@@ -80,21 +53,4 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
 
   defp existing_media_id(%Candidate{existing_media: %{id: id}}), do: id
   defp existing_media_id(%Candidate{}), do: nil
-
-  defp fail_after_error(run, actor, error) do
-    run
-    |> fail(actor)
-    |> case do
-      {:ok, _run} -> {:error, error}
-      {:error, fail_error} -> {:error, fail_error}
-    end
-  end
-
-  defp complete(run, actor) do
-    MediaDomain.complete_import_run(run, actor: actor)
-  end
-
-  defp fail(run, actor) do
-    MediaDomain.fail_import_run(run, actor: actor)
-  end
 end

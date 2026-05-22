@@ -66,8 +66,6 @@ defmodule WatchClub.Media.ImportPipeline do
 
       {:ok, Stream.concat(skipped, imported)}
     end
-  rescue
-    error in [Scan.Error] -> {:error, error.message}
   end
 
   defp load_existing_media(candidates, configuration, import_run) do
