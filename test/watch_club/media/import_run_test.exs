@@ -4,7 +4,6 @@ defmodule WatchClub.Media.ImportRunTest do
   import WatchClub.Media
 
   alias WatchClub.Media.{ImportResult, ImportRun}
-  alias WatchClub.SystemActor
 
   describe "start_import_run/*" do
     test "creates a Pending Media Import with a configuration snapshot and schedules the run" do
@@ -198,46 +197,6 @@ defmodule WatchClub.Media.ImportRunTest do
     on_exit(fn -> File.rm_rf!(path) end)
 
     path
-  end
-
-  describe "complete_import_run/*" do
-    test "completes a Processing Media Import for the system actor" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin))
-      run = generate(import_run(configuration, status: :processing))
-
-      assert %ImportRun{status: :completed} =
-               complete_import_run!(run, actor: SystemActor.actor())
-    end
-
-    test "only the system actor can complete Media Imports" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin))
-      run = generate(import_run(configuration, status: :processing))
-
-      complete_import_run(run, actor: admin)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-  end
-
-  describe "fail_import_run/*" do
-    test "fails a Pending Media Import for the system actor" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin))
-      run = generate(import_run(configuration, status: :pending))
-
-      assert %ImportRun{status: :failed} =
-               fail_import_run!(run, actor: SystemActor.actor())
-    end
-
-    test "only the system actor can fail Media Imports" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin))
-      run = generate(import_run(configuration, status: :pending))
-
-      fail_import_run(run, actor: admin)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
   end
 
   describe "list_import_runs/*" do

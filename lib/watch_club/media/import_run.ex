@@ -81,10 +81,20 @@ defmodule WatchClub.Media.ImportRun do
       change Changes.ExecuteRun
     end
 
+    # Status transition and result rows commit atomically in one transaction.
+    #
+    # `bulk?: true` produces a single multi-row INSERT; per row we send 5
+    # parameters, so this caps the input at ~13k results before hitting
+    # Postgres' 65k parameter limit. Acceptable for realistic library sizes;
+    # if we ever exceed this we'd need to chunk the inserts manually inside
+    # the action's transaction.
     update :complete do
+      require_atomic? false
       accept []
+      argument :results, {:array, :map}, allow_nil?: false, default: []
 
       change transition_state(:completed)
+      change manage_relationship(:results, type: :create, authorize?: false, bulk?: true)
     end
 
     update :fail do

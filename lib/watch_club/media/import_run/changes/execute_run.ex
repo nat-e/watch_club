@@ -1,7 +1,24 @@
 defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
+  @moduledoc """
+  The work half of `ImportRun`'s `:run` action.
+
+  The action transitions the run to `:processing` inside the database
+  transaction (via `transition_state(:processing)` declared in the action's
+  `changes` block) and then registers this change as an `after_transaction`
+  callback. Once the transaction commits we:
+
+    1. Load `:snapshot_configuration`.
+    2. Run the import pipeline.
+    3. Hand the per-candidate outcomes to the `:complete` action, which
+       writes the `ImportResult` rows and transitions the run to
+       `:completed` atomically in a single transaction.
+
+  If anything fails or raises, the error propagates to AshOban, which runs
+  the trigger's `on_error: :fail` action to mark the run failed.
+  """
+
   use Ash.Resource.Change
 
-  alias WatchClub.Media, as: MediaDomain
   alias WatchClub.Media.ImportPipeline
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportRun
@@ -11,33 +28,30 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, %ImportRun{} = run} <- result,
            {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, actor: actor),
-           {:ok, candidates} <- ImportPipeline.process_import(loaded_run),
-           :ok <- record_outcomes(candidates, loaded_run, actor) do
-        MediaDomain.complete_import_run(loaded_run, actor: actor)
+           {:ok, candidates} <- ImportPipeline.process_import(loaded_run) do
+        Ash.update(loaded_run, %{results: result_inputs(candidates, loaded_run)},
+          action: :complete,
+          actor: actor
+        )
       end
     end)
   end
 
-  defp record_outcomes(candidates, run, actor) do
-    Enum.each(candidates, &record_outcome(&1, run, actor))
-    :ok
-  end
-
   # Skipped candidates do not produce a result row (per CONTEXT.md: existing
   # Media re-encountered without refresh writes nothing).
-  defp record_outcome(%Candidate{outcome: %{status: :skipped}}, _run, _actor), do: :ok
+  defp result_inputs(candidates, run) do
+    candidates
+    |> Stream.reject(fn %Candidate{outcome: %{status: status}} -> status == :skipped end)
+    |> Enum.map(&result_input(&1, run))
+  end
 
-  defp record_outcome(%Candidate{outcome: outcome} = candidate, run, actor) do
-    MediaDomain.create_import_result(
-      %{
-        media_import_id: run.id,
-        status: outcome.status,
-        path: candidate.path,
-        message: outcome.message,
-        metadata: result_metadata(candidate, run)
-      },
-      actor: actor
-    )
+  defp result_input(%Candidate{outcome: outcome} = candidate, run) do
+    %{
+      status: outcome.status,
+      path: candidate.path,
+      message: outcome.message,
+      metadata: result_metadata(candidate, run)
+    }
   end
 
   defp result_metadata(%Candidate{} = candidate, %ImportRun{} = run) do
