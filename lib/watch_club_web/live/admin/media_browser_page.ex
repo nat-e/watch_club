@@ -72,7 +72,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
            load: drawer_load_tree()
          ) do
       {:ok, media} ->
-        state = %{socket.assigns.state | drawer: State.Drawer.open(socket.assigns.state.drawer, media)}
+        state = %{
+          socket.assigns.state
+          | drawer: State.Drawer.open(socket.assigns.state.drawer, media)
+        }
+
         {:noreply, assign(socket, :state, state)}
 
       {:error, _reason} ->
@@ -133,7 +137,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     >
       <.settings_header
         title="Media Browser"
-        description="View and manage all the media on this instance."
+        description="View and manage all medias on this instance."
       />
 
       <Toolbar.toolbar state={@state} />
@@ -142,14 +146,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         "grid gap-cluster",
         @state.drawer.open? && "lg:grid-cols-[minmax(0,1fr)_28rem]"
       ]}>
-        <.card surface="default" padding="none" class="overflow-hidden">
-          <Table.render
-            :if={!State.Stream.empty?(@state.stream)}
-            streams={@streams}
-            selected_id={selected_id(@state)}
-          />
-          <.empty_state :if={State.Stream.empty?(@state.stream)} state={@state} />
-        </.card>
+        <.empty_state :if={State.Stream.empty?(@state.stream)} state={@state} />
+
+        <Table.render
+          :if={!State.Stream.empty?(@state.stream)}
+          streams={@streams}
+          selected_id={selected_id(@state)}
+        />
 
         <DetailDrawer.render :if={@state.drawer.open?} media={@state.drawer.media} />
       </div>
@@ -172,8 +175,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
   defp no_media_empty_state(assigns) do
     ~H"""
-    <.empty border={false}>
-      <:icon><Lucideicons.disc /></:icon>
+    <.empty>
+      <:icon><Lucideicons.search /></:icon>
       <:title>You don't have any media yet</:title>
       <:description>
         Configure media imports or automations to add Media to your instance.
@@ -188,10 +191,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
   defp filtered_empty_state(assigns) do
     ~H"""
-    <.empty border={false}>
-      <:icon><Lucideicons.disc /></:icon>
-      <:title>No matching Media</:title>
-      <:description>Try removing some filters or clearing the search.</:description>
+    <.empty>
+      <:icon><Lucideicons.search_x /></:icon>
+      <:title>No Media match your filters</:title>
+      <:description>Try clearing your filters or searching for something else</:description>
+      <.button id="empty-state-import-media" patch={~p"/admin/media"} variant="accent">
+        <:icon><Lucideicons.x /></:icon>
+        Clear filters
+      </.button>
     </.empty>
     """
   end
