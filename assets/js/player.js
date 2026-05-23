@@ -57,7 +57,6 @@ const createPlayerStorage = () => {
 
 const Player = {
 	mounted() {
-		this.session = JSON.parse(this.el.dataset.session);
 		this.vidstackScriptUrl = this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
 		this.player = this.el.querySelector("[data-player-media]");
 		this.captionsEl = this.el.querySelector("media-captions");
@@ -117,7 +116,7 @@ const Player = {
 
 			this.configurePlayer(vidstack);
 			this.player.src = {
-				src: this.session.master_url,
+				src: this.player.dataset.src,
 				type: "application/x-mpegurl",
 			};
 			this.player.startLoading?.();
@@ -129,8 +128,6 @@ const Player = {
 	configurePlayer({ Hls }) {
 		const signal = this.abortController.signal;
 
-		this.player.title = this.session.title;
-		this.player.duration = this.session.duration;
 		this.player.preload = "metadata";
 		this.player.playsInline = true;
 		this.player.preferNativeHLS = false;
@@ -145,7 +142,7 @@ const Player = {
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
 					this.reportHeartbeat();
-					remote.seek(clamp(player.currentTime - 10, 0, player.duration || this.session.duration), event);
+					remote.seek(clamp(player.currentTime - 10, 0, player.duration), event);
 				},
 			},
 			seekForward: {
@@ -153,7 +150,7 @@ const Player = {
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
 					this.reportHeartbeat();
-					remote.seek(clamp(player.currentTime + 10, 0, player.duration || this.session.duration), event);
+					remote.seek(clamp(player.currentTime + 10, 0, player.duration), event);
 				},
 			},
 		};

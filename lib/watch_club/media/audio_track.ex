@@ -87,4 +87,12 @@ defmodule WatchClub.Media.AudioTrack do
       public? true
     end
   end
+
+  calculations do
+    calculate :display_label,
+              :string,
+              {WatchClub.Media.Calculations.TrackDisplayLabel, fallback_prefix: "Audio"} do
+      public? true
+    end
+  end
 end

@@ -42,13 +42,13 @@ defmodule WatchClubWeb.Router do
   scope "/hls", WatchClubWeb do
     pipe_through :playback
 
-    get "/:stream_id/master.m3u8", PlayerController, :master_playlist
-    get "/:stream_id/video/:variant/index.m3u8", PlayerController, :video_playlist
-    get "/:stream_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
-    get "/:stream_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
-    get "/:stream_id/video/:variant/:segment", PlayerController, :video_segment
-    get "/:stream_id/audio/:track_id/:segment", PlayerController, :audio_segment
-    get "/:stream_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
+    get "/:session_id/master.m3u8", PlayerController, :master_playlist
+    get "/:session_id/video/:variant/index.m3u8", PlayerController, :video_playlist
+    get "/:session_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
+    get "/:session_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
+    get "/:session_id/video/:variant/:segment", PlayerController, :video_segment
+    get "/:session_id/audio/:track_id/:segment", PlayerController, :audio_segment
+    get "/:session_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
   end
 
   scope "/", WatchClubWeb do

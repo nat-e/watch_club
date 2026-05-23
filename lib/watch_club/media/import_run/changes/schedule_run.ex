@@ -5,10 +5,11 @@ defmodule WatchClub.Media.ImportRun.Changes.ScheduleRun do
 
   @impl true
   def change(changeset, _opts, _context) do
-    Ash.Changeset.after_action(changeset, fn _changeset, run ->
-      AshOban.run_trigger(run, :run, actor: SystemActor.actor())
-
-      {:ok, run}
+    Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
+      with {:ok, run} <- result do
+        AshOban.run_trigger(run, :run, actor: SystemActor.actor())
+        {:ok, run}
+      end
     end)
   end
 end

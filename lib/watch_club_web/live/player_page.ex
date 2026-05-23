@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.PlayerPage do
   use WatchClubWeb, :live_view
 
-  alias WatchClub.Playback
+  alias WatchClub.Playbacks
 
   require Logger
 
@@ -10,7 +10,7 @@ defmodule WatchClubWeb.PlayerPage do
     ~H"""
     <main class="fixed inset-0 h-dvh w-dvw overflow-hidden bg-black text-white">
       <section
-        :if={is_nil(@player_session)}
+        :if={is_nil(@session)}
         class="grid h-dvh w-dvw place-items-center bg-black px-page text-center"
       >
         <div :if={@player_error} class="max-w-readable space-y-related">
@@ -37,7 +37,7 @@ defmodule WatchClubWeb.PlayerPage do
       </section>
 
       <section
-        :if={@player_session}
+        :if={@session}
         id="watch-club-player-shell"
         class="relative h-dvh w-dvw bg-black text-white"
       >
@@ -45,16 +45,15 @@ defmodule WatchClubWeb.PlayerPage do
           id="watch-club-player"
           phx-hook="Player"
           phx-update="ignore"
-          data-session={Jason.encode!(@player_session)}
           data-vidstack-src={~p"/assets/js/player_vidstack.js"}
           class="h-dvh w-dvw bg-black text-white"
         >
           <media-player
             id="watch-club-vidstack-player"
             data-player-media
-            data-src={@player_session.master_url}
-            title={@player_session.title}
-            duration={@player_session.duration}
+            data-src={~p"/hls/#{@session.id}/master.m3u8"}
+            title={playback_title(@session)}
+            duration={@session.active_playback.media.video.duration_seconds}
             preload="metadata"
             playsinline
             data-controls="true"
@@ -104,17 +103,17 @@ defmodule WatchClubWeb.PlayerPage do
 
                 <div class="min-w-0 flex-1 pt-1 text-center sm:pt-2">
                   <h1 class="truncate text-base font-semibold text-white sm:text-xl">
-                    {@player_session.title}
+                    {playback_title(@session)}
                   </h1>
                   <p class="mx-auto mt-tight flex max-w-readable flex-wrap items-center justify-center gap-tight text-xs text-white/65 sm:text-sm">
                     <span>
-                      {@player_session.video.width}×{@player_session.video.height}
+                      {primary_video_track(@session).width}×{primary_video_track(@session).height}
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>{format_duration(@player_session.duration)}</span>
+                    <span>{format_duration(@session.active_playback.media.video.duration_seconds)}</span>
                     <span aria-hidden="true" class="hidden sm:inline">·</span>
                     <span class="hidden sm:inline">
-                      {dgettext("player", "source %{codec}", codec: @player_session.video.codec)}
+                      {dgettext("player", "source %{codec}", codec: primary_video_track(@session).codec)}
                     </span>
                   </p>
                 </div>
@@ -273,7 +272,7 @@ defmodule WatchClubWeb.PlayerPage do
                     <media-time type="current">0:00</media-time>
                     <span class="text-white/60">/</span>
                     <media-time type="duration">
-                      {format_duration(@player_session.duration)}
+                      {format_duration(@session.active_playback.media.video.duration_seconds)}
                     </media-time>
                   </div>
 
@@ -327,9 +326,7 @@ defmodule WatchClubWeb.PlayerPage do
     socket =
       socket
       |> assign(:page_title, "WatchClub Player")
-      |> assign(:player_session, nil)
-      |> assign(:playback_session, nil)
-      |> assign(:playback_stream, nil)
+      |> assign(:session, nil)
       |> assign(:player_error, false)
       |> assign(:playback_error, false)
 
@@ -353,8 +350,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   @impl true
   def handle_event("player_heartbeat", _params, socket) do
-    with %{} = session <- socket.assigns.playback_session do
-      Playback.heartbeat_session(session, actor: socket.assigns.current_user)
+    with %{} = session <- socket.assigns.session do
+      Playbacks.heartbeat_session(session, actor: socket.assigns.current_user)
     end
 
     {:noreply, socket}
@@ -362,62 +359,47 @@ defmodule WatchClubWeb.PlayerPage do
 
   @impl true
   def handle_event("player_stop", _params, socket) do
-    {:reply, stop_player_session(socket.assigns.current_user, socket.assigns.playback_stream),
-     socket}
+    {:reply, stop_session(socket.assigns.current_user, socket.assigns.session), socket}
   end
 
   @impl true
   def terminate(_reason, socket) do
-    stop_player_session(socket.assigns[:current_user], socket.assigns[:playback_stream])
+    stop_session(socket.assigns[:current_user], socket.assigns[:session])
     :ok
   end
 
   defp start_player_session(socket, media_id) do
     actor = socket.assigns.current_user
 
-    with {:ok, session} <- Playback.start_session(media_id, actor: actor),
-         {:ok, stream} <- Playback.start_stream(session.id, actor: actor) do
-      socket =
-        socket
-        |> assign(:playback_session, session)
-        |> assign(:playback_stream, stream)
-        |> assign(:player_session, player_session(stream))
-        |> assign(:player_error, false)
-        |> assign(:playback_error, false)
+    case Playbacks.start_session(media_id, actor: actor) do
+      {:ok, %{active_playback: %{}} = session} ->
+        socket =
+          socket
+          |> assign(:session, session)
+          |> assign(:player_error, false)
+          |> assign(:playback_error, false)
 
-      {:ok, socket}
-    else
+        {:ok, socket}
+
       {:error, reason} ->
         Logger.warning("Could not start Playback Session: #{inspect(reason)}")
         {:ok, assign(socket, :player_error, true)}
     end
   end
 
-  defp player_session(stream) do
-    %{
-      id: stream.id,
-      title: stream.title,
-      duration: stream.duration,
-      segment_duration: stream.segment_duration,
-      segment_count: stream.segment_count,
-      video: stream.video,
-      qualities: stream.qualities,
-      audio_tracks: stream.audio_tracks,
-      subtitle_tracks: stream.subtitle_tracks,
-      master_url: "/hls/#{stream.id}/master.m3u8"
-    }
-  end
+  defp playback_title(session), do: Path.basename(session.active_playback.media.path)
 
-  defp stop_player_session(actor, %{id: stream_id}) when not is_nil(actor) do
-    case Playback.close_stream(stream_id, actor: actor) do
-      :ok -> %{ok: true}
-      {:ok, _} -> %{ok: true}
+  defp primary_video_track(session), do: hd(session.active_playback.media.video.video_tracks)
+
+  defp stop_session(actor, %{} = session) when not is_nil(actor) do
+    case Playbacks.close_session(session, actor: actor) do
+      {:ok, _session} -> %{ok: true}
       {:error, %Ash.Error.Forbidden{}} -> %{ok: true}
       {:error, reason} -> %{ok: false, error: inspect(reason)}
     end
   end
 
-  defp stop_player_session(_actor, _stream), do: %{ok: true}
+  defp stop_session(_actor, _session), do: %{ok: true}
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)

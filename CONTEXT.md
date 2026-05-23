@@ -151,8 +151,12 @@ The WatchClub interface where a member watches a selected video.
 _Avoid_: Video player page, stream page
 
 **Playback Session**:
-One continuous use of the **Player** by a user for one selected media file.
+One continuous use of the **Player** by a user. A **Playback Session** does not itself reference a selected media file; that belongs to each **Playback** inside it.
 _Avoid_: Player Session, HLS Session, stream session, watch session, watch history
+
+**Playback**:
+One **Media** being played by a user inside a **Playback Session**.
+_Avoid_: Stream, HLS Stream, play, playthrough
 
 **Ebook**:
 Media that can be read or downloaded and is attached to a book.
@@ -267,7 +271,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **User** has one set of **User Preferences**
 - **User Preferences** belong to one **User** and are managed only by that **User**
 - **User Preferences** include the user’s preferred **Locale**
-- Deleting a **User** does not delete their **Playback Sessions**
+- Deleting a **User** does not delete their **Playback Sessions** or **Playbacks**
 
 ### Clubs
 
@@ -313,32 +317,37 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **Member** can **Play Library Item** or **Download Library Item** only for **Library Items** visible to them in WatchClub
 - A **Member** starts playback through **Play Library Item**, not by playing **Media** or **Video** directly
 - **Play Library Item** opens the **Player** after exactly one **Media** file has been selected
-- **Play Library Item** creates a **Playback Session** for exactly one selected **Media** file when the **Player** opens, before playback succeeds
-- Initially, **Playback Sessions** are created only for **Video** **Media**
+- **Play Library Item** from outside the **Player** creates a **Playback Session** and its first **Playback** for the selected **Media** when the **Player** opens, before playback succeeds
+- While the **Player** is open, advancing to another **Media** (for example the next **TV Show Episode**) creates a new **Playback** on the same **Playback Session**
+- Initially, **Playbacks** are created only for **Video** **Media**
 - A **Playback Session** is started by exactly one **User**
-- Only the starting **User** and the **Instance Administrator** can access a **Playback Session** for playback
-- A **User** can start a **Playback Session** for **Media** only when at least one visible **Library Item** references the **Content** attached to that **Media**
+- A **Playback Session** has zero or more **Playbacks** over its lifetime
+- A **Playback** belongs to exactly one **Playback Session** and references exactly one **Media**
+- Only the starting **User** and the **Instance Administrator** can access a **Playback Session** or any of its **Playbacks**
+- A **User** can start a **Playback** for **Media** only when at least one visible **Library Item** references the **Content** attached to that **Media**
 - For **Media** attached to a **TV Show Episode**, playback access comes from visibility of the parent **TV Show** as a **Library Item**
 - Playback availability is based on whether the **Content** is visible to the **User**, not on one selected **Club** or **Library** context
-- The **Instance Administrator** can start a **Playback Session** for any **Media**
-- A **Playback Session** can continue even if the **User** loses access to the **Content** after the **Playback Session** starts
-- Losing access to **Content** prevents future **Playback Sessions** but does not end an existing **Playback Session**
+- The **Instance Administrator** can start a **Playback** for any **Media**
+- A **Playback** can continue even if the **User** loses access to the **Content** after it starts
+- Losing access to **Content** prevents future **Playbacks** but does not end an existing **Playback**
 - A **Playback Session** is not scoped to a **Club**, **Library**, or **Library Item**
-- A **Playback Session** remains active while the **Player** is playing or recently interacted with
-- A **Playback Session** can become inactive if the **Player** stays paused without interaction long enough for WatchClub to consider it inactive
-- A **User** may have multiple active **Playback Sessions** for the same **Media**
-- A later viewing attempt for the same **Media** creates a separate **Playback Session**
-- A **Playback Session** can exist even when playback later fails
-- A **Playback Session** records when it was created and when the **Player** was last active
+- A **Playback** is current while it has not ended; it ends when the **Player** closes, when another **Playback** starts on the same **Playback Session**, or when WatchClub marks it inactive after the **Player** stays paused without interaction long enough
+- A **Playback Session** has at most one current **Playback** at any time
+- A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
+- A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit
+- A later **Play Library Item** from outside the **Player** for the same **Media** creates a separate **Playback Session** with its own first **Playback**
+- A **Playback Session** can exist even when its **Playbacks** later fail
+- A **Playback Session** records only when it was created; its activity is derived from its **Playbacks**
+- A **Playback** records its selected **Media**, when it was created, when it was last active, and when it ended
 - The **Player** is active when it is playing or when the **User** interacts with playback controls
-- Only **Player** heartbeats update a **Playback Session**'s last active time
+- Only **Player** heartbeats update the current **Playback**'s last active time
 - While the **Player** is playing, it sends a heartbeat about every five seconds
 - The **Player** also sends a heartbeat when the **User** interacts with playback controls
-- HLS playlist and segment requests do not update a **Playback Session**'s last active time
-- A **Playback Session** has no explicit ended state; WatchClub determines whether it is active from its last active time
-- A **User** can inspect their own **Playback Sessions**
-- The **Instance Administrator** can inspect **Playback Sessions** by **User**, **Media**, creation time, and last active time
-- If the same **Content** is visible to a **User** through multiple **Library Items**, one **Playback Session** for its **Media** may be relevant to each corresponding club activity feed
+- HLS playlist and segment requests do not update a **Playback**'s last active time
+- A **Playback** has an explicit ended time; a **Playback Session** has no explicit ended state and is considered active or dormant based on whether it has a current **Playback**
+- A **User** can inspect their own **Playback Sessions** and **Playbacks**
+- The **Instance Administrator** can inspect **Playback Sessions** by **User** and creation time, and inspect **Playbacks** by **Media**, creation time, and last active time
+- If the same **Content** is visible to a **User** through multiple **Library Items**, one **Playback** for its **Media** may be relevant to each corresponding club activity feed
 - A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Media**
 - Adding **Content** to a **Library** and playing available **Media** are independent member actions
 - If exactly one **Video** is available for **Play Library Item**, playback can start without a selection step
@@ -375,7 +384,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - **Media** has exactly one concrete **Video**, **Ebook**, or **Audiobook**
 - Technical details belong to **Videos**, **Ebooks**, or **Audiobooks**, not to generic **Media**
 - Deleting **Media** deletes its concrete **Video**, **Ebook**, or **Audiobook** and their technical details
-- Deleting **Media** does not delete **Playback Sessions**
+- Deleting **Media** does not delete **Playback Sessions** or **Playbacks**
 - Deleting **Media** does not delete **Content**, **Movies**, **Books**, or **TV Show Episodes**
 - A **Video** is attached to exactly one **Movie** or exactly one **TV Show Episode**
 - A **Video** has one or more **Video Tracks**
@@ -519,6 +528,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
-- **Playback Session** is distinct from future watch-history concepts; resolved: it records one Player session, not whether a user has watched a work overall.
-- **Playback Session** is not a club-scoped or library-scoped concept; resolved: it is scoped to the **User** and selected **Media**.
+- **Playback Session** is distinct from future watch-history concepts; resolved: it records one Player visit, not whether a user has watched a work overall.
+- **Playback Session** is not a club-scoped or library-scoped concept; resolved: it is scoped to the **User** for one **Player** visit, and the selected **Media** lives on each **Playback** inside it.
+- "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, and **Refresh Media Metadata** is a separate media operation if needed.

@@ -5,8 +5,12 @@ defmodule WatchClub.Media.TextTrack do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
+  import Ash.Expr
+
   alias WatchClub.Media.Video
   alias WatchClub.Shared.Changes.NormalizePath
+
+  @hls_supported_codecs ~w(subrip webvtt ass ssa)
 
   postgres do
     table "text_tracks"
@@ -100,6 +104,18 @@ defmodule WatchClub.Media.TextTrack do
   relationships do
     belongs_to :video, Video do
       allow_nil? false
+      public? true
+    end
+  end
+
+  calculations do
+    calculate :display_label,
+              :string,
+              {WatchClub.Media.Calculations.TrackDisplayLabel, fallback_prefix: "Subtitle"} do
+      public? true
+    end
+
+    calculate :hls_supported?, :boolean, expr(is_nil(sidecar_path) and codec in ^@hls_supported_codecs) do
       public? true
     end
   end

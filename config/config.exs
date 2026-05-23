@@ -55,7 +55,7 @@ config :watch_club,
     WatchClub.Clubs,
     WatchClub.Contents,
     WatchClub.Media,
-    WatchClub.Playback
+    WatchClub.Playbacks
   ]
 
 config :watch_club, Oban,
@@ -64,7 +64,7 @@ config :watch_club, Oban,
   plugins: [
     {Oban.Plugins.Cron,
      crontab: [
-       {"*/15 * * * *", WatchClub.Playback.Workers.PruneSegmentCache}
+       {"*/15 * * * *", WatchClub.Playbacks.Workers.PruneSegmentCache}
      ]}
   ],
   queues: [media_imports: 1, playback_cache_maintenance: 1]

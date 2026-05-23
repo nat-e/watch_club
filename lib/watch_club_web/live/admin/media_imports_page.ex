@@ -17,7 +17,7 @@ defmodule WatchClubWeb.Admin.MediaImportsPage do
 
   alias Phoenix.PubSub
   alias WatchClub.Media
-  alias WatchClub.Media.ImportConfiguration
+  alias WatchClub.Media.{ImportConfiguration, ImportRun}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -241,9 +241,12 @@ defmodule WatchClubWeb.Admin.MediaImportsPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(%Ash.Notifier.Notification{}, socket) do
+  def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
+      when resource in [ImportConfiguration, ImportRun] do
     {:noreply, load_configurations(socket)}
   end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   # ---------------------------------------------------------------------------
   # Helpers
