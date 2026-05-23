@@ -11,47 +11,22 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <header class="z-10 flex h-row-lg items-center justify-between gap-related border-b px-related sm:gap-group sm:px-group">
-      <div class="flex w-full items-center gap-related">
-        <.button
-          id="navbar-open-sidebar-button"
-          variant="ghost"
-          size="icon-sm"
-          class="block md:hidden"
-          aria-label={dgettext("nav", "Open navigation")}
-          aria-controls="sidebar-panel"
-          phx-click={SidebarLive.show_sidebar()}
-        >
-          <Lucideicons.menu class="size-icon-lg font-bold" />
-        </.button>
-        <div class="w-full">
-          <.desktop_search {assigns} />
-          <.mobile_search {assigns} />
-        </div>
+    <header class="z-10 flex h-row-lg items-center gap-related border-b px-related sm:gap-group sm:px-group">
+      <.button
+        id="navbar-open-sidebar-button"
+        variant="ghost"
+        size="icon-sm"
+        class="block md:hidden"
+        aria-label={dgettext("nav", "Open navigation")}
+        aria-controls="sidebar-panel"
+        phx-click={SidebarLive.show_sidebar()}
+      >
+        <Lucideicons.menu class="size-icon-lg font-bold" />
+      </.button>
+      <div class="w-full">
+        <.desktop_search {assigns} />
+        <.mobile_search {assigns} />
       </div>
-      <.dropdown_menu id="navbar-user-menu">
-        <:trigger>
-          <.button
-            id="navbar-user-menu-trigger"
-            size="icon"
-            variant="ghost"
-            aria-label={dgettext("nav", "User menu")}
-          >
-            <.avatar id={@current_user.id} name={@current_user.username} />
-          </.button>
-        </:trigger>
-        <.dropdown_menu_item id="navbar-settings-link" navigate={~p"/settings"}>
-          <Lucideicons.settings /> {dgettext("nav", "Settings")}
-        </.dropdown_menu_item>
-        <.dropdown_menu_item
-          id="navbar-sign-out-link"
-          href={~p"/sign-out"}
-          method="delete"
-          variant="destructive"
-        >
-          <Lucideicons.log_out /> {dgettext("nav", "Sign out")}
-        </.dropdown_menu_item>
-      </.dropdown_menu>
     </header>
     """
   end

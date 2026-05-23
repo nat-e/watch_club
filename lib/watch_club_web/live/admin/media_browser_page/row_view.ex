@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           id: binary(),
           path: String.t(),
           file_name: String.t(),
-          media_type: :video | :ebook | :audiobook,
+          media_type: :movie | :tv_show_episode | :ebook | :audiobook,
           content_title: String.t() | nil,
           content_sub: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
@@ -42,10 +42,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   # Content title + sub
   # --------------------------------------------------------------------------
 
-  defp content_title(%Media{type: :video, video: %Video{movie: %{content: %{original_title: t}}}}), do: t
+  defp content_title(%Media{type: :movie, video: %Video{movie: %{content: %{original_title: t}}}}), do: t
 
   defp content_title(%Media{
-         type: :video,
+         type: :tv_show_episode,
          video: %Video{tv_show_episode: %{tv_show: %{content: %{original_title: t}}}}
        }),
        do: t
@@ -55,7 +55,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   defp content_title(_), do: nil
 
   defp content_sub(%Media{
-         type: :video,
+         type: :tv_show_episode,
          video: %Video{tv_show_episode: %{season_number: s, episode_number: e}}
        }) do
      "S#{pad(s)}E#{pad(e)}"
@@ -78,12 +78,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
     |> Enum.sort_by(& &1.name)
   end
 
-  defp library_items(%Media{type: :video, video: %Video{movie: %{content: %{library_items: items}}}})
+  defp library_items(%Media{type: :movie, video: %Video{movie: %{content: %{library_items: items}}}})
        when is_list(items),
        do: items
 
   defp library_items(%Media{
-         type: :video,
+         type: :tv_show_episode,
          video: %Video{tv_show_episode: %{tv_show: %{content: %{library_items: items}}}}
        })
        when is_list(items),
@@ -103,7 +103,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   # Resolution (video only; bucket from height)
   # --------------------------------------------------------------------------
 
-  defp resolution(%Media{type: :video, video: %Video{video_tracks: tracks}}) when is_list(tracks) do
+  defp resolution(%Media{video: %Video{video_tracks: tracks}}) when is_list(tracks) do
     tracks
     |> Enum.map(& &1.height)
     |> Enum.reject(&is_nil/1)
@@ -123,17 +123,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   # Audio / subtitle languages
   # --------------------------------------------------------------------------
 
-  defp audio_languages(%Media{type: :video, video: %Video{audio_tracks: tracks}}) when is_list(tracks) do
+  defp audio_languages(%Media{video: %Video{audio_tracks: tracks}}) when is_list(tracks) do
     tracks
     |> Enum.map(& &1.language)
     |> Enum.reject(&(&1 in [nil, ""]))
     |> Enum.uniq()
   end
 
-  defp audio_languages(%Media{type: :audiobook}), do: []
   defp audio_languages(_), do: []
 
-  defp subtitle_languages(%Media{type: :video, video: %Video{text_tracks: tracks}}) when is_list(tracks) do
+  defp subtitle_languages(%Media{video: %Video{text_tracks: tracks}}) when is_list(tracks) do
     tracks
     |> Enum.map(& &1.language)
     |> Enum.reject(&(&1 in [nil, ""]))

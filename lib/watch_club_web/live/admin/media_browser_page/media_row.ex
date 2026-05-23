@@ -7,6 +7,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
+  import WatchClubWeb.Components.Media.MediaTypeIcon
 
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
 
@@ -31,7 +32,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
     >
       <td class="px-related py-2.5">
         <div class="flex items-center gap-related min-w-0">
-          <.media_type_glyph type={@view.media_type} />
+          <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
+            <.media_type_icon media_type={@view.media_type} class="size-icon-sm" />
+          </span>
           <span class="block truncate text-sm font-medium text-text">
             {@view.file_name}
           </span>
@@ -54,25 +57,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         </span>
       </td>
     </tr>
-    """
-  end
-
-  attr :type, :atom, required: true
-
-  defp media_type_glyph(assigns) do
-    icon =
-      case assigns.type do
-        :video -> :film
-        :ebook -> :book_open
-        :audiobook -> :headphones
-      end
-
-    assigns = assign(assigns, :icon, icon)
-
-    ~H"""
-    <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-      <.dynamic_icon name={@icon} class="size-icon-sm" />
-    </span>
     """
   end
 
@@ -154,14 +138,5 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       {:ok, dt} -> relative_time(dt)
       _ -> "—"
     end
-  end
-
-  attr :name, :atom, required: true
-  attr :class, :string, default: "size-icon"
-
-  defp dynamic_icon(assigns) do
-    ~H"""
-    {apply(Lucideicons, @name, [%{class: @class, __changed__: %{}}])}
-    """
   end
 end

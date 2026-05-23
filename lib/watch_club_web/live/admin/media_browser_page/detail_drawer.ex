@@ -12,15 +12,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Media.MediaTypeIcon
 
-  alias WatchClub.Media.{Media, Video}
+  alias WatchClub.Media.{Media, MediaType, Video}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
 
   attr :media, Media, required: true
 
   def render(assigns) do
     view = RowView.from_media(assigns.media)
-    assigns = assigns |> assign(:view, view)
+    has_video? = assigns.media.type in [:movie, :tv_show_episode]
+    assigns = assigns |> assign(:view, view) |> assign(:has_video?, has_video?)
 
     ~H"""
     <aside class="grid h-fit overflow-hidden rounded-card border border-border bg-surface shadow-card">
@@ -28,9 +30,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
       <div class="grid gap-cluster p-cluster">
         <.content_section view={@view} media={@media} />
-        <.video_section :if={@media.type == :video} media={@media} view={@view} />
-        <.audio_section :if={@media.type == :video} media={@media} />
-        <.subtitle_section :if={@media.type == :video} media={@media} />
+        <.video_section :if={@has_video?} media={@media} view={@view} />
+        <.audio_section :if={@has_video?} media={@media} />
+        <.subtitle_section :if={@has_video?} media={@media} />
         <.file_section media={@media} />
       </div>
     </aside>
@@ -45,11 +47,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <header class="grid gap-group border-b border-border-subtle p-cluster">
       <div class="flex items-center gap-related">
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-          <.dynamic_icon name={media_type_icon(@view.media_type)} class="size-icon" />
+          <.media_type_icon media_type={@view.media_type} class="size-icon" />
         </span>
         <.stack space="tight" class="min-w-0 grow">
           <span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
-            {humanize_media_type(@view.media_type)} file
+            {MediaType.translated_label(@view.media_type)} file
           </span>
           <span class="truncate font-mono text-sm text-text" title={@view.file_name}>
             {@view.file_name}
@@ -295,25 +297,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   # Helpers
   # --------------------------------------------------------------------------
 
-  defp media_type_icon(:video), do: :film
-  defp media_type_icon(:ebook), do: :book_open
-  defp media_type_icon(:audiobook), do: :headphones
-
-  defp humanize_media_type(:video), do: "Video"
-  defp humanize_media_type(:ebook), do: "Ebook"
-  defp humanize_media_type(:audiobook), do: "Audiobook"
-
   defp play_icon(:ebook), do: :book_open
   defp play_icon(_), do: :play
 
   defp play_label(:ebook), do: "Read"
   defp play_label(_), do: "Play"
 
-  defp content_meta(%{media_type: :video, content_sub: sub}) when is_binary(sub),
-    do: ["Video", sub]
+  defp content_meta(%{media_type: :tv_show_episode, content_sub: sub}) when is_binary(sub),
+    do: [MediaType.translated_label(:tv_show_episode), sub]
 
-  defp content_meta(%{media_type: type}) when type in [:video, :ebook, :audiobook],
-    do: [humanize_media_type(type)]
+  defp content_meta(%{media_type: type}) when type in [:movie, :tv_show_episode, :ebook, :audiobook],
+    do: [MediaType.translated_label(type)]
 
   defp content_meta(_), do: []
 

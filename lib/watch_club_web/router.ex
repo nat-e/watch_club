@@ -61,6 +61,7 @@ defmodule WatchClubWeb.Router do
         {WatchClubWeb.Hooks.Auth, :live_administrator_required},
         WatchClubWeb.Hooks.Locale
       ] do
+      live "/admin/settings", Admin.InstanceSettingsPage
       live "/admin/media", Admin.MediaBrowserPage
       live "/admin/media/imports", Admin.MediaImportsPage
       live "/admin/media/imports/:id/history", Admin.MediaImportHistoryPage

@@ -111,7 +111,60 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
               </.sidebar_item>
             </li>
           </ul>
+
+          <%!--
+            mt-auto pushes Admin to the bottom of the scroll viewport when there is room,
+            and lets it scroll naturally with the rest of the nav when there isn't.
+          --%>
+          <div
+            :if={@current_user.administrator?}
+            class="mt-auto flex flex-col gap-tight -mx-group border-t border-border-subtle px-group pt-group"
+          >
+            <h3 class="px-group text-xs font-semibold tracking-wide text-text-subtle uppercase">
+              {dgettext("nav", "Admin")}
+            </h3>
+            <ul class="flex list-none flex-col gap-tight p-0">
+              <.admin_links current_path={@current_path} />
+            </ul>
+          </div>
         </nav>
+
+        <%!--
+          Reuses the --club-nav-rail-offset trick (left padding + half the avatar size)
+          so Settings hangs under the user avatar like libraries hang under a club.
+        --%>
+        <div class={[
+          "flex flex-col gap-tight border-t border-border-subtle p-group",
+          "[--club-nav-avatar-size:2rem]",
+          "[--club-nav-rail-offset:calc(var(--wc-space-group)_+_(var(--club-nav-avatar-size)_/_2))]"
+        ]}>
+          <div class="flex min-h-touch-target items-center gap-related px-group text-sm font-semibold text-text">
+            <.avatar id={@current_user.id} name={@current_user.username} size="md" />
+            <span class="min-w-0 flex-1 truncate">{@current_user.username}</span>
+            <.button
+              id="sidebar-sign-out-button"
+              variant="ghost"
+              size="icon"
+              href={~p"/sign-out"}
+              method="delete"
+              aria-label={dgettext("nav", "Sign out")}
+            >
+              <Lucideicons.log_out class="text-danger" />
+            </.button>
+          </div>
+          <ul class="ml-[var(--club-nav-rail-offset)] flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related">
+            <li>
+              <.sidebar_item
+                id="sidebar-settings-link"
+                navigate={~p"/settings"}
+                active={active?(@current_path, "/settings")}
+              >
+                <Lucideicons.settings />
+                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Settings")}</span>
+              </.sidebar_item>
+            </li>
+          </ul>
+        </div>
       </aside>
 
       <.create_club_modal :if={@create_club_form} form={@create_club_form} myself={@myself} />
@@ -161,6 +214,46 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     >
       {render_slot(@inner_block)}
     </.button>
+    """
+  end
+
+  attr :current_path, :string, required: true
+
+  defp admin_links(assigns) do
+    ~H"""
+    <li>
+      <.sidebar_item
+        id="sidebar-admin-instance-settings-link"
+        navigate={~p"/admin/settings"}
+        active={active?(@current_path, "/admin/settings")}
+      >
+        <Lucideicons.settings_2 />
+        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Instance settings")}</span>
+      </.sidebar_item>
+    </li>
+    <li>
+      <.sidebar_item
+        id="sidebar-admin-media-browser-link"
+        navigate={~p"/admin/media"}
+        active={
+          active?(@current_path, "/admin/media") and
+            not String.starts_with?(@current_path, "/admin/media/imports")
+        }
+      >
+        <Lucideicons.film />
+        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Media browser")}</span>
+      </.sidebar_item>
+    </li>
+    <li>
+      <.sidebar_item
+        id="sidebar-admin-media-imports-link"
+        navigate={~p"/admin/media/imports"}
+        active={active?(@current_path, "/admin/media/imports")}
+      >
+        <Lucideicons.folder_input />
+        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Import media")}</span>
+      </.sidebar_item>
+    </li>
     """
   end
 
