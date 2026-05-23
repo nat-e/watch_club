@@ -154,7 +154,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         >
           <.avatar id={library.club.id} name={library.club.name} size="xs" />
           <span class="min-w-0 truncate">{library.name}</span>
-          <span class="ml-auto truncate text-text-subtle">{library.club.name}</span>
         </li>
       </ul>
     </.section_block>
