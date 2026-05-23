@@ -127,24 +127,24 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractorTest
     end
 
     test "{tmdb-27205}" do
-      assert ExternalIdExtractor.from_text("Inception {tmdb-27205}.mkv").tmdb == "27205"
+      assert ExternalIdExtractor.from_text("Inception {tmdb-27205}.mkv").tmdb == 27205
     end
 
     test "(tvdbid=121361)" do
-      assert ExternalIdExtractor.from_text("Show (tvdbid=121361)/file.mkv").tvdb == "121361"
+      assert ExternalIdExtractor.from_text("Show (tvdbid=121361)/file.mkv").tvdb == 121_361
     end
 
     test "bracket attribute wins over no other source" do
       result = ExternalIdExtractor.from_text("File [imdb-tt1375666] [tmdb-27205].mkv")
       assert result.imdb == "tt1375666"
-      assert result.tmdb == "27205"
+      assert result.tmdb == 27205
     end
   end
 
   describe "from_text/1 — uniqueid tag (Jellyfin: BaseNfoParser.ParseProviderLinks)" do
     test ~s{<uniqueid type="tmdb">141052</uniqueid>} do
       xml = ~s{<uniqueid type="tmdb">141052</uniqueid>}
-      assert ExternalIdExtractor.from_text(xml).tmdb == "141052"
+      assert ExternalIdExtractor.from_text(xml).tmdb == 141_052
     end
 
     test ~s{<uniqueid type="imdb">tt0974015</uniqueid>} do
@@ -154,7 +154,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractorTest
 
     test ~s{<uniqueid type="tvdb">253573</uniqueid>} do
       xml = ~s{<uniqueid type="tvdb">253573</uniqueid>}
-      assert ExternalIdExtractor.from_text(xml).tvdb == "253573"
+      assert ExternalIdExtractor.from_text(xml).tvdb == 253_573
     end
   end
 end
