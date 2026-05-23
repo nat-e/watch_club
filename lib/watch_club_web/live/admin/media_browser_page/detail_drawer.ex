@@ -69,7 +69,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
       <.file_name
         file_name={@view.file_name}
         wrap
-        class="font-mono text-sm text-text-muted"
+        class="font-mono text-base text-text-muted"
       />
 
       <.cluster space="related">
@@ -113,7 +113,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
           <ul
             :if={content_meta(@view) != []}
-            class="flex flex-wrap items-center gap-related text-sm text-text-muted"
+            class="flex flex-wrap items-center gap-related text-base text-text-muted"
           >
             <li
               :for={{item, index} <- Enum.with_index(content_meta(@view))}
@@ -125,7 +125,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           </ul>
 
           <div :if={@view.content_sub}>
-            <.badge variant="secondary" size="sm">{@view.content_sub}</.badge>
+            <.badge variant="secondary">{@view.content_sub}</.badge>
           </div>
         </.stack>
       </div>
@@ -139,7 +139,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp library_section(%{view: %{libraries: []}} = assigns) do
     ~H"""
     <.section_block label="Libraries">
-      <p class="text-sm text-text-subtle">This content is not in any Library.</p>
+      <p class="text-base text-text-subtle">This content is not in any Library.</p>
     </.section_block>
     """
   end
@@ -147,12 +147,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp library_section(assigns) do
     ~H"""
     <.section_block label="Libraries">
-      <ul class="grid gap-tight">
+      <ul class="grid gap-related">
         <li
           :for={library <- @view.libraries}
-          class="flex items-center gap-related text-sm text-text"
+          class="flex items-center gap-related text-base text-text"
         >
-          <.avatar id={library.club.id} name={library.club.name} size="xs" />
+          <.avatar id={library.club.id} name={library.club.name} size="sm" />
           <span class="min-w-0 truncate">{library.name}</span>
         </li>
       </ul>
@@ -168,16 +168,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <.section_block label="Video">
       <.dl>
         <.dl_badge_row label="Resolution">
-          <.badge :if={@view.resolution} variant="muted" size="sm">
+          <.badge :if={@view.resolution} variant="muted">
             {RowView.resolution_label(@view.resolution)}
           </.badge>
-          <span :if={!@view.resolution} class="text-xs text-text-subtle">—</span>
+          <span :if={!@view.resolution} class="text-text-subtle">—</span>
         </.dl_badge_row>
         <.dl_badge_row :if={video_codec(@media)} label="Codec">
-          <.badge variant="muted" size="sm">{video_codec(@media)}</.badge>
+          <.badge variant="muted">{video_codec(@media)}</.badge>
         </.dl_badge_row>
         <.dl_badge_row :if={@media.video && @media.video.container} label="Container">
-          <.badge variant="muted" size="sm">{@media.video.container}</.badge>
+          <.badge variant="muted">{@media.video.container}</.badge>
         </.dl_badge_row>
         <.dl_row :if={frame_rate(@media)} label="Frame rate" value={frame_rate(@media)} />
       </.dl>
@@ -193,20 +193,20 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
     ~H"""
     <.section_block label={"Audio (#{length(@tracks)})"}>
-      <ul class="grid gap-tight">
+      <ul class="grid gap-related">
         <li
           :for={track <- @tracks}
-          class="flex items-center justify-between gap-related text-sm"
+          class="flex items-center justify-between gap-related text-base"
         >
           <div class="flex items-center gap-related min-w-0">
-            <span class="text-base leading-none">
+            <span class="text-lg leading-none">
               {RowView.language_flag(track.language || "und")}
             </span>
             <span class="truncate text-text">{track.language || "—"}</span>
           </div>
           <div class="flex items-center gap-tight shrink-0">
-            <.badge :if={track.codec} variant="muted" size="sm">{track.codec}</.badge>
-            <.badge :if={track.channels} variant="muted" size="sm">
+            <.badge :if={track.codec} variant="muted">{track.codec}</.badge>
+            <.badge :if={track.channels} variant="muted">
               {channels_label(track.channels)}
             </.badge>
           </div>
@@ -226,19 +226,19 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
     ~H"""
     <.section_block label={"Subtitles (#{length(@tracks)})"}>
-      <ul class="grid gap-tight">
+      <ul class="grid gap-related">
         <li
           :for={track <- @tracks}
-          class="flex items-center justify-between gap-related text-sm"
+          class="flex items-center justify-between gap-related text-base"
         >
           <div class="flex items-center gap-related min-w-0">
-            <span class="text-base leading-none">
+            <span class="text-lg leading-none">
               {RowView.language_flag(track.language || "und")}
             </span>
             <span class="truncate text-text">{track.language || "—"}</span>
           </div>
-          <.badge :if={Map.get(track, :default?)} variant="muted" size="sm">Default</.badge>
-          <.badge :if={Map.get(track, :forced?)} variant="muted" size="sm">Forced</.badge>
+          <.badge :if={Map.get(track, :default?)} variant="muted">Default</.badge>
+          <.badge :if={Map.get(track, :forced?)} variant="muted">Forced</.badge>
         </li>
       </ul>
     </.section_block>
@@ -288,7 +288,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <.dynamic_tag
       tag_name={@as}
       class={[
-        "text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle",
+        "text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle",
         @class
       ]}
     >
@@ -301,7 +301,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp dl(assigns) do
     ~H"""
-    <dl class="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-related gap-y-related text-sm">
+    <dl class="grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-x-related gap-y-related text-base">
       {render_slot(@inner_block)}
     </dl>
     """
@@ -316,7 +316,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <dt class="text-text-subtle">{@label}</dt>
     <dd class={[
       "min-w-0 break-words text-text",
-      @mono && "font-mono text-xs text-text-muted"
+      @mono && "font-mono text-sm text-text-muted"
     ]}>
       {@value}
     </dd>
