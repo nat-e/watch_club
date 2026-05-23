@@ -6,10 +6,9 @@ defmodule WatchClub.Media.Media do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Media.{Audiobook, Ebook, MediaType, Video}
+  alias WatchClub.Media.Preparations.{ApplyBrowseSort, FilterBrowseClub, FilterBrowseSearch}
   alias WatchClub.Shared.Changes.NormalizePath
-
-  import Ash.Expr
-  require Ash.Query
+  alias WatchClub.Shared.SortOrder
 
   postgres do
     table "media"
@@ -22,10 +21,57 @@ defmodule WatchClub.Media.Media do
     read :under_path_prefix do
       argument :prefix, :string, allow_nil?: false
 
-      prepare fn query, _context ->
-        prefix = Ash.Query.get_argument(query, :prefix)
-        Ash.Query.filter(query, expr(fragment("? LIKE ?", path, ^(prefix <> "%"))))
+      prepare build(filter: expr(fragment("? LIKE ? || '%'", path, ^arg(:prefix))))
+    end
+
+    read :browse do
+      description """
+      Admin Media browser action.
+
+      Returns Media filtered by media_type, club_id, and a free-text search
+      across path and attached-content titles. Paginated with keyset.
+      Preloads the attached-content + library + club tree so callers can
+      compute the per-row "in N clubs" list in Elixir.
+      """
+
+      argument :search, :string, allow_nil?: true, default: nil
+      argument :media_type, MediaType, allow_nil?: true, default: nil
+      argument :club_id, :uuid_v7, allow_nil?: true, default: nil
+
+      argument :sort_by, :atom do
+        allow_nil? false
+        default :imported_at
+        constraints one_of: [:imported_at, :path]
       end
+
+      argument :sort_order, SortOrder do
+        allow_nil? false
+        default :desc
+      end
+
+      pagination keyset?: true, default_limit: 50, required?: false
+
+      prepare build(
+                load: [
+                  video: [
+                    movie: [content: [library_items: [library: :club]]],
+                    tv_show_episode: [
+                      tv_show: [content: [library_items: [library: :club]]]
+                    ]
+                  ],
+                  ebook: [book: [content: [library_items: [library: :club]]]],
+                  audiobook: [book: [content: [library_items: [library: :club]]]]
+                ]
+              )
+
+      prepare FilterBrowseSearch
+
+      prepare build(filter: expr(type == ^arg(:media_type))) do
+        where present(:media_type)
+      end
+
+      prepare FilterBrowseClub
+      prepare ApplyBrowseSort
     end
 
     create :create_video do

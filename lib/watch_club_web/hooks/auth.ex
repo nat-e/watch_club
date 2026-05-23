@@ -35,6 +35,21 @@ defmodule WatchClubWeb.Hooks.Auth do
     end
   end
 
+  def on_mount(:live_administrator_required, _params, _session, socket) do
+    user = socket.assigns[:current_user]
+
+    cond do
+      is_nil(user) ->
+        {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
+
+      user.administrator? ->
+        {:cont, socket |> subscribe_to_current_user_pubsub(user)}
+
+      true ->
+        {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
+    end
+  end
+
   def on_mount(:live_no_user, _params, _session, socket) do
     if socket.assigns[:current_user] do
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}

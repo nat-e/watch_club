@@ -7,6 +7,8 @@ defmodule WatchClub.Media do
     resource WatchClub.Media.Media do
       define :list_media, action: :read
       define :list_media_under_path_prefix, action: :under_path_prefix, args: [:prefix]
+      define :browse_media, action: :browse
+      define :get_media, action: :read, get_by: [:id]
       define :create_or_update_video, action: :create_video
       define :create_or_update_ebook, action: :create_ebook
       define :create_or_update_audiobook, action: :create_audiobook

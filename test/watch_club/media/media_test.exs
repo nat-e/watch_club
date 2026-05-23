@@ -305,6 +305,143 @@ defmodule WatchClub.Media.MediaTest do
     end
   end
 
+  describe "browse_media/*" do
+    test "returns Media for any authenticated actor" do
+      admin = generate(administrator())
+      movie = seed_movie()
+
+      m1 =
+        create_or_update_video!(video_input("tmp/browse/a.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      m2 =
+        create_or_update_video!(video_input("tmp/browse/b.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      rows = browse_media!(actor: admin)
+      ids = Enum.map(rows, & &1.id)
+      assert m1.id in ids
+      assert m2.id in ids
+    end
+
+    test "rejects reads without an actor" do
+      browse_media(actor: nil)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "filters by media_type" do
+      admin = generate(administrator())
+      movie = seed_movie()
+      book = seed_book()
+
+      _video =
+        create_or_update_video!(video_input("tmp/browse/v.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      ebook =
+        create_or_update_ebook!(%{path: "tmp/browse/e.epub", ebook: %{book_id: book.id}},
+          actor: SystemActor.actor()
+        )
+
+      assert [row] = browse_media!(%{media_type: :ebook}, actor: admin)
+      assert row.id == ebook.id
+    end
+
+    test "search matches the path" do
+      admin = generate(administrator())
+      movie = seed_movie()
+
+      _a =
+        create_or_update_video!(video_input("tmp/browse/needle.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      _b =
+        create_or_update_video!(video_input("tmp/browse/other.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      assert [row] = browse_media!(%{search: "needle"}, actor: admin)
+      assert row.path =~ "needle"
+    end
+
+    test "search matches the attached Content original_title" do
+      admin = generate(administrator())
+
+      content =
+        Ash.Seed.seed!(Content, %{
+          type: :movie,
+          external_id_source: :tmdb,
+          external_id: "movie-search-#{System.unique_integer([:positive])}",
+          original_title: "Findable Title",
+          original_language: "en",
+          origin_country: "US"
+        })
+
+      movie = Ash.Seed.seed!(Movie, %{id: content.id})
+
+      _ =
+        create_or_update_video!(video_input("tmp/browse/unrelated.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      assert [row] = browse_media!(%{search: "Findable"}, actor: admin)
+      assert row.path =~ "unrelated"
+    end
+
+    test "sorts by path asc" do
+      admin = generate(administrator())
+      movie = seed_movie()
+
+      _a =
+        create_or_update_video!(video_input("tmp/browse/aaa.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      _b =
+        create_or_update_video!(video_input("tmp/browse/bbb.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      assert [first, second] =
+               browse_media!(%{sort_by: :path, sort_order: :asc}, actor: admin)
+
+      assert first.path =~ "aaa.mkv"
+      assert second.path =~ "bbb.mkv"
+    end
+
+    test "filters by club_id through Movie attachment" do
+      admin = generate(administrator())
+      club = generate(club(actor: admin))
+      library = generate(library(club))
+      movie = seed_movie()
+
+      Ash.Seed.seed!(WatchClub.Clubs.LibraryItem, %{
+        library_id: library.id,
+        content_id: movie.id,
+        added_by_id: admin.id
+      })
+
+      in_club =
+        create_or_update_video!(video_input("tmp/browse/in-club.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      other_movie = seed_movie()
+
+      _out_of_club =
+        create_or_update_video!(video_input("tmp/browse/out-of-club.mkv", other_movie),
+          actor: SystemActor.actor()
+        )
+
+      assert [row] = browse_media!(%{club_id: club.id}, actor: admin)
+      assert row.id == in_club.id
+    end
+  end
+
   defp video_input(path, %Movie{} = movie),
     do: video_input(path, :movie, %{movie_id: movie.id})
 

@@ -54,6 +54,17 @@ defmodule WatchClubWeb.Router do
   scope "/", WatchClubWeb do
     pipe_through :browser
 
+    ash_authentication_live_session :administrator_routes,
+      on_mount: [
+        WatchClubWeb.Hooks.CurrentUrl,
+        WatchClubWeb.Hooks.Flash,
+        {WatchClubWeb.Hooks.Auth, :live_administrator_required},
+        WatchClubWeb.Hooks.Locale
+      ] do
+      live "/admin/media", Admin.MediaBrowserPage
+      live "/media/imports", Admin.MediaImportsPage
+    end
+
     ash_authentication_live_session :authenticated_routes,
       on_mount: [
         WatchClubWeb.Hooks.CurrentUrl,
