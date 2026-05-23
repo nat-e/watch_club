@@ -95,20 +95,24 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp content_section(assigns) do
     ~H"""
-    <.stack space="related">
+    <.section_block label="Content">
       <div class="grid grid-cols-[6rem_minmax(0,1fr)] items-start gap-cluster">
         <.tmdb_poster
-          path={nil}
-          size="w154"
+          path={@view.poster_path}
+          size="w185"
           alt={@view.content_title || @view.file_name}
           class="rounded-control border border-border-subtle"
         />
 
-        <.stack space="tight" class="min-w-0 self-center">
+        <.stack space="related" class="min-w-0 self-center">
           <h2 class="text-xl font-heading font-semibold leading-tight tracking-tight text-text">
             {@view.content_title || "Unmatched"}
           </h2>
-          <ul class="flex flex-wrap items-center gap-related text-sm text-text-muted">
+
+          <ul
+            :if={content_meta(@view) != []}
+            class="flex flex-wrap items-center gap-related text-sm text-text-muted"
+          >
             <li
               :for={{item, index} <- Enum.with_index(content_meta(@view))}
               class="flex items-center gap-related"
@@ -117,6 +121,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
               <span>{item}</span>
             </li>
           </ul>
+
+          <div :if={@view.content_sub}>
+            <.badge variant="secondary" size="sm">{@view.content_sub}</.badge>
+          </div>
         </.stack>
       </div>
 
@@ -129,7 +137,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
       <p :if={@view.clubs == []} class="text-sm text-text-subtle">
         Not reachable from any Club.
       </p>
-    </.stack>
+    </.section_block>
     """
   end
 
@@ -327,14 +335,28 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp play_label(:ebook), do: "Read"
   defp play_label(_), do: "Play"
 
-  defp content_meta(%{media_type: :tv_show_episode, content_sub: sub}) when is_binary(sub),
-    do: [MediaType.translated_label(:tv_show_episode), sub]
+  defp content_meta(view) do
+    [
+      view.release_year && Integer.to_string(view.release_year),
+      language_item(view),
+      country_item(view)
+    ]
+    |> Enum.reject(&is_nil/1)
+  end
 
-  defp content_meta(%{media_type: type})
-       when type in [:movie, :tv_show_episode, :ebook, :audiobook],
-       do: [MediaType.translated_label(type)]
+  defp language_item(%{original_language: lang}) when is_binary(lang) and lang != "",
+    do: String.upcase(lang)
 
-  defp content_meta(_), do: []
+  defp language_item(_), do: nil
+
+  defp country_item(%{origin_country: country}) when is_binary(country) and country != "" do
+    case RowView.country_flag(country) do
+      nil -> country
+      flag -> "#{flag} #{country}"
+    end
+  end
+
+  defp country_item(_), do: nil
 
   defp video_codec(%Media{video: %Video{video_tracks: [%{codec: codec} | _]}})
        when is_binary(codec),

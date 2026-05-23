@@ -14,6 +14,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           media_type: :movie | :tv_show_episode | :ebook | :audiobook,
           content_title: String.t() | nil,
           content_sub: String.t() | nil,
+          release_year: integer() | nil,
+          original_language: String.t() | nil,
+          origin_country: String.t() | nil,
+          poster_path: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
           resolution: :uhd_4k | :hd_1080p | :hd_720p | :sd | nil,
           audio_languages: [String.t()],
@@ -30,6 +34,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       media_type: media.type,
       content_title: content_title(media),
       content_sub: content_sub(media),
+      release_year: release_year(media),
+      original_language: original_language(media),
+      origin_country: origin_country(media),
+      poster_path: poster_path(media),
       clubs: clubs(media),
       resolution: resolution(media),
       audio_languages: audio_languages(media),
@@ -65,6 +73,51 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
 
   defp pad(n) when is_integer(n) and n < 10, do: "0#{n}"
   defp pad(n) when is_integer(n), do: Integer.to_string(n)
+
+  # --------------------------------------------------------------------------
+  # Content metadata (year / language / country / poster)
+  # --------------------------------------------------------------------------
+
+  defp release_year(%Media{} = media) do
+    case content(media) do
+      %{release_date: %Date{year: year}} -> year
+      _ -> nil
+    end
+  end
+
+  defp original_language(%Media{} = media) do
+    case content(media) do
+      %{original_language: lang} when is_binary(lang) and lang != "" -> lang
+      _ -> nil
+    end
+  end
+
+  defp origin_country(%Media{} = media) do
+    case content(media) do
+      %{origin_country: country} when is_binary(country) and country != "" -> country
+      _ -> nil
+    end
+  end
+
+  defp poster_path(%Media{type: :movie, video: %Video{movie: %{best_localization: %{poster_path: p}}}}),
+    do: p
+
+  defp poster_path(%Media{
+         type: :tv_show_episode,
+         video: %Video{tv_show_episode: %{tv_show: %{best_localization: %{poster_path: p}}}}
+       }),
+       do: p
+
+  defp poster_path(_), do: nil
+
+  defp content(%Media{type: :movie, video: %Video{movie: %{content: c}}}), do: c
+
+  defp content(%Media{type: :tv_show_episode, video: %Video{tv_show_episode: %{tv_show: %{content: c}}}}),
+    do: c
+
+  defp content(%Media{type: :ebook, ebook: %Ebook{book: %{content: c}}}), do: c
+  defp content(%Media{type: :audiobook, audiobook: %Audiobook{book: %{content: c}}}), do: c
+  defp content(_), do: nil
 
   # --------------------------------------------------------------------------
   # Clubs (union across attachment paths)
@@ -168,6 +221,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       {String.slice(name, 0, len - tail_len), String.slice(name, len - tail_len, tail_len)}
     end
   end
+
+  @spec country_flag(String.t() | nil) :: String.t() | nil
+  def country_flag(country) when is_binary(country) and byte_size(country) == 2 do
+    country
+    |> String.upcase()
+    |> String.to_charlist()
+    |> Enum.map(&(&1 + 127_397))
+    |> List.to_string()
+  end
+
+  def country_flag(_), do: nil
 
   @spec language_flag(String.t()) :: String.t()
   def language_flag(lang) when is_binary(lang) do

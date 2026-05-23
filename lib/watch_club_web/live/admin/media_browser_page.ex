@@ -247,9 +247,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         :video_tracks,
         :audio_tracks,
         :text_tracks,
-        movie: [content: [library_items: [library: :club]]],
+        movie: [:best_localization, content: [library_items: [library: :club]]],
         tv_show_episode: [
-          tv_show: [content: [library_items: [library: :club]]]
+          tv_show: [:best_localization, content: [library_items: [library: :club]]]
         ]
       ],
       ebook: [book: [content: [library_items: [library: :club]]]],
