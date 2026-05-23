@@ -36,7 +36,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         still claims its share of the table width, but the inner truncate
         sees a 0-width constraint and clips cleanly at the column boundary.
       -->
-      <td class="px-related py-2.5 align-middle max-w-0">
+      <td class="px-related py-2.5 align-middle w-full max-w-0">
         <div class="flex items-center gap-related min-w-0">
           <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
             <.media_type_icon media_type={@view.media_type} class="size-icon-sm" />
@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
           <.file_name file_name={@view.file_name} class="text-sm font-medium text-text" />
         </div>
       </td>
-      <td class="px-related py-2.5 align-middle max-w-0">
+      <td class="px-related py-2.5 align-middle max-w-[20rem]">
         <span class="block truncate text-sm text-text-muted" title={matched_content_inline(@view)}>
           {matched_content_inline(@view)}
         </span>

@@ -43,8 +43,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
         <.table>
           <.table_header>
             <.table_row>
-              <.table_head class="text-left max-w-0 overflow-hidden">File</.table_head>
-              <.table_head class="text-left max-w-0 overflow-hidden">Matched</.table_head>
+              <.table_head class="text-left w-full max-w-0 overflow-hidden">File</.table_head>
+              <.table_head class="text-left max-w-[20rem]">Matched</.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Clubs</.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Audio</.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Subs</.table_head>
