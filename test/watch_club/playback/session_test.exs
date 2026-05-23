@@ -106,7 +106,7 @@ defmodule WatchClub.Playback.SessionTest do
   end
 
   defp orphan_media(path) do
-    Ash.Seed.seed!(Media, %{path: Path.expand(path), type: :video})
+    Ash.Seed.seed!(Media, %{path: Path.expand(path), type: :movie})
   end
 
   defp accessible_media(%User{} = user, path) do
