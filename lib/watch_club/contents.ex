@@ -52,7 +52,7 @@ defmodule WatchClub.Contents do
     case Content
          |> Ash.Query.filter(external_id_source == :tmdb and external_id == ^to_string(tmdb_id))
          |> Ash.read_one(actor: actor) do
-      {:ok, nil} -> create_movie(%{tmdb_id: tmdb_id}, actor: actor)
+      {:ok, nil} -> create_movie(tmdb_id, actor: actor)
       {:ok, existing} -> {:ok, existing}
       {:error, error} -> {:error, error}
     end
@@ -65,8 +65,9 @@ defmodule WatchClub.Contents do
     def get_or_create_tv_show(tmdb_id, actor) do
       case Content
            |> Ash.Query.filter(external_id_source == :tmdb and external_id == ^to_string(tmdb_id))
+           |> Ash.Query.load(tv_show: [:episodes])
            |> Ash.read_one(actor: actor) do
-        {:ok, nil} -> create_tv_show(%{tmdb_id: tmdb_id}, actor: actor)
+        {:ok, nil} -> create_tv_show(tmdb_id, actor: actor)
         {:ok, existing} -> {:ok, existing}
         {:error, error} -> {:error, error}
       end

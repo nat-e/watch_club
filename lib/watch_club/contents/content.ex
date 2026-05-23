@@ -43,7 +43,7 @@ defmodule WatchClub.Contents.Content do
       argument :tmdb_id, :integer, allow_nil?: false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
 
-      change CreateOrUpdateMovie, only_when_valid?: true
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
 
       change WatchClub.Contents.Changes.SetLibraries,
         only_when_valid?: true,
@@ -56,7 +56,7 @@ defmodule WatchClub.Contents.Content do
       description "Re-fetches TMDB details for an existing Movie, mirroring TMDB exactly: localizations are inserted, updated, or destroyed to match the current TMDB payload."
       require_atomic? false
       argument :tmdb_id, :integer, allow_nil?: false
-      change CreateOrUpdateMovie
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie
     end
 
     create :create_tv_show do
