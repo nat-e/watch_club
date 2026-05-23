@@ -14,8 +14,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     {:ok,
      socket
      |> stream_configure(:media_rows, dom_id: &"media-row-#{&1.id}")
+     |> stream_configure(:media_cards, dom_id: &"media-card-#{&1.id}")
      |> assign(:state, State.new())
-     |> stream(:media_rows, [])}
+     |> stream(:media_rows, [])
+     |> stream(:media_cards, [])}
   end
 
   @impl true
@@ -34,7 +36,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     {:noreply,
      socket
      |> assign(:state, state)
-     |> stream(:media_rows, rows, reset: true)}
+     |> stream(:media_rows, rows, reset: true)
+     |> stream(:media_cards, rows, reset: true)}
   end
 
   @impl true
@@ -110,6 +113,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
              socket
              |> assign(:state, state)
              |> stream_delete(:media_rows, media)
+             |> stream_delete(:media_cards, media)
              |> put_flash(:info, "Media deleted.")}
 
           {:error, _reason} ->
@@ -142,19 +146,44 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
       <Toolbar.toolbar state={@state} />
 
-      <div class={[
-        "grid gap-cluster",
-        @state.drawer.open? && "lg:grid-cols-[minmax(0,1fr)_28rem]"
-      ]}>
-        <.empty_state :if={State.Stream.empty?(@state.stream)} state={@state} />
+      <.empty_state :if={State.Stream.empty?(@state.stream)} state={@state} />
 
+      <div
+        :if={!State.Stream.empty?(@state.stream)}
+        class={[
+          "grid gap-cluster items-start",
+          @state.drawer.open? &&
+            "lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_32rem] 2xl:grid-cols-[minmax(0,1fr)_36rem]"
+        ]}
+      >
         <Table.render
-          :if={!State.Stream.empty?(@state.stream)}
           streams={@streams}
           selected_id={selected_id(@state)}
+          drawer_open?={@state.drawer.open?}
         />
 
-        <DetailDrawer.render :if={@state.drawer.open?} media={@state.drawer.media} />
+        <%= if @state.drawer.open? do %>
+          <button
+            type="button"
+            phx-click="close_drawer"
+            aria-label="Close detail panel"
+            class="fixed inset-0 z-40 bg-scrim backdrop-blur-sm lg:hidden"
+          >
+          </button>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Media detail"
+            phx-window-keydown="close_drawer"
+            phx-key="escape"
+            class={[
+              "fixed inset-y-0 right-0 z-50 w-full max-w-[32rem] overflow-y-auto",
+              "lg:static lg:z-auto lg:max-w-none lg:overflow-visible"
+            ]}
+          >
+            <DetailDrawer.render media={@state.drawer.media} />
+          </div>
+        <% end %>
       </div>
     </Layouts.app>
     """

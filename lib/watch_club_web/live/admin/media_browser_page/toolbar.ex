@@ -19,13 +19,24 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
   def toolbar(assigns) do
     ~H"""
     <.card surface="default" padding="cluster">
-      <form id="media-browser-toolbar" phx-change="apply_state">
+      <form
+        id="media-browser-toolbar"
+        phx-change="apply_state"
+        aria-label="Filter media"
+      >
         <.stack space="related">
           <.cluster space="related">
-            <div class="relative grow min-w-[18rem]">
-              <Lucideicons.search class="absolute left-3 top-1/2 size-icon-sm -translate-y-1/2 text-text-subtle" />
+            <div class="relative grow basis-full sm:basis-[18rem] min-w-0">
+              <label for="media-browser-search" class="sr-only">
+                Search file name or matched content
+              </label>
+              <Lucideicons.search
+                aria-hidden="true"
+                class="pointer-events-none absolute left-3 top-1/2 size-icon-sm -translate-y-1/2 text-text-subtle"
+              />
               <input
-                type="text"
+                id="media-browser-search"
+                type="search"
                 name="search"
                 value={@state.filter.search}
                 placeholder="Search file name or content…"
@@ -43,7 +54,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
               options={[{:video, "Video"}, {:ebook, "Ebook"}, {:audiobook, "Audiobook"}]}
             />
 
-            <div class="ml-auto">
+            <div class="sm:ml-auto">
               <.sort_select state={@state} />
             </div>
           </.cluster>

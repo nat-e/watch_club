@@ -13,6 +13,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Layout
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClub.Media.{Media, MediaType, Video}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
@@ -25,7 +26,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     assigns = assigns |> assign(:view, view) |> assign(:has_video?, has_video?)
 
     ~H"""
-    <aside class="grid h-fit overflow-hidden rounded-card border border-border bg-surface shadow-card">
+    <aside class="grid h-full content-start overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-card">
       <.hero view={@view} media={@media} />
 
       <div class="grid gap-cluster p-cluster">
@@ -45,7 +46,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp hero(assigns) do
     ~H"""
     <header class="grid gap-group border-b border-border-subtle p-cluster">
-      <div class="flex items-center gap-related">
+      <div class="flex items-center gap-related min-w-0">
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
           <.media_type_icon media_type={@view.media_type} class="size-icon" />
         </span>
@@ -53,9 +54,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           <span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
             {MediaType.translated_label(@view.media_type)} file
           </span>
-          <span class="truncate font-mono text-sm text-text" title={@view.file_name}>
-            {@view.file_name}
-          </span>
+          <.file_name file_name={@view.file_name} class="font-mono text-sm text-text" />
         </.stack>
         <button
           type="button"

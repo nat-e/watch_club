@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
 
@@ -30,33 +31,92 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         @selected && "bg-surface-selected"
       ]}
     >
-      <td class="px-related py-2.5">
+      <!--
+        max-w-0 on a table cell is the canonical truncation idiom: the cell
+        still claims its share of the table width, but the inner truncate
+        sees a 0-width constraint and clips cleanly at the column boundary.
+      -->
+      <td class="px-related py-2.5 align-middle max-w-0">
         <div class="flex items-center gap-related min-w-0">
           <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
             <.media_type_icon media_type={@view.media_type} class="size-icon-sm" />
           </span>
-          <span class="block truncate text-sm font-medium text-text">
-            {@view.file_name}
-          </span>
+          <.file_name file_name={@view.file_name} class="text-sm font-medium text-text" />
         </div>
       </td>
-      <td class="px-related py-2.5">
-        <span class="block truncate text-sm text-text-muted">
+      <td class="px-related py-2.5 align-middle max-w-0">
+        <span class="block truncate text-sm text-text-muted" title={matched_content_inline(@view)}>
           {matched_content_inline(@view)}
         </span>
       </td>
-      <td class="px-related py-2.5"><.clubs_avatars clubs={@view.clubs} /></td>
-      <td class="px-related py-2.5"><.flag_strip langs={@view.audio_languages} /></td>
-      <td class="px-related py-2.5"><.flag_strip langs={@view.subtitle_languages} /></td>
-      <td class="px-related py-2.5">
+      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
+        <.clubs_avatars clubs={@view.clubs} />
+      </td>
+      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
+        <.flag_strip langs={@view.audio_languages} />
+      </td>
+      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
+        <.flag_strip langs={@view.subtitle_languages} />
+      </td>
+      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
         <.resolution_badge resolution={@view.resolution} />
       </td>
-      <td class="px-related py-2.5">
-        <span class="text-xs text-text-subtle whitespace-nowrap">
+      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap">
+        <span class="text-xs text-text-subtle">
           {relative_time(@view.imported_at)}
         </span>
       </td>
     </tr>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :row, :map, required: true, doc: "raw Media struct from the stream"
+  attr :selected, :boolean, default: false
+
+  def card(assigns) do
+    view = RowView.from_media(assigns.row)
+    assigns = assign(assigns, :view, view)
+
+    ~H"""
+    <li
+      id={@id}
+      phx-click="open_drawer"
+      phx-value-id={@view.id}
+      class={[
+        "flex flex-col gap-related rounded-card border border-border bg-surface p-cluster shadow-card",
+        "transition-colors cursor-pointer hover:bg-surface-hover",
+        @selected && "ring-2 ring-focus-ring border-border-focus"
+      ]}
+    >
+      <div class="flex items-center gap-related min-w-0">
+        <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
+          <.media_type_icon media_type={@view.media_type} class="size-icon-sm" />
+        </span>
+        <.file_name file_name={@view.file_name} class="text-sm font-medium text-text" />
+      </div>
+
+      <p class="truncate text-sm text-text-muted" title={matched_content_inline(@view)}>
+        {matched_content_inline(@view)}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-related text-xs text-text-subtle">
+        <.resolution_badge resolution={@view.resolution} />
+        <span :if={@view.audio_languages != []} class="flex items-center gap-tight">
+          <Lucideicons.volume_2 class="size-icon-xs" />
+          <.flag_strip langs={@view.audio_languages} />
+        </span>
+        <span :if={@view.subtitle_languages != []} class="flex items-center gap-tight">
+          <Lucideicons.captions class="size-icon-xs" />
+          <.flag_strip langs={@view.subtitle_languages} />
+        </span>
+        <span :if={@view.clubs != []} class="flex items-center gap-tight">
+          <Lucideicons.library class="size-icon-xs" />
+          <.clubs_avatars clubs={@view.clubs} />
+        </span>
+        <span class="ml-auto whitespace-nowrap">{relative_time(@view.imported_at)}</span>
+      </div>
+    </li>
     """
   end
 

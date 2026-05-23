@@ -152,6 +152,23 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   def resolution_label(:sd), do: "SD"
   def resolution_label(_), do: nil
 
+  @doc """
+  Splits a filename into `{head, tail}` so the head can truncate with an
+  ellipsis while the tail (extension + a few preceding characters) stays
+  visible — a middle-ellipsis effect achieved purely with flex layout.
+  """
+  @spec split_file_name(String.t()) :: {String.t(), String.t()}
+  def split_file_name(name) when is_binary(name) do
+    len = String.length(name)
+    tail_len = 12
+
+    if len <= tail_len + 4 do
+      {name, ""}
+    else
+      {String.slice(name, 0, len - tail_len), String.slice(name, len - tail_len, tail_len)}
+    end
+  end
+
   @spec language_flag(String.t()) :: String.t()
   def language_flag(lang) when is_binary(lang) do
     code =
