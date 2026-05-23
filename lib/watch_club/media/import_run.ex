@@ -8,7 +8,7 @@ defmodule WatchClub.Media.ImportRun do
 
   import Ash.Expr
 
-  alias WatchClub.Media.{ImportConfiguration, ImportResult}
+  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportRun.Changes
 
   postgres do
@@ -31,15 +31,7 @@ defmodule WatchClub.Media.ImportRun do
     triggers do
       trigger :run do
         action :run
-
-        where expr(
-                status == :pending and
-                  not exists(
-                    WatchClub.Media.ImportRun,
-                    configuration_id == parent(configuration_id) and status == :processing
-                  )
-              )
-
+        where expr(status == :processing)
         queue :media_imports
         max_attempts 1
         on_error :fail
@@ -50,14 +42,13 @@ defmodule WatchClub.Media.ImportRun do
   end
 
   state_machine do
-    initial_states [:pending]
-    default_initial_state :pending
+    initial_states [:processing]
+    default_initial_state :processing
     state_attribute :status
 
     transitions do
-      transition :run, from: :pending, to: :processing
       transition :complete, from: :processing, to: :completed
-      transition :fail, from: [:pending, :processing], to: :failed
+      transition :fail, from: :processing, to: :failed
     end
   end
 
@@ -77,24 +68,13 @@ defmodule WatchClub.Media.ImportRun do
       require_atomic? false
       accept []
 
-      change transition_state(:processing)
       change Changes.ExecuteRun
     end
 
-    # Status transition and result rows commit atomically in one transaction.
-    #
-    # `bulk?: true` produces a single multi-row INSERT; per row we send 5
-    # parameters, so this caps the input at ~13k results before hitting
-    # Postgres' 65k parameter limit. Acceptable for realistic library sizes;
-    # if we ever exceed this we'd need to chunk the inserts manually inside
-    # the action's transaction.
     update :complete do
-      require_atomic? false
       accept []
-      argument :results, {:array, :map}, allow_nil?: false, default: []
 
       change transition_state(:completed)
-      change manage_relationship(:results, type: :create, authorize?: false, bulk?: true)
     end
 
     update :fail do
@@ -161,12 +141,6 @@ defmodule WatchClub.Media.ImportRun do
     belongs_to :configuration, ImportConfiguration do
       allow_nil? true
       public? true
-    end
-
-    has_many :results, ImportResult do
-      public? true
-      destination_attribute :media_import_id
-      sort media_import_id: :desc, inserted_at: :desc
     end
   end
 

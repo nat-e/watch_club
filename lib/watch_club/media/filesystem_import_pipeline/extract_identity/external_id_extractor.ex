@@ -21,7 +21,15 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor do
   etc., so they're only recognized when paired with a marker.
   """
 
-  alias WatchClub.Media.ImportPipeline.Candidate.ExternalIds
+  defmodule ExternalIds do
+    @type t :: %__MODULE__{
+            tmdb: integer() | nil,
+            imdb: String.t() | nil,
+            tvdb: integer() | nil
+          }
+
+    defstruct [:tmdb, :imdb, :tvdb]
+  end
 
   @bracket_regex ~r/[\[\(\{]\s*(tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)\s*[=\-\s]\s*([^\]\)\}]+?)\s*[\]\)\}]/i
   @uniqueid_regex ~r/<uniqueid[^>]+type=["'](tmdb|imdb|tvdb)["'][^>]*>\s*([^<]+?)\s*<\/uniqueid>/i
@@ -41,9 +49,16 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor do
   def from_text(text) when is_binary(text) do
     %ExternalIds{
       imdb: find_imdb(text),
-      tmdb: find_tmdb(text),
-      tvdb: find_tvdb(text)
+      tmdb: to_int(find_tmdb(text)),
+      tvdb: to_int(find_tvdb(text))
     }
+  end
+
+  defp to_int(value) when is_binary(value) do
+    case Integer.parse(value) do
+      {n, ""} -> n
+      _ -> nil
+    end
   end
 
   @doc """

@@ -161,8 +161,7 @@ defmodule WatchClub.Generator do
       ImportConfiguration,
       :create_filesystem,
       defaults: [
-        content_type: :movie,
-        media_type: :video,
+        media_type: :movie,
         filesystem_path:
           sequence(:import_configuration_filesystem_path, fn i -> "tmp/media-imports/#{i}" end)
       ],
@@ -173,7 +172,7 @@ defmodule WatchClub.Generator do
   end
 
   def import_run(%ImportConfiguration{} = configuration, opts \\ []) do
-    {status, opts} = Keyword.pop(opts, :status, :pending)
+    {status, opts} = Keyword.pop(opts, :status, :processing)
 
     seed_generator(
       %ImportRun{

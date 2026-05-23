@@ -14,15 +14,27 @@
     },
     {
       "allow_nil?": false,
-      "default": "nil",
+      "default": "false",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "status",
-      "type": "text"
+      "source": "refresh_metadata",
+      "type": "boolean"
+    },
+    {
+      "allow_nil?": false,
+      "default": "true",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "is_triggered_manually",
+      "type": "boolean"
     },
     {
       "allow_nil?": false,
@@ -33,43 +45,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "path",
-      "type": "text"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "media_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "message",
-      "type": "text"
-    },
-    {
-      "allow_nil?": false,
-      "default": "%{}",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "metadata",
+      "source": "configuration_snapshot",
       "type": "map"
     },
     {
@@ -98,6 +74,18 @@
     },
     {
       "allow_nil?": false,
+      "default": "\"processing\"",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "status",
+      "type": "text"
+    },
+    {
+      "allow_nil?": true,
       "default": "nil",
       "generated?": false,
       "precision": null,
@@ -115,26 +103,49 @@
           "global": null,
           "strategy": null
         },
-        "name": "media_import_results_media_import_id_fkey",
-        "on_delete": "delete",
+        "name": "media_import_runs_configuration_id_fkey",
+        "on_delete": "nilify",
         "on_update": "update",
         "primary_key?": true,
         "schema": "public",
-        "table": "media_import_runs"
+        "table": "media_import_configurations"
       },
       "scale": null,
       "size": null,
-      "source": "media_import_id",
+      "source": "configuration_id",
       "type": "uuid"
     }
   ],
   "base_filter": null,
   "check_constraints": [],
   "create_table_options": null,
-  "custom_indexes": [],
+  "custom_indexes": [
+    {
+      "all_tenants?": false,
+      "concurrently": false,
+      "error_fields": [
+        "configuration_id"
+      ],
+      "fields": [
+        {
+          "type": "atom",
+          "value": "configuration_id"
+        }
+      ],
+      "include": null,
+      "message": null,
+      "name": "media_import_runs_one_processing_per_configuration_index",
+      "nulls_distinct": true,
+      "prefix": null,
+      "table": null,
+      "unique": true,
+      "using": null,
+      "where": "status = 'processing' AND configuration_id IS NOT NULL"
+    }
+  ],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "FD6AF9312389520C694F797E6C45359B838EFB87CC42433588BA697836630EE5",
+  "hash": "38AD18C3F2492E15046D96A4CE8852329B6B481C6CD05BF42B856FF2498E9A42",
   "identities": [],
   "multitenancy": {
     "attribute": null,
@@ -143,5 +154,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "media_import_results"
+  "table": "media_import_runs"
 }

@@ -19,40 +19,33 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
-    case configuration.media_type do
-      :video -> probe_video(candidate)
-      :audiobook -> probe_audiobook(candidate)
-      :ebook -> probe_ebook(candidate)
+    case probe(configuration.media_type, candidate) do
+      {:ok, candidate} -> {:ok, candidate}
+      {:error, reason} -> {:halt, reason}
     end
   end
 
-  defp probe_video(candidate) do
+  defp probe(media_type, candidate) when media_type in [:movie, :tv_show_episode] do
     with {:ok, metadata} <- Ffmpeg.probe(candidate.path),
          {:ok, structure} <- Tracks.for_video(metadata) do
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}
-    else
-      {:error, message} -> {:halt, candidate, :failed, halt_message(candidate, message)}
     end
   end
 
-  defp probe_audiobook(candidate) do
+  defp probe(:audiobook, candidate) do
     with {:ok, metadata} <- Ffmpeg.probe(candidate.path),
          {:ok, structure} <- Tracks.for_audiobook(metadata) do
       {:ok, %{candidate | media_structure: structure}}
-    else
-      {:error, message} -> {:halt, candidate, :failed, halt_message(candidate, message)}
     end
   end
 
-  defp probe_ebook(candidate) do
+  defp probe(:ebook, candidate) do
     structure = %MediaStructure{
       container: candidate.extension |> String.trim_leading(".") |> empty_to_nil()
     }
 
     {:ok, %{candidate | media_structure: structure}}
   end
-
-  defp halt_message(candidate, message), do: "#{Path.basename(candidate.path)}: #{message}"
 
   defp empty_to_nil(""), do: nil
   defp empty_to_nil(value), do: value

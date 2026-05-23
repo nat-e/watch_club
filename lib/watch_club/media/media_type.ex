@@ -3,12 +3,14 @@ defmodule WatchClub.Media.MediaType do
 
   use Ash.Type.Enum,
     values: [
-      video: [description: "Video file", label: "Video"],
-      ebook: [description: "Ebook file", label: "Ebook"],
-      audiobook: [description: "Audiobook file", label: "Audiobook"]
+      movie: [description: "Video file for a Movie"],
+      tv_show_episode: [description: "Video file for a TV Show Episode"],
+      ebook: [description: "Ebook file"],
+      audiobook: [description: "Audiobook file"]
     ]
 
-  def translated_label(:video), do: dgettext("media_types", "Video")
+  def translated_label(:movie), do: dgettext("media_types", "Movie")
+  def translated_label(:tv_show_episode), do: dgettext("media_types", "TV Show Episode")
   def translated_label(:ebook), do: dgettext("media_types", "Ebook")
   def translated_label(:audiobook), do: dgettext("media_types", "Audiobook")
 end

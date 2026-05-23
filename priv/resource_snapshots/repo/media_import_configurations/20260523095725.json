@@ -14,14 +14,14 @@
     },
     {
       "allow_nil?": false,
-      "default": "nil",
+      "default": "\"filesystem\"",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "status",
+      "source": "source_type",
       "type": "text"
     },
     {
@@ -33,44 +33,32 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "path",
-      "type": "text"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "media_id",
-      "type": "uuid"
-    },
-    {
-      "allow_nil?": true,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": null,
-      "scale": null,
-      "size": null,
-      "source": "message",
+      "source": "media_type",
       "type": "text"
     },
     {
       "allow_nil?": false,
-      "default": "%{}",
+      "default": "nil",
       "generated?": false,
       "precision": null,
       "primary_key?": false,
       "references": null,
       "scale": null,
       "size": null,
-      "source": "metadata",
-      "type": "map"
+      "source": "filesystem_path",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "false",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "is_disabled",
+      "type": "boolean"
     },
     {
       "allow_nil?": false,
@@ -95,37 +83,6 @@
       "size": null,
       "source": "updated_at",
       "type": "utc_datetime_usec"
-    },
-    {
-      "allow_nil?": false,
-      "default": "nil",
-      "generated?": false,
-      "precision": null,
-      "primary_key?": false,
-      "references": {
-        "deferrable": false,
-        "destination_attribute": "id",
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null,
-        "index?": false,
-        "match_type": null,
-        "match_with": null,
-        "multitenancy": {
-          "attribute": null,
-          "global": null,
-          "strategy": null
-        },
-        "name": "media_import_results_media_import_id_fkey",
-        "on_delete": "delete",
-        "on_update": "update",
-        "primary_key?": true,
-        "schema": "public",
-        "table": "media_imports"
-      },
-      "scale": null,
-      "size": null,
-      "source": "media_import_id",
-      "type": "uuid"
     }
   ],
   "base_filter": null,
@@ -134,7 +91,7 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "1F046F87978F36A666B1345C06FC5997F9372CDCED25C091C6CF90DADBD1C939",
+  "hash": "8A54331FDE516194A6D07BE59E0FEAEFA2960051DD433C79F1169FFBE711CE18",
   "identities": [],
   "multitenancy": {
     "attribute": null,
@@ -143,5 +100,5 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "media_import_results"
+  "table": "media_import_configurations"
 }

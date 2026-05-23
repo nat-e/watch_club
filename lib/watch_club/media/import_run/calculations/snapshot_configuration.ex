@@ -26,7 +26,6 @@ defmodule WatchClub.Media.ImportRun.Calculations.SnapshotConfiguration do
     %ImportConfiguration{
       id: Map.fetch!(snapshot, "id"),
       source_type: snapshot_atom(snapshot, "source_type"),
-      content_type: snapshot_atom(snapshot, "content_type"),
       media_type: snapshot_atom(snapshot, "media_type"),
       filesystem_path: Map.fetch!(snapshot, "filesystem_path")
     }

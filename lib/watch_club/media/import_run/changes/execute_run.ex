@@ -9,9 +9,7 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
 
     1. Load `:snapshot_configuration`.
     2. Run the import pipeline.
-    3. Hand the per-candidate outcomes to the `:complete` action, which
-       writes the `ImportResult` rows and transitions the run to
-       `:completed` atomically in a single transaction.
+    3. Set the run as completed
 
   If anything fails or raises, the error propagates to AshOban, which runs
   the trigger's `on_error: :fail` action to mark the run failed.
@@ -19,50 +17,30 @@ defmodule WatchClub.Media.ImportRun.Changes.ExecuteRun do
 
   use Ash.Resource.Change
 
-  alias WatchClub.Media.ImportPipeline
-  alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.{FilesystemImportPipeline, ImportRun}
+
+  @filesystem_pipeline Application.compile_env(
+                         :watch_club,
+                         :import_pipeline_filesystem,
+                         FilesystemImportPipeline
+                       )
 
   @impl true
-  def change(changeset, _opts, %{actor: actor}) do
+  def change(changeset, _opts, context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, %ImportRun{} = run} <- result,
-           {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, actor: actor),
-           {:ok, candidates} <- ImportPipeline.process_import(loaded_run) do
-        Ash.update(loaded_run, %{results: result_inputs(candidates, loaded_run)},
-          action: :complete,
-          actor: actor
-        )
+           {:ok, loaded_run} <- Ash.load(run, :snapshot_configuration, scope: context),
+           :ok <-
+             import_pipeline(loaded_run.snapshot_configuration.source_type).import_medias(
+               loaded_run
+             ) do
+        Ash.update(loaded_run, %{}, action: :complete, scope: context)
+      else
+        {:error, _} = error -> error
+        other -> {:error, "Unexpected pipeline result: #{inspect(other)}"}
       end
     end)
   end
 
-  # Skipped candidates do not produce a result row (per CONTEXT.md: existing
-  # Media re-encountered without refresh writes nothing).
-  defp result_inputs(candidates, run) do
-    candidates
-    |> Stream.reject(fn %Candidate{outcome: %{status: status}} -> status == :skipped end)
-    |> Enum.map(&result_input(&1, run))
-  end
-
-  defp result_input(%Candidate{} = candidate, %ImportRun{} = run) do
-    configuration = run.snapshot_configuration
-    match = candidate.match
-    existing_media = candidate.existing_media
-
-    %{
-      status: candidate.outcome.status,
-      path: candidate.path,
-      media_id: match && match.media_id,
-      message: candidate.outcome.message,
-      metadata: %{
-        "content_type" => Atom.to_string(configuration.content_type),
-        "media_type" => Atom.to_string(configuration.media_type),
-        "relative_path" => candidate.relative_path,
-        "existing_media_id" => existing_media && existing_media.id,
-        "content_id" => match && match.content_id,
-        "content_action" => match && Atom.to_string(match.content_action)
-      }
-    }
-  end
+  defp import_pipeline(:filesystem), do: @filesystem_pipeline
 end

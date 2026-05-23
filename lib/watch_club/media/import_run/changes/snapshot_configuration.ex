@@ -16,7 +16,6 @@ defmodule WatchClub.Media.ImportRun.Changes.SnapshotConfiguration do
           "id" => configuration.id,
           "name" => configuration.name,
           "source_type" => Atom.to_string(configuration.source_type),
-          "content_type" => Atom.to_string(configuration.content_type),
           "media_type" => Atom.to_string(configuration.media_type),
           "filesystem_path" => configuration.filesystem_path
         })

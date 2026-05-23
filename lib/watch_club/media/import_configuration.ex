@@ -5,7 +5,6 @@ defmodule WatchClub.Media.ImportConfiguration do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.ContentType
   alias WatchClub.Media.ImportConfiguration.Calculations
   alias WatchClub.Media.ImportConfiguration.Validations
   alias WatchClub.Media.{ImportRun, ImportSourceType, MediaType}
@@ -14,17 +13,6 @@ defmodule WatchClub.Media.ImportConfiguration do
   postgres do
     table "media_import_configurations"
     repo WatchClub.Repo
-
-    check_constraints do
-      check_constraint [:content_type, :media_type],
-        name: "media_import_configurations_valid_content_media_type_check",
-        check: """
-        (content_type = 'movie' AND media_type = 'video') OR
-        (content_type = 'tv_show' AND media_type = 'video') OR
-        (content_type = 'book' AND media_type IN ('ebook', 'audiobook'))
-        """,
-        message: "Media Import Configuration content type and media type are incompatible"
-    end
   end
 
   actions do
@@ -32,9 +20,7 @@ defmodule WatchClub.Media.ImportConfiguration do
 
     create :create_filesystem do
       primary? true
-      accept [:content_type, :media_type, :filesystem_path]
-
-      validate Validations.ValidCombination
+      accept [:media_type, :filesystem_path]
 
       change set_attribute(:source_type, :filesystem)
       change {NormalizePath, attribute: :filesystem_path}
@@ -84,11 +70,6 @@ defmodule WatchClub.Media.ImportConfiguration do
       allow_nil? false
       public? true
       default :filesystem
-    end
-
-    attribute :content_type, ContentType do
-      allow_nil? false
-      public? true
     end
 
     attribute :media_type, MediaType do

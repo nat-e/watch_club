@@ -9,8 +9,6 @@ defmodule WatchClub.Media.MediaTest do
     AudioTrack,
     Audiobook,
     Ebook,
-    ImportConfiguration,
-    ImportRun,
     Media,
     TextTrack,
     Video,
@@ -21,106 +19,87 @@ defmodule WatchClub.Media.MediaTest do
 
   require Ash.Query
 
-  describe "create_video/*" do
-    test "creates video media with tracks" do
+  describe "list_media/*" do
+    test "lists media for an authenticated user" do
+      user = generate(user())
+      movie = seed_movie()
+      media = create_or_update_video!(video_input("tmp/list.mkv", movie), actor: SystemActor.actor())
+
+      assert [%Media{id: id}] = list_media!(actor: user)
+      assert id == media.id
+    end
+
+    test "rejects reads without an actor" do
+      list_media(actor: nil)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "list_media_under_path_prefix/*" do
+    test "returns only media under the given path prefix" do
+      movie = seed_movie()
+      under =
+        create_or_update_video!(video_input("tmp/library-a/under.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      _outside =
+        create_or_update_video!(video_input("tmp/library-b/outside.mkv", movie),
+          actor: SystemActor.actor()
+        )
+
+      assert [%Media{id: id}] =
+               list_media_under_path_prefix!(Path.expand("tmp/library-a"), actor: SystemActor.actor())
+
+      assert id == under.id
+    end
+  end
+
+  describe "create_or_update_video/*" do
+    test "creates video for a movie" do
       movie = seed_movie()
       path = "tmp/media/../movies/star-wars.mkv"
-      sidecar_path = "tmp/media/../movies/star-wars.en.srt"
+      sidecar_path = "tmp/media/../movies/star-wars.fr.srt"
 
       assert %Media{
                id: media_id,
                path: normalized_path,
-               type: :video,
+               type: :movie,
                video: %Video{
                  id: video_id,
                  movie_id: movie_id,
                  duration_seconds: 7245.5,
                  container: "matroska",
-                 bit_rate: 8_000_000,
-                 video_tracks: [
-                   %VideoTrack{
-                     stream_index: 0,
-                     codec: "h264",
-                     width: 1920,
-                     height: 1080,
-                     frame_rate: 23.976,
-                     bit_rate: 7_500_000
-                   }
-                 ],
-                 audio_tracks: [
-                   %AudioTrack{
-                     stream_index: 1,
-                     codec: "aac",
-                     language: "eng",
-                     title: "Stereo",
-                     channels: 2,
-                     default?: true
-                   }
-                 ],
+                 video_tracks: [%VideoTrack{codec: "h264"}],
+                 audio_tracks: [%AudioTrack{codec: "aac", default?: true}],
                  text_tracks: [
-                   %TextTrack{
-                     stream_index: 2,
-                     codec: "subrip",
-                     language: "eng",
-                     title: "English",
-                     default?: true,
-                     forced?: false
-                   },
-                   %TextTrack{
-                     stream_index: nil,
-                     sidecar_path: normalized_sidecar_path,
-                     codec: "subrip",
-                     language: "fra",
-                     title: "French",
-                     default?: false,
-                     forced?: false
-                   }
+                   %TextTrack{stream_index: 2, codec: "subrip"},
+                   %TextTrack{sidecar_path: normalized_sidecar_path, codec: "subrip"}
                  ]
                }
              } =
-               create_video!(
+               create_or_update_video!(
                  %{
                    path: path,
+                   type: :movie,
                    video: %{
                      movie_id: movie.id,
                      duration_seconds: 7245.5,
                      container: "matroska",
                      bit_rate: 8_000_000,
-                     video_tracks: [
-                       %{
-                         stream_index: 0,
-                         codec: "h264",
-                         width: 1920,
-                         height: 1080,
-                         frame_rate: 23.976,
-                         bit_rate: 7_500_000
-                       }
-                     ],
+                     video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
                      audio_tracks: [
                        %{
                          stream_index: 1,
                          codec: "aac",
                          language: "eng",
-                         title: "Stereo",
                          channels: 2,
                          default?: true
                        }
                      ],
                      text_tracks: [
-                       %{
-                         stream_index: 2,
-                         codec: "subrip",
-                         language: "eng",
-                         title: "English",
-                         default?: true,
-                         forced?: false
-                       },
-                       %{
-                         sidecar_path: sidecar_path,
-                         codec: "subrip",
-                         language: "fra",
-                         title: "French"
-                       }
+                       %{stream_index: 2, codec: "subrip", language: "eng"},
+                       %{sidecar_path: sidecar_path, codec: "subrip", language: "fra"}
                      ]
                    }
                  },
@@ -134,51 +113,88 @@ defmodule WatchClub.Media.MediaTest do
       assert normalized_sidecar_path == Path.expand(sidecar_path)
     end
 
-    test "creates video media for a TV Show Episode" do
-      tv_show_episode = seed_tv_show_episode()
+    test "creates video for a TV show episode" do
+      episode = seed_tv_show_episode()
 
       assert %Media{
-               id: media_id,
-               type: :video,
-               video: %Video{
-                 id: video_id,
-                 movie_id: nil,
-                 tv_show_episode_id: tv_show_episode_id
-               }
+               type: :tv_show_episode,
+               video: %Video{movie_id: nil, tv_show_episode_id: episode_id}
              } =
-               create_video!(video_input("tmp/tv-show-episode.mkv", tv_show_episode),
+               create_or_update_video!(video_input("tmp/tv-show.mkv", episode),
                  actor: SystemActor.actor(),
                  load: [:video]
                )
 
-      assert media_id == video_id
-      assert tv_show_episode_id == tv_show_episode.id
+      assert episode_id == episode.id
     end
 
-    test "rejects duplicate normalized paths" do
+    test "replaces an existing video at the same path" do
       movie = seed_movie()
-      path = "tmp/media/../movies/duplicate.mkv"
+      path = "tmp/refresh.mkv"
 
-      create_video!(video_input(path, movie), actor: SystemActor.actor())
+      original =
+        create_or_update_video!(video_input(path, movie),
+          actor: SystemActor.actor(),
+          load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+        )
 
-      create_video(video_input(Path.expand(path), movie), actor: SystemActor.actor())
-      |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Changes.InvalidAttribute{field: :path} -> true
-        _ -> false
-      end)
+      original_track_ids =
+        Enum.map(
+          original.video.video_tracks ++ original.video.audio_tracks ++ original.video.text_tracks,
+          & &1.id
+        )
+
+      refreshed =
+        create_or_update_video!(
+          %{
+            path: path,
+            type: :movie,
+            video: %{
+              movie_id: movie.id,
+              container: "matroska",
+              video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
+              audio_tracks: [
+                %{stream_index: 1, codec: "opus", language: "eng", channels: 2, default?: true}
+              ],
+              text_tracks: []
+            }
+          },
+          actor: SystemActor.actor(),
+          load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+        )
+
+      assert refreshed.id == original.id
+      assert refreshed.video.id == original.video.id
+      assert [%VideoTrack{codec: "av1"}] = refreshed.video.video_tracks
+      assert [%AudioTrack{codec: "opus"}] = refreshed.video.audio_tracks
+      assert refreshed.video.text_tracks == []
+
+      for old_id <- original_track_ids do
+        refute VideoTrack
+               |> Ash.Query.filter(id == ^old_id)
+               |> Ash.exists?(authorize?: false)
+
+        refute AudioTrack
+               |> Ash.Query.filter(id == ^old_id)
+               |> Ash.exists?(authorize?: false)
+
+        refute TextTrack
+               |> Ash.Query.filter(id == ^old_id)
+               |> Ash.exists?(authorize?: false)
+      end
     end
 
-    test "forbids non-system actors from creating video media" do
+    test "rejects writes from a non-system actor" do
       user = generate(user())
       movie = seed_movie()
 
-      create_video(video_input("tmp/member-video.mkv", movie), actor: user)
+      create_or_update_video(video_input("tmp/forbidden.mkv", movie), actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  describe "create_ebook/*" do
-    test "creates ebook media" do
+  describe "create_or_update_ebook/*" do
+    test "creates ebook for a book" do
       book = seed_book()
       path = "tmp/books/../books/book.epub"
 
@@ -188,7 +204,7 @@ defmodule WatchClub.Media.MediaTest do
                type: :ebook,
                ebook: %Ebook{id: ebook_id, book_id: book_id}
              } =
-               create_ebook!(%{path: path, ebook: %{book_id: book.id}},
+               create_or_update_ebook!(%{path: path, ebook: %{book_id: book.id}},
                  actor: SystemActor.actor(),
                  load: [:ebook]
                )
@@ -197,10 +213,32 @@ defmodule WatchClub.Media.MediaTest do
       assert book_id == book.id
       assert normalized_path == Path.expand(path)
     end
+
+    test "replaces an existing ebook at the same path" do
+      original_book = seed_book()
+      new_book = seed_book()
+      path = "tmp/refresh-ebook.epub"
+
+      original =
+        create_or_update_ebook!(%{path: path, ebook: %{book_id: original_book.id}},
+          actor: SystemActor.actor(),
+          load: [:ebook]
+        )
+
+      refreshed =
+        create_or_update_ebook!(%{path: path, ebook: %{book_id: new_book.id}},
+          actor: SystemActor.actor(),
+          load: [:ebook]
+        )
+
+      assert refreshed.id == original.id
+      assert refreshed.ebook.id == original.ebook.id
+      assert refreshed.ebook.book_id == new_book.id
+    end
   end
 
-  describe "create_audiobook/*" do
-    test "creates audiobook media" do
+  describe "create_or_update_audiobook/*" do
+    test "creates audiobook for a book" do
       book = seed_book()
       path = "tmp/audiobooks/../audiobooks/book.m4b"
 
@@ -210,7 +248,7 @@ defmodule WatchClub.Media.MediaTest do
                type: :audiobook,
                audiobook: %Audiobook{id: audiobook_id, book_id: book_id}
              } =
-               create_audiobook!(%{path: path, audiobook: %{book_id: book.id}},
+               create_or_update_audiobook!(%{path: path, audiobook: %{book_id: book.id}},
                  actor: SystemActor.actor(),
                  load: [:audiobook]
                )
@@ -219,192 +257,71 @@ defmodule WatchClub.Media.MediaTest do
       assert book_id == book.id
       assert normalized_path == Path.expand(path)
     end
-  end
 
-  describe "list_media/*" do
-    test "lists media for any authenticated actor" do
-      user = generate(user())
-      movie = seed_movie()
-      media = create_video!(video_input("tmp/list-media.mkv", movie), actor: SystemActor.actor())
+    test "replaces an existing audiobook at the same path" do
+      original_book = seed_book()
+      new_book = seed_book()
+      path = "tmp/refresh-audiobook.m4b"
 
-      assert [%Media{id: media_id, video: %Video{id: video_id}}] =
-               list_media!(actor: user, load: [:video])
-
-      assert media_id == media.id
-      assert video_id == media.id
-    end
-  end
-
-  describe "update_video/*" do
-    test "updates the concrete Video in place and rebuilds tracks" do
-      movie = seed_movie()
-
-      media =
-        create_video!(video_input("tmp/media/refresh.mkv", movie),
+      original =
+        create_or_update_audiobook!(%{path: path, audiobook: %{book_id: original_book.id}},
           actor: SystemActor.actor(),
-          load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+          load: [:audiobook]
         )
 
-      original_media_id = media.id
-      original_video_id = media.video.id
-      original_path = media.path
-      old_track_id = media.video.video_tracks |> List.first() |> Map.fetch!(:id)
+      refreshed =
+        create_or_update_audiobook!(%{path: path, audiobook: %{book_id: new_book.id}},
+          actor: SystemActor.actor(),
+          load: [:audiobook]
+        )
 
-      assert %Media{video: %Video{video_tracks: [%VideoTrack{codec: "av1"}]}} =
-               updated_media =
-               update_video!(
-                 media,
-                 %{
-                   video: %{
-                     movie_id: movie.id,
-                     duration_seconds: 7000.0,
-                     container: "matroska",
-                     bit_rate: 5_000_000,
-                     video_tracks: [
-                       %{stream_index: 0, codec: "av1", width: 3840, height: 2160}
-                     ],
-                     audio_tracks: [
-                       %{
-                         stream_index: 1,
-                         codec: "opus",
-                         language: "eng",
-                         channels: 2,
-                         default?: true
-                       }
-                     ],
-                     text_tracks: []
-                   }
-                 },
-                 actor: SystemActor.actor(),
-                 load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
-               )
-
-      assert updated_media.id == original_media_id
-      assert updated_media.path == original_path
-      assert updated_media.video.id == original_video_id
-
-      refute VideoTrack
-             |> Ash.Query.filter(id == ^old_track_id)
-             |> Ash.exists?(authorize?: false)
-    end
-
-    test "forbids non-system actors" do
-      user = generate(user())
-      movie = seed_movie()
-
-      media = create_video!(video_input("tmp/forbid-update.mkv", movie), actor: SystemActor.actor())
-
-      update_video(media, %{video: %{movie_id: movie.id, video_tracks: []}}, actor: user)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-  end
-
-  describe "assign_last_successful_import/*" do
-    test "sets the last successful Media Import for a Media" do
-      movie = seed_movie()
-      media = create_video!(video_input("tmp/assign.mkv", movie), actor: SystemActor.actor())
-      run = seed_import_run()
-
-      assert %Media{last_successful_media_import_id: run_id} =
-               assign_last_successful_import!(
-                 media,
-                 %{last_successful_media_import_id: run.id},
-                 actor: SystemActor.actor()
-               )
-
-      assert run_id == run.id
-    end
-
-    test "forbids non-system actors" do
-      user = generate(user())
-      movie = seed_movie()
-      media = create_video!(video_input("tmp/forbid-assign.mkv", movie), actor: SystemActor.actor())
-      run = seed_import_run()
-
-      assign_last_successful_import(
-        media,
-        %{last_successful_media_import_id: run.id},
-        actor: user
-      )
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+      assert refreshed.id == original.id
+      assert refreshed.audiobook.id == original.audiobook.id
+      assert refreshed.audiobook.book_id == new_book.id
     end
   end
 
   describe "destroy_media/*" do
-    test "destroys media with its concrete media and track details" do
+    test "deletes the video and its tracks alongside the media" do
       movie = seed_movie()
 
       media =
-        create_video!(video_input("tmp/destroy-media.mkv", movie),
+        create_or_update_video!(video_input("tmp/destroy.mkv", movie),
           actor: SystemActor.actor(),
           load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
         )
 
-      video_track_id = media.video.video_tracks |> List.first() |> Map.fetch!(:id)
-      audio_track_id = media.video.audio_tracks |> List.first() |> Map.fetch!(:id)
-      text_track_id = media.video.text_tracks |> List.first() |> Map.fetch!(:id)
+      video_track_id = hd(media.video.video_tracks).id
+      audio_track_id = hd(media.video.audio_tracks).id
+      text_track_id = hd(media.video.text_tracks).id
 
       assert :ok = destroy_media!(media, actor: SystemActor.actor())
 
-      refute Media
-             |> Ash.Query.filter(id == ^media.id)
-             |> Ash.exists?(authorize?: false)
-
-      refute Video
-             |> Ash.Query.filter(id == ^media.id)
-             |> Ash.exists?(authorize?: false)
-
-      refute VideoTrack
-             |> Ash.Query.filter(id == ^video_track_id)
-             |> Ash.exists?(authorize?: false)
-
-      refute AudioTrack
-             |> Ash.Query.filter(id == ^audio_track_id)
-             |> Ash.exists?(authorize?: false)
-
-      refute TextTrack
-             |> Ash.Query.filter(id == ^text_track_id)
-             |> Ash.exists?(authorize?: false)
+      refute Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+      refute Video |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+      refute VideoTrack |> Ash.Query.filter(id == ^video_track_id) |> Ash.exists?(authorize?: false)
+      refute AudioTrack |> Ash.Query.filter(id == ^audio_track_id) |> Ash.exists?(authorize?: false)
+      refute TextTrack |> Ash.Query.filter(id == ^text_track_id) |> Ash.exists?(authorize?: false)
     end
   end
 
-  defp video_input(path, %Movie{} = movie) do
-    video_input(path, %{movie_id: movie.id})
-  end
+  defp video_input(path, %Movie{} = movie),
+    do: video_input(path, :movie, %{movie_id: movie.id})
 
-  defp video_input(path, %TvShowEpisode{} = tv_show_episode) do
-    video_input(path, %{tv_show_episode_id: tv_show_episode.id})
-  end
+  defp video_input(path, %TvShowEpisode{} = episode),
+    do: video_input(path, :tv_show_episode, %{tv_show_episode_id: episode.id})
 
-  defp video_input(path, attachment) do
+  defp video_input(path, type, attachment) do
     %{
       path: path,
+      type: type,
       video:
         Map.merge(attachment, %{
-          video_tracks: [
-            %{
-              stream_index: 0,
-              codec: "h264",
-              width: 1920,
-              height: 1080
-            }
-          ],
+          video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
           audio_tracks: [
-            %{
-              stream_index: 1,
-              codec: "aac",
-              language: "eng",
-              channels: 2,
-              default?: true
-            }
+            %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
           ],
-          text_tracks: [
-            %{
-              stream_index: 2,
-              codec: "subrip",
-              language: "eng"
-            }
-          ]
+          text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
         })
     }
   end
@@ -439,24 +356,6 @@ defmodule WatchClub.Media.MediaTest do
       })
 
     Ash.Seed.seed!(Book, %{id: content.id, title: "Book #{unique}", hardcover_id: unique})
-  end
-
-  defp seed_import_run do
-    config =
-      Ash.Seed.seed!(ImportConfiguration, %{
-        source_type: :filesystem,
-        content_type: :movie,
-        media_type: :video,
-        filesystem_path: "tmp/media-imports/#{System.unique_integer([:positive])}"
-      })
-
-    Ash.Seed.seed!(ImportRun, %{
-      configuration_id: config.id,
-      status: :pending,
-      refresh_metadata?: false,
-      triggered_manually?: true,
-      configuration_snapshot: %{"id" => config.id}
-    })
   end
 
   defp seed_tv_show_episode do

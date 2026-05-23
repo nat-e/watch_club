@@ -60,9 +60,9 @@ defmodule WatchClub.Media.Video do
         default []
       end
 
-      change manage_relationship(:video_tracks, type: :create, authorize?: false)
-      change manage_relationship(:audio_tracks, type: :create, authorize?: false)
-      change manage_relationship(:text_tracks, type: :create, authorize?: false)
+      change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
+      change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
+      change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
     end
 
     update :update do
@@ -163,5 +163,4 @@ defmodule WatchClub.Media.Video do
       public? true
     end
   end
-
 end

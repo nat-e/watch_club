@@ -13,9 +13,15 @@ defmodule WatchClub.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       consolidate_protocols: Mix.env() != :dev,
-      usage_rules: usage_rules()
+      usage_rules: usage_rules(),
+      elixirc_options: elixirc_options(Mix.env())
     ]
   end
+
+  defp elixirc_options(:test),
+    do: [no_warn_undefined: [WatchClub.Media.ImportPipelineMock]]
+
+  defp elixirc_options(_), do: []
 
   # Configuration for the OTP application.
   #
@@ -71,6 +77,7 @@ defmodule WatchClub.MixProject do
       {:lazy_html, ">= 0.1.0"},
       {:live_debugger, "~> 1.0.0", only: :dev},
       {:lucide_icons, "~> 2.0"},
+      {:mox, "~> 1.2", only: :test},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},

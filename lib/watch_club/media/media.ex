@@ -5,7 +5,7 @@ defmodule WatchClub.Media.Media do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Media.{Audiobook, Ebook, ImportRun, MediaType, Video}
+  alias WatchClub.Media.{Audiobook, Ebook, MediaType, Video}
   alias WatchClub.Shared.Changes.NormalizePath
 
   import Ash.Expr
@@ -14,10 +14,6 @@ defmodule WatchClub.Media.Media do
   postgres do
     table "media"
     repo WatchClub.Repo
-
-    references do
-      reference :last_successful_media_import, on_delete: :nilify, on_update: :update
-    end
   end
 
   actions do
@@ -34,56 +30,22 @@ defmodule WatchClub.Media.Media do
 
     create :create_video do
       primary? true
-      accept [:path]
+      accept [:path, :type]
+      upsert? true
+      upsert_identity :unique_path
+      upsert_fields []
 
       argument :video, :map do
         allow_nil? false
       end
 
-      change set_attribute(:type, :video)
       change NormalizePath
-      change manage_relationship(:video, type: :create, authorize?: false)
-    end
 
-    create :create_ebook do
-      accept [:path]
-
-      argument :ebook, :map do
-        allow_nil? false
-      end
-
-      change set_attribute(:type, :ebook)
-      change NormalizePath
-      change manage_relationship(:ebook, type: :create, authorize?: false)
-    end
-
-    create :create_audiobook do
-      accept [:path]
-
-      argument :audiobook, :map do
-        allow_nil? false
-      end
-
-      change set_attribute(:type, :audiobook)
-      change NormalizePath
-      change manage_relationship(:audiobook, type: :create, authorize?: false)
-    end
-
-    update :update_video do
-      description "Updates the concrete Video (and its tracks) attached to this Media without touching the Media row itself. Used by Media Imports when Refresh Metadata is on."
-      require_atomic? false
-
-      argument :video, :map do
-        allow_nil? false
-      end
-
-      change fn changeset, _context ->
-        # Video shares the Media's primary key. Setting `id` on the input lets
-        # `manage_relationship` match it against the existing Video and update
-        # in place rather than destroy + create.
+      change fn changeset, _ctx ->
         video_input =
           changeset
           |> Ash.Changeset.get_argument(:video)
+          # shared PK — needed for :direct_control to match the existing Video on the upsert path
           |> Map.put(:id, changeset.data.id)
 
         Ash.Changeset.manage_relationship(changeset, :video, video_input,
@@ -93,10 +55,58 @@ defmodule WatchClub.Media.Media do
       end
     end
 
-    update :assign_last_successful_import do
-      description "Sets the Media Import that last successfully imported this Media. Drives deletion ownership."
-      require_atomic? false
-      accept [:last_successful_media_import_id]
+    create :create_ebook do
+      accept [:path]
+      upsert? true
+      upsert_identity :unique_path
+      upsert_fields []
+
+      argument :ebook, :map do
+        allow_nil? false
+      end
+
+      change set_attribute(:type, :ebook)
+      change NormalizePath
+
+      change fn changeset, _ctx ->
+        ebook_input =
+          changeset
+          |> Ash.Changeset.get_argument(:ebook)
+          # shared PK — needed for :direct_control to match the existing ebook on the upsert path
+          |> Map.put(:id, changeset.data.id)
+
+        Ash.Changeset.manage_relationship(changeset, :ebook, ebook_input,
+          type: :direct_control,
+          authorize?: false
+        )
+      end
+    end
+
+    create :create_audiobook do
+      accept [:path]
+      upsert? true
+      upsert_identity :unique_path
+      upsert_fields []
+
+      argument :audiobook, :map do
+        allow_nil? false
+      end
+
+      change set_attribute(:type, :audiobook)
+      change NormalizePath
+
+      change fn changeset, _ctx ->
+        audiobook_input =
+          changeset
+          |> Ash.Changeset.get_argument(:audiobook)
+          # shared PK — needed for :direct_control to match the existing audiobook on the upsert path
+          |> Map.put(:id, changeset.data.id)
+
+        Ash.Changeset.manage_relationship(changeset, :audiobook, audiobook_input,
+          type: :direct_control,
+          authorize?: false
+        )
+      end
     end
   end
 
@@ -114,7 +124,7 @@ defmodule WatchClub.Media.Media do
 
     policy action_type([:create, :update, :destroy]) do
       description "Only the system actor can write Media"
-      authorize_if actor_attribute_equals(:system?, true)
+      authorize_if WatchClub.Checks.IsSystemActor
     end
   end
 
@@ -145,12 +155,6 @@ defmodule WatchClub.Media.Media do
 
     has_one :audiobook, Audiobook do
       destination_attribute :id
-    end
-
-    belongs_to :last_successful_media_import, ImportRun do
-      allow_nil? true
-      public? true
-      attribute_writable? true
     end
   end
 

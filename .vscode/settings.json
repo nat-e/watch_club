@@ -24,11 +24,11 @@
 	},
 	"[elixir]": {
 		"editor.formatOnSave": true,
-		"editor.defaultFormatter": "JakeBecker.elixir-ls"
+		"editor.defaultFormatter": "ExpertLSP.expert"
 	},
 	"[phoenix-heex]": {
 		"editor.formatOnSave": true,
-		"editor.defaultFormatter": "JakeBecker.elixir-ls"
+		"editor.defaultFormatter": "ExpertLSP.expert"
 	},
 	"[javascript]": {
 		"editor.formatOnSave": true,

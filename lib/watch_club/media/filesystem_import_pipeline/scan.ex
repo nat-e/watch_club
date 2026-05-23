@@ -58,12 +58,12 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
           {:enqueue, children(path)}
         end
 
-      {:ok, %{type: :regular} = stat} ->
+      {:ok, %{type: :regular}} ->
         if IgnoreRules.file_ignored?(path, root_path) or
              not MediaTypeFilter.accepted?(path, configuration) do
           :drop
         else
-          {:emit, Candidate.new(path, root_path, stat)}
+          {:emit, Candidate.new(path)}
         end
 
       {:ok, _} ->

@@ -30,7 +30,7 @@ defmodule WatchClub.Media.Ebook do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy, update: [:book_id]]
 
     create :create do
       primary? true
@@ -77,5 +77,4 @@ defmodule WatchClub.Media.Ebook do
       public? true
     end
   end
-
 end

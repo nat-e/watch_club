@@ -7,11 +7,9 @@ defmodule WatchClub.Media do
     resource WatchClub.Media.Media do
       define :list_media, action: :read
       define :list_media_under_path_prefix, action: :under_path_prefix, args: [:prefix]
-      define :create_video
-      define :create_ebook
-      define :create_audiobook
-      define :update_video
-      define :assign_last_successful_import
+      define :create_or_update_video, action: :create_video
+      define :create_or_update_ebook, action: :create_ebook
+      define :create_or_update_audiobook, action: :create_audiobook
       define :destroy_media, action: :destroy
     end
 
@@ -29,11 +27,6 @@ defmodule WatchClub.Media do
       define :list_import_runs, action: :read
       define :get_import_run_by_id, action: :read, get_by: [:id]
       define :start_import_run, action: :start, args: [:configuration_id]
-    end
-
-    resource WatchClub.Media.ImportResult do
-      define :import_results_for_run, action: :by_media_import, args: [:media_import_id]
-      define :create_import_result, action: :create
     end
 
     resource WatchClub.Media.Video

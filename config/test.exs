@@ -32,6 +32,8 @@ config :watch_club,
     plug: {Req.Test, WatchClub.Integrations.Tmdb.Client}
   ]
 
+config :watch_club, import_pipeline_filesystem: WatchClub.Media.ImportPipelineMock
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

@@ -36,18 +36,27 @@ defmodule WatchClub.Contents.Content do
     end
 
     create :create_movie do
-      description "Fetches a Movie from TMDB and creates it in DB. Content and MovieLocalization will also be created"
+      description "Fetches a Movie from TMDB and creates it in DB if it doesn't already exist. Content and MovieLocalization will also be created"
       primary? true
+      upsert? true
+      upsert_identity :external_id
       argument :tmdb_id, :integer, allow_nil?: false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
 
-      change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
+      change CreateOrUpdateMovie, only_when_valid?: true
 
       change WatchClub.Contents.Changes.SetLibraries,
         only_when_valid?: true,
         where: [present(:library_ids)]
 
       change load([:implementation])
+    end
+
+    update :refresh_movie do
+      description "Re-fetches TMDB details for an existing Movie, mirroring TMDB exactly: localizations are inserted, updated, or destroyed to match the current TMDB payload."
+      require_atomic? false
+      argument :tmdb_id, :integer, allow_nil?: false
+      change CreateOrUpdateMovie
     end
 
     create :create_tv_show do
@@ -61,7 +70,7 @@ defmodule WatchClub.Contents.Content do
         only_when_valid?: true,
         where: [present(:library_ids)]
 
-      change load([:implementation])
+      change load([:implementation, tv_show: [:episodes]])
     end
 
     update :refresh_tv_show do
