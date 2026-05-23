@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   """
   use WatchClubWeb, :html
 
+  import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
@@ -31,6 +32,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
       <div class="grid gap-cluster p-cluster">
         <.content_section view={@view} media={@media} />
+        <.library_section view={@view} />
         <.video_section :if={@has_video?} media={@media} view={@view} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
@@ -128,15 +130,33 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         </.stack>
       </div>
 
-      <.cluster :if={@view.clubs != []} space="tight">
-        <.badge :for={club <- @view.clubs} variant="secondary" size="sm">
-          <:icon><Lucideicons.library /></:icon>
-          <span class="max-w-[14rem] truncate">{club.name}</span>
-        </.badge>
-      </.cluster>
-      <p :if={@view.clubs == []} class="text-sm text-text-subtle">
-        Not reachable from any Club.
-      </p>
+    </.section_block>
+    """
+  end
+
+  attr :view, :map, required: true
+
+  defp library_section(%{view: %{libraries: []}} = assigns) do
+    ~H"""
+    <.section_block label="Libraries">
+      <p class="text-sm text-text-subtle">This content is not in any Library.</p>
+    </.section_block>
+    """
+  end
+
+  defp library_section(assigns) do
+    ~H"""
+    <.section_block label="Libraries">
+      <ul class="grid gap-tight">
+        <li
+          :for={library <- @view.libraries}
+          class="flex items-center gap-related text-sm text-text"
+        >
+          <.avatar id={library.club.id} name={library.club.name} size="xs" />
+          <span class="min-w-0 truncate">{library.name}</span>
+          <span class="ml-auto truncate text-text-subtle">{library.club.name}</span>
+        </li>
+      </ul>
     </.section_block>
     """
   end

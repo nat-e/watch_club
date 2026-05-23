@@ -19,6 +19,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           origin_country: String.t() | nil,
           poster_path: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
+          libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
           resolution: :uhd_4k | :hd_1080p | :hd_720p | :sd | nil,
           audio_languages: [String.t()],
           subtitle_languages: [String.t()],
@@ -39,6 +40,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       origin_country: origin_country(media),
       poster_path: poster_path(media),
       clubs: clubs(media),
+      libraries: libraries(media),
       resolution: resolution(media),
       audio_languages: audio_languages(media),
       subtitle_languages: subtitle_languages(media),
@@ -129,6 +131,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
     |> Enum.map(fn item -> item.library.club end)
     |> Enum.uniq_by(& &1.id)
     |> Enum.sort_by(& &1.name)
+  end
+
+  defp libraries(%Media{} = media) do
+    media
+    |> library_items()
+    |> Enum.map(fn item ->
+      %{id: item.library.id, name: item.library.name, club: item.library.club}
+    end)
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.sort_by(&{&1.club.name, &1.name})
   end
 
   defp library_items(%Media{type: :movie, video: %Video{movie: %{content: %{library_items: items}}}})
