@@ -10,6 +10,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
 
   attr :file_name, :string, required: true
   attr :class, :any, default: nil
+  attr :wrap, :boolean, default: false, doc: "wrap onto multiple lines instead of middle-truncating"
+
+  def file_name(%{wrap: true} = assigns) do
+    ~H"""
+    <span class={["block break-all", @class]} title={@file_name}>
+      {@file_name}
+    </span>
+    """
+  end
 
   def file_name(assigns) do
     {head, tail} = RowView.split_file_name(assigns.file_name)

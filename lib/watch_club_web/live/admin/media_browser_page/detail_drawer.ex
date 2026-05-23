@@ -50,12 +50,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
           <.media_type_icon media_type={@view.media_type} class="size-icon" />
         </span>
-        <.stack space="tight" class="min-w-0 grow">
-          <span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
-            {MediaType.translated_label(@view.media_type)} file
-          </span>
-          <.file_name file_name={@view.file_name} class="font-mono text-sm text-text" />
-        </.stack>
+        <span class="grow text-sm font-medium text-text">
+          {MediaType.translated_label(@view.media_type)}
+        </span>
         <button
           type="button"
           phx-click="close_drawer"
@@ -65,6 +62,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           <Lucideicons.x class="size-icon-sm" />
         </button>
       </div>
+
+      <.file_name
+        file_name={@view.file_name}
+        wrap
+        class="font-mono text-sm text-text-muted"
+      />
+
       <.cluster space="related">
         <.button id="drawer-play" variant="accent" size="md" emphasis>
           <:icon><.dynamic_icon name={play_icon(@view.media_type)} class="size-icon-sm" /></:icon>
@@ -72,11 +76,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         </.button>
         <.button
           id="drawer-delete"
-          variant="ghost"
+          variant="danger"
           size="md"
           phx-click="delete_media"
           data-confirm="Delete this Media? This cannot be undone."
-          class="text-danger hover:bg-danger-bg hover:text-danger"
         >
           <:icon><Lucideicons.trash_2 /></:icon>
           Delete
