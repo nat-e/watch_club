@@ -20,8 +20,6 @@ defmodule WatchClub.Media do
       define :get_import_configuration_by_id, action: :read, get_by: [:id]
       define :create_filesystem_import_configuration, action: :create_filesystem
       define :update_import_configuration, action: :update
-      define :disable_import_configuration, action: :disable
-      define :enable_import_configuration, action: :enable
       define :destroy_import_configuration, action: :destroy
     end
 

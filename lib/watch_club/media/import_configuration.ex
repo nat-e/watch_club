@@ -3,7 +3,8 @@ defmodule WatchClub.Media.ImportConfiguration do
     otp_app: :watch_club,
     domain: WatchClub.Media,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Media.ImportConfiguration.Calculations
   alias WatchClub.Media.{ImportRun, ImportSourceType, MediaType}
@@ -12,6 +13,16 @@ defmodule WatchClub.Media.ImportConfiguration do
   postgres do
     table "media_import_configurations"
     repo WatchClub.Repo
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "media_imports"
+
+    publish :create_filesystem, ""
+    publish :update, [[:id, nil]]
+    publish :destroy, [[:id, nil]]
   end
 
   actions do
@@ -32,14 +43,6 @@ defmodule WatchClub.Media.ImportConfiguration do
       change {NormalizePath, attribute: :filesystem_path}
     end
 
-    update :disable do
-      change set_attribute(:disabled?, true)
-    end
-
-    update :enable do
-      change set_attribute(:disabled?, false)
-    end
-
     destroy :destroy do
       primary? true
     end
@@ -52,7 +55,7 @@ defmodule WatchClub.Media.ImportConfiguration do
       forbid_if always()
     end
 
-    policy action([:read, :create_filesystem, :update, :disable, :enable, :destroy]) do
+    policy action([:read, :create_filesystem, :update, :destroy]) do
       description "Only the Instance Administrator can manage Media Import Configurations"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
@@ -81,13 +84,6 @@ defmodule WatchClub.Media.ImportConfiguration do
       public? true
     end
 
-    attribute :disabled?, :boolean do
-      allow_nil? false
-      default false
-      public? true
-      source :is_disabled
-    end
-
     timestamps()
   end
 
@@ -96,6 +92,12 @@ defmodule WatchClub.Media.ImportConfiguration do
       destination_attribute :configuration_id
       public? true
       sort inserted_at: :desc
+    end
+
+    has_one :latest_run, ImportRun do
+      destination_attribute :configuration_id
+      sort inserted_at: :desc
+      public? true
     end
   end
 

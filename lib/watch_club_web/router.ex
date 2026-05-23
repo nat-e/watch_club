@@ -62,7 +62,8 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Locale
       ] do
       live "/admin/media", Admin.MediaBrowserPage
-      live "/media/imports", Admin.MediaImportsPage
+      live "/admin/media/imports", Admin.MediaImportsPage
+      live "/admin/media/imports/:id/history", Admin.MediaImportHistoryPage
     end
 
     ash_authentication_live_session :authenticated_routes,

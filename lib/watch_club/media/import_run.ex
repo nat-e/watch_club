@@ -4,6 +4,7 @@ defmodule WatchClub.Media.ImportRun do
     domain: WatchClub.Media,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
+    notifiers: [Ash.Notifier.PubSub],
     extensions: [AshOban, AshStateMachine]
 
   import Ash.Expr
@@ -52,6 +53,16 @@ defmodule WatchClub.Media.ImportRun do
     end
   end
 
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "media_imports"
+
+    publish :start, [[:configuration_id, nil]]
+    publish :complete, [[:configuration_id, nil]]
+    publish :fail, [[:configuration_id, nil]]
+  end
+
   actions do
     defaults [:read]
 
@@ -74,12 +85,14 @@ defmodule WatchClub.Media.ImportRun do
     update :complete do
       accept []
 
+      change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:completed)
     end
 
     update :fail do
       accept []
 
+      change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
     end
   end
@@ -131,6 +144,10 @@ defmodule WatchClub.Media.ImportRun do
 
     attribute :configuration_snapshot, :map do
       allow_nil? false
+      public? true
+    end
+
+    attribute :finished_at, :utc_datetime_usec do
       public? true
     end
 

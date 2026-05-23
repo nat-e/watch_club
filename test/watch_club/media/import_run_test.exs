@@ -36,13 +36,6 @@ defmodule WatchClub.Media.ImportRunTest do
       assert %ImportRun{status: :failed} = get_import_run_by_id!(run.id, actor: admin)
     end
 
-    test "starts a run for a disabled configuration" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin, disabled?: true))
-
-      assert %ImportRun{status: :processing} = start_import_run!(configuration.id, actor: admin)
-    end
-
     test "rejects a new run while one is already processing for the same configuration" do
       admin = generate(administrator())
       configuration = generate(import_configuration(actor: admin))
@@ -63,6 +56,16 @@ defmodule WatchClub.Media.ImportRunTest do
 
       start_import_run(configuration.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "rejects an unknown configuration id" do
+      admin = generate(administrator())
+
+      start_import_run(Ash.UUIDv7.generate(), actor: admin)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Query.NotFound{resource: WatchClub.Media.ImportConfiguration} -> true
+        _ -> false
+      end)
     end
   end
 

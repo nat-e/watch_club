@@ -1,5 +1,5 @@
 defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
-  use WatchClub.DataCase, async: false
+  use WatchClub.DataCase
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
   alias WatchClub.Media.ImportConfiguration

@@ -16,7 +16,6 @@ defmodule WatchClub.Media.ImportConfigurationTest do
                source_type: :filesystem,
                media_type: :movie,
                filesystem_path: normalized_path,
-               disabled?: false,
                name: name
              } =
                create_filesystem_import_configuration!(
@@ -53,26 +52,6 @@ defmodule WatchClub.Media.ImportConfigurationTest do
     end
   end
 
-  describe "disable_import_configuration/*" do
-    test "disables a configuration" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(actor: admin))
-
-      assert %ImportConfiguration{disabled?: true} =
-               disable_import_configuration!(configuration, actor: admin)
-    end
-  end
-
-  describe "enable_import_configuration/*" do
-    test "enables a configuration" do
-      admin = generate(administrator())
-      configuration = generate(import_configuration(disabled?: true))
-
-      assert %ImportConfiguration{disabled?: false} =
-               enable_import_configuration!(configuration, actor: admin)
-    end
-  end
-
   describe "destroy_import_configuration/*" do
     test "destroys a configuration and nullifies the FK on past runs" do
       admin = generate(administrator())
@@ -97,6 +76,26 @@ defmodule WatchClub.Media.ImportConfigurationTest do
 
       assert [%ImportConfiguration{id: id}] = list_import_configurations!(actor: admin)
       assert id == configuration.id
+    end
+
+    test "loads :latest_run with the most recent ImportRun" do
+      admin = generate(administrator())
+      configuration = generate(import_configuration(actor: admin))
+      _older = generate(import_run(configuration, status: :completed))
+      newer = generate(import_run(configuration, status: :failed))
+
+      assert [%ImportConfiguration{latest_run: %ImportRun{id: latest_id, status: :failed}}] =
+               list_import_configurations!(actor: admin, load: [:latest_run])
+
+      assert latest_id == newer.id
+    end
+
+    test "loads :latest_run as nil when the configuration has no runs" do
+      admin = generate(administrator())
+      generate(import_configuration(actor: admin))
+
+      assert [%ImportConfiguration{latest_run: nil}] =
+               list_import_configurations!(actor: admin, load: [:latest_run])
     end
   end
 end

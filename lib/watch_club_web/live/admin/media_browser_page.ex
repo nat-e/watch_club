@@ -178,7 +178,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       <:description>
         Configure media imports or automations to add Media to your instance.
       </:description>
-      <.button id="empty-state-import-media" href={~p"/media/imports"} variant="accent">
+      <.button id="empty-state-import-media" navigate={~p"/admin/media/imports"} variant="accent">
         <:icon><Lucideicons.download /></:icon>
         Import Media
       </.button>
