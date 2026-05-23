@@ -104,18 +104,22 @@ defmodule WatchClub.Contents.Content do
       # selected libraries, not the content's global library list. Omitted library
       # items outside the actor's removal rights are preserved.
       change fn changeset, _context ->
-        library_inputs =
-          changeset
-          |> Ash.Changeset.get_argument(:library_ids)
-          |> Enum.map(fn library_id ->
-            %{id: library_id, content_id: changeset.data.id, library_id: library_id}
-          end)
+        case Ash.Changeset.get_argument(changeset, :library_ids) do
+          nil ->
+            changeset
 
-        Ash.Changeset.manage_relationship(changeset, :libraries, library_inputs,
-          type: :append_and_remove,
-          join_keys: [:content_id, :library_id],
-          meta: [id: :library_ids]
-        )
+          library_ids ->
+            library_inputs =
+              Enum.map(library_ids, fn library_id ->
+                %{id: library_id, content_id: changeset.data.id, library_id: library_id}
+              end)
+
+            Ash.Changeset.manage_relationship(changeset, :libraries, library_inputs,
+              type: :append_and_remove,
+              join_keys: [:content_id, :library_id],
+              meta: [id: :library_ids]
+            )
+        end
       end
 
       change load(library_items: [:library])
