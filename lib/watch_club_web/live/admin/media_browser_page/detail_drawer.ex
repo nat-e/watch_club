@@ -50,8 +50,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
           <.media_type_icon media_type={@view.media_type} class="size-icon" />
         </span>
-        <span class="grow text-sm font-medium text-text">
-          {MediaType.translated_label(@view.media_type)}
+        <span class="grow text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
+          {MediaType.translated_label(@view.media_type)} file
         </span>
         <button
           type="button"
