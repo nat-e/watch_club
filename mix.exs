@@ -19,7 +19,9 @@ defmodule WatchClub.MixProject do
   end
 
   defp elixirc_options(:test),
-    do: [no_warn_undefined: [WatchClub.Media.ImportPipelineMock]]
+    do: [
+      no_warn_undefined: [WatchClub.Media.ImportPipelineMock, WatchClub.Media.FfprobeMock]
+    ]
 
   defp elixirc_options(_), do: []
 

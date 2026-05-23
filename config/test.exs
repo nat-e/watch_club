@@ -33,6 +33,7 @@ config :watch_club,
   ]
 
 config :watch_club, import_pipeline_filesystem: WatchClub.Media.ImportPipelineMock
+config :watch_club, :ffprobe, WatchClub.Media.FfprobeMock
 
 # Print only warnings and errors during test
 config :logger, level: :warning

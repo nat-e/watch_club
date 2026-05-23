@@ -6,7 +6,6 @@ defmodule WatchClub.Media.ImportConfiguration do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Media.ImportConfiguration.Calculations
-  alias WatchClub.Media.ImportConfiguration.Validations
   alias WatchClub.Media.{ImportRun, ImportSourceType, MediaType}
   alias WatchClub.Shared.Changes.NormalizePath
 

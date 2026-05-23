@@ -13,6 +13,8 @@ defmodule WatchClub.Media.Ffmpeg do
   final file is never seen partially written.
   """
 
+  @behaviour WatchClub.Media.Ffmpeg.Probe
+
   require Logger
 
   @doc """
@@ -20,6 +22,7 @@ defmodule WatchClub.Media.Ffmpeg do
   (streams + format). Returns `{:error, message}` if `ffprobe` is missing,
   exits non-zero, or returns invalid JSON.
   """
+  @impl true
   def probe(path) when is_binary(path) do
     args = [
       "-hide_banner",

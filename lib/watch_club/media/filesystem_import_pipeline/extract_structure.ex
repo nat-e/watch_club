@@ -11,11 +11,12 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
 
   @behaviour WatchClub.Media.ImportPipeline.Stage
 
-  alias WatchClub.Media.Ffmpeg
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
   alias WatchClub.Media.ImportPipeline.ExtractStructure.{Sidecars, Tracks}
   alias WatchClub.Media.ImportRun
+
+  @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Media.Ffmpeg)
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
@@ -26,27 +27,28 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
   end
 
   defp probe(media_type, candidate) when media_type in [:movie, :tv_show_episode] do
-    with {:ok, metadata} <- Ffmpeg.probe(candidate.path),
+    with {:ok, metadata} <- @ffprobe.probe(candidate.path),
          {:ok, structure} <- Tracks.for_video(metadata) do
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}
     end
   end
 
   defp probe(:audiobook, candidate) do
-    with {:ok, metadata} <- Ffmpeg.probe(candidate.path),
+    with {:ok, metadata} <- @ffprobe.probe(candidate.path),
          {:ok, structure} <- Tracks.for_audiobook(metadata) do
       {:ok, %{candidate | media_structure: structure}}
     end
   end
 
   defp probe(:ebook, candidate) do
-    structure = %MediaStructure{
-      container: candidate.extension |> String.trim_leading(".") |> empty_to_nil()
-    }
-
+    structure = %MediaStructure{container: container_from_path(candidate.path)}
     {:ok, %{candidate | media_structure: structure}}
   end
 
-  defp empty_to_nil(""), do: nil
-  defp empty_to_nil(value), do: value
+  defp container_from_path(path) do
+    case path |> Path.extname() |> String.trim_leading(".") do
+      "" -> nil
+      ext -> ext
+    end
+  end
 end

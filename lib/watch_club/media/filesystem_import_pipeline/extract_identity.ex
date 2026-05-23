@@ -40,8 +40,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
     %MovieIdentity{
       title: title,
       year: year,
-      tmdb_id: path_ids[:tmdb],
-      imdb_id: path_ids[:imdb]
+      tmdb_id: path_ids.tmdb,
+      imdb_id: path_ids.imdb
     }
   end
 
@@ -60,9 +60,9 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
       title: title,
       season_number: episode[:season_number],
       episode_number: episode[:episode_number],
-      tmdb_id: path_ids[:tmdb],
-      tvdb_id: path_ids[:tvdb],
-      imdb_id: path_ids[:imdb]
+      tmdb_id: path_ids.tmdb,
+      tvdb_id: path_ids.tvdb,
+      imdb_id: path_ids.imdb
     }
   end
 

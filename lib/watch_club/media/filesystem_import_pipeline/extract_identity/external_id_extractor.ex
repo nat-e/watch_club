@@ -54,6 +54,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor do
     }
   end
 
+  defp to_int(nil), do: nil
+
   defp to_int(value) when is_binary(value) do
     case Integer.parse(value) do
       {n, ""} -> n
