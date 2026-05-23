@@ -50,17 +50,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
           <.media_type_icon media_type={@view.media_type} class="size-icon" />
         </span>
-        <span class="grow text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
-          {MediaType.translated_label(@view.media_type)} file
-        </span>
-        <button
-          type="button"
+        <.eyebrow class="grow">
+          {MediaType.translated_label(@view.media_type)}
+        </.eyebrow>
+        <.button
+          id="drawer-close"
+          size="icon-sm"
+          variant="ghost"
           phx-click="close_drawer"
-          class="shrink-0 rounded-control p-1 text-text-subtle hover:bg-surface-raised hover:text-text"
           aria-label="Close drawer"
         >
-          <Lucideicons.x class="size-icon-sm" />
-        </button>
+          <Lucideicons.x />
+        </.button>
       </div>
 
       <.file_name
@@ -108,7 +109,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
             {@view.content_title || "Unmatched"}
           </h2>
           <ul class="flex flex-wrap items-center gap-related text-sm text-text-muted">
-            <li :for={{item, index} <- Enum.with_index(content_meta(@view))} class="flex items-center gap-related">
+            <li
+              :for={{item, index} <- Enum.with_index(content_meta(@view))}
+              class="flex items-center gap-related"
+            >
               <span :if={index > 0} aria-hidden="true">·</span>
               <span>{item}</span>
             </li>
@@ -175,7 +179,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           </div>
           <div class="flex items-center gap-tight shrink-0">
             <.badge :if={track.codec} variant="muted" size="sm">{track.codec}</.badge>
-            <.badge :if={track.channels} variant="muted" size="sm">{channels_label(track.channels)}</.badge>
+            <.badge :if={track.channels} variant="muted" size="sm">
+              {channels_label(track.channels)}
+            </.badge>
           </div>
         </li>
       </ul>
@@ -239,12 +245,28 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     ~H"""
     <section>
       <.stack space="related">
-        <h3 class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle">
-          {@label}
-        </h3>
+        <.eyebrow as="h3">{@label}</.eyebrow>
         {render_slot(@inner_block)}
       </.stack>
     </section>
+    """
+  end
+
+  attr :as, :string, values: ~w(span h3), default: "span"
+  attr :class, :any, default: nil
+  slot :inner_block, required: true
+
+  defp eyebrow(assigns) do
+    ~H"""
+    <.dynamic_tag
+      tag_name={@as}
+      class={[
+        "text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-subtle",
+        @class
+      ]}
+    >
+      {render_slot(@inner_block)}
+    </.dynamic_tag>
     """
   end
 
@@ -308,18 +330,21 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp content_meta(%{media_type: :tv_show_episode, content_sub: sub}) when is_binary(sub),
     do: [MediaType.translated_label(:tv_show_episode), sub]
 
-  defp content_meta(%{media_type: type}) when type in [:movie, :tv_show_episode, :ebook, :audiobook],
-    do: [MediaType.translated_label(type)]
+  defp content_meta(%{media_type: type})
+       when type in [:movie, :tv_show_episode, :ebook, :audiobook],
+       do: [MediaType.translated_label(type)]
 
   defp content_meta(_), do: []
 
-  defp video_codec(%Media{video: %Video{video_tracks: [%{codec: codec} | _]}}) when is_binary(codec),
-    do: codec
+  defp video_codec(%Media{video: %Video{video_tracks: [%{codec: codec} | _]}})
+       when is_binary(codec),
+       do: codec
 
   defp video_codec(_), do: nil
 
-  defp frame_rate(%Media{video: %Video{video_tracks: [%{frame_rate: fr} | _]}}) when not is_nil(fr),
-    do: "#{fr} fps"
+  defp frame_rate(%Media{video: %Video{video_tracks: [%{frame_rate: fr} | _]}})
+       when not is_nil(fr),
+       do: "#{fr} fps"
 
   defp frame_rate(_), do: nil
 
