@@ -27,7 +27,11 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
   defp save_media(media_type, %Candidate{} = candidate)
        when media_type in [:movie, :tv_show_episode] do
     Media.create_or_update_video(
-      %{path: candidate.path, video: build_video_input(media_type, candidate)},
+      %{
+        path: candidate.path,
+        type: media_type,
+        video: build_video_input(media_type, candidate)
+      },
       actor: SystemActor.actor()
     )
   end
