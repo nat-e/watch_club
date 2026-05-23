@@ -12,6 +12,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
   attr :streams, :map, required: true
   attr :selected_id, :any, default: nil
   attr :drawer_open?, :boolean, default: false
+  attr :locale, :atom, required: true
 
   def render(assigns) do
     ~H"""
@@ -36,6 +37,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
           id={dom_id}
           row={row}
           selected={@selected_id == row.id}
+          locale={@locale}
         />
       </ul>
 
@@ -45,10 +47,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
             <.table_row>
               <.table_head class="text-left w-full max-w-0 overflow-hidden">File</.table_head>
               <.table_head class="text-left max-w-[20rem]">Matched</.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Clubs</.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Audio</.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Subs</.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">Res</.table_head>
+              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
+                Clubs
+              </.table_head>
+              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
+                Audio
+              </.table_head>
+              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
+                Subtitles
+              </.table_head>
+              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
+                Video
+              </.table_head>
               <.table_head class="w-px text-left">Imported</.table_head>
             </.table_row>
           </.table_header>
@@ -58,6 +68,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
               id={dom_id}
               row={row}
               selected={@selected_id == row.id}
+              locale={@locale}
             />
           </tbody>
         </.table>

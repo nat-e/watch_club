@@ -19,8 +19,7 @@ defmodule WatchClub.Media.Calculations.TrackDisplayLabel do
     records
     |> Enum.with_index()
     |> Enum.map(fn {record, index} ->
-      language = record.language || "und"
-      language_name = language_name(language)
+      language_name = WatchClub.Languages.to_name(record.language || "und")
       fallback = "#{fallback_prefix} #{index + 1}"
 
       case record.title do
@@ -29,24 +28,5 @@ defmodule WatchClub.Media.Calculations.TrackDisplayLabel do
         title -> "#{language_name} — #{title}"
       end
     end)
-  end
-
-  defp language_name(language) when is_binary(language) do
-    case WatchClub.Cldr.Language.to_string(language) do
-      {:ok, name} ->
-        name
-
-      _error ->
-        case Cldr.Locale.canonical_language_tag(language, WatchClub.Cldr) do
-          {:ok, tag} ->
-            case WatchClub.Cldr.Language.to_string(tag) do
-              {:ok, name} -> name
-              _error -> String.upcase(language)
-            end
-
-          {:error, _reason} ->
-            String.upcase(language)
-        end
-    end
   end
 end

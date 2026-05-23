@@ -11,10 +11,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
+  alias WatchClubWeb.Helpers.Time
 
   attr :id, :string, required: true
   attr :row, :map, required: true, doc: "raw Media struct from the stream"
   attr :selected, :boolean, default: false
+  attr :locale, :atom, required: true
 
   def row(assigns) do
     view = RowView.from_media(assigns.row)
@@ -45,9 +47,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         </div>
       </td>
       <td class="px-related py-2.5 align-middle max-w-[20rem]">
-        <span class="block truncate text-sm text-text-muted" title={matched_content_inline(@view)}>
-          {matched_content_inline(@view)}
-        </span>
+        <div
+          class="flex items-center gap-tight min-w-0"
+          title={matched_content_inline(@view)}
+        >
+          <span class="truncate text-sm text-text-muted">
+            {@view.content_title || "—"}
+          </span>
+          <.badge :if={@view.content_sub} variant="secondary" size="sm" class="shrink-0">
+            {@view.content_sub}
+          </.badge>
+        </div>
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
         <.clubs_avatars clubs={@view.clubs} />
@@ -63,7 +73,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap">
         <span class="text-xs text-text-subtle">
-          {relative_time(@view.imported_at)}
+          {Time.relative_from_now(@view.imported_at, @locale)}
         </span>
       </td>
     </tr>
@@ -73,6 +83,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   attr :id, :string, required: true
   attr :row, :map, required: true, doc: "raw Media struct from the stream"
   attr :selected, :boolean, default: false
+  attr :locale, :atom, required: true
 
   def card(assigns) do
     view = RowView.from_media(assigns.row)
@@ -84,39 +95,70 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       phx-click="open_drawer"
       phx-value-id={@view.id}
       class={[
-        "flex flex-col gap-related rounded-card border border-border bg-surface p-cluster shadow-card",
+        "flex flex-col gap-related rounded-card border border-border bg-surface p-4 shadow-card",
         "transition-colors cursor-pointer hover:bg-surface-hover",
         @selected && "ring-2 ring-focus-ring border-border-focus"
       ]}
     >
-      <div class="flex items-center gap-related min-w-0">
-        <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-          <.media_type_icon media_type={@view.media_type} class="size-icon-sm" />
-        </span>
+      <div class="flex items-center gap-tight min-w-0">
+        <.media_type_icon
+          media_type={@view.media_type}
+          class="size-icon shrink-0 text-text-subtle"
+        />
         <.file_name file_name={@view.file_name} class="text-sm font-medium text-text" />
       </div>
 
-      <p class="truncate text-sm text-text-muted" title={matched_content_inline(@view)}>
-        {matched_content_inline(@view)}
-      </p>
+      <.identity_line view={@view} />
 
-      <div class="flex flex-wrap items-center gap-related text-xs text-text-subtle">
-        <.resolution_badge resolution={@view.resolution} />
-        <span :if={@view.audio_languages != []} class="flex items-center gap-tight">
-          <Lucideicons.volume_2 class="size-icon-xs" />
-          <.flag_strip langs={@view.audio_languages} />
-        </span>
-        <span :if={@view.subtitle_languages != []} class="flex items-center gap-tight">
-          <Lucideicons.captions class="size-icon-xs" />
-          <.flag_strip langs={@view.subtitle_languages} />
-        </span>
-        <span :if={@view.clubs != []} class="flex items-center gap-tight">
-          <Lucideicons.library class="size-icon-xs" />
-          <.clubs_avatars clubs={@view.clubs} />
-        </span>
-        <span class="ml-auto whitespace-nowrap">{relative_time(@view.imported_at)}</span>
-      </div>
+      <.library_chips libraries={@view.libraries} />
     </li>
+    """
+  end
+
+  attr :view, :map, required: true
+
+  defp identity_line(%{view: %{content_title: nil}} = assigns) do
+    ~H"""
+    <p class="text-sm italic text-text-subtle">Unmatched</p>
+    """
+  end
+
+  defp identity_line(assigns) do
+    ~H"""
+    <p class="truncate text-sm text-text-muted">{identity_text(@view)}</p>
+    """
+  end
+
+  defp identity_text(%{content_title: title, content_sub: sub}) when is_binary(sub),
+    do: "#{title} · #{sub}"
+
+  defp identity_text(%{content_title: title, release_year: year}) when is_integer(year),
+    do: "#{title} · #{year}"
+
+  defp identity_text(%{content_title: title}), do: title
+
+  attr :libraries, :list, required: true
+
+  defp library_chips(%{libraries: []} = assigns), do: ~H""
+
+  defp library_chips(assigns) do
+    visible = Enum.take(assigns.libraries, 3)
+    overflow = length(assigns.libraries) - length(visible)
+    assigns = assigns |> assign(:visible, visible) |> assign(:overflow, overflow)
+
+    ~H"""
+    <ul class="flex flex-wrap items-center gap-related">
+      <li
+        :for={library <- @visible}
+        class="flex items-center gap-tight min-w-0 text-sm text-text-subtle"
+      >
+        <.avatar id={library.club.id} name={library.club.name} />
+        <span class="truncate">{library.name}</span>
+      </li>
+      <li :if={@overflow > 0} class="text-sm text-text-subtle">
+        +{@overflow}
+      </li>
+    </ul>
     """
   end
 
@@ -130,7 +172,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   defp clubs_avatars(assigns) do
     ~H"""
-    <.avatar_group avatars={@clubs} avatar_size="xs" />
+    <.avatar_group avatars={@clubs} avatar_size="sm" />
     """
   end
 
@@ -144,13 +186,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   defp flag_strip(assigns) do
     ~H"""
-    <div class="flex items-center gap-tight whitespace-nowrap">
+    <div class="flex items-center whitespace-nowrap">
       <span
         :for={lang <- Enum.take(@langs, 3)}
         title={lang}
         class="text-base leading-none"
       >
-        {RowView.language_flag(lang)}
+        {WatchClub.Languages.to_flag(lang)}
       </span>
       <span :if={length(@langs) > 3} class="text-xs text-text-subtle">
         +{length(@langs) - 3}
@@ -179,24 +221,4 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   defp matched_content_inline(%{content_title: title, content_sub: sub}),
     do: "#{title} · #{sub}"
-
-  defp relative_time(nil), do: "—"
-
-  defp relative_time(%DateTime{} = dt) do
-    diff = DateTime.diff(DateTime.utc_now(), dt, :second)
-
-    cond do
-      diff < 60 -> "just now"
-      diff < 3600 -> "#{div(diff, 60)}m ago"
-      diff < 86_400 -> "#{div(diff, 3600)}h ago"
-      true -> "#{div(diff, 86_400)}d ago"
-    end
-  end
-
-  defp relative_time(%NaiveDateTime{} = ndt) do
-    case DateTime.from_naive(ndt, "Etc/UTC") do
-      {:ok, dt} -> relative_time(dt)
-      _ -> "—"
-    end
-  end
 end

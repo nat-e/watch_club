@@ -244,36 +244,4 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   end
 
   def country_flag(_), do: nil
-
-  @spec language_flag(String.t()) :: String.t()
-  def language_flag(lang) when is_binary(lang) do
-    code =
-      case String.downcase(lang) do
-        "en" -> "GB"
-        "eng" -> "GB"
-        "fr" -> "FR"
-        "fra" -> "FR"
-        "ja" -> "JP"
-        "jpn" -> "JP"
-        "es" -> "ES"
-        "spa" -> "ES"
-        "de" -> "DE"
-        "deu" -> "DE"
-        "it" -> "IT"
-        "ita" -> "IT"
-        "pt" -> "PT"
-        "por" -> "PT"
-        "zh" -> "CN"
-        "chi" -> "CN"
-        "ko" -> "KR"
-        "kor" -> "KR"
-        _ -> "UN"
-      end
-
-    code
-    |> String.upcase()
-    |> String.to_charlist()
-    |> Enum.map(&(&1 + 127_397))
-    |> List.to_string()
-  end
 end

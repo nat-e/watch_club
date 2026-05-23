@@ -18,8 +18,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   alias WatchClub.Media.{Media, MediaType, Video}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
+  alias WatchClubWeb.Helpers.Time
 
   attr :media, Media, required: true
+  attr :locale, :atom, required: true
 
   def render(assigns) do
     view = RowView.from_media(assigns.media)
@@ -36,7 +38,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         <.video_section :if={@has_video?} media={@media} view={@view} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
-        <.file_section media={@media} />
+        <.file_section media={@media} locale={@locale} />
       </div>
     </aside>
     """
@@ -200,9 +202,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         >
           <div class="flex items-center gap-related min-w-0">
             <span class="text-lg leading-none">
-              {RowView.language_flag(track.language || "und")}
+              {WatchClub.Languages.to_flag(track.language)}
             </span>
-            <span class="truncate text-text">{track.language || "—"}</span>
+            <span class="truncate text-text">
+              {WatchClub.Languages.to_name(track.language) || "—"}
+            </span>
           </div>
           <div class="flex items-center gap-tight shrink-0">
             <.badge :if={track.codec} variant="muted">{track.codec}</.badge>
@@ -233,9 +237,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         >
           <div class="flex items-center gap-related min-w-0">
             <span class="text-lg leading-none">
-              {RowView.language_flag(track.language || "und")}
+              {WatchClub.Languages.to_flag(track.language)}
             </span>
-            <span class="truncate text-text">{track.language || "—"}</span>
+            <span class="truncate text-text">
+              {WatchClub.Languages.to_name(track.language) || "—"}
+            </span>
           </div>
           <.badge :if={Map.get(track, :default?)} variant="muted">Default</.badge>
           <.badge :if={Map.get(track, :forced?)} variant="muted">Forced</.badge>
@@ -248,14 +254,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp subtitle_section(assigns), do: ~H""
 
   attr :media, Media, required: true
+  attr :locale, :atom, required: true
 
   defp file_section(assigns) do
     ~H"""
     <.section_block label="File">
       <.dl>
         <.dl_row label="Path" value={@media.path} mono />
-        <.dl_row label="Imported" value={format_dt(@media.inserted_at)} />
-        <.dl_row :if={@media.updated_at} label="Updated" value={format_dt(@media.updated_at)} />
+        <.dl_row
+          :if={@media.updated_at}
+          label="Last updated"
+          value={Time.relative_from_now(@media.updated_at, @locale)}
+        />
       </.dl>
     </.section_block>
     """
@@ -385,7 +395,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp frame_rate(%Media{video: %Video{video_tracks: [%{frame_rate: fr} | _]}})
        when not is_nil(fr),
-       do: "#{fr} fps"
+       do: "#{round(fr)} fps"
 
   defp frame_rate(_), do: nil
 
@@ -400,14 +410,4 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp channels_label(s) when is_binary(s), do: s
   defp channels_label(_), do: nil
-
-  defp format_dt(nil), do: "—"
-
-  defp format_dt(%DateTime{} = dt),
-    do: Calendar.strftime(dt, "%Y-%m-%d %H:%M")
-
-  defp format_dt(%NaiveDateTime{} = ndt),
-    do: Calendar.strftime(ndt, "%Y-%m-%d %H:%M")
-
-  defp format_dt(_), do: "—"
 end

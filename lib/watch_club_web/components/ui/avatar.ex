@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       |> assign(:overflow_count, length(assigns.avatars) - length(visible_avatars))
 
     ~H"""
-    <div class={["flex items-center -space-x-4", @class]} {@rest}>
+    <div class={["flex items-center -space-x-3.5", @class]} {@rest}>
       <.avatar
         :for={avatar <- @visible_avatars}
         id={avatar.id}

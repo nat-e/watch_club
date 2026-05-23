@@ -160,6 +160,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           streams={@streams}
           selected_id={selected_id(@state)}
           drawer_open?={@state.drawer.open?}
+          locale={@current_user.settings.locale}
         />
 
         <%= if @state.drawer.open? do %>
@@ -181,7 +182,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
               "lg:static lg:z-auto lg:max-w-none lg:overflow-visible"
             ]}
           >
-            <DetailDrawer.render media={@state.drawer.media} />
+            <DetailDrawer.render
+              media={@state.drawer.media}
+              locale={@current_user.settings.locale}
+            />
           </div>
         <% end %>
       </div>
