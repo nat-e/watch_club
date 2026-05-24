@@ -29,6 +29,9 @@ defmodule WatchClubWeb.Admin.MediaImports.HistoryTable do
           <.table_head class="text-left">
             {dgettext("admin_media_imports", "Refresh metadata")}
           </.table_head>
+          <.table_head class="w-0">
+            <span class="sr-only">{dgettext("admin_media_imports", "Actions")}</span>
+          </.table_head>
         </.table_row>
       </.table_header>
       <.table_body>
@@ -47,6 +50,20 @@ defmodule WatchClubWeb.Admin.MediaImports.HistoryTable do
           </.table_cell>
           <.table_cell class="text-left">
             <.refresh_metadata_badge value={run.refresh_metadata?} />
+          </.table_cell>
+          <.table_cell class="text-right">
+            <.button
+              :if={run.status == :processing}
+              id={"cancel-run-#{run.id}"}
+              variant="secondary"
+              class="text-text-muted hover:text-text"
+              phx-click="cancel_run"
+              phx-value-id={run.id}
+              aria-label={dgettext("admin_media_imports", "Cancel")}
+            >
+              <Lucideicons.x />
+              {dgettext("admin_media_imports", "Cancel")}
+            </.button>
           </.table_cell>
         </.table_row>
       </.table_body>

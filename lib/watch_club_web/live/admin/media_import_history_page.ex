@@ -134,6 +134,19 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
     {:noreply, assign(socket, :run_modal_open?, false)}
   end
 
+  def handle_event("cancel_run", %{"id" => run_id}, socket) do
+    actor = socket.assigns.current_user
+
+    with {:ok, run} <- Media.get_import_run_by_id(run_id, actor: actor),
+         {:ok, _run} <- Media.cancel_import_run(run, actor: actor) do
+      {:noreply, put_flash(socket, :info, dgettext("admin_media_imports", "Import cancelled"))}
+    else
+      {:error, _error} ->
+        {:noreply,
+         put_flash(socket, :error, dgettext("admin_media_imports", "Could not cancel import"))}
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # PubSub
   # ---------------------------------------------------------------------------

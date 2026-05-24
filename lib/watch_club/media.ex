@@ -27,6 +27,7 @@ defmodule WatchClub.Media do
       define :list_import_runs, action: :read
       define :get_import_run_by_id, action: :read, get_by: [:id]
       define :start_import_run, action: :start, args: [:configuration_id]
+      define :cancel_import_run, action: :cancel
     end
 
     resource WatchClub.Media.Video

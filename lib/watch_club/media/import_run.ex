@@ -50,17 +50,8 @@ defmodule WatchClub.Media.ImportRun do
     transitions do
       transition :complete, from: :processing, to: :completed
       transition :fail, from: :processing, to: :failed
+      transition :cancel, from: :processing, to: :cancelled
     end
-  end
-
-  pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-    prefix "media_imports"
-
-    publish :start, [[:configuration_id, nil]]
-    publish :complete, [[:configuration_id, nil]]
-    publish :fail, [[:configuration_id, nil]]
   end
 
   actions do
@@ -95,6 +86,15 @@ defmodule WatchClub.Media.ImportRun do
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
     end
+
+    update :cancel do
+      require_atomic? false
+      accept []
+
+      change set_attribute(:finished_at, &DateTime.utc_now/0)
+      change transition_state(:cancelled)
+      change Changes.CancelObanJob
+    end
   end
 
   policies do
@@ -110,8 +110,8 @@ defmodule WatchClub.Media.ImportRun do
       authorize_if actor_attribute_equals(:system?, true)
     end
 
-    policy action(:start) do
-      description "Only the Instance Administrator can manually trigger Media Imports"
+    policy action([:start, :cancel]) do
+      description "Only the Instance Administrator can manage Media Imports"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
@@ -119,6 +119,17 @@ defmodule WatchClub.Media.ImportRun do
       description "Only the system actor can process Media Imports in the background"
       authorize_if actor_attribute_equals(:system?, true)
     end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "media_imports"
+
+    publish :start, [[:configuration_id, nil]]
+    publish :complete, [[:configuration_id, nil]]
+    publish :fail, [[:configuration_id, nil]]
+    publish :cancel, [[:configuration_id, nil]]
   end
 
   preparations do

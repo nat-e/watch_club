@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaImports.RunStatusBadge do
 
   attr :status, :atom,
     required: true,
-    values: [:completed, :failed, :processing, :pending, :never_run]
+    values: [:completed, :failed, :cancelled, :processing, :pending, :never_run]
 
   attr :size, :string, values: ~w(sm md), default: "sm"
   attr :label, :string, default: nil
@@ -30,6 +30,15 @@ defmodule WatchClubWeb.Admin.MediaImports.RunStatusBadge do
     <.badge variant="danger" size={@size}>
       <:icon><Lucideicons.circle_alert /></:icon>
       {@label || dgettext("admin_media_imports", "Failed")}
+    </.badge>
+    """
+  end
+
+  def run_status_badge(%{status: :cancelled} = assigns) do
+    ~H"""
+    <.badge variant="muted" size={@size}>
+      <:icon><Lucideicons.circle_x /></:icon>
+      {@label || dgettext("admin_media_imports", "Cancelled")}
     </.badge>
     """
   end
