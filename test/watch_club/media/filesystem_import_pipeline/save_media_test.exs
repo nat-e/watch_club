@@ -5,7 +5,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
   alias WatchClub.Media.{Media, Video, VideoTrack}
   alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
+  alias WatchClub.Media.ImportPipeline.Candidate.{MatchResult, MediaStructure}
   alias WatchClub.Media.ImportPipeline.SaveMedia
   alias WatchClub.Media.ImportRun
 
@@ -17,7 +17,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
 
       candidate = %Candidate{
         path: "tmp/star-wars.mkv",
-        matched_id: movie.id,
+        match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: sample_video_structure()
       }
 
@@ -47,7 +47,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
 
       candidate = %Candidate{
         path: "tmp/friends-s01e01.mkv",
-        matched_id: episode.id,
+        match_result: %MatchResult{result: :success, matched_id: episode.id},
         media_structure: sample_video_structure()
       }
 
@@ -65,6 +65,45 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
     end
   end
 
+  describe "apply/2 — unmatched" do
+    test "persists Media + unattached Video on a movie run when matched_id is nil" do
+      candidate = %Candidate{
+        path: "tmp/unmatched-movie.mkv",
+        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        media_structure: sample_video_structure()
+      }
+
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:movie))
+
+      assert %Media{
+               type: :movie,
+               video: %Video{
+                 movie_id: nil,
+                 tv_show_episode_id: nil,
+                 container: "matroska",
+                 video_tracks: [%{codec: "h264"}],
+                 audio_tracks: [_],
+                 text_tracks: [_]
+               }
+             } = load_media!(candidate.path)
+    end
+
+    test "persists Media + unattached Video on a tv_show_episode run when matched_id is nil" do
+      candidate = %Candidate{
+        path: "tmp/unmatched-episode.mkv",
+        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        media_structure: sample_video_structure()
+      }
+
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:tv_show_episode))
+
+      assert %Media{
+               type: :tv_show_episode,
+               video: %Video{movie_id: nil, tv_show_episode_id: nil}
+             } = load_media!(candidate.path)
+    end
+  end
+
   describe "apply/2 — refresh" do
     test "replaces the existing Video and tracks when the path already has a Media" do
       movie = seed_movie()
@@ -72,7 +111,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
 
       candidate_original = %Candidate{
         path: path,
-        matched_id: movie.id,
+        match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: sample_video_structure()
       }
 
@@ -82,7 +121,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
 
       candidate_refresh = %Candidate{
         path: path,
-        matched_id: movie.id,
+        match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: %{
           sample_video_structure()
           | video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],

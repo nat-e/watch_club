@@ -7,6 +7,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
 
   alias WatchClub.Media
   alias WatchClub.Media.ImportPipeline.Candidate
+  alias WatchClub.Media.ImportPipeline.Candidate.MatchResult
   alias WatchClub.Media.ImportRun
   alias WatchClub.SystemActor
 
@@ -50,7 +51,10 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
 
   defp build_video_input(
          media_type,
-         %Candidate{media_structure: structure, matched_id: matched_id}
+         %Candidate{
+           media_structure: structure,
+           match_result: %MatchResult{matched_id: matched_id}
+         }
        ) do
     foreign_key =
       case media_type do

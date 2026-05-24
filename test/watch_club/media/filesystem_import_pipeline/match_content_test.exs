@@ -4,7 +4,7 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
   alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MovieIdentity}
+  alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MatchResult, MovieIdentity}
   alias WatchClub.Media.ImportPipeline.MatchContent
   alias WatchClub.Media.ImportRun
 
@@ -13,7 +13,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       movie = seed_movie(tmdb_id: 11)
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == movie.id
     end
 
@@ -25,7 +26,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert is_binary(matched_id)
     end
 
@@ -39,7 +41,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == movie.id
     end
 
@@ -53,14 +56,35 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{title: "Star Wars", year: 1977})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == movie.id
     end
 
-    test "halts when no movie strategy matches" do
+    test "passes through with matched_id: nil when no movie strategy matches" do
       candidate = candidate_with(%MovieIdentity{})
 
-      assert {:halt, "Error matching content"} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
+               MatchContent.apply(candidate, run())
+    end
+
+    test "passes through with matched_id: nil when TMDB title search returns no results" do
+      stub_tmdb(fn _conn, _path -> %{"results" => []} end)
+
+      candidate = candidate_with(%MovieIdentity{title: "Unknown Film", year: 1999})
+
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
+               MatchContent.apply(candidate, run())
+    end
+
+    test "halts when TMDB returns an HTTP error" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
+
+      assert {:halt, _} = MatchContent.apply(candidate, run())
     end
   end
 
@@ -71,7 +95,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == episode.id
     end
 
@@ -83,7 +108,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert is_binary(matched_id)
     end
 
@@ -98,7 +124,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tvdb_id: 79168, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == episode.id
     end
 
@@ -117,7 +144,8 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
           episode_number: 3
         })
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == episode.id
     end
 
@@ -132,23 +160,26 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{title: "Friends", season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{matched_id: matched_id}} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+               MatchContent.apply(candidate, run())
       assert matched_id == episode.id
     end
 
-    test "halts when the show resolves but season/episode is missing" do
+    test "passes through with matched_id: nil when the show resolves but season/episode is missing" do
       _ = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
 
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 99, episode_number: 99})
 
-      assert {:halt, "Error matching content"} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
+               MatchContent.apply(candidate, run())
     end
 
-    test "halts when no TV strategy matches" do
+    test "passes through with matched_id: nil when no TV strategy matches" do
       candidate = candidate_with(%EpisodeIdentity{season_number: 1, episode_number: 3})
 
-      assert {:halt, "Error matching content"} = MatchContent.apply(candidate, run())
+      assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
+               MatchContent.apply(candidate, run())
     end
   end
 

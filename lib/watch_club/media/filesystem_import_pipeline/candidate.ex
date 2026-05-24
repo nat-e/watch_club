@@ -13,7 +13,7 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
             | __MODULE__.BookIdentity.t()
             | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
-          matched_id: Ash.UUIDv7.t() | nil
+          match_result: __MODULE__.MatchResult.t() | nil
         }
 
   defstruct [
@@ -21,8 +21,25 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
     :relative_path,
     :identity,
     :media_structure,
-    :matched_id
+    :match_result
   ]
+
+  defmodule MatchResult do
+    @moduledoc """
+    Outcome of the `MatchContent` stage. `:success` means the candidate's
+    identity was resolved to a Content row (its id is in `matched_id`);
+    `:not_matched` means the stage ran but no Content could be resolved.
+    A `nil` `match_result` on the parent `Candidate` means the stage has
+    not yet run.
+    """
+
+    @type t :: %__MODULE__{
+            result: :success | :not_matched,
+            matched_id: Ash.UUIDv7.t() | nil
+          }
+
+    defstruct [:result, :matched_id]
+  end
 
   defmodule MovieIdentity do
     @type t :: %__MODULE__{

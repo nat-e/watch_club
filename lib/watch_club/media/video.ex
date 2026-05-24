@@ -32,9 +32,9 @@ defmodule WatchClub.Media.Video do
 
     check_constraints do
       check_constraint [:movie_id, :tv_show_episode_id],
-        name: "videos_exactly_one_content_attachment_check",
-        check: "num_nonnulls(movie_id, tv_show_episode_id) = 1",
-        message: "Video must be attached to exactly one Movie or TV Show Episode"
+        name: "videos_at_most_one_content_attachment_check",
+        check: "num_nonnulls(movie_id, tv_show_episode_id) <= 1",
+        message: "Video may be attached to at most one Movie or TV Show Episode"
     end
   end
 

@@ -1,7 +1,7 @@
 defmodule WatchClub.Media.ImportPipeline.MatchContent do
   @moduledoc """
   Resolves a candidate's identity to a `Content` row, creating it if needed,
-  and writes the resolved id back to the candidate as `:matched_id`.
+  and writes the outcome back to the candidate as a `Candidate.MatchResult`.
   """
 
   @behaviour WatchClub.Media.ImportPipeline.Stage
@@ -9,7 +9,14 @@ defmodule WatchClub.Media.ImportPipeline.MatchContent do
   alias WatchClub.Contents
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Media.ImportPipeline.Candidate
-  alias WatchClub.Media.ImportPipeline.Candidate.{BookIdentity, EpisodeIdentity, MovieIdentity}
+
+  alias WatchClub.Media.ImportPipeline.Candidate.{
+    BookIdentity,
+    EpisodeIdentity,
+    MatchResult,
+    MovieIdentity
+  }
+
   alias WatchClub.Media.ImportRun
   alias WatchClub.SystemActor
 
@@ -19,7 +26,12 @@ defmodule WatchClub.Media.ImportPipeline.MatchContent do
   def apply(%Candidate{} = candidate, %ImportRun{}) do
     case get_or_create_content(candidate.identity) do
       {:ok, match} ->
-        {:ok, %{candidate | matched_id: match.id}}
+        {:ok,
+         %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}}
+
+      {:error, :no_match} ->
+        {:ok,
+         %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}}
 
       {:error, reason} ->
         Logger.error("Error matching content for #{candidate.path}: #{inspect(reason)}")
