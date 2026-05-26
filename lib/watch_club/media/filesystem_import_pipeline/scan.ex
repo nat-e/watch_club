@@ -11,14 +11,31 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   # Allow more time for the first operation for slow booting external drives
   @initial_disk_operation_timeout 15_000
 
-  def list_candidate_files(
-        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} = configuration
+  @doc """
+  Returns a lazy `Stream` of `Candidate` values produced by walking the
+  configured filesystem path.
+
+  `skip_paths` is a `MapSet` of expanded paths that should be skipped without
+  even running an `lstat` — typically the paths of media already imported
+  for this configuration. Pass `MapSet.new/0` to scan everything.
+
+  The root path is checked eagerly: this function returns `{:error, _}` if
+  the root is missing, inaccessible, a symlink, or not a directory. Once the
+  root gate passes, all subsequent per-path errors during the walk are
+  logged and the offending path/subtree is dropped — the stream never
+  raises in normal operation.
+  """
+  def stream_candidate_files(configuration, skip_paths \\ MapSet.new())
+
+  def stream_candidate_files(
+        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} = configuration,
+        skip_paths
       ) do
     root_path = Path.expand(root_path)
 
     case Fs.lstat(root_path, time: :posix, timeout: @initial_disk_operation_timeout) do
       {:ok, %{type: :directory}} ->
-        {:ok, walk([root_path], root_path, configuration, [])}
+        {:ok, candidate_stream(root_path, configuration, skip_paths)}
 
       {:ok, %{type: :symlink}} ->
         {:error, "Media Import filesystem location cannot be a symbolic link: #{root_path}"}
@@ -32,23 +49,37 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
     end
   end
 
-  def list_candidate_files(%ImportConfiguration{source_type: source_type}) do
+  def stream_candidate_files(%ImportConfiguration{source_type: source_type}, _skip_paths) do
     {:error, "Unsupported Media Import Source Type: #{inspect(source_type)}"}
   end
 
-  defp walk([], _root_path, _configuration, candidates), do: Enum.reverse(candidates)
+  defp candidate_stream(root_path, configuration, skip_paths) do
+    Stream.resource(
+      fn -> [root_path] end,
+      fn
+        [] ->
+          {:halt, []}
 
-  defp walk([path | rest], root_path, configuration, candidates) do
-    expanded = Path.expand(path)
+        [path | rest] ->
+          case inspect_path(Path.expand(path), root_path, configuration, skip_paths) do
+            :drop -> {[], rest}
+            {:enqueue, children} -> {[], children ++ rest}
+            {:emit, candidate} -> {[candidate], rest}
+          end
+      end,
+      fn _ -> :ok end
+    )
+  end
 
-    case inspect_path(expanded, root_path, configuration) do
-      :drop -> walk(rest, root_path, configuration, candidates)
-      {:enqueue, children} -> walk(children ++ rest, root_path, configuration, candidates)
-      {:emit, candidate} -> walk(rest, root_path, configuration, [candidate | candidates])
+  defp inspect_path(path, root_path, configuration, skip_paths) do
+    if MapSet.member?(skip_paths, path) do
+      :drop
+    else
+      inspect_unseen_path(path, root_path, configuration)
     end
   end
 
-  defp inspect_path(path, root_path, configuration) do
+  defp inspect_unseen_path(path, root_path, configuration) do
     case Fs.lstat(path, time: :posix) do
       {:ok, %{type: :symlink}} ->
         :drop

@@ -28,7 +28,7 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
     Scan
   }
 
-  alias WatchClub.Media.{ImportRun, Media}
+  alias WatchClub.Media.ImportRun
   alias WatchClub.SystemActor
 
   require Logger
@@ -38,14 +38,10 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
 
   @impl true
   def import_medias(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
-    with {:ok, candidates} <- Scan.list_candidate_files(configuration),
-         {:ok, candidates} <-
-           filter_existing(
-             candidates,
-             configuration.filesystem_path,
-             import_run.refresh_metadata?
-           ) do
-      candidates
+    with {:ok, skip_paths} <-
+           load_existing_media(configuration.filesystem_path, import_run.refresh_metadata?),
+         {:ok, candidate_stream} <- Scan.stream_candidate_files(configuration, skip_paths) do
+      candidate_stream
       |> Task.async_stream(&process_candidate(&1, import_run),
         max_concurrency: @concurrency,
         ordered: false,
@@ -57,16 +53,15 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
     end
   end
 
-  # When not refreshing metadata, filter candidates that already exist.
-  defp filter_existing(candidates, _root_path, true), do: {:ok, candidates}
+  # Returns the set of media paths already imported under `root_path`, used by
+  # `Scan` to skip them without statting. When refreshing metadata the caller
+  # wants to re-process everything, so the set is empty.
+  defp load_existing_media(_root_path, true), do: {:ok, MapSet.new()}
 
-  defp filter_existing(candidates, root_path, _refresh_metadata?) do
+  defp load_existing_media(root_path, _refresh_metadata?) do
     with {:ok, media} <-
            MediaDomain.list_media_under_path_prefix(root_path, actor: SystemActor.actor()) do
-      by_path = Map.new(media, fn %Media{path: path} = m -> {path, m} end)
-
-      {:ok,
-       candidates |> Enum.reject(fn candidate -> Map.get(by_path, candidate.path) != nil end)}
+      {:ok, MapSet.new(media, & &1.path)}
     end
   end
 
