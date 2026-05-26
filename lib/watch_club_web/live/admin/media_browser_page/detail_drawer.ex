@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.Media.MediaTypeIcon
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
-  alias WatchClub.Media.{Media, MediaType, Video}
+  alias WatchClub.Media.{Media, MediaType, Video, VideoResolution}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
@@ -131,7 +131,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           </div>
         </.stack>
       </div>
-
     </.section_block>
     """
   end
@@ -171,7 +170,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
       <.dl>
         <.dl_badge_row label="Resolution">
           <.badge :if={@view.resolution} variant="muted">
-            {RowView.resolution_label(@view.resolution)}
+            {VideoResolution.label(@view.resolution)}
           </.badge>
           <span :if={!@view.resolution} class="text-text-subtle">—</span>
         </.dl_badge_row>

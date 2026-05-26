@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   HEEX templates.
   """
 
-  alias WatchClub.Media.{Audiobook, Ebook, Media, Video}
+  alias WatchClub.Media.{Audiobook, Ebook, Media, Video, VideoResolution}
 
   @type t :: %{
           id: binary(),
@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           poster_path: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
           libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
-          resolution: :uhd_4k | :hd_1080p | :hd_720p | :sd | nil,
+          resolution: VideoResolution.t() | nil,
           audio_languages: [String.t()],
           subtitle_languages: [String.t()],
           imported_at: DateTime.t() | nil
@@ -165,24 +165,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   defp library_items(_), do: []
 
   # --------------------------------------------------------------------------
-  # Resolution (video only; bucket from height)
+  # Resolution: picks the highest bucket across video tracks. Per-track bucketing
+  # is the `:resolution` calculation on VideoTrack (auto-loaded via preparation).
   # --------------------------------------------------------------------------
 
   defp resolution(%Media{video: %Video{video_tracks: tracks}}) when is_list(tracks) do
     tracks
-    |> Enum.map(& &1.height)
+    |> Enum.map(& &1.resolution)
     |> Enum.reject(&is_nil/1)
-    |> Enum.max(fn -> nil end)
-    |> bucket()
+    |> Enum.max_by(&VideoResolution.rank/1, fn -> nil end)
   end
 
   defp resolution(_), do: nil
-
-  defp bucket(nil), do: nil
-  defp bucket(h) when h >= 1900, do: :uhd_4k
-  defp bucket(h) when h >= 1000, do: :hd_1080p
-  defp bucket(h) when h >= 700, do: :hd_720p
-  defp bucket(_), do: :sd
 
   # --------------------------------------------------------------------------
   # Audio / subtitle languages
@@ -205,17 +199,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   end
 
   defp subtitle_languages(_), do: []
-
-  # --------------------------------------------------------------------------
-  # Localized labels
-  # --------------------------------------------------------------------------
-
-  @spec resolution_label(:uhd_4k | :hd_1080p | :hd_720p | :sd | nil) :: String.t() | nil
-  def resolution_label(:uhd_4k), do: "4K"
-  def resolution_label(:hd_1080p), do: "1080p"
-  def resolution_label(:hd_720p), do: "720p"
-  def resolution_label(:sd), do: "SD"
-  def resolution_label(_), do: nil
 
   @doc """
   Splits a filename into `{head, tail}` so the head can truncate with an

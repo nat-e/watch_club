@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Components.Media.MediaTypeIcon
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
+  alias WatchClub.Media.VideoResolution
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
@@ -211,7 +212,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   defp resolution_badge(assigns) do
     ~H"""
-    <.badge variant="muted" size="sm">{RowView.resolution_label(@resolution)}</.badge>
+    <.badge variant="muted" size="sm">{VideoResolution.label(@resolution)}</.badge>
     """
   end
 

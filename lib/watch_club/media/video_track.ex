@@ -6,6 +6,7 @@ defmodule WatchClub.Media.VideoTrack do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Media.Video
+  alias WatchClub.Media.VideoResolution
 
   postgres do
     table "video_tracks"
@@ -23,6 +24,10 @@ defmodule WatchClub.Media.VideoTrack do
       primary? true
       accept [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate]
     end
+  end
+
+  preparations do
+    prepare build(load: [:resolution])
   end
 
   policies do
@@ -84,6 +89,26 @@ defmodule WatchClub.Media.VideoTrack do
   relationships do
     belongs_to :video, Video do
       allow_nil? false
+      public? true
+    end
+  end
+
+  calculations do
+    # Bucketed display resolution. Cascade is smallest-first with generous height
+    # ceilings so anamorphic / letterboxed encodes (e.g. 1920x800 cinemascope)
+    # fall into the bucket their width implies rather than the one their
+    # cropped height would suggest. Thresholds mirror Jellyfin's
+    # `MediaStream.GetResolutionText`, collapsed to the four buckets the UI shows.
+    calculate :resolution,
+              VideoResolution,
+              expr(
+                cond do
+                  width <= 1024 and height <= 576 -> :sd
+                  width <= 1280 and height <= 962 -> :hd_720p
+                  width <= 2560 and height <= 1440 -> :hd_1080p
+                  true -> :uhd_4k
+                end
+              ) do
       public? true
     end
   end
