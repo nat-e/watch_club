@@ -171,9 +171,15 @@ defmodule WatchClub.Media.Media do
       authorize_if always()
     end
 
-    policy action_type([:create, :update, :destroy]) do
-      description "Only the system actor can write Media"
+    policy action_type([:create, :update]) do
+      description "Only the system actor can create or update Media"
       authorize_if WatchClub.Checks.IsSystemActor
+    end
+
+    policy action_type(:destroy) do
+      description "The system actor or an instance administrator can destroy Media"
+      authorize_if WatchClub.Checks.IsSystemActor
+      authorize_if actor_attribute_equals(:administrator?, true)
     end
   end
 

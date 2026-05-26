@@ -299,20 +299,27 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     right panel, with its heavy preload tree.
     """
 
-    defstruct open?: false, media: nil
+    defstruct open?: false, media: nil, confirm_remove_open?: false
 
-    @type t :: %__MODULE__{open?: boolean(), media: term() | nil}
+    @type t :: %__MODULE__{open?: boolean(), media: term() | nil, confirm_remove_open?: boolean()}
 
     @spec new() :: t()
     def new, do: %__MODULE__{}
 
     @spec open(t(), term()) :: t()
-    def open(%__MODULE__{} = d, media), do: %{d | open?: true, media: media}
+    def open(%__MODULE__{} = d, media),
+      do: %{d | open?: true, media: media, confirm_remove_open?: false}
 
     @spec close(t()) :: t()
     def close(%__MODULE__{}), do: new()
 
     @spec open?(t()) :: boolean()
     def open?(%__MODULE__{open?: v}), do: v
+
+    @spec open_confirm_remove(t()) :: t()
+    def open_confirm_remove(%__MODULE__{} = d), do: %{d | confirm_remove_open?: true}
+
+    @spec close_confirm_remove(t()) :: t()
+    def close_confirm_remove(%__MODULE__{} = d), do: %{d | confirm_remove_open?: false}
   end
 end

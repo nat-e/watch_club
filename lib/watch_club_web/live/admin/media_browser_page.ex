@@ -1,6 +1,9 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage do
   use WatchClubWeb, :live_view
 
+  require Logger
+
+  import WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal
   import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Components.UI.Empty
 
@@ -94,6 +97,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     {:noreply, assign(socket, :state, state)}
   end
 
+  def handle_event("open_remove_media_modal", _params, socket) do
+    drawer = State.Drawer.open_confirm_remove(socket.assigns.state.drawer)
+    {:noreply, assign(socket, :state, %{socket.assigns.state | drawer: drawer})}
+  end
+
+  def handle_event("close_remove_media_modal", _params, socket) do
+    drawer = State.Drawer.close_confirm_remove(socket.assigns.state.drawer)
+    {:noreply, assign(socket, :state, %{socket.assigns.state | drawer: drawer})}
+  end
+
   def handle_event("delete_media", _params, socket) do
     drawer = socket.assigns.state.drawer
 
@@ -116,7 +129,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
              |> stream_delete(:media_cards, media)
              |> put_flash(:info, "Media deleted.")}
 
-          {:error, _reason} ->
+          {:error, reason} ->
+            Logger.error("Failed to delete Media #{media.id}: #{inspect(reason)}")
+
             {:noreply,
              socket
              |> put_flash(:error, "Could not delete Media.")}
@@ -189,6 +204,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           </div>
         <% end %>
       </div>
+
+      <.remove_media_modal :if={@state.drawer.confirm_remove_open?} />
     </Layouts.app>
     """
   end

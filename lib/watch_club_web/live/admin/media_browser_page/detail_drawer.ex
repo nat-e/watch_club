@@ -87,14 +87,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           {play_label(@media.type)}
         </.button>
         <.button
-          id="drawer-delete"
+          id="drawer-remove"
           variant="danger"
           size="md"
-          phx-click="delete_media"
-          data-confirm="Delete this Media? This cannot be undone."
+          phx-click="open_remove_media_modal"
         >
           <:icon><Lucideicons.trash_2 /></:icon>
-          Delete
+          Remove media
         </.button>
       </.cluster>
     </header>
