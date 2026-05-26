@@ -8,10 +8,6 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
 
   require Logger
 
-  defmodule Error do
-    defexception [:message]
-  end
-
   # Allow more time for the first operation for slow booting external drives
   @initial_disk_operation_timeout 15_000
 
@@ -80,7 +76,8 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
         :drop
 
       {:error, reason} ->
-        raise Error, message: "Cannot inspect filesystem path #{path}: #{inspect(reason)}"
+        Logger.warning("Cannot inspect filesystem path, skipping #{path} (#{inspect(reason)})")
+        :drop
     end
   end
 
@@ -96,7 +93,11 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
         []
 
       {:error, reason} ->
-        raise Error, message: "Cannot list filesystem directory #{path}: #{inspect(reason)}"
+        Logger.warning(
+          "Cannot list filesystem directory, skipping subtree #{path} (#{inspect(reason)})"
+        )
+
+        []
     end
   end
 end
