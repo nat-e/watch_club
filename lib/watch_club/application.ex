@@ -12,6 +12,7 @@ defmodule WatchClub.Application do
     children = [
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
+      {Task.Supervisor, name: WatchClub.Shared.Fs.TaskSupervisor},
       {Oban,
        AshOban.config(
          Application.fetch_env!(:watch_club, :ash_domains),

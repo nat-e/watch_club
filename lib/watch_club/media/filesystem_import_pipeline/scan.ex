@@ -4,17 +4,23 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
+  alias WatchClub.Shared.Fs
+
+  require Logger
 
   defmodule Error do
     defexception [:message]
   end
+
+  # Allow more time for the first operation for slow booting external drives
+  @initial_disk_operation_timeout 15_000
 
   def list_candidate_files(
         %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} = configuration
       ) do
     root_path = Path.expand(root_path)
 
-    case File.lstat(root_path, time: :posix) do
+    case Fs.lstat(root_path, time: :posix, timeout: @initial_disk_operation_timeout) do
       {:ok, %{type: :directory}} ->
         {:ok, walk([root_path], root_path, configuration, [])}
 
@@ -47,7 +53,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   end
 
   defp inspect_path(path, root_path, configuration) do
-    case File.lstat(path, time: :posix) do
+    case Fs.lstat(path, time: :posix) do
       {:ok, %{type: :symlink}} ->
         :drop
 
@@ -69,17 +75,25 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
       {:ok, _} ->
         :drop
 
+      {:error, :timeout} ->
+        Logger.warning("Filesystem lstat timed out, skipping: #{path}")
+        :drop
+
       {:error, reason} ->
         raise Error, message: "Cannot inspect filesystem path #{path}: #{inspect(reason)}"
     end
   end
 
   defp children(path) do
-    case File.ls(path) do
+    case Fs.ls(path) do
       {:ok, entries} ->
         entries
         |> Enum.sort()
         |> Enum.map(&Path.join(path, &1))
+
+      {:error, :timeout} ->
+        Logger.warning("Filesystem ls timed out, skipping subtree: #{path}")
+        []
 
       {:error, reason} ->
         raise Error, message: "Cannot list filesystem directory #{path}: #{inspect(reason)}"
