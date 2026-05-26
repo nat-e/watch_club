@@ -107,7 +107,7 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
 
     defmodule VideoTrack do
       @moduledoc false
-      defstruct [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate]
+      defstruct [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate, default?: false]
     end
 
     defmodule AudioTrack do

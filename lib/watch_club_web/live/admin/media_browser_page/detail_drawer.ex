@@ -386,13 +386,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp country_item(_), do: nil
 
-  defp video_codec(%Media{video: %Video{video_tracks: [%{codec: codec} | _]}})
+  defp video_codec(%Media{video: %Video{default_video_track: %{codec: codec}}})
        when is_binary(codec),
        do: codec
 
   defp video_codec(_), do: nil
 
-  defp frame_rate(%Media{video: %Video{video_tracks: [%{frame_rate: fr} | _]}})
+  defp frame_rate(%Media{video: %Video{default_video_track: %{frame_rate: fr}}})
        when not is_nil(fr),
        do: "#{round(fr)} fps"
 

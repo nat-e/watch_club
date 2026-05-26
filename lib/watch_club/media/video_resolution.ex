@@ -1,8 +1,7 @@
 defmodule WatchClub.Media.VideoResolution do
   @moduledoc """
-  Bucketed display resolution for a `VideoTrack`. Values are ordered from
-  lowest to highest so `Enum.max_by/2` on the `rank/1` helper picks the
-  dominant track when multiple are present.
+  Bucketed display resolution for a `VideoTrack`. Computed by the `:resolution`
+  calculation on `VideoTrack`; rendered with `label/1`.
   """
 
   use Ash.Type.Enum,
@@ -18,9 +17,4 @@ defmodule WatchClub.Media.VideoResolution do
   def label(:hd_720p), do: "720p"
   def label(:sd), do: "SD"
   def label(_), do: nil
-
-  def rank(:uhd_4k), do: 3
-  def rank(:hd_1080p), do: 2
-  def rank(:hd_720p), do: 1
-  def rank(:sd), do: 0
 end

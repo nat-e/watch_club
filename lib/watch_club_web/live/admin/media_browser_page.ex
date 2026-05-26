@@ -248,7 +248,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   defp drawer_load_tree do
     [
       video: [
-        :video_tracks,
+        :default_video_track,
         :audio_tracks,
         :text_tracks,
         movie: [:best_localization, content: [library_items: [library: :club]]],

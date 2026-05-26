@@ -30,7 +30,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     video = playback.media.video
 
     metadata = %{
-      video: hd(video.video_tracks),
+      video: video.default_video_track,
       audio_tracks: video.audio_tracks,
       subtitle_tracks: video.text_tracks
     }
@@ -141,7 +141,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   defp duration(playback), do: playback.media.video.duration_seconds
 
   defp qualities(playback) do
-    track = hd(playback.media.video.video_tracks)
+    track = playback.media.video.default_video_track
     QualityLadder.build(track.width, track.height, track.bit_rate)
   end
 

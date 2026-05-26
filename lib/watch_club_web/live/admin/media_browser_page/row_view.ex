@@ -165,17 +165,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   defp library_items(_), do: []
 
   # --------------------------------------------------------------------------
-  # Resolution: picks the highest bucket across video tracks. Per-track bucketing
-  # is the `:resolution` calculation on VideoTrack (auto-loaded via preparation).
+  # Resolution comes from the video's default track (default flag, falling back
+  # to smallest stream_index). The `:resolution` calc on VideoTrack auto-loads
+  # via preparation.
   # --------------------------------------------------------------------------
 
-  defp resolution(%Media{video: %Video{video_tracks: tracks}}) when is_list(tracks) do
-    tracks
-    |> Enum.map(& &1.resolution)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.max_by(&VideoResolution.rank/1, fn -> nil end)
-  end
-
+  defp resolution(%Media{video: %Video{default_video_track: %{resolution: bucket}}}), do: bucket
   defp resolution(_), do: nil
 
   # --------------------------------------------------------------------------

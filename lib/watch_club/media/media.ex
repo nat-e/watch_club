@@ -54,7 +54,7 @@ defmodule WatchClub.Media.Media do
       prepare build(
                 load: [
                   video: [
-                    :video_tracks,
+                    :default_video_track,
                     :audio_tracks,
                     :text_tracks,
                     movie: [content: [library_items: [library: :club]]],

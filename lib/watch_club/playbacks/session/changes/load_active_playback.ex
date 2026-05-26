@@ -19,7 +19,7 @@ defmodule WatchClub.Playbacks.Session.Changes.LoadActivePlayback do
           active_playback: [
             media: [
               video: [
-                :video_tracks,
+                :default_video_track,
                 audio_tracks: [:display_label],
                 text_tracks:
                   TextTrack

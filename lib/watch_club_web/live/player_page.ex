@@ -389,7 +389,7 @@ defmodule WatchClubWeb.PlayerPage do
 
   defp playback_title(session), do: Path.basename(session.active_playback.media.path)
 
-  defp primary_video_track(session), do: hd(session.active_playback.media.video.video_tracks)
+  defp primary_video_track(session), do: session.active_playback.media.video.default_video_track
 
   defp stop_session(actor, %{} = session) when not is_nil(actor) do
     case Playbacks.close_session(session, actor: actor) do

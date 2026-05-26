@@ -18,11 +18,15 @@ defmodule WatchClub.Media.VideoTrack do
   end
 
   actions do
-    defaults [:read, :destroy, update: [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate]]
+    defaults [
+      :read,
+      :destroy,
+      update: [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate, :default?]
+    ]
 
     create :create do
       primary? true
-      accept [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate]
+      accept [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate, :default?]
     end
   end
 
@@ -83,6 +87,13 @@ defmodule WatchClub.Media.VideoTrack do
       allow_nil? true
       public? true
       constraints min: 0
+    end
+
+    attribute :default?, :boolean do
+      allow_nil? false
+      default false
+      public? true
+      source :is_default
     end
   end
 

@@ -155,6 +155,12 @@ defmodule WatchClub.Media.Video do
       public? true
     end
 
+    has_one :default_video_track, VideoTrack do
+      public? true
+      from_many? true
+      default_sort default?: :desc, stream_index: :asc
+    end
+
     has_many :audio_tracks, AudioTrack do
       public? true
     end

@@ -67,7 +67,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Tracks do
         width: stream["width"],
         height: stream["height"],
         frame_rate: frame_rate(stream["avg_frame_rate"] || stream["r_frame_rate"]),
-        bit_rate: parse_int(stream["bit_rate"]) || parse_int(get_in(stream, ["tags", "BPS"]))
+        bit_rate: parse_int(stream["bit_rate"]) || parse_int(get_in(stream, ["tags", "BPS"])),
+        default?: get_in(stream, ["disposition", "default"]) == 1
       }
     end)
   end
