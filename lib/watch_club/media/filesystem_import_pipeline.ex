@@ -59,22 +59,27 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
   defp load_existing_media(_root_path, true), do: {:ok, MapSet.new()}
 
   defp load_existing_media(root_path, _refresh_metadata?) do
+    Logger.info("Load existing medias for #{root_path}")
+
     with {:ok, media} <-
            MediaDomain.list_media_under_path_prefix(root_path, actor: SystemActor.actor()) do
+      Logger.info("Found #{length(media)} existing medias in #{root_path}")
       {:ok, MapSet.new(media, & &1.path)}
     end
   end
 
   defp process_candidate(%Candidate{} = candidate, %ImportRun{} = import_run) do
+    Logger.info("Processing import candidate: #{candidate}")
+
     with {:ok, candidate} <- ExtractIdentity.apply(candidate, import_run),
          {:ok, candidate} <- ExtractStructure.apply(candidate, import_run),
          {:ok, candidate} <- MatchContent.apply(candidate, import_run),
          {:ok, candidate} <- SaveMedia.apply(candidate, import_run) do
-      Logger.info("Finished processing candidate: #{candidate.path}")
+      Logger.info("Finished processing candidate: #{candidate}")
       :ok
     else
       {:halt, reason} ->
-        Logger.info("Stop processing candidate: #{candidate.path}: #{inspect(reason)}")
+        Logger.warning("Stop processing candidate: #{candidate}: #{inspect(reason)}")
         :ok
     end
   end

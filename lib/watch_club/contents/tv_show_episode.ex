@@ -20,6 +20,10 @@ defmodule WatchClub.Contents.TvShowEpisode do
     defaults [:read, :destroy, create: :*, update: :*]
   end
 
+  preparations do
+    prepare build(load: [:formatted_episode_number])
+  end
+
   attributes do
     uuid_v7_primary_key :id
 
@@ -44,7 +48,27 @@ defmodule WatchClub.Contents.TvShowEpisode do
     has_many :videos, Video
   end
 
+  calculations do
+    calculate :formatted_episode_number,
+              :string,
+              WatchClub.Contents.TvShowEpisode.Calculations.FormattedEpisodeNumber do
+      public? true
+    end
+  end
+
   identities do
     identity :unique_position_per_tv_show, [:tv_show_id, :season_number, :episode_number]
+  end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(episode) do
+      case episode.tv_show do
+        %Ash.NotLoaded{} ->
+          "[Episode] show:#{episode.tv_show_id} #{episode.formatted_episode_number}"
+
+        %{original_title: title} ->
+          "[Episode] #{title} #{episode.formatted_episode_number}"
+      end
+    end
   end
 end

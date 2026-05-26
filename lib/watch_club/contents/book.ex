@@ -54,4 +54,19 @@ defmodule WatchClub.Contents.Book do
     identity :unique_content, [:id]
     identity :unique_hardcover_id, [:hardcover_id]
   end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(book) do
+      case book.content do
+        %Ash.NotLoaded{} ->
+          "[Book] id:#{book.id}"
+
+        %{original_title: title, release_date: %Date{year: year}} ->
+          "[Book] #{title} (#{year})"
+
+        %{original_title: title} ->
+          "[Book] #{title}"
+      end
+    end
+  end
 end

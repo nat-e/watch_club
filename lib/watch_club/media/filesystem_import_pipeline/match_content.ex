@@ -24,17 +24,19 @@ defmodule WatchClub.Media.ImportPipeline.MatchContent do
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{}) do
+    Logger.debug("Matching content for #{candidate}")
+
     case get_or_create_content(candidate.identity) do
       {:ok, match} ->
-        {:ok,
-         %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}}
+        Logger.info("Matched #{candidate} to #{match}")
+        {:ok, %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}}
 
       {:error, :no_match} ->
-        {:ok,
-         %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}}
+        Logger.info("No match found for #{candidate}")
+        {:ok, %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}}
 
       {:error, reason} ->
-        Logger.error("Error matching content for #{candidate.path}: #{inspect(reason)}")
+        Logger.error("Error matching content for #{candidate}: #{inspect(reason)}")
         {:halt, "Error matching content"}
     end
   end

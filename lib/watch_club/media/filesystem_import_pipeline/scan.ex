@@ -73,6 +73,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
 
   defp inspect_path(path, root_path, configuration, skip_paths) do
     if MapSet.member?(skip_paths, path) do
+      Logger.debug("Skipping file #{path} (media already exist)")
       :drop
     else
       inspect_unseen_path(path, root_path, configuration)
@@ -80,6 +81,8 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   end
 
   defp inspect_unseen_path(path, root_path, configuration) do
+    Logger.debug("Scanning file #{path}")
+
     case Fs.lstat(path, time: :posix) do
       {:ok, %{type: :symlink}} ->
         :drop
@@ -94,12 +97,14 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
       {:ok, %{type: :regular}} ->
         if IgnoreRules.file_ignored?(path, root_path) or
              not MediaTypeFilter.accepted?(path, configuration) do
+          Logger.debug("Skipping file #{path} (ignored)")
           :drop
         else
           {:emit, Candidate.new(path)}
         end
 
       {:ok, _} ->
+        Logger.debug("Skipping file #{path} (unsupported type)")
         :drop
 
       {:error, :timeout} ->

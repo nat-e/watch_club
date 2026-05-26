@@ -27,11 +27,13 @@ defmodule WatchClub.Contents.TvShow do
       argument :localizations, {:array, :map}, allow_nil?: false, default: []
       argument :episodes, {:array, :map}, allow_nil?: false, default: []
 
-      change manage_relationship(:localizations, type: :direct_control,
+      change manage_relationship(:localizations,
+               type: :direct_control,
                use_identities: [:_primary_key, :unique_locale_per_tv_show]
              )
 
-      change manage_relationship(:episodes, type: :direct_control,
+      change manage_relationship(:episodes,
+               type: :direct_control,
                use_identities: [:_primary_key, :unique_position_per_tv_show]
              )
     end
@@ -44,11 +46,13 @@ defmodule WatchClub.Contents.TvShow do
       argument :localizations, {:array, :map}, allow_nil?: false, default: []
       argument :episodes, {:array, :map}, allow_nil?: false, default: []
 
-      change manage_relationship(:localizations, type: :direct_control,
+      change manage_relationship(:localizations,
+               type: :direct_control,
                use_identities: [:_primary_key, :unique_locale_per_tv_show]
              )
 
-      change manage_relationship(:episodes, type: :direct_control,
+      change manage_relationship(:episodes,
+               type: :direct_control,
                use_identities: [:_primary_key, :unique_position_per_tv_show]
              )
     end
@@ -125,5 +129,20 @@ defmodule WatchClub.Contents.TvShow do
     identity :unique_content, [:id]
     identity :unique_tmdb_id, [:tmdb_id]
     identity :unique_tvdb_id, [:tvdb_id]
+  end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(show) do
+      case show.content do
+        %Ash.NotLoaded{} ->
+          "[Show] id:#{show.id}"
+
+        %{original_title: title, release_date: %Date{year: year}} ->
+          "[Show] #{title} (#{year})"
+
+        %{original_title: title} ->
+          "[Show] #{title}"
+      end
+    end
   end
 end

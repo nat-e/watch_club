@@ -27,8 +27,11 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   alias WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser
   alias WatchClub.Media.ImportRun
 
+  require Logger
+
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+    Logger.debug("Extracting identity for #{candidate}")
     identity = extract_identity(configuration.media_type, candidate, configuration)
     {:ok, %{candidate | identity: identity}}
   end

@@ -15,6 +15,8 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+    Logger.debug("Saving media for #{candidate}")
+
     case save_media(configuration.media_type, candidate) do
       {:ok, _media} ->
         {:ok, candidate}

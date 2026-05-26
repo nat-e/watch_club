@@ -16,10 +16,14 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
   alias WatchClub.Media.ImportPipeline.ExtractStructure.{Sidecars, Tracks}
   alias WatchClub.Media.ImportRun
 
+  require Logger
+
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Media.Ffmpeg)
 
   @impl true
   def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+    Logger.debug("Extracting structure for #{candidate}")
+
     case probe(configuration.media_type, candidate) do
       {:ok, candidate} -> {:ok, candidate}
       {:error, reason} -> {:halt, reason}

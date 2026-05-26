@@ -258,4 +258,14 @@ defmodule WatchClub.Contents.Content do
   identities do
     identity :external_id, [:external_id_source, :external_id]
   end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(%{type: type, original_title: title, release_date: %Date{year: year}}) do
+      "[#{ContentType.label(type)}] #{title} (#{year})"
+    end
+
+    def to_string(%{type: type, original_title: title}) do
+      "[#{ContentType.label(type)}] #{title}"
+    end
+  end
 end

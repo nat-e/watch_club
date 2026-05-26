@@ -74,4 +74,19 @@ defmodule WatchClub.Contents.Movie do
   identities do
     identity :unique_content, [:id]
   end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(movie) do
+      case movie.content do
+        %Ash.NotLoaded{} ->
+          "[Movie] id:#{movie.id}"
+
+        %{original_title: title, release_date: %Date{year: year}} ->
+          "[Movie] #{title} (#{year})"
+
+        %{original_title: title} ->
+          "[Movie] #{title}"
+      end
+    end
+  end
 end

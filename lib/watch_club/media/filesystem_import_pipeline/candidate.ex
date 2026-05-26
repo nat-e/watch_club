@@ -137,4 +137,8 @@ defmodule WatchClub.Media.ImportPipeline.Candidate do
   def new(path) do
     %__MODULE__{path: path}
   end
+
+  defimpl String.Chars, for: __MODULE__ do
+    def to_string(%{path: path}), do: path
+  end
 end
