@@ -17,8 +17,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           release_year: integer() | nil,
           original_language: String.t() | nil,
           origin_country: String.t() | nil,
-          clubs: [%{id: binary(), name: String.t()}],
-          libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
           imported_at: DateTime.t() | nil
         }
 
@@ -34,8 +32,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       release_year: release_year(media),
       original_language: original_language(media),
       origin_country: origin_country(media),
-      clubs: clubs(media),
-      libraries: libraries(media),
       imported_at: media.inserted_at
     }
   end
@@ -97,49 +93,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   defp content(%Media{type: :ebook, ebook: %Ebook{book: %{content: c}}}), do: c
   defp content(%Media{type: :audiobook, audiobook: %Audiobook{book: %{content: c}}}), do: c
   defp content(_), do: nil
-
-  # --------------------------------------------------------------------------
-  # Clubs (union across attachment paths)
-  # --------------------------------------------------------------------------
-
-  defp clubs(%Media{} = media) do
-    media
-    |> library_items()
-    |> Enum.map(fn item -> item.library.club end)
-    |> Enum.uniq_by(& &1.id)
-    |> Enum.sort_by(& &1.name)
-  end
-
-  defp libraries(%Media{} = media) do
-    media
-    |> library_items()
-    |> Enum.map(fn item ->
-      %{id: item.library.id, name: item.library.name, club: item.library.club}
-    end)
-    |> Enum.uniq_by(& &1.id)
-    |> Enum.sort_by(&{&1.club.name, &1.name})
-  end
-
-  defp library_items(%Media{type: :movie, video: %Video{movie: %{content: %{library_items: items}}}})
-       when is_list(items),
-       do: items
-
-  defp library_items(%Media{
-         type: :tv_show_episode,
-         video: %Video{tv_show_episode: %{tv_show: %{content: %{library_items: items}}}}
-       })
-       when is_list(items),
-       do: items
-
-  defp library_items(%Media{type: :ebook, ebook: %Ebook{book: %{content: %{library_items: items}}}})
-       when is_list(items),
-       do: items
-
-  defp library_items(%Media{type: :audiobook, audiobook: %Audiobook{book: %{content: %{library_items: items}}}})
-       when is_list(items),
-       do: items
-
-  defp library_items(_), do: []
 
   @doc """
   Splits a filename into `{head, tail}` so the head can truncate with an

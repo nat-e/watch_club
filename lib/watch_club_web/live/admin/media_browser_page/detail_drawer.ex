@@ -8,11 +8,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   """
   use WatchClubWeb, :html
 
-  import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.MatchedContentSection
   import WatchClubWeb.Components.Medias.UnmatchedContentSection
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
       <div class="grid gap-cluster p-cluster">
         <.content_section view={@view} media={@media} />
-        <.library_section view={@view} />
+        <.library_section media={@media} />
         <.video_section :if={@has_video?} media={@media} view={@view} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
@@ -142,28 +142,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     """
   end
 
-  attr :view, :map, required: true
-
-  defp library_section(%{view: %{libraries: []}} = assigns) do
-    ~H"""
-    <.section_block label="Libraries">
-      <p class="text-base text-text-subtle">This content is not in any Library.</p>
-    </.section_block>
-    """
-  end
+  attr :media, Media, required: true
 
   defp library_section(assigns) do
     ~H"""
     <.section_block label="Libraries">
-      <ul class="grid gap-related">
-        <li
-          :for={library <- @view.libraries}
-          class="flex items-center gap-related text-base text-text"
-        >
-          <.avatar id={library.club.id} name={library.club.name} size="sm" />
-          <span class="min-w-0 truncate">{library.name}</span>
-        </li>
-      </ul>
+      <.media_libraries_list media={@media} />
     </.section_block>
     """
   end

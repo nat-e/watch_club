@@ -5,10 +5,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   """
   use WatchClubWeb, :html
 
-  import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.Media.MediaTypeIcon
   import WatchClubWeb.Components.Medias.LanguageFlags
+  import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
@@ -62,7 +62,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         </div>
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
-        <.clubs_avatars clubs={@view.clubs} />
+        <.media_clubs_avatars media={@row} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
         <.audio_languages_flags video={@row.video} />
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
       <.identity_line view={@view} />
 
-      <.library_chips libraries={@view.libraries} />
+      <.media_libraries_chips media={@row} />
     </li>
     """
   end
@@ -138,45 +138,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
     do: "#{title} · #{year}"
 
   defp identity_text(%{content_title: title}), do: title
-
-  attr :libraries, :list, required: true
-
-  defp library_chips(%{libraries: []} = assigns), do: ~H""
-
-  defp library_chips(assigns) do
-    visible = Enum.take(assigns.libraries, 3)
-    overflow = length(assigns.libraries) - length(visible)
-    assigns = assigns |> assign(:visible, visible) |> assign(:overflow, overflow)
-
-    ~H"""
-    <ul class="flex flex-wrap items-center gap-related">
-      <li
-        :for={library <- @visible}
-        class="flex items-center gap-tight min-w-0 text-sm text-text-subtle"
-      >
-        <.avatar id={library.club.id} name={library.club.name} />
-        <span class="truncate">{library.name}</span>
-      </li>
-      <li :if={@overflow > 0} class="text-sm text-text-subtle">
-        +{@overflow}
-      </li>
-    </ul>
-    """
-  end
-
-  attr :clubs, :list, required: true
-
-  defp clubs_avatars(%{clubs: []} = assigns) do
-    ~H"""
-    <span class="text-xs text-text-subtle">—</span>
-    """
-  end
-
-  defp clubs_avatars(assigns) do
-    ~H"""
-    <.avatar_group avatars={@clubs} avatar_size="sm" />
-    """
-  end
 
   defp matched_content_inline(%{content_title: nil}), do: "—"
 
