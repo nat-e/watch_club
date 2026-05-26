@@ -33,24 +33,37 @@ defmodule WatchClub.Languages do
   end
 
   @doc """
-  Returns a flag emoji for the language's likely territory per CLDR
-  (e.g. `"fre"` → 🇫🇷, `"ja"` → 🇯🇵, `"en"` → 🇺🇸). Returns the UN flag
-  (🇺🇳) when CLDR can't resolve a territory for the input.
+  Returns a flag emoji for a language or territory code via CLDR
+  (e.g. `"fre"` → 🇫🇷, `"ja"` → 🇯🇵, `"en"` → 🇺🇸, `"US"` → 🇺🇸).
+
+  Language tags are resolved to their likely territory; bare territory codes
+  that aren't valid language tags fall back to `und-XX` resolution so callers
+  can pass either form. Returns the UN flag (🇺🇳) when neither resolves.
   """
   @spec to_flag(String.t() | nil) :: String.t()
-  def to_flag(language) when is_binary(language) and language != "" do
-    case Cldr.Locale.canonical_language_tag(language, WatchClub.Cldr,
-           add_likely_subtags: true
-         ) do
-      {:ok, %{territory: territory}} when not is_nil(territory) ->
-        territory |> Atom.to_string() |> flag_emoji()
-
-      _ ->
-        flag_emoji("UN")
+  def to_flag(code) when is_binary(code) and code != "" do
+    case resolve_territory(code) do
+      nil -> flag_emoji("UN")
+      territory -> territory |> Atom.to_string() |> flag_emoji()
     end
   end
 
   def to_flag(_), do: flag_emoji("UN")
+
+  defp resolve_territory(code) do
+    case Cldr.Locale.canonical_language_tag(code, WatchClub.Cldr, add_likely_subtags: true) do
+      {:ok, %{territory: territory}} when not is_nil(territory) ->
+        territory
+
+      _ ->
+        case Cldr.Locale.canonical_language_tag("und-#{code}", WatchClub.Cldr,
+               add_likely_subtags: true
+             ) do
+          {:ok, %{territory: territory}} when not is_nil(territory) -> territory
+          _ -> nil
+        end
+    end
+  end
 
   defp flag_emoji(country_code) do
     country_code

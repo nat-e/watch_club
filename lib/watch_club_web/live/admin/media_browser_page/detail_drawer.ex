@@ -12,12 +12,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
-  import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Medias.MatchedContentSection
+  import WatchClubWeb.Components.Medias.UnmatchedContentSection
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
-  alias WatchClub.Media.{Media, MediaType, Video}
+  alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Media.{Audiobook, Ebook, Media, MediaType, Video}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
@@ -98,40 +100,44 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   attr :view, :map, required: true
   attr :media, Media, required: true
 
+  defp content_section(%{media: %Media{video: %Video{movie: %Movie{}}}} = assigns) do
+    ~H"""
+    <.section_block label="Content">
+      <.matched_content_section content={@media.video.movie} />
+    </.section_block>
+    """
+  end
+
+  defp content_section(
+         %{media: %Media{video: %Video{tv_show_episode: %TvShowEpisode{}}}} = assigns
+       ) do
+    ~H"""
+    <.section_block label="Content">
+      <.matched_content_section content={@media.video.tv_show_episode} />
+    </.section_block>
+    """
+  end
+
+  defp content_section(%{media: %Media{ebook: %Ebook{}}} = assigns) do
+    ~H"""
+    <.section_block label="Content">
+      <.matched_content_section content={@media.ebook.book} />
+    </.section_block>
+    """
+  end
+
+  defp content_section(%{media: %Media{audiobook: %Audiobook{}}} = assigns) do
+    ~H"""
+    <.section_block label="Content">
+      <.matched_content_section content={@media.audiobook.book} />
+    </.section_block>
+    """
+  end
+
   defp content_section(assigns) do
     ~H"""
     <.section_block label="Content">
-      <div class="grid grid-cols-[6rem_minmax(0,1fr)] items-start gap-cluster">
-        <.tmdb_poster
-          path={@view.poster_path}
-          size="w185"
-          alt={@view.content_title || @view.file_name}
-          class="rounded-control border border-border-subtle"
-        />
-
-        <.stack space="related" class="min-w-0 self-center">
-          <h2 class="text-xl font-heading font-semibold leading-tight tracking-tight text-text">
-            {@view.content_title || "Unmatched"}
-          </h2>
-
-          <ul
-            :if={content_meta(@view) != []}
-            class="flex flex-wrap items-center gap-related text-base text-text-muted"
-          >
-            <li
-              :for={{item, index} <- Enum.with_index(content_meta(@view))}
-              class="flex items-center gap-related"
-            >
-              <span :if={index > 0} aria-hidden="true">·</span>
-              <span>{item}</span>
-            </li>
-          </ul>
-
-          <div :if={@view.content_sub}>
-            <.badge variant="secondary">{@view.content_sub}</.badge>
-          </div>
-        </.stack>
-      </div>
+      <.unmatched_content_section file_name={@view.file_name} />
     </.section_block>
     """
   end
@@ -360,29 +366,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp play_label(:ebook), do: "Read"
   defp play_label(_), do: "Play"
-
-  defp content_meta(view) do
-    [
-      view.release_year && Integer.to_string(view.release_year),
-      language_item(view),
-      country_item(view)
-    ]
-    |> Enum.reject(&is_nil/1)
-  end
-
-  defp language_item(%{original_language: lang}) when is_binary(lang) and lang != "",
-    do: String.upcase(lang)
-
-  defp language_item(_), do: nil
-
-  defp country_item(%{origin_country: country}) when is_binary(country) and country != "" do
-    case RowView.country_flag(country) do
-      nil -> country
-      flag -> "#{flag} #{country}"
-    end
-  end
-
-  defp country_item(_), do: nil
 
   defp video_codec(%Media{video: %Video{default_video_track: %{codec: codec}}})
        when is_binary(codec),

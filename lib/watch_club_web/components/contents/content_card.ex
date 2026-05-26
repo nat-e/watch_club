@@ -78,7 +78,9 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             <div class="flex h-full w-full items-end">
               <div class="px-related pb-related text-text">
                 <div class="flex flex-row items-center gap-tight leading-none">
-                  <span :if={@content.origin_country}>{ContentView.country_flag(@content)}</span>
+                  <span :if={@content.origin_country}>
+                    {WatchClub.Languages.to_flag(@content.origin_country)}
+                  </span>
                   <span :if={@content.release_date} class="font-medium">
                     {@content.release_date.year}
                   </span>

@@ -460,18 +460,8 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     name = (country && country.name) || code
 
     if name do
-      %{name: name, flag: country_flag(code)}
+      %{name: name, flag: WatchClub.Languages.to_flag(code)}
     end
-  end
-
-  defp country_flag(nil), do: nil
-
-  defp country_flag(country) do
-    country
-    |> String.upcase()
-    |> String.to_charlist()
-    |> Enum.map(&(&1 + 127_397))
-    |> List.to_string()
   end
 
   defp original_language_label(%MovieDetailsResponse{} = details) do

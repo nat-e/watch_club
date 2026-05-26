@@ -83,14 +83,6 @@ defmodule WatchClub.Contents.ContentView do
   def details_url(%ContentView{type: :movie} = content), do: "/movies/#{content.external_id}"
   def details_url(%ContentView{type: :tv_show} = content), do: "/shows/#{content.external_id}"
 
-  def country_flag(%ContentView{origin_country: country}) do
-    country
-    |> String.upcase()
-    |> String.to_charlist()
-    |> Enum.map(&(&1 + 127_397))
-    |> List.to_string()
-  end
-
   def in_clubs(content, current_user) do
     memberships_by_club_id = Map.new(current_user.memberships, fn m -> {m.club_id, m} end)
 

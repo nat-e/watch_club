@@ -17,7 +17,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           release_year: integer() | nil,
           original_language: String.t() | nil,
           origin_country: String.t() | nil,
-          poster_path: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
           libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
           imported_at: DateTime.t() | nil
@@ -35,7 +34,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       release_year: release_year(media),
       original_language: original_language(media),
       origin_country: origin_country(media),
-      poster_path: poster_path(media),
       clubs: clubs(media),
       libraries: libraries(media),
       imported_at: media.inserted_at
@@ -60,15 +58,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
 
   defp content_sub(%Media{
          type: :tv_show_episode,
-         video: %Video{tv_show_episode: %{season_number: s, episode_number: e}}
-       }) do
-     "S#{pad(s)}E#{pad(e)}"
-  end
+         video: %Video{tv_show_episode: %{formatted_episode_number: formatted}}
+       }),
+       do: formatted
 
   defp content_sub(_), do: nil
-
-  defp pad(n) when is_integer(n) and n < 10, do: "0#{n}"
-  defp pad(n) when is_integer(n), do: Integer.to_string(n)
 
   # --------------------------------------------------------------------------
   # Content metadata (year / language / country / poster)
@@ -94,17 +88,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       _ -> nil
     end
   end
-
-  defp poster_path(%Media{type: :movie, video: %Video{movie: %{best_localization: %{poster_path: p}}}}),
-    do: p
-
-  defp poster_path(%Media{
-         type: :tv_show_episode,
-         video: %Video{tv_show_episode: %{tv_show: %{best_localization: %{poster_path: p}}}}
-       }),
-       do: p
-
-  defp poster_path(_), do: nil
 
   defp content(%Media{type: :movie, video: %Video{movie: %{content: c}}}), do: c
 
@@ -175,14 +158,4 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
     end
   end
 
-  @spec country_flag(String.t() | nil) :: String.t() | nil
-  def country_flag(country) when is_binary(country) and byte_size(country) == 2 do
-    country
-    |> String.upcase()
-    |> String.to_charlist()
-    |> Enum.map(&(&1 + 127_397))
-    |> List.to_string()
-  end
-
-  def country_flag(_), do: nil
 end
