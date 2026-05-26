@@ -107,17 +107,18 @@ defmodule WatchClub.Media.ImportRun do
     policy action(:read) do
       description "The Instance Administrator and system actor can inspect Media Imports"
       authorize_if actor_attribute_equals(:administrator?, true)
-      authorize_if actor_attribute_equals(:system?, true)
+      authorize_if WatchClub.Checks.IsSystemActor
     end
 
     policy action([:start, :cancel]) do
       description "Only the Instance Administrator can manage Media Imports"
       authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if WatchClub.Checks.IsSystemActor
     end
 
     policy action([:run, :complete, :fail]) do
       description "Only the system actor can process Media Imports in the background"
-      authorize_if actor_attribute_equals(:system?, true)
+      authorize_if WatchClub.Checks.IsSystemActor
     end
   end
 

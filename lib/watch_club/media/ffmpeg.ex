@@ -28,6 +28,12 @@ defmodule WatchClub.Media.Ffmpeg do
       "-hide_banner",
       "-loglevel",
       "error",
+      # Generous probe caps matching Jellyfin's defaults — ffmpeg's stock 5 MB
+      # / 5 s limits silently miss streams in some files.
+      "-probesize",
+      "1G",
+      "-analyzeduration",
+      "200M",
       "-print_format",
       "json",
       "-show_format",

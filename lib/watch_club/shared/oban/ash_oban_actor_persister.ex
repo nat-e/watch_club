@@ -1,4 +1,4 @@
-defmodule WatchClub.AshObanActorPersister do
+defmodule WatchClub.Shared.Oban.AshObanActorPersister do
   @moduledoc false
 
   use AshOban.ActorPersister

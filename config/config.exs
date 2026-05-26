@@ -65,11 +65,13 @@ config :watch_club, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"*/15 * * * *", WatchClub.Playbacks.Workers.PruneSegmentCache}
-     ]}
+     ]},
+    # Deletes jobs older than a week to avoid Oban table from growing indefinitely
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
   ],
   queues: [media_imports: 1, playback_cache_maintenance: 1]
 
-config :ash_oban, :actor_persister, WatchClub.AshObanActorPersister
+config :ash_oban, :actor_persister, WatchClub.Shared.Oban.AshObanActorPersister
 
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,
