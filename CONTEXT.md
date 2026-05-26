@@ -138,8 +138,12 @@ _Avoid_: Archive club, close club
 An instance-wide local file available in WatchClub as a video, ebook, or audiobook.
 _Avoid_: Content, Media Version, media item
 
+**Unmatched Media**:
+Media whose concrete video, ebook, or audiobook has no attached **Content** because the **Media Import** could not identify it.
+_Avoid_: Orphan media, unattached media, unidentified media
+
 **Media Type**:
-The kind of media, either video, ebook, or audiobook.
+The kind of media, one of **Movie**, **TV Show Episode**, **Ebook**, or **Audiobook**. A Media Type determines both the concrete media kind (video, ebook, audiobook) and the **Content Type** the media is expected to attach to.
 _Avoid_: Content Type, file type
 
 **Video**:
@@ -170,6 +174,10 @@ _Avoid_: Media Version, audio media version
 A persisted visual stream within a video.
 _Avoid_: Stream metadata, playback option
 
+**Default Video Track**:
+The **Video Track** the **Player** uses for a **Video** and that the playback quality ladder is derived from.
+_Avoid_: Primary video stream, main track
+
 **Audio Track**:
 A persisted audio stream within a video.
 _Avoid_: Stream metadata, playback option
@@ -177,6 +185,10 @@ _Avoid_: Stream metadata, playback option
 **Text Track**:
 A persisted subtitle or caption track for a video.
 _Avoid_: Subtitle track, caption track, stream metadata
+
+**Media Browser**:
+The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
+_Avoid_: Media admin, media library page, file browser
 
 **Media Import Configuration**:
 A reusable configuration for importing media from one source.
@@ -194,21 +206,13 @@ _Avoid_: Media Source Import, Media Scan Run, scan job, scan execution, sync
 A media import option that re-evaluates existing media instead of skipping it.
 _Avoid_: Force refresh, rescan existing media
 
-**Refresh Media Metadata**:
-Re-evaluate stored technical details for existing media.
-_Avoid_: Playback probe, start-of-session probe
-
 **Media Import Status**:
 The overall progress or outcome of a media import.
-_Avoid_: Media Import Result, import summary, run result, scan result
+_Avoid_: import summary, run result, scan result
 
-**Media Import Result**:
-The outcome for one file considered or deleted during a media import.
-_Avoid_: File Import Result, import line, import log entry
-
-**Media Import Result Status**:
-The outcome category assigned to a media import result.
-_Avoid_: File Import Result Status, import state, scan status, file status
+**Cancel Media Import**:
+End an in-progress media import before it finishes.
+_Avoid_: Stop media import, abort scan, kill import
 
 ### Contents
 
@@ -331,7 +335,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **Playback** can continue even if the **User** loses access to the **Content** after it starts
 - Losing access to **Content** prevents future **Playbacks** but does not end an existing **Playback**
 - A **Playback Session** is not scoped to a **Club**, **Library**, or **Library Item**
-- A **Playback** is current while it has not ended; it ends when the **Player** closes, when another **Playback** starts on the same **Playback Session**, or when WatchClub marks it inactive after the **Player** stays paused without interaction long enough
+- A **Playback** is current while it has not ended; it ends when the **Player** closes or when another **Playback** starts on the same **Playback Session**
 - A **Playback Session** has at most one current **Playback** at any time
 - A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
 - A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit
@@ -386,8 +390,10 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - Deleting **Media** deletes its concrete **Video**, **Ebook**, or **Audiobook** and their technical details
 - Deleting **Media** does not delete **Playback Sessions** or **Playbacks**
 - Deleting **Media** does not delete **Content**, **Movies**, **Books**, or **TV Show Episodes**
-- A **Video** is attached to exactly one **Movie** or exactly one **TV Show Episode**
+- A **Video** is attached to at most one **Movie** or at most one **TV Show Episode**
+- A **Video** with no attached **Movie** or **TV Show Episode** is **Unmatched Media**
 - A **Video** has one or more **Video Tracks**
+- A **Video** has exactly one **Default Video Track**
 - A **Video** may have zero or more **Audio Tracks**
 - A **Video** may have zero or more **Text Tracks**
 - A **Video Track** belongs to exactly one **Video**
@@ -398,6 +404,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
+- **Unmatched Media** cannot reach a **Library Item** and is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
 
 ### Media Imports
@@ -406,48 +413,39 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **Media Import Configuration** is not scoped to a **Library**
 - A **Media Import Configuration** is used only to import **Media**, not to play or download it
 - A **Media Import Configuration**’s name is calculated from its configuration
-- A **Media Import Configuration**’s **Content Type**, **Media Type**, and **Media Import Source Type** cannot be edited after creation
+- A **Media Import Configuration**’s **Media Type** and **Media Import Source Type** cannot be edited after creation
 - A filesystem **Media Import Configuration**’s filesystem location can be edited after it has past **Media Imports**
-- A **Media Import Configuration** can be disabled to pause scheduled imports
-- A disabled **Media Import Configuration** can still be imported manually
-- A disabled **Media Import Configuration** can be enabled again
 - Deleting a **Media Import Configuration** does not delete **Media** or past **Media Imports**
-- A **Media Import Configuration** has exactly one **Content Type**, one **Media Type**, and one **Media Import Source Type**
-- Valid **Media Import Configuration** combinations are Movie and Video, TV Show and Video, Book and Ebook, and Book and Audiobook
+- A **Media Import Configuration** has exactly one **Media Type** and one **Media Import Source Type**
 - A **Media Import Configuration** filters out files that do not match its **Media Type**
-- A **Media Import Configuration** uses its **Content Type** to choose which **Metadata Provider** identifies discovered files
-- A **Media Import Configuration** may have a schedule, but can also be imported manually without one
+- A **Media Import Configuration** uses its **Media Type** to choose which **Metadata Provider** identifies discovered files
+- A **Media Import Configuration** can be imported manually by the **Instance Administrator**
 - A **Media Import Configuration** has attributes specific to its **Media Import Source Type**
 - A **Media Import Source Type** may represent a filesystem location, an external media server, or an automation service
+- The only **Media Import Source Type** implemented today is filesystem
 - A filesystem **Media Import Configuration** has exactly one filesystem location
 - Filesystem locations may overlap across **Media Import Configurations**
-- Multiple **Media Import Configurations** can have the same filesystem location, **Content Type**, and **Media Type**
+- Multiple **Media Import Configurations** can have the same filesystem location and **Media Type**
 - **Book** content can be imported through separate **Media Import Configurations** for **Ebook** and **Audiobook** media types
-- A single external system can be represented by multiple **Media Import Configurations** when it provides multiple **Content Types**
+- A single external system can be represented by multiple **Media Import Configurations** when it provides multiple **Media Types**
 - A **Media Import** is started from one **Media Import Configuration**
-- A manual trigger creates a Pending **Media Import**
+- A **Media Import** starts in the Processing status
 - A **Media Import** records whether it was triggered manually or by a schedule, but not which **Instance Administrator** triggered it
 - A past **Media Import** remains after its **Media Import Configuration** is deleted
 - A **Media Import** keeps a snapshot of the **Media Import Configuration** that ran
 - A **Media Import** has **Refresh Metadata** off by default
-- A **Media Import** has one **Media Import Status**: Pending, Processing, Completed, or Failed
+- A **Media Import** has one **Media Import Status**: Processing, Completed, Failed, or Cancelled
 - A **Media Import Configuration** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
-- A **Completed** **Media Import** may have **Media Import Results** with No Match or Failed statuses
 - A **Failed** **Media Import** is one that cannot finish processing its source
-- A **Media Import** creates **Media Import Results** for processed candidate files and deleted **Media**
-- A **Media Import Result** belongs to exactly one **Media Import**
-- A **Media Import Result** has one **Media Import Result Status**: Created, Updated, Deleted, No Match, or Failed
-- A No Match **Media Import Result Status** means a candidate file matched the **Media Type** but could not be confidently matched to **Content** or a **TV Show Episode**
-- Files filtered out by **Media Type** do not create **Media Import Results**
-- Hidden files and hidden folders are ignored by filesystem imports and do not create **Media Import Results**
+- A **Cancelled** **Media Import** is one that the **Instance Administrator** ended before it finished, or that was left **Processing** by a previous run of WatchClub
+- Files filtered out by **Media Type**, hidden files, and hidden folders are ignored by filesystem imports
 - Filesystem imports do not follow symbolic links
 - A filesystem import recursively examines its **Media Import Configuration**’s filesystem location
 - A **Media Import** creates **Media** only for files with a local filesystem path accessible to WatchClub
 - A **Media Import** inspects local files before creating **Videos**, **Ebooks**, or **Audiobooks**
 - **Playback Sessions** use the stored technical details of **Media**
 - **Play Library Item** does not refresh technical details before opening the **Player**
-- **Refresh Media Metadata** can update stored technical details outside the playback start flow
 - A filesystem import discovers sidecar **Text Tracks** for **Videos**, without creating separate **Media** for those sidecar files
 - A **Media Import** may create missing **Content** when a **Metadata Provider** confidently identifies it
 - Content created by a **Media Import** includes all available **Content Localizations**
@@ -457,17 +455,12 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
 - A **Media Import** does not create **Library Items**
-- When **Refresh Metadata** is off, an existing **Media** found again by a **Media Import** is skipped and has no **Media Import Result**
-- When **Refresh Metadata** is on, an existing **Media** found again by a **Media Import** has an Updated **Media Import Result Status** even when no stored information changes
-- When **Refresh Metadata** is on, a **Media Import** rematches existing **Media** and recreates its generic and concrete media details
-- When **Refresh Metadata** is off, a **Media Import** skips existing **Media** even when the same path would now match different **Content**, **Content Type**, or **Media Type**
-- A **Media** records its last successful **Media Import**
-- Created and Updated **Media Import Results** change which **Media Import** owns deletion tracking for a **Media**
-- No Match, Failed, and Deleted **Media Import Results** do not change deletion tracking ownership
+- When **Refresh Metadata** is off, an existing **Media** found again by a **Media Import** is skipped
+- When **Refresh Metadata** is on, a **Media Import** rematches existing **Media** and recreates its concrete media details
+- When **Refresh Metadata** is off, a **Media Import** skips existing **Media** even when the same path would now match different **Content** or **Media Type**
+- A filesystem **Media Import** deletes **Media** whose path is no longer present under the configuration’s filesystem location
 - Moving a file deletes the old **Media** and creates new **Media** at the new path
-- A filesystem import deletes missing **Media** only when that **Media** is under the configured filesystem location, matches the import’s **Content Type** and **Media Type**, and was last successfully imported by a **Media Import** started from the same **Media Import Configuration**
 - Overlapping filesystem imports can run at the same time
-- Overlapping filesystem imports do not delete each other’s **Media** unless their current **Media Import** is from the configuration that last successfully imported that **Media**
 
 ### Contents
 
@@ -514,7 +507,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
 - "Club Library" is not canonical; resolved: the canonical term is **Library**.
 - "Media Version" is not canonical; resolved: use **Media** for the local file and **Video**, **Ebook**, or **Audiobook** for concrete media.
-- **Media Type** and **Content Type** are distinct; resolved: **Media Type** classifies **Media**, while **Content Type** classifies **Content**.
+- **Media Type** and **Content Type** are distinct but coupled; resolved: **Media Type** classifies **Media** with four values (Movie, TV Show Episode, Ebook, Audiobook) and implies the expected **Content Type** for the attached **Content**.
 - "Scan Library", "Media Source", and "sync" are not canonical; resolved: use **Media Import Configuration** for the configuration and **Media Import** for the one-way operation.
 - "Media Server Library" is not canonical; resolved: use **Media Import Configuration** for origins of media availability and **Library** for club-owned collections.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
@@ -531,4 +524,5 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - **Playback Session** is distinct from future watch-history concepts; resolved: it records one Player visit, not whether a user has watched a work overall.
 - **Playback Session** is not a club-scoped or library-scoped concept; resolved: it is scoped to the **User** for one **Player** visit, and the selected **Media** lives on each **Playback** inside it.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
-- "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, and **Refresh Media Metadata** is a separate media operation if needed.
+- "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
+- "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.

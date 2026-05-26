@@ -6,7 +6,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
   """
   use Phoenix.Component
 
-  alias WatchClubWeb.Admin.MediaBrowserPage.RowView
+  @tail_len 12
 
   attr :file_name, :string, required: true
   attr :class, :any, default: nil
@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
   end
 
   def file_name(assigns) do
-    {head, tail} = RowView.split_file_name(assigns.file_name)
+    {head, tail} = split(assigns.file_name)
     assigns = assigns |> assign(:head, head) |> assign(:tail, tail)
 
     ~H"""
@@ -33,5 +33,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
       <span :if={@tail != ""} class="shrink-0 whitespace-pre">{@tail}</span>
     </span>
     """
+  end
+
+  defp split(name) do
+    len = String.length(name)
+
+    if len <= @tail_len + 4 do
+      {name, ""}
+    else
+      {String.slice(name, 0, len - @tail_len), String.slice(name, len - @tail_len, @tail_len)}
+    end
   end
 end

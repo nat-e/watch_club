@@ -20,25 +20,23 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
   alias WatchClub.Media.{Audiobook, Ebook, Media, MediaType, Video}
-  alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
   attr :media, Media, required: true
   attr :locale, :atom, required: true
 
   def render(assigns) do
-    view = RowView.from_media(assigns.media)
     has_video? = assigns.media.type in [:movie, :tv_show_episode]
-    assigns = assigns |> assign(:view, view) |> assign(:has_video?, has_video?)
+    assigns = assign(assigns, :has_video?, has_video?)
 
     ~H"""
     <aside class="grid h-full content-start overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-card">
-      <.hero view={@view} media={@media} />
+      <.hero media={@media} />
 
       <div class="grid gap-cluster p-cluster">
-        <.content_section view={@view} media={@media} />
+        <.content_section media={@media} />
         <.library_section media={@media} />
-        <.video_section :if={@has_video?} media={@media} view={@view} />
+        <.video_section :if={@has_video?} media={@media} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
         <.file_section media={@media} locale={@locale} />
@@ -47,7 +45,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     """
   end
 
-  attr :view, :map, required: true
   attr :media, Media, required: true
 
   defp hero(assigns) do
@@ -55,10 +52,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <header class="grid gap-group border-b border-border-subtle p-cluster">
       <div class="flex items-center gap-related min-w-0">
         <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-          <.media_type_icon media_type={@view.media_type} class="size-icon" />
+          <.media_type_icon media_type={@media.type} class="size-icon" />
         </span>
         <.eyebrow class="grow">
-          {MediaType.translated_label(@view.media_type)}
+          {MediaType.translated_label(@media.type)}
         </.eyebrow>
         <.button
           id="drawer-close"
@@ -72,15 +69,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
       </div>
 
       <.file_name
-        file_name={@view.file_name}
+        file_name={Path.basename(@media.path || "")}
         wrap
         class="font-mono text-base text-text-muted"
       />
 
       <.cluster space="related">
         <.button id="drawer-play" variant="accent" size="md" emphasis>
-          <:icon><.dynamic_icon name={play_icon(@view.media_type)} class="size-icon-sm" /></:icon>
-          {play_label(@view.media_type)}
+          <:icon><.dynamic_icon name={play_icon(@media.type)} class="size-icon-sm" /></:icon>
+          {play_label(@media.type)}
         </.button>
         <.button
           id="drawer-delete"
@@ -97,7 +94,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     """
   end
 
-  attr :view, :map, required: true
   attr :media, Media, required: true
 
   defp content_section(%{media: %Media{video: %Video{movie: %Movie{}}}} = assigns) do
@@ -137,7 +133,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp content_section(assigns) do
     ~H"""
     <.section_block label="Content">
-      <.unmatched_content_section file_name={@view.file_name} />
+      <.unmatched_content_section file_name={Path.basename(@media.path || "")} />
     </.section_block>
     """
   end
@@ -153,7 +149,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   end
 
   attr :media, Media, required: true
-  attr :view, :map, required: true
 
   defp video_section(assigns) do
     ~H"""
