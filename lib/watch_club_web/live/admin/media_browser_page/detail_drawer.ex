@@ -75,7 +75,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
       />
 
       <.cluster space="related">
-        <.button id="drawer-play" variant="accent" size="md" emphasis>
+        <.button
+          :if={@media.type in [:movie, :tv_show_episode]}
+          id="drawer-play"
+          navigate={~p"/play/#{@media.id}"}
+          variant="accent"
+          size="md"
+          emphasis
+        >
           <:icon><.dynamic_icon name={play_icon(@media.type)} class="size-icon-sm" /></:icon>
           {play_label(@media.type)}
         </.button>
