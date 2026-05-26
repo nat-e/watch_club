@@ -21,8 +21,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           clubs: [%{id: binary(), name: String.t()}],
           libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
           resolution: VideoResolution.t() | nil,
-          audio_languages: [String.t()],
-          subtitle_languages: [String.t()],
           imported_at: DateTime.t() | nil
         }
 
@@ -42,8 +40,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       clubs: clubs(media),
       libraries: libraries(media),
       resolution: resolution(media),
-      audio_languages: audio_languages(media),
-      subtitle_languages: subtitle_languages(media),
       imported_at: media.inserted_at
     }
   end
@@ -172,28 +168,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
 
   defp resolution(%Media{video: %Video{default_video_track: %{resolution: bucket}}}), do: bucket
   defp resolution(_), do: nil
-
-  # --------------------------------------------------------------------------
-  # Audio / subtitle languages
-  # --------------------------------------------------------------------------
-
-  defp audio_languages(%Media{video: %Video{audio_tracks: tracks}}) when is_list(tracks) do
-    tracks
-    |> Enum.map(& &1.language)
-    |> Enum.reject(&(&1 in [nil, ""]))
-    |> Enum.uniq()
-  end
-
-  defp audio_languages(_), do: []
-
-  defp subtitle_languages(%Media{video: %Video{text_tracks: tracks}}) when is_list(tracks) do
-    tracks
-    |> Enum.map(& &1.language)
-    |> Enum.reject(&(&1 in [nil, ""]))
-    |> Enum.uniq()
-  end
-
-  defp subtitle_languages(_), do: []
 
   @doc """
   Splits a filename into `{head, tail}` so the head can truncate with an

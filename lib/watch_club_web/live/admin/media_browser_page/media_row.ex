@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Components.UI.Avatar
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Medias.LanguageFlags
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClub.Media.VideoResolution
@@ -64,10 +65,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         <.clubs_avatars clubs={@view.clubs} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
-        <.flag_strip langs={@view.audio_languages} />
+        <.audio_languages_flags video={@row.video} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
-        <.flag_strip langs={@view.subtitle_languages} />
+        <.subtitle_languages_flags video={@row.video} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
         <.resolution_badge resolution={@view.resolution} />
@@ -174,31 +175,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   defp clubs_avatars(assigns) do
     ~H"""
     <.avatar_group avatars={@clubs} avatar_size="sm" />
-    """
-  end
-
-  attr :langs, :list, required: true
-
-  defp flag_strip(%{langs: []} = assigns) do
-    ~H"""
-    <span class="text-xs text-text-subtle">—</span>
-    """
-  end
-
-  defp flag_strip(assigns) do
-    ~H"""
-    <div class="flex items-center whitespace-nowrap">
-      <span
-        :for={lang <- Enum.take(@langs, 3)}
-        title={lang}
-        class="text-base leading-none"
-      >
-        {WatchClub.Languages.to_flag(lang)}
-      </span>
-      <span :if={length(@langs) > 3} class="text-xs text-text-subtle">
-        +{length(@langs) - 3}
-      </span>
-    </div>
     """
   end
 
