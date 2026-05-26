@@ -14,9 +14,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Layout
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Medias.VideoResolutionBadge
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
-  alias WatchClub.Media.{Media, MediaType, Video, VideoResolution}
+  alias WatchClub.Media.{Media, MediaType, Video}
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
@@ -169,10 +170,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <.section_block label="Video">
       <.dl>
         <.dl_badge_row label="Resolution">
-          <.badge :if={@view.resolution} variant="muted">
-            {VideoResolution.label(@view.resolution)}
-          </.badge>
-          <span :if={!@view.resolution} class="text-text-subtle">—</span>
+          <.video_resolution_badge video={@media.video} />
         </.dl_badge_row>
         <.dl_badge_row :if={video_codec(@media)} label="Codec">
           <.badge variant="muted">{video_codec(@media)}</.badge>

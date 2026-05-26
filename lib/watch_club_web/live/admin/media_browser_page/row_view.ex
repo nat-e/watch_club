@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
   HEEX templates.
   """
 
-  alias WatchClub.Media.{Audiobook, Ebook, Media, Video, VideoResolution}
+  alias WatchClub.Media.{Audiobook, Ebook, Media, Video}
 
   @type t :: %{
           id: binary(),
@@ -20,7 +20,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
           poster_path: String.t() | nil,
           clubs: [%{id: binary(), name: String.t()}],
           libraries: [%{id: binary(), name: String.t(), club: %{id: binary(), name: String.t()}}],
-          resolution: VideoResolution.t() | nil,
           imported_at: DateTime.t() | nil
         }
 
@@ -39,7 +38,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
       poster_path: poster_path(media),
       clubs: clubs(media),
       libraries: libraries(media),
-      resolution: resolution(media),
       imported_at: media.inserted_at
     }
   end
@@ -159,15 +157,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RowView do
        do: items
 
   defp library_items(_), do: []
-
-  # --------------------------------------------------------------------------
-  # Resolution comes from the video's default track (default flag, falling back
-  # to smallest stream_index). The `:resolution` calc on VideoTrack auto-loads
-  # via preparation.
-  # --------------------------------------------------------------------------
-
-  defp resolution(%Media{video: %Video{default_video_track: %{resolution: bucket}}}), do: bucket
-  defp resolution(_), do: nil
 
   @doc """
   Splits a filename into `{head, tail}` so the head can truncate with an

@@ -9,9 +9,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.Media.MediaTypeIcon
   import WatchClubWeb.Components.Medias.LanguageFlags
+  import WatchClubWeb.Components.Medias.VideoResolutionBadge
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
-  alias WatchClub.Media.VideoResolution
   alias WatchClubWeb.Admin.MediaBrowserPage.RowView
   alias WatchClubWeb.Helpers.Time
 
@@ -71,7 +71,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         <.subtitle_languages_flags video={@row.video} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
-        <.resolution_badge resolution={@view.resolution} />
+        <.video_resolution_badge video={@row.video} size="sm" class="text-xs" />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap">
         <span class="text-xs text-text-subtle">
@@ -175,20 +175,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   defp clubs_avatars(assigns) do
     ~H"""
     <.avatar_group avatars={@clubs} avatar_size="sm" />
-    """
-  end
-
-  attr :resolution, :atom, default: nil
-
-  defp resolution_badge(%{resolution: nil} = assigns) do
-    ~H"""
-    <span class="text-xs text-text-subtle">—</span>
-    """
-  end
-
-  defp resolution_badge(assigns) do
-    ~H"""
-    <.badge variant="muted" size="sm">{VideoResolution.label(@resolution)}</.badge>
     """
   end
 
