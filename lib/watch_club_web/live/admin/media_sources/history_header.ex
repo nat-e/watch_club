@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
 
   import WatchClubWeb.Components.Media.{FilesystemPath, MediaTypeIcon}
 
-  alias WatchClub.Media.{MediaImport, MediaSource, MediaType}
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   attr :media_source, MediaSource, required: true
 
@@ -35,7 +35,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
           </span>
           <.stack space="tight" class="min-w-0">
             <h1 class="text-2xl font-heading font-semibold tracking-tight">
-              {MediaType.translated_plural_label(@media_source.media_type)}
+              {@media_source.name}
             </h1>
             <.filesystem_path path={@media_source.filesystem_path} class="self-start" />
           </.stack>

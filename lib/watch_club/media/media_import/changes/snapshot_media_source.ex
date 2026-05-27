@@ -7,10 +7,7 @@ defmodule WatchClub.Media.MediaImport.Changes.SnapshotMediaSource do
   def change(changeset, _opts, _context) do
     media_source_id = Ash.Changeset.get_attribute(changeset, :media_source_id)
 
-    case WatchClub.Media.get_media_source_by_id(media_source_id,
-           authorize?: false,
-           load: [:name]
-         ) do
+    case WatchClub.Media.get_media_source_by_id(media_source_id, authorize?: false) do
       {:ok, %MediaSource{} = media_source} ->
         Ash.Changeset.change_attribute(changeset, :media_source_snapshot, %{
           "id" => media_source.id,

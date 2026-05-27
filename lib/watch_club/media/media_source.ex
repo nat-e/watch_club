@@ -6,7 +6,7 @@ defmodule WatchClub.Media.MediaSource do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Media.MediaSource.Calculations
+  alias WatchClub.Media.MediaSource.Changes.ComputeName
   alias WatchClub.Media.{MediaImport, MediaSourceType, MediaType}
   alias WatchClub.Shared.Changes.NormalizePath
 
@@ -30,15 +30,16 @@ defmodule WatchClub.Media.MediaSource do
 
     create :create_filesystem do
       primary? true
-      accept [:media_type, :filesystem_path]
+      accept [:name, :media_type, :filesystem_path]
 
       change set_attribute(:source_type, :filesystem)
       change {NormalizePath, attribute: :filesystem_path}
+      change ComputeName
     end
 
     update :update do
       primary? true
-      accept [:filesystem_path]
+      accept [:name, :filesystem_path]
 
       change {NormalizePath, attribute: :filesystem_path}
     end
@@ -67,6 +68,11 @@ defmodule WatchClub.Media.MediaSource do
 
   attributes do
     uuid_v7_primary_key :id
+
+    attribute :name, :string do
+      allow_nil? false
+      public? true
+    end
 
     attribute :source_type, MediaSourceType do
       allow_nil? false
@@ -97,13 +103,6 @@ defmodule WatchClub.Media.MediaSource do
     has_one :latest_import, MediaImport do
       destination_attribute :media_source_id
       sort inserted_at: :desc
-      public? true
-    end
-  end
-
-  calculations do
-    calculate :name, :string, Calculations.Name do
-      allow_nil? false
       public? true
     end
   end

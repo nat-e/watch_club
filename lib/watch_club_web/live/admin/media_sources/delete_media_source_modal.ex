@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
 
   import WatchClubWeb.Components.Media.FilesystemPath
 
-  alias WatchClub.Media.{MediaSource, MediaType}
+  alias WatchClub.Media.MediaSource
 
   attr :media_source, MediaSource, required: true
 
@@ -18,8 +18,8 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
       <.stack space="related">
         <p class="text-sm text-text">
           {raw(
-            dgettext("admin_media_imports", "This will delete the %{label} Media Source for:",
-              label: gtbold(MediaType.translated_plural_label(@media_source.media_type))
+            dgettext("admin_media_imports", "This will delete the Media Source %{name}:",
+              name: gtbold(@media_source.name)
             )
           )}
         </p>

@@ -8,7 +8,7 @@ defmodule WatchClub.Media.MediaSourceTest do
   require Ash.Query
 
   describe "create_filesystem_media_source/*" do
-    test "creates a filesystem Media Source with normalized path and computed name" do
+    test "creates a filesystem Media Source with normalized path and auto-computed name" do
       admin = generate(administrator())
       path = "tmp/media-imports/../movies"
 
@@ -20,12 +20,37 @@ defmodule WatchClub.Media.MediaSourceTest do
              } =
                create_filesystem_media_source!(
                  %{media_type: :movie, filesystem_path: path},
-                 actor: admin,
-                 load: [:name]
+                 actor: admin
                )
 
       assert normalized_path == Path.expand(path)
-      assert name == "Movie Filesystem: #{normalized_path}"
+      assert name == "Filesystem: #{normalized_path}"
+    end
+
+    test "uses the caller-provided name when one is supplied" do
+      admin = generate(administrator())
+
+      assert %MediaSource{name: "Main movie library"} =
+               create_filesystem_media_source!(
+                 %{
+                   name: "Main movie library",
+                   media_type: :movie,
+                   filesystem_path: "tmp/movies"
+                 },
+                 actor: admin
+               )
+    end
+
+    test "auto-computes the name when the caller passes a blank string" do
+      admin = generate(administrator())
+
+      assert %MediaSource{filesystem_path: normalized_path, name: name} =
+               create_filesystem_media_source!(
+                 %{name: "", media_type: :movie, filesystem_path: "tmp/movies"},
+                 actor: admin
+               )
+
+      assert name == "Filesystem: #{normalized_path}"
     end
 
     test "rejects non-admin actors" do

@@ -260,7 +260,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     media_sources =
       Media.list_media_sources!(
         actor: socket.assigns.current_user,
-        load: [:latest_import, :name]
+        load: [:latest_import]
       )
 
     assign(socket, :media_sources, media_sources)

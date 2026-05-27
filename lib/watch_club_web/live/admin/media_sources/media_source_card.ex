@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   import WatchClubWeb.Admin.MediaSources.LastImportSummary
   import WatchClubWeb.Components.Media.{FilesystemPath, MediaTypeIcon}
 
-  alias WatchClub.Media.{MediaImport, MediaSource, MediaType}
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   attr :media_source, MediaSource, required: true
   attr :locale, :atom, required: true
@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
             navigate={~p"/admin/media/sources/#{@media_source.id}/history"}
             class="truncate text-base font-semibold tracking-tight text-text outline-none hover:text-text"
           >
-            {MediaType.translated_plural_label(@media_source.media_type)}
+            {@media_source.name}
           </.link>
           <.filesystem_path path={@media_source.filesystem_path} />
         </.cluster>
@@ -51,7 +51,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
             class="text-text-muted hover:text-text"
             aria-label={
               dgettext("admin_media_imports", "Actions for %{label}",
-                label: MediaType.translated_plural_label(@media_source.media_type)
+                label: @media_source.name
               )
             }
           >

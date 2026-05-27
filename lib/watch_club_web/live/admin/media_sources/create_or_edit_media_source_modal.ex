@@ -31,6 +31,12 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
         phx-change="validate_configure_media_source"
         phx-submit="submit_configure_media_source"
       >
+        <.field
+          field={@form[:name]}
+          label={name_label(@mode)}
+          type="text"
+        />
+
         <.media_type_field form={@form} mode={@mode} media_source={@media_source} />
 
         <.field
@@ -109,6 +115,12 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
     </.field>
     """
   end
+
+  defp name_label(:create),
+    do: dgettext("admin_media_imports", "Name (Optional)")
+
+  defp name_label(:edit),
+    do: dgettext("admin_media_imports", "Name")
 
   defp mode_copy(:create) do
     %{

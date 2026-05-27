@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
 
   import WatchClubWeb.Components.Media.FilesystemPath
 
-  alias WatchClub.Media.{MediaSource, MediaType}
+  alias WatchClub.Media.MediaSource
 
   attr :media_source, MediaSource, required: true
 
@@ -24,8 +24,8 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
       <:title>{dgettext("admin_media_imports", "Run media import")}</:title>
       <:description>
         {raw(
-          dgettext("admin_media_imports", "Start a new %{label} import from:",
-            label: gtbold(MediaType.translated_plural_label(@media_source.media_type))
+          dgettext("admin_media_imports", "Start a new import of %{name} from:",
+            name: gtbold(@media_source.name)
           )
         )}
         <.filesystem_path path={@media_source.filesystem_path} class="ml-tight align-middle" />
