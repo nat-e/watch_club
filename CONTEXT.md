@@ -97,28 +97,28 @@ Download a video, ebook, or audiobook for a library item through WatchClub.
 _Avoid_: Download content, download media, download media server item
 
 **Content Request**:
-A request to make a library item’s content available through one request profile.
-_Avoid_: Media Request, Request Content, Request Media, download request, fetch request, acquisition request
+A user’s request for WatchClub to make a piece of content available on the media server for that user’s personal consumption.
+_Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
-**Content Request Status**:
-The progress of a content request toward making content available.
-_Avoid_: Request state, automation status
+**Media Source Request**:
+WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
+_Avoid_: Request Attempt, Profile Request, Sourcing
 
-**Pending Content Request**:
-A content request that WatchClub has created but has not confirmed as accepted by an automation service.
-_Avoid_: Queued request, waiting request
+**Media Source Request State**:
+The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself. One of: Created, Submitted, Not Released, Searching, Grabbed, Downloaded, Needs Attention, Cancelled.
+_Avoid_: Request Attempt State, *arr status
 
-**Requested Content Request**:
-A content request accepted by an automation service.
-_Avoid_: Sent request, grabbed request
+**Request Content**:
+A user creates a **Content Request** for one piece of **Content** so its media file is brought to the media server for them.
+_Avoid_: Request media, fetch content, grab content, add to my downloads, add to watchlist
 
-**Available Content Request**:
-A content request whose requested content has at least one **Media** file available in WatchClub.
-_Avoid_: Complete request, fulfilled request
+**Cancel Content Request**:
+A user removes one of their own **Content Requests**.
+_Avoid_: Delete request, abort request, unrequest
 
-**Failed Content Request**:
-A content request that WatchClub cannot currently progress.
-_Avoid_: Errored request, rejected request
+**My Requests**:
+The WatchClub interface where a user views and manages their own **Content Requests**.
+_Avoid_: My downloads, watchlist, request inbox
 
 **Leave Club**:
 A member ends their own membership in a club.
@@ -190,28 +190,28 @@ _Avoid_: Subtitle track, caption track, stream metadata
 The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
 _Avoid_: Media admin, media library page, file browser
 
-**Media Import Configuration**:
-A reusable configuration for importing media from one source.
-_Avoid_: Media Source, playback source, streaming source, media library, sync source
+**Media Source**:
+A reusable, instance-wide configuration of where WatchClub brings **Media** from, and optionally where it can ask for **Content** to be made available. A **Media Source** has exactly one **Media Source Type** and one **Media Type**. Depending on its **Media Source Type**, a **Media Source** may also accept **Media Source Requests**.
+_Avoid_: Media Import Configuration, Media Library, Media Provider, Automation Service, Request Profile, playback source, streaming source, sync source
 
-**Media Import Source Type**:
-The kind of source a media import configuration imports from.
-_Avoid_: Media type, content type, provider type
+**Media Source Type**:
+The kind of upstream system a **Media Source** represents. One of `filesystem`, `radarr`, `sonarr`, `chaptarr`. A **Media Source Type** determines whether the **Media Source** accepts **Media Source Requests**: `filesystem` does not; `radarr`, `sonarr`, and `chaptarr` do.
+_Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a media import configuration.
-_Avoid_: Media Source Import, Media Scan Run, scan job, scan execution, sync
+One execution of a **Media Source**'s scan-and-process cycle. A **Media Import** records the scan phase (started, finished, what it discovered) and is the umbrella for the per-file processing work it enqueues. A webhook-triggered single-file processing is not a **Media Import**.
+_Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Refresh Metadata**:
-A media import option that re-evaluates existing media instead of skipping it.
+A **Media Import** option that re-evaluates existing **Media** instead of skipping it. A webhook-triggered single-file processing always behaves as if **Refresh Metadata** were on.
 _Avoid_: Force refresh, rescan existing media
 
 **Media Import Status**:
-The overall progress or outcome of a media import.
+The overall progress or outcome of a **Media Import**.
 _Avoid_: import summary, run result, scan result
 
 **Cancel Media Import**:
-End an in-progress media import before it finishes.
+End an in-progress **Media Import** before its scan phase finishes; in-flight per-file processing jobs continue to completion.
 _Avoid_: Stop media import, abort scan, kill import
 
 ### Contents
@@ -256,15 +256,6 @@ _Avoid_: Localization, translation, localized content
 The content localization selected for a user based on their preferred locale.
 _Avoid_: Best localization, current localization
 
-### Automation Services
-
-**Automation Service**:
-A service that WatchClub can ask to make content available.
-_Avoid_: Acquisition service, media server, metadata provider, download client
-
-**Request Profile**:
-A configuration of how a library can request content through an automation service.
-_Avoid_: Request target, request settings, automation settings, service settings
 
 ## Relationships
 
@@ -318,8 +309,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A current **Member** who added a **Library Item** can **Remove from Library** for that item
 - A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
 - If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
-- A **Member** can **Play Library Item** or **Download Library Item** only for **Library Items** visible to them in WatchClub
-- A **Member** starts playback through **Play Library Item**, not by playing **Media** or **Video** directly
+- A **Member** can **Play Library Item** or **Download Library Item** for any **Library Item** visible to them in WatchClub
 - **Play Library Item** opens the **Player** after exactly one **Media** file has been selected
 - **Play Library Item** from outside the **Player** creates a **Playback Session** and its first **Playback** for the selected **Media** when the **Player** opens, before playback succeeds
 - While the **Player** is open, advancing to another **Media** (for example the next **TV Show Episode**) creates a new **Playback** on the same **Playback Session**
@@ -328,12 +318,9 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **Playback Session** has zero or more **Playbacks** over its lifetime
 - A **Playback** belongs to exactly one **Playback Session** and references exactly one **Media**
 - Only the starting **User** and the **Instance Administrator** can access a **Playback Session** or any of its **Playbacks**
-- A **User** can start a **Playback** for **Media** only when at least one visible **Library Item** references the **Content** attached to that **Media**
-- For **Media** attached to a **TV Show Episode**, playback access comes from visibility of the parent **TV Show** as a **Library Item**
-- Playback availability is based on whether the **Content** is visible to the **User**, not on one selected **Club** or **Library** context
-- The **Instance Administrator** can start a **Playback** for any **Media**
-- A **Playback** can continue even if the **User** loses access to the **Content** after it starts
-- Losing access to **Content** prevents future **Playbacks** but does not end an existing **Playback**
+- Any **User** can start a **Playback** for any **Media**; WatchClub does not gate playback on **Library Item** visibility or any other access rule
+- What a **User** *sees* in WatchClub is constrained by their **Memberships** and their **Content Requests**; what they can *play* once reached is not
+- The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
 - A **Playback Session** is not scoped to a **Club**, **Library**, or **Library Item**
 - A **Playback** is current while it has not ended; it ends when the **Player** closes or when another **Playback** starts on the same **Playback Session**
 - A **Playback Session** has at most one current **Playback** at any time
@@ -358,26 +345,37 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - When multiple **Videos** are available for **Play Library Item**, the **Member** chooses one before the **Player** opens, using visible **Video Track**, **Audio Track**, and **Text Track** details
 - For a **TV Show** **Library Item**, **Play Library Item** is offered on individual **TV Show Episodes**, not as a single show-level choice
 - When multiple **Media** files are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
-- **Add to Library** requests the **Library Item**’s **Content** as a whole
-- For **TV Show** content, **Add to Library** requests the entire **TV Show**, not a season or **TV Show Episode**
-- **Add to Library** creates one **Content Request** for each **Request Profile** configured on the **Library**
-- **Add to Library** creates no **Content Requests** when the **Library** has no **Request Profiles**
-- **Add to Library** creates the **Library Item** even when one or more **Content Requests** cannot make progress
-- A **Content Request** belongs to exactly one **Library Item**
-- A **Content Request** uses exactly one **Request Profile**
-- A **Library Item** has at most one **Content Request** for a given **Request Profile**
-- A **Content Request** has exactly one **Content Request Status**
-- A **Content Request Status** is **Pending Content Request**, **Requested Content Request**, **Available Content Request**, or **Failed Content Request**
+- **Add to Library** treats the **Library Item**’s **Content** as a whole; for **TV Show** content this is the entire **TV Show**, not a season or **TV Show Episode**
+- **Add to Library** also performs **Request Content** for the acting **Member**: if they do not already have a **Content Request** for the **Content**, one is created; if they do, it is reused
+- **Add to Library** creates the **Library Item** even when the resulting **Content Request** cannot currently make progress
+- When the **Library** already contains the **Content**, **Add to Library** does not create a duplicate **Library Item**, but it still performs **Request Content** for the acting **Member** if they have no **Content Request** for that **Content**
+- **Request Content** outside of **Add to Library** creates only a **Content Request**; it does not create or modify any **Library Item**
+- A **Content Request** belongs to exactly one **User** and references exactly one **Content**
+- A **User** has at most one **Content Request** for a given **Content**
+- A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
+- A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
+- A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**
+- A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
+- A **Media Source Request** is created on demand when a **Content Request** is created for a **Content** that has no existing **Media Source Request** for a matching **Media Source**
+- A **Media Source Request**'s call to its **Media Source** is performed asynchronously after the **Content Request** is created; the **Media Source Request** is observable in the Created state until the call resolves
+- A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; no **Media Source Requests** are created until such a **Media Source** exists, at which point **Media Source Requests** are backfilled for existing **Content Requests**
+- A **Media Source Request** carries one **Media Source Request State**, updated by webhook events from its **Media Source**
+- A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created (e.g. the Radarr movie id, the Sonarr series id)
+- A **Media Source Request** persists after every claiming **Content Request** is cancelled
+- **Cancel Content Request** removes the **Content Request** and does not delete any **Media**, any **Library Item**, any **Media Source Request**, or any resource in any **Media Source**
+- A **Media Source Request** in the Needs Attention state is recovered only by the **Instance Administrator** manually retrying it
+- **Remove from Library** does not affect the adding **Member**’s **Content Request** or any other **User**’s **Content Request**
+- A **User**’s **Content Request** persists independently of their **Memberships** and of the lifecycle of any **Library Item**
+- A **User**’s **Content Requests** are visible only to that **User** and to the **Instance Administrator**; other **Users**, including co-**Members** of any **Club**, cannot see them
+- The **Instance Administrator** can inspect all **Content Requests** in WatchClub
+- **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Library** may create missing **Content**
+- A **Content** can exist in WatchClub referenced only by **Content Requests**, with no **Library Items** and no **Media**
+- Deleting a **User** deletes their **Content Requests**; any **Media** acquired through those requests remains in WatchClub
 - Only a **Club Admin** can **Delete Library**
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 - Only a **Club Admin** can **Delete Club**
 - **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Libraries**, and **Library Items**, but not **Content** or **Media**
-- Only a **Club Admin** can manage **Request Profiles** for a **Library** in their **Club**
-- A **Library** may have zero or more **Request Profiles**
-- A **Request Profile** belongs to exactly one **Library**
-- A **Library** can have multiple **Request Profiles** that use the same **Automation Service**
-- Adding a **Request Profile** to a **Library** does not create **Content Requests** for existing **Library Items**
-- Deleting a **Request Profile** deletes its **Content Requests**
+- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests** for existing **Library Items**
 - **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
 ### Media
@@ -407,41 +405,49 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - **Unmatched Media** cannot reach a **Library Item** and is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
 
-### Media Imports
+### Media Sources & Media Imports
 
-- Only the **Instance Administrator** can manage **Media Import Configurations**
-- A **Media Import Configuration** is not scoped to a **Library**
-- A **Media Import Configuration** is used only to import **Media**, not to play or download it
-- A **Media Import Configuration**’s name is calculated from its configuration
-- A **Media Import Configuration**’s **Media Type** and **Media Import Source Type** cannot be edited after creation
-- A filesystem **Media Import Configuration**’s filesystem location can be edited after it has past **Media Imports**
-- Deleting a **Media Import Configuration** does not delete **Media** or past **Media Imports**
-- A **Media Import Configuration** has exactly one **Media Type** and one **Media Import Source Type**
-- A **Media Import Configuration** filters out files that do not match its **Media Type**
-- A **Media Import Configuration** uses its **Media Type** to choose which **Metadata Provider** identifies discovered files
-- A **Media Import Configuration** can be imported manually by the **Instance Administrator**
-- A **Media Import Configuration** has attributes specific to its **Media Import Source Type**
-- A **Media Import Source Type** may represent a filesystem location, an external media server, or an automation service
-- The only **Media Import Source Type** implemented today is filesystem
-- A filesystem **Media Import Configuration** has exactly one filesystem location
-- Filesystem locations may overlap across **Media Import Configurations**
-- Multiple **Media Import Configurations** can have the same filesystem location and **Media Type**
-- **Book** content can be imported through separate **Media Import Configurations** for **Ebook** and **Audiobook** media types
-- A single external system can be represented by multiple **Media Import Configurations** when it provides multiple **Media Types**
-- A **Media Import** is started from one **Media Import Configuration**
+- Only the **Instance Administrator** can manage **Media Sources**
+- A **Media Source** is not scoped to a **Library** or **Club**
+- A **Media Source** is used only to import **Media** and, when its **Media Source Type** supports it, to accept **Media Source Requests**; it is not used to play or download **Media** to users
+- A **Media Source**'s name is calculated from its configuration
+- A **Media Source**'s **Media Type** and **Media Source Type** cannot be edited after creation
+- A filesystem **Media Source**'s filesystem location can be edited after it has past **Media Imports**
+- A **Media Source** has exactly one **Media Type** and one **Media Source Type**
+- A **Media Source** filters out files that do not match its **Media Type**
+- A **Media Source** uses its **Media Type** to choose which **Metadata Provider** identifies discovered files
+- A **Media Source** can be imported manually by the **Instance Administrator** at any time, including immediately after it is first connected
+- A **Media Source** can be imported on a schedule, regardless of **Media Source Type**
+- A **Media Source** has attributes specific to its **Media Source Type**
+- A **Media Source Type** is one of `filesystem`, `radarr`, `sonarr`, or `chaptarr`; `radarr`, `sonarr`, and `chaptarr` support **Media Source Requests**, `filesystem` does not
+- A request-capable **Media Source** also stores connection details (base URL, API key, webhook secret), the **Media Source**-side settings used when submitting **Media Source Requests** (quality profile, root folder, tags), and the local filesystem path where that root folder appears on WatchClub's disk
+- Two request-capable **Media Sources** may point at the same external system (same base URL and same API key) when covering different root folders or different sets of **Media Source**-side settings
+- A filesystem **Media Source** has exactly one filesystem location
+- A request-capable **Media Source** covers exactly one **Media Source**-side root folder; covering multiple root folders requires multiple **Media Sources**
+- Deleting a **Media Source** deletes its **Media Source Requests**, but does not delete **Media**, past **Media Imports**, **Content Requests**, or any resource in the external system
+- Filesystem locations may overlap across **Media Sources**
+- Multiple **Media Sources** can have the same filesystem location and **Media Type**
+- **Book** content can be imported through separate **Media Sources** for **Ebook** and **Audiobook** media types
+- A single external system can be represented by multiple **Media Sources** when it provides multiple **Media Types** or covers multiple root folders
+- A **Media Import** is started from one **Media Source**
 - A **Media Import** starts in the Processing status
 - A **Media Import** records whether it was triggered manually or by a schedule, but not which **Instance Administrator** triggered it
-- A past **Media Import** remains after its **Media Import Configuration** is deleted
-- A **Media Import** keeps a snapshot of the **Media Import Configuration** that ran
+- A past **Media Import** remains after its **Media Source** is deleted
+- A **Media Import** keeps a snapshot of the **Media Source** that ran
 - A **Media Import** has **Refresh Metadata** off by default
 - A **Media Import** has one **Media Import Status**: Processing, Completed, Failed, or Cancelled
-- A **Media Import Configuration** can have at most one Processing **Media Import** at a time
+- A **Media Source** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
+- A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then a processing phase that runs once per candidate to create or refresh **Media**
+- The processing phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
+- Webhook-triggered processing always behaves as if **Refresh Metadata** were on
+- Scan phases differ by **Media Source Type**: a filesystem scan walks the configured location; an `radarr` or `sonarr` scan calls the **Media Source**'s API to enumerate its catalog
 - A **Failed** **Media Import** is one that cannot finish processing its source
 - A **Cancelled** **Media Import** is one that the **Instance Administrator** ended before it finished, or that was left **Processing** by a previous run of WatchClub
+- **Cancel Media Import** ends the scan phase; in-flight per-file processing jobs continue to completion
 - Files filtered out by **Media Type**, hidden files, and hidden folders are ignored by filesystem imports
 - Filesystem imports do not follow symbolic links
-- A filesystem import recursively examines its **Media Import Configuration**’s filesystem location
+- A filesystem import recursively examines its **Media Source**'s filesystem location
 - A **Media Import** creates **Media** only for files with a local filesystem path accessible to WatchClub
 - A **Media Import** inspects local files before creating **Videos**, **Ebooks**, or **Audiobooks**
 - **Playback Sessions** use the stored technical details of **Media**
@@ -477,16 +483,6 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - A **TV Show Episode** has an episode number greater than or equal to 1
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
 
-### Automation Services
-
-- An **Automation Service** can be asked to make **Content** available in WatchClub
-- An **Automation Service** supports one or more **Content Types**
-- Only the **Instance Administrator** can manage **Automation Services**
-- **Automation Services** are configured for the WatchClub instance by the **Instance Administrator**
-- A **Request Profile** uses exactly one **Automation Service**
-- A **Request Profile** can only use an **Automation Service** that supports the **Content Type** it requests
-- An **Automation Service** may be used by many **Request Profiles**
-
 ### Cross-domain
 
 - A **User** can have memberships in many **Clubs**
@@ -499,7 +495,7 @@ _Avoid_: Request target, request settings, automation settings, service settings
 > **Dev:** "Does adding a movie to a **Library** mean the club recommends it?"
 > **Domain expert:** "No — **Add to Library** creates a **Library Item** so the **Content** is visible to the **Club**."
 > **Dev:** "Where do playable files come from?"
-> **Domain expert:** "An **Instance Administrator** defines a **Media Import Configuration**, and each **Media Import** discovers instance-wide **Media** without adding anything to club **Libraries**."
+> **Domain expert:** "An **Instance Administrator** defines a **Media Source**, and each **Media Import** discovers instance-wide **Media** without adding anything to club **Libraries**."
 
 ## Flagged ambiguities
 
@@ -508,16 +504,18 @@ _Avoid_: Request target, request settings, automation settings, service settings
 - "Club Library" is not canonical; resolved: the canonical term is **Library**.
 - "Media Version" is not canonical; resolved: use **Media** for the local file and **Video**, **Ebook**, or **Audiobook** for concrete media.
 - **Media Type** and **Content Type** are distinct but coupled; resolved: **Media Type** classifies **Media** with four values (Movie, TV Show Episode, Ebook, Audiobook) and implies the expected **Content Type** for the attached **Content**.
-- "Scan Library", "Media Source", and "sync" are not canonical; resolved: use **Media Import Configuration** for the configuration and **Media Import** for the one-way operation.
-- "Media Server Library" is not canonical; resolved: use **Media Import Configuration** for origins of media availability and **Library** for club-owned collections.
+- "Scan Library" and "sync" are not canonical; resolved: use **Media Source** for the configuration and **Media Import** for the one-way operation.
+- "Media Server Library" is not canonical; resolved: use **Media Source** for origins of media availability and **Library** for club-owned collections.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
-- "Request settings" is not canonical; use **Request Profile** for the library-specific way to request content through an **Automation Service**.
-- "Request Media" and "Request Content" are not canonical actions; resolved: **Add to Library** is the user action and it may create **Content Requests**.
+- "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
+- **Content Request Status**, **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical domain entities; resolved: a **Content Request** has no stored status. What appears as a status in **My Requests** is a UI label computed at read time from the **Content**'s **Media** and from its **Media Source Requests**.
+- The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is shared by every **Content Request** for that **Content**; it is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
+- "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**, and **Add to Library** additionally performs **Request Content** for the adding **Member**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
-- Radarr and Sonarr can be **Automation Services** when WatchClub asks them to make content available, and can be used by **Media Import Configurations** when WatchClub imports already-available media from them.
+- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration.
 - "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.

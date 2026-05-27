@@ -79,12 +79,12 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
             </li>
             <li>
               <.sidebar_item
-                id="sidebar-watchlist-link"
-                navigate={~p"/watchlist"}
-                active={active?(@current_path, "/watchlist")}
+                id="sidebar-my-requests-link"
+                navigate={~p"/my-requests"}
+                active={active?(@current_path, "/my-requests")}
               >
-                <Lucideicons.bookmark />
-                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Watchlist")}</span>
+                <Lucideicons.inbox />
+                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "My Requests")}</span>
               </.sidebar_item>
             </li>
           </ul>

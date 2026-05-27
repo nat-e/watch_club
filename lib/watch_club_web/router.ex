@@ -78,7 +78,7 @@ defmodule WatchClubWeb.Router do
       live "/play/:media_id", PlayerPage
       live "/search", SearchPage
       live "/settings", Accounts.SettingsPage
-      live "/watchlist", WatchlistPage
+      live "/my-requests", MyRequestsPage
       live "/clubs/:club_id", Clubs.ClubPage
       live "/clubs/:club_id/members", Clubs.MembersPage
       live "/clubs/:club_id/settings", Clubs.SettingsPage
