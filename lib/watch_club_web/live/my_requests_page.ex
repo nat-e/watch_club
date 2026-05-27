@@ -227,9 +227,6 @@ defmodule WatchClubWeb.MyRequestsPage do
   defp group_for(status) when status in @unavailable_statuses, do: "unavailable"
   defp group_for(status), do: status
 
-  defp request_word(1), do: "request"
-  defp request_word(_), do: "requests"
-
   defp group_label("in_progress"), do: "In progress"
   defp group_label("available"), do: "Available"
   defp group_label("failed"), do: "Failed"

@@ -51,6 +51,7 @@ defmodule WatchClub.Media.MediaSource do
       argument :base_url, :string, allow_nil?: false
       argument :api_key, :string, allow_nil?: false
       argument :quality_profile_id, :integer, allow_nil?: false
+      argument :quality_profile_name, :string, allow_nil?: false
       argument :root_folder_path, :string, allow_nil?: false
       argument :local_root_folder_path, :string, allow_nil?: true
 

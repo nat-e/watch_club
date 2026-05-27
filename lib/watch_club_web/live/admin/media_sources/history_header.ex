@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Media.{MediaTypeIcon, SourceIdentifier, SourceTypeIcon}
+  import WatchClubWeb.Components.Media.{MediaTypeBadge, SourceIdentifier, SourceTypeIcon}
 
   alias WatchClub.Media.{MediaImport, MediaSource}
 
@@ -40,11 +40,8 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
               {@media_source.name}
             </h1>
             <.cluster space="related" class="min-w-0">
-              <span class="inline-flex shrink-0 items-center gap-tight rounded-full border border-border-subtle bg-surface-inset px-related py-0.5 text-xs font-medium text-text-muted">
-                <.media_type_icon media_type={@media_source.media_type} class="size-icon-sm" />
-                {WatchClub.Media.MediaType.translated_plural_label(@media_source.media_type)}
-              </span>
-              <.source_identifier media_source={@media_source} class="self-start" />
+              <.media_type_badge media_type={@media_source.media_type} />
+              <.source_identifier media_source={@media_source} />
             </.cluster>
           </.stack>
         </.inline>

@@ -33,6 +33,7 @@ defmodule WatchClub.Media.RadarrMediaSource do
         :base_url,
         :api_key,
         :quality_profile_id,
+        :quality_profile_name,
         :root_folder_path,
         :local_root_folder_path
       ]
@@ -48,6 +49,7 @@ defmodule WatchClub.Media.RadarrMediaSource do
         :base_url,
         :api_key,
         :quality_profile_id,
+        :quality_profile_name,
         :root_folder_path,
         :local_root_folder_path
       ]
@@ -116,6 +118,11 @@ defmodule WatchClub.Media.RadarrMediaSource do
     end
 
     attribute :quality_profile_id, :integer do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :quality_profile_name, :string do
       allow_nil? false
       public? true
     end

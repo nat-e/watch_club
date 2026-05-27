@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Badge
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
-  import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Media.MediaTypeBadge
   import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.MatchedContentSection
   import WatchClubWeb.Components.Medias.UnmatchedContentSection
@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
-  alias WatchClub.Media.{Audiobook, Ebook, Media, MediaType, Video}
+  alias WatchClub.Media.{Audiobook, Ebook, Media, Video}
   alias WatchClubWeb.Helpers.Time
 
   attr :media, Media, required: true
@@ -51,12 +51,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     ~H"""
     <header class="grid gap-group border-b border-border-subtle p-cluster">
       <div class="flex items-center gap-related min-w-0">
-        <span class="grid size-9 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-          <.media_type_icon media_type={@media.type} class="size-icon" />
-        </span>
-        <.eyebrow class="grow">
-          {MediaType.translated_label(@media.type)}
-        </.eyebrow>
+        <.media_type_badge media_type={@media.type} />
         <.button
           id="drawer-close"
           size="icon-sm"

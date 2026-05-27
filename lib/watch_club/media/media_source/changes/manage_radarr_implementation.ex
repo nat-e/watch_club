@@ -18,6 +18,7 @@ defmodule WatchClub.Media.MediaSource.Changes.ManageRadarrImplementation do
       base_url: trim_url(Ash.Changeset.get_argument(changeset, :base_url)),
       api_key: Ash.Changeset.get_argument(changeset, :api_key),
       quality_profile_id: Ash.Changeset.get_argument(changeset, :quality_profile_id),
+      quality_profile_name: Ash.Changeset.get_argument(changeset, :quality_profile_name),
       root_folder_path: Ash.Changeset.get_argument(changeset, :root_folder_path),
       local_root_folder_path:
         Ash.Changeset.get_argument(changeset, :local_root_folder_path)

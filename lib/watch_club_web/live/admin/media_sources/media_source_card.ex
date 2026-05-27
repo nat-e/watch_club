@@ -8,9 +8,8 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   use WatchClubWeb, :component
 
   import WatchClubWeb.Admin.MediaSources.LastImportSummary
-  import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Media.MediaTypeBadge
   import WatchClubWeb.Components.Media.SourceIdentifier
-  import WatchClubWeb.Components.Media.SourceTypeIcon
 
   alias WatchClub.Media.{MediaImport, MediaSource}
 
@@ -34,19 +33,17 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
     >
       <div class="flex items-start gap-related">
         <.stack space="tight" class="min-w-0 flex-1">
+          <.link
+            navigate={~p"/admin/media/sources/#{@media_source.id}/history"}
+            class="truncate text-base font-semibold tracking-tight text-text outline-none hover:text-text"
+          >
+            {@media_source.name}
+          </.link>
           <.cluster space="related" class="min-w-0">
-            <.link
-              navigate={~p"/admin/media/sources/#{@media_source.id}/history"}
-              class="truncate text-base font-semibold tracking-tight text-text outline-none hover:text-text"
-            >
-              {@media_source.name}
-            </.link>
-            <.media_type_pill media_type={@media_source.media_type} />
+            <.media_type_badge media_type={@media_source.media_type} />
+            <.source_identifier media_source={@media_source} />
           </.cluster>
-
-          <.source_identifier media_source={@media_source} />
         </.stack>
-
         <.dropdown_menu id={"media-source-actions-#{@media_source.id}"}>
           <:trigger>
             <.button
@@ -113,17 +110,6 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
         <.last_import_summary latest_import={@media_source.latest_import} locale={@locale} />
       </div>
     </.card>
-    """
-  end
-
-  attr :media_type, :atom, required: true
-
-  defp media_type_pill(assigns) do
-    ~H"""
-    <span class="inline-flex shrink-0 items-center gap-tight rounded-full border border-border-subtle bg-surface-inset px-related py-0.5 text-xs font-medium text-text-muted">
-      <.media_type_icon media_type={@media_type} class="size-icon-sm" />
-      {WatchClub.Media.MediaType.translated_plural_label(@media_type)}
-    </span>
     """
   end
 end

@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Media.MediaTypeIcon
+  import WatchClubWeb.Components.Media.MediaTypeBadge
 
   alias WatchClub.Media.{MediaSource, MediaType}
 
@@ -100,8 +100,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
               @mode == :create && "hover:bg-surface-hover"
             ]}
           >
-            <.media_type_icon media_type={media_type} class="size-icon text-text-muted" />
-            <span class="font-medium">{MediaType.translated_plural_label(media_type)}</span>
+            <.media_type_badge media_type={media_type}/>
             <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
           </:item>
         </.radio_group>

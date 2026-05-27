@@ -5,7 +5,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   """
   use WatchClubWeb, :html
 
-  import WatchClubWeb.Components.Media.MediaTypeIcon
   import WatchClubWeb.Components.Medias.LanguageFlags
   import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.MatchedContentIdentity
@@ -41,9 +40,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       -->
       <td class="px-related py-2.5 align-middle w-full max-w-0">
         <div class="flex items-center gap-related min-w-0">
-          <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
-            <.media_type_icon media_type={@row.type} class="size-icon-sm" />
-          </span>
           <.file_name
             file_name={Path.basename(@row.path || "")}
             class="text-sm font-medium text-text"
@@ -92,10 +88,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       ]}
     >
       <div class="flex items-center gap-tight min-w-0">
-        <.media_type_icon
-          media_type={@row.type}
-          class="size-icon shrink-0 text-text-subtle"
-        />
         <.file_name file_name={Path.basename(@row.path || "")} class="text-sm font-medium text-text" />
       </div>
 

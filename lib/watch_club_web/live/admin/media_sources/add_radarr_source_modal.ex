@@ -113,7 +113,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
 
     def configuration_input(%__MODULE__{} = wizard, params) do
       if ready_to_configure?(wizard) do
-        %Connection{base_url: base_url, api_key: api_key} = wizard.connection
+        %Connection{base_url: base_url, api_key: api_key, profiles: profiles} = wizard.connection
+
+        quality_profile_id = parse_integer(params["quality_profile_id"])
+        profile = Enum.find(profiles, &(&1.id == quality_profile_id))
 
         local_root_folder_path =
           case String.trim(params["local_root_folder_path"] || "") do
@@ -125,7 +128,8 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
          %{
            base_url: base_url,
            api_key: api_key,
-           quality_profile_id: parse_integer(params["quality_profile_id"]),
+           quality_profile_id: quality_profile_id,
+           quality_profile_name: profile && profile.name,
            root_folder_path: params["root_folder_path"],
            local_root_folder_path: local_root_folder_path
          }}
