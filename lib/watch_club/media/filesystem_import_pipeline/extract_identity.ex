@@ -21,6 +21,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
 
   @behaviour WatchClub.Media.ImportPipeline.Stage
 
+  alias WatchClub.Media.FilesystemMediaSource
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MovieIdentity}
   alias WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor
@@ -30,7 +31,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   require Logger
 
   @impl true
-  def apply(%Candidate{} = candidate, %MediaImport{source_snapshot: media_source}) do
+  def apply(%Candidate{} = candidate, %MediaImport{media_source: media_source}) do
     Logger.debug("Extracting identity for #{candidate}")
     identity = extract_identity(media_source.media_type, candidate, media_source)
     {:ok, %{candidate | identity: identity}}
@@ -51,10 +52,12 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   defp extract_identity(:tv_show_episode, candidate, media_source) do
     episode = FilenameParser.parse_episode(candidate.path)
 
+    %FilesystemMediaSource{filesystem_path: root_path} = media_source.implementation
+
     title =
       episode[:tv_show_title] ||
         FilenameParser.clean_title(
-          FilenameParser.tv_show_title_from_path(candidate.path, media_source.filesystem_path)
+          FilenameParser.tv_show_title_from_path(candidate.path, root_path)
         )
 
     path_ids = ExternalIdExtractor.from_text(Path.dirname(candidate.path))

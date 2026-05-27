@@ -21,7 +21,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure do
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Media.Ffmpeg)
 
   @impl true
-  def apply(%Candidate{} = candidate, %MediaImport{source_snapshot: media_source}) do
+  def apply(%Candidate{} = candidate, %MediaImport{media_source: media_source}) do
     Logger.debug("Extracting structure for #{candidate}")
 
     case probe(media_source.media_type, candidate) do

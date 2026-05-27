@@ -144,9 +144,10 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
 
   defp run_for(media_type) do
     %MediaImport{
-      source_snapshot: %MediaSource{
+      media_source: %MediaSource{
         media_type: media_type,
-        filesystem_path: "tmp"
+        source_type: :filesystem,
+        implementation: %WatchClub.Media.FilesystemMediaSource{filesystem_path: "tmp"}
       }
     }
   end

@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Media.FilesystemPath
+  import WatchClubWeb.Components.Media.SourceIdentifier
 
   alias WatchClub.Media.MediaSource
 
@@ -23,7 +23,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
             )
           )}
         </p>
-        <.filesystem_path path={@media_source.filesystem_path} class="self-start" />
+        <.source_identifier media_source={@media_source} class="self-start" />
         <p class="text-sm text-text-muted">
           {dgettext(
             "admin_media_imports",

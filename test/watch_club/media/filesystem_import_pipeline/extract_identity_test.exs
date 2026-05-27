@@ -68,9 +68,12 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentityTest do
 
   defp run_for(media_type, root_path) do
     %MediaImport{
-      source_snapshot: %MediaSource{
+      media_source: %MediaSource{
         media_type: media_type,
-        filesystem_path: root_path
+        source_type: :filesystem,
+        implementation: %WatchClub.Media.FilesystemMediaSource{
+          filesystem_path: root_path
+        }
       }
     }
   end

@@ -3,7 +3,7 @@ defmodule WatchClub.Media.ImportPipeline.Stage do
   Contract for an `ImportPipeline` stage.
 
   Each stage transforms a `Candidate` in the context of a `MediaImport`
-  (which always has its `:source_snapshot` loaded — stages may
+  (which always has its `:media_source` loaded — stages may
   pattern-match on that).
 
   Returns `{:ok, candidate}` to continue, or `{:halt, reason}` to

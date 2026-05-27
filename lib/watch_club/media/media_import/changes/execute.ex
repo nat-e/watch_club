@@ -7,8 +7,8 @@ defmodule WatchClub.Media.MediaImport.Changes.Execute do
   action's `changes` block) and then registers this change as an
   `after_transaction` callback. Once the transaction commits we:
 
-    1. Load `:source_snapshot`.
-    2. Run the import pipeline.
+    1. Load the live `media_source` (with its `:implementation`).
+    2. Dispatch to the pipeline matching the Media Source's type.
     3. Set the Media Import as completed.
 
   If anything fails or raises, the error propagates to AshOban, which runs
@@ -29,9 +29,9 @@ defmodule WatchClub.Media.MediaImport.Changes.Execute do
   def change(changeset, _opts, context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, %MediaImport{} = media_import} <- result,
-           {:ok, loaded} <- Ash.load(media_import, :source_snapshot, scope: context),
-           :ok <-
-             import_pipeline(loaded.source_snapshot.source_type).import_medias(loaded) do
+           {:ok, loaded} <-
+             Ash.load(media_import, [media_source: [:implementation]], scope: context),
+           :ok <- import_pipeline(loaded.media_source.source_type).import_medias(loaded) do
         Ash.update(loaded, %{}, action: :complete, scope: context)
       else
         {:error, _} = error -> error

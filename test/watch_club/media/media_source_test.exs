@@ -3,7 +3,7 @@ defmodule WatchClub.Media.MediaSourceTest do
 
   import WatchClub.Media
 
-  alias WatchClub.Media.{MediaImport, MediaSource}
+  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, RadarrMediaSource}
 
   require Ash.Query
 
@@ -15,8 +15,8 @@ defmodule WatchClub.Media.MediaSourceTest do
       assert %MediaSource{
                source_type: :filesystem,
                media_type: :movie,
-               filesystem_path: normalized_path,
-               name: name
+               name: name,
+               implementation: %FilesystemMediaSource{filesystem_path: normalized_path}
              } =
                create_filesystem_media_source!(
                  %{media_type: :movie, filesystem_path: path},
@@ -24,32 +24,6 @@ defmodule WatchClub.Media.MediaSourceTest do
                )
 
       assert normalized_path == Path.expand(path)
-      assert name == "Filesystem: #{normalized_path}"
-    end
-
-    test "uses the caller-provided name when one is supplied" do
-      admin = generate(administrator())
-
-      assert %MediaSource{name: "Main movie library"} =
-               create_filesystem_media_source!(
-                 %{
-                   name: "Main movie library",
-                   media_type: :movie,
-                   filesystem_path: "tmp/movies"
-                 },
-                 actor: admin
-               )
-    end
-
-    test "auto-computes the name when the caller passes a blank string" do
-      admin = generate(administrator())
-
-      assert %MediaSource{filesystem_path: normalized_path, name: name} =
-               create_filesystem_media_source!(
-                 %{name: "", media_type: :movie, filesystem_path: "tmp/movies"},
-                 actor: admin
-               )
-
       assert name == "Filesystem: #{normalized_path}"
     end
 
@@ -62,23 +36,134 @@ defmodule WatchClub.Media.MediaSourceTest do
       )
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+
+    test "loads :can_request? as false" do
+      admin = generate(administrator())
+
+      assert %MediaSource{can_request?: false} =
+               create_filesystem_media_source!(
+                 %{media_type: :movie, filesystem_path: "tmp/movies"},
+                 actor: admin
+               )
+    end
   end
 
-  describe "update_media_source/*" do
+  describe "create_radarr_media_source/*" do
+    test "creates a radarr Media Source with normalized local path, computed name, and movie media_type" do
+      admin = generate(administrator())
+
+      assert %MediaSource{
+               source_type: :radarr,
+               media_type: :movie,
+               name: name,
+               can_request?: true,
+               implementation: %RadarrMediaSource{
+                 base_url: "https://radarr.lan",
+                 api_key: "abc123",
+                 quality_profile_id: 7,
+                 root_folder_path: "/movies",
+                 local_root_folder_path: normalized_local
+               }
+             } =
+               create_radarr_media_source!(
+                 %{
+                   base_url: "https://radarr.lan/",
+                   api_key: "abc123",
+                   quality_profile_id: 7,
+                   root_folder_path: "/movies",
+                   local_root_folder_path: "tmp/movies/../movies"
+                 },
+                 actor: admin
+               )
+
+      assert normalized_local == Path.expand("tmp/movies/../movies")
+      assert name == "Radarr · /movies"
+    end
+
+    test "accepts a nil local_root_folder_path" do
+      admin = generate(administrator())
+
+      assert %MediaSource{
+               implementation: %RadarrMediaSource{local_root_folder_path: nil}
+             } =
+               create_radarr_media_source!(
+                 %{
+                   base_url: "https://radarr.lan",
+                   api_key: "abc123",
+                   quality_profile_id: 7,
+                   root_folder_path: "/movies"
+                 },
+                 actor: admin
+               )
+    end
+
+    test "rejects non-admin actors" do
+      user = generate(user())
+
+      create_radarr_media_source(
+        %{
+          base_url: "https://radarr.lan",
+          api_key: "abc123",
+          quality_profile_id: 7,
+          root_folder_path: "/movies"
+        },
+        actor: user
+      )
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "update_filesystem_media_source/*" do
     test "updates the filesystem path and re-normalizes it" do
       admin = generate(administrator())
       media_source = generate(media_source(actor: admin))
       path = "tmp/media-imports/../movie-updates"
 
-      assert %MediaSource{filesystem_path: normalized_path} =
-               update_media_source!(media_source, %{filesystem_path: path}, actor: admin)
+      assert %FilesystemMediaSource{filesystem_path: normalized_path} =
+               update_filesystem_media_source!(
+                 media_source.implementation,
+                 %{filesystem_path: path},
+                 actor: admin
+               )
 
       assert normalized_path == Path.expand(path)
     end
   end
 
+  describe "update_radarr_media_source/*" do
+    test "updates radarr config" do
+      admin = generate(administrator())
+
+      radarr =
+        create_radarr_media_source!(
+          %{
+            base_url: "https://radarr.lan",
+            api_key: "abc123",
+            quality_profile_id: 7,
+            root_folder_path: "/movies"
+          },
+          actor: admin
+        )
+
+      assert %RadarrMediaSource{
+               quality_profile_id: 8,
+               root_folder_path: "/movies-4k"
+             } =
+               update_radarr_media_source!(
+                 radarr.implementation,
+                 %{
+                   base_url: "https://radarr.lan",
+                   api_key: "abc123",
+                   quality_profile_id: 8,
+                   root_folder_path: "/movies-4k"
+                 },
+                 actor: admin
+               )
+    end
+  end
+
   describe "destroy_media_source/*" do
-    test "destroys a Media Source and nullifies the FK on past Media Imports" do
+    test "destroys a Media Source and cascade-deletes past Media Imports" do
       admin = generate(administrator())
       media_source = generate(media_source(actor: admin))
       media_import = generate(media_import(media_source))
@@ -89,8 +174,20 @@ defmodule WatchClub.Media.MediaSourceTest do
              |> Ash.Query.filter(id == ^media_source.id)
              |> Ash.exists?(authorize?: false)
 
-      assert %MediaImport{media_source_id: nil} =
-               Ash.get!(MediaImport, media_import.id, authorize?: false)
+      refute MediaImport
+             |> Ash.Query.filter(id == ^media_import.id)
+             |> Ash.exists?(authorize?: false)
+    end
+
+    test "destroys the filesystem implementation row" do
+      admin = generate(administrator())
+      media_source = generate(media_source(actor: admin))
+
+      assert :ok = destroy_media_source!(media_source, actor: admin)
+
+      refute FilesystemMediaSource
+             |> Ash.Query.filter(id == ^media_source.id)
+             |> Ash.exists?(authorize?: false)
     end
   end
 

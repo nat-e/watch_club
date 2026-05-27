@@ -14,7 +14,7 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
   require Logger
 
   @impl true
-  def apply(%Candidate{} = candidate, %MediaImport{source_snapshot: media_source}) do
+  def apply(%Candidate{} = candidate, %MediaImport{media_source: media_source}) do
     Logger.debug("Saving media for #{candidate}")
 
     case save_media(media_source.media_type, candidate) do

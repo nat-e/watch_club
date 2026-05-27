@@ -28,7 +28,7 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
     Scan
   }
 
-  alias WatchClub.Media.MediaImport
+  alias WatchClub.Media.{FilesystemMediaSource, MediaImport}
   alias WatchClub.SystemActor
 
   require Logger
@@ -37,9 +37,11 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
   @candidate_timeout_ms :timer.seconds(30)
 
   @impl true
-  def import_medias(%MediaImport{source_snapshot: %_{} = media_source} = media_import) do
+  def import_medias(%MediaImport{media_source: %_{} = media_source} = media_import) do
+    %{implementation: %FilesystemMediaSource{filesystem_path: root_path}} = media_source
+
     with {:ok, skip_paths} <-
-           load_existing_media(media_source.filesystem_path, media_import.refresh_metadata?),
+           load_existing_media(root_path, media_import.refresh_metadata?),
          {:ok, candidate_stream} <- Scan.stream_candidate_files(media_source, skip_paths) do
       candidate_stream
       |> Task.async_stream(&process_candidate(&1, media_import),

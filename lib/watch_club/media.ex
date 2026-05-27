@@ -19,8 +19,17 @@ defmodule WatchClub.Media do
       define :list_media_sources, action: :read
       define :get_media_source_by_id, action: :read, get_by: [:id]
       define :create_filesystem_media_source, action: :create_filesystem
-      define :update_media_source, action: :update
+      define :create_radarr_media_source, action: :create_radarr
       define :destroy_media_source, action: :destroy
+    end
+
+    resource WatchClub.Media.FilesystemMediaSource do
+      define :update_filesystem_media_source, action: :update
+    end
+
+    resource WatchClub.Media.RadarrMediaSource do
+      define :update_radarr_media_source, action: :update
+      define :load_radarr_profiles, action: :load_radarr_profiles, args: [:base_url, :api_key]
     end
 
     resource WatchClub.Media.MediaImport do

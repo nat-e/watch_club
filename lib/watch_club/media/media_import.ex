@@ -17,14 +17,14 @@ defmodule WatchClub.Media.MediaImport do
     repo WatchClub.Repo
 
     references do
-      reference :media_source, on_delete: :nilify, on_update: :update
+      reference :media_source, on_delete: :delete, on_update: :update
     end
 
     custom_indexes do
       index [:media_source_id],
         unique: true,
         name: "media_imports_one_processing_per_media_source_index",
-        where: "status = 'processing' AND media_source_id IS NOT NULL"
+        where: "status = 'processing'"
     end
   end
 
@@ -62,7 +62,6 @@ defmodule WatchClub.Media.MediaImport do
       accept [:media_source_id, :refresh_metadata?]
 
       change set_attribute(:triggered_manually?, true)
-      change Changes.SnapshotMediaSource
       change Changes.Schedule
     end
 
@@ -154,11 +153,6 @@ defmodule WatchClub.Media.MediaImport do
       source :is_triggered_manually
     end
 
-    attribute :media_source_snapshot, :map do
-      allow_nil? false
-      public? true
-    end
-
     attribute :finished_at, :utc_datetime_usec do
       public? true
     end
@@ -168,16 +162,7 @@ defmodule WatchClub.Media.MediaImport do
 
   relationships do
     belongs_to :media_source, MediaSource do
-      allow_nil? true
-      public? true
-    end
-  end
-
-  calculations do
-    calculate :source_snapshot,
-              :struct,
-              WatchClub.Media.MediaImport.Calculations.SourceSnapshot do
-      constraints instance_of: MediaSource
+      allow_nil? false
       public? true
     end
   end

@@ -44,7 +44,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
           <span class="grid size-7 shrink-0 place-items-center rounded-control border border-border-subtle bg-surface-inset text-text-muted">
             <.media_type_icon media_type={@row.type} class="size-icon-sm" />
           </span>
-          <.file_name file_name={Path.basename(@row.path || "")} class="text-sm font-medium text-text" />
+          <.file_name
+            file_name={Path.basename(@row.path || "")}
+            class="text-sm font-medium text-text"
+          />
         </div>
       </td>
       <td class="px-related py-2.5 align-middle max-w-[20rem]">
@@ -118,7 +121,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
     """
   end
 
-  defp content_cell(%{row: %Media{video: %Video{tv_show_episode: %TvShowEpisode{} = episode}}} = assigns) do
+  defp content_cell(
+         %{row: %Media{video: %Video{tv_show_episode: %TvShowEpisode{} = episode}}} = assigns
+       ) do
     assigns = assign(assigns, :content, episode)
 
     ~H"""
@@ -158,7 +163,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
     """
   end
 
-  defp identity_line(%{row: %Media{video: %Video{tv_show_episode: %TvShowEpisode{} = episode}}} = assigns) do
+  defp identity_line(
+         %{row: %Media{video: %Video{tv_show_episode: %TvShowEpisode{} = episode}}} = assigns
+       ) do
     assigns = assign(assigns, :content, episode)
 
     ~H"""

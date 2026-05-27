@@ -65,7 +65,7 @@ defmodule WatchClub.Media.MediaImportTest do
 
       start_media_import(Ash.UUIDv7.generate(), actor: admin)
       |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Query.NotFound{resource: WatchClub.Media.MediaSource} -> true
+        %Ash.Error.Changes.InvalidAttribute{field: :media_source_id} -> true
         _ -> false
       end)
     end

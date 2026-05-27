@@ -179,8 +179,7 @@ defmodule WatchClub.Generator do
         media_source_id: media_source.id,
         status: status,
         refresh_metadata?: false,
-        triggered_manually?: true,
-        media_source_snapshot: %{"id" => media_source.id}
+        triggered_manually?: true
       },
       overrides: opts
     )

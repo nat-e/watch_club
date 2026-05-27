@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Media.{FilesystemPath, MediaTypeIcon}
+  import WatchClubWeb.Components.Media.{MediaTypeIcon, SourceIdentifier, SourceTypeIcon}
 
   alias WatchClub.Media.{MediaImport, MediaSource}
 
@@ -16,7 +16,11 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
 
   def history_header(assigns) do
     assigns =
-      assign(assigns, :processing?, processing?(List.first(assigns.media_source.imports)))
+      assign(
+        assigns,
+        :processing?,
+        match?(%MediaImport{status: :processing}, List.first(assigns.media_source.imports))
+      )
 
     ~H"""
     <.stack space="cluster">
@@ -30,21 +34,33 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
 
       <div class="flex flex-col gap-cluster sm:flex-row sm:items-start sm:justify-between">
         <.inline space="cluster" class="min-w-0">
-          <span class="grid size-control-lg shrink-0 place-items-center rounded-control border border-border bg-surface-raised text-text-muted">
-            <.media_type_icon media_type={@media_source.media_type} class="size-icon-lg" />
-          </span>
+          <.source_type_icon type={@media_source.source_type} size="header" />
           <.stack space="tight" class="min-w-0">
             <h1 class="text-2xl font-heading font-semibold tracking-tight">
               {@media_source.name}
             </h1>
-            <.filesystem_path path={@media_source.filesystem_path} class="self-start" />
+            <.cluster space="related" class="min-w-0">
+              <span class="inline-flex shrink-0 items-center gap-tight rounded-full border border-border-subtle bg-surface-inset px-related py-0.5 text-xs font-medium text-text-muted">
+                <.media_type_icon media_type={@media_source.media_type} class="size-icon-sm" />
+                {WatchClub.Media.MediaType.translated_plural_label(@media_source.media_type)}
+              </span>
+              <.source_identifier media_source={@media_source} class="self-start" />
+            </.cluster>
           </.stack>
         </.inline>
 
         <.button
           id="history-run-import-button"
           variant="primary"
-          disabled={@processing?}
+          disabled={@processing? or @media_source.source_type != :filesystem}
+          title={
+            if(@media_source.source_type != :filesystem,
+              do:
+                dgettext("admin_media_imports", "%{type} import coming soon",
+                  type: WatchClub.Media.MediaSourceType.translated_label(@media_source.source_type)
+                )
+            )
+          }
           phx-click="open_run_import_modal"
           phx-value-id={@media_source.id}
         >
@@ -58,9 +74,6 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
     </.stack>
     """
   end
-
-  defp processing?(%MediaImport{status: :processing}), do: true
-  defp processing?(_), do: false
 
   defp run_import_label(true), do: dgettext("admin_media_imports", "Running…")
   defp run_import_label(false), do: dgettext("admin_media_imports", "Run import")

@@ -187,7 +187,12 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
   end
 
   defp run do
-    %MediaImport{source_snapshot: %MediaSource{filesystem_path: "/library"}}
+    %MediaImport{
+      media_source: %MediaSource{
+        source_type: :filesystem,
+        implementation: %WatchClub.Media.FilesystemMediaSource{filesystem_path: "/library"}
+      }
+    }
   end
 
   defp stub_tmdb(response_fun) do

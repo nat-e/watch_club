@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Media.FilesystemPath
+  import WatchClubWeb.Components.Media.SourceIdentifier
 
   alias WatchClub.Media.MediaSource
 
@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
             name: gtbold(@media_source.name)
           )
         )}
-        <.filesystem_path path={@media_source.filesystem_path} class="ml-tight align-middle" />
+        <.source_identifier media_source={@media_source} class="ml-tight align-middle" />
       </:description>
 
       <.form for={@form} id="run-import-form" phx-submit="confirm_run_import">

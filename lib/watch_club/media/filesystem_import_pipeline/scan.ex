@@ -3,7 +3,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
 
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
-  alias WatchClub.Media.MediaSource
+  alias WatchClub.Media.{FilesystemMediaSource, MediaSource}
   alias WatchClub.Shared.Fs
 
   require Logger
@@ -28,7 +28,10 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   def stream_candidate_files(media_source, skip_paths \\ MapSet.new())
 
   def stream_candidate_files(
-        %MediaSource{source_type: :filesystem, filesystem_path: root_path} = media_source,
+        %MediaSource{
+          source_type: :filesystem,
+          implementation: %FilesystemMediaSource{filesystem_path: root_path}
+        } = media_source,
         skip_paths
       ) do
     root_path = Path.expand(root_path)

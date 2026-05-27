@@ -45,4 +45,14 @@ defmodule WatchClubWeb.Helpers.Url do
       query: %{}
     }
   end
+
+  @doc """
+  Strips `http://` / `https://` from a URL for compact display.
+  """
+  @spec strip_scheme(String.t()) :: String.t()
+  def strip_scheme(url) when is_binary(url) do
+    url
+    |> String.replace_prefix("https://", "")
+    |> String.replace_prefix("http://", "")
+  end
 end

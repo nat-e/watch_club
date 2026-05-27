@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunStatusBadge do
     required: true,
     values: [:completed, :failed, :cancelled, :processing, :pending, :never_run]
 
-  attr :size, :string, values: ~w(sm md), default: "sm"
+  attr :size, :string, values: ~w(sm md), default: "md"
   attr :label, :string, default: nil
 
   def run_status_badge(%{status: :completed} = assigns) do

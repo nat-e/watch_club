@@ -6,8 +6,18 @@ defmodule WatchClub.Media.MediaSource do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Media.MediaSource.Changes.ComputeName
-  alias WatchClub.Media.{MediaImport, MediaSourceType, MediaType}
+  import Ash.Expr
+
+  alias WatchClub.Media.{
+    FilesystemMediaSource,
+    MediaImport,
+    MediaSourceType,
+    MediaType,
+    RadarrMediaSource
+  }
+
+  alias WatchClub.Media.MediaSource.Calculations.GetImplementation
+  alias WatchClub.Media.MediaSource.Changes.{ComputeName, ManageRadarrImplementation}
   alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
@@ -15,33 +25,43 @@ defmodule WatchClub.Media.MediaSource do
     repo WatchClub.Repo
   end
 
-  pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-    prefix "media_sources"
-
-    publish :create_filesystem, ""
-    publish :update, [[:id, nil]]
-    publish :destroy, [[:id, nil]]
-  end
-
   actions do
     defaults [:read]
 
     create :create_filesystem do
       primary? true
-      accept [:name, :media_type, :filesystem_path]
+
+      argument :filesystem_path, :string, allow_nil?: false
+
+      accept [:media_type]
 
       change set_attribute(:source_type, :filesystem)
-      change {NormalizePath, attribute: :filesystem_path}
+      change {NormalizePath, argument: :filesystem_path}
+
+      change manage_relationship(:filesystem_path, :filesystem,
+               type: :direct_control,
+               value_is_key: :filesystem_path
+             )
+
       change ComputeName
+      change load([:implementation, :can_request?])
     end
 
-    update :update do
-      primary? true
-      accept [:name, :filesystem_path]
+    create :create_radarr do
+      argument :base_url, :string, allow_nil?: false
+      argument :api_key, :string, allow_nil?: false
+      argument :quality_profile_id, :integer, allow_nil?: false
+      argument :root_folder_path, :string, allow_nil?: false
+      argument :local_root_folder_path, :string, allow_nil?: true
 
-      change {NormalizePath, attribute: :filesystem_path}
+      change set_attribute(:source_type, :radarr)
+      change set_attribute(:media_type, :movie)
+      change {NormalizePath, argument: :local_root_folder_path}
+
+      change ManageRadarrImplementation
+
+      change ComputeName
+      change load([:implementation, :can_request?])
     end
 
     destroy :destroy do
@@ -56,14 +76,30 @@ defmodule WatchClub.Media.MediaSource do
       forbid_if always()
     end
 
-    policy action([:read, :create_filesystem, :update, :destroy]) do
+    policy action(:read) do
+      description "Instance Administrator and the system actor can read Media Sources"
+      authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if WatchClub.Checks.IsSystemActor
+    end
+
+    policy action([:create_filesystem, :create_radarr, :destroy]) do
       description "Only the Instance Administrator can manage Media Sources"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
   end
 
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "media_sources"
+
+    publish_all :create, ""
+    publish_all :update, [[:id, nil]]
+    publish_all :destroy, [[:id, nil]]
+  end
+
   preparations do
-    prepare build(sort: [inserted_at: :desc])
+    prepare build(sort: [inserted_at: :desc], load: [:implementation, :can_request?])
   end
 
   attributes do
@@ -85,15 +121,20 @@ defmodule WatchClub.Media.MediaSource do
       public? true
     end
 
-    attribute :filesystem_path, :string do
-      allow_nil? false
-      public? true
-    end
-
     timestamps()
   end
 
   relationships do
+    has_one :filesystem, FilesystemMediaSource do
+      destination_attribute :id
+      public? true
+    end
+
+    has_one :radarr, RadarrMediaSource do
+      destination_attribute :id
+      public? true
+    end
+
     has_many :imports, MediaImport do
       destination_attribute :media_source_id
       public? true
@@ -103,6 +144,28 @@ defmodule WatchClub.Media.MediaSource do
     has_one :latest_import, MediaImport do
       destination_attribute :media_source_id
       sort inserted_at: :desc
+      public? true
+    end
+  end
+
+  calculations do
+    calculate :implementation,
+              :union,
+              GetImplementation do
+      constraints types: [
+                    filesystem: [type: :struct, constraints: [instance_of: FilesystemMediaSource]],
+                    radarr: [type: :struct, constraints: [instance_of: RadarrMediaSource]]
+                  ]
+
+      public? true
+      allow_nil? false
+    end
+
+    # Kept in sync with `MediaSourceType` — request-capable types are
+    # `:radarr` (and, future, `:sonarr` / `:chaptarr`).
+    calculate :can_request?,
+              :boolean,
+              expr(source_type in [:radarr]) do
       public? true
     end
   end
