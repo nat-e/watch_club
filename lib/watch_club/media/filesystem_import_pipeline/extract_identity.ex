@@ -2,7 +2,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   @moduledoc """
   Populates `candidate.identity` with what the file claims to be.
 
-  Orchestration only. Dispatches on `configuration.content_type`, runs the
+  Orchestration only. Dispatches on `media_source.content_type`, runs the
   `FilenameParser` (what the path claims) and the matching `NfoParser` entry
   point (what the sidecar XML claims), then merges the two into the
   `Candidate.Identity` struct.
@@ -25,18 +25,18 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
   alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MovieIdentity}
   alias WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractor
   alias WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
 
   require Logger
 
   @impl true
-  def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+  def apply(%Candidate{} = candidate, %MediaImport{source_snapshot: media_source}) do
     Logger.debug("Extracting identity for #{candidate}")
-    identity = extract_identity(configuration.media_type, candidate, configuration)
+    identity = extract_identity(media_source.media_type, candidate, media_source)
     {:ok, %{candidate | identity: identity}}
   end
 
-  defp extract_identity(:movie, candidate, _configuration) do
+  defp extract_identity(:movie, candidate, _media_source) do
     {title, year} = FilenameParser.title_and_year(candidate.path)
     path_ids = ExternalIdExtractor.from_text(candidate.path)
 
@@ -48,13 +48,13 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
     }
   end
 
-  defp extract_identity(:tv_show_episode, candidate, configuration) do
+  defp extract_identity(:tv_show_episode, candidate, media_source) do
     episode = FilenameParser.parse_episode(candidate.path)
 
     title =
       episode[:tv_show_title] ||
         FilenameParser.clean_title(
-          FilenameParser.tv_show_title_from_path(candidate.path, configuration.filesystem_path)
+          FilenameParser.tv_show_title_from_path(candidate.path, media_source.filesystem_path)
         )
 
     path_ids = ExternalIdExtractor.from_text(Path.dirname(candidate.path))
@@ -69,11 +69,11 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity do
     }
   end
 
-  defp extract_identity(:audiobook, _candidate, _configuration) do
+  defp extract_identity(:audiobook, _candidate, _media_source) do
     raise "Books not supported yet"
   end
 
-  defp extract_identity(:ebook, _candidate, _configuration) do
+  defp extract_identity(:ebook, _candidate, _media_source) do
     raise "Books not supported yet"
   end
 end

@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Admin.MediaImports.RunImportModal do
+defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
   @moduledoc """
   Confirm modal for triggering a `Media Import`. Hosts the only Refresh
   metadata switch in the UI — cards and history headers do not expose it.
@@ -7,16 +7,16 @@ defmodule WatchClubWeb.Admin.MediaImports.RunImportModal do
 
   import WatchClubWeb.Components.Media.FilesystemPath
 
-  alias WatchClub.Media.{ImportConfiguration, MediaType}
+  alias WatchClub.Media.{MediaSource, MediaType}
 
-  attr :configuration, ImportConfiguration, required: true
+  attr :media_source, MediaSource, required: true
 
   def run_import_modal(assigns) do
     assigns =
       assign(
         assigns,
         :form,
-        to_form(%{"configuration_id" => assigns.configuration.id}, as: :run_import)
+        to_form(%{"media_source_id" => assigns.media_source.id}, as: :run_import)
       )
 
     ~H"""
@@ -25,14 +25,14 @@ defmodule WatchClubWeb.Admin.MediaImports.RunImportModal do
       <:description>
         {raw(
           dgettext("admin_media_imports", "Start a new %{label} import from:",
-            label: gtbold(MediaType.translated_plural_label(@configuration.media_type))
+            label: gtbold(MediaType.translated_plural_label(@media_source.media_type))
           )
         )}
-        <.filesystem_path path={@configuration.filesystem_path} class="ml-tight align-middle" />
+        <.filesystem_path path={@media_source.filesystem_path} class="ml-tight align-middle" />
       </:description>
 
       <.form for={@form} id="run-import-form" phx-submit="confirm_run_import">
-        <.input field={@form[:configuration_id]} type="hidden" />
+        <.input field={@form[:media_source_id]} type="hidden" />
 
         <label
           for={@form[:refresh_metadata].id}

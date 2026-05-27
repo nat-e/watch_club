@@ -237,7 +237,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         navigate={~p"/admin/media"}
         active={
           active?(@current_path, "/admin/media") and
-            not String.starts_with?(@current_path, "/admin/media/imports")
+            not String.starts_with?(@current_path, "/admin/media/sources")
         }
       >
         <Lucideicons.film />
@@ -246,12 +246,12 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     </li>
     <li>
       <.sidebar_item
-        id="sidebar-admin-media-imports-link"
-        navigate={~p"/admin/media/imports"}
-        active={active?(@current_path, "/admin/media/imports")}
+        id="sidebar-admin-media-sources-link"
+        navigate={~p"/admin/media/sources"}
+        active={active?(@current_path, "/admin/media/sources")}
       >
         <Lucideicons.folder_input />
-        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Import media")}</span>
+        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Media Sources")}</span>
       </.sidebar_item>
     </li>
     """

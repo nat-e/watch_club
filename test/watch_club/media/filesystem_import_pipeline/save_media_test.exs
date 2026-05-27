@@ -2,12 +2,10 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
-  alias WatchClub.Media.{Media, Video, VideoTrack}
-  alias WatchClub.Media.ImportConfiguration
+  alias WatchClub.Media.{Media, MediaImport, MediaSource, Video, VideoTrack}
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.{MatchResult, MediaStructure}
   alias WatchClub.Media.ImportPipeline.SaveMedia
-  alias WatchClub.Media.ImportRun
 
   require Ash.Query
 
@@ -145,8 +143,8 @@ defmodule WatchClub.Media.ImportPipeline.SaveMediaTest do
   end
 
   defp run_for(media_type) do
-    %ImportRun{
-      snapshot_configuration: %ImportConfiguration{
+    %MediaImport{
+      source_snapshot: %MediaSource{
         media_type: media_type,
         filesystem_path: "tmp"
       }

@@ -1,11 +1,10 @@
 defmodule WatchClub.Media.ImportPipeline.ExtractIdentityTest do
   use ExUnit.Case, async: true
 
-  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MovieIdentity}
   alias WatchClub.Media.ImportPipeline.ExtractIdentity
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   describe "apply/2 — movies" do
     test "builds a MovieIdentity with title and year from the filename" do
@@ -68,8 +67,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentityTest do
   end
 
   defp run_for(media_type, root_path) do
-    %ImportRun{
-      snapshot_configuration: %ImportConfiguration{
+    %MediaImport{
+      source_snapshot: %MediaSource{
         media_type: media_type,
         filesystem_path: root_path
       }

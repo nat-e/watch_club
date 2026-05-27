@@ -1,9 +1,9 @@
 defmodule WatchClub.Media.ImportPipeline.Scan do
   @moduledoc false
 
-  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
+  alias WatchClub.Media.MediaSource
   alias WatchClub.Shared.Fs
 
   require Logger
@@ -17,7 +17,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
 
   `skip_paths` is a `MapSet` of expanded paths that should be skipped without
   even running an `lstat` — typically the paths of media already imported
-  for this configuration. Pass `MapSet.new/0` to scan everything.
+  for this `MediaSource`. Pass `MapSet.new/0` to scan everything.
 
   The root path is checked eagerly: this function returns `{:error, _}` if
   the root is missing, inaccessible, a symlink, or not a directory. Once the
@@ -25,35 +25,35 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   logged and the offending path/subtree is dropped — the stream never
   raises in normal operation.
   """
-  def stream_candidate_files(configuration, skip_paths \\ MapSet.new())
+  def stream_candidate_files(media_source, skip_paths \\ MapSet.new())
 
   def stream_candidate_files(
-        %ImportConfiguration{source_type: :filesystem, filesystem_path: root_path} = configuration,
+        %MediaSource{source_type: :filesystem, filesystem_path: root_path} = media_source,
         skip_paths
       ) do
     root_path = Path.expand(root_path)
 
     case Fs.lstat(root_path, time: :posix, timeout: @initial_disk_operation_timeout) do
       {:ok, %{type: :directory}} ->
-        {:ok, candidate_stream(root_path, configuration, skip_paths)}
+        {:ok, candidate_stream(root_path, media_source, skip_paths)}
 
       {:ok, %{type: :symlink}} ->
-        {:error, "Media Import filesystem location cannot be a symbolic link: #{root_path}"}
+        {:error, "Media Source filesystem location cannot be a symbolic link: #{root_path}"}
 
       {:ok, %{type: type}} ->
-        {:error, "Media Import filesystem location is not a directory: #{root_path} (#{type})"}
+        {:error, "Media Source filesystem location is not a directory: #{root_path} (#{type})"}
 
       {:error, reason} ->
         {:error,
-         "Cannot access Media Import filesystem location #{root_path}: #{inspect(reason)}"}
+         "Cannot access Media Source filesystem location #{root_path}: #{inspect(reason)}"}
     end
   end
 
-  def stream_candidate_files(%ImportConfiguration{source_type: source_type}, _skip_paths) do
-    {:error, "Unsupported Media Import Source Type: #{inspect(source_type)}"}
+  def stream_candidate_files(%MediaSource{source_type: source_type}, _skip_paths) do
+    {:error, "Unsupported Media Source Type: #{inspect(source_type)}"}
   end
 
-  defp candidate_stream(root_path, configuration, skip_paths) do
+  defp candidate_stream(root_path, media_source, skip_paths) do
     Stream.resource(
       fn -> [root_path] end,
       fn
@@ -61,7 +61,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
           {:halt, []}
 
         [path | rest] ->
-          case inspect_path(Path.expand(path), root_path, configuration, skip_paths) do
+          case inspect_path(Path.expand(path), root_path, media_source, skip_paths) do
             :drop -> {[], rest}
             {:enqueue, children} -> {[], children ++ rest}
             {:emit, candidate} -> {[candidate], rest}
@@ -71,16 +71,16 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
     )
   end
 
-  defp inspect_path(path, root_path, configuration, skip_paths) do
+  defp inspect_path(path, root_path, media_source, skip_paths) do
     if MapSet.member?(skip_paths, path) do
       Logger.debug("Skipping file #{path} (media already exist)")
       :drop
     else
-      inspect_unseen_path(path, root_path, configuration)
+      inspect_unseen_path(path, root_path, media_source)
     end
   end
 
-  defp inspect_unseen_path(path, root_path, configuration) do
+  defp inspect_unseen_path(path, root_path, media_source) do
     Logger.debug("Scanning file #{path}")
 
     case Fs.lstat(path, time: :posix) do
@@ -96,7 +96,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
 
       {:ok, %{type: :regular}} ->
         if IgnoreRules.file_ignored?(path, root_path) or
-             not MediaTypeFilter.accepted?(path, configuration) do
+             not MediaTypeFilter.accepted?(path, media_source) do
           Logger.debug("Skipping file #{path} (ignored)")
           :drop
         else

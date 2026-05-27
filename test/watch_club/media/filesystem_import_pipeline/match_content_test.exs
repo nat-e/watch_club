@@ -2,11 +2,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
   use WatchClub.DataCase
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
-  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.{EpisodeIdentity, MatchResult, MovieIdentity}
   alias WatchClub.Media.ImportPipeline.MatchContent
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   describe "apply/2 — movie" do
     test "matches a movie that already exists in the DB" do
@@ -188,7 +187,7 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
   end
 
   defp run do
-    %ImportRun{snapshot_configuration: %ImportConfiguration{filesystem_path: "/library"}}
+    %MediaImport{source_snapshot: %MediaSource{filesystem_path: "/library"}}
   end
 
   defp stub_tmdb(response_fun) do

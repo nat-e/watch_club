@@ -1,6 +1,6 @@
-defmodule WatchClubWeb.Admin.MediaImports.RunStatusBadge do
+defmodule WatchClubWeb.Admin.MediaSources.RunStatusBadge do
   @moduledoc """
-  Status badge for a `Media Import` (or for a configuration that has never run).
+  Status badge for a `Media Import` (or for a `Media Source` that has never imported).
 
   The status determines the icon + variant. The label defaults to the
   status's canonical name (e.g. "Completed") but can be overridden via

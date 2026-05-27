@@ -4,12 +4,11 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructureTest do
   import Mox
 
   alias WatchClub.Media.FfprobeMock
-  alias WatchClub.Media.ImportConfiguration
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.{AudioTrack, TextTrack, VideoTrack}
   alias WatchClub.Media.ImportPipeline.ExtractStructure
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   setup :verify_on_exit!
 
@@ -115,8 +114,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructureTest do
   end
 
   defp run_for(media_type) do
-    %ImportRun{
-      snapshot_configuration: %ImportConfiguration{
+    %MediaImport{
+      source_snapshot: %MediaSource{
         media_type: media_type,
         filesystem_path: "/library"
       }

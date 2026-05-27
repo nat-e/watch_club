@@ -1,20 +1,19 @@
-defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
+defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   @moduledoc """
-  Instance-administrator page that shows the run history for one
-  `Media Import Configuration` and exposes the Run import flow.
+  Instance-administrator page that shows the `Media Import` history for one
+  `Media Source` and exposes the Run import flow.
 
-  Lives at `/admin/media/imports/:id/history`. Sibling of
-  `MediaImportsPage`.
+  Lives at `/admin/media/sources/:id/history`. Sibling of `MediaSourcesPage`.
   """
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Admin.MediaImports.HistoryHeader
-  import WatchClubWeb.Admin.MediaImports.HistoryTable
-  import WatchClubWeb.Admin.MediaImports.RunImportModal
+  import WatchClubWeb.Admin.MediaSources.HistoryHeader
+  import WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable
+  import WatchClubWeb.Admin.MediaSources.RunImportModal
 
   alias Phoenix.PubSub
   alias WatchClub.Media
-  alias WatchClub.Media.{ImportConfiguration, ImportRun}
+  alias WatchClub.Media.{MediaImport, MediaSource}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -29,23 +28,23 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
     # Subscribe before load to avoid race condition
     socket = resubscribe(socket, id)
 
-    case Media.get_import_configuration_by_id(id,
+    case Media.get_media_source_by_id(id,
            actor: socket.assigns.current_user,
            load: [:imports]
          ) do
-      {:ok, configuration} ->
-        {:noreply, assign(socket, :configuration, configuration)}
+      {:ok, media_source} ->
+        {:noreply, assign(socket, :media_source, media_source)}
 
       {:error, _} ->
         {:noreply,
          socket
-         |> put_flash(:error, dgettext("admin_media_imports", "Import configuration not found"))
-         |> push_navigate(to: ~p"/admin/media/imports")}
+         |> put_flash(:error, dgettext("admin_media_imports", "Media Source not found"))
+         |> push_navigate(to: ~p"/admin/media/sources")}
     end
   end
 
   @impl true
-  def render(%{configuration: %ImportConfiguration{}} = assigns) do
+  def render(%{media_source: %MediaSource{}} = assigns) do
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -54,37 +53,37 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
       space="section"
       class="max-w-panel"
     >
-      <.history_header configuration={@configuration} />
+      <.history_header media_source={@media_source} />
 
       <.section title={dgettext("admin_media_imports", "Import history")}>
-        <.empty :if={@configuration.imports == []} border={false}>
+        <.empty :if={@media_source.imports == []} border={false}>
           <:icon><Lucideicons.history /></:icon>
-          <:title>{dgettext("admin_media_imports", "No runs yet")}</:title>
+          <:title>{dgettext("admin_media_imports", "No Media Imports yet")}</:title>
           <:description>
             {dgettext(
               "admin_media_imports",
-              "This import has not ran yet. Run it to import your medias."
+              "This Media Source has not been imported yet. Run an import to add your medias."
             )}
           </:description>
           <.button
             id="empty-history-run-import-button"
             variant="primary"
             phx-click="open_run_import_modal"
-            phx-value-id={@configuration.id}
+            phx-value-id={@media_source.id}
           >
             <:icon position="start"><Lucideicons.play /></:icon>
             {dgettext("admin_media_imports", "Run import")}
           </.button>
         </.empty>
 
-        <.history_table
-          :if={@configuration.imports != []}
-          runs={@configuration.imports}
+        <.media_import_history_table
+          :if={@media_source.imports != []}
+          imports={@media_source.imports}
           locale={@current_user.settings.locale}
         />
       </.section>
 
-      <.run_import_modal :if={@run_modal_open?} configuration={@configuration} />
+      <.run_import_modal :if={@run_modal_open?} media_source={@media_source} />
     </Layouts.app>
     """
   end
@@ -110,13 +109,13 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
   end
 
   def handle_event("confirm_run_import", %{"run_import" => params}, socket) do
-    %{"configuration_id" => id} = params
+    %{"media_source_id" => id} = params
     refresh_metadata? = params["refresh_metadata"] == "true"
 
-    case Media.start_import_run(id, %{refresh_metadata?: refresh_metadata?},
+    case Media.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
            actor: socket.assigns.current_user
          ) do
-      {:ok, _run} ->
+      {:ok, _media_import} ->
         {:noreply,
          socket
          |> assign(:run_modal_open?, false)
@@ -134,11 +133,11 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
     {:noreply, assign(socket, :run_modal_open?, false)}
   end
 
-  def handle_event("cancel_run", %{"id" => run_id}, socket) do
+  def handle_event("cancel_media_import", %{"id" => media_import_id}, socket) do
     actor = socket.assigns.current_user
 
-    with {:ok, run} <- Media.get_import_run_by_id(run_id, actor: actor),
-         {:ok, _run} <- Media.cancel_import_run(run, actor: actor) do
+    with {:ok, media_import} <- Media.get_media_import_by_id(media_import_id, actor: actor),
+         {:ok, _media_import} <- Media.cancel_media_import(media_import, actor: actor) do
       {:noreply, put_flash(socket, :info, dgettext("admin_media_imports", "Import cancelled"))}
     else
       {:error, _error} ->
@@ -153,18 +152,18 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{resource: ImportConfiguration, action: %{name: :destroy}},
+        %Ash.Notifier.Notification{resource: MediaSource, action: %{name: :destroy}},
         socket
       ) do
     {:noreply,
      socket
-     |> put_flash(:info, dgettext("admin_media_imports", "Configuration was deleted"))
-     |> push_navigate(to: ~p"/admin/media/imports")}
+     |> put_flash(:info, dgettext("admin_media_imports", "Media Source was deleted"))
+     |> push_navigate(to: ~p"/admin/media/sources")}
   end
 
   def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [ImportConfiguration, ImportRun] do
-    {:noreply, reload_configuration(socket)}
+      when resource in [MediaSource, MediaImport] do
+    {:noreply, reload_media_source(socket)}
   end
 
   # Catch all clause to avoid crash if we publish more messages on this topic later
@@ -179,21 +178,23 @@ defmodule WatchClubWeb.Admin.MediaImportHistoryPage do
   defp resubscribe(socket, id) do
     if connected?(socket) do
       if old = socket.assigns.subscribed_id do
+        PubSub.unsubscribe(WatchClub.PubSub, "media_sources")
         PubSub.unsubscribe(WatchClub.PubSub, "media_imports:#{old}")
       end
 
+      PubSub.subscribe(WatchClub.PubSub, "media_sources")
       PubSub.subscribe(WatchClub.PubSub, "media_imports:#{id}")
     end
 
     assign(socket, :subscribed_id, id)
   end
 
-  defp reload_configuration(%{assigns: %{configuration: %ImportConfiguration{id: id}}} = socket) do
-    case Media.get_import_configuration_by_id(id,
+  defp reload_media_source(%{assigns: %{media_source: %MediaSource{id: id}}} = socket) do
+    case Media.get_media_source_by_id(id,
            actor: socket.assigns.current_user,
            load: [:imports]
          ) do
-      {:ok, configuration} -> assign(socket, :configuration, configuration)
+      {:ok, media_source} -> assign(socket, :media_source, media_source)
       {:error, _} -> socket
     end
   end

@@ -1,6 +1,6 @@
-defmodule WatchClub.Media.ImportSourceType do
+defmodule WatchClub.Media.MediaSourceType do
   @moduledoc """
-  The kind of source a Media Import Configuration imports from.
+  The kind of upstream system a `Media Source` represents.
   """
 
   use Gettext, backend: WatchClubWeb.Gettext
@@ -13,5 +13,5 @@ defmodule WatchClub.Media.ImportSourceType do
       ]
     ]
 
-  def translated_label(:filesystem), do: dgettext("import_source_types", "Filesystem")
+  def translated_label(:filesystem), do: dgettext("media_source_types", "Filesystem")
 end

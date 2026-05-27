@@ -21,7 +21,7 @@ defmodule WatchClub.Application do
          Application.fetch_env!(:watch_club, Oban),
          []
        )},
-      WatchClub.Media.ImportRun.OrphansCleanup,
+      WatchClub.Media.MediaImport.OrphansCleanup,
       {DNSCluster, query: Application.get_env(:watch_club, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WatchClub.PubSub},
       {AshAuthentication.Supervisor, [otp_app: :watch_club]},

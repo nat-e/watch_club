@@ -17,13 +17,13 @@ defmodule WatchClub.Media.ImportPipeline.MatchContent do
     MovieIdentity
   }
 
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
   alias WatchClub.SystemActor
 
   require Logger
 
   @impl true
-  def apply(%Candidate{} = candidate, %ImportRun{}) do
+  def apply(%Candidate{} = candidate, %MediaImport{}) do
     Logger.debug("Matching content for #{candidate}")
 
     case get_or_create_content(candidate.identity) do

@@ -1,6 +1,6 @@
 defmodule WatchClub.Media.FilesystemImportPipeline do
   @moduledoc """
-  Runs each candidate file under an `ImportRun`'s configured location through
+  Runs each candidate file under a `MediaImport`'s configured location through
   the per-candidate stages, composed with `with/1`:
 
       ExtractIdentity   → describe what the file represents
@@ -28,7 +28,7 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
     Scan
   }
 
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
   alias WatchClub.SystemActor
 
   require Logger
@@ -37,12 +37,12 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
   @candidate_timeout_ms :timer.seconds(30)
 
   @impl true
-  def import_medias(%ImportRun{snapshot_configuration: %_{} = configuration} = import_run) do
+  def import_medias(%MediaImport{source_snapshot: %_{} = media_source} = media_import) do
     with {:ok, skip_paths} <-
-           load_existing_media(configuration.filesystem_path, import_run.refresh_metadata?),
-         {:ok, candidate_stream} <- Scan.stream_candidate_files(configuration, skip_paths) do
+           load_existing_media(media_source.filesystem_path, media_import.refresh_metadata?),
+         {:ok, candidate_stream} <- Scan.stream_candidate_files(media_source, skip_paths) do
       candidate_stream
-      |> Task.async_stream(&process_candidate(&1, import_run),
+      |> Task.async_stream(&process_candidate(&1, media_import),
         max_concurrency: @concurrency,
         ordered: false,
         timeout: @candidate_timeout_ms,
@@ -68,13 +68,13 @@ defmodule WatchClub.Media.FilesystemImportPipeline do
     end
   end
 
-  defp process_candidate(%Candidate{} = candidate, %ImportRun{} = import_run) do
+  defp process_candidate(%Candidate{} = candidate, %MediaImport{} = media_import) do
     Logger.info("Processing import candidate: #{candidate}")
 
-    with {:ok, candidate} <- ExtractIdentity.apply(candidate, import_run),
-         {:ok, candidate} <- ExtractStructure.apply(candidate, import_run),
-         {:ok, candidate} <- MatchContent.apply(candidate, import_run),
-         {:ok, candidate} <- SaveMedia.apply(candidate, import_run) do
+    with {:ok, candidate} <- ExtractIdentity.apply(candidate, media_import),
+         {:ok, candidate} <- ExtractStructure.apply(candidate, media_import),
+         {:ok, candidate} <- MatchContent.apply(candidate, media_import),
+         {:ok, candidate} <- SaveMedia.apply(candidate, media_import) do
       Logger.info("Finished processing candidate: #{candidate}")
       :ok
     else

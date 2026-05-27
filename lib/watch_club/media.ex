@@ -15,19 +15,19 @@ defmodule WatchClub.Media do
       define :destroy_media, action: :destroy
     end
 
-    resource WatchClub.Media.ImportConfiguration do
-      define :list_import_configurations, action: :read
-      define :get_import_configuration_by_id, action: :read, get_by: [:id]
-      define :create_filesystem_import_configuration, action: :create_filesystem
-      define :update_import_configuration, action: :update
-      define :destroy_import_configuration, action: :destroy
+    resource WatchClub.Media.MediaSource do
+      define :list_media_sources, action: :read
+      define :get_media_source_by_id, action: :read, get_by: [:id]
+      define :create_filesystem_media_source, action: :create_filesystem
+      define :update_media_source, action: :update
+      define :destroy_media_source, action: :destroy
     end
 
-    resource WatchClub.Media.ImportRun do
-      define :list_import_runs, action: :read
-      define :get_import_run_by_id, action: :read, get_by: [:id]
-      define :start_import_run, action: :start, args: [:configuration_id]
-      define :cancel_import_run, action: :cancel
+    resource WatchClub.Media.MediaImport do
+      define :list_media_imports, action: :read
+      define :get_media_import_by_id, action: :read, get_by: [:id]
+      define :start_media_import, action: :start, args: [:media_source_id]
+      define :cancel_media_import, action: :cancel
     end
 
     resource WatchClub.Media.Video

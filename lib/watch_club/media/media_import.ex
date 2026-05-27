@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.ImportRun do
+defmodule WatchClub.Media.MediaImport do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -9,22 +9,22 @@ defmodule WatchClub.Media.ImportRun do
 
   import Ash.Expr
 
-  alias WatchClub.Media.ImportConfiguration
-  alias WatchClub.Media.ImportRun.Changes
+  alias WatchClub.Media.MediaImport.Changes
+  alias WatchClub.Media.MediaSource
 
   postgres do
-    table "media_import_runs"
+    table "media_imports"
     repo WatchClub.Repo
 
     references do
-      reference :configuration, on_delete: :nilify, on_update: :update
+      reference :media_source, on_delete: :nilify, on_update: :update
     end
 
     custom_indexes do
-      index [:configuration_id],
+      index [:media_source_id],
         unique: true,
-        name: "media_import_runs_one_processing_per_configuration_index",
-        where: "status = 'processing' AND configuration_id IS NOT NULL"
+        name: "media_imports_one_processing_per_media_source_index",
+        where: "status = 'processing' AND media_source_id IS NOT NULL"
     end
   end
 
@@ -37,7 +37,7 @@ defmodule WatchClub.Media.ImportRun do
         max_attempts 1
         on_error :fail
         scheduler_cron false
-        worker_module_name WatchClub.Media.Workers.ExecuteImportRun
+        worker_module_name WatchClub.Media.Workers.ExecuteMediaImport
       end
     end
   end
@@ -59,18 +59,18 @@ defmodule WatchClub.Media.ImportRun do
 
     create :start do
       primary? true
-      accept [:configuration_id, :refresh_metadata?]
+      accept [:media_source_id, :refresh_metadata?]
 
       change set_attribute(:triggered_manually?, true)
-      change Changes.SnapshotConfiguration
-      change Changes.ScheduleRun
+      change Changes.SnapshotMediaSource
+      change Changes.Schedule
     end
 
     update :run do
       require_atomic? false
       accept []
 
-      change Changes.ExecuteRun
+      change Changes.Execute
     end
 
     update :complete do
@@ -127,10 +127,10 @@ defmodule WatchClub.Media.ImportRun do
     name WatchClub.PubSub
     prefix "media_imports"
 
-    publish :start, [[:configuration_id, nil]]
-    publish :complete, [[:configuration_id, nil]]
-    publish :fail, [[:configuration_id, nil]]
-    publish :cancel, [[:configuration_id, nil]]
+    publish :start, [[:media_source_id, nil]]
+    publish :complete, [[:media_source_id, nil]]
+    publish :fail, [[:media_source_id, nil]]
+    publish :cancel, [[:media_source_id, nil]]
   end
 
   preparations do
@@ -154,7 +154,7 @@ defmodule WatchClub.Media.ImportRun do
       source :is_triggered_manually
     end
 
-    attribute :configuration_snapshot, :map do
+    attribute :media_source_snapshot, :map do
       allow_nil? false
       public? true
     end
@@ -167,17 +167,17 @@ defmodule WatchClub.Media.ImportRun do
   end
 
   relationships do
-    belongs_to :configuration, ImportConfiguration do
+    belongs_to :media_source, MediaSource do
       allow_nil? true
       public? true
     end
   end
 
   calculations do
-    calculate :snapshot_configuration,
+    calculate :source_snapshot,
               :struct,
-              WatchClub.Media.ImportRun.Calculations.SnapshotConfiguration do
-      constraints instance_of: ImportConfiguration
+              WatchClub.Media.MediaImport.Calculations.SourceSnapshot do
+      constraints instance_of: MediaSource
       public? true
     end
   end

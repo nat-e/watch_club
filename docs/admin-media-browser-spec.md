@@ -26,7 +26,7 @@ and test specs are deferred to follow-up sections.
 ### Non-goals
 
 - No Media editing, re-import, or metadata refresh from this page.
-  Those remain on the Media Import Configuration page.
+  Those remain on the Media Source page.
 - No bulk actions in v1. Single-row delete only, via the drawer.
 - No Grouped-by-Content view in v1. The brainstorm explored it; v1 ships the
   Flat view only. Grouped view stays as a documented follow-up.

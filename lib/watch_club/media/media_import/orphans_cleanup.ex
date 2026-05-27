@@ -1,16 +1,18 @@
-defmodule WatchClub.Media.ImportRun.OrphansCleanup do
+defmodule WatchClub.Media.MediaImport.OrphansCleanup do
   @moduledoc """
-  Cancels any `ImportRun` left in `:processing` by a previous BEAM that died
+  Cancels any `MediaImport` left in `:processing` by a previous BEAM that died
   without finishing its work (SIGKILL, OOM, host crash, graceful shutdown that
   outran its grace period).
 
   Runs synchronously in `init/1` and returns `:ignore` so the GenServer exits
-  cleanly. Sits between the `Oban` and `Endpoint` children in the supervision
-  tree, which gives two guarantees:
+  cleanly. Placed after `Oban` and `Phoenix.PubSub` and before `Endpoint` in
+  the supervision tree, which gives three guarantees:
 
     * Oban is started, so the bulk update's `Changes.CancelObanJob` hook can
       cancel the underlying Oban jobs.
-    * The web endpoint hasn't started yet, so no fresh `ImportRun` can be
+    * `Phoenix.PubSub` is started, so the `:cancel` action's PubSub notifier
+      can broadcast.
+    * The web endpoint hasn't started yet, so no fresh `MediaImport` can be
       created before cleanup completes.
   """
 
@@ -20,7 +22,7 @@ defmodule WatchClub.Media.ImportRun.OrphansCleanup do
   require Logger
 
   alias WatchClub.Media
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
   alias WatchClub.SystemActor
 
   def start_link(_opts), do: GenServer.start_link(__MODULE__, [])
@@ -32,13 +34,19 @@ defmodule WatchClub.Media.ImportRun.OrphansCleanup do
   end
 
   defp run do
-    ImportRun
+    MediaImport
     |> Ash.Query.filter(status == :processing)
-    |> Media.cancel_import_run(actor: SystemActor.actor())
+    |> Media.cancel_media_import(
+      actor: SystemActor.actor(),
+      bulk_options: [return_records?: true]
+    )
     |> log_result()
   catch
     kind, reason ->
-      Logger.error("ImportRun orphans cleanup failed: #{inspect(kind)} #{inspect(reason)}")
+      Logger.error(
+        "MediaImport orphans cleanup failed: #{inspect(kind)} #{inspect(reason)}\n" <>
+          Exception.format_stacktrace(__STACKTRACE__)
+      )
 
       :ok
   end
@@ -46,10 +54,10 @@ defmodule WatchClub.Media.ImportRun.OrphansCleanup do
   defp log_result(%Ash.BulkResult{status: :success, records: []}), do: :ok
 
   defp log_result(%Ash.BulkResult{status: :success, records: records}) do
-    Logger.info("Cancelled #{length(records)} orphaned ImportRun(s) from previous run")
+    Logger.info("Cancelled #{length(records)} orphaned MediaImport(s) from previous run")
   end
 
   defp log_result(%Ash.BulkResult{status: status, errors: errors}) do
-    Logger.error("Orphan ImportRun cleanup finished with status #{status}: #{inspect(errors)}")
+    Logger.error("Orphan MediaImport cleanup finished with status #{status}: #{inspect(errors)}")
   end
 end

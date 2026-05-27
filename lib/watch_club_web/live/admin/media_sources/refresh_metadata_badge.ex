@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Admin.MediaImports.RefreshMetadataBadge do
+defmodule WatchClubWeb.Admin.MediaSources.RefreshMetadataBadge do
   @moduledoc """
   Refresh-metadata badge for a `Media Import` row.
   """

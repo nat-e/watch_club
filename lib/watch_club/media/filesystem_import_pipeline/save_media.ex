@@ -8,16 +8,16 @@ defmodule WatchClub.Media.ImportPipeline.SaveMedia do
   alias WatchClub.Media
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MatchResult
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
   alias WatchClub.SystemActor
 
   require Logger
 
   @impl true
-  def apply(%Candidate{} = candidate, %ImportRun{snapshot_configuration: configuration}) do
+  def apply(%Candidate{} = candidate, %MediaImport{source_snapshot: media_source}) do
     Logger.debug("Saving media for #{candidate}")
 
-    case save_media(configuration.media_type, candidate) do
+    case save_media(media_source.media_type, candidate) do
       {:ok, _media} ->
         {:ok, candidate}
 

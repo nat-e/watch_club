@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.ImportRun.Changes.ScheduleRun do
+defmodule WatchClub.Media.MediaImport.Changes.Schedule do
   use Ash.Resource.Change
 
   alias WatchClub.SystemActor
@@ -6,9 +6,9 @@ defmodule WatchClub.Media.ImportRun.Changes.ScheduleRun do
   @impl true
   def change(changeset, _opts, _context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
-      with {:ok, run} <- result do
-        AshOban.run_trigger(run, :run, actor: SystemActor.actor())
-        {:ok, run}
+      with {:ok, media_import} <- result do
+        AshOban.run_trigger(media_import, :run, actor: SystemActor.actor())
+        {:ok, media_import}
       end
     end)
   end

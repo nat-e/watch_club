@@ -26,7 +26,7 @@ Acceptance:
 **Goal:** Add import configuration/run/result resources.
 
 Includes:
-- `MediaImportConfiguration`
+- `MediaSource`
 - `MediaImport`
 - `MediaImportResult`
 - enum types:

@@ -1,4 +1,4 @@
-defmodule WatchClub.Media.ImportConfiguration do
+defmodule WatchClub.Media.MediaSource do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Media,
@@ -6,19 +6,19 @@ defmodule WatchClub.Media.ImportConfiguration do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Media.ImportConfiguration.Calculations
-  alias WatchClub.Media.{ImportRun, ImportSourceType, MediaType}
+  alias WatchClub.Media.MediaSource.Calculations
+  alias WatchClub.Media.{MediaImport, MediaSourceType, MediaType}
   alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
-    table "media_import_configurations"
+    table "media_sources"
     repo WatchClub.Repo
   end
 
   pub_sub do
     module Phoenix.PubSub
     name WatchClub.PubSub
-    prefix "media_imports"
+    prefix "media_sources"
 
     publish :create_filesystem, ""
     publish :update, [[:id, nil]]
@@ -50,13 +50,13 @@ defmodule WatchClub.Media.ImportConfiguration do
 
   policies do
     policy actor_absent() do
-      description "Media Import Configuration actions require an authenticated actor"
+      description "Media Source actions require an authenticated actor"
       access_type :strict
       forbid_if always()
     end
 
     policy action([:read, :create_filesystem, :update, :destroy]) do
-      description "Only the Instance Administrator can manage Media Import Configurations"
+      description "Only the Instance Administrator can manage Media Sources"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
   end
@@ -68,7 +68,7 @@ defmodule WatchClub.Media.ImportConfiguration do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :source_type, ImportSourceType do
+    attribute :source_type, MediaSourceType do
       allow_nil? false
       public? true
       default :filesystem
@@ -88,14 +88,14 @@ defmodule WatchClub.Media.ImportConfiguration do
   end
 
   relationships do
-    has_many :imports, ImportRun do
-      destination_attribute :configuration_id
+    has_many :imports, MediaImport do
+      destination_attribute :media_source_id
       public? true
       sort inserted_at: :desc
     end
 
-    has_one :latest_run, ImportRun do
-      destination_attribute :configuration_id
+    has_one :latest_import, MediaImport do
+      destination_attribute :media_source_id
       sort inserted_at: :desc
       public? true
     end

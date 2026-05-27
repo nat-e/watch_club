@@ -1,23 +1,23 @@
-defmodule WatchClubWeb.Admin.MediaImports.HistoryTable do
+defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   @moduledoc """
-  Run history table for one `Media Import Configuration`.
+  History table of `Media Imports` for one `Media Source`.
 
   Columns: Status, Started, Duration, Trigger, Refresh metadata.
-  Duration is rendered as `—` for in-progress runs because there is no finished
-  timestamp yet.
+  Duration is rendered as `—` for in-progress Media Imports because there is
+  no finished timestamp yet.
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Admin.MediaImports.RefreshMetadataBadge
-  import WatchClubWeb.Admin.MediaImports.RunStatusBadge
+  import WatchClubWeb.Admin.MediaSources.RefreshMetadataBadge
+  import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
-  alias WatchClub.Media.ImportRun
+  alias WatchClub.Media.MediaImport
   alias WatchClubWeb.Helpers.Time
 
-  attr :runs, :list, required: true
+  attr :imports, :list, required: true
   attr :locale, :atom, required: true
 
-  def history_table(assigns) do
+  def media_import_history_table(assigns) do
     ~H"""
     <.table>
       <.table_header>
@@ -35,30 +35,30 @@ defmodule WatchClubWeb.Admin.MediaImports.HistoryTable do
         </.table_row>
       </.table_header>
       <.table_body>
-        <.table_row :for={run <- @runs}>
+        <.table_row :for={media_import <- @imports}>
           <.table_cell class="text-left">
-            <.run_status_badge status={run.status} />
+            <.run_status_badge status={media_import.status} />
           </.table_cell>
           <.table_cell class="text-left text-text-muted">
-            {Time.relative_from_now(run.inserted_at, @locale)}
+            {Time.relative_from_now(media_import.inserted_at, @locale)}
           </.table_cell>
           <.table_cell class="text-left text-text-muted">
-            {duration(run)}
+            {duration(media_import)}
           </.table_cell>
           <.table_cell class="text-left">
-            <.trigger_badge triggered_manually?={run.triggered_manually?} />
+            <.trigger_badge triggered_manually?={media_import.triggered_manually?} />
           </.table_cell>
           <.table_cell class="text-left">
-            <.refresh_metadata_badge value={run.refresh_metadata?} />
+            <.refresh_metadata_badge value={media_import.refresh_metadata?} />
           </.table_cell>
           <.table_cell class="text-right">
             <.button
-              :if={run.status == :processing}
-              id={"cancel-run-#{run.id}"}
+              :if={media_import.status == :processing}
+              id={"cancel-media-import-#{media_import.id}"}
               variant="secondary"
               class="text-text-muted hover:text-text"
-              phx-click="cancel_run"
-              phx-value-id={run.id}
+              phx-click="cancel_media_import"
+              phx-value-id={media_import.id}
               aria-label={dgettext("admin_media_imports", "Cancel")}
             >
               <Lucideicons.x />
@@ -91,9 +91,9 @@ defmodule WatchClubWeb.Admin.MediaImports.HistoryTable do
     """
   end
 
-  defp duration(%ImportRun{finished_at: nil}), do: "—"
+  defp duration(%MediaImport{finished_at: nil}), do: "—"
 
-  defp duration(%ImportRun{inserted_at: started, finished_at: finished}) do
+  defp duration(%MediaImport{inserted_at: started, finished_at: finished}) do
     seconds = DateTime.diff(finished, started, :second)
     format_duration(seconds)
   end
