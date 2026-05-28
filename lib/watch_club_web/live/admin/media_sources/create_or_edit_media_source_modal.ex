@@ -96,12 +96,12 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
             disabled={@mode == :edit}
             tooltip={@mode == :edit && @locked_message}
             class={[
-              "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors has-[:checked]:border-accent has-[:checked]:bg-surface-selected has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 [&>[data-slot=radio-group-item]]:sr-only",
+              "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-50 *:data-[slot=radio-group-item]:sr-only",
               @mode == :create && "hover:bg-surface-hover"
             ]}
           >
-            <.media_type_badge media_type={media_type}/>
-            <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
+            <.media_type_badge media_type={media_type} />
+            <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-checked/radio-card:opacity-100" />
           </:item>
         </.radio_group>
       </:control>

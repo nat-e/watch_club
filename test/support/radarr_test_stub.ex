@@ -29,6 +29,7 @@ defmodule WatchClub.Integrations.Radarr.TestStub do
   def call(%Plug.Conn{request_path: "/api/v3/system/status"} = conn, _opts) do
     if has_api_key?(conn) do
       json(conn, 200, %{
+        "appName" => "Radarr",
         "version" => "5.4.6.8723",
         "instanceName" => "Radarr (Test Stub)"
       })

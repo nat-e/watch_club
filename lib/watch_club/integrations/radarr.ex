@@ -5,7 +5,22 @@ defmodule WatchClub.Integrations.Radarr do
 
   import WatchClub.Integrations.Radarr.Client
 
-  alias WatchClub.Integrations.Radarr.{QualityProfile, RootFolder, Webhook}
+  alias WatchClub.Integrations.Radarr.{QualityProfile, RootFolder, SystemStatus, Webhook}
+
+  @doc """
+  Fetches Radarr's `/api/v3/system/status`. Returns the parsed
+  `SystemStatus` on success; interpretation (e.g. asserting
+  `app_name == "Radarr"`) is the caller's responsibility.
+  """
+  @spec get_status(String.t(), String.t()) ::
+          {:ok, SystemStatus.t()} | {:error, term()}
+  def get_status(base_url, api_key) do
+    case get(base_url, api_key, "/api/v3/system/status") do
+      {:ok, body} when is_map(body) -> {:ok, SystemStatus.from_api(body)}
+      {:ok, _other} -> {:error, :invalid_response}
+      {:error, _} = error -> error
+    end
+  end
 
   @doc """
   Returns the quality profiles defined on the Radarr server.
@@ -66,6 +81,24 @@ defmodule WatchClub.Integrations.Radarr do
 
       {:error, _} = error ->
         error
+    end
+  end
+
+  @doc """
+  Updates an existing Webhook notification in place via PUT. Radarr
+  re-runs its `Test` step before persisting, so a successful response
+  means the new URL was reachable.
+  """
+  @spec update_webhook(String.t(), String.t(), integer(), Webhook.config()) ::
+          {:ok, %{id: integer()}} | {:error, term()}
+  def update_webhook(base_url, api_key, notification_id, config)
+      when is_integer(notification_id) do
+    body = Map.put(Webhook.body(config), :id, notification_id)
+
+    case put(base_url, api_key, "/api/v3/notification/#{notification_id}", body) do
+      {:ok, %{"id" => id}} when is_integer(id) -> {:ok, %{id: id}}
+      {:ok, _other} -> {:error, :invalid_response}
+      {:error, _} = error -> error
     end
   end
 

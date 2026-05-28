@@ -9,14 +9,13 @@ defmodule WatchClub.Media.RadarrMediaSource do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Integrations.Radarr.Connection
   alias WatchClub.Media.MediaSource
-  alias WatchClub.Media.RadarrMediaSource.Actions.LoadRadarrProfiles
 
   alias WatchClub.Media.RadarrMediaSource.Changes.{
     GenerateWebhookSecret,
     RegisterRadarrWebhook,
-    ScheduleWebhookDeletion
+    ScheduleWebhookDeletion,
+    UpdateRadarrWebhook
   }
 
   alias WatchClub.Shared.Changes.{NormalizePath, TrimUrl}
@@ -55,6 +54,7 @@ defmodule WatchClub.Media.RadarrMediaSource do
 
     update :update do
       primary? true
+      require_atomic? false
 
       accept [
         :base_url,
@@ -62,11 +62,14 @@ defmodule WatchClub.Media.RadarrMediaSource do
         :quality_profile_id,
         :quality_profile_name,
         :root_folder_path,
-        :local_root_folder_path
+        :local_root_folder_path,
+        :webhook_callback_base_url
       ]
 
       change {TrimUrl, attribute: :base_url}
+      change {TrimUrl, attribute: :webhook_callback_base_url}
       change {NormalizePath, attribute: :local_root_folder_path}
+      change UpdateRadarrWebhook
     end
 
     destroy :destroy do
@@ -74,20 +77,6 @@ defmodule WatchClub.Media.RadarrMediaSource do
       require_atomic? false
 
       change ScheduleWebhookDeletion
-    end
-
-    action :load_radarr_profiles, :struct do
-      description """
-      Talks to a Radarr server and returns its quality profiles + root
-      folders.
-      """
-
-      constraints instance_of: Connection
-
-      argument :base_url, :string, allow_nil?: false
-      argument :api_key, :string, allow_nil?: false
-
-      run LoadRadarrProfiles
     end
   end
 
@@ -104,7 +93,7 @@ defmodule WatchClub.Media.RadarrMediaSource do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:create, :update, :destroy, :load_radarr_profiles]) do
+    policy action([:create, :update, :destroy]) do
       description "Only the Instance Administrator can write RadarrMediaSource directly"
       authorize_if actor_attribute_equals(:administrator?, true)
     end

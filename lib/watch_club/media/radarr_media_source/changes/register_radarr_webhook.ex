@@ -1,16 +1,16 @@
 defmodule WatchClub.Media.RadarrMediaSource.Changes.RegisterRadarrWebhook do
   @moduledoc """
-  Synchronous webhook registration on Radarr, run as a `before_action`
-  on `RadarrMediaSource`'s `:create`. The HTTP call happens inside the
-  enclosing transaction — failure aborts the create. Step 3 of the Add
-  Radarr Source wizard already verified Radarr→WatchClub reachability,
-  so this call is expected to succeed.
+  Synchronous webhook registration on Radarr, run as a
+  `before_transaction` hook on `RadarrMediaSource`'s `:create`. The
+  HTTP call happens *outside* the DB transaction so a slow Radarr
+  response doesn't hold the transaction open. A failure short-circuits
+  the action before the transaction even opens.
 
   The id, base URL, api key, and webhook secret are all known on the
-  changeset before insert (the id is the parent `MediaSource`'s
+  changeset at this point (the id is the parent `MediaSource`'s
   primary key threaded down by `manage_relationship`), so the
-  `radarr_notification_id` can be set on the changeset and persisted
-  in the same INSERT.
+  `radarr_notification_id` is set on the changeset and persisted in
+  the same INSERT.
   """
   use Ash.Resource.Change
 
@@ -19,7 +19,7 @@ defmodule WatchClub.Media.RadarrMediaSource.Changes.RegisterRadarrWebhook do
 
   @impl true
   def change(changeset, _opts, _context) do
-    Ash.Changeset.before_action(changeset, fn changeset ->
+    Ash.Changeset.before_transaction(changeset, fn changeset ->
       with {:ok, config} <- build_config(changeset),
            base_url = Ash.Changeset.get_attribute(changeset, :base_url),
            api_key = Ash.Changeset.get_attribute(changeset, :api_key),

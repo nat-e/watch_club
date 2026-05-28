@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
             name: gtbold(@media_source.name)
           )
         )}
-        <.source_identifier media_source={@media_source} class="ml-tight align-middle" />
+        <.source_identifier media_source={@media_source} />
       </:description>
 
       <.form for={@form} id="run-import-form" phx-submit="confirm_run_import">

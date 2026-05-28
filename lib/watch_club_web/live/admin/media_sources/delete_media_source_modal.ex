@@ -23,7 +23,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
             )
           )}
         </p>
-        <.source_identifier media_source={@media_source} class="self-start" />
+        <.source_identifier media_source={@media_source} />
         <p class="text-sm text-text-muted">
           {dgettext(
             "admin_media_imports",

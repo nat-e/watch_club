@@ -36,6 +36,12 @@ defmodule WatchClub.Integrations.Radarr.Client do
     request(base_url, api_key, [method: :post, url: path, json: body] ++ opts)
   end
 
+  @spec put(String.t(), String.t(), String.t(), map(), keyword()) ::
+          {:ok, any()} | {:error, term()}
+  def put(base_url, api_key, path, body, opts \\ []) do
+    request(base_url, api_key, [method: :put, url: path, json: body] ++ opts)
+  end
+
   @spec delete(String.t(), String.t(), String.t(), keyword()) ::
           {:ok, any()} | {:error, term()}
   def delete(base_url, api_key, path, opts \\ []) do
