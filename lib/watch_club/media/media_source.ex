@@ -54,6 +54,7 @@ defmodule WatchClub.Media.MediaSource do
       argument :quality_profile_name, :string, allow_nil?: false
       argument :root_folder_path, :string, allow_nil?: false
       argument :local_root_folder_path, :string, allow_nil?: true
+      argument :webhook_callback_base_url, :string, allow_nil?: false
 
       change set_attribute(:source_type, :radarr)
       change set_attribute(:media_type, :movie)

@@ -12,6 +12,13 @@ defmodule WatchClub.Media.RadarrMediaSource do
   alias WatchClub.Integrations.Radarr.Connection
   alias WatchClub.Media.MediaSource
   alias WatchClub.Media.RadarrMediaSource.Actions.LoadRadarrProfiles
+
+  alias WatchClub.Media.RadarrMediaSource.Changes.{
+    GenerateWebhookSecret,
+    RegisterRadarrWebhook,
+    ScheduleWebhookDeletion
+  }
+
   alias WatchClub.Shared.Changes.{NormalizePath, TrimUrl}
 
   postgres do
@@ -24,7 +31,7 @@ defmodule WatchClub.Media.RadarrMediaSource do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
 
     create :create do
       primary? true
@@ -35,11 +42,15 @@ defmodule WatchClub.Media.RadarrMediaSource do
         :quality_profile_id,
         :quality_profile_name,
         :root_folder_path,
-        :local_root_folder_path
+        :local_root_folder_path,
+        :webhook_callback_base_url
       ]
 
       change {TrimUrl, attribute: :base_url}
+      change {TrimUrl, attribute: :webhook_callback_base_url}
       change {NormalizePath, attribute: :local_root_folder_path}
+      change GenerateWebhookSecret
+      change RegisterRadarrWebhook
     end
 
     update :update do
@@ -56,6 +67,13 @@ defmodule WatchClub.Media.RadarrMediaSource do
 
       change {TrimUrl, attribute: :base_url}
       change {NormalizePath, attribute: :local_root_folder_path}
+    end
+
+    destroy :destroy do
+      primary? true
+      require_atomic? false
+
+      change ScheduleWebhookDeletion
     end
 
     action :load_radarr_profiles, :struct do
@@ -137,6 +155,31 @@ defmodule WatchClub.Media.RadarrMediaSource do
     attribute :local_root_folder_path, :string do
       allow_nil? true
       public? true
+    end
+
+    # The base URL Radarr will use to reach WatchClub. Stored
+    # per-source because Radarr can sit on a different network
+    # (Docker, LAN, remote) than the WatchClub host itself.
+    attribute :webhook_callback_base_url, :string do
+      allow_nil? false
+      public? true
+    end
+
+    # Shared secret WatchClub sends to itself in the
+    # `X-WatchClub-Token` header on every non-Test event, generated at
+    # create time and never exposed back to the form.
+    attribute :webhook_secret, :string do
+      allow_nil? false
+      public? false
+      sensitive? true
+    end
+
+    # The id Radarr assigned to the registered Webhook notification.
+    # Carried into the destroy job's args so the cleanup call survives
+    # the row being gone.
+    attribute :radarr_notification_id, :integer do
+      allow_nil? false
+      public? false
     end
   end
 

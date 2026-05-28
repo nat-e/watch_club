@@ -70,8 +70,10 @@ defmodule WatchClub.Media.MediaSourceTest do
                    base_url: "https://radarr.lan/",
                    api_key: "abc123",
                    quality_profile_id: 7,
+                   quality_profile_name: "HD-1080p Bluray",
                    root_folder_path: "/movies",
-                   local_root_folder_path: "tmp/movies/../movies"
+                   local_root_folder_path: "tmp/movies/../movies",
+                   webhook_callback_base_url: "http://watch-club.test"
                  },
                  actor: admin
                )
@@ -91,7 +93,9 @@ defmodule WatchClub.Media.MediaSourceTest do
                    base_url: "https://radarr.lan",
                    api_key: "abc123",
                    quality_profile_id: 7,
-                   root_folder_path: "/movies"
+                   quality_profile_name: "HD-1080p Bluray",
+                   root_folder_path: "/movies",
+                   webhook_callback_base_url: "http://watch-club.test"
                  },
                  actor: admin
                )
@@ -105,7 +109,9 @@ defmodule WatchClub.Media.MediaSourceTest do
           base_url: "https://radarr.lan",
           api_key: "abc123",
           quality_profile_id: 7,
-          root_folder_path: "/movies"
+          quality_profile_name: "HD-1080p Bluray",
+          root_folder_path: "/movies",
+          webhook_callback_base_url: "http://watch-club.test"
         },
         actor: user
       )
@@ -140,7 +146,9 @@ defmodule WatchClub.Media.MediaSourceTest do
             base_url: "https://radarr.lan",
             api_key: "abc123",
             quality_profile_id: 7,
-            root_folder_path: "/movies"
+            quality_profile_name: "HD-1080p Bluray",
+            root_folder_path: "/movies",
+            webhook_callback_base_url: "http://watch-club.test"
           },
           actor: admin
         )

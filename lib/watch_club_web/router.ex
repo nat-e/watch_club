@@ -29,6 +29,13 @@ defmodule WatchClubWeb.Router do
     plug :set_actor, :user
   end
 
+  # Inbound webhooks from media sources. JSON only; no session, no
+  # CSRF, no Ash actor — handlers authenticate per-request from the
+  # body or a header.
+  pipeline :webhook do
+    plug :accepts, ["json"]
+  end
+
   # Like :browser but without CSRF protection — HLS segment GETs from
   # <media-player> don't carry a CSRF token. No HTML rendering either,
   # so :accepts, layouts, and flash are intentionally absent.
@@ -37,6 +44,12 @@ defmodule WatchClubWeb.Router do
     plug :put_secure_browser_headers
     plug :load_from_session
     plug :ensure_administrator_setup
+  end
+
+  scope "/webhooks", WatchClubWeb.Webhooks do
+    pipe_through :webhook
+
+    post "/radarr/:media_source_id", RadarrController, :handle
   end
 
   scope "/hls", WatchClubWeb do

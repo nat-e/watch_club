@@ -63,6 +63,30 @@ defmodule WatchClub.Integrations.Radarr.TestStub do
     end
   end
 
+  def call(%Plug.Conn{request_path: "/api/v3/notification", method: "POST"} = conn, _opts) do
+    if has_api_key?(conn) do
+      json(conn, 200, %{"id" => :erlang.unique_integer([:positive])})
+    else
+      json(conn, 401, %{"message" => "Unauthorized"})
+    end
+  end
+
+  def call(%Plug.Conn{request_path: "/api/v3/notification/test", method: "POST"} = conn, _opts) do
+    if has_api_key?(conn) do
+      json(conn, 200, %{})
+    else
+      json(conn, 401, %{"message" => "Unauthorized"})
+    end
+  end
+
+  def call(%Plug.Conn{path_info: ["api", "v3", "notification", _id], method: "DELETE"} = conn, _opts) do
+    if has_api_key?(conn) do
+      json(conn, 200, %{})
+    else
+      json(conn, 401, %{"message" => "Unauthorized"})
+    end
+  end
+
   def call(conn, _opts), do: json(conn, 404, %{"message" => "Not Found"})
 
   defp has_api_key?(conn) do

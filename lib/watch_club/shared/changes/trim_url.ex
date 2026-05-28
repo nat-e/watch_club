@@ -9,6 +9,8 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
   """
   use Ash.Resource.Change
 
+  alias WatchClub.Shared.Url
+
   @impl true
   def init(opts) do
     attribute = Keyword.get(opts, :attribute, :url)
@@ -26,7 +28,7 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
 
     case Ash.Changeset.get_attribute(changeset, attribute) do
       url when is_binary(url) ->
-        Ash.Changeset.change_attribute(changeset, attribute, normalize(url))
+        Ash.Changeset.change_attribute(changeset, attribute, Url.normalize_base(url))
 
       _ ->
         changeset
@@ -40,7 +42,7 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
     case Map.get(changeset.params, attribute) ||
            Map.get(changeset.params, Atom.to_string(attribute)) do
       url when is_binary(url) ->
-        atomics = %{attribute => normalize(url)}
+        atomics = %{attribute => Url.normalize_base(url)}
 
         case changeset.action.type do
           :create -> {:atomic_set, atomics}
@@ -50,11 +52,5 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
       _ ->
         :ok
     end
-  end
-
-  defp normalize(url) do
-    url
-    |> String.trim()
-    |> String.replace_trailing("/", "")
   end
 end

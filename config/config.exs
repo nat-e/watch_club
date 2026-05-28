@@ -69,7 +69,7 @@ config :watch_club, Oban,
     # Deletes jobs older than a week to avoid Oban table from growing indefinitely
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
   ],
-  queues: [media_imports: 1, playback_cache_maintenance: 1]
+  queues: [media_imports: 1, playback_cache_maintenance: 1, media_source_webhooks: 1]
 
 config :ash_oban, :actor_persister, WatchClub.Shared.Oban.AshObanActorPersister
 

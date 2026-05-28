@@ -4,6 +4,8 @@ defmodule WatchClub.Integrations.Radarr.Client do
   """
   require Logger
 
+  alias WatchClub.Shared.Url
+
   @receive_timeout 5_000
 
   @spec request(String.t(), String.t(), keyword()) :: {:ok, any()} | {:error, term()}
@@ -12,7 +14,7 @@ defmodule WatchClub.Integrations.Radarr.Client do
     # silent retries — `retry: false`. Background import flows can opt in
     # by passing `retry: :transient` through `opts`.
     [
-      base_url: normalize_base_url(base_url),
+      base_url: Url.normalize_base(base_url),
       headers: [{"x-api-key", api_key}, {"accept", "application/json"}],
       retry: false,
       receive_timeout: @receive_timeout
@@ -28,8 +30,16 @@ defmodule WatchClub.Integrations.Radarr.Client do
     request(base_url, api_key, [method: :get, url: path] ++ opts)
   end
 
-  defp normalize_base_url(url) do
-    url |> String.trim() |> String.replace_trailing("/", "")
+  @spec post(String.t(), String.t(), String.t(), map(), keyword()) ::
+          {:ok, any()} | {:error, term()}
+  def post(base_url, api_key, path, body, opts \\ []) do
+    request(base_url, api_key, [method: :post, url: path, json: body] ++ opts)
+  end
+
+  @spec delete(String.t(), String.t(), String.t(), keyword()) ::
+          {:ok, any()} | {:error, term()}
+  def delete(base_url, api_key, path, opts \\ []) do
+    request(base_url, api_key, [method: :delete, url: path] ++ opts)
   end
 
   defp handle_response({:ok, %Req.Response{status: status, body: body}})

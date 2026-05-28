@@ -24,6 +24,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
     alias Phoenix.Component
     alias WatchClub.Integrations.Radarr.Connection
     alias WatchClub.Media.MediaSource
+    alias WatchClub.Shared.Url
 
     defstruct [
       :mode,
@@ -33,18 +34,26 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
       :connection,
       :connect_error,
       :profiles_load_ref,
-      testing?: false
+      :configuration,
+      :wizard_id,
+      :callback_base_url,
+      :webhook_test_ref,
+      :webhook_error,
+      testing?: false,
+      webhook_state: :unverified
     ]
 
-    def create do
+    def create(default_callback_base_url) do
       %__MODULE__{
         mode: :create,
         step: :connect,
-        form: radarr_form(%{"base_url" => "", "api_key" => ""})
+        form: radarr_form(%{"base_url" => "", "api_key" => ""}),
+        wizard_id: Ash.UUIDv7.generate(),
+        callback_base_url: default_callback_base_url
       }
     end
 
-    def edit(%MediaSource{source_type: :radarr} = media_source) do
+    def edit(%MediaSource{source_type: :radarr} = media_source, default_callback_base_url) do
       impl = media_source.implementation
 
       %__MODULE__{
@@ -57,7 +66,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
           api_key: impl.api_key,
           profiles: [],
           root_folders: []
-        }
+        },
+        wizard_id: media_source.id,
+        callback_base_url: impl.webhook_callback_base_url || default_callback_base_url,
+        webhook_state: :verified
       }
     end
 
@@ -93,9 +105,113 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
           connection: nil,
           connect_error: nil,
           testing?: false,
-          profiles_load_ref: nil
+          profiles_load_ref: nil,
+          webhook_state: :unverified,
+          webhook_error: nil,
+          webhook_test_ref: nil
       }
     end
+
+    def advance_to_webhook_step(%__MODULE__{} = wizard, configuration) do
+      %{
+        wizard
+        | step: :webhook,
+          configuration: configuration,
+          form: radarr_form(%{"webhook_callback_base_url" => wizard.callback_base_url || ""}),
+          webhook_state: :unverified,
+          webhook_error: nil
+      }
+    end
+
+    def back_to_configure_step(%__MODULE__{} = wizard) do
+      %{
+        wizard
+        | step: :configure,
+          form: radarr_form(configure_params_from_state(wizard)),
+          webhook_state: :unverified,
+          webhook_error: nil,
+          webhook_test_ref: nil
+      }
+    end
+
+    defp configure_params_from_state(%__MODULE__{configuration: nil} = wizard) do
+      configuration_params(wizard, wizard.connection)
+    end
+
+    defp configure_params_from_state(%__MODULE__{configuration: config}) do
+      %{
+        "quality_profile_id" =>
+          if(config.quality_profile_id, do: to_string(config.quality_profile_id), else: nil),
+        "root_folder_path" => config.root_folder_path,
+        "local_root_folder_path" => config.local_root_folder_path || ""
+      }
+    end
+
+    def validate_webhook(%__MODULE__{} = wizard, params) do
+      callback = String.trim(params["webhook_callback_base_url"] || "")
+
+      state =
+        cond do
+          callback == "" -> :unverified
+          callback == wizard.callback_base_url -> wizard.webhook_state
+          true -> :unverified
+        end
+
+      %{
+        wizard
+        | form: radarr_form(params),
+          callback_base_url: callback,
+          webhook_state: state,
+          webhook_error: nil
+      }
+    end
+
+    def begin_webhook_test(%__MODULE__{} = wizard, ref) do
+      %{wizard | webhook_state: :testing, webhook_error: nil, webhook_test_ref: ref}
+    end
+
+    def cancel_webhook_test(%__MODULE__{} = wizard) do
+      %{wizard | webhook_state: :unverified, webhook_test_ref: nil}
+    end
+
+    def apply_webhook_test_result(%__MODULE__{webhook_test_ref: current_ref}, ref, _result)
+        when current_ref != ref do
+      :stale
+    end
+
+    def apply_webhook_test_result(%__MODULE__{} = wizard, _ref, {:ok, {:ok, :verified}}) do
+      {:ok, %{wizard | webhook_state: :verified, webhook_error: nil, webhook_test_ref: nil}}
+    end
+
+    def apply_webhook_test_result(%__MODULE__{} = wizard, _ref, {:ok, {:error, reason}}) do
+      {:ok, %{wizard | webhook_state: :failed, webhook_error: reason, webhook_test_ref: nil}}
+    end
+
+    def apply_webhook_test_result(%__MODULE__{} = wizard, _ref, {:exit, {:shutdown, :cancel}}) do
+      {:ok, cancel_webhook_test(wizard)}
+    end
+
+    def apply_webhook_test_result(%__MODULE__{} = wizard, _ref, {:exit, reason}) do
+      {:ok,
+       %{
+         wizard
+         | webhook_state: :failed,
+           webhook_error: {:transport_error, reason},
+           webhook_test_ref: nil
+       }}
+    end
+
+    def webhook_test_ref(%__MODULE__{webhook_test_ref: ref}), do: ref
+
+    def ready_to_submit?(%__MODULE__{webhook_state: :verified}), do: true
+    def ready_to_submit?(_), do: false
+
+    def callback_url(%__MODULE__{callback_base_url: base, wizard_id: id})
+        when is_binary(base) and is_binary(id) do
+      Url.webhook_callback_url(base, :radarr, id)
+    end
+
+    def callback_url(_), do: nil
 
     def validate_configuration(%__MODULE__{} = wizard, params) do
       %{wizard | form: radarr_form(params)}
@@ -293,7 +409,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
   end
 
   defp initialize(%{mode: :create}, socket) do
-    assign(socket, :wizard, Wizard.create())
+    assign(socket, :wizard, Wizard.create(default_callback_base_url()))
   end
 
   defp initialize(
@@ -303,9 +419,11 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
     impl = media_source.implementation
 
     socket
-    |> assign(:wizard, Wizard.edit(media_source))
+    |> assign(:wizard, Wizard.edit(media_source, default_callback_base_url()))
     |> start_radarr_profiles_load(impl.base_url, impl.api_key)
   end
+
+  defp default_callback_base_url, do: WatchClubWeb.Endpoint.url()
 
   attr :id, :string, required: true
   attr :mode, :atom, required: true, values: [:create, :edit]
@@ -339,6 +457,11 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
           wizard={@wizard}
           myself={@myself}
         />
+        <.webhook_form
+          :if={@wizard.step == :webhook}
+          wizard={@wizard}
+          myself={@myself}
+        />
       </.modal>
     </div>
     """
@@ -348,7 +471,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
     do: dgettext("admin_media_imports", "Connect Radarr Server")
 
   defp step_title(:configure),
-    do: dgettext("admin_media_imports", "Configure Source")
+    do: dgettext("admin_media_imports", "Configure Request Profile")
+
+  defp step_title(:webhook),
+    do: dgettext("admin_media_imports", "Configure Webhooks")
 
   defp step_description(:connect),
     do: dgettext("admin_media_imports", "Enter the credentials to connect to your Radarr server.")
@@ -358,6 +484,13 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
       dgettext(
         "admin_media_imports",
         "Select the Quality Profile and root folder that will be used to import and request media from this server. If you want to configure multiple quality profiles or root folders, create multiple sources."
+      )
+
+  defp step_description(:webhook),
+    do:
+      dgettext(
+        "admin_media_imports",
+        "We need to create a Radarr Webhook Connection to get real time notifications when new movies are available in Radarr. You can see it in Radarr Settings > Connect"
       )
 
   attr :wizard, :map, required: true
@@ -536,8 +669,114 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
     """
   end
 
-  defp submit_label(%Wizard{mode: :create}), do: dgettext("admin_media_imports", "Create Source")
+  defp submit_label(%Wizard{mode: :create}), do: dgettext("admin_media_imports", "Continue")
   defp submit_label(%Wizard{mode: :edit}), do: dgettext("admin_media_imports", "Save changes")
+
+  attr :wizard, :map, required: true
+  attr :myself, :any, required: true
+
+  defp webhook_form(assigns) do
+    assigns = assign(assigns, :callback_url, Wizard.callback_url(assigns.wizard))
+
+    ~H"""
+    <.form
+      for={@wizard.form}
+      id="add-radarr-webhook-form"
+      phx-change="validate_radarr_webhook"
+      phx-submit="submit_radarr_webhook"
+      phx-target={@myself}
+    >
+      <.field
+        field={@wizard.form[:webhook_callback_base_url]}
+        label={dgettext("admin_media_imports", "Watch Club URL")}
+        type="url"
+        input_class="font-mono"
+        placeholder="http://host.docker.internal:4000"
+        autocomplete="off"
+      >
+        <:hint>
+          {dgettext(
+            "admin_media_imports",
+            "Use an address Radarr can reach from its network. In Docker setups this might be different from your browser URL."
+          )}
+        </:hint>
+      </.field>
+
+      <div class="flex items-center gap-related">
+        <.button
+          id="test-radarr-webhook"
+          type="button"
+          variant="secondary"
+          phx-click="test_radarr_webhook"
+          phx-target={@myself}
+          disabled={@wizard.webhook_state == :testing or @callback_url in [nil, ""]}
+        >
+          <:icon :if={@wizard.webhook_state == :testing} position="start">
+            <Lucideicons.loader_circle class="size-icon-sm animate-spin" />
+          </:icon>
+          {dgettext("admin_media_imports", "Test webhook")}
+        </.button>
+
+        <.webhook_status_badge state={@wizard.webhook_state} error={@wizard.webhook_error} />
+      </div>
+
+      <:action>
+        <.button
+          id="radarr-back-to-configure"
+          type="button"
+          variant="secondary"
+          phx-click="radarr_back_to_configure"
+          phx-target={@myself}
+        >
+          <:icon position="start"><Lucideicons.arrow_left class="size-icon-sm" /></:icon>
+          {dgettext("default", "Back")}
+        </.button>
+        <.button
+          id="submit-radarr-webhook"
+          type="submit"
+          variant="primary"
+          disabled={!Wizard.ready_to_submit?(@wizard)}
+        >
+          {dgettext("admin_media_imports", "Add Source")}
+        </.button>
+      </:action>
+    </.form>
+    """
+  end
+
+  attr :state, :atom, required: true
+  attr :error, :any, default: nil
+
+  defp webhook_status_badge(%{state: :verified} = assigns) do
+    ~H"""
+    <span class="inline-flex items-center gap-tight text-sm text-success">
+      <Lucideicons.circle_check class="size-icon-sm" />
+      {dgettext("admin_media_imports", "Webhook configuration validated")}
+    </span>
+    """
+  end
+
+  defp webhook_status_badge(%{state: :failed} = assigns) do
+    ~H"""
+    <span class="inline-flex items-center gap-tight text-sm text-danger">
+      <Lucideicons.circle_alert class="size-icon-sm" />
+      {dgettext("admin_media_imports", "Webhook delivery failed, ")}
+    </span>
+    """
+  end
+
+  defp webhook_status_badge(%{state: :testing} = assigns) do
+    ~H"""
+    <span class="inline-flex items-center gap-tight text-sm text-text-muted">
+      {dgettext("admin_media_imports", "Validating webhook configuration...")}
+    </span>
+    """
+  end
+
+  defp webhook_status_badge(assigns) do
+    ~H"""
+    """
+  end
 
   attr :connection, Connection, required: true
 
@@ -605,7 +844,18 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
   def handle_event("submit_radarr_configure", %{"radarr" => params}, socket) do
     case Wizard.configuration_input(socket.assigns.wizard, params) do
       {:ok, input} ->
-        submit_radarr_configure(socket, input)
+        case socket.assigns.wizard.mode do
+          :edit ->
+            submit_radarr_configure(socket, input)
+
+          :create ->
+            {:noreply,
+             assign(
+               socket,
+               :wizard,
+               Wizard.advance_to_webhook_step(socket.assigns.wizard, input)
+             )}
+        end
 
       {:error, wizard} ->
         {:noreply, assign(socket, :wizard, wizard)}
@@ -615,14 +865,50 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
     end
   end
 
+  def handle_event("radarr_back_to_configure", _params, socket) do
+    socket = cancel_radarr_webhook_test(socket)
+
+    {:noreply, assign(socket, :wizard, Wizard.back_to_configure_step(socket.assigns.wizard))}
+  end
+
+  def handle_event("validate_radarr_webhook", %{"radarr" => params}, socket) do
+    {:noreply, assign(socket, :wizard, Wizard.validate_webhook(socket.assigns.wizard, params))}
+  end
+
+  def handle_event("test_radarr_webhook", _params, socket) do
+    {:noreply, start_radarr_webhook_test(socket)}
+  end
+
+  def handle_event("submit_radarr_webhook", _params, socket) do
+    wizard = socket.assigns.wizard
+
+    if Wizard.ready_to_submit?(wizard) do
+      input = Map.put(wizard.configuration, :webhook_callback_base_url, wizard.callback_base_url)
+      submit_radarr_configure(socket, input)
+    else
+      {:noreply, socket}
+    end
+  end
+
   def handle_event("close", _params, socket) do
     send(self(), :close_radarr_source_modal)
-    {:noreply, cancel_radarr_profiles_load(socket)}
+
+    {:noreply,
+     socket
+     |> cancel_radarr_profiles_load()
+     |> cancel_radarr_webhook_test()}
   end
 
   @impl true
   def handle_async({:radarr_load_profiles, ref}, result, socket) do
     case Wizard.apply_profile_load_result(socket.assigns.wizard, ref, result) do
+      {:ok, wizard} -> {:noreply, assign(socket, :wizard, wizard)}
+      :stale -> {:noreply, socket}
+    end
+  end
+
+  def handle_async({:radarr_test_webhook, ref}, result, socket) do
+    case Wizard.apply_webhook_test_result(socket.assigns.wizard, ref, result) do
       {:ok, wizard} -> {:noreply, assign(socket, :wizard, wizard)}
       :stale -> {:noreply, socket}
     end
@@ -653,6 +939,46 @@ defmodule WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal do
   end
 
   defp cancel_radarr_profiles_load(socket), do: socket
+
+  defp start_radarr_webhook_test(socket) do
+    wizard = socket.assigns.wizard
+
+    case wizard.connection do
+      %Connection{base_url: base_url, api_key: api_key} when is_binary(base_url) ->
+        callback_url = Wizard.callback_url(wizard)
+        token = "watchclub-test"
+        ref = System.unique_integer([:positive, :monotonic])
+
+        socket = cancel_radarr_webhook_test(socket)
+
+        socket
+        |> assign(:wizard, Wizard.begin_webhook_test(socket.assigns.wizard, ref))
+        |> start_async({:radarr_test_webhook, ref}, fn ->
+          WatchClub.Integrations.Radarr.test_webhook(base_url, api_key, %{
+            name: "WatchClub Test #{wizard.wizard_id}",
+            callback_url: callback_url,
+            token: token
+          })
+        end)
+
+      _ ->
+        socket
+    end
+  end
+
+  defp cancel_radarr_webhook_test(%{assigns: %{wizard: %Wizard{} = wizard}} = socket) do
+    case Wizard.webhook_test_ref(wizard) do
+      nil ->
+        socket
+
+      ref ->
+        socket
+        |> cancel_async({:radarr_test_webhook, ref})
+        |> assign(:wizard, Wizard.cancel_webhook_test(wizard))
+    end
+  end
+
+  defp cancel_radarr_webhook_test(socket), do: socket
 
   defp submit_radarr_configure(socket, input) do
     wizard = socket.assigns.wizard
