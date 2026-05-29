@@ -7,6 +7,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   @type t :: %__MODULE__{
           path: String.t() | nil,
+          media_type: atom() | nil,
           identity:
             __MODULE__.MovieIdentity.t()
             | __MODULE__.EpisodeIdentity.t()
@@ -18,6 +19,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defstruct [
     :path,
+    :media_type,
     :relative_path,
     :identity,
     :media_structure,
@@ -132,32 +134,46 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Builds a fresh `Candidate` for a discovered file during `Scan`. `path` is expected to be absolute paths.
+  Builds a fresh `Candidate` for a discovered file during `Scan`. `path` is
+  expected to be an absolute path; `media_type` comes from the Media Source
+  being scanned.
   """
-  def new(path) do
-    %__MODULE__{path: path}
+  def new(path, media_type) do
+    %__MODULE__{path: path, media_type: media_type}
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`path` and `identity`) into a
-  plain map for an Oban job's args. `identity` is flattened with
-  `Map.from_struct/1`, so no JSON encoder impl is required.
+  Flattens a `Candidate`'s scan-time fields (`path`, `media_type`, and
+  `identity`) into a plain map for an Oban job's args. `identity` is
+  flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
   """
   @spec to_map(t()) :: map()
-  def to_map(%__MODULE__{path: path, identity: identity}) do
-    %{path: path, identity: identity && Map.from_struct(identity)}
+  def to_map(%__MODULE__{path: path, media_type: media_type, identity: identity}) do
+    %{path: path, media_type: media_type, identity: identity && Map.from_struct(identity)}
   end
 
   @doc """
   Rebuilds a `Candidate` from an Oban job's (string-keyed) args. The
-  identity struct is chosen from `media_type`. Inverse of `to_map/1`.
+  identity struct is chosen from the serialized `media_type`. Inverse of
+  `to_map/1`.
   """
-  @spec from_map(map(), atom()) :: t()
-  def from_map(%{"path" => path, "identity" => nil}, _media_type) do
-    %__MODULE__{path: path}
+  @spec from_map(map()) :: t()
+  def from_map(%{"path" => path, "media_type" => media_type, "identity" => identity_fields}) do
+    media_type = to_media_type(media_type)
+
+    %__MODULE__{
+      path: path,
+      media_type: media_type,
+      identity: build_identity(identity_fields, media_type)
+    }
   end
 
-  def from_map(%{"path" => path, "identity" => fields}, media_type) do
+  defp to_media_type(media_type) when is_atom(media_type), do: media_type
+  defp to_media_type(media_type) when is_binary(media_type), do: String.to_existing_atom(media_type)
+
+  defp build_identity(nil, _media_type), do: nil
+
+  defp build_identity(fields, media_type) do
     module =
       case media_type do
         :movie -> __MODULE__.MovieIdentity
@@ -168,7 +184,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     # to_existing_atom: identity keys are struct fields, so the atoms exist.
     fields = Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
 
-    %__MODULE__{path: path, identity: struct(module, fields)}
+    struct(module, fields)
   end
 
   defimpl String.Chars, for: __MODULE__ do

@@ -69,6 +69,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
   defp to_candidate(%Episode{} = episode, %Series{} = series, %Servarr{} = config) do
     %Candidate{
       path: local_path(episode.file_path, config),
+      media_type: :tv_show_episode,
       identity: %EpisodeIdentity{
         tvdb_id: series.tvdb_id,
         tmdb_id: series.tmdb_id,

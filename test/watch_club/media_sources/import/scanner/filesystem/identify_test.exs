@@ -8,7 +8,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
 
   describe "apply/2 — movies" do
     test "builds a MovieIdentity with title and year from the filename" do
-      candidate = Candidate.new("/library/Star Wars (1977).mkv")
+      candidate = Candidate.new("/library/Star Wars (1977).mkv", :movie)
       source = source_for(:movie, "/library")
 
       assert %Candidate{identity: %MovieIdentity{title: "Star Wars", year: 1977}} =
@@ -16,7 +16,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
     end
 
     test "extracts the tmdb id from a bracket in the filename" do
-      candidate = Candidate.new("/library/Star Wars (1977) [tmdbid-11].mkv")
+      candidate = Candidate.new("/library/Star Wars (1977) [tmdbid-11].mkv", :movie)
       source = source_for(:movie, "/library")
 
       assert %Candidate{identity: %MovieIdentity{tmdb_id: 11}} =
@@ -24,7 +24,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
     end
 
     test "extracts the imdb id from a bracket in a parent directory" do
-      candidate = Candidate.new("/library/Star Wars [imdbid-tt0076759]/movie.mkv")
+      candidate = Candidate.new("/library/Star Wars [imdbid-tt0076759]/movie.mkv", :movie)
       source = source_for(:movie, "/library")
 
       assert %Candidate{identity: %MovieIdentity{imdb_id: "tt0076759"}} =
@@ -34,7 +34,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
 
   describe "apply/2 — tv_show_episode" do
     test "builds an EpisodeIdentity with season, episode, and show title from the filename" do
-      candidate = Candidate.new("/library/American Gods - S01E03.mkv")
+      candidate = Candidate.new("/library/American Gods - S01E03.mkv", :tv_show_episode)
       source = source_for(:tv_show_episode, "/library")
 
       assert %Candidate{
@@ -47,7 +47,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
     end
 
     test "falls back to deriving the show title from the path when the filename lacks one" do
-      candidate = Candidate.new("/library/American Gods/Season 01/S01E03.mkv")
+      candidate = Candidate.new("/library/American Gods/Season 01/S01E03.mkv", :tv_show_episode)
       source = source_for(:tv_show_episode, "/library")
 
       assert %Candidate{identity: %EpisodeIdentity{title: "American Gods"}} =
@@ -56,7 +56,10 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
 
     test "extracts external ids from the directory, not the basename" do
       candidate =
-        Candidate.new("/library/American Gods [tmdbid-46639]/Season 01/S01E03.mkv")
+        Candidate.new(
+          "/library/American Gods [tmdbid-46639]/Season 01/S01E03.mkv",
+          :tv_show_episode
+        )
 
       source = source_for(:tv_show_episode, "/library")
 

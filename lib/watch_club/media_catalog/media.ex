@@ -24,6 +24,13 @@ defmodule WatchClub.MediaCatalog.Media do
   actions do
     defaults [:read, :destroy]
 
+    # Move a Media to a new path (e.g. a Radarr/Sonarr rename). Content and
+    # tracks are unchanged — only the file location moves.
+    update :change_path do
+      accept [:path]
+      change NormalizePath
+    end
+
     read :under_path_prefix do
       argument :prefix, :string, allow_nil?: false
 

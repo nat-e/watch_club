@@ -5,16 +5,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MatchResult, MovieIdentity}
   alias WatchClub.MediaSources.Import.Ingestor.MatchContent
-  alias WatchClub.MediaSources.{Import, Source}
 
-  describe "apply/2 — movie" do
+  describe "apply/1 — movie" do
     test "matches a movie that already exists in the DB" do
       movie = seed_movie(tmdb_id: 11)
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == movie.id
     end
@@ -29,7 +28,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert is_binary(matched_id)
     end
@@ -46,7 +45,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == movie.id
     end
@@ -63,7 +62,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == movie.id
     end
@@ -72,7 +71,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{})
 
       assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
     end
 
     test "passes through with matched_id: nil when TMDB title search returns no results" do
@@ -81,7 +80,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{title: "Unknown Film", year: 1999})
 
       assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
     end
 
     test "halts when TMDB returns an HTTP error" do
@@ -91,11 +90,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
 
-      assert {:halt, _} = MatchContent.apply(candidate, run())
+      assert {:halt, _} = MatchContent.apply(candidate)
     end
   end
 
-  describe "apply/2 — tv episode" do
+  describe "apply/1 — tv episode" do
     test "matches an episode whose show already exists in the DB" do
       %{episode: episode} = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
 
@@ -104,7 +103,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == episode.id
     end
@@ -119,7 +118,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert is_binary(matched_id)
     end
@@ -137,7 +136,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == episode.id
     end
@@ -159,7 +158,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == episode.id
     end
@@ -177,7 +176,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert {:ok,
               %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
 
       assert matched_id == episode.id
     end
@@ -189,28 +188,19 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 99, episode_number: 99})
 
       assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
     end
 
     test "passes through with matched_id: nil when no TV strategy matches" do
       candidate = candidate_with(%EpisodeIdentity{season_number: 1, episode_number: 3})
 
       assert {:ok, %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}}} =
-               MatchContent.apply(candidate, run())
+               MatchContent.apply(candidate)
     end
   end
 
   defp candidate_with(identity) do
     %Candidate{path: "/library/file.mkv", identity: identity}
-  end
-
-  defp run do
-    %Import{
-      media_source: %Source{
-        source_type: :filesystem,
-        implementation: %WatchClub.MediaSources.Filesystem{filesystem_path: "/library"}
-      }
-    }
   end
 
   defp stub_tmdb(response_fun) do
