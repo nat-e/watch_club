@@ -14,11 +14,12 @@ defmodule WatchClub.Media.MediaImportTest do
       admin = generate(administrator())
       media_source = generate(media_source(actor: admin))
 
-      stub(ImportPipelineMock, :import_medias, fn _media_import -> :ok end)
+      stub(ImportPipelineMock, :scan, fn _media_import -> {:ok, []} end)
 
       media_import = start_media_import!(media_source.id, actor: admin)
 
-      Oban.drain_queue(queue: :media_imports)
+      Oban.drain_queue(queue: :scan_media_sources)
+      Oban.drain_queue(queue: :monitor_media_imports, with_scheduled: true)
 
       assert %MediaImport{status: :completed} =
                get_media_import_by_id!(media_import.id, actor: admin)
@@ -28,11 +29,25 @@ defmodule WatchClub.Media.MediaImportTest do
       admin = generate(administrator())
       media_source = generate(media_source(actor: admin))
 
-      stub(ImportPipelineMock, :import_medias, fn _media_import -> {:error, :boom} end)
+      stub(ImportPipelineMock, :scan, fn _media_import -> {:error, :boom} end)
 
       media_import = start_media_import!(media_source.id, actor: admin)
 
-      Oban.drain_queue(queue: :media_imports)
+      Oban.drain_queue(queue: :scan_media_sources)
+
+      assert %MediaImport{status: :failed} =
+               get_media_import_by_id!(media_import.id, actor: admin)
+    end
+
+    test "fails the Media Import when the pipeline raises" do
+      admin = generate(administrator())
+      media_source = generate(media_source(actor: admin))
+
+      stub(ImportPipelineMock, :scan, fn _media_import -> raise "boom" end)
+
+      media_import = start_media_import!(media_source.id, actor: admin)
+
+      Oban.drain_queue(queue: :scan_media_sources)
 
       assert %MediaImport{status: :failed} =
                get_media_import_by_id!(media_import.id, actor: admin)

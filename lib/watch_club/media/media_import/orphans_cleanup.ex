@@ -8,7 +8,7 @@ defmodule WatchClub.Media.MediaImport.OrphansCleanup do
   cleanly. Placed after `Oban` and `Phoenix.PubSub` and before `Endpoint` in
   the supervision tree, which gives three guarantees:
 
-    * Oban is started, so the bulk update's `Changes.CancelObanJob` hook can
+    * Oban is started, so the bulk update's `Changes.CancelObanJobs` hook can
       cancel the underlying Oban jobs.
     * `Phoenix.PubSub` is started, so the `:cancel` action's PubSub notifier
       can broadcast.

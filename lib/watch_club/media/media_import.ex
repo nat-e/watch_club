@@ -5,9 +5,7 @@ defmodule WatchClub.Media.MediaImport do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub],
-    extensions: [AshOban, AshStateMachine]
-
-  import Ash.Expr
+    extensions: [AshStateMachine]
 
   alias WatchClub.Media.MediaImport.Changes
   alias WatchClub.Media.MediaSource
@@ -25,20 +23,6 @@ defmodule WatchClub.Media.MediaImport do
         unique: true,
         name: "media_imports_one_processing_per_media_source_index",
         where: "status = 'processing'"
-    end
-  end
-
-  oban do
-    triggers do
-      trigger :run do
-        action :run
-        where expr(status == :processing)
-        queue :media_imports
-        max_attempts 1
-        on_error :fail
-        scheduler_cron false
-        worker_module_name WatchClub.Media.Workers.ExecuteMediaImport
-      end
     end
   end
 
@@ -65,13 +49,6 @@ defmodule WatchClub.Media.MediaImport do
       change Changes.Schedule
     end
 
-    update :run do
-      require_atomic? false
-      accept []
-
-      change Changes.Execute
-    end
-
     update :complete do
       accept []
 
@@ -92,7 +69,7 @@ defmodule WatchClub.Media.MediaImport do
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:cancelled)
-      change Changes.CancelObanJob
+      change Changes.CancelObanJobs
     end
   end
 
@@ -115,7 +92,7 @@ defmodule WatchClub.Media.MediaImport do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:run, :complete, :fail]) do
+    policy action([:complete, :fail]) do
       description "Only the system actor can process Media Imports in the background"
       authorize_if WatchClub.Checks.IsSystemActor
     end

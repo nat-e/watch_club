@@ -1,9 +1,9 @@
 defmodule WatchClub.Media.ImportPipeline.Scan do
   @moduledoc false
 
+  alias WatchClub.Media.{FilesystemMediaSource, MediaSource}
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
-  alias WatchClub.Media.{FilesystemMediaSource, MediaSource}
   alias WatchClub.Shared.Fs
 
   require Logger

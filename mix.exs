@@ -80,6 +80,7 @@ defmodule WatchClub.MixProject do
       {:live_debugger, "~> 1.0.0", only: :dev},
       {:lucide_icons, "~> 2.0"},
       {:mox, "~> 1.2", only: :test},
+      {:oban_web, "~> 2.11"},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
