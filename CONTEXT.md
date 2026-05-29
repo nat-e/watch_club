@@ -195,15 +195,15 @@ A reusable, instance-wide configuration of where WatchClub brings **Media** from
 _Avoid_: Media Import Configuration, Media Library, Media Provider, Automation Service, Request Profile, playback source, streaming source, sync source
 
 **Media Source Type**:
-The kind of upstream system a **Media Source** represents. One of `filesystem`, `radarr`, `sonarr`, `chaptarr`. A **Media Source Type** determines whether the **Media Source** accepts **Media Source Requests**: `filesystem` does not; `radarr`, `sonarr`, and `chaptarr` do.
+The kind of upstream system a **Media Source** represents. One of `filesystem`, `radarr`, or `sonarr` (with `chaptarr` planned but not yet implemented). A **Media Source Type** determines whether the **Media Source** accepts **Media Source Requests**: `filesystem` does not; `radarr` and `sonarr` do, as will `chaptarr`.
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a **Media Source**'s scan-and-process cycle. A **Media Import** records the scan phase (started, finished, what it discovered) and is the umbrella for the per-file processing work it enqueues. A webhook-triggered single-file processing is not a **Media Import**.
+One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, what it discovered) and is the umbrella for the per-file ingest work it enqueues. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Refresh Metadata**:
-A **Media Import** option that re-evaluates existing **Media** instead of skipping it. A webhook-triggered single-file processing always behaves as if **Refresh Metadata** were on.
+A **Media Import** option that re-evaluates existing **Media** instead of skipping it. A webhook-triggered single-file ingest always behaves as if **Refresh Metadata** were on.
 _Avoid_: Force refresh, rescan existing media
 
 **Media Import Status**:
@@ -211,7 +211,7 @@ The overall progress or outcome of a **Media Import**.
 _Avoid_: import summary, run result, scan result
 
 **Cancel Media Import**:
-End an in-progress **Media Import** before its scan phase finishes; in-flight per-file processing jobs continue to completion.
+End an in-progress **Media Import** before its scan phase finishes; in-flight per-file ingest jobs continue to completion.
 _Avoid_: Stop media import, abort scan, kill import
 
 ### Contents
@@ -419,7 +419,7 @@ _Avoid_: Best localization, current localization
 - A **Media Source** can be imported manually by the **Instance Administrator** at any time, including immediately after it is first connected
 - A **Media Source** can be imported on a schedule, regardless of **Media Source Type**
 - A **Media Source** has attributes specific to its **Media Source Type**
-- A **Media Source Type** is one of `filesystem`, `radarr`, `sonarr`, or `chaptarr`; `radarr`, `sonarr`, and `chaptarr` support **Media Source Requests**, `filesystem` does not
+- A **Media Source Type** is one of `filesystem`, `radarr`, or `sonarr` (with `chaptarr` planned); `radarr` and `sonarr` support **Media Source Requests** (as will `chaptarr`), `filesystem` does not
 - A request-capable **Media Source** also stores connection details (base URL, API key, webhook secret), the **Media Source**-side settings used when submitting **Media Source Requests** (quality profile, root folder, tags), and the local filesystem path where that root folder appears on WatchClub's disk
 - Two request-capable **Media Sources** may point at the same external system (same base URL and same API key) when covering different root folders or different sets of **Media Source**-side settings
 - A filesystem **Media Source** has exactly one filesystem location
@@ -438,13 +438,13 @@ _Avoid_: Best localization, current localization
 - A **Media Import** has one **Media Import Status**: Processing, Completed, Failed, or Cancelled
 - A **Media Source** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
-- A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then a processing phase that runs once per candidate to create or refresh **Media**
-- The processing phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
-- Webhook-triggered processing always behaves as if **Refresh Metadata** were on
+- A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then an ingest phase that runs once per candidate to create or refresh **Media**
+- The ingest phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
+- Webhook-triggered ingest always behaves as if **Refresh Metadata** were on
 - Scan phases differ by **Media Source Type**: a filesystem scan walks the configured location; an `radarr` or `sonarr` scan calls the **Media Source**'s API to enumerate its catalog
 - A **Failed** **Media Import** is one that cannot finish processing its source
 - A **Cancelled** **Media Import** is one that the **Instance Administrator** ended before it finished, or that was left **Processing** by a previous run of WatchClub
-- **Cancel Media Import** ends the scan phase; in-flight per-file processing jobs continue to completion
+- **Cancel Media Import** ends the scan phase; in-flight per-file ingest jobs continue to completion
 - Files filtered out by **Media Type**, hidden files, and hidden folders are ignored by filesystem imports
 - Filesystem imports do not follow symbolic links
 - A filesystem import recursively examines its **Media Source**'s filesystem location
@@ -515,7 +515,7 @@ _Avoid_: Best localization, current localization
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
-- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration.
+- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type.
 - "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
@@ -524,3 +524,4 @@ _Avoid_: Best localization, current localization
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
+- The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
