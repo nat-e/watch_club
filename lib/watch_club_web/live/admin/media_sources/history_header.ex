@@ -49,15 +49,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
         <.button
           id="history-run-import-button"
           variant="primary"
-          disabled={@processing? or @media_source.source_type != :filesystem}
-          title={
-            if(@media_source.source_type != :filesystem,
-              do:
-                dgettext("admin_media_imports", "%{type} import coming soon",
-                  type: WatchClub.Media.MediaSourceType.translated_label(@media_source.source_type)
-                )
-            )
-          }
+          disabled={@processing?}
           phx-click="open_run_import_modal"
           phx-value-id={@media_source.id}
         >

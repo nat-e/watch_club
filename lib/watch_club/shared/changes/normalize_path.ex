@@ -11,6 +11,8 @@ defmodule WatchClub.Shared.Changes.NormalizePath do
   """
   use Ash.Resource.Change
 
+  alias WatchClub.Shared.Path, as: Paths
+
   @impl true
   def init(opts) do
     cond do
@@ -42,7 +44,7 @@ defmodule WatchClub.Shared.Changes.NormalizePath do
             changeset
 
           path when is_binary(path) ->
-            Ash.Changeset.set_argument(changeset, argument, Path.expand(path))
+            Ash.Changeset.set_argument(changeset, argument, Paths.normalize(path))
         end
 
       attribute = Keyword.get(opts, :attribute) ->
@@ -51,7 +53,7 @@ defmodule WatchClub.Shared.Changes.NormalizePath do
             changeset
 
           path when is_binary(path) ->
-            Ash.Changeset.change_attribute(changeset, attribute, Path.expand(path))
+            Ash.Changeset.change_attribute(changeset, attribute, Paths.normalize(path))
         end
     end
   end
@@ -72,7 +74,7 @@ defmodule WatchClub.Shared.Changes.NormalizePath do
             :ok
 
           path when is_binary(path) ->
-            atomics = %{attribute => Path.expand(path)}
+            atomics = %{attribute => Paths.normalize(path)}
 
             case changeset.action.type do
               :create -> {:atomic_set, atomics}

@@ -299,10 +299,10 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("open_run_import_modal", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
-      %MediaSource{source_type: :filesystem} = media_source ->
+      %MediaSource{} = media_source ->
         {:noreply, socket |> reset_modals() |> assign(:run_import_media_source, media_source)}
 
-      _ ->
+      nil ->
         {:noreply, socket}
     end
   end

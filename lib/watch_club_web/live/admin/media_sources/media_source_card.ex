@@ -60,7 +60,6 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
           </:trigger>
 
           <.dropdown_menu_item
-            :if={@media_source.source_type == :filesystem}
             id={"run-now-#{@media_source.id}"}
             disabled={@processing?}
             phx-click="open_run_import_modal"

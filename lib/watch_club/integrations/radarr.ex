@@ -5,7 +5,7 @@ defmodule WatchClub.Integrations.Radarr do
 
   import WatchClub.Integrations.Radarr.Client
 
-  alias WatchClub.Integrations.Radarr.{QualityProfile, RootFolder, SystemStatus, Webhook}
+  alias WatchClub.Integrations.Radarr.{Movie, QualityProfile, RootFolder, SystemStatus, Webhook}
 
   @doc """
   Fetches Radarr's `/api/v3/system/status`. Returns the parsed
@@ -43,6 +43,20 @@ defmodule WatchClub.Integrations.Radarr do
   def list_root_folders(base_url, api_key) do
     case get(base_url, api_key, "/api/v3/rootfolder") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &RootFolder.from_api/1)}
+      {:ok, _other} -> {:error, :invalid_response}
+      {:error, _} = error -> error
+    end
+  end
+
+  @doc """
+  Returns every movie in the Radarr library (no server-side filtering or
+  pagination; callers filter client-side). Retries transient errors.
+  """
+  @spec list_movies(String.t(), String.t()) ::
+          {:ok, [Movie.t()]} | {:error, term()}
+  def list_movies(base_url, api_key) do
+    case get(base_url, api_key, "/api/v3/movie", retry: :transient) do
+      {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Movie.from_api/1)}
       {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end

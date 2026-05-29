@@ -25,7 +25,15 @@ defmodule WatchClub.Media.Workers.ScanMediaSource do
   use Oban.Worker, queue: :scan_media_sources, max_attempts: 1
 
   alias WatchClub.Media, as: MediaDomain
-  alias WatchClub.Media.{FilesystemMediaSource, ImportPipeline, MediaImport, MediaSource}
+
+  alias WatchClub.Media.{
+    FilesystemMediaSource,
+    ImportPipeline,
+    MediaImport,
+    MediaSource,
+    RadarrMediaSource
+  }
+
   alias WatchClub.Media.Workers.ImportMediaFile
   alias WatchClub.SystemActor
 
@@ -96,6 +104,22 @@ defmodule WatchClub.Media.Workers.ScanMediaSource do
            implementation: %FilesystemMediaSource{filesystem_path: root_path}
          }
        }) do
+    skip_paths_under(root_path)
+  end
+
+  defp load_skip_paths(%MediaImport{
+         media_source: %MediaSource{
+           implementation: %RadarrMediaSource{
+             root_folder_path: root_folder_path,
+             local_root_folder_path: local_root_folder_path
+           }
+         }
+       }) do
+    # Candidate paths are mapped onto WatchClub's disk; dedup against the local root.
+    skip_paths_under(local_root_folder_path || root_folder_path)
+  end
+
+  defp skip_paths_under(root_path) do
     Logger.info("Load existing medias for #{root_path}")
 
     with {:ok, media} <-
@@ -110,7 +134,7 @@ defmodule WatchClub.Media.Workers.ScanMediaSource do
     |> Stream.chunk_every(@chunk_size)
     |> Enum.reduce(0, fn chunk, acc ->
       chunk
-      |> Enum.map(&ImportMediaFile.new_job(media_import, &1.path))
+      |> Enum.map(&ImportMediaFile.new_job(media_import, &1))
       |> Oban.insert_all()
 
       acc + length(chunk)

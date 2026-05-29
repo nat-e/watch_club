@@ -10,6 +10,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser do
   defines; the first match wins.
   """
 
+  alias WatchClub.Shared.Path, as: Paths
+
   # ----------------------------------------------------------------------
   # Regex tables — direct port of Jellyfin NamingOptions.cs
 
@@ -129,7 +131,10 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser do
   @spec tv_show_title_from_path(String.t(), String.t()) :: String.t()
   def tv_show_title_from_path(path, root_path) when is_binary(path) and is_binary(root_path) do
     parent_dir = Path.dirname(path)
-    candidate = if season_directory?(parent_dir, root_path), do: Path.dirname(parent_dir), else: parent_dir
+
+    candidate =
+      if season_directory?(parent_dir, root_path), do: Path.dirname(parent_dir), else: parent_dir
+
     Path.basename(candidate)
   end
 
@@ -223,7 +228,9 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser do
   defp put_if(map, key, value), do: Map.put(map, key, value)
 
   defp blank_to_nil(nil), do: nil
-  defp blank_to_nil(value) when is_binary(value), do: if(String.trim(value) == "", do: nil, else: value)
+
+  defp blank_to_nil(value) when is_binary(value),
+    do: if(String.trim(value) == "", do: nil, else: value)
 
   defp ensure_leading_slash(path) do
     if String.starts_with?(path, "/"), do: path, else: "/" <> path
@@ -233,8 +240,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParser do
   # tv_show_title_from_path helpers
 
   defp season_directory?(directory, root_path) do
-    expanded_root = Path.expand(root_path)
-    expanded_dir = Path.expand(directory)
+    expanded_root = Paths.normalize(root_path)
+    expanded_dir = Paths.normalize(directory)
 
     String.starts_with?(expanded_dir, expanded_root) and
       expanded_dir != expanded_root and

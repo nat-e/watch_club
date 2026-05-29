@@ -33,24 +33,26 @@ defmodule WatchClub.Media.Workers.ImportMediaFile do
   require Logger
 
   @doc """
-  Builds the Oban changeset for one candidate file under the given
-  Media Import.
+  Builds the Oban changeset to process a Candidate, flattening its scan-time
+  fields into the job args via `Candidate.to_map/1`.
   """
-  def new_job(%MediaImport{id: id}, path) when is_binary(path) do
-    new(
-      %{media_import_id: id, path: path},
-      tags: ["media_import:#{id}"]
-    )
+  def new_job(%MediaImport{id: id}, %Candidate{} = candidate) do
+    candidate
+    |> Candidate.to_map()
+    |> Map.put(:media_import_id, id)
+    |> new(tags: ["media_import:#{id}"])
   end
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"media_import_id" => id, "path" => path}}) do
+  def perform(%Oban.Job{args: %{"media_import_id" => id} = args}) do
     case Ash.get(MediaImport, id,
            load: [media_source: [:implementation]],
            actor: SystemActor.actor()
          ) do
       {:ok, media_import} ->
-        process(Candidate.new(path), media_import)
+        args
+        |> Candidate.from_map(media_import.media_source.media_type)
+        |> process(media_import)
 
       {:error, %Ash.Error.Query.NotFound{}} ->
         {:cancel, "MediaImport #{id} not found"}

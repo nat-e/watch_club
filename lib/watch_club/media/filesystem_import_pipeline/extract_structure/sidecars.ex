@@ -9,6 +9,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
 
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.TextTrack
+  alias WatchClub.Shared.Path, as: Paths
 
   @subtitle_extensions MapSet.new([".ass", ".srt", ".ssa", ".sub", ".vtt"])
 
@@ -84,7 +85,7 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructure.Sidecars do
 
       [
         %TextTrack{
-          sidecar_path: Path.expand(path),
+          sidecar_path: Paths.normalize(path),
           codec: codec_for_extension(extension),
           language: parsed.language,
           title: parsed.title,

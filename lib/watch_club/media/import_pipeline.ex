@@ -18,6 +18,12 @@ defmodule WatchClub.Media.ImportPipeline do
                          WatchClub.Media.FilesystemImportPipeline
                        )
 
+  @radarr_pipeline Application.compile_env(
+                     :watch_club,
+                     :import_pipeline_radarr,
+                     WatchClub.Media.RadarrImportPipeline
+                   )
+
   @callback scan(MediaImport.t()) :: {:ok, Enumerable.t(Candidate.t())} | {:error, term()}
 
   @callback process_candidate(Candidate.t(), MediaImport.t()) ::
@@ -25,7 +31,9 @@ defmodule WatchClub.Media.ImportPipeline do
 
   @doc """
   Returns the pipeline module for a given Media Source type. Test overrides
-  go through `:watch_club, :import_pipeline_filesystem`.
+  go through `:watch_club, :import_pipeline_filesystem` /
+  `:import_pipeline_radarr`.
   """
   def for_source_type(:filesystem), do: @filesystem_pipeline
+  def for_source_type(:radarr), do: @radarr_pipeline
 end

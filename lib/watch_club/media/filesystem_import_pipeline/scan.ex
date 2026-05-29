@@ -5,6 +5,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Scan.{IgnoreRules, MediaTypeFilter}
   alias WatchClub.Shared.Fs
+  alias WatchClub.Shared.Path, as: Paths
 
   require Logger
 
@@ -34,7 +35,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
         } = media_source,
         skip_paths
       ) do
-    root_path = Path.expand(root_path)
+    root_path = Paths.normalize(root_path)
 
     case Fs.lstat(root_path, time: :posix, timeout: @initial_disk_operation_timeout) do
       {:ok, %{type: :directory}} ->
@@ -64,7 +65,7 @@ defmodule WatchClub.Media.ImportPipeline.Scan do
           {:halt, []}
 
         [path | rest] ->
-          case inspect_path(Path.expand(path), root_path, media_source, skip_paths) do
+          case inspect_path(Paths.normalize(path), root_path, media_source, skip_paths) do
             :drop -> {[], rest}
             {:enqueue, children} -> {[], children ++ rest}
             {:emit, candidate} -> {[candidate], rest}
