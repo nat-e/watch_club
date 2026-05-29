@@ -14,8 +14,11 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   require Logger
 
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
+  alias WatchClub.Integrations.Radarr.RadarrMovieFileDeleteWebhookEvent
   alias WatchClub.Integrations.Servarr.Webhook.MediaFile
   alias WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent
+  alias WatchClub.Integrations.Sonarr.SonarrEpisodeFileDeleteWebhookEvent
+  alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MovieIdentity}
@@ -124,12 +127,35 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     end
   end
 
+  defp process_webhook(%{"eventType" => "MovieFileDelete"} = params, %Servarr{flavor: :radarr} = source) do
+    event = RadarrMovieFileDeleteWebhookEvent.from_api(params)
+    remove_media(source, event.folder_path, event.file)
+  end
+
+  defp process_webhook(%{"eventType" => "EpisodeFileDelete"} = params, %Servarr{flavor: :sonarr} = source) do
+    event = SonarrEpisodeFileDeleteWebhookEvent.from_api(params)
+    remove_media(source, event.series_path, event.file)
+  end
+
   defp process_webhook(_params, _source), do: :ok
 
   defp enqueue_ingest(candidates) do
     candidates
     |> Enum.map(&CandidateIngestor.new_job/1)
     |> Oban.insert_all()
+  end
+
+  # The disk is the authority: only drop the Media when the file is actually
+  # gone. A same-path upgrade leaves the new file in place, so its delete
+  # event is a no-op and the refreshed Media survives.
+  defp remove_media(source, folder, file) do
+    with path when is_binary(path) <- local_path(source, folder, file),
+         false <- File.exists?(path),
+         {:ok, media} <- MediaCatalog.get_media_by_path(path, actor: SystemActor.actor()) do
+      MediaCatalog.destroy_media(media, actor: SystemActor.actor())
+    else
+      _ -> :ok
+    end
   end
 
   # WatchClub-local path = content folder + relative path, remapped onto our
