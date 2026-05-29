@@ -31,7 +31,7 @@ defmodule WatchClub.Media.Workers.ScanMediaSource do
     ImportPipeline,
     MediaImport,
     MediaSource,
-    RadarrMediaSource
+    ServarrMediaSource
   }
 
   alias WatchClub.Media.Workers.ImportMediaFile
@@ -109,7 +109,7 @@ defmodule WatchClub.Media.Workers.ScanMediaSource do
 
   defp load_skip_paths(%MediaImport{
          media_source: %MediaSource{
-           implementation: %RadarrMediaSource{
+           implementation: %ServarrMediaSource{
              root_folder_path: root_folder_path,
              local_root_folder_path: local_root_folder_path
            }

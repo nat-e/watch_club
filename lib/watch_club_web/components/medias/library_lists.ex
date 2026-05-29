@@ -96,7 +96,10 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
     |> Enum.sort_by(&{&1.club.name, &1.name})
   end
 
-  defp library_items(%Media{type: :movie, video: %Video{movie: %{content: %{library_items: items}}}})
+  defp library_items(%Media{
+         type: :movie,
+         video: %Video{movie: %{content: %{library_items: items}}}
+       })
        when is_list(items),
        do: items
 
@@ -107,7 +110,10 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
        when is_list(items),
        do: items
 
-  defp library_items(%Media{type: :ebook, ebook: %Ebook{book: %{content: %{library_items: items}}}})
+  defp library_items(%Media{
+         type: :ebook,
+         ebook: %Ebook{book: %{content: %{library_items: items}}}
+       })
        when is_list(items),
        do: items
 

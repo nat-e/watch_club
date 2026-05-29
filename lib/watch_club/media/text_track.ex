@@ -29,7 +29,11 @@ defmodule WatchClub.Media.TextTrack do
   end
 
   actions do
-    defaults [:read, :destroy, update: [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?]]
+    defaults [
+      :read,
+      :destroy,
+      update: [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?]
+    ]
 
     create :create do
       primary? true
@@ -115,7 +119,9 @@ defmodule WatchClub.Media.TextTrack do
       public? true
     end
 
-    calculate :hls_supported?, :boolean, expr(is_nil(sidecar_path) and codec in ^@hls_supported_codecs) do
+    calculate :hls_supported?,
+              :boolean,
+              expr(is_nil(sidecar_path) and codec in ^@hls_supported_codecs) do
       public? true
     end
   end

@@ -12,8 +12,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       movie = seed_movie(tmdb_id: 11)
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == movie.id
     end
 
@@ -25,8 +27,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert is_binary(matched_id)
     end
 
@@ -40,8 +44,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == movie.id
     end
 
@@ -55,8 +61,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{title: "Star Wars", year: 1977})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == movie.id
     end
 
@@ -94,8 +102,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == episode.id
     end
 
@@ -107,8 +117,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert is_binary(matched_id)
     end
 
@@ -123,8 +135,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{tvdb_id: 79168, season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == episode.id
     end
 
@@ -143,8 +157,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
           episode_number: 3
         })
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == episode.id
     end
 
@@ -159,8 +175,10 @@ defmodule WatchClub.Media.ImportPipeline.MatchContentTest do
       candidate =
         candidate_with(%EpisodeIdentity{title: "Friends", season_number: 1, episode_number: 3})
 
-      assert {:ok, %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
+      assert {:ok,
+              %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}}} =
                MatchContent.apply(candidate, run())
+
       assert matched_id == episode.id
     end
 

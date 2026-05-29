@@ -1,27 +1,28 @@
 defmodule WatchClub.Media.RadarrImportPipelineTest do
   use ExUnit.Case, async: false
 
-  alias WatchClub.Integrations.Radarr.Client
+  alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MovieIdentity
-  alias WatchClub.Media.{MediaImport, MediaSource, RadarrImportPipeline, RadarrMediaSource}
+  alias WatchClub.Media.{MediaImport, MediaSource, RadarrImportPipeline, ServarrMediaSource}
 
   setup do
-    previous = Application.get_env(:watch_club, :radarr_req_options)
+    previous = Application.get_env(:watch_club, :servarr_req_options)
 
-    Application.put_env(:watch_club, :radarr_req_options,
+    Application.put_env(:watch_club, :servarr_req_options,
       plug: {Req.Test, Client},
       retry: false
     )
 
-    on_exit(fn -> Application.put_env(:watch_club, :radarr_req_options, previous) end)
+    on_exit(fn -> Application.put_env(:watch_club, :servarr_req_options, previous) end)
     :ok
   end
 
   defp media_import(config_overrides \\ %{}) do
     config =
       struct(
-        %RadarrMediaSource{
+        %ServarrMediaSource{
+          flavor: :radarr,
           base_url: "http://radarr.test",
           api_key: "key",
           quality_profile_id: 6,

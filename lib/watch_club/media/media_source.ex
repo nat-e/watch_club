@@ -8,16 +8,24 @@ defmodule WatchClub.Media.MediaSource do
 
   import Ash.Expr
 
+  alias WatchClub.Media.ServarrFlavor
+
   alias WatchClub.Media.{
     FilesystemMediaSource,
     MediaImport,
     MediaSourceType,
     MediaType,
-    RadarrMediaSource
+    ServarrMediaSource
   }
 
   alias WatchClub.Media.MediaSource.Calculations.GetImplementation
-  alias WatchClub.Media.MediaSource.Changes.{ComputeName, ManageRadarrImplementation}
+
+  alias WatchClub.Media.MediaSource.Changes.{
+    ComputeName,
+    ManageServarrImplementation,
+    SetServarrTypes
+  }
+
   alias WatchClub.Shared.Changes.NormalizePath
 
   postgres do
@@ -47,7 +55,11 @@ defmodule WatchClub.Media.MediaSource do
       change load([:implementation, :can_request?])
     end
 
-    create :create_radarr do
+    # One action for both Servarr flavors. `flavor` drives `source_type`
+    # and `media_type`; the `create_radarr` / `create_sonarr` code
+    # interfaces on the domain pin it so callers stay product-specific.
+    create :create_servarr do
+      argument :flavor, ServarrFlavor, allow_nil?: false
       argument :base_url, :string, allow_nil?: false
       argument :api_key, :string, allow_nil?: false
       argument :quality_profile_id, :integer, allow_nil?: false
@@ -56,12 +68,9 @@ defmodule WatchClub.Media.MediaSource do
       argument :local_root_folder_path, :string, allow_nil?: true
       argument :webhook_callback_base_url, :string, allow_nil?: false
 
-      change set_attribute(:source_type, :radarr)
-      change set_attribute(:media_type, :movie)
+      change SetServarrTypes
       change {NormalizePath, argument: :local_root_folder_path}
-
-      change ManageRadarrImplementation
-
+      change ManageServarrImplementation
       change ComputeName
       change load([:implementation, :can_request?])
     end
@@ -84,7 +93,7 @@ defmodule WatchClub.Media.MediaSource do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:create_filesystem, :create_radarr, :destroy]) do
+    policy action([:create_filesystem, :create_servarr, :destroy]) do
       description "Only the Instance Administrator can manage Media Sources"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
@@ -132,7 +141,7 @@ defmodule WatchClub.Media.MediaSource do
       public? true
     end
 
-    has_one :radarr, RadarrMediaSource do
+    has_one :servarr, ServarrMediaSource do
       destination_attribute :id
       public? true
     end
@@ -156,7 +165,7 @@ defmodule WatchClub.Media.MediaSource do
               GetImplementation do
       constraints types: [
                     filesystem: [type: :struct, constraints: [instance_of: FilesystemMediaSource]],
-                    radarr: [type: :struct, constraints: [instance_of: RadarrMediaSource]]
+                    servarr: [type: :struct, constraints: [instance_of: ServarrMediaSource]]
                   ]
 
       public? true
@@ -164,10 +173,10 @@ defmodule WatchClub.Media.MediaSource do
     end
 
     # Kept in sync with `MediaSourceType` — request-capable types are
-    # `:radarr` (and, future, `:sonarr` / `:chaptarr`).
+    # `:radarr` and `:sonarr` (and, future, `:chaptarr`).
     calculate :can_request?,
               :boolean,
-              expr(source_type in [:radarr]) do
+              expr(source_type in [:radarr, :sonarr]) do
       public? true
     end
   end

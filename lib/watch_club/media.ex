@@ -19,7 +19,7 @@ defmodule WatchClub.Media do
       define :list_media_sources, action: :read
       define :get_media_source_by_id, action: :read, get_by: [:id]
       define :create_filesystem_media_source, action: :create_filesystem
-      define :create_radarr_media_source, action: :create_radarr
+      define :create_servarr_media_source, action: :create_servarr
       define :destroy_media_source, action: :destroy
     end
 
@@ -27,8 +27,8 @@ defmodule WatchClub.Media do
       define :update_filesystem_media_source, action: :update
     end
 
-    resource WatchClub.Media.RadarrMediaSource do
-      define :update_radarr_media_source, action: :update
+    resource WatchClub.Media.ServarrMediaSource do
+      define :update_servarr_media_source, action: :update
     end
 
     resource WatchClub.Media.MediaImport do
@@ -38,13 +38,13 @@ defmodule WatchClub.Media do
       define :cancel_media_import, action: :cancel
     end
 
-    resource WatchClub.Media.RadarrMediaSource.Wizard do
-      define :create_radarr_wizard_for_create, action: :for_create
-      define :create_radarr_wizard_for_edit, action: :for_edit, args: [:media_source]
-      define :configure_radarr_connection, action: :configure_connection
-      define :configure_radarr_request_profile, action: :configure_request_profile
-      define :configure_radarr_webhook, action: :configure_webhook
-      define :radarr_wizard_back_to_previous_step, action: :back_to_previous_step
+    resource WatchClub.Media.ServarrMediaSource.Wizard do
+      define :create_servarr_wizard_for_create, action: :for_create, args: [:flavor]
+      define :create_servarr_wizard_for_edit, action: :for_edit, args: [:media_source]
+      define :configure_servarr_connection, action: :configure_connection
+      define :configure_servarr_request_profile, action: :configure_request_profile
+      define :configure_servarr_webhook, action: :configure_webhook
+      define :servarr_wizard_back_to_previous_step, action: :back_to_previous_step
     end
 
     resource WatchClub.Media.Video

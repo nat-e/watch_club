@@ -9,7 +9,7 @@ defmodule WatchClub.Media.MediaSource.Calculations.GetImplementation do
   use Ash.Resource.Calculation
 
   @impl true
-  def load(_, _, _), do: [:filesystem, :radarr]
+  def load(_, _, _), do: [:filesystem, :servarr]
 
   @impl true
   def strict_loads?, do: false
@@ -19,7 +19,7 @@ defmodule WatchClub.Media.MediaSource.Calculations.GetImplementation do
     Enum.map(records, fn record ->
       cond do
         record.filesystem -> record.filesystem
-        record.radarr -> record.radarr
+        record.servarr -> record.servarr
         true -> raise "Media Source #{record.id} has no implementation"
       end
     end)

@@ -1,13 +1,14 @@
 defmodule WatchClub.Media.MediaSource.Changes.ComputeName do
   @moduledoc """
   Fills `:name` from the source's configuration when the caller did not
-  provide one. Runs on `:create_filesystem` / `:create_radarr` after the
-  type-specific input has been normalized and accepted. Users can later
-  edit the name through the update actions.
+  provide one. Runs on `:create_filesystem` / `:create_radarr` /
+  `:create_sonarr` after the type-specific input has been normalized and
+  accepted. Users can later edit the name through the update actions.
 
   Fallback patterns:
     * filesystem → `"Filesystem: <path>"`
     * radarr     → `"Radarr · <root_folder_path>"`
+    * sonarr     → `"Sonarr · <root_folder_path>"`
   """
 
   use Ash.Resource.Change
@@ -34,10 +35,13 @@ defmodule WatchClub.Media.MediaSource.Changes.ComputeName do
           _ -> nil
         end
 
-      :radarr ->
+      type when type in [:radarr, :sonarr] ->
         case Ash.Changeset.get_argument(changeset, :root_folder_path) do
-          root when is_binary(root) and root != "" -> "Radarr · #{root}"
-          _ -> nil
+          root when is_binary(root) and root != "" ->
+            "#{WatchClub.Media.ServarrFlavor.label(type)} · #{root}"
+
+          _ ->
+            nil
         end
 
       _ ->

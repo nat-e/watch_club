@@ -58,18 +58,18 @@ defmodule WatchClub.Contents do
     end
   end
 
-    @doc """
-    Create a TV Show if it does not exist.
-    The create action is an upsert, so there is no race condition.
-    """
-    def get_or_create_tv_show(tmdb_id, actor) do
-      case Content
-           |> Ash.Query.filter(external_id_source == :tmdb and external_id == ^to_string(tmdb_id))
-           |> Ash.Query.load(tv_show: [:episodes])
-           |> Ash.read_one(actor: actor) do
-        {:ok, nil} -> create_tv_show(tmdb_id, actor: actor)
-        {:ok, existing} -> {:ok, existing}
-        {:error, error} -> {:error, error}
-      end
+  @doc """
+  Create a TV Show if it does not exist.
+  The create action is an upsert, so there is no race condition.
+  """
+  def get_or_create_tv_show(tmdb_id, actor) do
+    case Content
+         |> Ash.Query.filter(external_id_source == :tmdb and external_id == ^to_string(tmdb_id))
+         |> Ash.Query.load(tv_show: [:episodes])
+         |> Ash.read_one(actor: actor) do
+      {:ok, nil} -> create_tv_show(tmdb_id, actor: actor)
+      {:ok, existing} -> {:ok, existing}
+      {:error, error} -> {:error, error}
     end
+  end
 end

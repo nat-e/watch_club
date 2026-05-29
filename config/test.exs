@@ -31,8 +31,8 @@ config :watch_club,
   tmdb_req_options: [
     plug: {Req.Test, WatchClub.Integrations.Tmdb.Client}
   ],
-  radarr_req_options: [
-    plug: {WatchClub.Integrations.Radarr.TestStub, []}
+  servarr_req_options: [
+    plug: {WatchClub.Integrations.Servarr.TestStub, []}
   ]
 
 config :watch_club, import_pipeline_filesystem: WatchClub.Media.ImportPipelineMock

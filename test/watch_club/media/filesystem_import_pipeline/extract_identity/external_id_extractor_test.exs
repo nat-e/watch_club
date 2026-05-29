@@ -26,7 +26,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.ExternalIdExtractorTest
     end
 
     test ~s{"https://www.imdb.com/title/tt12345678"} do
-      assert ExternalIdExtractor.find_imdb("https://www.imdb.com/title/tt12345678") == "tt12345678"
+      assert ExternalIdExtractor.find_imdb("https://www.imdb.com/title/tt12345678") ==
+               "tt12345678"
     end
 
     test ~s{multiline (literal \\n) with 7-digit URL} do

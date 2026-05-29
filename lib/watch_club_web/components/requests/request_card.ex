@@ -278,13 +278,18 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   defp panel_border_class("available"), do: "border-success-border"
   defp panel_border_class("failed"), do: "border-danger-border"
+
   defp panel_border_class(status) when status in ["not_released", "not_found"],
     do: "border-border-subtle"
+
   defp panel_border_class(_), do: "border-accent-border"
 
   defp status_text_class("available"), do: "text-success"
   defp status_text_class("failed"), do: "text-danger"
-  defp status_text_class(status) when status in ["not_released", "not_found"], do: "text-text-muted"
+
+  defp status_text_class(status) when status in ["not_released", "not_found"],
+    do: "text-text-muted"
+
   defp status_text_class(_), do: "text-accent"
 
   defp action_label("available"), do: "Delete content"

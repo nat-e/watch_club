@@ -30,10 +30,6 @@ defmodule WatchClub.Media.VideoTrack do
     end
   end
 
-  preparations do
-    prepare build(load: [:resolution])
-  end
-
   policies do
     policy actor_absent() do
       description "Video track actions require an authenticated actor"
@@ -50,6 +46,10 @@ defmodule WatchClub.Media.VideoTrack do
       description "Only the system actor can write Video Tracks"
       authorize_if actor_attribute_equals(:system?, true)
     end
+  end
+
+  preparations do
+    prepare build(load: [:resolution])
   end
 
   attributes do

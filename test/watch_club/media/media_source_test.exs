@@ -3,7 +3,7 @@ defmodule WatchClub.Media.MediaSourceTest do
 
   import WatchClub.Media
 
-  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, RadarrMediaSource}
+  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, ServarrMediaSource}
 
   require Ash.Query
 
@@ -48,7 +48,7 @@ defmodule WatchClub.Media.MediaSourceTest do
     end
   end
 
-  describe "create_radarr_media_source/*" do
+  describe "create_servarr_media_source/* (radarr)" do
     test "creates a radarr Media Source with normalized local path, computed name, and movie media_type" do
       admin = generate(administrator())
 
@@ -57,7 +57,8 @@ defmodule WatchClub.Media.MediaSourceTest do
                media_type: :movie,
                name: name,
                can_request?: true,
-               implementation: %RadarrMediaSource{
+               implementation: %ServarrMediaSource{
+                 flavor: :radarr,
                  base_url: "https://radarr.lan",
                  api_key: "abc123",
                  quality_profile_id: 7,
@@ -65,8 +66,9 @@ defmodule WatchClub.Media.MediaSourceTest do
                  local_root_folder_path: normalized_local
                }
              } =
-               create_radarr_media_source!(
+               create_servarr_media_source!(
                  %{
+                   flavor: :radarr,
                    base_url: "https://radarr.lan/",
                    api_key: "abc123",
                    quality_profile_id: 7,
@@ -86,10 +88,11 @@ defmodule WatchClub.Media.MediaSourceTest do
       admin = generate(administrator())
 
       assert %MediaSource{
-               implementation: %RadarrMediaSource{local_root_folder_path: nil}
+               implementation: %ServarrMediaSource{local_root_folder_path: nil}
              } =
-               create_radarr_media_source!(
+               create_servarr_media_source!(
                  %{
+                   flavor: :radarr,
                    base_url: "https://radarr.lan",
                    api_key: "abc123",
                    quality_profile_id: 7,
@@ -104,13 +107,66 @@ defmodule WatchClub.Media.MediaSourceTest do
     test "rejects non-admin actors" do
       user = generate(user())
 
-      create_radarr_media_source(
+      create_servarr_media_source(
         %{
+          flavor: :radarr,
           base_url: "https://radarr.lan",
           api_key: "abc123",
           quality_profile_id: 7,
           quality_profile_name: "HD-1080p Bluray",
           root_folder_path: "/movies",
+          webhook_callback_base_url: "http://watch-club.test"
+        },
+        actor: user
+      )
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "create_servarr_media_source/* (sonarr)" do
+    test "creates a sonarr Media Source with computed name and tv_show_episode media_type" do
+      admin = generate(administrator())
+
+      assert %MediaSource{
+               source_type: :sonarr,
+               media_type: :tv_show_episode,
+               name: name,
+               can_request?: true,
+               implementation: %ServarrMediaSource{
+                 flavor: :sonarr,
+                 base_url: "https://sonarr.lan",
+                 api_key: "abc123",
+                 quality_profile_id: 7,
+                 root_folder_path: "/tv"
+               }
+             } =
+               create_servarr_media_source!(
+                 %{
+                   flavor: :sonarr,
+                   base_url: "https://sonarr.lan/",
+                   api_key: "abc123",
+                   quality_profile_id: 7,
+                   quality_profile_name: "HD-1080p Bluray",
+                   root_folder_path: "/tv",
+                   webhook_callback_base_url: "http://watch-club.test"
+                 },
+                 actor: admin
+               )
+
+      assert name == "Sonarr · /tv"
+    end
+
+    test "rejects non-admin actors" do
+      user = generate(user())
+
+      create_servarr_media_source(
+        %{
+          flavor: :sonarr,
+          base_url: "https://sonarr.lan",
+          api_key: "abc123",
+          quality_profile_id: 7,
+          quality_profile_name: "HD-1080p Bluray",
+          root_folder_path: "/tv",
           webhook_callback_base_url: "http://watch-club.test"
         },
         actor: user
@@ -141,8 +197,9 @@ defmodule WatchClub.Media.MediaSourceTest do
       admin = generate(administrator())
 
       radarr =
-        create_radarr_media_source!(
+        create_servarr_media_source!(
           %{
+            flavor: :radarr,
             base_url: "https://radarr.lan",
             api_key: "abc123",
             quality_profile_id: 7,
@@ -153,11 +210,11 @@ defmodule WatchClub.Media.MediaSourceTest do
           actor: admin
         )
 
-      assert %RadarrMediaSource{
+      assert %ServarrMediaSource{
                quality_profile_id: 8,
                root_folder_path: "/movies-4k"
              } =
-               update_radarr_media_source!(
+               update_servarr_media_source!(
                  radarr.implementation,
                  %{
                    base_url: "https://radarr.lan",

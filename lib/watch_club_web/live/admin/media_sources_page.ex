@@ -4,9 +4,9 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   instance and lets the admin add, edit, delete, and trigger imports.
 
   Lives at `/admin/media/sources`. Sources are grouped by `MediaSourceType`
-  (Filesystem and Radarr), each section with its own primary "Add" action
-  that drives the type-specific create flow. The history of one Media
-  Source is on the sibling `MediaSourceHistoryPage`.
+  (Filesystem, Radarr, and Sonarr), each section with its own primary "Add"
+  action that drives the type-specific create flow. The history of one
+  Media Source is on the sibling `MediaSourceHistoryPage`.
   """
   use WatchClubWeb, :live_view
 
@@ -19,8 +19,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   alias Phoenix.PubSub
   alias WatchClub.Media
-  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, RadarrMediaSource}
-  alias WatchClubWeb.Admin.MediaSources.AddRadarrSourceModal
+  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, ServarrMediaSource}
+  alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
 
   @impl true
   def mount(_params, _session, socket) do
@@ -43,6 +43,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       assigns
       |> assign(:filesystem_sources, Map.get(groups, :filesystem, []))
       |> assign(:radarr_sources, Map.get(groups, :radarr, []))
+      |> assign(:sonarr_sources, Map.get(groups, :sonarr, []))
 
     ~H"""
     <Layouts.app
@@ -97,6 +98,21 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
           }
           locale={@current_user.settings.locale}
         />
+
+        <.source_type_section
+          type={:sonarr}
+          title={dgettext("admin_media_imports", "Sonarr")}
+          description={dgettext("admin_media_imports", "Import TV shows from a Sonarr server.")}
+          add_event="open_add_sonarr_source_modal"
+          sources={@sonarr_sources}
+          empty_copy={
+            dgettext(
+              "admin_media_imports",
+              "Connect a Sonarr server to import TV shows and fulfill TV show requests."
+            )
+          }
+          locale={@current_user.settings.locale}
+        />
       </.stack>
 
       <.create_or_edit_media_source_modal
@@ -106,11 +122,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         media_source={@configure_media_source}
       />
       <.live_component
-        :if={@radarr_modal}
-        module={AddRadarrSourceModal}
-        id={@radarr_modal.id}
-        mode={@radarr_modal.mode}
-        media_source={@radarr_modal.media_source}
+        :if={@servarr_modal}
+        module={AddServarrSourceModal}
+        id={@servarr_modal.id}
+        mode={@servarr_modal.mode}
+        flavor={@servarr_modal.flavor}
+        media_source={@servarr_modal.media_source}
         current_user={@current_user}
       />
       <.delete_media_source_modal
@@ -211,13 +228,15 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
          |> assign(:configure_form, form)
          |> assign(:configure_media_source, media_source)}
 
-      %MediaSource{source_type: :radarr} = media_source ->
+      %MediaSource{source_type: source_type} = media_source
+      when source_type in [:radarr, :sonarr] ->
         {:noreply,
          socket
          |> reset_modals()
-         |> assign(:radarr_modal, %{
-           id: radarr_modal_id(),
+         |> assign(:servarr_modal, %{
+           id: servarr_modal_id(),
            mode: :edit,
+           flavor: source_type,
            media_source: media_source
          })}
 
@@ -244,18 +263,15 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   end
 
   # ---------------------------------------------------------------------------
-  # Radarr source modal
+  # Servarr (Radarr / Sonarr) source modal
   # ---------------------------------------------------------------------------
 
   def handle_event("open_add_radarr_source_modal", _params, socket) do
-    {:noreply,
-     socket
-     |> reset_modals()
-     |> assign(:radarr_modal, %{
-       id: radarr_modal_id(),
-       mode: :create,
-       media_source: nil
-     })}
+    {:noreply, open_servarr_create_modal(socket, :radarr)}
+  end
+
+  def handle_event("open_add_sonarr_source_modal", _params, socket) do
+    {:noreply, open_servarr_create_modal(socket, :sonarr)}
   end
 
   # ---------------------------------------------------------------------------
@@ -337,11 +353,11 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(:close_radarr_source_modal, socket) do
-    {:noreply, assign(socket, :radarr_modal, nil)}
+  def handle_info(:close_servarr_source_modal, socket) do
+    {:noreply, assign(socket, :servarr_modal, nil)}
   end
 
-  def handle_info({:radarr_source_saved, mode}, socket) do
+  def handle_info({:servarr_source_saved, mode}, socket) do
     message =
       case mode do
         :edit -> dgettext("admin_media_imports", "Media Source updated")
@@ -350,21 +366,21 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
     {:noreply,
      socket
-     |> assign(:radarr_modal, nil)
+     |> assign(:servarr_modal, nil)
      |> put_flash(:info, message)}
   end
 
-  def handle_info(:radarr_source_save_failed, socket) do
+  def handle_info(:servarr_source_save_failed, socket) do
     {:noreply,
      put_flash(
        socket,
        :error,
-       dgettext("admin_media_imports", "Could not save Radarr source")
+       dgettext("admin_media_imports", "Could not save source")
      )}
   end
 
   def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [MediaSource, FilesystemMediaSource, RadarrMediaSource, MediaImport] do
+      when resource in [MediaSource, FilesystemMediaSource, ServarrMediaSource, MediaImport] do
     {:noreply, load_media_sources(socket)}
   end
 
@@ -393,7 +409,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     |> assign(:configure_mode, nil)
     |> assign(:configure_form, nil)
     |> assign(:configure_media_source, nil)
-    |> assign(:radarr_modal, nil)
+    |> assign(:servarr_modal, nil)
     |> assign(:delete_media_source, nil)
     |> assign(:run_import_media_source, nil)
   end
@@ -435,7 +451,18 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     end
   end
 
-  defp radarr_modal_id do
-    "radarr-source-modal-#{System.unique_integer([:positive, :monotonic])}"
+  defp open_servarr_create_modal(socket, flavor) do
+    socket
+    |> reset_modals()
+    |> assign(:servarr_modal, %{
+      id: servarr_modal_id(),
+      mode: :create,
+      flavor: flavor,
+      media_source: nil
+    })
+  end
+
+  defp servarr_modal_id do
+    "servarr-source-modal-#{System.unique_integer([:positive, :monotonic])}"
   end
 end

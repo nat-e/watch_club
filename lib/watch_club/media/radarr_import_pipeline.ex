@@ -18,13 +18,15 @@ defmodule WatchClub.Media.RadarrImportPipeline do
   alias WatchClub.Integrations.Radarr.Movie
   alias WatchClub.Media.ImportPipeline.{Candidate, ExtractStructure, MatchContent, SaveMedia}
   alias WatchClub.Media.ImportPipeline.Candidate.MovieIdentity
-  alias WatchClub.Media.{MediaImport, RadarrMediaSource}
+  alias WatchClub.Media.{MediaImport, ServarrMediaSource}
   alias WatchClub.Shared.Path, as: Paths
 
   require Logger
 
   @impl true
-  def scan(%MediaImport{media_source: %{implementation: %RadarrMediaSource{} = config}}) do
+  def scan(%MediaImport{
+        media_source: %{implementation: %ServarrMediaSource{flavor: :radarr} = config}
+      }) do
     case Radarr.list_movies(config.base_url, config.api_key) do
       {:ok, movies} ->
         candidates =
@@ -52,14 +54,14 @@ defmodule WatchClub.Media.RadarrImportPipeline do
     end
   end
 
-  defp belongs_to_source?(%Movie{} = movie, %RadarrMediaSource{} = config) do
+  defp belongs_to_source?(%Movie{} = movie, %ServarrMediaSource{} = config) do
     movie.has_file? and
       is_binary(movie.file_path) and
       movie.quality_profile_id == config.quality_profile_id and
       Paths.normalize(movie.root_folder_path) == Paths.normalize(config.root_folder_path)
   end
 
-  defp to_candidate(%Movie{} = movie, %RadarrMediaSource{} = config) do
+  defp to_candidate(%Movie{} = movie, %ServarrMediaSource{} = config) do
     %Candidate{
       path: local_path(movie.file_path, config),
       identity: %MovieIdentity{
@@ -72,7 +74,7 @@ defmodule WatchClub.Media.RadarrImportPipeline do
   end
 
   # Maps the Radarr-side file path onto WatchClub's disk.
-  defp local_path(file_path, %RadarrMediaSource{
+  defp local_path(file_path, %ServarrMediaSource{
          root_folder_path: root,
          local_root_folder_path: local_root
        }) do

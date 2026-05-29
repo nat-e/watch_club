@@ -23,7 +23,9 @@ defmodule WatchClub.Media.MediaTest do
     test "lists media for an authenticated user" do
       user = generate(user())
       movie = seed_movie()
-      media = create_or_update_video!(video_input("tmp/list.mkv", movie), actor: SystemActor.actor())
+
+      media =
+        create_or_update_video!(video_input("tmp/list.mkv", movie), actor: SystemActor.actor())
 
       assert [%Media{id: id}] = list_media!(actor: user)
       assert id == media.id
@@ -38,6 +40,7 @@ defmodule WatchClub.Media.MediaTest do
   describe "list_media_under_path_prefix/*" do
     test "returns only media under the given path prefix" do
       movie = seed_movie()
+
       under =
         create_or_update_video!(video_input("tmp/library-a/under.mkv", movie),
           actor: SystemActor.actor()
@@ -49,7 +52,9 @@ defmodule WatchClub.Media.MediaTest do
         )
 
       assert [%Media{id: id}] =
-               list_media_under_path_prefix!(Path.expand("tmp/library-a"), actor: SystemActor.actor())
+               list_media_under_path_prefix!(Path.expand("tmp/library-a"),
+                 actor: SystemActor.actor()
+               )
 
       assert id == under.id
     end
@@ -299,8 +304,15 @@ defmodule WatchClub.Media.MediaTest do
 
       refute Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
       refute Video |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
-      refute VideoTrack |> Ash.Query.filter(id == ^video_track_id) |> Ash.exists?(authorize?: false)
-      refute AudioTrack |> Ash.Query.filter(id == ^audio_track_id) |> Ash.exists?(authorize?: false)
+
+      refute VideoTrack
+             |> Ash.Query.filter(id == ^video_track_id)
+             |> Ash.exists?(authorize?: false)
+
+      refute AudioTrack
+             |> Ash.Query.filter(id == ^audio_track_id)
+             |> Ash.exists?(authorize?: false)
+
       refute TextTrack |> Ash.Query.filter(id == ^text_track_id) |> Ash.exists?(authorize?: false)
     end
   end

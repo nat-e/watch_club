@@ -6,7 +6,13 @@ defmodule WatchClub.Media.ImportPipeline.ExtractStructureTest do
   alias WatchClub.Media.FfprobeMock
   alias WatchClub.Media.ImportPipeline.Candidate
   alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure
-  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.{AudioTrack, TextTrack, VideoTrack}
+
+  alias WatchClub.Media.ImportPipeline.Candidate.MediaStructure.{
+    AudioTrack,
+    TextTrack,
+    VideoTrack
+  }
+
   alias WatchClub.Media.ImportPipeline.ExtractStructure
   alias WatchClub.Media.{MediaImport, MediaSource}
 

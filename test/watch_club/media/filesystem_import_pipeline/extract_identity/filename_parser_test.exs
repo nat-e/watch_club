@@ -157,7 +157,8 @@ defmodule WatchClub.Media.ImportPipeline.ExtractIdentity.FilenameParserTest do
       {"Crouching.Tiger.Hidden.Dragon-HDC.mkv", "Crouching Tiger Hidden Dragon"},
       {"Crouching.Tiger.Hidden.Dragon.BDrip.mkv", "Crouching Tiger Hidden Dragon"},
       {"Crouching.Tiger.Hidden.Dragon.BDrip-HDC.mkv", "Crouching Tiger Hidden Dragon"},
-      {"Crouching.Tiger.Hidden.Dragon.4K.UltraHD.HDR.BDrip-HDC.mkv", "Crouching Tiger Hidden Dragon"},
+      {"Crouching.Tiger.Hidden.Dragon.4K.UltraHD.HDR.BDrip-HDC.mkv",
+       "Crouching Tiger Hidden Dragon"},
       {"[HorribleSubs] Made in Abyss - 13 [720p].mkv", "Made in Abyss"},
       {"[Erai-raws] Jujutsu Kaisen - 03 [720p][Multiple Subtitle].mkv", "Jujutsu Kaisen"}
     ]

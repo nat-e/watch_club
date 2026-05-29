@@ -3,7 +3,8 @@ defmodule WatchClub.Media.MediaSourceType do
   The kind of upstream system a `Media Source` represents.
 
   A `MediaSourceType` also determines whether the Media Source accepts
-  `Media Source Requests`. Today `filesystem` does not; `radarr` does.
+  `Media Source Requests`. Today `filesystem` does not; `radarr` and
+  `sonarr` do.
   """
 
   use Gettext, backend: WatchClubWeb.Gettext
@@ -18,9 +19,15 @@ defmodule WatchClub.Media.MediaSourceType do
         description:
           "Imports Media from a Radarr server and asks it to fetch new Movies on request",
         label: "Radarr"
+      ],
+      sonarr: [
+        description:
+          "Imports Media from a Sonarr server and asks it to fetch new TV Shows on request",
+        label: "Sonarr"
       ]
     ]
 
   def translated_label(:filesystem), do: dgettext("media_source_types", "Filesystem")
   def translated_label(:radarr), do: dgettext("media_source_types", "Radarr")
+  def translated_label(:sonarr), do: dgettext("media_source_types", "Sonarr")
 end

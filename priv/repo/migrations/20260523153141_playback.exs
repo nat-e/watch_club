@@ -31,7 +31,8 @@ defmodule WatchClub.Repo.Migrations.Playback do
                prefix: "public",
                on_delete: :delete_all,
                on_update: :update_all
-             ), null: false
+             ),
+             null: false
     end
   end
 
@@ -49,7 +50,8 @@ defmodule WatchClub.Repo.Migrations.Playback do
                prefix: "public",
                on_delete: :nilify_all,
                on_update: :update_all
-             ), null: true
+             ),
+             null: true
 
       modify :session_id,
              references(:playback_sessions,
