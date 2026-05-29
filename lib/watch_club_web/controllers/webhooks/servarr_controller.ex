@@ -15,9 +15,12 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrMovieFileDeleteWebhookEvent
+  alias WatchClub.Integrations.Radarr.RadarrRenameWebhookEvent
   alias WatchClub.Integrations.Servarr.Webhook.MediaFile
+  alias WatchClub.Integrations.Servarr.Webhook.RenamedFile
   alias WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent
   alias WatchClub.Integrations.Sonarr.SonarrEpisodeFileDeleteWebhookEvent
+  alias WatchClub.Integrations.Sonarr.SonarrRenameWebhookEvent
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources
   alias WatchClub.MediaSources.Import.Candidate
@@ -137,6 +140,16 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     remove_media(source, event.series_path, event.file)
   end
 
+  defp process_webhook(%{"eventType" => "Rename"} = params, %Servarr{flavor: :radarr} = source) do
+    event = RadarrRenameWebhookEvent.from_api(params)
+    relocate_renamed_files(source, event.folder_path, event.renamed_files)
+  end
+
+  defp process_webhook(%{"eventType" => "Rename"} = params, %Servarr{flavor: :sonarr} = source) do
+    event = SonarrRenameWebhookEvent.from_api(params)
+    relocate_renamed_files(source, event.series_path, event.renamed_files)
+  end
+
   defp process_webhook(_params, _source), do: :ok
 
   defp enqueue_ingest(candidates) do
@@ -158,13 +171,45 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     end
   end
 
-  # WatchClub-local path = content folder + relative path, remapped onto our
-  # disk. nil when outside this source's root, or not derivable.
-  defp local_path(%Servarr{root_folder_path: root} = source, folder, %MediaFile{
-         relative_path: relative_path
-       })
+  # A rename moves bytes in place, so relocate the existing Media old → new
+  # rather than re-ingesting. The disk move already happened on the *arr side.
+  defp relocate_renamed_files(source, folder, renamed_files) when is_binary(folder) do
+    Enum.each(renamed_files, &relocate_renamed_file(source, folder, &1))
+  end
+
+  defp relocate_renamed_files(_source, _folder, _renamed_files), do: :ok
+
+  defp relocate_renamed_file(source, folder, %RenamedFile{previous_path: previous, relative_path: relative})
+       when is_binary(previous) and is_binary(relative) do
+    relocate_media(to_local(source, previous), to_local(source, Path.join(folder, relative)))
+  end
+
+  defp relocate_renamed_file(_source, _folder, _file), do: :ok
+
+  defp relocate_media(old, new) when is_binary(old) and is_binary(new) and old != new do
+    with {:ok, media} <- MediaCatalog.get_media_by_path(old, actor: SystemActor.actor()),
+         {:ok, _} <- MediaCatalog.change_media_path(media, %{path: new}, actor: SystemActor.actor()) do
+      :ok
+    else
+      _ -> :ok
+    end
+  end
+
+  defp relocate_media(_old, _new), do: :ok
+
+  # WatchClub-local path of a content folder + relative path; nil when not
+  # derivable.
+  defp local_path(source, folder, %MediaFile{relative_path: relative_path})
        when is_binary(folder) and is_binary(relative_path) do
-    server_path = folder |> Path.join(relative_path) |> Paths.normalize()
+    to_local(source, Path.join(folder, relative_path))
+  end
+
+  defp local_path(_source, _folder, _file), do: nil
+
+  # Maps a server-side absolute path onto WatchClub's disk; nil when the path
+  # is outside this source's root folder.
+  defp to_local(%Servarr{root_folder_path: root} = source, server_path) when is_binary(server_path) do
+    server_path = Paths.normalize(server_path)
     root = Paths.normalize(root)
 
     if server_path == root or String.starts_with?(server_path, root <> "/") do
@@ -172,5 +217,5 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     end
   end
 
-  defp local_path(_source, _folder, _file), do: nil
+  defp to_local(_source, _server_path), do: nil
 end

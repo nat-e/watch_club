@@ -124,6 +124,52 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
     end
   end
 
+  describe "Rename" do
+    test "relocates the Media from the previous path to the new path", %{conn: conn} do
+      source = seed_radarr_source()
+      old = Path.expand("/data/movies/EO (2022)/old.mkv")
+      new = Path.expand("/data/movies/EO (2022)/EO (2022).mkv")
+      seed_media(old)
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_rename())
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      refute media_exists?(old)
+      assert media_exists?(new)
+    end
+
+    test "is a no-op when no Media exists at the previous path", %{conn: conn} do
+      source = seed_radarr_source()
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_rename())
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      refute media_exists?(Path.expand("/data/movies/EO (2022)/EO (2022).mkv"))
+    end
+
+    test "relocates a Sonarr episode file", %{conn: conn} do
+      source = seed_sonarr_source()
+      old = Path.expand("/data/tv/Friends/Season 01/old.mkv")
+      new = Path.expand("/data/tv/Friends/Season 01/friends-s01e01.mkv")
+      seed_media(old)
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/sonarr/#{source.id}", episode_rename())
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      refute media_exists?(old)
+      assert media_exists?(new)
+    end
+  end
+
   describe "other events" do
     test "Test acks 200 without auth and enqueues nothing", %{conn: conn} do
       source = seed_radarr_source()
@@ -229,6 +275,29 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         "relativePath" => "Season 01/friends.mkv",
         "path" => "/tv/Friends/Season 01/friends.mkv"
       }
+    }
+  end
+
+  defp movie_rename do
+    %{
+      "eventType" => "Rename",
+      "movie" => %{"folderPath" => "/movies/EO (2022)"},
+      "renamedMovieFiles" => [
+        %{"previousPath" => "/movies/EO (2022)/old.mkv", "relativePath" => "EO (2022).mkv"}
+      ]
+    }
+  end
+
+  defp episode_rename do
+    %{
+      "eventType" => "Rename",
+      "series" => %{"path" => "/tv/Friends"},
+      "renamedEpisodeFiles" => [
+        %{
+          "previousPath" => "/tv/Friends/Season 01/old.mkv",
+          "relativePath" => "Season 01/friends-s01e01.mkv"
+        }
+      ]
     }
   end
 end
