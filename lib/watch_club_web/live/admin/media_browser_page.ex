@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Components.UI.Empty
 
-  alias WatchClub.Media
+  alias WatchClub.MediaCatalog
   alias WatchClubWeb.Admin.MediaBrowserPage.{DetailDrawer, State, Table, Toolbar}
 
   @page_size 50
@@ -73,7 +73,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   end
 
   def handle_event("open_drawer", %{"id" => id}, socket) do
-    case Media.get_media(id,
+    case MediaCatalog.get_media(id,
            actor: socket.assigns.current_user,
            load: drawer_load_tree()
          ) do
@@ -115,7 +115,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         {:noreply, socket}
 
       media ->
-        case Media.destroy_media(media, actor: socket.assigns.current_user) do
+        case MediaCatalog.destroy_media(media, actor: socket.assigns.current_user) do
           :ok ->
             state = %{
               socket.assigns.state
@@ -258,7 +258,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   # --------------------------------------------------------------------------
 
   defp load_media_rows(%State{} = state, actor) do
-    Media.browse_media!(State.browse_arguments(state), actor: actor)
+    MediaCatalog.browse_media!(State.browse_arguments(state), actor: actor)
     |> Enum.take(@page_size)
   end
 

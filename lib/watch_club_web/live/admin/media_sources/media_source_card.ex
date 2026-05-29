@@ -11,9 +11,9 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   import WatchClubWeb.Components.Media.MediaTypeBadge
   import WatchClubWeb.Components.Media.SourceIdentifier
 
-  alias WatchClub.Media.{MediaImport, MediaSource}
+  alias WatchClub.MediaSources.{Import, Source}
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
   attr :locale, :atom, required: true
 
   def media_source_card(assigns) do
@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
       assign(
         assigns,
         :processing?,
-        match?(%MediaImport{status: :processing}, assigns.media_source.latest_import)
+        match?(%Import{status: :processing}, assigns.media_source.latest_import)
       )
 
     ~H"""

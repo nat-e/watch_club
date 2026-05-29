@@ -49,7 +49,8 @@ defmodule WatchClubWeb.Router do
   scope "/webhooks", WatchClubWeb.Webhooks do
     pipe_through :webhook
 
-    post "/radarr/:media_source_id", RadarrController, :handle
+    post "/radarr/:media_source_id", ServarrController, :handle
+    post "/sonarr/:media_source_id", ServarrController, :handle
   end
 
   scope "/hls", WatchClubWeb do
@@ -150,7 +151,7 @@ defmodule WatchClubWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: WatchClubWeb.Telemetry
-      oban_dashboard "/oban"
+      oban_dashboard("/oban")
       # forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
 

@@ -12,7 +12,10 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentIdentity do
   attr :content, :any, required: true
 
   def matched_content_identity(%{content: %Movie{} = movie} = assigns) do
-    render_identity(assigns, identity_text(movie.content.original_title, nil, year_of(movie.content)))
+    render_identity(
+      assigns,
+      identity_text(movie.content.original_title, nil, year_of(movie.content))
+    )
   end
 
   def matched_content_identity(%{content: %TvShowEpisode{} = episode} = assigns) do

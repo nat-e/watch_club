@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   import WatchClubWeb.Admin.MediaSources.RefreshMetadataBadge
   import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
-  alias WatchClub.Media.MediaImport
+  alias WatchClub.MediaSources.Import
   alias WatchClubWeb.Helpers.Time
 
   attr :imports, :list, required: true
@@ -91,9 +91,9 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
     """
   end
 
-  defp duration(%MediaImport{finished_at: nil}), do: "—"
+  defp duration(%Import{finished_at: nil}), do: "—"
 
-  defp duration(%MediaImport{inserted_at: started, finished_at: finished}) do
+  defp duration(%Import{inserted_at: started, finished_at: finished}) do
     seconds = DateTime.diff(finished, started, :second)
     format_duration(seconds)
   end

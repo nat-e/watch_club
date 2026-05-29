@@ -20,7 +20,7 @@ defmodule WatchClub.MixProject do
 
   defp elixirc_options(:test),
     do: [
-      no_warn_undefined: [WatchClub.Media.ImportPipelineMock, WatchClub.Media.FfprobeMock]
+      no_warn_undefined: [WatchClub.MediaSources.Import.ScannerMock, WatchClub.Ffmpeg.ProbeMock]
     ]
 
   defp elixirc_options(_), do: []

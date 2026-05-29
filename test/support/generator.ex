@@ -3,7 +3,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.Accounts.{User, UserSettings}
   alias WatchClub.Clubs.{Club, Invitation, Library, LibraryIcon, Membership}
   alias WatchClub.Contents.{Book, Content, TvShow}
-  alias WatchClub.Media.{MediaImport, MediaSource}
+  alias WatchClub.MediaSources.{Import, Source}
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -158,7 +158,7 @@ defmodule WatchClub.Generator do
 
   def media_source(opts \\ []) do
     changeset_generator(
-      MediaSource,
+      Source,
       :create_filesystem,
       defaults: [
         media_type: :movie,
@@ -171,11 +171,11 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def media_import(%MediaSource{} = media_source, opts \\ []) do
+  def media_import(%Source{} = media_source, opts \\ []) do
     {status, opts} = Keyword.pop(opts, :status, :processing)
 
     seed_generator(
-      %MediaImport{
+      %Import{
         media_source_id: media_source.id,
         status: status,
         refresh_metadata?: false,

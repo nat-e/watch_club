@@ -6,7 +6,7 @@ defmodule WatchClub.Contents.Movie do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Content, ContentView, MovieLocalization}
-  alias WatchClub.Media.Video
+  alias WatchClub.MediaCatalog.Video
 
   postgres do
     table "movies"

@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
-  alias WatchClub.Media.{Audiobook, Ebook, Media, Video}
+  alias WatchClub.MediaCatalog.{Audiobook, Ebook, Media, Video}
   alias WatchClubWeb.Helpers.Time
 
   attr :id, :string, required: true

@@ -10,16 +10,16 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
 
   import WatchClubWeb.Components.Media.{MediaTypeBadge, SourceIdentifier, SourceTypeIcon}
 
-  alias WatchClub.Media.{MediaImport, MediaSource}
+  alias WatchClub.MediaSources.{Import, Source}
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
 
   def history_header(assigns) do
     assigns =
       assign(
         assigns,
         :processing?,
-        match?(%MediaImport{status: :processing}, List.first(assigns.media_source.imports))
+        match?(%Import{status: :processing}, List.first(assigns.media_source.imports))
       )
 
     ~H"""

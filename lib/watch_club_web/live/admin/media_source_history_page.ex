@@ -12,8 +12,8 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   import WatchClubWeb.Admin.MediaSources.RunImportModal
 
   alias Phoenix.PubSub
-  alias WatchClub.Media
-  alias WatchClub.Media.{MediaImport, MediaSource}
+  alias WatchClub.MediaSources
+  alias WatchClub.MediaSources.{Import, Source}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     # Subscribe before load to avoid race condition
     socket = resubscribe(socket, id)
 
-    case Media.get_media_source_by_id(id,
+    case MediaSources.get_media_source_by_id(id,
            actor: socket.assigns.current_user,
            load: [:imports]
          ) do
@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   end
 
   @impl true
-  def render(%{media_source: %MediaSource{}} = assigns) do
+  def render(%{media_source: %Source{}} = assigns) do
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     %{"media_source_id" => id} = params
     refresh_metadata? = params["refresh_metadata"] == "true"
 
-    case Media.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
+    case MediaSources.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
            actor: socket.assigns.current_user
          ) do
       {:ok, _media_import} ->
@@ -136,8 +136,8 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   def handle_event("cancel_media_import", %{"id" => media_import_id}, socket) do
     actor = socket.assigns.current_user
 
-    with {:ok, media_import} <- Media.get_media_import_by_id(media_import_id, actor: actor),
-         {:ok, _media_import} <- Media.cancel_media_import(media_import, actor: actor) do
+    with {:ok, media_import} <- MediaSources.get_media_import_by_id(media_import_id, actor: actor),
+         {:ok, _media_import} <- MediaSources.cancel_media_import(media_import, actor: actor) do
       {:noreply, put_flash(socket, :info, dgettext("admin_media_imports", "Import cancelled"))}
     else
       {:error, _error} ->
@@ -152,7 +152,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{resource: MediaSource, action: %{name: :destroy}},
+        %Ash.Notifier.Notification{resource: Source, action: %{name: :destroy}},
         socket
       ) do
     {:noreply,
@@ -162,7 +162,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   end
 
   def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [MediaSource, MediaImport] do
+      when resource in [Source, Import] do
     {:noreply, reload_media_source(socket)}
   end
 
@@ -189,8 +189,8 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     assign(socket, :subscribed_id, id)
   end
 
-  defp reload_media_source(%{assigns: %{media_source: %MediaSource{id: id}}} = socket) do
-    case Media.get_media_source_by_id(id,
+  defp reload_media_source(%{assigns: %{media_source: %Source{id: id}}} = socket) do
+    case MediaSources.get_media_source_by_id(id,
            actor: socket.assigns.current_user,
            load: [:imports]
          ) do

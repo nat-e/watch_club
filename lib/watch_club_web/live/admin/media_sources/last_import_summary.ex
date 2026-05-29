@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Admin.MediaSources.LastImportSummary do
 
   import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
-  alias WatchClub.Media.MediaImport
+  alias WatchClub.MediaSources.Import
   alias WatchClubWeb.Helpers.Time
 
   attr :latest_import, :any, required: true
@@ -22,7 +22,7 @@ defmodule WatchClubWeb.Admin.MediaSources.LastImportSummary do
     """
   end
 
-  def last_import_summary(%{latest_import: %MediaImport{status: :processing}} = assigns) do
+  def last_import_summary(%{latest_import: %Import{status: :processing}} = assigns) do
     ~H"""
     <.run_status_badge
       status={@latest_import.status}
@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Admin.MediaSources.LastImportSummary do
     """
   end
 
-  def last_import_summary(%{latest_import: %MediaImport{}} = assigns) do
+  def last_import_summary(%{latest_import: %Import{}} = assigns) do
     ~H"""
     <.run_status_badge
       status={@latest_import.status}

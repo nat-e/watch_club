@@ -20,7 +20,7 @@ defmodule WatchClub.Playbacks.Session do
   require Ash.Query
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Media.TextTrack
+  alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Session.Changes
 

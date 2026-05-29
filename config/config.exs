@@ -54,7 +54,8 @@ config :watch_club,
     WatchClub.Accounts,
     WatchClub.Clubs,
     WatchClub.Contents,
-    WatchClub.Media,
+    WatchClub.MediaCatalog,
+    WatchClub.MediaSources,
     WatchClub.Playbacks
   ]
 
@@ -70,9 +71,9 @@ config :watch_club, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
   ],
   queues: [
-    scan_media_sources: 1,
-    import_media_files: 3,
-    monitor_media_imports: 5,
+    media_source_scans: 1,
+    media_candidate_ingestions: 3,
+    media_import_monitors: 5,
     playback_cache_maintenance: 1,
     media_source_webhooks: 1
   ]

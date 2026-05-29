@@ -110,10 +110,14 @@ defmodule WatchClubWeb.PlayerPage do
                       {primary_video_track(@session).width}×{primary_video_track(@session).height}
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>{format_duration(@session.active_playback.media.video.duration_seconds)}</span>
+                    <span>
+                      {format_duration(@session.active_playback.media.video.duration_seconds)}
+                    </span>
                     <span aria-hidden="true" class="hidden sm:inline">·</span>
                     <span class="hidden sm:inline">
-                      {dgettext("player", "source %{codec}", codec: primary_video_track(@session).codec)}
+                      {dgettext("player", "source %{codec}",
+                        codec: primary_video_track(@session).codec
+                      )}
                     </span>
                   </p>
                 </div>

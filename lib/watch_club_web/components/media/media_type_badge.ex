@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Components.Media.MediaTypeBadge do
     ~H"""
     <.badge variant="accent">
       <:icon><.media_type_icon media_type={@media_type} /></:icon>
-      {WatchClub.Media.MediaType.translated_plural_label(@media_type)}
+      {WatchClub.MediaCatalog.MediaType.translated_plural_label(@media_type)}
     </.badge>
     """
   end

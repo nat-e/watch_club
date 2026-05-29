@@ -1,14 +1,15 @@
 defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   @moduledoc """
-  Visual icon for a `MediaSourceType`. Filesystem uses a Lucide icon in a
-  bordered chip; `radarr` uses Radarr's official SVG. Sizing options:
+  Visual icon for a `Source.Type`. Filesystem uses a Lucide icon in a
+  bordered chip; `radarr` / `sonarr` use the product's official SVG.
+  Sizing options:
 
     * `"header"` / `"card"` — fits `size-control-md` (40px).
     * `"empty"` — fits the icon slot of `<.empty>` (large).
   """
   use WatchClubWeb, :component
 
-  attr :type, :atom, required: true, values: [:filesystem, :radarr]
+  attr :type, :atom, required: true, values: [:filesystem, :radarr, :sonarr]
 
   attr :size, :string,
     values: ~w(header card empty),
@@ -28,12 +29,12 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
     """
   end
 
-  def source_type_icon(%{type: :radarr} = assigns) do
+  def source_type_icon(%{type: type} = assigns) when type in [:radarr, :sonarr] do
     ~H"""
     <span class={["inline-grid shrink-0 place-items-center", box_classes(@size), @class]}>
       <img
-        src="/images/source_types/radarr.svg"
-        alt="Radarr logo"
+        src={"/images/source_types/#{@type}.svg"}
+        alt={"#{@type} logo"}
         class={image_classes(@size)}
       />
     </span>

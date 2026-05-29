@@ -58,7 +58,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
   end
 
   @doc """
-  Returns the arguments map to pass to `WatchClub.Media.browse_media/2`.
+  Returns the arguments map to pass to `WatchClub.MediaCatalog.browse_media/2`.
   """
   @spec browse_arguments(t()) :: map()
   def browse_arguments(%__MODULE__{filter: f, sort: s}) do

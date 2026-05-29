@@ -4,7 +4,7 @@ defmodule WatchClub.Playbacks.SessionTest do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership}
   alias WatchClub.Contents.{Content, Movie}
-  alias WatchClub.Media.{Media, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClub.SystemActor

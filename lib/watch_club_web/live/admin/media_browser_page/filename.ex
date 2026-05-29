@@ -10,7 +10,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
 
   attr :file_name, :string, required: true
   attr :class, :any, default: nil
-  attr :wrap, :boolean, default: false, doc: "wrap onto multiple lines instead of middle-truncating"
+
+  attr :wrap, :boolean,
+    default: false,
+    doc: "wrap onto multiple lines instead of middle-truncating"
 
   def file_name(%{wrap: true} = assigns) do
     ~H"""

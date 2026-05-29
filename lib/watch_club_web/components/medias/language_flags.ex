@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Components.Medias.LanguageFlags do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Media.Video
+  alias WatchClub.MediaCatalog.Video
 
   attr :video, Video, required: true
   attr :max, :integer, default: 3

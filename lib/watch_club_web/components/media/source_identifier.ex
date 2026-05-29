@@ -2,16 +2,16 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
   @moduledoc """
   Compact monospace chip that identifies a Media Source.
 
-  Filesystem sources show the filesystem path; Radarr sources show
+  Filesystem sources show the filesystem path; Radarr / Sonarr sources show
   `host · root_folder_path`.
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Media.MediaSource
+  alias WatchClub.MediaSources.Source
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
 
-  def source_identifier(%{media_source: %MediaSource{source_type: :filesystem}} = assigns) do
+  def source_identifier(%{media_source: %Source{source_type: :filesystem}} = assigns) do
     ~H"""
     <.badge variant="muted" class="rounded-sm">
       <:icon><.lucide_icon name="folder" /></:icon>
@@ -20,7 +20,8 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
     """
   end
 
-  def source_identifier(%{media_source: %MediaSource{source_type: :radarr}} = assigns) do
+  def source_identifier(%{media_source: %Source{source_type: type}} = assigns)
+      when type in [:radarr, :sonarr] do
     ~H"""
     <.badge variant="muted" class="rounded-sm">
       <:icon><.lucide_icon name="link" /></:icon>
