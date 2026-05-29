@@ -11,11 +11,12 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
 
   import WatchClubWeb.Components.Media.MediaTypeBadge
 
-  alias WatchClub.Media.{MediaSource, MediaType}
+  alias WatchClub.MediaCatalog.MediaType
+  alias WatchClub.MediaSources.Source
 
   attr :form, Phoenix.HTML.Form, required: true
   attr :mode, :atom, required: true, values: [:create, :edit]
-  attr :media_source, MediaSource, default: nil
+  attr :media_source, Source, default: nil
 
   def create_or_edit_media_source_modal(assigns) do
     assigns = assign(assigns, mode_copy(assigns.mode))
@@ -68,7 +69,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
 
   attr :form, Phoenix.HTML.Form, required: true
   attr :mode, :atom, required: true
-  attr :media_source, MediaSource, default: nil
+  attr :media_source, Source, default: nil
 
   defp media_type_field(assigns) do
     assigns =

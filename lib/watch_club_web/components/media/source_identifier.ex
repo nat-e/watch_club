@@ -7,11 +7,11 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Media.MediaSource
+  alias WatchClub.MediaSources.Source
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
 
-  def source_identifier(%{media_source: %MediaSource{source_type: :filesystem}} = assigns) do
+  def source_identifier(%{media_source: %Source{source_type: :filesystem}} = assigns) do
     ~H"""
     <.badge variant="muted" class="rounded-sm">
       <:icon><.lucide_icon name="folder" /></:icon>
@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
     """
   end
 
-  def source_identifier(%{media_source: %MediaSource{source_type: type}} = assigns)
+  def source_identifier(%{media_source: %Source{source_type: type}} = assigns)
       when type in [:radarr, :sonarr] do
     ~H"""
     <.badge variant="muted" class="rounded-sm">

@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Components.Medias.VideoResolutionBadge do
 
   import WatchClubWeb.Components.UI.Badge
 
-  alias WatchClub.Media.{Video, VideoResolution}
+  alias WatchClub.MediaCatalog.{Video, VideoResolution}
 
   attr :video, Video, default: nil
   attr :size, :string, values: ~w(sm md), default: "md"

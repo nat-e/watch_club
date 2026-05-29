@@ -7,9 +7,9 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
 
   import WatchClubWeb.Components.Media.SourceIdentifier
 
-  alias WatchClub.Media.MediaSource
+  alias WatchClub.MediaSources.Source
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
 
   def delete_media_source_modal(assigns) do
     ~H"""

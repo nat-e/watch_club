@@ -8,7 +8,7 @@ defmodule WatchClub.Playbacks.Session.Changes.LoadActivePlayback do
 
   require Ash.Query
 
-  alias WatchClub.Media.TextTrack
+  alias WatchClub.MediaCatalog.TextTrack
 
   @impl true
   def change(changeset, _opts, context) do

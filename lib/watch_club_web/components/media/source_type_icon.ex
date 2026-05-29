@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   @moduledoc """
-  Visual icon for a `MediaSourceType`. Filesystem uses a Lucide icon in a
+  Visual icon for a `Source.Type`. Filesystem uses a Lucide icon in a
   bordered chip; `radarr` / `sonarr` use the product's official SVG.
   Sizing options:
 

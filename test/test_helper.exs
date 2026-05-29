@@ -1,5 +1,5 @@
 ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(WatchClub.Repo, :manual)
 
-Mox.defmock(WatchClub.Media.ImportPipelineMock, for: WatchClub.Media.ImportPipeline)
-Mox.defmock(WatchClub.Media.FfprobeMock, for: WatchClub.Media.Ffmpeg.Probe)
+Mox.defmock(WatchClub.MediaSources.Import.ScannerMock, for: WatchClub.MediaSources.Import.Scanner)
+Mox.defmock(WatchClub.Ffmpeg.ProbeMock, for: WatchClub.Ffmpeg.Probe)

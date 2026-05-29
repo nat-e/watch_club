@@ -22,7 +22,7 @@ defmodule WatchClub.Playbacks.Playback do
 
   import Ash.Expr
 
-  alias WatchClub.Media.Media
+  alias WatchClub.MediaCatalog.Media
   alias WatchClub.Playbacks.Session
 
   postgres do

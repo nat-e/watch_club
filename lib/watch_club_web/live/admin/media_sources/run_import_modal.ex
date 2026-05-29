@@ -7,9 +7,9 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
 
   import WatchClubWeb.Components.Media.SourceIdentifier
 
-  alias WatchClub.Media.MediaSource
+  alias WatchClub.MediaSources.Source
 
-  attr :media_source, MediaSource, required: true
+  attr :media_source, Source, required: true
 
   def run_import_modal(assigns) do
     assigns =

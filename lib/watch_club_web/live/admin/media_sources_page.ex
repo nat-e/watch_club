@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   Instance-administrator page that lists every `Media Source` on the
   instance and lets the admin add, edit, delete, and trigger imports.
 
-  Lives at `/admin/media/sources`. Sources are grouped by `MediaSourceType`
+  Lives at `/admin/media/sources`. Sources are grouped by `Source.Type`
   (Filesystem, Radarr, and Sonarr), each section with its own primary "Add"
   action that drives the type-specific create flow. The history of one
   Media Source is on the sibling `MediaSourceHistoryPage`.
@@ -18,8 +18,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   import WatchClubWeb.Components.Settings.SettingsHeader
 
   alias Phoenix.PubSub
-  alias WatchClub.Media
-  alias WatchClub.Media.{FilesystemMediaSource, MediaImport, MediaSource, ServarrMediaSource}
+  alias WatchClub.MediaSources
+  alias WatchClub.MediaSources.{Filesystem, Import, Source, Servarr}
   alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
 
   @impl true
@@ -202,7 +202,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   @impl true
   def handle_event("open_create_filesystem_source_modal", _params, socket) do
     form =
-      Media.form_to_create_filesystem_media_source(actor: socket.assigns.current_user)
+      MediaSources.form_to_create_filesystem_media_source(actor: socket.assigns.current_user)
 
     {:noreply,
      socket
@@ -214,7 +214,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("open_edit_media_source_modal", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
-      %MediaSource{source_type: :filesystem} = media_source ->
+      %Source{source_type: :filesystem} = media_source ->
         form =
           to_form(
             %{"filesystem_path" => media_source.implementation.filesystem_path},
@@ -228,7 +228,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
          |> assign(:configure_form, form)
          |> assign(:configure_media_source, media_source)}
 
-      %MediaSource{source_type: source_type} = media_source
+      %Source{source_type: source_type} = media_source
       when source_type in [:radarr, :sonarr] ->
         {:noreply,
          socket
@@ -280,7 +280,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("open_delete_modal", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
-      %MediaSource{} = media_source ->
+      %Source{} = media_source ->
         {:noreply, socket |> reset_modals() |> assign(:delete_media_source, media_source)}
 
       nil ->
@@ -290,8 +290,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("confirm_delete_media_source", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
-      %MediaSource{} = media_source ->
-        case Media.destroy_media_source(media_source, actor: socket.assigns.current_user) do
+      %Source{} = media_source ->
+        case MediaSources.destroy_media_source(media_source, actor: socket.assigns.current_user) do
           :ok ->
             {:noreply,
              socket
@@ -315,7 +315,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("open_run_import_modal", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
-      %MediaSource{} = media_source ->
+      %Source{} = media_source ->
         {:noreply, socket |> reset_modals() |> assign(:run_import_media_source, media_source)}
 
       nil ->
@@ -327,7 +327,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     %{"media_source_id" => id} = params
     refresh_metadata? = params["refresh_metadata"] == "true"
 
-    case Media.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
+    case MediaSources.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
            actor: socket.assigns.current_user
          ) do
       {:ok, _media_import} ->
@@ -380,7 +380,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   end
 
   def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [MediaSource, FilesystemMediaSource, ServarrMediaSource, MediaImport] do
+      when resource in [Source, Filesystem, Servarr, Import] do
     {:noreply, load_media_sources(socket)}
   end
 
@@ -392,7 +392,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   defp load_media_sources(socket) do
     media_sources =
-      Media.list_media_sources!(
+      MediaSources.list_media_sources!(
         actor: socket.assigns.current_user,
         load: [:latest_import, :implementation]
       )
@@ -430,7 +430,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   defp submit_edit_filesystem(socket, params) do
     media_source = socket.assigns.configure_media_source
 
-    case Media.update_filesystem_media_source(
+    case MediaSources.update_filesystem_media_source(
            media_source.implementation,
            %{filesystem_path: params["filesystem_path"]},
            actor: socket.assigns.current_user

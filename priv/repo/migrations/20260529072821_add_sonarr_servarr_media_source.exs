@@ -13,9 +13,7 @@ defmodule WatchClub.Repo.Migrations.AddSonarrServarrMediaSource do
     # rather than migrate rows across. Delete the parent rows first —
     # otherwise they survive with no implementation and blow up
     # `GetImplementation` on read.
-    execute(
-      "DELETE FROM media_sources WHERE id IN (SELECT id FROM radarr_media_sources)"
-    )
+    execute("DELETE FROM media_sources WHERE id IN (SELECT id FROM radarr_media_sources)")
 
     drop_if_exists table(:radarr_media_sources)
 

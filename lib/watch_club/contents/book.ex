@@ -5,7 +5,7 @@ defmodule WatchClub.Contents.Book do
     data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.Content
-  alias WatchClub.Media.{Audiobook, Ebook}
+  alias WatchClub.MediaCatalog.{Audiobook, Ebook}
 
   postgres do
     table "books"

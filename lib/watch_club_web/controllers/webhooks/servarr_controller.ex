@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   In this slice only `Test` events are meaningfully handled — they return
   200 immediately so the server's synchronous test round-trip succeeds.
-  Every other event is authenticated against the `ServarrMediaSource`'s
+  Every other event is authenticated against the `Servarr`'s
   `webhook_secret`, logged, and acknowledged with 200. Per-event handling
   lives in a follow-up PR.
   """
@@ -17,7 +17,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   require Logger
 
-  alias WatchClub.Media
+  alias WatchClub.MediaSources
   alias WatchClub.SystemActor
 
   @token_header "x-watchclub-token"
@@ -53,7 +53,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   end
 
   defp load_source(media_source_id) do
-    case Media.get_media_source_by_id(media_source_id,
+    case MediaSources.get_media_source_by_id(media_source_id,
            load: [:implementation],
            actor: SystemActor.actor()
          ) do

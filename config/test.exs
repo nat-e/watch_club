@@ -35,8 +35,8 @@ config :watch_club,
     plug: {WatchClub.Integrations.Servarr.TestStub, []}
   ]
 
-config :watch_club, import_pipeline_filesystem: WatchClub.Media.ImportPipelineMock
-config :watch_club, :ffprobe, WatchClub.Media.FfprobeMock
+config :watch_club, import_scanner_filesystem: WatchClub.MediaSources.Import.ScannerMock
+config :watch_club, :ffprobe, WatchClub.Ffmpeg.ProbeMock
 
 # Print only warnings and errors during test
 config :logger, level: :warning

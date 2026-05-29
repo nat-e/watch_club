@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   product name, logo, and copy; the flow is identical for both.
 
   In create mode the modal drives a three-step wizard backed by the
-  in-memory `ServarrMediaSource.Wizard` resource:
+  in-memory `Servarr.Wizard` resource:
 
     1. `:connection`      — base URL + API key (validates by loading the
                             server's quality profiles and root folders)
@@ -16,18 +16,18 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   Each step's form is an `AshPhoenix.Form` over the wizard's matching
   `:configure_*` update action. On final step submit the wizard transitions
   to `:finished` and the LiveComponent hands its attributes to
-  `Media.create_servarr_media_source/2`.
+  `MediaSources.create_servarr_media_source/2`.
 
   In edit mode the modal renders a single form against
-  `ServarrMediaSource.update`.
+  `Servarr.update`.
   """
   use WatchClubWeb, :live_component
 
   alias AshPhoenix.Form
-  alias WatchClub.Media.ServarrFlavor, as: Flavor
-  alias WatchClub.Media
-  alias WatchClub.Media.MediaSource
-  alias WatchClub.Media.ServarrMediaSource.Wizard
+  alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
+  alias WatchClub.MediaSources
+  alias WatchClub.MediaSources.Source
+  alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClubWeb.Endpoint
 
   @impl true
@@ -49,16 +49,16 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
 
   defp initialize(%{mode: :create, flavor: flavor}, socket) do
     actor = socket.assigns.current_user
-    {:ok, wizard} = Media.create_servarr_wizard_for_create(flavor, actor: actor)
+    {:ok, wizard} = MediaSources.create_servarr_wizard_for_create(flavor, actor: actor)
 
     socket
     |> assign(:wizard, wizard)
     |> assign(:form, form_for_wizard(wizard, actor))
   end
 
-  defp initialize(%{mode: :edit, media_source: %MediaSource{} = media_source}, socket) do
+  defp initialize(%{mode: :edit, media_source: %Source{} = media_source}, socket) do
     actor = socket.assigns.current_user
-    {:ok, wizard} = Media.create_servarr_wizard_for_edit(media_source, actor: actor)
+    {:ok, wizard} = MediaSources.create_servarr_wizard_for_edit(media_source, actor: actor)
 
     socket
     |> assign(:media_source, media_source)
@@ -116,7 +116,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
     actor = socket.assigns.current_user
 
     {:ok, wizard} =
-      Media.servarr_wizard_back_to_previous_step(socket.assigns.wizard, actor: actor)
+      MediaSources.servarr_wizard_back_to_previous_step(socket.assigns.wizard, actor: actor)
 
     {:noreply,
      socket
@@ -154,7 +154,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   defp create_media_source(socket, %Wizard{} = wizard) do
     input = Map.put(wizard_to_input(wizard), :flavor, socket.assigns.flavor)
 
-    case Media.create_servarr_media_source(input, actor: socket.assigns.current_user) do
+    case MediaSources.create_servarr_media_source(input, actor: socket.assigns.current_user) do
       {:ok, _media_source} ->
         send(self(), {:servarr_source_saved, :create})
         {:noreply, socket}
@@ -168,7 +168,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   defp edit_media_source(socket, %Wizard{} = wizard) do
     impl = socket.assigns.media_source.implementation
 
-    case Media.update_servarr_media_source(impl, wizard_to_input(wizard),
+    case MediaSources.update_servarr_media_source(impl, wizard_to_input(wizard),
            actor: socket.assigns.current_user
          ) do
       {:ok, _impl} ->

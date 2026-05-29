@@ -9,7 +9,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   paths, HLS wire-format conventions, and ffmpeg invocation.
   """
 
-  alias WatchClub.Media.Ffmpeg
+  alias WatchClub.Ffmpeg
   alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache}
 
   @segment_duration 6.0

@@ -15,7 +15,7 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
 
   import WatchClubWeb.Components.UI.Avatar
 
-  alias WatchClub.Media.{Audiobook, Ebook, Media, Video}
+  alias WatchClub.MediaCatalog.{Audiobook, Ebook, Media, Video}
 
   attr :media, Media, required: true
 
