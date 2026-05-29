@@ -3,24 +3,24 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
   alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
-  alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{MatchResult, MediaStructure}
   alias WatchClub.MediaSources.Import.Ingestor.SaveMedia
 
   require Ash.Query
 
-  describe "apply/2 — movie" do
+  describe "apply/1 —movie" do
     test "persists a Media + Video attached to the movie with the probed structure" do
       movie = seed_movie()
 
       candidate = %Candidate{
         path: "tmp/star-wars.mkv",
+        media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:movie))
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :movie,
@@ -40,17 +40,18 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
     end
   end
 
-  describe "apply/2 — tv_show_episode" do
+  describe "apply/1 —tv_show_episode" do
     test "persists a Media + Video attached to the TV show episode" do
       episode = seed_tv_show_episode()
 
       candidate = %Candidate{
         path: "tmp/friends-s01e01.mkv",
+        media_type: :tv_show_episode,
         match_result: %MatchResult{result: :success, matched_id: episode.id},
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:tv_show_episode))
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :tv_show_episode,
@@ -64,15 +65,16 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
     end
   end
 
-  describe "apply/2 — unmatched" do
+  describe "apply/1 —unmatched" do
     test "persists Media + unattached Video on a movie run when matched_id is nil" do
       candidate = %Candidate{
         path: "tmp/unmatched-movie.mkv",
+        media_type: :movie,
         match_result: %MatchResult{result: :not_matched, matched_id: nil},
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:movie))
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :movie,
@@ -90,11 +92,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
     test "persists Media + unattached Video on a tv_show_episode run when matched_id is nil" do
       candidate = %Candidate{
         path: "tmp/unmatched-episode.mkv",
+        media_type: :tv_show_episode,
         match_result: %MatchResult{result: :not_matched, matched_id: nil},
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate, run_for(:tv_show_episode))
+      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :tv_show_episode,
@@ -103,23 +106,25 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
     end
   end
 
-  describe "apply/2 — refresh" do
+  describe "apply/1 —refresh" do
     test "replaces the existing Video and tracks when the path already has a Media" do
       movie = seed_movie()
       path = "tmp/refresh-save.mkv"
 
       candidate_original = %Candidate{
         path: path,
+        media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, _} = SaveMedia.apply(candidate_original, run_for(:movie))
+      assert {:ok, _} = SaveMedia.apply(candidate_original)
       original = load_media!(path)
       original_track_id = hd(original.video.video_tracks).id
 
       candidate_refresh = %Candidate{
         path: path,
+        media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},
         media_structure: %{
           sample_video_structure()
@@ -129,7 +134,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         }
       }
 
-      assert {:ok, _} = SaveMedia.apply(candidate_refresh, run_for(:movie))
+      assert {:ok, _} = SaveMedia.apply(candidate_refresh)
 
       refreshed = load_media!(path)
 
@@ -141,16 +146,6 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
              |> Ash.Query.filter(id == ^original_track_id)
              |> Ash.exists?(authorize?: false)
     end
-  end
-
-  defp run_for(media_type) do
-    %Import{
-      media_source: %Source{
-        media_type: media_type,
-        source_type: :filesystem,
-        implementation: %WatchClub.MediaSources.Filesystem{filesystem_path: "tmp"}
-      }
-    }
   end
 
   defp sample_video_structure do

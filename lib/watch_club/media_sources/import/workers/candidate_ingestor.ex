@@ -46,26 +46,26 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"media_import_id" => id} = args}) do
-    case Ash.get(Import, id,
-           load: [media_source: [:implementation]],
-           actor: SystemActor.actor()
-         ) do
-      {:ok, media_import} ->
+    # The Media Import is loaded only to confirm it still exists — a cancelled
+    # or deleted import should not ingest. The candidate carries its own
+    # `media_type`, so the ingest stages no longer need the Media Source.
+    case Ash.get(Import, id, actor: SystemActor.actor()) do
+      {:ok, _media_import} ->
         args
-        |> Candidate.from_map(media_import.media_source.media_type)
-        |> ingest(media_import)
+        |> Candidate.from_map()
+        |> ingest()
 
       {:error, %Ash.Error.Query.NotFound{}} ->
         {:cancel, "Import #{id} not found"}
     end
   end
 
-  defp ingest(%Candidate{} = candidate, %Import{} = media_import) do
+  defp ingest(%Candidate{} = candidate) do
     Logger.info("Ingesting candidate: #{candidate}")
 
-    with {:ok, candidate} <- ExtractStructure.apply(candidate, media_import),
-         {:ok, candidate} <- MatchContent.apply(candidate, media_import),
-         {:ok, candidate} <- SaveMedia.apply(candidate, media_import) do
+    with {:ok, candidate} <- ExtractStructure.apply(candidate),
+         {:ok, candidate} <- MatchContent.apply(candidate),
+         {:ok, candidate} <- SaveMedia.apply(candidate) do
       Logger.info("Finished ingesting candidate: #{candidate}")
       :ok
     else

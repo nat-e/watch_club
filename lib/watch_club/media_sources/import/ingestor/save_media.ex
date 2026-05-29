@@ -6,15 +6,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MatchResult
-  alias WatchClub.MediaSources.Import
   alias WatchClub.SystemActor
 
   require Logger
 
-  def apply(%Candidate{} = candidate, %Import{media_source: media_source}) do
+  def apply(%Candidate{media_type: media_type} = candidate) do
     Logger.debug("Saving media for #{candidate}")
 
-    case save_media(media_source.media_type, candidate) do
+    case save_media(media_type, candidate) do
       {:ok, _media} ->
         {:ok, candidate}
 

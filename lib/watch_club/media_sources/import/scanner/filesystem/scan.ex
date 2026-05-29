@@ -104,7 +104,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
           Logger.debug("Skipping file #{path} (ignored)")
           :drop
         else
-          {:emit, Candidate.new(path)}
+          {:emit, Candidate.new(path, media_source.media_type)}
         end
 
       {:ok, _} ->

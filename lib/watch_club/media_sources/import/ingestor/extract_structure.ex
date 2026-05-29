@@ -1,7 +1,7 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   @moduledoc """
   Populates `candidate.media_structure` with the file's technical shape —
-  container, duration, and tracks. Dispatches by `media_source.media_type`:
+  container, duration, and tracks. Dispatches by `candidate.media_type`:
 
     * `:video` → probe with `ffprobe`, build the structure, append sidecar
       text tracks.
@@ -12,16 +12,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MediaStructure
   alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure.{Sidecars, Tracks}
-  alias WatchClub.MediaSources.Import
 
   require Logger
 
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
-  def apply(%Candidate{} = candidate, %Import{media_source: media_source}) do
+  def apply(%Candidate{media_type: media_type} = candidate) do
     Logger.debug("Extracting structure for #{candidate}")
 
-    case probe(media_source.media_type, candidate) do
+    case probe(media_type, candidate) do
       {:ok, candidate} -> {:ok, candidate}
       {:error, reason} -> {:halt, reason}
     end

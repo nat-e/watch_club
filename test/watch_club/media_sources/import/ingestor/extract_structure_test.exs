@@ -14,16 +14,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
   }
 
   alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure
-  alias WatchClub.MediaSources.{Import, Source}
 
   setup :verify_on_exit!
 
-  describe "apply/2 — movie" do
+  describe "apply/1 —movie" do
     test "probes the file and populates the structure with video, audio, and subtitle tracks" do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
-      candidate = Candidate.new("/library/Friends - S01E01.mkv")
-      run = run_for(:movie)
+      candidate = Candidate.new("/library/Friends - S01E01.mkv", :movie)
 
       assert {:ok,
               %Candidate{
@@ -38,16 +36,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   ],
                   text_tracks: [%TextTrack{codec: "subrip", language: "fre"}]
                 }
-              }} = ExtractStructure.apply(candidate, run)
+              }} = ExtractStructure.apply(candidate)
     end
   end
 
-  describe "apply/2 — tv_show_episode" do
+  describe "apply/1 —tv_show_episode" do
     test "uses the same video probing as movies" do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
-      candidate = Candidate.new("/library/Friends - S01E01.mkv")
-      run = run_for(:tv_show_episode)
+      candidate = Candidate.new("/library/Friends - S01E01.mkv", :tv_show_episode)
 
       assert {:ok,
               %Candidate{
@@ -56,16 +53,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   audio_tracks: [_, _],
                   text_tracks: [_]
                 }
-              }} = ExtractStructure.apply(candidate, run)
+              }} = ExtractStructure.apply(candidate)
     end
   end
 
-  describe "apply/2 — audiobook" do
+  describe "apply/1 —audiobook" do
     test "probes the file and populates an audio-only structure" do
       stub_ffprobe(load_fixture("audiobook_inner_game"))
 
-      candidate = Candidate.new("/library/audiobook.mp3")
-      run = run_for(:audiobook)
+      candidate = Candidate.new("/library/audiobook.mp3", :audiobook)
 
       assert {:ok,
               %Candidate{
@@ -77,14 +73,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   audio_tracks: [%AudioTrack{codec: "mp3", channels: 2}],
                   text_tracks: []
                 }
-              }} = ExtractStructure.apply(candidate, run)
+              }} = ExtractStructure.apply(candidate)
     end
   end
 
-  describe "apply/2 — ebook" do
+  describe "apply/1 —ebook" do
     test "uses the file extension as container without probing" do
-      candidate = Candidate.new("/library/book.epub")
-      run = run_for(:ebook)
+      candidate = Candidate.new("/library/book.epub", :ebook)
 
       assert {:ok,
               %Candidate{
@@ -94,18 +89,17 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   audio_tracks: [],
                   text_tracks: []
                 }
-              }} = ExtractStructure.apply(candidate, run)
+              }} = ExtractStructure.apply(candidate)
     end
   end
 
-  describe "apply/2 — failure" do
+  describe "apply/1 —failure" do
     test "halts when ffprobe returns an error" do
       stub(ProbeMock, :probe, fn _path -> {:error, "ffprobe exited with 1"} end)
 
-      candidate = Candidate.new("/library/broken.mkv")
-      run = run_for(:movie)
+      candidate = Candidate.new("/library/broken.mkv", :movie)
 
-      assert {:halt, "ffprobe exited with 1"} = ExtractStructure.apply(candidate, run)
+      assert {:halt, "ffprobe exited with 1"} = ExtractStructure.apply(candidate)
     end
   end
 
@@ -117,15 +111,5 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
     Path.join([__DIR__, "../../../../support/fixtures/ffprobe", "#{name}.json"])
     |> File.read!()
     |> Jason.decode!()
-  end
-
-  defp run_for(media_type) do
-    %Import{
-      media_source: %Source{
-        media_type: media_type,
-        source_type: :filesystem,
-        implementation: %WatchClub.MediaSources.Filesystem{filesystem_path: "/library"}
-      }
-    }
   end
 end

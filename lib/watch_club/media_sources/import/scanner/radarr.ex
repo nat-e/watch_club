@@ -48,6 +48,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Radarr do
   defp to_candidate(%Movie{} = movie, %Servarr{} = config) do
     %Candidate{
       path: local_path(movie.file_path, config),
+      media_type: :movie,
       identity: %MovieIdentity{
         tmdb_id: movie.tmdb_id,
         imdb_id: movie.imdb_id,
