@@ -133,6 +133,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         module={PlayOrRequestButtonLive}
         content={@content}
         current_user={@current_user}
+        size="lg"
         class="w-full md:w-auto"
       />
       <.live_component
@@ -145,6 +146,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
             send(self(), {:content_libraries_updated, content_view})
           end
         }
+        size="lg"
         class="w-full md:w-auto"
       />
       <.button

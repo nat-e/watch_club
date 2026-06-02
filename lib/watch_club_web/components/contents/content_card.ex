@@ -102,6 +102,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
               module={PlayOrRequestButtonLive}
               content={@content}
               current_user={@current_user}
+              size="lg"
               class="w-full"
             />
           </div>

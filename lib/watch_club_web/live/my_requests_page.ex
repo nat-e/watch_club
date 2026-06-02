@@ -202,7 +202,7 @@ defmodule WatchClubWeb.MyRequestsPage do
           :for={{dom_id, request} <- @streams.requests}
           id={dom_id}
           request={request}
-          locale={@current_user.settings.locale}
+          current_user={@current_user}
         />
       </.stack>
 

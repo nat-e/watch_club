@@ -10,6 +10,10 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   attr :class, :any, default: nil
   attr :on_content_updated, {:fun, 1}, required: true
 
+  attr :size, :string,
+    values: ~w(sm md lg),
+    default: "md"
+
   @impl true
   def render(assigns) do
     assigns = assign(assigns, :clubs, ContentView.in_clubs(assigns.content, assigns.current_user))
@@ -18,7 +22,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     <div class={@class}>
       <.button
         id={"#{@id}-open-button"}
-        size="lg"
+        size={@size}
         variant={if @clubs == [], do: "primary", else: "accent"}
         class="w-full"
         phx-target={@myself}

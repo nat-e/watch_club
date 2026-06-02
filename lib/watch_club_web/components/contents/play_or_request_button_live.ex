@@ -9,6 +9,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :current_user, User, required: true
   attr :class, :any, default: nil
 
+  attr :size, :string,
+    values: ~w(sm md lg),
+    default: "md"
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -16,7 +20,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       <.button
         :if={!ContentView.playable?(@content)}
         id={"#{@id}-request-button"}
-        size="lg"
+        size={@size}
         variant="primary"
         emphasis
         phx-click="request-content"
@@ -29,7 +33,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       <.button
         :if={ContentView.playable?(@content)}
         id={"#{@id}-play-button"}
-        size="lg"
+        size={@size}
         variant="primary"
         emphasis
         href={play_link(@content)}

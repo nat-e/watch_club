@@ -27,15 +27,13 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   alias WatchClub.Requests.ContentRequest
   alias WatchClub.Requests.ContentRequestStatus
 
+  alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
+
   @in_progress_statuses [:requested, :downloading, :importing]
 
   attr :id, :string
-
-  attr :request, ContentRequest,
-    required: true,
-    doc: "A Content Request with `content`, `status`, `progress` and `playable?` loaded."
-
-  attr :locale, :any, required: true
+  attr :request, ContentRequest, required: true
+  attr :current_user, User, required: true
 
   def request_card(assigns) do
     ~H"""
@@ -49,17 +47,11 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     >
       <.content_section
         id={@request.id}
-        content={ContentView.from_content(@request.content, @locale)}
-        playable={@request.playable?}
+        content={ContentView.from_content(@request.content, @current_user.settings.locale)}
+        current_user={@current_user}
       />
 
-      <.status_section
-        id={@request.id}
-        status={@request.status}
-        progress={@request.progress}
-        content_type={@request.content.type}
-        requested_at_label={relative_from_now(@request.inserted_at, @locale)}
-      />
+      <.status_section request={@request} current_user={@current_user} />
     </.card>
     """
   end
@@ -68,31 +60,19 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   attr :id, :string, required: true
   attr :content, ContentView, required: true
-  attr :playable, :boolean, default: false
+  attr :current_user, User, required: true
 
   defp content_section(assigns) do
     ~H"""
     <div class={[
       "relative flex min-w-0 flex-1 items-center gap-group p-group",
-      !@playable && "opacity-70"
+      !ContentView.playable?(@content) && "opacity-70"
     ]}>
       <.tmdb_poster
         size="w342"
         path={@content.image_path}
         class="h-36 shrink-0 rounded-control border border-border-subtle shadow-overlay"
-      >
-        <button
-          :if={@playable}
-          id={"#{@id}-play"}
-          type="button"
-          aria-label="Play"
-          class="group/play absolute inset-0 z-10 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-        >
-          <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay transition-transform group-hover/play:scale-105 group-active/play:scale-100">
-            <Lucideicons.play class="size-icon" />
-          </span>
-        </button>
-      </.tmdb_poster>
+      />
 
       <div class="min-w-0 flex flex-1 flex-col justify-between h-full">
         <div class="flex flex-col gap-tight">
@@ -108,14 +88,27 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           </p>
         </div>
 
-        <.button
-          id={"#{@id}-add-to-library"}
-          variant="accent"
-          class="relative z-10"
-        >
-          <:icon><Lucideicons.plus /></:icon>
-          Add to Library
-        </.button>
+        <div class="flex flex-row gap-related">
+          <.live_component
+            id={"#{@id}-details-play-or-request-button"}
+            module={PlayOrRequestButtonLive}
+            content={@content}
+            current_user={@current_user}
+            class="relative z-10 w-auto"
+          />
+          <.live_component
+            id={"#{@id}-details-add-to-library-button"}
+            module={AddToLibraryButtonLive}
+            content={@content}
+            current_user={@current_user}
+            on_content_updated={
+              fn content_view ->
+                send(self(), {:content_libraries_updated, content_view})
+              end
+            }
+            class="relative z-10 w-auto"
+          />
+        </div>
       </div>
     </div>
     """
@@ -123,14 +116,11 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   # ─── Status section ──────────────────────────────────────────────────────
 
-  attr :id, :string, required: true
-  attr :status, :atom, required: true
-  attr :progress, :integer, default: nil
-  attr :content_type, :atom, required: true
-  attr :requested_at_label, :string, default: nil
+  attr :request, ContentRequest, required: true
+  attr :current_user, User, required: true
 
   defp status_section(assigns) do
-    assigns = assign(assigns, :style, status_style(assigns.status))
+    assigns = assign(assigns, :style, status_style(assigns.request.status))
 
     ~H"""
     <div class={[
@@ -140,24 +130,28 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     ]}>
       <div class="flex items-start justify-between gap-tight">
         <p class={["text-xs font-semibold tracking-wider uppercase", @style.text]}>
-          {ContentRequestStatus.translated_label(@status)}
+          {ContentRequestStatus.translated_label(@request.status)}
         </p>
         <.button
-          id={"#{@id}-cancel"}
+          id={"#{@request.id}-cancel"}
           variant="ghost"
           size="icon-sm"
-          aria-label={action_label(@status)}
+          aria-label={action_label(@request.status)}
           phx-click="cancel-request"
-          phx-value-id={@id}
+          phx-value-id={@request.id}
         >
           <Lucideicons.x />
         </.button>
       </div>
 
-      <.status_body status={@status} progress={@progress} content_type={@content_type} />
+      <.status_body
+        status={@request.status}
+        progress={@request.progress}
+        content_type={@request.content.type}
+      />
 
-      <p :if={@requested_at_label} class="text-xs text-text-muted">
-        Requested {@requested_at_label}
+      <p class="text-xs text-text-muted">
+        Requested {relative_from_now(@request.inserted_at, @current_user.settings.locale)}
       </p>
     </div>
     """
@@ -199,23 +193,10 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   defp status_body(assigns) do
     ~H"""
     <p class={["text-sm", (@status == :completed && "text-text") || "text-text-muted"]}>
-      {status_message(@status, @content_type)}
+      {ContentRequestStatus.status_message(@status, @content_type)}
     </p>
     """
   end
-
-  # ─── Status helpers ──────────────────────────────────────────────────────
-
-  defp status_message(:completed, _type), do: "Ready when you are."
-
-  defp status_message(:failed, type),
-    do: "There was an error downloading the #{content_type_noun(type)}."
-
-  defp status_message(:not_released, type),
-    do: "This #{content_type_noun(type)} hasn't been released yet."
-
-  defp status_message(:not_found, type),
-    do: "We couldn't find this #{content_type_noun(type)}."
 
   defp in_progress_label(:requested), do: "Queued"
   defp in_progress_label(:downloading), do: "Downloading"
@@ -235,13 +216,9 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   defp status_style(status) when status in [:not_released, :not_found],
     do: %{bg: "bg-surface-inset", border: "border-border-subtle", text: "text-text-muted"}
 
-  defp status_style(_in_progress),
+  defp status_style(_status),
     do: %{bg: "bg-accent-bg", border: "border-accent-border", text: "text-accent"}
 
   defp action_label(:completed), do: "Delete content"
   defp action_label(_), do: "Cancel request"
-
-  defp content_type_noun(:movie), do: "movie"
-  defp content_type_noun(:tv_show), do: "TV show"
-  defp content_type_noun(:book), do: "book"
 end
