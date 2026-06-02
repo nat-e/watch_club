@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.ContentView
   alias WatchClub.Shared.SortOrder
-  alias WatchClubWeb.Clubs.LibraryPage.ContentStreamState
+  alias WatchClubWeb.Helpers.KeysetStreamState
 
   @contents_page_size 40
 
@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     {:ok,
      socket
      |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")
-     |> assign(:content_stream, ContentStreamState.initial())}
+     |> assign(:content_stream, KeysetStreamState.initial())}
   end
 
   @impl true
@@ -38,7 +38,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
             <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
           </div>
           <.library_sort_controls
-            :if={!ContentStreamState.empty?(@content_stream)}
+            :if={!KeysetStreamState.empty?(@content_stream)}
             club_id={@library.club_id}
             library_id={@library.id}
             current_sort_by={@sort_by}
@@ -46,7 +46,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           />
         </header>
 
-        <.empty :if={ContentStreamState.empty?(@content_stream)}>
+        <.empty :if={KeysetStreamState.empty?(@content_stream)}>
           <:icon><Lucideicons.library /></:icon>
           <:title>{dgettext("clubs", "Library is empty")}</:title>
           <:description>
@@ -55,7 +55,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         </.empty>
 
         <div
-          :if={!ContentStreamState.empty?(@content_stream)}
+          :if={!KeysetStreamState.empty?(@content_stream)}
           id="library-content-stream"
           phx-update="stream"
           class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-group"
@@ -66,7 +66,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         </div>
 
         <.infinite_scroll_trigger
-          :if={ContentStreamState.can_load_more?(@content_stream)}
+          :if={KeysetStreamState.can_load_more?(@content_stream)}
           id="library-content-load-more"
           event="load_more_contents"
         />
@@ -219,7 +219,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       sort_order: sort_order
     } = socket.assigns
 
-    if ContentStreamState.can_load_more?(content_stream) do
+    if KeysetStreamState.can_load_more?(content_stream) do
       page =
         load_contents_page(
           library.id,
@@ -231,7 +231,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
       {:noreply,
        socket
-       |> assign(:content_stream, ContentStreamState.append(content_stream, page))
+       |> assign(:content_stream, KeysetStreamState.append(content_stream, page))
        |> stream(:contents, page.contents, at: -1)}
     else
       {:noreply, socket}
@@ -249,7 +249,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
          socket
          |> assign(
            library: library,
-           content_stream: ContentStreamState.reset(page),
+           content_stream: KeysetStreamState.reset(page),
            sort_by: sort_by,
            sort_order: sort_order
          )

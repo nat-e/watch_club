@@ -6,7 +6,7 @@ defmodule WatchClubWeb.MyRequestsPage do
   alias WatchClub.Requests.ContentRequestSort
   alias WatchClub.Requests.ContentRequestStatusGroup
   alias WatchClubWeb.Components.Requests.RequestCard
-  alias WatchClubWeb.MyRequestsPage.RequestStreamState
+  alias WatchClubWeb.Helpers.KeysetStreamState
   import WatchClubWeb.Components.Settings.SettingsHeader
 
   @page_size 25
@@ -29,7 +29,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     {:ok,
      socket
      |> stream_configure(:requests, dom_id: &"request-#{&1.id}")
-     |> assign(:request_stream, RequestStreamState.initial())}
+     |> assign(:request_stream, KeysetStreamState.initial())}
   end
 
   @impl true
@@ -47,13 +47,13 @@ defmodule WatchClubWeb.MyRequestsPage do
   def handle_event("load_more", _params, socket) do
     state = socket.assigns.request_stream
 
-    if RequestStreamState.can_load_more?(state) do
-      next_state = RequestStreamState.next(state)
+    if KeysetStreamState.can_load_more?(state) do
+      page = load_requests_page(socket, state.next_keyset)
 
       {:noreply,
        socket
-       |> assign(:request_stream, next_state)
-       |> stream(:requests, RequestStreamState.results(next_state), at: -1)}
+       |> assign(:request_stream, KeysetStreamState.append(state, page))
+       |> stream(:requests, page.results, at: -1)}
     else
       {:noreply, socket}
     end
@@ -94,7 +94,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       </.cluster>
 
       <div class="mb-cluster flex flex-wrap items-center justify-between gap-related">
-        <nav aria-label="Filter by content type" class="flex items-center gap-cluster text-sm">
+        <nav aria-label="Filter by content type" class="flex items-center gap-cluster">
           <.content_type_filter
             :for={type <- [:all | ContentType.library_display_order()]}
             type={type}
@@ -106,7 +106,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
         <.dropdown_menu id="my-requests-sort">
           <:trigger>
-            <.button id="my-requests-sort-trigger" variant="ghost" size="sm">
+            <.button id="my-requests-sort-trigger" variant="ghost">
               <:icon><Lucideicons.arrow_up_down /></:icon>
               Sort: {ContentRequestSort.translated_label(@sort)}
               <:icon position="end"><Lucideicons.chevron_down /></:icon>
@@ -123,25 +123,27 @@ defmodule WatchClubWeb.MyRequestsPage do
         </.dropdown_menu>
       </div>
 
-      <.empty :if={RequestStreamState.empty?(@request_stream)} size="sm">
+      <.empty :if={KeysetStreamState.empty?(@request_stream)} size="sm">
         <:icon><Lucideicons.inbox /></:icon>
         <:title>No requests match</:title>
         <:description>Try clearing some filters, or browse content to add a request.</:description>
       </.empty>
 
       <.stack
-        :if={!RequestStreamState.empty?(@request_stream)}
+        :if={!KeysetStreamState.empty?(@request_stream)}
         space="related"
         id="my-requests"
         phx-update="stream"
       >
-        <div :for={{dom_id, request} <- @streams.requests} id={dom_id}>
-          <RequestCard.request_card request={request} locale={@current_user.settings.locale} />
-        </div>
+        <RequestCard.request_card
+          :for={{dom_id, request} <- @streams.requests}
+          request={request}
+          locale={@current_user.settings.locale}
+        />
       </.stack>
 
       <.infinite_scroll_trigger
-        :if={RequestStreamState.can_load_more?(@request_stream)}
+        :if={KeysetStreamState.can_load_more?(@request_stream)}
         id="my-requests-load-more"
         event="load_more"
       />
@@ -208,20 +210,34 @@ defmodule WatchClubWeb.MyRequestsPage do
   # ─── Loading ───────────────────────────────────────────────────────────────
 
   defp load_first_page(socket) do
-    user = socket.assigns.current_user
+    page = load_requests_page(socket, nil)
+
+    socket
+    |> assign(:request_stream, KeysetStreamState.reset(page))
+    |> stream(:requests, page.results, reset: true)
+  end
+
+  # Reads one keyset page of the current user's requests under the active
+  # filters/sort. Returns the rows plus the bookkeeping `KeysetStreamState`
+  # needs: whether more remain and the cursor for the next page.
+  defp load_requests_page(socket, after_keyset) do
+    page_opts = [limit: @page_size]
+    page_opts = if after_keyset, do: Keyword.put(page_opts, :after, after_keyset), else: page_opts
 
     page =
       Requests.list_content_requests_for_current_user!(
         action_filters(socket),
-        actor: user,
-        page: [limit: @page_size]
+        actor: socket.assigns.current_user,
+        page: page_opts
       )
 
-    state = RequestStreamState.reset(page)
+    next_keyset =
+      case List.last(page.results) do
+        nil -> nil
+        request -> request.__metadata__.keyset
+      end
 
-    socket
-    |> assign(:request_stream, state)
-    |> stream(:requests, RequestStreamState.results(state), reset: true)
+    %{results: page.results, more?: page.more?, next_keyset: next_keyset}
   end
 
   # `:all` collapses to "no filter": status_group is simply omitted (the action

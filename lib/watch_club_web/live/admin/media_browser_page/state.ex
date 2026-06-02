@@ -245,8 +245,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     @moduledoc """
     Pagination cursor state for the streamed media list.
 
-    Mirrors `WatchClubWeb.Clubs.LibraryPage.ContentStreamState`: tracks the
-    keyset for the next page and whether more rows remain.
+    Covers the same ground as `WatchClubWeb.Helpers.KeysetStreamState` (the shared
+    infinite-scroll bookkeeping used by the library and My Requests pages):
+    tracks the keyset for the next page and whether more rows remain. A
+    candidate to converge onto that module — see `append/2` below.
     """
 
     defstruct next_keyset: nil, can_load_more?: false, empty?: true

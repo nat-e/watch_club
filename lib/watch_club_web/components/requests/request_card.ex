@@ -182,7 +182,8 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         aria-valuemax="100"
         aria-label={@label}
       >
-        <div class="h-full bg-accent transition-[width]" style={"width: #{@pct}%"} aria-hidden="true"></div>
+        <div class="h-full bg-accent transition-[width]" style={"width: #{@pct}%"} aria-hidden="true">
+        </div>
       </div>
     </div>
     """
