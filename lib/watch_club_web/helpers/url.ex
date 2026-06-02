@@ -55,4 +55,16 @@ defmodule WatchClubWeb.Helpers.Url do
     |> String.replace_prefix("https://", "")
     |> String.replace_prefix("http://", "")
   end
+
+  @doc """
+  Parses a URL param string into one of `allowed_values` (a list of atoms),
+  falling back to `default`. Matches on the stringified atom rather than
+  `String.to_atom/1`, so untrusted input never mints a new atom.
+  """
+  def parse_url_param(value, allowed_values, default \\ nil)
+  def parse_url_param(nil, _allowed_values, default), do: default
+
+  def parse_url_param(value, allowed_values, default) when is_binary(value) do
+    Enum.find(allowed_values, default, &(to_string(&1) == value))
+  end
 end

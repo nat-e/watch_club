@@ -15,6 +15,7 @@ defmodule WatchClub.Requests.ContentRequestStatusGroup do
 
   use Ash.Type.Enum, values: [:in_progress, :completed, :failed, :unavailable]
 
+  def translated_label(nil), do: dgettext("content_request_status_groups", "All")
   def translated_label(:in_progress), do: dgettext("content_request_status_groups", "In progress")
   def translated_label(:completed), do: dgettext("content_request_status_groups", "Completed")
   def translated_label(:failed), do: dgettext("content_request_status_groups", "Failed")

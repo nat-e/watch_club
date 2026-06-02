@@ -13,12 +13,11 @@ defmodule WatchClubWeb.MyRequestsPage do
 
   @page_size 25
 
-  # Filter values, derived from the domain enums (plus the "all" no-filter
-  # sentinel). Labels and display order live on the enums themselves; the
-  # status_group → status collapsing happens server-side, in `for_current_user`.
-  # Sort is owned end-to-end by `ContentRequestSort` (param + label + query).
-  @valid_status_groups ["all" | Enum.map(ContentRequestStatusGroup.values(), &to_string/1)]
-  @valid_types ["all" | Enum.map(ContentType.library_display_order(), &to_string/1)]
+  # Filters are carried as atoms: an enum value, or `nil` for "no filter" (the
+  # "All" chip). `Url.parse_url_param/3` validates the raw param against each
+  # domain module's `values/0`; `nil` flows straight through to the URL (dropped
+  # by `path/1`), the action filters (`maybe_filter/3`), and `matches_filters?/2`.
+  # The status_group → status collapsing happens server-side, in `for_current_user`.
 
   @impl true
   def mount(_params, _session, socket) do
@@ -42,9 +41,19 @@ defmodule WatchClubWeb.MyRequestsPage do
 
     {:noreply,
      socket
-     |> assign(:sort, ContentRequestSort.parse_param(params["sort"]))
-     |> assign(:status_filter, validate(params["status"], @valid_status_groups, "all"))
-     |> assign(:content_type_filter, validate(params["type"], @valid_types, "all"))
+     |> assign(
+       :sort,
+       Url.parse_url_param(
+         params["sort"],
+         ContentRequestSort.values(),
+         ContentRequestSort.default()
+       )
+     )
+     |> assign(
+       :status_filter,
+       Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
+     )
+     |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
      |> assign(:stream_state, stream_state)
      |> load_requests_page(stream_state)}
   end
@@ -137,7 +146,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
       <.cluster space="tight" aria-label="Filter by status" class="mb-related">
         <.status_chip
-          :for={group <- [:all | ContentRequestStatusGroup.values()]}
+          :for={group <- [nil | ContentRequestStatusGroup.values()]}
           group={group}
           current={@status_filter}
           sort={@sort}
@@ -148,7 +157,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       <div class="mb-cluster flex flex-wrap items-center justify-between gap-related">
         <nav aria-label="Filter by content type" class="flex items-center gap-cluster">
           <.content_type_filter
-            :for={type <- [:all | ContentType.library_display_order()]}
+            :for={type <- [nil | ContentType.library_display_order()]}
             type={type}
             current={@content_type_filter}
             sort={@sort}
@@ -206,21 +215,19 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
-  attr :group, :atom, required: true, doc: "`:all`, or a `ContentRequestStatusGroup` value."
-  attr :current, :string, required: true
+  attr :group, :atom
+  attr :current, :atom, required: true
   attr :sort, :atom, required: true
-  attr :type, :string, required: true
+  attr :type, :atom, required: true
 
   defp status_chip(assigns) do
-    assigns = assign(assigns, :value, to_string(assigns.group))
-
     ~H"""
     <.link
-      patch={path(sort: @sort, type: @type, status: @value)}
+      patch={path(sort: @sort, type: @type, status: @group)}
       class={[
         "inline-flex items-center gap-tight rounded-full border px-related py-tight text-sm transition-colors",
-        @current == @value && "border-border bg-surface-selected text-text",
-        @current != @value &&
+        @current == @group && "border-border bg-surface-selected text-text",
+        @current != @group &&
           "border-border-subtle bg-surface-inset text-text-muted hover:border-border hover:text-text"
       ]}
     >
@@ -230,34 +237,32 @@ defmodule WatchClubWeb.MyRequestsPage do
           @group == :in_progress && "bg-accent",
           @group == :completed && "bg-success",
           @group == :failed && "bg-danger",
-          @group in [:all, :unavailable] && "bg-text-subtle"
+          @group in [nil, :unavailable] && "bg-text-subtle"
         ]}
         aria-hidden="true"
       >
       </span>
-      {if @group == :all, do: gettext("All"), else: ContentRequestStatusGroup.translated_label(@group)}
+      {ContentRequestStatusGroup.translated_label(@group)}
     </.link>
     """
   end
 
-  attr :type, :atom, required: true, doc: "`:all`, or a `ContentType` value."
-  attr :current, :string, required: true
+  attr :type, :atom, required: true
+  attr :current, :atom, required: true
   attr :sort, :atom, required: true
-  attr :status, :string, required: true
+  attr :status, :atom, required: true
 
   defp content_type_filter(assigns) do
-    assigns = assign(assigns, :value, to_string(assigns.type))
-
     ~H"""
     <.link
-      patch={path(sort: @sort, status: @status, type: @value)}
+      patch={path(sort: @sort, status: @status, type: @type)}
       class={[
         "border-b-2 pb-tight transition-colors",
-        @current == @value && "border-accent text-text",
-        @current != @value && "border-transparent text-text-muted hover:text-text"
+        @current == @type && "border-accent text-text",
+        @current != @type && "border-transparent text-text-muted hover:text-text"
       ]}
     >
-      {if @type == :all, do: gettext("All"), else: ContentType.translated_plural_label(@type)}
+      {ContentType.translated_plural_label(@type)}
     </.link>
     """
   end
@@ -268,7 +273,11 @@ defmodule WatchClubWeb.MyRequestsPage do
         stream_state,
         fn page_options ->
           Requests.list_content_requests_for_current_user(
-            action_filters(socket),
+            %{
+              sort: socket.assigns.sort,
+              status_group: socket.assigns.status_filter,
+              content_type: socket.assigns.content_type_filter
+            },
             actor: socket.assigns.current_user,
             page: page_options
           )
@@ -288,8 +297,6 @@ defmodule WatchClubWeb.MyRequestsPage do
     end
   end
 
-  # ─── Live reconcile ─────────────────────────────────────────────────────────
-
   # Re-read one of the user's requests by id with the card's view data — the
   # same load the list uses, plus `:status_group` for `matches_filters?/2`. The
   # `:read` policy scopes it to the actor, so a foreign id resolves to nothing.
@@ -301,47 +308,19 @@ defmodule WatchClubWeb.MyRequestsPage do
     status_filter = socket.assigns.status_filter
     type_filter = socket.assigns.content_type_filter
 
-    (status_filter == "all" or to_string(request.status_group) == status_filter) and
-      (type_filter == "all" or to_string(request.content.type) == type_filter)
+    (status_filter == nil or request.status_group == status_filter) and
+      (type_filter == nil or request.content.type == type_filter)
   end
-
-  # `:all` collapses to "no filter": status_group is simply omitted (the action
-  # only filters when a real group is present) and content_type likewise.
-  defp action_filters(socket) do
-    %{sort: socket.assigns.sort}
-    |> maybe_filter(:status_group, socket.assigns.status_filter)
-    |> maybe_filter(:content_type, socket.assigns.content_type_filter)
-  end
-
-  defp maybe_filter(filters, _key, "all"), do: filters
-
-  defp maybe_filter(filters, key, value),
-    do: Map.put(filters, key, String.to_existing_atom(value))
-
-  # ─── Helpers ──────────────────────────────────────────────────────────────
 
   defp path(opts) do
-    sort = Keyword.get(opts, :sort, ContentRequestSort.default())
-
     params =
-      %{}
-      |> maybe_put("sort", ContentRequestSort.to_param(sort), "last_update")
-      |> maybe_put("status", Keyword.get(opts, :status, "all"), "all")
-      |> maybe_put("type", Keyword.get(opts, :type, "all"), "all")
+      %{
+        sort: Keyword.get(opts, :sort),
+        status: Keyword.get(opts, :status),
+        type: Keyword.get(opts, :type)
+      }
+      |> Map.reject(fn {_key, value} -> value == nil end)
 
-    if params == %{} do
-      ~p"/my-requests"
-    else
-      ~p"/my-requests?#{params}"
-    end
+    ~p"/my-requests?#{params}"
   end
-
-  defp maybe_put(map, _key, value, default) when value == default, do: map
-  defp maybe_put(map, key, value, _default), do: Map.put(map, key, value)
-
-  defp validate(value, allowed, default) when is_binary(value) do
-    if value in allowed, do: value, else: default
-  end
-
-  defp validate(_value, _allowed, default), do: default
 end

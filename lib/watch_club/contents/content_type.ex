@@ -13,10 +13,12 @@ defmodule WatchClub.Contents.ContentType do
 
   def library_display_order, do: @library_display_order
 
+  def translated_label(nil), do: dgettext("content_types", "All")
   def translated_label(:book), do: dgettext("content_types", "Book")
   def translated_label(:movie), do: dgettext("content_types", "Movie")
   def translated_label(:tv_show), do: dgettext("content_types", "TV Show")
 
+  def translated_plural_label(nil), do: dgettext("content_types", "All")
   def translated_plural_label(:book), do: dgettext("content_types", "Books")
   def translated_plural_label(:movie), do: dgettext("content_types", "Movies")
   def translated_plural_label(:tv_show), do: dgettext("content_types", "TV Shows")
