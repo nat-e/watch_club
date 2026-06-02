@@ -2,7 +2,6 @@ defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
   alias Ash.Notifier.Notification
-  alias WatchClub.Contents.Content
   alias WatchClub.Contents.ContentType
   alias WatchClub.Requests
   alias WatchClub.Requests.ContentRequest
@@ -28,37 +27,34 @@ defmodule WatchClubWeb.MyRequestsPage do
     # One topic carries everything for this user's requests: create/cancel
     # (ContentRequest `pub_sub`) and status/progress moves fanned out from
     # Media Source Request writes (see MediaSourceRequest's NotifyRequesters).
-    if connected?(socket),
-      do: Phoenix.PubSub.subscribe(WatchClub.PubSub, "content_requests:user:#{user.id}")
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, "content_requests:user:#{user.id}")
+    end
 
     {:ok,
      socket
-     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")
-     |> assign(:request_stream, KeysetStreamState.initial())}
+     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    socket =
-      socket
-      |> assign(:sort, ContentRequestSort.parse_param(params["sort"]))
-      |> assign(:status_filter, validate(params["status"], @valid_status_groups, "all"))
-      |> assign(:content_type_filter, validate(params["type"], @valid_types, "all"))
+    stream_state = KeysetStreamState.init(@page_size)
 
-    {:noreply, load_first_page(socket)}
+    {:noreply,
+     socket
+     |> assign(:sort, ContentRequestSort.parse_param(params["sort"]))
+     |> assign(:status_filter, validate(params["status"], @valid_status_groups, "all"))
+     |> assign(:content_type_filter, validate(params["type"], @valid_types, "all"))
+     |> assign(:stream_state, stream_state)
+     |> load_requests_page(stream_state)}
   end
 
   @impl true
   def handle_event("load_more", _params, socket) do
-    state = socket.assigns.request_stream
+    stream_state = socket.assigns.stream_state
 
-    if KeysetStreamState.can_load_more?(state) do
-      page = load_requests_page(socket, state.next_keyset)
-
-      {:noreply,
-       socket
-       |> assign(:request_stream, KeysetStreamState.append(state, page))
-       |> stream(:requests, page.results, at: -1)}
+    if KeysetStreamState.can_load_more?(stream_state) do
+      {:noreply, socket |> load_requests_page(stream_state)}
     else
       {:noreply, socket}
     end
@@ -67,7 +63,7 @@ defmodule WatchClubWeb.MyRequestsPage do
   @impl true
   def handle_event("cancel-request", %{"id" => id}, socket) do
     Requests.cancel_content_request(id, actor: socket.assigns.current_user)
-    {:noreply, stream_delete(socket, :requests, %{id: id})}
+    {:noreply, socket}
   end
 
   # The user created (or re-requested) content, here or in another tab. Prepend
@@ -75,11 +71,15 @@ defmodule WatchClubWeb.MyRequestsPage do
   # ignore it otherwise.
   @impl true
   def handle_info(
-        %Notification{resource: ContentRequest, action: %{name: :request}, data: %{id: id}},
+        %Notification{
+          resource: ContentRequest,
+          action: %{name: :request},
+          data: %{id: request_id}
+        },
         socket
       ) do
     socket =
-      case fetch_request(socket, id) do
+      case fetch_request(socket, request_id) do
         {:ok, %ContentRequest{} = request} ->
           if matches_filters?(request, socket),
             do: stream_insert(socket, :requests, request, at: 0),
@@ -175,27 +175,30 @@ defmodule WatchClubWeb.MyRequestsPage do
         </.dropdown_menu>
       </div>
 
-      <.empty :if={KeysetStreamState.empty?(@request_stream)} size="sm">
-        <:icon><Lucideicons.inbox /></:icon>
-        <:title>No requests match</:title>
-        <:description>Try clearing some filters, or browse content to add a request.</:description>
-      </.empty>
+      <.stack id="my-requests" phx-update="stream" space="related">
+        <div
+          id="my-requests-empty"
+          class="only:block hidden"
+        >
+          <.empty size="sm">
+            <:icon><Lucideicons.inbox /></:icon>
+            <:title>No requests match</:title>
+            <:description>
+              Try clearing some filters, or browse content to add a request.
+            </:description>
+          </.empty>
+        </div>
 
-      <.stack
-        :if={!KeysetStreamState.empty?(@request_stream)}
-        space="related"
-        id="my-requests"
-        phx-update="stream"
-      >
         <RequestCard.request_card
           :for={{dom_id, request} <- @streams.requests}
+          id={dom_id}
           request={request}
           locale={@current_user.settings.locale}
         />
       </.stack>
 
       <.infinite_scroll_trigger
-        :if={KeysetStreamState.can_load_more?(@request_stream)}
+        :if={KeysetStreamState.can_load_more?(@stream_state)}
         id="my-requests-load-more"
         event="load_more"
       />
@@ -259,37 +262,30 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
-  # ─── Loading ───────────────────────────────────────────────────────────────
-
-  defp load_first_page(socket) do
-    page = load_requests_page(socket, nil)
-
-    socket
-    |> assign(:request_stream, KeysetStreamState.reset(page))
-    |> stream(:requests, page.results, reset: true)
-  end
-
-  # Reads one keyset page of the current user's requests under the active
-  # filters/sort. Returns the rows plus the bookkeeping `KeysetStreamState`
-  # needs: whether more remain and the cursor for the next page.
-  defp load_requests_page(socket, after_keyset) do
-    page_opts = [limit: @page_size]
-    page_opts = if after_keyset, do: Keyword.put(page_opts, :after, after_keyset), else: page_opts
-
-    page =
-      Requests.list_content_requests_for_current_user!(
-        action_filters(socket),
-        actor: socket.assigns.current_user,
-        page: page_opts
+  defp load_requests_page(socket, %KeysetStreamState{} = stream_state) do
+    load =
+      KeysetStreamState.load_page(
+        stream_state,
+        fn page_options ->
+          Requests.list_content_requests_for_current_user(
+            action_filters(socket),
+            actor: socket.assigns.current_user,
+            page: page_options
+          )
+        end
       )
 
-    next_keyset =
-      case List.last(page.results) do
-        nil -> nil
-        request -> request.__metadata__.keyset
-      end
+    case load do
+      {:ok, new_state, results} ->
+        socket
+        |> assign(:stream_state, new_state)
+        |> stream(:requests, results, reset: stream_state.status == :init)
 
-    %{results: page.results, more?: page.more?, next_keyset: next_keyset}
+      {:error, new_state, _} ->
+        socket
+        |> assign(:stream_state, new_state)
+        |> put_flash(:error, "There was an error loading requests")
+    end
   end
 
   # ─── Live reconcile ─────────────────────────────────────────────────────────
@@ -298,18 +294,7 @@ defmodule WatchClubWeb.MyRequestsPage do
   # same load the list uses, plus `:status_group` for `matches_filters?/2`. The
   # `:read` policy scopes it to the actor, so a foreign id resolves to nothing.
   defp fetch_request(socket, request_id) do
-    actor = socket.assigns.current_user
-
-    Requests.get_content_request_by_id(request_id,
-      actor: actor,
-      load: [
-        :status,
-        :status_group,
-        :progress,
-        :playable?,
-        content: Ash.Query.for_read(Content, :for_view, %{}, actor: actor)
-      ]
-    )
+    Requests.get_content_request_by_id(request_id, actor: socket.assigns.current_user)
   end
 
   defp matches_filters?(request, socket) do

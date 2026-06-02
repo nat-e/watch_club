@@ -13,7 +13,7 @@ defmodule WatchClub.Requests do
       define :request_content, action: :request
       define :list_content_requests_for_current_user, action: :for_current_user
       define :list_content_requests_for_content, action: :for_content, args: [:content_id]
-      define :get_content_request_by_id, action: :read, get_by: [:id]
+      define :get_content_request_by_id, action: :for_current_user, get_by: [:id]
       define :cancel_content_request, action: :cancel
     end
 

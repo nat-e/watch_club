@@ -93,6 +93,7 @@ defmodule WatchClub.Requests.ContentRequest do
         |> ContentRequestSort.sort_query(Ash.Query.get_argument(query, :sort))
         |> Ash.Query.load([
           :status,
+          :status_group,
           :progress,
           :playable?,
           content: Ash.Query.for_read(Content, :for_view, %{}, actor: context.actor)

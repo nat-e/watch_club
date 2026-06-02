@@ -1,54 +1,39 @@
 defmodule WatchClubWeb.Helpers.KeysetStreamState do
   @moduledoc """
-  Bookkeeping shared by the infinite-scroll LiveView streams.
-
-  Answers the only two questions a paginated stream asks of its state — is the
-  list empty, and where does the next keyset page begin — and nothing more. The
-  loaded rows live in the LiveView's `stream`, never here; this struct holds
-  just the cursor and a status.
-
-  Feed `reset/1` and `append/2` a normalized page map exposing `:more?` and
-  `:next_keyset` (any extra keys, e.g. the results, are ignored). The owning
-  LiveView fetches the next slice by re-issuing its read with `after:` the
-  stored `next_keyset`.
+  State for a synchronous infinite scroll list backed by Ash keyset pagination
   """
 
-  @type status :: :empty | :ready | :ended
-  @type page :: %{optional(any) => any, more?: boolean, next_keyset: term | nil}
-  @type t :: %__MODULE__{status: status, next_keyset: term | nil}
+  @type status :: :init | :ready | :error
+  @type t :: %__MODULE__{page_size: integer(), status: status(), after_keyset: term() | nil}
 
-  defstruct status: :empty, next_keyset: nil
+  defstruct [:page_size, status: :init, after_keyset: nil]
 
-  def initial, do: %__MODULE__{}
+  def init(page_size) when is_integer(page_size), do: %__MODULE__{page_size: page_size}
 
-  @doc """
-  First page, or a full reload. A page with no rows (`next_keyset: nil`)
-  collapses to `:empty`.
-  """
-  def reset(%{next_keyset: nil}), do: %__MODULE__{status: :empty}
-  def reset(page), do: from_page(page)
+  def load_page(%__MODULE__{} = state, load_fn) do
+    case load_fn.(page_options(state)) do
+      {:ok, %{results: results, more?: true}} ->
+        after_keyset = List.last(results).__metadata__.keyset
 
-  @doc """
-  A subsequent page appended to an already-populated stream. Never collapses to
-  `:empty` — the stream already holds rows — so an exhausted page lands on
-  `:ended`.
-  """
-  def append(_state, page), do: from_page(page)
+        {:ok, %__MODULE__{state | status: :ready, after_keyset: after_keyset}, results}
 
-  def empty?(%__MODULE__{status: :empty}), do: true
-  def empty?(%__MODULE__{}), do: false
+      {:ok, %{results: results}} ->
+        {:ok, %__MODULE__{state | status: :ready, after_keyset: nil}, results}
 
-  def can_load_more?(%__MODULE__{status: :ready, next_keyset: next_keyset}) do
-    not is_nil(next_keyset)
+      {:error, _error} ->
+        {:error, %__MODULE__{state | status: :error}, nil}
+    end
   end
 
-  def can_load_more?(%__MODULE__{}), do: false
+  def error?(%__MODULE__{status: status}), do: status == :error
 
-  defp from_page(%{more?: true, next_keyset: next_keyset}) do
-    %__MODULE__{status: :ready, next_keyset: next_keyset}
+  def can_load_more?(%__MODULE__{after_keyset: after_keyset}) do
+    not is_nil(after_keyset)
   end
 
-  defp from_page(%{more?: false, next_keyset: next_keyset}) do
-    %__MODULE__{status: :ended, next_keyset: next_keyset}
-  end
+  defp page_options(%__MODULE__{page_size: page_size, after_keyset: nil}),
+    do: [limit: page_size]
+
+  defp page_options(%__MODULE__{page_size: page_size, after_keyset: after_keyset}),
+    do: [limit: page_size, after: after_keyset]
 end

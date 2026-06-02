@@ -15,8 +15,23 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")
-     |> assign(:content_stream, KeysetStreamState.initial())}
+     |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")}
+  end
+
+  @impl true
+  def handle_params(%{"club_id" => club_id, "library_id" => library_id} = params, _uri, socket) do
+    {sort_by, sort_order} = LibraryItemsSortOption.parse_param(params["sort"])
+
+    if params["sort"] != LibraryItemsSortOption.to_param(sort_by, sort_order) and
+         connected?(socket) do
+      {:noreply,
+       push_patch(socket,
+         to: library_sort_path(club_id, library_id, sort_by, sort_order),
+         replace: true
+       )}
+    else
+      load_library(socket, club_id, library_id, sort_by, sort_order)
+    end
   end
 
   @impl true
@@ -38,7 +53,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
             <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
           </div>
           <.library_sort_controls
-            :if={!KeysetStreamState.empty?(@content_stream)}
             club_id={@library.club_id}
             library_id={@library.id}
             current_sort_by={@sort_by}
@@ -46,27 +60,28 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           />
         </header>
 
-        <.empty :if={KeysetStreamState.empty?(@content_stream)}>
-          <:icon><Lucideicons.library /></:icon>
-          <:title>{dgettext("clubs", "Library is empty")}</:title>
-          <:description>
-            {dgettext("clubs", "This library does not have any content yet.")}
-          </:description>
-        </.empty>
-
         <div
-          :if={!KeysetStreamState.empty?(@content_stream)}
           id="library-content-stream"
           phx-update="stream"
           class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-group"
         >
+          <div id="library-content-empty" class="only:block hidden col-span-full">
+            <.empty>
+              <:icon><Lucideicons.library /></:icon>
+              <:title>{dgettext("clubs", "Library is empty")}</:title>
+              <:description>
+                {dgettext("clubs", "This library does not have any content yet.")}
+              </:description>
+            </.empty>
+          </div>
+
           <div :for={{dom_id, content} <- @streams.contents} id={dom_id} class="w-full">
             <.content_card content={content} library_id_context={@library.id} />
           </div>
         </div>
 
         <.infinite_scroll_trigger
-          :if={KeysetStreamState.can_load_more?(@content_stream)}
+          :if={KeysetStreamState.can_load_more?(@stream_state)}
           id="library-content-load-more"
           event="load_more_contents"
         />
@@ -194,45 +209,11 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   @impl true
-  def handle_params(%{"club_id" => club_id, "library_id" => library_id} = params, _uri, socket) do
-    {sort_by, sort_order} = LibraryItemsSortOption.parse_param(params["sort"])
-
-    if params["sort"] != LibraryItemsSortOption.to_param(sort_by, sort_order) and
-         connected?(socket) do
-      {:noreply,
-       push_patch(socket,
-         to: library_sort_path(club_id, library_id, sort_by, sort_order),
-         replace: true
-       )}
-    else
-      load_library(socket, club_id, library_id, sort_by, sort_order)
-    end
-  end
-
-  @impl true
   def handle_event("load_more_contents", _params, socket) do
-    %{
-      content_stream: content_stream,
-      current_user: current_user,
-      library: library,
-      sort_by: sort_by,
-      sort_order: sort_order
-    } = socket.assigns
+    stream_state = socket.assigns.stream_state
 
-    if KeysetStreamState.can_load_more?(content_stream) do
-      page =
-        load_contents_page(
-          library.id,
-          sort_by,
-          sort_order,
-          content_stream.next_keyset,
-          current_user
-        )
-
-      {:noreply,
-       socket
-       |> assign(:content_stream, KeysetStreamState.append(content_stream, page))
-       |> stream(:contents, page.contents, at: -1)}
+    if KeysetStreamState.can_load_more?(stream_state) do
+      {:noreply, load_contents_page(socket, stream_state)}
     else
       {:noreply, socket}
     end
@@ -243,17 +224,13 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
     case Clubs.get_library_by_id(library_id, actor: current_user) do
       {:ok, %Library{club_id: ^club_id} = library} ->
-        page = load_contents_page(library.id, sort_by, sort_order, nil, current_user)
+        stream_state = KeysetStreamState.init(@contents_page_size)
 
         {:noreply,
          socket
-         |> assign(
-           library: library,
-           content_stream: KeysetStreamState.reset(page),
-           sort_by: sort_by,
-           sort_order: sort_order
-         )
-         |> stream(:contents, page.contents, reset: true)}
+         |> assign(library: library, sort_by: sort_by, sort_order: sort_order)
+         |> assign(:stream_state, stream_state)
+         |> load_contents_page(stream_state)}
 
       {:ok, %Library{}} ->
         not_found(socket)
@@ -269,28 +246,35 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     end
   end
 
-  defp load_contents_page(library_id, sort_by, sort_order, after_keyset, current_user) do
-    page_opts = [limit: @contents_page_size]
-    page_opts = if after_keyset, do: Keyword.put(page_opts, :after, after_keyset), else: page_opts
+  # Loads one keyset page of the library's contents. `load_page` derives the
+  # cursor from the raw `LibraryItem`s' metadata; we then map them to
+  # `ContentView`s (which carry no keyset) for the stream.
+  defp load_contents_page(socket, %KeysetStreamState{} = stream_state) do
+    %{library: library, sort_by: sort_by, sort_order: sort_order, current_user: current_user} =
+      socket.assigns
 
-    page =
-      Clubs.get_library_items!(library_id, %{sort_by: sort_by, sort_order: sort_order},
-        actor: current_user,
-        page: page_opts
-      )
+    load =
+      KeysetStreamState.load_page(stream_state, fn page_options ->
+        Clubs.get_library_items(library.id, %{sort_by: sort_by, sort_order: sort_order},
+          actor: current_user,
+          page: page_options
+        )
+      end)
 
-    locale = current_user.settings.locale
+    case load do
+      {:ok, new_state, items} ->
+        contents =
+          Enum.map(items, &ContentView.from_content(&1.content, current_user.settings.locale))
 
-    contents =
-      Enum.map(page.results, fn item -> ContentView.from_content(item.content, locale) end)
+        socket
+        |> assign(:stream_state, new_state)
+        |> stream(:contents, contents, reset: stream_state.status == :init)
 
-    next_keyset =
-      case List.last(page.results) do
-        nil -> nil
-        item -> item.__metadata__.keyset
-      end
-
-    %{contents: contents, more?: page.more?, next_keyset: next_keyset}
+      {:error, new_state, _} ->
+        socket
+        |> assign(:stream_state, new_state)
+        |> put_flash(:error, dgettext("clubs", "There was an error loading the library"))
+    end
   end
 
   defp library_sort_path(club_id, library_id, sort_by, sort_order) do

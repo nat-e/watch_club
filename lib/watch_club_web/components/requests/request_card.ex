@@ -29,6 +29,8 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   @in_progress_statuses [:requested, :downloading, :importing]
 
+  attr :id, :string
+
   attr :request, ContentRequest,
     required: true,
     doc: "A Content Request with `content`, `status`, `progress` and `playable?` loaded."
@@ -41,7 +43,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       as="article"
       data_slot="request-card"
       padding="none"
-      id={@request.id}
+      id={@id}
       data-status={@request.status}
       class="group/card flex overflow-hidden"
     >
