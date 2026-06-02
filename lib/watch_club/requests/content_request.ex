@@ -100,6 +100,12 @@ defmodule WatchClub.Requests.ContentRequest do
       end
     end
 
+    read :for_content do
+      argument :content_id, :uuid, allow_nil?: false
+
+      filter expr(content_id == ^arg(:content_id))
+    end
+
     destroy :cancel do
       primary? true
 
@@ -121,6 +127,12 @@ defmodule WatchClub.Requests.ContentRequest do
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
+    policy action(:for_content) do
+      description "Only admin and system user can get all Content Requests for a content"
+      authorize_if WatchClub.Checks.IsSystemActor
+      authorize_if actor_attribute_equals(:administrator?, true)
+    end
+
     policy action(:request) do
       description "Any authenticated user can request content for themselves"
       authorize_if always()
@@ -136,10 +148,12 @@ defmodule WatchClub.Requests.ContentRequest do
   pub_sub do
     module Phoenix.PubSub
     name WatchClub.PubSub
-    prefix "users"
+    prefix "content_requests"
 
-    publish :request, [:user_id, "requests"]
-    publish :cancel, [:user_id, "requests"]
+    publish :request, ["user", :user_id]
+    publish :request, [:id]
+    publish :cancel, ["user", :user_id]
+    publish :cancel, [:id]
   end
 
   attributes do

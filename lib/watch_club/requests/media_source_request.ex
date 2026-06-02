@@ -17,11 +17,11 @@ defmodule WatchClub.Requests.MediaSourceRequest do
     otp_app: :watch_club,
     domain: WatchClub.Requests,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub]
+    authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Source
+  alias WatchClub.Requests.MediaSourceRequest.Changes.NotifyRequesters
   alias WatchClub.Requests.MediaSourceRequest.Changes.RefreshState
   alias WatchClub.Requests.MediaSourceRequestState
 
@@ -51,6 +51,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       accept [:content_id, :media_source_id, :external_resource_id]
 
       change RefreshState
+      change NotifyRequesters
     end
 
     # Reconcile against the *arr's current truth. Called on any webhook/poll
@@ -60,10 +61,16 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       accept []
 
       change RefreshState
+      change NotifyRequesters
     end
 
     destroy :destroy do
       primary? true
+
+      # NotifyRequesters runs after_transaction, so the destroy can't be atomic.
+      require_atomic? false
+
+      change NotifyRequesters
     end
   end
 
@@ -86,16 +93,6 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       description "Media Source Requests are written only by the system actor (workers, webhooks)"
       authorize_if WatchClub.Checks.IsSystemActor
     end
-  end
-
-  pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-    prefix "media_source_requests"
-
-    publish_all :create, [[:content_id, nil]]
-    publish_all :update, [[:content_id, nil]]
-    publish_all :destroy, [[:content_id, nil]]
   end
 
   attributes do

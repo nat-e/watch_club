@@ -1,8 +1,11 @@
 defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
+  alias Ash.Notifier.Notification
+  alias WatchClub.Contents.Content
   alias WatchClub.Contents.ContentType
   alias WatchClub.Requests
+  alias WatchClub.Requests.ContentRequest
   alias WatchClub.Requests.ContentRequestSort
   alias WatchClub.Requests.ContentRequestStatusGroup
   alias WatchClubWeb.Components.Requests.RequestCard
@@ -22,9 +25,11 @@ defmodule WatchClubWeb.MyRequestsPage do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
 
-    # Topic published by ContentRequest's `pub_sub` block (prefix "users").
+    # One topic carries everything for this user's requests: create/cancel
+    # (ContentRequest `pub_sub`) and status/progress moves fanned out from
+    # Media Source Request writes (see MediaSourceRequest's NotifyRequesters).
     if connected?(socket),
-      do: Phoenix.PubSub.subscribe(WatchClub.PubSub, "users:#{user.id}:requests")
+      do: Phoenix.PubSub.subscribe(WatchClub.PubSub, "content_requests:user:#{user.id}")
 
     {:ok,
      socket
@@ -65,12 +70,59 @@ defmodule WatchClubWeb.MyRequestsPage do
     {:noreply, stream_delete(socket, :requests, %{id: id})}
   end
 
+  # The user created (or re-requested) content, here or in another tab. Prepend
+  # the new card (most-recent-activity sort) if it matches the active filters;
+  # ignore it otherwise.
   @impl true
-  def handle_info(_event, socket) do
-    # A request was created/cancelled (here or in another tab) — reconcile by
-    # reloading the first page.
-    {:noreply, load_first_page(socket)}
+  def handle_info(
+        %Notification{resource: ContentRequest, action: %{name: :request}, data: %{id: id}},
+        socket
+      ) do
+    socket =
+      case fetch_request(socket, id) do
+        {:ok, %ContentRequest{} = request} ->
+          if matches_filters?(request, socket),
+            do: stream_insert(socket, :requests, request, at: 0),
+            else: socket
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
   end
+
+  # The user cancelled a request, here or in another tab. Drop the card (a
+  # no-op if it isn't loaded — e.g. this tab already removed it).
+  def handle_info(
+        %Notification{resource: ContentRequest, action: %{type: :destroy}, data: %{id: id}},
+        socket
+      ) do
+    {:noreply, stream_delete(socket, :requests, %{id: id})}
+  end
+
+  # A Media Source Request write fanned out to us (see NotifyRequesters): this
+  # user's *derived* status/progress for that content may have moved. Re-read
+  # the one card and patch it in place when it still matches (no `:at`, so it
+  # keeps its position), or drop it when the change pushed it out of the filter.
+  # `update_only` leaves an unloaded-but-matching request for the next load
+  # rather than inserting it out of sort order.
+  def handle_info({:request_changed, id}, socket) do
+    socket =
+      case fetch_request(socket, id) do
+        {:ok, %ContentRequest{} = request} ->
+          if matches_filters?(request, socket),
+            do: stream_insert(socket, :requests, request, update_only: true),
+            else: stream_delete(socket, :requests, request)
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   @impl true
   def render(assigns) do
@@ -238,6 +290,34 @@ defmodule WatchClubWeb.MyRequestsPage do
       end
 
     %{results: page.results, more?: page.more?, next_keyset: next_keyset}
+  end
+
+  # ─── Live reconcile ─────────────────────────────────────────────────────────
+
+  # Re-read one of the user's requests by id with the card's view data — the
+  # same load the list uses, plus `:status_group` for `matches_filters?/2`. The
+  # `:read` policy scopes it to the actor, so a foreign id resolves to nothing.
+  defp fetch_request(socket, request_id) do
+    actor = socket.assigns.current_user
+
+    Requests.get_content_request_by_id(request_id,
+      actor: actor,
+      load: [
+        :status,
+        :status_group,
+        :progress,
+        :playable?,
+        content: Ash.Query.for_read(Content, :for_view, %{}, actor: actor)
+      ]
+    )
+  end
+
+  defp matches_filters?(request, socket) do
+    status_filter = socket.assigns.status_filter
+    type_filter = socket.assigns.content_type_filter
+
+    (status_filter == "all" or to_string(request.status_group) == status_filter) and
+      (type_filter == "all" or to_string(request.content.type) == type_filter)
   end
 
   # `:all` collapses to "no filter": status_group is simply omitted (the action
