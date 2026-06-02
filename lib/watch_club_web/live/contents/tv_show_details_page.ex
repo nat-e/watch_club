@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
-      class="!p-0"
+      class="p-0!"
       space="none"
     >
       <.tv_show_details
@@ -81,7 +81,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       </div>
 
       <div class="relative z-1 mx-auto grid w-full max-w-[100rem] grid-cols-1 gap-cluster px-page pb-page-y pt-section 2xl:grid-cols-[minmax(0,1fr)_22rem] 2xl:items-start">
-        <.hero_panel tv_show={@tv_show} current_user={@current_user} available?={false} />
+        <.hero_panel tv_show={@tv_show} current_user={@current_user} />
 
         <div class="grid gap-cluster">
           <.section

@@ -63,6 +63,12 @@ defmodule WatchClub.Contents.TvShowEpisode do
               WatchClub.Contents.TvShowEpisode.Calculations.FormattedEpisodeNumber do
       public? true
     end
+
+    calculate :playable?, :boolean, expr(videos_count > 0)
+  end
+
+  aggregates do
+    count :videos_count, :videos
   end
 
   identities do

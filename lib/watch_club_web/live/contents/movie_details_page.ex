@@ -9,8 +9,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   alias WatchClub.Accounts.UserLocale
   alias WatchClub.Contents.ContentView
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
-  alias WatchClub.Requests
-  alias WatchClubWeb.Components.Contents.AddToLibraryButtonLive
+  alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
 
   @impl true
   def render(%{movie: %ContentView{details: %MovieDetailsResponse{}}} = assigns) do
@@ -19,7 +18,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
-      class="!p-0"
+      class="p-0!"
       space="none"
     >
       <.movie_details movie={@movie} current_user={@current_user} />
@@ -51,8 +50,6 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
     assigns =
       assigns
-      |> assign(:details, details)
-      |> assign(:available?, false)
       |> assign(:in_clubs, in_clubs)
       |> assign(:metadata_items, metadata_items(details))
       |> assign(:primary_country, primary_country(details))
@@ -70,8 +67,8 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
     >
       <.tmdb_backdrop
-        :if={@details.backdrop_path}
-        path={@details.backdrop_path}
+        :if={@movie.details.backdrop_path}
+        path={@movie.details.backdrop_path}
         size="w1280"
         alt=""
         aria-hidden="true"
@@ -96,9 +93,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       <div class="relative z-1 mx-auto grid w-full max-w-[100rem] grid-cols-1 gap-cluster px-page pb-page-y pt-section 2xl:grid-cols-[minmax(0,1fr)_22rem] 2xl:items-start">
         <.hero_panel
           movie={@movie}
-          details={@details}
           current_user={@current_user}
-          available?={@available?}
           in_clubs={@in_clubs}
           metadata_items={@metadata_items}
           primary_country={@primary_country}
@@ -108,12 +103,12 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
         <div class="grid gap-cluster">
           <.section
-            :if={@details.overview}
+            :if={@movie.details.overview}
             title={dgettext("contents", "Overview")}
             icon={:film}
           >
             <p class="leading-7 text-text-muted">
-              {@details.overview}
+              {@movie.details.overview}
             </p>
           </.section>
 
@@ -137,7 +132,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
             score={@score}
             score_percent={@score_percent}
             vote_count={@vote_count}
-            raw_vote_count={@details.vote_count}
+            raw_vote_count={@movie.details.vote_count}
           />
           <.external_links_card :if={@external_links != []} links={@external_links} />
         </aside>
@@ -147,9 +142,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   attr :movie, ContentView, required: true
-  attr :details, MovieDetailsResponse, required: true
   attr :current_user, User, required: true
-  attr :available?, :boolean, required: true
   attr :in_clubs, :list, required: true
   attr :metadata_items, :list, required: true
   attr :primary_country, :map, default: nil
@@ -161,15 +154,15 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     <header class="relative flex justify-center py-cluster md:min-h-[32rem] md:py-section xl:min-h-[36rem] 2xl:col-span-2">
       <div class="relative z-1 grid content-start gap-cluster md:min-h-[28rem] xl:min-h-[32rem]">
         <p
-          :if={@details.tagline}
+          :if={@movie.details.tagline}
           class="justify-self-center text-center text-sm font-semibold tracking-[0.28em] text-accent uppercase"
         >
-          {@details.tagline}
+          {@movie.details.tagline}
         </p>
 
         <div class="grid content-start gap-cluster md:grid-cols-[11rem_minmax(0,1fr)] md:items-center xl:grid-cols-[15rem_minmax(0,1fr)]">
           <.tmdb_poster
-            path={@details.poster_path}
+            path={@movie.details.poster_path}
             size="w500"
             alt=""
             class="mx-auto w-44 rounded-card border border-border-subtle shadow-overlay md:mx-0 md:w-full"
@@ -212,16 +205,16 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
               </li>
             </ul>
 
-            <p :if={show_original_title?(@movie, @details)} class="text-center md:text-left">
+            <p :if={show_original_title?(@movie, @movie.details)} class="text-center md:text-left">
               {dgettext("contents", "Original title")}:
-              <span class="font-semibold text-text">{@details.original_title}</span>
+              <span class="font-semibold text-text">{@movie.details.original_title}</span>
             </p>
 
             <ul
-              :if={@details.genres != []}
+              :if={@movie.details.genres != []}
               class="flex flex-wrap items-center justify-center gap-related md:justify-start"
             >
-              <li :for={genre <- @details.genres}>
+              <li :for={genre <- @movie.details.genres}>
                 <.badge variant="secondary">{genre.name}</.badge>
               </li>
             </ul>
@@ -229,11 +222,10 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         </div>
 
         <.stack space="group" class="w-full items-center justify-self-center">
-          <.availability_notice :if={!@available? && @in_clubs == []} movie={@movie} />
+          <%!-- <.availability_notice :if={!@available? && @in_clubs == []} movie={@movie} /> --%>
           <.hero_actions
             movie={@movie}
             current_user={@current_user}
-            available?={@available?}
             trailer_url={@trailer_url}
           />
         </.stack>
@@ -263,37 +255,30 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   attr :movie, ContentView, required: true
   attr :current_user, User, required: true
-  attr :available?, :boolean, required: true
   attr :trailer_url, :string, default: nil
 
   defp hero_actions(assigns) do
     ~H"""
     <.cluster class="w-full justify-center">
-      <div :if={!@available?} class="w-full md:w-auto">
-        <.live_component
-          id="movie-details-add-to-library-button"
-          module={AddToLibraryButtonLive}
-          content={@movie}
-          current_user={@current_user}
-          on_content_updated={
-            fn content_view ->
-              send(self(), {:content_libraries_updated, content_view})
-            end
-          }
-          class="w-full md:w-auto"
-        />
-      </div>
-      <.button
-        :if={@available?}
-        id="movie-details-play-button"
-        size="lg"
-        variant="primary"
-        emphasis
+      <.live_component
+        id="movie-details-play-or-request-button"
+        module={PlayOrRequestButtonLive}
+        content={@movie}
+        current_user={@current_user}
         class="w-full md:w-auto"
-      >
-        <:icon><Lucideicons.play /></:icon>
-        {dgettext("contents", "Play")}
-      </.button>
+      />
+      <.live_component
+        id="movie-details-add-to-library-button"
+        module={AddToLibraryButtonLive}
+        content={@movie}
+        current_user={@current_user}
+        on_content_updated={
+          fn content_view ->
+            send(self(), {:content_libraries_updated, content_view})
+          end
+        }
+        class="w-full md:w-auto"
+      />
       <.button
         :if={@trailer_url}
         id="movie-details-watch-trailer-button"
@@ -305,16 +290,6 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       >
         <:icon><Lucideicons.play_circle /></:icon>
         {dgettext("contents", "Watch Trailer")}
-      </.button>
-      <.button
-        id="movie-details-request-button"
-        size="lg"
-        variant="accent"
-        phx-click="request-content"
-        class="w-full md:w-auto"
-      >
-        <:icon><Lucideicons.download /></:icon>
-        {dgettext("contents", "Request")}
       </.button>
     </.cluster>
     """
@@ -424,27 +399,6 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       {:error, error} ->
         Logger.warning("Error loading movie: #{inspect(error)}")
         {:ok, socket}
-    end
-  end
-
-  @impl true
-  def handle_event("request-content", _params, socket) do
-    movie = socket.assigns.movie
-
-    case Requests.request_content(
-           %{
-             external_id_source: movie.external_id_source,
-             external_id: movie.external_id,
-             content_type: movie.type
-           },
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, _request} ->
-        {:noreply, put_flash(socket, :info, dgettext("contents", "Added to your requests."))}
-
-      {:error, _error} ->
-        {:noreply,
-         put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
     end
   end
 

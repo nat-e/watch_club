@@ -4,6 +4,7 @@ defmodule WatchClub.Contents.ContentView do
   alias WatchClub.Clubs.LibraryItem
 
   alias WatchClub.Contents.{
+    Book,
     Content,
     ContentType,
     ContentView,
@@ -82,6 +83,18 @@ defmodule WatchClub.Contents.ContentView do
   def details_url(%ContentView{type: :book} = content), do: "/books/#{content.external_id}"
   def details_url(%ContentView{type: :movie} = content), do: "/movies/#{content.external_id}"
   def details_url(%ContentView{type: :tv_show} = content), do: "/shows/#{content.external_id}"
+
+  def playable?(%ContentView{content: %Content{book: %Book{} = book}}), do: book.playable?
+  def playable?(%ContentView{content: %Content{movie: %Movie{} = movie}}), do: movie.playable?
+
+  def playable?(%ContentView{content: %Content{tv_show: %TvShow{} = show}}) do
+    first_episode =
+      Enum.find(show.episodes, fn e -> e.season_number == 1 and e.episode_number == 1 end)
+
+    first_episode && first_episode.playable?
+  end
+
+  def playable?(_content), do: false
 
   def in_clubs(content, current_user) do
     memberships_by_club_id = Map.new(current_user.memberships, fn m -> {m.club_id, m} end)

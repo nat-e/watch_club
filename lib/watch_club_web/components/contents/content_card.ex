@@ -6,9 +6,12 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Contents.ContentView
+  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   attr :content, ContentView, required: true
+  attr :current_user, User, required: true
   attr :library_id_context, :string, default: nil
 
   def content_card(assigns) do
@@ -94,15 +97,13 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </.link>
 
           <div class="mb-tight flex w-full flex-row gap-tight px-tight">
-            <.button
-              id={"content-card-play-button-#{ContentView.unique_id(@content)}"}
-              type="button"
-              variant="primary"
+            <.live_component
+              id={"play-or-request-button-#{ContentView.unique_id(@content)}"}
+              module={PlayOrRequestButtonLive}
+              content={@content}
+              current_user={@current_user}
               class="w-full"
-            >
-              <Lucideicons.play />
-              {dgettext("clubs", "Play")}
-            </.button>
+            />
           </div>
         </div>
       </.tmdb_poster>

@@ -15,12 +15,12 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     assigns = assign(assigns, :clubs, ContentView.in_clubs(assigns.content, assigns.current_user))
 
     ~H"""
-    <div>
+    <div class={@class}>
       <.button
         id={"#{@id}-open-button"}
         size="lg"
         variant={if @clubs == [], do: "primary", else: "accent"}
-        class={@class}
+        class="w-full"
         phx-target={@myself}
         phx-click="open"
       >

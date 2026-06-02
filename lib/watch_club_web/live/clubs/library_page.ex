@@ -76,7 +76,11 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           </div>
 
           <div :for={{dom_id, content} <- @streams.contents} id={dom_id} class="w-full">
-            <.content_card content={content} library_id_context={@library.id} />
+            <.content_card
+              content={content}
+              library_id_context={@library.id}
+              current_user={@current_user}
+            />
           </div>
         </div>
 

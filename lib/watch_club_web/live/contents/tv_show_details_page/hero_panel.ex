@@ -8,11 +8,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.HeroPanel do
 
   alias WatchClub.Contents.ContentView
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
-  alias WatchClubWeb.Components.Contents.AddToLibraryButtonLive
+  alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
 
   attr :tv_show, ContentView, required: true
   attr :current_user, User, required: true
-  attr :available?, :boolean, required: true
 
   def hero_panel(assigns) do
     ~H"""
@@ -91,15 +90,13 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.HeroPanel do
         </div>
 
         <.stack space="group" class="w-full items-center justify-self-center">
-          <.availability_notice
+          <%!-- <.availability_notice
             :if={!@available? && ContentView.in_clubs(@tv_show, @current_user) == []}
             tv_show={@tv_show}
-          />
+          /> --%>
           <.hero_actions
             tv_show={@tv_show}
             current_user={@current_user}
-            available?={@available?}
-            trailer_url={trailer_url(@tv_show.details)}
           />
         </.stack>
       </div>
@@ -128,37 +125,31 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.HeroPanel do
 
   attr :tv_show, ContentView, required: true
   attr :current_user, User, required: true
-  attr :available?, :boolean, required: true
-  attr :trailer_url, :string, default: nil
 
   defp hero_actions(assigns) do
+    assigns = assigns |> assign(:trailer_url, trailer_url(assigns.tv_show.details))
+
     ~H"""
     <.cluster class="w-full justify-center">
-      <div :if={!@available?} class="w-full md:w-auto">
-        <.live_component
-          id="tv-show-details-add-to-library-button"
-          module={AddToLibraryButtonLive}
-          content={@tv_show}
-          current_user={@current_user}
-          on_content_updated={
-            fn content_view ->
-              send(self(), {:content_libraries_updated, content_view})
-            end
-          }
-          class="w-full md:w-auto"
-        />
-      </div>
-      <.button
-        :if={@available?}
-        id="tv-show-details-play-button"
-        size="lg"
-        variant="primary"
-        emphasis
+      <.live_component
+        id="play-or-request-button"
+        module={PlayOrRequestButtonLive}
+        content={@tv_show}
+        current_user={@current_user}
         class="w-full md:w-auto"
-      >
-        <:icon><Lucideicons.play /></:icon>
-        {dgettext("contents", "Play")}
-      </.button>
+      />
+      <.live_component
+        id="details-add-to-library-button"
+        module={AddToLibraryButtonLive}
+        content={@tv_show}
+        current_user={@current_user}
+        on_content_updated={
+          fn content_view ->
+            send(self(), {:content_libraries_updated, content_view})
+          end
+        }
+        class="w-full md:w-auto"
+      />
       <.button
         :if={@trailer_url}
         id="tv-show-details-watch-trailer-button"

@@ -32,7 +32,15 @@ defmodule WatchClub.Contents.Content do
 
     read :for_view do
       description "Read action that loads all data needed to build ContentViews"
-      prepare build(load: [library_items: [:library, :added_by]])
+
+      prepare build(
+                load: [
+                  library_items: [:library, :added_by],
+                  book: [:audiobooks, :ebooks, :playable?],
+                  movie: [:videos, :playable?],
+                  tv_show: [episodes: [:videos, :playable?]]
+                ]
+              )
     end
 
     create :create_movie do

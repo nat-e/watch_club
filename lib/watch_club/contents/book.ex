@@ -50,6 +50,15 @@ defmodule WatchClub.Contents.Book do
     has_many :audiobooks, Audiobook
   end
 
+  calculations do
+    calculate :playable?, :boolean, expr(audiobooks_count > 0 or ebooks_count > 0)
+  end
+
+  aggregates do
+    count :audiobooks_count, :audiobooks
+    count :ebooks_count, :ebooks
+  end
+
   identities do
     identity :unique_content, [:id]
     identity :unique_hardcover_id, [:hardcover_id]

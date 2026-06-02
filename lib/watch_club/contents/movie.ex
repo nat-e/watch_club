@@ -71,6 +71,14 @@ defmodule WatchClub.Contents.Movie do
     has_many :videos, Video
   end
 
+  calculations do
+    calculate :playable?, :boolean, expr(videos_count > 0)
+  end
+
+  aggregates do
+    count :videos_count, :videos
+  end
+
   identities do
     identity :unique_content, [:id]
   end
