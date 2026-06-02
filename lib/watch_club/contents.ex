@@ -18,6 +18,7 @@ defmodule WatchClub.Contents do
   resources do
     resource Content do
       define :search_content, action: :search
+      define :get_content_by_id, action: :read, get_by: [:id]
       define :create_movie, args: [:tmdb_id]
       define :create_tv_show, args: [:tmdb_id]
       define :refresh_tv_show, action: :refresh_tv_show, args: [:tmdb_id]

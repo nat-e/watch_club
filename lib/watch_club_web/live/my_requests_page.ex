@@ -1,53 +1,79 @@
 defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
+  alias WatchClub.Contents.ContentType
+  alias WatchClub.Requests
+  alias WatchClub.Requests.ContentRequestSort
+  alias WatchClub.Requests.ContentRequestStatusGroup
   alias WatchClubWeb.Components.Requests.RequestCard
+  alias WatchClubWeb.MyRequestsPage.RequestStreamState
   import WatchClubWeb.Components.Settings.SettingsHeader
 
-  # UI-level status groups. Card-level labels remain finer-grained
-  # (queued / downloading X% / processing) but the page filter collapses
-  # the three "in-flight" states into a single "in_progress" pill, and
-  # "not_released" + "not_found" into "unavailable".
-  @in_progress_statuses ~w(requested downloading processing)
-  @unavailable_statuses ~w(not_released not_found)
-  @group_order ~w(in_progress available failed unavailable)
-  @valid_status_groups ["all" | @group_order]
-  @valid_types ~w(all movie tv_show book)
-  @valid_sorts ~w(last_update created)
-  @sort_labels %{"last_update" => "Last update", "created" => "Created"}
+  @page_size 25
+
+  # Filter values, derived from the domain enums (plus the "all" no-filter
+  # sentinel). Labels and display order live on the enums themselves; the
+  # status_group → status collapsing happens server-side, in `for_current_user`.
+  # Sort is owned end-to-end by `ContentRequestSort` (param + label + query).
+  @valid_status_groups ["all" | Enum.map(ContentRequestStatusGroup.values(), &to_string/1)]
+  @valid_types ["all" | Enum.map(ContentType.library_display_order(), &to_string/1)]
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, :requests, fixtures())}
+    user = socket.assigns.current_user
+
+    # Topic published by ContentRequest's `pub_sub` block (prefix "users").
+    if connected?(socket),
+      do: Phoenix.PubSub.subscribe(WatchClub.PubSub, "users:#{user.id}:requests")
+
+    {:ok,
+     socket
+     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")
+     |> assign(:request_stream, RequestStreamState.initial())}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply,
-     socket
-     |> assign(:sort, validate(params["sort"], @valid_sorts, "last_update"))
-     |> assign(:status_filter, validate(params["status"], @valid_status_groups, "all"))
-     |> assign(:content_type_filter, validate(params["type"], @valid_types, "all"))}
+    socket =
+      socket
+      |> assign(:sort, ContentRequestSort.parse_param(params["sort"]))
+      |> assign(:status_filter, validate(params["status"], @valid_status_groups, "all"))
+      |> assign(:content_type_filter, validate(params["type"], @valid_types, "all"))
+
+    {:noreply, load_first_page(socket)}
   end
 
   @impl true
   def handle_event("load_more", _params, socket) do
-    {:noreply, socket}
+    state = socket.assigns.request_stream
+
+    if RequestStreamState.can_load_more?(state) do
+      next_state = RequestStreamState.next(state)
+
+      {:noreply,
+       socket
+       |> assign(:request_stream, next_state)
+       |> stream(:requests, RequestStreamState.results(next_state), at: -1)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("cancel-request", %{"id" => id}, socket) do
+    Requests.cancel_content_request(id, actor: socket.assigns.current_user)
+    {:noreply, stream_delete(socket, :requests, %{id: id})}
+  end
+
+  @impl true
+  def handle_info(_event, socket) do
+    # A request was created/cancelled (here or in another tab) — reconcile by
+    # reloading the first page.
+    {:noreply, load_first_page(socket)}
   end
 
   @impl true
   def render(assigns) do
-    visible = filter_requests(assigns)
-    counts = count_by_group(assigns.requests)
-    total = length(assigns.requests)
-
-    assigns =
-      assigns
-      |> assign(:visible_requests, visible)
-      |> assign(:counts, counts)
-      |> assign(:total, total)
-      |> assign(:group_order, @group_order)
-
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -55,92 +81,67 @@ defmodule WatchClubWeb.MyRequestsPage do
       current_user={@current_user}
       class="max-w-layout-page"
     >
-      <.settings_header
-        title="My Requests"
-        description=""
-      />
+      <.settings_header title="My Requests" description="" />
+
       <.cluster space="tight" aria-label="Filter by status" class="mb-related">
         <.status_chip
+          :for={group <- [:all | ContentRequestStatusGroup.values()]}
+          group={group}
+          current={@status_filter}
           sort={@sort}
           type={@content_type_filter}
-          status="all"
-          current={@status_filter}
-          count={@total}
-        >
-          All
-        </.status_chip>
-        <.status_chip
-          :for={group <- @group_order}
-          sort={@sort}
-          type={@content_type_filter}
-          status={group}
-          current={@status_filter}
-          count={@counts[group] || 0}
-        >
-          {group_label(group)}
-        </.status_chip>
+        />
       </.cluster>
 
       <div class="mb-cluster flex flex-wrap items-center justify-between gap-related">
         <nav aria-label="Filter by content type" class="flex items-center gap-cluster text-sm">
-          <.link
-            :for={{type, label} <- type_options()}
-            patch={path(sort: @sort, status: @status_filter, type: type)}
-            class={[
-              "border-b-2 pb-tight transition-colors",
-              @content_type_filter == type && "border-accent text-text",
-              @content_type_filter != type &&
-                "border-transparent text-text-muted hover:text-text"
-            ]}
-          >
-            {label}
-          </.link>
+          <.content_type_filter
+            :for={type <- [:all | ContentType.library_display_order()]}
+            type={type}
+            current={@content_type_filter}
+            sort={@sort}
+            status={@status_filter}
+          />
         </nav>
 
         <.dropdown_menu id="my-requests-sort">
           <:trigger>
             <.button id="my-requests-sort-trigger" variant="ghost" size="sm">
               <:icon><Lucideicons.arrow_up_down /></:icon>
-              Sort: {sort_label(@sort)}
+              Sort: {ContentRequestSort.translated_label(@sort)}
               <:icon position="end"><Lucideicons.chevron_down /></:icon>
             </.button>
           </:trigger>
           <.dropdown_menu_item
-            :for={key <- ["last_update", "created"]}
-            id={"my-requests-sort-#{key}"}
-            patch={path(status: @status_filter, type: @content_type_filter, sort: key)}
+            :for={sort <- ContentRequestSort.values()}
+            id={"my-requests-sort-#{sort}"}
+            patch={path(status: @status_filter, type: @content_type_filter, sort: sort)}
           >
-            <Lucideicons.check class={if @sort == key, do: "", else: "invisible"} />
-            {sort_label(key)}
+            <Lucideicons.check class={if @sort == sort, do: "", else: "invisible"} />
+            {ContentRequestSort.translated_label(sort)}
           </.dropdown_menu_item>
         </.dropdown_menu>
       </div>
 
-      <.empty :if={@visible_requests == []} size="sm">
+      <.empty :if={RequestStreamState.empty?(@request_stream)} size="sm">
         <:icon><Lucideicons.inbox /></:icon>
         <:title>No requests match</:title>
         <:description>Try clearing some filters, or browse content to add a request.</:description>
       </.empty>
 
-      <.stack :if={@visible_requests != []} space="related">
-        <RequestCard.request_card
-          :for={req <- @visible_requests}
-          id={"my-requests-card-#{req.id}"}
-          content_type={req.content_type}
-          title={req.title}
-          year={req.year}
-          runtime={req.runtime}
-          country_flag={req.country_flag}
-          language_label={req.language_label}
-          poster_url={req.poster_url}
-          status={req.status}
-          progress={Map.get(req, :progress)}
-          requested_at_label={Map.get(req, :requested_at_label)}
-        />
+      <.stack
+        :if={!RequestStreamState.empty?(@request_stream)}
+        space="related"
+        id="my-requests"
+        phx-update="stream"
+      >
+        <div :for={{dom_id, request} <- @streams.requests} id={dom_id}>
+          <RequestCard.request_card request={request} locale={@current_user.settings.locale} />
+        </div>
       </.stack>
 
       <.infinite_scroll_trigger
-        :if={@visible_requests != []}
+        :if={RequestStreamState.can_load_more?(@request_stream)}
         id="my-requests-load-more"
         event="load_more"
       />
@@ -148,41 +149,102 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
-  attr :sort, :string, required: true
-  attr :type, :string, required: true
-  attr :status, :string, required: true
+  attr :group, :atom, required: true, doc: "`:all`, or a `ContentRequestStatusGroup` value."
   attr :current, :string, required: true
-  attr :count, :integer, required: true
-  slot :inner_block, required: true
+  attr :sort, :atom, required: true
+  attr :type, :string, required: true
 
   defp status_chip(assigns) do
+    assigns = assign(assigns, :value, to_string(assigns.group))
+
     ~H"""
     <.link
-      patch={path(sort: @sort, type: @type, status: @status)}
+      patch={path(sort: @sort, type: @type, status: @value)}
       class={[
         "inline-flex items-center gap-tight rounded-full border px-related py-tight text-sm transition-colors",
-        @current == @status && "border-border bg-surface-selected text-text",
-        @current != @status &&
+        @current == @value && "border-border bg-surface-selected text-text",
+        @current != @value &&
           "border-border-subtle bg-surface-inset text-text-muted hover:border-border hover:text-text"
       ]}
     >
       <span
-        class={["inline-block size-2 shrink-0 rounded-full", status_dot_class(@status)]}
+        class={[
+          "inline-block size-2 shrink-0 rounded-full",
+          @group == :in_progress && "bg-accent",
+          @group == :completed && "bg-success",
+          @group == :failed && "bg-danger",
+          @group in [:all, :unavailable] && "bg-text-subtle"
+        ]}
         aria-hidden="true"
       >
       </span>
-      {render_slot(@inner_block)}
-      <span class="tabular-nums text-text-subtle">{@count}</span>
+      {if @group == :all, do: gettext("All"), else: ContentRequestStatusGroup.translated_label(@group)}
     </.link>
     """
   end
 
+  attr :type, :atom, required: true, doc: "`:all`, or a `ContentType` value."
+  attr :current, :string, required: true
+  attr :sort, :atom, required: true
+  attr :status, :string, required: true
+
+  defp content_type_filter(assigns) do
+    assigns = assign(assigns, :value, to_string(assigns.type))
+
+    ~H"""
+    <.link
+      patch={path(sort: @sort, status: @status, type: @value)}
+      class={[
+        "border-b-2 pb-tight transition-colors",
+        @current == @value && "border-accent text-text",
+        @current != @value && "border-transparent text-text-muted hover:text-text"
+      ]}
+    >
+      {if @type == :all, do: gettext("All"), else: ContentType.translated_plural_label(@type)}
+    </.link>
+    """
+  end
+
+  # ─── Loading ───────────────────────────────────────────────────────────────
+
+  defp load_first_page(socket) do
+    user = socket.assigns.current_user
+
+    page =
+      Requests.list_content_requests_for_current_user!(
+        action_filters(socket),
+        actor: user,
+        page: [limit: @page_size]
+      )
+
+    state = RequestStreamState.reset(page)
+
+    socket
+    |> assign(:request_stream, state)
+    |> stream(:requests, RequestStreamState.results(state), reset: true)
+  end
+
+  # `:all` collapses to "no filter": status_group is simply omitted (the action
+  # only filters when a real group is present) and content_type likewise.
+  defp action_filters(socket) do
+    %{sort: socket.assigns.sort}
+    |> maybe_filter(:status_group, socket.assigns.status_filter)
+    |> maybe_filter(:content_type, socket.assigns.content_type_filter)
+  end
+
+  defp maybe_filter(filters, _key, "all"), do: filters
+
+  defp maybe_filter(filters, key, value),
+    do: Map.put(filters, key, String.to_existing_atom(value))
+
   # ─── Helpers ──────────────────────────────────────────────────────────────
 
   defp path(opts) do
+    sort = Keyword.get(opts, :sort, ContentRequestSort.default())
+
     params =
       %{}
-      |> maybe_put("sort", Keyword.get(opts, :sort, "last_update"), "last_update")
+      |> maybe_put("sort", ContentRequestSort.to_param(sort), "last_update")
       |> maybe_put("status", Keyword.get(opts, :status, "all"), "all")
       |> maybe_put("type", Keyword.get(opts, :type, "all"), "all")
 
@@ -201,168 +263,4 @@ defmodule WatchClubWeb.MyRequestsPage do
   end
 
   defp validate(_value, _allowed, default), do: default
-
-  defp filter_requests(assigns) do
-    Enum.filter(assigns.requests, fn req ->
-      status_match?(assigns.status_filter, req.status) and
-        type_match?(assigns.content_type_filter, req.content_type)
-    end)
-  end
-
-  defp status_match?("all", _status), do: true
-  defp status_match?("in_progress", status), do: status in @in_progress_statuses
-  defp status_match?("unavailable", status), do: status in @unavailable_statuses
-  defp status_match?(group, status), do: group == status
-
-  defp type_match?("all", _type), do: true
-  defp type_match?(filter, type), do: filter == to_string(type)
-
-  defp count_by_group(requests) do
-    Enum.reduce(requests, %{}, fn req, acc ->
-      Map.update(acc, group_for(req.status), 1, &(&1 + 1))
-    end)
-  end
-
-  defp group_for(status) when status in @in_progress_statuses, do: "in_progress"
-  defp group_for(status) when status in @unavailable_statuses, do: "unavailable"
-  defp group_for(status), do: status
-
-  defp group_label("in_progress"), do: "In progress"
-  defp group_label("available"), do: "Available"
-  defp group_label("failed"), do: "Failed"
-  defp group_label("unavailable"), do: "Unavailable"
-
-  defp status_dot_class("all"), do: "bg-text-subtle"
-  defp status_dot_class("in_progress"), do: "bg-accent"
-  defp status_dot_class("available"), do: "bg-success"
-  defp status_dot_class("failed"), do: "bg-danger"
-  defp status_dot_class("unavailable"), do: "bg-text-subtle"
-
-  defp type_options do
-    [
-      {"all", "All"},
-      {"movie", "Movies"},
-      {"tv_show", "TV Shows"},
-      {"book", "Books"}
-    ]
-  end
-
-  defp sort_label(key), do: Map.get(@sort_labels, key, key)
-
-  defp fixtures do
-    [
-      %{
-        id: "dune-part-three",
-        status: "not_released",
-        content_type: :movie,
-        title: "Dune: Part Three",
-        year: 2026,
-        runtime: nil,
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
-        requested_at_label: "2 hours ago"
-      },
-      %{
-        id: "dune-part-two",
-        status: "requested",
-        content_type: :movie,
-        title: "Dune: Part Two",
-        year: 2024,
-        runtime: "2h 47m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg"),
-        requested_at_label: "5 hours ago"
-      },
-      %{
-        id: "the-matrix",
-        status: "downloading",
-        progress: 48,
-        content_type: :movie,
-        title: "The Matrix",
-        year: 1999,
-        runtime: "2h 16m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/aOIuZAjPaRIE6CMzbazvcHuHXDc.jpg"),
-        requested_at_label: "yesterday"
-      },
-      %{
-        id: "severance",
-        status: "processing",
-        content_type: :tv_show,
-        title: "Severance",
-        year: 2022,
-        runtime: "S1–S2 · 19 ep",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg"),
-        requested_at_label: "3 days ago"
-      },
-      %{
-        id: "interstellar",
-        status: "available",
-        content_type: :movie,
-        title: "Interstellar",
-        year: 2014,
-        runtime: "2h 49m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/yQvGrMoipbRoddT0ZR8tPoR7NfX.jpg"),
-        requested_at_label: "1 week ago"
-      },
-      %{
-        id: "annihilation",
-        status: "failed",
-        content_type: :movie,
-        title: "Annihilation",
-        year: 2018,
-        runtime: "1h 55m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/4YRplSk6BhH6PRuE9gfyw9byUJ6.jpg"),
-        requested_at_label: "5 days ago"
-      },
-      %{
-        id: "blade-runner-2049",
-        status: "available",
-        content_type: :movie,
-        title: "Blade Runner 2049",
-        year: 2017,
-        runtime: "2h 44m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"),
-        requested_at_label: "2 weeks ago"
-      },
-      %{
-        id: "foundation",
-        status: "not_found",
-        content_type: :tv_show,
-        title: "Foundation",
-        year: 2021,
-        runtime: "S1–S3 · 30 ep",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/tg9I5pOY4M9CKj8U0cxVBTsm5eh.jpg"),
-        requested_at_label: "3 weeks ago"
-      },
-      %{
-        id: "dune-2021",
-        status: "downloading",
-        progress: 12,
-        content_type: :movie,
-        title: "Dune",
-        year: 2021,
-        runtime: "2h 35m",
-        country_flag: "🇺🇸",
-        language_label: "English",
-        poster_url: tmdb_poster("/gDzOcq0pfeCeqMBwKIJlSmQpjkZ.jpg"),
-        requested_at_label: "12 minutes ago"
-      }
-    ]
-  end
-
-  defp tmdb_poster(path), do: "https://image.tmdb.org/t/p/w500#{path}"
 end

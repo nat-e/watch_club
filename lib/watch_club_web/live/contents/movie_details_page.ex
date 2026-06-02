@@ -9,6 +9,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   alias WatchClub.Accounts.UserLocale
   alias WatchClub.Contents.ContentView
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
+  alias WatchClub.Requests
   alias WatchClubWeb.Components.Contents.AddToLibraryButtonLive
 
   @impl true
@@ -305,6 +306,16 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         <:icon><Lucideicons.play_circle /></:icon>
         {dgettext("contents", "Watch Trailer")}
       </.button>
+      <.button
+        id="movie-details-request-button"
+        size="lg"
+        variant="accent"
+        phx-click="request-content"
+        class="w-full md:w-auto"
+      >
+        <:icon><Lucideicons.download /></:icon>
+        {dgettext("contents", "Request")}
+      </.button>
     </.cluster>
     """
   end
@@ -413,6 +424,27 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       {:error, error} ->
         Logger.warning("Error loading movie: #{inspect(error)}")
         {:ok, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("request-content", _params, socket) do
+    movie = socket.assigns.movie
+
+    case Requests.request_content(
+           %{
+             external_id_source: movie.external_id_source,
+             external_id: movie.external_id,
+             content_type: movie.type
+           },
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _request} ->
+        {:noreply, put_flash(socket, :info, dgettext("contents", "Added to your requests."))}
+
+      {:error, _error} ->
+        {:noreply,
+         put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
     end
   end
 

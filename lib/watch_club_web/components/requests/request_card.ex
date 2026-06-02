@@ -2,141 +2,103 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   @moduledoc """
   Request card for the My Requests page.
 
-  Layout:
+  Takes the `ContentRequest` (with `content`, `status`, `progress` and
+  `playable?` loaded) plus the viewer's `locale`, and lays out a flex row of
+  two sections:
 
-    - Left (What): poster with a Play overlay when available, then a stack
-      of content-type badge + title + metadata + Add to Library button.
-      The Add button is revealed on card hover (or focus-within).
-    - Right (Status): tinted panel with a state header + cancel/delete icon
-      at the top, state body in the middle (always a progress bar for the
-      three in-progress states), and "Requested X ago" at the bottom.
+    - Left (Content): poster with a Play overlay when `playable` (independent of
+      status), then the content-type badge, title, year, and an "Add to Library"
+      button revealed on card hover (or focus-within).
+    - Right (Status): fixed-width tinted panel headed by the status'
+      `translated_label`, with a cancel/delete icon, the status body (a progress
+      bar for the three in-progress statuses), and "Requested X ago".
 
-  Seven status values, grouped by color:
-    * `not_released` / `not_found` — gray, can't be downloaded
-    * `requested` / `downloading` / `processing` — accent (purple), in flight
-    * `failed` — danger (red)
-    * `available` — success (green)
-
-  The status-section action is always an `×` icon button. Aria-label is
-  "Delete content" for `available` (the file exists on the server) and
-  "Cancel request" for every other status (no file yet).
+  Status is grouped by color: `not_released`/`not_found` gray, the in-flight
+  trio (`requested`/`downloading`/`importing`) accent, `failed` danger,
+  `completed` success.
   """
   use WatchClubWeb, :component
 
   import WatchClubWeb.Components.Contents.ContentTypeBadge
+  import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Helpers.Time
 
-  @valid_statuses ~w(not_released not_found requested downloading processing available failed)
+  alias WatchClub.Contents.ContentView
+  alias WatchClub.Requests.ContentRequest
+  alias WatchClub.Requests.ContentRequestStatus
 
-  attr :id, :string, required: true
+  @in_progress_statuses [:requested, :downloading, :importing]
 
-  attr :title, :string, required: true
-  attr :year, :integer, default: nil
-  attr :runtime, :string, default: nil
-  attr :country_flag, :string, default: nil
-  attr :language_label, :string, default: nil
-  attr :poster_url, :string, default: nil
-  attr :content_type, :atom, values: [:movie, :tv_show, :book], default: :movie
+  attr :request, ContentRequest,
+    required: true,
+    doc: "A Content Request with `content`, `status`, `progress` and `playable?` loaded."
 
-  attr :status, :string, values: @valid_statuses, required: true
-
-  attr :progress, :integer, default: nil
-  attr :requested_at_label, :string, default: nil
+  attr :locale, :any, required: true
 
   def request_card(assigns) do
     ~H"""
-    <article
-      id={@id}
-      data-slot="request-card"
-      data-status={@status}
-      class="group/card relative grid grid-cols-[minmax(0,1fr)_16rem] overflow-hidden rounded-card border border-border-subtle bg-surface shadow-card"
+    <.card
+      as="article"
+      data_slot="request-card"
+      padding="none"
+      id={@request.id}
+      data-status={@request.status}
+      class="group/card flex overflow-hidden"
     >
-      <.what_section
-        id={@id}
-        title={@title}
-        year={@year}
-        runtime={@runtime}
-        country_flag={@country_flag}
-        language_label={@language_label}
-        poster_url={@poster_url}
-        content_type={@content_type}
-        status={@status}
+      <.content_section
+        id={@request.id}
+        content={ContentView.from_content(@request.content, @locale)}
+        playable={@request.playable?}
       />
 
       <.status_section
-        id={@id}
-        status={@status}
-        progress={@progress}
-        content_type={@content_type}
-        requested_at_label={@requested_at_label}
+        id={@request.id}
+        status={@request.status}
+        progress={@request.progress}
+        content_type={@request.content.type}
+        requested_at_label={relative_from_now(@request.inserted_at, @locale)}
       />
-    </article>
+    </.card>
     """
   end
 
-  # ─── What section ────────────────────────────────────────────────────────
+  # ─── Content section ─────────────────────────────────────────────────────
 
   attr :id, :string, required: true
-  attr :title, :string, required: true
-  attr :year, :integer, default: nil
-  attr :runtime, :string, default: nil
-  attr :country_flag, :string, default: nil
-  attr :language_label, :string, default: nil
-  attr :poster_url, :string, default: nil
-  attr :content_type, :atom, required: true
-  attr :status, :string, required: true
+  attr :content, ContentView, required: true
+  attr :playable, :boolean, default: false
 
-  defp what_section(assigns) do
+  defp content_section(assigns) do
     ~H"""
-    <div class={["flex items-center gap-group p-group", @status != "available" && "opacity-70"]}>
-      <div class="relative aspect-2/3 h-36 shrink-0 overflow-hidden rounded-control border border-border-subtle bg-surface-inset shadow-overlay">
-        <img
-          :if={@poster_url}
-          src={@poster_url}
-          alt=""
-          class={[
-            "absolute inset-0 h-full w-full object-cover",
-            @status != "available" && "opacity-70"
-          ]}
-        />
-        <div
-          :if={!@poster_url}
-          class="absolute inset-0 flex items-center justify-center text-text-muted"
-        >
-          <Lucideicons.image />
-        </div>
-
+    <div class={["flex min-w-0 flex-1 items-center gap-group p-group", !@playable && "opacity-70"]}>
+      <.tmdb_poster
+        size="w342"
+        path={@content.image_path}
+        class="h-36 shrink-0 rounded-control border border-border-subtle shadow-overlay"
+      >
         <button
-          :if={@status == "available"}
+          :if={@playable}
           id={"#{@id}-play"}
           type="button"
           aria-label="Play"
-          class="group/play absolute inset-0 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          class="group/play absolute inset-0 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
         >
-          <span class="flex size-12 items-center justify-center rounded-full bg-white text-on-primary shadow-overlay transition-transform group-hover/play:scale-105 group-active/play:scale-100">
+          <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay transition-transform group-hover/play:scale-105 group-active/play:scale-100">
             <Lucideicons.play class="size-icon" />
           </span>
         </button>
-      </div>
+      </.tmdb_poster>
 
       <div class="min-w-0 flex-1">
-        <.stack space="tight">
-          <.content_type_badge type={@content_type} />
-
+        <div class="flex flex-col gap-tight">
+          <.content_type_badge type={@content.type} />
           <h3 class="truncate text-xl font-heading font-semibold tracking-tight text-text">
-            {@title}
+            {@content.title}
           </h3>
-
-          <p class="truncate text-sm text-text-muted">
-            <span :if={@year}>{@year}</span>
-            <span :if={@year && @runtime} aria-hidden="true"> · </span>
-            <span :if={@runtime}>{@runtime}</span>
-            <span :if={(@year || @runtime) && (@country_flag || @language_label)} aria-hidden="true">
-              ·
-            </span>
-            <span :if={@country_flag} aria-hidden="true">{@country_flag}</span>
-            <span :if={@language_label}>{@language_label}</span>
+          <p :if={@content.release_date} class="text-sm text-text-muted">
+            {@content.release_date.year}
           </p>
-        </.stack>
+        </div>
 
         <.button
           id={"#{@id}-add-to-library"}
@@ -155,30 +117,31 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   # ─── Status section ──────────────────────────────────────────────────────
 
   attr :id, :string, required: true
-  attr :status, :string, required: true
+  attr :status, :atom, required: true
   attr :progress, :integer, default: nil
   attr :content_type, :atom, required: true
   attr :requested_at_label, :string, default: nil
 
   defp status_section(assigns) do
+    assigns = assign(assigns, :style, status_style(assigns.status))
+
     ~H"""
     <div class={[
-      "flex flex-col justify-between gap-related border-l p-group",
-      panel_bg_class(@status),
-      panel_border_class(@status)
+      "flex w-64 shrink-0 flex-col justify-between gap-related border-l p-group",
+      @style.bg,
+      @style.border
     ]}>
       <div class="flex items-start justify-between gap-tight">
-        <p class={[
-          "text-xs font-semibold tracking-wider uppercase",
-          status_text_class(@status)
-        ]}>
-          {state_header(@status)}
+        <p class={["text-xs font-semibold tracking-wider uppercase", @style.text]}>
+          {ContentRequestStatus.translated_label(@status)}
         </p>
         <.button
           id={"#{@id}-cancel"}
           variant="ghost"
           size="icon-sm"
           aria-label={action_label(@status)}
+          phx-click="cancel-request"
+          phx-value-id={@id}
         >
           <Lucideicons.x />
         </.button>
@@ -195,104 +158,79 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   # ─── Status body (per state) ─────────────────────────────────────────────
 
-  attr :status, :string, required: true
+  attr :status, :atom, required: true
   attr :progress, :integer, default: nil
   attr :content_type, :atom, required: true
 
-  defp status_body(%{status: "available"} = assigns) do
-    ~H"""
-    <p class="text-sm text-text">
-      Ready when you are.
-    </p>
-    """
-  end
-
-  defp status_body(%{status: status} = assigns)
-       when status in ["requested", "downloading", "processing"] do
-    pct = in_progress_pct(assigns.status, assigns.progress)
-    assigns = assigns |> assign(:pct, pct) |> assign(:label, in_progress_label(status))
+  defp status_body(%{status: status} = assigns) when status in @in_progress_statuses do
+    assigns =
+      assigns
+      |> assign(:pct, in_progress_pct(status, assigns.progress))
+      |> assign(:label, in_progress_label(status))
 
     ~H"""
-    <div>
+    <div class="flex flex-col gap-tight">
       <div class="flex items-baseline justify-between">
         <p class="text-sm font-medium text-text">{@label}</p>
         <p class="text-xs tabular-nums text-accent">{@pct}%</p>
       </div>
-      <div class="mt-tight h-1.5 w-full overflow-hidden rounded-full bg-surface-inset">
-        <div
-          class="h-full bg-accent transition-[width]"
-          style={"width: #{@pct}%"}
-          aria-hidden="true"
-        >
-        </div>
+      <div
+        class="h-1.5 w-full overflow-hidden rounded-full bg-surface-inset"
+        role="progressbar"
+        aria-valuenow={@pct}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-label={@label}
+      >
+        <div class="h-full bg-accent transition-[width]" style={"width: #{@pct}%"} aria-hidden="true"></div>
       </div>
     </div>
     """
   end
 
-  defp status_body(%{status: "failed"} = assigns) do
+  defp status_body(assigns) do
     ~H"""
-    <p class="text-sm text-text-muted">
-      There was an error downloading the {content_type_noun(@content_type)}.
+    <p class={["text-sm", (@status == :completed && "text-text") || "text-text-muted"]}>
+      {status_message(@status, @content_type)}
     </p>
     """
   end
 
-  defp status_body(%{status: "not_released"} = assigns) do
-    ~H"""
-    <p class="text-sm text-text-muted">
-      This {content_type_noun(@content_type)} hasn't been released yet.
-    </p>
-    """
-  end
+  # ─── Status helpers ──────────────────────────────────────────────────────
 
-  defp status_body(%{status: "not_found"} = assigns) do
-    ~H"""
-    <p class="text-sm text-text-muted">
-      We couldn't find this {content_type_noun(@content_type)}.
-    </p>
-    """
-  end
+  defp status_message(:completed, _type), do: "Ready when you are."
 
-  # ─── State helpers ───────────────────────────────────────────────────────
+  defp status_message(:failed, type),
+    do: "There was an error downloading the #{content_type_noun(type)}."
 
-  defp state_header("available"), do: "Ready to play"
-  defp state_header("failed"), do: "Failed"
-  defp state_header("not_released"), do: "Not released"
-  defp state_header("not_found"), do: "Not found"
-  defp state_header(_), do: "In progress"
+  defp status_message(:not_released, type),
+    do: "This #{content_type_noun(type)} hasn't been released yet."
 
-  defp in_progress_label("requested"), do: "Queued"
-  defp in_progress_label("downloading"), do: "Downloading"
-  defp in_progress_label("processing"), do: "Processing"
+  defp status_message(:not_found, type),
+    do: "We couldn't find this #{content_type_noun(type)}."
 
-  defp in_progress_pct("requested", _), do: 0
-  defp in_progress_pct("processing", _), do: 100
-  defp in_progress_pct("downloading", nil), do: 0
-  defp in_progress_pct("downloading", n) when is_integer(n), do: max(min(n, 100), 0)
+  defp in_progress_label(:requested), do: "Queued"
+  defp in_progress_label(:downloading), do: "Downloading"
+  defp in_progress_label(:importing), do: "Importing"
 
-  defp panel_bg_class("available"), do: "bg-success-bg"
-  defp panel_bg_class("failed"), do: "bg-danger-bg"
-  defp panel_bg_class(status) when status in ["not_released", "not_found"], do: "bg-surface-inset"
-  defp panel_bg_class(_), do: "bg-accent-bg"
+  defp in_progress_pct(:requested, _), do: 0
+  defp in_progress_pct(:importing, _), do: 100
+  defp in_progress_pct(:downloading, nil), do: 0
+  defp in_progress_pct(:downloading, n) when is_integer(n), do: max(min(n, 100), 0)
 
-  defp panel_border_class("available"), do: "border-success-border"
-  defp panel_border_class("failed"), do: "border-danger-border"
+  defp status_style(:completed),
+    do: %{bg: "bg-success-bg", border: "border-success-border", text: "text-success"}
 
-  defp panel_border_class(status) when status in ["not_released", "not_found"],
-    do: "border-border-subtle"
+  defp status_style(:failed),
+    do: %{bg: "bg-danger-bg", border: "border-danger-border", text: "text-danger"}
 
-  defp panel_border_class(_), do: "border-accent-border"
+  defp status_style(status) when status in [:not_released, :not_found],
+    do: %{bg: "bg-surface-inset", border: "border-border-subtle", text: "text-text-muted"}
 
-  defp status_text_class("available"), do: "text-success"
-  defp status_text_class("failed"), do: "text-danger"
+  defp status_style(_in_progress),
+    do: %{bg: "bg-accent-bg", border: "border-accent-border", text: "text-accent"}
 
-  defp status_text_class(status) when status in ["not_released", "not_found"],
-    do: "text-text-muted"
-
-  defp status_text_class(_), do: "text-accent"
-
-  defp action_label("available"), do: "Delete content"
+  defp action_label(:completed), do: "Delete content"
   defp action_label(_), do: "Cancel request"
 
   defp content_type_noun(:movie), do: "movie"

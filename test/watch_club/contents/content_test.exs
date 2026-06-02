@@ -165,6 +165,34 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.read!(actor: actor, authorize?: false)
     end
 
+    test "maps per-season air dates onto episodes, concurrently and best-effort" do
+      actor = generate(user(locale: :en_US))
+
+      # Route the base details vs. the per-season endpoints the concurrent
+      # fan-out hits. Season 1's fixture lists 2 episodes though details say 3,
+      # so S1E3 has no date — best-effort leaves it nil rather than failing.
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        case Regex.run(~r{/season/(\d+)$}, conn.request_path) do
+          [_, season] -> Req.Test.json(conn, tv_season_details_fixture(String.to_integer(season)))
+          nil -> Req.Test.json(conn, tv_details_fixture())
+        end
+      end)
+
+      content = create_tv_show!("42", actor: actor)
+
+      air_dates =
+        TvShowEpisode
+        |> Ash.Query.filter(tv_show_id == ^content.id)
+        |> Ash.read!(authorize?: false)
+        |> Map.new(fn ep -> {{ep.season_number, ep.episode_number}, ep.air_date} end)
+
+      assert air_dates[{1, 1}] == ~D[2015-12-14]
+      assert air_dates[{1, 2}] == ~D[2015-12-15]
+      assert air_dates[{1, 3}] == nil
+      assert air_dates[{2, 1}] == ~D[2017-02-01]
+      assert air_dates[{2, 2}] == nil
+    end
+
     test "returns an invalid error when TMDB fetch fails" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn

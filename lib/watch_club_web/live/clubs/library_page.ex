@@ -26,7 +26,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
-      class="!p-2"
+      class="p-2!"
       space="none"
     >
       <.stack space="group" class="w-full">

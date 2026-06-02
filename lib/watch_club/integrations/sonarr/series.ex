@@ -8,7 +8,10 @@ defmodule WatchClub.Integrations.Sonarr.Series do
           tmdb_id: integer() | nil,
           title: String.t() | nil,
           quality_profile_id: integer() | nil,
-          root_folder_path: String.t() | nil
+          root_folder_path: String.t() | nil,
+          status: String.t() | nil,
+          episode_count: non_neg_integer(),
+          episode_file_count: non_neg_integer()
         }
 
   defstruct [
@@ -18,7 +21,10 @@ defmodule WatchClub.Integrations.Sonarr.Series do
     :tmdb_id,
     :title,
     :quality_profile_id,
-    :root_folder_path
+    :root_folder_path,
+    :status,
+    episode_count: 0,
+    episode_file_count: 0
   ]
 
   @spec from_api(map()) :: t()
@@ -30,7 +36,10 @@ defmodule WatchClub.Integrations.Sonarr.Series do
       tmdb_id: data["tmdbId"],
       title: data["title"],
       quality_profile_id: data["qualityProfileId"],
-      root_folder_path: data["rootFolderPath"]
+      root_folder_path: data["rootFolderPath"],
+      status: data["status"],
+      episode_count: get_in(data, ["statistics", "episodeCount"]) || 0,
+      episode_file_count: get_in(data, ["statistics", "episodeFileCount"]) || 0
     }
   end
 

@@ -32,6 +32,12 @@ defmodule WatchClub.MediaSources.Source do
   actions do
     defaults [:read]
 
+    read :request_capable do
+      description "Request-capable Media Sources that can serve the given Media Types."
+      argument :media_types, {:array, MediaType}, allow_nil?: false
+      filter expr(source_type in [:radarr, :sonarr] and media_type in ^arg(:media_types))
+    end
+
     create :create_filesystem do
       primary? true
 
@@ -83,7 +89,7 @@ defmodule WatchClub.MediaSources.Source do
       forbid_if always()
     end
 
-    policy action(:read) do
+    policy action([:read, :request_capable]) do
       description "Instance Administrator and the system actor can read Media Sources"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if WatchClub.Checks.IsSystemActor

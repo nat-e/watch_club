@@ -10,6 +10,7 @@ defmodule WatchClub.MediaSources do
       define :create_filesystem_media_source, action: :create_filesystem
       define :create_servarr_media_source, action: :create_servarr
       define :destroy_media_source, action: :destroy
+      define :list_request_capable_sources, action: :request_capable, args: [:media_types]
     end
 
     resource WatchClub.MediaSources.Filesystem do

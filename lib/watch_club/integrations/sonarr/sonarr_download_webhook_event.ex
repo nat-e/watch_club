@@ -37,7 +37,16 @@ defmodule WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent do
           upgrade?: boolean()
         }
 
-  defstruct [:tvdb_id, :tmdb_id, :imdb_id, :title, :series_path, :file, episodes: [], upgrade?: false]
+  defstruct [
+    :tvdb_id,
+    :tmdb_id,
+    :imdb_id,
+    :title,
+    :series_path,
+    :file,
+    episodes: [],
+    upgrade?: false
+  ]
 
   @spec from_api(map()) :: t()
   def from_api(params) when is_map(params) do

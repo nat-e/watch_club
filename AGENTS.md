@@ -16,10 +16,13 @@ Rules:
 
 ## Coding style
 
-### CSS
+### Frontend
 
 - Inline the CSS styles directly in the HEEX templates. Do not extract them to elixir functions, this makes the code harder to read and comprehend. If you find yourself duplicating them, it is often a sign that you need to extract a function component.
 - Use tailwind classes based onsemantic token from our design system as defined in `@docs/design-system/foundations.md`
+- Avoid long list of assigns in live views / live components. Prefer deriving data directly at the call site inline inside the component. When in need of many related assigns, consider creating a struct or Ash Resource for managing them. Try to extract business logic inside testable Ash resources.
+- Make sure to always make components responsive and think of different viewports
+- Prefer simpler `flex` layouts instead of `grid` when possible.
 
 ## Coding guidelines
 
@@ -46,4 +49,4 @@ We write tests for all the functions exposed in our Ash domains and only for tho
 
 ## Documentation
 
-- Comments and docs should only document and explain the current system. Conversation details or changes compared to past implementations should not leak into it.
+- Comments and docs should be concise and only document the current state of the code. Conversation details or changes compared to past implementations should not be reflected in documentation.

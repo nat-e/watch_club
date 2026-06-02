@@ -5,13 +5,16 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   identifies the source.
 
   `Test` is acked with 200 (no auth) for the server's test round-trip. Other
-  events authenticate against the `Servarr`'s `webhook_secret`, then become
-  ingest `Candidate`s enqueued on `CandidateIngestor`. `Download` is the only
-  event that produces work today.
+  events authenticate against the `Servarr`'s `webhook_secret`, then do two
+  things: the Media side (ingest/remove/relocate files) and the request side —
+  any event enqueues a `RefreshMediaSourceRequest` that reconciles the Media
+  Source Request's state against the *arr's current truth, except deletes,
+  which drop the request.
   """
   use WatchClubWeb, :controller
 
   require Logger
+  require Ash.Query
 
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrMovieFileDeleteWebhookEvent
@@ -27,6 +30,9 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MovieIdentity}
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
   alias WatchClub.MediaSources.Servarr
+  alias WatchClub.Requests
+  alias WatchClub.Requests.MediaSourceRequest
+  alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
   alias WatchClub.Shared.Path, as: Paths
   alias WatchClub.SystemActor
 
@@ -100,6 +106,8 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
           }
         ])
     end
+
+    refresh_request(source, params)
   end
 
   defp process_webhook(%{"eventType" => "Download"} = params, %Servarr{flavor: :sonarr} = source) do
@@ -128,6 +136,8 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
         end)
         |> enqueue_ingest()
     end
+
+    refresh_request(source, params)
   end
 
   defp process_webhook(
@@ -136,6 +146,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
        ) do
     event = RadarrMovieFileDeleteWebhookEvent.from_api(params)
     remove_media(source, event.folder_path, event.file)
+    refresh_request(source, params)
   end
 
   defp process_webhook(
@@ -144,6 +155,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
        ) do
     event = SonarrEpisodeFileDeleteWebhookEvent.from_api(params)
     remove_media(source, event.series_path, event.file)
+    refresh_request(source, params)
   end
 
   defp process_webhook(%{"eventType" => "Rename"} = params, %Servarr{flavor: :radarr} = source) do
@@ -156,7 +168,60 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     relocate_renamed_files(source, event.series_path, event.renamed_files)
   end
 
-  defp process_webhook(_params, _source), do: :ok
+  # The movie / series was removed upstream — drop the Media Source Request
+  # (the Content Request survives and reads `not_found`).
+  defp process_webhook(
+         %{"eventType" => "MovieDelete"} = params,
+         %Servarr{flavor: :radarr} = source
+       ) do
+    destroy_request(source, params)
+  end
+
+  defp process_webhook(
+         %{"eventType" => "SeriesDelete"} = params,
+         %Servarr{flavor: :sonarr} = source
+       ) do
+    destroy_request(source, params)
+  end
+
+  # Any other event for the resource (Grab, ManualInteractionRequired, …) just
+  # triggers a reconcile; events with no resource (HealthIssue, …) no-op.
+  defp process_webhook(params, %Servarr{} = source), do: refresh_request(source, params)
+
+  # ─── Media Source Request state ──────────────────────────────────────────
+  #
+  # The state is reconciled from the *arr's current truth, never driven by the
+  # event — so any webhook just enqueues a refresh for the resource, if
+  # WatchClub requested it. Matched by the id stored at submit/adopt.
+
+  # Only enqueue when WatchClub actually requested this resource — most *arr
+  # webhooks are for library content nobody requested here, which we ignore.
+  defp refresh_request(%Servarr{} = source, params) do
+    if request = find_request(source, params) do
+      request.id |> RefreshMediaSourceRequest.new_job() |> Oban.insert!()
+    end
+  end
+
+  defp destroy_request(%Servarr{} = source, params) do
+    if request = find_request(source, params) do
+      Requests.destroy_media_source_request(request, actor: SystemActor.actor())
+    end
+  end
+
+  defp find_request(%Servarr{id: source_id, flavor: flavor}, params) do
+    with arr_id when is_integer(arr_id) <- get_in(params, [arr_resource_key(flavor), "id"]),
+         {:ok, %MediaSourceRequest{} = request} <-
+           MediaSourceRequest
+           |> Ash.Query.filter(media_source_id == ^source_id and external_resource_id == ^arr_id)
+           |> Ash.read_one(actor: SystemActor.actor()) do
+      request
+    else
+      _ -> nil
+    end
+  end
+
+  defp arr_resource_key(:radarr), do: "movie"
+  defp arr_resource_key(:sonarr), do: "series"
 
   defp enqueue_ingest(candidates) do
     candidates

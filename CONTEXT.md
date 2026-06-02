@@ -105,8 +105,8 @@ WatchClub's record of asking one **Media Source** to make one **Content** availa
 _Avoid_: Request Attempt, Profile Request, Sourcing
 
 **Media Source Request State**:
-The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself. One of: Created, Submitted, Not Released, Searching, Grabbed, Downloaded, Needs Attention, Cancelled.
-_Avoid_: Request Attempt State, *arr status
+The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and *reconciled from the **Media Source**'s current state* (not driven by individual events). One of: Submitted, Not Released, Downloading, Partially Downloaded, Downloaded, Needs Attention.
+_Avoid_: Request Attempt State, *arr status, Grabbed, Searching, Cancelled, Created
 
 **Request Content**:
 A user creates a **Content Request** for one piece of **Content** so its media file is brought to the media server for them.
@@ -353,17 +353,24 @@ _Avoid_: Best localization, current localization
 - A **Content Request** belongs to exactly one **User** and references exactly one **Content**
 - A **User** has at most one **Content Request** for a given **Content**
 - A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
+- Whether a **Content Request** is *playable* is a read-time flag separate from its displayed status: true once the **Content** has **Media** for the **Movie** or for any aired **TV Show Episode**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present and more downloading), so playability drives the Play action independently of status
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
-- A **Media Source Request** is created on demand when a **Content Request** is created for a **Content** that has no existing **Media Source Request** for a matching **Media Source**
-- A **Media Source Request**'s call to its **Media Source** is performed asynchronously after the **Content Request** is created; the **Media Source Request** is observable in the Created state until the call resolves
-- A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; no **Media Source Requests** are created until such a **Media Source** exists, at which point **Media Source Requests** are backfilled for existing **Content Requests**
+- A **Media Source Request** comes into existence only *after* a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted (or Not Released)
+- **Request Content** fans out to *every* request-capable **Media Source** that can serve the **Content** (its **Media Type** produces the **Content**'s **Content Type**), creating one **Media Source Request** per such **Media Source**. This includes multiple **Media Sources** of the same **Media Source Type** (two `radarr` sources each get their own **Media Source Request**) and multiple **Media Types** for one **Content** (a **Book** fans out to both its **Ebook** and **Audiobook** **Media Sources**)
+- For a **TV Show**, the singleton is per (**TV Show**, **Media Source**): one **Media Source Request** covers the whole show, never one per **TV Show Episode**. It maps to the single series resource the **Media Source** creates. Per-**TV Show Episode** availability is read from **Media**, not from **Media Source Requests**
+- A **Content Request** has a derived progress, the share of the **Content**'s expected parts that have **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over *aired* **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored
+- A **TV Show Episode** records its air date, sourced from the **Metadata Provider**
+- The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
+- A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created *only* when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **User** cancels and re-requests
+- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** reads as complete regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
 - A **Media Source Request** carries one **Media Source Request State**, updated by webhook events from its **Media Source**
-- A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created (e.g. the Radarr movie id, the Sonarr series id)
-- A **Media Source Request** persists after every claiming **Content Request** is cancelled
+- A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created *or adopted* — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
+- A **Media Source Request** persists after every claiming **Content Request** is cancelled (it is shared, and the upstream resource still exists)
+- When a **Media Source**'s upstream system reports its movie or series deleted, WatchClub deletes the **Media Source Request** rather than keeping a terminal state; the **Content Request** survives and, with no progressing **Media Source Request**, reads as not found until cancelled and re-requested
 - **Cancel Content Request** removes the **Content Request** and does not delete any **Media**, any **Library Item**, any **Media Source Request**, or any resource in any **Media Source**
-- A **Media Source Request** in the Needs Attention state is recovered only by the **Instance Administrator** manually retrying it
+- A **Media Source Request** in the Needs Attention state is recovered passively: the **Instance Administrator** resolves the problem on the **Media Source**'s upstream system, and the resulting webhook advances the **Media Source Request**. WatchClub has no manual retry action
 - **Remove from Library** does not affect the adding **Member**’s **Content Request** or any other **User**’s **Content Request**
 - A **User**’s **Content Request** persists independently of their **Memberships** and of the lifecycle of any **Library Item**
 - A **User**’s **Content Requests** are visible only to that **User** and to the **Instance Administrator**; other **Users**, including co-**Members** of any **Club**, cannot see them
@@ -375,7 +382,7 @@ _Avoid_: Best localization, current localization
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 - Only a **Club Admin** can **Delete Club**
 - **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Libraries**, and **Library Items**, but not **Content** or **Media**
-- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests** for existing **Library Items**
+- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests** for existing **Library Items**, and does not backfill **Media Source Requests** for existing **Content Requests**
 - **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
 ### Media

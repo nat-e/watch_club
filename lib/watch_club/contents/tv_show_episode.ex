@@ -38,6 +38,15 @@ defmodule WatchClub.Contents.TvShowEpisode do
       public? true
       constraints min: 1
     end
+
+    # Sourced from the Metadata Provider (TMDB season details). Nil when the
+    # provider has no date yet. Drives the "aired episodes" denominator for
+    # a TV Show's request completeness: an episode counts as aired when
+    # air_date is set and not in the future.
+    attribute :air_date, :date do
+      allow_nil? true
+      public? true
+    end
   end
 
   relationships do

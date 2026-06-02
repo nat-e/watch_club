@@ -56,7 +56,8 @@ config :watch_club,
     WatchClub.Contents,
     WatchClub.MediaCatalog,
     WatchClub.MediaSources,
-    WatchClub.Playbacks
+    WatchClub.Playbacks,
+    WatchClub.Requests
   ]
 
 config :watch_club, Oban,
@@ -75,7 +76,10 @@ config :watch_club, Oban,
     media_candidate_ingestions: 3,
     media_import_monitors: 5,
     playback_cache_maintenance: 1,
-    media_source_webhooks: 1
+    media_source_webhooks: 1,
+    # Low concurrency: submissions add+search on the *arr instance, so keep
+    # the load (and indexer pressure) gentle even on a big fan-out/backfill.
+    media_source_requests: 2
   ]
 
 config :ash_oban, :actor_persister, WatchClub.Shared.Oban.AshObanActorPersister
