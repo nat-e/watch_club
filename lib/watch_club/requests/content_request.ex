@@ -208,7 +208,7 @@ defmodule WatchClub.Requests.ContentRequest do
               ContentRequestStatusGroup,
               expr(
                 cond do
-                  status == :not_released -> :unavailable
+                  status == :not_released -> :not_released
                   status == :completed -> :completed
                   status == :failed -> :failed
                   status in [:requested, :downloading, :importing] -> :in_progress

@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       padding="none"
       id={@id}
       data-status={@request.status}
-      class="group/card flex overflow-hidden"
+      class="group/card flex flex-col overflow-hidden @xl:flex-row"
     >
       <.content_section
         id={@request.id}
@@ -72,7 +72,10 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   defp content_section(assigns) do
     ~H"""
-    <div class={["flex min-w-0 flex-1 items-center gap-group p-group", !@playable && "opacity-70"]}>
+    <div class={[
+      "relative flex min-w-0 flex-1 items-center gap-group p-group",
+      !@playable && "opacity-70"
+    ]}>
       <.tmdb_poster
         size="w342"
         path={@content.image_path}
@@ -83,7 +86,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           id={"#{@id}-play"}
           type="button"
           aria-label="Play"
-          class="group/play absolute inset-0 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
+          class="group/play absolute inset-0 z-10 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
         >
           <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay transition-transform group-hover/play:scale-105 group-active/play:scale-100">
             <Lucideicons.play class="size-icon" />
@@ -91,12 +94,15 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         </button>
       </.tmdb_poster>
 
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex flex-1 flex-col justify-between h-full">
         <div class="flex flex-col gap-tight">
           <.content_type_badge type={@content.type} />
-          <h3 class="truncate text-xl font-heading font-semibold tracking-tight text-text">
+          <.link
+            href={WatchClub.Shared.Url.content_details_link(@content.type, @content.external_id)}
+            class="truncate text-xl font-heading font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
+          >
             {@content.title}
-          </h3>
+          </.link>
           <p :if={@content.release_date} class="text-sm text-text-muted">
             {@content.release_date.year}
           </p>
@@ -105,8 +111,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         <.button
           id={"#{@id}-add-to-library"}
           variant="accent"
-          size="sm"
-          class="mt-cluster opacity-0 transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100"
+          class="relative z-10"
         >
           <:icon><Lucideicons.plus /></:icon>
           Add to Library
@@ -129,7 +134,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
     ~H"""
     <div class={[
-      "flex w-64 shrink-0 flex-col justify-between gap-related border-l p-group",
+      "order-first flex w-full shrink-0 flex-col justify-between gap-related border-b p-group @xl:order-0 @xl:w-64 @xl:border-b-0 @xl:border-l",
       @style.bg,
       @style.border
     ]}>

@@ -184,7 +184,7 @@ defmodule WatchClubWeb.MyRequestsPage do
         </.dropdown_menu>
       </div>
 
-      <.stack id="my-requests" phx-update="stream" space="related">
+      <.stack id="my-requests" class="@container" phx-update="stream" space="related">
         <div
           id="my-requests-empty"
           class="only:block hidden"
@@ -232,12 +232,13 @@ defmodule WatchClubWeb.MyRequestsPage do
       ]}
     >
       <span
+        :if={@group != nil}
         class={[
           "inline-block size-2 shrink-0 rounded-full",
           @group == :in_progress && "bg-accent",
           @group == :completed && "bg-success",
           @group == :failed && "bg-danger",
-          @group in [nil, :unavailable] && "bg-text-subtle"
+          @group == :not_released && "bg-text-subtle"
         ]}
         aria-hidden="true"
       >

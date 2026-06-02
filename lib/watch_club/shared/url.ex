@@ -11,6 +11,11 @@ defmodule WatchClub.Shared.Url do
 
   Idempotent — safe to call on already-normalized URLs.
   """
+  use Phoenix.VerifiedRoutes,
+    endpoint: WatchClubWeb.Endpoint,
+    router: WatchClubWeb.Router,
+    statics: WatchClubWeb.static_paths()
+
   @spec normalize_base(nil) :: nil
   @spec normalize_base(String.t()) :: String.t()
   def normalize_base(nil), do: nil
@@ -31,4 +36,13 @@ defmodule WatchClub.Shared.Url do
       when is_binary(base) and is_binary(media_source_id) do
     "#{normalize_base(base)}/webhooks/#{source_type}/#{media_source_id}"
   end
+
+  def content_details_link(:movie, external_id),
+    do: ~p"/movies/#{external_id}"
+
+  def content_details_link(:tv_show, external_id),
+    do: ~p"/shows/#{external_id}"
+
+  def content_details_link(:book, external_id),
+    do: ~p"/books/#{external_id}"
 end
