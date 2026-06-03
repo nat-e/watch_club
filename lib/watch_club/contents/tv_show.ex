@@ -125,6 +125,13 @@ defmodule WatchClub.Contents.TvShow do
     end
   end
 
+  aggregates do
+    # A show is playable once its first episode (S01E01) has Media.
+    exists :first_episode_available?, [:content, :tv_show, :episodes] do
+      filter expr(season_number == 1 and episode_number == 1 and exists(playable?, true))
+    end
+  end
+
   identities do
     identity :unique_content, [:id]
     identity :unique_tmdb_id, [:tmdb_id]

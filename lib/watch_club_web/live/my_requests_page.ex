@@ -238,7 +238,8 @@ defmodule WatchClubWeb.MyRequestsPage do
           @group == :in_progress && "bg-accent",
           @group == :completed && "bg-success",
           @group == :failed && "bg-danger",
-          @group == :not_released && "bg-text-subtle"
+          @group == :not_released && "bg-text-subtle",
+          @group == :not_found && "bg-warning"
         ]}
         aria-hidden="true"
       >

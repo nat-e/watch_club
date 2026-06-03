@@ -1,6 +1,6 @@
 defmodule WatchClub.Requests.ContentRequestTest do
   @moduledoc """
-  Verifies the derived read model (status / progress / playable?) — the
+  Verifies the derived read model (status / progress?) — the
   multi-hop aggregate + cond SQL — actually executes and resolves correctly.
   Data is seeded directly to exercise the calculations without the
   TMDB-backed create flow.
@@ -24,7 +24,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
   end
 
   defp load(request, user),
-    do: Ash.load!(request, [:status, :progress, :playable?], actor: user)
+    do: Ash.load!(request, [:status, :progress], actor: user)
 
   # The `for_current_user` action loads content through `:for_view`, which
   # resolves `implementation` from the movie/tv_show row. Seed that row
@@ -68,7 +68,6 @@ defmodule WatchClub.Requests.ContentRequestTest do
     loaded = load(ctx.request, ctx.user)
     assert loaded.status == :requested
     assert loaded.progress == 0
-    refute loaded.playable?
   end
 
   test "a downloading request reads as :downloading", ctx do

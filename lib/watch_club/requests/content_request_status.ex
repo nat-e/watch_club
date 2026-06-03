@@ -44,7 +44,7 @@ defmodule WatchClub.Requests.ContentRequestStatus do
     do:
       dgettext(
         "content_request_statuses",
-        "We couldn't find this %{type} at this time. We will keep looking for it and download it automatically when we do.",
+        "We haven't found this %{type} yet. We will keep looking for it and will notify you if we do.",
         type: ContentType.translated_label(content_type)
       )
 

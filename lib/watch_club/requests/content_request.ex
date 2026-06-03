@@ -20,11 +20,8 @@ defmodule WatchClub.Requests.ContentRequest do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Content
-  alias WatchClub.Requests.ContentRequest.Changes.EnsureContentExists
-  alias WatchClub.Requests.ContentRequest.Changes.CreateMediaSourceRequests
-  alias WatchClub.Requests.ContentRequestSort
-  alias WatchClub.Requests.ContentRequestStatusGroup
-  alias WatchClub.Requests.MediaSourceRequest
+  alias WatchClub.Requests.ContentRequest.Changes.{CreateMediaSourceRequests, EnsureContentExists}
+  alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup, MediaSourceRequest}
 
   postgres do
     table "content_requests"
@@ -95,7 +92,6 @@ defmodule WatchClub.Requests.ContentRequest do
           :status,
           :status_group,
           :progress,
-          :playable?,
           content: Ash.Query.for_read(Content, :for_view, %{}, actor: context.actor)
         ])
       end
@@ -184,14 +180,6 @@ defmodule WatchClub.Requests.ContentRequest do
   end
 
   calculations do
-    # Drives the Play button, independent of status: a movie with Media, or
-    # a show whose first episode (S01E01) has Media.
-    calculate :playable?,
-              :boolean,
-              expr(movie_video_count > 0 or first_episode_available?) do
-      public? true
-    end
-
     calculate :progress,
               :integer,
               WatchClub.Requests.ContentRequest.Calculations.Progress do
@@ -209,6 +197,7 @@ defmodule WatchClub.Requests.ContentRequest do
               expr(
                 cond do
                   status == :not_released -> :not_released
+                  status == :not_found -> :not_found
                   status == :completed -> :completed
                   status == :failed -> :failed
                   status in [:requested, :downloading, :importing] -> :in_progress
@@ -270,11 +259,6 @@ defmodule WatchClub.Requests.ContentRequest do
                not is_nil(air_date) and air_date <= fragment("CURRENT_DATE") and
                  exists(videos, true)
              )
-    end
-
-    # A show is playable once its first episode (S01E01) has Media.
-    exists :first_episode_available?, [:content, :tv_show, :episodes] do
-      filter expr(season_number == 1 and episode_number == 1 and exists(videos, true))
     end
   end
 

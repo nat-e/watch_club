@@ -13,7 +13,7 @@ defmodule WatchClub.Requests.ContentRequestStatusGroup do
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
-  use Ash.Type.Enum, values: [:in_progress, :completed, :failed, :not_released]
+  use Ash.Type.Enum, values: [:in_progress, :completed, :failed, :not_released, :not_found]
 
   def translated_label(nil), do: dgettext("content_request_status_groups", "All")
   def translated_label(:in_progress), do: dgettext("content_request_status_groups", "In progress")
@@ -22,4 +22,6 @@ defmodule WatchClub.Requests.ContentRequestStatusGroup do
 
   def translated_label(:not_released),
     do: dgettext("content_request_status_groups", "Not released")
+
+  def translated_label(:not_found), do: dgettext("content_request_status_groups", "Not found")
 end
