@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, ContentView}
   alias WatchClub.Requests
+  alias WatchClub.Requests.ContentRequestStatus
 
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
@@ -15,6 +16,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   @impl true
   def render(assigns) do
+    assigns = assigns |> assign(:request, ContentView.current_request(assigns.content))
+
     ~H"""
     <div class={@class}>
       <.button
@@ -25,10 +28,13 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         emphasis
         phx-click="request-content"
         phx-target={@myself}
+        disabled={@request != nil}
         class="w-full"
       >
-        <:icon><Lucideicons.download /></:icon>
-        {dgettext("contents", "Request")}
+        <:icon :if={@request != nil}><Lucideicons.loader_circle class="animate-spin" /></:icon>
+        <:icon :if={@request == nil}><Lucideicons.download /></:icon>
+        {(@request && ContentRequestStatus.translated_label(@request.status)) ||
+          dgettext("contents", "Request")}
       </.button>
       <.button
         :if={ContentView.playable?(@content)}

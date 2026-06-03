@@ -18,9 +18,12 @@ defmodule WatchClub.Contents.Content do
     TvShow
   }
 
+  alias WatchClub.Requests.ContentRequest
+
   alias WatchClub.Contents.Calculations.GetContentImplementation
 
   import Ash.Expr
+  require Ash.Query
 
   postgres do
     table "contents"
@@ -31,11 +34,12 @@ defmodule WatchClub.Contents.Content do
     defaults [:read]
 
     read :for_view do
-      description "Read action that loads all data needed to build ContentViews"
+      description "Read action that loads all data needed to build ContentViews for the current user"
 
       prepare build(
                 load: [
                   library_items: [:library, :added_by],
+                  viewer_request: [:status, :status_group, :progress],
                   book: [:audiobooks, :ebooks, :playable?],
                   movie: [:videos, :playable?],
                   tv_show: [episodes: [:videos, :playable?]]
@@ -219,6 +223,12 @@ defmodule WatchClub.Contents.Content do
 
     has_one :tv_show, TvShow do
       destination_attribute :id
+    end
+
+    has_many :requests, ContentRequest
+
+    has_one :viewer_request, ContentRequest do
+      filter expr(user_id == ^actor(:id))
     end
 
     has_many :library_items, LibraryItem
