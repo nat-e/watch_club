@@ -100,6 +100,14 @@ _Avoid_: Download content, download media, download media server item
 A user’s request for WatchClub to make a piece of content available on the media server for that user’s personal consumption.
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
+**Content Request Status**:
+The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Queued, Downloading, Importing, Completed, Failed. *Importing* means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. *Queued* is the label for a just-submitted request still within its grace window or whose **Media Source** call is still in flight.
+_Avoid_: Pending, Requested, Available, request state, Media Source Request State
+
+**Content Request Status Group**:
+The coarse grouping of **Content Request Statuses** used by the **My Requests** filter. One of: In Progress (Queued, Downloading, Importing), Completed, Failed, Not Released, Not Found.
+_Avoid_: Status filter, request category
+
 **Media Source Request**:
 WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
 _Avoid_: Request Attempt, Profile Request, Sourcing
@@ -346,14 +354,12 @@ _Avoid_: Best localization, current localization
 - For a **TV Show** **Library Item**, **Play Library Item** is offered on individual **TV Show Episodes**, not as a single show-level choice
 - When multiple **Media** files are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
 - **Add to Library** treats the **Library Item**’s **Content** as a whole; for **TV Show** content this is the entire **TV Show**, not a season or **TV Show Episode**
-- **Add to Library** also performs **Request Content** for the acting **Member**: if they do not already have a **Content Request** for the **Content**, one is created; if they do, it is reused
-- **Add to Library** creates the **Library Item** even when the resulting **Content Request** cannot currently make progress
-- When the **Library** already contains the **Content**, **Add to Library** does not create a duplicate **Library Item**, but it still performs **Request Content** for the acting **Member** if they have no **Content Request** for that **Content**
-- **Request Content** outside of **Add to Library** creates only a **Content Request**; it does not create or modify any **Library Item**
+- When the **Library** already contains the **Content**, **Add to Library** does not create a duplicate **Library Item**
+- **Add to Library** and **Request Content** are independent actions: **Add to Library** creates only a **Library Item**, **Request Content** creates only a **Content Request**, and neither one triggers the other
 - A **Content Request** belongs to exactly one **User** and references exactly one **Content**
 - A **User** has at most one **Content Request** for a given **Content**
 - A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
-- Whether a **Content Request** is *playable* is a read-time flag separate from its displayed status: true once the **Content** has **Media** for the **Movie** or for any aired **TV Show Episode**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present and more downloading), so playability drives the Play action independently of status
+- Whether a **Content Request** is *playable* is a read-time flag separate from its displayed status: true once the **Content** has **Media** for the **Movie** or for the **TV Show**'s first **TV Show Episode** (season 1, episode 1). A **Content Request** can be playable while still showing an in-progress status (a **TV Show** whose first episode is present while more are downloading), so playability drives the Play action independently of status
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
@@ -365,7 +371,7 @@ _Avoid_: Best localization, current localization
 - The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
 - A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created *only* when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **User** cancels and re-requests
 - When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** reads as complete regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
-- A **Media Source Request** carries one **Media Source Request State**, updated by webhook events from its **Media Source**
+- A **Media Source Request** carries one **Media Source Request State**, recomputed from the **Media Source**'s current state (its movie/series record plus download queue) whenever a webhook or poll arrives; the event triggers a refresh, it does not itself set the state
 - A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created *or adopted* — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
 - A **Media Source Request** persists after every claiming **Content Request** is cancelled (it is shared, and the upstream resource still exists)
 - When a **Media Source**'s upstream system reports its movie or series deleted, WatchClub deletes the **Media Source Request** rather than keeping a terminal state; the **Content Request** survives and, with no progressing **Media Source Request**, reads as not found until cancelled and re-requested
@@ -377,12 +383,13 @@ _Avoid_: Best localization, current localization
 - The **Instance Administrator** can inspect all **Content Requests** in WatchClub
 - **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Library** may create missing **Content**
 - A **Content** can exist in WatchClub referenced only by **Content Requests**, with no **Library Items** and no **Media**
+- **Request Content** currently creates a **Content Request** only for **Movies** and **TV Shows**; **Book** requests are not yet supported (no request-capable **Book** **Media Source** exists — that is the planned `chaptarr` — and the action rejects **Book** content). The **Book**-to-**Ebook**+**Audiobook** fan-out describes the intended design for when `chaptarr` lands, not current behaviour
 - Deleting a **User** deletes their **Content Requests**; any **Media** acquired through those requests remains in WatchClub
 - Only a **Club Admin** can **Delete Library**
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 - Only a **Club Admin** can **Delete Club**
 - **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Libraries**, and **Library Items**, but not **Content** or **Media**
-- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests** for existing **Library Items**, and does not backfill **Media Source Requests** for existing **Content Requests**
+- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests**, and does not backfill **Media Source Requests** for existing **Content Requests**
 - **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
 ### Media
@@ -515,14 +522,14 @@ _Avoid_: Best localization, current localization
 - "Media Server Library" is not canonical; resolved: use **Media Source** for origins of media availability and **Library** for club-owned collections.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
 - "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
-- **Content Request Status**, **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical domain entities; resolved: a **Content Request** has no stored status. What appears as a status in **My Requests** is a UI label computed at read time from the **Content**'s **Media** and from its **Media Source Requests**.
+- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** and its **Content Request Status Group** *are* canonical, but as *derived read-model values* computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
 - The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is shared by every **Content Request** for that **Content**; it is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
-- "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**, and **Add to Library** additionally performs **Request Content** for the adding **Member**.
+- "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Add to Library** — adding **Content** to a **Library** does not create a **Content Request**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
-- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type.
+- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type. Because no request-capable **Book** source exists, **Request Content** today serves only **Movies** and **TV Shows**; the **Book** fan-out is intended design, not current behaviour.
 - "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
