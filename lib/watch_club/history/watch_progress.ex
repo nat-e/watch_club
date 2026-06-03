@@ -52,9 +52,19 @@ defmodule WatchClub.History.WatchProgress do
       forbid_if always()
     end
 
-    policy action([:record_movie_progress, :record_episode_progress, :read, :destroy]) do
-      description "Only related user can manage their WatchProgress"
+    # The two ownership checks are not interchangeable: `relating_to_actor`
+    # inspects the changeset ("is this write setting `user` to the actor?"), so
+    # it only resolves on creates/updates. `relates_to_actor_via` filters on the
+    # persisted row (`user_id == actor.id`), which is what reads and destroys need
+    # — using `relating_to_actor` there forbids every read.
+    policy action([:record_movie_progress, :record_episode_progress]) do
+      description "A User records only their own Watch Progress"
       authorize_if relating_to_actor(:user)
+    end
+
+    policy action_type([:read, :destroy]) do
+      description "Only the related User can read or destroy their Watch Progress"
+      authorize_if relates_to_actor_via(:user)
     end
   end
 

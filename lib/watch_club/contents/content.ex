@@ -18,6 +18,8 @@ defmodule WatchClub.Contents.Content do
     TvShow
   }
 
+  alias WatchClub.History.WatchStatus
+
   alias WatchClub.Requests.ContentRequest
 
   alias WatchClub.Contents.Calculations.GetContentImplementation
@@ -38,11 +40,15 @@ defmodule WatchClub.Contents.Content do
 
       prepare build(
                 load: [
+                  :viewer_progress_status,
                   library_items: [:library, :added_by],
                   viewer_request: [:status, :status_group, :progress],
                   book: [:audiobooks, :ebooks, :playable?],
                   movie: [:videos, :playable?],
-                  tv_show: [episodes: [:videos, :playable?]]
+                  tv_show: [
+                    :viewer_next_episode,
+                    episodes: [:videos, :playable?, :viewer_progress_status]
+                  ]
                 ]
               )
     end
@@ -228,6 +234,7 @@ defmodule WatchClub.Contents.Content do
     has_many :requests, ContentRequest
 
     has_one :viewer_request, ContentRequest do
+      from_many? true
       filter expr(user_id == ^actor(:id))
     end
 
@@ -245,6 +252,16 @@ defmodule WatchClub.Contents.Content do
 
       allow_nil? false
     end
+
+    # The progress status of the content for the current user
+    calculate :viewer_progress_status,
+              WatchStatus,
+              expr(
+                cond do
+                  type == :tv_show -> tv_show.viewer_progress_status
+                  type == :movie -> movie.viewer_progress_status
+                end
+              )
 
     calculate :localized_title_key,
               :string,

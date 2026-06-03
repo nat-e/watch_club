@@ -5,6 +5,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.TvShow
+  alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
 
   postgres do
@@ -21,7 +22,10 @@ defmodule WatchClub.Contents.TvShowEpisode do
   end
 
   preparations do
-    prepare build(load: [:formatted_episode_number])
+    prepare build(
+              load: [:formatted_episode_number],
+              sort: [tv_show_id: :asc, season_number: :asc, episode_number: :asc]
+            )
   end
 
   attributes do
@@ -55,6 +59,12 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
 
     has_many :videos, Video
+    has_many :watch_progresses, WatchProgress
+
+    has_one :viewer_progress, WatchProgress do
+      from_many? true
+      filter expr(user_id == ^actor(:id))
+    end
   end
 
   calculations do
@@ -65,6 +75,16 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
 
     calculate :playable?, :boolean, expr(videos_count > 0)
+
+    calculate :viewer_progress_status,
+              WatchStatus,
+              expr(
+                cond do
+                  is_nil(viewer_progress) -> :not_started
+                  viewer_progress.completed -> :completed
+                  true -> :in_progress
+                end
+              )
   end
 
   aggregates do

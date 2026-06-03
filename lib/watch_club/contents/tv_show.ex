@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.TvShow do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
+  alias WatchClub.History.WatchStatus
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   postgres do
@@ -120,15 +121,46 @@ defmodule WatchClub.Contents.TvShow do
     has_many :localizations, TvShowLocalization
     has_many :episodes, TvShowEpisode
 
+    # The next episode that the current user has not watched to completion
+    # Episodes are automatically sorted by season/episode number so no need to sort here
+    has_one :viewer_next_episode, TvShowEpisode do
+      from_many? true
+      filter expr(viewer_progress_status != :completed)
+    end
+
+    # The best localization based on the current user locale
     has_one :best_localization, TvShowLocalization do
       from_many? true
     end
   end
 
+  calculations do
+    # The progress status of the show for the current user
+    # A show is completed when all known episodes are completed
+    calculate :viewer_progress_status,
+              WatchStatus,
+              expr(
+                cond do
+                  viewer_episodes_started_count == 0 -> :not_started
+                  viewer_episodes_completed_count == episodes_count -> :completed
+                  true -> :in_progress
+                end
+              )
+  end
+
   aggregates do
-    # A show is playable once its first episode (S01E01) has Media.
-    exists :first_episode_available?, [:content, :tv_show, :episodes] do
-      filter expr(season_number == 1 and episode_number == 1 and exists(playable?, true))
+    exists :first_episode_available?, :episodes do
+      filter expr(season_number == 1 and episode_number == 1 and playable?)
+    end
+
+    count :episodes_count, :episodes
+
+    count :viewer_episodes_completed_count, :episodes do
+      filter expr(viewer_progress_status == :completed)
+    end
+
+    count :viewer_episodes_started_count, :episodes do
+      filter expr(viewer_progress_status != :not_started)
     end
   end
 

@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.Movie do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Content, ContentView, MovieLocalization}
+  alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
 
   postgres do
@@ -69,10 +70,26 @@ defmodule WatchClub.Contents.Movie do
     end
 
     has_many :videos, Video
+    has_many :watch_progresses, WatchProgress
+
+    has_one :viewer_progress, WatchProgress do
+      from_many? true
+      filter expr(user_id == ^actor(:id))
+    end
   end
 
   calculations do
     calculate :playable?, :boolean, expr(videos_count > 0)
+
+    calculate :viewer_progress_status,
+              WatchStatus,
+              expr(
+                cond do
+                  is_nil(viewer_progress) -> :not_started
+                  viewer_progress.completed -> :completed
+                  true -> :in_progress
+                end
+              )
   end
 
   aggregates do
