@@ -98,6 +98,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
           <.episodes_section
             :if={season_summaries(@tv_show.details) != []}
+            content={@tv_show}
             details={@tv_show.details}
             selected_season={@selected_season}
             season_metadata_by_number={@season_metadata_by_number}

@@ -7,9 +7,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Accounts.UserLocale
+  alias WatchClub.Contents.{ContentView, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
 
+  attr :content, ContentView, required: true
   attr :details, TvDetailsResponse, required: true
   attr :selected_season, :integer, required: true
   attr :season_metadata_by_number, :map, required: true
@@ -34,6 +36,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
           <.season_selector seasons={season_summaries(@details)} selected_season={@selected_season} />
         </div>
         <.season_panel
+          content={@content}
           selected_season_summary={
             selected_season_summary(season_summaries(@details), @selected_season)
           }
@@ -98,6 +101,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     """
   end
 
+  attr :content, ContentView, required: true
   attr :selected_season_summary, :map, required: true
   attr :season_metadata, :map, required: true
   attr :locale, :atom, required: true
@@ -150,8 +154,9 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
       <div class="grid gap-related">
         <.episode_row
-          :for={episode <- @season_metadata.details.episodes}
-          episode={episode}
+          :for={episode_details <- @season_metadata.details.episodes}
+          episode={ContentView.episode(@content, episode_details.season_number, episode_details.episode_number)}
+          episode_details={episode_details}
           locale={@locale}
         />
       </div>
@@ -199,7 +204,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     >
       <span class="sr-only">{dgettext("contents", "Loading season episodes")}</span>
       <section class="grid gap-group md:grid-cols-[8rem_minmax(0,1fr)] md:items-center">
-        <div class="aspect-[2/3] w-32 animate-pulse rounded-control border border-border-subtle bg-surface-raised md:w-full">
+        <div class="aspect-2/3 w-32 animate-pulse rounded-control border border-border-subtle bg-surface-raised md:w-full">
         </div>
         <div class="grid gap-related">
           <div class="h-8 w-48 animate-pulse rounded-full bg-surface-raised"></div>
@@ -228,65 +233,71 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     """
   end
 
-  attr :episode, SeasonDetails.Episode, required: true
+  attr :episode_details, SeasonDetails.Episode, required: true
+  attr :episode, TvShowEpisode
   attr :locale, :atom, required: true
 
   defp episode_row(assigns) do
     ~H"""
     <article class="grid gap-group rounded-control border border-border bg-surface p-related shadow-card md:grid-cols-[13rem_minmax(0,1fr)]">
-      <div class="relative aspect-video overflow-hidden rounded-control border border-border-subtle bg-surface-raised">
-        <img
-          :if={@episode.still_path}
-          src={tmdb_image_url(@episode.still_path, "w300")}
-          alt=""
-          class="absolute inset-0 h-full w-full object-cover"
-        />
-        <div
-          :if={!@episode.still_path}
-          class="absolute inset-0 grid place-items-center text-text-muted"
+       <.tmdb_still
+          size="w300"
+          path={@episode_details.still_path}
+          class="rounded-control"
         >
-          <Lucideicons.image class="size-icon" />
-        </div>
-      </div>
+          <.link
+            :if={@episode && @episode.playable?}
+            id={"#{@episode_details.id}-episode-play"}
+            href={episode_play_link(@episode)}
+            aria-label="Play"
+            class="absolute inset-0 flex items-center justify-center"
+          >
+            <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay">
+              <Lucideicons.play class="size-icon" />
+            </span>
+          </.link>
+        </.tmdb_still>
 
       <div class="grid min-w-0 content-start gap-related">
         <div class="flex flex-wrap items-start justify-between gap-related">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-related">
               <.badge variant="muted" size="sm">
-                S{pad(@episode.season_number)}E{pad(@episode.episode_number)}
+                S{pad(@episode_details.season_number)}E{pad(@episode_details.episode_number)}
               </.badge>
-              <h4 class="text-lg leading-tight font-semibold text-text">{@episode.name}</h4>
+              <h4 class="text-lg leading-tight font-semibold text-text">{@episode_details.name}</h4>
             </div>
           </div>
 
           <div
-            :if={@episode.vote_average}
+            :if={@episode_details.vote_average}
             class="inline-flex items-center gap-tight text-sm font-semibold text-success"
           >
             <Lucideicons.star class="size-icon-sm" />
-            {format_score(@episode.vote_average)}
+            {format_score(@episode_details.vote_average)}
           </div>
         </div>
 
-        <p :if={@episode.overview} class="text-sm leading-6 text-text-muted">
-          {@episode.overview}
+        <p :if={@episode_details.overview} class="text-sm leading-6 text-text-muted">
+          {@episode_details.overview}
         </p>
 
         <ul class="flex flex-wrap items-center gap-related text-sm text-text-subtle">
-          <li :if={format_date(@episode.air_date, @locale)} class="inline-flex items-center gap-tight">
+          <li :if={format_date(@episode_details.air_date, @locale)} class="inline-flex items-center gap-tight">
             <Lucideicons.calendar_days class="size-icon-sm" />
-            {format_date(@episode.air_date, @locale)}
+            {format_date(@episode_details.air_date, @locale)}
           </li>
-          <li :if={format_runtime(@episode.runtime)} class="inline-flex items-center gap-tight">
+          <li :if={format_runtime(@episode_details.runtime)} class="inline-flex items-center gap-tight">
             <Lucideicons.clock class="size-icon-sm" />
-            {format_runtime(@episode.runtime)}
+            {format_runtime(@episode_details.runtime)}
           </li>
         </ul>
       </div>
     </article>
     """
   end
+
+  defp episode_play_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
 
   defp season_summaries(%TvDetailsResponse{} = details) do
     details.seasons
@@ -328,6 +339,5 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
   defp format_score(_), do: nil
 
-  defp tmdb_image_url(path, size), do: "https://image.tmdb.org/t/p/#{size}#{path}"
   defp pad(number), do: number |> Integer.to_string() |> String.pad_leading(2, "0")
 end

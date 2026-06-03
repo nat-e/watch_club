@@ -13,8 +13,38 @@ defmodule WatchClubWeb.Components.Contents.TmdbPoster do
 
   def tmdb_poster(assigns) do
     ~H"""
+    <.tmdb_image path={@path} size={@size} alt={@alt} class={["aspect-2/3", @class]}>
+      {render_slot(@inner_block)}
+    </.tmdb_image>
+    """
+  end
+
+  attr :class, :any, default: nil
+  attr :path, :string, default: nil
+  attr :size, :string, values: ~w(w92 w185 w300 original), required: true
+  attr :alt, :string, default: ""
+
+  slot :inner_block
+
+  def tmdb_still(assigns) do
+    ~H"""
+    <.tmdb_image path={@path} size={@size} alt={@alt} class={["aspect-16/9", @class]}>
+      {render_slot(@inner_block)}
+    </.tmdb_image>
+    """
+  end
+
+  attr :class, :any, default: nil
+  attr :path, :string, default: nil
+  attr :size, :string, required: true
+  attr :alt, :string, default: ""
+
+  slot :inner_block
+
+  defp tmdb_image(assigns) do
+    ~H"""
     <div class={[
-      "relative aspect-[2/3] overflow-hidden bg-surface-inset",
+      "relative overflow-hidden bg-surface-inset",
       @class
     ]}>
       <img

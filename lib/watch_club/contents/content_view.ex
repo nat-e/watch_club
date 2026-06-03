@@ -10,7 +10,8 @@ defmodule WatchClub.Contents.ContentView do
     ContentView,
     ExternalIdSource,
     Movie,
-    TvShow
+    TvShow,
+    TvShowEpisode
   }
 
   alias WatchClub.Requests.ContentRequest
@@ -97,6 +98,19 @@ defmodule WatchClub.Contents.ContentView do
   end
 
   def playable?(_content), do: false
+
+  @spec episode(ContentView.t(), integer(), integer()) :: TvShowEpisode.t() | nil
+  def episode(
+        %__MODULE__{content: %Content{tv_show: %TvShow{} = show}},
+        season_number,
+        episode_number
+      ) do
+    Enum.find(show.episodes, fn episode ->
+      episode.season_number == season_number and episode.episode_number == episode_number
+    end)
+  end
+
+  def episode(%__MODULE__{}, _season_number, _episode_number), do: nil
 
   @spec current_request(ContentView.t()) :: ContentRequest.t() | nil
   def current_request(%__MODULE__{} = content) do
