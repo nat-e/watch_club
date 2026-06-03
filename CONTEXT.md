@@ -170,6 +170,10 @@ _Avoid_: Player Session, HLS Session, stream session, watch session, watch histo
 One **Media** being played by a user inside a **Playback Session**.
 _Avoid_: Stream, HLS Stream, play, playthrough
 
+**Watch Progress**:
+How far a **User** has got through one **Movie** or one **TV Show Episode**, and whether they have finished it. Tied to the watchable work, not to a specific **Media**, so the several **Videos** that back one **Movie** or **Episode** share a single Watch Progress. Covers video only for now; reading a **Book** or listening to an **Audiobook** would be sibling concepts, not the same record.
+_Avoid_: watch history, watch session, resume point, playhead, watched flag
+
 **Ebook**:
 Media that can be read or downloaded and is attached to a book.
 _Avoid_: Media Version, digital book copy
@@ -533,7 +537,7 @@ _Avoid_: Best localization, current localization
 - "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
-- **Playback Session** is distinct from future watch-history concepts; resolved: it records one Player visit, not whether a user has watched a work overall.
+- **Playback Session** is distinct from **Watch Progress**; resolved: a Playback Session records one Player visit, while Watch Progress records how far a **User** has got through a **Movie** or **TV Show Episode** overall and whether they finished it.
 - **Playback Session** is not a club-scoped or library-scoped concept; resolved: it is scoped to the **User** for one **Player** visit, and the selected **Media** lives on each **Playback** inside it.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.

@@ -353,22 +353,29 @@ defmodule WatchClubWeb.PlayerPage do
   end
 
   @impl true
-  def handle_event("player_heartbeat", _params, socket) do
+  def handle_event("player_heartbeat", params, socket) do
     with %{} = session <- socket.assigns.session do
-      Playbacks.heartbeat_session(session, actor: socket.assigns.current_user)
+      Playbacks.heartbeat_session(session, %{position_seconds: params["position_seconds"]},
+        actor: socket.assigns.current_user
+      )
     end
 
     {:noreply, socket}
   end
 
   @impl true
-  def handle_event("player_stop", _params, socket) do
-    {:reply, stop_session(socket.assigns.current_user, socket.assigns.session), socket}
+  def handle_event("player_stop", params, socket) do
+    {:reply,
+     stop_session(
+       socket.assigns.current_user,
+       socket.assigns.session,
+       params["position_seconds"]
+     ), socket}
   end
 
   @impl true
   def terminate(_reason, socket) do
-    stop_session(socket.assigns[:current_user], socket.assigns[:session])
+    stop_session(socket.assigns[:current_user], socket.assigns[:session], nil)
     :ok
   end
 
@@ -395,15 +402,15 @@ defmodule WatchClubWeb.PlayerPage do
 
   defp primary_video_track(session), do: session.active_playback.media.video.default_video_track
 
-  defp stop_session(actor, %{} = session) when not is_nil(actor) do
-    case Playbacks.close_session(session, actor: actor) do
+  defp stop_session(actor, %{} = session, position) when not is_nil(actor) do
+    case Playbacks.close_session(session, %{position_seconds: position}, actor: actor) do
       {:ok, _session} -> %{ok: true}
       {:error, %Ash.Error.Forbidden{}} -> %{ok: true}
       {:error, reason} -> %{ok: false, error: inspect(reason)}
     end
   end
 
-  defp stop_session(_actor, _session), do: %{ok: true}
+  defp stop_session(_actor, _session, _position), do: %{ok: true}
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)

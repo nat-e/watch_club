@@ -36,15 +36,31 @@ defmodule WatchClub.Playbacks.Playback do
   end
 
   actions do
-    defaults [:read, create: [:session_id, :media_id]]
+    defaults [:read]
+
+    create :create do
+      primary? true
+      accept [:session_id, :media_id]
+      argument :position_seconds, :float, allow_nil?: true
+
+      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
+    end
 
     update :update do
       primary? true
+      require_atomic? false
       accept [:last_active_at]
+      argument :position_seconds, :float, allow_nil?: true
+
+      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
     end
 
     update :end do
+      require_atomic? false
+      argument :position_seconds, :float, allow_nil?: true
+
       change set_attribute(:ended_at, &DateTime.utc_now/0)
+      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
     end
   end
 

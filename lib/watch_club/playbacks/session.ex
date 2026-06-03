@@ -79,18 +79,20 @@ defmodule WatchClub.Playbacks.Session do
     end
 
     update :heartbeat do
-      description "Heartbeat the Session's current Playback, updating its last active time."
+      description "Heartbeat the Session's current Playback, updating its last active time and the actor's Watch Progress from the reported position."
 
       require_atomic? false
+      argument :position_seconds, :float, allow_nil?: true
 
       change Changes.BumpCurrentPlayback
       change Changes.LoadActivePlayback
     end
 
     update :close do
-      description "Close the Session's current Playback by setting its `ended_at`. Its on-disk segment cache is reclaimed by the periodic prune worker."
+      description "Close the Session's current Playback by setting its `ended_at`, recording the actor's Watch Progress from the final position. Its on-disk segment cache is reclaimed by the periodic prune worker."
 
       require_atomic? false
+      argument :position_seconds, :float, allow_nil?: true
 
       change Changes.EndCurrentPlayback
       change Changes.LoadActivePlayback

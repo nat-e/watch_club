@@ -295,7 +295,12 @@ const Player = {
 	},
 
 	reportHeartbeat() {
-		this.pushEvent("player_heartbeat", {}, () => {});
+		const position = this.player?.currentTime;
+		this.pushEvent(
+			"player_heartbeat",
+			{ position_seconds: Number.isFinite(position) ? position : null },
+			() => {},
+		);
 	},
 
 	reportFailure() {
@@ -306,7 +311,12 @@ const Player = {
 		if (this.stopped) return;
 		this.stopped = true;
 		this.playing = false;
-		this.pushEvent("player_stop", {}, () => {});
+		const position = this.player?.currentTime;
+		this.pushEvent(
+			"player_stop",
+			{ position_seconds: Number.isFinite(position) ? position : null },
+			() => {},
+		);
 	},
 };
 
