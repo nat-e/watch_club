@@ -49,7 +49,7 @@ defmodule WatchClub.Contents do
       define :mark_show_watched, action: :mark_watched
       define :mark_show_not_watched, action: :mark_not_watched
       define :mark_show_season_watched, action: :mark_season_watched
-      define :mark_show_not_season_watched, action: :mark_season_not_watched
+      define :mark_show_season_not_watched, action: :mark_season_not_watched
       define :mark_show_episode_watched, action: :mark_episode_watched
       define :mark_show_episode_not_watched, action: :mark_episode_not_watched
     end

@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
 
-  alias WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge
+  alias WatchClubWeb.Components.Contents.{EpisodeWatchProgressBadge, SeasonWatchProgressBadge}
 
   attr :content, ContentView, required: true
   attr :details, TvDetailsResponse, required: true
@@ -144,6 +144,13 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
       />
 
       <div class="flex flex-col gap-related">
+        <.live_component
+          id={"season-progress-badge-#{@season_metadata.details.season_number}"}
+          module={SeasonWatchProgressBadge}
+          content={@content}
+          season_number={@season_metadata.details.season_number}
+          current_user={@current_user}
+        />
         <div class="flex flex-wrap items-center gap-related">
           <h3 class="text-2xl font-semibold tracking-tight text-text">
             {dgettext("contents", "Season %{number}", number: @season_metadata.details.season_number)}
