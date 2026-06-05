@@ -121,11 +121,17 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   end
 
   @impl true
-  @spec mount(map(), any(), Phoenix.LiveView.Socket.t()) :: {:ok, Phoenix.LiveView.Socket.t()}
   def mount(%{"tmdb_id" => tmdb_id}, _session, socket) do
     user = socket.assigns.current_user
 
-    case Contents.get_tv_show_details(tmdb_id, actor: user) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(
+        WatchClub.PubSub,
+        WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
+      )
+    end
+
+    case load_tv_show(tmdb_id, user) do
       {:ok, tv_show} ->
         season_summaries = season_summaries(tv_show.details)
 
@@ -150,6 +156,22 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   @impl true
   def handle_info({:content_libraries_updated, %ContentView{} = tv_show}, socket) do
     {:noreply, assign(socket, :tv_show, tv_show)}
+  end
+
+  def handle_info(
+        %Ash.Notifier.Notification{
+          metadata: %{subject: :content_view_changed, external_id: tmdb_id}
+        },
+        socket
+      ) do
+    case load_tv_show(tmdb_id, socket.assigns.current_user) do
+      {:ok, show} ->
+        {:noreply, socket |> assign(:tv_show, show)}
+
+      {:error, error} ->
+        Logger.error("Error reloading TV show: #{inspect(error)}")
+        {:noreply, socket}
+    end
   end
 
   @impl true
@@ -187,6 +209,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
      socket
      |> put_season_metadata(season_number, %{status: :loading})
      |> start_season_metadata_load(season_number)}
+  end
+
+  defp load_tv_show(tmdb_id, user) do
+    Contents.get_tv_show_details(tmdb_id, actor: user)
   end
 
   defp initial_season_metadata_by_number(season_summaries) do

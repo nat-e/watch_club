@@ -78,6 +78,7 @@ defmodule WatchClub.Contents.TvShow do
       require_atomic? false
 
       change {UpdateShowEpisodes, action: :mark_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_not_watched do
@@ -85,6 +86,7 @@ defmodule WatchClub.Contents.TvShow do
       require_atomic? false
 
       change {UpdateShowEpisodes, action: :mark_not_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_season_watched do
@@ -93,6 +95,7 @@ defmodule WatchClub.Contents.TvShow do
       argument :season_number, :integer, allow_nil?: false
 
       change {UpdateShowEpisodes, action: :mark_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_season_not_watched do
@@ -101,6 +104,7 @@ defmodule WatchClub.Contents.TvShow do
       argument :season_number, :integer, allow_nil?: false
 
       change {UpdateShowEpisodes, action: :mark_not_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_episode_watched do
@@ -110,6 +114,7 @@ defmodule WatchClub.Contents.TvShow do
       argument :episode_number, :integer, allow_nil?: false
 
       change {UpdateShowEpisodes, action: :mark_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_episode_not_watched do
@@ -119,6 +124,7 @@ defmodule WatchClub.Contents.TvShow do
       argument :episode_number, :integer, allow_nil?: false
 
       change {UpdateShowEpisodes, action: :mark_not_watched}
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
   end
 

@@ -37,12 +37,14 @@ defmodule WatchClub.Contents.Movie do
       description "Marks the Movie as watched for the current user"
       require_atomic? false
       change WatchClub.Contents.Changes.SetViewerProgressCompleted
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
 
     update :mark_not_watched do
       description "Marks the Movie as un-watched for the current user"
       require_atomic? false
       change WatchClub.Contents.Changes.DeleteViewerProgress
+      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
     end
   end
 

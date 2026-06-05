@@ -108,7 +108,14 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   def mount(%{"tmdb_id" => tmdb_id}, _session, socket) do
     user = socket.assigns.current_user
 
-    case Contents.get_movie_details(tmdb_id, actor: user) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(
+        WatchClub.PubSub,
+        WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
+      )
+    end
+
+    case load_movie(tmdb_id, user) do
       {:ok, movie} ->
         {:ok, socket |> assign(:movie, movie)}
 
@@ -121,5 +128,26 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   @impl true
   def handle_info({:content_libraries_updated, %ContentView{} = movie}, socket) do
     {:noreply, assign(socket, :movie, movie)}
+  end
+
+  @impl true
+  def handle_info(
+        %Ash.Notifier.Notification{
+          metadata: %{subject: :content_view_changed, external_id: tmdb_id}
+        },
+        socket
+      ) do
+    case load_movie(tmdb_id, socket.assigns.current_user) do
+      {:ok, movie} ->
+        {:noreply, socket |> assign(:movie, movie)}
+
+      {:error, error} ->
+        Logger.error("Error reloading movie: #{inspect(error)}")
+        {:noreply, socket}
+    end
+  end
+
+  defp load_movie(tmdb_id, user) do
+    Contents.get_movie_details(tmdb_id, actor: user)
   end
 end

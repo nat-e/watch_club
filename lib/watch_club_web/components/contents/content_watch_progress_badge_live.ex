@@ -43,7 +43,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
 
     with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
          {:ok, _} <- mark_content_watched(content.content, user) do
-      {:noreply, socket |> assign(:status, :completed)}
+      {:noreply, socket}
     else
       {:error, error} ->
         Logger.error("Error marking content watched #{inspect(error)}")
@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
 
     with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
          {:ok, _} <- mark_content_not_watched(content.content, user) do
-      {:noreply, socket |> assign(:status, :not_started)}
+      {:noreply, socket}
     else
       {:error, error} ->
         Logger.error("Error marking content not watched #{inspect(error)}")

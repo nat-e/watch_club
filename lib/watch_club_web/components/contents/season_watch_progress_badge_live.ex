@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
              %{season_number: socket.assigns.season_number},
              actor: user
            ) do
-      {:noreply, socket |> assign(:status, :completed)}
+      {:noreply, socket}
     else
       {:error, error} ->
         Logger.error("Error marking content watched #{inspect(error)}")
@@ -66,7 +66,7 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
              %{season_number: socket.assigns.season_number},
              actor: user
            ) do
-      {:noreply, socket |> assign(:status, :not_started)}
+      {:noreply, socket}
     else
       {:error, error} ->
         Logger.error("Error marking content not watched #{inspect(error)}")
