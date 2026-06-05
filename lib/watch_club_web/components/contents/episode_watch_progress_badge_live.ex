@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
   def render(%{status: :completed} = assigns) do
     ~H"""
     <button class="w-fit" phx-target={@myself} phx-click="mark_not_watched">
-      <.badge variant="success" size="lg">
+      <.badge variant="success">
         <:icon><Lucideicons.check_circle_2 /></:icon>
         Watched
       </.badge>
@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
   def render(assigns) do
     ~H"""
     <button class="w-fit" phx-target={@myself} phx-click="mark_watched">
-      <.badge variant="muted" size="lg">
+      <.badge variant="muted">
         <:icon><Lucideicons.check_circle_2 /></:icon>
         Mark as watched
       </.badge>

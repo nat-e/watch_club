@@ -21,7 +21,7 @@ Rules:
 - Inline the CSS styles directly in the HEEX templates. Do not extract them to elixir functions, this makes the code harder to read and comprehend. If you find yourself duplicating them, it is often a sign that you need to extract a function component.
 - Use tailwind classes based onsemantic token from our design system as defined in `@docs/design-system/foundations.md`
 - Avoid long list of assigns in live views / live components. Prefer deriving data directly at the call site inline inside the component. When in need of many related assigns, consider creating a struct or Ash Resource for managing them. Try to extract business logic inside testable Ash resources.
-- Make sure to always make components responsive and think of different viewports
+- Make sure to always make UI responsive. Use Tailwind container queries rather than absolute breakpoints.
 - Prefer simpler `flex` layouts instead of `grid` when possible.
 
 ### Backend
