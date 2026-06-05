@@ -28,9 +28,15 @@ defmodule WatchClub.Contents do
 
     resource Movie do
       define :get_movie_details, action: :details, args: [:tmdb_id]
+      define :mark_movie_watched, action: :mark_watched
+      define :mark_movie_not_watched, action: :mark_not_watched
     end
 
-    resource Book
+    resource Book do
+      define :mark_book_read, action: :mark_read
+      define :mark_book_not_read, action: :mark_not_read
+    end
+
     resource MovieLocalization
 
     resource TvShow do
@@ -39,6 +45,13 @@ defmodule WatchClub.Contents do
       define :get_tv_show_season_details,
         action: :season_details,
         args: [:tmdb_id, :season_number]
+
+      define :mark_show_watched, action: :mark_watched
+      define :mark_show_not_watched, action: :mark_not_watched
+      define :mark_show_season_watched, action: :mark_season_watched
+      define :mark_show_not_season_watched, action: :mark_season_not_watched
+      define :mark_show_episode_watched, action: :mark_episode_watched
+      define :mark_show_episode_not_watched, action: :mark_episode_not_watched
     end
 
     resource TvShowEpisode

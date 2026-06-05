@@ -48,7 +48,7 @@
 		// "elixir": "html",
 		"html-eex": "html"
 	},
-	// "expert.server.nightly": true,
+	"expert.server.nightly": true,
   // "expert.server.logLevel": "warning",
   // "expert.server.fileLogLevel": "info",
   // "expert.trace.server": "off",

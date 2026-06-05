@@ -258,8 +258,9 @@ defmodule WatchClub.Contents.Content do
               WatchStatus,
               expr(
                 cond do
-                  type == :tv_show -> tv_show.viewer_progress_status
+                  type == :book -> book.viewer_progress_status
                   type == :movie -> movie.viewer_progress_status
+                  type == :tv_show -> tv_show.viewer_progress_status
                 end
               )
 

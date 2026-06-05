@@ -24,6 +24,10 @@ Rules:
 - Make sure to always make components responsive and think of different viewports
 - Prefer simpler `flex` layouts instead of `grid` when possible.
 
+### Backend
+
+- Only add policies and Ash authorizers to resources when it adds meaningful value. Policies like "any logged in user can do any action" does not bring value.
+
 ## Coding guidelines
 
 - Focus on readability and maintainability of the code and clear separation of concerns.

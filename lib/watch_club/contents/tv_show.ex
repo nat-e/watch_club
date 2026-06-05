@@ -2,10 +2,10 @@ defmodule WatchClub.Contents.TvShow do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
-    data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
+  alias WatchClub.Contents.Changes.UpdateShowEpisodes
   alias WatchClub.History.WatchStatus
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
@@ -72,18 +72,53 @@ defmodule WatchClub.Contents.TvShow do
 
       run WatchClub.Contents.Actions.GetTvShowSeasonDetails
     end
-  end
 
-  policies do
-    policy actor_absent() do
-      description "TV Show actions require an authenticated actor"
-      access_type :strict
-      forbid_if always()
+    update :mark_watched do
+      description "Marks all Episodes of the show as watched for the current user"
+      require_atomic? false
+
+      change {UpdateShowEpisodes, action: :mark_watched}
     end
 
-    policy action([:read, :details, :season_details]) do
-      description "TV Show metadata and details are visible to authenticated users"
-      authorize_if always()
+    update :mark_not_watched do
+      description "Marks all Episodes of the show as not watched for the current user"
+      require_atomic? false
+
+      change {UpdateShowEpisodes, action: :mark_not_watched}
+    end
+
+    update :mark_season_watched do
+      description "Marks all Episodes of the season as watched for the current user"
+      require_atomic? false
+      argument :season_number, :integer, allow_nil?: false
+
+      change {UpdateShowEpisodes, action: :mark_watched}
+    end
+
+    update :mark_season_not_watched do
+      description "Marks all Episodes of the season as not watched for the current user"
+      require_atomic? false
+      argument :season_number, :integer, allow_nil?: false
+
+      change {UpdateShowEpisodes, action: :mark_not_watched}
+    end
+
+    update :mark_episode_watched do
+      description "Marks a specific episode as watched for the current user"
+      require_atomic? false
+      argument :season_number, :integer, allow_nil?: false
+      argument :episode_number, :integer, allow_nil?: false
+
+      change {UpdateShowEpisodes, action: :mark_watched}
+    end
+
+    update :mark_episode_not_watched do
+      description "Marks a specific episode as not watched for the current user"
+      require_atomic? false
+      argument :season_number, :integer, allow_nil?: false
+      argument :episode_number, :integer, allow_nil?: false
+
+      change {UpdateShowEpisodes, action: :mark_not_watched}
     end
   end
 

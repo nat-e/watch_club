@@ -3,6 +3,11 @@ defmodule WatchClub.Contents.ContentView do
 
   alias WatchClub.Clubs.LibraryItem
 
+  alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.Club
+
+  alias WatchClub.Contents
+
   alias WatchClub.Contents.{
     Book,
     Content,
@@ -87,6 +92,7 @@ defmodule WatchClub.Contents.ContentView do
   def details_url(%__MODULE__{type: :movie} = content), do: "/movies/#{content.external_id}"
   def details_url(%__MODULE__{type: :tv_show} = content), do: "/shows/#{content.external_id}"
 
+  @spec playable?(ContentView.t()) :: boolean()
   def playable?(%__MODULE__{content: %Content{book: %Book{} = book}}), do: book.playable?
   def playable?(%__MODULE__{content: %Content{movie: %Movie{} = movie}}), do: movie.playable?
 
@@ -99,6 +105,15 @@ defmodule WatchClub.Contents.ContentView do
 
   def playable?(_content), do: false
 
+  @spec viewer_progress_status(ContentView.t()) :: atom()
+  def viewer_progress_status(%__MODULE__{content: %Content{viewer_progress_status: status}}),
+    do: status
+
+  def viewer_progress_status(%__MODULE__{}), do: :not_started
+
+  @doc """
+  Returns a TvShowEpisode, or nil if the Content does not exist in the database
+  """
   @spec episode(ContentView.t(), integer(), integer()) :: TvShowEpisode.t() | nil
   def episode(
         %__MODULE__{content: %Content{tv_show: %TvShow{} = show}},
@@ -112,12 +127,42 @@ defmodule WatchClub.Contents.ContentView do
 
   def episode(%__MODULE__{}, _season_number, _episode_number), do: nil
 
+  @doc """
+  Returns the ContentRequest the current user has made for this Content, if any
+  """
   @spec current_request(ContentView.t()) :: ContentRequest.t() | nil
   def current_request(%__MODULE__{} = content) do
     content.content && content.content.viewer_request
   end
 
-  def in_clubs(content, current_user) do
+  @doc """
+  Creates the Content in the database if it does not exist.
+  Returns the ContentView with the content populated.
+  """
+  @spec ensure_content_exists(ContentView.t(), User.t()) ::
+          {:ok, ContentView.t()} | {:error, term()}
+  def ensure_content_exists(%__MODULE__{content: %Content{}} = content, _current_user),
+    do: {:ok, content}
+
+  def ensure_content_exists(%__MODULE__{type: :movie} = content, %User{} = current_user) do
+    case Contents.get_or_create_movie(content.external_id, current_user) do
+      {:ok, movie} -> {:ok, %__MODULE__{content | content: movie}}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  def ensure_content_exists(%__MODULE__{type: :tv_show} = content, %User{} = current_user) do
+    case Contents.get_or_create_tv_show(content.external_id, current_user) do
+      {:ok, show} -> {:ok, %__MODULE__{content | content: show}}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @doc """
+  Returns the list of Clubs for which this Content is at least in one library.
+  """
+  @spec in_clubs(ContentView.t(), User.t()) :: [Club.t()]
+  def in_clubs(%__MODULE__{} = content, %User{} = current_user) do
     memberships_by_club_id = Map.new(current_user.memberships, fn m -> {m.club_id, m} end)
 
     content.in_libraries

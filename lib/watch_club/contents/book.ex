@@ -5,6 +5,7 @@ defmodule WatchClub.Contents.Book do
     data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.Content
+  alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.{Audiobook, Ebook}
 
   postgres do
@@ -18,6 +19,18 @@ defmodule WatchClub.Contents.Book do
 
   actions do
     defaults [:read, :destroy, create: [], update: []]
+
+    update :mark_read do
+      description "Marks the Book as read for the current user"
+      require_atomic? false
+      change WatchClub.Contents.Changes.SetViewerProgressCompleted
+    end
+
+    update :mark_not_read do
+      description "Marks the Book as not read for the current user"
+      require_atomic? false
+      change WatchClub.Contents.Changes.DeleteViewerProgress
+    end
   end
 
   attributes do
@@ -48,10 +61,26 @@ defmodule WatchClub.Contents.Book do
 
     has_many :ebooks, Ebook
     has_many :audiobooks, Audiobook
+    has_many :watch_progresses, WatchProgress
+
+    has_one :viewer_progress, WatchProgress do
+      from_many? true
+      filter expr(user_id == ^actor(:id))
+    end
   end
 
   calculations do
     calculate :playable?, :boolean, expr(audiobooks_count > 0 or ebooks_count > 0)
+
+    calculate :viewer_progress_status,
+              WatchStatus,
+              expr(
+                cond do
+                  is_nil(viewer_progress) -> :not_started
+                  viewer_progress.completed -> :completed
+                  true -> :in_progress
+                end
+              )
   end
 
   aggregates do

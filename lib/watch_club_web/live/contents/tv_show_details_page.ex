@@ -102,7 +102,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
             details={@tv_show.details}
             selected_season={@selected_season}
             season_metadata_by_number={@season_metadata_by_number}
-            locale={@current_user.settings.locale}
+            current_user={@current_user}
           />
 
           <.cast_section content={@tv_show} />

@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Components.UI.Badge do
     values: ~w(default accent secondary success muted danger),
     default: "default"
 
-  attr :size, :string, values: ~w(sm md), default: "md"
+  attr :size, :string, values: ~w(sm md lg), default: "md"
 
   attr :rest, :global
 
@@ -26,8 +26,9 @@ defmodule WatchClubWeb.Components.UI.Badge do
     <span
       class={[
         "inline-flex w-fit shrink-0 items-center justify-center gap-tight overflow-hidden rounded-full border font-medium whitespace-nowrap",
-        @size == "sm" && "h-5 px-related py-0.5 text-xs",
-        @size == "md" && "h-6 px-related py-tight text-sm",
+        @size == "sm" && "px-related py-0.5 text-xs",
+        @size == "md" && "px-related py-0.5 text-sm",
+        @size == "lg" && "px-related py-tight text-sm",
         @variant == "default" && "border-transparent bg-primary text-on-primary",
         @variant == "accent" && "border-transparent bg-accent text-on-accent",
         @variant == "secondary" && "border-border bg-surface-raised text-text",

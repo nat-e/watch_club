@@ -8,7 +8,12 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
   alias WatchClub.Contents.ContentView
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
-  alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
+
+  alias WatchClubWeb.Components.Contents.{
+    AddToLibraryButtonLive,
+    ContentWatchProgressBadge,
+    PlayOrRequestButtonLive
+  }
 
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
@@ -34,13 +39,18 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
           <.stack space="group" class="self-center text-center md:text-left">
             <.stack space="related">
+              <.live_component
+                id="viewer-progress-badge"
+                module={ContentWatchProgressBadge}
+                content={@content}
+                current_user={@current_user}
+              />
               <h1
                 id="content-details-title"
                 class="text-4xl leading-none font-semibold tracking-tight text-text sm:text-5xl xl:text-6xl"
               >
                 {@content.title}
               </h1>
-
               <ul
                 :if={metadata_items(@content.details) != []}
                 class="flex flex-wrap items-center justify-center gap-related text-text-muted md:justify-start"
@@ -90,35 +100,12 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         </div>
 
         <.stack space="group" class="w-full items-center justify-self-center">
-          <%!-- <.availability_notice
-            :if={!@available? && ContentView.in_clubs(@content, @current_user) == []}
-            content={@content}
-          /> --%>
           <.hero_actions content={@content} current_user={@current_user} />
         </.stack>
       </div>
     </header>
     """
   end
-
-  # attr :content, ContentView, required: true
-  #
-  # defp availability_notice(assigns) do
-  #   ~H"""
-  #   <div class="mx-auto max-w-readable rounded-card border border-accent-border bg-accent-bg p-group text-left text-sm leading-6 text-accent">
-  #     <div class="flex gap-related">
-  #       <Lucideicons.info class="mt-0.5 size-icon shrink-0 text-accent" />
-  #       <p>
-  #         {dgettext(
-  #           "contents",
-  #           "%{title} is not in your club libraries yet. Add it to a Library so every Member in that club can see it.",
-  #           title: @content.title
-  #         )}
-  #       </p>
-  #     </div>
-  #   </div>
-  #   """
-  # end
 
   attr :content, ContentView, required: true
   attr :current_user, User, required: true

@@ -2,8 +2,7 @@ defmodule WatchClub.Contents.Movie do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
-    data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Contents.{Content, ContentView, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
@@ -33,18 +32,17 @@ defmodule WatchClub.Contents.Movie do
 
       run WatchClub.Contents.Actions.GetMovieDetails
     end
-  end
 
-  policies do
-    policy actor_absent() do
-      description "Movie actions require an authenticated actor"
-      access_type :strict
-      forbid_if always()
+    update :mark_watched do
+      description "Marks the Movie as watched for the current user"
+      require_atomic? false
+      change WatchClub.Contents.Changes.SetViewerProgressCompleted
     end
 
-    policy action([:read, :details]) do
-      description "Movie metadata and details are visible to authenticated users"
-      authorize_if always()
+    update :mark_not_watched do
+      description "Marks the Movie as un-watched for the current user"
+      require_atomic? false
+      change WatchClub.Contents.Changes.DeleteViewerProgress
     end
   end
 

@@ -6,7 +6,7 @@ defmodule WatchClub.History.WatchProgress do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Book, Movie, TvShowEpisode}
   alias WatchClub.MediaCatalog.Media
 
   postgres do
@@ -14,6 +14,7 @@ defmodule WatchClub.History.WatchProgress do
     repo WatchClub.Repo
 
     identity_wheres_to_sql unique_movie_per_user: "movie_id IS NOT NULL",
+                           unique_book_per_user: "book_id IS NOT NULL",
                            unique_episode_per_user: "tv_show_episode_id IS NOT NULL"
 
     references do
@@ -32,6 +33,15 @@ defmodule WatchClub.History.WatchProgress do
       upsert_fields [:position_seconds, :last_media_id, :completed]
 
       accept [:movie_id, :last_media_id, :position_seconds, :completed]
+      change relate_actor(:user)
+    end
+
+    create :record_book_progress do
+      upsert? true
+      upsert_identity :unique_book_per_user
+      upsert_fields [:position_seconds, :last_media_id, :completed]
+
+      accept [:book_id, :last_media_id, :position_seconds, :completed]
       change relate_actor(:user)
     end
 
@@ -56,8 +66,7 @@ defmodule WatchClub.History.WatchProgress do
     # inspects the changeset ("is this write setting `user` to the actor?"), so
     # it only resolves on creates/updates. `relates_to_actor_via` filters on the
     # persisted row (`user_id == actor.id`), which is what reads and destroys need
-    # — using `relating_to_actor` there forbids every read.
-    policy action([:record_movie_progress, :record_episode_progress]) do
+    policy action_type([:create, :update]) do
       description "A User records only their own Watch Progress"
       authorize_if relating_to_actor(:user)
     end
@@ -94,6 +103,11 @@ defmodule WatchClub.History.WatchProgress do
       public? true
     end
 
+    belongs_to :book, Book do
+      allow_nil? true
+      public? true
+    end
+
     belongs_to :tv_show_episode, TvShowEpisode do
       allow_nil? true
       public? true
@@ -106,6 +120,10 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   identities do
+    identity :unique_book_per_user, [:user_id, :book_id] do
+      where expr(not is_nil(book_id))
+    end
+
     identity :unique_movie_per_user, [:user_id, :movie_id] do
       where expr(not is_nil(movie_id))
     end

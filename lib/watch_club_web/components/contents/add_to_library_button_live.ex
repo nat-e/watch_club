@@ -154,7 +154,6 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   end
 
   @impl true
-  @spec handle_event(<<_::32, _::_*8>>, any(), any()) :: {:noreply, any()}
   def handle_event("open", _params, socket) do
     content_view = socket.assigns.content
     actor = socket.assigns.current_user

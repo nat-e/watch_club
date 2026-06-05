@@ -10,6 +10,7 @@ defmodule WatchClub.History do
   resources do
     resource WatchProgress do
       define :record_movie_progress
+      define :record_book_progress
       define :record_episode_progress
     end
   end
