@@ -30,17 +30,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     assigns = assign(assigns, :has_video?, has_video?)
 
     ~H"""
-    <aside class="grid h-full content-start overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-card">
+    <aside class="flex h-full flex-col overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-card">
       <.hero media={@media} />
 
-      <div class="grid gap-cluster p-cluster">
+      <.stack space="cluster" class="p-cluster">
         <.content_section media={@media} />
         <.library_section media={@media} />
         <.video_section :if={@has_video?} media={@media} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
         <.file_section media={@media} locale={@locale} />
-      </div>
+      </.stack>
     </aside>
     """
   end
@@ -49,7 +49,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp hero(assigns) do
     ~H"""
-    <header class="grid gap-group border-b border-border-subtle p-cluster">
+    <header class="flex flex-col gap-group border-b border-border-subtle p-cluster">
       <div class="flex items-center gap-related min-w-0">
         <.media_type_badge media_type={@media.type} />
         <.button
@@ -178,7 +178,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
     ~H"""
     <.section_block label={"Audio (#{length(@tracks)})"}>
-      <ul class="grid gap-related">
+      <.stack as="ul" space="related">
         <li
           :for={track <- @tracks}
           class="flex items-center justify-between gap-related text-base"
@@ -198,7 +198,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
             </.badge>
           </div>
         </li>
-      </ul>
+      </.stack>
     </.section_block>
     """
   end
@@ -213,7 +213,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
     ~H"""
     <.section_block label={"Subtitles (#{length(@tracks)})"}>
-      <ul class="grid gap-related">
+      <.stack as="ul" space="related">
         <li
           :for={track <- @tracks}
           class="flex items-center justify-between gap-related text-base"
@@ -229,7 +229,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           <.badge :if={Map.get(track, :default?)} variant="muted">Default</.badge>
           <.badge :if={Map.get(track, :forced?)} variant="muted">Forced</.badge>
         </li>
-      </ul>
+      </.stack>
     </.section_block>
     """
   end

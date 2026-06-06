@@ -59,15 +59,15 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentSection do
       |> assign(:sub_badge, fields[:sub_badge])
 
     ~H"""
-    <div class="grid grid-cols-[6rem_minmax(0,1fr)] items-start gap-cluster">
+    <div class="flex items-start gap-cluster">
       <.tmdb_poster
         path={@poster_path}
         size="w185"
         alt={@title}
-        class="rounded-control border border-border-subtle"
+        class="w-24 shrink-0 rounded-control border border-border-subtle"
       />
 
-      <.stack space="related" class="min-w-0 self-center">
+      <.stack space="related" class="min-w-0 flex-1 self-center">
         <h2 class="text-xl font-heading font-semibold leading-tight tracking-tight text-text">
           {@title}
         </h2>

@@ -66,7 +66,7 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
     <p :if={@libraries == []} class="text-base text-text-subtle">
       This content is not in any Library.
     </p>
-    <ul :if={@libraries != []} class="grid gap-related">
+    <.stack :if={@libraries != []} as="ul" space="related">
       <li
         :for={library <- @libraries}
         class="flex items-center gap-related text-base text-text"
@@ -74,7 +74,7 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
         <.avatar id={library.club.id} name={library.club.name} size="sm" />
         <span class="min-w-0 truncate">{library.name}</span>
       </li>
-    </ul>
+    </.stack>
     """
   end
 

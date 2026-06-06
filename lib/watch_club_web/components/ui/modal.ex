@@ -63,9 +63,9 @@ defmodule WatchClubWeb.Components.UI.Modal do
     >
       <div
         data-slot="modal-content"
-        class="grid max-h-[calc(100dvh-2rem)] gap-cluster overflow-y-auto p-cluster text-sm text-text"
+        class="flex max-h-[calc(100dvh-2rem)] flex-col gap-cluster overflow-y-auto p-cluster text-sm text-text"
       >
-        <header data-slot="modal-header" class="grid gap-related pr-10">
+        <header data-slot="modal-header" class="flex flex-col gap-related pr-10">
           <h2
             :for={title <- @title}
             id={"#{@id}-title"}
@@ -88,7 +88,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
           </p>
         </header>
 
-        <div data-slot="modal-body" class="grid gap-group text-sm/relaxed text-text">
+        <div data-slot="modal-body" class="flex flex-col gap-group text-sm/relaxed text-text">
           {render_slot(@inner_block)}
         </div>
 

@@ -71,13 +71,13 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
             </.empty>
           </div>
 
-          <div :for={{dom_id, content} <- @streams.contents} id={dom_id} class="w-full">
-            <.content_card
-              content={content}
-              library_id_context={@library.id}
-              current_user={@current_user}
-            />
-          </div>
+          <.content_card
+            :for={{dom_id, content} <- @streams.contents}
+            id={dom_id}
+            content={content}
+            library_id_context={@library.id}
+            current_user={@current_user}
+          />
         </div>
 
         <.infinite_scroll_trigger

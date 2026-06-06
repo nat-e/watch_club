@@ -16,11 +16,11 @@ defmodule WatchClubWeb.Components.Contents.Details.ExternalLinksCard do
       title={dgettext("contents", "External links")}
       icon={:external_link}
     >
-      <ul class="grid gap-related">
+      <.stack as="ul" space="related">
         <li :for={link <- external_links(@content.details)}>
           <.external_link_button link={link} />
         </li>
-      </ul>
+      </.stack>
     </.section>
     """
   end

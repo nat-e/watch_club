@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
       item_id={:id}
       event="reorder_libraries"
       target={@target}
-      class="grid gap-related"
+      class="flex flex-col gap-related"
     >
       <:item :let={{library, _index}}>
         <.library_list_item library={library} target={@target} />
@@ -91,12 +91,12 @@ defmodule WatchClubWeb.Clubs.Settings.Libraries.LibraryList do
         <.library_icon library={@library} class="size-icon-lg" />
       </.button>
 
-      <div class="grid min-w-0 gap-tight">
+      <.stack space="tight" class="min-w-0">
         <h3 class="truncate text-base font-semibold">{@library.name}</h3>
         <div class="flex flex-wrap gap-tight">
           <.content_type_badge content_type={@library.content_type} />
         </div>
-      </div>
+      </.stack>
 
       <.dropdown_menu
         id={"library-actions-#{@library.id}"}

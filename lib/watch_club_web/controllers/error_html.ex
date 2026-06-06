@@ -33,9 +33,9 @@ defmodule WatchClubWeb.ErrorHTML do
       </head>
       <body class="min-h-svh bg-canvas text-text">
         <main class="flex min-h-svh items-center justify-center px-page py-page-y">
-          <section class="grid w-full max-w-readable gap-group text-center text-balance">
+          <section class="flex w-full max-w-readable flex-col gap-group text-center text-balance">
             <p class="text-sm font-semibold tracking-wide text-text-muted">{@status}</p>
-            <div class="grid gap-related">
+            <div class="flex flex-col gap-related">
               <h1 class="text-2xl font-bold tracking-tight text-text sm:text-3xl">
                 {@title}
               </h1>

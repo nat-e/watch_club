@@ -79,7 +79,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           <.content_type_badge type={@content.type} />
           <.link
             href={WatchClub.Shared.Url.content_details_link(@content.type, @content.external_id)}
-            class="truncate text-xl font-heading font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
+            class="truncate text-xl font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
           >
             {@content.title}
           </.link>

@@ -152,7 +152,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   defp source_type_section(assigns) do
     ~H"""
-    <.card as="section" data_slot="section" padding="cluster" class="grid gap-group">
+    <.card as="section" data_slot="section" padding="cluster" class="flex flex-col gap-group">
       <div class="flex flex-col items-start gap-related sm:flex-row sm:items-start sm:justify-between">
         <div class="flex min-w-0 items-start gap-related">
           <.source_type_icon type={@type} size="header" />
@@ -186,11 +186,11 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         </:description>
       </.empty>
 
-      <ul :if={@sources != []} class="grid list-none gap-related p-0">
+      <.stack :if={@sources != []} as="ul" space="related">
         <li :for={source <- @sources}>
           <.media_source_card media_source={source} locale={@locale} />
         </li>
-      </ul>
+      </.stack>
     </.card>
     """
   end

@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
   alias WatchClub.Contents.ContentView
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
+  attr :id, :string
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
   attr :library_id_context, :string, default: nil
@@ -32,10 +33,10 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
     ~H"""
     <.card
       as="article"
-      id={"content-card-#{@card_id}"}
+      id={@id}
       data_slot="content-card"
       padding="none"
-      class="group/content-card w-full overflow-hidden"
+      class="group/content-card relative w-full overflow-hidden"
     >
       <.tmdb_poster size="w342" path={@content.image_path} class="w-full">
         <button
@@ -46,8 +47,11 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           phx-click={reveal_content_card()}
         />
 
-        <div class="pointer-events-none absolute inset-0 z-30 flex h-full w-full flex-col overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100">
-          <div class="flex translate-y-[-0.25rem] items-center gap-related p-tight transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
+        <.stack
+          space="related"
+          class="pointer-events-none absolute inset-0 z-30 p-tight h-full w-full overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100"
+        >
+          <div class="flex translate-y-[-0.25rem] items-center gap-related transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
             <.avatar
               :if={@library_item && @library_item.added_by}
               id={@library_item.added_by.id}
@@ -74,40 +78,33 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             </.dropdown_menu>
           </div>
 
-          <.link
-            id={"content-card-details-link-#{@card_id}"}
-            navigate={ContentView.details_url(@content)}
-            class="min-h-0 flex-1 overflow-hidden text-left"
-          >
-            <div class="flex h-full w-full items-end">
-              <div class="px-related pb-related text-text">
-                <div class="flex flex-row items-center gap-tight leading-none">
-                  <span :if={@content.origin_country}>
-                    {WatchClub.Languages.to_flag(@content.origin_country)}
-                  </span>
-                  <span :if={@content.release_date} class="font-medium">
-                    {@content.release_date.year}
-                  </span>
-                </div>
+          <.stack space="tight" class="justify-end flex-1">
+            <.inline space="tight" class="leading-none">
+              <span :if={@content.origin_country}>
+                {WatchClub.Languages.to_flag(@content.origin_country)}
+              </span>
+              <span :if={@content.release_date} class="font-medium">
+                {@content.release_date.year}
+              </span>
+            </.inline>
 
-                <h2 class="mt-tight line-clamp-3 text-xl leading-tight font-bold whitespace-normal text-text">
-                  {@content.title}
-                </h2>
-              </div>
-            </div>
-          </.link>
+            <.link
+              navigate={ContentView.details_url(@content)}
+              class="line-clamp-4 text-xl leading-tight font-bold after:absolute after:inset-0 after:content-['']"
+            >
+              {@content.title}
+            </.link>
+          </.stack>
 
-          <div class="mb-tight flex w-full flex-row gap-tight px-tight">
-            <.live_component
-              id={"play-or-request-button-#{@card_id}"}
-              module={PlayOrRequestButtonLive}
-              content={@content}
-              current_user={@current_user}
-              size="md"
-              class="w-full"
-            />
-          </div>
-        </div>
+          <.live_component
+            id={"play-or-request-button-#{@card_id}"}
+            module={PlayOrRequestButtonLive}
+            content={@content}
+            current_user={@current_user}
+            size="md"
+            class="z-10"
+          />
+        </.stack>
       </.tmdb_poster>
     </.card>
     """

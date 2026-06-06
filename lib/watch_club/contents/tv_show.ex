@@ -4,8 +4,8 @@ defmodule WatchClub.Contents.TvShow do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
   alias WatchClub.Contents.Changes.UpdateShowEpisodes
+  alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
   alias WatchClub.History.WatchStatus
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 

@@ -345,7 +345,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:control>
         <.radio_group
           field={@form[:selected_root_path]}
-          class="grid gap-tight"
+          class="flex flex-col gap-tight"
         >
           <:item
             :for={path <- @root_folders}

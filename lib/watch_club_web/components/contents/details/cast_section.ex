@@ -41,10 +41,10 @@ defmodule WatchClubWeb.Components.Contents.Details.CastSection do
           {@person.initials}
         </div>
       </div>
-      <div class="grid content-start gap-tight overflow-hidden p-related">
-        <p class="text-sm leading-5 font-semibold break-words text-text">{@person.name}</p>
-        <p class="line-clamp-1 text-xs leading-5 break-words text-text-muted">{@person.role}</p>
-      </div>
+      <.stack space="tight" class="overflow-hidden p-related">
+        <p class="text-sm leading-5 font-semibold wrap-break-words text-text">{@person.name}</p>
+        <p class="line-clamp-1 text-xs leading-5 wrap-break-words text-text-muted">{@person.role}</p>
+      </.stack>
     </li>
     """
   end
@@ -83,8 +83,7 @@ defmodule WatchClubWeb.Components.Contents.Details.CastSection do
     name
     |> String.split(" ", trim: true)
     |> Enum.take(2)
-    |> Enum.map(&String.first/1)
-    |> Enum.join()
+    |> Enum.map_join(&String.first/1)
   end
 
   defp tmdb_profile_url(path), do: "https://image.tmdb.org/t/p/w185#{path}"

@@ -10,6 +10,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
 
   import WatchClubWeb.Components.UI.LucideIcon
 
+  attr :as, :string, values: ~w(div ul ol), default: "div", doc: "HTML tag for the stack root."
+
   attr :space, :string,
     values: ~w(none tight related group cluster section),
     default: "group"
@@ -20,7 +22,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
 
   def stack(assigns) do
     ~H"""
-    <div
+    <.dynamic_tag
+      tag_name={@as}
       class={[
         "flex flex-col",
         @space == "tight" && "gap-tight",
@@ -33,9 +36,11 @@ defmodule WatchClubWeb.Components.UI.Layout do
       {@rest}
     >
       {render_slot(@inner_block)}
-    </div>
+    </.dynamic_tag>
     """
   end
+
+  attr :as, :string, values: ~w(div ul ol), default: "div", doc: "HTML tag for the inline root."
 
   attr :space, :string,
     values: ~w(none tight related group cluster section),
@@ -47,7 +52,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
 
   def inline(assigns) do
     ~H"""
-    <div
+    <.dynamic_tag
+      tag_name={@as}
       class={[
         "flex items-center",
         @space == "tight" && "gap-tight",
@@ -60,9 +66,11 @@ defmodule WatchClubWeb.Components.UI.Layout do
       {@rest}
     >
       {render_slot(@inner_block)}
-    </div>
+    </.dynamic_tag>
     """
   end
+
+  attr :as, :string, values: ~w(div ul ol), default: "div", doc: "HTML tag for the cluster root."
 
   attr :space, :string,
     values: ~w(none tight related group cluster section),
@@ -74,7 +82,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
 
   def cluster(assigns) do
     ~H"""
-    <div
+    <.dynamic_tag
+      tag_name={@as}
       class={[
         "flex flex-wrap items-center",
         @space == "tight" && "gap-tight",
@@ -87,7 +96,7 @@ defmodule WatchClubWeb.Components.UI.Layout do
       {@rest}
     >
       {render_slot(@inner_block)}
-    </div>
+    </.dynamic_tag>
     """
   end
 
@@ -189,7 +198,7 @@ defmodule WatchClubWeb.Components.UI.Layout do
           >
             <.lucide_icon name={@icon} class="size-icon" />
           </span>
-          <div class="grid min-w-0 gap-tight">
+          <div class="flex flex-col min-w-0 gap-tight">
             <h2 :if={@title} class="text-xl font-heading font-semibold tracking-tight text-text">
               {@title}
             </h2>
