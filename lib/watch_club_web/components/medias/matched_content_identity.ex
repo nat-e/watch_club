@@ -9,12 +9,18 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentIdentity do
 
   alias WatchClub.Contents.{Book, Movie, TvShowEpisode}
 
+  alias WatchClubWeb.Helpers.Time
+
   attr :content, :any, required: true
 
   def matched_content_identity(%{content: %Movie{} = movie} = assigns) do
     render_identity(
       assigns,
-      identity_text(movie.content.original_title, nil, year_of(movie.content))
+      identity_text(
+        movie.content.original_title,
+        nil,
+        Time.maybe_year(movie.content.release_date)
+      )
     )
   end
 
@@ -30,7 +36,10 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentIdentity do
   end
 
   def matched_content_identity(%{content: %Book{} = book} = assigns) do
-    render_identity(assigns, identity_text(book.title, nil, year_of(book.content)))
+    render_identity(
+      assigns,
+      identity_text(book.title, nil, Time.maybe_year(book.content.release_date))
+    )
   end
 
   defp render_identity(assigns, text) do
@@ -44,7 +53,4 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentIdentity do
   defp identity_text(title, sub, _year) when is_binary(sub), do: "#{title} · #{sub}"
   defp identity_text(title, _sub, year) when is_integer(year), do: "#{title} · #{year}"
   defp identity_text(title, _sub, _year), do: title
-
-  defp year_of(%{release_date: %Date{year: year}}), do: year
-  defp year_of(_), do: nil
 end

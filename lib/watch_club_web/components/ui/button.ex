@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     <.link
       id={@id}
       class={[
-        "w-fit inline-flex min-w-0 shrink items-center justify-center rounded-control border bg-clip-padding font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
+        "inline-flex min-w-0 shrink items-center justify-center rounded-control border bg-clip-padding font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
           "border-transparent bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
         @variant == "primary" && @emphasis && "shadow-glow",
@@ -97,7 +97,7 @@ defmodule WatchClubWeb.Components.UI.Button do
       id={@id}
       type={@type}
       class={[
-        "w-fit inline-flex min-w-0 shrink items-center justify-center rounded-control border bg-clip-padding font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
+        "inline-flex min-w-0 shrink items-center justify-center rounded-control border bg-clip-padding font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
         @variant == "primary" &&
           "border-transparent bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
         @variant == "primary" && @emphasis && "shadow-glow",

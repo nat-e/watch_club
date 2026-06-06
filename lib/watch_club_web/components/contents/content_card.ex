@@ -24,38 +24,39 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           Enum.find(assigns.content.in_libraries, fn item -> item.library_id == library_id end)
       end
 
-    assigns = assigns |> assign(:library_item, library_item)
+    assigns =
+      assigns
+      |> assign(:library_item, library_item)
+      |> assign(:card_id, ContentView.unique_id(assigns.content))
 
     ~H"""
     <.card
       as="article"
-      id={"content-card-#{ContentView.unique_id(@content)}"}
+      id={"content-card-#{@card_id}"}
       data_slot="content-card"
       padding="none"
       class="group/content-card w-full overflow-hidden"
     >
       <.tmdb_poster size="w342" path={@content.image_path} class="w-full">
         <button
-          id={"content-card-reveal-#{ContentView.unique_id(@content)}"}
+          id={"content-card-reveal-#{@card_id}"}
           type="button"
-          class="absolute inset-0 z-20 md:hidden group-data-[state=revealed]/content-card:hidden"
+          class="absolute inset-0 z-20 [@media(hover:hover)]:hidden group-data-[state=revealed]/content-card:hidden"
           aria-label={dgettext("clubs", "Reveal details for %{title}", title: @content.title)}
           phx-click={reveal_content_card()}
         />
 
         <div class="pointer-events-none absolute inset-0 z-30 flex h-full w-full flex-col overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100">
-          <div class="flex translate-y-[-0.25rem] items-center justify-between gap-related p-tight transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
+          <div class="flex translate-y-[-0.25rem] items-center gap-related p-tight transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
             <.avatar
               :if={@library_item && @library_item.added_by}
               id={@library_item.added_by.id}
               name={@library_item.added_by.username}
-              size="lg"
             />
-            <div class="flex-1"></div>
-            <.dropdown_menu id={"content-card-menu-#{ContentView.unique_id(@content)}"}>
+            <.dropdown_menu id={"content-card-menu-#{@card_id}"} class="ml-auto">
               <:trigger>
                 <.button
-                  id={"content-card-actions-trigger-#{ContentView.unique_id(@content)}"}
+                  id={"content-card-actions-trigger-#{@card_id}"}
                   variant="secondary"
                   size="icon"
                   aria-label={dgettext("clubs", "Content actions")}
@@ -64,7 +65,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
                 </.button>
               </:trigger>
               <.dropdown_menu_item
-                id={"content-card-actions-coming-soon-#{ContentView.unique_id(@content)}"}
+                id={"content-card-actions-coming-soon-#{@card_id}"}
                 disabled
               >
                 <Lucideicons.circle_ellipsis />
@@ -74,7 +75,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           </div>
 
           <.link
-            id={"content-card-details-link-#{ContentView.unique_id(@content)}"}
+            id={"content-card-details-link-#{@card_id}"}
             navigate={ContentView.details_url(@content)}
             class="min-h-0 flex-1 overflow-hidden text-left"
           >
@@ -98,11 +99,11 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
 
           <div class="mb-tight flex w-full flex-row gap-tight px-tight">
             <.live_component
-              id={"play-or-request-button-#{ContentView.unique_id(@content)}"}
+              id={"play-or-request-button-#{@card_id}"}
               module={PlayOrRequestButtonLive}
               content={@content}
               current_user={@current_user}
-              size="lg"
+              size="md"
               class="w-full"
             />
           </div>

@@ -14,6 +14,8 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentSection do
 
   alias WatchClub.Contents.{Book, Movie, TvShowEpisode}
 
+  alias WatchClubWeb.Helpers.Time
+
   attr :content, :any, required: true
 
   def matched_content_section(%{content: %Movie{} = movie} = assigns) do
@@ -92,12 +94,9 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentSection do
   end
 
   defp meta_items(content) do
-    [release_year(content), language(content), country(content)]
+    [Time.maybe_year(content.release_date), language(content), country(content)]
     |> Enum.reject(&is_nil/1)
   end
-
-  defp release_year(%{release_date: %Date{year: year}}), do: Integer.to_string(year)
-  defp release_year(_), do: nil
 
   defp language(%{original_language: lang}) when is_binary(lang) and lang != "",
     do: String.upcase(lang)

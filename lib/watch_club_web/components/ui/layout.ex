@@ -21,9 +21,8 @@ defmodule WatchClubWeb.Components.UI.Layout do
   def stack(assigns) do
     ~H"""
     <div
-      data-slot="stack"
       class={[
-        "grid",
+        "flex flex-col",
         @space == "tight" && "gap-tight",
         @space == "related" && "gap-related",
         @space == "group" && "gap-group",
@@ -49,7 +48,6 @@ defmodule WatchClubWeb.Components.UI.Layout do
   def inline(assigns) do
     ~H"""
     <div
-      data-slot="inline"
       class={[
         "flex items-center",
         @space == "tight" && "gap-tight",
@@ -77,7 +75,6 @@ defmodule WatchClubWeb.Components.UI.Layout do
   def cluster(assigns) do
     ~H"""
     <div
-      data-slot="cluster"
       class={[
         "flex flex-wrap items-center",
         @space == "tight" && "gap-tight",

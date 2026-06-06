@@ -48,4 +48,11 @@ defmodule WatchClubWeb.Helpers.Time do
   defp format_date(date, locale) do
     date |> DateTime.to_date() |> WatchClub.Cldr.Date.to_string!(format: :medium, locale: locale)
   end
+
+  @doc """
+  Returns a String representing the year of a Date, if a Date is provided.
+  """
+  @spec maybe_year(Date.t() | nil) :: String.t() | nil
+  def maybe_year(%Date{year: year}), do: Integer.to_string(year)
+  def maybe_year(_), do: nil
 end

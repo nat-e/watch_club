@@ -12,6 +12,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
 
   alias WatchClubWeb.Components.Contents.{EpisodeWatchProgressBadge, SeasonWatchProgressBadge}
+  alias WatchClubWeb.Helpers.Time
 
   attr :content, ContentView, required: true
   attr :details, TvDetailsResponse, required: true
@@ -98,7 +99,9 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
       <span class="block text-sm font-semibold">
         {dgettext("contents", "Season %{number}", number: @season.season_number)}
       </span>
-      <span :if={year(@season.air_date)} class="text-xs">{year(@season.air_date)}</span>
+      <span :if={Time.maybe_year(@season.air_date)} class="text-xs">
+        {Time.maybe_year(@season.air_date)}
+      </span>
     </button>
     """
   end
@@ -155,8 +158,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
           <h3 class="text-2xl font-semibold tracking-tight text-text">
             {dgettext("contents", "Season %{number}", number: @season_metadata.details.season_number)}
           </h3>
-          <span :if={year(@season_metadata.details.air_date)} class="text-sm text-text-muted">
-            {year(@season_metadata.details.air_date)}
+          <span
+            :if={Time.maybe_year(@season_metadata.details.air_date)}
+            class="text-sm text-text-muted"
+          >
+            {Time.maybe_year(@season_metadata.details.air_date)}
           </span>
         </div>
         <p
@@ -325,9 +331,6 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
   defp episode_skeleton_indexes(count) when is_integer(count) and count > 0, do: 1..count
   defp episode_skeleton_indexes(_), do: []
-
-  defp year(%Date{year: year}), do: Integer.to_string(year)
-  defp year(_), do: nil
 
   defp format_runtime(nil), do: nil
 

@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   require Logger
 
-  import WatchClubWeb.Components.Contents.TmdbBackdrop
+  import WatchClubWeb.Components.Contents.Details.DetailsBackdrop
   import WatchClubWeb.Components.Contents.Details.HeroPanel
   import WatchClubWeb.Components.Contents.Details.ReviewsCard
   import WatchClubWeb.Components.Contents.Details.ExternalLinksCard
@@ -58,63 +58,43 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       aria-labelledby="content-details-title"
       class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
     >
-      <.tmdb_backdrop
-        :if={@tv_show.details.backdrop_path}
-        path={@tv_show.details.backdrop_path}
-        size="w1280"
-        alt=""
-        aria-hidden="true"
-        class="absolute inset-0 h-full w-full object-cover opacity-35"
-      />
-      <div
-        aria-hidden="true"
-        class="absolute inset-0 bg-linear-to-r from-canvas via-canvas/82 to-canvas/45"
-      >
-      </div>
-      <div
-        aria-hidden="true"
-        class="absolute inset-0 bg-linear-to-b from-canvas/10 via-canvas/82 to-canvas"
-      >
-      </div>
-      <div
-        aria-hidden="true"
-        class="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,var(--wc-color-primary-bg),transparent_34rem)]"
-      >
-      </div>
+      <.details_backdrop path={@tv_show.details.backdrop_path} />
 
-      <div class="relative z-1 mx-auto grid w-full max-w-[100rem] grid-cols-1 gap-cluster px-page pb-page-y pt-section 2xl:grid-cols-[minmax(0,1fr)_22rem] 2xl:items-start">
+      <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
         <.hero_panel content={@tv_show} current_user={@current_user} />
 
-        <div class="grid gap-cluster">
-          <.section
-            :if={@tv_show.details.overview}
-            title={dgettext("contents", "Overview")}
-            icon={:tv}
+        <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
+          <div class="flex min-w-0 flex-1 flex-col gap-cluster">
+            <.section
+              :if={@tv_show.details.overview}
+              title={dgettext("contents", "Overview")}
+              icon={:tv}
+            >
+              <p class="leading-7 text-text-muted">
+                {@tv_show.details.overview}
+              </p>
+            </.section>
+
+            <.episodes_section
+              :if={season_summaries(@tv_show.details) != []}
+              content={@tv_show}
+              details={@tv_show.details}
+              selected_season={@selected_season}
+              season_metadata_by_number={@season_metadata_by_number}
+              current_user={@current_user}
+            />
+
+            <.cast_section content={@tv_show} />
+          </div>
+
+          <aside
+            aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
+            class="flex w-full flex-col gap-cluster @6xl:w-[22rem] @6xl:shrink-0"
           >
-            <p class="leading-7 text-text-muted">
-              {@tv_show.details.overview}
-            </p>
-          </.section>
-
-          <.episodes_section
-            :if={season_summaries(@tv_show.details) != []}
-            content={@tv_show}
-            details={@tv_show.details}
-            selected_season={@selected_season}
-            season_metadata_by_number={@season_metadata_by_number}
-            current_user={@current_user}
-          />
-
-          <.cast_section content={@tv_show} />
+            <.reviews_card content={@tv_show} current_user={@current_user} />
+            <.external_links_card content={@tv_show} />
+          </aside>
         </div>
-
-        <aside
-          aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
-          class="grid content-start gap-cluster"
-        >
-          <.reviews_card content={@tv_show} current_user={@current_user} />
-          <.external_links_card content={@tv_show} />
-        </aside>
       </div>
     </article>
     """

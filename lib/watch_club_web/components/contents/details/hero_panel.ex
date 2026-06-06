@@ -15,45 +15,44 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     PlayOrRequestButtonLive
   }
 
+  alias WatchClubWeb.Helpers.Time
+
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
 
   def hero_panel(assigns) do
     ~H"""
-    <header class="relative flex justify-center py-cluster md:min-h-[32rem] md:py-section xl:min-h-[36rem] 2xl:col-span-2">
-      <div class="relative z-1 grid content-start gap-cluster md:min-h-[28rem] xl:min-h-[32rem]">
+    <header class="relative flex justify-center py-cluster @xl:py-section">
+      <div class="relative flex flex-col gap-cluster">
         <p
           :if={@content.details.tagline}
-          class="justify-self-center text-center text-sm font-semibold tracking-[0.28em] text-accent uppercase"
+          class="text-center text-sm font-semibold tracking-[0.3em] text-accent uppercase"
         >
           {@content.details.tagline}
         </p>
 
-        <div class="grid content-start gap-cluster md:grid-cols-[11rem_minmax(0,1fr)] md:items-center xl:grid-cols-[15rem_minmax(0,1fr)]">
+        <div class="flex flex-col gap-cluster @xl:flex-row @xl:items-center">
           <.tmdb_poster
             path={@content.details.poster_path}
             size="w500"
             alt=""
-            class="mx-auto w-44 rounded-card border border-border-subtle shadow-overlay md:mx-0 md:w-full"
+            class="mx-auto w-44 shrink-0 rounded-card border border-border-subtle shadow-overlay @xl:mx-0 @5xl:w-60"
           />
 
-          <.stack space="group" class="self-center text-center md:text-left">
-            <.stack space="related">
+          <div class="flex flex-col items-center gap-group text-center @xl:flex-1 @xl:items-start @xl:text-left">
+            <div class="flex flex-col items-center gap-related @xl:items-start">
               <.live_component
                 id="viewer-progress-badge"
                 module={ContentWatchProgressBadge}
                 content={@content}
                 current_user={@current_user}
               />
-              <h1
-                id="content-details-title"
-                class="text-4xl leading-none font-semibold tracking-tight text-text sm:text-5xl xl:text-6xl"
-              >
+              <h1 class="text-4xl leading-none font-semibold tracking-tight text-text">
                 {@content.title}
               </h1>
               <ul
                 :if={metadata_items(@content.details) != []}
-                class="flex flex-wrap items-center justify-center gap-related text-text-muted md:justify-start"
+                class="flex flex-wrap items-center gap-related text-text-muted"
               >
                 <li
                   :for={{item, index} <- Enum.with_index(metadata_items(@content.details))}
@@ -63,9 +62,9 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
                   <span>{item}</span>
                 </li>
               </ul>
-            </.stack>
+            </div>
 
-            <ul class="flex flex-wrap items-center justify-center gap-related text-text-muted md:justify-start">
+            <ul class="flex flex-wrap items-center gap-related text-text-muted">
               <li class="inline-flex items-center gap-tight">
                 <Lucideicons.languages class="size-icon-sm text-accent" aria-hidden="true" />
                 <span class="font-semibold text-text">
@@ -83,25 +82,20 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
               </li>
             </ul>
 
-            <p :if={show_original_title?(@content)} class="text-center md:text-left">
+            <p :if={show_original_title?(@content)}>
               {dgettext("contents", "Original title")}:
               <span class="font-semibold text-text">{original_title(@content.details)}</span>
             </p>
 
-            <ul
-              :if={@content.details.genres != []}
-              class="flex flex-wrap items-center justify-center gap-related md:justify-start"
-            >
+            <ul :if={@content.details.genres != []} class="flex flex-wrap items-center gap-related">
               <li :for={genre <- @content.details.genres}>
                 <.badge variant="secondary">{genre.name}</.badge>
               </li>
             </ul>
-          </.stack>
+          </div>
         </div>
 
-        <.stack space="group" class="w-full items-center justify-self-center">
-          <.hero_actions content={@content} current_user={@current_user} />
-        </.stack>
+        <.hero_actions content={@content} current_user={@current_user} />
       </div>
     </header>
     """
@@ -121,7 +115,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         content={@content}
         current_user={@current_user}
         size="lg"
-        class="w-full md:w-auto"
+        class="w-full @xl:w-auto"
       />
       <.live_component
         id="details-add-to-library-button"
@@ -134,7 +128,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
           end
         }
         size="lg"
-        class="w-full md:w-auto"
+        class="w-full @xl:w-auto"
       />
       <.button
         :if={@trailer_url}
@@ -143,7 +137,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         target="_blank"
         size="lg"
         variant="secondary"
-        class="w-full md:w-auto"
+        class="w-full @xl:w-auto"
       >
         <:icon><Lucideicons.play_circle /></:icon>
         {dgettext("contents", "Watch Trailer")}
@@ -154,7 +148,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
   defp metadata_items(%MovieDetailsResponse{} = details) do
     [
-      release_year(details.release_date),
+      Time.maybe_year(details.release_date),
       format_runtime(details.runtime),
       translated_status(details.status)
     ]
@@ -163,15 +157,12 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
   defp metadata_items(%TvDetailsResponse{} = details) do
     [
-      release_year(details.first_air_date),
+      Time.maybe_year(details.first_air_date),
       format_season_count(details.number_of_seasons || length(season_summaries(details))),
       translated_status(details.status)
     ]
     |> Enum.reject(&is_nil/1)
   end
-
-  defp release_year(%Date{year: year}), do: Integer.to_string(year)
-  defp release_year(_), do: nil
 
   defp format_runtime(nil), do: nil
 

@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.ContentCard
-  import WatchClubWeb.Components.Libraries.LibraryIcon
 
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Contents.ContentView
@@ -44,26 +43,23 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       class="p-2!"
       space="none"
     >
-      <.stack space="group" class="w-full">
-        <header class="flex w-full flex-col gap-related sm:flex-row sm:items-center sm:justify-between">
-          <div class="flex min-w-0 flex-1 items-center gap-related">
-            <span class="grid size-control-md shrink-0 place-items-center rounded-control border border-border bg-surface-raised text-text-muted">
-              <.library_icon library={@library} class="size-icon" />
-            </span>
-            <h1 class="min-w-0 flex-1 truncate text-2xl font-bold">{@library.name}</h1>
-          </div>
+      <.stack space="group" class="w-full @container">
+        <.stack space="related">
+          <.inline space="related">
+            <h1 class="min-w-0 flex-1 truncate text-3xl font-bold">{@library.name}</h1>
+          </.inline>
           <.library_sort_controls
             club_id={@library.club_id}
             library_id={@library.id}
             current_sort_by={@sort_by}
             current_sort_order={@sort_order}
           />
-        </header>
+        </.stack>
 
         <div
           id="library-content-stream"
           phx-update="stream"
-          class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-group"
+          class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] @5xl:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-group"
         >
           <div id="library-content-empty" class="only:block hidden col-span-full">
             <.empty>
@@ -107,46 +103,44 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   defp library_sort_controls(assigns) do
     ~H"""
-    <div class="flex max-w-full items-center justify-end gap-related overflow-x-auto pb-tight sm:pb-0">
-      <div
-        role="group"
-        aria-label={dgettext("clubs", "Library sort order")}
-        class="flex shrink-0 gap-tight"
-      >
-        <.sort_toggle_button
-          club_id={@club_id}
-          library_id={@library_id}
-          current_sort_by={@current_sort_by}
-          current_sort_order={@current_sort_order}
-          sort_by={:title}
-          default_order={:asc}
-          asc_icon={:arrow_down_a_z}
-          desc_icon={:arrow_down_z_a}
-          label={dgettext("clubs", "Title")}
-        />
-        <.sort_toggle_button
-          club_id={@club_id}
-          library_id={@library_id}
-          current_sort_by={@current_sort_by}
-          current_sort_order={@current_sort_order}
-          sort_by={:added_date}
-          default_order={:desc}
-          asc_icon={:calendar_arrow_down}
-          desc_icon={:calendar_arrow_up}
-          label={dgettext("clubs", "Added date")}
-        />
-        <.sort_toggle_button
-          club_id={@club_id}
-          library_id={@library_id}
-          current_sort_by={@current_sort_by}
-          current_sort_order={@current_sort_order}
-          sort_by={:release_date}
-          default_order={:desc}
-          asc_icon={:calendar_arrow_down}
-          desc_icon={:calendar_arrow_up}
-          label={dgettext("clubs", "Release date")}
-        />
-      </div>
+    <div
+      role="group"
+      aria-label={dgettext("clubs", "Library sort order")}
+      class="flex flex-wrap items-center justify-end gap-tight"
+    >
+      <.sort_toggle_button
+        club_id={@club_id}
+        library_id={@library_id}
+        current_sort_by={@current_sort_by}
+        current_sort_order={@current_sort_order}
+        sort_by={:title}
+        default_order={:asc}
+        asc_icon={:arrow_down_a_z}
+        desc_icon={:arrow_down_z_a}
+        label={dgettext("clubs", "Title")}
+      />
+      <.sort_toggle_button
+        club_id={@club_id}
+        library_id={@library_id}
+        current_sort_by={@current_sort_by}
+        current_sort_order={@current_sort_order}
+        sort_by={:added_date}
+        default_order={:desc}
+        asc_icon={:calendar_arrow_down}
+        desc_icon={:calendar_arrow_up}
+        label={dgettext("clubs", "Added date")}
+      />
+      <.sort_toggle_button
+        club_id={@club_id}
+        library_id={@library_id}
+        current_sort_by={@current_sort_by}
+        current_sort_order={@current_sort_order}
+        sort_by={:release_date}
+        default_order={:desc}
+        asc_icon={:calendar_arrow_down}
+        desc_icon={:calendar_arrow_up}
+        label={dgettext("clubs", "Release date")}
+      />
     </div>
     """
   end
