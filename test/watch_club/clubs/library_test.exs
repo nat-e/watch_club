@@ -157,7 +157,7 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Abricot", "Banana", "Cerise", "Dattel", "Éclair", "Eden"] =
                Enum.map(items, fn item ->
                  item.content
-                 |> ContentView.from_content(:fr_FR)
+                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
     end
@@ -180,7 +180,7 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Movie 201", "Movie 202"] =
                Enum.map(first_items, fn item ->
                  item.content
-                 |> ContentView.from_content(:en_US)
+                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
 
@@ -195,7 +195,7 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Movie 203"] =
                Enum.map(second_items, fn item ->
                  item.content
-                 |> ContentView.from_content(:en_US)
+                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
     end

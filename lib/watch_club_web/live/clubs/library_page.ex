@@ -14,6 +14,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   def mount(_params, _session, socket) do
     {:ok,
      socket
+     |> assign(:subscribed_content_view_topics, [])
      |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")}
   end
 
@@ -94,6 +95,21 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     ~H"""
     <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}></Layouts.app>
     """
+  end
+
+  @impl true
+  def handle_info(
+        %Ash.Notifier.Notification{
+          metadata: %{subject: :content_view_changed, content_id: content_id}
+        },
+        socket
+      ) do
+    content =
+      content_id
+      |> Contents.view_content_by_id!(actor: socket.assigns.current_user)
+      |> ContentView.from_content()
+
+    {:noreply, socket |> stream_insert(:contents, content, update_only: true)}
   end
 
   attr :club_id, :string, required: true
@@ -262,16 +278,57 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     case load do
       {:ok, new_state, items} ->
         contents =
-          Enum.map(items, &ContentView.from_content(&1.content, current_user.settings.locale))
+          Enum.map(items, &ContentView.from_content(&1.content))
+
+        reset = stream_state.status == :init
 
         socket
+        |> maybe_reset_subscriptions(reset)
+        |> subscribe_to_contents(contents)
         |> assign(:stream_state, new_state)
-        |> stream(:contents, contents, reset: stream_state.status == :init)
+        |> stream(:contents, contents, reset: reset)
 
       {:error, new_state, _} ->
         socket
         |> assign(:stream_state, new_state)
         |> put_flash(:error, dgettext("clubs", "There was an error loading the library"))
+    end
+  end
+
+  defp maybe_reset_subscriptions(socket, false), do: socket
+
+  defp maybe_reset_subscriptions(socket, true) do
+    if connected?(socket) do
+      socket.assigns.subscribed_content_view_topics
+      |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
+    end
+
+    socket |> assign(:subscribed_content_view_topics, [])
+  end
+
+  defp subscribe_to_contents(socket, contents) do
+    if connected?(socket) do
+      user_id = socket.assigns.current_user.id
+
+      topics =
+        contents
+        |> Enum.map(
+          &WatchClub.PubSub.content_view_topic(
+            &1.external_id_source,
+            &1.external_id,
+            user_id
+          )
+        )
+
+      Enum.each(topics, &Phoenix.PubSub.subscribe(WatchClub.PubSub, &1))
+
+      socket
+      |> assign(
+        :subscribed_content_view_topics,
+        socket.assigns.subscribed_content_view_topics ++ topics
+      )
+    else
+      socket
     end
   end
 

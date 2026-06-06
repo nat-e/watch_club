@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     >
       <.content_section
         id={@request.id}
-        content={ContentView.from_content(@request.content, @current_user.settings.locale)}
+        content={ContentView.from_content(@request.content)}
         current_user={@current_user}
       />
 

@@ -47,7 +47,10 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
                 content={@content}
                 current_user={@current_user}
               />
-              <h1 class="text-4xl leading-none font-semibold tracking-tight text-text">
+              <h1
+                id="content-details-title"
+                class="text-4xl leading-none font-semibold tracking-tight text-text"
+              >
                 {@content.title}
               </h1>
               <ul

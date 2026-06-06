@@ -170,7 +170,7 @@ defmodule WatchClub.Contents.ContentView do
     |> Enum.uniq_by(& &1.id)
   end
 
-  def from_content(%Content{implementation: %Movie{} = movie} = content, _locale) do
+  def from_content(%Content{implementation: %Movie{} = movie} = content) do
     ContentView.new!(%{
       external_id_source: content.external_id_source,
       external_id: content.external_id,
@@ -186,7 +186,7 @@ defmodule WatchClub.Contents.ContentView do
     })
   end
 
-  def from_content(%Content{implementation: %TvShow{} = tv_show} = content, _locale) do
+  def from_content(%Content{implementation: %TvShow{} = tv_show} = content) do
     ContentView.new!(%{
       external_id_source: content.external_id_source,
       external_id: content.external_id,

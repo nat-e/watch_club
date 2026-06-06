@@ -190,7 +190,6 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   def handle_event("submit", params, socket) do
     library_ids = (params["form"] && params["form"]["library_ids"]) || []
-    actor = socket.assigns.current_user
 
     case AshPhoenix.Form.submit(socket.assigns.form,
            params: %{library_ids: library_ids}
@@ -198,7 +197,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
       {:ok, %Content{} = content} ->
         content_view =
           content
-          |> ContentView.from_content(actor.settings.locale)
+          |> ContentView.from_content()
           |> Map.put(:details, socket.assigns.content.details)
 
         socket.assigns.on_content_updated.(content_view)
