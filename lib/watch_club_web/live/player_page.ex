@@ -71,11 +71,11 @@ defmodule WatchClubWeb.PlayerPage do
             >
             </media-gesture>
 
-            <media-captions class="pointer-events-none absolute inset-x-4 bottom-32 z-20 mx-auto block max-w-[80%] text-center text-lg font-semibold text-white [text-shadow:0_2px_4px_rgb(0_0_0_/_0.85)] sm:text-2xl">
+            <media-captions class="pointer-events-none absolute inset-x-4 bottom-32 z-20 mx-auto block max-w-[80%] text-center text-lg font-semibold text-white [text-shadow:0_2px_4px_rgb(0_0_0/0.85)] sm:text-2xl">
             </media-captions>
 
             <div
-              class="pointer-events-none absolute inset-0 z-20 grid place-items-center opacity-0 transition-opacity duration-200 group-data-[buffering]/player:opacity-100"
+              class="pointer-events-none absolute inset-0 z-20 grid place-items-center opacity-0 transition-opacity duration-200 group-data-buffering/player:opacity-100"
               aria-hidden="true"
             >
               <div class="grid size-24 place-items-center rounded-full bg-black/55 backdrop-blur-sm">
@@ -86,7 +86,7 @@ defmodule WatchClubWeb.PlayerPage do
             <media-controls
               data-visible="true"
               hide-delay="3000"
-              class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-gradient-to-t from-black/75 via-black/5 to-black/70 opacity-0 transition-opacity duration-200 data-[visible]:opacity-100"
+              class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-trom-black/75 via-black/5 to-black/70 opacity-0 transition-opacity duration-200 data-visible:opacity-100"
             >
               <header
                 class="pointer-events-auto flex w-full items-start justify-between gap-related px-4 pb-4 sm:px-8"
@@ -125,7 +125,7 @@ defmodule WatchClubWeb.PlayerPage do
                 <div class="flex shrink-0 items-center gap-tight">
                   <media-menu class="contents">
                     <media-menu-button
-                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2adata-focus:ring-white/70m:size-12"
                       aria-label={dgettext("player", "Quality")}
                     >
                       <Lucideicons.settings class="size-6 sm:size-7" />
@@ -137,9 +137,9 @@ defmodule WatchClubWeb.PlayerPage do
                       </p>
                       <media-quality-radio-group auto-label={dgettext("player", "Auto")} hide-bitrate>
                         <template>
-                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
-                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
-                            <span data-part="label" class="ml-related"></span>
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/15ata-[focus]:ring-2 data-focus:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-checked/radio:opacity-100" />
+                            <span data-part="label" class="ml-related" />
                           </media-radio>
                         </template>
                       </media-quality-radio-group>
@@ -148,7 +148,7 @@ defmodule WatchClubWeb.PlayerPage do
 
                   <media-menu class="contents">
                     <media-menu-button
-                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/70 sm:size-12"
                       aria-label={dgettext("player", "Audio")}
                     >
                       <Lucideicons.languages class="size-6 sm:size-7" />
@@ -160,8 +160,8 @@ defmodule WatchClubWeb.PlayerPage do
                       </p>
                       <media-audio-radio-group>
                         <template>
-                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
-                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/15 data-focus:ring-2 data-focus:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-checked/radio:opacity-100" />
                             <span data-part="label" class="ml-related"></span>
                           </media-radio>
                         </template>
@@ -171,7 +171,7 @@ defmodule WatchClubWeb.PlayerPage do
 
                   <media-menu class="contents">
                     <media-menu-button
-                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                      class="inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/70 sm:size-12"
                       aria-label={dgettext("player", "Subtitles")}
                     >
                       <Lucideicons.captions class="size-6 sm:size-7" />
@@ -183,8 +183,8 @@ defmodule WatchClubWeb.PlayerPage do
                       </p>
                       <media-captions-radio-group off-label={dgettext("player", "Off")}>
                         <template>
-                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-[checked]:bg-white/15 data-[focus]:ring-2 data-[focus]:ring-white/70">
-                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-[checked]/radio:opacity-100" />
+                          <media-radio class="group/radio flex w-full items-center rounded-control p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/15 data-focus:ring-2 data-focus:ring-white/70">
+                            <Lucideicons.check class="size-icon-sm opacity-0 group-data-checked/radio:opacity-100" />
                             <span data-part="label" class="ml-related"></span>
                           </media-radio>
                         </template>
@@ -193,29 +193,29 @@ defmodule WatchClubWeb.PlayerPage do
                   </media-menu>
 
                   <media-mute-button
-                    class="group/mute inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                    class="group/mute inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-12"
                     aria-label={dgettext("player", "Mute")}
                   >
-                    <Lucideicons.volume_2 class="size-6 group-data-[muted]/mute:hidden sm:size-7" />
-                    <Lucideicons.volume_x class="hidden size-6 group-data-[muted]/mute:block sm:size-7" />
+                    <Lucideicons.volume_2 class="size-6 group-data-muted/mute:hidden sm:size-7" />
+                    <Lucideicons.volume_x class="hidden size-6 group-data-muted/mute:block sm:size-7" />
                   </media-mute-button>
 
                   <media-fullscreen-button
                     target="media"
-                    class="group/fullscreen inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-12"
+                    class="group/fullscreen inline-flex size-10 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-12"
                     aria-label={dgettext("player", "Fullscreen")}
                   >
-                    <Lucideicons.maximize class="size-6 group-data-[active]/fullscreen:hidden sm:size-7" />
-                    <Lucideicons.minimize class="hidden size-6 group-data-[active]/fullscreen:block sm:size-7" />
+                    <Lucideicons.maximize class="size-6 group-data-active/fullscreen:hidden sm:size-7" />
+                    <Lucideicons.minimize class="hidden size-6 group-data-active/fullscreen:block sm:size-7" />
                   </media-fullscreen-button>
                 </div>
               </header>
 
               <div class="pointer-events-none flex flex-1 items-center justify-center px-page">
-                <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity duration-200 group-data-[buffering]/player:opacity-0">
+                <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity duration-200 group-data-buffering/player:opacity-0">
                   <media-seek-button
                     seconds="-10"
-                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-24"
+                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-24"
                     aria-label={dgettext("player", "Seek backward 10 seconds")}
                   >
                     <Lucideicons.rotate_ccw class="size-12 sm:size-16" />
@@ -224,16 +224,16 @@ defmodule WatchClubWeb.PlayerPage do
 
                   <media-play-button
                     data-paused="true"
-                    class="group/play inline-flex size-24 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-28"
+                    class="group/play inline-flex size-24 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-28"
                     aria-label={dgettext("player", "Play or pause")}
                   >
-                    <Lucideicons.play class="hidden size-20 group-data-[paused]/play:block sm:size-24" />
-                    <Lucideicons.pause class="size-20 group-data-[paused]/play:hidden sm:size-24" />
+                    <Lucideicons.play class="hidden size-20 group-data-paused/play:block sm:size-24" />
+                    <Lucideicons.pause class="size-20 group-data-paused/play:hiddenm:size-24" />
                   </media-play-button>
 
                   <media-seek-button
                     seconds="10"
-                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-[focus]:ring-2 data-[focus]:ring-white/70 sm:size-24"
+                    class="inline-flex size-20 items-center justify-center rounded-control text-white outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-24"
                     aria-label={dgettext("player", "Seek forward 10 seconds")}
                   >
                     <Lucideicons.rotate_cw class="size-12 sm:size-16" />
@@ -252,7 +252,7 @@ defmodule WatchClubWeb.PlayerPage do
                   aria-label={dgettext("player", "Seek")}
                   class="group/timeline relative block h-10 w-full cursor-pointer touch-none outline-none"
                 >
-                  <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-data-[focus]/timeline:ring-2 group-data-[focus]/timeline:ring-white/70">
+                  <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-data-focus/timeline:ring-2 group-data-focus/timeline:ring-white/70">
                     <div
                       class="absolute h-full rounded-full bg-white/45"
                       style="width: var(--slider-progress, 0%);"
@@ -265,7 +265,7 @@ defmodule WatchClubWeb.PlayerPage do
                     </div>
                   </div>
                   <div
-                    class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-[active]/timeline:scale-125 group-data-[dragging]/timeline:ring-4"
+                    class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-active/timeline:scale-125 group-data-dragging/timeline:ring-4"
                     style="left: var(--slider-fill, 0%);"
                   >
                   </div>

@@ -12,8 +12,8 @@ defmodule WatchClub.Requests.MediaSourceRequest.Changes.NotifyRequesters do
   """
   use Ash.Resource.Change
 
-  alias WatchClub.SystemActor
   alias WatchClub.Requests
+  alias WatchClub.SystemActor
 
   @impl true
   def change(changeset, _opts, _context) do

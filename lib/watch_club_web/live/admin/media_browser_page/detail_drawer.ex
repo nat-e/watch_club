@@ -308,7 +308,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     ~H"""
     <dt class="text-text-subtle">{@label}</dt>
     <dd class={[
-      "min-w-0 break-words text-text",
+      "min-w-0 wrap-break-words text-text",
       @mono && "font-mono text-sm text-text-muted"
     ]}>
       {@value}
