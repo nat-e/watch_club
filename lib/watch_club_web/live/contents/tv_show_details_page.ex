@@ -3,11 +3,14 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   require Logger
 
-  import WatchClubWeb.Components.Contents.Details.DetailsBackdrop
-  import WatchClubWeb.Components.Contents.Details.HeroPanel
-  import WatchClubWeb.Components.Contents.Details.ReviewsCard
-  import WatchClubWeb.Components.Contents.Details.ExternalLinksCard
-  import WatchClubWeb.Components.Contents.Details.CastSection
+  import WatchClubWeb.Components.Contents.Details.{
+    CastSection,
+    DetailsBackdrop,
+    ExternalLinksCard,
+    HeroPanel,
+    ReviewsCard
+  }
+
   import WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection
 
   alias WatchClub.Contents.ContentView
@@ -158,6 +161,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
         {:noreply, socket}
     end
   end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   @impl true
   def handle_async({:season_metadata, season_number}, {:ok, {:ok, season_details}}, socket) do

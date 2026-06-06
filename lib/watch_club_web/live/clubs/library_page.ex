@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:subscribed_content_view_topics, [])
+     |> assign(:subscribed_content_topics, [])
      |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")}
   end
 
@@ -111,6 +111,8 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
     {:noreply, socket |> stream_insert(:contents, content, update_only: true)}
   end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   attr :club_id, :string, required: true
   attr :current_sort_by, :atom, required: true
@@ -299,39 +301,23 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   defp maybe_reset_subscriptions(socket, true) do
     if connected?(socket) do
-      socket.assigns.subscribed_content_view_topics
+      socket.assigns.subscribed_content_topics
       |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
     end
 
-    socket |> assign(:subscribed_content_view_topics, [])
+    socket |> assign(:subscribed_content_topics, [])
   end
 
   defp subscribe_to_contents(socket, contents) do
     if connected?(socket) do
-      user_id = socket.assigns.current_user.id
-
       topics =
         contents
-        |> Enum.flat_map(
-          &[
-            WatchClub.PubSub.content_view_topic(
-              &1.external_id_source,
-              &1.external_id,
-              user_id
-            ),
-            WatchClub.PubSub.content_topic(
-              &1.external_id_source,
-              &1.external_id
-            )
-          ]
-        )
-
-      Enum.each(topics, &Phoenix.PubSub.subscribe(WatchClub.PubSub, &1))
+        |> Enum.flat_map(&WatchClub.PubSub.subscribe_to_content(&1, socket.assigns.current_user))
 
       socket
       |> assign(
-        :subscribed_content_view_topics,
-        socket.assigns.subscribed_content_view_topics ++ topics
+        :subscribed_content_topics,
+        socket.assigns.subscribed_content_topics ++ topics
       )
     else
       socket

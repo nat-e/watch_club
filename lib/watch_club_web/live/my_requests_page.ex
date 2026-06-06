@@ -2,11 +2,9 @@ defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
   alias Ash.Notifier.Notification
-  alias WatchClub.Contents.ContentType
+  alias WatchClub.Contents.{ContentType, ContentView}
   alias WatchClub.Requests
-  alias WatchClub.Requests.ContentRequest
-  alias WatchClub.Requests.ContentRequestSort
-  alias WatchClub.Requests.ContentRequestStatusGroup
+  alias WatchClub.Requests.{ContentRequest, ContentRequestSort, ContentRequestStatusGroup}
   alias WatchClubWeb.Components.Requests.RequestCard
   alias WatchClubWeb.Helpers.KeysetStreamState
   import WatchClubWeb.Components.Settings.SettingsHeader
@@ -32,6 +30,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
     {:ok,
      socket
+     |> assign(:subscribed_content_topics, [])
      |> stream_configure(:requests, dom_id: &"request-#{&1.id}")}
   end
 
@@ -83,15 +82,17 @@ defmodule WatchClubWeb.MyRequestsPage do
         %Notification{
           resource: ContentRequest,
           action: %{name: :request},
-          data: %{id: request_id}
+          data: %{content_id: content_id}
         },
         socket
       ) do
+    user = socket.assigns.current_user
+
     socket =
-      case fetch_request(socket, request_id) do
+      case Requests.get_current_user_request_for_content(content_id, actor: user) do
         {:ok, %ContentRequest{} = request} ->
           if matches_filters?(request, socket),
-            do: stream_insert(socket, :requests, request, at: 0),
+            do: socket |> prepend_request(request),
             else: socket
 
         _ ->
@@ -104,25 +105,29 @@ defmodule WatchClubWeb.MyRequestsPage do
   # The user cancelled a request, here or in another tab. Drop the card (a
   # no-op if it isn't loaded — e.g. this tab already removed it).
   def handle_info(
-        %Notification{resource: ContentRequest, action: %{type: :destroy}, data: %{id: id}},
+        %Notification{resource: ContentRequest, action: %{type: :destroy}, data: request},
         socket
       ) do
-    {:noreply, stream_delete(socket, :requests, %{id: id})}
+    {:noreply, socket |> delete_request(request)}
   end
 
-  # A Media Source Request write fanned out to us (see NotifyRequesters): this
-  # user's *derived* status/progress for that content may have moved. Re-read
-  # the one card and patch it in place when it still matches (no `:at`, so it
-  # keeps its position), or drop it when the change pushed it out of the filter.
-  # `update_only` leaves an unloaded-but-matching request for the next load
-  # rather than inserting it out of sort order.
-  def handle_info({:request_changed, id}, socket) do
+  # A Content has changed, reload and replace it, or remove it from the stream if
+  # it no longer matches the filters
+  @impl true
+  def handle_info(
+        %Ash.Notifier.Notification{
+          metadata: %{subject: :content_changed, content_id: content_id}
+        },
+        socket
+      ) do
+    user = socket.assigns.current_user
+
     socket =
-      case fetch_request(socket, id) do
+      case Requests.get_current_user_request_for_content(content_id, actor: user) do
         {:ok, %ContentRequest{} = request} ->
           if matches_filters?(request, socket),
-            do: stream_insert(socket, :requests, request, update_only: true),
-            else: stream_delete(socket, :requests, request)
+            do: socket |> stream_insert(:requests, request, update_only: true),
+            else: socket |> delete_request(request)
 
         _ ->
           socket
@@ -294,7 +299,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       KeysetStreamState.load_page(
         stream_state,
         fn page_options ->
-          Requests.list_content_requests_for_current_user(
+          Requests.list_current_user_content_requests(
             %{
               sort: socket.assigns.sort,
               status_group: socket.assigns.status_filter,
@@ -307,10 +312,17 @@ defmodule WatchClubWeb.MyRequestsPage do
       )
 
     case load do
-      {:ok, new_state, results} ->
+      {:ok, new_state, requests} ->
+        contents =
+          Enum.map(requests, &ContentView.from_content(&1.content))
+
+        reset = stream_state.status == :init
+
         socket
+        |> maybe_reset_subscriptions(reset)
+        |> subscribe_to_contents(contents)
         |> assign(:stream_state, new_state)
-        |> stream(:requests, results, reset: stream_state.status == :init)
+        |> stream(:requests, requests, reset: reset)
 
       {:error, new_state, _} ->
         socket
@@ -319,11 +331,47 @@ defmodule WatchClubWeb.MyRequestsPage do
     end
   end
 
-  # Re-read one of the user's requests by id with the card's view data — the
-  # same load the list uses, plus `:status_group` for `matches_filters?/2`. The
-  # `:read` policy scopes it to the actor, so a foreign id resolves to nothing.
-  defp fetch_request(socket, request_id) do
-    Requests.get_content_request_by_id(request_id, actor: socket.assigns.current_user)
+  defp maybe_reset_subscriptions(socket, false), do: socket
+
+  defp maybe_reset_subscriptions(socket, true) do
+    if connected?(socket) do
+      socket.assigns.subscribed_content_topics
+      |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
+    end
+
+    socket |> assign(:subscribed_content_topics, [])
+  end
+
+  defp subscribe_to_contents(socket, contents) do
+    if connected?(socket) do
+      topics =
+        contents
+        |> Enum.flat_map(&WatchClub.PubSub.subscribe_to_content(&1, socket.assigns.current_user))
+
+      socket
+      |> assign(
+        :subscribed_content_topics,
+        socket.assigns.subscribed_content_topics ++ topics
+      )
+    else
+      socket
+    end
+  end
+
+  defp prepend_request(socket, request) do
+    WatchClub.PubSub.subscribe_to_content(request.content, socket.assigns.current_user)
+
+    socket |> stream_insert(:requests, request, at: 0)
+  end
+
+  defp delete_request(socket, request) do
+    # Request.content might not be loaded so the easiest way to unsubscribe is to
+    # filter the topics we're subscribed to
+    socket.assigns.subscribed_content_topics
+    |> Enum.filter(&String.starts_with?(&1, "contents:#{request.content_id}"))
+    |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
+
+    socket |> stream_delete(:requests, request)
   end
 
   defp matches_filters?(request, socket) do
