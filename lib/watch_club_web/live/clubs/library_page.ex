@@ -100,7 +100,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   @impl true
   def handle_info(
         %Ash.Notifier.Notification{
-          metadata: %{subject: :content_view_changed, content_id: content_id}
+          metadata: %{subject: :content_changed, content_id: content_id}
         },
         socket
       ) do
@@ -312,12 +312,18 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
       topics =
         contents
-        |> Enum.map(
-          &WatchClub.PubSub.content_view_topic(
-            &1.external_id_source,
-            &1.external_id,
-            user_id
-          )
+        |> Enum.flat_map(
+          &[
+            WatchClub.PubSub.content_view_topic(
+              &1.external_id_source,
+              &1.external_id,
+              user_id
+            ),
+            WatchClub.PubSub.content_topic(
+              &1.external_id_source,
+              &1.external_id
+            )
+          ]
         )
 
       Enum.each(topics, &Phoenix.PubSub.subscribe(WatchClub.PubSub, &1))

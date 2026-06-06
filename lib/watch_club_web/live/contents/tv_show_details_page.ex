@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
         <.hero_panel content={@tv_show} current_user={@current_user} />
 
-        <div class="flex flex-col gap-cluster @4xl:flex-row @4xl:items-start">
+        <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
           <div class="flex min-w-0 flex-1 flex-col gap-cluster">
             <.section
               :if={@tv_show.details.overview}
@@ -89,7 +89,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
           <aside
             aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
-            class="flex w-full flex-col gap-cluster @4xl:w-[22rem] @4xl:shrink-0"
+            class="flex w-full flex-col gap-cluster @6xl:w-[22rem] @6xl:shrink-0"
           >
             <.reviews_card content={@tv_show} current_user={@current_user} />
             <.external_links_card content={@tv_show} />
@@ -105,6 +105,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
     user = socket.assigns.current_user
 
     if connected?(socket) do
+      Phoenix.PubSub.subscribe(
+        WatchClub.PubSub,
+        WatchClub.PubSub.content_topic(:tmdb, tmdb_id)
+      )
+
       Phoenix.PubSub.subscribe(
         WatchClub.PubSub,
         WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
@@ -140,7 +145,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   def handle_info(
         %Ash.Notifier.Notification{
-          metadata: %{subject: :content_view_changed, external_id: tmdb_id}
+          metadata: %{subject: :content_changed, external_id: tmdb_id}
         },
         socket
       ) do

@@ -24,14 +24,14 @@ defmodule WatchClub.Contents.Book do
       description "Marks the Book as read for the current user"
       require_atomic? false
       change WatchClub.Contents.Changes.SetViewerProgressCompleted
-      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :__actor}
     end
 
     update :mark_not_read do
       description "Marks the Book as not read for the current user"
       require_atomic? false
       change WatchClub.Contents.Changes.DeleteViewerProgress
-      change {WatchClub.Contents.Changes.NotifyContentViewChanged, content_path: :content}
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :__actor}
     end
   end
 

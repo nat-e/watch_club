@@ -292,7 +292,21 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       audio_track_id = hd(media.video.audio_tracks).id
       text_track_id = hd(media.video.text_tracks).id
 
+      content = Ash.get!(Content, movie.id, authorize?: false)
+
+      Phoenix.PubSub.subscribe(
+        WatchClub.PubSub,
+        WatchClub.PubSub.content_topic(content.external_id_source, content.external_id)
+      )
+
       assert :ok = destroy_media!(media, actor: SystemActor.actor())
+
+      # The content is resolved before the cascade delete, so the change still broadcasts
+      assert_receive %Ash.Notifier.Notification{
+        metadata: %{subject: :content_changed, content_id: content_id}
+      }
+
+      assert content_id == content.id
 
       refute Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
       refute Video |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)

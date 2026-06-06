@@ -22,7 +22,7 @@ defmodule WatchClub.MediaCatalog.Media do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
 
     # Move a Media to a new path (e.g. a Radarr/Sonarr rename). Content and
     # tracks are unchanged — only the file location moves.
@@ -115,6 +115,8 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
     end
 
     create :create_ebook do
@@ -142,6 +144,8 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
     end
 
     create :create_audiobook do
@@ -169,6 +173,15 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
+    end
+
+    destroy :destroy do
+      primary? true
+      require_atomic? false
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
     end
   end
 
@@ -210,6 +223,15 @@ defmodule WatchClub.MediaCatalog.Media do
     end
 
     timestamps()
+  end
+
+  calculations do
+    calculate :content,
+              :struct,
+              WatchClub.MediaCatalog.Calculations.MediaContent do
+      constraints instance_of: WatchClub.Contents.Content
+      public? true
+    end
   end
 
   relationships do

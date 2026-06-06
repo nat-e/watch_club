@@ -144,7 +144,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     >
       <.settings_header title="My Requests" description="" />
 
-      <.cluster space="tight" aria-label="Filter by status" class="mb-related">
+      <.cluster space="tight" role="group" aria-label="Filter by status" class="mb-related">
         <.status_chip
           :for={group <- [nil | ContentRequestStatusGroup.values()]}
           group={group}
@@ -185,18 +185,11 @@ defmodule WatchClubWeb.MyRequestsPage do
       </div>
 
       <.stack id="my-requests" class="@container" phx-update="stream" space="related">
-        <div
-          id="my-requests-empty"
-          class="only:block hidden"
-        >
-          <.empty size="sm">
-            <:icon><Lucideicons.inbox /></:icon>
-            <:title>No requests match</:title>
-            <:description>
-              Try clearing some filters, or browse content to add a request.
-            </:description>
-          </.empty>
-        </div>
+        <%!-- `hidden only:flex`: shown only when it's the stream's sole child (no cards). --%>
+        <.requests_empty_state
+          filtered={@status_filter != nil or @content_type_filter != nil}
+          class="hidden only:flex"
+        />
 
         <RequestCard.request_card
           :for={{dom_id, request} <- @streams.requests}
@@ -224,6 +217,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     ~H"""
     <.link
       patch={path(sort: @sort, type: @type, status: @group)}
+      aria-current={@current == @group && "page"}
       class={[
         "inline-flex items-center gap-tight rounded-full border px-related py-tight text-sm transition-colors",
         @current == @group && "border-border bg-surface-selected text-text",
@@ -258,6 +252,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     ~H"""
     <.link
       patch={path(sort: @sort, status: @status, type: @type)}
+      aria-current={@current == @type && "page"}
       class={[
         "border-b-2 pb-tight transition-colors",
         @current == @type && "border-accent text-text",
@@ -266,6 +261,31 @@ defmodule WatchClubWeb.MyRequestsPage do
     >
       {ContentType.translated_plural_label(@type)}
     </.link>
+    """
+  end
+
+  # The `:filtered` flavor tells the user a filter is hiding everything; the
+  # other greets a user with no requests at all.
+  attr :filtered, :boolean, required: true
+  attr :class, :any, default: nil
+
+  defp requests_empty_state(%{filtered: true} = assigns) do
+    ~H"""
+    <.empty id="my-requests-empty" size="sm" class={@class}>
+      <:icon><Lucideicons.inbox /></:icon>
+      <:title>No requests match</:title>
+      <:description>Try clearing some filters, or browse content to add a request.</:description>
+    </.empty>
+    """
+  end
+
+  defp requests_empty_state(assigns) do
+    ~H"""
+    <.empty id="my-requests-empty" size="sm" class={@class}>
+      <:icon><Lucideicons.inbox /></:icon>
+      <:title>No requests yet</:title>
+      <:description>Browse movies and shows to request something for your club.</:description>
+    </.empty>
     """
   end
 
