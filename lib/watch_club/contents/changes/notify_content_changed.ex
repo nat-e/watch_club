@@ -5,9 +5,9 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
   :content A key or path (list of keys) for resolving the content from the Resource being changed (e.g. :content or [:tv_show, :content]).
   If the :content resolves to a nil record, the notification is not broadcasted
 
-  :user An optional key or path (list of keys) for resolving the User. When set, the notification will be published to the ContentView PubSub topic and only the
-  actor will be notified. When false, the notification is sent to a global Content topic (use for changes that are not specific to a given user)
-  The `:__actor` atom can be used to resolve the user to the action actor.
+  :user An optional key or path (list of keys) for resolving the User(s). When set, the notification is published to each resolved user's ContentView PubSub
+  topic. A path may fan out (e.g. a `has_many` like [:user_requests, :user] resolves to every requester). When unset, the notification is sent to a global
+  Content topic (use for changes that are not specific to a given user). The `:__actor` atom can be used to resolve the user to the action actor.
 
   We cannot use the built-in Ash.Notifier.PubSub because it doesn't support the actor id as part of the key
   """
@@ -35,14 +35,14 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
     |> snapshot_content_before_destroy(opts, context)
     |> Ash.Changeset.after_transaction(fn
       changeset, {:ok, record} = result ->
-        {content, user_id} =
+        {content, user_ids} =
           case changeset.context[:notify_content_changed] do
             nil ->
               content = resolve_content(opts, record)
-              {content, content && resolve_user_id(opts, record, context)}
+              {content, content && resolve_user_ids(opts, record, context)}
 
             snapshot ->
-              {snapshot.content, snapshot.user_id}
+              {snapshot.content, snapshot.user_ids}
           end
 
         case content do
@@ -63,12 +63,7 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
                 }
               )
 
-            Phoenix.PubSub.broadcast(
-              WatchClub.PubSub,
-              topic(content, user_id),
-              notification
-            )
-
+            broadcast(content, user_ids, notification)
             result
         end
 
@@ -85,11 +80,11 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
     if changeset.action_type == :destroy do
       Ash.Changeset.before_action(changeset, fn changeset ->
         content = resolve_content(opts, changeset.data)
-        user_id = content && resolve_user_id(opts, changeset.data, context)
+        user_ids = content && resolve_user_ids(opts, changeset.data, context)
 
         Ash.Changeset.put_context(changeset, :notify_content_changed, %{
           content: content,
-          user_id: user_id
+          user_ids: user_ids
         })
       end)
     else
@@ -97,47 +92,55 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
     end
   end
 
-  defp topic(content, nil),
+  # nil user_ids => not user-scoped, broadcast to the global content topic.
+  # A list => one notification per user's content-view topic ([] notifies nobody).
+  defp broadcast(content, nil, notification),
     do:
-      WatchClub.PubSub.content_topic(
-        content.external_id_source,
-        content.external_id
+      Phoenix.PubSub.broadcast(
+        WatchClub.PubSub,
+        WatchClub.PubSub.content_topic(content.external_id_source, content.external_id),
+        notification
       )
 
-  defp topic(content, user_id),
+  defp broadcast(content, user_ids, notification),
     do:
-      WatchClub.PubSub.content_view_topic(
-        content.external_id_source,
-        content.external_id,
-        user_id
-      )
+      Enum.each(user_ids, fn user_id ->
+        Phoenix.PubSub.broadcast(
+          WatchClub.PubSub,
+          WatchClub.PubSub.content_view_topic(
+            content.external_id_source,
+            content.external_id,
+            user_id
+          ),
+          notification
+        )
+      end)
 
   defp resolve_content(opts, record) do
     path = opts |> Keyword.fetch!(:content) |> List.wrap()
-    resolve_path(record, path)
+    record |> resolve_path(path) |> List.first()
   end
 
-  defp resolve_user_id(opts, record, context) do
+  defp resolve_user_ids(opts, record, context) do
     case Keyword.get(opts, :user) do
       nil ->
         nil
 
       :__actor ->
-        context.actor.id
+        [context.actor.id]
 
       path ->
-        resolve_path(record, List.wrap(path)).id
+        record |> resolve_path(List.wrap(path)) |> Enum.map(& &1.id)
     end
   end
 
+  # Walks the path, flat-mapping each step so a key resolving to a `has_many`
+  # fans out: each step keeps only the present values (`nil` and `[]` drop out).
   defp resolve_path(record, path) do
     record = load_path(record, path)
 
-    Enum.reduce_while(path, record, fn key, acc ->
-      case Map.get(acc, key) do
-        nil -> {:halt, nil}
-        value -> {:cont, value}
-      end
+    Enum.reduce(path, [record], fn key, records ->
+      Enum.flat_map(records, fn record -> record |> Map.get(key) |> List.wrap() end)
     end)
   end
 

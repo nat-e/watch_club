@@ -21,9 +21,8 @@ defmodule WatchClubWeb.MyRequestsPage do
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
 
-    # One topic carries everything for this user's requests: create/cancel
-    # (ContentRequest `pub_sub`) and status/progress moves fanned out from
-    # Media Source Request writes (see MediaSourceRequest's NotifyRequesters).
+    # Subscribe to creation/deletion of content_requests
+    # Updates go through content / content view
     if connected?(socket) do
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "content_requests:user:#{user.id}")
     end

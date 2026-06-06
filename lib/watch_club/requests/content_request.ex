@@ -57,6 +57,7 @@ defmodule WatchClub.Requests.ContentRequest do
       change relate_actor(:user)
       change EnsureContentExists
       change CreateMediaSourceRequests
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :user}
     end
 
     read :for_current_user do
@@ -107,6 +108,11 @@ defmodule WatchClub.Requests.ContentRequest do
       primary? true
 
       description "Remove the acting user's own request. Touches no Media, Library Item, or Media Source Request."
+
+      # NotifyContentChanged broadcasts in after_transaction, so the destroy can't be atomic.
+      require_atomic? false
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :user}
     end
   end
 
@@ -148,9 +154,7 @@ defmodule WatchClub.Requests.ContentRequest do
     prefix "content_requests"
 
     publish :request, ["user", :user_id]
-    publish :request, [:id]
     publish :cancel, ["user", :user_id]
-    publish :cancel, [:id]
   end
 
   attributes do

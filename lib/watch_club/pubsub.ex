@@ -17,13 +17,13 @@ defmodule WatchClub.PubSub do
   @spec subscribe_to_content(ContentView.t() | Content.t(), User.t()) :: [String.t()]
   def subscribe_to_content(%ContentView{} = content, %User{} = current_user) do
     topics = content_topics(content.external_id_source, content.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.unsubscribe(__MODULE__, &1))
+    Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
     topics
   end
 
   def subscribe_to_content(%Content{} = content, %User{} = current_user) do
     topics = content_topics(content.external_id_source, content.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.unsubscribe(__MODULE__, &1))
+    Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
     topics
   end
 
@@ -33,7 +33,7 @@ defmodule WatchClub.PubSub do
   @spec unsubscribe_from_content(ContentView.t(), User.t()) :: [String.t()]
   def unsubscribe_from_content(%ContentView{} = content, %User{} = current_user) do
     topics = content_topics(content.external_id_source, content.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
+    Enum.each(topics, &Phoenix.PubSub.unsubscribe(__MODULE__, &1))
     topics
   end
 

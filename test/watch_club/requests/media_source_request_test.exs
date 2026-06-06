@@ -9,7 +9,7 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   """
   use WatchClub.DataCase, async: false
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, Movie, TvShow}
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.Requests
@@ -108,13 +108,28 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   end
 
   defp seed_content(type) do
-    Ash.Seed.seed!(Content, %{
-      type: type,
-      external_id_source: :tmdb,
-      external_id: "#{System.unique_integer([:positive])}",
-      original_title: "Seeded #{type}",
-      original_language: "en",
-      origin_country: "US"
+    content =
+      Ash.Seed.seed!(Content, %{
+        type: type,
+        external_id_source: :tmdb,
+        external_id: "#{System.unique_integer([:positive])}",
+        original_title: "Seeded #{type}",
+        original_language: "en",
+        origin_country: "US"
+      })
+
+    seed_implementation(type, content.id)
+    content
+  end
+
+  defp seed_implementation(:movie, id), do: Ash.Seed.seed!(Movie, %{id: id})
+
+  defp seed_implementation(:tv_show, id) do
+    Ash.Seed.seed!(TvShow, %{
+      id: id,
+      original_name: "Seeded show",
+      tmdb_id: System.unique_integer([:positive]),
+      tvdb_id: System.unique_integer([:positive])
     })
   end
 

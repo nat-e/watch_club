@@ -21,9 +21,8 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Source
-  alias WatchClub.Requests.MediaSourceRequest.Changes.NotifyRequesters
   alias WatchClub.Requests.MediaSourceRequest.Changes.RefreshState
-  alias WatchClub.Requests.MediaSourceRequestState
+  alias WatchClub.Requests.{ContentRequest, MediaSourceRequestState}
 
   postgres do
     table "media_source_requests"
@@ -51,7 +50,9 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       accept [:content_id, :media_source_id, :external_resource_id]
 
       change RefreshState
-      change NotifyRequesters
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged,
+              content: :content, user: [:user_requests, :user]}
     end
 
     # Reconcile against the *arr's current truth. Called on any webhook/poll
@@ -61,16 +62,18 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       accept []
 
       change RefreshState
-      change NotifyRequesters
+
+      change {WatchClub.Contents.Changes.NotifyContentChanged,
+              content: :content, user: [:user_requests, :user]}
     end
 
     destroy :destroy do
       primary? true
 
-      # NotifyRequesters runs after_transaction, so the destroy can't be atomic.
       require_atomic? false
 
-      change NotifyRequesters
+      change {WatchClub.Contents.Changes.NotifyContentChanged,
+              content: :content, user: [:user_requests, :user]}
     end
   end
 
@@ -126,6 +129,11 @@ defmodule WatchClub.Requests.MediaSourceRequest do
     belongs_to :media_source, Source do
       allow_nil? false
       public? true
+    end
+
+    has_many :user_requests, ContentRequest do
+      source_attribute :content_id
+      destination_attribute :content_id
     end
   end
 
