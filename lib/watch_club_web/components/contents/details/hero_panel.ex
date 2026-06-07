@@ -125,11 +125,6 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         module={AddToLibraryButtonLive}
         content={@content}
         current_user={@current_user}
-        on_content_updated={
-          fn content_view ->
-            send(self(), {:content_libraries_updated, content_view})
-          end
-        }
         size="lg"
         class="w-full @xl:w-auto"
       />

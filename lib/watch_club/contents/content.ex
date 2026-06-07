@@ -3,8 +3,7 @@ defmodule WatchClub.Contents.Content do
     otp_app: :watch_club,
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub]
+    authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Clubs.{Library, LibraryItem}
 
@@ -67,6 +66,7 @@ defmodule WatchClub.Contents.Content do
         only_when_valid?: true,
         where: [present(:library_ids)]
 
+      change WatchClub.Contents.Changes.NotifyContentChanged
       change load([:implementation])
     end
 
@@ -75,6 +75,7 @@ defmodule WatchClub.Contents.Content do
       require_atomic? false
       argument :tmdb_id, :integer, allow_nil?: false
       change WatchClub.Contents.Changes.CreateOrUpdateMovie
+      change WatchClub.Contents.Changes.NotifyContentChanged
     end
 
     create :create_tv_show do
@@ -88,6 +89,7 @@ defmodule WatchClub.Contents.Content do
         only_when_valid?: true,
         where: [present(:library_ids)]
 
+      change WatchClub.Contents.Changes.NotifyContentChanged
       change load([:implementation, tv_show: [:episodes]])
     end
 
@@ -97,6 +99,7 @@ defmodule WatchClub.Contents.Content do
       argument :tmdb_id, :integer, allow_nil?: false
 
       change WatchClub.Contents.Changes.CreateOrUpdateTvShow, only_when_valid?: true
+      change WatchClub.Contents.Changes.NotifyContentChanged
       change load([:implementation])
     end
 
@@ -141,6 +144,7 @@ defmodule WatchClub.Contents.Content do
       end
 
       change load(library_items: [:library])
+      change WatchClub.Contents.Changes.NotifyContentChanged
     end
   end
 

@@ -3,8 +3,7 @@ defmodule WatchClub.Clubs.LibraryItem do
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
-    data_layer: AshPostgres.DataLayer,
-    notifiers: [Ash.Notifier.PubSub]
+    data_layer: AshPostgres.DataLayer
 
   use Gettext, backend: WatchClubWeb.Gettext
 

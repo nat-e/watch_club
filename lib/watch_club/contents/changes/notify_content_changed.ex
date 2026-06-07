@@ -3,7 +3,7 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
   Sends a PubSub notification after an action that changes a Content.
 
   :content A key or path (list of keys) for resolving the content from the Resource being changed (e.g. :content or [:tv_show, :content]).
-  If the :content resolves to a nil record, the notification is not broadcasted
+  If the :content resolves to a nil record, the notification is not broadcasted. Can be omitted if called from the Content resource directly
 
   :user An optional key or path (list of keys) for resolving the User(s). When set, the notification is published to each resolved user's ContentView PubSub
   topic. A path may fan out (e.g. a `has_many` like [:user_requests, :user] resolves to every requester). When unset, the notification is sent to a global
@@ -18,9 +18,6 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
     content = opts[:content]
 
     case content do
-      nil ->
-        {:error, ":content must be provided"}
-
       content when is_atom(content) or is_list(content) ->
         {:ok, opts}
 
@@ -117,8 +114,7 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
       end)
 
   defp resolve_content(opts, record) do
-    path = opts |> Keyword.fetch!(:content) |> List.wrap()
-    record |> resolve_path(path) |> List.first()
+    record |> resolve_path(opts[:content]) |> List.first()
   end
 
   defp resolve_user_ids(opts, record, context) do
@@ -136,6 +132,9 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
 
   # Walks the path, flat-mapping each step so a key resolving to a `has_many`
   # fans out: each step keeps only the present values (`nil` and `[]` drop out).
+  defp resolve_path(record, nil), do: [record]
+  defp resolve_path(record, []), do: [record]
+
   defp resolve_path(record, path) do
     record = load_path(record, path)
 
@@ -143,6 +142,9 @@ defmodule WatchClub.Contents.Changes.NotifyContentChanged do
       Enum.flat_map(records, fn record -> record |> Map.get(key) |> List.wrap() end)
     end)
   end
+
+  defp load_path(record, nil), do: record
+  defp load_path(record, []), do: record
 
   defp load_path(record, path) do
     # path is a flat traversal path; nest it into a load statement

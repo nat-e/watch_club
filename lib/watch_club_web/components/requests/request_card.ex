@@ -101,11 +101,6 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
             module={AddToLibraryButtonLive}
             content={@content}
             current_user={@current_user}
-            on_content_updated={
-              fn content_view ->
-                send(self(), {:content_libraries_updated, content_view})
-              end
-            }
             class="relative z-10 w-auto"
           />
         </div>

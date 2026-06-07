@@ -110,10 +110,6 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
-  def handle_info({:content_libraries_updated, %ContentView{} = movie}, socket) do
-    {:noreply, assign(socket, :movie, movie)}
-  end
-
   def handle_info(
         %Ash.Notifier.Notification{
           metadata: %{subject: :content_changed, external_id: tmdb_id}

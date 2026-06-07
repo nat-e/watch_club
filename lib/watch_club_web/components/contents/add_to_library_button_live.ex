@@ -8,7 +8,6 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
-  attr :on_content_updated, {:fun, 1}, required: true
 
   attr :size, :string,
     values: ~w(sm md lg),
@@ -194,14 +193,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     case AshPhoenix.Form.submit(socket.assigns.form,
            params: %{library_ids: library_ids}
          ) do
-      {:ok, %Content{} = content} ->
-        content_view =
-          content
-          |> ContentView.from_content()
-          |> Map.put(:details, socket.assigns.content.details)
-
-        socket.assigns.on_content_updated.(content_view)
-
+      {:ok, %Content{}} ->
         {:noreply, socket |> assign(:form, nil)}
 
       {:error, form} ->
