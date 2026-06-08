@@ -9,6 +9,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
   require Ash.Query
 
   alias WatchClub.Contents
+  alias WatchClub.Contents.Notifiers.ContentChangedNotifier
   alias WatchClub.History.WatchProgress
 
   @impl true
@@ -20,7 +21,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
       |> viewer_progress_query(
         Map.get(input.arguments, :season_number),
         Map.get(input.arguments, :episode_number),
-        context.actor
+        actor
       )
       |> Ash.bulk_destroy!(:destroy, %{},
         scope: context,
@@ -28,7 +29,10 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
         return_records?: false
       )
 
-      {:ok, content}
+      notification =
+        ContentChangedNotifier.create_notification(input.resource, input.action, content, [actor.id], actor)
+
+      {:ok, content, [notification]}
     end
   end
 

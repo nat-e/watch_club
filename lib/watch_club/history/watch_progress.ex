@@ -3,7 +3,8 @@ defmodule WatchClub.History.WatchProgress do
     otp_app: :watch_club,
     domain: WatchClub.History,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}

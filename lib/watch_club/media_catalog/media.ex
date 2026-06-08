@@ -3,7 +3,8 @@ defmodule WatchClub.MediaCatalog.Media do
     otp_app: :watch_club,
     domain: WatchClub.MediaCatalog,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   alias WatchClub.MediaCatalog.{Audiobook, Ebook, MediaType, Video}
 
@@ -116,7 +117,7 @@ defmodule WatchClub.MediaCatalog.Media do
         )
       end
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
+      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
 
     create :create_ebook do
@@ -145,7 +146,7 @@ defmodule WatchClub.MediaCatalog.Media do
         )
       end
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
+      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
 
     create :create_audiobook do
@@ -174,14 +175,14 @@ defmodule WatchClub.MediaCatalog.Media do
         )
       end
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
+      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
 
     destroy :destroy do
       primary? true
       require_atomic? false
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content}
+      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
   end
 

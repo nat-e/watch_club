@@ -8,6 +8,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   require Ash.Query
 
   alias WatchClub.Contents
+  alias WatchClub.Contents.Notifiers.ContentChangedNotifier
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.History
   alias WatchClub.History.WatchProgress
@@ -24,7 +25,10 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
         context
       )
 
-      {:ok, content}
+      notification =
+        ContentChangedNotifier.create_notification(input.resource, input.action, content, [actor.id], actor)
+
+      {:ok, content, [notification]}
     end
   end
 

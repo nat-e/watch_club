@@ -17,7 +17,8 @@ defmodule WatchClub.Requests.MediaSourceRequest do
     otp_app: :watch_club,
     domain: WatchClub.Requests,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Source
@@ -51,7 +52,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
       change RefreshState
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged,
+      change {WatchClub.Contents.Changes.CreateContentNotification,
               content: :content, user: [:user_requests, :user]}
     end
 
@@ -63,7 +64,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
       change RefreshState
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged,
+      change {WatchClub.Contents.Changes.CreateContentNotification,
               content: :content, user: [:user_requests, :user]}
     end
 
@@ -72,7 +73,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
       require_atomic? false
 
-      change {WatchClub.Contents.Changes.NotifyContentChanged,
+      change {WatchClub.Contents.Changes.CreateContentNotification,
               content: :content, user: [:user_requests, :user]}
     end
   end

@@ -2,7 +2,8 @@ defmodule WatchClub.Contents.Content do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   alias WatchClub.Clubs.{Library, LibraryItem}
 
@@ -95,7 +96,7 @@ defmodule WatchClub.Contents.Content do
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
 
-      change WatchClub.Contents.Changes.NotifyContentChanged
+      change WatchClub.Contents.Changes.CreateContentNotification
     end
 
     action :search, {:array, :struct} do
@@ -139,7 +140,7 @@ defmodule WatchClub.Contents.Content do
       end
 
       change load(library_items: [:library])
-      change WatchClub.Contents.Changes.NotifyContentChanged
+      change WatchClub.Contents.Changes.CreateContentNotification
     end
   end
 
