@@ -103,7 +103,7 @@ defmodule WatchClubWeb do
       alias Phoenix.LiveView.JS
 
       # Import domains and basic models
-      alias WatchClub.{Accounts, Clubs, Contents}
+      alias WatchClub.{Accounts, Clubs, Contents, History}
       alias WatchClub.Accounts.User
       alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
       alias WatchClub.Contents.{Book, Content, ContentType, Movie, SearchContentType, TvShow}

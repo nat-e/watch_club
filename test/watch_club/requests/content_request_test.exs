@@ -9,7 +9,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
 
   import WatchClub.Generator
 
-  alias WatchClub.Contents.{Content, Movie, TvShow}
+  alias WatchClub.Contents.{Content, ContentIdentity, Movie, TvShow}
   alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.Requests
   alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
@@ -161,10 +161,10 @@ defmodule WatchClub.Requests.ContentRequestTest do
 
       assert {:ok, _request} =
                Requests.request_content(
-                 %{
+                 %ContentIdentity{
+                   type: :movie,
                    external_id_source: :tmdb,
-                   external_id: content.external_id,
-                   content_type: :movie
+                   external_id: content.external_id
                  },
                  actor: ctx.user
                )

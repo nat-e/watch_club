@@ -6,11 +6,10 @@ defmodule WatchClub.Contents.ContentView do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Club
 
-  alias WatchClub.Contents
-
   alias WatchClub.Contents.{
     Book,
     Content,
+    ContentIdentity,
     ContentType,
     ContentView,
     ExternalIdSource,
@@ -88,6 +87,15 @@ defmodule WatchClub.Contents.ContentView do
 
   def unique_id(content), do: "#{content.external_id_source}-#{content.external_id}"
 
+  @spec identity(t()) :: ContentIdentity.t()
+  def identity(%__MODULE__{} = content) do
+    %ContentIdentity{
+      type: content.type,
+      external_id_source: content.external_id_source,
+      external_id: content.external_id
+    }
+  end
+
   def details_url(%__MODULE__{type: :book} = content), do: "/books/#{content.external_id}"
   def details_url(%__MODULE__{type: :movie} = content), do: "/movies/#{content.external_id}"
   def details_url(%__MODULE__{type: :tv_show} = content), do: "/shows/#{content.external_id}"
@@ -133,29 +141,6 @@ defmodule WatchClub.Contents.ContentView do
   @spec current_request(ContentView.t()) :: ContentRequest.t() | nil
   def current_request(%__MODULE__{} = content) do
     content.content && content.content.viewer_request
-  end
-
-  @doc """
-  Creates the Content in the database if it does not exist.
-  Returns the ContentView with the content populated.
-  """
-  @spec ensure_content_exists(ContentView.t(), User.t()) ::
-          {:ok, ContentView.t()} | {:error, term()}
-  def ensure_content_exists(%__MODULE__{content: %Content{}} = content, _current_user),
-    do: {:ok, content}
-
-  def ensure_content_exists(%__MODULE__{type: :movie} = content, %User{} = current_user) do
-    case Contents.get_or_create_movie(content.external_id, current_user) do
-      {:ok, movie} -> {:ok, %__MODULE__{content | content: movie}}
-      {:error, error} -> {:error, error}
-    end
-  end
-
-  def ensure_content_exists(%__MODULE__{type: :tv_show} = content, %User{} = current_user) do
-    case Contents.get_or_create_tv_show(content.external_id, current_user) do
-      {:ok, show} -> {:ok, %__MODULE__{content | content: show}}
-      {:error, error} -> {:error, error}
-    end
   end
 
   @doc """

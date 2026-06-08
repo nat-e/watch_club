@@ -19,18 +19,6 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
   actions do
     defaults [:read, :destroy, create: :*, update: :*]
-
-    update :mark_watched do
-      description "Marks the Episode as watched for the current user"
-      require_atomic? false
-      change WatchClub.Contents.Changes.SetViewerProgressCompleted
-    end
-
-    update :mark_not_watched do
-      description "Marks the Episode as un-watched for the current user"
-      require_atomic? false
-      change WatchClub.Contents.Changes.DeleteViewerProgress
-    end
   end
 
   preparations do

@@ -1,0 +1,73 @@
+defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
+  @moduledoc """
+  Marks a Content watched for the acting user.
+  Can be filtered by season_id and/or episode_id for TV Shows
+  """
+  use Ash.Resource.Actions.Implementation
+
+  require Ash.Query
+
+  alias WatchClub.Contents
+  alias WatchClub.Contents.TvShowEpisode
+  alias WatchClub.History
+  alias WatchClub.History.WatchProgress
+
+  @impl true
+  def run(input, _opts, context) do
+    actor = context.actor
+
+    with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor) do
+      mark_watched(
+        content,
+        Map.get(input.arguments, :season_number),
+        Map.get(input.arguments, :episode_number),
+        context
+      )
+
+      {:ok, content}
+    end
+  end
+
+  defp mark_watched(%{type: :movie, id: id}, _season, _episode, context) do
+    History.record_movie_progress!(
+      %{movie_id: id, completed: true, position_seconds: 0, last_media_id: nil},
+      scope: context
+    )
+  end
+
+  defp mark_watched(%{type: :book, id: id}, _season, _episode, context) do
+    History.record_book_progress!(
+      %{book_id: id, completed: true, position_seconds: 0, last_media_id: nil},
+      scope: context
+    )
+  end
+
+  defp mark_watched(%{type: :tv_show, id: tv_show_id}, season, episode, context) do
+    inputs =
+      tv_show_id
+      |> episode_ids(season, episode, context)
+      |> Enum.map(fn episode_id ->
+        %{
+          tv_show_episode_id: episode_id,
+          completed: true,
+          position_seconds: 0,
+          last_media_id: nil
+        }
+      end)
+
+    Ash.bulk_create!(inputs, WatchProgress, :record_episode_progress,
+      scope: context,
+      return_records?: false
+    )
+  end
+
+  # nil season/episode mean "all", so the filter is a no-op for that scope.
+  defp episode_ids(tv_show_id, season, episode, context) do
+    TvShowEpisode
+    |> Ash.Query.filter(tv_show_id == ^tv_show_id)
+    |> Ash.Query.filter(is_nil(^season) or season_number == ^season)
+    |> Ash.Query.filter(is_nil(^episode) or episode_number == ^episode)
+    |> Ash.read!(scope: context)
+    |> Enum.map(& &1.id)
+  end
+end

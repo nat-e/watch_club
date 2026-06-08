@@ -10,7 +10,7 @@ defmodule WatchClub.Requests do
 
   resources do
     resource WatchClub.Requests.ContentRequest do
-      define :request_content, action: :request
+      define :request_content, action: :request, args: [:content_identity]
       define :list_current_user_content_requests, action: :for_current_user
 
       define :get_current_user_request_for_content,

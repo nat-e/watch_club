@@ -5,6 +5,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   """
 
   alias WatchClub.Contents
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.MediaSources.Import.Candidate
 
@@ -39,7 +40,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   # 1. Match by TMDB ID
   defp get_or_create_content(%MovieIdentity{tmdb_id: tmdb_id}) when is_integer(tmdb_id) do
-    Contents.get_or_create_movie(tmdb_id, SystemActor.actor())
+    Contents.get_or_create_content(ContentIdentity.for_movie(tmdb_id), SystemActor.actor())
   end
 
   # 2. Match by IMDB ID. We just fetch the TMDB ID and go back to step 1.
@@ -80,7 +81,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
          episode_number: episode_number
        })
        when is_integer(tmdb_id) do
-    with {:ok, content} <- Contents.get_or_create_tv_show(tmdb_id, SystemActor.actor()) do
+    with {:ok, content} <-
+           Contents.get_or_create_content(
+             ContentIdentity.for_tv_show(tmdb_id),
+             SystemActor.actor()
+           ) do
       case Enum.find(content.tv_show.episodes, fn e ->
              e.season_number == season_number and e.episode_number == episode_number
            end) do

@@ -9,7 +9,11 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
   @impl true
   def change(changeset, _opts, _context) do
-    tmdb_id = Ash.Changeset.get_argument(changeset, :tmdb_id)
+    tmdb_id =
+      String.to_integer(
+        Ash.Changeset.get_attribute(changeset, :external_id) ||
+          Ash.Changeset.get_argument(changeset, :content_identity).external_id
+      )
 
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       Logger.info("Fetching TV show from TMDB: #{tmdb_id}")

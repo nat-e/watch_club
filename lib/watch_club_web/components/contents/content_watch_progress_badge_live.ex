@@ -4,7 +4,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
   """
   use WatchClubWeb, :live_component
 
-  alias WatchClub.Contents.{Book, ContentView, Movie, TvShow}
+  alias WatchClub.Contents.ContentView
 
   @impl true
   def render(%{status: :completed} = assigns) do
@@ -39,12 +39,12 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
 
   @impl true
   def handle_event("mark_watched", _params, socket) do
-    user = socket.assigns.current_user
+    case History.mark_content_watched(ContentView.identity(socket.assigns.content),
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _content} ->
+        {:noreply, socket}
 
-    with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
-         {:ok, _} <- mark_content_watched(content.content, user) do
-      {:noreply, socket}
-    else
       {:error, error} ->
         Logger.error("Error marking content watched #{inspect(error)}")
         {:noreply, socket |> put_flash(:error, "Something wrong happened")}
@@ -52,39 +52,15 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
   end
 
   def handle_event("mark_not_watched", _params, socket) do
-    user = socket.assigns.current_user
+    case History.mark_content_not_watched(ContentView.identity(socket.assigns.content),
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _content} ->
+        {:noreply, socket}
 
-    with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
-         {:ok, _} <- mark_content_not_watched(content.content, user) do
-      {:noreply, socket}
-    else
       {:error, error} ->
         Logger.error("Error marking content not watched #{inspect(error)}")
         {:noreply, socket |> put_flash(:error, "Something wrong happened")}
     end
-  end
-
-  defp mark_content_watched(%Content{movie: %Movie{} = movie}, current_user) do
-    Contents.mark_movie_watched(movie, actor: current_user)
-  end
-
-  defp mark_content_watched(%Content{tv_show: %TvShow{} = show}, current_user) do
-    Contents.mark_show_watched(show, actor: current_user)
-  end
-
-  defp mark_content_watched(%Content{book: %Book{} = book}, current_user) do
-    Contents.mark_book_read(book, actor: current_user)
-  end
-
-  defp mark_content_not_watched(%Content{movie: %Movie{} = movie}, current_user) do
-    Contents.mark_movie_not_watched(movie, actor: current_user)
-  end
-
-  defp mark_content_not_watched(%Content{tv_show: %TvShow{} = show}, current_user) do
-    Contents.mark_show_not_watched(show, actor: current_user)
-  end
-
-  defp mark_content_not_watched(%Content{book: %Book{} = book}, current_user) do
-    Contents.mark_book_not_read(book, actor: current_user)
   end
 end

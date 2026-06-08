@@ -12,6 +12,9 @@ defmodule WatchClub.History do
       define :record_movie_progress
       define :record_book_progress
       define :record_episode_progress
+
+      define :mark_content_watched, args: [:content_identity]
+      define :mark_content_not_watched, args: [:content_identity]
     end
   end
 end

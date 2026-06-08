@@ -2,13 +2,13 @@ defmodule WatchClub.Contents.Content do
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
-    data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    data_layer: AshPostgres.DataLayer
 
   alias WatchClub.Clubs.{Library, LibraryItem}
 
   alias WatchClub.Contents.{
     Book,
+    ContentIdentity,
     ContentType,
     ContentView,
     ExternalIdSource,
@@ -52,55 +52,50 @@ defmodule WatchClub.Contents.Content do
               )
     end
 
-    create :create_movie do
-      description "Fetches a Movie from TMDB and creates it in DB if it doesn't already exist. Content and MovieLocalization will also be created"
+    create :create do
+      description "Fetches content from an external metadata provider (TMDB, Hardcover, ...) and creates the Content and its relations"
       primary? true
       upsert? true
       upsert_identity :external_id
-      argument :tmdb_id, :integer, allow_nil?: false
-      argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
+      argument :content_identity, ContentIdentity, allow_nil?: false
 
-      change WatchClub.Contents.Changes.CreateOrUpdateMovie, only_when_valid?: true
+      # Seed the Content's identity attributes from the argument so the
+      # type-gated changes below (and the upsert identity) can rely on them.
+      change fn changeset, _context ->
+        identity = Ash.Changeset.get_argument(changeset, :content_identity)
 
-      change WatchClub.Contents.Changes.SetLibraries,
+        changeset
+        |> Ash.Changeset.force_change_attribute(:type, identity.type)
+        |> Ash.Changeset.force_change_attribute(:external_id_source, identity.external_id_source)
+        |> Ash.Changeset.force_change_attribute(:external_id, identity.external_id)
+      end
+
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie,
         only_when_valid?: true,
-        where: [present(:library_ids)]
+        where: attribute_equals(:type, :movie)
 
-      change WatchClub.Contents.Changes.NotifyContentChanged
+      change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
+        only_when_valid?: true,
+        where: attribute_equals(:type, :tv_show)
+
       change load([:implementation])
     end
 
-    update :refresh_movie do
-      description "Re-fetches TMDB details for an existing Movie, mirroring TMDB exactly: localizations are inserted, updated, or destroyed to match the current TMDB payload."
+    update :refresh_metadata do
+      description "Re-fetches content from an external metadata provider (TMDB, Hardcover, ...) and updates the content and its relations"
       require_atomic? false
-      argument :tmdb_id, :integer, allow_nil?: false
-      change WatchClub.Contents.Changes.CreateOrUpdateMovie
-      change WatchClub.Contents.Changes.NotifyContentChanged
-    end
 
-    create :create_tv_show do
-      description "Fetches a TV Show from TMDB and creates it in DB. Content, TvShowLocalization, and TV Show Episodes will also be created"
-      argument :tmdb_id, :integer, allow_nil?: false
-      argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
-
-      change WatchClub.Contents.Changes.CreateOrUpdateTvShow, only_when_valid?: true
-
-      change WatchClub.Contents.Changes.SetLibraries,
+      # Identity is already on the Content being refreshed, so each change
+      # gates on the persisted `type`.
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie,
         only_when_valid?: true,
-        where: [present(:library_ids)]
+        where: attribute_equals(:type, :movie)
+
+      change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
+        only_when_valid?: true,
+        where: attribute_equals(:type, :tv_show)
 
       change WatchClub.Contents.Changes.NotifyContentChanged
-      change load([:implementation, tv_show: [:episodes]])
-    end
-
-    update :refresh_tv_show do
-      description "Re-fetches TMDB details for an existing TV Show Content, mirroring TMDB exactly: localizations and episodes are inserted, updated, or destroyed to match the current TMDB payload."
-      require_atomic? false
-      argument :tmdb_id, :integer, allow_nil?: false
-
-      change WatchClub.Contents.Changes.CreateOrUpdateTvShow, only_when_valid?: true
-      change WatchClub.Contents.Changes.NotifyContentChanged
-      change load([:implementation])
     end
 
     action :search, {:array, :struct} do
@@ -145,35 +140,6 @@ defmodule WatchClub.Contents.Content do
 
       change load(library_items: [:library])
       change WatchClub.Contents.Changes.NotifyContentChanged
-    end
-  end
-
-  policies do
-    policy actor_absent() do
-      description "Content actions require an authenticated actor"
-      access_type :strict
-      forbid_if always()
-    end
-
-    policy action([:read, :for_view, :search]) do
-      description "Content metadata is visible to authenticated users"
-      authorize_if always()
-    end
-
-    policy action([:create_movie, :create_tv_show]) do
-      description "Authenticated users can create catalog content and only select libraries they can access; the system actor can create content during Media Imports"
-      authorize_if actor_attribute_equals(:system?, true)
-      authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
-    end
-
-    policy action(:set_libraries) do
-      description "Users can only set content libraries they can access"
-      authorize_if WatchClub.Contents.Checks.ActorCanAccessSelectedLibraries
-    end
-
-    policy action(:refresh_tv_show) do
-      description "Only the system actor can refresh TV Show Content during Media Imports"
-      authorize_if actor_attribute_equals(:system?, true)
     end
   end
 

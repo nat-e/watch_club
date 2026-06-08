@@ -6,7 +6,8 @@ defmodule WatchClub.History.WatchProgress do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Book, Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}
+  alias WatchClub.History.WatchProgress.Actions.{MarkNotWatched, MarkWatched}
   alias WatchClub.MediaCatalog.Media
 
   postgres do
@@ -53,6 +54,24 @@ defmodule WatchClub.History.WatchProgress do
       accept [:tv_show_episode_id, :last_media_id, :position_seconds, :completed]
       change relate_actor(:user)
     end
+
+    action :mark_content_watched, :struct do
+      constraints instance_of: Content
+      argument :content_identity, ContentIdentity, allow_nil?: false
+      argument :season_number, :integer
+      argument :episode_number, :integer
+
+      run MarkWatched
+    end
+
+    action :mark_content_not_watched, :struct do
+      constraints instance_of: Content
+      argument :content_identity, ContentIdentity, allow_nil?: false
+      argument :season_number, :integer
+      argument :episode_number, :integer
+
+      run MarkNotWatched
+    end
   end
 
   policies do
@@ -62,18 +81,22 @@ defmodule WatchClub.History.WatchProgress do
       forbid_if always()
     end
 
-    # The two ownership checks are not interchangeable: `relating_to_actor`
-    # inspects the changeset ("is this write setting `user` to the actor?"), so
-    # it only resolves on creates/updates. `relates_to_actor_via` filters on the
-    # persisted row (`user_id == actor.id`), which is what reads and destroys need
-    policy action_type([:create, :update]) do
-      description "A User records only their own Watch Progress"
+    policy action_type(:create) do
+      description "Any User can record WatchProgress"
       authorize_if relating_to_actor(:user)
     end
 
-    policy action_type([:read, :destroy]) do
+    policy action_type([:read, :update, :destroy]) do
       description "Only the related User can read or destroy their Watch Progress"
       authorize_if relates_to_actor_via(:user)
+    end
+
+    policy action([
+             :mark_content_watched,
+             :mark_content_not_watched
+           ]) do
+      description "Any User can mark content watched"
+      authorize_if always()
     end
   end
 

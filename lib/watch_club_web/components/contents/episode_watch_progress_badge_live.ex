@@ -44,20 +44,17 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
 
   @impl true
   def handle_event("mark_watched", _params, socket) do
-    user = socket.assigns.current_user
+    case History.mark_content_watched(
+           ContentView.identity(socket.assigns.content),
+           %{
+             season_number: socket.assigns.season_number,
+             episode_number: socket.assigns.episode_number
+           },
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _content} ->
+        {:noreply, socket}
 
-    with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
-         {:ok, _} <-
-           Contents.mark_show_episode_watched(
-             content.content.tv_show,
-             %{
-               season_number: socket.assigns.season_number,
-               episode_number: socket.assigns.episode_number
-             },
-             actor: user
-           ) do
-      {:noreply, socket}
-    else
       {:error, error} ->
         Logger.error("Error marking content watched #{inspect(error)}")
         {:noreply, socket |> put_flash(:error, "Something wrong happened")}
@@ -65,20 +62,17 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
   end
 
   def handle_event("mark_not_watched", _params, socket) do
-    user = socket.assigns.current_user
+    case History.mark_content_not_watched(
+           ContentView.identity(socket.assigns.content),
+           %{
+             season_number: socket.assigns.season_number,
+             episode_number: socket.assigns.episode_number
+           },
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _content} ->
+        {:noreply, socket}
 
-    with {:ok, content} <- ContentView.ensure_content_exists(socket.assigns.content, user),
-         {:ok, _} <-
-           Contents.mark_show_episode_not_watched(
-             content.content.tv_show,
-             %{
-               season_number: socket.assigns.season_number,
-               episode_number: socket.assigns.episode_number
-             },
-             actor: user
-           ) do
-      {:noreply, socket}
-    else
       {:error, error} ->
         Logger.error("Error marking content not watched #{inspect(error)}")
         {:noreply, socket |> put_flash(:error, "Something wrong happened")}

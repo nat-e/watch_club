@@ -32,22 +32,6 @@ defmodule WatchClub.Contents.Movie do
 
       run WatchClub.Contents.Actions.GetMovieDetails
     end
-
-    update :mark_watched do
-      description "Marks the Movie as watched for the current user"
-      require_atomic? false
-      change WatchClub.Contents.Changes.SetViewerProgressCompleted
-
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :__actor}
-    end
-
-    update :mark_not_watched do
-      description "Marks the Movie as un-watched for the current user"
-      require_atomic? false
-      change WatchClub.Contents.Changes.DeleteViewerProgress
-
-      change {WatchClub.Contents.Changes.NotifyContentChanged, content: :content, user: :__actor}
-    end
   end
 
   attributes do

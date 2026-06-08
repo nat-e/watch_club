@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   use WatchClubWeb, :live_component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, ContentView}
+  alias WatchClub.Contents.{Content, ContentIdentity, ContentView}
   alias WatchClub.Requests
   alias WatchClub.Requests.ContentRequestStatus
 
@@ -62,10 +62,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     content = socket.assigns.content
 
     case Requests.request_content(
-           %{
+           %ContentIdentity{
+             type: content.type,
              external_id_source: content.external_id_source,
-             external_id: content.external_id,
-             content_type: content.type
+             external_id: content.external_id
            },
            actor: socket.assigns.current_user
          ) do

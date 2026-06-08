@@ -36,23 +36,11 @@ defmodule WatchClub.Requests.ContentRequest do
   actions do
     defaults [:read]
 
-    # `(provider, external_id, content_type)` in; the Content is internal
-    # (resolved/created by EnsureContentExists). Idempotent per user+content.
     create :request do
       upsert? true
       upsert_identity :unique_user_content
 
-      argument :external_id_source, WatchClub.Contents.ExternalIdSource do
-        allow_nil? false
-        default :tmdb
-      end
-
-      argument :external_id, :string, allow_nil?: false
-
-      argument :content_type, :atom do
-        allow_nil? false
-        constraints one_of: [:movie, :tv_show]
-      end
+      argument :content_identity, WatchClub.Contents.ContentIdentity, allow_nil?: false
 
       change relate_actor(:user)
       change EnsureContentExists
