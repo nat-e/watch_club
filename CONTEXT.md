@@ -49,24 +49,28 @@ A member who can view libraries, add content to them, and remove library items t
 _Avoid_: Regular user, participant
 
 **Invitation**:
-A one-time link created by a **Club Admin** that lets one person join a club.
-_Avoid_: Invite, invitation code
+An instance-wide link created by the **Instance Administrator** that lets new people register and, on doing so, join zero or more **Clubs** as **Club Members**. Redeemable only while it is not **Expired**, not **Disabled**, and not **Exhausted**.
+_Avoid_: Invite, invitation code, club invitation
 
-**Invitee Name**:
-The display name written on an invitation to personalize it before anyone accepts it.
-_Avoid_: Invitee, recipient
+**Use Limit**:
+The optional maximum number of new accounts an **Invitation** can create. Unlimited when unset.
+_Avoid_: Max uses, seats, quota
+
+**Redeem Invitation**:
+A new person registers through an **Invitation**, creating their **User** and one **Club Member** **Membership** in each granted **Club**. Counts as one use against the **Use Limit**.
+_Avoid_: Accept invitation, join instance
 
 **Expired Invitation**:
-An invitation that can no longer be accepted because its acceptance window has passed.
+An invitation that can no longer be redeemed because its redemption window has passed.
 _Avoid_: Invalid invitation, stale invitation
 
-**Used Invitation**:
-An invitation that has already created a membership and cannot be accepted again.
-_Avoid_: Accepted invitation, redeemed invitation
+**Exhausted Invitation**:
+An invitation that has reached its **Use Limit** and can no longer be redeemed.
+_Avoid_: Used invitation, used-up invitation, spent invitation
 
-**Delete Invitation**:
-Remove an unused invitation so its link can no longer be accepted.
-_Avoid_: Revoke invitation, cancel invitation
+**Disable Invitation**:
+Deactivate a still-redeemable **Invitation** so its link can no longer be redeemed, without removing the **Users** and **Memberships** it already created. Cannot be applied to an **Exhausted Invitation**.
+_Avoid_: Delete invitation, revoke invitation, cancel invitation, archive invitation
 
 **Library**:
 A named collection of content inside a club for exactly one content type.
@@ -293,13 +297,15 @@ _Avoid_: Best localization, current localization
 - A **Club Member** can view only their own **Membership**
 - **Leave Club** ends the acting **Club Member**’s **Membership** without removing **Library Items** they added
 - **Remove Member** ends another **Member**’s **Membership** without removing **Library Items** they added
-- An **Invitation** belongs to exactly one **Club**
-- An **Invitation** is link-based and is not tied to a specific **User** before acceptance
-- An **Invitation** may have one **Invitee Name**
-- Accepting an **Invitation** creates exactly one **Membership** as a **Club Member**
-- An **Expired Invitation** cannot be accepted
-- A **Used Invitation** cannot be accepted again
-- **Delete Invitation** applies only to an unused **Invitation**
+- An **Invitation** is instance-wide and grants membership to zero or more **Clubs**
+- An **Invitation** granting zero **Clubs** lets a new person register without joining any **Club**; the **Instance Administrator** adds them to **Clubs** later
+- An **Invitation** is created and managed only by the **Instance Administrator**
+- An **Invitation** is link-based and is not tied to any **User** before redemption
+- An **Invitation** is redeemed only by a new person registering; an existing **User** can never redeem one
+- **Redeem Invitation** creates the new **User** and one **Club Member** **Membership** per granted **Club**, and counts as one use against the **Use Limit**
+- An **Invitation** records its originating **Use Limit**; uses are counted from the **Users** it created, not stored
+- An **Expired Invitation**, a **Disabled** **Invitation**, and an **Exhausted Invitation** cannot be redeemed
+- **Disable Invitation** can be applied at any time except to an **Exhausted Invitation**, and leaves already-created **Users** and **Memberships** intact
 - A **Club** has zero or more **Libraries**
 - A **Library** belongs to exactly one **Club**
 - A **Library** has exactly one **Content Type**
@@ -392,7 +398,8 @@ _Avoid_: Best localization, current localization
 - Only a **Club Admin** can **Delete Library**
 - **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
 - Only a **Club Admin** can **Delete Club**
-- **Delete Club** removes the **Club**’s **Memberships**, **Invitations**, **Libraries**, and **Library Items**, but not **Content** or **Media**
+- **Delete Club** removes the **Club**’s **Memberships**, **Libraries**, and **Library Items**, but not **Content** or **Media**
+- **Delete Club** drops the **Club** from every **Invitation** that grants it; those **Invitations** survive, even if left granting zero **Clubs**
 - Adding or removing a request-capable **Media Source** does not create or remove **Content Requests**, and does not backfill **Media Source Requests** for existing **Content Requests**
 - **Add to Library** cannot be repeated for **Content** that is already in the **Library**
 
@@ -506,7 +513,8 @@ _Avoid_: Best localization, current localization
 - A **User** can have memberships in many **Clubs**
 - A **Club** is created by the **Instance Administrator**, who becomes its **Club Admin**
 - The **Club Admin** cannot be replaced
-- A **User** cannot accept an **Invitation** to a **Club** where they are already a **Member**
+- An **Invitation** is the only way a new person joins **Clubs**; once a **User** exists, the **Instance Administrator** adds them to a **Club** directly rather than through an **Invitation**
+- A **User** records the **Invitation** they registered through, if any
 
 ## Example dialogue
 
