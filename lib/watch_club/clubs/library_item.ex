@@ -3,17 +3,19 @@ defmodule WatchClub.Clubs.LibraryItem do
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
+  alias WatchClub.Clubs.LibraryItem.Actions.{AddContentToLibraries, RemoveContentFromLibraries}
   alias WatchClub.Clubs.LibraryItemsSortOption
   alias WatchClub.Clubs.Preparations.PrepareLibraryItemsForView
   alias WatchClub.Clubs.Validations.LibraryAllowsContentType
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Shared.SortOrder
 
   import Ash.Expr
@@ -57,7 +59,7 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     create :create do
       primary? true
-      accept [:library_id, :content_id]
+      accept [:content_id, :library_id]
 
       validate LibraryAllowsContentType do
         only_when_valid? true
@@ -65,6 +67,26 @@ defmodule WatchClub.Clubs.LibraryItem do
       end
 
       change relate_actor(:added_by)
+    end
+
+    # Bulk add/remove a Content to/from several libraries at once, emitting a
+    # single content_changed notification (vs one per LibraryItem). Each row
+    # still goes through :create / :destroy, so per-library validation and
+    # policies apply.
+    action :add_content_to_libraries, :struct do
+      constraints instance_of: Content
+      argument :content_identity, ContentIdentity, allow_nil?: false
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
+
+      run AddContentToLibraries
+    end
+
+    action :remove_content_from_libraries, :struct do
+      constraints instance_of: Content
+      argument :content_identity, ContentIdentity, allow_nil?: false
+      argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
+
+      run RemoveContentFromLibraries
     end
   end
 
@@ -93,6 +115,12 @@ defmodule WatchClub.Clubs.LibraryItem do
     policy action([:read, :for_library]) do
       description "Only club members can read library items"
       authorize_if {ActorIsClubMemberFilter, club_path: [:library, :club]}
+    end
+
+    # Per-library access is enforced by the :create / :destroy these delegate to.
+    policy action([:add_content_to_libraries, :remove_content_from_libraries]) do
+      description "Any authenticated user may add or remove content to libraries they can access"
+      authorize_if always()
     end
   end
 

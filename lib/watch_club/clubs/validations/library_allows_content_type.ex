@@ -1,33 +1,21 @@
 defmodule WatchClub.Clubs.Validations.LibraryAllowsContentType do
   @moduledoc """
-  Validates that a library allows the type of content being added to it.
+  Validates that the library accepts the content's type. A Library holds a single
+  `content_type`, so the Content being added must match it.
   """
   use Ash.Resource.Validation
-
-  require Ash.Query
 
   alias WatchClub.Clubs.Library
   alias WatchClub.Contents.Content
 
   @impl true
-  def validate(%Ash.Changeset{} = changeset, _opts, context) do
+  def validate(%Ash.Changeset{} = changeset, _opts, _context) do
     library_id = Ash.Changeset.get_argument_or_attribute(changeset, :library_id)
     content_id = Ash.Changeset.get_argument_or_attribute(changeset, :content_id)
 
-    Library
-    |> Ash.Query.for_read(:read, %{}, scope: context)
-    |> Ash.Query.filter(id == ^library_id)
-    |> Ash.Query.filter(exists(Content, id == ^content_id and type == parent(content_type)))
-    |> Ash.exists()
-    |> case do
-      {:ok, true} ->
-        :ok
-
-      {:ok, false} ->
-        {:error, field: :library_id}
-
-      {:error, error} ->
-        {:error, error}
+    with {:ok, %Library{content_type: library_type}} <- Ash.get(Library, library_id, authorize?: false),
+         {:ok, %Content{type: content_type}} <- Ash.get(Content, content_id, authorize?: false) do
+      if library_type == content_type, do: :ok, else: {:error, field: :library_id}
     end
   end
 end

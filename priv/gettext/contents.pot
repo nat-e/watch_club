@@ -209,3 +209,33 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "We couldn't load the season. Please try again"
 msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:48
+#, elixir-autogen, elixir-format
+msgid "Share with Clubs"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "Share with a club"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Add %{content_name} to a club library. Every member of that club will be able to see and access it."
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "Added"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "No club to share with"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:95
+#, elixir-autogen, elixir-format
+msgid "Join a club with a library that accepts this kind of content to share it."
+msgstr ""

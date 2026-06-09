@@ -2,8 +2,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   use WatchClubWeb, :live_component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents
-  alias WatchClub.Contents.{Content, ContentView}
+  alias WatchClub.Contents.ContentView
 
   attr :content, ContentView, required: true
   attr :current_user, User, required: true
@@ -29,12 +28,11 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
       >
         <.inner clubs={@clubs} />
       </.button>
-      <.club_selection_modal
-        :if={@form}
+      <.library_selection_modal
+        :if={@open?}
         component_id={@id}
         content={@content}
         current_user={@current_user}
-        form={@form}
         myself={@myself}
       />
     </div>
@@ -44,7 +42,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   defp inner(%{clubs: []} = assigns) do
     ~H"""
     <Lucideicons.list_plus />
-    <span>{dgettext("contents", "Add to Library")}</span>
+    <span>{dgettext("contents", "Share with Clubs")}</span>
     """
   end
 
@@ -65,7 +63,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     """
   end
 
-  defp club_selection_modal(assigns) do
+  defp library_selection_modal(assigns) do
     assigns =
       assign(
         assigns,
@@ -75,24 +73,22 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
     ~H"""
     <.modal id="club-selection-modal" on_close={JS.push("close", target: @myself)}>
-      <:title>{dgettext("contents", "Select libraries")}</:title>
+      <:title>{dgettext("contents", "Share with club")}</:title>
       <.stack space="group" class="relative w-full max-w-lg">
         <.alert variant="accent">
           <:icon><Lucideicons.users class="size-icon-xl" /></:icon>
           {raw(
             dgettext(
               "contents",
-              "Add %{content_name} to Libraries to share it with the Members of your clubs.",
+              "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content.",
               content_name: gtboldunder(@content.title)
             )
           )}
         </.alert>
         <.stack space="group">
-          <.inline class="justify-around">
-            <h2 class="text-lg font-bold">{dgettext("contents", "Select clubs")}</h2>
-          </.inline>
+          <h2 class="text-lg font-bold">{dgettext("contents", "Select library")}</h2>
           <.form
-            for={@form}
+            for={%{}}
             id={"#{@component_id}-club-selection-form"}
             phx-target={@myself}
             phx-submit="submit"
@@ -102,14 +98,13 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
               component_id={@component_id}
               club={option.club}
               library={option.library}
-              selected?={in_library?(@content, option.library.id)}
-              disabled?={option.disabled?}
+              already_in?={option.already_in?}
             />
             <:action>
               <.button
                 id={"#{@component_id}-club-selection-submit-button"}
                 type="submit"
-                disabled={Enum.all?(@library_options, & &1.disabled?)}
+                disabled={Enum.all?(@library_options, & &1.already_in?)}
               >
                 {dgettext("default", "Save")}
               </.button>
@@ -121,14 +116,26 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     """
   end
 
+  defp library_selection_checkbox(%{already_in?: true} = assigns) do
+    ~H"""
+    <div class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border bg-surface-selected p-group text-text">
+      <div class="flex min-w-0 flex-row items-center gap-related">
+        <.avatar id={@club.id} name={@club.name} />
+        <div class="min-w-0">
+          <p class="truncate font-bold">{@club.name}</p>
+          <p class="truncate text-sm text-text-muted">{@library.name}</p>
+        </div>
+      </div>
+      <.badge variant="success">
+        {dgettext("contents", "Already in %{library}", library: @library.name)}
+      </.badge>
+    </div>
+    """
+  end
+
   defp library_selection_checkbox(assigns) do
     ~H"""
-    <label class={[
-      "flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border p-group transition-colors",
-      @disabled? && "cursor-not-allowed opacity-50",
-      @selected? && "bg-surface-selected text-text",
-      !@selected? && !@disabled? && "hover:bg-surface-hover active:bg-surface-active"
-    ]}>
+    <label class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border p-group transition-colors hover:bg-surface-hover active:bg-surface-active">
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
         <div class="min-w-0">
@@ -140,8 +147,6 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
         id={"#{@component_id}-library-checkbox-#{@library.id}"}
         name="form[library_ids][]"
         value={@library.id}
-        checked={@selected?}
-        disabled={@disabled?}
       />
     </label>
     """
@@ -149,74 +154,64 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   @impl true
   def mount(socket) do
-    {:ok, socket |> assign(:form, nil)}
+    {:ok, assign(socket, :open?, false)}
   end
 
+  # Just toggles the modal — the checkboxes carry the selection and the bulk
+  # actions resolve (and create) the Content from its identity, so there's no
+  # form state to track.
   @impl true
   def handle_event("open", _params, socket) do
-    content_view = socket.assigns.content
-    actor = socket.assigns.current_user
-
-    form =
-      case content_view do
-        %ContentView{content: nil, type: :movie} ->
-          Contents.form_to_create_movie(
-            prepare_params: fn params, _ ->
-              Map.put(params, :tmdb_id, String.to_integer(content_view.external_id))
-            end,
-            actor: actor
-          )
-
-        %ContentView{content: nil, type: :tv_show} ->
-          Contents.form_to_create_tv_show(
-            prepare_params: fn params, _ ->
-              Map.put(params, :tmdb_id, String.to_integer(content_view.external_id))
-            end,
-            actor: actor
-          )
-
-        %ContentView{content: content, type: type} when type in [:movie, :tv_show] ->
-          Contents.form_to_set_club_libraries(content, actor: actor)
-      end
-
-    {:noreply, socket |> assign(:form, to_form(form))}
+    {:noreply, assign(socket, :open?, true)}
   end
 
   @impl true
   def handle_event("close", _params, socket) do
-    {:noreply, socket |> assign(:form, nil)}
+    {:noreply, assign(socket, :open?, false)}
   end
 
+  # Adds the Content to the newly-checked libraries. Already-in and
+  # type-mismatched libraries aren't selectable, so this only ever adds. The bulk
+  # action broadcasts a single content_changed, so the parent reloads.
   def handle_event("submit", params, socket) do
-    library_ids = (params["form"] && params["form"]["library_ids"]) || []
+    case (params["form"] && params["form"]["library_ids"]) || [] do
+      [] ->
+        {:noreply, assign(socket, :open?, false)}
 
-    case AshPhoenix.Form.submit(socket.assigns.form,
-           params: %{library_ids: library_ids}
-         ) do
-      {:ok, %Content{}} ->
-        {:noreply, socket |> assign(:form, nil)}
+      library_ids ->
+        identity = ContentView.identity(socket.assigns.content)
 
-      {:error, form} ->
-        Logger.warning("Error selecting clubs: #{inspect(form.source.errors)}")
+        case Clubs.add_content_to_libraries(identity, library_ids,
+               actor: socket.assigns.current_user
+             ) do
+          {:ok, _} ->
+            {:noreply, assign(socket, :open?, false)}
 
-        WatchClubWeb.Hooks.Flash.send_flash(
-          :error,
-          dgettext("default", "Something went wrong, try again later")
-        )
+          {:error, error} ->
+            Logger.warning("Error adding to libraries: #{inspect(error)}")
 
-        {:noreply, socket |> assign(:form, to_form(form))}
+            WatchClubWeb.Hooks.Flash.send_flash(
+              :error,
+              dgettext("default", "Something went wrong, try again later")
+            )
+
+            {:noreply, socket}
+        end
     end
   end
 
+  # The actor's club libraries that accept this content's type, marking the ones
+  # it is already in (shown as a badge, not a selectable checkbox).
   defp libraries_for_content(%User{} = user, %ContentView{} = content) do
     user.memberships
     |> Enum.flat_map(fn membership ->
       membership.club.libraries
+      |> Enum.filter(&(&1.content_type == content.type))
       |> Enum.map(fn library ->
         %{
           club: membership.club,
           library: library,
-          disabled?: library.content_type != content.type
+          already_in?: in_library?(content, library.id)
         }
       end)
     end)

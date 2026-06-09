@@ -39,6 +39,9 @@ defmodule WatchClub.Clubs do
 
     resource LibraryItem do
       define :get_library_items, action: :for_library, args: [:library_id]
+
+      define :add_content_to_libraries, args: [:content_identity, :library_ids]
+      define :remove_content_from_libraries, args: [:content_identity, :library_ids]
     end
 
     resource Membership do

@@ -244,3 +244,39 @@ msgstr "Réessayer"
 #, elixir-autogen, elixir-format
 msgid "We couldn't load the season. Please try again"
 msgstr "Nous n’avons pas pu charger la saison. Veuillez réessayer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:48
+#, elixir-autogen, elixir-format
+msgid "Share with Clubs"
+msgstr "Partager avec des clubs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "Share with a club"
+msgstr "Partager avec un club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:74
+#, elixir-autogen, elixir-format
+msgid "Add %{content_name} to a club library. Every member of that club will be able to see and access it."
+msgstr "Ajoutez %{content_name} à une bibliothèque de club. Tous les membres de ce club pourront le voir et y accéder."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:141
+#, elixir-autogen, elixir-format
+msgid "Added"
+msgstr "Ajouté"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "No club to share with"
+msgstr "Aucun club avec qui partager"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:95
+#, elixir-autogen, elixir-format
+msgid "Join a club with a library that accepts this kind of content to share it."
+msgstr "Rejoignez un club doté d’une bibliothèque qui accepte ce type de contenu pour le partager."
