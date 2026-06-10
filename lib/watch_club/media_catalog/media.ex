@@ -118,6 +118,7 @@ defmodule WatchClub.MediaCatalog.Media do
       end
 
       change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
+      change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
     end
 
     create :create_ebook do
@@ -183,6 +184,7 @@ defmodule WatchClub.MediaCatalog.Media do
       require_atomic? false
 
       change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
+      change WatchClub.MediaCatalog.Changes.DeleteTrickplay
     end
   end
 

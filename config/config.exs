@@ -80,7 +80,10 @@ config :watch_club, Oban,
     media_source_webhooks: 1,
     # Low concurrency: submissions add+search on the *arr instance, so keep
     # the load (and indexer pressure) gentle even on a big fan-out/backfill.
-    media_source_requests: 2
+    media_source_requests: 2,
+    # Single worker so trickplay's full-decode ffmpeg pass never crowds out
+    # imports.
+    trickplay_generation: 1
   ]
 
 config :ash_oban, :actor_persister, WatchClub.Shared.Oban.AshObanActorPersister

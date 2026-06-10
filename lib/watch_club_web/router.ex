@@ -53,16 +53,17 @@ defmodule WatchClubWeb.Router do
     post "/sonarr/:media_source_id", ServarrController, :handle
   end
 
-  scope "/hls", WatchClubWeb do
+  scope "/player", WatchClubWeb do
     pipe_through :playback
 
-    get "/:session_id/master.m3u8", PlayerController, :master_playlist
-    get "/:session_id/video/:variant/index.m3u8", PlayerController, :video_playlist
-    get "/:session_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
-    get "/:session_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
-    get "/:session_id/video/:variant/:segment", PlayerController, :video_segment
-    get "/:session_id/audio/:track_id/:segment", PlayerController, :audio_segment
-    get "/:session_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
+    get "/hls/:session_id/master.m3u8", PlayerController, :master_playlist
+    get "/hls/:session_id/video/:variant/index.m3u8", PlayerController, :video_playlist
+    get "/hls/:session_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
+    get "/hls/:session_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
+    get "/hls/:session_id/video/:variant/:segment", PlayerController, :video_segment
+    get "/hls/:session_id/audio/:track_id/:segment", PlayerController, :audio_segment
+    get "/hls/:session_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
+    get "/thumbnails/:session_id/:file", PlayerController, :thumbnails_file
   end
 
   scope "/", WatchClubWeb do

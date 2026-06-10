@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.PlayerPage do
   use WatchClubWeb, :live_view
 
+  import WatchClubWeb.Components.Player.SeekBar
+
   alias WatchClub.Playbacks
 
   require Logger
@@ -51,7 +53,7 @@ defmodule WatchClubWeb.PlayerPage do
           <media-player
             id="watch-club-vidstack-player"
             data-player-media
-            data-src={~p"/hls/#{@session.id}/master.m3u8"}
+            data-src={~p"/player/hls/#{@session.id}/master.m3u8"}
             title={playback_title(@session)}
             duration={@session.active_playback.media.video.duration_seconds}
             preload="metadata"
@@ -246,30 +248,7 @@ defmodule WatchClubWeb.PlayerPage do
                 class="pointer-events-auto flex w-full flex-col gap-related px-4 pt-4 sm:px-8"
                 style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
               >
-                <media-time-slider
-                  key-step="10"
-                  shift-key-multiplier="1"
-                  aria-label={dgettext("player", "Seek")}
-                  class="group/timeline relative block h-10 w-full cursor-pointer touch-none outline-none"
-                >
-                  <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-data-focus/timeline:ring-2 group-data-focus/timeline:ring-white/70">
-                    <div
-                      class="absolute h-full rounded-full bg-white/45"
-                      style="width: var(--slider-progress, 0%);"
-                    >
-                    </div>
-                    <div
-                      class="absolute h-full rounded-full bg-primary"
-                      style="width: var(--slider-fill, 0%);"
-                    >
-                    </div>
-                  </div>
-                  <div
-                    class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-active/timeline:scale-125 group-data-dragging/timeline:ring-4"
-                    style="left: var(--slider-fill, 0%);"
-                  >
-                  </div>
-                </media-time-slider>
+                <.seek_bar thumbnails={~p"/player/thumbnails/#{@session.id}/thumbnails.vtt"} />
 
                 <div class="relative flex min-h-control-sm items-center justify-center text-sm font-medium text-white/90 tabular-nums">
                   <div class="flex items-center justify-center gap-tight">

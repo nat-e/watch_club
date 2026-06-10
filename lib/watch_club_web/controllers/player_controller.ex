@@ -2,34 +2,47 @@ defmodule WatchClubWeb.PlayerController do
   use WatchClubWeb, :controller
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Ffmpeg.Trickplay
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Playback.Hls
+
+  @m3u8 "application/vnd.apple.mpegurl"
 
   plug :require_current_user
 
   def master_playlist(conn, %{"session_id" => session_id}) do
-    conn
-    |> put_resp_header("cache-control", "no-store")
-    |> send_text_result(with_active_playback(session_id, conn, &Hls.master_playlist/1))
+    send_text_result(
+      conn,
+      with_active_playback(session_id, conn, &Hls.master_playlist/1),
+      @m3u8,
+      "no-store"
+    )
   end
 
   def video_playlist(conn, %{"session_id" => session_id, "variant" => variant}) do
-    conn
-    |> put_resp_header("cache-control", "no-store")
-    |> send_text_result(with_active_playback(session_id, conn, &Hls.video_playlist(&1, variant)))
+    send_text_result(
+      conn,
+      with_active_playback(session_id, conn, &Hls.video_playlist(&1, variant)),
+      @m3u8,
+      "no-store"
+    )
   end
 
   def audio_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
-    conn
-    |> put_resp_header("cache-control", "no-store")
-    |> send_text_result(with_active_playback(session_id, conn, &Hls.audio_playlist(&1, track_id)))
+    send_text_result(
+      conn,
+      with_active_playback(session_id, conn, &Hls.audio_playlist(&1, track_id)),
+      @m3u8,
+      "no-store"
+    )
   end
 
   def subtitle_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
-    conn
-    |> put_resp_header("cache-control", "no-store")
-    |> send_text_result(
-      with_active_playback(session_id, conn, &Hls.subtitle_playlist(&1, track_id))
+    send_text_result(
+      conn,
+      with_active_playback(session_id, conn, &Hls.subtitle_playlist(&1, track_id)),
+      @m3u8,
+      "no-store"
     )
   end
 
@@ -38,11 +51,11 @@ defmodule WatchClubWeb.PlayerController do
         "variant" => variant,
         "segment" => segment
       }) do
-    conn
-    |> put_resp_header("cache-control", "public, max-age=3600")
-    |> send_file_result(
+    send_file_result(
+      conn,
       with_active_playback(session_id, conn, &Hls.video_segment(&1, variant, segment)),
-      "video/mp2t"
+      "video/mp2t",
+      "public, max-age=3600"
     )
   end
 
@@ -51,11 +64,11 @@ defmodule WatchClubWeb.PlayerController do
         "track_id" => track_id,
         "segment" => segment
       }) do
-    conn
-    |> put_resp_header("cache-control", "public, max-age=3600")
-    |> send_file_result(
+    send_file_result(
+      conn,
       with_active_playback(session_id, conn, &Hls.audio_segment(&1, track_id, segment)),
-      "video/mp2t"
+      "video/mp2t",
+      "public, max-age=3600"
     )
   end
 
@@ -64,11 +77,33 @@ defmodule WatchClubWeb.PlayerController do
         "track_id" => track_id,
         "file" => file
       }) do
-    conn
-    |> put_resp_header("cache-control", "public, max-age=3600")
-    |> send_file_result(
+    send_file_result(
+      conn,
       with_active_playback(session_id, conn, &Hls.subtitle_file(&1, track_id, file)),
-      "text/vtt"
+      "text/vtt",
+      "public, max-age=3600"
+    )
+  end
+
+  def thumbnails_file(conn, %{"session_id" => session_id, "file" => "thumbnails.vtt"}) do
+    # Cue sprite refs must be origin-absolute and session-scoped, which only the
+    # web layer knows — so the manifest is stamped with this base at serve time.
+    base = Path.dirname(~p"/player/thumbnails/#{session_id}/thumbnails.vtt")
+
+    send_text_result(
+      conn,
+      with_active_playback(session_id, conn, &Trickplay.manifest(&1.media.id, base)),
+      "text/vtt",
+      "public, max-age=3600"
+    )
+  end
+
+  def thumbnails_file(conn, %{"session_id" => session_id, "file" => file}) do
+    send_file_result(
+      conn,
+      with_active_playback(session_id, conn, &Trickplay.sprite_path(&1.media.id, file)),
+      "image/jpeg",
+      "public, max-age=3600"
     )
   end
 
@@ -89,30 +124,39 @@ defmodule WatchClubWeb.PlayerController do
     |> halt()
   end
 
-  defp send_text_result(conn, {:ok, body}) do
+  # Cache-control is applied only on success so error responses are never
+  # cached with the payload's freshness.
+  defp send_text_result(conn, {:ok, body}, content_type, cache_control) do
     conn
-    |> put_resp_header("content-type", "application/vnd.apple.mpegurl")
+    |> put_resp_header("cache-control", cache_control)
+    |> put_resp_header("content-type", content_type)
     |> send_resp(200, body)
   end
 
-  defp send_text_result(conn, {:error, :not_found}), do: send_not_found(conn)
-  defp send_text_result(conn, {:error, _reason}), do: send_server_error(conn)
+  defp send_text_result(conn, {:error, :not_found}, _content_type, _cache_control),
+    do: send_not_found(conn)
 
-  defp send_file_result(conn, {:ok, path}, content_type) do
+  defp send_text_result(conn, {:error, _reason}, _content_type, _cache_control),
+    do: send_server_error(conn)
+
+  defp send_file_result(conn, {:ok, path}, content_type, cache_control) do
     conn
+    |> put_resp_header("cache-control", cache_control)
     |> put_resp_header("content-type", content_type)
     |> send_file(200, path)
   end
 
-  defp send_file_result(conn, {:error, :not_found}, _content_type), do: send_not_found(conn)
+  defp send_file_result(conn, {:error, :not_found}, _content_type, _cache_control),
+    do: send_not_found(conn)
 
-  defp send_file_result(conn, {:error, :invalid_segment}, _content_type) do
+  defp send_file_result(conn, {:error, :invalid_segment}, _content_type, _cache_control) do
     conn
     |> put_resp_content_type("text/plain")
     |> send_resp(400, "Bad request")
   end
 
-  defp send_file_result(conn, {:error, _reason}, _content_type), do: send_server_error(conn)
+  defp send_file_result(conn, {:error, _reason}, _content_type, _cache_control),
+    do: send_server_error(conn)
 
   defp send_not_found(conn) do
     conn

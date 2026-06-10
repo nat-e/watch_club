@@ -86,7 +86,7 @@ defmodule WatchClub.Contents.Changes.CreateContentNotification do
   end
 
   defp resolve_content(opts, record) do
-    record |> resolve_path(opts[:content]) |> List.first()
+    record |> resolve_path(List.wrap(opts[:content])) |> List.first()
   end
 
   defp resolve_user_ids(opts, record, context) do
@@ -104,7 +104,6 @@ defmodule WatchClub.Contents.Changes.CreateContentNotification do
 
   # Walks the path, flat-mapping each step so a key resolving to a `has_many`
   # fans out: each step keeps only the present values (`nil` and `[]` drop out).
-  defp resolve_path(record, nil), do: [record]
   defp resolve_path(record, []), do: [record]
 
   defp resolve_path(record, path) do

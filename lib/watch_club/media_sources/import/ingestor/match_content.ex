@@ -86,6 +86,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
              ContentIdentity.for_tv_show(tmdb_id),
              SystemActor.actor()
            ) do
+      content = Ash.load!(content, [tv_show: [:episodes]], actor: SystemActor.actor())
+
       case Enum.find(content.tv_show.episodes, fn e ->
              e.season_number == season_number and e.episode_number == episode_number
            end) do
