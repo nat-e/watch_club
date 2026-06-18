@@ -7,7 +7,8 @@ defmodule WatchClub.Integrations.Tmdb.Client do
       base_url: "https://api.themoviedb.org/3",
       retry: :transient,
       max_retries: 3,
-      receive_timeout: 5_000
+      receive_timeout: 5_000,
+      compressed: true
     ]
     |> Keyword.merge(Application.get_env(:watch_club, :tmdb_req_options, []))
     |> Req.new()

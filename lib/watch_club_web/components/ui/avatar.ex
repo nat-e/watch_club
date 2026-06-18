@@ -53,6 +53,20 @@ defmodule WatchClubWeb.Components.UI.Avatar do
   attr :avatar_class, :any, default: nil
   attr :rest, :global
 
+  def avatar_group(assigns) when assigns.avatars == [] do
+    ~H"""
+    <span class={[
+      "inline-flex items-center",
+      @avatar_size == "xs" && "h-5 text-[0.625rem]",
+      @avatar_size == "sm" && "h-6 text-xs",
+      @avatar_size == "md" && "h-8 text-base",
+      @avatar_size == "lg" && "h-10 text-lg"
+    ]}>
+      -
+    </span>
+    """
+  end
+
   def avatar_group(assigns) do
     visible_avatars =
       if length(assigns.avatars) <= 3, do: assigns.avatars, else: Enum.take(assigns.avatars, 2)

@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
 
   alias Phoenix.PubSub
   alias WatchClub.MediaSources
-  alias WatchClub.MediaSources.{Import, Source}
+  alias WatchClub.MediaSources.Source
 
   @impl true
   def mount(_params, _session, socket) do
@@ -152,7 +152,10 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{resource: Source, action: %{name: :destroy}},
+        %Phoenix.Socket.Broadcast{
+          topic: "media_sources:" <> _,
+          payload: %Ash.Notifier.Notification{action: %{name: :destroy}}
+        },
         socket
       ) do
     {:noreply,
@@ -161,8 +164,11 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
      |> push_navigate(to: ~p"/admin/media/sources")}
   end
 
-  def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [Source, Import] do
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "media_sources:" <> _}, socket) do
+    {:noreply, reload_media_source(socket)}
+  end
+
+  def handle_info(%Phoenix.Socket.Broadcast{topic: "media_imports:" <> _}, socket) do
     {:noreply, reload_media_source(socket)}
   end
 

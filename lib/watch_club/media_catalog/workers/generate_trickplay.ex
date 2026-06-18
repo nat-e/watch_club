@@ -22,7 +22,7 @@ defmodule WatchClub.MediaCatalog.Workers.GenerateTrickplay do
     unique: [
       fields: [:worker, :args],
       keys: [:video_id],
-      states: [:available, :scheduled],
+      states: :scheduled,
       period: :infinity
     ]
 

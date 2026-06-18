@@ -8,33 +8,38 @@ defmodule WatchClubWeb.Helpers.Time do
     diff = DateTime.diff(DateTime.utc_now(), date)
     cldr_locale_name = UserLocale.to_cldr_locale_name(locale)
 
+    # CLDR renders negative values as the past ("3 days ago") and positive
+    # values as the future ("in 3 days").
+    sign = if diff > 0, do: -1, else: 1
+    absolute_diff = abs(diff)
+
     cond do
-      diff < 60 ->
+      absolute_diff < 60 ->
         format_relative(0, :second, cldr_locale_name)
 
-      diff < 120 ->
-        format_relative(-1, :minute, cldr_locale_name)
+      absolute_diff < 120 ->
+        format_relative(sign, :minute, cldr_locale_name)
 
-      diff < 3600 ->
-        format_relative(-div(diff, 60), :minute, cldr_locale_name)
+      absolute_diff < 3600 ->
+        format_relative(sign * div(absolute_diff, 60), :minute, cldr_locale_name)
 
-      diff < 7200 ->
-        format_relative(-1, :hour, cldr_locale_name)
+      absolute_diff < 7200 ->
+        format_relative(sign, :hour, cldr_locale_name)
 
-      diff < 86_400 ->
-        format_relative(-div(diff, 3600), :hour, cldr_locale_name)
+      absolute_diff < 86_400 ->
+        format_relative(sign * div(absolute_diff, 3600), :hour, cldr_locale_name)
 
-      diff < 172_800 ->
-        format_relative(-1, :day, cldr_locale_name)
+      absolute_diff < 172_800 ->
+        format_relative(sign, :day, cldr_locale_name)
 
-      diff < 604_800 ->
-        format_relative(-div(diff, 86_400), :day, cldr_locale_name)
+      absolute_diff < 604_800 ->
+        format_relative(sign * div(absolute_diff, 86_400), :day, cldr_locale_name)
 
-      diff < 1_209_600 ->
-        format_relative(-1, :week, cldr_locale_name)
+      absolute_diff < 1_209_600 ->
+        format_relative(sign, :week, cldr_locale_name)
 
-      diff < @four_weeks_in_seconds ->
-        format_relative(-div(diff, 604_800), :week, cldr_locale_name)
+      absolute_diff < @four_weeks_in_seconds ->
+        format_relative(sign * div(absolute_diff, 604_800), :week, cldr_locale_name)
 
       true ->
         format_date(date, cldr_locale_name)

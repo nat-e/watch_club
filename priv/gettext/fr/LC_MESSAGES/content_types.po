@@ -10,23 +10,23 @@ msgid ""
 msgstr ""
 "Language: fr\n"
 
-#: lib/watch_club/contents/content_type.ex:16
+#: lib/watch_club/contents/content_type.ex:17
 #, elixir-autogen, elixir-format
 msgid "Book"
 msgstr "Livre"
 
-#: lib/watch_club/contents/content_type.ex:17
+#: lib/watch_club/contents/content_type.ex:18
 #, elixir-autogen, elixir-format
 msgid "Movie"
 msgstr "Film"
 
-#: lib/watch_club/contents/content_type.ex:18
+#: lib/watch_club/contents/content_type.ex:19
 #, elixir-autogen, elixir-format
 msgid "TV Show"
 msgstr "Série TV"
 
 # AI-translated (Claude)
-#: lib/watch_club/contents/content_type.ex:20
+#: lib/watch_club/contents/content_type.ex:22
 #: lib/watch_club/contents/search_content_type.ex:11
 #, elixir-autogen, elixir-format
 msgid "Books"
@@ -38,13 +38,19 @@ msgid "Movies and Shows"
 msgstr "Films et Séries"
 
 # AI-translated (Claude)
-#: lib/watch_club/contents/content_type.ex:21
+#: lib/watch_club/contents/content_type.ex:23
 #, elixir-autogen, elixir-format
 msgid "Movies"
 msgstr "Films"
 
 # AI-translated (Claude)
-#: lib/watch_club/contents/content_type.ex:22
+#: lib/watch_club/contents/content_type.ex:24
 #, elixir-autogen, elixir-format
 msgid "TV Shows"
 msgstr "Séries TV"
+
+#: lib/watch_club/contents/content_type.ex:16
+#: lib/watch_club/contents/content_type.ex:21
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr ""

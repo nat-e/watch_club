@@ -5,6 +5,15 @@ defmodule WatchClub.PubSub do
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, ContentView}
 
+  @doc """
+  Subscribes a LiveView socket to a topic or list of PubSub topics if the socket is connected
+  """
+  def subscribe_if_connected(socket, topics) do
+    if Phoenix.LiveView.connected?(socket) do
+      topics |> List.wrap() |> Enum.each(&Phoenix.PubSub.subscribe(WatchClub.PubSub, &1))
+    end
+  end
+
   def content_topic(external_id_source, external_id),
     do: "content:#{external_id_source}:#{external_id}"
 

@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   alias Phoenix.PubSub
   alias WatchClub.MediaSources
-  alias WatchClub.MediaSources.{Filesystem, Import, Source, Servarr}
+  alias WatchClub.MediaSources.Source
   alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
 
   @impl true
@@ -379,8 +379,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
      )}
   end
 
-  def handle_info(%Ash.Notifier.Notification{resource: resource}, socket)
-      when resource in [Source, Filesystem, Servarr, Import] do
+  def handle_info(%Phoenix.Socket.Broadcast{topic: topic}, socket)
+      when topic in ["media_sources", "media_imports"] do
     {:noreply, load_media_sources(socket)}
   end
 

@@ -87,17 +87,10 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   def mount(%{"tmdb_id" => tmdb_id}, _session, socket) do
     user = socket.assigns.current_user
 
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(
-        WatchClub.PubSub,
-        WatchClub.PubSub.content_topic(:tmdb, tmdb_id)
-      )
-
-      Phoenix.PubSub.subscribe(
-        WatchClub.PubSub,
-        WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
-      )
-    end
+    WatchClub.PubSub.subscribe_if_connected(socket, [
+      WatchClub.PubSub.content_topic(:tmdb, tmdb_id),
+      WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
+    ])
 
     case load_movie(tmdb_id, user) do
       {:ok, movie} ->
@@ -111,8 +104,10 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{
-          metadata: %{subject: :content_changed, external_id: tmdb_id}
+        %Phoenix.Socket.Broadcast{
+          payload: %Ash.Notifier.Notification{
+            metadata: %{subject: :content_changed, external_id: tmdb_id}
+          }
         },
         socket
       ) do

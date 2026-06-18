@@ -143,8 +143,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{
-          metadata: %{subject: :content_changed, external_id: tmdb_id}
+        %Phoenix.Socket.Broadcast{
+          payload: %Ash.Notifier.Notification{
+            metadata: %{subject: :content_changed, external_id: tmdb_id}
+          }
         },
         socket
       ) do

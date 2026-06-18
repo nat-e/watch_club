@@ -55,7 +55,11 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       File.write!(path, "stub")
       on_exit(fn -> File.rm(path) end)
 
-      candidate = %Candidate{path: path, media_type: :movie, identity: %MovieIdentity{tmdb_id: 11}}
+      candidate = %Candidate{
+        path: path,
+        media_type: :movie,
+        identity: %MovieIdentity{tmdb_id: 11}
+      }
 
       assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
 

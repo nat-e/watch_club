@@ -31,6 +31,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Select
       import WatchClubWeb.Components.UI.Table
       import WatchClubWeb.Components.UI.Tooltip
+      import WatchClubWeb.Components.UI.Typography
     end
   end
 end

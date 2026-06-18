@@ -103,7 +103,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
       <.toast_icon kind={@kind} />
 
       <div data-slot="flash-toast-content" class="flex min-w-0 flex-col gap-tight">
-        <div data-slot="flash-toast-title" class="font-medium break-words">{@message}</div>
+        <div data-slot="flash-toast-title" class="font-medium wrap-break-word">{@message}</div>
       </div>
 
       <button

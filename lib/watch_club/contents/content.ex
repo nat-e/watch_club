@@ -214,13 +214,10 @@ defmodule WatchClub.Contents.Content do
   end
 
   calculations do
-    calculate :implementation, :union, GetContentImplementation do
-      constraints types: [
-                    book: [type: :struct, constraints: [instance_of: Book]],
-                    movie: [type: :struct, constraints: [instance_of: Movie]],
-                    tv_show: [type: :struct, constraints: [instance_of: TvShow]]
-                  ]
-
+    # Typed as a plain :struct (one of Book | Movie | TvShow), not :union:
+    # union calculation values get wrapped in %Ash.Union{} on load, and
+    # callers want the implementation struct directly.
+    calculate :implementation, :struct, GetContentImplementation do
       allow_nil? false
     end
 

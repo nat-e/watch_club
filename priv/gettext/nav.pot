@@ -37,32 +37,52 @@ msgstr ""
 msgid "Main navigation"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:21
+#: lib/watch_club_web/components/navigation/navbar_live.ex:20
 #, elixir-autogen, elixir-format
 msgid "Open navigation"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:44
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:52
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:150
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar_live.ex:38
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:317
 #, elixir-autogen, elixir-format
-msgid "User menu"
+msgid "Club actions"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "Admin"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:231
+#, elixir-autogen, elixir-format
+msgid "Instance settings"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:266
+#, elixir-autogen, elixir-format
+msgid "Media Sources"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:256
+#, elixir-autogen, elixir-format
+msgid "Media browser"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex:87
 #, elixir-autogen, elixir-format
-msgid "Watchlist"
+msgid "My Requests"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:212
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:243
 #, elixir-autogen, elixir-format
-msgid "Club actions"
+msgid "Users"
 msgstr ""

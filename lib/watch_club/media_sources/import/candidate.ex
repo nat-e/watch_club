@@ -169,7 +169,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   defp to_media_type(media_type) when is_atom(media_type), do: media_type
-  defp to_media_type(media_type) when is_binary(media_type), do: String.to_existing_atom(media_type)
+
+  defp to_media_type(media_type) when is_binary(media_type),
+    do: String.to_existing_atom(media_type)
 
   defp build_identity(nil, _media_type), do: nil
 

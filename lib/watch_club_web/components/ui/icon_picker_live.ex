@@ -35,7 +35,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
       <.modal
         id={"#{@id}-modal"}
         size="lg"
-        on_close={JS.push("close", target: @myself)}
+        on_close={@on_close}
       >
         <:title>{@title}</:title>
         <:description>{@description}</:description>
@@ -81,8 +81,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
               id={dom_id}
               variant="ghost"
               size="icon"
-              phx-click="select_icon"
-              phx-target={@myself}
+              phx-click={@on_select}
               phx-value-icon={icon.name}
               aria-label={dgettext("clubs", "Use %{icon_name} icon", icon_name: icon.name)}
               title={icon.name}
@@ -107,16 +106,6 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
 
   def handle_event("load_more_icons", _params, socket) do
     {:noreply, load_icon_page(socket, socket.assigns.icon_page + 1)}
-  end
-
-  def handle_event("select_icon", %{"icon" => icon}, socket) do
-    socket.assigns.on_select.(icon)
-    {:noreply, socket}
-  end
-
-  def handle_event("close", _params, socket) do
-    socket.assigns.on_close.()
-    {:noreply, socket}
   end
 
   defp reset_icons(socket, query) do

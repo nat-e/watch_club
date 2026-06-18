@@ -77,6 +77,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Locale
       ] do
       live "/admin/settings", Admin.InstanceSettingsPage
+      live "/admin/users", Admin.UsersPage
       live "/admin/media", Admin.MediaBrowserPage
       live "/admin/media/sources", Admin.MediaSourcesPage
       live "/admin/media/sources/:id/history", Admin.MediaSourceHistoryPage
@@ -112,16 +113,7 @@ defmodule WatchClubWeb.Router do
       ] do
       live "/setup", Accounts.SetupPage
       live "/sign-in", Accounts.SignInPage
-    end
-
-    ash_authentication_live_session :optional_user_routes,
-      on_mount: [
-        WatchClubWeb.Hooks.CurrentUrl,
-        WatchClubWeb.Hooks.Flash,
-        {WatchClubWeb.Hooks.Auth, :live_user_optional},
-        WatchClubWeb.Hooks.Locale
-      ] do
-      live "/invitations/:invitation_id", Invitations.InvitationPage
+      live "/join/:code", Invitations.InvitationPage
     end
 
     # Auto-generated POST and callbacks routes from Ash Authentication

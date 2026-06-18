@@ -294,16 +294,17 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       content = Ash.get!(Content, movie.id, authorize?: false)
 
-      Phoenix.PubSub.subscribe(
-        WatchClub.PubSub,
-        WatchClub.PubSub.content_topic(content.external_id_source, content.external_id)
-      )
+      topic = WatchClub.PubSub.content_topic(content.external_id_source, content.external_id)
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, topic)
 
       assert :ok = destroy_media!(media, actor: SystemActor.actor())
 
       # The content is resolved before the cascade delete, so the change still broadcasts
-      assert_receive %Ash.Notifier.Notification{
-        metadata: %{subject: :content_changed, content_id: content_id}
+      assert_receive %Phoenix.Socket.Broadcast{
+        topic: ^topic,
+        payload: %Ash.Notifier.Notification{
+          metadata: %{subject: :content_changed, content_id: content_id}
+        }
       }
 
       assert content_id == content.id

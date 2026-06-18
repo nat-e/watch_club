@@ -2,25 +2,53 @@ defmodule WatchClubWeb.Accounts.SignInPage do
   require Logger
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Accounts.SignInForm
-
   @impl true
   def render(assigns) do
     ~H"""
     <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome back!")}>
-      <.sign_in_form
+      <.form
+        for={@form}
         id="signin-form"
-        form={@form}
-        change="validate_sign_in"
-        submit="submit_sign_in"
-      />
+        phx-change="validate_sign_in"
+        phx-submit="submit_sign_in"
+        phx-mounted={JS.focus_first()}
+      >
+        <.field
+          field={@form[:username]}
+          label={dgettext("auth", "Username")}
+          autocomplete="username"
+          type="text"
+        />
+        <.field
+          field={@form[:password]}
+          label={dgettext("auth", "Password")}
+          autocomplete="password"
+          type="password"
+        />
+        <:action>
+          <.button id="signin-form-submit-button" type="submit" class="w-full">
+            {dgettext("auth", "Sign in")}
+          </.button>
+        </:action>
+      </.form>
     </Layouts.centered_card>
     """
   end
 
   @impl true
   def mount(_params, _session, socket) do
-    form = Accounts.form_to_sign_in(sign_in_form_opts())
+    form =
+      Accounts.form_to_sign_in(
+        context: %{token_type: :sign_in},
+        transform_errors: fn
+          _, %AshAuthentication.Errors.AuthenticationFailed{} ->
+            {:password, dgettext("errors", "Your username or password is invalid"), []}
+
+          _, err ->
+            err
+        end
+      )
+
     {:ok, socket |> assign(form: to_form(form))}
   end
 

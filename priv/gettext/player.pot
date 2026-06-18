@@ -1,0 +1,111 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:154
+#: lib/watch_club_web/live/player_page.ex:161
+#, elixir-autogen, elixir-format
+msgid "Audio"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:140
+#, elixir-autogen, elixir-format
+msgid "Auto"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:101
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:26
+#, elixir-autogen, elixir-format
+msgid "Back home"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:20
+#: lib/watch_club_web/live/player_page.ex:298
+#, elixir-autogen, elixir-format
+msgid "Error loading video"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:208
+#, elixir-autogen, elixir-format
+msgid "Fullscreen"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:199
+#, elixir-autogen, elixir-format
+msgid "Mute"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:269
+#, elixir-autogen, elixir-format
+msgid "Next episode"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:186
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:230
+#, elixir-autogen, elixir-format
+msgid "Play or pause"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:35
+#, elixir-autogen, elixir-format
+msgid "Preparing an HLS playback session."
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:131
+#: lib/watch_club_web/live/player_page.ex:138
+#, elixir-autogen, elixir-format
+msgid "Quality"
+msgstr ""
+
+#: lib/watch_club_web/components/player/seek_bar.ex:22
+#, elixir-autogen, elixir-format
+msgid "Seek"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:221
+#, elixir-autogen, elixir-format
+msgid "Seek backward 10 seconds"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:239
+#, elixir-autogen, elixir-format
+msgid "Seek forward 10 seconds"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:282
+#, elixir-autogen, elixir-format
+msgid "Skip"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:33
+#, elixir-autogen, elixir-format
+msgid "Starting player…"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:177
+#: lib/watch_club_web/live/player_page.ex:184
+#, elixir-autogen, elixir-format
+msgid "Subtitles"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex:120
+#, elixir-autogen, elixir-format
+msgid "source %{codec}"
+msgstr ""

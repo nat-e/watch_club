@@ -61,6 +61,11 @@ defmodule WatchClub.Contents.Notifiers.ContentChangedNotifier do
 
   def notify(_notification), do: :ok
 
-  defp broadcast(topic, notification),
-    do: Phoenix.PubSub.broadcast(WatchClub.PubSub, topic, notification)
+  defp broadcast(topic, notification) do
+    Phoenix.PubSub.broadcast(WatchClub.PubSub, topic, %Phoenix.Socket.Broadcast{
+      topic: topic,
+      event: "content_changed",
+      payload: notification
+    })
+  end
 end

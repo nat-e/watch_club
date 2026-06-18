@@ -1,5 +1,5 @@
 defmodule WatchClubWeb.Helpers.Url do
-  alias WatchClub.Clubs.Invitation
+  alias WatchClub.Accounts.InvitationCode
 
   use Phoenix.VerifiedRoutes,
     endpoint: WatchClubWeb.Endpoint,
@@ -26,22 +26,26 @@ defmodule WatchClubWeb.Helpers.Url do
   end
 
   @spec to_url(t(), absolute: boolean()) :: String.t()
-  def to_url(%__MODULE__{authority: authority, path: path, query: query}, opts \\ []) do
-    relative = path <> "?" <> URI.encode_query(query)
+  def to_url(
+        %__MODULE__{scheme: scheme, authority: authority, path: path, query: query},
+        opts \\ []
+      ) do
+    query_string = if query == %{}, do: "", else: "?" <> URI.encode_query(query)
+    relative = path <> query_string
 
     if Keyword.get(opts, :absolute) do
-      "https://" <> authority <> relative
+      scheme <> "://" <> authority <> relative
     else
       relative
     end
   end
 
-  @spec invitation_url(t(), Invitation.t()) :: t()
-  def invitation_url(%__MODULE__{} = url, %Invitation{} = invitation) do
+  @spec invitation_url(t(), InvitationCode.t()) :: t()
+  def invitation_url(%__MODULE__{} = url, %InvitationCode{} = invitation) do
     %__MODULE__{
       scheme: url.scheme,
       authority: url.authority,
-      path: ~p"/invitations/#{invitation.id}",
+      path: ~p"/join/#{invitation.code}",
       query: %{}
     }
   end

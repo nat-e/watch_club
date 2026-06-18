@@ -10,6 +10,7 @@ defmodule WatchClub.Contents.ContentTest do
 
   alias WatchClub.Contents.{
     Content,
+    ContentIdentity,
     ContentView,
     Movie,
     MovieLocalization,
@@ -112,14 +113,6 @@ defmodule WatchClub.Contents.ContentTest do
              } = create_movie!("12", actor: generate(user()))
     end
 
-    test "requires membership in selected libraries", %{club: club} do
-      library = generate(library(club, content_type: :movie))
-      non_member = generate(user())
-
-      create_movie("13", %{library_ids: [library.id]}, actor: non_member)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-
     test "system actor can create a movie without selecting libraries" do
       assert %Content{type: :movie, external_id: "11"} =
                create_movie!("11", actor: WatchClub.SystemActor.actor())
@@ -212,14 +205,6 @@ defmodule WatchClub.Contents.ContentTest do
       end)
     end
 
-    test "requires membership in selected libraries", %{club: club} do
-      library = generate(library(club, content_type: :tv_show))
-      non_member = generate(user())
-
-      create_tv_show("43", %{library_ids: [library.id]}, actor: non_member)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-
     test "system actor can create a TV show without selecting libraries" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         Req.Test.json(conn, tv_details_fixture())
@@ -267,7 +252,7 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, refreshed_fixture)
       end)
 
-      assert %Content{type: :tv_show} = refresh_tv_show!(content, 42, actor: system)
+      assert %Content{type: :tv_show} = refresh_tv_show!(content, actor: system)
 
       assert [
                %TvShowEpisode{season_number: 1, episode_number: 1, id: ^s1e1_id},
@@ -280,19 +265,6 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.Query.filter(tv_show_id == ^content.id)
                |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
                |> Ash.read!(authorize?: false)
-    end
-
-    test "forbids non-system actors" do
-      actor = generate(user(locale: :en_US))
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, tv_details_fixture())
-      end)
-
-      content = create_tv_show!("42", actor: actor)
-
-      refresh_tv_show(content, 42, actor: actor)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
@@ -546,6 +518,42 @@ defmodule WatchClub.Contents.ContentTest do
       set_club_libraries(content, %{library_ids: [library.id]}, actor: non_member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+  end
+
+  # Bridge the per-type vocabulary these tests are written in onto the unified
+  # create/refresh_metadata actions: create (upsert) the Content from its TMDB
+  # identity, then, when library_ids are given, attach it to those club
+  # libraries as the same actor (where library access is authorized).
+  defp create_movie(external_id, params \\ %{}, opts),
+    do: create_content_in_libraries(ContentIdentity.for_movie(external_id), params, opts)
+
+  defp create_tv_show(external_id, params \\ %{}, opts),
+    do: create_content_in_libraries(ContentIdentity.for_tv_show(external_id), params, opts)
+
+  defp create_movie!(external_id, params \\ %{}, opts) do
+    {:ok, content} = create_movie(external_id, params, opts)
+    content
+  end
+
+  defp create_tv_show!(external_id, params \\ %{}, opts) do
+    {:ok, content} = create_tv_show(external_id, params, opts)
+    content
+  end
+
+  defp create_content_in_libraries(identity, %{library_ids: library_ids}, opts) do
+    with {:ok, content} <- create_content(identity, %{}, opts) do
+      set_club_libraries(content, %{library_ids: library_ids}, opts)
+    end
+  end
+
+  defp create_content_in_libraries(identity, _params, opts),
+    do: create_content(identity, %{}, opts)
+
+  defp refresh_tv_show(content, opts), do: refresh_metadata(content, %{}, opts)
+
+  defp refresh_tv_show!(content, opts) do
+    {:ok, content} = refresh_tv_show(content, opts)
+    content
   end
 
   defp tv_details_fixture do

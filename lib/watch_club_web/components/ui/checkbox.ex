@@ -5,6 +5,8 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
 
   use Phoenix.Component
 
+  import WatchClubWeb.Components.UI.{Label, Layout}
+
   attr :id, :any,
     default: nil,
     doc: "required unless `field` is provided; must be stable across renders"
@@ -44,11 +46,11 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     <span
       data-slot="checkbox"
       class={[
-        "relative inline-grid size-4 shrink-0 place-items-center rounded-control border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
-        "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
-        "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring",
+        "relative inline-grid size-4 shrink-0 place-items-center rounded-sm border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
+        "has-checked:border-primary has-checked:bg-primary has-checked:text-on-primary",
+        "has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring",
         "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring",
-        "has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50",
+        "has-disabled:cursor-not-allowed has-disabled:opacity-50",
         @class
       ]}
     >
@@ -64,6 +66,52 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
       />
       <Lucideicons.check aria-hidden="true" class="pointer-events-none size-3" />
     </span>
+    """
+  end
+
+  attr :field, Phoenix.HTML.FormField, doc: "form field — derives id, name, checked, and errors"
+  attr :options, :list, required: true, doc: "List of all potential options"
+  attr :to_value, {:fun, 1}, required: true, doc: "A function to extract the value of an option"
+
+  attr :disabled?, {:fun, 1},
+    default: nil,
+    doc: "A function to decide whether an option should be disabled"
+
+  slot :label, required: true
+
+  def checkbox_group(assigns) do
+    ~H"""
+    <.stack space="related">
+      <.checkbox_group_item
+        :for={option <- @options}
+        field={@field}
+        option={option}
+        label={@label}
+        value={@to_value.(option)}
+        disabled?={@disabled? && @disabled?.(option)}
+      />
+    </.stack>
+    """
+  end
+
+  defp checkbox_group_item(assigns) do
+    ~H"""
+    <.label
+      for={"#{@field.id}-#{@value}"}
+      class={[
+        "flex flex-row justify-between w-full items-center rounded-card border border-border-subtle bg-surface p-related h-control-lg",
+        @disabled? && "opacity-50 cursor-not-allowed"
+      ]}
+    >
+      {render_slot(@label, @option)}
+      <.checkbox
+        id={"#{@field.id}-#{@value}"}
+        name={@field.name <> "[]"}
+        value={@value}
+        checked={@value in @field.value}
+        disabled={@disabled?}
+      />
+    </.label>
     """
   end
 end

@@ -43,7 +43,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       padding="none"
       id={@id}
       data-status={@request.status}
-      class="group/card flex flex-col overflow-hidden @xl:flex-row"
+      class="flex flex-col @xl:flex-row"
     >
       <.content_section
         id={@request.id}
@@ -65,7 +65,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   defp content_section(assigns) do
     ~H"""
     <div class={[
-      "relative flex min-w-0 flex-1 items-center gap-group p-group",
+      "relative flex flex-1 items-center gap-group p-group",
       !ContentView.playable?(@content) && "opacity-70"
     ]}>
       <.tmdb_poster
@@ -74,36 +74,36 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         class="h-36 shrink-0 rounded-control border border-border-subtle shadow-overlay"
       />
 
-      <div class="min-w-0 flex flex-1 flex-col justify-between h-full">
-        <div class="flex flex-col gap-tight">
+      <div class="flex flex-1 flex-col justify-between gap-related h-full overflow-clip">
+        <.stack space="tight">
           <.content_type_badge type={@content.type} />
           <.link
             href={WatchClub.Shared.Url.content_details_link(@content.type, @content.external_id)}
-            class="truncate text-xl font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
+            class="line-clamp-2 text-xl font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
           >
             {@content.title}
           </.link>
           <p :if={@content.release_date} class="text-sm text-text-muted">
             {@content.release_date.year}
           </p>
-        </div>
+        </.stack>
 
-        <div class="flex flex-row gap-related">
+        <.cluster space="related">
           <.live_component
             id={"#{@id}-details-play-or-request-button"}
             module={PlayOrRequestButtonLive}
             content={@content}
             current_user={@current_user}
-            class="relative z-10 w-auto"
+            class="relative z-10"
           />
           <.live_component
             id={"#{@id}-details-add-to-library-button"}
             module={AddToLibraryButtonLive}
             content={@content}
             current_user={@current_user}
-            class="relative z-10 w-auto"
+            class="relative z-10"
           />
-        </div>
+        </.cluster>
       </div>
     </div>
     """
@@ -119,12 +119,12 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
     ~H"""
     <div class={[
-      "order-first flex w-full shrink-0 flex-col justify-between gap-related border-b p-group @xl:order-0 @xl:w-64 @xl:border-b-0 @xl:border-l",
+      "order-first flex flex-col justify-between gap-related border-b p-group rounded-t-card @xl:rounded-t-none @xl:rounded-r-card @xl:order-0 @xl:w-64 @xl:border-b-0 @xl:border-l",
       @style.bg,
       @style.border
     ]}>
-      <div class="flex items-start justify-between gap-tight">
-        <p class={["text-xs font-semibold tracking-wider uppercase", @style.text]}>
+      <div class="flex items-center justify-between gap-related">
+        <p class={["text-sm font-semibold tracking-wider uppercase", @style.text]}>
           {ContentRequestStatus.translated_label(@request.status)}
         </p>
         <.button
@@ -165,7 +165,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       |> assign(:label, in_progress_label(status))
 
     ~H"""
-    <div class="flex flex-col gap-tight">
+    <.stack space="tight">
       <div class="flex items-baseline justify-between">
         <p class="text-sm font-medium text-text">{@label}</p>
         <p class="text-xs tabular-nums text-accent">{@pct}%</p>
@@ -181,7 +181,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         <div class="h-full bg-accent transition-[width]" style={"width: #{@pct}%"} aria-hidden="true">
         </div>
       </div>
-    </div>
+    </.stack>
     """
   end
 

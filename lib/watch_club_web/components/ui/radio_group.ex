@@ -110,7 +110,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
         else
           "inline-flex cursor-pointer items-center gap-related rounded-control text-sm text-text transition-colors select-none"
         end,
-        "has-[:disabled]:cursor-not-allowed has-[:disabled]:text-text-disabled has-[:disabled]:opacity-50",
+        "has-disabled:cursor-not-allowed has-disabled:text-text-disabled has-disabled:opacity-50",
         @focusable &&
           "outline-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
         @item[:class]
@@ -120,8 +120,8 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
         data-slot="radio-group-item"
         class={[
           "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
-          "has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary",
-          "has-[:focus-visible]:border-border-focus has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring",
+          "has-checked:border-primary has-checked:bg-primary has-checked:text-on-primary",
+          "has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring",
           "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring"
         ]}
       >
@@ -139,7 +139,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
         <span
           data-slot="radio-group-indicator"
           aria-hidden="true"
-          class="pointer-events-none grid size-full place-items-center opacity-0 transition-opacity group-has-[:checked]/radio-control:opacity-100"
+          class="pointer-events-none grid size-full place-items-center opacity-0 transition-opacity group-has-checked/radio-control:opacity-100"
         >
           <span data-slot="radio-group-dot" class="size-2 rounded-full bg-on-primary" />
         </span>

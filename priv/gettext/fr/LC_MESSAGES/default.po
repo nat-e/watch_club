@@ -14,8 +14,13 @@ msgstr ""
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:34
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:34
-#: lib/watch_club_web/live/clubs/members_page.ex:220
-#: lib/watch_club_web/live/clubs/members_page.ex:248
+#: lib/watch_club_web/live/admin/invitations_page.ex:474
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:411
+#: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex:59
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex:42
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex:57
+#: lib/watch_club_web/live/admin/users_page.ex:226
+#: lib/watch_club_web/live/clubs/members_page.ex:132
 #: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:68
 #: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:25
 #, elixir-autogen, elixir-format
@@ -25,7 +30,7 @@ msgstr "Annuler"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/ui/flash.ex:113
 #: lib/watch_club_web/components/ui/modal.ex:109
-#: lib/watch_club_web/live/clubs/members_page.ex:341
+#: lib/watch_club_web/live/admin/invitations_page.ex:445
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Fermer"
@@ -38,14 +43,13 @@ msgstr "Créer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:44
-#: lib/watch_club_web/live/clubs/members_page.ex:256
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:111
-#: lib/watch_club_web/live/accounts/settings_page.ex:56
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:109
+#: lib/watch_club_web/live/accounts/settings_page.ex:55
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
@@ -58,7 +62,7 @@ msgid "Try again"
 msgstr "Réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:210
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "Something went wrong, try again later"
 msgstr "Une erreur est survenue, réessayez plus tard"
@@ -114,3 +118,10 @@ msgstr "%{count} de plus"
 #, elixir-autogen, elixir-format
 msgid "Select..."
 msgstr "Sélectionner..."
+
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:429
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:447
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:465
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""

@@ -136,7 +136,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         <div class={[
           "flex flex-col gap-tight border-t border-border-subtle p-group",
           "[--club-nav-avatar-size:2rem]",
-          "[--club-nav-rail-offset:calc(var(--wc-space-group)_+_(var(--club-nav-avatar-size)_/_2))]"
+          "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
         ]}>
           <div class="flex min-h-touch-target items-center gap-related px-group text-sm font-semibold text-text">
             <.avatar id={@current_user.id} name={@current_user.username} size="md" />
@@ -152,7 +152,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
               <Lucideicons.log_out class="text-danger" />
             </.button>
           </div>
-          <ul class="ml-[var(--club-nav-rail-offset)] flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related">
+          <ul class="ml-(--club-nav-rail-offset) flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related">
             <li>
               <.sidebar_item
                 id="sidebar-settings-link"
@@ -233,6 +233,18 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     </li>
     <li>
       <.sidebar_item
+        id="sidebar-admin-users-link"
+        navigate={~p"/admin/users"}
+        active={
+          active?(@current_path, "/admin/users") or active?(@current_path, "/admin/invitations")
+        }
+      >
+        <Lucideicons.users />
+        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Users")}</span>
+      </.sidebar_item>
+    </li>
+    <li>
+      <.sidebar_item
         id="sidebar-admin-media-browser-link"
         navigate={~p"/admin/media"}
         active={
@@ -278,7 +290,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     <li class={[
       "flex flex-col gap-tight",
       "[--club-nav-avatar-size:2rem]",
-      "[--club-nav-rail-offset:calc(var(--wc-space-group)_+_(var(--club-nav-avatar-size)_/_2))]"
+      "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
     ]}>
       <div class={[
         "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
@@ -366,7 +378,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
       <ul
         :if={@libraries != []}
-        class="ml-[var(--club-nav-rail-offset)] flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related"
+        class="ml-(--club-nav-rail-offset) flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related"
       >
         <.library_nav_item
           :for={library <- @libraries}

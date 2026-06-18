@@ -4,7 +4,7 @@ defmodule WatchClub.Clubs.Club do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    notifiers: [Ash.Notifier.PubSub]
+    fragments: [WatchClub.PubSubDefaults]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -13,7 +13,7 @@ defmodule WatchClub.Clubs.Club do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Changes.CreateAdminMembershipForActor
-  alias WatchClub.Clubs.{Invitation, Library, Membership}
+  alias WatchClub.Clubs.{Library, Membership}
 
   postgres do
     table "clubs"
@@ -25,26 +25,38 @@ defmodule WatchClub.Clubs.Club do
 
     read :preview
 
-    read :members_and_invitations do
-      prepare build(load: [:invitations, :memberships])
-    end
-
-    action :reorder_libraries, {:array, :struct} do
+    update :reorder_libraries do
       description "Reorders the libraries that belong to a club"
-      constraints items: [instance_of: Library]
       transaction? true
       touches_resources [Library]
+      require_atomic? false
 
-      argument :club_id, :uuid_v7, allow_nil?: false
       argument :library_ids, {:array, :uuid_v7}, allow_nil?: true
 
-      run WatchClub.Clubs.Actions.ReorderLibraries
+      change WatchClub.Clubs.Changes.ReorderLibraries
     end
 
     create :create do
       accept [:name]
 
       change CreateAdminMembershipForActor
+    end
+
+    update :add_members do
+      argument :user_ids, {:array, :uuid_v7} do
+        allow_nil? false
+        # Default is needed so that the form default value is [] and not nil
+        default []
+      end
+
+      require_atomic? false
+
+      change manage_relationship(:user_ids, :memberships,
+               type: :create,
+               on_no_match: {:create, :add_to_club},
+               # Otherwise Ash sets the user_ids as :id key
+               value_is_key: :user_id
+             )
     end
 
     destroy :destroy do
@@ -56,39 +68,29 @@ defmodule WatchClub.Clubs.Club do
   end
 
   policies do
-    # All actions will be forbidden without an actor
-    policy actor_absent() do
-      access_type :strict
-      forbid_if always()
-    end
-
     # Only the administrator can create clubs
     policy action(:create) do
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
-    # Users can read only the clubs they are a member of
+    # Users can read only the clubs they are a member of; the instance
+    # administrator can read all clubs (admin pages, invitation club grants)
     policy action(:read) do
-      # We can't use the ActorIsClubMember here because we need a filter check
+      authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if expr(exists(memberships, user_id == ^actor(:id)))
     end
 
     # Only club admins can update and destroy it
-    policy action([:update, :destroy, :members_and_invitations]) do
+    policy action([:update, :destroy, :add_members, :reorder_libraries]) do
       authorize_if expr(exists(memberships, user_id == ^actor(:id) and role == :admin))
-    end
-
-    policy action(:reorder_libraries) do
-      authorize_if {WatchClub.Clubs.Checks.ActorIsClubMember, role: :admin}
     end
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-
     prefix "clubs"
     publish :update, [:id]
+    publish :destroy, [:id]
+    publish :reorder_libraries, [:id, "libraries"]
   end
 
   validations do
@@ -121,10 +123,6 @@ defmodule WatchClub.Clubs.Club do
   relationships do
     has_many :memberships, Membership do
       read_action :with_user
-    end
-
-    has_many :invitations, Invitation do
-      read_action :list_club_invitations
     end
 
     has_many :libraries, Library

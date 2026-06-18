@@ -8,6 +8,13 @@ defmodule WatchClubWeb.Hooks.Auth do
 
   alias AshAuthentication.Phoenix.LiveSession
 
+  @sidebar_resources [
+    WatchClub.Accounts.UserSettings,
+    WatchClub.Clubs.Membership,
+    WatchClub.Clubs.Club,
+    WatchClub.Clubs.Library
+  ]
+
   # This is used for nested liveviews to fetch the current user.
   # To use, place the following at the top of that liveview:
   # on_mount {WatchClubWeb.LiveUserAuth, :current_user}
@@ -59,15 +66,14 @@ defmodule WatchClubWeb.Hooks.Auth do
   end
 
   defp subscribe_to_current_user_pubsub(socket, user) do
-    if Phoenix.LiveView.connected?(socket) do
-      Phoenix.PubSub.subscribe(WatchClub.PubSub, "users:#{user.id}")
-      Phoenix.PubSub.subscribe(WatchClub.PubSub, "users:#{user.id}:memberships")
-
-      Enum.each(
-        user.memberships,
-        &Phoenix.PubSub.subscribe(WatchClub.PubSub, "clubs:#{&1.club.id}")
-      )
-    end
+    WatchClub.PubSub.subscribe_if_connected(
+      socket,
+      [
+        "users:#{user.id}:settings",
+        "users:#{user.id}:memberships"
+      ] ++
+        Enum.flat_map(user.memberships, &["clubs:#{&1.club.id}", "clubs:#{&1.club.id}:libraries"])
+    )
 
     socket
     |> Phoenix.LiveView.attach_hook(
@@ -77,7 +83,11 @@ defmodule WatchClubWeb.Hooks.Auth do
     )
   end
 
-  defp reload_user_on_change(%Ash.Notifier.Notification{}, socket) do
+  defp reload_user_on_change(
+         %Phoenix.Socket.Broadcast{payload: %Ash.Notifier.Notification{resource: resource}},
+         socket
+       )
+       when resource in @sidebar_resources do
     user = WatchClub.Accounts.get_current_user!(actor: socket.assigns.current_user)
     {:cont, socket |> assign(:current_user, user)}
   end

@@ -1,8 +1,8 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
-  alias WatchClub.Accounts.{User, UserSettings}
-  alias WatchClub.Clubs.{Club, Invitation, Library, LibraryIcon, Membership}
-  alias WatchClub.Contents.{Book, Content, TvShow}
+  alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
+  alias WatchClub.Clubs.{Club, Library, LibraryIcon, Membership}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, TvShow}
   alias WatchClub.MediaSources.{Import, Source}
 
   @default_password "passw0rd"
@@ -69,17 +69,18 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def invitation(%Club{} = club, %User{} = actor, opts \\ []) do
+  def invitation_code(opts \\ []) do
     changeset_generator(
-      Invitation,
+      InvitationCode,
       :create,
       defaults: [
-        name: sequence(:invitation_name, fn i -> "Invitation #{i}" end),
-        club_id: club.id
+        code: sequence(:invitation_code, fn i -> "CODE_#{i}" end),
+        club_ids: [],
+        max_uses: nil
       ],
       authorize?: false,
-      actor: actor,
-      overrides: opts
+      actor: opts[:actor],
+      overrides: Keyword.drop(opts, [:actor])
     )
   end
 
@@ -128,16 +129,33 @@ defmodule WatchClub.Generator do
   end
 
   def movie(opts \\ []) do
+    library_ids = Keyword.get(opts, :library_ids)
+    actor = opts[:actor]
+
+    tmdb_id =
+      case Keyword.fetch(opts, :tmdb_id) do
+        {:ok, id} -> StreamData.constant(id)
+        :error -> sequence(:tmdb_id, fn i -> i end)
+      end
+
     changeset_generator(
       Content,
-      :create_movie,
-      defaults: [
-        tmdb_id: Keyword.get(opts, :tmdb_id, sequence(:tmdb_id, fn i -> i end)),
-        library_ids: Keyword.get(opts, :library_ids)
-      ],
+      :create,
+      defaults: [content_identity: StreamData.map(tmdb_id, &ContentIdentity.for_movie/1)],
       authorize?: false,
-      actor: opts[:actor],
-      overrides: Keyword.take(opts, [:tmdb_id, :library_ids])
+      actor: actor,
+      after_action: fn content ->
+        # Library selection moved out of create into set_libraries; mirror that
+        # here so callers can still seed a movie straight into club libraries.
+        if library_ids do
+          WatchClub.Contents.set_club_libraries!(content, %{library_ids: library_ids},
+            actor: actor,
+            authorize?: false
+          )
+        else
+          content
+        end
+      end
     )
   end
 

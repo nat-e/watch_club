@@ -6,7 +6,7 @@ defmodule WatchClub.Accounts.UserSettings do
     domain: WatchClub.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub]
+    fragments: [WatchClub.PubSubDefaults]
 
   alias WatchClub.Accounts.{User, UserLocale}
 
@@ -31,10 +31,7 @@ defmodule WatchClub.Accounts.UserSettings do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-
-    publish :update, ["users", :user_id]
+    publish :update, ["users", :user_id, "settings"]
   end
 
   attributes do

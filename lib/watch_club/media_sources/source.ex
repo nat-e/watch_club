@@ -4,7 +4,7 @@ defmodule WatchClub.MediaSources.Source do
     domain: WatchClub.MediaSources,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub]
+    fragments: [WatchClub.PubSubDefaults]
 
   import Ash.Expr
 
@@ -102,8 +102,6 @@ defmodule WatchClub.MediaSources.Source do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
     prefix "media_sources"
 
     publish_all :create, ""
@@ -162,14 +160,12 @@ defmodule WatchClub.MediaSources.Source do
   end
 
   calculations do
+    # Typed as a plain :struct (one of Filesystem | Servarr), not :union:
+    # union calculation values get wrapped in %Ash.Union{} on load, and
+    # callers want the implementation struct directly.
     calculate :implementation,
-              :union,
+              :struct,
               GetImplementation do
-      constraints types: [
-                    filesystem: [type: :struct, constraints: [instance_of: Filesystem]],
-                    servarr: [type: :struct, constraints: [instance_of: Servarr]]
-                  ]
-
       public? true
       allow_nil? false
     end

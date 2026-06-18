@@ -23,9 +23,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
     # Subscribe to creation/deletion of content_requests
     # Updates go through content / content view
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(WatchClub.PubSub, "content_requests:user:#{user.id}")
-    end
+    WatchClub.PubSub.subscribe_if_connected(socket, "content_requests:user:#{user.id}")
 
     {:ok,
      socket
@@ -78,10 +76,12 @@ defmodule WatchClubWeb.MyRequestsPage do
   # ignore it otherwise.
   @impl true
   def handle_info(
-        %Notification{
-          resource: ContentRequest,
-          action: %{name: :request},
-          data: %{content_id: content_id}
+        %Phoenix.Socket.Broadcast{
+          payload: %Notification{
+            resource: ContentRequest,
+            action: %{name: :request},
+            data: %{content_id: content_id}
+          }
         },
         socket
       ) do
@@ -104,7 +104,13 @@ defmodule WatchClubWeb.MyRequestsPage do
   # The user cancelled a request, here or in another tab. Drop the card (a
   # no-op if it isn't loaded — e.g. this tab already removed it).
   def handle_info(
-        %Notification{resource: ContentRequest, action: %{type: :destroy}, data: request},
+        %Phoenix.Socket.Broadcast{
+          payload: %Notification{
+            resource: ContentRequest,
+            action: %{type: :destroy},
+            data: request
+          }
+        },
         socket
       ) do
     {:noreply, socket |> delete_request(request)}
@@ -114,8 +120,8 @@ defmodule WatchClubWeb.MyRequestsPage do
   # it no longer matches the filters
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{
-          metadata: %{subject: :content_changed, content_id: content_id}
+        %Phoenix.Socket.Broadcast{
+          payload: %Notification{metadata: %{subject: :content_changed, content_id: content_id}}
         },
         socket
       ) do

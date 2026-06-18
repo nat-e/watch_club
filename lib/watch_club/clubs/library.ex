@@ -4,12 +4,11 @@ defmodule WatchClub.Clubs.Library do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    notifiers: [Ash.Notifier.PubSub]
+    fragments: [WatchClub.PubSubDefaults]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Clubs.Changes.{
-    ReorderLibrariesAfterDestroy,
     SetDefaultLibraryIcon,
     SetNextLibraryIndex
   }
@@ -31,7 +30,8 @@ defmodule WatchClub.Clubs.Library do
   end
 
   actions do
-    defaults [:read]
+    # We do not re-order library after destroys so there might be gaps in the index. This is fine
+    defaults [:read, :destroy]
 
     read :by_club do
       argument :club_id, :uuid_v7, allow_nil?: false
@@ -54,14 +54,6 @@ defmodule WatchClub.Clubs.Library do
 
       change SetDefaultLibraryIcon
       change SetNextLibraryIndex
-    end
-
-    destroy :destroy do
-      # Destroying a library reorders sibling libraries after deletion,
-      # which performs follow-up updates across multiple records.
-      require_atomic? false
-
-      change ReorderLibrariesAfterDestroy
     end
   end
 
@@ -93,13 +85,11 @@ defmodule WatchClub.Clubs.Library do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-
-    publish :create, ["clubs", :club_id]
-    publish :update, ["clubs", :club_id]
-    publish :set_index, ["clubs", :club_id]
-    publish :destroy, ["clubs", :club_id]
+    publish :create, ["clubs", :club_id, "libraries"]
+    publish :update, ["clubs", :club_id, "libraries"]
+    publish :update, ["clubs", :club_id, "libraries", :id]
+    publish :destroy, ["clubs", :club_id, "libraries"]
+    publish :destroy, ["clubs", :club_id, "libraries", :id]
   end
 
   preparations do

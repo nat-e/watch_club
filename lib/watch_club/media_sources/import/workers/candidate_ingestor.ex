@@ -21,7 +21,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
     unique: [
       fields: [:worker, :args],
       keys: [:media_import_id, :path],
-      states: [:available, :scheduled, :executing, :retryable],
+      states: :incomplete,
       period: :infinity
     ]
 

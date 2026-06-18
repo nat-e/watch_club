@@ -24,6 +24,13 @@ Rules:
 - Make sure to always make UI responsive. Use Tailwind container queries rather than absolute breakpoints.
 - Prefer simpler `flex` layouts instead of `grid` when possible.
 
+### Data Loading
+
+- When loading data to display in pages that shouldn't fail (no user input), prefer ! bang version instead of handling error explicitely
+- When loading data based on user input (form, url params, ...), errors are expected and you must handle them
+- When submitting form, always handle the error case and update the form in the assigns
+- When submitting actions that shouldn't fail (gated by UX), or very low chances with no possible mitigation, prefer ! bang versions.
+
 ### Backend
 
 - Only add policies and Ash authorizers to resources when it adds meaningful value. Policies like "any logged in user can do any action" does not bring value.

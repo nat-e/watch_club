@@ -19,7 +19,7 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
     unique: [
       fields: [:worker, :args],
       keys: [:media_import_id],
-      states: [:available, :scheduled, :executing, :retryable],
+      states: :incomplete,
       period: :infinity
     ]
 

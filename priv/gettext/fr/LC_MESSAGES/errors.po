@@ -12,117 +12,109 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:416
+#: lib/watch_club/accounts/user.ex:438
 #, elixir-autogen, elixir-format
 msgid "An administrator already exists"
 msgstr "Un administrateur existe déjà"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/club.ex:106
+#: lib/watch_club/clubs/club.ex:108
 #, elixir-autogen, elixir-format
 msgid "Club name cannot be longer than %{max} characters"
 msgstr "Le nom du club ne peut pas dépasser %{max} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/club.ex:98
+#: lib/watch_club/clubs/club.ex:100
 #, elixir-autogen, elixir-format
 msgid "Club name is required"
 msgstr "Le nom du club est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/club.ex:102
+#: lib/watch_club/clubs/club.ex:104
 #, elixir-autogen, elixir-format
 msgid "Club name must be at least %{min} characters"
 msgstr "Le nom du club doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:107
+#: lib/watch_club/accounts/invitation.ex:107
 #, elixir-autogen, elixir-format
 msgid "Name cannot be longer than %{max} characters"
 msgstr "Le nom ne peut pas dépasser %{max} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:103
+#: lib/watch_club/accounts/invitation.ex:103
 #, elixir-autogen, elixir-format
 msgid "Name must be at least %{min} characters"
 msgstr "Le nom doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:184
+#: lib/watch_club/accounts/user.ex:183
 #, elixir-autogen, elixir-format
 msgid "Password is required"
 msgstr "Le mot de passe est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:380
+#: lib/watch_club/accounts/user.ex:393
 #, elixir-autogen, elixir-format
 msgid "Passwords do not match"
 msgstr "Les mots de passe ne correspondent pas"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/changes/accept_invitation.ex:49
-#: lib/watch_club/accounts/preparations/accept_invitation.ex:58
-#, elixir-autogen, elixir-format
-msgid "The invitation could not be accepted"
-msgstr "L'invitation n'a pas pu être acceptée"
-
-# AI-translated (Claude)
-#: lib/watch_club/accounts/changes/accept_invitation.ex:38
-#: lib/watch_club/accounts/preparations/accept_invitation.ex:47
+#: lib/watch_club/accounts/changes/redeem_invitation.ex:50
 #, elixir-autogen, elixir-format
 msgid "The invitation does not exist"
 msgstr "L'invitation n'existe pas"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:61
+#: lib/watch_club/accounts/changes/redeem_invitation.ex:85
 #, elixir-autogen, elixir-format
 msgid "The invitation has already been used"
 msgstr "L'invitation a déjà été utilisée"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/invitation.ex:57
+#: lib/watch_club/accounts/changes/redeem_invitation.ex:82
 #, elixir-autogen, elixir-format
 msgid "The invitation has expired"
 msgstr "L'invitation a expiré"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:372
+#: lib/watch_club/accounts/user.ex:385
 #, elixir-autogen, elixir-format
 msgid "The password is required"
 msgstr "Le mot de passe est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:353
+#: lib/watch_club/accounts/user.ex:366
 #, elixir-autogen, elixir-format
 msgid "The username is required"
 msgstr "Le nom d'utilisateur est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:365
+#: lib/watch_club/accounts/user.ex:378
 #, elixir-autogen, elixir-format
 msgid "Username can only contain lower case letters, numbers and _"
 msgstr "Le nom d'utilisateur ne peut contenir que des lettres minuscules, des chiffres et _"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:361
+#: lib/watch_club/accounts/user.ex:374
 #, elixir-autogen, elixir-format
 msgid "Username cannot be longer than %{max} characters"
 msgstr "Le nom d'utilisateur ne peut pas dépasser %{max} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:180
+#: lib/watch_club/accounts/user.ex:179
 #, elixir-autogen, elixir-format
 msgid "Username is required"
 msgstr "Le nom d'utilisateur est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:357
+#: lib/watch_club/accounts/user.ex:370
 #, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
 msgstr "Le nom d'utilisateur doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:49
+#: lib/watch_club_web/components/accounts/sign_in_form.ex:46
 #, elixir-autogen, elixir-format
 msgid "Your username or password is invalid"
 msgstr "Votre nom d'utilisateur ou votre mot de passe est invalide"
@@ -152,13 +144,13 @@ msgid "Library name must be at least %{min} characters"
 msgstr "Le nom de la bibliothèque doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex:376
+#: lib/watch_club/accounts/user.ex:389
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
 msgstr "Le mot de passe doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/clubs/library_item.ex:65
+#: lib/watch_club/clubs/library_item.ex:66
 #, elixir-autogen, elixir-format
 msgid "Library does not allow this content type"
 msgstr "Cette bibliothèque n’autorise pas ce type de contenu"
@@ -167,4 +159,28 @@ msgstr "Cette bibliothèque n’autorise pas ce type de contenu"
 #: lib/watch_club/clubs/library.ex:126
 #, elixir-autogen, elixir-format
 msgid "Library content type is required"
-msgstr "Le type de contenu de la bibliothèque est obligatoire"
+msgstr "Le type de contenu de la bibliothèque est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/invitation.ex:72
+#, elixir-autogen, elixir-format
+msgid "A used invitation cannot be disabled"
+msgstr "Une invitation utilisée ne peut pas être désactivée"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/invitation.ex:111
+#, elixir-autogen, elixir-format
+msgid "Max uses must be at least %{greater_than_or_equal_to}"
+msgstr "Le nombre maximal d'utilisations doit être d'au moins %{greater_than_or_equal_to}"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/changes/redeem_invitation.ex:88
+#, elixir-autogen, elixir-format
+msgid "The invitation has been disabled"
+msgstr "L'invitation a été désactivée"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/invitation.ex:76
+#, elixir-autogen, elixir-format
+msgid "The invitation is already disabled"
+msgstr "L'invitation est déjà désactivée"

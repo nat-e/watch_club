@@ -261,23 +261,6 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert :ok = destroy_library!(library, actor: admin)
     end
 
-    test "recomputes indexes of remaining libraries", %{club: club, admin: admin} do
-      _first = generate(library(club, index: 0, name: "First"))
-      second = generate(library(club, index: 1, name: "Second"))
-      _third = generate(library(club, index: 2, name: "Third"))
-
-      assert :ok = destroy_library!(second, actor: admin)
-
-      assert [
-               %Library{name: "First", index: 0},
-               %Library{name: "Third", index: 1}
-             ] =
-               Library
-               |> Ash.Query.filter(club_id == ^club.id)
-               |> Ash.Query.sort(index: :asc)
-               |> Ash.read!(authorize?: false)
-    end
-
     test "members cannot destroy libraries", %{club: club, member: member} do
       library = generate(library(club))
 

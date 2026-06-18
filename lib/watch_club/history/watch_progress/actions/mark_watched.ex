@@ -26,7 +26,13 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
       )
 
       notification =
-        ContentChangedNotifier.create_notification(input.resource, input.action, content, [actor.id], actor)
+        ContentChangedNotifier.create_notification(
+          input.resource,
+          input.action,
+          content,
+          [actor.id],
+          actor
+        )
 
       {:ok, content, [notification]}
     end

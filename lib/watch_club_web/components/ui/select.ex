@@ -118,7 +118,7 @@ defmodule WatchClubWeb.Components.UI.Select do
       >
         <div
           data-slot="select-value"
-          class="flex min-w-0 flex-1 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text-subtle [&>*]:min-w-0 [&>*]:max-w-full"
+          class="flex min-w-0 flex-1 items-center overflow-hidden text-ellipsis whitespace-nowrap text-text-subtle *:min-w-0 *:max-w-full"
         >
           {@placeholder}
         </div>

@@ -49,27 +49,27 @@ A member who can view libraries, add content to them, and remove library items t
 _Avoid_: Regular user, participant
 
 **Invitation**:
-An instance-wide link created by the **Instance Administrator** that lets new people register and, on doing so, join zero or more **Clubs** as **Club Members**. Redeemable only while it is not **Expired**, not **Disabled**, and not **Exhausted**.
+An instance-wide link created by the **Instance Administrator** that lets new people register and, on doing so, join zero or more **Clubs** as **Club Members**. Redeemable only while it is not **Expired**, not **Disabled**, and not **Used**.
 _Avoid_: Invite, invitation code, club invitation
 
-**Use Limit**:
+**Max Uses**:
 The optional maximum number of new accounts an **Invitation** can create. Unlimited when unset.
-_Avoid_: Max uses, seats, quota
+_Avoid_: Use limit, seats, quota
 
 **Redeem Invitation**:
-A new person registers through an **Invitation**, creating their **User** and one **Club Member** **Membership** in each granted **Club**. Counts as one use against the **Use Limit**.
+A new person registers through an **Invitation**, creating their **User** and one **Club Member** **Membership** in each granted **Club**. Counts as one use against the **Max Uses**.
 _Avoid_: Accept invitation, join instance
 
 **Expired Invitation**:
 An invitation that can no longer be redeemed because its redemption window has passed.
 _Avoid_: Invalid invitation, stale invitation
 
-**Exhausted Invitation**:
-An invitation that has reached its **Use Limit** and can no longer be redeemed.
-_Avoid_: Used invitation, used-up invitation, spent invitation
+**Used Invitation**:
+An invitation that has reached its **Max Uses** and can no longer be redeemed.
+_Avoid_: Exhausted invitation, used-up invitation, spent invitation
 
 **Disable Invitation**:
-Deactivate a still-redeemable **Invitation** so its link can no longer be redeemed, without removing the **Users** and **Memberships** it already created. Cannot be applied to an **Exhausted Invitation**.
+Deactivate a still-redeemable **Invitation** so its link can no longer be redeemed, without removing the **Users** and **Memberships** it already created. Cannot be applied to a **Used Invitation**.
 _Avoid_: Delete invitation, revoke invitation, cancel invitation, archive invitation
 
 **Library**:
@@ -291,7 +291,6 @@ _Avoid_: Best localization, current localization
 - A **Club** has exactly one **Club Admin**
 - A **Club Admin** and a **Club Member** are both **Members**
 - A **Membership** belongs to exactly one **User** and exactly one **Club**
-- A **Membership** may originate from an **Invitation**
 - The **Club Admin** cannot **Leave Club** or be the target of **Remove Member**
 - Only a **Club Admin** can view the full member and invitation list for a **Club**
 - A **Club Member** can view only their own **Membership**
@@ -302,10 +301,10 @@ _Avoid_: Best localization, current localization
 - An **Invitation** is created and managed only by the **Instance Administrator**
 - An **Invitation** is link-based and is not tied to any **User** before redemption
 - An **Invitation** is redeemed only by a new person registering; an existing **User** can never redeem one
-- **Redeem Invitation** creates the new **User** and one **Club Member** **Membership** per granted **Club**, and counts as one use against the **Use Limit**
-- An **Invitation** records its originating **Use Limit**; uses are counted from the **Users** it created, not stored
-- An **Expired Invitation**, a **Disabled** **Invitation**, and an **Exhausted Invitation** cannot be redeemed
-- **Disable Invitation** can be applied at any time except to an **Exhausted Invitation**, and leaves already-created **Users** and **Memberships** intact
+- **Redeem Invitation** creates the new **User** and one **Club Member** **Membership** per granted **Club**, and counts as one use against the **Max Uses**
+- An **Invitation** records its **Max Uses** and its use count, incremented each time it is redeemed
+- An **Expired Invitation**, a **Disabled** **Invitation**, and a **Used Invitation** cannot be redeemed
+- **Disable Invitation** can be applied at any time except to a **Used Invitation**, and leaves already-created **Users** and **Memberships** intact
 - A **Club** has zero or more **Libraries**
 - A **Library** belongs to exactly one **Club**
 - A **Library** has exactly one **Content Type**
@@ -514,7 +513,6 @@ _Avoid_: Best localization, current localization
 - A **Club** is created by the **Instance Administrator**, who becomes its **Club Admin**
 - The **Club Admin** cannot be replaced
 - An **Invitation** is the only way a new person joins **Clubs**; once a **User** exists, the **Instance Administrator** adds them to a **Club** directly rather than through an **Invitation**
-- A **User** records the **Invitation** they registered through, if any
 
 ## Example dialogue
 

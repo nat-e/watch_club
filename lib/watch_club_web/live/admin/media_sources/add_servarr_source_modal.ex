@@ -24,10 +24,9 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   use WatchClubWeb, :live_component
 
   alias AshPhoenix.Form
-  alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
   alias WatchClub.MediaSources
+  alias WatchClub.MediaSources.Servarr.{Flavor, Wizard}
   alias WatchClub.MediaSources.Source
-  alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClubWeb.Endpoint
 
   @impl true

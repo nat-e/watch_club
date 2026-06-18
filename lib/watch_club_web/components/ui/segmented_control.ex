@@ -53,9 +53,9 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
       aria-current={@link? && @selected? && "page"}
       aria-pressed={!@link? && @selected?}
       class={[
-        "grow basis-0 !rounded-none !border-0 text-center",
+        "grow basis-0 rounded-none! border-0! text-center",
         @selected? &&
-          "pointer-events-none !bg-surface-selected !text-text hover:!bg-surface-selected active:!bg-surface-selected",
+          "pointer-events-none bg-surface-selected! text-text! hover:bg-surface-selected! active:bg-surface-selected!",
         @item[:class]
       ]}
       {@item_attrs}

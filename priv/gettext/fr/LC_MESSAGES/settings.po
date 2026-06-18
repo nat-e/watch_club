@@ -12,37 +12,37 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:83
+#: lib/watch_club_web/live/accounts/settings_page.ex:82
 #, elixir-autogen, elixir-format
 msgid "Error updating settings"
 msgstr "Erreur lors de la mise à jour des paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:36
+#: lib/watch_club_web/live/accounts/settings_page.ex:35
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Langue"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:20
+#: lib/watch_club_web/live/accounts/settings_page.ex:19
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:26
+#: lib/watch_club_web/live/accounts/settings_page.ex:25
 #, elixir-autogen, elixir-format
 msgid "Choose the language used across Watch Club."
 msgstr "Choisissez la langue utilisée dans Watch Club."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:21
+#: lib/watch_club_web/live/accounts/settings_page.ex:20
 #, elixir-autogen, elixir-format
 msgid "Manage your account preferences."
 msgstr "Gérez les préférences de votre compte."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:25
+#: lib/watch_club_web/live/accounts/settings_page.ex:24
 #, elixir-autogen, elixir-format
 msgid "Preferences"
 msgstr "Préférences"

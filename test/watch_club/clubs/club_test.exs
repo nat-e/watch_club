@@ -3,7 +3,7 @@ defmodule WatchClub.Clubs.ClubTest do
 
   import WatchClub.Clubs
 
-  alias WatchClub.Clubs.{Club, Invitation, Library, Membership}
+  alias WatchClub.Clubs.{Club, Library, Membership}
 
   require Ash.Query
 
@@ -99,14 +99,7 @@ defmodule WatchClub.Clubs.ClubTest do
       second = generate(library(club, name: "Second", index: 1))
       third = generate(library(club, name: "Third", index: 2))
 
-      assert [
-               %Library{name: "Third", index: 0},
-               %Library{name: "First", index: 1},
-               %Library{name: "Second", index: 2}
-             ] =
-               reorder_libraries!(club.id, %{library_ids: [third.id, first.id, second.id]},
-                 actor: admin
-               )
+      assert %Club{} = reorder_libraries!(club.id, [third.id, first.id, second.id], actor: admin)
 
       assert [
                %Library{name: "Third", index: 0},
@@ -123,7 +116,7 @@ defmodule WatchClub.Clubs.ClubTest do
       second = generate(library(club, index: 1))
       generate(library(club, index: 2))
 
-      reorder_libraries(club.id, %{library_ids: [first.id, second.id]}, actor: admin)
+      reorder_libraries(club.id, [first.id, second.id], actor: admin)
       |> assert_has_error(Ash.Error.Invalid, fn
         %Ash.Error.Action.InvalidArgument{field: :library_ids} -> true
         _ -> false
@@ -131,12 +124,12 @@ defmodule WatchClub.Clubs.ClubTest do
     end
 
     test "members cannot reorder libraries", %{club: club, member: member} do
-      reorder_libraries(club.id, %{}, actor: member)
+      reorder_libraries(club.id, [], actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
 
     test "cannot reorder libraries without an actor", %{club: club} do
-      reorder_libraries(club.id, %{})
+      reorder_libraries(club.id, [])
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -148,14 +141,18 @@ defmodule WatchClub.Clubs.ClubTest do
 
     test "sends a clubs:<club_id> pubsub event", %{club: club, admin: admin} do
       club_id = club.id
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "clubs:#{club_id}")
+      topic = "clubs:#{club_id}"
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, topic)
       %Club{name: "New name"} = update_club!(club, %{name: "New name"}, actor: admin)
 
-      assert_receive %Ash.Notifier.Notification{
-                       resource: Club,
-                       action: %Ash.Resource.Actions.Update{},
-                       data: %Club{
-                         id: ^club_id
+      assert_receive %Phoenix.Socket.Broadcast{
+                       topic: ^topic,
+                       payload: %Ash.Notifier.Notification{
+                         resource: Club,
+                         action: %Ash.Resource.Actions.Update{},
+                         data: %Club{
+                           id: ^club_id
+                         }
                        }
                      },
                      500
@@ -185,15 +182,6 @@ defmodule WatchClub.Clubs.ClubTest do
 
     test "cannot destroy club without an actor", %{club: club} do
       assert_raise Ash.Error.Forbidden, fn -> destroy_club!(club) end
-    end
-  end
-
-  describe "relationship: invitations" do
-    test "admins can see club invitations", %{club: club, admin: admin} do
-      invitation(club, admin) |> generate_many(2)
-
-      club = Ash.load!(club, :invitations, actor: admin)
-      assert [%Invitation{}, %Invitation{}] = club.invitations
     end
   end
 

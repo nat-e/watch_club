@@ -9,7 +9,8 @@ defmodule WatchClub.Accounts.User do
     domain: WatchClub.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    extensions: [AshAuthentication]
+    extensions: [AshAuthentication],
+    fragments: [WatchClub.PubSubDefaults]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -171,11 +172,6 @@ defmodule WatchClub.Accounts.User do
         sensitive? true
       end
 
-      argument :invitation_id, :uuid_v7 do
-        description "An invitation to accept upon signing in."
-        allow_nil? true
-      end
-
       validate present(:username) do
         message dgettext_noop("errors", "Username is required")
       end
@@ -186,8 +182,6 @@ defmodule WatchClub.Accounts.User do
 
       # validates the provided username and password and generates a token
       prepare AshAuthentication.Strategy.Password.SignInPreparation
-
-      prepare WatchClub.Accounts.Preparations.AcceptInvitation
 
       metadata :token, :string do
         description "A JWT that can be used to authenticate the user."
@@ -238,8 +232,8 @@ defmodule WatchClub.Accounts.User do
         sensitive? true
       end
 
-      argument :invitation_id, :uuid_v7 do
-        description "An invitation to accept upon signing up."
+      argument :invitation_code, :string do
+        description "An invitation code to accept upon signing up."
         allow_nil? false
       end
 
@@ -256,8 +250,8 @@ defmodule WatchClub.Accounts.User do
       # validates that the password matches the confirmation
       validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
 
-      # If there is an invitation, accept it in after_action hook
-      change WatchClub.Accounts.Changes.AcceptInvitation
+      # Validates the invitation code and creates one club member membership per granted club
+      change WatchClub.Accounts.Changes.ApplyInvitationCode
 
       change manage_relationship(:locale, :settings,
                type: :create,
@@ -285,6 +279,14 @@ defmodule WatchClub.Accounts.User do
     read :get_by_username do
       description "Looks up a user by their username"
       get_by :username
+    end
+
+    destroy :destroy do
+      description "Deletes a user account. The Library items they created will remain."
+
+      # Delete memberships through the action (not the DB cascade) so the
+      # membership PubSub notifications are sent
+      change cascade_destroy(:memberships, return_notifications?: true, after_action?: false)
     end
 
     update :reset_password_with_token do
@@ -344,6 +346,18 @@ defmodule WatchClub.Accounts.User do
     policy action(:read) do
       authorize_if always()
     end
+
+    # Only the instance administrator can delete users, and the
+    # administrator account itself can never be deleted
+    policy action(:destroy) do
+      forbid_if expr(administrator? == true)
+      authorize_if actor_attribute_equals(:administrator?, true)
+    end
+  end
+
+  pub_sub do
+    publish :register_with_password, ["users"]
+    publish :destroy, ["users"]
   end
 
   validations do
@@ -400,6 +414,8 @@ defmodule WatchClub.Accounts.User do
       allow_nil?: false,
       default: false,
       source: :is_administrator
+
+    timestamps()
   end
 
   relationships do

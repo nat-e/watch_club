@@ -35,7 +35,7 @@ defmodule WatchClub.MediaCatalog.Media do
     read :under_path_prefix do
       argument :prefix, :string, allow_nil?: false
 
-      prepare build(filter: expr(fragment("? LIKE ? || '%'", path, ^arg(:prefix))))
+      prepare build(filter: expr(string_starts_with(path, ^arg(:prefix))))
     end
 
     read :browse do
@@ -228,15 +228,6 @@ defmodule WatchClub.MediaCatalog.Media do
     timestamps()
   end
 
-  calculations do
-    calculate :content,
-              :struct,
-              WatchClub.MediaCatalog.Calculations.MediaContent do
-      constraints instance_of: WatchClub.Contents.Content
-      public? true
-    end
-  end
-
   relationships do
     has_one :video, Video do
       destination_attribute :id
@@ -248,6 +239,15 @@ defmodule WatchClub.MediaCatalog.Media do
 
     has_one :audiobook, Audiobook do
       destination_attribute :id
+    end
+  end
+
+  calculations do
+    calculate :content,
+              :struct,
+              WatchClub.MediaCatalog.Calculations.MediaContent do
+      constraints instance_of: WatchClub.Contents.Content
+      public? true
     end
   end
 

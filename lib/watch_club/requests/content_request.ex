@@ -14,7 +14,8 @@ defmodule WatchClub.Requests.ContentRequest do
     domain: WatchClub.Requests,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub, WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    fragments: [WatchClub.PubSubDefaults],
+    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
 
   import Ash.Expr
 
@@ -45,7 +46,9 @@ defmodule WatchClub.Requests.ContentRequest do
       change relate_actor(:user)
       change EnsureContentExists
       change CreateMediaSourceRequests
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content, user: :user}
+
+      change {WatchClub.Contents.Changes.CreateContentNotification,
+              content: :content, user: :user}
     end
 
     read :for_current_user do
@@ -100,7 +103,8 @@ defmodule WatchClub.Requests.ContentRequest do
       # CreateContentNotification adds after_action hooks, so the destroy can't be atomic.
       require_atomic? false
 
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content, user: :user}
+      change {WatchClub.Contents.Changes.CreateContentNotification,
+              content: :content, user: :user}
     end
   end
 
@@ -137,8 +141,6 @@ defmodule WatchClub.Requests.ContentRequest do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
     prefix "content_requests"
 
     publish :request, ["user", :user_id]

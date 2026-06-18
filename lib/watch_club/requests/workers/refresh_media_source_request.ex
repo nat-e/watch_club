@@ -5,17 +5,12 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
   for any event carrying a resource id; a future poller would enqueue the
   same job. Runs `refresh_status`, which re-derives the state.
 
-  Unique over pending states so a burst of webhooks for one request coalesces
-  into a single reconcile.
+  Every webhook enqueues its own reconcile — the refresh is idempotent and
+  cheap, so duplicates from a webhook burst are harmless.
   """
   use Oban.Worker,
     queue: :media_source_requests,
-    max_attempts: 5,
-    unique: [
-      fields: [:worker, :args],
-      keys: [:media_source_request_id],
-      states: [:available, :scheduled]
-    ]
+    max_attempts: 5
 
   alias WatchClub.Requests
   alias WatchClub.Requests.MediaSourceRequest

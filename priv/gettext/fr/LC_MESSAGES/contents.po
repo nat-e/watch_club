@@ -12,7 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:60
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:61
 #, elixir-autogen, elixir-format
 msgid "In %{count} club"
 msgid_plural "In %{count} clubs"
@@ -20,20 +20,8 @@ msgstr[0] "Dans %{count} club"
 msgstr[1] "Dans %{count} clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:89
-#, elixir-autogen, elixir-format
-msgid "Select clubs"
-msgstr "Sélectionner des clubs"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:75
-#, elixir-autogen, elixir-format
-msgid "Select libraries"
-msgstr "Sélectionner des bibliothèques"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:457
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:326
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:168
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:338
 #, elixir-autogen, elixir-format
 msgid "%{count} minute"
 msgid_plural "%{count} minutes"
@@ -41,32 +29,19 @@ msgstr[0] "%{count} minute"
 msgstr[1] "%{count} minutes"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:465
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:176
 #, elixir-autogen, elixir-format
 msgid "%{hours}h"
 msgstr "%{hours} h"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:467
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:178
 #, elixir-autogen, elixir-format
 msgid "%{hours}h %{minutes}m"
 msgstr "%{hours} h %{minutes} min"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:80
-#, elixir-autogen, elixir-format
-msgid "Add %{content_name} to Libraries to share it with the Members of your clubs."
-msgstr "Ajoutez %{content_name} à des bibliothèques pour le partager avec les membres de vos clubs."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:44
-#, elixir-autogen, elixir-format
-msgid "Add to Library"
-msgstr "Ajouter à une bibliothèque"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:333
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:158
+#: lib/watch_club_web/components/contents/details/reviews_card.ex:35
 #, elixir-autogen, elixir-format
 msgid "Based on %{count} TMDB vote."
 msgid_plural "Based on %{count} TMDB votes."
@@ -74,98 +49,85 @@ msgstr[0] "Basé sur %{count} vote TMDB."
 msgstr[1] "Basé sur %{count} votes TMDB."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:131
-#: lib/watch_club_web/live/contents/movie_details_page.ex:350
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:117
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:175
+#: lib/watch_club_web/components/contents/details/external_links_card.ex:16
+#: lib/watch_club_web/live/contents/movie_details_page.ex:74
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex:94
 #, elixir-autogen, elixir-format
 msgid "External links"
 msgstr "Liens externes"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:614
+#: lib/watch_club_web/components/contents/details/external_links_card.ex:66
 #, elixir-autogen, elixir-format
 msgid "Letterboxd search"
 msgstr "Recherche Letterboxd"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:34
+#: lib/watch_club_web/live/contents/movie_details_page.ex:35
 #, elixir-autogen, elixir-format
 msgid "Movie unavailable"
 msgstr "Film indisponible"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:609
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:425
+#: lib/watch_club_web/components/contents/details/external_links_card.ex:61
+#: lib/watch_club_web/components/contents/details/external_links_card.ex:89
 #, elixir-autogen, elixir-format
 msgid "Official site"
 msgstr "Site officiel"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:294
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:160
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:49
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr "Lire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:471
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:189
 #, elixir-autogen, elixir-format
 msgid "Released"
 msgstr "Sorti"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:131
-#: lib/watch_club_web/live/contents/movie_details_page.ex:319
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:117
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:144
+#: lib/watch_club_web/components/contents/details/reviews_card.ex:17
+#: lib/watch_club_web/live/contents/movie_details_page.ex:74
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex:94
 #, elixir-autogen, elixir-format
 msgid "Reviews"
 msgstr "Avis"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:306
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:172
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:141
 #, elixir-autogen, elixir-format
 msgid "Watch Trailer"
 msgstr "Voir la bande-annonce"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:36
+#: lib/watch_club_web/live/contents/movie_details_page.ex:37
 #, elixir-autogen, elixir-format
 msgid "We could not load this movie. Try again later."
 msgstr "Nous n’avons pas pu charger ce film. Réessayez plus tard."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:252
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:118
-#, elixir-autogen, elixir-format
-msgid "%{title} is not in your club libraries yet. Add it to a Library so every Member in that club can see it."
-msgstr "%{title} n’est pas encore dans les bibliothèques de vos clubs. Ajoutez-le à une bibliothèque afin que chaque membre de ce club puisse le voir."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:121
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:107
+#: lib/watch_club_web/components/contents/details/cast_section.ex:15
 #, elixir-autogen, elixir-format
 msgid "Cast"
 msgstr "Casting"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:215
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:78
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:89
 #, elixir-autogen, elixir-format
 msgid "Original title"
 msgstr "Titre original"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/movie_details_page.ex:111
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:89
+#: lib/watch_club_web/live/contents/movie_details_page.ex:62
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex:73
 #, elixir-autogen, elixir-format
 msgid "Overview"
 msgstr "Résumé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:194
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:186
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"
@@ -173,110 +135,117 @@ msgstr[0] "%{count} saison"
 msgstr[1] "%{count} saisons"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:199
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:192
 #, elixir-autogen, elixir-format
 msgid "Canceled"
 msgstr "Annulée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:197
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:190
 #, elixir-autogen, elixir-format
 msgid "Ended"
 msgstr "Terminée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:25
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:41
 #, elixir-autogen, elixir-format
 msgid "Episodes"
 msgstr "Épisodes"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/hero_panel.ex:198
+#: lib/watch_club_web/components/contents/details/hero_panel.ex:191
 #, elixir-autogen, elixir-format
 msgid "Returning Series"
 msgstr "Série en cours"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:92
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:131
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:100
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:159
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
 msgstr "Saison %{number}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:59
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:68
 #, elixir-autogen, elixir-format
 msgid "Seasons"
 msgstr "Saisons"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:39
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex:44
 #, elixir-autogen, elixir-format
 msgid "TV Show unavailable"
 msgstr "Série TV indisponible"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:41
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex:46
 #, elixir-autogen, elixir-format
 msgid "We could not load this TV Show. Try again later."
 msgstr "Nous n’avons pas pu charger cette série TV. Réessayez plus tard."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:178
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:206
 #, elixir-autogen, elixir-format
 msgid "Error loading season"
 msgstr "Erreur lors du chargement de la saison"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:206
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:226
 #, elixir-autogen, elixir-format
 msgid "Loading season episodes"
 msgstr "Chargement des épisodes de la saison"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:190
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:218
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:180
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:208
 #, elixir-autogen, elixir-format
 msgid "We couldn't load the season. Please try again"
 msgstr "Nous n’avons pas pu charger la saison. Veuillez réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:48
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:45
 #, elixir-autogen, elixir-format
 msgid "Share with Clubs"
-msgstr "Partager avec des clubs"
+msgstr "Partager aux clubs"
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:73
+#, elixir-autogen, elixir-format
+msgid "Added to your requests."
+msgstr ""
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "Already in %{library}"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:77
+#, elixir-autogen, elixir-format
+msgid "Could not request this right now."
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:37
+#, elixir-autogen, elixir-format
+msgid "Request"
+msgstr ""
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:69
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:89
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Select library"
+msgstr "Sélectionner des bibliothèques"
+
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:81
 #, elixir-autogen, elixir-format
-msgid "Share with a club"
+msgid "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content."
+msgstr ""
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:76
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Share with club"
 msgstr "Partager avec un club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:74
-#, elixir-autogen, elixir-format
-msgid "Add %{content_name} to a club library. Every member of that club will be able to see and access it."
-msgstr "Ajoutez %{content_name} à une bibliothèque de club. Tous les membres de ce club pourront le voir et y accéder."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:141
-#, elixir-autogen, elixir-format
-msgid "Added"
-msgstr "Ajouté"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:92
-#, elixir-autogen, elixir-format
-msgid "No club to share with"
-msgstr "Aucun club avec qui partager"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_button_live.ex:95
-#, elixir-autogen, elixir-format
-msgid "Join a club with a library that accepts this kind of content to share it."
-msgstr "Rejoignez un club doté d’une bibliothèque qui accepte ce type de contenu pour le partager."

@@ -34,7 +34,8 @@ defmodule WatchClub.Repo.Migrations.AddContentAndMediaSourceRequests do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
 
       add :media_source_id,
           references(:media_sources,
@@ -44,7 +45,8 @@ defmodule WatchClub.Repo.Migrations.AddContentAndMediaSourceRequests do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:media_source_requests, [:content_id, :media_source_id],
@@ -70,7 +72,8 @@ defmodule WatchClub.Repo.Migrations.AddContentAndMediaSourceRequests do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
 
       add :content_id,
           references(:contents,
@@ -80,7 +83,8 @@ defmodule WatchClub.Repo.Migrations.AddContentAndMediaSourceRequests do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:content_requests, [:user_id, :content_id],

@@ -1,0 +1,27 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club/history/watch_status.ex:7
+#, elixir-autogen, elixir-format
+msgid "Not Watched"
+msgstr ""
+
+#: lib/watch_club/history/watch_status.ex:9
+#, elixir-autogen, elixir-format
+msgid "Watched"
+msgstr ""
+
+#: lib/watch_club/history/watch_status.ex:8
+#, elixir-autogen, elixir-format
+msgid "Watching"
+msgstr ""

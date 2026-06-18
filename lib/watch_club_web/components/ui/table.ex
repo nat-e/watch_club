@@ -17,11 +17,14 @@ defmodule WatchClubWeb.Components.UI.Table do
     ~H"""
     <div
       data-slot="table-container"
-      class="relative w-full overflow-x-auto rounded-control border border-border bg-surface shadow-card"
+      class={[
+        "relative w-full overflow-x-auto rounded-control border border-border bg-surface shadow-card",
+        @class
+      ]}
     >
       <table
         data-slot="table"
-        class={["w-full caption-bottom text-sm text-text", @class]}
+        class="w-full caption-bottom text-sm text-text"
         {@rest}
       >
         {render_slot(@inner_block)}

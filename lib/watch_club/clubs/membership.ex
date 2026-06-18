@@ -4,10 +4,10 @@ defmodule WatchClub.Clubs.Membership do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    notifiers: [Ash.Notifier.PubSub]
+    fragments: [WatchClub.PubSubDefaults]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.{Club, Invitation, MembershipRole}
+  alias WatchClub.Clubs.{Club, MembershipRole}
 
   postgres do
     table "memberships"
@@ -20,7 +20,7 @@ defmodule WatchClub.Clubs.Membership do
   end
 
   actions do
-    defaults [:read, :destroy, create: [:*]]
+    defaults [:read, :destroy, create: [:*], update: []]
 
     read :with_user do
       prepare build(load: [:user])
@@ -33,21 +33,29 @@ defmodule WatchClub.Clubs.Membership do
               )
     end
 
+    create :add_to_club do
+      description "Instance administrator adds an existing user to a club as a club member"
+      accept [:club_id, :user_id]
+
+      change set_attribute(:role, :member)
+    end
+
     destroy :leave_club
   end
 
   policies do
-    policy actor_absent() do
-      forbid_if always()
-    end
-
     # Membership creation is always forbidden and is always done via
-    # Club:create and Invitation:accept where authorization is skipped
+    # Club:create and invitation redemption where authorization is skipped
     policy action(:create) do
       forbid_if always()
     end
 
+    policy action(:add_to_club) do
+      authorize_if {WatchClub.Clubs.Checks.ActorIsClubMember, role: :admin}
+    end
+
     policy action([:read, :with_user, :with_club_and_user]) do
+      authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if {WatchClub.Clubs.Checks.ActorIsClubMemberFilter, role: :admin}
       authorize_if relates_to_actor_via(:user)
     end
@@ -64,13 +72,14 @@ defmodule WatchClub.Clubs.Membership do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-
     publish :create, ["users", :user_id, "memberships"]
     publish :create, ["clubs", :club_id, "memberships"]
+    publish :add_to_club, ["users", :user_id, "memberships"]
+    publish :add_to_club, ["clubs", :club_id, "memberships"]
     publish :leave_club, ["users", :user_id, "memberships"]
     publish :leave_club, ["clubs", :club_id, "memberships"]
+    publish :destroy, ["users", :user_id, "memberships"]
+    publish :destroy, ["clubs", :club_id, "memberships"]
   end
 
   attributes do
@@ -84,14 +93,9 @@ defmodule WatchClub.Clubs.Membership do
   relationships do
     belongs_to :club, Club, allow_nil?: false, public?: true
     belongs_to :user, User, allow_nil?: false, public?: true
-
-    belongs_to :invitation, Invitation do
-      allow_nil? true
-    end
   end
 
   identities do
     identity :club_and_user, [:club_id, :user_id]
-    identity :invitation_id, [:invitation_id]
   end
 end

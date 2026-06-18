@@ -1,176 +1,95 @@
 defmodule WatchClubWeb.Invitations.InvitationPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Accounts.RegistrationForm
-  import WatchClubWeb.Components.Accounts.SignInForm
-
   @impl true
   def render(
-        %{invitation: %Invitation{}, current_user: nil, form: %Phoenix.HTML.Form{}} = assigns
+        %{invitation: %InvitationCode{status: :active}, form: %Phoenix.HTML.Form{}} = assigns
       ) do
-    title =
-      case assigns.invitation.name do
-        nil -> dgettext("invitations", "Hello!")
-        name -> dgettext("invitations", "Hello %{name}!", name: name)
-      end
-
-    assigns = assigns |> assign(:title, title)
-
     ~H"""
-    <Layouts.centered_card flash={@flash} title={@title}>
+    <Layouts.centered_card flash={@flash} title={dgettext("invitations", "Welcome!")}>
       <.stack space="related">
         <p>
-          <.invitation_intro invitation={@invitation} />
+          {dgettext("invitations", "You are invited to create an account on watch.club!")}
         </p>
-        <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
       </.stack>
-      <.segmented_control aria-label={dgettext("invitations", "Invitation action")}>
-        <:item
-          id="invitation-register-tab"
-          patch={~p"/invitations/#{@invitation.id}"}
-          selected={@action == :register}
-        >
-          {dgettext("auth", "Create account")}
-        </:item>
-        <:item
-          id="invitation-sign-in-tab"
-          patch={~p"/invitations/#{@invitation.id}?action=sign_in"}
-          selected={@action == :sign_in}
-        >
-          {dgettext("auth", "Sign in")}
-        </:item>
-      </.segmented_control>
-      <.alert :if={@user_exists?} variant="info">
-        <:icon><Lucideicons.info /></:icon>
-        {dgettext("invitations", "Looks like you already have an account! Please login instead.")}
-      </.alert>
-      <.registration_form
-        :if={@action == :register}
+      <.form
+        for={@form}
         id="invitation-registration-form"
-        form={@form}
-        change="validate_registration"
-        submit="submit_registration"
-      />
-      <.sign_in_form
-        :if={@action == :sign_in}
-        id="invitation-sign-in-form"
-        form={@form}
-        change="validate_sign_in"
-        submit="submit_sign_in"
-      />
+        phx-change="validate_registration"
+        phx-submit="submit_registration"
+        phx-mounted={JS.focus_first()}
+      >
+        <.field
+          field={@form[:username]}
+          label={dgettext("auth", "Username")}
+          autocomplete="username"
+          type="text"
+        />
+        <.field
+          field={@form[:password]}
+          label={dgettext("auth", "Password")}
+          autocomplete="new-password"
+          type="password"
+        />
+        <.field
+          field={@form[:password_confirmation]}
+          label={dgettext("auth", "Confirm password")}
+          autocomplete="new-password"
+          type="password"
+        />
+        <.field
+          field={@form[:invitation_code]}
+          label={dgettext("auth", "Invitation Code")}
+          readonly={true}
+          type="text"
+        />
+        <:action>
+          <.button id="invitation-registration-form-submit-button" type="submit" class="w-full">
+            {dgettext("auth", "Create account")}
+          </.button>
+        </:action>
+      </.form>
     </Layouts.centered_card>
     """
   end
 
-  def render(%{invitation: %Invitation{}, current_user: %User{}} = assigns) do
+  def render(assigns) do
     ~H"""
     <Layouts.centered_card
       flash={@flash}
-      title={dgettext("invitations", "Hello %{name}!", name: @current_user.username)}
+      title={dgettext("invitations", "This invitation is no longer available")}
     >
-      <.stack space="related">
-        <p>
-          <.invitation_intro invitation={@invitation} />
-        </p>
-        <p>{dgettext("invitations", "Create an account or sign-in to accept the invitation.")}</p>
-      </.stack>
-      <.inline class="justify-end">
-        <.button id="accept-invitation-button" phx-click="accept_invitation">
-          {dgettext("invitations", "Accept Invitation")}
-        </.button>
-      </.inline>
+      <p>
+        {dgettext("invitations", "Ask the person who invited you for a new link.")}
+      </p>
     </Layouts.centered_card>
     """
   end
 
-  def render(assigns), do: ~H""
-
-  attr :invitation, Invitation, required: true
-
-  defp invitation_intro(assigns) do
-    ~H"""
-    {raw(
-      dgettext("invitations", "You are invited to join %{club_name} on watch.club",
-        club_name: gtbold(@invitation.club.name)
-      )
-    )}
-    """
-  end
-
   @impl true
-  def mount(%{"invitation_id" => invitation_id}, session, socket) do
-    # Make sure the invitation belongs to the current user is logged in
-    case Clubs.view_invitation(invitation_id, actor: socket.assigns.current_user) do
+  def mount(%{"code" => code}, session, socket) do
+    case Accounts.view_invitation(code, actor: socket.assigns.current_user) do
       {:ok, invitation} ->
         locale = WatchClubWeb.Plugs.BrowserLocale.get(session)
-        {:ok, socket |> assign(:invitation, invitation) |> assign(:locale, locale)}
 
-      {:error, _} ->
+        form =
+          Accounts.form_to_register_with_password(
+            params: %{"invitation_code" => code},
+            prepare_params: fn params, _ -> Map.put(params, :locale, locale) end,
+            context: %{token_type: :sign_in}
+          )
+
         {:ok,
          socket
-         |> put_flash(
-           :error,
-           dgettext("invitations", "The invitation you were trying to access does not exist")
-         )
-         |> redirect(to: ~p"/")}
-    end
-  end
-
-  @impl true
-  def handle_params(params, _uri, socket) do
-    action =
-      if params["action"] == "sign_in" do
-        :sign_in
-      else
-        :register
-      end
-
-    %{invitation: %{id: invitation_id}, locale: locale} = socket.assigns
-
-    form =
-      case action do
-        :sign_in ->
-          Accounts.form_to_sign_in(sign_in_form_opts(invitation_id))
-
-        :register ->
-          Accounts.form_to_register_with_password(registration_form_opts(locale, invitation_id))
-      end
-
-    {:noreply,
-     socket
-     |> assign(:user_exists?, !!params["user_exists"])
-     |> assign(:action, action)
-     |> assign(:form, to_form(form))}
-  end
-
-  @impl true
-  def handle_event(
-        "accept_invitation",
-        _params,
-        %{assigns: %{current_user: user, invitation: invitation}} = socket
-      ) do
-    case Clubs.accept_invitation(invitation, actor: user) do
-      {:ok, invitation} ->
-        {:noreply,
-         socket
-         |> put_flash(
-           :success,
-           dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
-         )
-         |> redirect(to: ~p"/")}
+         |> assign(:invitation, invitation)
+         |> assign(:form, to_form(form))}
 
       {:error, _} ->
-        {:noreply,
-         socket
-         |> put_flash(
-           :error,
-           dgettext("invitations", "Couldn't join %{club_name}, try again later",
-             club_name: invitation.club.name
-           )
-         )}
+        {:ok, socket}
     end
   end
 
+  @impl true
   def handle_event("validate_registration", %{"form" => params}, socket) do
     {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, params))}
   end
@@ -178,40 +97,8 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
   def handle_event("submit_registration", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, user} ->
-        %{invitation: invitation} = socket.assigns
-
         socket =
           socket
-          |> put_flash(
-            :success,
-            dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
-          )
-          |> redirect(
-            to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
-          )
-
-        {:noreply, socket}
-
-      {:error, form} ->
-        {:noreply, assign(socket, form: form)}
-    end
-  end
-
-  def handle_event("validate_sign_in", %{"form" => params}, socket) do
-    {:noreply, assign(socket, form: AshPhoenix.Form.validate(socket.assigns.form, params))}
-  end
-
-  def handle_event("submit_sign_in", %{"form" => params}, socket) do
-    case AshPhoenix.Form.submit(socket.assigns.form, params: params, read_one?: true) do
-      {:ok, user} ->
-        %{invitation: invitation} = socket.assigns
-
-        socket =
-          socket
-          |> put_flash(
-            :success,
-            dgettext("invitations", "You joined %{club_name}", club_name: invitation.club.name)
-          )
           |> redirect(
             to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
           )

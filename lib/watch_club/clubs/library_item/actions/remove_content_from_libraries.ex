@@ -19,10 +19,15 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.RemoveContentFromLibraries do
   def run(input, _opts, context) do
     library_ids = input.arguments.library_ids
 
-    with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, context.actor) do
+    with {:ok, content} <-
+           Contents.get_or_create_content(input.arguments.content_identity, context.actor) do
       LibraryItem
       |> Ash.Query.filter(content_id == ^content.id and library_id in ^library_ids)
-      |> Ash.bulk_destroy!(:destroy, %{}, scope: context, strategy: :stream, return_records?: false)
+      |> Ash.bulk_destroy!(:destroy, %{},
+        scope: context,
+        strategy: :stream,
+        return_records?: false
+      )
 
       notification =
         ContentChangedNotifier.create_notification(

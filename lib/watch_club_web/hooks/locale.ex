@@ -30,10 +30,12 @@ defmodule WatchClubWeb.Hooks.Locale do
   end
 
   defp reload_locale_on_change(
-         %Ash.Notifier.Notification{
-           resource: UserSettings,
-           action: %Ash.Resource.Actions.Update{},
-           data: %UserSettings{locale: locale}
+         %Phoenix.Socket.Broadcast{
+           payload: %Ash.Notifier.Notification{
+             resource: UserSettings,
+             action: %Ash.Resource.Actions.Update{},
+             data: %UserSettings{locale: locale}
+           }
          },
          socket
        ) do

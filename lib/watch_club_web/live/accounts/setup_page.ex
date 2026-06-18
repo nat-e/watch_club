@@ -2,8 +2,6 @@ defmodule WatchClubWeb.Accounts.SetupPage do
   require Logger
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Accounts.RegistrationForm
-
   alias WatchClub.Accounts
 
   @impl true
@@ -24,12 +22,38 @@ defmodule WatchClubWeb.Accounts.SetupPage do
           )}
         </p>
       </.stack>
-      <.registration_form
+      <.form
+        for={@form}
         id="setup-form"
-        form={@form}
-        change="validate_registration"
-        submit="submit_registration"
-      />
+        phx-change="validate_registration"
+        phx-submit="submit_registration"
+        phx-mounted={JS.focus_first()}
+      >
+        <.field
+          field={@form[:username]}
+          label={dgettext("auth", "Username")}
+          autocomplete="username"
+          type="text"
+        />
+        <.field
+          field={@form[:password]}
+          label={dgettext("auth", "Password")}
+          autocomplete="new-password"
+          type="password"
+        />
+        <.field
+          field={@form[:password_confirmation]}
+          label={dgettext("auth", "Confirm password")}
+          autocomplete="new-password"
+          type="password"
+        />
+        <.field_errors field={@form[:invitation_code]} show_untouched={true} />
+        <:action>
+          <.button id="setup-form-submit-button" type="submit" class="w-full">
+            {dgettext("auth", "Create account")}
+          </.button>
+        </:action>
+      </.form>
     </Layouts.centered_card>
     """
   end
@@ -37,7 +61,13 @@ defmodule WatchClubWeb.Accounts.SetupPage do
   @impl true
   def mount(_params, session, socket) do
     locale = WatchClubWeb.Plugs.BrowserLocale.get(session)
-    form = Accounts.form_to_create_administrator(registration_form_opts(locale))
+
+    form =
+      Accounts.form_to_create_administrator(
+        prepare_params: fn params, _ -> Map.put(params, :locale, locale) end,
+        context: %{token_type: :sign_in}
+      )
+
     {:ok, socket |> assign(form: to_form(form))}
   end
 

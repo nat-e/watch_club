@@ -1,6 +1,8 @@
 defmodule WatchClub.Clubs.Changes.SetNextLibraryIndex do
   @moduledoc """
   Sets the new library index after the last existing library in the club.
+  There might be gaps in the existing indexes since we don't re-order after destroy, so we
+  need to find the max + 1 instead of the first available.
   """
   use Ash.Resource.Change
 

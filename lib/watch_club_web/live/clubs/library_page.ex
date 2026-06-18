@@ -10,6 +10,8 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   @contents_page_size 40
 
+  on_mount {WatchClubWeb.Hooks.LoadClub, false}
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -99,8 +101,10 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   @impl true
   def handle_info(
-        %Ash.Notifier.Notification{
-          metadata: %{subject: :content_changed, content_id: content_id}
+        %Phoenix.Socket.Broadcast{
+          payload: %Ash.Notifier.Notification{
+            metadata: %{subject: :content_changed, content_id: content_id}
+          }
         },
         socket
       ) do
@@ -248,16 +252,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
          |> assign(:stream_state, stream_state)
          |> load_contents_page(stream_state)}
 
-      {:ok, %Library{}} ->
-        not_found(socket)
-
-      {:error, %Ash.Error.Query.NotFound{}} ->
-        not_found(socket)
-
-      {:error, %Ash.Error.Invalid{}} ->
-        not_found(socket)
-
-      {:error, %Ash.Error.Forbidden{}} ->
+      _ ->
         not_found(socket)
     end
   end

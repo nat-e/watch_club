@@ -130,7 +130,8 @@ defmodule WatchClub.Integrations.Servarr.Client do
       base_url: Url.normalize_base(base_url),
       headers: [{"x-api-key", api_key}, {"accept", "application/json"}],
       retry: false,
-      receive_timeout: @receive_timeout
+      receive_timeout: @receive_timeout,
+      compressed: true
     ]
     |> Keyword.merge(Application.get_env(:watch_club, :servarr_req_options, []))
     |> Req.new()

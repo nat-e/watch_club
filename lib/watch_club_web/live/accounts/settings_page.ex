@@ -28,6 +28,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
           for={@user_settings_form}
           id="user-settings-form"
           class="w-full sm:max-w-sm"
+          phx-change="validate_update_settings"
           phx-submit="submit_update_settings"
         >
           <.field
@@ -63,23 +64,26 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    %{current_user: user} = socket.assigns
+    user = socket.assigns.current_user
     form = Accounts.form_to_update_user_settings(user.settings, actor: user)
     {:ok, socket |> assign(:user_settings_form, to_form(form))}
   end
 
   @impl true
+  def handle_event("validate_update_settings", %{"form" => params}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :user_settings_form,
+       AshPhoenix.Form.validate(socket.assigns.user_settings_form, params)
+     )}
+  end
+
   def handle_event("submit_update_settings", %{"form" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.user_settings_form, params: params) do
-      {:ok, _settings} ->
-        # Locale hook reloads connected LiveViews when the persisted locale changes.
-        {:noreply, socket}
-
-      {:error, form} ->
-        {:noreply,
-         socket
-         |> assign(:user_settings_form, form)
-         |> put_flash(:error, dgettext("settings", "Error updating settings"))}
+      # Locale hook reloads connected LiveViews when the persisted locale changes.
+      {:ok, _settings} -> {:noreply, socket}
+      {:error, form} -> {:noreply, socket |> assign(:user_settings_form, form)}
     end
   end
 end

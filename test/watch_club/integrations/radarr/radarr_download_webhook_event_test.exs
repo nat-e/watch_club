@@ -37,7 +37,8 @@ defmodule WatchClub.Integrations.Radarr.RadarrDownloadWebhookEventTest do
   end
 
   test "blank imdbId becomes nil and a missing isUpgrade defaults to false" do
-    event = RadarrDownloadWebhookEvent.from_api(%{"movie" => %{"imdbId" => ""}, "movieFile" => %{}})
+    event =
+      RadarrDownloadWebhookEvent.from_api(%{"movie" => %{"imdbId" => ""}, "movieFile" => %{}})
 
     assert event.imdb_id == nil
     assert event.upgrade? == false

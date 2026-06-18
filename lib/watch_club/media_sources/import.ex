@@ -4,7 +4,7 @@ defmodule WatchClub.MediaSources.Import do
     domain: WatchClub.MediaSources,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub],
+    fragments: [WatchClub.PubSubDefaults],
     extensions: [AshStateMachine]
 
   alias WatchClub.MediaSources.Import.Changes
@@ -99,8 +99,6 @@ defmodule WatchClub.MediaSources.Import do
   end
 
   pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
     prefix "media_imports"
 
     publish :start, [[:media_source_id, nil]]
