@@ -61,6 +61,11 @@ config :watch_club,
     WatchClub.Requests
   ]
 
+# Ash generates large SQL (many lateral joins for calcs/aggregates), which trips
+# Postgres' jit_above_cost threshold. JIT compilation then dominates runtime
+# (~640ms compile vs ~2ms execution) on our modest row counts, so disable it.
+config :watch_club, WatchClub.Repo, parameters: [jit: "off"]
+
 config :watch_club, Oban,
   engine: Oban.Engines.Basic,
   repo: WatchClub.Repo,
