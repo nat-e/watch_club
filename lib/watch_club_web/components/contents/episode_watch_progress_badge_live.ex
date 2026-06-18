@@ -4,7 +4,12 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
   """
   use WatchClubWeb, :live_component
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
+
+  attr :content_identity, ContentIdentity, required: true
+  attr :season_number, :integer, required: true
+  attr :episode_number, :integer, required: true
+  attr :status, :atom, required: true
 
   @impl true
   def render(%{status: :completed} = assigns) do
@@ -30,22 +35,9 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
   end
 
   @impl true
-  def update(assigns, socket) do
-    episode = ContentView.episode(assigns.content, assigns.season_number, assigns.episode_number)
-
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(
-       :status,
-       (episode && episode.viewer_progress_status) || :not_started
-     )}
-  end
-
-  @impl true
   def handle_event("mark_watched", _params, socket) do
     case History.mark_content_watched(
-           ContentView.identity(socket.assigns.content),
+           socket.assigns.content_identity,
            %{
              season_number: socket.assigns.season_number,
              episode_number: socket.assigns.episode_number
@@ -63,7 +55,7 @@ defmodule WatchClubWeb.Components.Contents.EpisodeWatchProgressBadge do
 
   def handle_event("mark_not_watched", _params, socket) do
     case History.mark_content_not_watched(
-           ContentView.identity(socket.assigns.content),
+           socket.assigns.content_identity,
            %{
              season_number: socket.assigns.season_number,
              episode_number: socket.assigns.episode_number

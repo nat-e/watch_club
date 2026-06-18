@@ -6,7 +6,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
 
   alias WatchClubWeb.Components.Contents.{
@@ -17,7 +17,12 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
 
   alias WatchClubWeb.Helpers.Time
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
+
+  attr :content, :any,
+    required: true,
+    doc: "An instance of MovieDetailsResponse or TvDetailsResponse"
+
   attr :current_user, User, required: true
 
   def hero_panel(assigns) do
@@ -25,15 +30,15 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     <header class="relative flex justify-center py-cluster @xl:py-section">
       <div class="relative flex flex-col gap-cluster">
         <p
-          :if={@content.details.tagline}
+          :if={@content.tagline}
           class="text-center text-sm font-semibold tracking-[0.3em] text-accent uppercase"
         >
-          {@content.details.tagline}
+          {@content.tagline}
         </p>
 
         <div class="flex flex-col gap-cluster @xl:flex-row @xl:items-center">
           <.tmdb_poster
-            path={@content.details.poster_path}
+            path={@content.poster_path}
             size="w500"
             alt=""
             class="mx-auto w-44 shrink-0 rounded-card border border-border-subtle shadow-overlay @xl:mx-0 @5xl:w-60"
@@ -42,23 +47,23 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
           <div class="flex flex-col items-center gap-group text-center @xl:flex-1 @xl:items-start @xl:text-left">
             <div class="flex flex-col items-center gap-related @xl:items-start">
               <.live_component
-                id="viewer-progress-badge"
+                id="content-watch-progress"
                 module={ContentWatchProgressBadge}
-                content={@content}
+                content_identity={@content_identity}
                 current_user={@current_user}
               />
               <h1
                 id="content-details-title"
                 class="text-4xl leading-none font-semibold tracking-tight text-text"
               >
-                {@content.title}
+                {title(@content)}
               </h1>
               <ul
-                :if={metadata_items(@content.details) != []}
+                :if={metadata_items(@content) != []}
                 class="flex flex-wrap items-center gap-related text-text-muted"
               >
                 <li
-                  :for={{item, index} <- Enum.with_index(metadata_items(@content.details))}
+                  :for={{item, index} <- Enum.with_index(metadata_items(@content))}
                   class="flex items-center gap-related"
                 >
                   <span :if={index > 0} aria-hidden="true">•</span>
@@ -71,51 +76,60 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
               <li class="inline-flex items-center gap-tight">
                 <Lucideicons.languages class="size-icon-sm text-accent" aria-hidden="true" />
                 <span class="font-semibold text-text">
-                  {original_language_label(@content.details)}
+                  {original_language_label(@content)}
                 </span>
               </li>
               <li
-                :if={primary_country(@content.details)}
+                :if={primary_country(@content)}
                 class="inline-flex items-center gap-tight font-semibold text-text"
               >
-                <span :if={primary_country(@content.details).flag} aria-hidden="true">
-                  {primary_country(@content.details).flag}
+                <span :if={primary_country(@content).flag} aria-hidden="true">
+                  {primary_country(@content).flag}
                 </span>
-                {primary_country(@content.details).name}
+                {primary_country(@content).name}
               </li>
             </ul>
 
             <p :if={show_original_title?(@content)}>
               {dgettext("contents", "Original title")}:
-              <span class="font-semibold text-text">{original_title(@content.details)}</span>
+              <span class="font-semibold text-text">{original_title(@content)}</span>
             </p>
 
-            <ul :if={@content.details.genres != []} class="flex flex-wrap items-center gap-related">
-              <li :for={genre <- @content.details.genres}>
+            <ul :if={@content.genres != []} class="flex flex-wrap items-center gap-related">
+              <li :for={genre <- @content.genres}>
                 <.badge variant="secondary">{genre.name}</.badge>
               </li>
             </ul>
           </div>
         </div>
 
-        <.hero_actions content={@content} current_user={@current_user} />
+        <.hero_actions
+          content_identity={@content_identity}
+          content={@content}
+          current_user={@current_user}
+        />
       </div>
     </header>
     """
   end
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
+
+  attr :content, :any,
+    required: true,
+    doc: "An instance of MovieDetailsResponse or TvDetailsResponse"
+
   attr :current_user, User, required: true
 
   defp hero_actions(assigns) do
-    assigns = assign(assigns, :trailer_url, trailer_url(assigns.content.details))
+    assigns = assigns |> assign(trailer_url: trailer_url(assigns.content))
 
     ~H"""
     <.cluster class="w-full justify-center">
       <.live_component
         id="details-play-or-request-button"
         module={PlayOrRequestButtonLive}
-        content={@content}
+        content_identity={@content_identity}
         current_user={@current_user}
         size="lg"
         class="w-full @xl:w-auto"
@@ -123,7 +137,8 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
       <.live_component
         id="details-add-to-library-button"
         module={AddToLibraryButtonLive}
-        content={@content}
+        content_identity={@content_identity}
+        content_title={title(@content)}
         current_user={@current_user}
         size="lg"
         class="w-full @xl:w-auto"
@@ -143,6 +158,9 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     </.cluster>
     """
   end
+
+  defp title(%MovieDetailsResponse{} = details), do: details.title
+  defp title(%TvDetailsResponse{} = details), do: details.name
 
   defp metadata_items(%MovieDetailsResponse{} = details) do
     [
@@ -222,9 +240,9 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
   defp original_title(%MovieDetailsResponse{original_title: original_title}), do: original_title
   defp original_title(%TvDetailsResponse{original_name: original_name}), do: original_name
 
-  defp show_original_title?(%ContentView{title: title} = content) do
-    original = original_title(content.details)
-    original not in [nil, ""] and original != title
+  defp show_original_title?(content) do
+    original = original_title(content)
+    original not in [nil, ""] and original != title(content)
   end
 
   defp trailer_url(details) do

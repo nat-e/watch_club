@@ -2,8 +2,7 @@ defmodule WatchClub.Requests.ContentRequestSort do
   @moduledoc """
   Sort options for the My Requests page (`ContentRequest.for_current_user`).
 
-  Owns URL-param parsing and the sort applied to the query, in the same shape
-  as `Clubs.LibraryItemsSortOption`. `translated_label/1` drives the sort menu.
+  Owns URL-param parsing and the sort applied to the query. `translated_label/1` drives the sort menu.
   """
   use Gettext, backend: WatchClubWeb.Gettext
 

@@ -4,40 +4,40 @@ defmodule WatchClubWeb.Components.Contents.Details.ReviewsCard do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Accounts.{User, UserLocale}
 
-  attr :content, ContentView, required: true
+  attr :vote_average, :float, required: true
+  attr :vote_count, :integer, required: true
   attr :current_user, User, required: true
 
   def reviews_card(assigns) do
     ~H"""
     <.section
-      :if={format_score(@content.details.vote_average)}
+      :if={format_score(@vote_average)}
       title={dgettext("contents", "Reviews")}
       icon={:star}
     >
       <div class="grid place-items-center gap-related text-center">
         <div
           class="grid size-24 place-items-center rounded-full p-1"
-          style={"background: conic-gradient(var(--wc-color-success) #{score_percent(@content.details.vote_average)}%, var(--wc-color-surface-inset) 0)"}
+          style={"background: conic-gradient(var(--wc-color-success) #{score_percent(@vote_average)}%, var(--wc-color-surface-inset) 0)"}
         >
           <div class="grid size-full place-items-center rounded-full bg-surface-overlay">
             <div>
               <p class="text-2xl font-semibold text-text">
-                {format_score(@content.details.vote_average)}
+                {format_score(@vote_average)}
               </p>
               <p class="text-xs text-text-muted">TMDB</p>
             </div>
           </div>
         </div>
-        <p :if={@content.details.vote_count} class="text-sm leading-6 text-text-muted">
+        <p :if={@vote_count} class="text-sm leading-6 text-text-muted">
           {dngettext(
             "contents",
             "Based on %{count} TMDB vote.",
             "Based on %{count} TMDB votes.",
-            @content.details.vote_count,
-            count: format_vote_count(@content.details.vote_count, @current_user.settings.locale)
+            @vote_count,
+            count: format_vote_count(@vote_count, @current_user.settings.locale)
           )}
         </p>
       </div>

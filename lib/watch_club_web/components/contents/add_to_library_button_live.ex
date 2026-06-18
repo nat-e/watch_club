@@ -2,9 +2,10 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   use WatchClubWeb, :live_component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
+  attr :content_title, :string, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
 
@@ -14,24 +15,24 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   @impl true
   def render(assigns) do
-    assigns = assign(assigns, :clubs, ContentView.in_clubs(assigns.content, assigns.current_user))
-
     ~H"""
     <div class={@class}>
       <.button
         id={"#{@id}-open-button"}
         size={@size}
-        variant={if @clubs == [], do: "primary", else: "accent"}
+        variant={if @library_items == [], do: "primary", else: "accent"}
         class="w-full"
         phx-target={@myself}
         phx-click="open"
       >
-        <.inner clubs={@clubs} />
+        <.inner library_items={@library_items} />
       </.button>
       <.library_selection_modal
         :if={@open?}
         component_id={@id}
-        content={@content}
+        content_identity={@content_identity}
+        content_title={@content_title}
+        library_items={@library_items}
         current_user={@current_user}
         myself={@myself}
       />
@@ -39,7 +40,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     """
   end
 
-  defp inner(%{clubs: []} = assigns) do
+  defp inner(%{library_items: []} = assigns) do
     ~H"""
     <Lucideicons.list_plus />
     <span>{dgettext("contents", "Share with Clubs")}</span>
@@ -47,6 +48,8 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   end
 
   defp inner(assigns) do
+    assigns = assigns |> assign(clubs: assigns.library_items |> Enum.map(& &1.library.club))
+
     ~H"""
     <.avatar_group avatars={@clubs} avatar_size="sm" />
     <.count_label count={length(@clubs)} />
@@ -65,10 +68,14 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   defp library_selection_modal(assigns) do
     assigns =
-      assign(
-        assigns,
-        :library_options,
-        libraries_for_content(assigns.current_user, assigns.content)
+      assigns
+      |> assign(
+        library_options:
+          libraries_for_content(
+            assigns.current_user,
+            assigns.content_identity.type,
+            assigns.library_items
+          )
       )
 
     ~H"""
@@ -81,7 +88,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
             dgettext(
               "contents",
               "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content.",
-              content_name: gtboldunder(@content.title)
+              content_name: gtboldunder(@content_title)
             )
           )}
         </.alert>
@@ -157,6 +164,27 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
     {:ok, assign(socket, :open?, false)}
   end
 
+  @impl true
+  def update_many(assigns_sockets) do
+    identities = Enum.map(assigns_sockets, fn {assigns, _socket} -> assigns.content_identity end)
+
+    actor = assigns_sockets |> List.first() |> Kernel.elem(0) |> Map.fetch!(:current_user)
+
+    items_by_identity =
+      Clubs.get_library_items_by_identities!(identities,
+        actor: actor,
+        load: [:content, library: [:club]]
+      )
+      |> Enum.group_by(&ContentIdentity.from_content(&1.content))
+
+    assigns_sockets
+    |> Enum.map(fn {assigns, socket} ->
+      socket
+      |> assign(assigns)
+      |> assign(library_items: Map.get(items_by_identity, assigns.content_identity, []))
+    end)
+  end
+
   # Just toggles the modal — the checkboxes carry the selection and the bulk
   # actions resolve (and create) the Content from its identity, so there's no
   # form state to track.
@@ -179,9 +207,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
         {:noreply, assign(socket, :open?, false)}
 
       library_ids ->
-        identity = ContentView.identity(socket.assigns.content)
-
-        case Clubs.add_content_to_libraries(identity, library_ids,
+        case Clubs.add_content_to_libraries(socket.assigns.content_identity, library_ids,
                actor: socket.assigns.current_user
              ) do
           {:ok, _} ->
@@ -202,22 +228,18 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   # The actor's club libraries that accept this content's type, marking the ones
   # it is already in (shown as a badge, not a selectable checkbox).
-  defp libraries_for_content(%User{} = user, %ContentView{} = content) do
+  defp libraries_for_content(%User{} = user, content_type, library_items) do
     user.memberships
     |> Enum.flat_map(fn membership ->
       membership.club.libraries
-      |> Enum.filter(&(&1.content_type == content.type))
+      |> Enum.filter(&(&1.content_type == content_type))
       |> Enum.map(fn library ->
         %{
           club: membership.club,
           library: library,
-          already_in?: in_library?(content, library.id)
+          already_in?: library_items |> Enum.any?(&(library.id == &1.library_id))
         }
       end)
     end)
-  end
-
-  defp in_library?(%ContentView{} = content, library_id) do
-    Enum.any?(content.in_libraries, &(&1.library_id == library_id))
   end
 end

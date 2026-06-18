@@ -4,8 +4,9 @@ defmodule WatchClub.Contents.Movie do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{Content, ContentView, MovieLocalization}
+  alias WatchClub.Contents.{Content, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
+  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
   alias WatchClub.MediaCatalog.Video
 
   postgres do
@@ -28,7 +29,7 @@ defmodule WatchClub.Contents.Movie do
     end
 
     action :details, :struct do
-      constraints instance_of: ContentView
+      constraints instance_of: MovieDetailsResponse
       argument :tmdb_id, :integer, allow_nil?: false
 
       run WatchClub.Contents.Actions.GetMovieDetails
@@ -63,7 +64,7 @@ defmodule WatchClub.Contents.Movie do
     has_many :videos, Video
     has_many :watch_progresses, WatchProgress
 
-    has_one :viewer_progress, WatchProgress do
+    has_one :actor_progress, WatchProgress do
       from_many? true
       filter expr(user_id == ^actor(:id))
     end
@@ -72,18 +73,18 @@ defmodule WatchClub.Contents.Movie do
   calculations do
     calculate :playable?, :boolean, expr(videos_count > 0)
 
-    calculate :viewer_progress_status,
+    calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
-                  is_nil(viewer_progress) -> :not_started
-                  viewer_progress.completed -> :completed
+                  is_nil(actor_progress) -> :not_started
+                  actor_progress.completed -> :completed
                   true -> :in_progress
                 end
               )
 
     # The date at which the current user has most recently watched this movie
-    calculate :viewer_last_watched_at, :utc_datetime, expr(viewer_progress.updated_at)
+    calculate :actor_last_watched_at, :utc_datetime, expr(actor_progress.updated_at)
   end
 
   aggregates do

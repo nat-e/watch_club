@@ -3,6 +3,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
 
   alias WatchClub.Accounts.UserLocale
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
+  alias WatchClub.Integrations.Tmdb.Types.Images
 
   require Logger
 
@@ -71,12 +72,12 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   end
 
   defp best_global_backdrop(%MovieDetailsResponse{
-         images: %MovieDetailsResponse.Images{backdrops: []}
+         images: %Images{backdrops: []}
        }),
        do: nil
 
   defp best_global_backdrop(%MovieDetailsResponse{
-         images: %MovieDetailsResponse.Images{backdrops: backdrops}
+         images: %Images{backdrops: backdrops}
        }) do
     Enum.min_by(backdrops, fn backdrop ->
       {

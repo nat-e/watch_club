@@ -2,6 +2,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   use WatchClubWeb, :live_view
 
   require Logger
+  require Ash.Query
 
   import WatchClubWeb.Components.Contents.Details.{
     CastSection,
@@ -13,11 +14,17 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   import WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
+  alias WatchClubWeb.Components.Contents.{
+    AddToLibraryButtonLive,
+    ContentWatchProgressBadge,
+    PlayOrRequestButtonLive
+  }
+
   @impl true
-  def render(%{tv_show: %ContentView{details: %TvDetailsResponse{}}} = assigns) do
+  def render(%{tv_show: %TvDetailsResponse{}} = assigns) do
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -26,12 +33,57 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       class="p-0!"
       space="none"
     >
-      <.tv_show_details
-        tv_show={@tv_show}
-        current_user={@current_user}
-        selected_season={@selected_season}
-        season_metadata_by_number={@season_metadata_by_number}
-      />
+      <article
+        aria-labelledby="content-details-title"
+        class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
+      >
+        <.details_backdrop path={@tv_show.backdrop_path} />
+
+        <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
+          <.hero_panel
+            content_identity={ContentIdentity.for_movie(@tv_show.id)}
+            content={@tv_show}
+            current_user={@current_user}
+          />
+
+          <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
+            <div class="flex min-w-0 flex-1 flex-col gap-cluster">
+              <.section
+                :if={@tv_show.overview}
+                title={dgettext("contents", "Overview")}
+                icon={:tv}
+              >
+                <p class="leading-7 text-text-muted">
+                  {@tv_show.overview}
+                </p>
+              </.section>
+
+              <.episodes_section
+                :if={@tv_show.seasons != []}
+                details={@tv_show}
+                selected_season={@selected_season}
+                season_metadata_by_number={@season_metadata_by_number}
+                episodes={@episodes}
+                current_user={@current_user}
+              />
+
+              <.cast_section credits={@tv_show.credits} />
+            </div>
+
+            <aside
+              aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
+              class="flex w-full flex-col gap-cluster @6xl:w-[22rem] @6xl:shrink-0"
+            >
+              <.reviews_card
+                vote_average={@tv_show.vote_average}
+                vote_count={@tv_show.vote_count}
+                current_user={@current_user}
+              />
+              <.external_links_card content={@tv_show} />
+            </aside>
+          </div>
+        </div>
+      </article>
     </Layouts.app>
     """
   end
@@ -50,114 +102,103 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
     """
   end
 
-  attr :tv_show, ContentView, required: true
-  attr :current_user, User, required: true
-  attr :selected_season, :integer, required: true
-  attr :season_metadata_by_number, :map, required: true
-
-  defp tv_show_details(assigns) do
-    ~H"""
-    <article
-      aria-labelledby="content-details-title"
-      class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
-    >
-      <.details_backdrop path={@tv_show.details.backdrop_path} />
-
-      <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
-        <.hero_panel content={@tv_show} current_user={@current_user} />
-
-        <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
-          <div class="flex min-w-0 flex-1 flex-col gap-cluster">
-            <.section
-              :if={@tv_show.details.overview}
-              title={dgettext("contents", "Overview")}
-              icon={:tv}
-            >
-              <p class="leading-7 text-text-muted">
-                {@tv_show.details.overview}
-              </p>
-            </.section>
-
-            <.episodes_section
-              :if={season_summaries(@tv_show.details) != []}
-              content={@tv_show}
-              details={@tv_show.details}
-              selected_season={@selected_season}
-              season_metadata_by_number={@season_metadata_by_number}
-              current_user={@current_user}
-            />
-
-            <.cast_section content={@tv_show} />
-          </div>
-
-          <aside
-            aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
-            class="flex w-full flex-col gap-cluster @6xl:w-[22rem] @6xl:shrink-0"
-          >
-            <.reviews_card content={@tv_show} current_user={@current_user} />
-            <.external_links_card content={@tv_show} />
-          </aside>
-        </div>
-      </div>
-    </article>
-    """
-  end
-
   @impl true
-  def mount(%{"tmdb_id" => tmdb_id}, _session, socket) do
+  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     user = socket.assigns.current_user
 
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(
-        WatchClub.PubSub,
-        WatchClub.PubSub.content_topic(:tmdb, tmdb_id)
-      )
+    WatchClub.PubSub.subscribe_if_connected(socket, [
+      WatchClub.PubSub.content_topic(:tmdb, tmdb_id),
+      WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
+    ])
 
-      Phoenix.PubSub.subscribe(
-        WatchClub.PubSub,
-        WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
-      )
+    case Integer.parse(tmdb_id) do
+      {parsed_id, ""} -> {:noreply, socket |> load_tv_show_details(parsed_id)}
+      _ -> {:noreply, socket |> redirect_home()}
     end
+  end
 
-    case load_tv_show(tmdb_id, user) do
+  defp load_tv_show_details(socket, tmdb_id) do
+    case Contents.get_tv_show_details(tmdb_id, actor: socket.assigns.current_user) do
       {:ok, tv_show} ->
-        season_summaries = season_summaries(tv_show.details)
+        socket
+        |> assign(
+          tv_show: tv_show,
+          selected_season: 1,
+          season_metadata_by_number:
+            Map.new(tv_show.seasons, &{&1.season_number, %{status: :loading}})
+        )
+        |> load_episodes()
+        |> start_season_metadata_loads(tv_show.seasons)
 
-        socket =
-          socket
-          |> assign(:tv_show, tv_show)
-          |> assign(:selected_season, default_season(tv_show))
-          |> assign(
-            :season_metadata_by_number,
-            initial_season_metadata_by_number(season_summaries)
-          )
-          |> start_season_metadata_loads(season_summaries)
-
-        {:ok, socket}
-
-      {:error, error} ->
-        Logger.warning("Error loading TV Show: #{inspect(error)}")
-        {:ok, socket}
+      {:error, _} ->
+        socket |> redirect_home()
     end
+  end
+
+  # Load the TvShowEpisode data from database if they exist with their context
+  # (whether they are playable and watched by the current user)
+  # They are loaded into the socket assigns, in a 2 levels map indexed by season number
+  # and episode number for fast retrieval.
+  defp load_episodes(socket) do
+    episodes_map =
+      Contents.get_episodes_for_show!(socket.assigns.tv_show.id,
+        load: [
+          # This is used for displaying the watch progress badge at the season and episode level
+          :actor_progress_status,
+          # playable? and videos is used to display the play button on each episode
+          :playable?,
+          :videos
+        ],
+        actor: socket.assigns.current_user
+      )
+      |> Enum.group_by(& &1.season_number)
+      |> Map.new(fn {season_number, episodes} ->
+        {season_number, Map.new(episodes, &{&1.episode_number, &1})}
+      end)
+
+    socket |> assign(episodes: episodes_map)
+  end
+
+  defp redirect_home(socket) do
+    socket
+    |> put_flash(
+      :error,
+      dgettext("contents", "The TV Show you were looking for does not exist")
+    )
+    |> push_navigate(to: ~p"/")
   end
 
   @impl true
   def handle_info(
         %Phoenix.Socket.Broadcast{
           payload: %Ash.Notifier.Notification{
-            metadata: %{subject: :content_changed, external_id: tmdb_id}
+            metadata: %{subject: :content_changed, content_identity: content_identity}
           }
         },
         socket
       ) do
-    case load_tv_show(tmdb_id, socket.assigns.current_user) do
-      {:ok, show} ->
-        {:noreply, socket |> assign(:tv_show, show)}
+    # Update all the live components that load their own data
+    # This could be optimized
+    send_update(ContentWatchProgressBadge,
+      id: "content-watch-progress",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
 
-      {:error, error} ->
-        Logger.error("Error reloading TV show: #{inspect(error)}")
-        {:noreply, socket}
-    end
+    send_update(PlayOrRequestButtonLive,
+      id: "details-play-or-request-button",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
+
+    send_update(AddToLibraryButtonLive,
+      id: "details-add-to-library-button",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
+
+    # Reload the episode data
+    {:noreply, socket |> load_episodes()}
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
@@ -199,14 +240,6 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
      |> start_season_metadata_load(season_number)}
   end
 
-  defp load_tv_show(tmdb_id, user) do
-    Contents.get_tv_show_details(tmdb_id, actor: user)
-  end
-
-  defp initial_season_metadata_by_number(season_summaries) do
-    Map.new(season_summaries, fn season -> {season.season_number, %{status: :loading}} end)
-  end
-
   defp finish_season_metadata_load(socket, season_number, metadata) do
     put_season_metadata(socket, season_number, metadata)
   end
@@ -222,26 +255,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   end
 
   defp start_season_metadata_load(socket, season_number) do
-    tmdb_id = socket.assigns.tv_show.external_id
+    tmdb_id = socket.assigns.tv_show.id
     actor = socket.assigns.current_user
 
     start_async(socket, {:season_metadata, season_number}, fn ->
       Contents.get_tv_show_season_details(tmdb_id, season_number, actor: actor)
     end)
-  end
-
-  defp default_season(%ContentView{details: %TvDetailsResponse{} = details}) do
-    case season_summaries(details) do
-      [season | _] -> season.season_number
-      [] -> 1
-    end
-  end
-
-  defp default_season(_), do: 1
-
-  defp season_summaries(%TvDetailsResponse{} = details) do
-    details.seasons
-    |> Enum.filter(&(&1.season_number >= 1 and &1.episode_count > 0))
-    |> Enum.sort_by(& &1.season_number)
   end
 end

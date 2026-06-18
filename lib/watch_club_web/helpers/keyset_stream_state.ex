@@ -3,6 +3,8 @@ defmodule WatchClubWeb.Helpers.KeysetStreamState do
   State for a synchronous infinite scroll list backed by Ash keyset pagination
   """
 
+  require Logger
+
   @type status :: :init | :ready | :error
   @type t :: %__MODULE__{page_size: integer(), status: status(), after_keyset: term() | nil}
 
@@ -20,7 +22,8 @@ defmodule WatchClubWeb.Helpers.KeysetStreamState do
       {:ok, %{results: results}} ->
         {:ok, %__MODULE__{state | status: :ready, after_keyset: nil}, results}
 
-      {:error, _error} ->
+      {:error, error} ->
+        Logger.error("Error loading keyset page: #{inspect(error)}")
         {:error, %__MODULE__{state | status: :error}, nil}
     end
   end

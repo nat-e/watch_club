@@ -51,7 +51,7 @@ defmodule WatchClub.Contents.Book do
     has_many :audiobooks, Audiobook
     has_many :watch_progresses, WatchProgress
 
-    has_one :viewer_progress, WatchProgress do
+    has_one :actor_progress, WatchProgress do
       from_many? true
       filter expr(user_id == ^actor(:id))
     end
@@ -60,17 +60,17 @@ defmodule WatchClub.Contents.Book do
   calculations do
     calculate :playable?, :boolean, expr(audiobooks_count > 0 or ebooks_count > 0)
 
-    calculate :viewer_progress_status,
+    calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
-                  is_nil(viewer_progress) -> :not_started
-                  viewer_progress.completed -> :completed
+                  is_nil(actor_progress) -> :not_started
+                  actor_progress.completed -> :completed
                   true -> :in_progress
                 end
               )
 
-    calculate :viewer_last_watched_at, :utc_datetime, expr(viewer_progress.updated_at)
+    calculate :actor_last_watched_at, :utc_datetime, expr(actor_progress.updated_at)
   end
 
   aggregates do

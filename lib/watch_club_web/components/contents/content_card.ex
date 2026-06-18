@@ -7,13 +7,19 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Clubs.LibraryItem
+  alias WatchClub.Contents.{Content, ContentIdentity}
+  alias WatchClub.Shared.Url
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   attr :id, :string
-  attr :content, ContentView, required: true
+  attr :content, Content, required: true
   attr :current_user, User, required: true
-  attr :library_id_context, :string, default: nil
+
+  attr :library_item, LibraryItem,
+    default: nil,
+    doc:
+      "If we are in the context of displaying a LibraryItem, an avatar will be displayed in the overlay"
 
   def content_card(assigns) do
     ~H"""
@@ -24,23 +30,27 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
       padding="none"
       class="group/content-card relative overflow-hidden w-44"
     >
-      <.tmdb_poster size="w342" path={@content.image_path}>
+      <.tmdb_poster size="w342" path={@content.implementation.best_localization.poster_path}>
         <Lucideicons.check_circle_2
-          :if={ContentView.viewer_progress_status(@content) == :completed}
+          :if={@content.actor_progress_status == :completed}
           class="absolute justify-self-end p-tight m-tight text-success size-9 bg-black/60 rounded-full"
         />
         <button
           id={"content-card-reveal-#{@id}"}
           type="button"
           class="absolute inset-0 z-20 [@media(hover:hover)]:hidden group-data-[state=revealed]/content-card:hidden"
-          aria-label={dgettext("clubs", "Reveal details for %{title}", title: @content.title)}
+          aria-label={
+            dgettext("clubs", "Reveal details for %{title}",
+              title: @content.implementation.best_localization.title
+            )
+          }
           phx-click={reveal_content_card()}
         />
         <.overlay
           id={@id}
           content={@content}
           current_user={@current_user}
-          library_id_context={@library_id_context}
+          library_item={@library_item}
         />
       </.tmdb_poster>
     </.card>
@@ -48,24 +58,11 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
   end
 
   attr :id, :string
-  attr :content, ContentView, required: true
+  attr :content, Content, required: true
   attr :current_user, User, required: true
-  attr :library_id_context, :string, default: nil
+  attr :library_item, LibraryItem, default: nil
 
   defp overlay(assigns) do
-    library_item =
-      case assigns.library_id_context do
-        nil ->
-          nil
-
-        library_id ->
-          Enum.find(assigns.content.in_libraries, fn item -> item.library_id == library_id end)
-      end
-
-    assigns =
-      assigns
-      |> assign(:library_item, library_item)
-
     ~H"""
     <.stack
       space="related"
@@ -109,17 +106,17 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
         </.inline>
 
         <.link
-          navigate={ContentView.details_url(@content)}
+          navigate={Url.content_details_link(@content.type, @content.external_id)}
           class="line-clamp-4 text-xl leading-tight font-bold after:absolute after:inset-0 after:content-['']"
         >
-          {@content.title}
+          {@content.implementation.best_localization.title}
         </.link>
       </.stack>
 
       <.live_component
         id={"play-or-request-button-#{@id}"}
         module={PlayOrRequestButtonLive}
-        content={@content}
+        content_identity={ContentIdentity.from_content(@content)}
         current_user={@current_user}
         size="md"
         class="z-10"

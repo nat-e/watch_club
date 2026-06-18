@@ -10,7 +10,9 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
+  alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
+  alias WatchClub.Shared.Url
 
   attr :form, :any, required: true
   attr :id_prefix, :string, required: true
@@ -81,39 +83,50 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
     <.search_preview_card
       :for={result <- @search_results}
       id_prefix={@id_prefix}
-      content={result}
+      content_identity={content_identity(result)}
+      poster_path={result.poster_path}
+      title={search_preview_title(result)}
+      description={result.overview}
     />
     """
   end
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
   attr :id_prefix, :string, required: true
+  attr :poster_path, :string, required: true
+  attr :title, :string, required: true
+  attr :description, :string, required: true
 
   defp search_preview_card(assigns) do
     ~H"""
     <.link
-      id={"#{@id_prefix}-preview-link-#{ContentView.unique_id(@content)}"}
+      id={"#{@id_prefix}-preview-link-#{@content_identity.external_id}"}
       class="flex gap-related hover:bg-surface-hover p-related"
-      navigate={details_url(@content)}
+      navigate={Url.content_details_link(@content_identity)}
     >
       <.tmdb_poster
-        path={@content.image_path}
+        path={@poster_path}
         size="w154"
         class="w-20 shrink-0 rounded-control"
       />
       <.stack space="related" class="h-full flex-1">
-        <span class="font-bold">{search_preview_title(@content)}</span>
-        <p class="line-clamp-2 text-sm text-text-muted">{@content.description}</p>
+        <span class="font-bold">{@title}</span>
+        <p class="line-clamp-2 text-sm text-text-muted">{@description}</p>
       </.stack>
     </.link>
     """
   end
 
-  defp search_preview_title(%ContentView{title: title, release_date: nil}), do: title
+  defp content_identity(%MovieSearchResult{id: tmdb_id}), do: ContentIdentity.for_movie(tmdb_id)
+  defp content_identity(%TvSearchResult{id: tmdb_id}), do: ContentIdentity.for_tv_show(tmdb_id)
 
-  defp search_preview_title(%ContentView{title: title, release_date: date}),
+  defp search_preview_title(%MovieSearchResult{title: title, release_date: nil}), do: title
+
+  defp search_preview_title(%MovieSearchResult{title: title, release_date: date}),
     do: "#{title} (#{date.year})"
 
-  defp details_url(%ContentView{type: :movie} = movie), do: ~p"/movies/#{movie.external_id}"
-  defp details_url(%ContentView{type: :tv_show} = show), do: ~p"/shows/#{show.external_id}"
+  defp search_preview_title(%TvSearchResult{name: name, first_air_date: nil}), do: name
+
+  defp search_preview_title(%TvSearchResult{name: name, first_air_date: date}),
+    do: "#{name} (#{date.year})"
 end

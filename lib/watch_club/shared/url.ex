@@ -16,7 +16,8 @@ defmodule WatchClub.Shared.Url do
     router: WatchClubWeb.Router,
     statics: WatchClubWeb.static_paths()
 
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Content, ContentIdentity, Movie, TvShowEpisode}
+  alias WatchClub.MediaCatalog.Video
 
   @spec normalize_base(nil) :: nil
   @spec normalize_base(String.t()) :: String.t()
@@ -39,6 +40,12 @@ defmodule WatchClub.Shared.Url do
     "#{normalize_base(base)}/webhooks/#{source_type}/#{media_source_id}"
   end
 
+  def content_details_link(%Content{type: type, external_id: id}),
+    do: content_details_link(type, id)
+
+  def content_details_link(%ContentIdentity{type: type, external_id: id}),
+    do: content_details_link(type, id)
+
   def content_details_link(:movie, external_id),
     do: ~p"/movies/#{external_id}"
 
@@ -50,4 +57,5 @@ defmodule WatchClub.Shared.Url do
 
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
+  def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
 end

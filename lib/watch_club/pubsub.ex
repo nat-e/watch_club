@@ -3,7 +3,7 @@ defmodule WatchClub.PubSub do
   Helpers and topics for the WatchClub PubSub notification service
   """
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, ContentView}
+  alias WatchClub.Contents.{Content, ContentIdentity}
 
   @doc """
   Subscribes a LiveView socket to a topic or list of PubSub topics if the socket is connected
@@ -23,9 +23,9 @@ defmodule WatchClub.PubSub do
   @doc """
   Subscribes to PubSub events for a given content and returns the topics
   """
-  @spec subscribe_to_content(ContentView.t() | Content.t(), User.t()) :: [String.t()]
-  def subscribe_to_content(%ContentView{} = content, %User{} = current_user) do
-    topics = content_topics(content.external_id_source, content.external_id, current_user)
+  @spec subscribe_to_content(ContentIdentity.t() | Content.t(), User.t()) :: [String.t()]
+  def subscribe_to_content(%ContentIdentity{} = identity, %User{} = current_user) do
+    topics = content_topics(identity.external_id_source, identity.external_id, current_user)
     Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
     topics
   end
@@ -39,9 +39,9 @@ defmodule WatchClub.PubSub do
   @doc """
   Unsubscribes from PubSub events for a given content and returns the topics
   """
-  @spec unsubscribe_from_content(ContentView.t(), User.t()) :: [String.t()]
-  def unsubscribe_from_content(%ContentView{} = content, %User{} = current_user) do
-    topics = content_topics(content.external_id_source, content.external_id, current_user)
+  @spec unsubscribe_from_content(ContentIdentity.t(), User.t()) :: [String.t()]
+  def unsubscribe_from_content(%ContentIdentity{} = identity, %User{} = current_user) do
+    topics = content_topics(identity.external_id_source, identity.external_id, current_user)
     Enum.each(topics, &Phoenix.PubSub.unsubscribe(__MODULE__, &1))
     topics
   end

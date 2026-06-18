@@ -4,7 +4,7 @@ defmodule WatchClub.Contents.TvShow do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{Content, ContentView, TvShowEpisode, TvShowLocalization}
+  alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
   alias WatchClub.History.WatchStatus
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
@@ -58,7 +58,7 @@ defmodule WatchClub.Contents.TvShow do
     end
 
     action :details, :struct do
-      constraints instance_of: ContentView
+      constraints instance_of: TvDetailsResponse
       argument :tmdb_id, :integer, allow_nil?: false
 
       run WatchClub.Contents.Actions.GetTvShowDetails
@@ -107,17 +107,16 @@ defmodule WatchClub.Contents.TvShow do
     has_many :localizations, TvShowLocalization
     has_many :episodes, TvShowEpisode
 
-    # The next episode that the current user has not watched to completion
-    # Episodes are automatically sorted by season/episode number so no need to sort here
-    has_one :viewer_next_episode, TvShowEpisode do
-      from_many? true
-      filter expr(viewer_progress_status != :completed)
+    # The next episode that the current user has not watched to completion.
+    # If all episodes have been watched, this returns the first one.
+    has_one :actor_next_episode, TvShowEpisode do
+      manual WatchClub.Contents.TvShow.ActorNextEpisode
     end
 
     # The episode that the current user has most recently watched (even partly), if any.
-    has_one :viewer_most_recently_watched_episode, TvShowEpisode do
+    has_one :actor_most_recently_watched_episode, TvShowEpisode do
       from_many? true
-      sort viewer_last_watched_at: :desc
+      sort actor_last_watched_at: :desc
     end
 
     # The best localization based on the current user locale
@@ -129,20 +128,20 @@ defmodule WatchClub.Contents.TvShow do
   calculations do
     # The progress status of the show for the current user
     # A show is completed when all known episodes are completed
-    calculate :viewer_progress_status,
+    calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
-                  viewer_episodes_started_count == 0 -> :not_started
-                  viewer_episodes_completed_count == episodes_count -> :completed
+                  actor_episodes_started_count == 0 -> :not_started
+                  actor_episodes_completed_count == episodes_count -> :completed
                   true -> :in_progress
                 end
               )
 
     # The date at which the current user has most recently watched an episode of this show
-    calculate :viewer_last_watched_at,
+    calculate :actor_last_watched_at,
               :utc_datetime,
-              expr(viewer_most_recently_watched_episode.viewer_last_watched_at)
+              expr(actor_most_recently_watched_episode.actor_last_watched_at)
   end
 
   aggregates do
@@ -152,12 +151,12 @@ defmodule WatchClub.Contents.TvShow do
 
     count :episodes_count, :episodes
 
-    count :viewer_episodes_completed_count, :episodes do
-      filter expr(viewer_progress_status == :completed)
+    count :actor_episodes_completed_count, :episodes do
+      filter expr(actor_progress_status == :completed)
     end
 
-    count :viewer_episodes_started_count, :episodes do
-      filter expr(viewer_progress_status != :not_started)
+    count :actor_episodes_started_count, :episodes do
+      filter expr(actor_progress_status != :not_started)
     end
   end
 

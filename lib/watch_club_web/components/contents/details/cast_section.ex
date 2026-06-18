@@ -4,19 +4,21 @@ defmodule WatchClubWeb.Components.Contents.Details.CastSection do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Integrations.Tmdb.Types.Credits
 
-  attr :content, ContentView, required: true
+  attr :credits, Credits, required: true
 
   def cast_section(assigns) do
+    assigns = assigns |> assign(cast_and_crew: cast_and_crew(assigns.credits))
+
     ~H"""
     <.section
-      :if={cast_and_crew(@content.details) != []}
+      :if={@cast_and_crew != []}
       title={dgettext("contents", "Cast")}
       icon={:users}
     >
       <ul class="flex max-h-[calc(33.5rem+var(--wc-space-group)+var(--wc-space-tight))] flex-wrap justify-center gap-group overflow-hidden sm:max-h-[calc(36.5rem+var(--wc-space-group)+var(--wc-space-tight))] sm:justify-start">
-        <.cast_card :for={person <- cast_and_crew(@content.details)} person={person} />
+        <.cast_card :for={person <- @cast_and_crew} person={person} />
       </ul>
     </.section>
     """
@@ -49,8 +51,7 @@ defmodule WatchClubWeb.Components.Contents.Details.CastSection do
     """
   end
 
-  defp cast_and_crew(details) do
-    credits = details.credits
+  defp cast_and_crew(credits) do
     cast = (credits && credits.cast) || []
     crew = (credits && credits.crew) || []
 

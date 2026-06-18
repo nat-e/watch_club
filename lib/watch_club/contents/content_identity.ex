@@ -5,7 +5,7 @@ defmodule WatchClub.Contents.ContentIdentity do
   """
   use Ash.TypedStruct
 
-  alias WatchClub.Contents.{ContentType, ExternalIdSource}
+  alias WatchClub.Contents.{Content, ContentType, ExternalIdSource}
 
   typed_struct do
     field :type, ContentType,
@@ -40,5 +40,10 @@ defmodule WatchClub.Contents.ContentIdentity do
   @spec for_book(integer() | binary()) :: t()
   def for_book(hardcover_id) do
     %__MODULE__{type: :book, external_id_source: :hardcover, external_id: to_string(hardcover_id)}
+  end
+
+  @spec from_content(Content.t()) :: t()
+  def from_content(%{type: type, external_id_source: source, external_id: external_id}) do
+    %__MODULE__{type: type, external_id_source: source, external_id: external_id}
   end
 end

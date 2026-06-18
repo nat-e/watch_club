@@ -4,20 +4,23 @@ defmodule WatchClubWeb.Components.Contents.Details.ExternalLinksCard do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.Contents.ContentView
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
 
-  attr :content, ContentView, required: true
+  attr :content, :any,
+    required: true,
+    doc: "An instance or MovieDetailsResponse or TvDetailsResponse"
 
   def external_links_card(assigns) do
+    assigns = assigns |> assign(links: external_links(assigns.content))
+
     ~H"""
     <.section
-      :if={external_links(@content.details) != []}
+      :if={@links != []}
       title={dgettext("contents", "External links")}
       icon={:external_link}
     >
       <.stack as="ul" space="related">
-        <li :for={link <- external_links(@content.details)}>
+        <li :for={link <- @links}>
           <.external_link_button link={link} />
         </li>
       </.stack>

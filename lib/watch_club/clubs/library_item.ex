@@ -12,11 +12,9 @@ defmodule WatchClub.Clubs.LibraryItem do
   alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
   alias WatchClub.Clubs.Library
   alias WatchClub.Clubs.LibraryItem.Actions.{AddContentToLibraries, RemoveContentFromLibraries}
-  alias WatchClub.Clubs.LibraryItemsSortOption
-  alias WatchClub.Clubs.Preparations.PrepareLibraryItemsForView
   alias WatchClub.Clubs.Validations.LibraryAllowsContentType
   alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Shared.SortOrder
+  alias WatchClub.Contents.Preparations.FilterByContentIdentities
 
   import Ash.Expr
 
@@ -37,24 +35,19 @@ defmodule WatchClub.Clubs.LibraryItem do
       primary? true
     end
 
+    read :by_identities do
+      description "Returns all LibraryItems that match one of the provided ContentIdentity"
+      argument :content_identities, {:array, ContentIdentity}, allow_nil?: false
+
+      prepare {FilterByContentIdentities, content_path: [:content]}
+    end
+
     read :for_library do
       pagination keyset?: true, required?: false, stable_sort: [:id]
 
       argument :library_id, :uuid_v7, allow_nil?: false
 
-      argument :sort_by, LibraryItemsSortOption do
-        allow_nil? false
-        default LibraryItemsSortOption.default_option()
-      end
-
-      argument :sort_order, SortOrder do
-        allow_nil? false
-        default LibraryItemsSortOption.default_order()
-      end
-
       filter expr(library_id == ^arg(:library_id))
-
-      prepare PrepareLibraryItemsForView
     end
 
     create :create do
@@ -112,7 +105,7 @@ defmodule WatchClub.Clubs.LibraryItem do
       authorize_if ActorCanCreateLibraryItem
     end
 
-    policy action([:read, :for_library]) do
+    policy action_type(:read) do
       description "Only club members can read library items"
       authorize_if {ActorIsClubMemberFilter, club_path: [:library, :club]}
     end

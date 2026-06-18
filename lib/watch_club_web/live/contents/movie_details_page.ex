@@ -3,17 +3,25 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   require Logger
 
-  import WatchClubWeb.Components.Contents.Details.DetailsBackdrop
-  import WatchClubWeb.Components.Contents.Details.HeroPanel
-  import WatchClubWeb.Components.Contents.Details.ReviewsCard
-  import WatchClubWeb.Components.Contents.Details.ExternalLinksCard
-  import WatchClubWeb.Components.Contents.Details.CastSection
-
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
 
+  import WatchClubWeb.Components.Contents.Details.{
+    CastSection,
+    DetailsBackdrop,
+    ExternalLinksCard,
+    HeroPanel,
+    ReviewsCard
+  }
+
+  alias WatchClubWeb.Components.Contents.{
+    AddToLibraryButtonLive,
+    ContentWatchProgressBadge,
+    PlayOrRequestButtonLive
+  }
+
   @impl true
-  def render(%{movie: %ContentView{details: %MovieDetailsResponse{}}} = assigns) do
+  def render(%{movie: %MovieDetailsResponse{}} = assigns) do
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -41,7 +49,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     """
   end
 
-  attr :movie, ContentView, required: true
+  attr :movie, MovieDetailsResponse, required: true
   attr :current_user, User, required: true
 
   defp movie_details(assigns) do
@@ -50,31 +58,39 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       aria-labelledby="content-details-title"
       class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
     >
-      <.details_backdrop path={@movie.details.backdrop_path} />
+      <.details_backdrop path={@movie.backdrop_path} />
 
       <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
-        <.hero_panel content={@movie} current_user={@current_user} />
+        <.hero_panel
+          content_identity={ContentIdentity.for_movie(@movie.id)}
+          content={@movie}
+          current_user={@current_user}
+        />
 
         <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
           <div class="flex min-w-0 flex-1 flex-col gap-cluster">
             <.section
-              :if={@movie.details.overview}
+              :if={@movie.overview}
               title={dgettext("contents", "Overview")}
               icon={:film}
             >
               <p class="leading-7 text-text-muted">
-                {@movie.details.overview}
+                {@movie.overview}
               </p>
             </.section>
 
-            <.cast_section content={@movie} />
+            <.cast_section credits={@movie.credits} />
           </div>
 
           <aside
             aria-label={"#{dgettext("contents", "Reviews")} / #{dgettext("contents", "External links")}"}
             class="flex w-full flex-col gap-cluster @6xl:w-[22rem] @6xl:shrink-0"
           >
-            <.reviews_card content={@movie} current_user={@current_user} />
+            <.reviews_card
+              vote_average={@movie.vote_average}
+              vote_count={@movie.vote_count}
+              current_user={@current_user}
+            />
             <.external_links_card content={@movie} />
           </aside>
         </div>
@@ -84,7 +100,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
-  def mount(%{"tmdb_id" => tmdb_id}, _session, socket) do
+  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     user = socket.assigns.current_user
 
     WatchClub.PubSub.subscribe_if_connected(socket, [
@@ -92,13 +108,18 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
     ])
 
-    case load_movie(tmdb_id, user) do
-      {:ok, movie} ->
-        {:ok, socket |> assign(:movie, movie)}
-
-      {:error, error} ->
-        Logger.warning("Error loading movie: #{inspect(error)}")
-        {:ok, socket}
+    with {parsed_id, ""} <- Integer.parse(tmdb_id),
+         {:ok, movie} <- Contents.get_movie_details(parsed_id, actor: user) do
+      {:noreply, socket |> assign(:movie, movie)}
+    else
+      _ ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           dgettext("contents", "The movie you were looking for does not exist")
+         )
+         |> push_navigate(to: ~p"/")}
     end
   end
 
@@ -106,24 +127,33 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   def handle_info(
         %Phoenix.Socket.Broadcast{
           payload: %Ash.Notifier.Notification{
-            metadata: %{subject: :content_changed, external_id: tmdb_id}
+            metadata: %{subject: :content_changed, content_identity: content_identity}
           }
         },
         socket
       ) do
-    case load_movie(tmdb_id, socket.assigns.current_user) do
-      {:ok, movie} ->
-        {:noreply, socket |> assign(:movie, movie)}
+    # Update all the live components that load their own data
+    # This could be optimized
+    send_update(ContentWatchProgressBadge,
+      id: "content-watch-progress",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
 
-      {:error, error} ->
-        Logger.error("Error reloading movie: #{inspect(error)}")
-        {:noreply, socket}
-    end
+    send_update(PlayOrRequestButtonLive,
+      id: "details-play-or-request-button",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
+
+    send_update(AddToLibraryButtonLive,
+      id: "details-add-to-library-button",
+      content_identity: content_identity,
+      current_user: socket.assigns.current_user
+    )
+
+    {:noreply, socket}
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
-
-  defp load_movie(tmdb_id, user) do
-    Contents.get_movie_details(tmdb_id, actor: user)
-  end
 end

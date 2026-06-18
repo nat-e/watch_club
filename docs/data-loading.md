@@ -49,4 +49,4 @@ We do not try to patch the existing data from the payload, instead we reload the
 | `clubs:<club_id>:memberships` | Change regarding club memberships | `Membership:create`, `Membership:destroy` | `/clubs/:club_id/members` |
 | `media_sources` | Change regarding Media Source | `MediaSource:create`, `Membership:destroy` | Every page for current user |
 | `content:<external_id_source>:<external_id>` | Change regarding a Content that affect everyone (refreshed Metadata, new Media, ...) | `Membership:create`, `Membership:destroy` | Every page that displays content |
-| `content:<external_id_source>:<external_id>:user:<user_id>` | Change regarding a Content x User (ContentView) | `Membership:create`, `Membership:destroy` | Every page that displays content |
+| `content:<external_id_source>:<external_id>:user:<user_id>` | Change regarding a Content x User | `Membership:create`, `Membership:destroy` | Every page that displays content |

@@ -4,7 +4,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
   """
   use WatchClubWeb, :live_component
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
 
   @impl true
   def render(%{status: :completed} = assigns) do
@@ -30,16 +30,31 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
   end
 
   @impl true
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:status, ContentView.viewer_progress_status(assigns.content))}
+  def update_many(assigns_sockets) do
+    identities = Enum.map(assigns_sockets, fn {assigns, _socket} -> assigns.content_identity end)
+
+    actor = assigns_sockets |> List.first() |> Kernel.elem(0) |> Map.fetch!(:current_user)
+
+    contents_by_identity =
+      Contents.get_contents_by_identities!(identities,
+        load: [:actor_progress_status],
+        actor: actor
+      )
+      |> Map.new(&{ContentIdentity.from_content(&1), &1})
+
+    assigns_sockets
+    |> Enum.map(fn {assigns, socket} ->
+      content = Map.get(contents_by_identity, assigns.content_identity)
+
+      socket
+      |> assign(assigns)
+      |> assign(status: (content && content.actor_progress_status) || :not_started)
+    end)
   end
 
   @impl true
   def handle_event("mark_watched", _params, socket) do
-    case History.mark_content_watched(ContentView.identity(socket.assigns.content),
+    case History.mark_content_watched(socket.assigns.content_identity,
            actor: socket.assigns.current_user
          ) do
       {:ok, _content} ->
@@ -52,7 +67,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
   end
 
   def handle_event("mark_not_watched", _params, socket) do
-    case History.mark_content_not_watched(ContentView.identity(socket.assigns.content),
+    case History.mark_content_not_watched(socket.assigns.content_identity,
            actor: socket.assigns.current_user
          ) do
       {:ok, _content} ->

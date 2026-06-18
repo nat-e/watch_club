@@ -4,7 +4,11 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
   """
   use WatchClubWeb, :live_component
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.ContentIdentity
+
+  attr :content_identity, ContentIdentity, required: true
+  attr :season_number, :integer, required: true
+  attr :status, :atom, required: true, doc: "The WatchStatus of the season for the current user"
 
   @impl true
   def render(%{status: :completed} = assigns) do
@@ -30,17 +34,9 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
   end
 
   @impl true
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:status, season_status(assigns.content, assigns.season_number))}
-  end
-
-  @impl true
   def handle_event("mark_watched", _params, socket) do
     case History.mark_content_watched(
-           ContentView.identity(socket.assigns.content),
+           socket.assigns.content_identity,
            %{season_number: socket.assigns.season_number},
            actor: socket.assigns.current_user
          ) do
@@ -55,7 +51,7 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
 
   def handle_event("mark_not_watched", _params, socket) do
     case History.mark_content_not_watched(
-           ContentView.identity(socket.assigns.content),
+           socket.assigns.content_identity,
            %{season_number: socket.assigns.season_number},
            actor: socket.assigns.current_user
          ) do
@@ -65,18 +61,6 @@ defmodule WatchClubWeb.Components.Contents.SeasonWatchProgressBadge do
       {:error, error} ->
         Logger.error("Error marking content not watched #{inspect(error)}")
         {:noreply, socket |> put_flash(:error, "Something wrong happened")}
-    end
-  end
-
-  defp season_status(%ContentView{content: nil}, _season), do: :not_started
-
-  defp season_status(%ContentView{content: content}, season_number) do
-    episodes = content.tv_show.episodes |> Enum.filter(&(&1.season_number == season_number))
-
-    cond do
-      Enum.all?(episodes, &(&1.viewer_progress_status == :not_started)) -> :not_started
-      Enum.all?(episodes, &(&1.viewer_progress_status == :completed)) -> :completed
-      true -> :in_progress
     end
   end
 end

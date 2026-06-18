@@ -3,8 +3,6 @@ defmodule WatchClubWeb.HomePage do
 
   import WatchClubWeb.Live.Home.ContinueWatchingSection
 
-  alias WatchClub.Contents.ContentView
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -24,9 +22,7 @@ defmodule WatchClubWeb.HomePage do
   end
 
   defp load_continue_watching(socket) do
-    contents =
-      Contents.get_user_recently_watched!(actor: socket.assigns.current_user)
-      |> Enum.map(&ContentView.from_content(&1))
+    contents = Contents.get_user_recently_watched!(actor: socket.assigns.current_user)
 
     socket |> assign(:continue_watching, contents)
   end

@@ -4,7 +4,6 @@ defmodule WatchClub.Clubs.LibraryTest do
   import WatchClub.Clubs
 
   alias WatchClub.Clubs.Library
-  alias WatchClub.Contents.ContentView
 
   require Ash.Query
 
@@ -157,7 +156,6 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Abricot", "Banana", "Cerise", "Dattel", "Éclair", "Eden"] =
                Enum.map(items, fn item ->
                  item.content
-                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
     end
@@ -180,7 +178,6 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Movie 201", "Movie 202"] =
                Enum.map(first_items, fn item ->
                  item.content
-                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
 
@@ -195,7 +192,6 @@ defmodule WatchClub.Clubs.LibraryTest do
       assert ["Movie 203"] =
                Enum.map(second_items, fn item ->
                  item.content
-                 |> ContentView.from_content()
                  |> Map.fetch!(:title)
                end)
     end

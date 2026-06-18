@@ -12,7 +12,7 @@ defmodule WatchClub.Contents.Changes.CreateContentNotification do
   nil record, no notification is emitted. Omit when the record is the Content.
 
   :user An optional key or path for resolving the User(s) to notify; each is
-  notified on their ContentView PubSub topic. A path may fan out (e.g. a
+  notified on their PubSub topic. A path may fan out (e.g. a
   `has_many` like [:user_requests, :user] resolves to every requester). The
   `:__actor` atom resolves to the action actor. When unset, the notification is
   sent to a global Content topic (use for changes not specific to a given user).

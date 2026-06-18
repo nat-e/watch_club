@@ -19,8 +19,12 @@ defmodule WatchClub.Contents do
   resources do
     resource Content do
       define :search_content, action: :search
+
+      define :get_contents_by_identities,
+        action: :by_content_identities,
+        args: [:content_identities]
+
       define :get_content_by_id, action: :read, get_by: [:id]
-      define :view_content_by_id, action: :for_view, get_by: [:id]
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
       define :get_user_recently_watched, action: :user_recently_watched
@@ -42,7 +46,10 @@ defmodule WatchClub.Contents do
         args: [:tmdb_id, :season_number]
     end
 
-    resource TvShowEpisode
+    resource TvShowEpisode do
+      define :get_episodes_for_show, action: :for_show, args: [:tmdb_id]
+    end
+
     resource TvShowLocalization
   end
 

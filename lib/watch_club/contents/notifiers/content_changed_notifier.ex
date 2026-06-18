@@ -1,6 +1,6 @@
 defmodule WatchClub.Contents.Notifiers.ContentChangedNotifier do
   @moduledoc """
-  Custom Ash.Notifier for sending PubSub notifications when a Content or its ContentView
+  Custom Ash.Notifier for sending PubSub notifications when a Content or its view for a user
   change.
 
   The notification carries everything in `metadata`, so this module does no
@@ -10,6 +10,7 @@ defmodule WatchClub.Contents.Notifiers.ContentChangedNotifier do
   use Ash.Notifier
 
   alias Ash.Notifier.Notification
+  alias WatchClub.Contents.ContentIdentity
 
   @doc """
   Builds a `:content_changed` notification for `content`, scoped to `recipients`
@@ -34,8 +35,7 @@ defmodule WatchClub.Contents.Notifiers.ContentChangedNotifier do
       metadata: %{
         subject: :content_changed,
         content_id: content.id,
-        external_id_source: content.external_id_source,
-        external_id: content.external_id,
+        content_identity: ContentIdentity.from_content(content),
         recipients: recipients
       }
     )
@@ -43,16 +43,23 @@ defmodule WatchClub.Contents.Notifiers.ContentChangedNotifier do
 
   @impl true
   def notify(%Notification{metadata: %{subject: :content_changed} = metadata} = notification) do
-    %{external_id_source: source, external_id: external_id, recipients: recipients} = metadata
+    %{content_identity: identity, recipients: recipients} = metadata
 
     case recipients do
       :global ->
-        broadcast(WatchClub.PubSub.content_topic(source, external_id), notification)
+        broadcast(
+          WatchClub.PubSub.content_topic(identity.external_id_source, identity.external_id),
+          notification
+        )
 
       user_ids ->
         Enum.each(user_ids, fn user_id ->
           broadcast(
-            WatchClub.PubSub.content_view_topic(source, external_id, user_id),
+            WatchClub.PubSub.content_view_topic(
+              identity.external_id_source,
+              identity.external_id,
+              user_id
+            ),
             notification
           )
         end)

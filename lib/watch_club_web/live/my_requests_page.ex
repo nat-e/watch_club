@@ -2,7 +2,7 @@ defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
   alias Ash.Notifier.Notification
-  alias WatchClub.Contents.{ContentType, ContentView}
+  alias WatchClub.Contents.ContentType
   alias WatchClub.Requests
   alias WatchClub.Requests.{ContentRequest, ContentRequestSort, ContentRequestStatusGroup}
   alias WatchClubWeb.Components.Requests.RequestCard
@@ -10,6 +10,8 @@ defmodule WatchClubWeb.MyRequestsPage do
   import WatchClubWeb.Components.Settings.SettingsHeader
 
   @page_size 25
+
+  @request_fields_to_load [:status, content: [:implementation]]
 
   # Filters are carried as atoms: an enum value, or `nil` for "no filter" (the
   # "All" chip). `Url.parse_url_param/3` validates the raw param against each
@@ -85,20 +87,17 @@ defmodule WatchClubWeb.MyRequestsPage do
         },
         socket
       ) do
-    user = socket.assigns.current_user
+    request =
+      Requests.get_current_user_request_for_content!(content_id,
+        load: @request_fields_to_load,
+        actor: socket.assigns.current_user
+      )
 
-    socket =
-      case Requests.get_current_user_request_for_content(content_id, actor: user) do
-        {:ok, %ContentRequest{} = request} ->
-          if matches_filters?(request, socket),
-            do: socket |> prepend_request(request),
-            else: socket
-
-        _ ->
-          socket
-      end
-
-    {:noreply, socket}
+    if matches_filters?(request, socket) do
+      {:noreply, socket |> prepend_request(request)}
+    else
+      {:noreply, socket}
+    end
   end
 
   # The user cancelled a request, here or in another tab. Drop the card (a
@@ -125,20 +124,17 @@ defmodule WatchClubWeb.MyRequestsPage do
         },
         socket
       ) do
-    user = socket.assigns.current_user
+    request =
+      Requests.get_current_user_request_for_content!(content_id,
+        load: @request_fields_to_load,
+        actor: socket.assigns.current_user
+      )
 
-    socket =
-      case Requests.get_current_user_request_for_content(content_id, actor: user) do
-        {:ok, %ContentRequest{} = request} ->
-          if matches_filters?(request, socket),
-            do: socket |> stream_insert(:requests, request, update_only: true),
-            else: socket |> delete_request(request)
-
-        _ ->
-          socket
-      end
-
-    {:noreply, socket}
+    if matches_filters?(request, socket) do
+      {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
+    else
+      {:noreply, socket |> delete_request(request)}
+    end
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
@@ -310,6 +306,7 @@ defmodule WatchClubWeb.MyRequestsPage do
               status_group: socket.assigns.status_filter,
               content_type: socket.assigns.content_type_filter
             },
+            load: @request_fields_to_load,
             actor: socket.assigns.current_user,
             page: page_options
           )
@@ -318,8 +315,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
     case load do
       {:ok, new_state, requests} ->
-        contents =
-          Enum.map(requests, &ContentView.from_content(&1.content))
+        contents = Enum.map(requests, & &1.content)
 
         reset = stream_state.status == :init
 

@@ -11,7 +11,6 @@ defmodule WatchClub.Contents.ContentTest do
   alias WatchClub.Contents.{
     Content,
     ContentIdentity,
-    ContentView,
     Movie,
     MovieLocalization,
     TvShow,
@@ -282,21 +281,16 @@ defmodule WatchClub.Contents.ContentTest do
         end
       end)
 
-      assert %ContentView{
-               type: :tv_show,
-               external_id: "42",
-               title: "The Expanse",
-               details: %TvDetailsResponse{
-                 backdrop_path: "/backdrop.jpg",
-                 status: "Ended",
-                 season_details: [],
-                 seasons: [
-                   %TvDetailsResponse.Season{season_number: 0, episode_count: 1},
-                   %TvDetailsResponse.Season{season_number: 1, episode_count: 3},
-                   %TvDetailsResponse.Season{season_number: 2, episode_count: 2},
-                   %TvDetailsResponse.Season{season_number: 3, episode_count: 0}
-                 ]
-               }
+      assert %TvDetailsResponse{
+               backdrop_path: "/backdrop.jpg",
+               status: "Ended",
+               season_details: [],
+               seasons: [
+                 %TvDetailsResponse.Season{season_number: 0, episode_count: 1},
+                 %TvDetailsResponse.Season{season_number: 1, episode_count: 3},
+                 %TvDetailsResponse.Season{season_number: 2, episode_count: 2},
+                 %TvDetailsResponse.Season{season_number: 3, episode_count: 0}
+               ]
              } = get_tv_show_details!("42", actor: actor)
     end
   end
@@ -323,33 +317,6 @@ defmodule WatchClub.Contents.ContentTest do
                  %TvDetailsResponse.SeasonDetails.Episode{episode_number: 2}
                ]
              } = get_tv_show_season_details!("42", 1, actor: actor)
-    end
-  end
-
-  describe "search_content/*" do
-    test "attaches existing TMDB content to matching search results", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      library = generate(library(club, content_type: :movie))
-      library_id = library.id
-      content = create_movie!("11", %{library_ids: [library.id]}, actor: admin)
-      content_id = content.id
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, %{
-          "results" => [%{"id" => 11, "media_type" => "movie", "title" => "Star Wars"}]
-        })
-      end)
-
-      assert [
-               %ContentView{
-                 content: %Content{id: ^content_id},
-                 external_id: "11",
-                 in_libraries: [%LibraryItem{library_id: ^library_id}]
-               }
-             ] = search_content!(%{query: "star", content_type: :movies_and_shows}, actor: member)
     end
   end
 

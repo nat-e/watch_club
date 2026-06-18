@@ -51,6 +51,10 @@ defmodule WatchClub.Requests.ContentRequest do
               content: :content, user: :user}
     end
 
+    read :with_status do
+      prepare build(load: [:status, :status_group, :progress])
+    end
+
     read :for_current_user do
       description "The acting user's own Content Requests, for the My Requests page."
 
@@ -78,14 +82,7 @@ defmodule WatchClub.Requests.ContentRequest do
       # Apply the requested sort, then load the read model and the content
       # (through its `:for_view` read action).
       prepare fn query, context ->
-        query
-        |> ContentRequestSort.sort_query(Ash.Query.get_argument(query, :sort))
-        |> Ash.Query.load([
-          :status,
-          :status_group,
-          :progress,
-          content: Ash.Query.for_read(Content, :for_view, %{}, actor: context.actor)
-        ])
+        query |> ContentRequestSort.sort_query(Ash.Query.get_argument(query, :sort))
       end
     end
 
@@ -117,7 +114,7 @@ defmodule WatchClub.Requests.ContentRequest do
 
     # Reads are filtered to the actor's own requests; the Instance
     # Administrator can inspect all.
-    policy action([:read, :for_current_user]) do
+    policy action([:read, :for_current_user, :with_status]) do
       authorize_if expr(user_id == ^actor(:id))
       authorize_if actor_attribute_equals(:administrator?, true)
     end

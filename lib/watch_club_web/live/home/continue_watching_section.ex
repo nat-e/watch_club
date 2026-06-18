@@ -2,8 +2,10 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
   use WatchClubWeb, :component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.Content
   alias WatchClub.Shared.Url
+
+  alias WatchClubWeb.Helpers.Time
 
   import WatchClubWeb.Components.Contents.{ContentTypeBadge, TmdbPoster}
 
@@ -25,29 +27,29 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     """
   end
 
-  attr :content, ContentView, required: true
+  attr :content, Content, required: true
   attr :current_user, User, required: true
 
-  defp continue_watching_card(%{content: %ContentView{type: :movie}} = assigns) do
+  defp continue_watching_card(%{content: %Content{type: :movie}} = assigns) do
     ~H"""
     <.card>
-      <.tmdb_still path={@content.content.movie.backdrop_path} />
+      <.tmdb_still path={@content.movie.backdrop_path} size="w300" />
       {@content.title}
     </.card>
     """
   end
 
-  defp continue_watching_card(%{content: %ContentView{type: :tv_show}} = assigns) do
-    episode = assigns.content.content.tv_show.viewer_next_episode
+  defp continue_watching_card(%{content: %Content{type: :tv_show}} = assigns) do
+    episode = assigns.content.tv_show.actor_next_episode
 
     assigns =
       assigns
       |> assign(
         episode: episode,
         time_left:
-          episode.viewer_progress_status == :in_progress && episode.viewer_progress.time_left &&
+          episode.actor_progress_status == :in_progress && episode.actor_progress.time_left &&
             Time.pretty_duration(
-              episode.viewer_progress.time_left,
+              episode.actor_progress.time_left,
               assigns.current_user.settings.locale
             )
       )

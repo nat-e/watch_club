@@ -23,9 +23,10 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Helpers.Time
 
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Requests.ContentRequest
   alias WatchClub.Requests.ContentRequestStatus
+  alias WatchClub.Shared.Url
 
   alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
 
@@ -47,7 +48,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     >
       <.content_section
         id={@request.id}
-        content={ContentView.from_content(@request.content)}
+        content={@request.content}
         current_user={@current_user}
       />
 
@@ -59,18 +60,18 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   # ─── Content section ─────────────────────────────────────────────────────
 
   attr :id, :string, required: true
-  attr :content, ContentView, required: true
+  attr :content, Content, required: true
   attr :current_user, User, required: true
 
   defp content_section(assigns) do
     ~H"""
     <div class={[
       "relative flex flex-1 items-center gap-group p-group",
-      !ContentView.playable?(@content) && "opacity-70"
+      !@content.playable? && "opacity-70"
     ]}>
       <.tmdb_poster
         size="w342"
-        path={@content.image_path}
+        path={@content.implementation.best_localization.poster_path}
         class="h-36 shrink-0 rounded-control border border-border-subtle shadow-overlay"
       />
 
@@ -78,10 +79,10 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
         <.stack space="tight">
           <.content_type_badge type={@content.type} />
           <.link
-            href={WatchClub.Shared.Url.content_details_link(@content.type, @content.external_id)}
+            href={Url.content_details_link(@content)}
             class="line-clamp-2 text-xl font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
           >
-            {@content.title}
+            {@content.implementation.best_localization.title}
           </.link>
           <p :if={@content.release_date} class="text-sm text-text-muted">
             {@content.release_date.year}
@@ -92,14 +93,15 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           <.live_component
             id={"#{@id}-details-play-or-request-button"}
             module={PlayOrRequestButtonLive}
-            content={@content}
+            content_identity={ContentIdentity.from_content(@content)}
             current_user={@current_user}
             class="relative z-10"
           />
           <.live_component
             id={"#{@id}-details-add-to-library-button"}
             module={AddToLibraryButtonLive}
-            content={@content}
+            content_identity={ContentIdentity.from_content(@content)}
+            content_title={@content.implementation.best_localization.title}
             current_user={@current_user}
             class="relative z-10"
           />

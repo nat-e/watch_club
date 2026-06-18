@@ -11,7 +11,6 @@ defmodule WatchClub.Contents.Content do
     Book,
     ContentIdentity,
     ContentType,
-    ContentView,
     ExternalIdSource,
     Movie,
     SearchContentType,
@@ -22,8 +21,8 @@ defmodule WatchClub.Contents.Content do
 
   alias WatchClub.Requests.ContentRequest
 
-  alias WatchClub.Contents.Calculations.GetContentImplementation
-  alias WatchClub.Contents.Preparations.LoadContentForView
+  alias WatchClub.Contents.Calculations.{ActorNextMediasToPlay, GetContentImplementation}
+  alias WatchClub.Contents.Preparations.FilterByContentIdentities
 
   import Ash.Expr
   require Ash.Query
@@ -36,19 +35,18 @@ defmodule WatchClub.Contents.Content do
   actions do
     defaults [:read]
 
-    read :for_view do
-      description "Read action that loads all data needed to build ContentViews for the current user"
-      prepare LoadContentForView
+    read :by_content_identities do
+      argument :content_identities, {:array, ContentIdentity}, allow_nil?: false
+
+      prepare FilterByContentIdentities
     end
 
     read :user_recently_watched do
       description "Returns the Contents recently watched by the actor. Most recently watched content first"
 
-      prepare LoadContentForView
-
       prepare build(
-                filter: [viewer_progress_status: :in_progress, playable?: true],
-                sort: [viewer_last_watched_at: :desc]
+                filter: [actor_progress_status: :in_progress, playable?: true],
+                sort: [actor_last_watched_at: :desc]
               )
     end
 
@@ -99,8 +97,6 @@ defmodule WatchClub.Contents.Content do
     end
 
     action :search, {:array, :struct} do
-      constraints items: [instance_of: ContentView]
-
       argument :query, :string, allow_nil?: false
       argument :content_type, SearchContentType, allow_nil?: false
       argument :location, :uuid_v7, allow_nil?: true
@@ -203,7 +199,7 @@ defmodule WatchClub.Contents.Content do
 
     has_many :requests, ContentRequest
 
-    has_one :viewer_request, ContentRequest do
+    has_one :actor_request, ContentRequest do
       from_many? true
       filter expr(user_id == ^actor(:id))
     end
@@ -228,31 +224,35 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.playable?
                   type == :movie -> movie.playable?
                   # For TV Show, we look at the current / next episode that the user should watch
-                  type == :tv_show -> tv_show.viewer_next_episode.playable?
+                  type == :tv_show -> tv_show.actor_next_episode.playable?
                 end
               )
 
     # The progress status of the content for the current user
-    calculate :viewer_progress_status,
+    calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
-                  type == :book -> book.viewer_progress_status
-                  type == :movie -> movie.viewer_progress_status
-                  type == :tv_show -> tv_show.viewer_progress_status
+                  type == :book -> book.actor_progress_status
+                  type == :movie -> movie.actor_progress_status
+                  type == :tv_show -> tv_show.actor_progress_status
                 end
               )
 
     # The date at which the current user has most recently watched this content
-    calculate :viewer_last_watched_at,
+    calculate :actor_last_watched_at,
               :utc_datetime,
               expr(
                 cond do
-                  type == :book -> book.viewer_last_watched_at
-                  type == :movie -> movie.viewer_last_watched_at
-                  type == :tv_show -> tv_show.viewer_last_watched_at
+                  type == :book -> book.actor_last_watched_at
+                  type == :movie -> movie.actor_last_watched_at
+                  type == :tv_show -> tv_show.actor_last_watched_at
                 end
               )
+
+    calculate :actor_next_medias_to_play,
+              :struct,
+              ActorNextMediasToPlay
 
     calculate :localized_title_key,
               :string,

@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{ContentView, TvShowEpisode}
+  alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
   alias WatchClub.Shared.Url
@@ -15,10 +15,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   alias WatchClubWeb.Components.Contents.{EpisodeWatchProgressBadge, SeasonWatchProgressBadge}
   alias WatchClubWeb.Helpers.Time
 
-  attr :content, ContentView, required: true
   attr :details, TvDetailsResponse, required: true
   attr :selected_season, :integer, required: true
   attr :season_metadata_by_number, :map, required: true
+  attr :episodes, :map, required: true, doc: "A 2-levels map of TvShowEpisode by season/ep number"
   attr :current_user, User, required: true
 
   def episodes_section(assigns) do
@@ -48,10 +48,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
           <.season_selector seasons={@seasons} selected_season={@selected_season} />
         </div>
         <.season_panel
-          content={@content}
+          content_identity={ContentIdentity.for_tv_show(@details.id)}
           current_user={@current_user}
-          selected_season_summary={@selected_season_summary}
+          season_summary={@selected_season_summary}
           season_metadata={@season_metadata}
+          season_episodes={Map.get(@episodes, @selected_season, %{})}
           class="min-w-0 flex-1 p-group"
         />
       </div>
@@ -107,9 +108,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     """
   end
 
-  attr :content, ContentView, required: true
-  attr :selected_season_summary, :map, required: true
+  attr :content_identity, ContentIdentity, required: true
+  attr :season_summary, :map, required: true
   attr :season_metadata, :map, required: true
+  attr :season_episodes, :map, required: true, doc: "A map of TvShowEpisode by episode number"
   attr :current_user, User, required: true
   attr :class, :any, default: nil
 
@@ -118,26 +120,38 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     <div
       id="tv-show-season-panel"
       role="tabpanel"
-      aria-labelledby={"tv-show-season-tab-#{@selected_season_summary.season_number}"}
+      aria-labelledby={"tv-show-season-tab-#{@season_summary.season_number}"}
       aria-busy={@season_metadata.status not in [:loaded, :failed]}
       class={["flex flex-col gap-cluster", @class]}
     >
       <.season_panel_body
-        content={@content}
+        content_identity={@content_identity}
         current_user={@current_user}
-        selected_season_summary={@selected_season_summary}
+        season_summary={@season_summary}
         season_metadata={@season_metadata}
+        season_episodes={@season_episodes}
       />
     </div>
     """
   end
 
-  attr :content, ContentView, required: true
-  attr :selected_season_summary, :map, required: true
+  attr :content_identity, ContentIdentity, required: true
+  attr :season_summary, :map, required: true
   attr :season_metadata, :map, required: true
   attr :current_user, User, required: true
+  attr :season_episodes, :map, required: true, doc: "A map of TvShowEpisode by episode number"
 
   defp season_panel_body(%{season_metadata: %{status: :loaded}} = assigns) do
+    assigns =
+      assigns
+      |> assign(
+        season_watch_status:
+          season_watch_status(
+            assigns.season_episodes,
+            length(assigns.season_metadata.details.episodes)
+          )
+      )
+
     ~H"""
     <section class="flex flex-col gap-group @xl:flex-row @xl:items-center">
       <.tmdb_poster
@@ -151,7 +165,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         <.live_component
           id={"season-progress-badge-#{@season_metadata.details.season_number}"}
           module={SeasonWatchProgressBadge}
-          content={@content}
+          status={@season_watch_status}
+          content_identity={@content_identity}
           season_number={@season_metadata.details.season_number}
           current_user={@current_user}
         />
@@ -185,14 +200,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     <div class="flex flex-col gap-related">
       <.episode_row
         :for={episode_details <- @season_metadata.details.episodes}
-        episode={
-          ContentView.episode(
-            @content,
-            episode_details.season_number,
-            episode_details.episode_number
-          )
-        }
-        content={@content}
+        episode={Map.get(@season_episodes, episode_details.episode_number)}
+        content_identity={@content_identity}
         episode_details={episode_details}
         current_user={@current_user}
       />
@@ -209,9 +218,9 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         {dgettext("contents", "We couldn't load the season. Please try again")}
       </:description>
       <.button
-        id={"tv-show-season-retry-button-#{@selected_season_summary.season_number}"}
+        id={"tv-show-season-retry-button-#{@season_summary.season_number}"}
         phx-click="retry_season_metadata"
-        phx-value-season={@selected_season_summary.season_number}
+        phx-value-season={@season_summary.season_number}
         variant="secondary"
         size="sm"
       >
@@ -237,7 +246,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
     <div class="flex flex-col gap-related">
       <div
-        :for={_index <- episode_skeleton_indexes(@selected_season_summary.episode_count)}
+        :for={_index <- episode_skeleton_indexes(@season_summary.episode_count)}
         class="flex flex-col gap-group rounded-control border border-border bg-surface p-related shadow-card @xl:flex-row"
       >
         <div class="aspect-video w-full shrink-0 self-start animate-pulse rounded-control border border-border-subtle bg-surface-raised @xl:w-48">
@@ -252,12 +261,18 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     """
   end
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
   attr :episode_details, SeasonDetails.Episode, required: true
   attr :current_user, User, required: true
   attr :episode, TvShowEpisode
 
   defp episode_row(assigns) do
+    assigns =
+      assigns
+      |> assign(
+        watch_status: (assigns.episode && assigns.episode.actor_progress_status) || :not_started
+      )
+
     ~H"""
     <article class="flex flex-col gap-group rounded-control border border-border bg-surface p-related shadow-card @xl:flex-row">
       <.tmdb_still
@@ -293,7 +308,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
             <.live_component
               id={"episode-progress-badge-#{@episode_details.id}"}
               module={EpisodeWatchProgressBadge}
-              content={@content}
+              status={@watch_status}
+              content_identity={@content_identity}
               season_number={@episode_details.season_number}
               episode_number={@episode_details.episode_number}
               current_user={@current_user}
@@ -345,4 +361,24 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   defp format_score(_), do: nil
 
   defp pad(number), do: number |> Integer.to_string() |> String.pad_leading(2, "0")
+
+  # Compute the watch status of a tv show season for the current user
+  # The season is considered completed if all its episodes are completed,
+  # it's in progress if some episodes are in progress or not watched,
+  # and it is not_started if none of the episodes are started
+  # Episodes is a 2 levels map of season number to episode number to TvShowEpisode.
+  # Seasons or Episodes can be missing if they don't exist in DB, in which case
+  # they should be considered not started.
+  defp season_watch_status(episodes, total_episodes) do
+    statuses =
+      episodes
+      |> Map.values()
+      |> Enum.map(& &1.actor_progress_status)
+
+    cond do
+      Enum.count(statuses, &(&1 == :completed)) == total_episodes -> :completed
+      Enum.all?(statuses, &(&1 == :not_started)) -> :not_started
+      true -> :in_progress
+    end
+  end
 end

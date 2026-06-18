@@ -2,11 +2,12 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   use WatchClubWeb, :live_component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, ContentIdentity, ContentView}
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Requests
-  alias WatchClub.Requests.ContentRequestStatus
+  alias WatchClub.Requests.{ContentRequest, ContentRequestStatus}
+  alias WatchClub.Shared.Url
 
-  attr :content, ContentView, required: true
+  attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
 
@@ -16,12 +17,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   @impl true
   def render(assigns) do
-    assigns = assigns |> assign(:request, ContentView.current_request(assigns.content))
-
     ~H"""
     <div class={@class}>
       <.button
-        :if={!ContentView.playable?(@content)}
+        :if={!@playable?}
         id={"#{@id}-request-button"}
         size={@size}
         variant="primary"
@@ -37,12 +36,12 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
           dgettext("contents", "Request")}
       </.button>
       <.button
-        :if={ContentView.playable?(@content)}
+        :if={@playable?}
         id={"#{@id}-play-button"}
         size={@size}
         variant="primary"
         emphasis
-        href={play_link(@content)}
+        href={Url.player_link(@next_medias_to_play)}
         class="w-full"
       >
         <:icon><Lucideicons.play /></:icon>
@@ -53,20 +52,40 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   end
 
   @impl true
-  def mount(socket) do
-    {:ok, socket |> assign(:form, nil)}
+  def update_many(assigns_sockets) do
+    identities = Enum.map(assigns_sockets, fn {assigns, _socket} -> assigns.content_identity end)
+
+    actor = assigns_sockets |> List.first() |> Kernel.elem(0) |> Map.fetch!(:current_user)
+
+    contents_by_identity =
+      Contents.get_contents_by_identities!(identities,
+        load: [
+          :playable?,
+          :actor_next_medias_to_play,
+          actor_request: Ash.Query.for_read(ContentRequest, :with_status, %{}, actor: actor)
+        ],
+        actor: actor
+      )
+      |> Map.new(&{ContentIdentity.from_content(&1), &1})
+
+    assigns_sockets
+    |> Enum.map(fn {assigns, socket} ->
+      content = Map.get(contents_by_identity, assigns.content_identity)
+
+      socket
+      |> assign(assigns)
+      |> assign(
+        playable?: (content && content.playable?) || false,
+        next_medias_to_play: (content && content.actor_next_medias_to_play) || [],
+        request: (content && content.actor_request) || nil
+      )
+    end)
   end
 
   @impl true
   def handle_event("request-content", _params, socket) do
-    content = socket.assigns.content
-
     case Requests.request_content(
-           %ContentIdentity{
-             type: content.type,
-             external_id_source: content.external_id_source,
-             external_id: content.external_id
-           },
+           socket.assigns.content_identity,
            actor: socket.assigns.current_user
          ) do
       {:ok, _request} ->
@@ -76,18 +95,5 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         {:noreply,
          put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
     end
-  end
-
-  defp play_link(%ContentView{content: %Content{movie: %Movie{} = movie}}) do
-    video = List.first(movie.videos)
-    ~p"/play/#{video.id}"
-  end
-
-  defp play_link(%ContentView{content: %Content{tv_show: %TvShow{} = show}}) do
-    first_episode =
-      Enum.find(show.episodes, fn e -> e.season_number == 1 and e.episode_number == 1 end)
-
-    video = List.first(first_episode.videos)
-    ~p"/play/#{video.id}"
   end
 end

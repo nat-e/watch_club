@@ -39,7 +39,6 @@ Rules:
 
 - Focus on readability and maintainability of the code and clear separation of concerns.
 - Don't code defensively, follow Elixir's mantra and "let it crash". Only handle "expected" errors explicitely
-- On the frontend, all components must deal with `ContentView` objects instead of Content, which is an abstraction for a Content that can be or not be backed in DB.
 - Refrain from extracting small helper functions, this creates a lot of indirections which makes the code harder to read and reason about. Only extract code to helper functions when it will be reused, or when it is substantial enough that it makes the code easier to reason about.
 - Helper names should describe what they do in the project's vocabulary, not generic mechanics. `unwrap_async_result` or `normalize_value` are shape descriptions, not meaning descriptions — prefer a name like `set_outcome_for_timeout` (or inline the code if short enough).
 

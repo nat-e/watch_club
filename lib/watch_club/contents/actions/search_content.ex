@@ -1,9 +1,13 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
+  @moduledoc """
+  Searches content on external APIs (TMDB for Movies/Shows and Hardcover for books).
+  This returns a list of MovieSearchResult/TvSearchResult
+  """
   use Ash.Resource.Actions.Implementation
 
+  require Logger
   require Ash.Query
 
-  alias WatchClub.Contents.{Content, ContentView}
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
 
@@ -11,21 +15,17 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   def run(
         %Ash.ActionInput{arguments: %{query: query, content_type: :movies_and_shows}},
         _opts,
-        %Ash.Resource.Actions.Implementation.Context{actor: actor}
+        context
       ) do
-    with {:ok, response} <- Tmdb.search_multi(query, locale: actor.settings.locale),
-         results <-
-           Enum.filter(response.results, fn res ->
-             is_struct(res, MovieSearchResult) || is_struct(res, TvSearchResult)
-           end),
-         {:ok, contents} <- get_contents_by_external_id(:movies_and_shows, results, actor),
-         contents_by_external_id <-
-           Map.new(contents, fn content -> {content.external_id, content} end) do
-      {:ok,
-       results
-       |> Enum.map(fn res ->
-         to_content_view(res, Map.get(contents_by_external_id, external_id(res)))
-       end)}
+    case Tmdb.search_multi(query, locale: context.actor.settings.locale) do
+      {:ok, response} ->
+        {:ok,
+         response.results
+         |> Enum.filter(&(is_struct(&1, MovieSearchResult) || is_struct(&1, TvSearchResult)))}
+
+      {:error, error} ->
+        Logger.error("Error searching TMDB for `#{query}`: #{inspect(error)}")
+        {:error, error}
     end
   end
 
@@ -35,48 +35,5 @@ defmodule WatchClub.Contents.Actions.SearchContent do
         _context
       ) do
     {:ok, []}
-  end
-
-  defp get_contents_by_external_id(:movies_and_shows, results, user) do
-    external_ids = results |> Enum.map(&external_id/1)
-
-    Content
-    |> Ash.Query.for_read(:for_view, %{}, actor: user)
-    |> Ash.Query.filter(external_id_source == :tmdb and external_id in ^external_ids)
-    |> Ash.read()
-  end
-
-  defp external_id(result), do: Integer.to_string(result.id)
-
-  defp to_content_view(%MovieSearchResult{} = result, content) do
-    ContentView.new!(%{
-      external_id_source: :tmdb,
-      external_id: external_id(result),
-      type: :movie,
-      content: content,
-      title: result.title,
-      description: result.overview,
-      image_path: result.poster_path,
-      origin_country: nil,
-      release_date: result.release_date,
-      details: nil,
-      in_libraries: (content && content.library_items) || []
-    })
-  end
-
-  defp to_content_view(%TvSearchResult{} = result, content) do
-    ContentView.new!(%{
-      external_id_source: :tmdb,
-      external_id: external_id(result),
-      type: :tv_show,
-      content: content,
-      title: result.name,
-      description: result.overview,
-      image_path: result.poster_path,
-      origin_country: nil,
-      release_date: result.first_air_date,
-      details: nil,
-      in_libraries: (content && content.library_items) || []
-    })
   end
 end

@@ -19,6 +19,16 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
   actions do
     defaults [:read, :destroy, create: :*, update: :*]
+
+    read :for_show do
+      description "Retrieves all episodes of a TV show for a given TMDB ID"
+      argument :tmdb_id, :integer, allow_nil?: false
+
+      filter expr(
+               tv_show.content.external_id_source == :tmdb and
+                 tv_show.content.external_id == ^arg(:tmdb_id)
+             )
+    end
   end
 
   preparations do
@@ -67,7 +77,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     has_many :videos, Video
     has_many :watch_progresses, WatchProgress
 
-    has_one :viewer_progress, WatchProgress do
+    has_one :actor_progress, WatchProgress do
       from_many? true
       filter expr(user_id == ^actor(:id))
     end
@@ -82,12 +92,12 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
     calculate :playable?, :boolean, expr(videos_count > 0)
 
-    calculate :viewer_progress_status,
+    calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
-                  is_nil(viewer_progress) -> :not_started
-                  viewer_progress.completed -> :completed
+                  is_nil(actor_progress) -> :not_started
+                  actor_progress.completed -> :completed
                   true -> :in_progress
                 end
               )
@@ -96,7 +106,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
   aggregates do
     count :videos_count, :videos
     # The date at which the current user has most recently watched this episode, or nil
-    first :viewer_last_watched_at, :viewer_progress, :updated_at
+    first :actor_last_watched_at, :actor_progress, :updated_at
   end
 
   identities do

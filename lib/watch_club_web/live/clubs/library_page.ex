@@ -1,14 +1,23 @@
 defmodule WatchClubWeb.Clubs.LibraryPage do
   use WatchClubWeb, :live_view
 
+  require Ash.Query
+
   import WatchClubWeb.Components.Contents.ContentCard
 
-  alias WatchClub.Clubs.LibraryItemsSortOption
-  alias WatchClub.Contents.ContentView
+  alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Shared.SortOrder
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @contents_page_size 40
+
+  # We keep a map of valid sort options string to atoms so that they
+  # can be parsed from untrusted URL parameters without creating atoms
+  # which will never be removed from memory
+  @sort_options [:added_date, :release_date, :title]
+  @sort_options_map Map.new(@sort_options, &{Atom.to_string(&1), &1})
+
+  @library_item_fields_to_load [:added_by, content: [:implementation, :actor_progress_status]]
 
   on_mount {WatchClubWeb.Hooks.LoadClub, false}
 
@@ -17,22 +26,36 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     {:ok,
      socket
      |> assign(:subscribed_content_topics, [])
-     |> stream_configure(:contents, dom_id: &"library-content-#{ContentView.unique_id(&1)}")}
+     |> stream_configure(:library_items, dom_id: & &1.id)}
   end
 
   @impl true
   def handle_params(%{"club_id" => club_id, "library_id" => library_id} = params, _uri, socket) do
-    {sort_by, sort_order} = LibraryItemsSortOption.parse_param(params["sort"])
-
-    if params["sort"] != LibraryItemsSortOption.to_param(sort_by, sort_order) and
-         connected?(socket) do
+    with {sort_by, sort_order} <- parse_sort_param(params["sort"]),
+         {:ok, library} <- Clubs.get_library_by_id(library_id, actor: socket.assigns.current_user) do
       {:noreply,
-       push_patch(socket,
-         to: library_sort_path(club_id, library_id, sort_by, sort_order),
-         replace: true
-       )}
+       socket
+       |> assign(
+         sort_by: sort_by,
+         sort_order: sort_order,
+         library: library,
+         stream_state: KeysetStreamState.init(@contents_page_size)
+       )
+       |> load_library_items_page()}
     else
-      load_library(socket, club_id, library_id, sort_by, sort_order)
+      :invalid_params ->
+        {:noreply, socket |> push_patch(to: ~p"/clubs/#{club_id}/libraries/#{library_id}")}
+
+      {:error, error} ->
+        Logger.warning("Error loading library page: #{inspect(error)}")
+
+        {:noreply,
+         socket
+         |> put_flash(
+           :error,
+           dgettext("clubs", "The library you were looking for does not exist")
+         )
+         |> redirect(to: ~p"/")}
     end
   end
 
@@ -75,10 +98,10 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           </div>
 
           <.content_card
-            :for={{dom_id, content} <- @streams.contents}
+            :for={{dom_id, library_item} <- @streams.library_items}
             id={dom_id}
-            content={content}
-            library_id_context={@library.id}
+            content={library_item.content}
+            library_item={library_item}
             current_user={@current_user}
           />
         </div>
@@ -108,12 +131,14 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         },
         socket
       ) do
-    content =
-      content_id
-      |> Contents.view_content_by_id!(actor: socket.assigns.current_user)
-      |> ContentView.from_content()
+    # Reload the library item and update it in the stream
+    library_item =
+      Clubs.get_library_item!(socket.assigns.library.id, content_id,
+        load: @library_item_fields_to_load,
+        actor: socket.assigns.current_user
+      )
 
-    {:noreply, socket |> stream_insert(:contents, content, update_only: true)}
+    {:noreply, socket |> stream_insert(:library_items, library_item, update_only: true)}
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
@@ -230,66 +255,42 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   @impl true
   def handle_event("load_more_contents", _params, socket) do
-    stream_state = socket.assigns.stream_state
-
-    if KeysetStreamState.can_load_more?(stream_state) do
-      {:noreply, load_contents_page(socket, stream_state)}
+    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
+      {:noreply, load_library_items_page(socket)}
     else
       {:noreply, socket}
     end
   end
 
-  defp load_library(socket, club_id, library_id, sort_by, sort_order) do
-    current_user = socket.assigns.current_user
-
-    case Clubs.get_library_by_id(library_id, actor: current_user) do
-      {:ok, %Library{club_id: ^club_id} = library} ->
-        stream_state = KeysetStreamState.init(@contents_page_size)
-
-        {:noreply,
-         socket
-         |> assign(library: library, sort_by: sort_by, sort_order: sort_order)
-         |> assign(:stream_state, stream_state)
-         |> load_contents_page(stream_state)}
-
-      _ ->
-        not_found(socket)
-    end
-  end
-
-  # Loads one keyset page of the library's contents. `load_page` derives the
-  # cursor from the raw `LibraryItem`s' metadata; we then map them to
-  # `ContentView`s (which carry no keyset) for the stream.
-  defp load_contents_page(socket, %KeysetStreamState{} = stream_state) do
-    %{library: library, sort_by: sort_by, sort_order: sort_order, current_user: current_user} =
+  defp load_library_items_page(socket) do
+    %{
+      library: library,
+      sort_by: sort_by,
+      sort_order: sort_order,
+      current_user: current_user,
+      stream_state: stream_state
+    } =
       socket.assigns
 
-    load =
+    {:ok, new_state, items} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
-        Clubs.get_library_items(library.id, %{sort_by: sort_by, sort_order: sort_order},
-          actor: current_user,
-          page: page_options
+        Clubs.get_library_items(library.id,
+          query: [
+            load: @library_item_fields_to_load,
+            sort: sort_library_items_query(sort_by, sort_order)
+          ],
+          page: page_options,
+          actor: current_user
         )
       end)
 
-    case load do
-      {:ok, new_state, items} ->
-        contents =
-          Enum.map(items, &ContentView.from_content(&1.content))
+    reset = stream_state.status == :init
 
-        reset = stream_state.status == :init
-
-        socket
-        |> maybe_reset_subscriptions(reset)
-        |> subscribe_to_contents(contents)
-        |> assign(:stream_state, new_state)
-        |> stream(:contents, contents, reset: reset)
-
-      {:error, new_state, _} ->
-        socket
-        |> assign(:stream_state, new_state)
-        |> put_flash(:error, dgettext("clubs", "There was an error loading the library"))
-    end
+    socket
+    |> maybe_reset_subscriptions(reset)
+    |> subscribe_to_contents(items)
+    |> assign(:stream_state, new_state)
+    |> stream(:library_items, items, reset: reset)
   end
 
   defp maybe_reset_subscriptions(socket, false), do: socket
@@ -303,11 +304,13 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     socket |> assign(:subscribed_content_topics, [])
   end
 
-  defp subscribe_to_contents(socket, contents) do
+  defp subscribe_to_contents(socket, library_items) do
     if connected?(socket) do
       topics =
-        contents
-        |> Enum.flat_map(&WatchClub.PubSub.subscribe_to_content(&1, socket.assigns.current_user))
+        library_items
+        |> Enum.flat_map(
+          &WatchClub.PubSub.subscribe_to_content(&1.content, socket.assigns.current_user)
+        )
 
       socket
       |> assign(
@@ -320,13 +323,32 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   defp library_sort_path(club_id, library_id, sort_by, sort_order) do
-    ~p"/clubs/#{club_id}/libraries/#{library_id}?#{[sort: LibraryItemsSortOption.to_param(sort_by, sort_order)]}"
+    ~p"/clubs/#{club_id}/libraries/#{library_id}?#{[sort: "#{Atom.to_string(sort_by)}.#{Atom.to_string(sort_order)}"]}"
   end
 
-  defp not_found(socket) do
-    {:noreply,
-     socket
-     |> put_flash(:error, dgettext("clubs", "The library you were looking for does not exist"))
-     |> push_navigate(to: ~p"/")}
+  # Parses the field and direction on which to sort the library items, based on the value
+  # of the URL parameters
+  defp parse_sort_param(param) when is_nil(param), do: {:added_date, :desc}
+
+  defp parse_sort_param(param) when is_binary(param) do
+    with [sort_by_param, sort_order_param] <- String.split(param, ".", parts: 2),
+         {:ok, sort_by} <- Map.fetch(@sort_options_map, sort_by_param),
+         {:ok, sort_order} <- SortOrder.parse_param(sort_order_param) do
+      {sort_by, sort_order}
+    else
+      _ -> :invalid_params
+    end
+  end
+
+  def sort_library_items_query(:added_date, sort_order) do
+    [{:inserted_at, sort_order}]
+  end
+
+  def sort_library_items_query(:release_date, sort_order) do
+    [{"content.release_date", SortOrder.nils_last(sort_order)}]
+  end
+
+  def sort_library_items_query(:title, sort_order) do
+    [{"content.localized_title_key", SortOrder.nils_last(sort_order)}]
   end
 end
