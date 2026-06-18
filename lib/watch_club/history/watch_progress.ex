@@ -1,4 +1,12 @@
 defmodule WatchClub.History.WatchProgress do
+  @moduledoc """
+  A resource that records whether a User has watched a given Movie or TV Show Episode.
+  We only create WatchProgress objects for contents that a user has started watching.
+  We record the time watched and the time left, and consider that the content is completed when they have watched
+  at least 90% of the content.
+  It is also possible for user to "Mark as Watched" without watching. In this case, position_seconds and duration_seconds
+  are set to nil, and the content is considered watched.
+  """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.History,
@@ -32,27 +40,27 @@ defmodule WatchClub.History.WatchProgress do
     create :record_movie_progress do
       upsert? true
       upsert_identity :unique_movie_per_user
-      upsert_fields [:position_seconds, :last_media_id, :completed]
+      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
 
-      accept [:movie_id, :last_media_id, :position_seconds, :completed]
+      accept [:movie_id, :last_media_id, :position_seconds, :duration_seconds]
       change relate_actor(:user)
     end
 
     create :record_book_progress do
       upsert? true
       upsert_identity :unique_book_per_user
-      upsert_fields [:position_seconds, :last_media_id, :completed]
+      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
 
-      accept [:book_id, :last_media_id, :position_seconds, :completed]
+      accept [:book_id, :last_media_id, :position_seconds, :duration_seconds]
       change relate_actor(:user)
     end
 
     create :record_episode_progress do
       upsert? true
       upsert_identity :unique_episode_per_user
-      upsert_fields [:position_seconds, :last_media_id, :completed]
+      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
 
-      accept [:tv_show_episode_id, :last_media_id, :position_seconds, :completed]
+      accept [:tv_show_episode_id, :last_media_id, :position_seconds, :duration_seconds]
       change relate_actor(:user)
     end
 
@@ -104,15 +112,11 @@ defmodule WatchClub.History.WatchProgress do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :position_seconds, :float do
-      allow_nil? false
-      default 0
-    end
+    # The number of seconds that the User has watched on a Media. Nil when marking as watched
+    attribute :position_seconds, :float
 
-    attribute :completed, :boolean do
-      allow_nil? false
-      default false
-    end
+    # The total duration of the Media that was being watched by the User. Nil when marking as watched
+    attribute :duration_seconds, :float
 
     timestamps()
   end
@@ -141,6 +145,28 @@ defmodule WatchClub.History.WatchProgress do
       allow_nil? true
       public? true
     end
+  end
+
+  calculations do
+    # A content is considered watch when a user has watched 90% of more of it
+    # position_seconds and duration_seconds will be nil when the content is marked as watched.
+    calculate :completed,
+              :boolean,
+              expr(
+                is_nil(position_seconds) or is_nil(duration_seconds) or
+                  position_seconds / duration_seconds >= 0.9
+              )
+
+    # The number of seconds left. This will always be positive since it's computed on the same Media
+    calculate :seconds_left,
+              :float,
+              expr(
+                if is_nil(position_seconds) or is_nil(duration_seconds) do
+                  nil
+                else
+                  duration_seconds - position_seconds
+                end
+              )
   end
 
   identities do

@@ -205,7 +205,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     name = (country && country.name) || code
 
     if name do
-      %{name: name, flag: WatchClub.Languages.to_flag(code)}
+      %{name: name, flag: WatchClub.Languages.country_flag(code)}
     end
   end
 

@@ -8,5 +8,5 @@ defmodule WatchClub.Cldr do
     otp_app: :watch_club,
     default_locale: @default_locale,
     locales: @locales,
-    providers: [Cldr.Number, Cldr.Calendar, Cldr.DateTime, Cldr.Language]
+    providers: [Cldr.Number, Cldr.Calendar, Cldr.DateTime, Cldr.Language, Cldr.Unit]
 end

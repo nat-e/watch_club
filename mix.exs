@@ -71,6 +71,7 @@ defmodule WatchClub.MixProject do
       {:ex_cldr_dates_times, "~> 2.25"},
       {:ex_cldr_languages, "~> 0.3"},
       {:ex_cldr_numbers, "~> 2.38"},
+      {:ex_cldr_units, "~> 3.20"},
       {:ex_m3u8, "~> 0.16"},
       {:gettext, "~> 1.0"},
       {:igniter, "~> 0.6", only: [:dev, :test]},

@@ -51,6 +51,12 @@ defmodule WatchClub.Contents.TvShowEpisode do
       allow_nil? true
       public? true
     end
+
+    # The path to the still image (16/9)
+    attribute :still_path, :string do
+      allow_nil? true
+      public? true
+    end
   end
 
   relationships do
@@ -89,6 +95,8 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
   aggregates do
     count :videos_count, :videos
+    # The date at which the current user has most recently watched this episode, or nil
+    first :viewer_last_watched_at, :viewer_progress, :updated_at
   end
 
   identities do

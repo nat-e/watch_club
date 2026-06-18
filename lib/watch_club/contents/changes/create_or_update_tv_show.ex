@@ -91,52 +91,56 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
   defp build_episodes(%TvDetailsResponse{id: tmdb_id} = tv_show) do
     seasons = Enum.filter(tv_show.seasons, &(&1.season_number >= 1 and &1.episode_count >= 1))
-    air_dates_by_season = fetch_air_dates_by_season(tmdb_id, seasons)
+    episode_details = fetch_episode_details(tmdb_id, seasons)
 
     Enum.flat_map(seasons, fn season ->
-      air_dates = Map.get(air_dates_by_season, season.season_number, %{})
+      season_episode_details = Map.get(episode_details, season.season_number, %{})
 
       Enum.map(1..season.episode_count, fn episode_number ->
+        episode_details = Map.get(season_episode_details, episode_number)
+        IO.inspect(episode_details)
+
         %{
           season_number: season.season_number,
           episode_number: episode_number,
-          air_date: Map.get(air_dates, episode_number)
+          air_date: (episode_details && episode_details.air_date) || nil,
+          still_path: (episode_details && episode_details.still_path) || nil
         }
       end)
     end)
   end
 
-  # Per-episode air dates only come from the season-details endpoint (the base
-  # TV details payload carries season counts, not episode dates), so we fetch
-  # one season at a time — concurrently, since a long-running show has many
-  # seasons and this runs inline before the Content is created. Bounded
-  # concurrency keeps the burst off TMDB's rate limit. Best-effort: a season
-  # that fails or times out is dropped, leaving its episodes with a nil
-  # air_date rather than failing the whole import.
-  defp fetch_air_dates_by_season(tmdb_id, seasons) do
+  # Per-episode detail only come from the season-details endpoint (the base
+  # TV details payload carries season counts, not episode air dates or still images),
+  # so we fetch one season at a time — concurrently, since a long-running show has many
+  # seasons and this runs inline before the Content is created.
+  # Crashes the process when one call fails, so that the entire action fails.
+  # We do not take care of max concurrency here, this is handled by the Tmdb client.
+  @spec fetch_episode_details(integer(), [integer()]) :: %{
+          integer() => %{integer() => WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails}
+        }
+  defp fetch_episode_details(tmdb_id, seasons) do
     seasons
     |> Task.async_stream(
       fn season ->
-        {season.season_number, fetch_episode_air_dates(tmdb_id, season.season_number)}
+        {season.season_number, fetch_episode_details_for_season(tmdb_id, season.season_number)}
       end,
-      max_concurrency: 8,
       ordered: false,
-      timeout: 20_000,
-      on_timeout: :kill_task
+      timeout: 10_000
     )
     |> Enum.reduce(%{}, fn
-      {:ok, {season_number, air_dates}}, acc -> Map.put(acc, season_number, air_dates)
+      {:ok, {season_number, details}}, acc -> Map.put(acc, season_number, details)
       {:exit, _reason}, acc -> acc
     end)
   end
 
-  defp fetch_episode_air_dates(tmdb_id, season_number) do
+  defp fetch_episode_details_for_season(tmdb_id, season_number) do
     case Tmdb.get_tv_season_details(tmdb_id, season_number) do
       {:ok, %TvDetailsResponse.SeasonDetails{episodes: episodes}} ->
-        Map.new(episodes, fn episode -> {episode.episode_number, episode.air_date} end)
+        Map.new(episodes, fn episode -> {episode.episode_number, episode} end)
 
       {:error, error} ->
-        Logger.warning("Failed to fetch season #{season_number} air dates: #{inspect(error)}")
+        Logger.warning("Failed to fetch season #{season_number} details: #{inspect(error)}")
         %{}
     end
   end

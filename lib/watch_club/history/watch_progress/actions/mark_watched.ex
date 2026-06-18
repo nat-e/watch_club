@@ -40,14 +40,14 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
 
   defp mark_watched(%{type: :movie, id: id}, _season, _episode, context) do
     History.record_movie_progress!(
-      %{movie_id: id, completed: true, position_seconds: 0, last_media_id: nil},
+      %{movie_id: id, last_media_id: nil},
       scope: context
     )
   end
 
   defp mark_watched(%{type: :book, id: id}, _season, _episode, context) do
     History.record_book_progress!(
-      %{book_id: id, completed: true, position_seconds: 0, last_media_id: nil},
+      %{book_id: id, last_media_id: nil},
       scope: context
     )
   end
@@ -59,8 +59,6 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
       |> Enum.map(fn episode_id ->
         %{
           tv_show_episode_id: episode_id,
-          completed: true,
-          position_seconds: 0,
           last_media_id: nil
         }
       end)

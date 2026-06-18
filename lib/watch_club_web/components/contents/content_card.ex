@@ -22,9 +22,9 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
       id={@id}
       data_slot="content-card"
       padding="none"
-      class="group/content-card relative w-full overflow-hidden"
+      class="group/content-card relative overflow-hidden w-44"
     >
-      <.tmdb_poster size="w342" path={@content.image_path} class="w-full">
+      <.tmdb_poster size="w342" path={@content.image_path}>
         <Lucideicons.check_circle_2
           :if={ContentView.viewer_progress_status(@content) == :completed}
           class="absolute justify-self-end p-tight m-tight text-success size-9 bg-black/60 rounded-full"
@@ -101,7 +101,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
       <.stack space="tight" class="justify-end flex-1">
         <.inline space="tight" class="leading-none">
           <span :if={@content.origin_country}>
-            {WatchClub.Languages.to_flag(@content.origin_country)}
+            {WatchClub.Languages.country_flag(@content.origin_country)}
           </span>
           <span :if={@content.release_date} class="font-medium">
             {@content.release_date.year}

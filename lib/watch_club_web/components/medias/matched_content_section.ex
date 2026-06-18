@@ -104,7 +104,7 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentSection do
   defp language(_), do: nil
 
   defp country(%{origin_country: code}) when is_binary(code) and code != "",
-    do: "#{WatchClub.Languages.to_flag(code)} #{code}"
+    do: "#{WatchClub.Languages.country_flag(code)} #{code}"
 
   defp country(_), do: nil
 end

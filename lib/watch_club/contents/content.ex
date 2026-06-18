@@ -23,6 +23,7 @@ defmodule WatchClub.Contents.Content do
   alias WatchClub.Requests.ContentRequest
 
   alias WatchClub.Contents.Calculations.GetContentImplementation
+  alias WatchClub.Contents.Preparations.LoadContentForView
 
   import Ash.Expr
   require Ash.Query
@@ -37,19 +38,17 @@ defmodule WatchClub.Contents.Content do
 
     read :for_view do
       description "Read action that loads all data needed to build ContentViews for the current user"
+      prepare LoadContentForView
+    end
+
+    read :user_recently_watched do
+      description "Returns the Contents recently watched by the actor. Most recently watched content first"
+
+      prepare LoadContentForView
 
       prepare build(
-                load: [
-                  :viewer_progress_status,
-                  library_items: [:library, :added_by],
-                  viewer_request: [:status, :status_group, :progress],
-                  book: [:audiobooks, :ebooks, :playable?],
-                  movie: [:videos, :playable?],
-                  tv_show: [
-                    :viewer_next_episode,
-                    episodes: [:videos, :playable?, :viewer_progress_status]
-                  ]
-                ]
+                filter: [viewer_progress_status: :in_progress, playable?: true],
+                sort: [viewer_last_watched_at: :desc]
               )
     end
 
@@ -221,6 +220,18 @@ defmodule WatchClub.Contents.Content do
       allow_nil? false
     end
 
+    # Whether or not the content is playable for the current user
+    calculate :playable?,
+              :boolean,
+              expr(
+                cond do
+                  type == :book -> book.playable?
+                  type == :movie -> movie.playable?
+                  # For TV Show, we look at the current / next episode that the user should watch
+                  type == :tv_show -> tv_show.viewer_next_episode.playable?
+                end
+              )
+
     # The progress status of the content for the current user
     calculate :viewer_progress_status,
               WatchStatus,
@@ -229,6 +240,17 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.viewer_progress_status
                   type == :movie -> movie.viewer_progress_status
                   type == :tv_show -> tv_show.viewer_progress_status
+                end
+              )
+
+    # The date at which the current user has most recently watched this content
+    calculate :viewer_last_watched_at,
+              :utc_datetime,
+              expr(
+                cond do
+                  type == :book -> book.viewer_last_watched_at
+                  type == :movie -> movie.viewer_last_watched_at
+                  type == :tv_show -> tv_show.viewer_last_watched_at
                 end
               )
 

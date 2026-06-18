@@ -33,12 +33,29 @@ defmodule WatchClub.Languages do
   end
 
   @doc """
-  Returns a flag emoji for a language or territory code via CLDR
-  (e.g. `"fre"` → 🇫🇷, `"ja"` → 🇯🇵, `"en"` → 🇺🇸, `"US"` → 🇺🇸).
+  Returns the flag emoji for an ISO 3166-1 alpha-2 country code
+  (e.g. `"CA"` → 🇨🇦, `"us"` → 🇺🇸). The flag is the two letters as regional
+  indicators, with no language resolution — so it never mistakes a country code
+  for a same-spelled language (e.g. `"CA"` is Canada here, not Catalan).
 
-  Language tags are resolved to their likely territory; bare territory codes
-  that aren't valid language tags fall back to `und-XX` resolution so callers
-  can pass either form. Returns the UN flag (🇺🇳) when neither resolves.
+  Use this for country/territory codes; use `to_flag/1` for language codes.
+  Returns the UN flag (🇺🇳) for anything that is not a two-letter code.
+  """
+  @spec country_flag(String.t() | nil) :: String.t()
+  def country_flag(code) when is_binary(code) do
+    if code =~ ~r/^[A-Za-z]{2}$/, do: flag_emoji(code), else: flag_emoji("UN")
+  end
+
+  def country_flag(_), do: flag_emoji("UN")
+
+  @doc """
+  Returns a flag emoji for a language code via CLDR by resolving it to its
+  likely territory (e.g. `"fre"` → 🇫🇷, `"ja"` → 🇯🇵, `"en"` → 🇺🇸).
+
+  This is for language codes. For country codes use `country_flag/1` instead:
+  a two-letter country code can collide with a language code (`"CA"` resolves
+  to Catalan → 🇪🇸 here, not Canada). Returns the UN flag (🇺🇳) when the
+  language can't be resolved to a territory.
   """
   @spec to_flag(String.t() | nil) :: String.t()
   def to_flag(code) when is_binary(code) and code != "" do

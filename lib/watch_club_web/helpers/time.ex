@@ -1,57 +1,11 @@
 defmodule WatchClubWeb.Helpers.Time do
   alias WatchClub.Accounts.UserLocale
 
-  @four_weeks_in_seconds 2_419_200
-
   @spec relative_from_now(DateTime.t(), atom()) :: String.t()
   def relative_from_now(date, locale) do
-    diff = DateTime.diff(DateTime.utc_now(), date)
-    cldr_locale_name = UserLocale.to_cldr_locale_name(locale)
-
-    # CLDR renders negative values as the past ("3 days ago") and positive
-    # values as the future ("in 3 days").
-    sign = if diff > 0, do: -1, else: 1
-    absolute_diff = abs(diff)
-
-    cond do
-      absolute_diff < 60 ->
-        format_relative(0, :second, cldr_locale_name)
-
-      absolute_diff < 120 ->
-        format_relative(sign, :minute, cldr_locale_name)
-
-      absolute_diff < 3600 ->
-        format_relative(sign * div(absolute_diff, 60), :minute, cldr_locale_name)
-
-      absolute_diff < 7200 ->
-        format_relative(sign, :hour, cldr_locale_name)
-
-      absolute_diff < 86_400 ->
-        format_relative(sign * div(absolute_diff, 3600), :hour, cldr_locale_name)
-
-      absolute_diff < 172_800 ->
-        format_relative(sign, :day, cldr_locale_name)
-
-      absolute_diff < 604_800 ->
-        format_relative(sign * div(absolute_diff, 86_400), :day, cldr_locale_name)
-
-      absolute_diff < 1_209_600 ->
-        format_relative(sign, :week, cldr_locale_name)
-
-      absolute_diff < @four_weeks_in_seconds ->
-        format_relative(sign * div(absolute_diff, 604_800), :week, cldr_locale_name)
-
-      true ->
-        format_date(date, cldr_locale_name)
-    end
-  end
-
-  defp format_relative(value, unit, locale) do
-    WatchClub.Cldr.DateTime.Relative.to_string!(value, unit: unit, locale: locale)
-  end
-
-  defp format_date(date, locale) do
-    date |> DateTime.to_date() |> WatchClub.Cldr.Date.to_string!(format: :medium, locale: locale)
+    DateTime.utc_now()
+    |> DateTime.diff(date)
+    |> WatchClub.Cldr.DateTime.Relative.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
   end
 
   @doc """
@@ -60,4 +14,25 @@ defmodule WatchClubWeb.Helpers.Time do
   @spec maybe_year(Date.t() | nil) :: String.t() | nil
   def maybe_year(%Date{year: year}), do: Integer.to_string(year)
   def maybe_year(_), do: nil
+
+  @doc """
+  Returns a localized string for a pretty duration like "3 seconds", "19 minutes", ...
+  """
+  @spec pretty_duration(number(), atom()) :: String.t()
+  def pretty_duration(duration_seconds, locale) when is_number(duration_seconds) do
+    seconds = trunc(duration_seconds)
+
+    {value, unit} =
+      cond do
+        seconds < 60 -> {seconds, :second}
+        seconds < 3600 -> {div(seconds, 60), :minute}
+        true -> {div(seconds, 3600), :hour}
+      end
+
+    WatchClub.Cldr.Unit.to_string!(value,
+      unit: unit,
+      style: :short,
+      locale: UserLocale.to_cldr_locale_name(locale)
+    )
+  end
 end

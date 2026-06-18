@@ -85,6 +85,7 @@ defmodule WatchClub.Contents.ContentView do
           in_libraries: [LibraryItem.t()]
         }
 
+  @spec unique_id(t()) :: String.t()
   def unique_id(content), do: "#{content.external_id_source}-#{content.external_id}"
 
   @spec identity(t()) :: ContentIdentity.t()

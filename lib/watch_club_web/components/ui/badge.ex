@@ -25,7 +25,7 @@ defmodule WatchClubWeb.Components.UI.Badge do
     ~H"""
     <span
       class={[
-        "inline-flex w-fit shrink-0 items-center justify-center gap-tight overflow-hidden rounded-full border font-medium whitespace-nowrap",
+        "inline-flex size-fit items-center justify-center gap-tight overflow-hidden rounded-full border font-medium whitespace-nowrap",
         @size == "sm" && "px-related py-0.5 text-xs",
         @size == "md" && "px-related py-0.5 text-sm",
         @size == "lg" && "px-related py-tight text-sm",

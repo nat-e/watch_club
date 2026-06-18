@@ -12,8 +12,6 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
   alias WatchClub.History
   alias WatchClub.MediaCatalog.{Media, Video}
 
-  @completed_fraction 0.9
-
   @impl true
   def change(changeset, _opts, context) do
     case Ash.Changeset.get_argument(changeset, :position_seconds) do
@@ -38,7 +36,7 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
         movie_id: movie_id,
         last_media_id: media_id,
         position_seconds: position,
-        completed: completed?(video, position)
+        duration_seconds: video.duration_seconds
       },
       scope: context
     )
@@ -56,15 +54,9 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
         tv_show_episode_id: episode_id,
         last_media_id: media_id,
         position_seconds: position,
-        completed: completed?(video, position)
+        duration_seconds: video.duration_seconds
       },
       scope: context
     )
   end
-
-  defp completed?(%Video{duration_seconds: duration}, position)
-       when is_float(duration) and duration > 0,
-       do: position / duration >= @completed_fraction
-
-  defp completed?(_video, _position), do: false
 end

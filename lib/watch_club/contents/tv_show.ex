@@ -114,6 +114,12 @@ defmodule WatchClub.Contents.TvShow do
       filter expr(viewer_progress_status != :completed)
     end
 
+    # The episode that the current user has most recently watched (even partly), if any.
+    has_one :viewer_most_recently_watched_episode, TvShowEpisode do
+      from_many? true
+      sort viewer_last_watched_at: :desc
+    end
+
     # The best localization based on the current user locale
     has_one :best_localization, TvShowLocalization do
       from_many? true
@@ -132,6 +138,11 @@ defmodule WatchClub.Contents.TvShow do
                   true -> :in_progress
                 end
               )
+
+    # The date at which the current user has most recently watched an episode of this show
+    calculate :viewer_last_watched_at,
+              :utc_datetime,
+              expr(viewer_most_recently_watched_episode.viewer_last_watched_at)
   end
 
   aggregates do

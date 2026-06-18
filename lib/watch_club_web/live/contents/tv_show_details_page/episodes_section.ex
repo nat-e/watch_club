@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
   alias WatchClub.Contents.{ContentView, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
+  alias WatchClub.Shared.Url
 
   alias WatchClubWeb.Components.Contents.{EpisodeWatchProgressBadge, SeasonWatchProgressBadge}
   alias WatchClubWeb.Helpers.Time
@@ -267,7 +268,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         <.link
           :if={@episode && @episode.playable?}
           id={"#{@episode_details.id}-episode-play"}
-          href={episode_play_link(@episode)}
+          href={Url.player_link(@episode)}
           aria-label="Play"
           class="absolute inset-0 flex items-center justify-center"
         >
@@ -314,9 +315,6 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     </article>
     """
   end
-
-  defp episode_play_link(%TvShowEpisode{} = episode),
-    do: ~p"/play/#{List.first(episode.videos).id}"
 
   defp season_summaries(%TvDetailsResponse{} = details) do
     details.seasons

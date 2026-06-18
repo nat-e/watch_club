@@ -18,9 +18,10 @@ defmodule WatchClub.Contents.Movie do
   end
 
   actions do
-    defaults [:read, :destroy, update: []]
+    defaults [:read, :destroy, update: [:backdrop_path]]
 
     create :create do
+      accept [:backdrop_path]
       primary? true
       argument :localizations, {:array, :map}, allow_nil?: false
       change manage_relationship(:localizations, type: :direct_control)
@@ -38,6 +39,10 @@ defmodule WatchClub.Contents.Movie do
     attribute :id, :uuid_v7 do
       primary_key? true
       allow_nil? false
+    end
+
+    attribute :backdrop_path, :string do
+      allow_nil? true
     end
   end
 
@@ -76,6 +81,9 @@ defmodule WatchClub.Contents.Movie do
                   true -> :in_progress
                 end
               )
+
+    # The date at which the current user has most recently watched this movie
+    calculate :viewer_last_watched_at, :utc_datetime, expr(viewer_progress.updated_at)
   end
 
   aggregates do

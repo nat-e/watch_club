@@ -42,9 +42,12 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
       UserLocale.values() |> Enum.map(fn locale -> build_localizations(movie, locale) end)
 
     Logger.info("Adding #{length(localizations)} to changeset")
+    best_backdrop = best_global_backdrop(movie)
 
     changeset
-    |> Ash.Changeset.manage_relationship(:movie, %{localizations: localizations},
+    |> Ash.Changeset.manage_relationship(
+      :movie,
+      %{localizations: localizations, backdrop_path: best_backdrop && best_backdrop.file_path},
       type: :direct_control,
       authorize?: false
     )
@@ -65,6 +68,24 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
     |> Ash.Changeset.force_change_attribute(:original_language, movie.original_language)
     |> Ash.Changeset.force_change_attribute(:origin_country, production_country)
     |> Ash.Changeset.force_change_attribute(:release_date, movie.release_date)
+  end
+
+  defp best_global_backdrop(%MovieDetailsResponse{
+         images: %MovieDetailsResponse.Images{backdrops: []}
+       }),
+       do: nil
+
+  defp best_global_backdrop(%MovieDetailsResponse{
+         images: %MovieDetailsResponse.Images{backdrops: backdrops}
+       }) do
+    Enum.min_by(backdrops, fn backdrop ->
+      {
+        # language-neutral first: nil → false
+        not is_nil(backdrop.iso_639_1),
+        # then prefer the 16:9 ones. TMDB rounds up 16/9 to 1.778
+        backdrop.aspect_ratio != 1.778
+      }
+    end)
   end
 
   defp build_localizations(%MovieDetailsResponse{} = movie, locale) do

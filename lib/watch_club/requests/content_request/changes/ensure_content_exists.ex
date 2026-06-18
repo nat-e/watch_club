@@ -5,8 +5,10 @@ defmodule WatchClub.Requests.ContentRequest.Changes.EnsureContentExists do
   yet, and sets `content_id` on the changeset before the upsert. Mirrors how Add
   to Library may create missing Content.
 
-  Runs `before_action` so `content_id` is present for the
-  `unique_user_content` upsert identity.
+  Runs `before_transaction` so the nested `Content.create` (which fetches from
+  the Metadata Provider in its own `before_transaction` hook) happens before this
+  action's transaction opens, keeping the HTTP fetch out of the transaction.
+  `content_id` is still set in time for the `unique_user_content` upsert identity.
   """
   use Ash.Resource.Change
 
@@ -14,7 +16,7 @@ defmodule WatchClub.Requests.ContentRequest.Changes.EnsureContentExists do
 
   @impl true
   def change(changeset, _opts, context) do
-    Ash.Changeset.before_action(changeset, fn changeset ->
+    Ash.Changeset.before_transaction(changeset, fn changeset ->
       content_identity = Ash.Changeset.get_argument(changeset, :content_identity)
 
       case Contents.get_or_create_content(content_identity, context.actor) do

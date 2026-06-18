@@ -23,8 +23,7 @@ defmodule WatchClub.Contents do
       define :view_content_by_id, action: :for_view, get_by: [:id]
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
-
-      define :set_club_libraries, action: :set_libraries
+      define :get_user_recently_watched, action: :user_recently_watched
     end
 
     resource Movie do

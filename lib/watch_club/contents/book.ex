@@ -69,6 +69,8 @@ defmodule WatchClub.Contents.Book do
                   true -> :in_progress
                 end
               )
+
+    calculate :viewer_last_watched_at, :utc_datetime, expr(viewer_progress.updated_at)
   end
 
   aggregates do
