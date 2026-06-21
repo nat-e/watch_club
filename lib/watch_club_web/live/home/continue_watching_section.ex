@@ -56,20 +56,21 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
 
     ~H"""
     <.card padding="none" class="relative w-80 flex flex-col rounded-lg">
-      <div>
-        <.tmdb_still path={@episode.still_path} size="original" class="rounded-t-lg">
-          <button
-            disabled={!@episode.has_media?}
-            id={"#{@episode.id}-episode-play"}
-            href={(@episode.has_media? && Url.player_link(@episode)) || nil}
-            aria-label="Play"
-            class="group absolute z-10 inset-0 flex items-center justify-center"
-          >
-            <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay group-disabled:bg-primary/50">
-              <Lucideicons.play class="size-icon" />
-            </span>
-          </button>
-        </.tmdb_still>
+      <div class="relative">
+        <.tmdb_still path={@episode.still_path} size="original" class="rounded-t-lg" />
+        <.button
+          id={"#{@episode.id}-episode-play"}
+          variant="primary"
+          size="icon-lg"
+          class="z-10 absolute inset-0 m-auto rounded-full!"
+          disabled={!@episode.has_media?}
+          phx-click={
+            # Use a click handler to turn this into an HTML Button since links don't handle disabled states
+            @episode.has_media? && JS.patch(Url.player_link(@episode))
+          }
+        >
+          <Lucideicons.play />
+        </.button>
       </div>
       <.stack space="related" class="m-related">
         <div class="flex justify-between">

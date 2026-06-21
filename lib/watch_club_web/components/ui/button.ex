@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     default: "primary"
 
   attr :size, :string,
-    values: ~w(sm md lg icon icon-sm),
+    values: ~w(sm md lg icon-sm icon icon-lg),
     default: "md"
 
   attr :type, :string, values: ~w(button submit reset), default: "button"
@@ -89,7 +89,7 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   defp class(variant, size, selected, emphasis) do
     [
-      "inline-flex items-center justify-center rounded-md border bg-clip-padding font-semibold whitespace-nowrap transition duration-150 outline-none select-none focus-visible:ring-1 disabled:cursor-not-allowed active:shadow-none disabled:opacity-75 disabled:shadow-none aria-busy:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon",
+      "inline-flex items-center justify-center rounded-md border bg-clip-padding font-semibold whitespace-nowrap transition duration-150 outline-none select-none focus-visible:ring-1 disabled:pointer-events-none disabled:cursor-not-allowed active:shadow-none disabled:opacity-75 disabled:shadow-none aria-busy:cursor-progress [&_svg]:shrink-0",
       variant == "primary" &&
         "border-transparent bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active focus-visible:ring-primary-ring",
       variant == "primary" && emphasis && "shadow-glow",
@@ -105,11 +105,15 @@ defmodule WatchClubWeb.Components.UI.Button do
         "border-transparent bg-surface-selected text-text hover:bg-surface-selected active:bg-surface-selected",
       variant == "danger" &&
         "border-transparent bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active focus-visible:border-danger-border focus-visible:ring-danger-ring",
-      size == "sm" && "h-control-sm gap-tight px-group text-xs",
-      size == "md" && "h-control-md gap-related px-group text-sm",
-      size == "lg" && "h-control-lg gap-related px-cluster text-base",
-      size == "icon" && "size-control-md p-0 text-sm",
-      size == "icon-sm" && "size-control-sm p-0 text-sm"
+      size == "sm" &&
+        "h-control-sm gap-tight px-group text-xs [&_svg:not([class*='size-'])]:size-icon",
+      size == "md" &&
+        "h-control-md gap-related px-group text-sm [&_svg:not([class*='size-'])]:size-icon",
+      size == "lg" &&
+        "h-control-lg gap-related px-cluster text-base [&_svg:not([class*='size-'])]:size-icon",
+      size == "icon-sm" && "size-control-sm [&_svg:not([class*='size-'])]:size-icon-sm",
+      size == "icon" && "size-control-md [&_svg:not([class*='size-'])]:size-icon",
+      size == "icon-lg" && "size-control-lg [&_svg:not([class*='size-'])]:size-icon-lg"
     ]
   end
 end
