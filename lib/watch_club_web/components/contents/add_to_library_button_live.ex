@@ -125,7 +125,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   defp library_selection_checkbox(%{already_in?: true} = assigns) do
     ~H"""
-    <div class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border bg-surface-selected p-group text-text">
+    <div class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-md border border-border bg-surface-selected p-group text-text">
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
         <div class="min-w-0">
@@ -142,7 +142,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
 
   defp library_selection_checkbox(assigns) do
     ~H"""
-    <label class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-control border border-border p-group transition-colors hover:bg-surface-hover active:bg-surface-active">
+    <label class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-md border border-border p-group transition-colors hover:bg-surface-hover active:bg-surface-active">
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
         <div class="min-w-0">

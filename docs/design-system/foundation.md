@@ -31,7 +31,7 @@ Design-system notation uses dots for readability. Tailwind utilities use hyphena
 | `color.surface` | `--color-surface` | `bg-surface` |
 | `color.text-muted` | `--color-text-muted` | `text-text-muted` |
 | `color.border-focus` | `--color-border-focus` | `border-border-focus` |
-| `radius.card` | `--radius-card` | `rounded-card` |
+| `radius.card` | `--radius-card` | `rounded-xl` |
 | `shadow.card` | `--shadow-card` | `shadow-card` |
 
 Watch Club source variables may use a project prefix internally, e.g. `--wc-color-surface`, then map into Tailwind `@theme` aliases.

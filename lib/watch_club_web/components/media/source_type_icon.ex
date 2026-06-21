@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   def source_type_icon(%{type: :filesystem} = assigns) do
     ~H"""
     <span class={[
-      "grid shrink-0 place-items-center rounded-control border border-border bg-surface text-text-muted",
+      "grid shrink-0 place-items-center rounded-md border border-border bg-surface text-text-muted",
       box_classes(@size),
       @class
     ]}>

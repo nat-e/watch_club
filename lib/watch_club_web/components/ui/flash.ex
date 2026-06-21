@@ -90,7 +90,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
       data-duration={@duration}
       role={if @kind == :error, do: "alert", else: "status"}
       class={[
-        "pointer-events-auto relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-related rounded-control border px-group py-related text-sm shadow-overlay transition-opacity duration-200",
+        "pointer-events-auto relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-related rounded-md border px-group py-related text-sm shadow-overlay transition-opacity duration-200",
         @kind == :success && "border-success-border bg-success-bg text-success",
         @kind == :info && "border-info-border bg-info-bg text-info",
         @kind == :warning && "border-warning-border bg-warning-bg text-warning",
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Components.UI.Flash do
         data-slot="flash-toast-close"
         aria-label={dgettext("default", "Close")}
         class={[
-          "-mt-0.5 -mr-1 inline-flex size-icon-lg shrink-0 items-center justify-center rounded-control transition-colors outline-none focus-visible:ring-2 [&_svg]:size-icon-sm",
+          "-mt-0.5 -mr-1 inline-flex size-icon-lg shrink-0 items-center justify-center rounded-md transition-colors outline-none focus-visible:ring-2 [&_svg]:size-icon-sm",
           @kind == :error && "text-danger hover:bg-danger-bg focus-visible:ring-danger-ring",
           @kind != :error &&
             "text-text-muted hover:bg-surface-hover hover:text-text focus-visible:ring-focus-ring"

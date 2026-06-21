@@ -243,7 +243,7 @@ defmodule WatchClubWeb.Components.UI.Layout do
       tag_name={@as}
       data-slot={@data_slot}
       class={[
-        "rounded-card border text-text",
+        "rounded-xl border text-text",
         @surface == "default" && "border-border-subtle bg-surface",
         @surface == "raised" && "border-border bg-surface-raised",
         @surface == "inset" && "border-border-subtle bg-surface-inset",

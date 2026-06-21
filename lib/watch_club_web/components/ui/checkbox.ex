@@ -99,7 +99,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     <.label
       for={"#{@field.id}-#{@value}"}
       class={[
-        "flex flex-row justify-between w-full items-center rounded-card border border-border-subtle bg-surface p-related h-control-lg",
+        "flex flex-row justify-between w-full items-center rounded-xl border border-border-subtle bg-surface p-related h-control-lg",
         @disabled? && "opacity-50 cursor-not-allowed"
       ]}
     >

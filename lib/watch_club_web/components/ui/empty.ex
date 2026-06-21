@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Components.UI.Empty do
     <section
       data-slot="empty"
       class={[
-        "flex w-full min-w-0 flex-col items-center justify-center rounded-card text-center text-balance",
+        "flex w-full min-w-0 flex-col items-center justify-center rounded-xl text-center text-balance",
         @size == "default" && "gap-group p-cluster",
         @size == "sm" && "gap-related p-group",
         @border && "border border-dashed border-border-subtle bg-surface",
@@ -50,7 +50,7 @@ defmodule WatchClubWeb.Components.UI.Empty do
         :for={icon <- @icon}
         data-slot="empty-icon"
         class={[
-          "flex shrink-0 items-center justify-center rounded-control text-text-muted [&_svg]:pointer-events-none [&_svg]:shrink-0",
+          "flex shrink-0 items-center justify-center rounded-md text-text-muted [&_svg]:pointer-events-none [&_svg]:shrink-0",
           @size == "default" && "size-control-lg [&_svg:not([class*='size-'])]:size-icon-lg",
           @size == "sm" && "size-control-sm [&_svg:not([class*='size-'])]:size-icon",
           @border && "border border-border bg-surface-raised",

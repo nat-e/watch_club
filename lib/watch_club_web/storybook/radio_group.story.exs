@@ -83,19 +83,19 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             },
             slots: [
               """
-              <:item value="movie" class="flex cursor-pointer items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="movie" class="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:movie} class="size-5 shrink-0 text-text-muted" />
                 <span class="font-medium">Movie</span>
               </:item>
               """,
               """
-              <:item value="tv_show" class="flex cursor-pointer items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="tv_show" class="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:tv_show} class="size-5 shrink-0 text-text-muted" />
                 <span class="font-medium">TV show</span>
               </:item>
               """,
               """
-              <:item value="book" class="flex cursor-pointer items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="book" class="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:book} class="size-5 shrink-0 text-text-muted" />
                 <span class="font-medium">Book</span>
               </:item>
@@ -113,19 +113,19 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             },
             slots: [
               """
-              <:item value="movie" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-control border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="movie" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-md border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:movie} class="size-7 text-text-muted" />
                 <span class="font-medium">Movie</span>
               </:item>
               """,
               """
-              <:item value="tv_show" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-control border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="tv_show" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-md border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:tv_show} class="size-7 text-text-muted" />
                 <span class="font-medium">TV show</span>
               </:item>
               """,
               """
-              <:item value="book" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-control border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="book" class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-md border border-border bg-surface-inset p-4 text-center transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:book} class="size-7 text-text-muted" />
                 <span class="font-medium">Book</span>
               </:item>
@@ -143,19 +143,19 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             },
             slots: [
               """
-              <:item value="movie" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="movie" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:movie} class="col-start-2 ml-auto size-7 text-text-muted" />
                 <span class="col-span-2 mt-auto font-medium">Movie</span>
               </:item>
               """,
               """
-              <:item value="tv_show" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="tv_show" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:tv_show} class="col-start-2 ml-auto size-7 text-text-muted" />
                 <span class="col-span-2 mt-auto font-medium">TV show</span>
               </:item>
               """,
               """
-              <:item value="book" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
+              <:item value="book" class="grid min-h-28 cursor-pointer grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected">
                 <.content_type_icon type={:book} class="col-start-2 ml-auto size-7 text-text-muted" />
                 <span class="col-span-2 mt-auto font-medium">Book</span>
               </:item>
@@ -174,21 +174,21 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
             },
             slots: [
               """
-              <:item value="movie" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
+              <:item value="movie" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
                 <.content_type_icon type={:movie} class="size-5 text-text-muted" />
                 <span class="font-medium">Movie</span>
                 <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
               </:item>
               """,
               """
-              <:item value="tv_show" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
+              <:item value="tv_show" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
                 <.content_type_icon type={:tv_show} class="size-5 text-text-muted" />
                 <span class="font-medium">TV show</span>
                 <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
               </:item>
               """,
               """
-              <:item value="book" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-control border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
+              <:item value="book" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
                 <.content_type_icon type={:book} class="size-5 text-text-muted" />
                 <span class="font-medium">Book</span>
                 <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />

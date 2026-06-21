@@ -293,7 +293,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
     ]}>
       <div class={[
-        "flex min-h-touch-target items-center overflow-hidden rounded-control border border-transparent transition-colors duration-150",
+        "flex min-h-touch-target items-center overflow-hidden rounded-md border border-transparent transition-colors duration-150",
         @active && "bg-surface-selected text-text",
         !@active &&
           "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active focus-within:bg-surface-hover focus-within:text-text"
@@ -317,7 +317,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
               aria-label={dgettext("nav", "Club actions")}
               data-club-nav-actions
               class={[
-                "inline-flex size-control-sm shrink-0 items-center justify-center rounded-control text-inherit transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm",
+                "inline-flex size-control-sm shrink-0 items-center justify-center rounded-md text-inherit transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm",
                 @active &&
                   "hover:bg-surface-hover hover:text-text active:bg-surface-active focus-visible:bg-surface-hover focus-visible:text-text",
                 !@active &&

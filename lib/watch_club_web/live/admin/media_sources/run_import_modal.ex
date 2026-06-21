@@ -36,7 +36,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
 
         <label
           for={@form[:refresh_metadata].id}
-          class="flex cursor-pointer items-start gap-related rounded-control border border-border bg-surface p-group"
+          class="flex cursor-pointer items-start gap-related rounded-md border border-border bg-surface p-group"
         >
           <.checkbox field={@form[:refresh_metadata]} value="true" class="mt-1" />
           <.stack space="tight">

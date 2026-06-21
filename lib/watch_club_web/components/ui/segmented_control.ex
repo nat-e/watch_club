@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
     ~H"""
     <div
       class={[
-        "inline-flex w-full overflow-hidden rounded-control border border-border bg-surface-inset text-sm",
+        "inline-flex w-full overflow-hidden rounded-md border border-border bg-surface-inset text-sm",
         @class
       ]}
       {@rest}

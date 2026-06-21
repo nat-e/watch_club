@@ -26,7 +26,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
     <div
       role="alert"
       class={[
-        "grid w-full gap-tight rounded-control border px-group py-related text-left text-sm",
+        "grid w-full gap-tight rounded-md border px-group py-related text-left text-sm",
         @icon != [] && @action != [] && "grid-cols-[auto_1fr_auto] gap-x-related",
         @icon != [] && @action == [] && "grid-cols-[auto_1fr] gap-x-related",
         @icon == [] && @action != [] && "grid-cols-[1fr_auto] gap-x-related",

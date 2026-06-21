@@ -84,12 +84,12 @@ defmodule WatchClubWeb.Storybook.Modal do
 
   defp showcase_card(assigns) do
     ~H"""
-    <section class="grid gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
+    <section class="grid gap-4 rounded-xl border border-border bg-surface p-5 shadow-card">
       <div class="grid gap-2">
         <h2 class="text-xl font-semibold">{@title}</h2>
         <p class="text-sm text-text-muted">{@description}</p>
       </div>
-      <div class="rounded-control border border-border-subtle bg-surface-inset p-3 text-sm text-text-muted">
+      <div class="rounded-md border border-border-subtle bg-surface-inset p-3 text-sm text-text-muted">
         {render_slot(@inner_block)}
       </div>
       <.button

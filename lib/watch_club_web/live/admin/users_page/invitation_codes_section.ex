@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
       <.inline class="justify-between">
         <.inline
           space="tight"
-          class="h-control-md min-w-0 rounded-control border border-border-subtle bg-surface-inset pr-tight pl-related"
+          class="h-control-md min-w-0 rounded-md border border-border-subtle bg-surface-inset pr-tight pl-related"
         >
           <span class="min-w-0 flex-1 truncate font-mono text-base font-semibold tracking-wide">
             {@invitation.code}

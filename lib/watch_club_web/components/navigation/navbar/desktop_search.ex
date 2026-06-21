@@ -67,7 +67,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       phx-mounted={JS.ignore_attributes("data-open")}
       class="hidden h-control-md md:block group/desktop-search relative"
     >
-      <div class="absolute inset-x-0 top-0 overflow-hidden rounded-control border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-focus-ring group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
+      <div class="absolute inset-x-0 top-0 overflow-hidden rounded-md border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-focus-ring group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
         <div class="flex w-full items-stretch">
           <.select
             id="desktop-search-location-select"

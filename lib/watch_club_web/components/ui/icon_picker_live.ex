@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
           />
         </.form>
 
-        <div class="max-h-[min(28rem,60dvh)] overflow-y-auto rounded-control border border-border bg-surface-inset p-related">
+        <div class="max-h-[min(28rem,60dvh)] overflow-y-auto rounded-md border border-border bg-surface-inset p-related">
           <.empty
             :if={@results_empty?}
             id={"#{@id}-empty"}

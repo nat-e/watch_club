@@ -51,7 +51,7 @@ defmodule WatchClubWeb.Components.UI.Input do
       aria-invalid={@errors != [] && "true"}
       data-slot="input"
       class={[
-        "h-control-md w-full min-w-0 rounded-control border border-border bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
+        "h-control-md w-full min-w-0 rounded-md border border-border bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
         "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
         "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:placeholder:text-text-disabled",
         "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger-ring",

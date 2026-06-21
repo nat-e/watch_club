@@ -59,7 +59,7 @@ defmodule WatchClubWeb.Clubs.Settings.CreateOrEditLibraryModal do
                     dgettext("clubs", "A library's content type cannot be changed after creation.")
                 }
                 class={[
-                  "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-control border border-border bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-50 *:data-[slot=radio-group-item]:sr-only",
+                  "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-md border border-border bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-50 *:data-[slot=radio-group-item]:sr-only",
                   !@edit? && "hover:bg-surface-hover"
                 ]}
               >

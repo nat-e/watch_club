@@ -64,7 +64,7 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentSection do
         path={@poster_path}
         size="w185"
         alt={@title}
-        class="w-24 shrink-0 rounded-control border border-border-subtle"
+        class="w-24 shrink-0 rounded-md border border-border-subtle"
       />
 
       <.stack space="related" class="min-w-0 flex-1 self-center">

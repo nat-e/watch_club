@@ -6,13 +6,13 @@ defmodule WatchClubWeb.Storybook.Flash do
   def function, do: &Flash.flash/1
 
   @template """
-  <div class="relative h-44 w-full overflow-hidden rounded-card border border-border bg-surface p-4" style="transform:translateZ(0)">
+  <div class="relative h-44 w-full overflow-hidden rounded-xl border border-border bg-surface p-4" style="transform:translateZ(0)">
     <.psb-variation/>
   </div>
   """
 
   @tall_template """
-  <div class="relative h-64 w-full overflow-hidden rounded-card border border-border bg-surface p-4" style="transform:translateZ(0)">
+  <div class="relative h-64 w-full overflow-hidden rounded-xl border border-border bg-surface p-4" style="transform:translateZ(0)">
     <.psb-variation/>
   </div>
   """

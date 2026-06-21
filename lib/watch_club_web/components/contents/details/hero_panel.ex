@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
             path={@content.poster_path}
             size="w500"
             alt=""
-            class="mx-auto w-44 shrink-0 rounded-card border border-border-subtle shadow-overlay @xl:mx-0 @5xl:w-60"
+            class="mx-auto w-44 shrink-0 rounded-xl border border-border-subtle shadow-overlay @xl:mx-0 @5xl:w-60"
           />
 
           <div class="flex flex-col items-center gap-group text-center @xl:flex-1 @xl:items-start @xl:text-left">

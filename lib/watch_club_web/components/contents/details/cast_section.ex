@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.Contents.Details.CastSection do
 
   defp cast_card(assigns) do
     ~H"""
-    <li class="grid w-28 shrink-0 grid-rows-[10.5rem_6.25rem] overflow-hidden rounded-card border border-border-subtle bg-surface-inset shadow-card sm:w-32 sm:grid-rows-[12rem_6.25rem]">
+    <li class="grid w-28 shrink-0 grid-rows-[10.5rem_6.25rem] overflow-hidden rounded-xl border border-border-subtle bg-surface-inset shadow-card sm:w-32 sm:grid-rows-[12rem_6.25rem]">
       <div class="relative bg-surface-raised">
         <img
           :if={@person.profile_path}

@@ -82,7 +82,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       phx-click="open_drawer"
       phx-value-id={@row.id}
       class={[
-        "flex flex-col gap-related rounded-card border border-border bg-surface p-4 shadow-card",
+        "flex flex-col gap-related rounded-xl border border-border bg-surface p-4 shadow-card",
         "transition-colors cursor-pointer hover:bg-surface-hover",
         @selected && "ring-2 ring-focus-ring border-border-focus"
       ]}

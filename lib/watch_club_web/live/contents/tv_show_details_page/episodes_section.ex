@@ -93,7 +93,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
       phx-click="select_season"
       phx-value-season={@season.season_number}
       class={[
-        "min-h-touch-target shrink-0 rounded-control border px-related py-related text-left transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none @2xl:w-full",
+        "min-h-touch-target shrink-0 rounded-md border px-related py-related text-left transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none @2xl:w-full",
         @selected? && "border-border bg-surface-selected text-text shadow-card",
         !@selected? && "border-transparent text-text-muted hover:bg-surface-hover hover:text-text"
       ]}
@@ -158,7 +158,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         path={@season_metadata.details.poster_path}
         size="w342"
         alt=""
-        class="w-32 shrink-0 rounded-control border border-border-subtle bg-surface-raised"
+        class="w-32 shrink-0 rounded-md border border-border-subtle bg-surface-raised"
       />
 
       <div class="flex flex-col gap-related">
@@ -211,7 +211,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
   defp season_panel_body(%{season_metadata: %{status: :failed}} = assigns) do
     ~H"""
-    <.empty border={false} class="min-h-[24rem] rounded-control bg-surface-inset">
+    <.empty border={false} class="min-h-[24rem] rounded-md bg-surface-inset">
       <:icon><Lucideicons.cloud_off /></:icon>
       <:title>{dgettext("contents", "Error loading season")}</:title>
       <:description>
@@ -235,7 +235,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     ~H"""
     <span class="sr-only">{dgettext("contents", "Loading season episodes")}</span>
     <section class="flex flex-col gap-group @xl:flex-row @xl:items-center">
-      <div class="aspect-2/3 w-32 shrink-0 animate-pulse rounded-control border border-border-subtle bg-surface-raised">
+      <div class="aspect-2/3 w-32 shrink-0 animate-pulse rounded-md border border-border-subtle bg-surface-raised">
       </div>
       <div class="flex flex-col gap-related">
         <div class="h-8 w-48 animate-pulse rounded-full bg-surface-raised"></div>
@@ -247,9 +247,9 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
     <div class="flex flex-col gap-related">
       <div
         :for={_index <- episode_skeleton_indexes(@season_summary.episode_count)}
-        class="flex flex-col gap-group rounded-control border border-border bg-surface p-related shadow-card @xl:flex-row"
+        class="flex flex-col gap-group rounded-md border border-border bg-surface p-related shadow-card @xl:flex-row"
       >
-        <div class="aspect-video w-full shrink-0 self-start animate-pulse rounded-control border border-border-subtle bg-surface-raised @xl:w-48">
+        <div class="aspect-video w-full shrink-0 self-start animate-pulse rounded-md border border-border-subtle bg-surface-raised @xl:w-48">
         </div>
         <div class="flex flex-1 flex-col gap-related">
           <div class="h-5 w-3/5 animate-pulse rounded-full bg-surface-raised"></div>
@@ -274,11 +274,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
       )
 
     ~H"""
-    <article class="flex flex-col gap-group rounded-control border border-border bg-surface p-related shadow-card @xl:flex-row">
+    <article class="flex flex-col gap-group rounded-md border border-border bg-surface p-related shadow-card @xl:flex-row">
       <.tmdb_still
         size="w300"
         path={@episode_details.still_path}
-        class="w-full shrink-0 self-start rounded-control @xl:w-48"
+        class="w-full shrink-0 self-start rounded-md @xl:w-48"
       >
         <.link
           :if={@episode && @episode.has_media?}

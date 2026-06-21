@@ -30,7 +30,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     assigns = assign(assigns, :has_video?, has_video?)
 
     ~H"""
-    <aside class="flex h-full flex-col overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-card">
+    <aside class="flex h-full flex-col overflow-hidden border border-border bg-surface shadow-card rounded-l-card lg:rounded-xl">
       <.hero media={@media} />
 
       <.stack space="cluster" class="p-cluster">

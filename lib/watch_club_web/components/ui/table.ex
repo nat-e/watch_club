@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <div
       data-slot="table-container"
       class={[
-        "relative w-full overflow-x-auto rounded-control border border-border bg-surface shadow-card",
+        "relative w-full overflow-x-auto rounded-md border border-border bg-surface shadow-card",
         @class
       ]}
     >

@@ -27,11 +27,11 @@ defmodule WatchClubWeb.Components.Player.SeekBar do
               clip the sprite sheet to a single tile, min/max scale it to a preview size. --%>
         <media-slider-thumbnail
           src={@thumbnails}
-          class="block overflow-hidden rounded-control border border-white/15 bg-black shadow-overlay data-hidden:hidden"
+          class="block overflow-hidden rounded-md border border-white/15 bg-black shadow-overlay data-hidden:hidden"
           style="width: var(--thumbnail-width); height: var(--thumbnail-height); contain: strict; min-width: 120px; min-height: 80px; max-width: 220px; max-height: 160px;"
         >
         </media-slider-thumbnail>
-        <media-slider-value class="rounded-control bg-black/80 px-related py-tight text-xs font-medium text-white tabular-nums">
+        <media-slider-value class="rounded-md bg-black/80 px-related py-tight text-xs font-medium text-white tabular-nums">
         </media-slider-value>
       </media-slider-preview>
 

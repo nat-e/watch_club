@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Components.Medias.UnmatchedContentSection do
       <.tmdb_poster
         size="w185"
         alt={@file_name}
-        class="w-24 shrink-0 rounded-control border border-border-subtle"
+        class="w-24 shrink-0 rounded-md border border-border-subtle"
       />
 
       <.stack space="related" class="min-w-0 flex-1 self-center">

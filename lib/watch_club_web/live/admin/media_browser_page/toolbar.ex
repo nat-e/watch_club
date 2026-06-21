@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
                 value={@state.filter.search}
                 placeholder="Search file name or content…"
                 phx-debounce="300"
-                class="h-control-md w-full rounded-control border border-border bg-surface-inset pl-9 pr-3 text-sm text-text placeholder:text-text-subtle focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-focus-ring"
+                class="h-control-md w-full rounded-md border border-border bg-surface-inset pl-9 pr-3 text-sm text-text placeholder:text-text-subtle focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-focus-ring"
               />
             </div>
 

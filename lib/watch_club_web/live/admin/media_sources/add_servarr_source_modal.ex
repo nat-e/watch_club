@@ -321,7 +321,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           <:item
             :for={profile <- @profiles}
             value={to_string(profile["id"])}
-            class="group/radio-card flex cursor-pointer items-center gap-tight rounded-control border border-border bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
+            class="group/radio-card flex cursor-pointer items-center gap-tight rounded-md border border-border bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
           >
             <Lucideicons.sparkles class="size-icon-sm text-text-muted" />
             <span class="text-sm font-medium">{profile["name"]}</span>
@@ -349,7 +349,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           <:item
             :for={path <- @root_folders}
             value={path}
-            class="group/radio-card flex cursor-pointer items-center gap-related rounded-control border border-border bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
+            class="group/radio-card flex cursor-pointer items-center gap-related rounded-md border border-border bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
           >
             <Lucideicons.folder class="size-icon-sm shrink-0 text-text-muted" />
             <span class="truncate font-mono text-sm text-text">{path}</span>

@@ -30,7 +30,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         should ask for <em>relationship</em>, not a raw number.
       </.intro>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Token ramp</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </div>
       </section>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">How to choose</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -104,7 +104,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           purpose="Vertical rhythm"
           code={stack_code()}
         >
-          <.stack space="group" class="rounded-control border border-border-subtle bg-surface p-group">
+          <.stack space="group" class="rounded-md border border-border-subtle bg-surface p-group">
             <.demo_item label="Club details" />
             <.demo_item label="Member permissions" />
             <.demo_item label="Danger zone" tone="danger" />
@@ -116,7 +116,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           purpose="Horizontal groups that can wrap"
           code={inline_code()}
         >
-          <.cluster class="rounded-control border border-border-subtle bg-surface p-group">
+          <.cluster class="rounded-md border border-border-subtle bg-surface p-group">
             <.badge variant="secondary">Drama</.badge>
             <.badge variant="secondary">Comedy</.badge>
             <.badge variant="secondary">Recently added</.badge>
@@ -131,17 +131,17 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           purpose="Gutters, width, top/bottom rhythm"
           code={page_code()}
         >
-          <div class="rounded-control border border-border-subtle bg-surface-inset p-related">
+          <div class="rounded-md border border-border-subtle bg-surface-inset p-related">
             <.page
               width="page"
               space="group"
-              class="rounded-control border border-primary/40 bg-primary/10"
+              class="rounded-md border border-primary/40 bg-primary/10"
             >
               <div class="h-3 w-2/5 rounded-full bg-primary/70"></div>
               <div class="grid gap-related md:grid-cols-3">
-                <div class="h-12 rounded-control bg-surface-raised"></div>
-                <div class="h-12 rounded-control bg-surface-raised"></div>
-                <div class="h-12 rounded-control bg-surface-raised"></div>
+                <div class="h-12 rounded-md bg-surface-raised"></div>
+                <div class="h-12 rounded-md bg-surface-raised"></div>
+                <div class="h-12 rounded-md bg-surface-raised"></div>
               </div>
             </.page>
           </div>
@@ -178,7 +178,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         primitive.
       </.intro>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Minimal v1 API</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -228,7 +228,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </div>
       </section>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">How a form would read</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -240,13 +240,13 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <div class="grid gap-cluster xl:grid-cols-[1fr_0.9fr]">
           <.code_block code={minimal_form_usage_code()} />
 
-          <div class="rounded-card border border-border-subtle bg-canvas p-group">
+          <div class="rounded-xl border border-border-subtle bg-canvas p-group">
             <.form_mock />
           </div>
         </div>
       </section>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Spacing rules for forms</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -270,7 +270,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </div>
       </section>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Defer until repetition proves need</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -305,7 +305,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         chooses layout intent once, then content composes inside it.
       </.intro>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Before / after</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -330,7 +330,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </div>
       </section>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">Migration rule</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -369,7 +369,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       </.intro>
 
       <div class="grid gap-cluster xl:grid-cols-[1fr_0.85fr]">
-        <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+        <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
           <div class="grid gap-related">
             <h2 class="text-2xl font-semibold tracking-tight">Operating model</h2>
             <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -394,7 +394,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           </div>
         </section>
 
-        <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+        <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
           <div class="grid gap-related">
             <h2 class="text-2xl font-semibold tracking-tight">Validated v0 tokens</h2>
             <p class="text-sm leading-6 text-text-muted">
@@ -413,7 +413,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </section>
       </div>
 
-      <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+      <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
         <div class="grid gap-related">
           <h2 class="text-2xl font-semibold tracking-tight">The rule in one picture</h2>
           <p class="max-w-readable text-sm leading-6 text-text-muted">
@@ -421,7 +421,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           </p>
         </div>
 
-        <div class="grid gap-section rounded-control border border-border-subtle bg-surface-inset p-group md:grid-cols-3">
+        <div class="grid gap-section rounded-md border border-border-subtle bg-surface-inset p-group md:grid-cols-3">
           <.relationship_demo title="Related" space="related" />
           <.relationship_demo title="Grouped" space="group" />
           <.relationship_demo title="Sectioned" space="cluster" />
@@ -449,7 +449,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp intro(assigns) do
     ~H"""
-    <section class="grid gap-group rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+    <section class="grid gap-group rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
       <div class="grid gap-related">
         <p class="text-xs font-semibold uppercase tracking-[0.28em] text-accent">{@eyebrow}</p>
         <h1 class="max-w-4xl text-3xl font-semibold tracking-tight md:text-5xl">{@title}</h1>
@@ -466,8 +466,8 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp principle_card(assigns) do
     ~H"""
-    <article class="grid gap-related rounded-control border border-border-subtle bg-surface-raised p-group">
-      <div class="inline-flex size-8 items-center justify-center rounded-control bg-primary/15 text-primary">
+    <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
+      <div class="inline-flex size-8 items-center justify-center rounded-md bg-primary/15 text-primary">
         <Lucideicons.sparkles class="size-4" />
       </div>
       <h3 class="font-semibold">{@title}</h3>
@@ -481,7 +481,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp token_pill(assigns) do
     ~H"""
-    <div class="flex items-center justify-between gap-related rounded-control border border-border-subtle bg-surface-raised px-group py-related">
+    <div class="flex items-center justify-between gap-related rounded-md border border-border-subtle bg-surface-raised px-group py-related">
       <code class="text-sm font-semibold text-primary">{@token}</code>
       <span class="text-sm text-text-muted">{@value}</span>
     </div>
@@ -493,11 +493,11 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp relationship_demo(assigns) do
     ~H"""
-    <article class="grid rounded-control border border-border-subtle bg-surface p-group">
+    <article class="grid rounded-md border border-border-subtle bg-surface p-group">
       <div class={["grid", gap_class(@space)]}>
-        <div class="h-10 rounded-control bg-primary/25 ring-1 ring-primary/30"></div>
-        <div class="h-10 rounded-control bg-primary/20 ring-1 ring-primary/25"></div>
-        <div class="h-10 rounded-control bg-primary/15 ring-1 ring-primary/20"></div>
+        <div class="h-10 rounded-md bg-primary/25 ring-1 ring-primary/30"></div>
+        <div class="h-10 rounded-md bg-primary/20 ring-1 ring-primary/25"></div>
+        <div class="h-10 rounded-md bg-primary/15 ring-1 ring-primary/20"></div>
       </div>
       <div class="mt-group grid gap-tight">
         <h3 class="font-semibold">{@title}</h3>
@@ -511,7 +511,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp scale_row(assigns) do
     ~H"""
-    <article class="grid gap-group rounded-control border border-border-subtle bg-surface-raised p-group md:grid-cols-[14rem_1fr] md:items-center">
+    <article class="grid gap-group rounded-md border border-border-subtle bg-surface-raised p-group md:grid-cols-[14rem_1fr] md:items-center">
       <div class="grid gap-tight">
         <code class="font-semibold text-primary">{@token.name}</code>
         <span class="text-sm text-text-muted">{@token.value} · {@token.utility}</span>
@@ -534,7 +534,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp guideline_card(assigns) do
     ~H"""
-    <article class="grid gap-related rounded-control border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
       <code class="w-fit rounded bg-surface-inset px-2 py-1 text-xs font-semibold text-primary">
         {@token}
       </code>
@@ -553,7 +553,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp primitive_card(assigns) do
     ~H"""
-    <section class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card">
+    <section class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card">
       <div class="flex flex-wrap items-start justify-between gap-group">
         <div class="grid gap-tight">
           <h2 class="text-2xl font-semibold tracking-tight">{@name}</h2>
@@ -562,7 +562,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <.badge variant="muted" size="sm">validated primitive</.badge>
       </div>
 
-      <div class="rounded-control border border-border-subtle bg-surface-inset p-group">
+      <div class="rounded-md border border-border-subtle bg-surface-inset p-group">
         {render_slot(@inner_block)}
       </div>
 
@@ -577,7 +577,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   defp demo_item(assigns) do
     ~H"""
     <div class={[
-      "flex items-center justify-between gap-related rounded-control border px-group py-related",
+      "flex items-center justify-between gap-related rounded-md border px-group py-related",
       @tone == "default" && "border-border-subtle bg-surface-raised",
       @tone == "danger" && "border-danger-border bg-danger-bg text-danger"
     ]}>
@@ -594,12 +594,12 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp form_api_card(assigns) do
     ~H"""
-    <article class="grid gap-group rounded-card border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-group rounded-xl border border-border-subtle bg-surface-raised p-group">
       <div class="flex flex-wrap items-center justify-between gap-group">
         <h3 class="text-xl font-semibold">{@title}</h3>
         <.badge variant="muted" size="sm">{@badge}</.badge>
       </div>
-      <div class="rounded-control border border-border-subtle bg-surface p-group">
+      <div class="rounded-md border border-border-subtle bg-surface p-group">
         {render_slot(@inner_block)}
       </div>
       <.code_block code={@code} />
@@ -611,7 +611,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     ~H"""
     <form
       id="spacing-form-mock"
-      class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-cluster shadow-card"
+      class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card"
     >
       <div class="grid gap-related">
         <h3 class="text-xl font-semibold">Create library</h3>
@@ -655,19 +655,19 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       <input
         :if={@control == "input"}
         id={@id}
-        class="h-control-md rounded-control border border-border bg-surface-inset px-3 py-2 text-sm text-text outline-none"
+        class="h-control-md rounded-md border border-border bg-surface-inset px-3 py-2 text-sm text-text outline-none"
         value="Weekend watchlist"
         readonly
       />
 
       <div :if={@control == "radio"} class="grid gap-related sm:grid-cols-3">
-        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
+        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-md border border-border bg-surface-inset p-group text-sm">
           <span class="size-3 rounded-full border border-border"></span> Movies
         </label>
-        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
+        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-md border border-border bg-surface-inset p-group text-sm">
           <span class="size-3 rounded-full border border-border"></span> Shows
         </label>
-        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-control border border-border bg-surface-inset p-group text-sm">
+        <label class="grid cursor-pointer grid-cols-[auto_1fr] items-center gap-related rounded-md border border-border bg-surface-inset p-group text-sm">
           <span class="size-3 rounded-full border border-border"></span> Books
         </label>
       </div>
@@ -684,7 +684,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp form_spacing_rule(assigns) do
     ~H"""
-    <article class="grid gap-related rounded-control border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
       <code class="w-fit rounded bg-surface-inset px-2 py-1 text-xs font-semibold text-primary">
         {@token}
       </code>
@@ -699,7 +699,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp deferred_form_component(assigns) do
     ~H"""
-    <article class="grid gap-related rounded-control border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
       <code class="w-fit rounded bg-surface-inset px-2 py-1 text-xs font-semibold text-text">
         {@name}
       </code>
@@ -718,7 +718,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp comparison_panel(assigns) do
     ~H"""
-    <article class="grid gap-group rounded-card border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-group rounded-xl border border-border-subtle bg-surface-raised p-group">
       <div class="flex items-center justify-between gap-group">
         <h3 class="text-xl font-semibold">{@title}</h3>
         <.badge variant={if(@tone == "primary", do: "default", else: "muted")} size="sm">
@@ -726,7 +726,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </.badge>
       </div>
 
-      <div class="rounded-control border border-border-subtle bg-canvas p-group">
+      <div class="rounded-md border border-border-subtle bg-canvas p-group">
         {render_slot(@inner_block)}
       </div>
 
@@ -743,7 +743,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <div class="h-3 w-full rounded-full bg-surface-raised"></div>
       </div>
 
-      <div class="grid gap-4 rounded-card border border-border-subtle bg-surface p-4">
+      <div class="grid gap-4 rounded-xl border border-border-subtle bg-surface p-4">
         <div class="flex items-center gap-2">
           <div class="size-10 rounded-full bg-surface-raised"></div>
           <div class="grid flex-1 gap-1">
@@ -752,16 +752,16 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           </div>
         </div>
         <div class="grid gap-2">
-          <div class="h-9 rounded-control bg-surface-inset"></div>
-          <div class="h-9 rounded-control bg-surface-inset"></div>
+          <div class="h-9 rounded-md bg-surface-inset"></div>
+          <div class="h-9 rounded-md bg-surface-inset"></div>
         </div>
       </div>
 
-      <div class="grid gap-4 rounded-card border border-border-subtle bg-surface p-4">
+      <div class="grid gap-4 rounded-xl border border-border-subtle bg-surface p-4">
         <div class="h-4 w-1/2 rounded-full bg-primary/60"></div>
         <div class="grid gap-2">
-          <div class="h-12 rounded-control bg-surface-inset"></div>
-          <div class="h-12 rounded-control bg-surface-inset"></div>
+          <div class="h-12 rounded-md bg-surface-inset"></div>
+          <div class="h-12 rounded-md bg-surface-inset"></div>
         </div>
       </div>
     </div>
@@ -776,7 +776,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <div class="h-3 w-full rounded-full bg-surface-raised"></div>
       </div>
 
-      <div class="grid gap-group rounded-card border border-border-subtle bg-surface p-group">
+      <div class="grid gap-group rounded-xl border border-border-subtle bg-surface p-group">
         <div class="flex items-center gap-related">
           <div class="size-10 rounded-full bg-surface-raised"></div>
           <div class="grid flex-1 gap-tight">
@@ -785,16 +785,16 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           </div>
         </div>
         <div class="grid gap-related">
-          <div class="h-9 rounded-control bg-surface-inset"></div>
-          <div class="h-9 rounded-control bg-surface-inset"></div>
+          <div class="h-9 rounded-md bg-surface-inset"></div>
+          <div class="h-9 rounded-md bg-surface-inset"></div>
         </div>
       </div>
 
-      <div class="grid gap-cluster rounded-card border border-border-subtle bg-surface p-group">
+      <div class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-group">
         <div class="h-4 w-1/2 rounded-full bg-primary/60"></div>
         <div class="grid gap-related">
-          <div class="h-12 rounded-control bg-surface-inset"></div>
-          <div class="h-12 rounded-control bg-surface-inset"></div>
+          <div class="h-12 rounded-md bg-surface-inset"></div>
+          <div class="h-12 rounded-md bg-surface-inset"></div>
         </div>
       </div>
     </div>
@@ -807,7 +807,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp migration_step(assigns) do
     ~H"""
-    <article class="grid gap-related rounded-control border border-border-subtle bg-surface-raised p-group">
+    <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
       <div class="inline-flex size-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
         {@number}
       </div>
@@ -821,7 +821,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp code_block(assigns) do
     ~H"""
-    <pre class="overflow-x-auto rounded-control border border-border-subtle bg-surface-inset p-group text-xs leading-6 text-text-muted"><code class="whitespace-pre">{@code}</code></pre>
+    <pre class="overflow-x-auto rounded-md border border-border-subtle bg-surface-inset p-group text-xs leading-6 text-text-muted"><code class="whitespace-pre">{@code}</code></pre>
     """
   end
 
@@ -986,7 +986,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     """
     <div class="mx-auto grid max-w-md gap-6 p-4">
       <div class="grid gap-2">...</div>
-      <div class="grid gap-4 rounded-card p-4">...</div>
+      <div class="grid gap-4 rounded-xl p-4">...</div>
     </div>
     """
     |> String.trim()
