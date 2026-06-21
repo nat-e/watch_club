@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
         <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
           <.hero_panel
-            content_identity={ContentIdentity.for_movie(@tv_show.id)}
+            content_identity={ContentIdentity.for_tv_show(@tv_show.id)}
             content={@tv_show}
             current_user={@current_user}
           />
@@ -145,8 +145,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
         load: [
           # This is used for displaying the watch progress badge at the season and episode level
           :actor_progress_status,
-          # playable? and videos is used to display the play button on each episode
-          :playable?,
+          # has_media? and videos is used to display the play button on each episode
+          :has_media?,
           :videos
         ],
         actor: socket.assigns.current_user

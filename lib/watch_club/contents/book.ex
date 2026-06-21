@@ -58,7 +58,7 @@ defmodule WatchClub.Contents.Book do
   end
 
   calculations do
-    calculate :playable?, :boolean, expr(audiobooks_count > 0 or ebooks_count > 0)
+    calculate :has_media?, :boolean, expr(audiobooks_count > 0 or ebooks_count > 0)
 
     calculate :actor_progress_status,
               WatchStatus,

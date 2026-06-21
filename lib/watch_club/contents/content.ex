@@ -45,7 +45,7 @@ defmodule WatchClub.Contents.Content do
       description "Returns the Contents recently watched by the actor. Most recently watched content first"
 
       prepare build(
-                filter: [actor_progress_status: :in_progress, playable?: true],
+                filter: [actor_progress_status: :in_progress, has_media?: true],
                 sort: [actor_last_watched_at: :desc]
               )
     end
@@ -216,15 +216,15 @@ defmodule WatchClub.Contents.Content do
       allow_nil? false
     end
 
-    # Whether or not the content is playable for the current user
-    calculate :playable?,
+    # Whether or not there are Video, Audiobook or Ebooks to back this Content in the media center
+    # For TV Show, this will be true as soon as the media
+    calculate :has_media?,
               :boolean,
               expr(
                 cond do
-                  type == :book -> book.playable?
-                  type == :movie -> movie.playable?
-                  # For TV Show, we look at the current / next episode that the user should watch
-                  type == :tv_show -> tv_show.actor_next_episode.playable?
+                  type == :book -> book.has_media?
+                  type == :movie -> movie.has_media?
+                  type == :tv_show -> tv_show.has_media?
                 end
               )
 

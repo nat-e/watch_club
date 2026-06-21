@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     ~H"""
     <.card>
       <.tmdb_still path={@content.movie.backdrop_path} size="w300" />
-      {@content.title}
+      {@content.implementation.best_localization.title}
     </.card>
     """
   end
@@ -58,17 +58,17 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     <.card padding="none" class="relative w-80 flex flex-col rounded-lg">
       <div>
         <.tmdb_still path={@episode.still_path} size="original" class="rounded-t-lg">
-          <.link
-            :if={@episode.playable?}
+          <button
+            disabled={!@episode.has_media?}
             id={"#{@episode.id}-episode-play"}
-            href={Url.player_link(@episode)}
+            href={(@episode.has_media? && Url.player_link(@episode)) || nil}
             aria-label="Play"
-            class="absolute z-10 inset-0 flex items-center justify-center"
+            class="group absolute z-10 inset-0 flex items-center justify-center"
           >
-            <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay">
+            <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay group-disabled:bg-primary/50">
               <Lucideicons.play class="size-icon" />
             </span>
-          </.link>
+          </button>
         </.tmdb_still>
       </div>
       <.stack space="related" class="m-related">
@@ -77,7 +77,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
             href={Url.content_details_link(@content.type, @content.external_id)}
             class="font-semibold text-lg line-clamp-2 min-h-[2lh] after:absolute after:inset-0"
           >
-            {@content.title}
+            {@content.implementation.best_localization.title}
           </.link>
           <.content_type_badge type={@content.type} />
         </div>

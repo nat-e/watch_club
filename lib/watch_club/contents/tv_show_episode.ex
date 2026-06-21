@@ -90,7 +90,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
       public? true
     end
 
-    calculate :playable?, :boolean, expr(videos_count > 0)
+    calculate :has_media?, :boolean, expr(videos_count > 0)
 
     calculate :actor_progress_status,
               WatchStatus,

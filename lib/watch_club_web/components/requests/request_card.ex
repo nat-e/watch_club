@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   Request card for the My Requests page.
 
   Takes the `ContentRequest` (with `content`, `status`, `progress` and
-  `playable?` loaded) plus the viewer's `locale`, and lays out a flex row of
+  `has_media?` loaded) plus the viewer's `locale`, and lays out a flex row of
   two sections:
 
     - Left (Content): poster with a Play overlay when `playable` (independent of
@@ -67,7 +67,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     ~H"""
     <div class={[
       "relative flex flex-1 items-center gap-group p-group",
-      !@content.playable? && "opacity-70"
+      !@content.has_media? && "opacity-70"
     ]}>
       <.tmdb_poster
         size="w342"

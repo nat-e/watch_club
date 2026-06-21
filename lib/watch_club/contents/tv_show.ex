@@ -145,8 +145,9 @@ defmodule WatchClub.Contents.TvShow do
   end
 
   aggregates do
-    exists :first_episode_available?, :episodes do
-      filter expr(season_number == 1 and episode_number == 1 and playable?)
+    exists :has_media?, :episodes do
+      description "Whether a TV Show has videos for any of their episode"
+      filter expr(has_media?)
     end
 
     count :episodes_count, :episodes

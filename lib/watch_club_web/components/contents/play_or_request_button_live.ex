@@ -16,11 +16,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     default: "md"
 
   @impl true
-  def render(assigns) do
+  def render(%{has_media?: false} = assigns) do
     ~H"""
     <div class={@class}>
       <.button
-        :if={!@playable?}
         id={"#{@id}-request-button"}
         size={@size}
         variant="primary"
@@ -35,8 +34,32 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         {(@request && ContentRequestStatus.translated_label(@request.status)) ||
           dgettext("contents", "Request")}
       </.button>
+    </div>
+    """
+  end
+
+  def render(%{has_media?: true, next_medias_to_play: []} = assigns) do
+    ~H"""
+    <div class={@class}>
       <.button
-        :if={@playable?}
+        id={"#{@id}-play-button"}
+        size={@size}
+        variant="primary"
+        emphasis
+        disabled
+        class="w-full"
+      >
+        <:icon><Lucideicons.play /></:icon>
+        {@play_label}
+      </.button>
+    </div>
+    """
+  end
+
+  def render(%{has_media?: true} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.button
         id={"#{@id}-play-button"}
         size={@size}
         variant="primary"
@@ -45,7 +68,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         class="w-full"
       >
         <:icon><Lucideicons.play /></:icon>
-        {dgettext("contents", "Play")}
+        {@play_label}
       </.button>
     </div>
     """
@@ -60,8 +83,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     contents_by_identity =
       Contents.get_contents_by_identities!(identities,
         load: [
-          :playable?,
+          :has_media?,
           :actor_next_medias_to_play,
+          tv_show: [:actor_next_episode],
           actor_request: Ash.Query.for_read(ContentRequest, :with_status, %{}, actor: actor)
         ],
         actor: actor
@@ -75,8 +99,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       socket
       |> assign(assigns)
       |> assign(
-        playable?: (content && content.playable?) || false,
+        has_media?: (content && content.has_media?) || false,
         next_medias_to_play: (content && content.actor_next_medias_to_play) || [],
+        play_label: play_label(assigns.content_identity.type, content),
         request: (content && content.actor_request) || nil
       )
     end)
@@ -96,4 +121,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
          put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
     end
   end
+
+  defp play_label(:movie, _content), do: dgettext("contents", "Play")
+  defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
+
+  defp play_label(:tv_show, %{tv_show: %{actor_next_episode: episode}}),
+    do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
 end

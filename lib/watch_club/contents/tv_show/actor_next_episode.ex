@@ -5,7 +5,7 @@ defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
   first episode of the show when they have completed all of them.
 
   Implements the AshPostgres callbacks so it can also be traversed inside
-  expressions (e.g. the `playable?` calculation), where it resolves to the same
+  expressions (e.g. the `has_media?` calculation), where it resolves to the same
   episode via a correlated `ORDER BY … LIMIT 1` lateral join.
   """
   use Ash.Resource.ManualRelationship
@@ -28,7 +28,10 @@ defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
     {:ok,
      Map.new(shows, fn show ->
        episodes = Map.get(episodes_by_show, show.id, [])
-       next = Enum.find(episodes, &(&1.actor_progress_status != :completed)) || List.first(episodes)
+
+       next =
+         Enum.find(episodes, &(&1.actor_progress_status != :completed)) || List.first(episodes)
+
        {show.id, next}
      end)}
   end

@@ -281,7 +281,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         class="w-full shrink-0 self-start rounded-control @xl:w-48"
       >
         <.link
-          :if={@episode && @episode.playable?}
+          :if={@episode && @episode.has_media?}
           id={"#{@episode_details.id}-episode-play"}
           href={Url.player_link(@episode)}
           aria-label="Play"

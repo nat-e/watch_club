@@ -71,7 +71,7 @@ defmodule WatchClub.Contents.Movie do
   end
 
   calculations do
-    calculate :playable?, :boolean, expr(videos_count > 0)
+    calculate :has_media?, :boolean, expr(videos_count > 0)
 
     calculate :actor_progress_status,
               WatchStatus,

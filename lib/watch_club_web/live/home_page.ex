@@ -22,7 +22,14 @@ defmodule WatchClubWeb.HomePage do
   end
 
   defp load_continue_watching(socket) do
-    contents = Contents.get_user_recently_watched!(actor: socket.assigns.current_user)
+    contents =
+      Contents.get_user_recently_watched!(
+        actor: socket.assigns.current_user,
+        load: [
+          :implementation,
+          tv_show: [actor_next_episode: [:has_media?, :videos]]
+        ]
+      )
 
     socket |> assign(:continue_watching, contents)
   end
