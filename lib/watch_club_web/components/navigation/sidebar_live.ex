@@ -207,8 +207,10 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       size="md"
       type="button"
       aria-current={@active && "page"}
-      selected={@active}
-      class={["min-h-touch-target w-full justify-start overflow-hidden text-left font-medium", @class]}
+      class={[
+        "min-h-touch-target w-full justify-start overflow-hidden text-left font-medium",
+        @active && "bg-surface-selected!"
+      ]}
       phx-click={@on_click}
       {@rest}
     >
@@ -292,40 +294,28 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       "[--club-nav-avatar-size:2rem]",
       "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
     ]}>
-      <div class={[
-        "flex min-h-touch-target items-center overflow-hidden rounded-md border border-transparent transition-colors duration-150",
-        @active && "bg-surface-selected text-text",
-        !@active &&
-          "text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active focus-within:bg-surface-hover focus-within:text-text"
-      ]}>
+      <div class="flex h-control-md items-center overflow-hidden text-text-muted">
         <.link
           id={"club-nav-link-#{@membership.club.id}"}
           navigate={@url}
           aria-current={@active && "page"}
-          class="flex min-h-touch-target min-w-0 flex-1 items-center gap-related px-group text-left text-sm font-semibold text-inherit transition-colors outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon"
+          class="flex min-w-0 flex-1 items-center gap-related px-group text-sm font-semibold"
           phx-click={hide_sidebar()}
         >
           <.avatar id={@membership.club.id} name={@membership.club.name} size="md" />
           <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
         </.link>
 
-        <.dropdown_menu id={"club-nav-actions-#{@membership.club.id}"} class="shrink-0 pr-tight">
+        <.dropdown_menu id={"club-nav-actions-#{@membership.club.id}"} class="shrink-0">
           <:trigger>
-            <button
+            <.button
               id={"club-nav-actions-trigger-#{@membership.club.id}"}
-              type="button"
+              size="icon"
+              variant="ghost"
               aria-label={dgettext("nav", "Club actions")}
-              data-club-nav-actions
-              class={[
-                "inline-flex size-control-sm shrink-0 items-center justify-center rounded-md text-inherit transition-colors outline-none focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm",
-                @active &&
-                  "hover:bg-surface-hover hover:text-text active:bg-surface-active focus-visible:bg-surface-hover focus-visible:text-text",
-                !@active &&
-                  "hover:bg-surface-active hover:text-text active:bg-surface-active focus-visible:bg-surface-active focus-visible:text-text"
-              ]}
             >
               <Lucideicons.ellipsis_vertical />
-            </button>
+            </.button>
           </:trigger>
 
           <.dropdown_menu_item

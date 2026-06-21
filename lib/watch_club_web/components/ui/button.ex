@@ -19,10 +19,6 @@ defmodule WatchClubWeb.Components.UI.Button do
   attr :type, :string, values: ~w(button submit reset), default: "button"
   attr :emphasis, :boolean, default: false, doc: "Adds rare brand glow emphasis."
 
-  attr :selected, :boolean,
-    default: false,
-    doc: "Applies the selected neutral surface state to neutral button variants."
-
   attr :rest, :global,
     include:
       ~w(disabled form name value autofocus href navigate patch method download replace target aria-label aria-busy aria-pressed)
@@ -46,7 +42,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     ~H"""
     <.link
       id={@id}
-      class={class(@variant, @size, @selected, @emphasis) ++ [@class]}
+      class={class(@variant, @size, @emphasis) ++ [@class]}
       {@rest}
     >
       <.inner icon={@icon}>{render_slot(@inner_block)}</.inner>
@@ -59,7 +55,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     <button
       id={@id}
       type={@type}
-      class={class(@variant, @size, @selected, @emphasis) ++ [@class]}
+      class={class(@variant, @size, @emphasis) ++ [@class]}
       {@rest}
     >
       <.inner icon={@icon}>{render_slot(@inner_block)}</.inner>
@@ -87,7 +83,7 @@ defmodule WatchClubWeb.Components.UI.Button do
     """
   end
 
-  defp class(variant, size, selected, emphasis) do
+  defp class(variant, size, emphasis) do
     [
       "inline-flex items-center justify-center rounded-md border bg-clip-padding font-semibold whitespace-nowrap transition duration-150 outline-none select-none focus-visible:ring-1 disabled:pointer-events-none disabled:cursor-not-allowed active:shadow-none disabled:opacity-75 disabled:shadow-none aria-busy:cursor-progress [&_svg]:shrink-0",
       variant == "primary" &&
@@ -95,14 +91,10 @@ defmodule WatchClubWeb.Components.UI.Button do
       variant == "primary" && emphasis && "shadow-glow",
       variant == "accent" &&
         "border-transparent bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active focus-visible:ring-accent-ring",
-      variant == "secondary" && !selected &&
+      variant == "secondary" &&
         "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active focus-visible:ring-ring",
-      variant == "secondary" && selected &&
-        "border-border bg-surface-selected text-text hover:bg-surface-selected active:bg-surface-selected",
-      variant == "ghost" && !selected &&
+      variant == "ghost" &&
         "border-transparent bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
-      variant == "ghost" && selected &&
-        "border-transparent bg-surface-selected text-text hover:bg-surface-selected active:bg-surface-selected",
       variant == "danger" &&
         "border-transparent bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active focus-visible:border-danger-border focus-visible:ring-danger-ring",
       size == "sm" &&
