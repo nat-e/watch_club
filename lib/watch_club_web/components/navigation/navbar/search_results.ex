@@ -69,7 +69,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   def search_results(assigns) do
     ~H"""
-    <button
+    <%!-- <button
       id={"#{@id_prefix}-see-all-results-button"}
       type="submit"
       class="flex w-full shrink-0 items-center justify-center gap-related border-b border-border-subtle p-related text-sm font-semibold text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:bg-surface-hover focus-visible:text-text focus-visible:outline-none"
@@ -79,7 +79,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
         <.kbd>Enter ⏎</.kbd>
       </span>
       <Lucideicons.chevron_right class="size-icon" />
-    </button>
+    </button> --%>
     <.search_preview_card
       :for={result <- @search_results}
       id_prefix={@id_prefix}
