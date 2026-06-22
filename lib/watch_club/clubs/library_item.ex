@@ -60,6 +60,9 @@ defmodule WatchClub.Clubs.LibraryItem do
       end
 
       change relate_actor(:added_by)
+
+      # Create the added_content feed event
+      change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
     end
 
     # Bulk add/remove a Content to/from several libraries at once, emitting a

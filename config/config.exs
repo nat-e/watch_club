@@ -52,6 +52,7 @@ config :watch_club,
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [
     WatchClub.Accounts,
+    WatchClub.ActivityFeed,
     WatchClub.Clubs,
     WatchClub.Contents,
     WatchClub.History,

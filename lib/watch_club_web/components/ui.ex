@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Alert
       import WatchClubWeb.Components.UI.Avatar
       import WatchClubWeb.Components.UI.Badge
+      import WatchClubWeb.Components.UI.Badges
       import WatchClubWeb.Components.UI.Button
       import WatchClubWeb.Components.UI.Checkbox
       import WatchClubWeb.Components.UI.DropdownMenu

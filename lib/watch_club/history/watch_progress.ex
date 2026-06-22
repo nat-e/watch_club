@@ -19,6 +19,9 @@ defmodule WatchClub.History.WatchProgress do
   alias WatchClub.History.WatchProgress.Actions.{MarkNotWatched, MarkWatched}
   alias WatchClub.MediaCatalog.Media
 
+  # When a user has watched more than 90% of a media, we consider it fully watched
+  @complete_after_ratio 0.9
+
   postgres do
     table "watch_progresses"
     repo WatchClub.Repo
@@ -109,6 +112,12 @@ defmodule WatchClub.History.WatchProgress do
     end
   end
 
+  preparations do
+    # We always load the seconds_left and watch percent since they are simple calculations
+    # that don't require joins
+    prepare build(load: [:seconds_left, :watch_percent])
+  end
+
   attributes do
     uuid_v7_primary_key :id
 
@@ -154,7 +163,7 @@ defmodule WatchClub.History.WatchProgress do
               :boolean,
               expr(
                 is_nil(position_seconds) or is_nil(duration_seconds) or
-                  position_seconds / duration_seconds >= 0.9
+                  position_seconds / duration_seconds >= @complete_after_ratio
               )
 
     # The number of seconds left. This will always be positive since it's computed on the same Media
@@ -165,6 +174,24 @@ defmodule WatchClub.History.WatchProgress do
                   nil
                 else
                   duration_seconds - position_seconds
+                end
+              )
+
+    # The percentage of the media that has been watched
+    # Returns 100% for media that have been marked watched
+    # When more than 90% have been watched, we return 100
+    calculate :watch_percent,
+              :float,
+              expr(
+                cond do
+                  is_nil(position_seconds) or is_nil(duration_seconds) or duration_seconds == 0 ->
+                    100.0
+
+                  position_seconds / duration_seconds >= @complete_after_ratio ->
+                    100.0
+
+                  true ->
+                    position_seconds / duration_seconds * 100
                 end
               )
   end

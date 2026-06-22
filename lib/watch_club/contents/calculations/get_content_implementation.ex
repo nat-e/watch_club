@@ -22,9 +22,6 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
 
         record.tv_show ->
           record.tv_show
-
-        true ->
-          raise "Unknown content type: #{inspect(record)}"
       end
     end)
   end

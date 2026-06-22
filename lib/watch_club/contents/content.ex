@@ -45,7 +45,7 @@ defmodule WatchClub.Contents.Content do
       description "Returns the Contents recently watched by the actor. Most recently watched content first"
 
       prepare build(
-                filter: [actor_progress_status: :in_progress, has_media?: true],
+                filter: [actor_progress_status: :in_progress],
                 sort: [actor_last_watched_at: :desc]
               )
     end

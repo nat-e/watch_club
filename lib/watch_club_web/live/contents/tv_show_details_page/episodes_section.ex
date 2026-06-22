@@ -158,7 +158,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
         path={@season_metadata.details.poster_path}
         size="w342"
         alt=""
-        class="w-32 shrink-0 rounded-md border border-border-subtle bg-surface-raised"
+        class="w-32 shrink-0 border border-border-subtle bg-surface-raised"
       />
 
       <div class="flex flex-col gap-related">

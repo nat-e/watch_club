@@ -5,7 +5,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   import WatchClubWeb.Components.Contents.ContentCard
 
-  alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Shared.SortOrder
   alias WatchClubWeb.Helpers.KeysetStreamState
 

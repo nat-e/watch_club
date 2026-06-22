@@ -10,7 +10,7 @@ defmodule WatchClub.PubSub do
   """
   def subscribe_if_connected(socket, topics) do
     if Phoenix.LiveView.connected?(socket) do
-      topics |> List.wrap() |> Enum.each(&Phoenix.PubSub.subscribe(WatchClub.PubSub, &1))
+      topics |> List.wrap() |> Enum.each(&Phoenix.PubSub.subscribe(__MODULE__, &1))
     end
   end
 

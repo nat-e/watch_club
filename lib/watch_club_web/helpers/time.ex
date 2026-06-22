@@ -3,8 +3,8 @@ defmodule WatchClubWeb.Helpers.Time do
 
   @spec relative_from_now(DateTime.t(), atom()) :: String.t()
   def relative_from_now(date, locale) do
-    DateTime.utc_now()
-    |> DateTime.diff(date)
+    date
+    |> DateTime.diff(DateTime.utc_now())
     |> WatchClub.Cldr.DateTime.Relative.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
   end
 

@@ -3,19 +3,24 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Content
+  alias WatchClub.History.WatchProgress
   alias WatchClub.Shared.Url
 
   alias WatchClubWeb.Helpers.Time
 
-  import WatchClubWeb.Components.Contents.{ContentTypeBadge, TmdbPoster}
+  import WatchClubWeb.Components.Contents.TmdbPoster
 
   attr :contents, :list, required: true
   attr :current_user, User, required: true
 
   def continue_watching_section(assigns) do
     ~H"""
-    <.stack space="group">
-      <h2 class="">Continue Watching</h2>
+    <.section
+      surface="transparent"
+      title="Continue Watching"
+      padding="none"
+      space="related"
+    >
       <.cluster>
         <.continue_watching_card
           :for={content <- @contents}
@@ -23,7 +28,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
           current_user={@current_user}
         />
       </.cluster>
-    </.stack>
+    </.section>
     """
   end
 
@@ -32,10 +37,13 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
 
   defp continue_watching_card(%{content: %Content{type: :movie}} = assigns) do
     ~H"""
-    <.card>
-      <.tmdb_still path={@content.movie.backdrop_path} size="w300" />
-      {@content.implementation.best_localization.title}
-    </.card>
+    <.generic_continue_watching_card
+      content={@content}
+      play_link={Url.player_link(@content.movie)}
+      watch_progress={@content.movie.actor_progress}
+      locale={@current_user.settings.locale}
+      image={@content.movie.backdrop_path}
+    />
     """
   end
 
@@ -55,38 +63,86 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
       )
 
     ~H"""
-    <.card padding="none" class="relative w-80 flex flex-col rounded-lg">
+    <.generic_continue_watching_card
+      content={@content}
+      disabled={!@episode.has_media?}
+      play_link={(@episode.has_media? && Url.player_link(@episode)) || nil}
+      watch_progress={@episode.actor_progress}
+      locale={@current_user.settings.locale}
+      image={@episode.still_path}
+      additional_info={@episode.formatted_episode_number}
+    />
+    """
+  end
+
+  attr :content, Content, required: true
+  attr :image, :string, required: true
+  attr :play_link, :string, required: true
+  attr :watch_progress, WatchProgress
+  attr :locale, :atom, required: true
+  attr :disabled, :boolean, default: false
+  attr :additional_info, :string, default: nil
+
+  defp generic_continue_watching_card(assigns) do
+    assigns =
+      assigns
+      |> assign(
+        time_left:
+          assigns.watch_progress && assigns.watch_progress.seconds_left &&
+            Time.pretty_duration(
+              assigns.watch_progress.seconds_left,
+              assigns.locale
+            )
+      )
+
+    ~H"""
+    <.card padding="none" class="relative w-60 flex flex-col rounded-lg">
       <div class="relative">
-        <.tmdb_still path={@episode.still_path} size="original" class="rounded-t-lg" />
-        <.button
-          id={"#{@episode.id}-episode-play"}
-          variant="primary"
-          size="icon-lg"
-          class="z-10 absolute inset-0 m-auto rounded-full!"
-          disabled={!@episode.has_media?}
-          phx-click={
-            # Use a click handler to turn this into an HTML Button since links don't handle disabled states
-            @episode.has_media? && JS.patch(Url.player_link(@episode))
-          }
-        >
-          <Lucideicons.play />
-        </.button>
+        <.tmdb_still path={@image} size="w300" class="rounded-t-lg" />
+        <div class="absolute inset-0 flex items-center justify-center">
+          <.button
+            :if={!@disabled}
+            id={"continue-watching-play-#{@content.id}"}
+            variant="primary"
+            size="icon-lg"
+            class="rounded-full! after:inset-0 after:absolute"
+            patch={@play_link}
+          >
+            <Lucideicons.play />
+          </.button>
+        </div>
+        <div
+          :if={@watch_progress}
+          class="absolute h-1 bg-primary mt-auto"
+          style={"width: #{@watch_progress.watch_percent}%"}
+        />
+        <div :if={@disabled} class="absolute inset-0 bg-scrim rounded-t-lg" />
       </div>
       <.stack space="related" class="m-related">
         <div class="flex justify-between">
           <.link
             href={Url.content_details_link(@content.type, @content.external_id)}
-            class="font-semibold text-lg line-clamp-2 min-h-[2lh] after:absolute after:inset-0"
+            class="z-10 font-semibold text-lg line-clamp-1 hover:underline"
           >
             {@content.implementation.best_localization.title}
           </.link>
-          <.content_type_badge type={@content.type} />
         </div>
-        <.inline class="flex justify-between items-baseline">
-          <span class="text-text-muted font-semibold text-sm tracking-wide uppercase ">
-            {@episode.formatted_episode_number}
+        <.inline class="flex justify-end">
+          <span
+            :if={@additional_info}
+            class="flex-1 text-text-muted font-semibold text-sm tracking-wide uppercase"
+          >
+            {@additional_info}
           </span>
-          <span class="text-text-subtle font-medium text-sm"></span>
+          <span :if={@disabled} class="text-text-subtle font-medium text-sm">
+            {dgettext("home", "Not available")}
+          </span>
+          <span :if={!@disabled && @time_left} class="text-text-subtle font-medium text-sm">
+            {dgettext("home", "%{time} left", time: @time_left)}
+          </span>
+          <span :if={!@disabled && !@time_left} class="text-text-subtle font-medium text-sm">
+            {dgettext("home", "Not started")}
+          </span>
         </.inline>
       </.stack>
     </.card>

@@ -19,13 +19,19 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.AddContentToLibraries do
     content_identity = input.arguments.content_identity
 
     with {:ok, content} <- Contents.get_or_create_content(content_identity, context.actor) do
-      input.arguments.library_ids
-      |> Enum.map(fn library_id ->
-        %{content_id: content.id, library_id: library_id}
-      end)
-      |> Ash.bulk_create!(LibraryItem, :create, scope: context, return_records?: false)
+      # We need to return notification for feed here
+      %Ash.BulkResult{notifications: notifications} =
+        input.arguments.library_ids
+        |> Enum.map(fn library_id ->
+          %{content_id: content.id, library_id: library_id}
+        end)
+        |> Ash.bulk_create!(LibraryItem, :create,
+          scope: context,
+          return_records?: false,
+          return_notifications?: true
+        )
 
-      notification =
+      content_changed =
         ContentChangedNotifier.create_notification(
           input.resource,
           input.action,
@@ -34,7 +40,7 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.AddContentToLibraries do
           context.actor
         )
 
-      {:ok, content, [notification]}
+      {:ok, content, [content_changed | List.wrap(notifications)]}
     end
   end
 end

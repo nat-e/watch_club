@@ -107,7 +107,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
       <.tmdb_poster
         path={@poster_path}
         size="w154"
-        class="w-20 shrink-0 rounded-md"
+        class="w-20 shrink-0"
       />
       <.stack space="related" class="h-full flex-1">
         <span class="font-bold">{@title}</span>

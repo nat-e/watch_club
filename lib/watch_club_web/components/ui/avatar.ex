@@ -29,9 +29,9 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       title={@name}
       class={[
         "relative flex shrink-0 items-center justify-center rounded-full font-bold text-white select-none",
-        @size == "xs" && "size-5 text-[0.625rem] leading-none",
-        @size == "sm" && "size-6 text-xs leading-none",
-        @size == "md" && "size-8 text-base",
+        @size == "xs" && "size-4 text-xs leading-none",
+        @size == "sm" && "size-5 text-sm leading-none",
+        @size == "md" && "size-7 text-base",
         @size == "lg" && "size-10 text-lg",
         @background_class,
         @class

@@ -40,6 +40,9 @@ defmodule WatchClub.Clubs.Club do
       accept [:name]
 
       change CreateAdminMembershipForActor
+
+      # Create the club_created feed event
+      change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
     end
 
     update :add_members do

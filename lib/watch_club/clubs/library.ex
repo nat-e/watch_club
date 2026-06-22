@@ -54,6 +54,9 @@ defmodule WatchClub.Clubs.Library do
 
       change SetDefaultLibraryIcon
       change SetNextLibraryIndex
+
+      # Create the library_created feed event
+      change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
     end
   end
 

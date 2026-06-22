@@ -20,7 +20,7 @@ defmodule WatchClub.Clubs.Membership do
   end
 
   actions do
-    defaults [:read, :destroy, create: [:*], update: []]
+    defaults [:read, :destroy, update: []]
 
     read :with_user do
       prepare build(load: [:user])
@@ -33,11 +33,20 @@ defmodule WatchClub.Clubs.Membership do
               )
     end
 
+    create :create do
+      primary? true
+      accept [:club_id, :user_id, :role]
+
+      change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
+    end
+
     create :add_to_club do
       description "Instance administrator adds an existing user to a club as a club member"
       accept [:club_id, :user_id]
 
       change set_attribute(:role, :member)
+
+      change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
     end
 
     destroy :leave_club

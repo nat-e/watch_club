@@ -72,7 +72,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       <.tmdb_poster
         size="w342"
         path={@content.implementation.best_localization.poster_path}
-        class="h-36 shrink-0 rounded-md border border-border-subtle shadow-overlay"
+        class="h-36 shrink-0 border border-border-subtle shadow-overlay"
       />
 
       <div class="flex flex-1 flex-col justify-between gap-related h-full overflow-clip">

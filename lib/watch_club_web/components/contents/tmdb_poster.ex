@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Components.Contents.TmdbPoster do
 
   def tmdb_poster(assigns) do
     ~H"""
-    <.tmdb_image path={@path} size={@size} alt={@alt} class={["aspect-2/3", @class]}>
+    <.tmdb_image path={@path} size={@size} alt={@alt} class={["aspect-2/3 rounded-lg", @class]}>
       {render_slot(@inner_block)}
     </.tmdb_image>
     """

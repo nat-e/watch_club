@@ -16,6 +16,7 @@ defmodule WatchClub.Shared.Url do
     router: WatchClubWeb.Router,
     statics: WatchClubWeb.static_paths()
 
+  alias WatchClub.Clubs.Library
   alias WatchClub.Contents.{Content, ContentIdentity, Movie, TvShowEpisode}
   alias WatchClub.MediaCatalog.Video
 
@@ -58,4 +59,7 @@ defmodule WatchClub.Shared.Url do
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
   def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
+
+  def club_library_link(%Library{id: library_id, club_id: club_id}),
+    do: ~p"/clubs/#{club_id}/libraries/#{library_id}"
 end

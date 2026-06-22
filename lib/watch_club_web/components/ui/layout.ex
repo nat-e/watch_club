@@ -173,7 +173,7 @@ defmodule WatchClubWeb.Components.UI.Layout do
       surface={@surface}
       shadow={@shadow}
       class={[
-        "grid",
+        "flex flex-col",
         @space == "tight" && "gap-tight",
         @space == "related" && "gap-related",
         @space == "group" && "gap-group",
@@ -248,12 +248,12 @@ defmodule WatchClubWeb.Components.UI.Layout do
         @surface == "raised" && "border-border bg-surface-raised",
         @surface == "inset" && "border-border-subtle bg-surface-inset",
         @surface == "overlay" && "border-border bg-surface-overlay",
-        @surface == "transparent" && "border-border-subtle bg-transparent",
+        @surface == "transparent" && "border-transparent bg-transparent shadow-none",
         @padding == "tight" && "p-tight",
         @padding == "related" && "p-related",
         @padding == "group" && "p-group",
         @padding == "cluster" && "p-cluster",
-        @shadow && "shadow-card",
+        @shadow && @surface != "transparent" && "shadow-card",
         @class
       ]}
       {@rest}

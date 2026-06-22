@@ -8,6 +8,8 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
   @sidebar_transition_time 200
 
+  def dom_id, do: "sidebar-shell"
+
   def show_sidebar(js \\ %JS{}) do
     js
     |> JS.remove_class("invisible pointer-events-none", to: "#sidebar-backdrop")
@@ -35,7 +37,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     assigns = assign(assigns, :current_path, assigns.current_url.path)
 
     ~H"""
-    <div id="sidebar-shell" phx-window-keydown={hide_sidebar()} phx-key="escape">
+    <div id={dom_id()} phx-window-keydown={hide_sidebar()} phx-key="escape">
       <button
         id="sidebar-backdrop"
         type="button"
