@@ -101,7 +101,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
         </div>
         <.progress_bar
           :if={@watch_progress}
-          progress={@watch_progress.watch_percent}
+          progress={@watch_progress.percent_watched}
           class="absolute bottom-0"
         />
         <div :if={@disabled} class="absolute inset-0 bg-scrim rounded-t-lg" />

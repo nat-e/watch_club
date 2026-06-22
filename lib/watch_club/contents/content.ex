@@ -241,7 +241,7 @@ defmodule WatchClub.Contents.Content do
 
     # The date at which the current user has most recently watched this content
     calculate :actor_last_watched_at,
-              :utc_datetime,
+              :utc_datetime_usec,
               expr(
                 cond do
                   type == :book -> book.actor_last_watched_at
@@ -251,7 +251,7 @@ defmodule WatchClub.Contents.Content do
               )
 
     calculate :actor_next_medias_to_play,
-              :struct,
+              {:array, :struct},
               ActorNextMediasToPlay
 
     calculate :localized_title_key,

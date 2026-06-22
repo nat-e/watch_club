@@ -28,14 +28,17 @@ defmodule WatchClub.Contents.TvShowEpisode do
                tv_show.content.external_id_source == :tmdb and
                  tv_show.content.external_id == ^arg(:tmdb_id)
              )
+
+      prepare build(sort: [season_number: :asc, episode_number: :asc])
     end
   end
 
   preparations do
-    prepare build(
-              load: [:formatted_episode_number],
-              sort: [tv_show_id: :asc, season_number: :asc, episode_number: :asc]
-            )
+    prepare build(load: [:formatted_episode_number])
+
+    # We don't default sort episodes by show / season / episode because
+    # 1. It breaks has_one relationship that implement their custom sorting (ie, tv_show.actor_last_watched_episode)
+    # 2. It can affect performance
   end
 
   attributes do
@@ -101,12 +104,13 @@ defmodule WatchClub.Contents.TvShowEpisode do
                   true -> :in_progress
                 end
               )
+
+    # The date at which the current user has most recently watched this episode, or nil
+    calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
   end
 
   aggregates do
     count :videos_count, :videos
-    # The date at which the current user has most recently watched this episode, or nil
-    first :actor_last_watched_at, :actor_progress, :updated_at
   end
 
   identities do

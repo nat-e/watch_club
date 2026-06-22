@@ -18,7 +18,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
 
     with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor) do
       content
-      |> actor_progress_query(
+      |> viewer_progress_query(
         Map.get(input.arguments, :season_number),
         Map.get(input.arguments, :episode_number),
         actor
@@ -42,17 +42,29 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
     end
   end
 
-  defp actor_progress_query(%{type: :movie, id: id}, _season, _episode, actor),
+  defp viewer_progress_query(%{type: :movie, id: id}, _season, _episode, actor),
     do: Ash.Query.filter(WatchProgress, movie_id == ^id and user_id == ^actor.id)
 
-  defp actor_progress_query(%{type: :book, id: id}, _season, _episode, actor),
+  defp viewer_progress_query(%{type: :book, id: id}, _season, _episode, actor),
     do: Ash.Query.filter(WatchProgress, book_id == ^id and user_id == ^actor.id)
 
   # nil season/episode mean "all", so the filter is a no-op for that scope.
-  defp actor_progress_query(%{type: :tv_show, id: tv_show_id}, season, episode, actor) do
+  defp viewer_progress_query(%{type: :tv_show, id: tv_show_id}, season, episode, actor) do
     WatchProgress
     |> Ash.Query.filter(tv_show_episode.tv_show_id == ^tv_show_id and user_id == ^actor.id)
-    |> Ash.Query.filter(is_nil(^season) or tv_show_episode.season_number == ^season)
-    |> Ash.Query.filter(is_nil(^episode) or tv_show_episode.episode_number == ^episode)
+    |> filter_by_season_number(season)
+    |> filter_by_episode_number(episode)
+  end
+
+  defp filter_by_season_number(query, nil), do: query
+
+  defp filter_by_season_number(query, season_number) do
+    query |> Ash.Query.filter(tv_show_episode.season_number == ^season_number)
+  end
+
+  defp filter_by_episode_number(query, nil), do: query
+
+  defp filter_by_episode_number(query, episode_number) do
+    query |> Ash.Query.filter(tv_show_episode.episode_number == ^episode_number)
   end
 end

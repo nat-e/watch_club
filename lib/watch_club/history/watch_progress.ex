@@ -115,7 +115,7 @@ defmodule WatchClub.History.WatchProgress do
   preparations do
     # We always load the seconds_left and watch percent since they are simple calculations
     # that don't require joins
-    prepare build(load: [:seconds_left, :watch_percent])
+    prepare build(load: [:seconds_left, :percent_watched])
   end
 
   attributes do
@@ -180,7 +180,7 @@ defmodule WatchClub.History.WatchProgress do
     # The percentage of the media that has been watched
     # Returns 100% for media that have been marked watched
     # When more than 90% have been watched, we return 100
-    calculate :watch_percent,
+    calculate :percent_watched,
               :float,
               expr(
                 cond do

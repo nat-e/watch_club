@@ -84,7 +84,7 @@ defmodule WatchClub.Contents.Movie do
               )
 
     # The date at which the current user has most recently watched this movie
-    calculate :actor_last_watched_at, :utc_datetime, expr(actor_progress.updated_at)
+    calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
   end
 
   aggregates do

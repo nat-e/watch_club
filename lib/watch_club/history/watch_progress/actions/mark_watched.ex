@@ -73,9 +73,21 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   defp episode_ids(tv_show_id, season, episode, context) do
     TvShowEpisode
     |> Ash.Query.filter(tv_show_id == ^tv_show_id)
-    |> Ash.Query.filter(is_nil(^season) or season_number == ^season)
-    |> Ash.Query.filter(is_nil(^episode) or episode_number == ^episode)
+    |> filter_by_season_number(season)
+    |> filter_by_episode_number(episode)
     |> Ash.read!(scope: context)
     |> Enum.map(& &1.id)
+  end
+
+  defp filter_by_season_number(query, nil), do: query
+
+  defp filter_by_season_number(query, season_number) do
+    query |> Ash.Query.filter(season_number == ^season_number)
+  end
+
+  defp filter_by_episode_number(query, nil), do: query
+
+  defp filter_by_episode_number(query, episode_number) do
+    query |> Ash.Query.filter(episode_number == ^episode_number)
   end
 end

@@ -22,7 +22,8 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
           record.movie.videos
 
         record.tv_show ->
-          record.tv_show.actor_next_episode.videos
+          episode = record.tv_show.actor_next_episode
+          (episode && episode.videos) || []
       end
     end)
   end

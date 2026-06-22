@@ -113,12 +113,6 @@ defmodule WatchClub.Contents.TvShow do
       manual WatchClub.Contents.TvShow.ActorNextEpisode
     end
 
-    # The episode that the current user has most recently watched (even partly), if any.
-    has_one :actor_most_recently_watched_episode, TvShowEpisode do
-      from_many? true
-      sort actor_last_watched_at: :desc
-    end
-
     # The best localization based on the current user locale
     has_one :best_localization, TvShowLocalization do
       from_many? true
@@ -137,11 +131,6 @@ defmodule WatchClub.Contents.TvShow do
                   true -> :in_progress
                 end
               )
-
-    # The date at which the current user has most recently watched an episode of this show
-    calculate :actor_last_watched_at,
-              :utc_datetime,
-              expr(actor_most_recently_watched_episode.actor_last_watched_at)
   end
 
   aggregates do
@@ -152,12 +141,24 @@ defmodule WatchClub.Contents.TvShow do
 
     count :episodes_count, :episodes
 
+    # Number of episodes that the current user has completed.
+    # Only used for internal calculation
     count :actor_episodes_completed_count, :episodes do
       filter expr(actor_progress_status == :completed)
+      public? false
     end
 
+    # Number of episodes that the current user has started.
+    # Only used for internal calculation
     count :actor_episodes_started_count, :episodes do
       filter expr(actor_progress_status != :not_started)
+      public? false
+    end
+
+    # The date at which the user last watched an episode of this show.
+    # Used internally for sorting the Recently Watched section
+    max :actor_last_watched_at, [:episodes, :actor_progress], :updated_at do
+      public? false
     end
   end
 

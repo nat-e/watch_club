@@ -1,18 +1,18 @@
 defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
   @moduledoc """
-  Manual relationship resolving the episode the current user should play next:
-  the first episode (by season/episode order) they have not completed, or the
-  first episode of the show when they have completed all of them.
+  Resolves the episode the current user should resume on next play.
 
-  Implements the AshPostgres callbacks so it can also be traversed inside
-  expressions (e.g. the `has_media?` calculation), where it resolves to the same
-  episode via a correlated `ORDER BY … LIMIT 1` lateral join.
+  The anchor is the episode the user watched most recently (ties — e.g. a whole
+  season marked at once — broken by airing order). From there:
+
+    * nothing watched yet      → the first episode
+    * anchor still in progress → the anchor itself (resume it)
+    * anchor completed         → the next episode in airing order, wrapping
+                                 back to the first once the finale is done
   """
   use Ash.Resource.ManualRelationship
-  use AshPostgres.ManualRelationship
 
   require Ash.Query
-  import Ecto.Query
 
   alias WatchClub.Contents.TvShowEpisode
 
@@ -21,77 +21,49 @@ defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
     episodes_by_show =
       TvShowEpisode
       |> Ash.Query.filter(tv_show_id in ^Enum.map(shows, & &1.id))
-      |> Ash.Query.load(:actor_progress_status)
+      |> Ash.Query.load([:actor_progress_status, :actor_last_watched_at])
       |> Ash.read!(actor: actor, authorize?: authorize?)
       |> Enum.group_by(& &1.tv_show_id)
 
     {:ok,
      Map.new(shows, fn show ->
-       episodes = Map.get(episodes_by_show, show.id, [])
-
-       next =
-         Enum.find(episodes, &(&1.actor_progress_status != :completed)) || List.first(episodes)
-
-       {show.id, next}
+       {show.id, next_episode(Map.get(episodes_by_show, show.id, []))}
      end)}
   end
 
-  @impl true
-  def ash_postgres_join(query, _opts, current_binding, as_binding, :inner, destination_query) do
-    {:ok,
-     from(row in query,
-       inner_lateral_join: episode in subquery(next_episode(destination_query, current_binding)),
-       as: ^as_binding,
-       on: true
-     )}
+  defp next_episode([]), do: nil
+
+  defp next_episode(episodes) do
+    episodes = Enum.sort_by(episodes, &{&1.season_number, &1.episode_number})
+
+    case most_recently_watched(episodes) do
+      nil ->
+        List.first(episodes)
+
+      %{actor_progress_status: :completed} = anchor ->
+        successor =
+          Enum.find(episodes, fn episode ->
+            {episode.season_number, episode.episode_number} >
+              {anchor.season_number, anchor.episode_number}
+          end)
+
+        successor || List.first(episodes)
+
+      anchor ->
+        anchor
+    end
   end
 
-  def ash_postgres_join(query, _opts, current_binding, as_binding, :left, destination_query) do
-    {:ok,
-     from(row in query,
-       left_lateral_join: episode in subquery(next_episode(destination_query, current_binding)),
-       as: ^as_binding,
-       on: true
-     )}
-  end
-
-  @impl true
-  def ash_postgres_subquery(_opts, current_binding, _as_binding, destination_query) do
-    {:ok, next_episode(destination_query, current_binding)}
-  end
-
-  # The single next-or-first episode for the parent show, ordered so that
-  # completed episodes sort last (falling back to the first episode).
-  defp next_episode(destination_query, parent_binding) do
-    actor_id =
-      case destination_query.__ash_bindings__.context[:private][:actor] do
-        %{id: id} -> id
-        _ -> nil
-      end
-
-    from(episode in destination_query,
-      where: episode.tv_show_id == parent_as(^parent_binding).id,
-      limit: 1
-    )
-    |> order_by_next(actor_id)
-  end
-
-  defp order_by_next(query, nil) do
-    from(episode in query, order_by: [asc: episode.season_number, asc: episode.episode_number])
-  end
-
-  defp order_by_next(query, actor_id) do
-    from(episode in query,
-      order_by: [
-        asc:
-          fragment(
-            "EXISTS (SELECT 1 FROM watch_progresses wp WHERE wp.tv_show_episode_id = ? AND wp.user_id = ? AND (wp.position_seconds IS NULL OR wp.duration_seconds IS NULL OR wp.position_seconds / wp.duration_seconds >= 0.9))",
-            episode.id,
-            ^actor_id
-          ),
-        asc: episode.season_number,
-        asc: episode.episode_number
-      ]
-    )
+  # Most recently watched episode, ties broken by airing order — episodes are
+  # sorted ascending, so an equal timestamp keeps the later one. This is the
+  # selection actor_last_watched_episode used to do in SQL.
+  defp most_recently_watched(episodes) do
+    episodes
+    |> Enum.reject(&is_nil(&1.actor_last_watched_at))
+    |> Enum.reduce(nil, fn episode, latest ->
+      if latest && DateTime.after?(latest.actor_last_watched_at, episode.actor_last_watched_at),
+        do: latest,
+        else: episode
+    end)
   end
 end

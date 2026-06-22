@@ -143,34 +143,53 @@ defmodule WatchClub.Generator do
       :create,
       defaults: [content_identity: StreamData.map(tmdb_id, &ContentIdentity.for_movie/1)],
       authorize?: false,
-      actor: actor,
-      after_action: fn content ->
-        # Library selection moved out of create into set_libraries; mirror that
-        # here so callers can still seed a movie straight into club libraries.
-        if library_ids do
-          WatchClub.Contents.set_club_libraries!(content, %{library_ids: library_ids},
-            actor: actor,
-            authorize?: false
-          )
-        else
-          content
-        end
-      end
+      actor: actor
     )
   end
 
   def tv_show(opts \\ []) do
-    changeset_generator(
-      TvShow,
-      :create,
-      defaults: [
-        original_name: sequence(:tv_show_name, fn i -> "Show #{i}" end),
-        tmdb_id: sequence(:tmdb_id, fn i -> i end),
-        tvdb_id: sequence(:tvdb_id, fn i -> i end)
-      ],
-      authorize?: false,
-      actor: opts[:actor],
-      overrides: opts
+    {num_seasons, opts} = Keyword.pop(opts, :num_seasons, 3)
+    {episodes_per_season, opts} = Keyword.pop(opts, :episodes_per_season, 24)
+    {start_date, opts} = Keyword.pop(opts, :start_date, ~D[2025-01-01])
+
+    episodes =
+      for season_number <- 1..num_seasons, episode_number <- 1..episodes_per_season do
+        %{
+          season_number: season_number,
+          episode_number: episode_number,
+          air_date: Date.shift(start_date, year: season_number, week: episode_number)
+        }
+      end
+
+    seed_generator(
+      %Content{
+        type: :tv_show,
+        external_id_source: :tmdb,
+        external_id: sequence(:tmdb_id, &to_string/1),
+        original_title: sequence(:tv_show_name, &"Show #{&1}"),
+        original_language: "en",
+        origin_country: "US",
+        release_date: start_date
+      },
+      overrides: opts,
+      after_action: fn content ->
+        tmdb_id = String.to_integer(content.external_id)
+
+        tv_show =
+          Ash.Seed.seed!(TvShow, %{
+            id: content.id,
+            original_name: content.original_title,
+            tmdb_id: tmdb_id,
+            tvdb_id: tmdb_id,
+            localizations:
+              for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
+                %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
+              end,
+            episodes: episodes
+          })
+
+        %{content | tv_show: tv_show}
+      end
     )
   end
 
