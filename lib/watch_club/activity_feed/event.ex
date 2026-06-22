@@ -44,9 +44,11 @@ defmodule WatchClub.ActivityFeed.Event do
   end
 
   actions do
-    read :read do
-      primary? true
+    defaults [:read]
 
+    read :for_actor do
+      description "Get all the Activity feed events for the current user"
+      # Filtering is done via the read policy, no need to filter explicitely
       pagination keyset?: true, required?: false, stable_sort: [:id]
       prepare LoadActivityFeedEvent
     end
@@ -145,9 +147,6 @@ defmodule WatchClub.ActivityFeed.Event do
 
   preparations do
     prepare build(sort: [created_at: :desc])
-  end
-
-  pub_sub do
   end
 
   attributes do

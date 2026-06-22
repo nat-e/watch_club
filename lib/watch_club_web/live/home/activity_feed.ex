@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
 
   # The feed can be empty for the administrator when they just created the instance
   # Use this as an onboarding screen for prompting them to create a Club
-  # We already have the entire club crea  tion flow handled in the sidebar, so we just
+  # We already have the entire club creation flow handled in the sidebar, so we just
   # send the event to that LiveView
   def empty_feed(%{current_user: %User{administrator?: true}} = assigns) do
     ~H"""

@@ -94,7 +94,8 @@ defmodule WatchClub.Repo.Migrations.ActivityFeed do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:activity_feed_library_created_events, [:library_id],
@@ -120,7 +121,8 @@ defmodule WatchClub.Repo.Migrations.ActivityFeed do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:activity_feed_club_created_events, [:club_id],
@@ -146,7 +148,8 @@ defmodule WatchClub.Repo.Migrations.ActivityFeed do
             prefix: "public",
             on_delete: :delete_all,
             on_update: :update_all
-          ), null: false
+          ),
+          null: false
     end
 
     create unique_index(:activity_feed_content_added_events, [:library_item_id],

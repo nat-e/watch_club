@@ -48,19 +48,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
   end
 
   defp continue_watching_card(%{content: %Content{type: :tv_show}} = assigns) do
-    episode = assigns.content.tv_show.actor_next_episode
-
-    assigns =
-      assigns
-      |> assign(
-        episode: episode,
-        time_left:
-          episode.actor_progress_status == :in_progress && episode.actor_progress.time_left &&
-            Time.pretty_duration(
-              episode.actor_progress.time_left,
-              assigns.current_user.settings.locale
-            )
-      )
+    assigns = assigns |> assign(episode: assigns.content.tv_show.actor_next_episode)
 
     ~H"""
     <.generic_continue_watching_card
@@ -111,10 +99,10 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
             <Lucideicons.play />
           </.button>
         </div>
-        <div
+        <.progress_bar
           :if={@watch_progress}
-          class="absolute h-1 bg-primary mt-auto"
-          style={"width: #{@watch_progress.watch_percent}%"}
+          progress={@watch_progress.watch_percent}
+          class="absolute bottom-0"
         />
         <div :if={@disabled} class="absolute inset-0 bg-scrim rounded-t-lg" />
       </div>
@@ -146,6 +134,20 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
         </.inline>
       </.stack>
     </.card>
+    """
+  end
+
+  attr :progress, :float, required: true, doc: "The progress in %"
+  attr :class, :any, default: nil
+
+  defp progress_bar(assigns) do
+    ~H"""
+    <div class={["w-full h-1 bg-scrim", @class]}>
+      <div
+        class="h-full bg-primary"
+        style={"width: #{@progress}%"}
+      />
+    </div>
     """
   end
 end
