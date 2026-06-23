@@ -1,8 +1,5 @@
 defmodule WatchClubWeb.Accounts.SetupPage do
-  require Logger
   use WatchClubWeb, :live_view
-
-  alias WatchClub.Accounts
 
   @impl true
   def render(assigns) do

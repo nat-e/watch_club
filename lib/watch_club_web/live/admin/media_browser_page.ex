@@ -1,13 +1,10 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage do
   use WatchClubWeb, :live_view
 
-  require Logger
-
   import WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal
   import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Components.UI.Empty
 
-  alias WatchClub.MediaCatalog
   alias WatchClubWeb.Admin.MediaBrowserPage.{DetailDrawer, State, Table, Toolbar}
 
   @page_size 50

@@ -11,9 +11,6 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   import WatchClubWeb.Admin.MediaSources.RefreshMetadataBadge
   import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
-  alias WatchClub.MediaSources.Import
-  alias WatchClubWeb.Helpers.Time
-
   attr :imports, :list, required: true
   attr :locale, :atom, required: true
 

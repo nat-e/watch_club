@@ -38,15 +38,14 @@ We do not try to patch the existing data from the payload, instead we reload the
 
 ### PubSub topics
 
-| Topic | Description | Triggered | Subscribers |
-|---|---|---|---|
-| `users` | Change regarding users | `User:register_with_password`, `User:destroy` | `/admin/users` |
-| `users:<user_id>:settings` | Change regarding a User's settings | `UserSettings:update` | Every page for current user |
-| `users:<user_id>:memberships` | Change regarding a User's memberships | `Membership:create`, `Membership:destroy` | Every page for current user |
-| `clubs:<club_id>` | Change regarding a club (name) | `Club:update` | `/clubs/:club_id/*` |
-| `clubs:<club_id>:libraries` | Change regarding a club libraries | `Library:create`, `Library:update`, `Library:destroy` | `/clubs/:club_id/settings` |
-| `clubs:<club_id>:libraries:<library_id>` | Change regarding a single Club Library | `Library:update`, `Library:destroy` | `/clubs/:club_id/library/:library_id` |
-| `clubs:<club_id>:memberships` | Change regarding club memberships | `Membership:create`, `Membership:destroy` | `/clubs/:club_id/members` |
-| `media_sources` | Change regarding Media Source | `MediaSource:create`, `Membership:destroy` | Every page for current user |
-| `content:<external_id_source>:<external_id>` | Change regarding a Content that affect everyone (refreshed Metadata, new Media, ...) | `Membership:create`, `Membership:destroy` | Every page that displays content |
-| `content:<external_id_source>:<external_id>:user:<user_id>` | Change regarding a Content x User | `Membership:create`, `Membership:destroy` | Every page that displays content |
+| Topic | Domain | Scope | Description | Triggered | Subscribers |
+|---|---|---|---|---|---|
+| `memberships:club:<club_id>` | Club Memberships | Club | Notifications about Club Memberships | `ClubMembership:CUD` | `/clubs/:club_id/members` |
+| `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
+| `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
+| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `ClubMembership:CUD` | Every page for current user |
+| `club:<club_id>` | - | Club | Notifications about a Club  | `Club:U`, `Library:CUD` | Every page for current user (Sidebar) |
+| `media_sources:admin` | MediaSources | Admin | Notifications about a a Media Source or Import  | `MediaSource:CUD`, `Import:CU` | `/admin/media_sources/*` |
+| `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `ContentRequest:CUD`, `WatchProgress:CUD` | Any page that display content (Content Details, Club Library, Homepage...) |
+| `content:club:<club_id>` | Contents | Club | Notification about a Content that affects members of a Club | `LibraryItem:CUD` | Any page that displays content (Content Details, Club Library...) |
+| `content:global` | Contents | Global | Notification about a Content that affects everybody | `Media:CUD` | Any page that displays content (Content Details, Club Library, Homepage...) |

@@ -10,7 +10,7 @@ defmodule WatchClub.Accounts.User do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
     extensions: [AshAuthentication],
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -356,8 +356,11 @@ defmodule WatchClub.Accounts.User do
   end
 
   pub_sub do
-    publish :register_with_password, ["users"]
-    publish :destroy, ["users"]
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish_all :create, ["users", "admin"]
+    publish_all :destroy, ["users", "admin"]
   end
 
   validations do

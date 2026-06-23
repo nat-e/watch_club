@@ -4,8 +4,9 @@ defmodule WatchClub.MediaCatalog.Media do
     domain: WatchClub.MediaCatalog,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    notifiers: [Ash.Notifier.PubSub]
 
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.MediaCatalog.{Audiobook, Ebook, MediaType, Video}
 
   alias WatchClub.MediaCatalog.Preparations.{
@@ -117,7 +118,6 @@ defmodule WatchClub.MediaCatalog.Media do
         )
       end
 
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
       change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
     end
 
@@ -146,8 +146,6 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
-
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
 
     create :create_audiobook do
@@ -175,15 +173,12 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
-
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
     end
 
     destroy :destroy do
       primary? true
       require_atomic? false
 
-      change {WatchClub.Contents.Changes.CreateContentNotification, content: :content}
       change WatchClub.MediaCatalog.Changes.DeleteTrickplay
     end
   end
@@ -209,6 +204,38 @@ defmodule WatchClub.MediaCatalog.Media do
       description "The system actor or an instance administrator can destroy Media"
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
+    end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    # Publish to the global content topic
+    # We add :content_id and :content_identity in the metadata to make
+    # it easy for subscribers to know which media this is related to
+    publish_all :create, ["content", "global"],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :destroy, ["content", "global"],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      case notification.data.calculations[:content] do
+        nil ->
+          notification
+
+        content ->
+          %{
+            notification
+            | metadata:
+                notification.metadata
+                |> Map.put(:content_identity, ContentIdentity.from_content(content))
+                |> Map.put(:content_id, content.id)
+          }
+      end
     end
   end
 
@@ -243,11 +270,11 @@ defmodule WatchClub.MediaCatalog.Media do
   end
 
   calculations do
+    # The Content this Media points to (can be nil for un-matched Media)
     calculate :content,
               :struct,
               WatchClub.MediaCatalog.Calculations.MediaContent do
-      constraints instance_of: WatchClub.Contents.Content
-      public? true
+      constraints instance_of: Content
     end
   end
 

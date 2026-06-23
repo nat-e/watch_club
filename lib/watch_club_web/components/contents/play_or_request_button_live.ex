@@ -1,11 +1,38 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   use WatchClubWeb, :live_component
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.Contents.ContentIdentity
-  alias WatchClub.Requests
-  alias WatchClub.Requests.{ContentRequest, ContentRequestStatus}
-  alias WatchClub.Shared.Url
+  @doc """
+  The DOM id we recommend using for this Live Component
+  Stable DOM id allows us to simplify PubSub notification handling
+  """
+  def dom_id(%ContentIdentity{} = identity),
+    do: "play-or-request-button-#{identity.external_id_source}-#{identity.external_id}"
+
+  @doc """
+  Updates the component when a relevant Ash Notification is received.
+  We recommend using it on every LiveView that uses this LiveComponent for reactivity.
+  This requires using dom_id() as the ID for the LiveComponent and the LiveView to have
+  subscribed to the correct topics via `WatchClub.PubSub.subscribe_to_current_user_content_topics`.
+
+  The button refreshes when Media have been added or removed from the Media center, or
+  when the Content Request of the user for this content has changed.
+  """
+  def handle_pubsub_message(
+        %Ash.Notifier.Notification{
+          resource: resource,
+          metadata: %{content_identity: identity}
+        },
+        %User{} = user
+      )
+      when resource in [ContentRequest, Media] do
+    send_update(__MODULE__,
+      id: dom_id(identity),
+      content_identity: identity,
+      current_user: user
+    )
+  end
+
+  def handle_pubsub_message(_msg, _user), do: nil
 
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true

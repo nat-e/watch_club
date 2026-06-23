@@ -10,8 +10,6 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
 
   import WatchClubWeb.Components.Media.{MediaTypeBadge, SourceIdentifier, SourceTypeIcon}
 
-  alias WatchClub.MediaSources.{Import, Source}
-
   attr :media_source, Source, required: true
 
   def history_header(assigns) do

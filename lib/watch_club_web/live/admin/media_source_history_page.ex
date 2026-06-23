@@ -7,30 +7,24 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   """
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Admin.MediaSources.HistoryHeader
-  import WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable
-  import WatchClubWeb.Admin.MediaSources.RunImportModal
+  # The fields that need to be loaded on the Source object to display the page
+  @media_source_fields [:imports]
 
-  alias Phoenix.PubSub
-  alias WatchClub.MediaSources
-  alias WatchClub.MediaSources.Source
+  import WatchClubWeb.Admin.MediaSources.{HistoryHeader, MediaImportHistoryTable, RunImportModal}
 
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:run_modal_open?, false)
-     |> assign(:subscribed_id, nil)}
+     |> WatchClub.PubSub.subscribe_if_connected("media_sources:admin")
+     |> assign(:run_modal_open?, false)}
   end
 
   @impl true
   def handle_params(%{"id" => id}, _uri, socket) do
-    # Subscribe before load to avoid race condition
-    socket = resubscribe(socket, id)
-
     case MediaSources.get_media_source_by_id(id,
            actor: socket.assigns.current_user,
-           load: [:imports]
+           load: @media_source_fields
          ) do
       {:ok, media_source} ->
         {:noreply, assign(socket, :media_source, media_source)}
@@ -151,57 +145,37 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(
-        %Phoenix.Socket.Broadcast{
-          topic: "media_sources:" <> _,
-          payload: %Ash.Notifier.Notification{action: %{name: :destroy}}
-        },
-        socket
-      ) do
+  # The source was deleted, navigate back to the list page
+  def handle_info(%Notification{data: %Source{id: source_id}, action: %{name: :destroy}}, socket)
+      when source_id == socket.assigns.media_source.id do
     {:noreply,
      socket
      |> put_flash(:info, dgettext("admin_media_imports", "Media Source was deleted"))
      |> push_navigate(to: ~p"/admin/media/sources")}
   end
 
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "media_sources:" <> _}, socket) do
-    {:noreply, reload_media_source(socket)}
+  # The source has changed, reload the page
+  def handle_info(%Notification{data: %Source{id: source_id}}, socket)
+      when source_id == socket.assigns.media_source.id do
+    {:noreply, socket |> reload_media_source()}
   end
 
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "media_imports:" <> _}, socket) do
-    {:noreply, reload_media_source(socket)}
+  # An import related to this source has changed, reload the page
+  def handle_info(%Notification{data: %Import{media_source_id: source_id}}, socket)
+      when source_id == socket.assigns.media_source.id do
+    {:noreply, socket |> reload_media_source()}
   end
 
-  # Catch all clause to avoid crash if we publish more messages on this topic later
+  # Ignore all other messages
   def handle_info(_message, socket), do: {:noreply, socket}
 
-  # ---------------------------------------------------------------------------
-  # Helpers
-  # ---------------------------------------------------------------------------
+  defp reload_media_source(socket) do
+    source =
+      MediaSources.get_media_source_by_id!(socket.assigns.media_source.id,
+        load: @media_source_fields,
+        actor: socket.assigns.current_user
+      )
 
-  defp resubscribe(socket, id) when socket.assigns.subscribed_id == id, do: socket
-
-  defp resubscribe(socket, id) do
-    if connected?(socket) do
-      if old = socket.assigns.subscribed_id do
-        PubSub.unsubscribe(WatchClub.PubSub, "media_sources")
-        PubSub.unsubscribe(WatchClub.PubSub, "media_imports:#{old}")
-      end
-
-      PubSub.subscribe(WatchClub.PubSub, "media_sources")
-      PubSub.subscribe(WatchClub.PubSub, "media_imports:#{id}")
-    end
-
-    assign(socket, :subscribed_id, id)
-  end
-
-  defp reload_media_source(%{assigns: %{media_source: %Source{id: id}}} = socket) do
-    case MediaSources.get_media_source_by_id(id,
-           actor: socket.assigns.current_user,
-           load: [:imports]
-         ) do
-      {:ok, media_source} -> assign(socket, :media_source, media_source)
-      {:error, _} -> socket
-    end
+    socket |> assign(media_source: source)
   end
 end

@@ -1,13 +1,8 @@
 defmodule WatchClubWeb.Live.Home.ActivityFeed do
   use WatchClubWeb, :component
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.ActivityFeed.Event
-  alias WatchClub.Shared.Url
-
-  alias WatchClubWeb.Helpers.Time
-
   import WatchClubWeb.Components.Contents.TmdbPoster
+
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   attr :stream, :list, required: true

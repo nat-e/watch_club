@@ -11,7 +11,7 @@ defmodule WatchClub.MediaSources.Source.Changes.ManageServarrImplementation do
   """
   use Ash.Resource.Change
 
-  alias WatchClub.Shared.Url
+  alias WatchClub.Shared.Path
 
   @impl true
   def change(changeset, _opts, _context) do
@@ -19,7 +19,7 @@ defmodule WatchClub.MediaSources.Source.Changes.ManageServarrImplementation do
 
     input = %{
       flavor: flavor,
-      base_url: Url.normalize_base(Ash.Changeset.get_argument(changeset, :base_url)),
+      base_url: Path.normalize_base_url(Ash.Changeset.get_argument(changeset, :base_url)),
       api_key: Ash.Changeset.get_argument(changeset, :api_key),
       quality_profile_id: Ash.Changeset.get_argument(changeset, :quality_profile_id),
       quality_profile_name: Ash.Changeset.get_argument(changeset, :quality_profile_name),
@@ -30,7 +30,7 @@ defmodule WatchClub.MediaSources.Source.Changes.ManageServarrImplementation do
     input =
       case Ash.Changeset.get_argument(changeset, :webhook_callback_base_url) do
         nil -> input
-        url -> Map.put(input, :webhook_callback_base_url, Url.normalize_base(url))
+        url -> Map.put(input, :webhook_callback_base_url, Path.normalize_base_url(url))
       end
 
     Ash.Changeset.manage_relationship(changeset, :servarr, input, type: :direct_control)

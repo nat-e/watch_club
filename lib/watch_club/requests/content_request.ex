@@ -14,13 +14,12 @@ defmodule WatchClub.Requests.ContentRequest do
     domain: WatchClub.Requests,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    fragments: [WatchClub.PubSubDefaults],
-    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    notifiers: [Ash.Notifier.PubSub]
 
   import Ash.Expr
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Requests.ContentRequest.Changes.{CreateMediaSourceRequests, EnsureContentExists}
   alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup, MediaSourceRequest}
 
@@ -46,9 +45,6 @@ defmodule WatchClub.Requests.ContentRequest do
       change relate_actor(:user)
       change EnsureContentExists
       change CreateMediaSourceRequests
-
-      change {WatchClub.Contents.Changes.CreateContentNotification,
-              content: :content, user: :user}
     end
 
     read :with_status do
@@ -96,12 +92,6 @@ defmodule WatchClub.Requests.ContentRequest do
       primary? true
 
       description "Remove the acting user's own request. Touches no Media, Library Item, or Media Source Request."
-
-      # CreateContentNotification adds after_action hooks, so the destroy can't be atomic.
-      require_atomic? false
-
-      change {WatchClub.Contents.Changes.CreateContentNotification,
-              content: :content, user: :user}
     end
   end
 
@@ -138,10 +128,31 @@ defmodule WatchClub.Requests.ContentRequest do
   end
 
   pub_sub do
-    prefix "content_requests"
+    module Phoenix.PubSub
+    name WatchClub.PubSub
 
-    publish :request, ["user", :user_id]
-    publish :cancel, ["user", :user_id]
+    # Publish to the User's content topic
+    # We add :content_id and :content_identity in the metadata to make
+    # it easy for subscribers to know which media this is related to
+    publish_all :create, ["content", "user", :user_id],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :destroy, ["content", "user", :user_id],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      content = notification.data.content
+
+      %{
+        notification
+        | metadata:
+            notification.metadata
+            |> Map.put(:content_identity, ContentIdentity.from_content(content))
+            |> Map.put(:content_id, content.id)
+      }
+    end
   end
 
   attributes do

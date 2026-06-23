@@ -3,9 +3,15 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   require Ash.Query
 
+  alias WatchClub.Shared.SortOrder
+
   import WatchClubWeb.Components.Contents.ContentCard
 
-  alias WatchClub.Shared.SortOrder
+  alias WatchClubWeb.Components.Contents.{
+    AddToLibraryButtonLive,
+    PlayOrRequestButtonLive
+  }
+
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @contents_page_size 40
@@ -24,7 +30,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:subscribed_content_topics, [])
+     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> stream_configure(:library_items, dom_id: & &1.id)}
   end
 
@@ -37,8 +43,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
        |> assign(
          sort_by: sort_by,
          sort_order: sort_order,
-         library: library,
-         stream_state: KeysetStreamState.init(@contents_page_size)
+         library: library
        )
        |> load_library_items_page()}
     else
@@ -122,25 +127,51 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   @impl true
+  # A Content was removed from the Library
+  # This is the only type of activity we support.
+  # For new elements, there is no clean place where to insert the element (it depends on the sort key)
+  # without reloading the entire list, which can be pretty disruptive if the user is scrolling
+  # There is no such thing as a LibraryItem update at the moment
   def handle_info(
-        %Phoenix.Socket.Broadcast{
-          payload: %Ash.Notifier.Notification{
-            metadata: %{subject: :content_changed, content_id: content_id}
-          }
-        },
+        %Notification{data: %LibraryItem{} = request, action: %{type: :destroy}},
         socket
       ) do
-    # Reload the library item and update it in the stream
-    library_item =
-      Clubs.get_library_item!(socket.assigns.library.id, content_id,
-        load: @library_item_fields_to_load,
-        actor: socket.assigns.current_user
-      )
-
-    {:noreply, socket |> stream_insert(:library_items, library_item, update_only: true)}
+    {:noreply, socket |> stream_delete(:library_items, request)}
   end
 
-  def handle_info(_message, socket), do: {:noreply, socket}
+  # A content has changed
+  def handle_info(%Notification{resource: resource, data: data, metadata: metadata}, socket)
+      when resource in [Content, WatchProgress] do
+    # Reload the library_item and update it
+    content_id =
+      case data do
+        %Content{id: id} -> id
+        %WatchProgress{} -> metadata.content_id
+      end
+
+    # This is slightly ineficient since we make a DB query even when the Contents are not in this
+    # stream.
+    # This is OK for now. The alternative would be to keep a list of content IDs in the stream
+    case Clubs.get_library_item(socket.assigns.library.id, content_id,
+           load: @library_item_fields_to_load,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, library_item} ->
+        {:noreply, socket |> stream_insert(:library_items, library_item, update_only: true)}
+
+      # Ignore the message if the content is not in this library
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info(message, socket) do
+    # Send updates to all the Live Components we are using on the content cards
+    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+
+    {:noreply, socket}
+  end
 
   attr :club_id, :string, required: true
   attr :current_sort_by, :atom, required: true
@@ -262,12 +293,13 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   defp load_library_items_page(socket) do
+    stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@contents_page_size)
+
     %{
       library: library,
       sort_by: sort_by,
       sort_order: sort_order,
-      current_user: current_user,
-      stream_state: stream_state
+      current_user: current_user
     } =
       socket.assigns
 
@@ -283,42 +315,9 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         )
       end)
 
-    reset = stream_state.status == :init
-
     socket
-    |> maybe_reset_subscriptions(reset)
-    |> subscribe_to_contents(items)
     |> assign(:stream_state, new_state)
-    |> stream(:library_items, items, reset: reset)
-  end
-
-  defp maybe_reset_subscriptions(socket, false), do: socket
-
-  defp maybe_reset_subscriptions(socket, true) do
-    if connected?(socket) do
-      socket.assigns.subscribed_content_topics
-      |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
-    end
-
-    socket |> assign(:subscribed_content_topics, [])
-  end
-
-  defp subscribe_to_contents(socket, library_items) do
-    if connected?(socket) do
-      topics =
-        library_items
-        |> Enum.flat_map(
-          &WatchClub.PubSub.subscribe_to_content(&1.content, socket.assigns.current_user)
-        )
-
-      socket
-      |> assign(
-        :subscribed_content_topics,
-        socket.assigns.subscribed_content_topics ++ topics
-      )
-    else
-      socket
-    end
+    |> stream(:library_items, items, reset: stream_state.status == :init)
   end
 
   defp library_sort_path(club_id, library_id, sort_by, sort_order) do

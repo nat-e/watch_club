@@ -3,7 +3,6 @@ defmodule WatchClub.PubSub do
   Helpers and topics for the WatchClub PubSub notification service
   """
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, ContentIdentity}
 
   @doc """
   Subscribes a LiveView socket to a topic or list of PubSub topics if the socket is connected
@@ -12,51 +11,24 @@ defmodule WatchClub.PubSub do
     if Phoenix.LiveView.connected?(socket) do
       topics |> List.wrap() |> Enum.each(&Phoenix.PubSub.subscribe(__MODULE__, &1))
     end
+
+    socket
   end
 
-  def content_topic(external_id_source, external_id),
-    do: "content:#{external_id_source}:#{external_id}"
+  # Subscribes to the PubSub topics for Content-related notifications
+  # for the current user.
+  def subscribe_to_current_user_content_topics(socket) do
+    if Phoenix.LiveView.connected?(socket) do
+      content_topics(socket.assigns.current_user)
+      |> List.wrap()
+      |> Enum.each(&Phoenix.PubSub.subscribe(__MODULE__, &1))
+    end
 
-  def content_view_topic(external_id_source, external_id, user_id),
-    do: "content:#{external_id_source}:#{external_id}:user:#{user_id}"
-
-  @doc """
-  Subscribes to PubSub events for a given content and returns the topics
-  """
-  @spec subscribe_to_content(ContentIdentity.t() | Content.t(), User.t()) :: [String.t()]
-  def subscribe_to_content(%ContentIdentity{} = identity, %User{} = current_user) do
-    topics = content_topics(identity.external_id_source, identity.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
-    topics
+    socket
   end
 
-  def subscribe_to_content(%Content{} = content, %User{} = current_user) do
-    topics = content_topics(content.external_id_source, content.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.subscribe(__MODULE__, &1))
-    topics
-  end
-
-  @doc """
-  Unsubscribes from PubSub events for a given content and returns the topics
-  """
-  @spec unsubscribe_from_content(ContentIdentity.t(), User.t()) :: [String.t()]
-  def unsubscribe_from_content(%ContentIdentity{} = identity, %User{} = current_user) do
-    topics = content_topics(identity.external_id_source, identity.external_id, current_user)
-    Enum.each(topics, &Phoenix.PubSub.unsubscribe(__MODULE__, &1))
-    topics
-  end
-
-  defp content_topics(external_id_source, external_id, %User{} = current_user) do
-    [
-      content_view_topic(
-        external_id_source,
-        external_id,
-        current_user.id
-      ),
-      content_topic(
-        external_id_source,
-        external_id
-      )
-    ]
+  defp content_topics(%User{} = user) do
+    Enum.map(user.memberships, &"content:club:#{&1.club_id}") ++
+      ["content:global", "content:user:#{user.id}"]
   end
 end

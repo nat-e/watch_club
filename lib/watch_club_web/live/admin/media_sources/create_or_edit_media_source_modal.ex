@@ -11,9 +11,6 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
 
   import WatchClubWeb.Components.Media.MediaTypeBadge
 
-  alias WatchClub.MediaCatalog.MediaType
-  alias WatchClub.MediaSources.Source
-
   attr :form, Phoenix.HTML.Form, required: true
   attr :mode, :atom, required: true, values: [:create, :edit]
   attr :media_source, Source, default: nil

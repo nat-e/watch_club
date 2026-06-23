@@ -6,6 +6,10 @@ defmodule WatchClubWeb.Helpers.Url do
     router: WatchClubWeb.Router,
     statics: WatchClubWeb.static_paths()
 
+  alias WatchClub.Clubs.Library
+  alias WatchClub.Contents.{Content, ContentIdentity, Movie, TvShowEpisode}
+  alias WatchClub.MediaCatalog.Video
+
   @type t :: %__MODULE__{
           scheme: String.t(),
           authority: String.t(),
@@ -40,16 +44,6 @@ defmodule WatchClubWeb.Helpers.Url do
     end
   end
 
-  @spec invitation_url(t(), InvitationCode.t()) :: t()
-  def invitation_url(%__MODULE__{} = url, %InvitationCode{} = invitation) do
-    %__MODULE__{
-      scheme: url.scheme,
-      authority: url.authority,
-      path: ~p"/join/#{invitation.code}",
-      query: %{}
-    }
-  end
-
   @doc """
   Strips `http://` / `https://` from a URL for compact display.
   """
@@ -71,4 +65,47 @@ defmodule WatchClubWeb.Helpers.Url do
   def parse_url_param(value, allowed_values, default) when is_binary(value) do
     Enum.find(allowed_values, default, &(to_string(&1) == value))
   end
+
+  @spec invitation_url(t(), InvitationCode.t()) :: t()
+  def invitation_url(%__MODULE__{} = url, %InvitationCode{} = invitation) do
+    %__MODULE__{
+      scheme: url.scheme,
+      authority: url.authority,
+      path: ~p"/join/#{invitation.code}",
+      query: %{}
+    }
+  end
+
+  @doc """
+  Builds the callback URL Watch Club asks a request-capable Media
+  Source to POST events to. Format is shared between wizard
+  verification and webhook registration, so they must agree.
+  """
+  @spec webhook_callback_url(String.t(), atom() | String.t(), String.t()) :: String.t()
+  def webhook_callback_url(base, source_type, media_source_id)
+      when is_binary(base) and is_binary(media_source_id) do
+    "#{WatchClub.Shared.Path.normalize_base_url(base)}/webhooks/#{source_type}/#{media_source_id}"
+  end
+
+  def content_details_link(%Content{type: type, external_id: id}),
+    do: content_details_link(type, id)
+
+  def content_details_link(%ContentIdentity{type: type, external_id: id}),
+    do: content_details_link(type, id)
+
+  def content_details_link(:movie, external_id),
+    do: ~p"/movies/#{external_id}"
+
+  def content_details_link(:tv_show, external_id),
+    do: ~p"/shows/#{external_id}"
+
+  def content_details_link(:book, external_id),
+    do: ~p"/books/#{external_id}"
+
+  def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
+  def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
+  def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
+
+  def club_library_link(%Library{id: library_id, club_id: club_id}),
+    do: ~p"/clubs/#{club_id}/libraries/#{library_id}"
 end

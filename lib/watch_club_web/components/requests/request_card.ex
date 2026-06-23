@@ -21,12 +21,6 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   import WatchClubWeb.Components.Contents.ContentTypeBadge
   import WatchClubWeb.Components.Contents.TmdbPoster
-  import WatchClubWeb.Helpers.Time
-
-  alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Requests.ContentRequest
-  alias WatchClub.Requests.ContentRequestStatus
-  alias WatchClub.Shared.Url
 
   alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
 
@@ -64,6 +58,8 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   attr :current_user, User, required: true
 
   defp content_section(assigns) do
+    assigns = assigns |> assign(content_identity: ContentIdentity.from_content(assigns.content))
+
     ~H"""
     <div class={[
       "relative flex flex-1 items-center gap-group p-group",
@@ -91,16 +87,16 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
         <.cluster space="related">
           <.live_component
-            id={"#{@id}-details-play-or-request-button"}
+            id={PlayOrRequestButtonLive.dom_id(@content_identity)}
             module={PlayOrRequestButtonLive}
-            content_identity={ContentIdentity.from_content(@content)}
+            content_identity={@content_identity}
             current_user={@current_user}
             class="relative z-10"
           />
           <.live_component
-            id={"#{@id}-details-add-to-library-button"}
+            id={AddToLibraryButtonLive.dom_id(@content_identity)}
             module={AddToLibraryButtonLive}
-            content_identity={ContentIdentity.from_content(@content)}
+            content_identity={@content_identity}
             content_title={@content.implementation.best_localization.title}
             current_user={@current_user}
             class="relative z-10"
@@ -148,7 +144,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       />
 
       <p class="text-xs text-text-muted">
-        Requested {relative_from_now(@request.inserted_at, @current_user.settings.locale)}
+        Requested {Time.relative_from_now(@request.inserted_at, @current_user.settings.locale)}
       </p>
     </div>
     """

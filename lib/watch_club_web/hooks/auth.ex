@@ -68,11 +68,7 @@ defmodule WatchClubWeb.Hooks.Auth do
   defp subscribe_to_current_user_pubsub(socket, user) do
     WatchClub.PubSub.subscribe_if_connected(
       socket,
-      [
-        "users:#{user.id}:settings",
-        "users:#{user.id}:memberships"
-      ] ++
-        Enum.flat_map(user.memberships, &["clubs:#{&1.club.id}", "clubs:#{&1.club.id}:libraries"])
+      ["user:#{user.id}" | Enum.map(user.memberships, &"club:#{&1.club.id}")]
     )
 
     socket
@@ -83,10 +79,7 @@ defmodule WatchClubWeb.Hooks.Auth do
     )
   end
 
-  defp reload_user_on_change(
-         %Phoenix.Socket.Broadcast{payload: %Ash.Notifier.Notification{resource: resource}},
-         socket
-       )
+  defp reload_user_on_change(%Ash.Notifier.Notification{resource: resource}, socket)
        when resource in @sidebar_resources do
     user = WatchClub.Accounts.get_current_user!(actor: socket.assigns.current_user)
     {:cont, socket |> assign(:current_user, user)}

@@ -1,13 +1,6 @@
 defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
   use WatchClubWeb, :component
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.Contents.Content
-  alias WatchClub.History.WatchProgress
-  alias WatchClub.Shared.Url
-
-  alias WatchClubWeb.Helpers.Time
-
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   attr :contents, :list, required: true
@@ -39,7 +32,8 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     ~H"""
     <.generic_continue_watching_card
       content={@content}
-      play_link={Url.player_link(@content.movie)}
+      play_link={(@content.movie.has_media? && Url.player_link(@content.movie)) || nil}
+      disabled={!@content.movie.has_media?}
       watch_progress={@content.movie.actor_progress}
       locale={@current_user.settings.locale}
       image={@content.movie.backdrop_path}

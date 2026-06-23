@@ -3,21 +3,17 @@ defmodule WatchClubWeb.HomePage do
 
   import WatchClubWeb.Live.Home.{ActivityFeed, ContinueWatchingSection}
 
-  alias Ash.Notifier.Notification
-  alias Phoenix.Socket.Broadcast
-
-  alias WatchClub.ActivityFeed
-  alias WatchClub.ActivityFeed.Event
   alias WatchClub.ActivityFeed.Preparations.LoadActivityFeedEvent
-
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @continue_watching_max_items 6
   @feed_page_size 25
 
-  @continue_watching_content_load [
-    movie: [:actor_progress, :videos],
-    tv_show: [actor_next_episode: [:has_media?, :actor_progress, :videos]]
+  # The fields that need to be loaded on the Content objects for the continue watching section
+  @media_fields [:has_media?, :actor_progress, :videos]
+  @continue_watching_content_fields [
+    movie: @media_fields,
+    tv_show: [actor_next_episode: @media_fields]
   ]
 
   @impl true
@@ -46,18 +42,17 @@ defmodule WatchClubWeb.HomePage do
 
   @impl true
   def mount(_params, _session, socket) do
-    subscribe_to_activity_feed_topics(socket)
-
     {:ok,
      socket
+     |> subscribe_to_activity_feed_topics()
+     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> stream_configure(:feed, dom_id: & &1.id)
-     |> assign(feed_stream_state: KeysetStreamState.init(@feed_page_size))
      |> load_feed_page()
      |> load_continue_watching()}
   end
 
   @impl true
-  def handle_info(%Broadcast{payload: %Notification{data: %Event{} = event}}, socket) do
+  def handle_info(%Notification{data: %Event{} = event}, socket) do
     # A new activity feed event has been received
     # Load the required fields (for some reason using load: option in pub_sub does not seem to work)
     # and prepend it to the stream
@@ -68,6 +63,10 @@ defmodule WatchClubWeb.HomePage do
     {:noreply, socket |> stream_insert(:feed, event, at: 0)}
   end
 
+  def handle_info(%Notification{resource: WatchProgress}, socket) do
+    {:noreply, socket |> load_continue_watching()}
+  end
+
   @impl true
   def handle_info(_msg, socket) do
     {:noreply, socket}
@@ -75,7 +74,11 @@ defmodule WatchClubWeb.HomePage do
 
   @impl true
   def handle_event("load_activity_feed_page", _params, socket) do
-    {:noreply, socket |> load_feed_page()}
+    if KeysetStreamState.can_load_more?(socket.assigns.feed_stream_state) do
+      {:noreply, socket |> load_feed_page()}
+    else
+      {:noreply, socket}
+    end
   end
 
   defp load_continue_watching(socket) do
@@ -83,7 +86,7 @@ defmodule WatchClubWeb.HomePage do
       Contents.get_user_recently_watched!(
         actor: socket.assigns.current_user,
         query: [
-          load: @continue_watching_content_load,
+          load: @continue_watching_content_fields,
           limit: @continue_watching_max_items
         ]
       )
@@ -92,8 +95,7 @@ defmodule WatchClubWeb.HomePage do
   end
 
   defp load_feed_page(socket) do
-    stream_state = socket.assigns.feed_stream_state
-    reset = stream_state.status == :init
+    stream_state = socket.assigns[:feed_stream_state] || KeysetStreamState.init(@feed_page_size)
 
     {:ok, new_state, items} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
@@ -105,18 +107,14 @@ defmodule WatchClubWeb.HomePage do
 
     socket
     |> assign(:feed_stream_state, new_state)
-    |> stream(:feed, items, reset: reset)
+    |> stream(:feed, items, reset: stream_state.status == :init)
   end
 
   defp subscribe_to_activity_feed_topics(socket) do
     user = socket.assigns.current_user
 
     # Subscribe to all the clubs of this user, plus their private and global feed topics
-    topics =
-      Enum.map(
-        user.memberships,
-        &"activity_feed_events:club:#{&1.club_id}"
-      ) ++ ["activity_feed_events:global", "activity_feed_events:user:#{user.id}"]
+    topics = Enum.map(user.memberships, &"feed:club:#{&1.club_id}")
 
     WatchClub.PubSub.subscribe_if_connected(socket, topics)
   end

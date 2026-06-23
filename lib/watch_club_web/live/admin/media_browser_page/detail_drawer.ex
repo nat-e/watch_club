@@ -18,10 +18,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
   import WatchClubWeb.Admin.MediaBrowserPage.Filename
 
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
-  alias WatchClub.MediaCatalog.{Audiobook, Ebook, Media, Video}
-  alias WatchClubWeb.Helpers.Time
-
   attr :media, Media, required: true
   attr :locale, :atom, required: true
 

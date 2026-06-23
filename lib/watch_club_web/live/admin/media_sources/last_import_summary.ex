@@ -10,9 +10,6 @@ defmodule WatchClubWeb.Admin.MediaSources.LastImportSummary do
 
   import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
-  alias WatchClub.MediaSources.Import
-  alias WatchClubWeb.Helpers.Time
-
   attr :latest_import, :any, required: true
   attr :locale, :atom, required: true
 

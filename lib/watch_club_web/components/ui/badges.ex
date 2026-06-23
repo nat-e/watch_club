@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Library}
   alias WatchClub.Contents.Content
-  alias WatchClub.Shared.Url
+  alias WatchClubWeb.Helpers.Url
 
   import WatchClubWeb.Components.UI.{Avatar, LucideIcon}
 

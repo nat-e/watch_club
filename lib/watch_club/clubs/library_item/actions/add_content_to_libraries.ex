@@ -2,17 +2,13 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.AddContentToLibraries do
   @moduledoc """
   Adds a Content to several libraries at once for the acting user.
 
-  Resolves the ContentIdentity to a Content (creating it from the Metadata
-  Provider if needed), then bulk-creates a LibraryItem per library through the
-  `:create` action — so each row runs its membership policy. `:create` itself
-  emits no notification; this action emits a single `content_changed` so the
-  broadcast is deduplicated.
+  This creates the Content if it does not exist yet and creates one Notification
+  per library the Content is added to.
   """
   use Ash.Resource.Actions.Implementation
 
   alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Contents
-  alias WatchClub.Contents.Notifiers.ContentChangedNotifier
 
   @impl true
   def run(input, _opts, context) do
@@ -31,16 +27,7 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.AddContentToLibraries do
           return_notifications?: true
         )
 
-      content_changed =
-        ContentChangedNotifier.create_notification(
-          input.resource,
-          input.action,
-          content,
-          :global,
-          context.actor
-        )
-
-      {:ok, content, [content_changed | List.wrap(notifications)]}
+      {:ok, content, notifications}
     end
   end
 end

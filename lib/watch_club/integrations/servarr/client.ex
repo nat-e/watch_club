@@ -15,7 +15,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
   require Logger
 
   alias WatchClub.Integrations.Servarr.{QualityProfile, RootFolder, SystemStatus, Webhook}
-  alias WatchClub.Shared.Url
+  alias WatchClub.Shared.Path
 
   @receive_timeout 5_000
 
@@ -127,7 +127,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
     # retries — `retry: false`. Background import flows can opt in by
     # passing `retry: :transient` through `opts`.
     [
-      base_url: Url.normalize_base(base_url),
+      base_url: Path.normalize_base_url(base_url),
       headers: [{"x-api-key", api_key}, {"accept", "application/json"}],
       retry: false,
       receive_timeout: @receive_timeout,

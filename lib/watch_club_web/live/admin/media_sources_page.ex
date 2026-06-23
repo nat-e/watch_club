@@ -10,27 +10,23 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   """
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal
-  import WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal
-  import WatchClubWeb.Admin.MediaSources.MediaSourceCard
-  import WatchClubWeb.Admin.MediaSources.RunImportModal
+  import WatchClubWeb.Admin.MediaSources.{
+    CreateOrEditMediaSourceModal,
+    DeleteMediaSourceModal,
+    MediaSourceCard,
+    RunImportModal
+  }
+
   import WatchClubWeb.Components.Media.SourceTypeIcon
   import WatchClubWeb.Components.Settings.SettingsHeader
 
-  alias Phoenix.PubSub
-  alias WatchClub.MediaSources
-  alias WatchClub.MediaSources.Source
   alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
 
   @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket) do
-      PubSub.subscribe(WatchClub.PubSub, "media_sources")
-      PubSub.subscribe(WatchClub.PubSub, "media_imports")
-    end
-
     {:ok,
      socket
+     |> WatchClub.PubSub.subscribe_if_connected("media_sources:admin")
      |> reset_modals()
      |> load_media_sources()}
   end
@@ -379,8 +375,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
      )}
   end
 
-  def handle_info(%Phoenix.Socket.Broadcast{topic: topic}, socket)
-      when topic in ["media_sources", "media_imports"] do
+  def handle_info(%Notification{resource: resource}, socket)
+      when resource in [Source, Import] do
     {:noreply, load_media_sources(socket)}
   end
 

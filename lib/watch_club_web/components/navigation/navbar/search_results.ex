@@ -10,9 +10,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
-  alias WatchClub.Shared.Url
 
   attr :form, :any, required: true
   attr :id_prefix, :string, required: true

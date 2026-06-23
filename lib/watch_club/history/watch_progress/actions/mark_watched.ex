@@ -1,72 +1,84 @@
 defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   @moduledoc """
   Marks a Content watched for the acting user.
-  Can be filtered by season_id and/or episode_id for TV Shows
+  Can be filtered by season_id and/or episode_id for TV Shows.
+
+  This will return a single notification, even when multiple TV Shows
+  episodes are marked.
   """
   use Ash.Resource.Actions.Implementation
 
   require Ash.Query
 
   alias WatchClub.Contents
-  alias WatchClub.Contents.Notifiers.ContentChangedNotifier
   alias WatchClub.Contents.TvShowEpisode
-  alias WatchClub.History
   alias WatchClub.History.WatchProgress
 
   @impl true
   def run(input, _opts, context) do
     actor = context.actor
 
-    with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor) do
-      mark_watched(
-        content,
-        Map.get(input.arguments, :season_number),
-        Map.get(input.arguments, :episode_number),
-        context
-      )
-
-      notification =
-        ContentChangedNotifier.create_notification(
-          input.resource,
-          input.action,
-          content,
-          [actor.id],
-          actor
-        )
-
-      {:ok, content, [notification]}
+    with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor),
+         notifications <-
+           mark_watched!(
+             content,
+             Map.get(input.arguments, :season_number),
+             Map.get(input.arguments, :episode_number),
+             context
+           ) do
+      {:ok, content, notifications}
     end
   end
 
-  defp mark_watched(%{type: :movie, id: id}, _season, _episode, context) do
-    History.record_movie_progress!(
-      %{movie_id: id, last_media_id: nil},
-      scope: context
-    )
+  defp mark_watched!(%{type: :movie, id: id}, _season, _episode, context) do
+    {_progress, notifications} =
+      WatchProgress
+      |> Ash.create!(
+        %{movie_id: id, last_media_id: nil, position_seconds: nil, duration_seconds: nil},
+        action: :record_movie_progress,
+        scope: context,
+        return_notifications?: true
+      )
+
+    notifications
   end
 
-  defp mark_watched(%{type: :book, id: id}, _season, _episode, context) do
-    History.record_book_progress!(
-      %{book_id: id, last_media_id: nil},
-      scope: context
-    )
+  defp mark_watched!(%{type: :book, id: id}, _season, _episode, context) do
+    {_progress, notifications} =
+      WatchProgress
+      |> Ash.create!(
+        %{book_id: id, last_media_id: nil, position_seconds: nil, duration_seconds: nil},
+        action: :record_book_progress,
+        scope: context,
+        return_notifications?: true
+      )
+
+    notifications
   end
 
-  defp mark_watched(%{type: :tv_show, id: tv_show_id}, season, episode, context) do
+  defp mark_watched!(%{type: :tv_show, id: tv_show_id}, season, episode, context) do
     inputs =
       tv_show_id
       |> episode_ids(season, episode, context)
       |> Enum.map(fn episode_id ->
         %{
           tv_show_episode_id: episode_id,
-          last_media_id: nil
+          last_media_id: nil,
+          position_seconds: nil,
+          duration_seconds: nil
         }
       end)
 
-    Ash.bulk_create!(inputs, WatchProgress, :record_episode_progress,
-      scope: context,
-      return_records?: false
-    )
+    %Ash.BulkResult{notifications: notifications} =
+      Ash.bulk_create!(inputs, WatchProgress, :record_episode_progress,
+        scope: context,
+        return_records?: false,
+        return_notifications?: true
+      )
+
+    # We just return a single notification for one of the episode to avoid flooding the subscribers
+    # This is fine since we reload data anyway
+    Enum.take(notifications, 1)
   end
 
   # nil season/episode mean "all", so the filter is a no-op for that scope.

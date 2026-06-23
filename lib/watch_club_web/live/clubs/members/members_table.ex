@@ -1,9 +1,6 @@
 defmodule WatchClubWeb.Live.Clubs.Members.MembersTable do
   use WatchClubWeb, :component
 
-  alias WatchClub.Accounts.User
-  alias WatchClubWeb.Helpers.Url
-
   attr :memberships, :list, required: true
   attr :current_user, User, required: true
   attr :current_url, Url, required: true

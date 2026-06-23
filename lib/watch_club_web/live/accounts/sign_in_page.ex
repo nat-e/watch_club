@@ -1,5 +1,4 @@
 defmodule WatchClubWeb.Accounts.SignInPage do
-  require Logger
   use WatchClubWeb, :live_view
 
   @impl true

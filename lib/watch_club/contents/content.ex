@@ -3,7 +3,7 @@ defmodule WatchClub.Contents.Content do
     otp_app: :watch_club,
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer,
-    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Clubs.{Library, LibraryItem}
 
@@ -92,8 +92,6 @@ defmodule WatchClub.Contents.Content do
       change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
-
-      change WatchClub.Contents.Changes.CreateContentNotification
     end
 
     action :search, {:array, :struct} do
@@ -103,40 +101,15 @@ defmodule WatchClub.Contents.Content do
 
       run WatchClub.Contents.Actions.SearchContent
     end
+  end
 
-    update :set_libraries do
-      description "Update the list of libraries a content belongs to"
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
 
-      # Setting libraries validates selected libraries and manages join records,
-      # so this action intentionally coordinates related data.
-      require_atomic? false
-      argument :library_ids, {:array, :uuid_v7}, allow_nil?: false
-
-      # Keep relationship authorization enabled: this action syncs the actor's
-      # selected libraries, not the content's global library list. Omitted library
-      # items outside the actor's removal rights are preserved.
-      change fn changeset, _context ->
-        case Ash.Changeset.get_argument(changeset, :library_ids) do
-          nil ->
-            changeset
-
-          library_ids ->
-            library_inputs =
-              Enum.map(library_ids, fn library_id ->
-                %{id: library_id, content_id: changeset.data.id, library_id: library_id}
-              end)
-
-            Ash.Changeset.manage_relationship(changeset, :libraries, library_inputs,
-              type: :append_and_remove,
-              join_keys: [:content_id, :library_id],
-              meta: [id: :library_ids]
-            )
-        end
-      end
-
-      change load(library_items: [:library])
-      change WatchClub.Contents.Changes.CreateContentNotification
-    end
+    publish_all :create, ["content", "global"]
+    publish_all :update, ["content", "global"]
+    publish_all :destroy, ["content", "global"]
   end
 
   preparations do

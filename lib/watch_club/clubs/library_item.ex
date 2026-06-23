@@ -4,7 +4,7 @@ defmodule WatchClub.Clubs.LibraryItem do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -65,10 +65,7 @@ defmodule WatchClub.Clubs.LibraryItem do
       change WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent
     end
 
-    # Bulk add/remove a Content to/from several libraries at once, emitting a
-    # single content_changed notification (vs one per LibraryItem). Each row
-    # still goes through :create / :destroy, so per-library validation and
-    # policies apply.
+    # Bulk add/remove a Content to/from several libraries at once
     action :add_content_to_libraries, :struct do
       constraints instance_of: Content
       argument :content_identity, ContentIdentity, allow_nil?: false
@@ -120,6 +117,34 @@ defmodule WatchClub.Clubs.LibraryItem do
     end
   end
 
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    # Publish to the Club's content topic
+    # We add :content_id and :content_identity in the metadata to make
+    # it easy for subscribers to know which media this is related to
+    publish_all :create, ["content", "club", [:club_id]],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :destroy, ["content", "club", [:club_id]],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      content = notification.data.content
+
+      %{
+        notification
+        | metadata:
+            notification.metadata
+            |> Map.put(:content_identity, ContentIdentity.from_content(content))
+            |> Map.put(:content_id, content.id)
+      }
+    end
+  end
+
   attributes do
     uuid_v7_primary_key :id
 
@@ -140,6 +165,11 @@ defmodule WatchClub.Clubs.LibraryItem do
     belongs_to :added_by, User do
       public? true
     end
+  end
+
+  calculations do
+    # The ID of the Club. Needed for computing the pub_sub topic
+    calculate :club_id, :uuid_v7, expr(library.club_id)
   end
 
   identities do

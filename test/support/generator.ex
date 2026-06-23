@@ -2,7 +2,7 @@ defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
   alias WatchClub.Clubs.{Club, Library, LibraryIcon, Membership}
-  alias WatchClub.Contents.{Book, Content, ContentIdentity, TvShow}
+  alias WatchClub.Contents.{Book, Content, Movie, TvShow}
   alias WatchClub.MediaSources.{Import, Source}
 
   @default_password "passw0rd"
@@ -129,21 +129,30 @@ defmodule WatchClub.Generator do
   end
 
   def movie(opts \\ []) do
-    library_ids = Keyword.get(opts, :library_ids)
-    actor = opts[:actor]
+    seed_generator(
+      %Content{
+        type: :movie,
+        external_id_source: :tmdb,
+        external_id: sequence(:tmdb_id, &to_string/1),
+        original_title: sequence(:movie_title, &"Movie #{&1}"),
+        original_language: "en",
+        origin_country: "US",
+        release_date: opts[:release_date] || ~D[2025-01-01]
+      },
+      overrides: opts,
+      after_action: fn content ->
+        movie =
+          Ash.Seed.seed!(Movie, %{
+            id: content.id,
+            backdrop_path: content.original_title,
+            localizations:
+              for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
+                %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
+              end
+          })
 
-    tmdb_id =
-      case Keyword.fetch(opts, :tmdb_id) do
-        {:ok, id} -> StreamData.constant(id)
-        :error -> sequence(:tmdb_id, fn i -> i end)
+        %{content | movie: movie}
       end
-
-    changeset_generator(
-      Content,
-      :create,
-      defaults: [content_identity: StreamData.map(tmdb_id, &ContentIdentity.for_movie/1)],
-      authorize?: false,
-      actor: actor
     )
   end
 

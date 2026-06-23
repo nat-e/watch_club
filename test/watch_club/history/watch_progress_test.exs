@@ -1,21 +1,89 @@
 defmodule WatchClub.History.WatchProgressTest do
   use WatchClub.DataCase
 
-  alias WatchClub.Contents
-  alias WatchClub.Contents.TvShowEpisode
+  alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.History
 
   setup do
     tv_show = generate(tv_show())
-    show_identity = Contents.ContentIdentity.from_content(tv_show)
+    movie = generate(movie())
+    show_identity = ContentIdentity.from_content(tv_show)
+    movie_identity = ContentIdentity.from_content(movie)
 
     # Generate a bunch of history to make sure it doesn't interfere between users
     user1 = generate(user())
     user2 = generate(user())
     History.mark_content_watched!(show_identity, actor: user1)
     History.mark_content_not_watched!(show_identity, %{season_number: 1}, actor: user2)
+    History.mark_content_watched!(movie_identity, actor: user1)
 
-    {:ok, tv_show: tv_show}
+    {:ok, tv_show: tv_show, movie: movie}
+  end
+
+  describe "movies" do
+    test "movie is unwatched by default", %{movie: movie} do
+      user = generate(user())
+
+      content =
+        movie |> Ash.load!([movie: [:actor_progress_status, :actor_progress]], actor: user)
+
+      assert content.movie.actor_progress_status == :not_started
+    end
+
+    test "marks an unwatched movie as watched", %{movie: movie} do
+      user = generate(user())
+
+      History.mark_content_watched!(ContentIdentity.from_content(movie), actor: user)
+
+      content =
+        movie |> Ash.load!([movie: [:actor_progress_status, :actor_progress]], actor: user)
+
+      assert content.movie.actor_progress_status == :completed
+    end
+
+    test "is in progress when partially watched", %{movie: movie} do
+      user = generate(user())
+
+      History.record_movie_progress!(
+        %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+        actor: user
+      )
+
+      content =
+        movie |> Ash.load!([movie: [:actor_progress_status, :actor_progress]], actor: user)
+
+      assert content.movie.actor_progress_status == :in_progress
+    end
+
+    test "is completed when more than 90% is watched", %{movie: movie} do
+      user = generate(user())
+
+      History.record_movie_progress!(
+        %{movie_id: movie.id, position_seconds: 95 * 60, duration_seconds: 100 * 60},
+        actor: user
+      )
+
+      content =
+        movie |> Ash.load!([movie: [:actor_progress_status, :actor_progress]], actor: user)
+
+      assert content.movie.actor_progress_status == :completed
+    end
+
+    test "marks a partially watched movie as completed", %{movie: movie} do
+      user = generate(user())
+
+      History.record_movie_progress!(
+        %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+        actor: user
+      )
+
+      History.mark_content_watched!(ContentIdentity.from_content(movie), actor: user)
+
+      content =
+        movie |> Ash.load!([movie: [:actor_progress_status, :actor_progress]], actor: user)
+
+      assert content.movie.actor_progress_status == :completed
+    end
   end
 
   describe "TV shows" do
@@ -54,7 +122,7 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark S01 watched
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{season_number: 1},
         actor: user
       )
@@ -92,7 +160,7 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark S01E01 watched
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{season_number: 1, episode_number: 1},
         actor: user
       )
@@ -143,7 +211,7 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark S01E01 watched
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{season_number: 1, episode_number: 1},
         actor: user
       )
@@ -198,7 +266,7 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark the entire show watched
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{},
         actor: user
       )
@@ -235,14 +303,14 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark the entire show watched
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{},
         actor: user
       )
 
       # Rewatch season 1
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{season_number: 1, episode_number: 1},
         actor: user
       )
@@ -279,7 +347,7 @@ defmodule WatchClub.History.WatchProgressTest do
 
       # Mark S02E01 watched, without watching season 1
       History.mark_content_watched!(
-        Contents.ContentIdentity.from_content(tv_show),
+        ContentIdentity.from_content(tv_show),
         %{season_number: 2, episode_number: 1},
         actor: user
       )

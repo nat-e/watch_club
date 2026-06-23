@@ -1,11 +1,6 @@
 defmodule WatchClubWeb.Contents.MovieDetailsPage do
   use WatchClubWeb, :live_view
 
-  require Logger
-
-  alias WatchClub.Contents.ContentIdentity
-  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
-
   import WatchClubWeb.Components.Contents.Details.{
     CastSection,
     DetailsBackdrop,
@@ -13,6 +8,8 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     HeroPanel,
     ReviewsCard
   }
+
+  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
 
   alias WatchClubWeb.Components.Contents.{
     AddToLibraryButtonLive,
@@ -100,16 +97,14 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
+  def mount(_params, _session, socket) do
+    {:ok, socket |> WatchClub.PubSub.subscribe_to_current_user_content_topics()}
+  end
+
+  @impl true
   def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
-    user = socket.assigns.current_user
-
-    WatchClub.PubSub.subscribe_if_connected(socket, [
-      WatchClub.PubSub.content_topic(:tmdb, tmdb_id),
-      WatchClub.PubSub.content_view_topic(:tmdb, tmdb_id, user.id)
-    ])
-
     with {parsed_id, ""} <- Integer.parse(tmdb_id),
-         {:ok, movie} <- Contents.get_movie_details(parsed_id, actor: user) do
+         {:ok, movie} <- Contents.get_movie_details(parsed_id, actor: socket.assigns.current_user) do
       {:noreply, socket |> assign(:movie, movie)}
     else
       _ ->
@@ -124,36 +119,12 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
-  def handle_info(
-        %Phoenix.Socket.Broadcast{
-          payload: %Ash.Notifier.Notification{
-            metadata: %{subject: :content_changed, content_identity: content_identity}
-          }
-        },
-        socket
-      ) do
-    # Update all the live components that load their own data
-    # This could be optimized
-    send_update(ContentWatchProgressBadge,
-      id: "content-watch-progress",
-      content_identity: content_identity,
-      current_user: socket.assigns.current_user
-    )
-
-    send_update(PlayOrRequestButtonLive,
-      id: "details-play-or-request-button",
-      content_identity: content_identity,
-      current_user: socket.assigns.current_user
-    )
-
-    send_update(AddToLibraryButtonLive,
-      id: "details-add-to-library-button",
-      content_identity: content_identity,
-      current_user: socket.assigns.current_user
-    )
+  def handle_info(message, socket) do
+    # Send updates to all the Live Components we are using on the request cards
+    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+    ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
+    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 
     {:noreply, socket}
   end
-
-  def handle_info(_message, socket), do: {:noreply, socket}
 end

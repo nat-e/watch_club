@@ -7,7 +7,7 @@ defmodule WatchClub.MediaSources.Filesystem do
     domain: WatchClub.MediaSources,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.MediaSources.Source
   alias WatchClub.Shared.Changes.NormalizePath
@@ -57,9 +57,10 @@ defmodule WatchClub.MediaSources.Filesystem do
   end
 
   pub_sub do
-    prefix "media_sources"
+    module Phoenix.PubSub
+    name WatchClub.PubSub
 
-    publish :update, [[:id, nil]]
+    publish :update, ["media_sources", "admin"]
   end
 
   attributes do

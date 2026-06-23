@@ -18,7 +18,7 @@ defmodule WatchClub.MediaSources.Servarr.Changes.UpdateWebhook do
 
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor
-  alias WatchClub.Shared.Url
+  alias WatchClubWeb.Helpers.Url
 
   @impl true
   def change(changeset, _opts, _context) do

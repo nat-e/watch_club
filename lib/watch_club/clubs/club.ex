@@ -4,7 +4,7 @@ defmodule WatchClub.Clubs.Club do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -90,10 +90,11 @@ defmodule WatchClub.Clubs.Club do
   end
 
   pub_sub do
-    prefix "clubs"
-    publish :update, [:id]
-    publish :destroy, [:id]
-    publish :reorder_libraries, [:id, "libraries"]
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish_all :update, ["club", :id]
+    publish_all :destroy, ["club", :id]
   end
 
   validations do

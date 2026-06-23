@@ -1,13 +1,18 @@
 defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
-  alias Ash.Notifier.Notification
-  alias WatchClub.Contents.ContentType
-  alias WatchClub.Requests
-  alias WatchClub.Requests.{ContentRequest, ContentRequestSort, ContentRequestStatusGroup}
+  import WatchClubWeb.Components.Settings.SettingsHeader
+
+  alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup}
+
+  alias WatchClubWeb.Components.Contents.{
+    AddToLibraryButtonLive,
+    ContentWatchProgressBadge,
+    PlayOrRequestButtonLive
+  }
+
   alias WatchClubWeb.Components.Requests.RequestCard
   alias WatchClubWeb.Helpers.KeysetStreamState
-  import WatchClubWeb.Components.Settings.SettingsHeader
 
   @page_size 25
 
@@ -21,22 +26,14 @@ defmodule WatchClubWeb.MyRequestsPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    user = socket.assigns.current_user
-
-    # Subscribe to creation/deletion of content_requests
-    # Updates go through content / content view
-    WatchClub.PubSub.subscribe_if_connected(socket, "content_requests:user:#{user.id}")
-
     {:ok,
      socket
-     |> assign(:subscribed_content_topics, [])
+     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> stream_configure(:requests, dom_id: &"request-#{&1.id}")}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    stream_state = KeysetStreamState.init(@page_size)
-
     {:noreply,
      socket
      |> assign(
@@ -48,20 +45,16 @@ defmodule WatchClubWeb.MyRequestsPage do
        )
      )
      |> assign(
-       :status_filter,
-       Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
+       status_filter: Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
      )
      |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
-     |> assign(:stream_state, stream_state)
-     |> load_requests_page(stream_state)}
+     |> load_requests_page()}
   end
 
   @impl true
   def handle_event("load_more", _params, socket) do
-    stream_state = socket.assigns.stream_state
-
-    if KeysetStreamState.can_load_more?(stream_state) do
-      {:noreply, socket |> load_requests_page(stream_state)}
+    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
+      {:noreply, socket |> load_requests_page()}
     else
       {:noreply, socket}
     end
@@ -73,71 +66,75 @@ defmodule WatchClubWeb.MyRequestsPage do
     {:noreply, socket}
   end
 
-  # The user created (or re-requested) content, here or in another tab. Prepend
-  # the new card (most-recent-activity sort) if it matches the active filters;
-  # ignore it otherwise.
   @impl true
+  # A ContentRequest has been deleted. Remove it from the stream
   def handle_info(
-        %Phoenix.Socket.Broadcast{
-          payload: %Notification{
-            resource: ContentRequest,
-            action: %{name: :request},
-            data: %{content_id: content_id}
-          }
+        %Notification{
+          data: %ContentRequest{} = request,
+          action: %{type: :destroy}
         },
         socket
       ) do
+    {:noreply, socket |> stream_delete(:requests, request)}
+  end
+
+  # A ContentRequest has been been created or updated
+  def handle_info(
+        %Notification{
+          data: %ContentRequest{} = request,
+          action: %{type: type}
+        },
+        socket
+      )
+      when type in [:create, :update] do
+    # We need to add :status_group to the fields in order to match the filters
     request =
-      Requests.get_current_user_request_for_content!(content_id,
-        load: @request_fields_to_load,
+      Ash.load!(request, @request_fields_to_load ++ [:status_group],
         actor: socket.assigns.current_user
       )
 
     if matches_filters?(request, socket) do
-      {:noreply, socket |> prepend_request(request)}
+      # Update it if it's already in the list, or add it at the beginning
+      {:noreply,
+       socket
+       |> stream_insert(
+         :requests,
+         request,
+         at: 0
+       )}
     else
-      {:noreply, socket}
+      {:noreply, socket |> stream_delete(:requests, request)}
     end
   end
 
-  # The user cancelled a request, here or in another tab. Drop the card (a
-  # no-op if it isn't loaded — e.g. this tab already removed it).
-  def handle_info(
-        %Phoenix.Socket.Broadcast{
-          payload: %Notification{
-            resource: ContentRequest,
-            action: %{type: :destroy},
-            data: request
-          }
-        },
-        socket
-      ) do
-    {:noreply, socket |> delete_request(request)}
-  end
+  # A content has changed
+  # Note that we only match `Content` here, this is because it's the only resource besides ContentRequest
+  # on which the cards depend, otherwise we would need to match them as well.
+  def handle_info(%Notification{data: %Content{id: content_id}}, socket) do
+    # This is slightly ineficient since we make a DB query even when the Contents are not in this
+    # stream.
+    # This is OK for now. The alternative would be to keep a list of content IDs in the stream
+    case Requests.get_current_user_request_for_content(content_id,
+           load: @request_fields_to_load,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, request} ->
+        {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
 
-  # A Content has changed, reload and replace it, or remove it from the stream if
-  # it no longer matches the filters
-  @impl true
-  def handle_info(
-        %Phoenix.Socket.Broadcast{
-          payload: %Notification{metadata: %{subject: :content_changed, content_id: content_id}}
-        },
-        socket
-      ) do
-    request =
-      Requests.get_current_user_request_for_content!(content_id,
-        load: @request_fields_to_load,
-        actor: socket.assigns.current_user
-      )
-
-    if matches_filters?(request, socket) do
-      {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
-    else
-      {:noreply, socket |> delete_request(request)}
+      # Ignore the message if the content is not in the requests list
+      {:error, _} ->
+        {:noreply, socket}
     end
   end
 
-  def handle_info(_message, socket), do: {:noreply, socket}
+  def handle_info(message, socket) do
+    # Send updates to all the Live Components we are using on the request cards
+    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+    ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
+    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+
+    {:noreply, socket}
+  end
 
   @impl true
   def render(assigns) do
@@ -295,8 +292,10 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
-  defp load_requests_page(socket, %KeysetStreamState{} = stream_state) do
-    load =
+  defp load_requests_page(socket) do
+    stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@page_size)
+
+    {:ok, new_state, requests} =
       KeysetStreamState.load_page(
         stream_state,
         fn page_options ->
@@ -313,66 +312,9 @@ defmodule WatchClubWeb.MyRequestsPage do
         end
       )
 
-    case load do
-      {:ok, new_state, requests} ->
-        contents = Enum.map(requests, & &1.content)
-
-        reset = stream_state.status == :init
-
-        socket
-        |> maybe_reset_subscriptions(reset)
-        |> subscribe_to_contents(contents)
-        |> assign(:stream_state, new_state)
-        |> stream(:requests, requests, reset: reset)
-
-      {:error, new_state, _} ->
-        socket
-        |> assign(:stream_state, new_state)
-        |> put_flash(:error, "There was an error loading requests")
-    end
-  end
-
-  defp maybe_reset_subscriptions(socket, false), do: socket
-
-  defp maybe_reset_subscriptions(socket, true) do
-    if connected?(socket) do
-      socket.assigns.subscribed_content_topics
-      |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
-    end
-
-    socket |> assign(:subscribed_content_topics, [])
-  end
-
-  defp subscribe_to_contents(socket, contents) do
-    if connected?(socket) do
-      topics =
-        contents
-        |> Enum.flat_map(&WatchClub.PubSub.subscribe_to_content(&1, socket.assigns.current_user))
-
-      socket
-      |> assign(
-        :subscribed_content_topics,
-        socket.assigns.subscribed_content_topics ++ topics
-      )
-    else
-      socket
-    end
-  end
-
-  defp prepend_request(socket, request) do
-    WatchClub.PubSub.subscribe_to_content(request.content, socket.assigns.current_user)
-
-    socket |> stream_insert(:requests, request, at: 0)
-  end
-
-  defp delete_request(socket, request) do
-    # Request.content might not be loaded so the easiest way to unsubscribe is to
-    # filter the topics we're subscribed to
-    socket.assigns.subscribed_content_topics
-    |> Enum.filter(&String.starts_with?(&1, "contents:#{request.content_id}"))
-    |> Enum.each(&Phoenix.PubSub.unsubscribe(WatchClub.PubSub, &1))
-
-    socket |> stream_delete(:requests, request)
+    socket
+    |> assign(stream_state: new_state)
+    |> stream(:requests, requests, reset: stream_state.status == :init)
   end
 
   defp matches_filters?(request, socket) do

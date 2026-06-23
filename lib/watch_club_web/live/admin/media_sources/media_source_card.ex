@@ -11,8 +11,6 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   import WatchClubWeb.Components.Media.MediaTypeBadge
   import WatchClubWeb.Components.Media.SourceIdentifier
 
-  alias WatchClub.MediaSources.{Import, Source}
-
   attr :media_source, Source, required: true
   attr :locale, :atom, required: true
 

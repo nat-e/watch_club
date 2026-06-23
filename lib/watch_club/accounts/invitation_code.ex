@@ -10,7 +10,7 @@ defmodule WatchClub.Accounts.InvitationCode do
     domain: WatchClub.Accounts,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -112,10 +112,12 @@ defmodule WatchClub.Accounts.InvitationCode do
   end
 
   pub_sub do
-    publish :create, ["invitation_codes"]
-    publish :update, ["invitation_codes"]
-    publish :use, ["invitation_codes"]
-    publish :destroy, ["invitation_codes"]
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish_all :create, ["users", "admin"]
+    publish_all :update, ["users", "admin"]
+    publish_all :destroy, ["users", "admin"]
   end
 
   preparations do

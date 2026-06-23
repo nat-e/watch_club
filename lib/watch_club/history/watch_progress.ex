@@ -12,7 +12,7 @@ defmodule WatchClub.History.WatchProgress do
     domain: WatchClub.History,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    notifiers: [WatchClub.Contents.Notifiers.ContentChangedNotifier]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}
@@ -34,11 +34,14 @@ defmodule WatchClub.History.WatchProgress do
       reference :user, on_delete: :delete, on_update: :update
       reference :movie, on_delete: :delete, on_update: :update
       reference :tv_show_episode, on_delete: :delete, on_update: :update
+
+      # When the media this refers is deleted, set to nil
+      reference :last_media, on_delete: :nilify, on_update: :update
     end
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read, :destroy, create: :*]
 
     create :record_movie_progress do
       upsert? true
@@ -112,6 +115,35 @@ defmodule WatchClub.History.WatchProgress do
     end
   end
 
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    # Notify every change to the User's content topic
+    # Bulk actions only trigger a single notification (see MarkWatched and MarkNotWatched)
+    # We add :content_id and :content_identity in the metadata to make
+    # it easy for subscribers to know which media this is related to
+    publish_all :create, ["content", "user", :user_id],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :destroy, ["content", "user", :user_id],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      content = notification.data.calculations[:content]
+
+      %{
+        notification
+        | metadata:
+            notification.metadata
+            |> Map.put(:content_identity, ContentIdentity.from_content(content))
+            |> Map.put(:content_id, content.id)
+      }
+    end
+  end
+
   preparations do
     # We always load the seconds_left and watch percent since they are simple calculations
     # that don't require joins
@@ -157,6 +189,17 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   calculations do
+    # The content this Watch Progress is related to
+    # This is used internally to set the ContentIdentity in the metadata
+    # of the Notifications sent on PubSub.
+    calculate :content,
+              :struct,
+              WatchClub.History.Calculations.WatchProgressContent do
+      constraints instance_of: Content
+      allow_nil? false
+      public? false
+    end
+
     # A content is considered watch when a user has watched 90% of more of it
     # position_seconds and duration_seconds will be nil when the content is marked as watched.
     calculate :completed,

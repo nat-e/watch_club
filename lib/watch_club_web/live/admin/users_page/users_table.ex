@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
   use WatchClubWeb, :component
 
-  alias WatchClubWeb.Helpers.Time
-
   attr :users, :list, required: true
   attr :current_user, User, required: true
 

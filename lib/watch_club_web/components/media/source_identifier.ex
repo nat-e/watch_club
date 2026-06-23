@@ -7,8 +7,6 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
   """
   use WatchClubWeb, :component
 
-  alias WatchClub.MediaSources.Source
-
   attr :media_source, Source, required: true
 
   def source_identifier(%{media_source: %Source{source_type: :filesystem}} = assigns) do
@@ -26,7 +24,7 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
     <.badge variant="muted" class="rounded-sm">
       <:icon><.lucide_icon name="link" /></:icon>
       <span class="truncate">
-        {WatchClubWeb.Helpers.Url.strip_scheme(@media_source.implementation.base_url)}
+        {Url.strip_scheme(@media_source.implementation.base_url)}
       </span>
     </.badge>
     <.badge variant="muted" class="rounded-sm">

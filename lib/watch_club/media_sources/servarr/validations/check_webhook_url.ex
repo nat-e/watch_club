@@ -12,7 +12,7 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
 
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
-  alias WatchClub.Shared.Url
+  alias WatchClubWeb.Helpers.Url
 
   @impl true
   def validate(%Ash.Changeset{} = changeset, _opts, _context) do

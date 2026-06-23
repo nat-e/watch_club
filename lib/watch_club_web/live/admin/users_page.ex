@@ -73,7 +73,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    WatchClub.PubSub.subscribe_if_connected(socket, ["users", "invitation_codes"])
+    WatchClub.PubSub.subscribe_if_connected(socket, ["users:admin"])
 
     {:ok,
      socket
@@ -83,11 +83,11 @@ defmodule WatchClubWeb.Admin.UsersPage do
   end
 
   @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "users"}, socket) do
+  def handle_info(%Notification{resource: User}, socket) do
     {:noreply, socket |> reload_users()}
   end
 
-  def handle_info(%Phoenix.Socket.Broadcast{topic: "invitation_codes"}, socket) do
+  def handle_info(%Notification{resource: InvitationCode}, socket) do
     {:noreply, socket |> reload_invitation_codes()}
   end
 

@@ -31,4 +31,14 @@ defmodule WatchClub.Shared.Path do
     |> normalize()
     |> String.replace_prefix(normalize(from_root), normalize(to_root))
   end
+
+  @spec normalize_base_url(nil) :: nil
+  @spec normalize_base_url(String.t()) :: String.t()
+  def normalize_base_url(nil), do: nil
+
+  def normalize_base_url(url) when is_binary(url) do
+    url
+    |> String.trim()
+    |> String.replace_trailing("/", "")
+  end
 end

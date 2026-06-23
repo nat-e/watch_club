@@ -4,7 +4,7 @@ defmodule WatchClub.Clubs.Membership do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, MembershipRole}
@@ -63,10 +63,8 @@ defmodule WatchClub.Clubs.Membership do
       authorize_if {WatchClub.Clubs.Checks.ActorIsClubMember, role: :admin}
     end
 
-    policy action([:read, :with_user, :with_club_and_user]) do
-      authorize_if actor_attribute_equals(:administrator?, true)
-      authorize_if {WatchClub.Clubs.Checks.ActorIsClubMemberFilter, role: :admin}
-      authorize_if relates_to_actor_via(:user)
+    policy action_type(:read) do
+      authorize_if WatchClub.Clubs.Checks.ActorIsClubMemberFilter
     end
 
     policy action(:destroy) do
@@ -81,14 +79,13 @@ defmodule WatchClub.Clubs.Membership do
   end
 
   pub_sub do
-    publish :create, ["users", :user_id, "memberships"]
-    publish :create, ["clubs", :club_id, "memberships"]
-    publish :add_to_club, ["users", :user_id, "memberships"]
-    publish :add_to_club, ["clubs", :club_id, "memberships"]
-    publish :leave_club, ["users", :user_id, "memberships"]
-    publish :leave_club, ["clubs", :club_id, "memberships"]
-    publish :destroy, ["users", :user_id, "memberships"]
-    publish :destroy, ["clubs", :club_id, "memberships"]
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish_all :create, ["user", :user_id]
+    publish_all :create, ["memberships", "club", :club_id]
+    publish_all :destroy, ["user", :user_id]
+    publish_all :destroy, ["memberships", "club", :club_id]
   end
 
   attributes do

@@ -4,7 +4,7 @@ defmodule WatchClub.MediaSources.Source do
     domain: WatchClub.MediaSources,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   import Ash.Expr
 
@@ -102,11 +102,12 @@ defmodule WatchClub.MediaSources.Source do
   end
 
   pub_sub do
-    prefix "media_sources"
+    module Phoenix.PubSub
+    name WatchClub.PubSub
 
-    publish_all :create, ""
-    publish_all :update, [[:id, nil]]
-    publish_all :destroy, [[:id, nil]]
+    publish_all :create, ["media_sources", "admin"]
+    publish_all :update, ["media_sources", "admin"]
+    publish_all :destroy, ["media_sources", "admin"]
   end
 
   preparations do

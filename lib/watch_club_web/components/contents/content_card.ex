@@ -6,10 +6,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.LibraryItem
-  alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Shared.Url
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   attr :id, :string
@@ -114,7 +110,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
       </.stack>
 
       <.live_component
-        id={"play-or-request-button-#{@id}"}
+        id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(@content))}
         module={PlayOrRequestButtonLive}
         content_identity={ContentIdentity.from_content(@content)}
         current_user={@current_user}

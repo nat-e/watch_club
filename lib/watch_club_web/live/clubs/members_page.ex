@@ -4,8 +4,6 @@ defmodule WatchClubWeb.Clubs.MembersPage do
   import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Live.Clubs.Members.{AddMembersModal, MembersTable, RemoveMemberModal}
 
-  require Logger
-
   on_mount {WatchClubWeb.Hooks.LoadClub, true}
 
   @impl true
@@ -60,25 +58,20 @@ defmodule WatchClubWeb.Clubs.MembersPage do
   @impl true
   def handle_params(%{"club_id" => club_id}, _uri, socket) do
     WatchClub.PubSub.subscribe_if_connected(socket, [
-      "clubs:#{club_id}",
-      "clubs:#{club_id}:memberships"
+      "club:#{club_id}",
+      "memberships:club:#{club_id}"
     ])
 
     {:noreply, socket |> reload_club_members()}
   end
 
   @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{topic: topic}, socket) do
-    cond do
-      topic == "clubs:#{socket.assigns.club.id}:memberships" ->
-        {:noreply, socket |> reload_club_members()}
+  def handle_info(%Notification{resource: Club}, socket) do
+    {:noreply, socket |> reload_club()}
+  end
 
-      topic == "clubs:#{socket.assigns.club.id}" ->
-        {:noreply, socket |> reload_club()}
-
-      true ->
-        {:noreply, socket}
-    end
+  def handle_info(%Notification{resource: ClubMembership}, socket) do
+    {:noreply, socket |> reload_club_members()}
   end
 
   def handle_info(_msg, socket), do: {:noreply, socket}
@@ -130,21 +123,18 @@ defmodule WatchClubWeb.Clubs.MembersPage do
   defp reload_club(socket) do
     # We need to handle error case since Ash.NotFound is expected when PubSub is triggered by Club deletion
     case Clubs.get_club_by_id(socket.assigns.club.id, actor: socket.assigns.current_user) do
-      {:ok, club} -> socket |> assign(:club, club)
+      {:ok, club} -> socket |> assign(club: club)
       {:error, _error} -> socket |> redirect_home()
     end
   end
 
   defp reload_club_members(socket) do
     club = Ash.load!(socket.assigns.club, [:memberships], actor: socket.assigns.current_user)
-    socket |> assign(:memberships, club.memberships)
+    socket |> assign(memberships: club.memberships)
   end
 
   defp close_modals(socket) do
-    socket
-    |> assign(:membership_to_remove, nil)
-    |> assign(:show_add_members_modal, false)
-    |> assign(:users, nil)
+    socket |> assign(membership_to_remove: nil, show_add_members_modal: false, users: nil)
   end
 
   defp redirect_home(socket) do

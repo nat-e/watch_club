@@ -3,10 +3,6 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Components.Player.SeekBar
 
-  alias WatchClub.Playbacks
-
-  require Logger
-
   @impl true
   def render(assigns) do
     ~H"""

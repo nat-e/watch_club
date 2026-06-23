@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
           <div class="flex flex-col items-center gap-group text-center @xl:flex-1 @xl:items-start @xl:text-left">
             <div class="flex flex-col items-center gap-related @xl:items-start">
               <.live_component
-                id="content-watch-progress"
+                id={ContentWatchProgressBadge.dom_id(@content_identity)}
                 module={ContentWatchProgressBadge}
                 content_identity={@content_identity}
                 current_user={@current_user}
@@ -127,7 +127,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     ~H"""
     <.cluster class="w-full justify-center">
       <.live_component
-        id="details-play-or-request-button"
+        id={PlayOrRequestButtonLive.dom_id(@content_identity)}
         module={PlayOrRequestButtonLive}
         content_identity={@content_identity}
         current_user={@current_user}
@@ -135,7 +135,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         class="w-full @xl:w-auto"
       />
       <.live_component
-        id="details-add-to-library-button"
+        id={AddToLibraryButtonLive.dom_id(@content_identity)}
         module={AddToLibraryButtonLive}
         content_identity={@content_identity}
         content_title={title(@content)}

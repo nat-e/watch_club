@@ -3,13 +3,15 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
   Marks a Content not watched for the acting user by deleting their
   WatchProgress for it.
   Can be filtered by season_id and/or episode_id for TV Shows
+
+  This will return a single notification, even when multiple TV Shows
+  episodes are marked.
   """
   use Ash.Resource.Actions.Implementation
 
   require Ash.Query
 
   alias WatchClub.Contents
-  alias WatchClub.Contents.Notifiers.ContentChangedNotifier
   alias WatchClub.History.WatchProgress
 
   @impl true
@@ -17,28 +19,22 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
     actor = context.actor
 
     with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor) do
-      content
-      |> viewer_progress_query(
-        Map.get(input.arguments, :season_number),
-        Map.get(input.arguments, :episode_number),
-        actor
-      )
-      |> Ash.bulk_destroy!(:destroy, %{},
-        scope: context,
-        strategy: :stream,
-        return_records?: false
-      )
-
-      notification =
-        ContentChangedNotifier.create_notification(
-          input.resource,
-          input.action,
-          content,
-          [actor.id],
+      %Ash.BulkResult{notifications: notifications} =
+        content
+        |> viewer_progress_query(
+          Map.get(input.arguments, :season_number),
+          Map.get(input.arguments, :episode_number),
           actor
         )
+        |> Ash.bulk_destroy!(:destroy, %{},
+          scope: context,
+          return_records?: false,
+          return_notifications?: true
+        )
 
-      {:ok, content, [notification]}
+      # We just return a single notification for one of the episode to avoid flooding the subscribers
+      # This is fine since we reload data anyway
+      {:ok, content, Enum.take(notifications, 1)}
     end
   end
 

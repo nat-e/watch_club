@@ -9,7 +9,7 @@ defmodule WatchClub.ActivityFeed.Event do
     domain: WatchClub.ActivityFeed,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Calculations.EventPayload
@@ -29,18 +29,6 @@ defmodule WatchClub.ActivityFeed.Event do
   postgres do
     table "activity_feed_events"
     repo WatchClub.Repo
-  end
-
-  pub_sub do
-    prefix "activity_feed_events"
-
-    # We don't use publish_all since in the future some events will not be club scoped.
-    # The broadcast payload is loaded at creation time (see CreateActivityFeedEvent),
-    # so no per-publication `load:` is needed here.
-    publish :create_club_created, ["club", :scope_club_id]
-    publish :create_library_created, ["club", :scope_club_id]
-    publish :create_content_added, ["club", :scope_club_id]
-    publish :create_member_added, ["club", :scope_club_id]
   end
 
   actions do
@@ -143,6 +131,20 @@ defmodule WatchClub.ActivityFeed.Event do
       authorize_if expr(is_nil(scope_club) and is_nil(scope_user))
       forbid_if always()
     end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "feed"
+
+    # We don't use publish_all since in the future some events will not be club scoped.
+    # The broadcast payload is loaded at creation time (see CreateActivityFeedEvent),
+    # so no per-publication `load:` is needed here.
+    publish :create_club_created, ["club", :scope_club_id]
+    publish :create_library_created, ["club", :scope_club_id]
+    publish :create_content_added, ["club", :scope_club_id]
+    publish :create_member_added, ["club", :scope_club_id]
   end
 
   preparations do

@@ -96,19 +96,67 @@ defmodule WatchClubWeb do
 
       # HTML escaping functionality
       import Phoenix.HTML
+
       # Core UI components
       use WatchClubWeb.Components.UI
+
+      alias Ash.Notifier.Notification
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
 
       # Import domains and basic models
-      alias WatchClub.{Accounts, Clubs, Contents, History}
-      alias WatchClub.Accounts.{InvitationCode, User}
-      alias WatchClub.Clubs.{Club, Library, Membership}
-      alias WatchClub.Contents.{Book, Content, ContentType, Movie, SearchContentType, TvShow}
+      alias WatchClub.{
+        Accounts,
+        ActivityFeed,
+        Clubs,
+        Contents,
+        History,
+        MediaCatalog,
+        MediaSources,
+        Playbacks,
+        Requests
+      }
 
-      alias WatchClubWeb.Helpers.Url
+      alias WatchClub.Accounts.{InvitationCode, User, UserLocale, UserSettings}
+      alias WatchClub.ActivityFeed.{Event, EventType}
+      alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership, MembershipRole}
+
+      alias WatchClub.Contents.{
+        Book,
+        Content,
+        ContentIdentity,
+        ContentType,
+        Movie,
+        SearchContentType,
+        TvShow,
+        TvShowEpisode
+      }
+
+      alias WatchClub.History.{WatchProgress, WatchStatus}
+
+      alias WatchClub.MediaCatalog.{
+        Audiobook,
+        Ebook,
+        Media,
+        MediaType,
+        Video,
+        VideoResolution,
+        VideoTrack
+      }
+
+      alias WatchClub.MediaSources.{Filesystem, Import, Servarr, Source}
+      alias WatchClub.Playbacks.{Playback, Session}
+
+      alias WatchClub.Requests.{
+        ContentRequest,
+        ContentRequestStatus,
+        ContentRequestStatusGrup,
+        MediaSourceRequest,
+        MediaSourceRequestState
+      }
+
+      alias WatchClubWeb.Helpers.{Time, Url}
 
       # Allow Logger calls
       require Logger

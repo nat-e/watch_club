@@ -4,7 +4,7 @@ defmodule WatchClub.Clubs.Library do
     domain: WatchClub.Clubs,
     authorizers: [Ash.Policy.Authorizer],
     data_layer: AshPostgres.DataLayer,
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -88,11 +88,12 @@ defmodule WatchClub.Clubs.Library do
   end
 
   pub_sub do
-    publish :create, ["clubs", :club_id, "libraries"]
-    publish :update, ["clubs", :club_id, "libraries"]
-    publish :update, ["clubs", :club_id, "libraries", :id]
-    publish :destroy, ["clubs", :club_id, "libraries"]
-    publish :destroy, ["clubs", :club_id, "libraries", :id]
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    publish_all :create, ["club", :club_id]
+    publish_all :update, ["club", :club_id]
+    publish_all :destroy, ["club", :club_id]
   end
 
   preparations do

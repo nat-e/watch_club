@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Live.Clubs.Members.RemoveMemberModal do
   use WatchClubWeb, :component
 
-  alias WatchClub.Clubs.Membership
-
   attr :membership, Membership, required: true
 
   def remove_member_modal(assigns) do

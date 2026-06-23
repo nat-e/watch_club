@@ -6,14 +6,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails
-  alias WatchClub.Shared.Url
 
   alias WatchClubWeb.Components.Contents.{EpisodeWatchProgressBadge, SeasonWatchProgressBadge}
-  alias WatchClubWeb.Helpers.Time
 
   attr :details, TvDetailsResponse, required: true
   attr :selected_season, :integer, required: true

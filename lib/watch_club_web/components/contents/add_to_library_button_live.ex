@@ -2,7 +2,39 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryButtonLive do
   use WatchClubWeb, :live_component
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Contents.ContentIdentity
+
+  @doc """
+  The DOM id we recommend using for this Live Component
+  Stable DOM id allows us to simplify PubSub notification handling
+  """
+  def dom_id(%ContentIdentity{} = identity),
+    do: "add-to-library-button-#{identity.external_id_source}-#{identity.external_id}"
+
+  @doc """
+  Updates the component when a relevant Ash Notification is received.
+  We recommend using it on every LiveView that uses this LiveComponent for reactivity.
+  This requires using dom_id() as the ID for the LiveComponent and the LiveView to have
+  subscribed to the correct topics via `WatchClub.PubSub.subscribe_to_current_user_content_topics`.
+
+  The button refreshes when contents are added or removed from Libraries
+  """
+  def handle_pubsub_message(
+        %Ash.Notifier.Notification{
+          resource: LibraryItem,
+          metadata: %{content_identity: identity}
+        },
+        %User{} = user
+      ) do
+    send_update(__MODULE__,
+      id: dom_id(identity),
+      content_identity: identity,
+      current_user: user
+    )
+  end
+
+  def handle_pubsub_message(_msg, _user), do: nil
 
   attr :content_identity, ContentIdentity, required: true
   attr :content_title, :string, required: true

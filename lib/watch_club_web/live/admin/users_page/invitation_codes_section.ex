@@ -1,8 +1,7 @@
 defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
   use WatchClubWeb, :component
 
-  alias WatchClub.Accounts.InvitationCode
-  alias WatchClubWeb.Helpers.{Time, Url}
+  alias WatchClubWeb.Helpers.Url
 
   attr :invitations, :list, required: true
   attr :current_user, User, required: true

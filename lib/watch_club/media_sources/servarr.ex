@@ -9,7 +9,7 @@ defmodule WatchClub.MediaSources.Servarr do
     domain: WatchClub.MediaSources,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
-    fragments: [WatchClub.PubSubDefaults]
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.MediaSources.Servarr.Flavor
   alias WatchClub.MediaSources.Source
@@ -104,9 +104,10 @@ defmodule WatchClub.MediaSources.Servarr do
   end
 
   pub_sub do
-    prefix "media_sources"
+    module Phoenix.PubSub
+    name WatchClub.PubSub
 
-    publish :update, [[:id, nil]]
+    publish :update, ["media_sources", "admin"]
   end
 
   attributes do

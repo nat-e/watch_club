@@ -11,8 +11,6 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
 
   alias WatchClubWeb.Components.UI.IconPickerLive
 
-  require Logger
-
   on_mount {WatchClubWeb.Hooks.LoadClub, true}
 
   @impl true
@@ -107,7 +105,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
 
   @impl true
   def handle_params(%{"club_id" => club_id}, _uri, socket) do
-    WatchClub.PubSub.subscribe_if_connected(socket, "clubs:#{club_id}")
+    WatchClub.PubSub.subscribe_if_connected(socket, "club:#{club_id}")
     form = Clubs.form_to_update_club(socket.assigns.club, actor: socket.assigns.current_user)
 
     {:noreply,
@@ -118,17 +116,12 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
   end
 
   @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{topic: topic}, socket) do
-    cond do
-      topic == "clubs:#{socket.assigns.club.id}:libraries" ->
-        {:noreply, socket |> reload_libraries!()}
+  def handle_info(%Notification{resource: Club}, socket) do
+    {:noreply, socket |> reload_club()}
+  end
 
-      topic == "clubs:#{socket.assigns.club.id}" ->
-        {:noreply, socket |> reload_club()}
-
-      true ->
-        {:noreply, socket}
-    end
+  def handle_info(%Notification{resource: Library}, socket) do
+    {:noreply, socket |> reload_libraries!()}
   end
 
   def handle_info(_msg, socket), do: {:noreply, socket}
