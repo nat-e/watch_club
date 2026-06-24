@@ -98,7 +98,6 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
       Enum.map(1..season.episode_count, fn episode_number ->
         episode_details = Map.get(season_episode_details, episode_number)
-        IO.inspect(episode_details)
 
         %{
           season_number: season.season_number,

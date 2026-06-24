@@ -120,9 +120,19 @@ msgstr ""
 msgid "Remove club member"
 msgstr ""
 
+#: lib/watch_club_web/components/contents/content_card.ex:95
+#, elixir-autogen, elixir-format
+msgid "Remove from club"
+msgstr ""
+
 #: lib/watch_club_web/live/clubs/members_page.ex:94
 #, elixir-autogen, elixir-format
 msgid "Remove member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/library_page.ex:306
+#, elixir-autogen, elixir-format
+msgid "Removed from club"
 msgstr ""
 
 #: lib/watch_club_web/live/clubs/members_page.ex:29

@@ -59,12 +59,20 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
   attr :library_item, LibraryItem, default: nil
 
   defp overlay(assigns) do
+    assigns =
+      assigns
+      |> assign(
+        removable?:
+          assigns.library_item &&
+            Clubs.can_destroy_library_item?(assigns.current_user, assigns.library_item)
+      )
+
     ~H"""
     <.stack
       space="related"
-      class="pointer-events-none absolute inset-0 z-30 p-tight h-full w-full overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100"
+      class="pointer-events-none absolute inset-0 z-30 p-tight h-full w-full overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100 card-menu-open:pointer-events-auto card-menu-open:opacity-100"
     >
-      <div class="relative z-10 flex translate-y-[-0.25rem] items-center gap-related transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0">
+      <div class="relative z-10 flex translate-y-[-0.25rem] items-center gap-related transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0 card-menu-open:translate-y-0">
         <.avatar
           :if={@library_item && @library_item.added_by}
           id={@library_item.added_by.id}
@@ -82,6 +90,17 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             </.button>
           </:trigger>
           <.dropdown_menu_item
+            :if={@removable?}
+            id={"content-card-actions-remove-#{@id}"}
+            variant="destructive"
+            phx-click="remove_library_item"
+            phx-value-content_id={@library_item.content_id}
+          >
+            <Lucideicons.trash_2 />
+            {dgettext("clubs", "Remove from club")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            :if={!@removable?}
             id={"content-card-actions-coming-soon-#{@id}"}
             disabled
           >

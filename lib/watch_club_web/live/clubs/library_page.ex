@@ -22,7 +22,10 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   @sort_options [:added_date, :release_date, :title]
   @sort_options_map Map.new(@sort_options, &{Atom.to_string(&1), &1})
 
-  @library_item_fields_to_load [:added_by, content: [:implementation, :actor_progress_status]]
+  @library_item_fields_to_load [
+    :added_by,
+    content: [:implementation, :actor_progress_status]
+  ]
 
   on_mount {WatchClubWeb.Hooks.LoadClub, false}
 
@@ -290,6 +293,16 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     else
       {:noreply, socket}
     end
+  end
+
+  def handle_event("remove_library_item", %{"content_id" => content_id}, socket) do
+    Clubs.get_library_item!(socket.assigns.library.id, content_id,
+      actor: socket.assigns.current_user
+    )
+    |> Clubs.destroy_library_item!(actor: socket.assigns.current_user)
+
+    # The item is removed from the stream reactively through the handling of the PubSub notification
+    {:noreply, socket |> put_flash(:success, dgettext("clubs", "Removed from club"))}
   end
 
   defp load_library_items_page(socket) do

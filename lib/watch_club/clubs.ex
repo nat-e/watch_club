@@ -33,6 +33,7 @@ defmodule WatchClub.Clubs do
 
       define :add_content_to_libraries, args: [:content_identity, :library_ids]
       define :remove_content_from_libraries, args: [:content_identity, :library_ids]
+      define :destroy_library_item, action: :destroy
     end
 
     resource Membership do

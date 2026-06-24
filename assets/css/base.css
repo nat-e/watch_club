@@ -36,6 +36,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Applies to descendants of a content card whose actions dropdown is open, so
+   the hover overlay stays visible and interactive while the menu is open. */
+@custom-variant card-menu-open (&:is([data-slot="content-card"]:has([data-slot="dropdown-menu-content"]:popover-open) *));
+
 @theme inline {
 	--color-canvas: var(--wc-color-canvas);
 	--color-scrim: var(--wc-color-scrim);

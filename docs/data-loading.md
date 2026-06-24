@@ -25,6 +25,7 @@ Race conditions should be very rare, since all the data is reloaded through PubS
 ### Reloading data
 
 We do not patch or reload the data explicitely upon completion of a mutation. We rely on PubSub to reload it for us.
+This has the benefit of using the same code path for any update to the data. We might introduce optimistic update later if it feels laggy.
 
 ### External mutations
 
@@ -32,9 +33,12 @@ Mutations that are expected to fail (e.g. calling an external API), should often
 
 ## PubSub
 
-All PubSub messages are `%Phoenix.Socket.Broadcast{}` envelopes whose `payload` is an `Ash.Notifier.Notification`. Resources get this via the `WatchClub.PubSubDefaults` fragment; custom notifiers must wrap their notifications in the same envelope.
-Subscribers pattern match on the envelope's `topic` rather than on the notification's resource.
-We do not try to patch the existing data from the payload, instead we reload the data completely.
+All PubSub messages are `%Ash.Notifier.Notification{}`.
+Our topics are voluntarily coarse, and are mainly built around the `scope` of the change, which represents the user of group of users affected by the change, sometimes prefixed by a `domain`.
+The idea is to reduce complexity in managing the PubSub topic subscriptions by only having a few topics and pattern matching on the Notification resource / action type to figure out how to process it.
+It is OK if not all events are relevant in a subscribed topic. As a self-hosted product, we expect a low number of users per instance.
+
+Data can be upated directly from the Notification payload if straight forward. If not, we prefer to reload the data entirely rather than introduce too much complexity.
 
 ### PubSub topics
 
@@ -49,3 +53,10 @@ We do not try to patch the existing data from the payload, instead we reload the
 | `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `ContentRequest:CUD`, `WatchProgress:CUD` | Any page that display content (Content Details, Club Library, Homepage...) |
 | `content:club:<club_id>` | Contents | Club | Notification about a Content that affects members of a Club | `LibraryItem:CUD` | Any page that displays content (Content Details, Club Library...) |
 | `content:global` | Contents | Global | Notification about a Content that affects everybody | `Media:CUD` | Any page that displays content (Content Details, Club Library, Homepage...) |
+
+
+## LiveComponents
+
+To provide a better separation of concern, some complex interactive components (PlayOrRequestButton, AddToLibraryButton, ...) are extracted to `LiveComponents` that handle their own data loading and mutation.
+For these, data loading is performed in `update_many()` in order to avoir N+1 queries in lists.
+They cannot directly receive PubSub event since they share the same process as the LiveView that host them, but they provide a `handle_pubsub_message()` function to collocate notification handling and make it easy for the host LiveViews to deal with.
