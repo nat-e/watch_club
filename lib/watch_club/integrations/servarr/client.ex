@@ -123,13 +123,10 @@ defmodule WatchClub.Integrations.Servarr.Client do
 
   @spec request(String.t(), String.t(), keyword()) :: {:ok, any()} | {:error, term()}
   def request(base_url, api_key, opts) do
-    # User-visible actions (Add Source) want fast feedback over silent
-    # retries — `retry: false`. Background import flows can opt in by
-    # passing `retry: :transient` through `opts`.
     [
       base_url: Path.normalize_base_url(base_url),
       headers: [{"x-api-key", api_key}, {"accept", "application/json"}],
-      retry: false,
+      retry: :transient,
       receive_timeout: @receive_timeout,
       compressed: true
     ]

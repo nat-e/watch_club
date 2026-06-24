@@ -35,7 +35,9 @@ defmodule WatchClub.MediaSources.Source do
     read :request_capable do
       description "Request-capable Media Sources that can serve the given Media Types."
       argument :media_types, {:array, MediaType}, allow_nil?: false
-      filter expr(source_type in [:radarr, :sonarr] and media_type in ^arg(:media_types))
+      
+      filter expr(media_type in ^arg(:media_types))
+      filter expr(can_request? == true)
     end
 
     create :create_filesystem do
@@ -171,8 +173,8 @@ defmodule WatchClub.MediaSources.Source do
       allow_nil? false
     end
 
-    # Kept in sync with `Type` — request-capable types are
-    # `:radarr` and `:sonarr` (and, future, `:chaptarr`).
+    # Whether or not the Media Source is capable or Requesting content
+    # Only Automation Services like Radarr and Sonarr are capable
     calculate :can_request?,
               :boolean,
               expr(source_type in [:radarr, :sonarr]) do

@@ -90,8 +90,9 @@ defmodule WatchClub.Contents.TvShow do
       public? true
     end
 
+    # Optional: Sometimes TMDB does not have the TVDB ID of the Show, even if it exists
     attribute :tvdb_id, :integer do
-      allow_nil? false
+      allow_nil? true
       public? true
     end
   end

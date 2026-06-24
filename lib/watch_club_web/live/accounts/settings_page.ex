@@ -3,8 +3,6 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
 
   import WatchClubWeb.Components.Settings.SettingsHeader
 
-  alias WatchClub.Accounts.UserLocale
-
   @impl true
   def render(assigns) do
     ~H"""
