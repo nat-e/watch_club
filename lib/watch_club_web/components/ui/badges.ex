@@ -12,11 +12,17 @@ defmodule WatchClubWeb.Components.UI.Badges do
 
   import WatchClubWeb.Components.UI.{Avatar, LucideIcon}
 
-  attr :user, User, required: true
+  attr :user, User
 
   @doc """
   An inline user span
   """
+  def user_ref(%{user: nil} = assigns) do
+    ~H"""
+    <span class="font-bold text-text-subtle">@Deleted user</span>
+    """
+  end
+
   def user_ref(assigns) do
     ~H"""
     <span class="font-bold text-primary">@{@user.username}</span>

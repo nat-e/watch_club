@@ -1,7 +1,17 @@
 defmodule WatchClub.ActivityFeed.Event do
   @moduledoc """
-  An Ash Resource that describe a single event to display in the activity feed
+  An Ash Resource that describe a single event to display in the activity feed.
+  It contains the fields and relationships common to all Events.
+  Fields and relationships specific to a certain event type are declared in a
+  type-specific payload resource.
 
+  We do not create Events for update/removal, and Events get deleted when the objects they describe
+  are deleted.
+  This is why payloads contain references to the objects they describe (Club, LibraryItem, ...),
+  not snapshots.
+
+  Event and their payload share the same ID, the FK is set on the payload object and we use a custom
+  SQL trigger to cascade delete the Events when the payload gets deleted
   """
 
   use Ash.Resource,
@@ -29,6 +39,75 @@ defmodule WatchClub.ActivityFeed.Event do
   postgres do
     table "activity_feed_events"
     repo WatchClub.Repo
+
+    references do
+      # Cascade deletes the events when their scope gets deleted
+      reference :scope_user, on_delete: :delete
+      reference :scope_club, on_delete: :delete
+
+      # Set the actor to nil when deleted
+      reference :actor, on_delete: :nilify
+    end
+
+    # Each payload row shares its primary key with its parent event. The FK
+    # cascade only deletes the payload when the event is deleted, not the other
+    # way around. These AFTER DELETE triggers delete the parent event whenever any
+    # payload is deleted, covering every deletion path (including DB cascades).
+    custom_statements do
+      statement :delete_parent_event_function do
+        up """
+        CREATE OR REPLACE FUNCTION delete_parent_activity_feed_event()
+        RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN
+          DELETE FROM activity_feed_events WHERE id = OLD.id;
+          RETURN OLD;
+        END;
+        $$
+        """
+
+        down "DROP FUNCTION IF EXISTS delete_parent_activity_feed_event()"
+      end
+
+      statement :delete_parent_event_on_club_created do
+        up """
+        CREATE TRIGGER delete_parent_event
+        AFTER DELETE ON activity_feed_club_created_events
+        FOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()
+        """
+
+        down "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_club_created_events"
+      end
+
+      statement :delete_parent_event_on_library_created do
+        up """
+        CREATE TRIGGER delete_parent_event
+        AFTER DELETE ON activity_feed_library_created_events
+        FOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()
+        """
+
+        down "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_library_created_events"
+      end
+
+      statement :delete_parent_event_on_content_added do
+        up """
+        CREATE TRIGGER delete_parent_event
+        AFTER DELETE ON activity_feed_content_added_events
+        FOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()
+        """
+
+        down "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_content_added_events"
+      end
+
+      statement :delete_parent_event_on_member_added do
+        up """
+        CREATE TRIGGER delete_parent_event
+        AFTER DELETE ON activity_feed_member_added_events
+        FOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()
+        """
+
+        down "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_member_added_events"
+      end
+    end
   end
 
   actions do
@@ -167,19 +246,19 @@ defmodule WatchClub.ActivityFeed.Event do
     # - Club: It concerns all members of a Club (e.g. a Content was added to the Club's library)
     # - Global: It concerns all Users (Not used yet, perhaps a global change on the instance?).
     #   In this case both scopes will be nil
-    belongs_to :scope_user, User
-    belongs_to :scope_club, Club
+    belongs_to :scope_user, User, allow_nil?: true
+    belongs_to :scope_club, Club, allow_nil?: true
 
     # The User that triggerred Event. Nil when the event was created from a system action.
-    belongs_to :actor, User
+    belongs_to :actor, User, allow_nil?: true
 
     # Polymorphism, each Event will have one relationship populated depending on its type
     # Records share the same primary ID
     # Accessed through the :payload calculation
-    has_one :club_created, ClubCreatedEvent, destination_attribute: :id
-    has_one :library_created, LibraryCreatedEvent, destination_attribute: :id
-    has_one :content_added, ContentAddedEvent, destination_attribute: :id
-    has_one :member_added, MemberAddedEvent, destination_attribute: :id
+    has_one :club_created, ClubCreatedEvent, allow_nil?: true, destination_attribute: :id
+    has_one :library_created, LibraryCreatedEvent, allow_nil?: true, destination_attribute: :id
+    has_one :content_added, ContentAddedEvent, allow_nil?: true, destination_attribute: :id
+    has_one :member_added, MemberAddedEvent, allow_nil?: true, destination_attribute: :id
   end
 
   calculations do

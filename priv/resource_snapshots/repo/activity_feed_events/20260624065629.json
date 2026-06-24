@@ -1,0 +1,180 @@
+{
+  "attributes": [
+    {
+      "allow_nil?": false,
+      "default": "fragment(\"uuid_generate_v7()\")",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": true,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "id",
+      "type": "uuid"
+    },
+    {
+      "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "type",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
+      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "created_at",
+      "type": "utc_datetime_usec"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": {
+        "deferrable": false,
+        "destination_attribute": "id",
+        "destination_attribute_default": null,
+        "destination_attribute_generated": null,
+        "index?": false,
+        "match_type": null,
+        "match_with": null,
+        "multitenancy": {
+          "attribute": null,
+          "global": null,
+          "strategy": null
+        },
+        "name": "activity_feed_events_scope_user_id_fkey",
+        "on_delete": "delete",
+        "on_update": null,
+        "primary_key?": true,
+        "schema": "public",
+        "table": "users"
+      },
+      "scale": null,
+      "size": null,
+      "source": "scope_user_id",
+      "type": "uuid"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": {
+        "deferrable": false,
+        "destination_attribute": "id",
+        "destination_attribute_default": null,
+        "destination_attribute_generated": null,
+        "index?": false,
+        "match_type": null,
+        "match_with": null,
+        "multitenancy": {
+          "attribute": null,
+          "global": null,
+          "strategy": null
+        },
+        "name": "activity_feed_events_scope_club_id_fkey",
+        "on_delete": "delete",
+        "on_update": null,
+        "primary_key?": true,
+        "schema": "public",
+        "table": "clubs"
+      },
+      "scale": null,
+      "size": null,
+      "source": "scope_club_id",
+      "type": "uuid"
+    },
+    {
+      "allow_nil?": true,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": {
+        "deferrable": false,
+        "destination_attribute": "id",
+        "destination_attribute_default": null,
+        "destination_attribute_generated": null,
+        "index?": false,
+        "match_type": null,
+        "match_with": null,
+        "multitenancy": {
+          "attribute": null,
+          "global": null,
+          "strategy": null
+        },
+        "name": "activity_feed_events_actor_id_fkey",
+        "on_delete": "nilify",
+        "on_update": null,
+        "primary_key?": true,
+        "schema": "public",
+        "table": "users"
+      },
+      "scale": null,
+      "size": null,
+      "source": "actor_id",
+      "type": "uuid"
+    }
+  ],
+  "base_filter": null,
+  "check_constraints": [],
+  "create_table_options": null,
+  "custom_indexes": [],
+  "custom_statements": [
+    {
+      "code?": false,
+      "down": "DROP FUNCTION IF EXISTS delete_parent_activity_feed_event()",
+      "name": "delete_parent_event_function",
+      "up": "CREATE OR REPLACE FUNCTION delete_parent_activity_feed_event()\nRETURNS TRIGGER LANGUAGE plpgsql AS $$\nBEGIN\n  DELETE FROM activity_feed_events WHERE id = OLD.id;\n  RETURN OLD;\nEND;\n$$\n"
+    },
+    {
+      "code?": false,
+      "down": "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_club_created_events",
+      "name": "delete_parent_event_on_club_created",
+      "up": "CREATE TRIGGER delete_parent_event\nAFTER DELETE ON activity_feed_club_created_events\nFOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()\n"
+    },
+    {
+      "code?": false,
+      "down": "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_library_created_events",
+      "name": "delete_parent_event_on_library_created",
+      "up": "CREATE TRIGGER delete_parent_event\nAFTER DELETE ON activity_feed_library_created_events\nFOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()\n"
+    },
+    {
+      "code?": false,
+      "down": "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_content_added_events",
+      "name": "delete_parent_event_on_content_added",
+      "up": "CREATE TRIGGER delete_parent_event\nAFTER DELETE ON activity_feed_content_added_events\nFOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()\n"
+    },
+    {
+      "code?": false,
+      "down": "DROP TRIGGER IF EXISTS delete_parent_event ON activity_feed_member_added_events",
+      "name": "delete_parent_event_on_member_added",
+      "up": "CREATE TRIGGER delete_parent_event\nAFTER DELETE ON activity_feed_member_added_events\nFOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()\n"
+    }
+  ],
+  "has_create_action": true,
+  "hash": "3686B9E4BAE2CD8BC8C8C57F2DFBDA06CA7F4F5B402FCE782C5A0C5F89971B3E",
+  "identities": [],
+  "multitenancy": {
+    "attribute": null,
+    "global": null,
+    "strategy": null
+  },
+  "repo": "Elixir.WatchClub.Repo",
+  "schema": null,
+  "table": "activity_feed_events"
+}

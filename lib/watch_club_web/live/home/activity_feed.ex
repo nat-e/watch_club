@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       padding="tight"
     >
       <.stack space="related" id="activity-feed" phx-update="stream">
-        <div class="only:block hidden">
+        <div id="activity-feed-empty-state" class="only:block hidden">
           <.empty_feed current_user={@current_user} />
         </div>
         <.feed_card
