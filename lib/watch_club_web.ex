@@ -127,6 +127,7 @@ defmodule WatchClubWeb do
         Content,
         ContentIdentity,
         ContentType,
+        ExternalIdSource,
         Movie,
         SearchContentType,
         TvShow,

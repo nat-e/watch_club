@@ -7,10 +7,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   import WatchClubWeb.Components.Contents.ContentCard
 
-  alias WatchClubWeb.Components.Contents.{
-    AddToLibraryButtonLive,
-    PlayOrRequestButtonLive
-  }
+  alias WatchClubWeb.Components.Contents.{AddToLibraryModalLive, PlayOrRequestButtonLive}
 
   alias WatchClubWeb.Helpers.KeysetStreamState
 
@@ -34,7 +31,8 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     |> stream_configure(:library_items, dom_id: & &1.id)}
+     |> stream_configure(:library_items, dom_id: & &1.id)
+     |> reset_modals()}
   end
 
   @impl true
@@ -119,13 +117,17 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
           event="load_more_contents"
         />
       </.stack>
-    </Layouts.app>
-    """
-  end
 
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}></Layouts.app>
+      <.live_component
+        :if={@content_to_add_to_library}
+        id="library-page-add-to-library-modal"
+        module={AddToLibraryModalLive}
+        content_identity={ContentIdentity.from_content(@content_to_add_to_library)}
+        content_title={@content_to_add_to_library.implementation.best_localization.title}
+        current_user={@current_user}
+        on_close={fn -> send(self(), "close_add_to_library_modal") end}
+      />
+    </Layouts.app>
     """
   end
 
@@ -168,9 +170,12 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     end
   end
 
+  def handle_info("close_add_to_library_modal", socket) do
+    {:noreply, socket |> reset_modals()}
+  end
+
   def handle_info(message, socket) do
     # Send updates to all the Live Components we are using on the content cards
-    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 
     {:noreply, socket}
@@ -305,6 +310,18 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     {:noreply, socket |> put_flash(:success, dgettext("clubs", "Removed from club"))}
   end
 
+  def handle_event("open_add_to_library_modal", %{"content_id" => content_id}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       content_to_add_to_library:
+         Contents.get_content_by_id!(content_id,
+           load: [:implementation],
+           actor: socket.assigns.current_user
+         )
+     )}
+  end
+
   defp load_library_items_page(socket) do
     stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@contents_page_size)
 
@@ -337,6 +354,10 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     ~p"/clubs/#{club_id}/libraries/#{library_id}?#{[sort: "#{Atom.to_string(sort_by)}.#{Atom.to_string(sort_order)}"]}"
   end
 
+  defp reset_modals(socket) do
+    socket |> assign(content_to_add_to_library: nil)
+  end
+
   # Parses the field and direction on which to sort the library items, based on the value
   # of the URL parameters
   defp parse_sort_param(param) when is_nil(param), do: {:added_date, :desc}
@@ -351,15 +372,15 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
     end
   end
 
-  def sort_library_items_query(:added_date, sort_order) do
+  defp sort_library_items_query(:added_date, sort_order) do
     [{:inserted_at, sort_order}]
   end
 
-  def sort_library_items_query(:release_date, sort_order) do
+  defp sort_library_items_query(:release_date, sort_order) do
     [{"content.release_date", SortOrder.nils_last(sort_order)}]
   end
 
-  def sort_library_items_query(:title, sort_order) do
+  defp sort_library_items_query(:title, sort_order) do
     [{"content.localized_title_key", SortOrder.nils_last(sort_order)}]
   end
 end

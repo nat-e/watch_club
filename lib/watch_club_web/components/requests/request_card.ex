@@ -22,7 +22,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
   import WatchClubWeb.Components.Contents.ContentTypeBadge
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClubWeb.Components.Contents.{AddToLibraryButtonLive, PlayOrRequestButtonLive}
+  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   @in_progress_statuses [:requested, :downloading, :importing]
 
@@ -91,16 +91,18 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
             module={PlayOrRequestButtonLive}
             content_identity={@content_identity}
             current_user={@current_user}
-            class="relative z-10"
+            class="z-10"
           />
-          <.live_component
-            id={AddToLibraryButtonLive.dom_id(@content_identity)}
-            module={AddToLibraryButtonLive}
-            content_identity={@content_identity}
-            content_title={@content.implementation.best_localization.title}
-            current_user={@current_user}
-            class="relative z-10"
-          />
+          <.button
+            id={"share-button-#{@content.id}"}
+            variant="accent"
+            phx-click="open_add_to_library_modal"
+            phx-value-content_id={@content.id}
+            class="z-10"
+          >
+            <:icon><Lucideicons.share_2 /></:icon>
+            Share with a club
+          </.button>
         </.cluster>
       </div>
     </div>

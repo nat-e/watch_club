@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Live.Clubs.Members.RemoveMemberModal do
 
   def remove_member_modal(assigns) do
     ~H"""
-    <.modal id="remove-member-modal" on_close={JS.push("close_modals")}>
+    <.modal id="remove-member-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("clubs", "Remove club member")}</:title>
       <p>
         {raw(

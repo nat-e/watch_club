@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal do
 
   def remove_media_modal(assigns) do
     ~H"""
-    <.modal id="remove-media-modal" on_close={JS.push("close_remove_media_modal")}>
+    <.modal id="remove-media-modal" size="sm" on_close={JS.push("close_remove_media_modal")}>
       <:title>Remove media</:title>
       <:description>
         Remove the media from this instance. This will not delete the file on the disk, only remove it from Watch Club.

@@ -12,7 +12,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar.DeleteClubModal do
 
   def delete_club_modal(assigns) do
     ~H"""
-    <.modal id="delete-club-modal" on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="delete-club-modal" size="sm" on_close={JS.push("close_modals", target: @myself)}>
       <:title>{dgettext("clubs", "Delete club")}</:title>
       <p>
         {raw(

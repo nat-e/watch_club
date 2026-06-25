@@ -10,7 +10,6 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
 
   alias WatchClubWeb.Components.Contents.{
-    AddToLibraryButtonLive,
     ContentWatchProgressBadge,
     PlayOrRequestButtonLive
   }
@@ -130,15 +129,6 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         id={PlayOrRequestButtonLive.dom_id(@content_identity)}
         module={PlayOrRequestButtonLive}
         content_identity={@content_identity}
-        current_user={@current_user}
-        size="lg"
-        class="w-full @xl:w-auto"
-      />
-      <.live_component
-        id={AddToLibraryButtonLive.dom_id(@content_identity)}
-        module={AddToLibraryButtonLive}
-        content_identity={@content_identity}
-        content_title={title(@content)}
         current_user={@current_user}
         size="lg"
         class="w-full @xl:w-auto"

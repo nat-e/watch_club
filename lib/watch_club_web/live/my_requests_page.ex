@@ -6,8 +6,7 @@ defmodule WatchClubWeb.MyRequestsPage do
   alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup}
 
   alias WatchClubWeb.Components.Contents.{
-    AddToLibraryButtonLive,
-    ContentWatchProgressBadge,
+    AddToLibraryModalLive,
     PlayOrRequestButtonLive
   }
 
@@ -17,124 +16,6 @@ defmodule WatchClubWeb.MyRequestsPage do
   @page_size 25
 
   @request_fields_to_load [:status, content: [:implementation]]
-
-  # Filters are carried as atoms: an enum value, or `nil` for "no filter" (the
-  # "All" chip). `Url.parse_url_param/3` validates the raw param against each
-  # domain module's `values/0`; `nil` flows straight through to the URL (dropped
-  # by `path/1`), the action filters (`maybe_filter/3`), and `matches_filters?/2`.
-  # The status_group → status collapsing happens server-side, in `for_current_user`.
-
-  @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")}
-  end
-
-  @impl true
-  def handle_params(params, _uri, socket) do
-    {:noreply,
-     socket
-     |> assign(
-       :sort,
-       Url.parse_url_param(
-         params["sort"],
-         ContentRequestSort.values(),
-         ContentRequestSort.default()
-       )
-     )
-     |> assign(
-       status_filter: Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
-     )
-     |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
-     |> load_requests_page()}
-  end
-
-  @impl true
-  def handle_event("load_more", _params, socket) do
-    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
-      {:noreply, socket |> load_requests_page()}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  @impl true
-  def handle_event("cancel-request", %{"id" => id}, socket) do
-    Requests.cancel_content_request(id, actor: socket.assigns.current_user)
-    {:noreply, socket}
-  end
-
-  @impl true
-  # A ContentRequest has been deleted. Remove it from the stream
-  def handle_info(
-        %Notification{
-          data: %ContentRequest{} = request,
-          action: %{type: :destroy}
-        },
-        socket
-      ) do
-    {:noreply, socket |> stream_delete(:requests, request)}
-  end
-
-  # A ContentRequest has been been created or updated
-  def handle_info(
-        %Notification{
-          data: %ContentRequest{} = request,
-          action: %{type: type}
-        },
-        socket
-      )
-      when type in [:create, :update] do
-    # We need to add :status_group to the fields in order to match the filters
-    request =
-      Ash.load!(request, @request_fields_to_load ++ [:status_group],
-        actor: socket.assigns.current_user
-      )
-
-    if matches_filters?(request, socket) do
-      # Update it if it's already in the list, or add it at the beginning
-      {:noreply,
-       socket
-       |> stream_insert(
-         :requests,
-         request,
-         at: 0
-       )}
-    else
-      {:noreply, socket |> stream_delete(:requests, request)}
-    end
-  end
-
-  # A content has changed
-  # Note that we only match `Content` here, this is because it's the only resource besides ContentRequest
-  # on which the cards depend, otherwise we would need to match them as well.
-  def handle_info(%Notification{data: %Content{id: content_id}}, socket) do
-    # This is slightly ineficient since we make a DB query even when the Contents are not in this
-    # stream.
-    # This is OK for now. The alternative would be to keep a list of content IDs in the stream
-    case Requests.get_current_user_request_for_content(content_id,
-           load: @request_fields_to_load,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, request} ->
-        {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
-
-      # Ignore the message if the content is not in the requests list
-      {:error, _} ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_info(message, socket) do
-    # Send updates to all the Live Components we are using on the request cards
-    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
-    ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
-    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
-
-    {:noreply, socket}
-  end
 
   @impl true
   def render(assigns) do
@@ -206,6 +87,15 @@ defmodule WatchClubWeb.MyRequestsPage do
         :if={KeysetStreamState.can_load_more?(@stream_state)}
         id="my-requests-load-more"
         event="load_more"
+      />
+      <.live_component
+        :if={@content_to_add_to_library}
+        id="library-page-add-to-library-modal"
+        module={AddToLibraryModalLive}
+        content_identity={ContentIdentity.from_content(@content_to_add_to_library)}
+        content_title={@content_to_add_to_library.implementation.best_localization.title}
+        current_user={@current_user}
+        on_close={fn -> send(self(), "close_add_to_library_modal") end}
       />
     </Layouts.app>
     """
@@ -292,6 +182,132 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
+     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")
+     |> reset_modals()}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :sort,
+       Url.parse_url_param(
+         params["sort"],
+         ContentRequestSort.values(),
+         ContentRequestSort.default()
+       )
+     )
+     |> assign(
+       status_filter: Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
+     )
+     |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
+     |> load_requests_page()}
+  end
+
+  @impl true
+  def handle_event("load_more", _params, socket) do
+    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
+      {:noreply, socket |> load_requests_page()}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("cancel-request", %{"id" => id}, socket) do
+    Requests.cancel_content_request(id, actor: socket.assigns.current_user)
+    {:noreply, socket}
+  end
+
+  def handle_event("open_add_to_library_modal", %{"content_id" => content_id}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       content_to_add_to_library:
+         Contents.get_content_by_id!(content_id,
+           load: [:implementation],
+           actor: socket.assigns.current_user
+         )
+     )}
+  end
+
+  @impl true
+  # A ContentRequest has been deleted. Remove it from the stream
+  def handle_info(
+        %Notification{
+          data: %ContentRequest{} = request,
+          action: %{type: :destroy}
+        },
+        socket
+      ) do
+    {:noreply, socket |> stream_delete(:requests, request)}
+  end
+
+  # A ContentRequest has been been created or updated
+  def handle_info(
+        %Notification{
+          data: %ContentRequest{} = request,
+          action: %{type: type}
+        },
+        socket
+      )
+      when type in [:create, :update] do
+    # We need to add :status_group to the fields in order to match the filters
+    request =
+      Ash.load!(request, @request_fields_to_load ++ [:status_group],
+        actor: socket.assigns.current_user
+      )
+
+    if matches_filters?(request, socket) do
+      # Update it if it's already in the list, or add it at the beginning
+      {:noreply,
+       socket
+       |> stream_insert(
+         :requests,
+         request,
+         at: 0
+       )}
+    else
+      {:noreply, socket |> stream_delete(:requests, request)}
+    end
+  end
+
+  # A content has changed
+  # Note that we only match `Content` here, this is because it's the only resource besides ContentRequest
+  # on which the cards depend, otherwise we would need to match them as well.
+  def handle_info(%Notification{data: %Content{id: content_id}}, socket) do
+    # This is slightly ineficient since we make a DB query even when the Contents are not in this
+    # stream.
+    # This is OK for now. The alternative would be to keep a list of content IDs in the stream
+    case Requests.get_current_user_request_for_content(content_id,
+           load: @request_fields_to_load,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, request} ->
+        {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
+
+      # Ignore the message if the content is not in the requests list
+      {:error, _} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_info("close_add_to_library_modal", socket) do
+    {:noreply, socket |> reset_modals()}
+  end
+
+  def handle_info(message, socket) do
+    # Send updates to all the Live Components we are using on the request cards
+    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+
+    {:noreply, socket}
+  end
+
   defp load_requests_page(socket) do
     stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@page_size)
 
@@ -315,6 +331,10 @@ defmodule WatchClubWeb.MyRequestsPage do
     socket
     |> assign(stream_state: new_state)
     |> stream(:requests, requests, reset: stream_state.status == :init)
+  end
+
+  defp reset_modals(socket) do
+    socket |> assign(content_to_add_to_library: nil)
   end
 
   defp matches_filters?(request, socket) do

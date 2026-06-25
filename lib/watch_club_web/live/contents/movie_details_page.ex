@@ -12,10 +12,11 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
 
   alias WatchClubWeb.Components.Contents.{
-    AddToLibraryButtonLive,
     ContentWatchProgressBadge,
     PlayOrRequestButtonLive
   }
+
+  alias WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive
 
   @impl true
   def render(%{movie: %MovieDetailsResponse{}} = assigns) do
@@ -27,7 +28,12 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       class="p-0!"
       space="none"
     >
-      <.movie_details movie={@movie} current_user={@current_user} />
+      <.movie_details
+        movie={@movie}
+        content_identity={@content_identity}
+        current_user={@current_user}
+        selected_club_id={@selected_club_id}
+      />
     </Layouts.app>
     """
   end
@@ -46,8 +52,10 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     """
   end
 
+  attr :content_identity, ContentIdentity, required: true
   attr :movie, MovieDetailsResponse, required: true
   attr :current_user, User, required: true
+  attr :selected_club_id, :string, required: true
 
   defp movie_details(assigns) do
     ~H"""
@@ -66,6 +74,15 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
         <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
           <div class="flex min-w-0 flex-1 flex-col gap-cluster">
+            <.live_component
+              :if={@current_user.memberships != []}
+              id={InYourClubsSectionLive.dom_id(@content_identity)}
+              module={InYourClubsSectionLive}
+              current_user={@current_user}
+              content_identity={@content_identity}
+              content_title={@movie.title}
+              selected_club_id={@selected_club_id}
+            />
             <.section
               :if={@movie.overview}
               title={dgettext("contents", "Overview")}
@@ -102,26 +119,50 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
-  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
-    with {parsed_id, ""} <- Integer.parse(tmdb_id),
-         {:ok, movie} <- Contents.get_movie_details(parsed_id, actor: socket.assigns.current_user) do
-      {:noreply, socket |> assign(:movie, movie)}
-    else
-      _ ->
+  def handle_params(%{"tmdb_id" => tmdb_id} = params, _uri, socket) do
+    case Integer.parse(tmdb_id) do
+      {parsed_id, ""} ->
         {:noreply,
          socket
-         |> put_flash(
-           :error,
-           dgettext("contents", "The movie you were looking for does not exist")
-         )
-         |> push_navigate(to: ~p"/")}
+         |> load_movie_details(parsed_id)
+         |> assign(selected_club_id: params["selected_club_id"])}
+
+      _ ->
+        {:noreply, socket |> redirect_home}
     end
+  end
+
+  # Avoid re-loading the entire movie when it didn't change
+  # This happens for example when switching the selected_club_id
+  defp load_movie_details(socket, tmdb_id) when socket.assigns.movie.id == tmdb_id, do: socket
+
+  defp load_movie_details(socket, tmdb_id) do
+    case Contents.get_movie_details(tmdb_id, actor: socket.assigns.current_user) do
+      {:ok, movie} ->
+        socket
+        |> assign(
+          movie: movie,
+          content_identity: ContentIdentity.for_movie(movie.id)
+        )
+
+      {:error, _error} ->
+        socket |> redirect_home()
+    end
+  end
+
+  defp redirect_home(socket) do
+    socket
+    |> put_flash(
+      :error,
+      dgettext("contents", "The movie you were looking for does not exist")
+    )
+    |> push_navigate(to: ~p"/")
   end
 
   @impl true
   def handle_info(message, socket) do
-    # Send updates to all the Live Components we are using on the request cards
-    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+    # Send updates to all the Live Components we are using on this page
+    InYourClubsSectionLive.handle_pubsub_message(message)
     ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 

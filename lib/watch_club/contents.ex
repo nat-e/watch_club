@@ -25,6 +25,11 @@ defmodule WatchClub.Contents do
         args: [:content_identities]
 
       define :get_content_by_id, action: :read, get_by: [:id]
+
+      define :get_content_by_external_id,
+        action: :read,
+        get_by: [:external_id_source, :external_id]
+
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
       define :get_user_recently_watched, action: :user_recently_watched

@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.DeleteUserModal do
 
   def delete_user_modal(assigns) do
     ~H"""
-    <.modal id="delete-user-modal" on_close={JS.push("close_modals")}>
+    <.modal id="delete-user-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("admin_users", "Delete user")}</:title>
       <p>
         {raw(

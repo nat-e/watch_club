@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
       )
 
     ~H"""
-    <.modal id="run-import-modal" on_close={JS.push("close_modals")}>
+    <.modal id="run-import-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("admin_media_imports", "Run media import")}</:title>
       <:description>
         {raw(

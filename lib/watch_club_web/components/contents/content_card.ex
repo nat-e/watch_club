@@ -70,9 +70,9 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
     ~H"""
     <.stack
       space="related"
-      class="pointer-events-none absolute inset-0 z-30 p-tight h-full w-full overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 group-hover/content-card:pointer-events-auto group-hover/content-card:opacity-100 group-focus-within/content-card:pointer-events-auto group-focus-within/content-card:opacity-100 group-data-[state=revealed]/content-card:pointer-events-auto group-data-[state=revealed]/content-card:opacity-100 card-menu-open:pointer-events-auto card-menu-open:opacity-100"
+      class="pointer-events-none absolute inset-0 z-30 p-tight h-full w-full overflow-hidden bg-linear-to-b from-surface-inset/40 to-surface-inset/90 opacity-0 transition-opacity duration-150 card-revealed:pointer-events-auto card-revealed:opacity-100"
     >
-      <div class="relative z-10 flex translate-y-[-0.25rem] items-center gap-related transition-transform duration-150 group-hover/content-card:translate-y-0 group-focus-within/content-card:translate-y-0 group-data-[state=revealed]/content-card:translate-y-0 card-menu-open:translate-y-0">
+      <div class="relative z-10 flex translate-y-[-0.25rem] items-center gap-related transition-transform duration-150 card-revealed:translate-y-0">
         <.avatar
           :if={@library_item && @library_item.added_by}
           id={@library_item.added_by.id}
@@ -90,6 +90,15 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             </.button>
           </:trigger>
           <.dropdown_menu_item
+            id={"content-card-actions-share-#{@id}"}
+            phx-click="open_add_to_library_modal"
+            phx-value-content_id={@content.id}
+          >
+            <Lucideicons.share_2 />
+            {dgettext("clubs", "Share with club")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_separator />
+          <.dropdown_menu_item
             :if={@removable?}
             id={"content-card-actions-remove-#{@id}"}
             variant="destructive"
@@ -98,14 +107,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           >
             <Lucideicons.trash_2 />
             {dgettext("clubs", "Remove from club")}
-          </.dropdown_menu_item>
-          <.dropdown_menu_item
-            :if={!@removable?}
-            id={"content-card-actions-coming-soon-#{@id}"}
-            disabled
-          >
-            <Lucideicons.circle_ellipsis />
-            {dgettext("clubs", "Actions coming soon")}
           </.dropdown_menu_item>
         </.dropdown_menu>
       </div>

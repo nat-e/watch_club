@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Clubs.Settings.DeleteLibraryModal do
 
   def delete_library_modal(assigns) do
     ~H"""
-    <.modal id="delete-library-modal" on_close={JS.push("close_modals")}>
+    <.modal id="delete-library-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("clubs", "Delete %{library_name}?", library_name: @library.name)}</:title>
       <p>
         {dgettext("clubs", "This will remove the library from the club.")}

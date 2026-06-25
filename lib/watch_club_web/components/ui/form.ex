@@ -38,7 +38,7 @@ defmodule WatchClubWeb.Components.UI.Form do
     <Phoenix.Component.form
       id={@id}
       for={@for}
-      class={[@layout == "stack" && "grid gap-cluster", @class]}
+      class={[@layout == "stack" && "flex flex-col gap-cluster", @class]}
       {@rest}
     >
       {render_slot(@inner_block)}

@@ -35,6 +35,8 @@ defmodule WatchClub.ActivityFeed.Event do
 
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.Club
+  alias WatchClub.Contents.{Content, ContentIdentity}
+  alias WatchClub.Contents.Preparations.FilterByContentIdentities
 
   postgres do
     table "activity_feed_events"
@@ -44,6 +46,8 @@ defmodule WatchClub.ActivityFeed.Event do
       # Cascade deletes the events when their scope gets deleted
       reference :scope_user, on_delete: :delete
       reference :scope_club, on_delete: :delete
+
+      reference :content, on_delete: :delete
 
       # Set the actor to nil when deleted
       reference :actor, on_delete: :nilify
@@ -129,6 +133,20 @@ defmodule WatchClub.ActivityFeed.Event do
       prepare LoadActivityFeedEvent
     end
 
+    read :for_content do
+      description "Get all the Activity feed events about a Content, potentially filtered by Club"
+      argument :content_identity, ContentIdentity, allow_nil?: false
+      argument :club_id, :uuid_v7, allow_nil?: true
+
+      prepare {FilterByContentIdentities, content_path: [:content]}
+
+      # Filter by club if one is provided
+      filter expr(is_nil(^arg(:club_id)) or scope_club_id == ^arg(:club_id))
+
+      pagination keyset?: true, required?: false, stable_sort: [:id]
+      prepare LoadActivityFeedEvent
+    end
+
     create :create_club_created do
       description "Create a :club_created activity feed event"
       argument :club_id, :uuid_v7, allow_nil?: false
@@ -168,6 +186,7 @@ defmodule WatchClub.ActivityFeed.Event do
     create :create_content_added do
       description "Create a :content_added activity feed event"
       argument :club_id, :uuid_v7, allow_nil?: false
+      argument :content_id, :uuid_v7, allow_nil?: false
 
       argument :content_added, :map do
         allow_nil? false
@@ -177,6 +196,7 @@ defmodule WatchClub.ActivityFeed.Event do
                     ]
       end
 
+      change set_attribute(:content_id, arg(:content_id))
       change set_attribute(:scope_club_id, arg(:club_id))
       change set_attribute(:type, :content_added)
       change manage_relationship(:content_added, type: :create)
@@ -251,6 +271,9 @@ defmodule WatchClub.ActivityFeed.Event do
 
     # The User that triggerred Event. Nil when the event was created from a system action.
     belongs_to :actor, User, allow_nil?: true
+
+    # The Content this event is related to (only for some events)
+    belongs_to :content, Content, allow_nil?: true
 
     # Polymorphism, each Event will have one relationship populated depending on its type
     # Records share the same primary ID

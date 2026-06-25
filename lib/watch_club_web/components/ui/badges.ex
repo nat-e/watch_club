@@ -30,12 +30,17 @@ defmodule WatchClubWeb.Components.UI.Badges do
   end
 
   attr :club, Club, required: true
+  attr :selected, :boolean, default: false
 
   def club_ref(assigns) do
     ~H"""
-    <span class="inline-flex items-center gap-1 whitespace-nowrap align-middle text-text-subtle">
+    <span class={[
+      "inline-flex items-center gap-1 whitespace-nowrap align-middle min-w-0",
+      @selected && "text-text",
+      !@selected && "text-text-subtle"
+    ]}>
       <.avatar id={@club.id} name={@club.name} />
-      <span class="font-semibold">{@club.name}</span>
+      <span class="font-semibold truncate">{@club.name}</span>
     </span>
     """
   end

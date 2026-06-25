@@ -18,8 +18,8 @@ defmodule WatchClubWeb.Components.UI.Modal do
   attr :class, :any, default: nil
 
   attr :size, :string,
-    values: ~w(sm md lg),
-    default: "md",
+    values: ~w(sm md lg none),
+    default: "none",
     doc: "Maximum modal width."
 
   attr :on_close, JS, required: true
@@ -51,7 +51,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
       data-slot="modal"
       data-on-close={@on_close}
       class={[
-        "fixed top-1/2 left-1/2 z-50 m-0 max-h-[calc(100dvh-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border bg-surface-overlay p-0 text-text shadow-overlay outline-none backdrop:bg-scrim backdrop:backdrop-blur-sm",
+        "m-auto p-related rounded-xl border border-border bg-surface-overlay p-0 shadow-overlay backdrop:bg-scrim backdrop:backdrop-blur-sm",
         @size == "sm" && "sm:max-w-md",
         @size == "md" && "sm:max-w-lg",
         @size == "lg" && "sm:max-w-2xl",
@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
     >
       <div
         data-slot="modal-content"
-        class="flex max-h-[calc(100dvh-2rem)] flex-col gap-cluster overflow-y-auto p-cluster text-sm text-text"
+        class="flex w-full flex-col gap-cluster overflow-y-auto p-cluster text-sm text-text"
       >
         <header data-slot="modal-header" class="flex flex-col gap-related pr-10">
           <h2

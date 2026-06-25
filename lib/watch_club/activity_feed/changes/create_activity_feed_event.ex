@@ -62,6 +62,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       fn %LibraryItem{} = library_item ->
         %{
           club_id: library_item.library.club_id,
+          content_id: library_item.content_id,
           content_added: %{library_item_id: library_item.id}
         }
       end,

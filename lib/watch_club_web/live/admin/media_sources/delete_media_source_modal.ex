@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
 
   def delete_media_source_modal(assigns) do
     ~H"""
-    <.modal id="delete-media-source-modal" on_close={JS.push("close_modals")}>
+    <.modal id="delete-media-source-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("admin_media_imports", "Delete Media Source")}</:title>
       <.stack space="related">
         <p class="text-sm text-text">

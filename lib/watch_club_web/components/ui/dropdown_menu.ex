@@ -107,6 +107,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           if (isOpen(this.content)) {
             this.content.hidePopover();
           } else {
+            // Keyboard activation (Enter/Space) fires a click with detail 0. We
+            // only restore focus to the trigger on close for keyboard opens.
+            this.openedViaKeyboard = event.detail === 0;
             this.content.style.visibility = "hidden";
             this.content.showPopover();
             this.position();
@@ -134,6 +137,11 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             this.addPositionListeners();
           } else {
             this.removePositionListeners();
+
+            // A pointer-opened menu leaves the trigger focused on dismissal, which
+            // would keep a hover-reveal overlay (e.g. the content card) open. Drop
+            // that focus; keyboard opens keep it so focus returns to the trigger.
+            if (!this.openedViaKeyboard) this.triggerControl.blur();
           }
         },
         addPositionListeners() {

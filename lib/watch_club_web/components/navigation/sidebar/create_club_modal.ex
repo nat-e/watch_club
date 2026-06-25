@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar.CreateClubModal do
 
   def create_club_modal(assigns) do
     ~H"""
-    <.modal id="create-club-modal" on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="create-club-modal" size="sm" on_close={JS.push("close_modals", target: @myself)}>
       <:title>{dgettext("clubs", "Create new club")}</:title>
       <:description>
         {dgettext(

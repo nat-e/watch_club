@@ -88,19 +88,21 @@ defmodule WatchClubWeb.Helpers.Url do
   end
 
   def content_details_link(%Content{type: type, external_id: id}),
-    do: content_details_link(type, id)
+    do: content_details_link(type, id, nil)
 
   def content_details_link(%ContentIdentity{type: type, external_id: id}),
-    do: content_details_link(type, id)
+    do: content_details_link(type, id, nil)
 
-  def content_details_link(:movie, external_id),
-    do: ~p"/movies/#{external_id}"
+  def content_details_link(content_type, external_id, selected_club_id \\ nil)
 
-  def content_details_link(:tv_show, external_id),
-    do: ~p"/shows/#{external_id}"
+  def content_details_link(:movie, external_id, selected_club_id),
+    do: ~p"/movies/#{external_id}?#{content_details_params(selected_club_id)}"
 
-  def content_details_link(:book, external_id),
-    do: ~p"/books/#{external_id}"
+  def content_details_link(:tv_show, external_id, selected_club_id),
+    do: ~p"/shows/#{external_id}?#{content_details_params(selected_club_id)}"
+
+  def content_details_link(:book, external_id, selected_club_id),
+    do: ~p"/books/#{external_id}?#{content_details_params(selected_club_id)}"
 
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
@@ -108,4 +110,7 @@ defmodule WatchClubWeb.Helpers.Url do
 
   def club_library_link(%Library{id: library_id, club_id: club_id}),
     do: ~p"/clubs/#{club_id}/libraries/#{library_id}"
+
+  defp content_details_params(nil), do: %{}
+  defp content_details_params(selected_club_id), do: %{selected_club_id: selected_club_id}
 end

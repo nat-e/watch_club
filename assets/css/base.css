@@ -36,9 +36,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Applies to descendants of a content card whose actions dropdown is open, so
-   the hover overlay stays visible and interactive while the menu is open. */
-@custom-variant card-menu-open (&:is([data-slot="content-card"]:has([data-slot="dropdown-menu-content"]:popover-open) *));
+/* Applies to descendants of a content card while its overlay should be revealed:
+   the card is hovered, holds keyboard focus (focus-visible, not plain focus, so a
+   trigger left focused by a mouse click or a closing dialog does not keep it open),
+   was explicitly revealed on touch, or has its actions menu open. */
+@custom-variant card-revealed (&:is(
+  [data-slot="content-card"]:hover *,
+  [data-slot="content-card"]:has(:focus-visible) *,
+  [data-slot="content-card"][data-state="revealed"] *,
+  [data-slot="content-card"]:has([data-slot="dropdown-menu-content"]:popover-open) *
+));
 
 @theme inline {
 	--color-canvas: var(--wc-color-canvas);

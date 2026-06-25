@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   when the Content Request of the user for this content has changed.
   """
   def handle_pubsub_message(
-        %Ash.Notifier.Notification{
+        %Notification{
           resource: resource,
           metadata: %{content_identity: identity}
         },

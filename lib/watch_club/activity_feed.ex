@@ -16,6 +16,7 @@ defmodule WatchClub.ActivityFeed do
     resource Event do
       define :get_user_activity_feed, action: :for_actor
       define :get_club_activity_feed, action: :for_club, args: [:club_id]
+      define :get_content_activity_feed, action: :for_content, args: [:content_identity]
     end
 
     resource ClubCreatedEvent

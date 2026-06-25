@@ -2,7 +2,7 @@ defmodule WatchClub.Contents.Preparations.FilterByContentIdentities do
   @moduledoc """
   An Ash Preparation that filters a Query where Contents are part of a provided
   list of ContentIdentity.
-  The query must declare a `content_identities` argument that accepts a list of Content Identity.
+  The query must declare a `content_identities` argument that accepts a list of Content Identity, or a single `content_identity`.
   This will compile to a giant SQL OR statement like this:
     WHERE (external_id_source = 'tmdb' AND external_id = 1)
       OR (external_id_source = 'tmdb' AND external_id = 2)...
@@ -19,7 +19,9 @@ defmodule WatchClub.Contents.Preparations.FilterByContentIdentities do
 
   @impl true
   def prepare(query, opts, _context) do
-    identities = Ash.Query.get_argument(query, :content_identities)
+    identities =
+      Ash.Query.get_argument(query, :content_identities) ||
+        Ash.Query.get_argument(query, :content_identity) |> List.wrap()
 
     content_path = Keyword.get(opts, :content_path, []) |> List.wrap()
     external_source_ref = ref(content_path, :external_id_source)

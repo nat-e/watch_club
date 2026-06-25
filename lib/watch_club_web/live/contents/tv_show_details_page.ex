@@ -16,10 +16,11 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   alias WatchClubWeb.Components.Contents.{
-    AddToLibraryButtonLive,
     ContentWatchProgressBadge,
     PlayOrRequestButtonLive
   }
+
+  alias WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive
 
   @episodes_load_fields [
     # This is used for displaying the watch progress badge at the season and episode level
@@ -47,13 +48,23 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
         <div class="relative z-1 mx-auto flex w-full max-w-[100rem] flex-col gap-cluster px-page pb-page-y pt-section @container">
           <.hero_panel
-            content_identity={ContentIdentity.for_tv_show(@tv_show.id)}
+            content_identity={@content_identity}
             content={@tv_show}
             current_user={@current_user}
           />
 
           <div class="flex flex-col gap-cluster @6xl:flex-row @6xl:items-start">
             <div class="flex min-w-0 flex-1 flex-col gap-cluster">
+              <.live_component
+                :if={@current_user.memberships != []}
+                id={InYourClubsSectionLive.dom_id(@content_identity)}
+                module={InYourClubsSectionLive}
+                current_user={@current_user}
+                content_identity={@content_identity}
+                content_title={@tv_show.name}
+                selected_club_id={@selected_club_id}
+              />
+
               <.section
                 :if={@tv_show.overview}
                 title={dgettext("contents", "Overview")}
@@ -114,12 +125,22 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   end
 
   @impl true
-  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
+  def handle_params(%{"tmdb_id" => tmdb_id} = params, _uri, socket) do
     case Integer.parse(tmdb_id) do
-      {parsed_id, ""} -> {:noreply, socket |> load_tv_show_details(parsed_id)}
-      _ -> {:noreply, socket |> redirect_home()}
+      {parsed_id, ""} ->
+        {:noreply,
+         socket
+         |> load_tv_show_details(parsed_id)
+         |> assign(selected_club_id: params["selected_club_id"])}
+
+      _ ->
+        {:noreply, socket |> redirect_home()}
     end
   end
+
+  # Avoid re-loading the entire show when it didn't change
+  # This happens for example when switching the selected_club_id
+  defp load_tv_show_details(socket, tmdb_id) when socket.assigns.tv_show.id == tmdb_id, do: socket
 
   defp load_tv_show_details(socket, tmdb_id) do
     case Contents.get_tv_show_details(tmdb_id, actor: socket.assigns.current_user) do
@@ -127,6 +148,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
         socket
         |> assign(
           tv_show: tv_show,
+          content_identity: ContentIdentity.for_tv_show(tv_show.id),
           selected_season: 1,
           season_metadata_by_number:
             Map.new(tv_show.seasons, &{&1.season_number, %{status: :loading}})
@@ -168,8 +190,8 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   @impl true
   def handle_info(message, socket) do
-    # Send updates to all the Live Components we are using on the request cards
-    AddToLibraryButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
+    # Send updates to all the Live Components we are using on this page
+    InYourClubsSectionLive.handle_pubsub_message(message)
     ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 

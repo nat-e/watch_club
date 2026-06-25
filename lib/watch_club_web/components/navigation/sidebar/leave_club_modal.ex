@@ -12,7 +12,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar.LeaveClubModal do
 
   def leave_club_modal(assigns) do
     ~H"""
-    <.modal id="leave-club-modal" on_close={JS.push("close_modals", target: @myself)}>
+    <.modal id="leave-club-modal" size="sm" on_close={JS.push("close_modals", target: @myself)}>
       <:title>{dgettext("clubs", "Leave club")}</:title>
       <p>
         {raw(

@@ -15,7 +15,7 @@ defmodule WatchClubWeb.Live.Clubs.Members.AddMembersModal do
       )
 
     ~H"""
-    <.modal id="add_members-modal" on_close={JS.push("close_modals")}>
+    <.modal id="add_members-modal" size="md" on_close={JS.push("close_modals")}>
       <:title>{dgettext("clubs", "Add club members")}</:title>
       <:description>
         {dgettext(
