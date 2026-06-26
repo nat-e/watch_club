@@ -12,6 +12,7 @@ defmodule WatchClub.Application do
     Oban.Telemetry.attach_default_logger()
 
     children = [
+      {Cachex, [:tmdb_api_cache]},
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
       {Task.Supervisor, name: WatchClub.Shared.Fs.TaskSupervisor},
