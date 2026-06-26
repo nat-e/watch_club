@@ -116,10 +116,6 @@ defmodule WatchClub.Contents.Content do
     publish_all :destroy, ["content", "global"]
   end
 
-  preparations do
-    prepare build(load: [:implementation])
-  end
-
   attributes do
     uuid_v7_primary_key :id
 

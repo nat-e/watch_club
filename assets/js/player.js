@@ -226,7 +226,11 @@ const Player = {
 							this.syncCaptionLayer(event.detail);
 						}
 
-						event.target.closest("media-menu")?.close?.(event);
+						// Return focus to the trigger before closing, otherwise the menu is
+						// hidden (aria-hidden) while the just-clicked radio still holds focus.
+						const menu = event.currentTarget.closest("media-menu");
+						menu?.querySelector("media-menu-button")?.focus();
+						menu?.close?.(event);
 					},
 					{ signal },
 				);

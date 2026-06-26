@@ -189,6 +189,8 @@ defmodule WatchClub.Ffmpeg do
       "0:#{job.stream_index}",
       "-c:s",
       "webvtt",
+      "-f",
+      "webvtt",
       tmp_path
     ]
 
