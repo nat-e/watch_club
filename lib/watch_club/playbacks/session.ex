@@ -20,7 +20,6 @@ defmodule WatchClub.Playbacks.Session do
   require Ash.Query
 
   alias WatchClub.Accounts.User
-  alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Session.Changes
 
@@ -35,28 +34,6 @@ defmodule WatchClub.Playbacks.Session do
 
   actions do
     defaults [:read]
-
-    read :read_for_playback do
-      description "Read a Session by id with `:active_playback` loaded HLS-ready. Used by the HLS controller to authorize and serve segments."
-      get? true
-
-      prepare build(
-                load: [
-                  active_playback: [
-                    media: [
-                      video: [
-                        :default_video_track,
-                        audio_tracks: [:display_label],
-                        text_tracks:
-                          TextTrack
-                          |> Ash.Query.filter(hls_supported? == true)
-                          |> Ash.Query.load(:display_label)
-                      ]
-                    ]
-                  ]
-                ]
-              )
-    end
 
     create :start do
       description "Create a Playback Session and start its first Playback for the selected Media."
@@ -100,12 +77,6 @@ defmodule WatchClub.Playbacks.Session do
   end
 
   policies do
-    policy actor_absent() do
-      description "Playback Session actions require an actor"
-      access_type :strict
-      forbid_if always()
-    end
-
     policy action(:start) do
       description "Any authenticated User can start a Playback Session; visibility of the selected Media is checked when the first Playback is created."
       authorize_if always()
@@ -117,15 +88,11 @@ defmodule WatchClub.Playbacks.Session do
       authorize_if relates_to_actor_via(:started_by)
     end
 
-    policy action([:start_new_playback, :heartbeat, :close]) do
-      description "Only the starting User and the Instance Administrator can act on a Playback Session."
+    policy action_type(:update) do
+      description "Only the starting User and the Instance Administrator can update a playback session"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via(:started_by)
     end
-  end
-
-  preparations do
-    prepare build(sort: [inserted_at: :desc])
   end
 
   attributes do

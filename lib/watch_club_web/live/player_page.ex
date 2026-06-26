@@ -3,6 +3,14 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
+  @playback_session_fields [
+    active_playback: [
+      media: [
+        :video
+      ]
+    ]
+  ]
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -28,10 +36,14 @@ defmodule WatchClubWeb.PlayerPage do
           <media-provider class="absolute inset-0 block [&_video]:size-full [&_video]:object-contain">
           </media-provider>
 
+          <%!-- On touch, a tap toggles play/pause only while the controls are showing
+                (data-controls). When they're hidden the gesture is display:none, so its
+                hit-test misses, the tap falls through to Vidstack's native control reveal
+                (with auto-hide), and nothing is paused. Hover pointers always pause. --%>
           <media-gesture
             event="pointerup"
             action="toggle:paused"
-            class="absolute inset-0 z-10 block"
+            class="absolute inset-0 z-10 hidden group-data-controls/player:block [@media(hover:hover)]:block"
             aria-hidden="true"
           >
           </media-gesture>
@@ -72,7 +84,6 @@ defmodule WatchClubWeb.PlayerPage do
       |> assign(:playback_error, false)
 
     if connected?(socket) do
-      Process.flag(:trap_exit, true)
       start_player_session(socket, media_id)
     else
       {:ok, socket}
@@ -110,16 +121,10 @@ defmodule WatchClubWeb.PlayerPage do
      ), socket}
   end
 
-  @impl true
-  def terminate(_reason, socket) do
-    stop_session(socket.assigns[:current_user], socket.assigns[:session], nil)
-    :ok
-  end
-
   defp start_player_session(socket, media_id) do
     actor = socket.assigns.current_user
 
-    case Playbacks.start_session(media_id, actor: actor) do
+    case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
       {:ok, %{active_playback: %{}} = session} ->
         socket =
           socket
@@ -137,7 +142,7 @@ defmodule WatchClubWeb.PlayerPage do
 
   defp playback_title(session), do: Path.basename(session.active_playback.media.path)
 
-  defp stop_session(actor, %{} = session, position) when not is_nil(actor) do
+  defp stop_session(actor, %Session{} = session, position) do
     case Playbacks.close_session(session, %{position_seconds: position}, actor: actor) do
       {:ok, _session} -> %{ok: true}
       {:error, %Ash.Error.Forbidden{}} -> %{ok: true}

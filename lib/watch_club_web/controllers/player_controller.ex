@@ -1,12 +1,30 @@
 defmodule WatchClubWeb.PlayerController do
   use WatchClubWeb, :controller
 
+  require Ash.Query
+
   alias WatchClub.Accounts.User
   alias WatchClub.Ffmpeg.Trickplay
+  alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Playback.Hls
 
   @m3u8 "application/vnd.apple.mpegurl"
+
+  @playback_session_fields [
+    active_playback: [
+      media: [
+        video: [
+          :default_video_track,
+          audio_tracks: [:display_label],
+          text_tracks:
+            TextTrack
+            |> Ash.Query.filter(hls_supported? == true)
+            |> Ash.Query.load(:display_label)
+        ]
+      ]
+    ]
+  ]
 
   plug :require_current_user
 
@@ -108,7 +126,10 @@ defmodule WatchClubWeb.PlayerController do
   end
 
   defp with_active_playback(session_id, conn, fun) do
-    case Playbacks.get_session_by_id(session_id, actor: conn.assigns.current_user) do
+    case Playbacks.get_session_by_id(session_id,
+           load: @playback_session_fields,
+           actor: conn.assigns.current_user
+         ) do
       {:ok, %{active_playback: %{} = playback}} -> fun.(playback)
       {:ok, _ended} -> {:error, :not_found}
       {:error, _reason} -> {:error, :not_found}

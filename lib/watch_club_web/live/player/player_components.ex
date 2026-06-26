@@ -146,7 +146,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   def controls_center_row(assigns) do
     ~H"""
-    <div class="pointer-events-none flex flex-1 items-center justify-center px-page">
+    <div class="pointer-events-none flex items-center justify-center">
       <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity group-data-buffering/player:opacity-0">
         <media-seek-button
           seconds="-10"

@@ -149,9 +149,11 @@ defmodule WatchClubWeb do
 
       alias WatchClub.MediaCatalog.{
         Audiobook,
+        AudioTrack,
         Ebook,
         Media,
         MediaType,
+        TextTrack,
         Video,
         VideoResolution,
         VideoTrack

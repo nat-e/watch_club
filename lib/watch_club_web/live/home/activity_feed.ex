@@ -164,7 +164,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     <.card id={@id}>
       <.inline space="group" class="items-start h-full">
         <.stack space="group" class="flex-1 h-full">
-          <.club_ref club={@event.scope_club} />
+          <.club_ref :if={@event.scope_club} club={@event.scope_club} />
           <div class="flex-1">{render_slot(@inner_block)}</div>
           <span class="text-sm text-text-subtle">
             {Time.relative_from_now(@event.created_at, @locale)}
