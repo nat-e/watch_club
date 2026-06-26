@@ -29,7 +29,7 @@ defmodule WatchClub.ActivityFeed.Calculations.ScopeEvent do
   @impl true
   def strict_loads?, do: false
 
-@impl true
+  @impl true
   def calculate(scopes, _, _) do
     Enum.map(
       scopes,

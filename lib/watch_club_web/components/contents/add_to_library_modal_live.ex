@@ -17,7 +17,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryModalLive do
               dgettext(
                 "contents",
                 "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content.",
-                content_name: gtboldunder(@content_title)
+                content_name: gtspan(@content_title, "font-bold underline")
               )
             )}
           </.alert>

@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
   import WatchClubWeb.Components.Navigation.Navbar.DesktopSearch
   import WatchClubWeb.Components.Navigation.Navbar.MobileSearch
 
+  alias WatchClub.Contents.SearchResultsPage
   alias WatchClubWeb.Components.Navigation.SidebarLive
 
   @max_search_results 5
@@ -97,7 +98,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
   end
 
   @impl true
-  def handle_async(:preview_search, {:ok, results}, socket) do
+  def handle_async(:preview_search, {:ok, %SearchResultsPage{results: results}}, socket) do
     {:noreply, socket |> assign(:search_results, Enum.take(results, @max_search_results))}
   end
 

@@ -14,6 +14,7 @@ defmodule WatchClub.Contents.Content do
     ExternalIdSource,
     Movie,
     SearchContentType,
+    SearchResultsPage,
     TvShow
   }
 
@@ -94,10 +95,13 @@ defmodule WatchClub.Contents.Content do
         where: attribute_equals(:type, :tv_show)
     end
 
-    action :search, {:array, :struct} do
+    action :search, :struct do
+      constraints instance_of: SearchResultsPage
+
       argument :query, :string, allow_nil?: false
       argument :content_type, SearchContentType, allow_nil?: false
       argument :location, :uuid_v7, allow_nil?: true
+      argument :page, :integer, allow_nil?: false, default: 1
 
       run WatchClub.Contents.Actions.SearchContent
     end

@@ -26,18 +26,18 @@ defmodule WatchClubWeb.Gettext do
     default_locale: :en_US
 
   defmodule Helpers do
+    def gtspan(text, class \\ "") do
+      text
+      |> Phoenix.HTML.html_escape()
+      |> Phoenix.HTML.safe_to_string()
+      |> then(&~s(<span class="#{class}">#{&1}</span>))
+    end
+
     def gtbold(text) do
       text
       |> Phoenix.HTML.html_escape()
       |> Phoenix.HTML.safe_to_string()
       |> then(&~s(<span class="font-bold">#{&1}</span>))
-    end
-
-    def gtboldunder(text) do
-      text
-      |> Phoenix.HTML.html_escape()
-      |> Phoenix.HTML.safe_to_string()
-      |> then(&~s(<span class="font-bold underline">#{&1}</span>))
     end
   end
 end
