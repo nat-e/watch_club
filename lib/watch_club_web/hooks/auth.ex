@@ -12,7 +12,8 @@ defmodule WatchClubWeb.Hooks.Auth do
     WatchClub.Accounts.UserSettings,
     WatchClub.Clubs.Membership,
     WatchClub.Clubs.Club,
-    WatchClub.Clubs.Library
+    WatchClub.Clubs.Library,
+    WatchClub.Lists.ContentList
   ]
 
   # This is used for nested liveviews to fetch the current user.

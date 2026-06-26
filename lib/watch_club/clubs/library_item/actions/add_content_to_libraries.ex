@@ -15,12 +15,9 @@ defmodule WatchClub.Clubs.LibraryItem.Actions.AddContentToLibraries do
     content_identity = input.arguments.content_identity
 
     with {:ok, content} <- Contents.get_or_create_content(content_identity, context.actor) do
-      # We need to return notification for feed here
       %Ash.BulkResult{notifications: notifications} =
         input.arguments.library_ids
-        |> Enum.map(fn library_id ->
-          %{content_id: content.id, library_id: library_id}
-        end)
+        |> Enum.map(&%{content_id: content.id, library_id: &1})
         |> Ash.bulk_create!(LibraryItem, :create,
           scope: context,
           return_records?: false,

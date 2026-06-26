@@ -99,6 +99,7 @@ defmodule WatchClubWeb.Router do
       live "/clubs/:club_id/members", Clubs.MembersPage
       live "/clubs/:club_id/settings", Clubs.SettingsPage
       live "/clubs/:club_id/libraries/:library_id", Clubs.LibraryPage
+      live "/lists/:list_id", Lists.ListPage
       live "/books/:hardcover_id", Contents.BookDetailsPage
       live "/movies/:tmdb_id", Contents.MovieDetailsPage
       live "/shows/:tmdb_id", Contents.TvShowDetailsPage

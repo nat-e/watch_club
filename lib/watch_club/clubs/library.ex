@@ -15,8 +15,9 @@ defmodule WatchClub.Clubs.Library do
 
   alias WatchClub.Clubs.Checks.ActorIsClubMember
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
-  alias WatchClub.Clubs.{Club, LibraryIcon, LibraryItem}
+  alias WatchClub.Clubs.{Club, LibraryItem}
   alias WatchClub.Contents.{Content, ContentType}
+  alias WatchClub.Shared.LucideIcon
 
   import Ash.Expr
 
@@ -120,7 +121,7 @@ defmodule WatchClub.Clubs.Library do
       message dgettext_noop("errors", "Library content type is required")
     end
 
-    validate one_of(:icon, LibraryIcon.names()) do
+    validate one_of(:icon, LucideIcon.names()) do
       message dgettext_noop("errors", "Library icon is invalid")
     end
   end

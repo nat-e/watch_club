@@ -3,6 +3,7 @@ defmodule WatchClub.Accounts.User do
 
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
+  alias WatchClub.Lists.ContentList
 
   use Ash.Resource,
     otp_app: :watch_club,
@@ -119,7 +120,7 @@ defmodule WatchClub.Accounts.User do
 
       # Load the club memberships when loading the logged in user
       prepare build(
-                load: [:settings, memberships: [club: [:libraries]]],
+                load: [:settings, :lists, memberships: [club: [:libraries]]],
                 context: %{private: %{authorize?: false}}
               )
     end
@@ -130,7 +131,7 @@ defmodule WatchClub.Accounts.User do
       filter expr(id == ^actor(:id))
 
       # Load the club memberships when loading the logged in user
-      prepare build(load: [:settings, memberships: [club: [:libraries]]])
+      prepare build(load: [:settings, :lists, memberships: [club: [:libraries]]])
     end
 
     update :change_password do
@@ -363,6 +364,11 @@ defmodule WatchClub.Accounts.User do
     publish_all :destroy, ["users", "admin"]
   end
 
+  changes do
+    # Give every newly created user a default, localized "To Watch" list
+    change WatchClub.Accounts.Changes.CreateToWatchList, on: [:create]
+  end
+
   validations do
     # Customer-facing validations own localized messages for form errors.
     # Keep shape rules here instead of duplicating them as argument or attribute constraints.
@@ -425,6 +431,10 @@ defmodule WatchClub.Accounts.User do
     has_many :memberships, Membership
     many_to_many :clubs, Club, through: Membership
     has_one :settings, UserSettings
+
+    has_many :lists, ContentList do
+      destination_attribute :owner_id
+    end
   end
 
   identities do

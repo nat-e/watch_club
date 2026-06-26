@@ -3,8 +3,12 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
   import WatchClubWeb.Components.Libraries.LibraryIcon
   import WatchClubWeb.Components.Navigation.Sidebar.CreateClubModal
+  import WatchClubWeb.Components.Navigation.Sidebar.CreateOrEditListModal
   import WatchClubWeb.Components.Navigation.Sidebar.DeleteClubModal
+  import WatchClubWeb.Components.Navigation.Sidebar.DeleteListModal
   import WatchClubWeb.Components.Navigation.Sidebar.LeaveClubModal
+
+  alias WatchClubWeb.Components.UI.IconPickerLive
 
   @sidebar_transition_time 200
 
@@ -91,9 +95,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
             </li>
           </ul>
 
-          <h3 class="px-group pt-related text-xs font-semibold tracking-wide text-text-subtle uppercase">
-            {dgettext("nav", "Clubs")}
-          </h3>
+          <.text_label text={dgettext("nav", "Clubs")} class="px-group" />
 
           <ul class="flex list-none flex-col gap-tight p-0">
             <.club_nav_item
@@ -112,6 +114,28 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
                 <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Create new club")}</span>
               </.sidebar_item>
             </li>
+          </ul>
+
+          <div class="flex items-center justify-between gap-related pl-group">
+            <.text_label text={dgettext("nav", "My lists")} />
+            <.button
+              id="sidebar-create-list-button"
+              size="icon"
+              variant="ghost"
+              aria-label={dgettext("nav", "Create new list")}
+              phx-click={JS.push("open_create_list_modal", target: @myself) |> hide_sidebar()}
+            >
+              <Lucideicons.plus />
+            </.button>
+          </div>
+
+          <ul class="flex list-none flex-col gap-tight p-0">
+            <.list_nav_item
+              :for={list <- @current_user.lists}
+              list={list}
+              current_path={@current_path}
+              myself={@myself}
+            />
           </ul>
 
           <%!--
@@ -175,6 +199,24 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         :if={@membership_to_leave}
         membership={@membership_to_leave}
         myself={@myself}
+      />
+
+      <.create_or_edit_list_modal
+        :if={@list_form}
+        form={@list_form}
+        icon={@list_icon}
+        myself={@myself}
+      />
+      <.delete_list_modal :if={@list_to_delete} list={@list_to_delete} myself={@myself} />
+      <.live_component
+        :if={@list_icon_picker_open}
+        module={IconPickerLive}
+        id="sidebar-list-icon-picker"
+        selected_icon={@list_icon}
+        title={dgettext("lists", "Choose an icon")}
+        description={dgettext("lists", "Select an icon for your list")}
+        on_select={JS.push("list_icon_selected", target: @myself)}
+        on_close={JS.push("close_list_icon_picker", target: @myself)}
       />
     </div>
     """
@@ -403,6 +445,71 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     """
   end
 
+  attr :list, ContentList, required: true
+  attr :current_path, :string, required: true
+  attr :myself, :any, required: true
+
+  defp list_nav_item(assigns) do
+    url = Url.list_link(assigns.list.id)
+
+    assigns =
+      assigns
+      |> assign(:url, url)
+      |> assign(:active, active?(assigns.current_path, url))
+
+    ~H"""
+    <li class={[
+      "relative flex h-control-md items-center justify-between overflow-hidden text-text-muted rounded-md hover:not-has-[button:hover]:bg-surface-hover",
+      @active && "bg-surface-selected"
+    ]}>
+      <.link
+        id={"list-nav-link-#{@list.id}"}
+        navigate={@url}
+        aria-current={@active && "page"}
+        class="flex items-center gap-related px-group text-sm font-semibold after:absolute after:inset-0"
+        phx-click={hide_sidebar()}
+      >
+        <.lucide_icon name={@list.icon} class="size-icon shrink-0" />
+        <span class="min-w-0 flex-1 truncate">{@list.name}</span>
+      </.link>
+
+      <.dropdown_menu id={"list-nav-actions-#{@list.id}"} class="shrink-0">
+        <:trigger>
+          <.button
+            id={"list-nav-actions-trigger-#{@list.id}"}
+            size="icon"
+            variant="ghost"
+            aria-label={dgettext("nav", "List actions")}
+            class="z-10"
+          >
+            <Lucideicons.ellipsis_vertical />
+          </.button>
+        </:trigger>
+
+        <.dropdown_menu_item
+          id={"list-nav-edit-button-#{@list.id}"}
+          phx-click={
+            JS.push("open_edit_list_modal", target: @myself, value: %{list_id: @list.id})
+            |> hide_sidebar()
+          }
+        >
+          <Lucideicons.pencil />{dgettext("lists", "Edit list")}
+        </.dropdown_menu_item>
+        <.dropdown_menu_item
+          id={"list-nav-delete-button-#{@list.id}"}
+          variant="destructive"
+          phx-click={
+            JS.push("open_delete_list_modal", target: @myself, value: %{list_id: @list.id})
+            |> hide_sidebar()
+          }
+        >
+          <Lucideicons.trash />{dgettext("lists", "Delete list")}
+        </.dropdown_menu_item>
+      </.dropdown_menu>
+    </li>
+    """
+  end
+
   @impl true
   def mount(socket) do
     {:ok, socket |> reset_modals()}
@@ -501,6 +608,74 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     {:noreply, socket |> assign(:membership_to_leave, nil)}
   end
 
+  def handle_event("open_create_list_modal", _params, socket) do
+    form = Lists.form_to_create_list(actor: socket.assigns.current_user)
+
+    {:noreply, socket |> assign(list_form: to_form(form), list_icon: "list")}
+  end
+
+  def handle_event("open_edit_list_modal", %{"list_id" => list_id}, socket) do
+    list = Enum.find(socket.assigns.current_user.lists, &(&1.id == list_id))
+    form = Lists.form_to_update_list(list, actor: socket.assigns.current_user)
+
+    {:noreply, socket |> assign(list_form: to_form(form), list_icon: list.icon)}
+  end
+
+  def handle_event("validate_list_form", %{"form" => params}, socket) do
+    {:noreply,
+     socket |> assign(:list_form, AshPhoenix.Form.validate(socket.assigns.list_form, params))}
+  end
+
+  def handle_event("submit_list_form", %{"form" => params}, socket) do
+    form = socket.assigns.list_form
+    edit? = form.source.type == :update
+
+    case AshPhoenix.Form.submit(form, params: params, read_one?: true) do
+      {:ok, _list} ->
+        WatchClubWeb.Hooks.Flash.send_flash(
+          :success,
+          (edit? && dgettext("lists", "List updated")) || dgettext("lists", "List created")
+        )
+
+        {:noreply, socket |> reset_modals()}
+
+      {:error, form} ->
+        {:noreply, socket |> assign(:list_form, form)}
+    end
+  end
+
+  def handle_event("open_list_icon_picker", _params, socket) do
+    {:noreply, socket |> assign(:list_icon_picker_open, true)}
+  end
+
+  def handle_event("close_list_icon_picker", _params, socket) do
+    {:noreply, socket |> assign(:list_icon_picker_open, false)}
+  end
+
+  def handle_event("list_icon_selected", %{"icon" => icon}, socket) do
+    {:noreply, socket |> assign(list_icon: icon, list_icon_picker_open: false)}
+  end
+
+  def handle_event("open_delete_list_modal", %{"list_id" => list_id}, socket) do
+    list = Enum.find(socket.assigns.current_user.lists, &(&1.id == list_id))
+
+    {:noreply, socket |> assign(:list_to_delete, list)}
+  end
+
+  def handle_event("delete_list", %{"list_id" => list_id}, socket) do
+    %{current_user: user} = socket.assigns
+    list = Enum.find(user.lists, &(&1.id == list_id))
+
+    Lists.destroy_list!(list, actor: user)
+
+    WatchClubWeb.Hooks.Flash.send_flash(
+      :success,
+      dgettext("lists", "List %{list_name} deleted", list_name: list.name)
+    )
+
+    {:noreply, socket |> assign(:list_to_delete, nil)}
+  end
+
   def handle_event("close_modals", _params, socket) do
     {:noreply, socket |> reset_modals()}
   end
@@ -515,5 +690,9 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     |> assign(:create_club_form, nil)
     |> assign(:club_to_delete, nil)
     |> assign(:membership_to_leave, nil)
+    |> assign(:list_form, nil)
+    |> assign(:list_to_delete, nil)
+    |> assign(:list_icon, nil)
+    |> assign(:list_icon_picker_open, false)
   end
 end

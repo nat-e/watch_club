@@ -11,65 +11,65 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club_web/live/player_page.ex:154
-#: lib/watch_club_web/live/player_page.ex:161
+#: lib/watch_club_web/live/player_page.ex:150
+#: lib/watch_club_web/live/player_page.ex:157
 #, elixir-autogen, elixir-format
 msgid "Audio"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:140
+#: lib/watch_club_web/live/player_page.ex:136
 #, elixir-autogen, elixir-format
 msgid "Auto"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:101
+#: lib/watch_club_web/live/player_page.ex:97
 #, elixir-autogen, elixir-format
 msgid "Back"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:26
+#: lib/watch_club_web/live/player_page.ex:22
 #, elixir-autogen, elixir-format
 msgid "Back home"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:20
-#: lib/watch_club_web/live/player_page.ex:298
+#: lib/watch_club_web/live/player_page.ex:16
+#: lib/watch_club_web/live/player_page.ex:294
 #, elixir-autogen, elixir-format
 msgid "Error loading video"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:208
+#: lib/watch_club_web/live/player_page.ex:204
 #, elixir-autogen, elixir-format
 msgid "Fullscreen"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:199
+#: lib/watch_club_web/live/player_page.ex:195
 #, elixir-autogen, elixir-format
 msgid "Mute"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:269
+#: lib/watch_club_web/live/player_page.ex:265
 #, elixir-autogen, elixir-format
 msgid "Next episode"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:186
+#: lib/watch_club_web/live/player_page.ex:182
 #, elixir-autogen, elixir-format
 msgid "Off"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:230
+#: lib/watch_club_web/live/player_page.ex:226
 #, elixir-autogen, elixir-format
 msgid "Play or pause"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:35
+#: lib/watch_club_web/live/player_page.ex:31
 #, elixir-autogen, elixir-format
 msgid "Preparing an HLS playback session."
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:131
-#: lib/watch_club_web/live/player_page.ex:138
+#: lib/watch_club_web/live/player_page.ex:127
+#: lib/watch_club_web/live/player_page.ex:134
 #, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr ""
@@ -79,33 +79,33 @@ msgstr ""
 msgid "Seek"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:221
+#: lib/watch_club_web/live/player_page.ex:217
 #, elixir-autogen, elixir-format
 msgid "Seek backward 10 seconds"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:239
+#: lib/watch_club_web/live/player_page.ex:235
 #, elixir-autogen, elixir-format
 msgid "Seek forward 10 seconds"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:282
+#: lib/watch_club_web/live/player_page.ex:278
 #, elixir-autogen, elixir-format
 msgid "Skip"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:33
+#: lib/watch_club_web/live/player_page.ex:29
 #, elixir-autogen, elixir-format
 msgid "Starting player…"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:177
-#: lib/watch_club_web/live/player_page.ex:184
+#: lib/watch_club_web/live/player_page.ex:173
+#: lib/watch_club_web/live/player_page.ex:180
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:120
+#: lib/watch_club_web/live/player_page.ex:116
 #, elixir-autogen, elixir-format
 msgid "source %{codec}"
 msgstr ""

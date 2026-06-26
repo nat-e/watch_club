@@ -87,6 +87,8 @@ defmodule WatchClubWeb.Helpers.Url do
     "#{WatchClub.Shared.Path.normalize_base_url(base)}/webhooks/#{source_type}/#{media_source_id}"
   end
 
+  def list_link(list_id), do: ~p"/lists/#{list_id}"
+
   def content_details_link(%Content{type: type, external_id: id}),
     do: content_details_link(type, id, nil)
 

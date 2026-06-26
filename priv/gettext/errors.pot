@@ -11,147 +11,168 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:438
+#: lib/watch_club/accounts/user.ex:445
 #, elixir-autogen, elixir-format
 msgid "An administrator already exists"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:108
+#: lib/watch_club/clubs/club.ex:112
 #, elixir-autogen, elixir-format
 msgid "Club name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:100
+#: lib/watch_club/clubs/club.ex:104
 #, elixir-autogen, elixir-format
 msgid "Club name is required"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:104
+#: lib/watch_club/clubs/club.ex:108
 #, elixir-autogen, elixir-format
 msgid "Club name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/invitation.ex:107
-#, elixir-autogen, elixir-format
-msgid "Name cannot be longer than %{max} characters"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation.ex:103
-#, elixir-autogen, elixir-format
-msgid "Name must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex:183
+#: lib/watch_club/accounts/user.ex:181
 #, elixir-autogen, elixir-format
 msgid "Password is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:393
+#: lib/watch_club/accounts/user.ex:403
 #, elixir-autogen, elixir-format
 msgid "Passwords do not match"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/redeem_invitation.ex:50
-#, elixir-autogen, elixir-format
-msgid "The invitation does not exist"
-msgstr ""
-
-#: lib/watch_club/accounts/changes/redeem_invitation.ex:85
+#: lib/watch_club/accounts/invitation_code.ex:87
 #, elixir-autogen, elixir-format
 msgid "The invitation has already been used"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/redeem_invitation.ex:82
+#: lib/watch_club/accounts/invitation_code.ex:83
 #, elixir-autogen, elixir-format
 msgid "The invitation has expired"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:385
+#: lib/watch_club/accounts/user.ex:395
 #, elixir-autogen, elixir-format
 msgid "The password is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:366
+#: lib/watch_club/accounts/user.ex:376
 #, elixir-autogen, elixir-format
 msgid "The username is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:378
+#: lib/watch_club/accounts/user.ex:388
 #, elixir-autogen, elixir-format
 msgid "Username can only contain lower case letters, numbers and _"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:374
+#: lib/watch_club/accounts/user.ex:384
 #, elixir-autogen, elixir-format
 msgid "Username cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:179
+#: lib/watch_club/accounts/user.ex:177
 #, elixir-autogen, elixir-format
 msgid "Username is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:370
+#: lib/watch_club/accounts/user.ex:380
 #, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club_web/components/accounts/sign_in_form.ex:46
+#: lib/watch_club_web/live/accounts/sign_in_page.ex:44
 #, elixir-autogen, elixir-format
 msgid "Your username or password is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:130
+#: lib/watch_club/clubs/library.ex:125
 #, elixir-autogen, elixir-format
 msgid "Library icon is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:121
+#: lib/watch_club/clubs/library.ex:116
 #, elixir-autogen, elixir-format
 msgid "Library name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:113
+#: lib/watch_club/clubs/library.ex:108
 #, elixir-autogen, elixir-format
 msgid "Library name is required"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:117
+#: lib/watch_club/clubs/library.ex:112
 #, elixir-autogen, elixir-format
 msgid "Library name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:389
+#: lib/watch_club/accounts/user.ex:399
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/library_item.ex:66
+#: lib/watch_club/clubs/library_item.ex:62
 #, elixir-autogen, elixir-format
 msgid "Library does not allow this content type"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex:126
+#: lib/watch_club/clubs/library.ex:121
 #, elixir-autogen, elixir-format
 msgid "Library content type is required"
 msgstr ""
 
-#: lib/watch_club/accounts/invitation.ex:72
-#, elixir-autogen, elixir-format
-msgid "A used invitation cannot be disabled"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation.ex:111
+#: lib/watch_club/accounts/invitation_code.ex:149
 #, elixir-autogen, elixir-format
 msgid "Max uses must be at least %{greater_than_or_equal_to}"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/redeem_invitation.ex:88
+#: lib/watch_club/accounts/invitation_code.ex:136
 #, elixir-autogen, elixir-format
-msgid "The invitation has been disabled"
+msgid "Code can only contain upper case letters, numbers and _"
 msgstr ""
 
-#: lib/watch_club/accounts/invitation.ex:76
+#: lib/watch_club/accounts/invitation_code.ex:144
 #, elixir-autogen, elixir-format
-msgid "The invitation is already disabled"
+msgid "Code cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex:130
+#, elixir-autogen, elixir-format
+msgid "Code must be at least %{min} characters"
+msgstr ""
+
+#: lib/watch_club/lists/content_list.ex:78
+#, elixir-autogen, elixir-format
+msgid "List icon is invalid"
+msgstr ""
+
+#: lib/watch_club/lists/content_list.ex:74
+#, elixir-autogen, elixir-format
+msgid "List name cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/lists/content_list.ex:66
+#, elixir-autogen, elixir-format
+msgid "List name is required"
+msgstr ""
+
+#: lib/watch_club/lists/content_list.ex:70
+#, elixir-autogen, elixir-format
+msgid "List name must be at least %{min} characters"
+msgstr ""
+
+#: lib/watch_club/accounts/changes/apply_invitation_code.ex:72
+#: lib/watch_club/accounts/changes/apply_invitation_code.ex:83
+#, elixir-autogen, elixir-format
+msgid "The invitation code is not valid"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex:218
+#, elixir-autogen, elixir-format
+msgid "This code is already used by another invitation"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex:69
+#, elixir-autogen, elixir-format
+msgid "This invitation has already been used more than that"
 msgstr ""

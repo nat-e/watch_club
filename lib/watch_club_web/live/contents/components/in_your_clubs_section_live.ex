@@ -334,7 +334,8 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
 
         # Select the desired club if valid, otherwise select the first one
         {selected_club_id, valid_club_ids} ->
-          (selected_club_id in valid_club_ids && selected_club_id) || List.first(valid_club_ids)
+          (selected_club_id in valid_club_ids && selected_club_id) ||
+            List.first(valid_club_ids)
       end
 
     socket

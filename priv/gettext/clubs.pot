@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:106
+#: lib/watch_club_web/live/clubs/members/members_table.ex:78
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr ""
@@ -31,18 +31,18 @@ msgstr ""
 msgid "Are you sure you want to leave %{club_name}?"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:122
+#: lib/watch_club_web/live/clubs/members/remove_member_modal.ex:12
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to remove %{username}?"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings_page.ex:39
+#: lib/watch_club_web/live/clubs/settings_page.ex:47
 #, elixir-autogen, elixir-format
 msgid "Club Name"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:345
-#: lib/watch_club_web/live/clubs/settings_page.ex:19
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:379
+#: lib/watch_club_web/live/clubs/settings_page.ex:27
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr ""
@@ -63,12 +63,12 @@ msgid "Create new club"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:16
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:360
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:394
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings_page.ex:44
+#: lib/watch_club_web/live/clubs/settings_page.ex:52
 #, elixir-autogen, elixir-format
 msgid "Edit Club"
 msgstr ""
@@ -79,79 +79,77 @@ msgid "Leave"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:16
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:374
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:408
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:337
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:371
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:112
+#: lib/watch_club_web/live/clubs/members/members_table.ex:84
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:186
+#: lib/watch_club_web/live/clubs/members_page.ex:120
 #, elixir-autogen, elixir-format
 msgid "Member removed"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:30
+#: lib/watch_club_web/live/clubs/members/members_table.ex:15
 #, elixir-autogen, elixir-format
 msgid "Member since"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:17
-#: lib/watch_club_web/live/clubs/members_page.ex:22
+#: lib/watch_club_web/live/clubs/members_page.ex:20
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:136
+#: lib/watch_club_web/live/clubs/members/remove_member_modal.ex:26
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:119
+#: lib/watch_club_web/live/clubs/members/remove_member_modal.ex:9
 #, elixir-autogen, elixir-format
 msgid "Remove club member"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:95
+#: lib/watch_club_web/components/contents/content_card.ex:124
 #, elixir-autogen, elixir-format
 msgid "Remove from club"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:94
+#: lib/watch_club_web/live/clubs/members/members_table.ex:66
 #, elixir-autogen, elixir-format
 msgid "Remove member"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:306
+#: lib/watch_club_web/live/clubs/library_page.ex:340
 #, elixir-autogen, elixir-format
 msgid "Removed from club"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:29
+#: lib/watch_club_web/live/clubs/members/members_table.ex:14
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:192
-#: lib/watch_club_web/live/clubs/settings_page.ex:112
+#: lib/watch_club_web/live/clubs/settings_page.ex:232
 #, elixir-autogen, elixir-format
 msgid "The club you were looking for does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:129
+#: lib/watch_club_web/live/clubs/members/remove_member_modal.ex:19
 #, elixir-autogen, elixir-format
 msgid "They won't be able to join back without being re-invited."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:28
+#: lib/watch_club_web/live/clubs/members/members_table.ex:13
 #, elixir-autogen, elixir-format
 msgid "User"
 msgstr ""
@@ -161,213 +159,182 @@ msgstr ""
 msgid "You will loose access to the library and will not be able to join back unless re-invited"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:442
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:541
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} created"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:467
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:566
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} deleted"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:475
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:574
 #, elixir-autogen, elixir-format
 msgid "Error deleting club, try again later"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:505
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:604
 #, elixir-autogen, elixir-format
 msgid "Error leaving club, try again later"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:497
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:596
 #, elixir-autogen, elixir-format
 msgid "You left %{club_name}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:307
-#, elixir-autogen, elixir-format
-msgid "Could not load club libraries"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:21
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:21
 #, elixir-autogen, elixir-format
 msgid "Create libraries to add movies, TV shows, or books to your club."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:20
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:28
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:32
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:38
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:20
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:32
+#: lib/watch_club_web/live/clubs/settings_page.ex:73
 #, elixir-autogen, elixir-format
 msgid "Create library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:13
+#: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex:12
 #, elixir-autogen, elixir-format
 msgid "Delete %{library_name}?"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:132
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:132
 #, elixir-autogen, elixir-format
 msgid "Delete Library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:33
+#: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex:31
 #, elixir-autogen, elixir-format
 msgid "Delete library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:76
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:76
 #, elixir-autogen, elixir-format
 msgid "Drag to reorder"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:251
-#, elixir-autogen, elixir-format
-msgid "Error deleting library, try again later"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:221
-#, elixir-autogen, elixir-format
-msgid "Error reordering libraries, try again later"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings_page.ex:26
+#: lib/watch_club_web/live/clubs/settings_page.ex:34
 #, elixir-autogen, elixir-format
 msgid "General"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:23
+#: lib/watch_club_web/live/clubs/settings_page.ex:59
 #, elixir-autogen, elixir-format
 msgid "Libraries"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:164
+#: lib/watch_club_web/live/clubs/settings_page.ex:180
 #, elixir-autogen, elixir-format
 msgid "Library created"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:242
+#: lib/watch_club_web/live/clubs/settings_page.ex:215
 #, elixir-autogen, elixir-format
 msgid "Library deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:111
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:111
 #, elixir-autogen, elixir-format
 msgid "Library actions"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:52
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:39
 #, elixir-autogen, elixir-format
 msgid "Library name"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings_page.ex:21
+#: lib/watch_club_web/live/clubs/settings_page.ex:29
 #, elixir-autogen, elixir-format
 msgid "Manage %{club_name}'s profile and libraries."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:19
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:19
 #, elixir-autogen, elixir-format
 msgid "No libraries yet"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:18
+#: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex:17
 #, elixir-autogen, elixir-format
 msgid "The underlying content records will not be deleted."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/delete_library_modal.ex:15
+#: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex:14
 #, elixir-autogen, elixir-format
 msgid "This will remove the library from the club."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings_page.ex:27
+#: lib/watch_club_web/live/clubs/settings_page.ex:35
 #, elixir-autogen, elixir-format
 msgid "Update the basic club information."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:96
-#, elixir-autogen, elixir-format
-msgid "Actions coming soon"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/content_card.ex:86
+#: lib/watch_club_web/components/contents/content_card.ex:94
 #, elixir-autogen, elixir-format
 msgid "Content actions"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:68
+#: lib/watch_club_web/live/clubs/library_page.ex:105
 #, elixir-autogen, elixir-format
 msgid "Library is empty"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:36
+#: lib/watch_club_web/components/contents/content_card.ex:44
 #, elixir-autogen, elixir-format
 msgid "Reveal details for %{title}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:70
+#: lib/watch_club_web/live/clubs/library_page.ex:107
 #, elixir-autogen, elixir-format
 msgid "This library does not have any content yet."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:149
+#: lib/watch_club_web/live/clubs/library_page.ex:246
 #, elixir-autogen, elixir-format
 msgid "Added date"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:126
+#: lib/watch_club_web/live/clubs/library_page.ex:223
 #, elixir-autogen, elixir-format
 msgid "Library sort order"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:160
+#: lib/watch_club_web/live/clubs/library_page.ex:257
 #, elixir-autogen, elixir-format
 msgid "Release date"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:138
+#: lib/watch_club_web/live/clubs/library_page.ex:235
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:213
+#: lib/watch_club_web/live/clubs/library_page.ex:310
 #, elixir-autogen, elixir-format
 msgid "Sort by %{field} %{order}"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:22
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:28
 #, elixir-autogen, elixir-format
 msgid "Add a new library to this club. Choose which content type it will contain."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:89
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:89
 #, elixir-autogen, elixir-format
 msgid "Change %{library_name} icon"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:25
+#: lib/watch_club_web/live/clubs/settings_page.ex:61
 #, elixir-autogen, elixir-format
 msgid "Create, edit, delete, and reorder club libraries. Each library contains one content type."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:33
-#: lib/watch_club_web/live/clubs/settings/libraries/library_list.ex:123
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:20
+#: lib/watch_club_web/live/clubs/settings/library_list.ex:123
 #, elixir-autogen, elixir-format
 msgid "Edit Library"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:126
-#, elixir-autogen, elixir-format
-msgid "Error updating library icon, try again later"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:37
-#, elixir-autogen, elixir-format
-msgid "Save changes"
 msgstr ""
 
 #: lib/watch_club_web/components/ui/icon_picker_live.ex:53
@@ -375,7 +342,7 @@ msgstr ""
 msgid "Search icons"
 msgstr ""
 
-#: lib/watch_club_web/components/ui/icon_picker_live.ex:87
+#: lib/watch_club_web/components/ui/icon_picker_live.ex:86
 #, elixir-autogen, elixir-format
 msgid "Use %{icon_name} icon"
 msgstr ""
@@ -390,52 +357,103 @@ msgstr ""
 msgid "Try a different search term."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:65
+#: lib/watch_club_web/live/clubs/settings_page.ex:90
 #, elixir-autogen, elixir-format
 msgid "Change icon"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries_live.ex:68
+#: lib/watch_club_web/live/clubs/settings_page.ex:93
 #, elixir-autogen, elixir-format
 msgid "Select a new icon for the %{library_name} library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:100
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:41
 #, elixir-autogen, elixir-format
 msgid "Content type"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:96
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:59
 #, elixir-autogen, elixir-format
 msgid "A library's content type cannot be changed after creation."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings/libraries/create_or_edit_library_modal.ex:102
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:43
 #, elixir-autogen, elixir-format
 msgid "Users will only be able to add this type of content to the library"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:334
+#: lib/watch_club_web/live/clubs/library_page.ex:68
 #, elixir-autogen, elixir-format
 msgid "The library you were looking for does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/settings_page.ex:121
-#, elixir-autogen, elixir-format
-msgid "You must enter a club name"
-msgstr ""
-
-#: lib/watch_club_web/live/clubs/members_page.ex:18
+#: lib/watch_club_web/live/clubs/members_page.ex:21
 #, elixir-autogen, elixir-format
 msgid "Manage %{club_name}'s members."
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/members_page.ex:23
+#: lib/watch_club_web/live/clubs/members/add_members_modal.ex:19
 #, elixir-autogen, elixir-format
-msgid "Review who can access the club."
+msgid "Add club members"
 msgstr ""
 
-#: lib/watch_club_web/live/clubs/library_page.ex:296
+#: lib/watch_club_web/live/clubs/members/add_members_modal.ex:21
 #, elixir-autogen, elixir-format
-msgid "There was an error loading the library"
+msgid "Add existing users to this club. To invite new users to the instance, go to the Admin > Users page"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members/add_members_modal.ex:49
+#, elixir-autogen, elixir-format
+msgid "Add member"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members_page.ex:34
+#, elixir-autogen, elixir-format
+msgid "Add members"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:21
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:16
+#, elixir-autogen, elixir-format
+msgid "Create invitation code"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/settings_page.ex:180
+#, elixir-autogen, elixir-format
+msgid "Library updated"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:21
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/content_card.ex:105
+#, elixir-autogen, elixir-format
+msgid "Share with club"
+msgstr ""
+
+#: lib/watch_club_web/hooks/load_club.ex:34
+#: lib/watch_club_web/live/clubs/members_page.ex:142
+#, elixir-autogen, elixir-format
+msgid "The page you were looking for does not exist"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members/add_members_modal.ex:31
+#, elixir-autogen, elixir-format
+msgid "Users"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/members_page.ex:91
+#, elixir-autogen, elixir-format
+msgid "Users added to club"
+msgstr ""
+
+#: lib/watch_club_web/live/clubs/library_page.ex:157
+#, elixir-autogen, elixir-format
+msgid "The library was deleted"
 msgstr ""

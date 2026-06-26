@@ -112,6 +112,7 @@ defmodule WatchClubWeb do
         Clubs,
         Contents,
         History,
+        Lists,
         MediaCatalog,
         MediaSources,
         Playbacks,
@@ -144,6 +145,7 @@ defmodule WatchClubWeb do
       }
 
       alias WatchClub.History.{WatchProgress, WatchStatus}
+      alias WatchClub.Lists.{ContentList, ListItem}
 
       alias WatchClub.MediaCatalog.{
         Audiobook,

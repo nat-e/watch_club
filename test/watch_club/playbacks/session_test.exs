@@ -175,7 +175,7 @@ defmodule WatchClub.Playbacks.SessionTest do
         club_id: club.id,
         name: "Library #{System.unique_integer([:positive])}",
         content_type: :movie,
-        icon: WatchClub.Clubs.LibraryIcon.default_for_content_type(:movie),
+        icon: "film",
         index: 0
       })
 

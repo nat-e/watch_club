@@ -4,7 +4,11 @@ defmodule WatchClub.Clubs.Changes.SetDefaultLibraryIcon do
   """
   use Ash.Resource.Change
 
-  alias WatchClub.Clubs.LibraryIcon
+  @default_by_content_type %{
+    movie: "film",
+    tv_show: "tv",
+    book: "book_open"
+  }
 
   @impl true
   def change(changeset, _opts, _context) do
@@ -16,7 +20,7 @@ defmodule WatchClub.Clubs.Changes.SetDefaultLibraryIcon do
         Ash.Changeset.force_change_attribute(
           changeset,
           :icon,
-          LibraryIcon.default_for_content_type(content_type)
+          Map.fetch!(@default_by_content_type, content_type)
         )
     end
   end

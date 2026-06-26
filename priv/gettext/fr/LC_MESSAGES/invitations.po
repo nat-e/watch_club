@@ -12,86 +12,24 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:13
-#: lib/watch_club_web/live/invitations/invitation_page.ex:34
-#, elixir-autogen, elixir-format
-msgid "Hello %{name}!"
-msgstr "Bonjour %{name} !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:33
-#, elixir-autogen, elixir-format
-msgid "Hello!"
-msgstr "Bonjour !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:116
-#, elixir-autogen, elixir-format
-msgid "The invitation you were trying to access does not exist"
-msgstr "L'invitation à laquelle vous essayez d'accéder n'existe pas"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:61
+#: lib/watch_club_web/live/invitations/invitation_page.ex:63
 #, elixir-autogen, elixir-format
 msgid "Ask the person who invited you for a new link."
 msgstr "Demandez un nouveau lien à la personne qui vous a invité."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:45
-#, elixir-autogen, elixir-format
-msgid "Create an account to accept the invitation."
-msgstr "Créez un compte pour accepter l'invitation."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:23
-#, elixir-autogen, elixir-format
-msgid "Go to watch.club"
-msgstr "Aller sur watch.club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:17
-#, elixir-autogen, elixir-format
-msgid "Invitations are for new accounts — you already have one."
-msgstr "Les invitations sont réservées aux nouveaux comptes — vous en avez déjà un."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:100
-#, elixir-autogen, elixir-format
-msgid "This invitation has already been used"
-msgstr "Cette invitation a déjà été utilisée"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:94
-#, elixir-autogen, elixir-format
-msgid "This invitation has expired"
-msgstr "Cette invitation a expiré"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:97
-#, elixir-autogen, elixir-format
-msgid "This invitation is no longer active"
+#: lib/watch_club_web/live/invitations/invitation_page.ex:60
+#, elixir-autogen, elixir-format, fuzzy
+msgid "This invitation is no longer available"
 msgstr "Cette invitation n'est plus active"
 
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:156
+#: lib/watch_club_web/live/invitations/invitation_page.ex:9
 #, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr "Bienvenue sur watch.club !"
+msgid "Welcome!"
+msgstr ""
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:73
-#, elixir-autogen, elixir-format
-msgid "You are invited to create an account on watch.club"
+#: lib/watch_club_web/live/invitations/invitation_page.ex:12
+#, elixir-autogen, elixir-format, fuzzy
+msgid "You are invited to create an account on watch.club!"
 msgstr "Vous êtes invité à créer un compte sur watch.club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:87
-#, elixir-autogen, elixir-format
-msgid "You are invited to join %{club_names} on watch.club"
-msgstr "Vous êtes invité à rejoindre %{club_names} sur watch.club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:160
-#, elixir-autogen, elixir-format
-msgid "You joined %{club_names}"
-msgstr "Vous avez rejoint %{club_names}"

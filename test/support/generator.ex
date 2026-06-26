@@ -1,7 +1,7 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
-  alias WatchClub.Clubs.{Club, Library, LibraryIcon, Membership}
+  alias WatchClub.Clubs.{Club, Library, Membership}
   alias WatchClub.Contents.{Book, Content, Movie, TvShow}
   alias WatchClub.MediaSources.{Import, Source}
 
@@ -107,7 +107,7 @@ defmodule WatchClub.Generator do
         name: sequence(:library_name, fn i -> "Library #{i}" end),
         club_id: club.id,
         content_type: content_type,
-        icon: Keyword.get(opts, :icon, LibraryIcon.default_for_content_type(content_type)),
+        icon: Keyword.get(opts, :icon, "film"),
         index: sequence(:library_index, fn i -> i end)
       },
       overrides: opts

@@ -8,7 +8,7 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   def request(opts) do
     # Returned the cached response if present unless cache is de-activated
     with true <- Keyword.get(opts, :cache, true),
-         {:ok, resp} <- Cachex.get(:tmdb_api_cache, cache_key(opts)) do
+         {:ok, resp} when not is_nil(resp) <- Cachex.get(:tmdb_api_cache, cache_key(opts)) do
       {:ok, resp}
     else
       _ -> send_request(opts)
@@ -35,7 +35,7 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   defp handle_response({:ok, %Req.Response{status: status, body: body}}, opts)
        when status in 200..299 do
     if Keyword.get(opts, :cache, true) do
-      Logger.debug("TMDB Cache hit")
+      Logger.debug("TMDB Cache miss - caching response")
 
       Cachex.put(:tmdb_api_cache, cache_key(opts), body,
         expire: Keyword.get(opts, :cache_ttl, @default_cache_ttl_ms)

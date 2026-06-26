@@ -12,6 +12,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
 
   alias WatchClubWeb.Components.Contents.{
+    AddToListModalLive,
     ContentWatchProgressBadge,
     PlayOrRequestButtonLive
   }
@@ -33,6 +34,16 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         content_identity={@content_identity}
         current_user={@current_user}
         selected_club_id={@selected_club_id}
+      />
+
+      <.live_component
+        :if={@add_to_list_modal_open}
+        id="movie-details-add-to-list-modal"
+        module={AddToListModalLive}
+        content_identity={@content_identity}
+        content_title={@movie.title}
+        current_user={@current_user}
+        on_close={fn -> send(self(), "close_add_to_list_modal") end}
       />
     </Layouts.app>
     """
@@ -115,7 +126,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> WatchClub.PubSub.subscribe_to_current_user_content_topics()}
+    {:ok, socket |> WatchClub.PubSub.subscribe_to_current_user_content_topics() |> reset_modals()}
   end
 
   @impl true
@@ -160,6 +171,15 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   end
 
   @impl true
+  def handle_event("open_add_to_list_modal", _params, socket) do
+    {:noreply, socket |> assign(:add_to_list_modal_open, true)}
+  end
+
+  @impl true
+  def handle_info("close_add_to_list_modal", socket) do
+    {:noreply, socket |> reset_modals()}
+  end
+
   def handle_info(message, socket) do
     # Send updates to all the Live Components we are using on this page
     InYourClubsSectionLive.handle_pubsub_message(message, socket.assigns.content_identity)
@@ -167,5 +187,9 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 
     {:noreply, socket}
+  end
+
+  defp reset_modals(socket) do
+    socket |> assign(add_to_list_modal_open: false)
   end
 end

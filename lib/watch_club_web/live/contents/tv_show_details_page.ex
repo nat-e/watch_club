@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   alias WatchClubWeb.Components.Contents.{
+    AddToListModalLive,
     ContentWatchProgressBadge,
     PlayOrRequestButtonLive
   }
@@ -101,6 +102,16 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
           </div>
         </div>
       </article>
+
+      <.live_component
+        :if={@add_to_list_modal_open}
+        id="tv-show-details-add-to-list-modal"
+        module={AddToListModalLive}
+        content_identity={@content_identity}
+        content_title={@tv_show.name}
+        current_user={@current_user}
+        on_close={fn -> send(self(), "close_add_to_list_modal") end}
+      />
     </Layouts.app>
     """
   end
@@ -121,7 +132,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> WatchClub.PubSub.subscribe_to_current_user_content_topics()}
+    {:ok, socket |> WatchClub.PubSub.subscribe_to_current_user_content_topics() |> reset_modals()}
   end
 
   @impl true
@@ -192,6 +203,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   end
 
   @impl true
+  def handle_info("close_add_to_list_modal", socket) do
+    {:noreply, socket |> reset_modals()}
+  end
+
   def handle_info(message, socket) do
     # Send updates to all the Live Components we are using on this page
     InYourClubsSectionLive.handle_pubsub_message(message, socket.assigns.content_identity)
@@ -235,6 +250,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   end
 
   @impl true
+  def handle_event("open_add_to_list_modal", _params, socket) do
+    {:noreply, socket |> assign(:add_to_list_modal_open, true)}
+  end
+
   def handle_event("select_season", %{"season" => season}, socket) do
     {:noreply, assign(socket, :selected_season, String.to_integer(season))}
   end
@@ -246,6 +265,10 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
      socket
      |> put_season_metadata(season_number, %{status: :loading})
      |> start_season_metadata_load(season_number)}
+  end
+
+  defp reset_modals(socket) do
+    socket |> assign(add_to_list_modal_open: false)
   end
 
   defp finish_season_metadata_load(socket, season_number, metadata) do

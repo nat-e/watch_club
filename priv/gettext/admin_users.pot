@@ -11,99 +11,59 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:49
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:20
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:180
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:79
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:193
-#, elixir-autogen, elixir-format
-msgid "Add to %{club_name}"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:285
-#, elixir-autogen, elixir-format
-msgid "Added to %{club_name}"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:44
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:15
 #, elixir-autogen, elixir-format
 msgid "Clubs"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:214
-#: lib/watch_club_web/live/admin/users_page.ex:229
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:9
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:24
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:91
 #, elixir-autogen, elixir-format
 msgid "Delete user"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:203
-#, elixir-autogen, elixir-format
-msgid "Delete user…"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:98
-#: lib/watch_club_web/live/admin/users_page.ex:129
-#, elixir-autogen, elixir-format
-msgid "Instance Administrator"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_tabs.ex:31
-#, elixir-autogen, elixir-format
-msgid "Invitations (%{count})"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:23
-#, elixir-autogen, elixir-format
-msgid "Manage who has access to this WatchClub instance."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:46
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:17
 #, elixir-autogen, elixir-format
 msgid "Member since"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:136
-#, elixir-autogen, elixir-format
-msgid "Member since %{relative}"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:217
-#, elixir-autogen, elixir-format
-msgid "Permanently delete %{username}'s account and their content requests. Library items they added and their watch history remain."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:295
-#, elixir-autogen, elixir-format
-msgid "The user could not be added to %{club_name}"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:270
-#, elixir-autogen, elixir-format
-msgid "The user could not be deleted"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex:42
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:13
 #, elixir-autogen, elixir-format
 msgid "User"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:262
+#: lib/watch_club_web/live/admin/users_page.ex:188
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:21
+#: lib/watch_club_web/live/admin/users_page.ex:26
 #, elixir-autogen, elixir-format
 msgid "Users"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_tabs.ex:22
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:12
 #, elixir-autogen, elixir-format
-msgid "Users (%{count})"
+msgid "Are you sure you want to delete %{username}? They will not be able to access Watch Club and all their history will be erased."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:53
+#, elixir-autogen, elixir-format
+msgid "Instance Admin"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex:28
+#, elixir-autogen, elixir-format
+msgid "Manage access to your WatchClub instance."
 msgstr ""

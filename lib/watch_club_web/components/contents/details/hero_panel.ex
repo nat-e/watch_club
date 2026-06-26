@@ -134,6 +134,16 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
         class="w-full @xl:w-auto"
       />
       <.button
+        id="details-add-to-list-button"
+        phx-click="open_add_to_list_modal"
+        size="lg"
+        variant="secondary"
+        class="w-full @xl:w-auto"
+      >
+        <:icon><Lucideicons.list_plus /></:icon>
+        {dgettext("contents", "Add to List")}
+      </.button>
+      <.button
         :if={@trailer_url}
         id="details-watch-trailer-button"
         href={@trailer_url}

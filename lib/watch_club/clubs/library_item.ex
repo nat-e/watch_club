@@ -1,4 +1,7 @@
 defmodule WatchClub.Clubs.LibraryItem do
+  @moduledoc """
+  Join resource linking a `Content` to a club's `Library`.
+  """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Clubs,
@@ -84,12 +87,6 @@ defmodule WatchClub.Clubs.LibraryItem do
   end
 
   policies do
-    policy actor_absent() do
-      description "Library items actions must have an actor"
-      access_type :strict
-      forbid_if always()
-    end
-
     policy action([:destroy]) do
       description "Only admins or current members that have added the content can remove it"
       authorize_if {ActorIsClubMemberFilter, role: :admin, club_path: [:library, :club]}

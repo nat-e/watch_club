@@ -11,73 +11,22 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:13
-#: lib/watch_club_web/live/invitations/invitation_page.ex:34
-#, elixir-autogen, elixir-format
-msgid "Hello %{name}!"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:33
-#, elixir-autogen, elixir-format
-msgid "Hello!"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:116
-#, elixir-autogen, elixir-format
-msgid "The invitation you were trying to access does not exist"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:61
+#: lib/watch_club_web/live/invitations/invitation_page.ex:63
 #, elixir-autogen, elixir-format
 msgid "Ask the person who invited you for a new link."
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:45
+#: lib/watch_club_web/live/invitations/invitation_page.ex:60
 #, elixir-autogen, elixir-format
-msgid "Create an account to accept the invitation."
+msgid "This invitation is no longer available"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:23
+#: lib/watch_club_web/live/invitations/invitation_page.ex:9
 #, elixir-autogen, elixir-format
-msgid "Go to watch.club"
+msgid "Welcome!"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:17
+#: lib/watch_club_web/live/invitations/invitation_page.ex:12
 #, elixir-autogen, elixir-format
-msgid "Invitations are for new accounts — you already have one."
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:100
-#, elixir-autogen, elixir-format
-msgid "This invitation has already been used"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:94
-#, elixir-autogen, elixir-format
-msgid "This invitation has expired"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:97
-#, elixir-autogen, elixir-format
-msgid "This invitation is no longer active"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:156
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:73
-#, elixir-autogen, elixir-format
-msgid "You are invited to create an account on watch.club"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:87
-#, elixir-autogen, elixir-format
-msgid "You are invited to join %{club_names} on watch.club"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex:160
-#, elixir-autogen, elixir-format
-msgid "You joined %{club_names}"
+msgid "You are invited to create an account on watch.club!"
 msgstr ""
