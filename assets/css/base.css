@@ -40,12 +40,27 @@
    the card is hovered, holds keyboard focus (focus-visible, not plain focus, so a
    trigger left focused by a mouse click or a closing dialog does not keep it open),
    was explicitly revealed on touch, or has its actions menu open. */
-@custom-variant card-revealed (&:is(
-  [data-slot="content-card"]:hover *,
-  [data-slot="content-card"]:has(:focus-visible) *,
-  [data-slot="content-card"][data-state="revealed"] *,
-  [data-slot="content-card"]:has([data-slot="dropdown-menu-content"]:popover-open) *
-));
+@custom-variant card-revealed {
+	/* Hover-to-reveal only on devices with a real hover-capable pointer. On touch,
+     tapping would otherwise trigger :hover and reveal + navigate in a single tap;
+     there the overlay is revealed explicitly via data-state="revealed". */
+	@media (hover: hover) {
+		&:is([data-slot="content-card"]:hover *) {
+			@slot;
+		}
+	}
+
+	&:is(
+			[data-slot="content-card"]:has(:focus-visible) *,
+			[data-slot="content-card"][data-state="revealed"] *,
+			[data-slot="content-card"]:has(
+					[data-slot="dropdown-menu-content"]:popover-open
+				)
+				*
+		) {
+		@slot;
+	}
+}
 
 @theme inline {
 	--color-canvas: var(--wc-color-canvas);
