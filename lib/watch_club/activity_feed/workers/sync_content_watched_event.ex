@@ -38,7 +38,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
       Contents.get_content_by_id!(content_id,
         load: [
           :actor_progress_status,
-          tv_show: [episodes: [:actor_progress_status]],
+          implementation: %{load: [tv_show: [episodes: [:actor_progress_status]]]},
           library_items: [:library]
         ],
         actor: actor
@@ -62,7 +62,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
           %{
             content_id: content_id,
             completed: status == :completed,
-            completed_episodes: completed_episodes(content),
+            completed_episodes: completed_episodes(content.implementation),
             scopes: event_scopes(content_id, user_id, content.library_items)
           },
           action: :upsert,
@@ -85,7 +85,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
     [%{scope_user_id: user_id, content_id: content_id} | club_scopes]
   end
 
-  defp completed_episodes(%Content{type: :tv_show, tv_show: %TvShow{episodes: episodes}}) do
+  defp completed_episodes(%TvShow{episodes: episodes}) do
     episodes
     |> Enum.filter(&(&1.actor_progress_status == :completed))
     |> Enum.map(&%{season_number: &1.season_number, episode_number: &1.episode_number})

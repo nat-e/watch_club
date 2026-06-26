@@ -12,8 +12,12 @@ defmodule WatchClubWeb.HomePage do
   # The fields that need to be loaded on the Content objects for the continue watching section
   @media_fields [:has_media?, :actor_progress, :videos]
   @continue_watching_content_fields [
-    movie: @media_fields,
-    tv_show: [actor_next_episode: @media_fields]
+    implementation: %{
+      load: [
+        movie: @media_fields,
+        tv_show: [actor_next_episode: @media_fields]
+      ]
+    }
   ]
 
   @impl true

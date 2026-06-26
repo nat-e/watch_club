@@ -1,41 +1,47 @@
 defmodule WatchClub.Integrations.Tmdb.Client do
   require Logger
 
-  @default_cache_ttl_ms 24 * 60 * 60 * 1000 # 1 day
+  # 1 day
+  @default_cache_ttl_ms 24 * 60 * 60 * 1000
 
   @spec request(keyword()) :: {:ok, Req.Response.t()} | {:error, any()}
   def request(opts) do
     # Returned the cached response if present unless cache is de-activated
     with true <- Keyword.get(opts, :cache, true),
-      {:ok, resp} <- Cachex.get(:tmdb_api_cache, cache_key(opts)) do
-        {:ok, resp}
-      else
-        _ -> send_request(opts)
-      end
+         {:ok, resp} <- Cachex.get(:tmdb_api_cache, cache_key(opts)) do
+      {:ok, resp}
+    else
+      _ -> send_request(opts)
+    end
   end
 
   defp send_request(opts) do
-          [
-            base_url: "https://api.themoviedb.org/3",
-            retry: :transient,
-            max_retries: 3,
-            receive_timeout: 5_000,
-            compressed: true
-          ]
-          |> Keyword.merge(Application.get_env(:watch_club, :tmdb_req_options, []))
-          |> Req.new()
-          |> Req.request(opts)
-          |> handle_response(opts)
+    [
+      base_url: "https://api.themoviedb.org/3",
+      retry: :transient,
+      max_retries: 3,
+      receive_timeout: 5_000,
+      compressed: true
+    ]
+    |> Keyword.merge(Application.get_env(:watch_club, :tmdb_req_options, []))
+    |> Req.new()
+    |> Req.request(opts)
+    |> handle_response(opts)
   end
 
   def get(path, opts \\ []), do: request([method: :get, url: path] ++ opts)
   def post(path, body, opts \\ []), do: request([method: :post, url: path, json: body] ++ opts)
 
-  defp handle_response({:ok, %Req.Response{status: status, body: body}}, opts) when status in 200..299 do
+  defp handle_response({:ok, %Req.Response{status: status, body: body}}, opts)
+       when status in 200..299 do
     if Keyword.get(opts, :cache, true) do
       Logger.debug("TMDB Cache hit")
-      Cachex.put(:tmdb_api_cache, cache_key(opts), body, expire: Keyword.get(opts, :cache_ttl, @default_cache_ttl_ms))
+
+      Cachex.put(:tmdb_api_cache, cache_key(opts), body,
+        expire: Keyword.get(opts, :cache_ttl, @default_cache_ttl_ms)
+      )
     end
+
     {:ok, body}
   end
 
@@ -75,5 +81,6 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   end
 
   # Cache key based off the URL and order independant params
-  defp cache_key(opts), do: {Keyword.fetch!(opts, :url), Enum.sort(Keyword.get(opts, :params, []))}
+  defp cache_key(opts),
+    do: {Keyword.fetch!(opts, :url), Enum.sort(Keyword.get(opts, :params, []))}
 end

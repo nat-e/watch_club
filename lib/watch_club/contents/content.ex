@@ -187,6 +187,8 @@ defmodule WatchClub.Contents.Content do
     # callers want the implementation struct directly.
     calculate :implementation, :struct, GetContentImplementation do
       allow_nil? false
+      # Load is a Keyword list of one load term per content type
+      argument :load, :term
     end
 
     # Whether or not there are Video, Audiobook or Ebooks to back this Content in the media center

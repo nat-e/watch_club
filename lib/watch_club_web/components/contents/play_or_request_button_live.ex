@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         load: [
           :has_media?,
           :actor_next_medias_to_play,
-          tv_show: [:actor_next_episode],
+          implementation: %{load: [tv_show: [:actor_next_episode]]},
           actor_request: Ash.Query.for_read(ContentRequest, :with_status, %{}, actor: actor)
         ],
         actor: actor
@@ -152,6 +152,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   defp play_label(:movie, _content), do: dgettext("contents", "Play")
   defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
 
-  defp play_label(:tv_show, %{tv_show: %{actor_next_episode: episode}}),
+  defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
     do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
 end

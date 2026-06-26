@@ -2,37 +2,39 @@ defmodule WatchClub.ActivityFeed.Calculations.ScopeEvent do
   @moduledoc """
   Resolves the single populated event of a FeedEventScope (its polymorphic payload).
 
-  The calculation can be loaded with a `load` argument to allow loading relationships
-  and calculations on the different events.
+  By default this calculation loads the event record.
+  It is possible to add extra loading relations or calculations by passing a `load` argument,
+  which will be merged with the defaults, e.g.
+  `implementation: %{load: [content_watched_event: [:content, :completed]]}`.
   """
   use Ash.Resource.Calculation
 
   @impl true
   def load(_query, _opts, context) do
-    case context.arguments[:load] do
-      nil ->
-        [
-          :club_created_event,
-          :content_added_event,
-          :content_watched_event,
-          :library_created_event,
-          :member_added_event
-        ]
+    [
+      club_created_event: merge_load(context, :club_created_event),
+      content_added_event: merge_load(context, :content_added_event),
+      content_watched_event: merge_load(context, :content_watched_event),
+      library_created_event: merge_load(context, :library_created_event),
+      member_added_event: merge_load(context, :member_added_event)
+    ]
+  end
 
-      load ->
-        load
-    end
+  defp merge_load(context, name, default \\ []) do
+    custom_load = context.arguments[:load] || []
+    default ++ Keyword.get(custom_load, name, [])
   end
 
   # Ensures all attributes are selected by default on the related loads we depend on.
   @impl true
   def strict_loads?, do: false
 
-  @impl true
+@impl true
   def calculate(scopes, _, _) do
-    Enum.map(scopes, fn scope ->
-      scope.club_created_event || scope.library_created_event || scope.content_added_event ||
-        scope.member_added_event || scope.content_watched_event
-    end)
+    Enum.map(
+      scopes,
+      &(&1.club_created_event || &1.library_created_event || &1.content_added_event ||
+          &1.member_added_event || &1.content_watched_event)
+    )
   end
 end

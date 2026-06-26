@@ -1,9 +1,19 @@
 defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
   use Ash.Resource.Calculation
 
+  alias WatchClub.Contents.{Book, Movie, TvShow}
+
   @impl true
   def load(_, _, _) do
-    [book: [:audiobooks, :ebooks], movie: [:videos], tv_show: [actor_next_episode: [:videos]]]
+    [
+      implementation: %{
+        load: [
+          book: [:audiobooks, :ebooks],
+          movie: [:videos],
+          tv_show: [actor_next_episode: [:videos]]
+        ]
+      }
+    ]
   end
 
   # This ensures that all attributes are selected by default
@@ -14,15 +24,15 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
   @impl true
   def calculate(records, _, _) do
     Enum.map(records, fn record ->
-      cond do
-        record.book ->
-          record.book.audiobooks ++ record.book.ebooks
+      case record.implementation do
+        %Book{} = book ->
+          book.audiobooks ++ book.ebooks
 
-        record.movie ->
-          record.movie.videos
+        %Movie{} = movie ->
+          movie.videos
 
-        record.tv_show ->
-          episode = record.tv_show.actor_next_episode
+        %TvShow{} = tv_show ->
+          episode = tv_show.actor_next_episode
           (episode && episode.videos) || []
       end
     end)

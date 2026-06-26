@@ -32,17 +32,19 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     ~H"""
     <.generic_continue_watching_card
       content={@content}
-      play_link={(@content.movie.has_media? && Url.player_link(@content.movie)) || nil}
-      disabled={!@content.movie.has_media?}
-      watch_progress={@content.movie.actor_progress}
+      play_link={
+        (@content.implementation.has_media? && Url.player_link(@content.implementation)) || nil
+      }
+      disabled={!@content.implementation.has_media?}
+      watch_progress={@content.implementation.actor_progress}
       locale={@current_user.settings.locale}
-      image={@content.movie.backdrop_path}
+      image={@content.implementation.backdrop_path}
     />
     """
   end
 
   defp continue_watching_card(%{content: %Content{type: :tv_show}} = assigns) do
-    assigns = assigns |> assign(episode: assigns.content.tv_show.actor_next_episode)
+    assigns = assigns |> assign(episode: assigns.content.implementation.actor_next_episode)
 
     ~H"""
     <.generic_continue_watching_card
