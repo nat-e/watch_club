@@ -3,6 +3,7 @@ defmodule WatchClub.PubSub do
   Helpers and topics for the WatchClub PubSub notification service
   """
   alias WatchClub.Accounts.User
+  alias WatchClub.Contents.ContentIdentity
 
   @doc """
   Subscribes a LiveView socket to a topic or list of PubSub topics if the socket is connected
@@ -25,6 +26,13 @@ defmodule WatchClub.PubSub do
     end
 
     socket
+  end
+
+  def subscribe_to_content_activity_feed(socket, %ContentIdentity{
+        external_id_source: source,
+        external_id: id
+      }) do
+    subscribe_if_connected(socket, "feed:content:#{source}:#{id}")
   end
 
   defp content_topics(%User{} = user) do

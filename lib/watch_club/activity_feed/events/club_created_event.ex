@@ -1,13 +1,14 @@
 defmodule WatchClub.ActivityFeed.Events.ClubCreatedEvent do
   @moduledoc """
-  Payload of a :club_created Activity feed Event.
+  A :club_created activity feed event: a User created a Club.
   """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.ActivityFeed,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.ActivityFeed.Event
+  alias WatchClub.Accounts.User
+  alias WatchClub.ActivityFeed.FeedEventScope
   alias WatchClub.Clubs.Club
 
   postgres do
@@ -15,31 +16,32 @@ defmodule WatchClub.ActivityFeed.Events.ClubCreatedEvent do
     repo WatchClub.Repo
 
     references do
-      reference :event, on_delete: :delete, on_update: :update
       reference :club, on_delete: :delete, on_update: :update
+      reference :actor, on_delete: :nilify, on_update: :update
     end
   end
 
   actions do
-    defaults [:read, create: [:club_id]]
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:club_id]
+      argument :scopes, {:array, :map}, allow_nil?: false
+
+      change relate_actor(:actor)
+      change manage_relationship(:scopes, type: :create)
+    end
   end
 
   attributes do
-    attribute :id, :uuid_v7 do
-      primary_key? true
-      allow_nil? false
-    end
+    uuid_v7_primary_key :id
   end
 
   relationships do
-    belongs_to :event, Event do
-      primary_key? true
-      allow_nil? false
-      define_attribute? false
-      source_attribute :id
-    end
-
     belongs_to :club, Club, allow_nil?: false
+    belongs_to :actor, User, allow_nil?: true
+    has_many :scopes, FeedEventScope
   end
 
   identities do

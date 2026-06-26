@@ -9,9 +9,7 @@ defmodule WatchClub.History do
 
   resources do
     resource WatchProgress do
-      define :record_movie_progress
-      define :record_book_progress
-      define :record_episode_progress
+      define :record_watch_progress, action: :record_progress
 
       define :mark_content_watched, args: [:content_identity]
       define :mark_content_not_watched, args: [:content_identity]

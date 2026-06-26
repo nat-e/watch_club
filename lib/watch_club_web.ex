@@ -119,7 +119,16 @@ defmodule WatchClubWeb do
       }
 
       alias WatchClub.Accounts.{InvitationCode, User, UserLocale, UserSettings}
-      alias WatchClub.ActivityFeed.{Event, EventType}
+      alias WatchClub.ActivityFeed.FeedEventScope
+
+      alias WatchClub.ActivityFeed.Events.{
+        ClubCreatedEvent,
+        ContentAddedEvent,
+        ContentWatchedEvent,
+        LibraryCreatedEvent,
+        MemberAddedEvent
+      }
+
       alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership, MembershipRole}
 
       alias WatchClub.Contents.{

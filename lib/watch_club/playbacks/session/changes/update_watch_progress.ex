@@ -31,7 +31,7 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
 
   defp record_progress(%Video{movie_id: movie_id} = video, media_id, position, context)
        when not is_nil(movie_id) do
-    History.record_movie_progress!(
+    History.record_watch_progress!(
       %{
         movie_id: movie_id,
         last_media_id: media_id,
@@ -49,7 +49,7 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
          context
        )
        when not is_nil(episode_id) do
-    History.record_episode_progress!(
+    History.record_watch_progress!(
       %{
         tv_show_episode_id: episode_id,
         last_media_id: media_id,

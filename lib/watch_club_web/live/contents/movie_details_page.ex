@@ -76,7 +76,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
           <div class="flex min-w-0 flex-1 flex-col gap-cluster">
             <.live_component
               :if={@current_user.memberships != []}
-              id={InYourClubsSectionLive.dom_id(@content_identity)}
+              id={InYourClubsSectionLive.dom_id()}
               module={InYourClubsSectionLive}
               current_user={@current_user}
               content_identity={@content_identity}
@@ -122,9 +122,13 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   def handle_params(%{"tmdb_id" => tmdb_id} = params, _uri, socket) do
     case Integer.parse(tmdb_id) do
       {parsed_id, ""} ->
+        content_identity = ContentIdentity.for_movie(parsed_id)
+
         {:noreply,
          socket
+         |> assign(content_identity: content_identity)
          |> load_movie_details(parsed_id)
+         |> WatchClub.PubSub.subscribe_to_content_activity_feed(content_identity)
          |> assign(selected_club_id: params["selected_club_id"])}
 
       _ ->
@@ -139,11 +143,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   defp load_movie_details(socket, tmdb_id) do
     case Contents.get_movie_details(tmdb_id, actor: socket.assigns.current_user) do
       {:ok, movie} ->
-        socket
-        |> assign(
-          movie: movie,
-          content_identity: ContentIdentity.for_movie(movie.id)
-        )
+        socket |> assign(movie: movie)
 
       {:error, _error} ->
         socket |> redirect_home()
@@ -162,7 +162,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
   @impl true
   def handle_info(message, socket) do
     # Send updates to all the Live Components we are using on this page
-    InYourClubsSectionLive.handle_pubsub_message(message)
+    InYourClubsSectionLive.handle_pubsub_message(message, socket.assigns.content_identity)
     ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 

@@ -197,6 +197,7 @@
       "up": "CREATE TRIGGER delete_parent_event\nAFTER DELETE ON activity_feed_member_added_events\nFOR EACH ROW EXECUTE FUNCTION delete_parent_activity_feed_event()\n"
     }
   ],
+  "drop_table_opted_out": true,
   "has_create_action": true,
   "hash": "A664EDC47F5FBC040536239CB55CFB945265EC7469E656158BB811B00F35A32D",
   "identities": [],

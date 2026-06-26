@@ -15,6 +15,7 @@ defmodule WatchClub.History.WatchProgress do
     notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
+  alias WatchClub.ActivityFeed.Changes.ScheduleContentWatchedEventSync
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}
   alias WatchClub.History.WatchProgress.Actions.{MarkNotWatched, MarkWatched}
   alias WatchClub.MediaCatalog.Media
@@ -41,33 +42,44 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   actions do
-    defaults [:read, :destroy, create: :*]
+    # :destroy stays atomic; MarkNotWatched recomputes the ContentWatchedEvent after the bulk delete.
+    defaults [:read, :destroy]
 
-    create :record_movie_progress do
+    # Mark watched is only intended to use by the generic mark_*_watched actions.
+    # It does not trigger side-effect to stay atomic to keep marking a show with many
+    # episodes watched fast.
+    # Side effects are triggered once per batch on the generic actions
+    create :mark_watched do
+      description "Marks a single movie, book or episode as watched"
+      primary? true
+
       upsert? true
-      upsert_identity :unique_movie_per_user
+      upsert_identity :unique_content_per_user
       upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
+      accept [:movie_id, :book_id, :tv_show_episode_id]
 
-      accept [:movie_id, :last_media_id, :position_seconds, :duration_seconds]
+      change set_attribute(:position_seconds, nil)
+      change set_attribute(:duration_seconds, nil)
+      change set_attribute(:last_media_id, nil)
       change relate_actor(:user)
     end
 
-    create :record_book_progress do
+    create :record_progress do
       upsert? true
-      upsert_identity :unique_book_per_user
+      upsert_identity :unique_content_per_user
       upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
 
-      accept [:book_id, :last_media_id, :position_seconds, :duration_seconds]
-      change relate_actor(:user)
-    end
+      accept [
+        :book_id,
+        :movie_id,
+        :tv_show_episode_id,
+        :last_media_id,
+        :position_seconds,
+        :duration_seconds
+      ]
 
-    create :record_episode_progress do
-      upsert? true
-      upsert_identity :unique_episode_per_user
-      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
-
-      accept [:tv_show_episode_id, :last_media_id, :position_seconds, :duration_seconds]
       change relate_actor(:user)
+      change ScheduleContentWatchedEventSync
     end
 
     action :mark_content_watched, :struct do
@@ -145,9 +157,8 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   preparations do
-    # We always load the seconds_left and watch percent since they are simple calculations
-    # that don't require joins
-    prepare build(load: [:seconds_left, :percent_watched])
+    # We always load the simple calculations that don't require joins
+    prepare build(load: [:seconds_left, :percent_watched, :completed])
   end
 
   attributes do
@@ -240,16 +251,8 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   identities do
-    identity :unique_book_per_user, [:user_id, :book_id] do
-      where expr(not is_nil(book_id))
-    end
-
-    identity :unique_movie_per_user, [:user_id, :movie_id] do
-      where expr(not is_nil(movie_id))
-    end
-
-    identity :unique_episode_per_user, [:user_id, :tv_show_episode_id] do
-      where expr(not is_nil(tv_show_episode_id))
+    identity :unique_content_per_user, [:user_id, :book_id, :movie_id, :tv_show_episode_id] do
+      nils_distinct? false
     end
   end
 end

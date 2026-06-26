@@ -46,21 +46,24 @@ defmodule WatchClubWeb.HomePage do
      socket
      |> subscribe_to_activity_feed_topics()
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     |> stream_configure(:feed, dom_id: & &1.id)
+     # Key by the underlying event so that we don't duplicate events sent to multiple scope
+     # This is mainly for new events received via PubSub since we load distinct events on page load
+     |> stream_configure(:feed, dom_id: &"feed-#{&1.event.id}")
      |> load_feed_page()
      |> load_continue_watching()}
   end
 
   @impl true
-  def handle_info(%Notification{data: %Event{} = event}, socket) do
-    # A new activity feed event has been received
+  def handle_info(%Notification{data: %FeedEventScope{} = scope}, socket) do
+    # A new activity feed scope has been received.
     # Load the required fields (for some reason using load: option in pub_sub does not seem to work)
-    # and prepend it to the stream
-    event =
-      event
+    # and prepend it to the stream. The stream is keyed by the underlying event, so duplicate scopes
+    # of the same event (personal + club) collapse to a single card.
+    scope =
+      scope
       |> Ash.load!(LoadActivityFeedEvent.load_statement(), actor: socket.assigns.current_user)
 
-    {:noreply, socket |> stream_insert(:feed, event, at: 0)}
+    {:noreply, socket |> stream_insert(:feed, scope, at: 0)}
   end
 
   def handle_info(%Notification{resource: WatchProgress}, socket) do
@@ -113,8 +116,8 @@ defmodule WatchClubWeb.HomePage do
   defp subscribe_to_activity_feed_topics(socket) do
     user = socket.assigns.current_user
 
-    # Subscribe to all the clubs of this user, plus their private and global feed topics
-    topics = Enum.map(user.memberships, &"feed:club:#{&1.club_id}")
+    # Subscribe to this user's personal feed topic plus all the clubs they belong to
+    topics = ["feed:user:#{user.id}" | Enum.map(user.memberships, &"feed:club:#{&1.club_id}")]
 
     WatchClub.PubSub.subscribe_if_connected(socket, topics)
   end

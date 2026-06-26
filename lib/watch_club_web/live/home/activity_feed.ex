@@ -22,9 +22,9 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
           <.empty_feed current_user={@current_user} />
         </div>
         <.feed_card
-          :for={{dom_id, event} <- @stream}
+          :for={{dom_id, event_scope} <- @stream}
           id={dom_id}
-          event={event}
+          event={event_scope}
           locale={@current_user.settings.locale}
         />
       </.stack>
@@ -80,59 +80,80 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
   end
 
   attr :id, :string, required: true
-  attr :event, Event, required: true
+  attr :event, FeedEventScope, required: true
   attr :locale, :atom, required: true
 
-  def feed_card(%{event: %Event{type: :club_created}} = assigns) do
+  def feed_card(%{event: %FeedEventScope{event: %ClubCreatedEvent{}}} = assigns) do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.actor} /> created the club
+        <.user_ref user={@event.event.actor} /> created the club
       </span>
     </.generic_feed_card>
     """
   end
 
-  def feed_card(%{event: %Event{type: :library_created}} = assigns) do
+  def feed_card(%{event: %FeedEventScope{event: %LibraryCreatedEvent{}}} = assigns) do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.actor} /> created the library
-        <.library_ref library={@event.library_created.library} />
+        <.user_ref user={@event.event.actor} /> created the library
+        <.library_ref library={@event.event.library} />
       </span>
     </.generic_feed_card>
     """
   end
 
-  def feed_card(%{event: %Event{type: :content_added}} = assigns) do
+  def feed_card(%{event: %FeedEventScope{event: %ContentAddedEvent{}}} = assigns) do
     ~H"""
     <.generic_feed_card
       id={@id}
       event={@event}
       locale={@locale}
-      content={@event.content_added.library_item.content}
+      content={@event.event.library_item.content}
     >
       <span class="text-sm">
-        <.user_ref user={@event.actor} /> added
-        <.content_link content={@event.content_added.library_item.content} /> to
-        <.library_ref library={@event.content_added.library_item.library} />
+        <.user_ref user={@event.event.actor} /> added
+        <.content_link content={@event.event.library_item.content} /> to
+        <.library_ref library={@event.event.library_item.library} />
       </span>
     </.generic_feed_card>
     """
   end
 
-  def feed_card(%{event: %Event{type: :member_added}} = assigns) do
+  def feed_card(%{event: %FeedEventScope{event: %ContentWatchedEvent{}}} = assigns) do
+    ~H"""
+    <.generic_feed_card
+      id={@id}
+      event={@event}
+      locale={@locale}
+      content={@event.event.content}
+    >
+      <span class="text-sm">
+        <.user_ref user={@event.event.actor} />
+        <%= if @event.event.completed do %>
+          watched
+        <% else %>
+          is watching
+        <% end %>
+        <.content_link content={@event.event.content} />
+      </span>
+    </.generic_feed_card>
+    """
+  end
+
+  def feed_card(%{event: %FeedEventScope{event: %MemberAddedEvent{}}} = assigns) do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.member_added.membership.user} /> joined the club
+        <.user_ref user={@event.event.membership.user} /> joined the club
       </span>
     </.generic_feed_card>
     """
   end
 
   attr :id, :string, required: true
-  attr :event, Event, required: true
+  attr :event, FeedEventScope, required: true
   attr :locale, :atom, required: true
   attr :content, Content, default: nil
 

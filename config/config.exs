@@ -79,6 +79,7 @@ config :watch_club, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
   ],
   queues: [
+    activity_feed_event_handlers: 5,
     media_source_scans: 1,
     media_candidate_ingestions: 3,
     media_import_monitors: 5,

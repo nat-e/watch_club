@@ -10,6 +10,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
 
   require Ash.Query
 
+  alias WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent
   alias WatchClub.Contents
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.History.WatchProgress
@@ -26,6 +27,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
              Map.get(input.arguments, :episode_number),
              context
            ) do
+      Oban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
       {:ok, content, notifications}
     end
   end
@@ -34,8 +36,8 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
     {_progress, notifications} =
       WatchProgress
       |> Ash.create!(
-        %{movie_id: id, last_media_id: nil, position_seconds: nil, duration_seconds: nil},
-        action: :record_movie_progress,
+        %{movie_id: id},
+        action: :mark_watched,
         scope: context,
         return_notifications?: true
       )
@@ -47,8 +49,8 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
     {_progress, notifications} =
       WatchProgress
       |> Ash.create!(
-        %{book_id: id, last_media_id: nil, position_seconds: nil, duration_seconds: nil},
-        action: :record_book_progress,
+        %{book_id: id},
+        action: :mark_watched,
         scope: context,
         return_notifications?: true
       )
@@ -60,17 +62,10 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
     inputs =
       tv_show_id
       |> episode_ids(season, episode, context)
-      |> Enum.map(fn episode_id ->
-        %{
-          tv_show_episode_id: episode_id,
-          last_media_id: nil,
-          position_seconds: nil,
-          duration_seconds: nil
-        }
-      end)
+      |> Enum.map(&%{tv_show_episode_id: &1})
 
     %Ash.BulkResult{notifications: notifications} =
-      Ash.bulk_create!(inputs, WatchProgress, :record_episode_progress,
+      Ash.bulk_create!(inputs, WatchProgress, :mark_watched,
         scope: context,
         return_records?: false,
         return_notifications?: true

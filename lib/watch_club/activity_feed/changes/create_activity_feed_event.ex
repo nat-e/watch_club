@@ -1,12 +1,17 @@
 defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
   @moduledoc """
   A generic Ash Change that creates the appropriate Activity Feed event depending on the action
-  being executed.
-  It will crash if called on an action that does not have a related activity feed event
+  being executed. Each event manages its own fan-out scopes.
+  It will crash if called on an action that does not have a related activity feed event.
   """
   use Ash.Resource.Change
 
-  alias WatchClub.ActivityFeed.Event
+  alias WatchClub.ActivityFeed.Events.{
+    ClubCreatedEvent,
+    ContentAddedEvent,
+    LibraryCreatedEvent,
+    MemberAddedEvent
+  }
 
   alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership}
 
@@ -14,8 +19,10 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
   def change(%Ash.Changeset{action_type: :create, data: %Club{}} = changeset, _opts, context) do
     create_event_after_action!(
       changeset,
-      :create_club_created,
-      fn club -> %{club_id: club.id, club_created: %{club_id: club.id}} end,
+      ClubCreatedEvent,
+      fn club ->
+        %{club_id: club.id, scopes: club_event_scope(club.id)}
+      end,
       context
     )
   end
@@ -30,9 +37,12 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       :member ->
         create_event_after_action!(
           changeset,
-          :create_member_added,
+          MemberAddedEvent,
           fn membership ->
-            %{club_id: membership.club_id, member_added: %{membership_id: membership.id}}
+            %{
+              membership_id: membership.id,
+              scopes: club_event_scope(membership.club_id)
+            }
           end,
           context
         )
@@ -45,8 +55,13 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
   def change(%Ash.Changeset{action_type: :create, data: %Library{}} = changeset, _opts, context) do
     create_event_after_action!(
       changeset,
-      :create_library_created,
-      fn library -> %{club_id: library.club_id, library_created: %{library_id: library.id}} end,
+      LibraryCreatedEvent,
+      fn library ->
+        %{
+          library_id: library.id,
+          scopes: club_event_scope(library.club_id)
+        }
+      end,
       context
     )
   end
@@ -58,12 +73,15 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       ) do
     create_event_after_action!(
       changeset,
-      :create_content_added,
+      ContentAddedEvent,
       fn %LibraryItem{} = library_item ->
         %{
-          club_id: library_item.library.club_id,
-          content_id: library_item.content_id,
-          content_added: %{library_item_id: library_item.id}
+          library_item_id: library_item.id,
+          scopes:
+            club_event_scope(
+              library_item.library.club_id,
+              library_item.content_id
+            )
         }
       end,
       context,
@@ -71,26 +89,30 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
     )
   end
 
-  defp create_event_after_action!(changeset, action, params, context, opts \\ nil) do
-    Ash.Changeset.after_action(changeset, fn _changeset, resource ->
-      resource =
+  defp create_event_after_action!(changeset, resource, params, context, opts \\ nil) do
+    Ash.Changeset.after_action(changeset, fn _changeset, record ->
+      record =
         if opts[:load] do
-          Ash.load!(resource, opts[:load], authorize?: false)
+          Ash.load!(record, opts[:load], authorize?: false)
         else
-          resource
+          record
         end
 
       {_event, notifications} =
-        Event
+        resource
         |> Ash.create!(
-          params.(resource),
-          action: action,
+          params.(record),
+          action: :create,
           actor: context.actor,
           authorize?: false,
           return_notifications?: true
         )
 
-      {:ok, resource, notifications}
+      {:ok, record, notifications}
     end)
+  end
+
+  def club_event_scope(club_id, content_id \\ nil) do
+    [%{scope_club_id: club_id, content_id: content_id}]
   end
 end

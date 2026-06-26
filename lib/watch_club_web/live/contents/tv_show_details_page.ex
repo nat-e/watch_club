@@ -57,7 +57,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
             <div class="flex min-w-0 flex-1 flex-col gap-cluster">
               <.live_component
                 :if={@current_user.memberships != []}
-                id={InYourClubsSectionLive.dom_id(@content_identity)}
+                id={InYourClubsSectionLive.dom_id()}
                 module={InYourClubsSectionLive}
                 current_user={@current_user}
                 content_identity={@content_identity}
@@ -128,9 +128,13 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   def handle_params(%{"tmdb_id" => tmdb_id} = params, _uri, socket) do
     case Integer.parse(tmdb_id) do
       {parsed_id, ""} ->
+        content_identity = ContentIdentity.for_tv_show(parsed_id)
+
         {:noreply,
          socket
+         |> assign(content_identity: content_identity)
          |> load_tv_show_details(parsed_id)
+         |> WatchClub.PubSub.subscribe_to_content_activity_feed(content_identity)
          |> assign(selected_club_id: params["selected_club_id"])}
 
       _ ->
@@ -148,7 +152,6 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
         socket
         |> assign(
           tv_show: tv_show,
-          content_identity: ContentIdentity.for_tv_show(tv_show.id),
           selected_season: 1,
           season_metadata_by_number:
             Map.new(tv_show.seasons, &{&1.season_number, %{status: :loading}})
@@ -191,7 +194,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   @impl true
   def handle_info(message, socket) do
     # Send updates to all the Live Components we are using on this page
-    InYourClubsSectionLive.handle_pubsub_message(message)
+    InYourClubsSectionLive.handle_pubsub_message(message, socket.assigns.content_identity)
     ContentWatchProgressBadge.handle_pubsub_message(message, socket.assigns.current_user)
     PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
 

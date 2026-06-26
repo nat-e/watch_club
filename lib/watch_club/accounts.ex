@@ -14,6 +14,7 @@ defmodule WatchClub.Accounts do
       define :register_with_password
       define :sign_in, action: :sign_in_with_password
       define :get_current_user
+      define :get_user_by_id, action: :read, get_by: [:id]
       define :destroy_user, action: :destroy
     end
 

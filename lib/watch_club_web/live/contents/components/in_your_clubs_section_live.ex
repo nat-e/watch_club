@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
   use WatchClubWeb, :live_component
 
+  alias WatchClub.ActivityFeed.Preparations.LoadActivityFeedEvent
+
   alias WatchClubWeb.Components.Contents.AddToLibraryModalLive
   alias WatchClubWeb.Helpers.KeysetStreamState
 
@@ -10,8 +12,7 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
   The DOM id we recommend using for this Live Component
   Stable DOM id allows us to simplify PubSub notification handling
   """
-  def dom_id(%ContentIdentity{} = identity),
-    do: "iyc-section-#{identity.external_id_source}-#{identity.external_id}"
+  def dom_id, do: "iyc-section"
 
   @doc """
   Updates the component when a relevant Ash Notification is received.
@@ -21,17 +22,32 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
 
   The section refreshes when the content has been added or removed to a club
   """
-  def handle_pubsub_message(%Notification{
-        resource: LibraryItem,
-        metadata: %{content_identity: identity}
-      }) do
-    send_update(__MODULE__,
-      id: dom_id(identity),
-      refresh_clubs: true
-    )
+  def handle_pubsub_message(
+        %Notification{
+          resource: LibraryItem,
+          metadata: %{content_identity: identity}
+        },
+        content_identity
+      )
+      when identity == content_identity do
+    send_update(__MODULE__, id: dom_id(), refresh_clubs: true)
   end
 
-  def handle_pubsub_message(_msg), do: nil
+  # Note that we don't support deletion of deleted events (ContentWatched at the moment)
+  # since they are not published.
+  # Prepend or update an event in the feed
+  # There is no need to check the content identity since content details page
+  # only subscribe to a content specific topic
+  def handle_pubsub_message(
+        %Notification{data: %FeedEventScope{scope_club_id: scope_club_id} = event},
+        _identity
+      )
+      when not is_nil(scope_club_id) do
+    send_update(__MODULE__, id: dom_id(), feed_event_upserted: event)
+  end
+
+  # Ignore all other events
+  def handle_pubsub_message(_msg, _identity), do: nil
 
   attr :content_identity, ContentIdentity, required: true
 
@@ -98,7 +114,7 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
         current_user={@current_user}
         on_close={
           fn ->
-            send_update(__MODULE__, id: dom_id(@content_identity), close_add_to_library_modal: true)
+            send_update(__MODULE__, id: dom_id(), close_add_to_library_modal: true)
           end
         }
       />
@@ -154,9 +170,10 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
       class="p-group flex-1 min-h-40 max-h-120 overflow-y-auto"
     >
       <.feed_card
-        :for={{dom_id, event} <- @feed}
+        :for={{dom_id, event_scope} <- @feed}
         id={dom_id}
-        event={event}
+        event={event_scope.event}
+        created_at={event_scope.created_at}
         locale={@current_user.settings.locale}
       />
       <.infinite_scroll_trigger
@@ -169,13 +186,34 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
     """
   end
 
-  defp feed_card(%{event: %Event{type: :content_added}} = assigns) do
+  attr :id, :string, required: true
+  attr :created_at, DateTime, required: true
+  attr :event, :any, required: true
+  attr :locale, :atom, required: true
+
+  defp feed_card(%{event: %ContentAddedEvent{}} = assigns) do
     ~H"""
-    <.generic_feed_card id={@id} icon={:plus} locale={@locale} created_at={@event.created_at}>
+    <.generic_feed_card id={@id} icon={:plus} locale={@locale} created_at={@created_at}>
       <span class="text-sm text-text-muted leading-snug">
         <.user_ref user={@event.actor} /> added
-        <.content_link content={@event.content_added.library_item.content} /> to
-        <.library_ref library={@event.content_added.library_item.library} />
+        <.content_link content={@event.library_item.content} /> to
+        <.library_ref library={@event.library_item.library} />
+      </span>
+    </.generic_feed_card>
+    """
+  end
+
+  defp feed_card(%{event: %ContentWatchedEvent{}} = assigns) do
+    ~H"""
+    <.generic_feed_card id={@id} icon={:circle_play} locale={@locale} created_at={@created_at}>
+      <span class="text-sm text-text-muted leading-snug">
+        <.user_ref user={@event.actor} />
+        <%= if @event.completed do %>
+          watched
+        <% else %>
+          is watching
+        <% end %>
+        <.content_link content={@event.content} />
       </span>
     </.generic_feed_card>
     """
@@ -214,7 +252,7 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
     {:ok,
      socket
      |> reset_modals()
-     |> stream_configure(:feed, dom_id: & &1.id)}
+     |> stream_configure(:feed, dom_id: &"feed-#{&1.event.id}")}
   end
 
   @impl true
@@ -227,6 +265,20 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
   def update(%{refresh_clubs: true}, socket) do
     # Switch selected club with the current club to select a club if nil before
     {:ok, socket |> load_clubs() |> switch_selected_club(socket.assigns.selected_club_id)}
+  end
+
+  # An event has been created or updated from the content's activity feed
+  def update(%{feed_event_upserted: %FeedEventScope{} = event}, socket) do
+    # Prepend or update the event from the feed, only if it's relevant to the selected club
+    if event.scope_club_id == socket.assigns.selected_club_id do
+      event =
+        event
+        |> Ash.load!(LoadActivityFeedEvent.load_statement(), actor: socket.assigns.current_user)
+
+      {:ok, socket |> stream_insert(:feed, event, at: 0)}
+    else
+      {:ok, socket}
+    end
   end
 
   # The parent is re-rendering the component
