@@ -241,6 +241,23 @@ const Player = {
 			() => {
 				this.playing = false;
 				this.reportHeartbeat();
+				// Auto-advance once the episode ends. The server no-ops when there is no
+				// next episode
+				this.pushEvent("play_next_episode", {});
+			},
+			{ signal },
+		);
+		// Reveal the auto-advance "up next" overlay during the last 5 seconds. CSS keys
+		// off [data-near-end] on the player root to fade it in and run the fill animation.
+		this.player.addEventListener(
+			"time-update",
+			() => {
+				const { currentTime, duration } = this.player;
+				const nearEnd =
+					Number.isFinite(duration) &&
+					duration > 0 &&
+					duration - currentTime <= 5;
+				this.player.toggleAttribute("data-near-end", nearEnd);
 			},
 			{ signal },
 		);

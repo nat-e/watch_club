@@ -204,8 +204,12 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute left-group"
           phx-click="play_previous_episode"
+          aria-label={
+            dgettext("player", "Play %{episode}", episode: @previous_episode.formatted_episode_number)
+          }
         >
-          {dgettext("player", "Play %{episode}", episode: @previous_episode.formatted_episode_number)}
+          <:icon><Lucideicons.skip_back /></:icon>
+          {@previous_episode.formatted_episode_number}
         </.button>
         <.inline
           space="tight"
@@ -223,11 +227,45 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute right-group"
           phx-click="play_next_episode"
+          aria-label={
+            dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)
+          }
         >
-          {dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)}
+          <:icon><Lucideicons.skip_forward /></:icon>
+          {@next_episode.formatted_episode_number}
         </.button>
       </div>
     </footer>
+    """
+  end
+
+  attr :video, Video, required: true
+
+  @doc """
+  Auto-advancing "Up next" overlay button revealed during the final seconds of an episode.
+
+  The JS player hook flips `data-near-end` on the player root element once the playback reaches the last
+  5 seconds; the CSS below fades the overlay in and runs the fill animation
+  """
+  def up_next_button(assigns) do
+    current_episode = assigns.video.tv_show_episode
+    assigns = assign(assigns, :next_episode, current_episode && current_episode.next_episode)
+
+    ~H"""
+    <.button
+      :if={@next_episode && @next_episode.has_media?}
+      id="player-up-next-button"
+      variant="secondary"
+      phx-click="play_next_episode"
+      class="pointer-events-none absolute bottom-28 right-group z-40 isolate overflow-hidden opacity-0 group-data-near-end/player:pointer-events-auto group-data-near-end/player:opacity-100 sm:bottom-32"
+    >
+      <:icon><Lucideicons.skip_forward /></:icon>
+      <span
+        aria-hidden="true"
+        class="absolute inset-0 -z-10 w-0 bg-primary/40 group-data-near-end/player:w-full motion-safe:[transition:width_5s_linear]"
+      />
+      {dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)}
+    </.button>
     """
   end
 

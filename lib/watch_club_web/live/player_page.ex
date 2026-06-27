@@ -76,6 +76,8 @@ defmodule WatchClubWeb.PlayerPage do
             />
           </media-controls>
 
+          <.up_next_button video={@session.active_playback.media.video} />
+
           <media-announcer />
         </media-player>
       </div>
