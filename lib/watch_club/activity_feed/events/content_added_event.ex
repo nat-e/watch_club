@@ -19,8 +19,8 @@ defmodule WatchClub.ActivityFeed.Events.ContentAddedEvent do
     repo WatchClub.Repo
 
     references do
-      reference :library_item, on_delete: :delete, on_update: :update
-      reference :actor, on_delete: :nilify, on_update: :update
+      reference :library_item, on_delete: :delete
+      reference :actor, on_delete: :nilify
     end
   end
 

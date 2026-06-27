@@ -24,7 +24,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
 
   alias WatchClub.{Accounts, Contents}
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
-  alias WatchClub.Contents.{Content, TvShow}
+  alias WatchClub.Contents.TvShow
 
   @doc "Builds a sync content watched event job for a given user/content."
   def new_job(user_id, content_id),

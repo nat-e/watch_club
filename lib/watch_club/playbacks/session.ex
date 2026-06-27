@@ -28,7 +28,7 @@ defmodule WatchClub.Playbacks.Session do
     repo WatchClub.Repo
 
     references do
-      reference :started_by, on_delete: :nilify, on_update: :update
+      reference :started_by, on_delete: :delete
     end
   end
 
@@ -103,15 +103,13 @@ defmodule WatchClub.Playbacks.Session do
 
   relationships do
     belongs_to :started_by, User do
-      allow_nil? true
-      public? true
+      allow_nil? false
     end
 
-    has_many :playbacks, Playback do
-      public? true
-    end
+    has_many :playbacks, Playback
 
     has_one :active_playback, Playback do
+      from_many? true
       public? true
       filter expr(is_nil(ended_at))
     end

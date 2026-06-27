@@ -24,8 +24,8 @@ defmodule WatchClub.MediaCatalog.Ebook do
     repo WatchClub.Repo
 
     references do
-      reference :media, on_delete: :delete, on_update: :update
-      reference :book, on_delete: :restrict, on_update: :update
+      reference :media, on_delete: :delete
+      reference :book, on_delete: :restrict
     end
   end
 

@@ -25,9 +25,9 @@ defmodule WatchClub.MediaCatalog.Video do
     repo WatchClub.Repo
 
     references do
-      reference :media, on_delete: :delete, on_update: :update
-      reference :movie, on_delete: :restrict, on_update: :update
-      reference :tv_show_episode, on_delete: :restrict, on_update: :update
+      reference :media, on_delete: :delete
+      reference :movie, on_delete: :restrict
+      reference :tv_show_episode, on_delete: :restrict
     end
 
     check_constraints do

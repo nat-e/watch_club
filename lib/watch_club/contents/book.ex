@@ -13,7 +13,7 @@ defmodule WatchClub.Contents.Book do
     repo WatchClub.Repo
 
     references do
-      reference :content, on_delete: :delete, on_update: :update
+      reference :content, on_delete: :delete
     end
   end
 

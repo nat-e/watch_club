@@ -13,7 +13,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     repo WatchClub.Repo
 
     references do
-      reference :tv_show, on_delete: :delete, on_update: :update
+      reference :tv_show, on_delete: :delete
     end
   end
 

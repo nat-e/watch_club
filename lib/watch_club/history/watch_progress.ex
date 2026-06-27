@@ -32,12 +32,12 @@ defmodule WatchClub.History.WatchProgress do
                            unique_episode_per_user: "tv_show_episode_id IS NOT NULL"
 
     references do
-      reference :user, on_delete: :delete, on_update: :update
-      reference :movie, on_delete: :delete, on_update: :update
-      reference :tv_show_episode, on_delete: :delete, on_update: :update
+      reference :user, on_delete: :delete
+      reference :movie, on_delete: :delete
+      reference :tv_show_episode, on_delete: :delete
 
       # When the media this refers is deleted, set to nil
-      reference :last_media, on_delete: :nilify, on_update: :update
+      reference :last_media, on_delete: :nilify
     end
   end
 

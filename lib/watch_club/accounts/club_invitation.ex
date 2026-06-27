@@ -17,8 +17,8 @@ defmodule WatchClub.Accounts.ClubInvitation do
     references do
       # Deleting a club drops it from every invitation code that grants it; the
       # invitations themselves survive.
-      reference :club, on_delete: :delete, on_update: :update
-      reference :invitation_code, on_delete: :delete, on_update: :update
+      reference :club, on_delete: :delete
+      reference :invitation_code, on_delete: :delete
     end
   end
 

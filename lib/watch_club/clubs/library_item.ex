@@ -26,8 +26,8 @@ defmodule WatchClub.Clubs.LibraryItem do
     repo WatchClub.Repo
 
     references do
-      reference :library, on_delete: :delete, on_update: :update
-      reference :added_by, on_delete: :nilify, on_update: :update
+      reference :library, on_delete: :delete
+      reference :added_by, on_delete: :nilify
     end
   end
 

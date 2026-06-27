@@ -26,7 +26,7 @@ defmodule WatchClub.Clubs.Library do
     repo WatchClub.Repo
 
     references do
-      reference :club, on_delete: :delete, on_update: :update
+      reference :club, on_delete: :delete
     end
   end
 

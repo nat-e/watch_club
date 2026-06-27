@@ -17,7 +17,7 @@ defmodule WatchClub.MediaSources.Filesystem do
     repo WatchClub.Repo
 
     references do
-      reference :media_source, on_delete: :delete, on_update: :update
+      reference :media_source, on_delete: :delete
     end
   end
 

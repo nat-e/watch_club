@@ -16,8 +16,8 @@ defmodule WatchClub.ActivityFeed.Events.MemberAddedEvent do
     repo WatchClub.Repo
 
     references do
-      reference :membership, on_delete: :delete, on_update: :update
-      reference :actor, on_delete: :nilify, on_update: :update
+      reference :membership, on_delete: :delete
+      reference :actor, on_delete: :nilify
     end
   end
 

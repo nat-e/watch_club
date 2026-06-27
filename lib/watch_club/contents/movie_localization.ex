@@ -12,7 +12,7 @@ defmodule WatchClub.Contents.MovieLocalization do
     repo WatchClub.Repo
 
     references do
-      reference :movie, on_delete: :delete, on_update: :update
+      reference :movie, on_delete: :delete
     end
   end
 

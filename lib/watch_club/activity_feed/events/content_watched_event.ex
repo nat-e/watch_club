@@ -28,8 +28,8 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
     identity_index_names unique_per_actor_content: "acwe_unique_per_actor_content_index"
 
     references do
-      reference :actor, on_delete: :delete, on_update: :update
-      reference :content, on_delete: :delete, on_update: :update
+      reference :actor, on_delete: :delete
+      reference :content, on_delete: :delete
     end
   end
 

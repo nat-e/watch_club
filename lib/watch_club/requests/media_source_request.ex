@@ -30,8 +30,8 @@ defmodule WatchClub.Requests.MediaSourceRequest do
     repo WatchClub.Repo
 
     references do
-      reference :content, on_delete: :delete, on_update: :update
-      reference :media_source, on_delete: :delete, on_update: :update
+      reference :content, on_delete: :delete
+      reference :media_source, on_delete: :delete
     end
   end
 

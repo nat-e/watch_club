@@ -28,8 +28,8 @@ defmodule WatchClub.Requests.ContentRequest do
     repo WatchClub.Repo
 
     references do
-      reference :user, on_delete: :delete, on_update: :update
-      reference :content, on_delete: :delete, on_update: :update
+      reference :user, on_delete: :delete
+      reference :content, on_delete: :delete
     end
   end
 

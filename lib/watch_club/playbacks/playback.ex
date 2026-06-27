@@ -20,8 +20,6 @@ defmodule WatchClub.Playbacks.Playback do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  import Ash.Expr
-
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.Playbacks.Session
 
@@ -30,8 +28,8 @@ defmodule WatchClub.Playbacks.Playback do
     repo WatchClub.Repo
 
     references do
-      reference :session, on_delete: :delete, on_update: :update
-      reference :media, on_delete: :delete, on_update: :update
+      reference :session, on_delete: :delete
+      reference :media, on_delete: :delete
     end
   end
 
@@ -81,7 +79,7 @@ defmodule WatchClub.Playbacks.Playback do
       description "Only the starting User (via the parent Session), the Instance Administrator, and the system actor can access Playbacks"
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
-      authorize_if expr(session.started_by_id == ^actor(:id))
+      authorize_if relates_to_actor_via([:session, :started_by])
     end
   end
 
