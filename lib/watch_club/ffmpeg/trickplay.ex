@@ -13,9 +13,6 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   built at serve time from the metadata alone, so cues always match the sprites
   on disk even across re-imports — the caller only supplies the session-scoped
   URL base the cue sprite refs hang off.
-
-  The storage root defaults to `priv/trickplay`, overridable via the
-  `:trickplay_dir` application env.
   """
 
   alias WatchClub.MediaCatalog.VideoTrack
@@ -167,7 +164,7 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   end
 
   defp trickplay_root,
-    do: Path.expand(Application.get_env(:watch_club, :trickplay_dir, "priv/trickplay"))
+    do: Path.join(Application.fetch_env!(:watch_club, :app_data), "trickplay")
 
   defp timestamp(seconds) do
     total_ms = round(seconds * 1000)

@@ -1,5 +1,12 @@
 # WatchClub
 
+WatchClub is a self-hosted, collaborative Media Center.
+
+## Install
+
+### Docker Compose
+
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

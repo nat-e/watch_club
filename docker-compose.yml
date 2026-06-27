@@ -1,65 +1,56 @@
 name: watch_club
 
+# Distribution compose for self-hosting WatchClub.
+#
+#   1. Copy .env.example to .env and fill in the required values.
+#   2. Run: docker compose up -d
+#
+# Upgrades: docker compose pull && docker compose up -d
+# (migrations run automatically on each start).
+
 services:
-  db:
-    image: postgres:18.3-trixie
-    networks:
-      - watch_club
+  postgres:
+    image: postgres:18
     restart: unless-stopped
-    # set shared memory limit when using docker compose
+    # Recommended when running Postgres under docker compose.
     shm_size: 128mb
-    ports:
-      - 5432:5432
     environment:
-      POSTGRES_DB: watch_club_dev
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: watch_club
+      POSTGRES_USER: watch_club
+      POSTGRES_PASSWORD: securepassword
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
-  radarr:
-    image: lscr.io/linuxserver/radarr:6.1.1
-    container_name: wc-radarr
-    environment:
-      - TZ=Etc/UTC
-    ports:
-      - '7878:7878'
-    volumes:
-      - wc-radarr-config:/config
-      - ./media:/media
-    networks:
-      - watch_club
-    restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:7878/']
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "pg_isready -U watch_club -d watch_club"]
+      interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 60s
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.17
-    container_name: wc-sonarr
-    environment:
-      - TZ=Etc/UTC
-    ports:
-      - '8989:8989'
-    volumes:
-      - wc-sonarr-config:/config
-      - ./media:/media
-    networks:
-      - watch_club
+      start_period: 30s
+
+  watch-club:
+    image: ghcr.io/nat-e/watch_club:${WATCH_CLUB_VERSION}
     restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:8989/']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-
-
-networks:
-  watch_club:
-    name: watch_club
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      WC_DATABASE_URL: ${WC_DATABASE_URL}
+      WC_SECRET: ${WC_SECRET}
+      WC_HOST: ${WC_HOST}
+      WC_PORT: ${WC_PORT}
+      WC_SCHEME: ${WC_SCHEME}
+      WC_APP_DATA: /data
+      WC_TMDB_API_KEY: ${WC_TMDB_API_KEY}
+    ports:
+      - "${WC_PORT}:${WC_PORT}"
+    volumes:
+      # Persistent app data. Used for cache, thumbnails, ...
+      - wc-data:/data
+      # Mount your media folders below
+      # You can mount this to any path you'd like and configure the import path in app
+      - /path/to/my/media:/media:ro
+      - /path/to/my/media2:/other-media:ro
 
 volumes:
   pgdata:
-  wc-radarr-config:
-  wc-sonarr-config:
+  wc-data:

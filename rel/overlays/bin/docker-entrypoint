@@ -1,0 +1,9 @@
+#!/bin/sh
+# Container default command: apply pending database migrations, then start the
+# server. Bundled in the image so self-hosters never run migrations by hand.
+set -eu
+
+cd -P -- "$(dirname -- "$0")"
+
+./migrate
+PHX_SERVER=true exec ./watch_club start
