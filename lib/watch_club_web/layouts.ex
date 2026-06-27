@@ -23,6 +23,10 @@ defmodule WatchClubWeb.Layouts do
     required: true,
     doc: "the currently logged in user, with their club memberships"
 
+  attr :instance_settings, InstanceSettings,
+    required: true,
+    doc: "the instance configuration, e.g. its display name"
+
   slot :inner_block, required: true
 
   slot :backdrop

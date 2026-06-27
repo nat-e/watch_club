@@ -19,14 +19,14 @@ msgstr "Administrateur créé"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex:43
-#: lib/watch_club_web/live/invitations/invitation_page.ex:36
+#: lib/watch_club_web/live/invitations/invitation_page.ex:38
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex:50
-#: lib/watch_club_web/live/invitations/invitation_page.ex:48
+#: lib/watch_club_web/live/invitations/invitation_page.ex:50
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr "Créer un compte"
@@ -40,7 +40,7 @@ msgstr "Ne partagez pas les identifiants de ce compte, vous pourrez inviter d'au
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex:37
 #: lib/watch_club_web/live/accounts/sign_in_page.ex:23
-#: lib/watch_club_web/live/invitations/invitation_page.ex:30
+#: lib/watch_club_web/live/invitations/invitation_page.ex:32
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr "Mot de passe"
@@ -60,7 +60,7 @@ msgstr "Pour configurer votre instance, vous devez créer un compte administrate
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex:31
 #: lib/watch_club_web/live/accounts/sign_in_page.ex:17
-#: lib/watch_club_web/live/invitations/invitation_page.ex:24
+#: lib/watch_club_web/live/invitations/invitation_page.ex:26
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr "Nom d'utilisateur"
@@ -72,18 +72,18 @@ msgid "Welcome back!"
 msgstr "Bon retour !"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex:7
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr "Bienvenue sur watch.club !"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/controllers/auth_controller.ex:10
 #, elixir-autogen, elixir-format
 msgid "Your password has successfully been reset"
 msgstr "Votre mot de passe a bien été réinitialisé"
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:42
+#: lib/watch_club_web/live/invitations/invitation_page.ex:44
 #, elixir-autogen, elixir-format
 msgid "Invitation Code"
 msgstr ""
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex:7
+#, elixir-autogen, elixir-format
+msgid "Welcome to watch.club!"
+msgstr "Bienvenue sur watch.club !"

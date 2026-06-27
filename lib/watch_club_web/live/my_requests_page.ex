@@ -24,6 +24,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       class="max-w-layout-page"
     >
       <.settings_header title="My Requests" description="" />

@@ -26,12 +26,12 @@ msgstr ""
 msgid "Invitation actions"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:160
+#: lib/watch_club_web/live/admin/users_page.ex:166
 #, elixir-autogen, elixir-format
 msgid "Invitation created"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:194
+#: lib/watch_club_web/live/admin/users_page.ex:200
 #, elixir-autogen, elixir-format
 msgid "Invitation link copied to clipboard"
 msgstr ""
@@ -96,17 +96,17 @@ msgstr ""
 msgid "Edit invitation code"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:209
+#: lib/watch_club_web/live/admin/users_page.ex:215
 #, elixir-autogen, elixir-format
 msgid "Invitation code deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:159
+#: lib/watch_club_web/live/admin/users_page.ex:165
 #, elixir-autogen, elixir-format
 msgid "Invitation updated"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:51
+#: lib/watch_club_web/live/admin/users_page.ex:53
 #, elixir-autogen, elixir-format
 msgid "Invite users"
 msgstr ""

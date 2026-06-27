@@ -41,7 +41,7 @@ msgid "Start typing to search"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/navbar/search_results.ex:40
-#: lib/watch_club_web/live/search_page.ex:84
+#: lib/watch_club_web/live/search_page.ex:85
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr ""
@@ -56,17 +56,17 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:98
+#: lib/watch_club_web/live/search_page.ex:99
 #, elixir-autogen, elixir-format
 msgid "No results"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:21
+#: lib/watch_club_web/live/search_page.ex:22
 #, elixir-autogen, elixir-format
 msgid "Showing results for %{query}"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:102
+#: lib/watch_club_web/live/search_page.ex:103
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for %{query}"
 msgstr ""

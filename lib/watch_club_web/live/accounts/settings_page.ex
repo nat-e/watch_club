@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
     >
@@ -20,7 +21,11 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
 
       <.section
         title={dgettext("settings", "Preferences")}
-        description={dgettext("settings", "Choose the language used across Watch Club.")}
+        description={
+          dgettext("settings", "Choose the language used across %{name}.",
+            name: @instance_settings.name
+          )
+        }
       >
         <.form
           for={@user_settings_form}

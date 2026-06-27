@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
   attr :stream, :list, required: true
   attr :stream_state, KeysetStreamState, required: true
   attr :current_user, User, required: true
+  attr :instance_settings, InstanceSettings, required: true
 
   def activity_feed(assigns) do
     ~H"""
@@ -19,7 +20,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     >
       <.stack space="related" id="activity-feed" phx-update="stream">
         <div id="activity-feed-empty-state" class="only:block hidden">
-          <.empty_feed current_user={@current_user} />
+          <.empty_feed current_user={@current_user} instance_settings={@instance_settings} />
         </div>
         <.feed_card
           :for={{dom_id, event_scope} <- @stream}
@@ -39,6 +40,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
   end
 
   attr :current_user, User, required: true
+  attr :instance_settings, InstanceSettings, required: true
 
   # The feed can be empty for the administrator when they just created the instance
   # Use this as an onboarding screen for prompting them to create a Club
@@ -48,7 +50,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.empty>
       <:icon><Lucideicons.rocket /></:icon>
-      <:title>Welcome to Watch Club!</:title>
+      <:title>{dgettext("feed", "Welcome to Watch Club!")}</:title>
       <:description>
         Your instance is successfully installed!
         <br />Create a club and invite your friends to get started
@@ -71,7 +73,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.empty>
       <:icon><Lucideicons.mail /></:icon>
-      <:title>Welcome to Watch Club!</:title>
+      <:title>{dgettext("feed", "Welcome to %{name}!", name: @instance_settings.name)}</:title>
       <:description>
         It's more fun with friends, contact the administrator so they can add you to some Clubs.<br />In the mean time, you can still browse and watch some content on your own.
       </:description>

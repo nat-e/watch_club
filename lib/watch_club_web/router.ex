@@ -21,6 +21,7 @@ defmodule WatchClubWeb.Router do
     plug :load_from_session
     plug :ensure_administrator_setup
     plug WatchClubWeb.Plugs.BrowserLocale
+    plug WatchClubWeb.Plugs.InstanceSettings
   end
 
   pipeline :api do
@@ -74,7 +75,8 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_administrator_required},
-        WatchClubWeb.Hooks.Locale
+        WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/admin/settings", Admin.InstanceSettingsPage
       live "/admin/users", Admin.UsersPage
@@ -88,7 +90,8 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_user_required},
-        WatchClubWeb.Hooks.Locale
+        WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/", HomePage
       live "/play/:media_id", PlayerPage
@@ -110,7 +113,8 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_no_user},
-        WatchClubWeb.Hooks.Locale
+        WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/setup", Accounts.SetupPage
       live "/sign-in", Accounts.SignInPage

@@ -46,6 +46,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="cluster"
       class="max-w-panel"
     >
@@ -54,7 +55,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         description={
           dgettext(
             "admin_media_imports",
-            "Configure Media Sources to import and request media to your Watch Club instance."
+            "Configure Media Sources to import and request media to your %{name} instance.",
+            name: @instance_settings.name
           )
         }
       />
@@ -125,6 +127,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         flavor={@servarr_modal.flavor}
         media_source={@servarr_modal.media_source}
         current_user={@current_user}
+        instance_settings={@instance_settings}
       />
       <.delete_media_source_modal
         :if={@delete_media_source}

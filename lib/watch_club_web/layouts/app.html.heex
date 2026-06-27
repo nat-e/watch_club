@@ -4,6 +4,7 @@
     module={WatchClubWeb.Components.Navigation.SidebarLive}
     current_url={@current_url}
     current_user={@current_user}
+    instance_settings={@instance_settings}
   />
 
   <main class="relative min-h-svh md:pl-[var(--wc-sidebar-width)]">
@@ -19,6 +20,7 @@
       module={WatchClubWeb.Components.Navigation.NavbarLive}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
     />
     <.page width="full" space={@space} class={["relative z-1", @class]}>
       {render_slot(@inner_block)}

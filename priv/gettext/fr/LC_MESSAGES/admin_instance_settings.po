@@ -11,22 +11,40 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:27
-#, elixir-autogen, elixir-format
-msgid "Configure the Watch Club instance itself. More options coming soon."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:25
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:31
 #, elixir-autogen, elixir-format
 msgid "Instance settings"
-msgstr ""
+msgstr "Paramètres de l'instance"
 
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:33
+#, elixir-autogen, elixir-format
+msgid "Configure how your instance presents itself."
+msgstr "Configurez la façon dont votre instance se présente."
+
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/instance_settings_page.ex:38
 #, elixir-autogen, elixir-format
-msgid "Instance settings will appear here in a future release."
-msgstr ""
+msgid "General"
+msgstr "Général"
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:36
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:55
 #, elixir-autogen, elixir-format
-msgid "Nothing here yet"
+msgid "Instance name"
+msgstr "Nom de l'instance"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:81
+#, elixir-autogen, elixir-format
+msgid "Instance settings updated."
+msgstr "Paramètres de l'instance mis à jour."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:40
+#, elixir-autogen, elixir-format
+msgid "The name shown across the app, in the browser tab, and in invitations."
 msgstr ""
+"Le nom affiché dans toute l'application, dans l'onglet du navigateur et dans "
+"les invitations."

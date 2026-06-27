@@ -17,13 +17,13 @@ msgid "Administrator created"
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex:43
-#: lib/watch_club_web/live/invitations/invitation_page.ex:36
+#: lib/watch_club_web/live/invitations/invitation_page.ex:38
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex:50
-#: lib/watch_club_web/live/invitations/invitation_page.ex:48
+#: lib/watch_club_web/live/invitations/invitation_page.ex:50
 #, elixir-autogen, elixir-format
 msgid "Create account"
 msgstr ""
@@ -35,7 +35,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex:37
 #: lib/watch_club_web/live/accounts/sign_in_page.ex:23
-#: lib/watch_club_web/live/invitations/invitation_page.ex:30
+#: lib/watch_club_web/live/invitations/invitation_page.ex:32
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
@@ -52,7 +52,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex:31
 #: lib/watch_club_web/live/accounts/sign_in_page.ex:17
-#: lib/watch_club_web/live/invitations/invitation_page.ex:24
+#: lib/watch_club_web/live/invitations/invitation_page.ex:26
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr ""
@@ -62,17 +62,17 @@ msgstr ""
 msgid "Welcome back!"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/setup_page.ex:7
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr ""
-
 #: lib/watch_club_web/controllers/auth_controller.ex:10
 #, elixir-autogen, elixir-format
 msgid "Your password has successfully been reset"
 msgstr ""
 
-#: lib/watch_club_web/live/invitations/invitation_page.ex:42
+#: lib/watch_club_web/live/invitations/invitation_page.ex:44
 #, elixir-autogen, elixir-format
 msgid "Invitation Code"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/setup_page.ex:7
+#, elixir-autogen, elixir-format
+msgid "Welcome to watch.club!"
 msgstr ""

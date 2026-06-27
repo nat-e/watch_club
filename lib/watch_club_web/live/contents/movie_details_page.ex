@@ -26,6 +26,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       class="p-0!"
       space="none"
     >
@@ -45,20 +46,6 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
         current_user={@current_user}
         on_close={fn -> send(self(), "close_add_to_list_modal") end}
       />
-    </Layouts.app>
-    """
-  end
-
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}>
-      <.empty>
-        <:icon><Lucideicons.film /></:icon>
-        <:title>{dgettext("contents", "Movie unavailable")}</:title>
-        <:description>
-          {dgettext("contents", "We could not load this movie. Try again later.")}
-        </:description>
-      </.empty>
     </Layouts.app>
     """
   end

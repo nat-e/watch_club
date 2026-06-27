@@ -149,6 +149,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
     >
       <.settings_header
@@ -202,7 +203,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         <% end %>
       </div>
 
-      <.remove_media_modal :if={@state.drawer.confirm_remove_open?} />
+      <.remove_media_modal
+        :if={@state.drawer.confirm_remove_open?}
+        instance_settings={@instance_settings}
+      />
     </Layouts.app>
     """
   end

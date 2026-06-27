@@ -27,6 +27,7 @@ defmodule WatchClubWeb.HomePage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
     >
@@ -39,6 +40,7 @@ defmodule WatchClubWeb.HomePage do
         stream={@streams.feed}
         current_user={@current_user}
         stream_state={@feed_stream_state}
+        instance_settings={@instance_settings}
       />
     </Layouts.app>
     """

@@ -14,6 +14,7 @@ defmodule WatchClubWeb.SearchPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       class="max-w-6xl"
     >
       <.section description={

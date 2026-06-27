@@ -44,6 +44,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
     >
@@ -88,6 +89,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
     >
     </Layouts.app>
     """

@@ -30,8 +30,8 @@ msgid "Clubs"
 msgstr "Clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:9
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:24
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:10
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:26
 #: lib/watch_club_web/live/admin/users_page/users_table.ex:91
 #, elixir-autogen, elixir-format
 msgid "Delete user"
@@ -50,29 +50,33 @@ msgid "User"
 msgstr "Utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:188
+#: lib/watch_club_web/live/admin/users_page.ex:194
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr "Utilisateur supprimé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:26
+#: lib/watch_club_web/live/admin/users_page.ex:27
 #, elixir-autogen, elixir-format
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:12
-#, elixir-autogen, elixir-format
-msgid "Are you sure you want to delete %{username}? They will not be able to access Watch Club and all their history will be erased."
-msgstr ""
-
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex:53
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Instance Admin"
 msgstr "Administrateur de l'instance"
 
-#: lib/watch_club_web/live/admin/users_page.ex:28
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:13
 #, elixir-autogen, elixir-format
-msgid "Manage access to your WatchClub instance."
+msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
 msgstr ""
+"Êtes-vous sûr de vouloir supprimer %{username} ? Il ne pourra plus accéder à "
+"%{name} et tout son historique sera effacé."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex:29
+#, elixir-autogen, elixir-format
+msgid "Manage access to %{name}."
+msgstr "Gérez l'accès à %{name}."

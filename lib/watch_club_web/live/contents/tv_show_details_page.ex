@@ -38,6 +38,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       class="p-0!"
       space="none"
     >
@@ -112,20 +113,6 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage do
         current_user={@current_user}
         on_close={fn -> send(self(), "close_add_to_list_modal") end}
       />
-    </Layouts.app>
-    """
-  end
-
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_url={@current_url} current_user={@current_user}>
-      <.empty>
-        <:icon><Lucideicons.tv /></:icon>
-        <:title>{dgettext("contents", "TV Show unavailable")}</:title>
-        <:description>
-          {dgettext("contents", "We could not load this TV Show. Try again later.")}
-        </:description>
-      </.empty>
     </Layouts.app>
     """
   end

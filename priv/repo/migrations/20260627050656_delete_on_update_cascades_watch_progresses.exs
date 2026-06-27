@@ -1,4 +1,4 @@
-defmodule WatchClub.Repo.Migrations.DeleteOnUpdateCascades do
+defmodule WatchClub.Repo.Migrations.DeleteOnUpdateCascadesWatchProgresses do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 

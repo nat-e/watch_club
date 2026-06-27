@@ -19,7 +19,8 @@ defmodule WatchClubWeb.ErrorHTML do
         status: status_from_template(template),
         title: title_from_template(template),
         description: description_from_template(template),
-        retry?: retryable_template?(template)
+        retry?: retryable_template?(template),
+        instance_name: assigns.instance_settings.name
       })
 
     ~H"""
@@ -28,7 +29,7 @@ defmodule WatchClubWeb.ErrorHTML do
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{@title} · WatchClub</title>
+        <title>{@title} · {@instance_name}</title>
         <link rel="stylesheet" href={~p"/assets/css/app.css"} />
       </head>
       <body class="min-h-svh bg-canvas text-text">

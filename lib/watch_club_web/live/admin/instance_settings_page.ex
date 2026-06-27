@@ -1,15 +1,20 @@
 defmodule WatchClubWeb.Admin.InstanceSettingsPage do
   @moduledoc """
-  Instance-administrator settings page. Currently a stub: the destination
-  exists so the sidebar Admin entry has somewhere to navigate, but the
-  configurable settings themselves land in a follow-up.
+  Instance-administrator settings page for configuring the instance itself.
   """
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Settings.SettingsHeader
 
   @impl true
-  def mount(_params, _session, socket), do: {:ok, socket}
+  def mount(_params, _session, socket) do
+    form =
+      Instance.form_to_update_instance_settings(socket.assigns.instance_settings,
+        actor: socket.assigns.current_user
+      )
+
+    {:ok, assign(socket, :form, to_form(form))}
+  end
 
   @impl true
   def render(assigns) do
@@ -18,30 +23,65 @@ defmodule WatchClubWeb.Admin.InstanceSettingsPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
     >
       <.settings_header
         title={dgettext("admin_instance_settings", "Instance settings")}
         description={
-          dgettext(
-            "admin_instance_settings",
-            "Configure the Watch Club instance itself. More options coming soon."
-          )
+          dgettext("admin_instance_settings", "Configure how your instance presents itself.")
         }
       />
 
-      <.empty>
-        <:icon><Lucideicons.settings_2 /></:icon>
-        <:title>{dgettext("admin_instance_settings", "Nothing here yet")}</:title>
-        <:description>
-          {dgettext(
+      <.section
+        title={dgettext("admin_instance_settings", "General")}
+        description={
+          dgettext(
             "admin_instance_settings",
-            "Instance settings will appear here in a future release."
-          )}
-        </:description>
-      </.empty>
+            "The name shown across the app, in the browser tab, and in invitations."
+          )
+        }
+      >
+        <.form
+          for={@form}
+          id="instance-settings-form"
+          class="w-full sm:max-w-sm"
+          phx-change="validate_instance_settings"
+          phx-submit="submit_instance_settings"
+        >
+          <.field
+            field={@form[:name]}
+            label={dgettext("admin_instance_settings", "Instance name")}
+            type="text"
+            class="w-full"
+          />
+          <:action class="sm:justify-start">
+            <.button id="instance-settings-submit-button" type="submit">
+              {dgettext("default", "Save")}
+            </.button>
+          </:action>
+        </.form>
+      </.section>
     </Layouts.app>
     """
+  end
+
+  @impl true
+  def handle_event("validate_instance_settings", %{"form" => params}, socket) do
+    {:noreply, socket |> assign(:form, AshPhoenix.Form.validate(socket.assigns.form, params))}
+  end
+
+  def handle_event("submit_instance_settings", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
+      {:ok, instance_settings} ->
+        {:noreply,
+         socket
+         |> assign(:instance_settings, instance_settings)
+         |> put_flash(:info, dgettext("admin_instance_settings", "Instance settings updated."))}
+
+      {:error, form} ->
+        {:noreply, socket |> assign(:form, form)}
+    end
   end
 end

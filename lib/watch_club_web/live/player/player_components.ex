@@ -204,9 +204,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute left-group"
           phx-click="play_previous_episode"
-          aria-label={
-            dgettext("player", "Play %{episode}", episode: @previous_episode.formatted_episode_number)
-          }
+          aria-label={dgettext("player", "Play previous episode")}
         >
           <:icon><Lucideicons.skip_back /></:icon>
           {@previous_episode.formatted_episode_number}
@@ -227,9 +225,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute right-group"
           phx-click="play_next_episode"
-          aria-label={
-            dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)
-          }
+          aria-label={dgettext("player", "Play next episode")}
         >
           <:icon><Lucideicons.skip_forward /></:icon>
           {@next_episode.formatted_episode_number}

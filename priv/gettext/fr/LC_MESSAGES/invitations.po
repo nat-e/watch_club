@@ -12,14 +12,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:63
+#: lib/watch_club_web/live/invitations/invitation_page.ex:65
 #, elixir-autogen, elixir-format
 msgid "Ask the person who invited you for a new link."
 msgstr "Demandez un nouveau lien à la personne qui vous a invité."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex:60
-#, elixir-autogen, elixir-format, fuzzy
+#: lib/watch_club_web/live/invitations/invitation_page.ex:62
+#, elixir-autogen, elixir-format
 msgid "This invitation is no longer available"
 msgstr "Cette invitation n'est plus active"
 
@@ -30,6 +30,6 @@ msgstr ""
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex:12
-#, elixir-autogen, elixir-format, fuzzy
-msgid "You are invited to create an account on watch.club!"
-msgstr "Vous êtes invité à créer un compte sur watch.club"
+#, elixir-autogen, elixir-format
+msgid "You are invited to create an account on %{name}!"
+msgstr "Vous êtes invité à créer un compte sur %{name} !"

@@ -34,7 +34,8 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
         id: assigns.id,
         mode: assigns.mode,
         flavor: assigns.flavor,
-        current_user: assigns.current_user
+        current_user: assigns.current_user,
+        instance_settings: assigns.instance_settings
       )
 
     if Map.has_key?(socket.assigns, :form) do
@@ -87,7 +88,13 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           phx-submit="submit"
           phx-target={@myself}
         >
-          <.wizard_step_form wizard={@wizard} form={@form} flavor={@flavor} myself={@myself} />
+          <.wizard_step_form
+            wizard={@wizard}
+            form={@form}
+            flavor={@flavor}
+            myself={@myself}
+            instance_settings={@instance_settings}
+          />
 
           <:action>
             <.wizard_step_actions mode={@mode} wizard={@wizard} form={@form} myself={@myself} />
@@ -214,8 +221,12 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
 
   defp title(%{wizard: %Wizard{step: step}, flavor: flavor}), do: step_title(step, flavor)
 
-  defp description(%{wizard: %Wizard{step: step}, flavor: flavor}),
-    do: step_description(step, flavor)
+  defp description(%{
+         wizard: %Wizard{step: step},
+         flavor: flavor,
+         instance_settings: instance_settings
+       }),
+       do: step_description(step, flavor, instance_settings.name)
 
   defp step_title(:connection, flavor),
     do: dgettext("admin_media_imports", "Connect %{name} Server", name: app_name(flavor))
@@ -228,28 +239,30 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
 
   defp step_title(_, _flavor), do: ""
 
-  defp step_description(:connection, flavor),
+  defp step_description(:connection, flavor, _instance_name),
     do:
       dgettext("admin_media_imports", "Enter the credentials to connect to your %{name} server.",
         name: app_name(flavor)
       )
 
-  defp step_description(:request_profile, _flavor),
+  defp step_description(:request_profile, _flavor, instance_name),
     do:
       dgettext(
         "admin_media_imports",
-        "Select the quality profile and root folder that Watch Club will use when requesting media."
+        "Select the quality profile and root folder that %{instance} will use when requesting media.",
+        instance: instance_name
       )
 
-  defp step_description(:webhook, flavor),
+  defp step_description(:webhook, flavor, instance_name),
     do:
       dgettext(
         "admin_media_imports",
-        "%{name} will POST events to Watch Club at the URL below. Submitting will verify the URL is reachable.",
-        name: app_name(flavor)
+        "%{name} will POST events to %{instance} at the URL below. Submitting will verify the URL is reachable.",
+        name: app_name(flavor),
+        instance: instance_name
       )
 
-  defp step_description(_, _flavor), do: ""
+  defp step_description(_, _flavor, _instance_name), do: ""
 
   # ── STEP RENDER ───────────────────────────────────────────────────
 
@@ -257,6 +270,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   attr :form, :map, required: true
   attr :flavor, :atom, required: true
   attr :myself, :any, required: true
+  attr :instance_settings, InstanceSettings, required: true
 
   defp wizard_step_form(%{wizard: %Wizard{step: :connection}} = assigns) do
     ~H"""
@@ -269,8 +283,9 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       autocomplete="off"
     >
       <:hint>
-        {dgettext("admin_media_imports", "The base URL to reach %{name} from Watch Club.",
-          name: app_name(@flavor)
+        {dgettext("admin_media_imports", "The base URL to reach %{name} from %{instance}.",
+          name: app_name(@flavor),
+          instance: @instance_settings.name
         )}
       </:hint>
     </.field>
@@ -367,7 +382,8 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:hint>
         {dgettext(
           "admin_media_imports",
-          "The root folder path must be accessible directly by Watch Club for playback. If the mounts are different, enter the path to the root folder from Watch Club file system."
+          "The root folder path must be accessible directly by %{instance} for playback. If the mounts are different, enter the path to the root folder from %{instance} file system.",
+          instance: @instance_settings.name
         )}
       </:hint>
     </.field>
@@ -379,7 +395,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
     <.field
       field={@form[:webhook_callback_base_url]}
       label={
-        dgettext("admin_media_imports", "Watch Club URL %{name} will call", name: app_name(@flavor))
+        dgettext("admin_media_imports", "%{instance} URL %{name} will call",
+          name: app_name(@flavor),
+          instance: @instance_settings.name
+        )
       }
       type="url"
       input_class="font-mono"

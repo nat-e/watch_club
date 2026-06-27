@@ -9,7 +9,9 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
     <Layouts.centered_card flash={@flash} title={dgettext("invitations", "Welcome!")}>
       <.stack space="related">
         <p>
-          {dgettext("invitations", "You are invited to create an account on watch.club!")}
+          {dgettext("invitations", "You are invited to create an account on %{name}!",
+            name: @instance_settings.name
+          )}
         </p>
       </.stack>
       <.form

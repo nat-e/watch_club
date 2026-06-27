@@ -55,7 +55,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
         class="fixed inset-y-0 left-0 z-50 flex w-[80vw] -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
       >
         <header class="flex h-row-lg shrink-0 items-center justify-between px-cluster">
-          <h2 class="font-heading text-xl font-semibold">watch.club</h2>
+          <h2 class="font-heading text-xl font-semibold">{@instance_settings.name}</h2>
           <.button
             id="sidebar-close-button"
             variant="ghost"

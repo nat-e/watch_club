@@ -11,17 +11,12 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:265
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:279
 #, elixir-autogen, elixir-format
 msgid "%{name} URL"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:246
-#, elixir-autogen, elixir-format
-msgid "%{name} will POST events to Watch Club at the URL below. Submitting will verify the URL is reachable."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:280
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:295
 #, elixir-autogen, elixir-format
 msgid "API Key"
 msgstr ""
@@ -36,12 +31,12 @@ msgstr ""
 msgid "Actions for %{label}"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:171
+#: lib/watch_club_web/live/admin/media_sources_page.ex:174
 #, elixir-autogen, elixir-format
 msgid "Add %{title} source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:465
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:484
 #, elixir-autogen, elixir-format
 msgid "Add Source"
 msgstr ""
@@ -77,17 +72,12 @@ msgstr ""
 msgid "Configure Media Source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:55
-#, elixir-autogen, elixir-format
-msgid "Configure Media Sources to import and request media to your Watch Club instance."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:224
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:235
 #, elixir-autogen, elixir-format
 msgid "Configure Source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:75
+#: lib/watch_club_web/live/admin/media_sources_page.ex:77
 #, elixir-autogen, elixir-format
 msgid "Configure a Filesystem source to scan a directory for media."
 msgstr ""
@@ -97,53 +87,53 @@ msgstr ""
 msgid "Configure what media should be imported from your filesystem."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:411
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:430
 #, elixir-autogen, elixir-format
 msgid "Connect"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:221
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:232
 #, elixir-autogen, elixir-format
 msgid "Connect %{name} Server"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:90
+#: lib/watch_club_web/live/admin/media_sources_page.ex:92
 #, elixir-autogen, elixir-format
 msgid "Connect a Radarr server to import movies and fulfill movie requests."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:105
+#: lib/watch_club_web/live/admin/media_sources_page.ex:107
 #, elixir-autogen, elixir-format
 msgid "Connect a Sonarr server to import TV shows and fulfill TV show requests."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:429
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:448
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:139
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:141
 #, elixir-autogen, elixir-format
 msgid "Could not cancel import"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:303
+#: lib/watch_club_web/live/admin/media_sources_page.ex:306
 #, elixir-autogen, elixir-format
 msgid "Could not delete Media Source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:374
+#: lib/watch_club_web/live/admin/media_sources_page.ex:377
 #, elixir-autogen, elixir-format
 msgid "Could not save source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:122
-#: lib/watch_club_web/live/admin/media_sources_page.ex:339
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:124
+#: lib/watch_club_web/live/admin/media_sources_page.ex:342
 #, elixir-autogen, elixir-format
 msgid "Could not start import"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:445
+#: lib/watch_club_web/live/admin/media_sources_page.ex:448
 #, elixir-autogen, elixir-format
 msgid "Could not update Media Source"
 msgstr ""
@@ -184,7 +174,7 @@ msgstr ""
 msgid "Edit Media Source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:233
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:244
 #, elixir-autogen, elixir-format
 msgid "Enter the credentials to connect to your %{name} server."
 msgstr ""
@@ -194,38 +184,38 @@ msgstr ""
 msgid "Failed"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:65
+#: lib/watch_club_web/live/admin/media_sources_page.ex:67
 #, elixir-autogen, elixir-format
 msgid "Filesystem"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:101
+#: lib/watch_club_web/live/admin/media_sources_page.ex:103
 #, elixir-autogen, elixir-format
 msgid "Import TV shows from a Sonarr server."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:135
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:137
 #, elixir-autogen, elixir-format
 msgid "Import cancelled"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:52
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:53
 #, elixir-autogen, elixir-format
 msgid "Import history"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:67
+#: lib/watch_club_web/live/admin/media_sources_page.ex:69
 #, elixir-autogen, elixir-format
 msgid "Import media from a directory on your hard drive or a remote filesystem."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:86
+#: lib/watch_club_web/live/admin/media_sources_page.ex:88
 #, elixir-autogen, elixir-format
 msgid "Import movies from a Radarr server."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:116
-#: lib/watch_club_web/live/admin/media_sources_page.ex:333
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:118
+#: lib/watch_club_web/live/admin/media_sources_page.ex:336
 #, elixir-autogen, elixir-format
 msgid "Import started"
 msgstr ""
@@ -251,13 +241,13 @@ msgstr ""
 msgid "Manual only"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:360
-#: lib/watch_club_web/live/admin/media_sources_page.ex:419
+#: lib/watch_club_web/live/admin/media_sources_page.ex:363
+#: lib/watch_club_web/live/admin/media_sources_page.ex:422
 #, elixir-autogen, elixir-format
 msgid "Media Source configured"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:295
+#: lib/watch_club_web/live/admin/media_sources_page.ex:298
 #, elixir-autogen, elixir-format
 msgid "Media Source deleted"
 msgstr ""
@@ -267,18 +257,18 @@ msgstr ""
 msgid "Media Source not found"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:359
-#: lib/watch_club_web/live/admin/media_sources_page.ex:438
+#: lib/watch_club_web/live/admin/media_sources_page.ex:362
+#: lib/watch_club_web/live/admin/media_sources_page.ex:441
 #, elixir-autogen, elixir-format
 msgid "Media Source updated"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:153
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:155
 #, elixir-autogen, elixir-format
 msgid "Media Source was deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:53
+#: lib/watch_club_web/live/admin/media_sources_page.ex:54
 #, elixir-autogen, elixir-format
 msgid "Media Sources"
 msgstr ""
@@ -298,12 +288,12 @@ msgstr ""
 msgid "Never imported"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:178
+#: lib/watch_club_web/live/admin/media_sources_page.ex:181
 #, elixir-autogen, elixir-format
 msgid "No %{title} sources yet"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:55
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:56
 #, elixir-autogen, elixir-format
 msgid "No Media Imports yet"
 msgstr ""
@@ -318,7 +308,7 @@ msgstr ""
 msgid "On"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:362
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:377
 #, elixir-autogen, elixir-format
 msgid "Path mapping (Optional)"
 msgstr ""
@@ -328,12 +318,12 @@ msgstr ""
 msgid "Pending"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:306
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:321
 #, elixir-autogen, elixir-format
 msgid "Quality Profile"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:85
+#: lib/watch_club_web/live/admin/media_sources_page.ex:87
 #, elixir-autogen, elixir-format
 msgid "Radarr"
 msgstr ""
@@ -344,12 +334,12 @@ msgstr ""
 msgid "Refresh metadata"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:334
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:349
 #, elixir-autogen, elixir-format
 msgid "Root folder"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:69
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:70
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex:66
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex:59
 #, elixir-autogen, elixir-format
@@ -371,7 +361,7 @@ msgstr ""
 msgid "Running…"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:447
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:466
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex:126
 #, elixir-autogen, elixir-format
 msgid "Save changes"
@@ -387,12 +377,7 @@ msgstr ""
 msgid "Scheduled"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:239
-#, elixir-autogen, elixir-format
-msgid "Select the quality profile and root folder that Watch Club will use when requesting media."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources_page.ex:100
+#: lib/watch_club_web/live/admin/media_sources_page.ex:102
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
 msgstr ""
@@ -412,32 +397,22 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:272
-#, elixir-autogen, elixir-format
-msgid "The base URL to reach %{name} from Watch Club."
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex:42
 #, elixir-autogen, elixir-format
 msgid "The directory and all its sub-directories will be scanned for media matching the selected type."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:309
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:324
 #, elixir-autogen, elixir-format
 msgid "The quality profile to use for making requests from this source."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:368
-#, elixir-autogen, elixir-format
-msgid "The root folder path must be accessible directly by Watch Club for playback. If the mounts are different, enter the path to the root folder from Watch Club file system."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:337
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:352
 #, elixir-autogen, elixir-format
 msgid "The root folder to use for making requests and importing data from this source."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:57
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:58
 #, elixir-autogen, elixir-format
 msgid "This Media Source has not been imported yet. Run an import to add your medias."
 msgstr ""
@@ -452,12 +427,12 @@ msgstr ""
 msgid "Trigger"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:390
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:409
 #, elixir-autogen, elixir-format
 msgid "Use the address %{name} can reach from its network. In Docker setups this is usually different from your browser URL."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:227
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:238
 #, elixir-autogen, elixir-format
 msgid "Verify Webhooks"
 msgstr ""
@@ -467,17 +442,57 @@ msgstr ""
 msgid "View history"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:382
-#, elixir-autogen, elixir-format
-msgid "Watch Club URL %{name} will call"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex:45
 #, elixir-autogen, elixir-format
 msgid "When enabled, the media will be re-computed and potentially re-matched to another content."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:287
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:302
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. You can find it in %{name}'s settings > General."
 msgstr ""
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:398
+#, elixir-autogen, elixir-format
+msgid "%{instance} URL %{name} will call"
+msgstr "URL %{instance} que %{name} appellera"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:258
+#, elixir-autogen, elixir-format
+msgid "%{name} will POST events to %{instance} at the URL below. Submitting will verify the URL is reachable."
+msgstr ""
+"%{name} enverra des événements à %{instance} à l'URL ci-dessous. La validation "
+"vérifiera que l'URL est joignable."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources_page.ex:56
+#, elixir-autogen, elixir-format
+msgid "Configure Media Sources to import and request media to your %{name} instance."
+msgstr ""
+"Configurez les sources de médias pour importer et demander des médias vers "
+"votre instance %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:250
+#, elixir-autogen, elixir-format
+msgid "Select the quality profile and root folder that %{instance} will use when requesting media."
+msgstr ""
+"Sélectionnez le profil de qualité et le dossier racine que %{instance} "
+"utilisera pour demander des médias."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:286
+#, elixir-autogen, elixir-format
+msgid "The base URL to reach %{name} from %{instance}."
+msgstr "L'URL de base pour joindre %{name} depuis %{instance}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:383
+#, elixir-autogen, elixir-format
+msgid "The root folder path must be accessible directly by %{instance} for playback. If the mounts are different, enter the path to the root folder from %{instance} file system."
+msgstr ""
+"Le chemin du dossier racine doit être accessible directement par %{instance} "
+"pour la lecture. Si les montages sont différents, saisissez le chemin vers le "
+"dossier racine depuis le système de fichiers de %{instance}."

@@ -78,6 +78,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       class="p-2!"
       space="none"
     >

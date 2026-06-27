@@ -18,6 +18,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
+      instance_settings={@instance_settings}
       space="section"
     >
       <div class="mx-auto w-full min-w-0 max-w-layout-page">
@@ -27,7 +28,8 @@ defmodule WatchClubWeb.Admin.UsersPage do
             description={
               dgettext(
                 "admin_users",
-                "Manage access to your WatchClub instance."
+                "Manage access to %{name}.",
+                name: @instance_settings.name
               )
             }
           />
@@ -55,7 +57,11 @@ defmodule WatchClubWeb.Admin.UsersPage do
           </.stack>
         </.stack>
 
-        <.delete_user_modal :if={@user_to_delete} user={@user_to_delete} />
+        <.delete_user_modal
+          :if={@user_to_delete}
+          user={@user_to_delete}
+          instance_settings={@instance_settings}
+        />
 
         <.create_invitation_code_modal
           :if={@invitation_form}

@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
   def mobile_search(assigns) do
     ~H"""
     <div class="flex md:hidden w-full flex-row justify-between items-center min-w-0">
-      <h2 class="font-heading text-xl font-semibold">watch.club</h2>
+      <h2 class="font-heading text-xl font-semibold">{@instance_settings.name}</h2>
       <.button
         id="mobile-search-open-button"
         class="block md:hidden shrink-0"
