@@ -116,7 +116,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         </.player_menu>
 
         <.player_menu label={dgettext("player", "Subtitles")}>
-          <:icon><Lucideicons.captions/></:icon>
+          <:icon><Lucideicons.captions /></:icon>
           <media-captions-radio-group off-label={dgettext("player", "Off")}>
             <template><.player_radio /></template>
           </media-captions-radio-group>
@@ -177,26 +177,55 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
-  attr :session, Session, required: true
+  attr :playback_id, :string, required: true
+  attr :video, Video, required: true
 
   @doc """
   The lower bar of the control panel of the footer, that contains the seek bar with the thumbnails
   and the duration timer.
   """
   def controls_footer(assigns) do
-    ~H"""
-    <footer
-      class="pointer-events-auto flex flex-col gap-related px-4 pt-4 sm:px-8"
-      style="padding-bottom: max(1rem, env(safe-area-inset-bottom));"
-    >
-      <.seek_bar thumbnails={~p"/player/thumbnails/#{@session.id}/thumbnails.vtt"} />
+    current_episode = assigns.video.tv_show_episode
 
-      <div class="flex items-center justify-center gap-tight text-sm font-medium text-white/90 tabular-nums">
-        <media-time type="current">0:00</media-time>
-        <span class="text-white/60">/</span>
-        <media-time type="duration">
-          {format_duration(@session.active_playback.media.video.duration_seconds)}
-        </media-time>
+    assigns =
+      assigns
+      |> assign(
+        next_episode: current_episode && current_episode.next_episode,
+        previous_episode: current_episode && current_episode.previous_episode
+      )
+
+    ~H"""
+    <footer class="pointer-events-auto flex flex-col gap-related h-24 px-group">
+      <.seek_bar thumbnails={~p"/player/thumbnails/#{@playback_id}/thumbnails.vtt"} />
+      <div class="flex items-center justify-center">
+        <.button
+          :if={@previous_episode && @previous_episode.has_media?}
+          id="player-previous-episode-button"
+          variant="secondary"
+          class="absolute left-group"
+          phx-click="play_previous_episode"
+        >
+          {dgettext("player", "Play %{episode}", episode: @previous_episode.formatted_episode_number)}
+        </.button>
+        <.inline
+          space="tight"
+          class="relative text-sm font-medium text-white/90 tabular-nums"
+        >
+          <media-time type="current">0:00</media-time>
+          <span class="text-white/60">/</span>
+          <media-time type="duration">
+            {format_duration(@video.duration_seconds)}
+          </media-time>
+        </.inline>
+        <.button
+          :if={@next_episode && @next_episode.has_media?}
+          id="player-next-episode-button"
+          variant="secondary"
+          class="absolute right-group"
+          phx-click="play_next_episode"
+        >
+          {dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)}
+        </.button>
       </div>
     </footer>
     """

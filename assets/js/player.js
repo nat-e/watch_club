@@ -2,7 +2,8 @@ const defaultVidstackScriptUrl = "/assets/js/player_vidstack.js";
 let vidstackLoadPromise;
 
 const loadVidstack = (src = defaultVidstackScriptUrl) => {
-	if (window.WatchClubVidstack?.Hls) return Promise.resolve(window.WatchClubVidstack);
+	if (window.WatchClubVidstack?.Hls)
+		return Promise.resolve(window.WatchClubVidstack);
 	if (vidstackLoadPromise) return vidstackLoadPromise;
 
 	vidstackLoadPromise = new Promise((resolve, reject) => {
@@ -14,7 +15,11 @@ const loadVidstack = (src = defaultVidstackScriptUrl) => {
 				resolve(window.WatchClubVidstack);
 			} else {
 				vidstackLoadPromise = undefined;
-				reject(new Error("Vidstack loaded without exposing window.WatchClubVidstack"));
+				reject(
+					new Error(
+						"Vidstack loaded without exposing window.WatchClubVidstack",
+					),
+				);
 			}
 		};
 		script.onerror = () => {
@@ -30,7 +35,14 @@ const loadVidstack = (src = defaultVidstackScriptUrl) => {
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const getNothing = async () => null;
 const noop = async () => {};
-const emptyStorageKeys = ["Volume", "Muted", "Time", "AudioGain", "PlaybackRate", "VideoQuality"];
+const emptyStorageKeys = [
+	"Volume",
+	"Muted",
+	"Time",
+	"AudioGain",
+	"PlaybackRate",
+	"VideoQuality",
+];
 const emptyPlayerStorage = Object.fromEntries(
 	emptyStorageKeys.flatMap((key) => [
 		[`get${key}`, getNothing],
@@ -57,12 +69,13 @@ const createPlayerStorage = () => {
 
 const Player = {
 	mounted() {
-		this.vidstackScriptUrl = this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
+		this.handleEvent("player:load_video", ({ src }) => this.loadVideo(src));
+		this.vidstackScriptUrl =
+			this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
 		this.player = this.el.querySelector("[data-player-media]");
 		this.captionsEl = this.el.querySelector("media-captions");
 		this.abortController = new AbortController();
 		this.disposed = false;
-		this.stopped = false;
 		this.playing = false;
 		this.heartbeatTimer = undefined;
 
@@ -79,7 +92,6 @@ const Player = {
 		this.disposed = true;
 		this.abortController.abort();
 		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
-		this.stopSession();
 	},
 
 	bindDomEvents() {
@@ -96,8 +108,16 @@ const Player = {
 				{ signal },
 			);
 		});
+	},
 
-		window.addEventListener("pagehide", () => this.stopSession(), { signal });
+	// This is called on initial load and when the video changes in the player session
+	// We reset the video and playback from the start but keep track selection intact.
+	loadVideo(src) {
+		if (!this.player) return;
+		this.pendingAutoplay = true;
+		this.player.src = { src, type: "application/x-mpegurl" };
+		this.player.currentTime = 0;
+		this.player.startLoading?.();
 	},
 
 	handleCommand(command) {
@@ -115,11 +135,7 @@ const Player = {
 			if (this.disposed) return;
 
 			this.configurePlayer(vidstack);
-			this.player.src = {
-				src: this.player.dataset.src,
-				type: "application/x-mpegurl",
-			};
-			this.player.startLoading?.();
+			this.loadVideo(this.player.dataset.src);
 		} catch (_error) {
 			this.reportFailure();
 		}
@@ -142,7 +158,10 @@ const Player = {
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
 					this.reportHeartbeat();
-					remote.seek(clamp(player.currentTime - 10, 0, player.duration), event);
+					remote.seek(
+						clamp(player.currentTime - 10, 0, player.duration),
+						event,
+					);
 				},
 			},
 			seekForward: {
@@ -150,7 +169,10 @@ const Player = {
 				onKeyDown: ({ event, player, remote }) => {
 					event.preventDefault();
 					this.reportHeartbeat();
-					remote.seek(clamp(player.currentTime + 10, 0, player.duration), event);
+					remote.seek(
+						clamp(player.currentTime + 10, 0, player.duration),
+						event,
+					);
 				},
 			},
 		};
@@ -180,25 +202,59 @@ const Player = {
 			{ signal },
 		);
 
-		this.player.addEventListener("can-play", () => this.reportReady(), { signal });
-		this.player.addEventListener("playing", () => {
-			this.playing = true;
-			this.reportReady();
-			this.reportHeartbeat();
-			this.restartHeartbeatTimer();
-		}, { signal });
-		this.player.addEventListener("play", () => this.reportHeartbeat(), { signal });
-		this.player.addEventListener("pause", () => {
-			this.playing = false;
-			this.reportHeartbeat();
-		}, { signal });
-		this.player.addEventListener("ended", () => {
-			this.playing = false;
-			this.reportHeartbeat();
-		}, { signal });
-		this.player.addEventListener("seeked", () => this.reportHeartbeat(), { signal });
-		this.player.addEventListener("play-fail", () => this.reportFailure(), { signal });
-		this.player.addEventListener("hls-unsupported", () => this.reportFailure(), { signal });
+		this.player.addEventListener(
+			"can-play",
+			() => {
+				this.reportReady();
+
+				if (this.pendingAutoplay) {
+					this.pendingAutoplay = false;
+					// Rejected when the browser blocks autoplay; the user can press play.
+					this.player.play().catch(() => {});
+				}
+			},
+			{ signal },
+		);
+		this.player.addEventListener(
+			"playing",
+			() => {
+				this.playing = true;
+				this.reportReady();
+				this.reportHeartbeat();
+				this.restartHeartbeatTimer();
+			},
+			{ signal },
+		);
+		this.player.addEventListener("play", () => this.reportHeartbeat(), {
+			signal,
+		});
+		this.player.addEventListener(
+			"pause",
+			() => {
+				this.playing = false;
+				this.reportHeartbeat();
+			},
+			{ signal },
+		);
+		this.player.addEventListener(
+			"ended",
+			() => {
+				this.playing = false;
+				this.reportHeartbeat();
+			},
+			{ signal },
+		);
+		this.player.addEventListener("seeked", () => this.reportHeartbeat(), {
+			signal,
+		});
+		this.player.addEventListener("play-fail", () => this.reportFailure(), {
+			signal,
+		});
+		this.player.addEventListener(
+			"hls-unsupported",
+			() => this.reportFailure(),
+			{ signal },
+		);
 		this.player.addEventListener(
 			"hls-error",
 			(event) => {
@@ -206,23 +262,41 @@ const Player = {
 			},
 			{ signal },
 		);
-		this.player.addEventListener("error", () => this.reportFailure(), { signal });
-		this.player.addEventListener("text-track-change", (event) => this.syncCaptionLayer(event.detail), {
+		this.player.addEventListener("error", () => this.reportFailure(), {
 			signal,
 		});
-		this.player.addEventListener("hls-cues-parsed", () => this.syncCaptionLayer(), { signal });
-		this.player.addEventListener("volume-change", () => {
-			this.storeLocalPreferences();
-			this.reportHeartbeat();
-		}, { signal });
+		this.player.addEventListener(
+			"text-track-change",
+			(event) => this.syncCaptionLayer(event.detail),
+			{
+				signal,
+			},
+		);
+		this.player.addEventListener(
+			"hls-cues-parsed",
+			() => this.syncCaptionLayer(),
+			{ signal },
+		);
+		this.player.addEventListener(
+			"volume-change",
+			() => {
+				this.storeLocalPreferences();
+				this.reportHeartbeat();
+			},
+			{ signal },
+		);
 
 		this.el
-			.querySelectorAll("media-quality-radio-group, media-audio-radio-group, media-captions-radio-group")
+			.querySelectorAll(
+				"media-quality-radio-group, media-audio-radio-group, media-captions-radio-group",
+			)
 			.forEach((group) => {
 				group.addEventListener(
 					"change",
 					(event) => {
-						if (event.currentTarget.localName === "media-captions-radio-group") {
+						if (
+							event.currentTarget.localName === "media-captions-radio-group"
+						) {
 							this.syncCaptionLayer(event.detail);
 						}
 
@@ -235,27 +309,38 @@ const Player = {
 					{ signal },
 				);
 			});
-
 	},
 
 	restoreLocalPreferences() {
-		const storedVolume = window.localStorage.getItem("watch-club:player-volume");
+		const storedVolume = window.localStorage.getItem(
+			"watch-club:player-volume",
+		);
 		const storedMuted = window.localStorage.getItem("watch-club:player-muted");
 
 		if (storedVolume !== null && storedVolume !== "0") {
 			const volume = Number(storedVolume);
-			if (Number.isFinite(volume) && volume > 0) this.player.volume = clamp(volume, 0, 1);
+			if (Number.isFinite(volume) && volume > 0)
+				this.player.volume = clamp(volume, 0, 1);
 		}
 
 		this.player.muted = storedMuted === "true";
 	},
 
 	storeLocalPreferences() {
-		window.localStorage.setItem("watch-club:player-volume", String(this.player.volume));
-		window.localStorage.setItem("watch-club:player-muted", String(this.player.muted));
+		window.localStorage.setItem(
+			"watch-club:player-volume",
+			String(this.player.volume),
+		);
+		window.localStorage.setItem(
+			"watch-club:player-muted",
+			String(this.player.muted),
+		);
 	},
 
-	syncCaptionLayer(selectedTrack = this.player.textTracks?.selected ?? null, provider = this.player.provider) {
+	syncCaptionLayer(
+		selectedTrack = this.player.textTracks?.selected ?? null,
+		provider = this.player.provider,
+	) {
 		const providerType = provider?.type;
 		const usingNativeHls = providerType === "video" && this.isHlsSource();
 
@@ -274,8 +359,11 @@ const Player = {
 	isHlsSource() {
 		const source = this.player.src;
 		if (typeof source === "string") return source.includes(".m3u8");
-		if (Array.isArray(source)) return source.some((item) => item?.type?.includes("mpegurl"));
-		return source?.type?.includes("mpegurl") || source?.src?.includes?.(".m3u8");
+		if (Array.isArray(source))
+			return source.some((item) => item?.type?.includes("mpegurl"));
+		return (
+			source?.type?.includes("mpegurl") || source?.src?.includes?.(".m3u8")
+		);
 	},
 
 	disableNativeTextTracks(video = this.getVideoElement()) {
@@ -288,7 +376,7 @@ const Player = {
 		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
 
 		this.heartbeatTimer = window.setInterval(() => {
-			if (!this.disposed && !this.stopped && this.playing) {
+			if (!this.disposed && this.playing) {
 				this.reportHeartbeat();
 			}
 		}, 5000);
@@ -309,18 +397,6 @@ const Player = {
 
 	reportFailure() {
 		this.pushEvent("player_failed", {}, () => {});
-	},
-
-	stopSession() {
-		if (this.stopped) return;
-		this.stopped = true;
-		this.playing = false;
-		const position = this.player?.currentTime;
-		this.pushEvent(
-			"player_stop",
-			{ position_seconds: Number.isFinite(position) ? position : null },
-			() => {},
-		);
 	},
 };
 

@@ -41,7 +41,6 @@ defmodule WatchClub.Playbacks.Session do
 
       change relate_actor(:started_by)
       change manage_relationship(:media_id, :playbacks, type: :create, value_is_key: :media_id)
-      change Changes.LoadActivePlayback
     end
 
     update :start_new_playback do
@@ -52,7 +51,6 @@ defmodule WatchClub.Playbacks.Session do
 
       change Changes.EndCurrentPlayback
       change Changes.StartPlayback
-      change Changes.LoadActivePlayback
     end
 
     update :heartbeat do
@@ -62,17 +60,6 @@ defmodule WatchClub.Playbacks.Session do
       argument :position_seconds, :float, allow_nil?: true
 
       change Changes.BumpCurrentPlayback
-      change Changes.LoadActivePlayback
-    end
-
-    update :close do
-      description "Close the Session's current Playback by setting its `ended_at`, recording the actor's Watch Progress from the final position. Its on-disk segment cache is reclaimed by the periodic prune worker."
-
-      require_atomic? false
-      argument :position_seconds, :float, allow_nil?: true
-
-      change Changes.EndCurrentPlayback
-      change Changes.LoadActivePlayback
     end
   end
 

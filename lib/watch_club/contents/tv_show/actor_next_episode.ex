@@ -1,14 +1,11 @@
 defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
   @moduledoc """
-  Resolves the episode the current user should resume on next play.
+  Resolves the episode the current user should watch on next play.
 
-  The anchor is the episode the user watched most recently (ties — e.g. a whole
-  season marked at once — broken by airing order). From there:
-
-    * nothing watched yet      → the first episode
-    * anchor still in progress → the anchor itself (resume it)
-    * anchor completed         → the next episode in airing order, wrapping
-                                 back to the first once the finale is done
+    * nothing watched yet                             → the first episode
+    * most recently watched episode still in progress → the episode
+    * most recently watched episode completed         → the next episode in airing order
+    * everything watched.                             → the first episode
   """
   use Ash.Resource.ManualRelationship
 
@@ -40,17 +37,12 @@ defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
       nil ->
         List.first(episodes)
 
-      %{actor_progress_status: :completed} = anchor ->
-        successor =
-          Enum.find(episodes, fn episode ->
-            {episode.season_number, episode.episode_number} >
-              {anchor.season_number, anchor.episode_number}
-          end)
-
+      %{actor_progress_status: :completed} = most_recently_watched ->
+        successor = Enum.find(episodes, &(&1.rank > most_recently_watched.rank))
         successor || List.first(episodes)
 
-      anchor ->
-        anchor
+      most_recently_watched ->
+        most_recently_watched
     end
   end
 

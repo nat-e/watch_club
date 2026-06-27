@@ -11,127 +11,124 @@ defmodule WatchClubWeb.PlayerController do
 
   @m3u8 "application/vnd.apple.mpegurl"
 
-  @playback_session_fields [
-    active_playback: [
-      media: [
-        video: [
-          :default_video_track,
-          audio_tracks: [:display_label],
-          text_tracks:
-            TextTrack
-            |> Ash.Query.filter(hls_supported? == true)
-            |> Ash.Query.load(:display_label)
-        ]
+  @playback_fields [
+    media: [
+      video: [
+        :default_video_track,
+        audio_tracks: [:display_label],
+        text_tracks:
+          TextTrack
+          |> Ash.Query.filter(hls_supported? == true)
+          |> Ash.Query.load(:display_label)
       ]
     ]
   ]
 
   plug :require_current_user
 
-  def master_playlist(conn, %{"session_id" => session_id}) do
+  def master_playlist(conn, %{"playback_id" => playback_id}) do
     send_text_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.master_playlist/1),
+      with_active_playback(playback_id, conn, &Hls.master_playlist(&1.media.video)),
       @m3u8,
       "no-store"
     )
   end
 
-  def video_playlist(conn, %{"session_id" => session_id, "variant" => variant}) do
+  def video_playlist(conn, %{"playback_id" => playback_id, "variant" => variant}) do
     send_text_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.video_playlist(&1, variant)),
+      with_active_playback(playback_id, conn, &Hls.video_playlist(&1.media.video, variant)),
       @m3u8,
       "no-store"
     )
   end
 
-  def audio_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
+  def audio_playlist(conn, %{"playback_id" => playback_id, "track_id" => track_id}) do
     send_text_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.audio_playlist(&1, track_id)),
+      with_active_playback(playback_id, conn, &Hls.audio_playlist(&1.media.video, track_id)),
       @m3u8,
       "no-store"
     )
   end
 
-  def subtitle_playlist(conn, %{"session_id" => session_id, "track_id" => track_id}) do
+  def subtitle_playlist(conn, %{"playback_id" => playback_id, "track_id" => track_id}) do
     send_text_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.subtitle_playlist(&1, track_id)),
+      with_active_playback(playback_id, conn, &Hls.subtitle_playlist(&1.media.video, track_id)),
       @m3u8,
       "no-store"
     )
   end
 
   def video_segment(conn, %{
-        "session_id" => session_id,
+        "playback_id" => playback_id,
         "variant" => variant,
         "segment" => segment
       }) do
     send_file_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.video_segment(&1, variant, segment)),
+      with_active_playback(playback_id, conn, &Hls.video_segment(&1, variant, segment)),
       "video/mp2t",
       "public, max-age=3600"
     )
   end
 
   def audio_segment(conn, %{
-        "session_id" => session_id,
+        "playback_id" => playback_id,
         "track_id" => track_id,
         "segment" => segment
       }) do
     send_file_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.audio_segment(&1, track_id, segment)),
+      with_active_playback(playback_id, conn, &Hls.audio_segment(&1, track_id, segment)),
       "video/mp2t",
       "public, max-age=3600"
     )
   end
 
   def subtitle_file(conn, %{
-        "session_id" => session_id,
+        "playback_id" => playback_id,
         "track_id" => track_id,
         "file" => file
       }) do
     send_file_result(
       conn,
-      with_active_playback(session_id, conn, &Hls.subtitle_file(&1, track_id, file)),
+      with_active_playback(playback_id, conn, &Hls.subtitle_file(&1, track_id, file)),
       "text/vtt",
       "public, max-age=3600"
     )
   end
 
-  def thumbnails_file(conn, %{"session_id" => session_id, "file" => "thumbnails.vtt"}) do
+  def thumbnails_file(conn, %{"playback_id" => playback_id, "file" => "thumbnails.vtt"}) do
     # Cue sprite refs must be origin-absolute and session-scoped, which only the
     # web layer knows — so the manifest is stamped with this base at serve time.
-    base = Path.dirname(~p"/player/thumbnails/#{session_id}/thumbnails.vtt")
+    base = Path.dirname(~p"/player/thumbnails/#{playback_id}/thumbnails.vtt")
 
     send_text_result(
       conn,
-      with_active_playback(session_id, conn, &Trickplay.manifest(&1.media.id, base)),
+      with_active_playback(playback_id, conn, &Trickplay.manifest(&1.media.id, base)),
       "text/vtt",
       "public, max-age=3600"
     )
   end
 
-  def thumbnails_file(conn, %{"session_id" => session_id, "file" => file}) do
+  def thumbnails_file(conn, %{"playback_id" => playback_id, "file" => file}) do
     send_file_result(
       conn,
-      with_active_playback(session_id, conn, &Trickplay.sprite_path(&1.media.id, file)),
+      with_active_playback(playback_id, conn, &Trickplay.sprite_path(&1.media.id, file)),
       "image/jpeg",
       "public, max-age=3600"
     )
   end
 
-  defp with_active_playback(session_id, conn, fun) do
-    case Playbacks.get_session_by_id(session_id,
-           load: @playback_session_fields,
+  defp with_active_playback(playback_id, conn, fun) do
+    case Playbacks.get_playback_by_id(playback_id,
+           load: @playback_fields,
            actor: conn.assigns.current_user
          ) do
-      {:ok, %{active_playback: %{} = playback}} -> fun.(playback)
-      {:ok, _ended} -> {:error, :not_found}
+      {:ok, playback} -> fun.(playback)
       {:error, _reason} -> {:error, :not_found}
     end
   end

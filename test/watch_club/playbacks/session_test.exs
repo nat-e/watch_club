@@ -116,25 +116,6 @@ defmodule WatchClub.Playbacks.SessionTest do
     end
   end
 
-  describe "close_session/*" do
-    @tag :tmp_dir
-    test "ends the current Playback and is idempotent", %{tmp_dir: tmp_dir} do
-      user = generate(user())
-      media = accessible_media(user, Path.join(tmp_dir, "close.mkv"))
-
-      {:ok, session} = Playbacks.start_session(media.id, actor: user)
-      original = session.active_playback
-
-      assert {:ok, after_close} = Playbacks.close_session(session, actor: user)
-      assert {:ok, _again} = Playbacks.close_session(session, actor: user)
-
-      assert is_nil(after_close.active_playback)
-
-      reloaded = Ash.get!(Playback, original.id, actor: SystemActor.actor())
-      refute is_nil(reloaded.ended_at)
-    end
-  end
-
   def orphan_media(path) do
     File.mkdir_p!(Path.dirname(path))
     File.write!(path, "")

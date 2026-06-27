@@ -29,7 +29,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
                  tv_show.content.external_id == ^arg(:tmdb_id)
              )
 
-      prepare build(sort: [season_number: :asc, episode_number: :asc])
+      prepare build(sort: [rank: :asc])
     end
   end
 
@@ -84,14 +84,46 @@ defmodule WatchClub.Contents.TvShowEpisode do
       from_many? true
       filter expr(user_id == ^actor(:id))
     end
+
+    # This is simply the next episode in the show, does not depend on the actor
+    has_one :next_episode, __MODULE__ do
+      description "Following episode in airing order within the same show; nil for the finale."
+      allow_nil? true
+
+      sort rank: :asc
+      filter expr(tv_show_id == parent(tv_show_id) and rank > parent(rank))
+
+      # This avoids having Ash trying to join on this episode's id
+      no_attributes? true
+      # Adds a LIMIT 1 since the filter returns many episodes
+      from_many? true
+    end
+
+    # This is simply the previous episode in the show, does not depend on the actor
+    has_one :previous_episode, __MODULE__ do
+      description "Previous episode in airing order within the same show; nil for the pilot."
+      allow_nil? true
+
+      sort rank: :desc
+      filter expr(tv_show_id == parent(tv_show_id) and rank < parent(rank))
+
+      # This avoids having Ash trying to join on this episode's id
+      no_attributes? true
+      # Adds a LIMIT 1 since the filter returns many episodes
+      from_many? true
+    end
   end
 
   calculations do
+    # A displayable episode and season number, e.g. S01E01
     calculate :formatted_episode_number,
               :string,
               WatchClub.Contents.TvShowEpisode.Calculations.FormattedEpisodeNumber do
       public? true
     end
+
+    # A rank to sort episodes on to make sure they are in the right season/episode order
+    calculate :rank, :integer, expr(season_number * 1000 + episode_number)
 
     calculate :has_media?, :boolean, expr(videos_count > 0)
 

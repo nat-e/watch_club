@@ -63,12 +63,6 @@ defmodule WatchClub.Playbacks.Playback do
   end
 
   policies do
-    policy actor_absent() do
-      description "Playback actions require an actor"
-      access_type :strict
-      forbid_if always()
-    end
-
     policy action(:create) do
       description "The Instance Administrator can start a Playback for any Media; a User can start one for Media whose Content is visible to them through a Library Item"
       authorize_if actor_attribute_equals(:administrator?, true)

@@ -1,15 +1,14 @@
 defmodule WatchClub.Playbacks.Playback.Hls do
   @moduledoc """
-  Pure rendering layer for a Playback's HLS output.
+  Helpers functions for building HLS playlists for videos and transcoding
+  HLS segments.
 
-  Every function takes a `Playback` loaded through `:for_hls_playback`, which
-  guarantees the Playback is active and that the media graph (video, audio
-  tracks, HLS-supported text tracks) is loaded. This module owns concerns
-  that only make sense in the HLS context: the quality ladder, segment-cache
-  paths, HLS wire-format conventions, and ffmpeg invocation.
+  Transcoded segments are cached on disk at the Playback level.
   """
 
   alias WatchClub.Ffmpeg
+  alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
+  alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache}
 
   @segment_duration 6.0
@@ -18,74 +17,70 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   def segment_duration, do: @segment_duration
 
   @doc "Number of segments needed to cover the Playback's source duration."
-  def segment_count(playback) do
-    playback
-    |> duration()
-    |> Kernel./(@segment_duration)
+  def segment_count(video) do
+    (video.duration_seconds / @segment_duration)
     |> Float.ceil()
     |> trunc()
   end
 
-  def master_playlist(playback) do
-    video = playback.media.video
-
+  def master_playlist(%Video{} = video) do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
       subtitle_tracks: video.text_tracks
     }
 
-    {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities(playback)))}
+    {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities(video)))}
   end
 
-  def video_playlist(playback, variant_id) do
-    with {:ok, _quality} <- find_quality(playback, variant_id) do
-      {:ok, render_media_playlist(playback)}
+  def video_playlist(%Video{} = video, variant_id) do
+    with {:ok, _quality} <- find_quality(video, variant_id) do
+      {:ok, render_media_playlist(video)}
     end
   end
 
-  def audio_playlist(playback, track_id) do
-    with {:ok, _track} <- find_audio_track(playback, track_id) do
-      {:ok, render_media_playlist(playback)}
+  def audio_playlist(%Video{} = video, track_id) do
+    with {:ok, _track} <- find_audio_track(video, track_id) do
+      {:ok, render_media_playlist(video)}
     end
   end
 
-  def subtitle_playlist(playback, track_id) do
-    with {:ok, track} <- find_subtitle_track(playback, track_id) do
-      {:ok, IO.iodata_to_binary(Playlist.subtitle(track, duration(playback)))}
+  def subtitle_playlist(%Video{} = video, track_id) do
+    with {:ok, track} <- find_subtitle_track(video, track_id) do
+      {:ok, IO.iodata_to_binary(Playlist.subtitle(track, video.duration_seconds))}
     end
   end
 
-  def video_segment(playback, variant_id, segment_name) do
-    with {:ok, quality} <- find_quality(playback, variant_id),
+  def video_segment(%Playback{} = playback, variant_id, segment_name) do
+    with {:ok, quality} <- find_quality(playback.media.video, variant_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         :ok <- validate_segment_index(playback, index) do
+         :ok <- validate_segment_index(playback.media.video, index) do
       ensure_video_segment(playback, quality, index)
     end
   end
 
-  def audio_segment(playback, track_id, segment_name) do
-    with {:ok, track} <- find_audio_track(playback, track_id),
+  def audio_segment(%Playback{} = playback, track_id, segment_name) do
+    with {:ok, track} <- find_audio_track(playback.media.video, track_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         :ok <- validate_segment_index(playback, index) do
+         :ok <- validate_segment_index(playback.media.video, index) do
       ensure_audio_segment(playback, track, index)
     end
   end
 
-  def subtitle_file(playback, track_id, file_name) do
-    with {:ok, track} <- find_subtitle_track(playback, track_id),
+  def subtitle_file(%Playback{} = playback, track_id, file_name) do
+    with {:ok, track} <- find_subtitle_track(playback.media.video, track_id),
          :ok <- ensure_expected_subtitle_file(track, file_name) do
       ensure_subtitle_file(playback, track)
     end
   end
 
-  defp render_media_playlist(playback) do
+  defp render_media_playlist(%Video{} = video) do
     IO.iodata_to_binary(
-      Playlist.segments(duration(playback), segment_count(playback), @segment_duration)
+      Playlist.segments(video.duration_seconds, segment_count(video), @segment_duration)
     )
   end
 
-  defp ensure_video_segment(playback, quality, index) do
+  defp ensure_video_segment(%Playback{} = playback, quality, index) do
     output_path = video_segment_path(playback, quality, index)
 
     if cached?(output_path) do
@@ -95,7 +90,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
         source_path: playback.media.path,
         output_path: output_path,
         start_time: index * @segment_duration,
-        duration: segment_duration_at(playback, index),
+        duration: segment_duration_at(playback.media.video, index),
         segment_duration: @segment_duration,
         width: quality.width,
         height: quality.height,
@@ -104,7 +99,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     end
   end
 
-  defp ensure_audio_segment(playback, track, index) do
+  defp ensure_audio_segment(%Playback{} = playback, %AudioTrack{} = track, index) do
     output_path = audio_segment_path(playback, track, index)
 
     if cached?(output_path) do
@@ -114,13 +109,13 @@ defmodule WatchClub.Playbacks.Playback.Hls do
         source_path: playback.media.path,
         output_path: output_path,
         start_time: index * @segment_duration,
-        duration: segment_duration_at(playback, index),
+        duration: segment_duration_at(playback.media.video, index),
         stream_index: track.stream_index
       })
     end
   end
 
-  defp ensure_subtitle_file(playback, track) do
+  defp ensure_subtitle_file(%Playback{} = playback, %TextTrack{} = track) do
     output_path = subtitle_file_path(playback, track)
 
     if cached?(output_path) do
@@ -134,33 +129,31 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     end
   end
 
-  defp ensure_expected_subtitle_file(track, file_name) do
+  defp ensure_expected_subtitle_file(%TextTrack{} = track, file_name) do
     if file_name == "#{track.id}.vtt", do: :ok, else: {:error, :not_found}
   end
 
-  defp duration(playback), do: playback.media.video.duration_seconds
-
-  defp qualities(playback) do
-    track = playback.media.video.default_video_track
+  defp qualities(%Video{} = video) do
+    track = video.default_video_track
     QualityLadder.build(track.width, track.height, track.bit_rate)
   end
 
-  defp find_quality(playback, id) do
-    case Enum.find(qualities(playback), &(&1.id == id)) do
+  defp find_quality(%Video{} = video, id) do
+    case Enum.find(qualities(video), &(&1.id == id)) do
       nil -> {:error, :not_found}
       quality -> {:ok, quality}
     end
   end
 
-  defp find_audio_track(playback, id) do
-    case Enum.find(playback.media.video.audio_tracks, &(&1.id == id)) do
+  defp find_audio_track(%Video{} = video, id) do
+    case Enum.find(video.audio_tracks, &(&1.id == id)) do
       nil -> {:error, :not_found}
       track -> {:ok, track}
     end
   end
 
-  defp find_subtitle_track(playback, id) do
-    case Enum.find(playback.media.video.text_tracks, &(&1.id == id)) do
+  defp find_subtitle_track(%Video{} = video, id) do
+    case Enum.find(video.text_tracks, &(&1.id == id)) do
       nil -> {:error, :not_found}
       track -> {:ok, track}
     end
@@ -173,20 +166,20 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     end
   end
 
-  defp validate_segment_index(playback, index) do
-    if index >= 0 and index < segment_count(playback) do
+  defp validate_segment_index(%Video{} = video, index) do
+    if index >= 0 and index < segment_count(video) do
       :ok
     else
       {:error, :not_found}
     end
   end
 
-  defp segment_duration_at(playback, index) do
-    remaining = duration(playback) - index * @segment_duration
+  defp segment_duration_at(%Video{} = video, index) do
+    remaining = video.duration_seconds - index * @segment_duration
     min(@segment_duration, max(remaining, 0.1))
   end
 
-  defp video_segment_path(playback, quality, index) do
+  defp video_segment_path(%Playback{} = playback, quality, index) do
     Path.join([
       SegmentCache.playback_dir(playback.id),
       "video",
@@ -195,7 +188,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     ])
   end
 
-  defp audio_segment_path(playback, track, index) do
+  defp audio_segment_path(%Playback{} = playback, %AudioTrack{} = track, index) do
     Path.join([
       SegmentCache.playback_dir(playback.id),
       "audio",
@@ -204,7 +197,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     ])
   end
 
-  defp subtitle_file_path(playback, track) do
+  defp subtitle_file_path(%Playback{} = playback, track) do
     Path.join([SegmentCache.playback_dir(playback.id), "subtitles", track.id, "#{track.id}.vtt"])
   end
 
