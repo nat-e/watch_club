@@ -80,8 +80,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
-  attr :session, Session, required: true
-  attr :title, :string, required: true
+  attr :video, Video, required: true
 
   def controls_header(assigns) do
     ~H"""
@@ -92,32 +91,32 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         class={media_menu_button_style()}
         aria-label={dgettext("player", "Back")}
       >
-        <Lucideicons.arrow_left class="size-7" />
+        <Lucideicons.arrow_left />
       </button>
 
       <div class="min-w-0 flex-1">
         <h1 class="truncate text-base font-semibold sm:text-xl">
-          {@title}
+          {header_title(@video)}
         </h1>
       </div>
 
       <div class="flex shrink-0 items-center gap-tight">
         <.player_menu label={dgettext("player", "Quality")}>
-          <:icon><Lucideicons.settings class="size-7" /></:icon>
+          <:icon><Lucideicons.settings /></:icon>
           <media-quality-radio-group auto-label={dgettext("player", "Auto")} hide-bitrate>
             <template><.player_radio /></template>
           </media-quality-radio-group>
         </.player_menu>
 
         <.player_menu label={dgettext("player", "Audio")}>
-          <:icon><Lucideicons.languages class="size-7" /></:icon>
+          <:icon><Lucideicons.languages /></:icon>
           <media-audio-radio-group>
             <template><.player_radio /></template>
           </media-audio-radio-group>
         </.player_menu>
 
         <.player_menu label={dgettext("player", "Subtitles")}>
-          <:icon><Lucideicons.captions class="size-7" /></:icon>
+          <:icon><Lucideicons.captions/></:icon>
           <media-captions-radio-group off-label={dgettext("player", "Off")}>
             <template><.player_radio /></template>
           </media-captions-radio-group>
@@ -127,8 +126,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           class={media_menu_button_style()}
           aria-label={dgettext("player", "Mute")}
         >
-          <Lucideicons.volume_2 class="size-7 group-data-muted/mute:hidden" />
-          <Lucideicons.volume_x class="hidden size-7 group-data-muted/mute:block" />
+          <Lucideicons.volume_2 class="group-data-muted/mute:hidden" />
+          <Lucideicons.volume_x class="hidden group-data-muted/mute:block" />
         </media-mute-button>
 
         <media-fullscreen-button
@@ -136,8 +135,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           class={media_menu_button_style()}
           aria-label={dgettext("player", "Fullscreen")}
         >
-          <Lucideicons.maximize class="size-7 group-data-active/fullscreen:hidden" />
-          <Lucideicons.minimize class="hidden size-7 group-data-active/fullscreen:block" />
+          <Lucideicons.maximize class="group-data-active/fullscreen:hidden" />
+          <Lucideicons.minimize class="hidden group-data-active/fullscreen:block" />
         </media-fullscreen-button>
       </div>
     </header>
@@ -150,27 +149,27 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity group-data-buffering/player:opacity-0">
         <media-seek-button
           seconds="-10"
-          class="relative inline-flex size-20 items-center justify-center rounded-md outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-24"
+          class={[media_menu_button_style(), "relative size-20! sm:size-24!"]}
           aria-label={dgettext("player", "Seek backward 10 seconds")}
         >
-          <Lucideicons.rotate_ccw class="size-12 sm:size-16" />
+          <Lucideicons.rotate_ccw class="size-12! sm:size-16!" />
           <span class="absolute mt-1 text-xs font-bold">10</span>
         </media-seek-button>
 
         <media-play-button
-          class="group/play inline-flex size-24 items-center justify-center rounded-md outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-28"
+          class={[media_menu_button_style(), "group/play relative size-24! sm:size-28!"]}
           aria-label={dgettext("player", "Play or pause")}
         >
-          <Lucideicons.play class="hidden size-20 group-data-paused/play:block sm:size-24" />
-          <Lucideicons.pause class="size-20 group-data-paused/play:hidden sm:size-24" />
+          <Lucideicons.play class="hidden group-data-paused/play:block size-20! sm:size-24!" />
+          <Lucideicons.pause class="group-data-paused/play:hidden size-20! sm:size-24!" />
         </media-play-button>
 
         <media-seek-button
           seconds="10"
-          class="relative inline-flex size-20 items-center justify-center rounded-md outline-none hover:bg-white/20 data-focus:ring-2 data-focus:ring-white/70 sm:size-24"
+          class={[media_menu_button_style(), "relative size-20! sm:size-24!"]}
           aria-label={dgettext("player", "Seek forward 10 seconds")}
         >
-          <Lucideicons.rotate_cw class="size-12 sm:size-16" />
+          <Lucideicons.rotate_cw class="size-12! sm:size-16!" />
           <span class="absolute mt-1 text-xs font-bold">10</span>
         </media-seek-button>
       </div>
@@ -247,18 +246,24 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   defp media_menu_button_style,
     do:
-      "inline-flex size-12 items-center justify-center rounded-md text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/70"
+      "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/70"
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)
     hours = div(total, 3600)
     minutes = total |> rem(3600) |> div(60)
-    seconds = total |> rem(60) |> Integer.to_string() |> String.pad_leading(2, "0")
+    seconds = rem(total, 60)
 
     if hours > 0 do
-      "#{hours}:#{Integer.to_string(minutes) |> String.pad_leading(2, "0")}:#{seconds}"
+      :io_lib.format(~c"~b:~2..0b:~2..0b", [hours, minutes, seconds])
     else
-      "#{minutes}:#{seconds}"
+      :io_lib.format(~c"~b:~2..0b", [minutes, seconds])
     end
+    |> to_string()
   end
+
+  defp header_title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
+
+  defp header_title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
+    do: "#{episode.tv_show.best_localization.title} - #{episode.formatted_episode_number}"
 end

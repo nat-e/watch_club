@@ -285,7 +285,8 @@ defmodule WatchClub.Repo.Migrations.DeleteOnUpdateCascades do
                type: :uuid,
                prefix: "public",
                on_delete: :delete_all
-             ), null: false
+             ),
+             null: false
     end
 
     drop constraint(:tv_show_localizations, "tv_show_localizations_tv_show_id_fkey")
@@ -1007,7 +1008,8 @@ defmodule WatchClub.Repo.Migrations.DeleteOnUpdateCascades do
                prefix: "public",
                on_delete: :nilify_all,
                on_update: :update_all
-             ), null: true
+             ),
+             null: true
     end
 
     drop constraint(:videos, "videos_id_fkey")

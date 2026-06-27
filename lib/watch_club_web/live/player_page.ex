@@ -6,7 +6,10 @@ defmodule WatchClubWeb.PlayerPage do
   @playback_session_fields [
     active_playback: [
       media: [
-        :video
+        video: [
+          movie: [:best_localization],
+          tv_show_episode: [tv_show: [:best_localization]]
+        ]
       ]
     ]
   ]
@@ -58,7 +61,7 @@ defmodule WatchClubWeb.PlayerPage do
             hide-delay="3000"
             class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/70 via-transparent to-black/70 opacity-0 transition-opacity data-visible:opacity-100"
           >
-            <.controls_header session={@session} title={playback_title(@session)} />
+            <.controls_header video={@session.active_playback.media.video} />
             <.controls_center_row />
             <.controls_footer session={@session} />
           </media-controls>
