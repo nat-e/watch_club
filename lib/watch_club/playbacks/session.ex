@@ -17,8 +17,6 @@ defmodule WatchClub.Playbacks.Session do
 
   import Ash.Expr
 
-  require Ash.Query
-
   alias WatchClub.Accounts.User
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Session.Changes

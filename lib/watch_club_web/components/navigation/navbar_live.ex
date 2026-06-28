@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
   def update(assigns, socket) do
     form =
       Contents.form_to_search_content(
-        params: %{location: "", content_type: :movies_and_shows},
+        params: %{content_type: :movies_and_shows},
         actor: assigns.current_user
       )
 
@@ -67,21 +67,14 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
   end
 
   def handle_event("open_search", %{"form" => params}, socket) do
-    search_url =
-      case params do
-        %{"location" => "", "content_type" => type, "query" => query} ->
-          ~p"/search?type=#{type}&query=#{query}"
-
-        %{"location" => club_id, "content_type" => type, "query" => query} ->
-          ~p"/search?type=#{type}&club_id=#{club_id}&query=#{query}"
-      end
-
-    {:noreply, socket |> push_navigate(to: search_url)}
+    {:noreply,
+     socket
+     |> push_navigate(to: ~p"/search?#{%{type: params["content_type"], query: params["query"]}}")}
   end
 
   defp preview_search(socket, params) do
     # Validate is used to update the form values after an input changes.
-    # This is necessary after calling change in JS for our location/content-type buttons to update on mobile
+    # This is necessary after calling change in JS for our content-type buttons to update on mobile
     # Errors are handled manually
     form = AshPhoenix.Form.validate(socket.assigns.form, params, errors: false)
     socket = assign(socket, :form, form)

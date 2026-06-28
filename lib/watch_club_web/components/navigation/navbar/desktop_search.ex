@@ -70,40 +70,9 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       <div class="absolute inset-x-0 top-0 overflow-hidden rounded-md border border-border bg-surface-inset transition-[border-color,box-shadow] focus-within:border-border-focus focus-within:ring-2 focus-within:ring-focus-ring group-data-open/desktop-search:z-50 group-data-open/desktop-search:shadow-overlay">
         <div class="flex w-full items-stretch">
           <.select
-            id="desktop-search-location-select"
-            field={@form[:location]}
-            class="min-w-20 shrink-1"
-            trigger_variant="attached"
-          >
-            <.select_item value="">
-              <div class="flex h-icon min-w-0 items-center gap-related">
-                <Lucideicons.globe class="size-icon shrink-0" />
-                <span class="min-w-0 flex-1 truncate leading-none">
-                  {dgettext("search", "Everywhere")}
-                </span>
-              </div>
-            </.select_item>
-            <.select_item
-              :for={membership <- @current_user.memberships}
-              value={membership.club.id}
-            >
-              <div class="flex h-icon min-w-0 items-center gap-related">
-                <.avatar
-                  id={membership.club.id}
-                  name={membership.club.name}
-                  size="xs"
-                  class="shrink-0"
-                />
-                <span class="min-w-0 flex-1 truncate leading-none">
-                  {membership.club.name}
-                </span>
-              </div>
-            </.select_item>
-          </.select>
-          <.select
             id="desktop-search-content-type-select"
             field={@form[:content_type]}
-            class="min-w-20 shrink-1"
+            class="min-w-20 shrink"
             trigger_variant="attached"
           >
             <.select_item
@@ -121,7 +90,11 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
           <.input
             id="desktop-search-query"
             field={@form[:query]}
-            placeholder={placeholder(assigns)}
+            placeholder={
+              dgettext("search", "Search %{content_type}",
+                content_type: SearchContentType.translated_label(@form[:content_type].value)
+              )
+            }
             class="min-w-48 h-control-md flex-1 rounded-none border-0 bg-surface-inset text-text shadow-none ring-0 placeholder:text-text-subtle focus-visible:bg-surface-hover focus-visible:!border-transparent focus-visible:!ring-0"
           />
           <button
@@ -147,29 +120,5 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.DesktopSearch do
       </div>
     </.form>
     """
-  end
-
-  defp placeholder(%{form: form, current_user: current_user}) do
-    content_type = form[:content_type].value
-
-    case form[:location].value do
-      nil ->
-        dgettext("search", "Search all %{content_type}",
-          content_type: SearchContentType.translated_label(content_type)
-        )
-
-      location_id ->
-        membership =
-          Enum.find(
-            current_user.memberships,
-            &(&1.club.id ==
-                location_id)
-          )
-
-        dgettext("search", "Search %{content_type} in %{club_name}",
-          content_type: SearchContentType.translated_label(content_type),
-          club_name: membership.club.name
-        )
-    end
   end
 end

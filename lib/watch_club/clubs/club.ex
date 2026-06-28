@@ -9,7 +9,6 @@ defmodule WatchClub.Clubs.Club do
   use Gettext, backend: WatchClubWeb.Gettext
 
   require Ash.Resource.Change.Builtins
-  require Ash.Query
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.Changes.CreateAdminMembershipForActor

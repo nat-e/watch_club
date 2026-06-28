@@ -26,7 +26,6 @@ defmodule WatchClub.Contents.Content do
   alias WatchClub.Contents.Preparations.FilterByContentIdentities
 
   import Ash.Expr
-  require Ash.Query
 
   postgres do
     table "contents"
@@ -100,7 +99,6 @@ defmodule WatchClub.Contents.Content do
 
       argument :query, :string, allow_nil?: false
       argument :content_type, SearchContentType, allow_nil?: false
-      argument :location, :uuid_v7, allow_nil?: true
       argument :page, :integer, allow_nil?: false, default: 1
 
       run WatchClub.Contents.Actions.SearchContent

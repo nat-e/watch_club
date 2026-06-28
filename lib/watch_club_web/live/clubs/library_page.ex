@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Clubs.LibraryPage do
   use WatchClubWeb, :live_view
 
-  require Ash.Query
-
   alias WatchClub.Shared.SortOrder
 
   import WatchClubWeb.Components.Contents.ContentCard

@@ -51,6 +51,6 @@ defmodule WatchClubWeb.Components.Medias.MatchedContentIdentity do
   end
 
   defp identity_text(title, sub, _year) when is_binary(sub), do: "#{title} · #{sub}"
-  defp identity_text(title, _sub, year) when is_integer(year), do: "#{title} · #{year}"
+  defp identity_text(title, _sub, year) when is_binary(year), do: "#{title} · #{year}"
   defp identity_text(title, _sub, _year), do: title
 end

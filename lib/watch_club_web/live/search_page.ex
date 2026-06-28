@@ -17,14 +17,22 @@ defmodule WatchClubWeb.SearchPage do
       instance_settings={@instance_settings}
       class="max-w-6xl"
     >
-      <.section description={
-        raw(
-          dgettext("search", "Showing results for %{query}",
-            query: gtspan("“#{@query}”", "font-bold text-text")
+      <.section
+        description={
+          raw(
+            dgettext("search", "Showing results for %{query}",
+              query: gtspan("“#{@query}”", "font-bold text-text")
+            )
           )
-        )
-      }>
-        <.stack id="search-results" phx-update="stream" space="related">
+        }
+        surface="transparent"
+        padding="related"
+      >
+        <.stack
+          id="search-results"
+          phx-update="stream"
+          space="related"
+        >
           <%!-- `hidden only:flex`: shown only when it's the stream's sole child (no cards). --%>
           <.no_results query={@query} search_error?={@search_error?} class="hidden only:flex" />
 
@@ -53,7 +61,7 @@ defmodule WatchClubWeb.SearchPage do
     <.link
       id={@id}
       navigate={Url.content_details_link(content_identity(@result))}
-      class="flex items-start gap-group rounded-lg p-related transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
+      class="flex items-start gap-group rounded-lg py-related transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
     >
       <.tmdb_poster
         path={@result.poster_path}
@@ -124,7 +132,6 @@ defmodule WatchClubWeb.SearchPage do
        query: params["query"] || "",
        content_type:
          Url.parse_url_param(params["type"], SearchContentType.values(), :movies_and_shows),
-       location: params["club_id"],
        page: 0,
        total_pages: 0,
        search_error?: false
@@ -150,7 +157,6 @@ defmodule WatchClubWeb.SearchPage do
            %{
              query: socket.assigns.query,
              content_type: socket.assigns.content_type,
-             location: socket.assigns.location,
              page: page_number
            },
            actor: socket.assigns.current_user

@@ -5,8 +5,6 @@ defmodule WatchClub.History do
 
   alias WatchClub.History.WatchProgress
 
-  require Ash.Query
-
   resources do
     resource WatchProgress do
       define :record_watch_progress, action: :record_progress

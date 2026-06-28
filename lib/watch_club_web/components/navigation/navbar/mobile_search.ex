@@ -11,6 +11,12 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
   import WatchClubWeb.Components.Contents.ContentTypeIcon
   import WatchClubWeb.Components.Navigation.Navbar.SearchResults
 
+  attr :form, Phoenix.HTML.Form, required: true
+  attr :myself, :any, required: true
+  attr :current_user, User, required: true
+  attr :instance_settings, InstanceSettings, required: true
+  attr :search_reasults, :list, required: true
+
   def mobile_search(assigns) do
     ~H"""
     <div class="flex md:hidden w-full flex-row justify-between items-center min-w-0">
@@ -35,11 +41,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
         phx-target={@myself}
         class="hidden flex-col z-50 fixed inset-0 bg-surface border-b border-border p-related"
       >
-        <.search_overlay_header
-          current_user={@current_user}
-          myself={@myself}
-          form={@form}
-        />
+        <.search_overlay_header form={@form} />
         <div class="relative flex-1 flex flex-col min-h-0">
           <div class="flex-1 divide-y overflow-y-auto min-h-0">
             <.search_results
@@ -48,52 +50,6 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
               form={@form}
               search_results={@search_results}
             />
-          </div>
-          <div id="mobile-overlay-search-location" class="hidden absolute inset-0 bg-surface">
-            <button
-              id="mobile-search-location-everywhere-button"
-              type="button"
-              class={[
-                "flex p-group gap-group items-center w-full hover:bg-surface-hover",
-                @form[:location].value == nil && "bg-surface-selected"
-              ]}
-              phx-click={
-                hide_overlay_and_change_value(
-                  "#mobile-overlay-search-location",
-                  "#mobile-search-input-location",
-                  ""
-                )
-              }
-              phx-target={@myself}
-            >
-              <Lucideicons.globe class="size-icon-lg" />{dgettext("search", "Everywhere")}
-            </button>
-            <button
-              :for={membership <- @current_user.memberships}
-              id={"mobile-search-location-#{membership.club.id}-button"}
-              type="button"
-              class={[
-                "flex p-group gap-group items-center w-full hover:bg-surface-hover",
-                @form[:location].value == membership.club.id &&
-                  "bg-surface-selected"
-              ]}
-              phx-click={
-                hide_overlay_and_change_value(
-                  "#mobile-overlay-search-location",
-                  "#mobile-search-input-location",
-                  membership.club.id
-                )
-              }
-              phx-target={@myself}
-            >
-              <.avatar
-                :if={membership.club}
-                id={membership.club.id}
-                name={membership.club.name}
-                size="sm"
-              />
-              <span class="truncate">{membership.club.name}</span>
-            </button>
           </div>
           <div
             id="mobile-overlay-search-content-type"
@@ -128,6 +84,8 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
     """
   end
 
+  attr :form, Phoenix.HTML.Form, required: true
+
   defp search_overlay_header(assigns) do
     ~H"""
     <div class="border-b p-related">
@@ -143,15 +101,16 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
         <div
           id="mobile-search-input-wrapper"
           class="relative flex-1"
-          phx-click={
-            JS.hide(to: "#mobile-overlay-search-location")
-            |> JS.hide(to: "#mobile-overlay-search-content-type")
-          }
+          phx-click={JS.hide(to: "#mobile-overlay-search-content-type")}
         >
           <.input
             id="search-overlay-input"
             field={@form[:query]}
-            placeholder={placeholder(assigns)}
+            placeholder={
+              dgettext("search", "Search %{content_type}",
+                content_type: SearchContentType.translated_label(@form[:content_type].value)
+              )
+            }
             class="peer h-control-md rounded-full bg-surface-inset p-group items-center pr-8 truncate"
             phx-debounce="300"
           />
@@ -168,42 +127,12 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
         </div>
       </.inline>
       <.cluster class="gap-x-group gap-y-related">
-        <.input id="mobile-search-input-location" field={@form[:location]} class="hidden" />
-        <.button
-          id="mobile-search-location-filter-button"
-          variant="secondary"
-          class="flex-1 gap-related min-w-38 items-center justify-between shrink"
-          phx-click={
-            JS.hide(to: "#mobile-overlay-search-content-type")
-            |> JS.toggle(to: "#mobile-overlay-search-location")
-          }
-        >
-          <.inline :if={@form[:location].value == nil}>
-            <Lucideicons.globe class="size-icon" /> {dgettext("search", "Everywhere")}
-          </.inline>
-
-          <.inline :if={@form[:location].value != nil} class="min-w-0">
-            <.avatar
-              id={get_club(@current_user, @form[:location].value).id}
-              name={get_club(@current_user, @form[:location].value).name}
-              size="xs"
-              class="shrink-0"
-            />
-            <span class="flex-1 truncate">
-              {get_club(@current_user, @form[:location].value).name}
-            </span>
-          </.inline>
-          <Lucideicons.chevron_down class="size-icon text-text-muted shrink-0" />
-        </.button>
         <.input id="mobile-search-input-content-type" field={@form[:content_type]} class="hidden" />
         <.button
           id="mobile-search-content-type-filter-button"
           variant="secondary"
           class="flex gap-related w-46 items-center justify-between"
-          phx-click={
-            JS.hide(to: "#mobile-overlay-search-location")
-            |> JS.toggle(to: "#mobile-overlay-search-content-type")
-          }
+          phx-click={JS.toggle(to: "#mobile-overlay-search-content-type")}
         >
           <.inline>
             <.content_type_icon type={@form[:content_type].value} class="size-icon" />
@@ -214,35 +143,6 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.MobileSearch do
       </.cluster>
     </div>
     """
-  end
-
-  defp get_club(current_user, club_id) do
-    %Membership{} = m = Enum.find(current_user.memberships, fn m -> m.club.id == club_id end)
-    m.club
-  end
-
-  defp placeholder(%{form: form, current_user: current_user}) do
-    content_type = form[:content_type].value
-
-    case form[:location].value do
-      nil ->
-        dgettext("search", "Search all %{content_type}",
-          content_type: SearchContentType.translated_label(content_type)
-        )
-
-      location_id ->
-        membership =
-          Enum.find(
-            current_user.memberships,
-            &(&1.club.id ==
-                location_id)
-          )
-
-        dgettext("search", "Search %{content_type} in %{club_name}",
-          content_type: SearchContentType.translated_label(content_type),
-          club_name: membership.club.name
-        )
-    end
   end
 
   defp hide_overlay_and_change_value(overlay_selector, field_selector, value) do

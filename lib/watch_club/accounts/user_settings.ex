@@ -1,6 +1,4 @@
 defmodule WatchClub.Accounts.UserSettings do
-  require Ash.Query
-
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Accounts,

@@ -7,7 +7,6 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   use Ash.Resource.Actions.Implementation
 
   require Logger
-  require Ash.Query
 
   alias WatchClub.Contents.SearchResultsPage
   alias WatchClub.Integrations.Tmdb

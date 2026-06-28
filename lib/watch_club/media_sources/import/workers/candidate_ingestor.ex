@@ -65,9 +65,6 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       {:halt, reason} ->
         Logger.warning("Stop ingesting candidate #{candidate}: #{inspect(reason)}")
         :ok
-
-      {:error, _} = error ->
-        error
     end
   end
 end

@@ -5,8 +5,6 @@ defmodule WatchClub.MediaCatalog.Preparations.ApplyBrowseSort do
   """
   use Ash.Resource.Preparation
 
-  require Ash.Query
-
   @impl true
   def prepare(query, _opts, _context) do
     dir = Ash.Query.get_argument(query, :sort_order)

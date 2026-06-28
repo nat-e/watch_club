@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Contents.TvShowDetailsPage do
   use WatchClubWeb, :live_view
 
-  require Ash.Query
-
   import WatchClubWeb.Components.Contents.Details.{
     CastSection,
     DetailsBackdrop,

@@ -82,7 +82,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
                 :if={primary_country(@content)}
                 class="inline-flex items-center gap-tight font-semibold text-text"
               >
-                <span :if={primary_country(@content).flag} aria-hidden="true">
+                <span aria-hidden="true">
                   {primary_country(@content).flag}
                 </span>
                 {primary_country(@content).name}
@@ -197,7 +197,6 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
     end
   end
 
-  defp format_season_count(nil), do: nil
   defp format_season_count(0), do: nil
 
   defp format_season_count(count) do

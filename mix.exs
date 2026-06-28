@@ -141,7 +141,7 @@ defmodule WatchClub.MixProject do
       usage_rules: [:ash, {~r/^ash_/, link: :markdown}],
       # or use skills
       skills: [
-        location: ".pi/skills",
+        location: ".claude/skills",
         # build skills that combine multiple usage rules
         build: [
           "ash-framework": [
