@@ -10,7 +10,9 @@
 				"autoExecuteCommands": true,
 				"icon": "run",
 				"color": "charts.purple",
-				"commands": ["iex -S mix phx.server"]
+				"commands": [
+					"iex -S mix phx.server"
+				]
 			},
 			{
 				"name": "psql",
@@ -26,7 +28,9 @@
 				"autoExecuteCommands": true,
 				"icon": "server",
 				"color": "terminal.ansiCyan",
-				"commands": ["docker compose logs -f"]
+				"commands": [
+					"docker compose -f docker-compose.dev.yml logs -f"
+				]
 			}
 		]
 	}

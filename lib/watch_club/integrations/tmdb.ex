@@ -66,6 +66,12 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
+  @spec search_multi!(String.t(), page: pos_integer(), locale: :atom) :: MultiSearchResponse.t()
+  def search_multi!(query, opts \\ []) do
+    {:ok, response} = search_multi(query, opts)
+    response
+  end
+
   @spec search_movie(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
           {:ok, MovieSearchResponse.t()} | {:error, term()}
   def search_movie(query, opts \\ []) do
@@ -82,6 +88,13 @@ defmodule WatchClub.Integrations.Tmdb do
       {:ok, body} -> {:ok, MovieSearchResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
+  end
+
+  @spec search_movie!(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+          MovieSearchResponse.t()
+  def search_movie!(query, opts \\ []) do
+    {:ok, results} = search_movie(query, opts)
+    results
   end
 
   @spec search_tv(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
@@ -102,6 +115,13 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
+  @spec search_tv!(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+          TvSearchResponse.t()
+  def search_tv!(query, opts \\ []) do
+    {:ok, response} = search_tv(query, opts)
+    response
+  end
+
   @spec find_by_external_id(String.t(), :imdb_id | :tvdb_id) ::
           {:ok, FindByExternalIdResponse.t()} | {:error, term()}
   def find_by_external_id(external_id, source) when source in [:imdb_id, :tvdb_id] do
@@ -112,6 +132,12 @@ defmodule WatchClub.Integrations.Tmdb do
       {:ok, body} -> {:ok, FindByExternalIdResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
+  end
+
+  @spec find_by_external_id!(String.t(), :imdb_id | :tvdb_id) :: FindByExternalIdResponse.t()
+  def find_by_external_id!(external_id, source) do
+    {:ok, response} = find_by_external_id(external_id, source)
+    response
   end
 
   @spec get_movie_details(integer() | String.t(), locale: atom()) ::
@@ -129,6 +155,12 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
+  @spec get_movie_details!(integer() | String.t(), locale: atom()) :: MovieDetailsResponse.t()
+  def get_movie_details!(tmdb_id, opts \\ []) do
+    {:ok, response} = get_movie_details(tmdb_id, opts)
+    response
+  end
+
   @spec get_tv_details(integer() | String.t(), locale: atom()) ::
           {:ok, TvDetailsResponse.t()} | {:error, term()}
   def get_tv_details(tmdb_id, opts \\ []) do
@@ -144,6 +176,12 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
+  @spec get_tv_details!(integer() | String.t(), locale: atom()) :: TvDetailsResponse.t()
+  def get_tv_details!(tmdb_id, opts \\ []) do
+    {:ok, response} = get_tv_details(tmdb_id, opts)
+    response
+  end
+
   @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom()) ::
           {:ok, TvDetailsResponse.SeasonDetails.t()} | {:error, term()}
   def get_tv_season_details(tmdb_id, season_number, opts \\ []) do
@@ -154,6 +192,13 @@ defmodule WatchClub.Integrations.Tmdb do
       {:ok, body} -> {:ok, TvDetailsResponse.SeasonDetails.from_api(body)}
       {:error, error} -> {:error, error}
     end
+  end
+
+  @spec get_tv_season_details!(integer() | String.t(), integer(), locale: atom()) ::
+          TvDetailsResponse.SeasonDetails.t()
+  def get_tv_season_details!(tmdb_id, season_number, opts \\ []) do
+    {:ok, details} = get_tv_season_details(tmdb_id, season_number, opts)
+    details
   end
 
   defp format_language(nil), do: nil

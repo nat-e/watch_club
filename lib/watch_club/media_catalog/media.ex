@@ -15,6 +15,7 @@ defmodule WatchClub.MediaCatalog.Media do
     FilterBrowseSearch
   }
 
+  alias WatchClub.Requests.Changes.UpdateContentRequests
   alias WatchClub.Shared.Changes.NormalizePath
   alias WatchClub.Shared.SortOrder
 
@@ -118,6 +119,7 @@ defmodule WatchClub.MediaCatalog.Media do
         )
       end
 
+      change UpdateContentRequests
       change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
     end
 
@@ -146,6 +148,8 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
+
+      change UpdateContentRequests
     end
 
     create :create_audiobook do
@@ -173,12 +177,15 @@ defmodule WatchClub.MediaCatalog.Media do
           authorize?: false
         )
       end
+
+      change UpdateContentRequests
     end
 
     destroy :destroy do
       primary? true
       require_atomic? false
 
+      change UpdateContentRequests
       change WatchClub.MediaCatalog.Changes.DeleteTrickplay
     end
   end

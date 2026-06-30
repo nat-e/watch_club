@@ -59,4 +59,12 @@ if config_env() != :test do
   # Writable directory for generated assets (trickplay sprite sheets, etc.).
   # Mount a volume at WC_APP_DATA so they survive container upgrades.
   config :watch_club, :app_data, env!("WC_APP_DATA", :string, "/data")
+
+  # Configure the logger
+  if env!("WC_LOG_FORMAT", :string, "text") == "json" do
+    config :logger, :default_handler,
+      formatter: {LoggerJSON.Formatters.Basic, metadata: {:all_except, [:conn, :gl, :pid, :mfa]}}
+  end
+
+  config :logger, level: env!("WC_LOG_LEVEL", :string, "info") |> String.to_existing_atom()
 end

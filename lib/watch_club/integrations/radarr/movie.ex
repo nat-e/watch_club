@@ -2,14 +2,14 @@ defmodule WatchClub.Integrations.Radarr.Movie do
   @moduledoc false
 
   @type t :: %__MODULE__{
-          id: integer() | nil,
-          tmdb_id: integer() | nil,
+          id: integer(),
+          tmdb_id: integer(),
           imdb_id: String.t() | nil,
           title: String.t() | nil,
-          year: integer() | nil,
-          has_file?: boolean(),
+          year: integer(),
+          has_file?: boolean() | nil,
           available?: boolean(),
-          quality_profile_id: integer() | nil,
+          quality_profile_id: integer(),
           root_folder_path: String.t() | nil,
           file_path: String.t() | nil
         }

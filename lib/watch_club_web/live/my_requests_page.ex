@@ -15,7 +15,12 @@ defmodule WatchClubWeb.MyRequestsPage do
 
   @page_size 25
 
-  @request_fields_to_load [:status, content: [:implementation]]
+  @request_fields_to_load [
+    :best_source_request,
+    :status_group,
+    :percent_imported,
+    content: [:implementation]
+  ]
 
   @impl true
   def render(assigns) do
@@ -52,7 +57,7 @@ defmodule WatchClubWeb.MyRequestsPage do
 
         <.dropdown_menu id="my-requests-sort">
           <:trigger>
-            <.button id="my-requests-sort-trigger" variant="ghost">
+            <.button id="my-requests-sort-button" variant="ghost">
               <:icon><Lucideicons.arrow_up_down /></:icon>
               Sort: {ContentRequestSort.translated_label(@sort)}
               <:icon position="end"><Lucideicons.chevron_down /></:icon>
@@ -125,7 +130,7 @@ defmodule WatchClubWeb.MyRequestsPage do
           "inline-block size-2 shrink-0 rounded-full",
           @group == :in_progress && "bg-accent",
           @group == :completed && "bg-success",
-          @group == :failed && "bg-danger",
+          @group == :needs_attention && "bg-danger",
           @group == :not_released && "bg-text-subtle",
           @group == :not_found && "bg-warning"
         ]}
@@ -208,6 +213,9 @@ defmodule WatchClubWeb.MyRequestsPage do
        status_filter: Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
      )
      |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
+     # Reset the keyset stream so a sort/filter change reloads from the first page
+     # and replaces the existing cards instead of resuming the previous cursor.
+     |> assign(:stream_state, KeysetStreamState.init(@page_size))
      |> load_requests_page()}
   end
 

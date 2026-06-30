@@ -18,11 +18,18 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
   def apply(%Candidate{media_type: media_type} = candidate) do
-    Logger.debug("Extracting structure for #{candidate}")
-
     case probe(media_type, candidate) do
-      {:ok, candidate} -> {:ok, candidate}
-      {:error, reason} -> {:halt, reason}
+      {:ok, candidate} ->
+        {:ok, candidate}
+
+      {:error, reason} ->
+        Logger.warning("Error extracting structure for #{candidate.path}",
+          event: :ingestor_extract_structure_error,
+          error: reason,
+          path: candidate.path
+        )
+
+        :skip
     end
   end
 

@@ -202,7 +202,7 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def media_source(opts \\ []) do
+  def filesystem_media_source(opts \\ []) do
     changeset_generator(
       Source,
       :create_filesystem,
@@ -210,6 +210,25 @@ defmodule WatchClub.Generator do
         media_type: :movie,
         filesystem_path:
           sequence(:media_source_filesystem_path, fn i -> "tmp/media-imports/#{i}" end)
+      ],
+      authorize?: false,
+      actor: opts[:actor],
+      overrides: opts
+    )
+  end
+
+  def radarr_media_source(opts \\ []) do
+    changeset_generator(
+      Source,
+      :create_servarr,
+      defaults: [
+        flavor: :radarr,
+        base_url: "http://radarr:7878",
+        api_key: "securekey",
+        quality_profile_id: 1,
+        quality_profile_name: "Movies",
+        root_folder_path: "/path/to/radarr",
+        webhook_callback_base_url: "http://watch_club:4000"
       ],
       authorize?: false,
       actor: opts[:actor],
@@ -229,5 +248,38 @@ defmodule WatchClub.Generator do
       },
       overrides: opts
     )
+  end
+
+  def media_movie_input(movie_id) do
+    %{
+      path: "/movies/#{movie_id}/video.mkv",
+      type: :movie,
+      video: video_input(:movie, movie_id)
+    }
+  end
+
+  def media_episode_input(episode_id) do
+    %{
+      path: "/episodes/#{episode_id}/video.mkv",
+      type: :movie,
+      video: video_input(:tv_show_episode, episode_id)
+    }
+  end
+
+  def video_input(media_type, id) do
+    id_field =
+      case media_type do
+        :movie -> :movie_id
+        :tv_show_episode -> :tv_show_episode_id
+      end
+
+    %{
+      video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
+      audio_tracks: [
+        %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
+      ],
+      text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
+    }
+    |> Map.put(id_field, id)
   end
 end

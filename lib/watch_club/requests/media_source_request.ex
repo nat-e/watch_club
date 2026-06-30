@@ -3,27 +3,17 @@ defmodule WatchClub.Requests.MediaSourceRequest do
   WatchClub's record of asking one request-capable `Source` to make one
   `Content` available. Singleton per `(content, media_source)`, shared by
   every `ContentRequest` for that content.
-
-  The row is *born at submission* (created only after a successful add/adopt,
-  so `external_resource_id` is never nil). Its `state` is **reconciled**, not
-  driven by events: `create` and `refresh_status` both recompute it from the
-  *arr's current truth via `RefreshState`. Any webhook (or a future poll) for
-  the resource just calls `refresh_status` — so state never oscillates.
-
-  The user-facing `ContentRequest` status is derived from these states plus
-  Media; this resource never stores anything user-facing.
   """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Requests,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer],
-    notifiers: [Ash.Notifier.PubSub]
+    authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Source
-  alias WatchClub.Requests.{ContentRequest, MediaSourceRequestState}
-  alias WatchClub.Requests.MediaSourceRequest.Changes.RefreshState
+  alias WatchClub.Requests.Changes.UpdateContentRequests
+  alias WatchClub.Requests.MediaSourceRequestStatus
 
   postgres do
     table "media_source_requests"
@@ -38,34 +28,40 @@ defmodule WatchClub.Requests.MediaSourceRequest do
   actions do
     defaults [:read]
 
-    # Created by the submit worker after a successful add/adopt. `state` is
-    # recomputed from the *arr by RefreshState (not passed in). Upsert on the
-    # singleton identity so a concurrent request can't duplicate it; on
-    # conflict we refresh the external id and re-derive state.
     create :create do
+      description "Updates the MSR and the related Content Requests"
       primary? true
       upsert? true
       upsert_identity :unique_content_source
-      upsert_fields [:external_resource_id, :state]
+      upsert_fields [:external_resource_id, :status]
 
       accept [:content_id, :media_source_id, :external_resource_id]
 
-      change RefreshState
+      # Schedule the first refresh in 5 seconds
+      change fn changeset, _ctx ->
+        Ash.Changeset.after_action(changeset, fn changeset, updated_request ->
+          RefreshMediaSourceRequest.new_job(updated_request.id, schedule_in: 5) |> Oban.insert!()
+          {:ok, updated_request}
+        end)
+      end
+
+      change UpdateContentRequests
     end
 
-    # Reconcile against the *arr's current truth. Called on any webhook/poll
-    # for the resource. require_atomic? false: RefreshState makes an HTTP call.
-    update :refresh_status do
+    update :update do
+      description "Updates the MSR and the related Content Requests if necessary"
+      primary? true
       require_atomic? false
-      accept []
+      accept [:status, :download_progress]
 
-      change RefreshState
+      change UpdateContentRequests
     end
 
     destroy :destroy do
       primary? true
 
       require_atomic? false
+      change UpdateContentRequests
     end
   end
 
@@ -76,35 +72,43 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       forbid_if always()
     end
 
-    # Not user-scoped and not sensitive (it reveals upstream request state for
+    # Not user-scoped and not sensitive (it reveals upstream request status for
     # a Content, not who asked). Readable by any authenticated actor so a
     # user's Content Request status can aggregate over it.
-    policy action(:read) do
+    policy action_type(:read) do
       description "Any authenticated actor can read Media Source Requests"
       authorize_if always()
     end
 
-    policy action([:create, :refresh_status, :destroy]) do
+    policy action_type([:create, :update, :destroy]) do
       description "Media Source Requests are written only by the system actor (workers, webhooks)"
       authorize_if WatchClub.Checks.IsSystemActor
     end
   end
 
-  pub_sub do
-    module Phoenix.PubSub
-    name WatchClub.PubSub
-
-    # TODO:
-  end
-
   attributes do
     uuid_v7_primary_key :id
 
-    # Reconciled from the *arr; see RefreshState. Plain attribute, not a state
+    # Reconciled from the *arr; see RefreshState. Plain attribute, not a status
     # machine — any value can follow any other.
-    attribute :state, MediaSourceRequestState do
+    attribute :status, MediaSourceRequestStatus do
       allow_nil? false
-      default :submitted
+      default :searching
+      public? true
+    end
+
+    # The download progress of the request in %.
+    #
+    # - 0 when the request is :searching
+    # - Between 0 and 100 when the request is :downloading / :partially_downloaded
+    # - 100 when the request is in a status after downloading
+    #
+    # For Movies/Books, this will be the progress of the downloaded file in the Radarr/Chaptarr queue
+    # For TV Shows, this will be the sum of the progress of all the downloaded files in
+    # the Sonarr queue (seasons or episodes), divided by the number of episodes.
+    attribute :download_progress, :float do
+      allow_nil? false
+      default 0.0
       public? true
     end
 
@@ -129,10 +133,22 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       allow_nil? false
       public? true
     end
+  end
 
-    has_many :user_requests, ContentRequest do
-      source_attribute :content_id
-      destination_attribute :content_id
+  calculations do
+    # An internal sorting rank for comparing requests of the same Content
+    calculate :status_rank,
+              :integer,
+              expr(
+                cond do
+                  status == :downloaded -> 4
+                  status == :downloading -> 3
+                  status == :needs_attention -> 2
+                  status == :not_released -> 1
+                  status == :searching -> 0
+                end
+              ) do
+      public? false
     end
   end
 

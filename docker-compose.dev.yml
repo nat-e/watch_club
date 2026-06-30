@@ -3,6 +3,7 @@ name: watch_club
 services:
   db:
     image: postgres:18.3-trixie
+    container_name: wc-db
     networks:
       - watch_club
     restart: unless-stopped
@@ -15,45 +16,87 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
+  
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    # Switch to alpine to disable VPN
+    # image: alpine:latest
+    # command: sleep infinity
+    container_name: wc-gluetun
+    networks:
+      - watch_club
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+      - VPN_TYPE=openvpn
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - SERVER_COUNTRIES=Netherlands
+      - SERVER_CATEGORIES=P2P
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 5s
+    ports:
+      - 9696:9696        # Prowlarr
+      - 8080:8080        # qbt WebUI
+      - 51413:51413      # qbt torrenting
+      - 51413:51413/udp  # qbt torrenting (UDP)
+    restart: unless-stopped
+
+  qbt:
+    image: lscr.io/linuxserver/qbittorrent:5.2.2
+    network_mode: "service:gluetun"
+    container_name: wc-qbt
+    environment:
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=51413
+    volumes:
+      - wc-qbt-config:/config
+      - ./media:/media
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    restart: unless-stopped
+
   radarr:
-    image: lscr.io/linuxserver/radarr:6.1.1
+    image: lscr.io/linuxserver/radarr:6.2.1
     container_name: wc-radarr
+    networks:
+      - watch_club
     environment:
       - TZ=Etc/UTC
     ports:
-      - '7878:7878'
+      - 7878:7878
     volumes:
       - wc-radarr-config:/config
       - ./media:/media
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:4.0.19
+    container_name: wc-sonarr
     networks:
       - watch_club
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:7878/']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.17
-    container_name: wc-sonarr
-    environment:
-      - TZ=Etc/UTC
     ports:
-      - '8989:8989'
+      - 8989:8989
     volumes:
       - wc-sonarr-config:/config
       - ./media:/media
-    networks:
-      - watch_club
     restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:8989/']
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
 
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:2.4.0
+    container_name: wc-prowlarr
+    network_mode: "service:gluetun"
+    volumes:
+      - wc-prowlarr-config:/config
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    restart: unless-stopped
 
 networks:
   watch_club:
@@ -61,5 +104,7 @@ networks:
 
 volumes:
   pgdata:
+  wc-qbt-config:
+  wc-prowlarr-config:
   wc-radarr-config:
   wc-sonarr-config:

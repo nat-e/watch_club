@@ -9,7 +9,7 @@ defmodule WatchClub.Application do
 
   @impl true
   def start(_type, _args) do
-    Oban.Telemetry.attach_default_logger()
+    WatchClub.Shared.ObanLogger.attach()
 
     children = [
       {Cachex, [:tmdb_api_cache]},

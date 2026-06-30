@@ -15,9 +15,9 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
 
   alias WatchClub.Integrations.Sonarr
   alias WatchClub.Integrations.Sonarr.{Episode, Series}
+  alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity
-  alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.Shared.Path, as: Paths
 
   require Logger
@@ -26,19 +26,30 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
   def scan(%Import{
         media_source: %{implementation: %Servarr{flavor: :sonarr} = config}
       }) do
-    case Sonarr.list_series(config.base_url, config.api_key) do
-      {:ok, series} ->
-        candidates =
-          series
-          |> Enum.filter(&belongs_to_source?(&1, config))
-          |> Enum.flat_map(&series_candidates(&1, config))
+    Logger.info("Fetch series from Sonarr", event: :sonarr_fetch_started)
 
-        Logger.info("Sonarr scan matched #{length(candidates)} episode file(s)")
-        {:ok, candidates}
+    config.base_url
+    |> Sonarr.list_series!(config.api_key)
+    |> tap(
+      &Logger.info("#{length(&1)} Series fetched from Sonarr",
+        event: :sonarr_fetch_success,
+        num_series: length(&1)
+      )
+    )
+    |> Enum.filter(&belongs_to_source?(&1, config))
+    |> Enum.flat_map(&series_candidates(&1, config))
+    |> tap(fn
+      [] ->
+        Logger.info("No eligible Series found", event: :sonarr_scan_finished, num_candidates: 0)
 
-      {:error, reason} ->
-        {:error, "Sonarr scan failed: #{inspect(reason)}"}
-    end
+      candidates ->
+        num_candidates = length(candidates)
+
+        Logger.info("Found #{num_candidates} eligible movies",
+          event: :sonarr_scan_finished,
+          num_candidates: num_candidates
+        )
+    end)
   end
 
   defp belongs_to_source?(%Series{} = series, %Servarr{} = config) do
@@ -47,6 +58,8 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
       Paths.normalize(series.root_folder_path) == Paths.normalize(config.root_folder_path)
   end
 
+  # List all the episodes for this Series.
+  # Handle errors if this fails since we want to continue with the other imports
   defp series_candidates(%Series{} = series, %Servarr{} = config) do
     case Sonarr.list_episodes(config.base_url, config.api_key, series.id) do
       {:ok, episodes} ->
@@ -55,8 +68,11 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
         |> Enum.map(&to_candidate(&1, series, config))
 
       {:error, reason} ->
-        Logger.warning(
-          "Sonarr episode list failed for series #{series.id} (#{series.title}): #{inspect(reason)}"
+        Logger.warning("Error listing episodes for: #{series}",
+          event: :sonarr_list_episodes_error,
+          series_id: series.id,
+          title: series.title,
+          reason: reason
         )
 
         []
@@ -66,9 +82,13 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
   defp downloaded?(%Episode{has_file?: true, file_path: path}) when is_binary(path), do: true
   defp downloaded?(%Episode{}), do: false
 
-  defp to_candidate(%Episode{} = episode, %Series{} = series, %Servarr{} = config) do
+  defp to_candidate(
+         %Episode{} = episode,
+         %Series{} = series,
+         %Servarr{root_folder_path: root, local_root_folder_path: local_root}
+       ) do
     %Candidate{
-      path: local_path(episode.file_path, config),
+      path: Paths.remap_prefix(episode.file_path, root, local_root),
       media_type: :tv_show_episode,
       identity: %EpisodeIdentity{
         tvdb_id: series.tvdb_id,
@@ -79,13 +99,5 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
         episode_number: episode.episode_number
       }
     }
-  end
-
-  # Maps the Sonarr-side file path onto WatchClub's disk.
-  defp local_path(file_path, %Servarr{
-         root_folder_path: root,
-         local_root_folder_path: local_root
-       }) do
-    Paths.remap_prefix(file_path, root, local_root)
   end
 end

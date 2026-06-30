@@ -16,11 +16,8 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdExtractor
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenameParser
 
-  require Logger
-
   @doc "Returns `candidate` with its `identity` populated from the path."
   def apply(%Candidate{} = candidate, media_source) do
-    Logger.debug("Identifying #{candidate}")
     %{candidate | identity: extract_identity(media_source.media_type, candidate, media_source)}
   end
 

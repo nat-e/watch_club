@@ -41,6 +41,8 @@ services:
       WC_SCHEME: ${WC_SCHEME}
       WC_APP_DATA: /data
       WC_TMDB_API_KEY: ${WC_TMDB_API_KEY}
+      WC_LOG_LEVEL: ${WC_LOG_LEVEL}
+      WC_LOG_FORMAT: ${WC_LOG_FORMAT}
     ports:
       - "${WC_PORT}:${WC_PORT}"
     volumes:

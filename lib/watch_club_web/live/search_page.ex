@@ -34,7 +34,7 @@ defmodule WatchClubWeb.SearchPage do
           space="related"
         >
           <%!-- `hidden only:flex`: shown only when it's the stream's sole child (no cards). --%>
-          <.no_results query={@query} search_error?={@search_error?} class="hidden only:flex" />
+          <.no_results query={@query} class="hidden only:flex" />
 
           <.search_result_card
             :for={{dom_id, result} <- @streams.search_results}
@@ -82,22 +82,7 @@ defmodule WatchClubWeb.SearchPage do
   end
 
   attr :query, :string, required: true
-  attr :search_error?, :boolean, required: true
   attr :class, :any, default: nil
-
-  defp no_results(%{search_error?: true} = assigns) do
-    ~H"""
-    <.empty id="search-results-status" class={@class}>
-      <:icon><Lucideicons.triangle_alert /></:icon>
-      <:description>
-        {dgettext("search", "There was an error searching for your content")}
-      </:description>
-      <.button id="search-retry" variant="secondary" phx-click="retry">
-        {dgettext("default", "Try again")}
-      </.button>
-    </.empty>
-    """
-  end
 
   defp no_results(assigns) do
     ~H"""
@@ -133,8 +118,7 @@ defmodule WatchClubWeb.SearchPage do
        content_type:
          Url.parse_url_param(params["type"], SearchContentType.values(), :movies_and_shows),
        page: 0,
-       total_pages: 0,
-       search_error?: false
+       total_pages: 0
      )
      |> load_page(1)}
   end
@@ -163,17 +147,16 @@ defmodule WatchClubWeb.SearchPage do
          ) do
       {:ok, %SearchResultsPage{results: results, page: page, total_pages: total_pages}} ->
         socket
-        |> assign(page: page, total_pages: total_pages, search_error?: false)
+        |> assign(page: page, total_pages: total_pages)
         |> stream(:search_results, results, reset: page_number == 1)
 
       {:error, _error} ->
-        socket = assign(socket, :search_error?, true)
         if page_number == 1, do: stream(socket, :search_results, [], reset: true), else: socket
     end
   end
 
   defp can_load_more?(assigns) do
-    not assigns.search_error? and assigns.page < assigns.total_pages
+    assigns.page < assigns.total_pages
   end
 
   defp content_identity(%MovieSearchResult{id: tmdb_id}), do: ContentIdentity.for_movie(tmdb_id)

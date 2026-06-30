@@ -1,13 +1,14 @@
 defmodule WatchClub.Requests.ContentRequest do
   @moduledoc """
-  A user's request for WatchClub to make a piece of `Content` available for
-  their personal consumption.
+  A user's request to make a piece of `Content` available on the Watch Club instance.
 
-  Has **no stored status**: what the user sees in My Requests is derived at
-  read time from this request's `MediaSourceRequest`s (shared per content)
-  and the Content's Media. The `media_source_requests` relationship is keyed
-  on `content_id`, not this row's id, because a Media Source Request is
-  shared by every user's request for the same Content.
+  If the instance has some requestable Media Sources configured (Radarr, Sonarr...)
+  creating a Request will automatically create one `Media Source Request` per source (if it did not
+  exist before), so that the content is automatically downloaded.
+  If not, the requests will be considered "manual", meaning that we will just wait that the
+  administrator finds and imports a Media for this content on its own.
+
+  At the moment, there is no approval workflow, all requests automatically download content.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -20,8 +21,13 @@ defmodule WatchClub.Requests.ContentRequest do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Requests.ContentRequest.Changes.{CreateMediaSourceRequests, EnsureContentExists}
-  alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup, MediaSourceRequest}
+  alias WatchClub.Requests.Changes.{CreateMediaSourceRequests, EnsureContentExists}
+
+  alias WatchClub.Requests.{
+    ContentRequestSort,
+    ContentRequestStatusGroup,
+    MediaSourceRequest
+  }
 
   postgres do
     table "content_requests"
@@ -30,6 +36,7 @@ defmodule WatchClub.Requests.ContentRequest do
     references do
       reference :user, on_delete: :delete
       reference :content, on_delete: :delete
+      reference :best_source_request, on_delete: :nilify
     end
   end
 
@@ -47,8 +54,11 @@ defmodule WatchClub.Requests.ContentRequest do
       change CreateMediaSourceRequests
     end
 
-    read :with_status do
-      prepare build(load: [:status, :status_group, :progress])
+    update :update do
+      accept [:best_source_request_id]
+      # This forces updates of the row, even when updating with an empty input map
+      # (which is the case in UpdateContentRequests when a media has changed)
+      change atomic_update(:updated_at, expr(now()))
     end
 
     read :for_current_user do
@@ -104,25 +114,26 @@ defmodule WatchClub.Requests.ContentRequest do
 
     # Reads are filtered to the actor's own requests; the Instance
     # Administrator can inspect all.
-    policy action([:read, :for_current_user, :with_status]) do
+    policy action_type(:read) do
       authorize_if expr(user_id == ^actor(:id))
-      authorize_if actor_attribute_equals(:administrator?, true)
-    end
-
-    policy action(:for_content) do
-      description "Only admin and system user can get all Content Requests for a content"
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
-    policy action(:request) do
+    policy action_type(:create) do
       description "Any authenticated user can request content for themselves"
       authorize_if always()
     end
 
-    policy action(:cancel) do
+    policy action_type(:update) do
+      description "Only SystemActor can update Content Requests"
+      authorize_if WatchClub.Checks.IsSystemActor
+    end
+
+    policy action_type(:destroy) do
       description "A user can cancel their own request; the Instance Administrator can cancel any"
       authorize_if expr(user_id == ^actor(:id))
+      authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
     end
   end
@@ -135,6 +146,10 @@ defmodule WatchClub.Requests.ContentRequest do
     # We add :content_id and :content_identity in the metadata to make
     # it easy for subscribers to know which media this is related to
     publish_all :create, ["content", "user", :user_id],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :update, ["content", "user", :user_id],
       load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
@@ -157,7 +172,6 @@ defmodule WatchClub.Requests.ContentRequest do
 
   attributes do
     uuid_v7_primary_key :id
-
     timestamps()
   end
 
@@ -173,94 +187,77 @@ defmodule WatchClub.Requests.ContentRequest do
       attribute_writable? false
     end
 
-    # An MSR is shared by every user's request for the same Content, so this
-    # is keyed on content_id rather than this row's primary key.
-    has_many :media_source_requests, MediaSourceRequest do
-      source_attribute :content_id
-      destination_attribute :content_id
+    # The most advanced MSR for this Content. Null if we don't have *arr server configured
+    belongs_to :best_source_request, MediaSourceRequest do
+      allow_nil? true
     end
   end
 
   calculations do
-    calculate :progress,
-              :integer,
-              WatchClub.Requests.ContentRequest.Calculations.Progress do
-      public? true
-    end
+    # The percentage of sub-contents for which medias exist and are ready to play on Watch Club
+    # For movies and books, this can only be 0 or 100
+    # For TV show, this is equal to the number of playable aired episodes / number of aired episodes
+    calculate :percent_imported,
+              :float,
+              expr(
+                cond do
+                  content.type == :movie and count(content.movie.videos) > 0 ->
+                    100.0
 
-    calculate :status,
-              WatchClub.Requests.ContentRequestStatus,
-              WatchClub.Requests.ContentRequest.Calculations.Status do
-      public? true
-    end
+                  content.type == :book and
+                      count(content.book.audiobooks) + count(content.book.ebooks) > 0 ->
+                    100.0
+
+                  # Guard the 0 denominator before any episode has aired
+                  content.type == :tv_show and
+                      not exists(content.tv_show.episodes, air_date <= today()) ->
+                    0.0
+
+                  content.type == :tv_show ->
+                    type(
+                      count(content.tv_show.episodes,
+                        query: [filter: expr(has_media? and air_date <= today())]
+                      ),
+                      :float
+                    ) * 100.0 /
+                      count(content.tv_show.episodes, query: [filter: expr(air_date <= today())])
+
+                  # Movie and books without content
+                  true ->
+                    0.0
+                end
+              )
 
     calculate :status_group,
               ContentRequestStatusGroup,
               expr(
                 cond do
-                  status == :not_released -> :not_released
-                  status == :not_found -> :not_found
-                  status == :completed -> :completed
-                  status == :failed -> :failed
-                  status in [:requested, :downloading, :importing] -> :in_progress
+                  percent_imported == 100.0 ->
+                    :completed
+
+                  is_nil(best_source_request) ->
+                    :in_progress
+
+                  best_source_request.status == :not_released ->
+                    :not_released
+
+                  best_source_request.status == :needs_attention ->
+                    :needs_attention
+
+                  # If it has been more than 5 minutes and we're still searching, we consider
+                  # that the content has not been found
+                  best_source_request.status == :searching and inserted_at < ago(5, :minute) ->
+                    :not_found
+
+                  best_source_request.status in [
+                    :searching,
+                    :downloading,
+                    :downloaded
+                  ] ->
+                    :in_progress
                 end
               ) do
       public? true
-    end
-
-    # MSR transitions, not this row, are what move; fall back to the row's
-    # own updated_at when there are no requests yet.
-    calculate :last_activity_at,
-              :utc_datetime_usec,
-              expr(fragment("coalesce(?, ?)", last_request_activity_at, updated_at)) do
-      public? true
-    end
-  end
-
-  aggregates do
-    # Media Source Request states for this request's content (shared pool).
-    count :request_count, :media_source_requests
-
-    count :downloading_request_count, :media_source_requests do
-      filter expr(state == :downloading)
-    end
-
-    count :partially_downloaded_request_count, :media_source_requests do
-      filter expr(state == :partially_downloaded)
-    end
-
-    count :downloaded_request_count, :media_source_requests do
-      filter expr(state == :downloaded)
-    end
-
-    count :not_released_request_count, :media_source_requests do
-      filter expr(state == :not_released)
-    end
-
-    count :needs_attention_request_count, :media_source_requests do
-      filter expr(state == :needs_attention)
-    end
-
-    # Submitted and still within the grace window — beyond it a submitted
-    # request that hasn't advanced is treated as "no progress" (not_found).
-    count :fresh_submitted_request_count, :media_source_requests do
-      filter expr(state == :submitted and inserted_at > ago(5, :minute))
-    end
-
-    max :last_request_activity_at, :media_source_requests, :updated_at
-
-    # Media presence (the fulfillment authority), independent of requests.
-    count :movie_video_count, [:content, :movie, :videos]
-
-    count :aired_episode_count, [:content, :tv_show, :episodes] do
-      filter expr(not is_nil(air_date) and air_date <= fragment("CURRENT_DATE"))
-    end
-
-    count :aired_available_episode_count, [:content, :tv_show, :episodes] do
-      filter expr(
-               not is_nil(air_date) and air_date <= fragment("CURRENT_DATE") and
-                 exists(videos, true)
-             )
     end
   end
 

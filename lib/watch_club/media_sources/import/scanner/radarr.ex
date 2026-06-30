@@ -12,9 +12,9 @@ defmodule WatchClub.MediaSources.Import.Scanner.Radarr do
 
   alias WatchClub.Integrations.Radarr
   alias WatchClub.Integrations.Radarr.Movie
+  alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
-  alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.Shared.Path, as: Paths
 
   require Logger
@@ -23,19 +23,30 @@ defmodule WatchClub.MediaSources.Import.Scanner.Radarr do
   def scan(%Import{
         media_source: %{implementation: %Servarr{flavor: :radarr} = config}
       }) do
-    case Radarr.list_movies(config.base_url, config.api_key) do
-      {:ok, movies} ->
-        candidates =
-          movies
-          |> Enum.filter(&belongs_to_source?(&1, config))
-          |> Enum.map(&to_candidate(&1, config))
+    Logger.info("Fetch movies from Radarr", event: :radarr_fetch_started)
 
-        Logger.info("Radarr scan matched #{length(candidates)} movie file(s)")
-        {:ok, candidates}
+    config.base_url
+    |> Radarr.list_movies!(config.api_key)
+    |> tap(
+      &Logger.info("#{length(&1)} movies fetched from Radarr",
+        event: :radarr_fetch_success,
+        num_movies: length(&1)
+      )
+    )
+    |> Enum.filter(&belongs_to_source?(&1, config))
+    |> Enum.map(&to_candidate(&1, config))
+    |> tap(fn
+      [] ->
+        Logger.info("No eligible movies found", event: :radarr_scan_finished, num_candidates: 0)
 
-      {:error, reason} ->
-        {:error, "Radarr scan failed: #{inspect(reason)}"}
-    end
+      candidates ->
+        num_candidates = length(candidates)
+
+        Logger.info("Found #{num_candidates} eligible movies",
+          event: :radarr_scan_finished,
+          num_candidates: num_candidates
+        )
+    end)
   end
 
   defp belongs_to_source?(%Movie{} = movie, %Servarr{} = config) do
@@ -45,9 +56,12 @@ defmodule WatchClub.MediaSources.Import.Scanner.Radarr do
       Paths.normalize(movie.root_folder_path) == Paths.normalize(config.root_folder_path)
   end
 
-  defp to_candidate(%Movie{} = movie, %Servarr{} = config) do
+  defp to_candidate(%Movie{} = movie, %Servarr{
+         root_folder_path: root,
+         local_root_folder_path: local_root
+       }) do
     %Candidate{
-      path: local_path(movie.file_path, config),
+      path: Paths.remap_prefix(movie.file_path, root, local_root),
       media_type: :movie,
       identity: %MovieIdentity{
         tmdb_id: movie.tmdb_id,
@@ -56,13 +70,5 @@ defmodule WatchClub.MediaSources.Import.Scanner.Radarr do
         year: movie.year
       }
     }
-  end
-
-  # Maps the Radarr-side file path onto WatchClub's disk.
-  defp local_path(file_path, %Servarr{
-         root_folder_path: root,
-         local_root_folder_path: local_root
-       }) do
-    Paths.remap_prefix(file_path, root, local_root)
   end
 end

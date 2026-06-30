@@ -1,7 +1,14 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   @moduledoc """
-  Resolves a candidate's identity to a `Content` row, creating it if needed,
-  and writes the outcome back to the candidate as a `Candidate.MatchResult`.
+  Try to match a Candidate to a Content, using the main metadata provider
+  (TMDB for movies/shows, Hardcover for books).
+
+  We try to match with the following strategy
+  - If we have the main provider ID, match with that
+  - If not, try to match with other IDs (IMDB, TVDB, ...)
+  - If not, fuzzy match with title + year
+
+  No error handling or retries, a network error crashes the Oban job and it will get restarted.
   """
 
   alias WatchClub.Contents
@@ -21,56 +28,54 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   require Logger
 
   def apply(%Candidate{} = candidate) do
-    Logger.debug("Matching content for #{candidate}")
+    Logger.info("Matching content for #{candidate.path} -- #{inspect(candidate.identity)}",
+      event: :matching_candidate_started,
+      identity: candidate.identity
+    )
 
     case get_or_create_content(candidate.identity) do
-      {:ok, match} ->
-        Logger.info("Matched #{candidate} to #{match}")
-        {:ok, %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}}
+      nil ->
+        Logger.warning("No match found for #{candidate.path}",
+          event: :no_match_found
+        )
 
-      {:error, :no_match} ->
-        Logger.info("No match found for #{candidate}")
-        {:ok, %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}}
+        %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}
 
-      {:error, reason} ->
-        Logger.error("Error matching content for #{candidate}: #{inspect(reason)}")
-        {:halt, "Error matching content"}
+      match ->
+        Logger.info("#{candidate.path} matched to: #{to_string(match)}",
+          event: :match_found,
+          external_id: match.id,
+          name: to_string(match)
+        )
+
+        %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}
     end
   end
 
   # 1. Match by TMDB ID
   defp get_or_create_content(%MovieIdentity{tmdb_id: tmdb_id}) when is_integer(tmdb_id) do
-    Contents.get_or_create_content(ContentIdentity.for_movie(tmdb_id), SystemActor.actor())
+    Contents.get_or_create_content!(ContentIdentity.for_movie(tmdb_id), SystemActor.actor())
   end
 
   # 2. Match by IMDB ID. We just fetch the TMDB ID and go back to step 1.
   defp get_or_create_content(%MovieIdentity{imdb_id: imdb_id}) when is_binary(imdb_id) do
-    case Tmdb.find_by_external_id(imdb_id, :imdb_id) do
-      {:ok,
-       %Tmdb.FindByExternalIdResponse{movie_results: [%Tmdb.MovieSearchResult{} = result | _]}} ->
-        get_or_create_content(%MovieIdentity{tmdb_id: result.id})
-
-      {:ok, _} ->
-        {:error, :no_match}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    Tmdb.find_by_external_id!(imdb_id, :imdb_id).movie_results
+    |> List.first()
+    |> then(fn
+      nil -> nil
+      result -> get_or_create_content(%MovieIdentity{tmdb_id: result.id})
+    end)
   end
 
   # 3. Match by title and year. We just fetch the TMDB ID and go back to step 1.
   defp get_or_create_content(%MovieIdentity{title: title, year: year})
        when is_binary(title) and is_integer(year) do
-    case Tmdb.search_movie(title, year: year) do
-      {:ok, %Tmdb.MovieSearchResponse{results: [%Tmdb.MovieSearchResult{} = result | _]}} ->
-        get_or_create_content(%MovieIdentity{tmdb_id: result.id})
-
-      {:ok, _} ->
-        {:error, :no_match}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    Tmdb.search_movie!(title, year: year).results
+    |> List.first()
+    |> then(fn
+      nil -> nil
+      result -> get_or_create_content(%MovieIdentity{tmdb_id: result.id})
+    end)
   end
 
   # TV Shows
@@ -81,23 +86,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
          episode_number: episode_number
        })
        when is_integer(tmdb_id) do
-    with {:ok, content} <-
-           Contents.get_or_create_content(
-             ContentIdentity.for_tv_show(tmdb_id),
-             SystemActor.actor()
-           ) do
-      content =
-        Ash.load!(content, [implementation: %{load: [tv_show: [:episodes]]}],
-          actor: SystemActor.actor()
-        )
+    content =
+      Contents.get_or_create_content!(ContentIdentity.for_tv_show(tmdb_id), SystemActor.actor(),
+        load: [implementation: %{load: [tv_show: [:episodes]]}]
+      )
 
-      case Enum.find(content.implementation.episodes, fn e ->
-             e.season_number == season_number and e.episode_number == episode_number
-           end) do
-        nil -> {:error, :no_match}
-        episode -> {:ok, episode}
-      end
-    end
+    content.implementation.episodes
+    |> Enum.find(&(&1.season_number == season_number and &1.episode_number == episode_number))
   end
 
   # 2. Match by TVDB ID. We just fetch the TMDB ID and go back to step 1.
@@ -115,35 +110,27 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   # 4. Match by title. We just fetch the TMDB ID and go back to step 1.
   defp get_or_create_content(%EpisodeIdentity{title: title} = identity)
        when is_binary(title) do
-    case Tmdb.search_tv(title) do
-      {:ok, %Tmdb.TvSearchResponse{results: [%Tmdb.TvSearchResult{} = result | _]}} ->
-        get_or_create_content(%{identity | tmdb_id: result.id})
-
-      {:ok, _} ->
-        {:error, :no_match}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    Tmdb.search_tv!(title).results
+    |> List.first()
+    |> then(fn
+      nil -> nil
+      result -> get_or_create_content(%{identity | tmdb_id: result.id})
+    end)
   end
 
   # Books
   defp get_or_create_content(%BookIdentity{}) do
-    {:error, :not_implemented}
+    raise "Not implemented"
   end
 
-  defp get_or_create_content(_identity), do: {:error, :no_match}
+  defp get_or_create_content(_identity), do: nil
 
   defp find_show_by_external_id(source, external_id, %EpisodeIdentity{} = identity) do
-    case Tmdb.find_by_external_id(external_id, source) do
-      {:ok, %Tmdb.FindByExternalIdResponse{tv_results: [%Tmdb.TvSearchResult{} = result | _]}} ->
-        get_or_create_content(%{identity | tmdb_id: result.id})
-
-      {:ok, _} ->
-        {:error, :no_match}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
+    Tmdb.find_by_external_id!(external_id, source).tv_results
+    |> List.first()
+    |> then(fn
+      nil -> nil
+      result -> get_or_create_content(%EpisodeIdentity{identity | tmdb_id: result.id})
+    end)
   end
 end

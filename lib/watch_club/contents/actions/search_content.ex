@@ -18,25 +18,34 @@ defmodule WatchClub.Contents.Actions.SearchContent do
         _opts,
         context
       ) do
-    case Tmdb.search_multi(query, page: page, locale: context.actor.settings.locale) do
-      {:ok, response} ->
-        results =
-          Enum.filter(
-            response.results,
-            &(is_struct(&1, MovieSearchResult) || is_struct(&1, TvSearchResult))
-          )
+    Logger.info("Searching \"#{query}\" on TMDB (page #{page})",
+      event: :search_movies_and_shows,
+      query: query,
+      page: page
+    )
 
-        {:ok,
-         %SearchResultsPage{
-           results: results,
-           page: response.page,
-           total_pages: response.total_pages
-         }}
+    response = Tmdb.search_multi!(query, page: page, locale: context.actor.settings.locale)
 
-      {:error, error} ->
-        Logger.error("Error searching TMDB for `#{query}`: #{inspect(error)}")
-        {:error, error}
-    end
+    results =
+      response.results
+      |> Enum.filter(&(is_struct(&1, MovieSearchResult) || is_struct(&1, TvSearchResult)))
+
+    num_results = length(results)
+
+    Logger.info("Found #{num_results} results for \"#{query}\"",
+      event: :search_movies_and_shows_found,
+      query: query,
+      page: page,
+      num_results: num_results,
+      total_results: length(response.results)
+    )
+
+    {:ok,
+     %SearchResultsPage{
+       results: results,
+       page: response.page,
+       total_pages: response.total_pages
+     }}
   end
 
   def run(
@@ -44,6 +53,6 @@ defmodule WatchClub.Contents.Actions.SearchContent do
         _opts,
         _context
       ) do
-    {:ok, %SearchResultsPage{}}
+    raise "Not implemented"
   end
 end

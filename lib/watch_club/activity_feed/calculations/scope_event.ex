@@ -22,7 +22,8 @@ defmodule WatchClub.ActivityFeed.Calculations.ScopeEvent do
 
   defp merge_load(context, name, default \\ []) do
     custom_load = context.arguments[:load] || []
-    default ++ Keyword.get(custom_load, name, [])
+    # List.wrap so a single load term works like a list.
+    default ++ List.wrap(Keyword.get(custom_load, name, []))
   end
 
   # Ensures all attributes are selected by default on the related loads we depend on.

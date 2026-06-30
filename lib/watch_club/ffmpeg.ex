@@ -48,9 +48,14 @@ defmodule WatchClub.Ffmpeg do
   end
 
   defp run_probe(ffprobe, args) do
-    case System.cmd(ffprobe, args, stderr_to_stdout: true) do
+    # Don't merge stderr: ffprobe writes JSON to stdout and diagnostics
+    # (e.g. "Referenced QT chapter track not found") to stderr even at
+    # `-loglevel error` while still exiting 0, which would corrupt the JSON.
+    # The BEAM can't capture stderr separately, so on failure we rely on the
+    # exit status; stderr is left to surface on the console.
+    case System.cmd(ffprobe, args) do
       {json, 0} -> {:ok, json}
-      {output, status} -> {:error, "ffprobe exited with #{status}: #{String.trim(output)}"}
+      {_output, status} -> {:error, "ffprobe exited with #{status}"}
     end
   end
 

@@ -166,10 +166,9 @@ defmodule WatchClubWeb do
 
       alias WatchClub.Requests.{
         ContentRequest,
-        ContentRequestStatus,
-        ContentRequestStatusGrup,
         MediaSourceRequest,
-        MediaSourceRequestState
+        MediaSourceRequestStatus,
+        ContentRequestStatusGroup
       }
 
       alias WatchClubWeb.Helpers.{Time, Url}

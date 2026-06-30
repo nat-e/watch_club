@@ -25,11 +25,9 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       period: :infinity
     ]
 
+  alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
-  alias WatchClub.MediaSources.Import
-
-  require Logger
 
   @doc "Builds an ingest job for a scan `Candidate`, tagged with the import at default priority."
   def new_job(%Import{id: id}, %Candidate{} = candidate) do
@@ -48,22 +46,20 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
+    Logger.metadata(path: args["path"], media_type: args["media_type"])
+
     args
     |> Candidate.from_map()
     |> ingest()
   end
 
   defp ingest(%Candidate{} = candidate) do
-    Logger.info("Ingesting candidate: #{candidate}")
-
     with {:ok, candidate} <- ExtractStructure.apply(candidate),
-         {:ok, candidate} <- MatchContent.apply(candidate),
-         {:ok, candidate} <- SaveMedia.apply(candidate) do
-      Logger.info("Finished ingesting candidate: #{candidate}")
+         candidate <- MatchContent.apply(candidate),
+         _candidate <- SaveMedia.apply(candidate) do
       :ok
     else
-      {:halt, reason} ->
-        Logger.warning("Stop ingesting candidate #{candidate}: #{inspect(reason)}")
+      :skip ->
         :ok
     end
   end

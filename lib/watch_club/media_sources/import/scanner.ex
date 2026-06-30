@@ -11,8 +11,8 @@ defmodule WatchClub.MediaSources.Import.Scanner do
   `:import_scanner_radarr` / `:import_scanner_sonarr`.
   """
 
-  alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import
+  alias WatchClub.MediaSources.Import.Candidate
 
   @filesystem_scanner Application.compile_env(
                         :watch_club,
@@ -32,7 +32,7 @@ defmodule WatchClub.MediaSources.Import.Scanner do
                     WatchClub.MediaSources.Import.Scanner.Sonarr
                   )
 
-  @callback scan(Import.t()) :: {:ok, Enumerable.t(Candidate.t())} | {:error, term()}
+  @callback scan(Import.t()) :: Enumerable.t(Candidate.t())
 
   @doc "Returns the scanner module for a given Media Source type."
   def for_source_type(:filesystem), do: @filesystem_scanner

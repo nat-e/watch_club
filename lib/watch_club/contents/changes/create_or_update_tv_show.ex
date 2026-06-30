@@ -16,24 +16,16 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       )
 
     Ash.Changeset.before_transaction(changeset, fn changeset ->
-      Logger.info("Fetching TV show from TMDB: #{tmdb_id}")
+      Logger.info("Creating TV show for TMDB ID: #{tmdb_id}",
+        event: :creating_tv_show,
+        tmdb_id: tmdb_id
+      )
 
-      case Tmdb.get_tv_details(tmdb_id) do
-        {:ok, %TvDetailsResponse{} = tv_show} ->
-          Logger.info("TV show fetched: #{tmdb_id}")
+      show = Tmdb.get_tv_details!(tmdb_id)
 
-          changeset
-          |> set_base_content(tv_show)
-          |> set_tv_show(tv_show)
-
-        {:error, error} ->
-          Logger.warning("Error fetching TV show: #{inspect(error)}")
-
-          Ash.Changeset.add_error(changeset,
-            message: "Failed to fetch TV show from TMDB",
-            private_vars: [tmdb_error: error]
-          )
-      end
+      changeset
+      |> set_base_content(show)
+      |> set_tv_show(show)
     end)
   end
 
@@ -122,7 +114,9 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
     seasons
     |> Task.async_stream(
       fn season ->
-        {season.season_number, fetch_episode_details_for_season(tmdb_id, season.season_number)}
+        {season.season_number,
+         Tmdb.get_tv_season_details!(tmdb_id, season.season_number).episodes
+         |> Map.new(&{&1.episode_number, &1})}
       end,
       ordered: false,
       timeout: 10_000
@@ -131,17 +125,6 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       {:ok, {season_number, details}}, acc -> Map.put(acc, season_number, details)
       {:exit, _reason}, acc -> acc
     end)
-  end
-
-  defp fetch_episode_details_for_season(tmdb_id, season_number) do
-    case Tmdb.get_tv_season_details(tmdb_id, season_number) do
-      {:ok, %TvDetailsResponse.SeasonDetails{episodes: episodes}} ->
-        Map.new(episodes, fn episode -> {episode.episode_number, episode} end)
-
-      {:error, error} ->
-        Logger.warning("Failed to fetch season #{season_number} details: #{inspect(error)}")
-        %{}
-    end
   end
 
   defp translated_or_default(nil, _key, default), do: default

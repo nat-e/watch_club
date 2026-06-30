@@ -1,4 +1,4 @@
-defmodule WatchClub.Integrations.Servarr.SystemStatus do
+defmodule WatchClub.Integrations.Servarr.System do
   @moduledoc false
 
   @type t :: %__MODULE__{

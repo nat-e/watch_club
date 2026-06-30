@@ -2,9 +2,8 @@ defmodule WatchClub.Integrations.Servarr.RootFolder do
   @moduledoc false
 
   @type t :: %__MODULE__{
-          path: String.t(),
-          accessible?: boolean(),
-          free_space: integer() | nil
+          path: String.t() | nil,
+          accessible?: boolean()
         }
 
   defstruct [:path, :accessible?, :free_space]
@@ -13,8 +12,7 @@ defmodule WatchClub.Integrations.Servarr.RootFolder do
   def from_api(data) do
     %__MODULE__{
       path: data["path"],
-      accessible?: Map.get(data, "accessible", true),
-      free_space: data["freeSpace"]
+      accessible?: Map.get(data, "accessible", true)
     }
   end
 end

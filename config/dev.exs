@@ -35,8 +35,10 @@ config :watch_club, WatchClubWeb.Endpoint,
 # Enable dev routes for dashboard, oban and storybook
 config :watch_club, dev_routes: true
 
-# Do not include metadata nor timestamps in development logs
-config :logger, :default_formatter, format: "[$level] $message\n"
+# We only include the error metadata in development
+config :logger, :default_formatter,
+  format: "[$level] $message $metadata\n",
+  metadata: [:error]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

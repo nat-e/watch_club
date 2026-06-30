@@ -16,25 +16,16 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
       )
 
     Ash.Changeset.before_transaction(changeset, fn changeset ->
-      Logger.info("Setting movie from TMDB: #{tmdb_id}")
+      Logger.info("Creating movie for TMDB ID: #{tmdb_id}",
+        event: :creating_movie,
+        tmdb_id: tmdb_id
+      )
 
-      case WatchClub.Integrations.Tmdb.get_movie_details(tmdb_id) do
-        {:ok, %MovieDetailsResponse{} = movie} ->
-          Logger.info("Movie fetched: #{tmdb_id}")
+      movie = WatchClub.Integrations.Tmdb.get_movie_details!(tmdb_id)
 
-          changeset
-          |> set_base_content(movie)
-          |> set_movie(movie)
-
-        {:error, error} ->
-          Logger.warning("Error fetching movie: #{inspect(error)}")
-
-          changeset
-          |> Ash.Changeset.add_error(
-            message: "Failed to fetch movie from TMDB",
-            private_vars: [tmdb_error: error]
-          )
-      end
+      changeset
+      |> set_base_content(movie)
+      |> set_movie(movie)
     end)
   end
 
@@ -42,7 +33,6 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
     localizations =
       UserLocale.values() |> Enum.map(fn locale -> build_localizations(movie, locale) end)
 
-    Logger.info("Adding #{length(localizations)} to changeset")
     best_backdrop = best_global_backdrop(movie)
 
     changeset

@@ -22,10 +22,7 @@ defmodule WatchClub.Requests do
 
     resource WatchClub.Requests.MediaSourceRequest do
       define :create_media_source_request, action: :create
-      define :refresh_media_source_request, action: :refresh_status
       define :destroy_media_source_request, action: :destroy
-      define :list_media_source_requests, action: :read
-      define :get_media_source_request_by_id, action: :read, get_by: [:id]
     end
   end
 end

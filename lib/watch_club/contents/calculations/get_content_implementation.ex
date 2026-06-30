@@ -3,8 +3,8 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
   Resolves a Content's polymorphic implementation (its Book, Movie or TvShow payload).
 
   By default this calculation loads the implementation record and its best localization.
-  It is possible to add extra loading relations or calculations by passing a `load` argument,
-  which will be merged with the defaults, e.g.
+  It is possible to add extra loading relations or calculations by passing a `load` argument
+  (an atom or a list per content type), which will be merged with the defaults, e.g.
   `implementation: %{load: [tv_show: [:episodes]]}`.
   """
   use Ash.Resource.Calculation
@@ -20,7 +20,8 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
 
   defp merge_load(context, name, default \\ []) do
     custom_load = context.arguments[:load] || []
-    default ++ Keyword.get(custom_load, name, [])
+    # List.wrap so a single load term (`tv_show: :episodes`) works like a list.
+    default ++ List.wrap(Keyword.get(custom_load, name, []))
   end
 
   # This ensures that all attributes are selected by default

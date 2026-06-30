@@ -3,9 +3,8 @@
 ## Data Loading in LiveView
 
 Data is loaded in `mount()` or in `handle_params()` when it depends on URL parameters
-To keep code simple, ONLY EXPECTED ERRORS are handled
+To keep code simple, ONLY EXPECTED ERRORS that can be fixed are handled
   - Data depends on user input or URL parameters we don't control
-  - Data is loaded from an external API
 Database failures or weird race conditions are not expected and it's ok to fail around those, no need to code defensively.
 All data being loaded in the application should be subscribed to via PubSub and refresh in real time, whether the action was triggerred by the user locally, in a different component, tab, or another user completely.
 
@@ -60,3 +59,14 @@ Data can be upated directly from the Notification payload if straight forward. I
 To provide a better separation of concern, some complex interactive components (PlayOrRequestButton, AddToLibraryButton, ...) are extracted to `LiveComponents` that handle their own data loading and mutation.
 For these, data loading is performed in `update_many()` in order to avoir N+1 queries in lists.
 They cannot directly receive PubSub event since they share the same process as the LiveView that host them, but they provide a `handle_pubsub_message()` function to collocate notification handling and make it easy for the host LiveViews to deal with.
+
+## Error handling
+
+Handling errors and corner cases is a huge source of complexity in code. Most often than not, developers tend to be too defensive and handle errors without providing much value to the user.
+
+We follow the "let it crash" Elixir mantra. We believe there is no point in adding code complexity to handle errors unless they are **expected** and can be **acted upon**.
+
+- **In LiveView**: In production, crashing the LiveView will simply reload the page. This can act as a retry with a clear state and can actually fix the issue more often than not. Even if it doesn't, this is not a much worse user experience than a useless generic flash message like `Something went wrong`.
+Also, crashing processes will show us debuggable errors for free.
+
+- **In Oban Jobs**: Oban by nature already takes care of re-scheduling failed jobs, and will display actionable errors when the process crashes. There is no value in handling errors (unless they are not fatal and the job should actually continue).

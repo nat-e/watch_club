@@ -14,7 +14,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
   """
   require Logger
 
-  alias WatchClub.Integrations.Servarr.{QualityProfile, RootFolder, SystemStatus, Webhook}
+  alias WatchClub.Integrations.Servarr.{QualityProfile, RootFolder, System, Webhook}
   alias WatchClub.Shared.Path
 
   @receive_timeout 5_000
@@ -22,12 +22,12 @@ defmodule WatchClub.Integrations.Servarr.Client do
   # ── Shared high-level endpoints ───────────────────────────────────
 
   @doc """
-  Fetches `/api/v3/system/status`. Returns the parsed `SystemStatus`
+  Fetches `/api/v3/system/status`. Returns the parsed `System`
   """
-  @spec get_status(String.t(), String.t()) :: {:ok, SystemStatus.t()} | {:error, term()}
+  @spec get_status(String.t(), String.t()) :: {:ok, System.t()} | {:error, term()}
   def get_status(base_url, api_key) do
     case get(base_url, api_key, "/api/v3/system/status") do
-      {:ok, body} when is_map(body) -> {:ok, SystemStatus.from_api(body)}
+      {:ok, body} when is_map(body) -> {:ok, System.from_api(body)}
       {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
@@ -163,45 +163,45 @@ defmodule WatchClub.Integrations.Servarr.Client do
     {:ok, body}
   end
 
+  defp handle_response({:ok, %Req.Response{status: 400, body: body}}) do
+    Logger.error("Servarr — Invalid Request", event: :servarr_api_error, status: 400, error: body)
+
+    {:error, :invalid_request}
+  end
+
   defp handle_response({:ok, %Req.Response{status: 401, body: body}}) do
-    Logger.warning("Servarr — Unauthorized: #{inspect(body)}")
+    Logger.warning("Servarr — Unauthorized", event: :servarr_api_error, status: 401, error: body)
+
     {:error, :unauthorized}
   end
 
   defp handle_response({:ok, %Req.Response{status: 404, body: body}}) do
-    Logger.warning("Servarr — Not Found: #{inspect(body)}")
+    Logger.warning("Servarr — Not Found", event: :servarr_api_error, status: 404, error: body)
     {:error, :not_found}
   end
 
   defp handle_response({:ok, %Req.Response{status: 429, body: body}}) do
-    Logger.warning("Servarr — Rate limited: #{inspect(body)}")
+    Logger.warning("Servarr — Rate limited", event: :servarr_api_error, status: 429, error: body)
     {:error, :rate_limited}
   end
 
   defp handle_response({:ok, %Req.Response{status: status, body: body}})
-       when status in 400..499 do
-    Logger.warning("Servarr — Client error #{status}: #{inspect(body)}")
-    {:error, :client_error}
-  end
-
-  defp handle_response({:ok, %Req.Response{status: status, body: body}})
        when status in 500..599 do
-    Logger.warning("Servarr — Server error #{status}: #{inspect(body)}")
+    Logger.warning("Servarr — Server error #{status}",
+      event: :servarr_api_error,
+      status: status,
+      error: body
+    )
+
     {:error, :server_error}
   end
 
-  defp handle_response({:ok, %Req.Response{status: status, body: body}}) do
-    Logger.warning("Servarr — Unexpected status #{status}: #{inspect(body)}")
-    {:error, :unexpected_status}
-  end
-
-  defp handle_response({:error, %Req.TransportError{reason: reason}}) do
-    Logger.warning("Servarr — Transport error: #{inspect(reason)}")
-    {:error, {:transport_error, reason}}
-  end
-
   defp handle_response({:error, reason}) do
-    Logger.warning("Servarr — Unknown error: #{inspect(reason)}")
+    Logger.error("Servarr — Unknown error",
+      event: :servarr_api_error,
+      error: reason
+    )
+
     {:error, :unknown_error}
   end
 end

@@ -1,17 +1,33 @@
 defmodule WatchClub.Integrations.Sonarr.Series do
   @moduledoc false
 
+  @type status :: :continuing | :ended | :upcoming | :deleted
+
+  @statuses %{
+    "continuing" => :continuing,
+    "ended" => :ended,
+    "upcoming" => :upcoming,
+    "deleted" => :deleted
+  }
+
+  defmodule Statistics do
+    @type t :: %__MODULE__{
+            episode_count: non_neg_integer(),
+            episode_file_count: non_neg_integer()
+          }
+    defstruct [:episode_count, :episode_file_count]
+  end
+
   @type t :: %__MODULE__{
-          id: integer() | nil,
-          tvdb_id: integer() | nil,
+          id: integer(),
+          tvdb_id: integer(),
           imdb_id: String.t() | nil,
-          tmdb_id: integer() | nil,
+          tmdb_id: integer(),
           title: String.t() | nil,
-          quality_profile_id: integer() | nil,
+          quality_profile_id: integer(),
           root_folder_path: String.t() | nil,
-          status: String.t() | nil,
-          episode_count: non_neg_integer(),
-          episode_file_count: non_neg_integer()
+          status: status(),
+          statistics: Statistics.t()
         }
 
   defstruct [
@@ -23,8 +39,7 @@ defmodule WatchClub.Integrations.Sonarr.Series do
     :quality_profile_id,
     :root_folder_path,
     :status,
-    episode_count: 0,
-    episode_file_count: 0
+    :statistics
   ]
 
   @spec from_api(map()) :: t()
@@ -37,9 +52,11 @@ defmodule WatchClub.Integrations.Sonarr.Series do
       title: data["title"],
       quality_profile_id: data["qualityProfileId"],
       root_folder_path: data["rootFolderPath"],
-      status: data["status"],
-      episode_count: get_in(data, ["statistics", "episodeCount"]) || 0,
-      episode_file_count: get_in(data, ["statistics", "episodeFileCount"]) || 0
+      status: Map.fetch!(@statuses, data["status"]),
+      statistics: %Statistics{
+        episode_count: get_in(data, ["statistics", "episodeCount"]),
+        episode_file_count: get_in(data, ["statistics", "episodeFileCount"])
+      }
     }
   end
 

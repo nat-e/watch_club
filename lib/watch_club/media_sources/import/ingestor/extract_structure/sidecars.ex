@@ -90,8 +90,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
           language: parsed.language,
           title: parsed.title,
           default?: parsed.default?,
-          forced?: parsed.forced?,
-          hearing_impaired?: parsed.hearing_impaired?
+          forced?: parsed.forced?
         }
       ]
     else

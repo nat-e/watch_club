@@ -46,37 +46,42 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   end
 
   defp handle_response({:ok, %Req.Response{status: 400, body: body}}, _opts) do
-    Logger.error("TMDB - Invalid Request: #{inspect(body)}")
+    Logger.error("TMDB — Invalid Request", event: :tmdb_api_error, status: 400, error: body)
     {:error, :invalid_request}
   end
 
   defp handle_response({:ok, %Req.Response{status: 401, body: body}}, _opts) do
-    Logger.error("TMDB - Unauthorized Request: #{inspect(body)}")
+    Logger.warning("TMDB — Unauthorized", event: :tmdb_api_error, status: 401, error: body)
     {:error, :unauthorized}
   end
 
   defp handle_response({:ok, %Req.Response{status: 404, body: body}}, _opts) do
-    Logger.error("TMDB - Not Found: #{inspect(body)}")
+    Logger.warning("TMDB — Not Found", event: :tmdb_api_error, status: 404, error: body)
     {:error, :not_found}
   end
 
   defp handle_response({:ok, %Req.Response{status: 429, body: body}}, _opts) do
-    Logger.warning("TMDB - Rate Limit error: #{inspect(body)}")
+    Logger.warning("TMDB — Rate limited", event: :tmdb_api_error, status: 429, error: body)
     {:error, :rate_limited}
   end
 
-  defp handle_response({:ok, %Req.Response{status: status, body: body}}, _opts) do
-    Logger.warning("TMDB - Server error (#{status}): #{inspect(body)}")
+  defp handle_response({:ok, %Req.Response{status: status, body: body}}, _opts)
+       when status in 500..599 do
+    Logger.warning("TMDB — Server error #{status}",
+      event: :tmdb_api_error,
+      status: status,
+      error: body
+    )
+
     {:error, :server_error}
   end
 
-  defp handle_response({:error, %Req.TransportError{reason: reason}}, _opts) do
-    Logger.warning("TMDB - Transport error: #{inspect(reason)}")
-    {:error, {:transport_error}}
-  end
-
   defp handle_response({:error, reason}, _opts) do
-    Logger.warning("TMDB - Unknown error: #{inspect(reason)}")
+    Logger.error("TMDB — Unknown error",
+      event: :tmdb_error,
+      error: reason
+    )
+
     {:error, :unknown_error}
   end
 

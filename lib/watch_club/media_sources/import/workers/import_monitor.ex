@@ -61,34 +61,49 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
   end
 
   defp complete_if_done(%Import{id: id} = media_import, job_id, actor) do
-    if work_pending?(id, job_id) do
-      {:snooze, @snooze_seconds}
-    else
-      complete!(media_import, actor)
-    end
-  end
+    tag = "media_import:#{id}"
 
-  defp work_pending?(media_import_id, own_job_id) do
-    tag = "media_import:#{media_import_id}"
+    jobs =
+      from(j in Oban.Job,
+        where: j.id != ^job_id,
+        where: fragment("? @> ?", j.tags, ^[tag])
+      )
+      |> select([:state])
+      |> Repo.all()
 
-    from(j in Oban.Job,
-      where: j.id != ^own_job_id,
-      where: j.state in ^@active_states,
-      where: fragment("? @> ?", j.tags, ^[tag])
-    )
-    |> Repo.exists?()
-  end
+    cond do
+      Enum.any?(jobs, &(&1.state in @active_states)) ->
+        {:snooze, @snooze_seconds}
 
-  defp complete!(%Import{} = media_import, actor) do
-    case Ash.update(media_import, %{}, action: :complete, actor: actor) do
-      {:ok, _} ->
-        Logger.info("Completed Import #{media_import.id}")
+      Enum.any?(jobs, &(&1.state == "discarded")) ->
+        Logger.info("Marking import #{media_import.id} failed",
+          event: :mark_import_result,
+          result: :failed,
+          media_import_id: media_import.id
+        )
+
+        Ash.update!(media_import, %{}, action: :fail, actor: actor)
         :ok
 
-      {:error, reason} = error ->
-        Logger.error("Could not complete Import #{media_import.id}: #{inspect(reason)}")
+      Enum.any?(jobs, &(&1.state == "cancelled")) ->
+        Logger.info("Marking import #{media_import.id} cancelled",
+          event: :mark_import_result,
+          result: :cancelled,
+          media_import_id: media_import.id
+        )
 
-        error
+        Ash.update!(media_import, %{}, action: :cancel, actor: actor)
+        :ok
+
+      true ->
+        Logger.info("Marking import #{media_import.id} completed",
+          event: :mark_import_result,
+          result: :completed,
+          media_import_id: media_import.id
+        )
+
+        Ash.update!(media_import, %{}, action: :complete, actor: actor)
+        :ok
     end
   end
 end

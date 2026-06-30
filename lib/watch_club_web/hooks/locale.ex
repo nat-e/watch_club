@@ -17,7 +17,6 @@ defmodule WatchClubWeb.Hooks.Locale do
       end
 
     language = extract_language(locale)
-    Logger.info("Set language to #{language}")
     Gettext.put_locale(WatchClubWeb.Gettext, language)
 
     {:cont,
@@ -42,7 +41,7 @@ defmodule WatchClubWeb.Hooks.Locale do
     if Gettext.get_locale(WatchClubWeb.Gettext) == language do
       {:cont, socket}
     else
-      Logger.info("Set language to #{language}")
+      Logger.info("language changed", language: language)
       Gettext.put_locale(WatchClubWeb.Gettext, language)
       {:halt, push_navigate(socket, to: current_path(socket.assigns.current_url), replace: true)}
     end

@@ -38,6 +38,10 @@ config :watch_club,
 config :watch_club, import_scanner_filesystem: WatchClub.MediaSources.Import.ScannerMock
 config :watch_club, :ffprobe, WatchClub.Ffmpeg.ProbeMock
 
+# Servarr actions run their *arr HTTP calls in `before_transaction` hooks; under
+# the test sandbox those run inside the surrounding transaction, which is fine.
+config :ash, warn_on_transaction_hooks?: false
+
 # Print only warnings and errors during test
 config :logger, level: :warning
 

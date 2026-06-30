@@ -10,13 +10,17 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem do
   """
   @behaviour WatchClub.MediaSources.Import.Scanner
 
-  alias WatchClub.MediaSources.Import.Scanner.Filesystem.{Identify, Scan}
   alias WatchClub.MediaSources.Import
+  alias WatchClub.MediaSources.Import.Scanner.Filesystem.{Identify, Scan}
+
+  require Logger
 
   @impl true
   def scan(%Import{media_source: %_{} = media_source}) do
-    with {:ok, candidates} <- Scan.stream_candidate_files(media_source) do
-      {:ok, Stream.map(candidates, &Identify.apply(&1, media_source))}
-    end
+    Logger.info("Scan filesystem Media Source", event: :filesystem_scan_started)
+
+    media_source
+    |> Scan.stream_candidate_files!()
+    |> Stream.map(&Identify.apply(&1, media_source))
   end
 end

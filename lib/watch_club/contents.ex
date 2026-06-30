@@ -62,15 +62,17 @@ defmodule WatchClub.Contents do
   Creates a Content if it does not exist
   The create action is an upsert, so there is no race condition.
   """
-  def get_or_create_content(%ContentIdentity{} = content_identity, actor) do
+  @spec get_or_create_content(ContentIdentity.t(), User.t()) ::
+          {:ok, Content.t()} | {:error, term()}
+  def get_or_create_content(%ContentIdentity{} = content_identity, actor, opts \\ []) do
     case Content
          |> Ash.Query.filter(
            external_id_source == ^content_identity.external_id_source and
              external_id == ^content_identity.external_id
          )
-         |> Ash.read_one(actor: actor) do
+         |> Ash.read_one(load: opts[:load], actor: actor) do
       {:ok, nil} ->
-        create_content(content_identity, actor: actor)
+        create_content(content_identity, load: opts[:load], actor: actor)
 
       {:ok, existing} ->
         {:ok, existing}
@@ -78,5 +80,11 @@ defmodule WatchClub.Contents do
       {:error, error} ->
         {:error, error}
     end
+  end
+
+  @spec get_or_create_content!(ContentIdentity.t(), User.t()) :: Content.t()
+  def get_or_create_content!(%ContentIdentity{} = content_identity, actor, opts \\ []) do
+    {:ok, content} = get_or_create_content(content_identity, actor, opts)
+    content
   end
 end

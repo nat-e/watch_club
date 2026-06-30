@@ -3,7 +3,7 @@ defmodule WatchClub.Integrations.Servarr.QualityProfile do
 
   @type t :: %__MODULE__{
           id: integer(),
-          name: String.t()
+          name: String.t() | nil
         }
 
   defstruct [:id, :name]

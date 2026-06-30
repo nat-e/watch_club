@@ -81,6 +81,7 @@ defmodule WatchClub.MixProject do
       {:oban, "~> 2.22"},
       {:lazy_html, ">= 0.1.0"},
       {:live_debugger, "~> 1.0.0", only: :dev},
+      {:logger_json, "~> 6.0"},
       {:lucide_icons, "~> 2.0"},
       {:mox, "~> 1.2", only: :test},
       {:oban_web, "~> 2.11"},

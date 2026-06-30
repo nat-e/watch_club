@@ -16,48 +16,27 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
   Returns a lazy `Stream` of `Candidate` values produced by walking the
   configured filesystem path.
 
-  `skip_paths` is a `MapSet` of expanded paths that should be skipped without
-  even running an `lstat` — typically the paths of media already imported
-  for this `Source`. Pass `MapSet.new/0` to scan everything.
-
-  The root path is checked eagerly: this function returns `{:error, _}` if
-  the root is missing, inaccessible, a symlink, or not a directory. Once the
-  root gate passes, all subsequent per-path errors during the walk are
-  logged and the offending path/subtree is dropped — the stream never
-  raises in normal operation.
+  The root path is checked eagerly and this function raises if the root is
+  missing, inaccessible, a symlink, or not a directory — a misconfigured
+  Media Source is fatal and the import job should crash. Once the root gate
+  passes, per-path errors during the walk are logged and the offending
+  path/subtree is dropped — the stream never raises in normal operation.
   """
-  def stream_candidate_files(media_source, skip_paths \\ MapSet.new())
-
-  def stream_candidate_files(
+  def stream_candidate_files!(
         %Source{
           source_type: :filesystem,
           implementation: %Filesystem{filesystem_path: root_path}
-        } = media_source,
-        skip_paths
+        } = media_source
       ) do
     root_path = Paths.normalize(root_path)
 
     case Fs.lstat(root_path, time: :posix, timeout: @initial_disk_operation_timeout) do
       {:ok, %{type: :directory}} ->
-        {:ok, candidate_stream(root_path, media_source, skip_paths)}
-
-      {:ok, %{type: :symlink}} ->
-        {:error, "Media Source filesystem location cannot be a symbolic link: #{root_path}"}
-
-      {:ok, %{type: type}} ->
-        {:error, "Media Source filesystem location is not a directory: #{root_path} (#{type})"}
-
-      {:error, reason} ->
-        {:error,
-         "Cannot access Media Source filesystem location #{root_path}: #{inspect(reason)}"}
+        candidate_stream(root_path, media_source)
     end
   end
 
-  def stream_candidate_files(%Source{source_type: source_type}, _skip_paths) do
-    {:error, "Unsupported Media Source Type: #{inspect(source_type)}"}
-  end
-
-  defp candidate_stream(root_path, media_source, skip_paths) do
+  defp candidate_stream(root_path, media_source) do
     Stream.resource(
       fn -> [root_path] end,
       fn
@@ -65,7 +44,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
           {:halt, []}
 
         [path | rest] ->
-          case inspect_path(Paths.normalize(path), root_path, media_source, skip_paths) do
+          case inspect_path(Paths.normalize(path), root_path, media_source) do
             :drop -> {[], rest}
             {:enqueue, children} -> {[], children ++ rest}
             {:emit, candidate} -> {[candidate], rest}
@@ -75,16 +54,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
     )
   end
 
-  defp inspect_path(path, root_path, media_source, skip_paths) do
-    if MapSet.member?(skip_paths, path) do
-      Logger.debug("Skipping file #{path} (media already exist)")
-      :drop
-    else
-      inspect_unseen_path(path, root_path, media_source)
-    end
-  end
-
-  defp inspect_unseen_path(path, root_path, media_source) do
+  defp inspect_path(path, root_path, media_source) do
     Logger.debug("Scanning file #{path}")
 
     case Fs.lstat(path, time: :posix) do

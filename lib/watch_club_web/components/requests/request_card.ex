@@ -24,8 +24,6 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
-  @in_progress_statuses [:requested, :downloading, :importing]
-
   attr :id, :string
   attr :request, ContentRequest, required: true
   attr :current_user, User, required: true
@@ -37,7 +35,6 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       data_slot="request-card"
       padding="none"
       id={@id}
-      data-status={@request.status}
       class="flex flex-col @xl:flex-row"
     >
       <.content_section
@@ -89,6 +86,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           <.live_component
             id={PlayOrRequestButtonLive.dom_id(@content_identity)}
             module={PlayOrRequestButtonLive}
+            play_only={true}
             content_identity={@content_identity}
             current_user={@current_user}
             class="z-10"
@@ -109,111 +107,240 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     """
   end
 
-  # ─── Status section ──────────────────────────────────────────────────────
-
   attr :request, ContentRequest, required: true
   attr :current_user, User, required: true
 
-  defp status_section(assigns) do
-    assigns = assign(assigns, :style, status_style(assigns.request.status))
+  defp status_section(%{request: %ContentRequest{status_group: :completed}} = assigns) do
+    ~H"""
+    <.generic_status_section
+      variant="success"
+      status_label={dgettext("requests", "Completed")}
+      text={dgettext("requests", "Your content is ready to watch!")}
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
 
+  defp status_section(
+         %{
+           request: %ContentRequest{
+             best_source_request: %MediaSourceRequest{status: :downloading}
+           }
+         } = assigns
+       ) do
+    ~H"""
+    <.generic_status_section
+      variant="accent"
+      status_label={dgettext("requests", "Downloading")}
+      progress={round(@request.best_source_request.download_progress)}
+      text={dgettext("requests", "Your content is being downloaded")}
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(
+         %{
+           request: %ContentRequest{best_source_request: %MediaSourceRequest{status: :downloaded}}
+         } = assigns
+       ) do
+    ~H"""
+    <.generic_status_section
+      variant="accent"
+      status_label={dgettext("requests", "Almost ready")}
+      progress={100}
+      text={dgettext("requests", "Your content has been downloaded and is being imported")}
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(
+         %{
+           request: %ContentRequest{
+             best_source_request: %MediaSourceRequest{status: :not_released}
+           }
+         } = assigns
+       ) do
+    ~H"""
+    <.generic_status_section
+      variant="default"
+      status_label={dgettext("requests", "Not released")}
+      text={
+        dgettext(
+          "requests",
+          "Your content is not available yet. We will download it automatically as soon as it's released!"
+        )
+      }
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(
+         %{
+           request: %ContentRequest{
+             best_source_request: %MediaSourceRequest{status: :needs_attention}
+           }
+         } = assigns
+       ) do
+    ~H"""
+    <.generic_status_section
+      variant="danger"
+      progress={round(@request.best_source_request.download_progress)}
+      status_label={dgettext("requests", "Needs attention")}
+      text={
+        dgettext(
+          "requests",
+          "There was a problem with this request that requires human attention. The administrator has been informed."
+        )
+      }
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(
+         %{request: %ContentRequest{percent_imported: percent_imported}} =
+           assigns
+       )
+       when percent_imported > 0 do
+    ~H"""
+    <.generic_status_section
+      variant="accent"
+      status_label={dgettext("requests", "Missing episodes")}
+      progress={round(@request.percent_imported)}
+      text={
+        dgettext(
+          "requests",
+          "We couldn't find some episodes of your show. We will keep looking for them."
+        )
+      }
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(%{request: %ContentRequest{best_source_request: nil}} = assigns) do
+    ~H"""
+    <.generic_status_section
+      variant="accent"
+      status_label={dgettext("requests", "Requested")}
+      text={
+        dgettext(
+          "requests",
+          "The administrator has been informed of your request. You will be notified when this content is ready."
+        )
+      }
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  defp status_section(%{request: %ContentRequest{status_group: :not_found}} = assigns) do
+    ~H"""
+    <.generic_status_section
+      variant="default"
+      status_label={dgettext("requests", "Not found")}
+      text={
+        dgettext(
+          "requests",
+          "Your content has not been found yet. It will be downloaded automatically when we find it."
+        )
+      }
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  # Searching and recent
+  defp status_section(assigns) do
+    ~H"""
+    <.generic_status_section
+      variant="accent"
+      status_label={dgettext("requests", "Searching")}
+      text={dgettext("requests", "We are looking for your content...")}
+      request={@request}
+      locale={@current_user.settings.locale}
+    />
+    """
+  end
+
+  attr :request, ContentRequest, required: true
+  attr :status_label, :string, required: true
+  attr :text, :string, required: true
+  attr :progress, :integer, default: nil
+  attr :variant, :string, values: ~w(default accent danger success)
+  attr :locale, :atom, required: true
+
+  def generic_status_section(assigns) do
     ~H"""
     <div class={[
-      "order-first flex flex-col justify-between gap-related border-b p-group rounded-t-card @xl:rounded-t-none @xl:rounded-r-card @xl:order-0 @xl:w-64 @xl:border-b-0 @xl:border-l",
-      @style.bg,
-      @style.border
+      "order-first flex flex-col justify-between gap-related border-b p-group rounded-t-xl @xl:rounded-t-none @xl:rounded-r-xl @xl:order-0 @xl:w-64 @xl:border-b-0 @xl:border-l",
+      @variant == "default" && ["bg-surface-inset border-border-subtle"],
+      @variant == "accent" && ["bg-accent-bg border-accent-border"],
+      @variant == "danger" && ["bg-danger-bg border-danger-border"],
+      @variant == "success" && ["bg-success-bg border-success-border"]
     ]}>
       <div class="flex items-center justify-between gap-related">
-        <p class={["text-sm font-semibold tracking-wider uppercase", @style.text]}>
-          {ContentRequestStatus.translated_label(@request.status)}
+        <p class={[
+          "text-sm font-semibold tracking-wider uppercase",
+          @variant == "default" && ["text-text-muted"],
+          @variant == "accent" && ["text-accent"],
+          @variant == "danger" && ["text-danger"],
+          @variant == "success" && ["text-success"]
+        ]}>
+          {@status_label}
         </p>
         <.button
           id={"#{@request.id}-cancel"}
           variant="ghost"
           size="icon-sm"
-          aria-label={action_label(@request.status)}
+          aria-label="Cancel Request"
           phx-click="cancel-request"
           phx-value-id={@request.id}
         >
-          <Lucideicons.x />
+          <Lucideicons.trash_2 />
         </.button>
       </div>
 
-      <.status_body
-        status={@request.status}
-        progress={@request.progress}
-        content_type={@request.content.type}
-      />
+      <.stack space="tight">
+        <div class="flex items-baseline justify-between">
+          <p class="text-sm font-medium text-text">{@text}</p>
+          <p :if={!is_nil(@progress)} class="text-xs tabular-nums">
+            {@progress}%
+          </p>
+        </div>
+        <div
+          :if={!is_nil(@progress)}
+          class="h-1.5 w-full overflow-hidden rounded-full bg-surface-inset"
+          role="progressbar"
+          aria-valuenow={@progress}
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-label={@text}
+        >
+          <div
+            class="h-full bg-accent transition-[width]"
+            style={"width: #{@progress}%"}
+            aria-hidden="true"
+          >
+          </div>
+        </div>
+      </.stack>
 
       <p class="text-xs text-text-muted">
-        Requested {Time.relative_from_now(@request.inserted_at, @current_user.settings.locale)}
+        Requested {Time.relative_from_now(@request.inserted_at, @locale)}
       </p>
     </div>
     """
   end
-
-  # ─── Status body (per state) ─────────────────────────────────────────────
-
-  attr :status, :atom, required: true
-  attr :progress, :integer, default: nil
-  attr :content_type, :atom, required: true
-
-  defp status_body(%{status: status} = assigns) when status in @in_progress_statuses do
-    assigns =
-      assigns
-      |> assign(:pct, in_progress_pct(status, assigns.progress))
-      |> assign(:label, in_progress_label(status))
-
-    ~H"""
-    <.stack space="tight">
-      <div class="flex items-baseline justify-between">
-        <p class="text-sm font-medium text-text">{@label}</p>
-        <p class="text-xs tabular-nums text-accent">{@pct}%</p>
-      </div>
-      <div
-        class="h-1.5 w-full overflow-hidden rounded-full bg-surface-inset"
-        role="progressbar"
-        aria-valuenow={@pct}
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-label={@label}
-      >
-        <div class="h-full bg-accent transition-[width]" style={"width: #{@pct}%"} aria-hidden="true">
-        </div>
-      </div>
-    </.stack>
-    """
-  end
-
-  defp status_body(assigns) do
-    ~H"""
-    <p class={["text-sm", (@status == :completed && "text-text") || "text-text-muted"]}>
-      {ContentRequestStatus.status_message(@status, @content_type)}
-    </p>
-    """
-  end
-
-  defp in_progress_label(:requested), do: "Queued"
-  defp in_progress_label(:downloading), do: "Downloading"
-  defp in_progress_label(:importing), do: "Importing"
-
-  defp in_progress_pct(:requested, _), do: 0
-  defp in_progress_pct(:importing, _), do: 100
-  defp in_progress_pct(:downloading, nil), do: 0
-  defp in_progress_pct(:downloading, n) when is_integer(n), do: max(min(n, 100), 0)
-
-  defp status_style(:completed),
-    do: %{bg: "bg-success-bg", border: "border-success-border", text: "text-success"}
-
-  defp status_style(:failed),
-    do: %{bg: "bg-danger-bg", border: "border-danger-border", text: "text-danger"}
-
-  defp status_style(status) when status in [:not_released, :not_found],
-    do: %{bg: "bg-surface-inset", border: "border-border-subtle", text: "text-text-muted"}
-
-  defp status_style(_status),
-    do: %{bg: "bg-accent-bg", border: "border-accent-border", text: "text-accent"}
-
-  defp action_label(:completed), do: "Delete content"
-  defp action_label(_), do: "Cancel request"
 end

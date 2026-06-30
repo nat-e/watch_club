@@ -1,15 +1,13 @@
 defmodule WatchClubWeb.Webhooks.ServarrController do
   @moduledoc """
-  Receiver for Radarr / Sonarr webhooks. One handler serves both; the
-  `/radarr/` or `/sonarr/` route segment is cosmetic, `media_source_id`
-  identifies the source.
+  Controller that handles the webhook notifications from Radarr and Sonarr.
 
-  `Test` is acked with 200 (no auth) for the server's test round-trip. Other
-  events authenticate against the `Servarr`'s `webhook_secret`, then do two
-  things: the Media side (ingest/remove/relocate files) and the request side —
-  any event enqueues a `RefreshMediaSourceRequest` that reconciles the Media
-  Source Request's state against the *arr's current truth, except deletes,
-  which drop the request.
+  Supported events:
+  - Rename: A file has been renamed on Radarr/Sonarr, we update the Media path in Watch Club
+  - EpisodeFileDelete / MovieFileDelete: A file has been deleted on Radarr/Sonarr, we delete
+    the Media in Watch Club
+  - Grab / Download / ManualInteractionRequired: The status of a request has changed on Servarr,
+    we simply schedule a MSR refresh to be done in an Oban job.
   """
   use WatchClubWeb, :controller
 
@@ -38,18 +36,29 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   @token_header "x-watchclub-token"
 
-  def handle(conn, %{"eventType" => "Test"}), do: json(conn, %{ok: true})
+  # MovieAdded is useless since we got the response anyway, and it creates
+  # warnings since it's received before the request is persisted in DB most of the time
+  @ignored_event_types ["MovieAdded", "HealthRestored", "Health", "Test"]
+
+  def handle(conn, %{"eventType" => event_type}) when event_type in @ignored_event_types do
+    Logger.info("Servarr webhook event ignored: #{event_type}",
+      event: :servarr_webhook_ignored,
+      event_type: event_type
+    )
+
+    json(conn, %{ok: true})
+  end
 
   def handle(conn, %{"eventType" => event_type, "media_source_id" => id} = params) do
+    Logger.metadata(
+      event_type: event_type,
+      media_source_id: id
+    )
+
+    Logger.info("Servarr webhook received: #{event_type}", event: :servarr_webhook_received)
+
     with {:ok, source} <- fetch_source(id),
          :ok <- verify_token(conn, source) do
-      Logger.info("servarr webhook",
-        flavor: source.flavor,
-        event_type: event_type,
-        media_source_id: id,
-        payload: Map.drop(params, ["media_source_id"])
-      )
-
       process_webhook(params, source)
 
       json(conn, %{ok: true})
@@ -72,6 +81,10 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
         {:ok, source}
 
       _ ->
+        Logger.warning("Media source not found: #{media_source_id}",
+          event: :servarr_webhook_media_source_not_found
+        )
+
         :error
     end
   end
@@ -81,7 +94,9 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
          true <- Plug.Crypto.secure_compare(provided, secret) do
       :ok
     else
-      _ -> :error
+      _ ->
+        Logger.warning("Invalid Servarr webhook token", event: :servarr_webhook_invalid_token)
+        :error
     end
   end
 
@@ -90,6 +105,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
     case local_path(source, event.folder_path, event.file) do
       nil ->
+        Logger.warning("radarr webhook: file doesn't match source")
         :ok
 
       path ->
@@ -115,6 +131,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
     case local_path(source, event.series_path, event.file) do
       nil ->
+        Logger.warning("sonarr webhook: file doesn't match source")
         :ok
 
       # One Candidate per episode; a multi-episode file shares the one path.
@@ -160,12 +177,12 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   defp process_webhook(%{"eventType" => "Rename"} = params, %Servarr{flavor: :radarr} = source) do
     event = RadarrRenameWebhookEvent.from_api(params)
-    relocate_renamed_files(source, event.folder_path, event.renamed_files)
+    move_renamed_files(source, event.folder_path, event.renamed_files)
   end
 
   defp process_webhook(%{"eventType" => "Rename"} = params, %Servarr{flavor: :sonarr} = source) do
     event = SonarrRenameWebhookEvent.from_api(params)
-    relocate_renamed_files(source, event.series_path, event.renamed_files)
+    move_renamed_files(source, event.series_path, event.renamed_files)
   end
 
   # The movie / series was removed upstream — drop the Media Source Request
@@ -186,19 +203,17 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
 
   # Any other event for the resource (Grab, ManualInteractionRequired, …) just
   # triggers a reconcile; events with no resource (HealthIssue, …) no-op.
-  defp process_webhook(params, %Servarr{} = source), do: refresh_request(source, params)
+  defp process_webhook(params, %Servarr{} = source) do
+    refresh_request(source, params)
+  end
 
-  # ─── Media Source Request state ──────────────────────────────────────────
-  #
-  # The state is reconciled from the *arr's current truth, never driven by the
-  # event — so any webhook just enqueues a refresh for the resource, if
-  # WatchClub requested it. Matched by the id stored at submit/adopt.
-
-  # Only enqueue when WatchClub actually requested this resource — most *arr
-  # webhooks are for library content nobody requested here, which we ignore.
   defp refresh_request(%Servarr{} = source, params) do
     if request = find_request(source, params) do
-      request.id |> RefreshMediaSourceRequest.new_job() |> Oban.insert!()
+      # Replace schedules the refresh for now, instead of waiting the next scheduled one
+      # https://github.com/oban-bg/oban/blob/main/guides/learning/unique_jobs.md#replacing-values
+      request.id
+      |> RefreshMediaSourceRequest.new_job(schedule_in: 1, replace: [scheduled: [:scheduled_at]])
+      |> Oban.insert!()
     end
   end
 
@@ -208,20 +223,45 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     end
   end
 
-  defp find_request(%Servarr{id: source_id, flavor: flavor}, params) do
-    with arr_id when is_integer(arr_id) <- get_in(params, [arr_resource_key(flavor), "id"]),
-         {:ok, %MediaSourceRequest{} = request} <-
-           MediaSourceRequest
-           |> Ash.Query.filter(media_source_id == ^source_id and external_resource_id == ^arr_id)
-           |> Ash.read_one(actor: SystemActor.actor()) do
-      request
-    else
-      _ -> nil
-    end
+  defp find_request(%Servarr{id: source_id, flavor: :radarr}, %{
+         "movie" => %{"id" => radarr_movie_id}
+       }) do
+    find_request_with_id(source_id, radarr_movie_id)
   end
 
-  defp arr_resource_key(:radarr), do: "movie"
-  defp arr_resource_key(:sonarr), do: "series"
+  defp find_request(%Servarr{id: source_id, flavor: :sonarr}, %{
+         "series" => %{"id" => sonarr_movie_id}
+       }) do
+    find_request_with_id(source_id, sonarr_movie_id)
+  end
+
+  # This is most likely a Health or other webhook not tied to a movie/series, ignore
+  defp find_request(_, _) do
+    Logger.info("Servarr webhook ignored, no resource targetted",
+      event: :servarr_webhook_no_resource
+    )
+
+    nil
+  end
+
+  defp find_request_with_id(source_id, external_id) do
+    case MediaSourceRequest
+         |> Ash.Query.filter(
+           media_source_id == ^source_id and external_resource_id == ^external_id
+         )
+         |> Ash.read_one(actor: SystemActor.actor()) do
+      {:ok, %MediaSourceRequest{} = request} ->
+        request
+
+      {:ok, nil} ->
+        Logger.warning("Media Server Request not found: #{external_id}",
+          event: :servarr_webhook_request_not_found,
+          external_id: external_id
+        )
+
+        nil
+    end
+  end
 
   defp enqueue_ingest(candidates) do
     candidates
@@ -237,20 +277,26 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
          false <- File.exists?(path),
          {:ok, media} <- MediaCatalog.get_media_by_path(path, actor: SystemActor.actor()) do
       MediaCatalog.destroy_media(media, actor: SystemActor.actor())
+      Logger.info("Media deleted: #{path}", event: :servarr_webhook_media_deleted, path: path)
     else
-      _ -> :ok
+      _ ->
+        Logger.warning("Could not delete media, file not found",
+          event: :servarr_webhook_file_not_found
+        )
+
+        :ok
     end
   end
 
   # A rename moves bytes in place, so relocate the existing Media old → new
   # rather than re-ingesting. The disk move already happened on the *arr side.
-  defp relocate_renamed_files(source, folder, renamed_files) when is_binary(folder) do
-    Enum.each(renamed_files, &relocate_renamed_file(source, folder, &1))
+  defp move_renamed_files(source, folder, renamed_files) when is_binary(folder) do
+    Enum.each(renamed_files, &move_renamed_file(source, folder, &1))
   end
 
-  defp relocate_renamed_files(_source, _folder, _renamed_files), do: :ok
+  defp move_renamed_files(_source, _folder, _renamed_files), do: :ok
 
-  defp relocate_renamed_file(source, folder, %RenamedFile{
+  defp move_renamed_file(source, folder, %RenamedFile{
          previous_path: previous,
          relative_path: relative
        })
@@ -258,15 +304,26 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     relocate_media(to_local(source, previous), to_local(source, Path.join(folder, relative)))
   end
 
-  defp relocate_renamed_file(_source, _folder, _file), do: :ok
+  defp move_renamed_file(_source, _folder, _file), do: :ok
 
   defp relocate_media(old, new) when is_binary(old) and is_binary(new) and old != new do
     with {:ok, media} <- MediaCatalog.get_media_by_path(old, actor: SystemActor.actor()),
          {:ok, _} <-
            MediaCatalog.change_media_path(media, %{path: new}, actor: SystemActor.actor()) do
+      Logger.info("Media path renamed: #{new}",
+        event: :servarr_webhook_media_renamed,
+        from: old,
+        to: new
+      )
+
       :ok
     else
-      _ -> :ok
+      _ ->
+        Logger.warning("Could not rename media, file not found",
+          event: :servarr_webhook_file_not_found
+        )
+
+        :ok
     end
   end
 

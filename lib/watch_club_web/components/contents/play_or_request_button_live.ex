@@ -37,16 +37,20 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
+  attr :play_only, :boolean, default: false
 
   attr :size, :string,
     values: ~w(sm md lg),
     default: "md"
+
+  @in_progress_statuses [:searching, :downloading, :downloaded]
 
   @impl true
   def render(%{has_media?: false} = assigns) do
     ~H"""
     <div class={@class}>
       <.button
+        :if={!@play_only}
         id={"#{@id}-request-button"}
         size={@size}
         variant="primary"
@@ -56,10 +60,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         disabled={@request != nil}
         class="w-full"
       >
-        <:icon :if={@request != nil}><Lucideicons.loader_circle class="animate-spin" /></:icon>
-        <:icon :if={@request == nil}><Lucideicons.download /></:icon>
-        {(@request && ContentRequestStatus.translated_label(@request.status)) ||
-          dgettext("contents", "Request")}
+        <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
+        {request_label(@request)}
       </.button>
     </div>
     """
@@ -113,7 +115,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
           :has_media?,
           :actor_next_medias_to_play,
           implementation: %{load: [tv_show: [:actor_next_episode]]},
-          actor_request: Ash.Query.for_read(ContentRequest, :with_status, %{}, actor: actor)
+          actor_request: [:best_source_request]
         ],
         actor: actor
       )
@@ -154,4 +156,56 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
     do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
+
+  defp icon_spin(nil), do: false
+
+  defp icon_spin(%ContentRequest{best_source_request: nil}), do: true
+
+  defp icon_spin(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}}),
+    do: status in @in_progress_statuses
+
+  defp request_icon(nil), do: :download
+
+  defp request_icon(%ContentRequest{best_source_request: nil}), do: :loader_circle
+
+  defp request_icon(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
+       when status in @in_progress_statuses, do: :loader_circle
+
+  defp request_icon(%ContentRequest{
+         best_source_request: %MediaSourceRequest{status: :not_released}
+       }),
+       do: :calendar
+
+  defp request_icon(%ContentRequest{
+         best_source_request: %MediaSourceRequest{status: :needs_attention}
+       }),
+       do: :triangle_alert
+
+  defp request_label(nil), do: dgettext("contents", "Request")
+
+  defp request_label(%ContentRequest{
+         best_source_request: %MediaSourceRequest{status: :searching}
+       }) do
+    dgettext("contents", "Searching")
+  end
+
+  defp request_label(%ContentRequest{best_source_request: nil}),
+    do: dgettext("contents", "Downloading")
+
+  defp request_label(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
+       when status in @in_progress_statuses do
+    dgettext("contents", "Downloading")
+  end
+
+  defp request_label(%ContentRequest{
+         best_source_request: %MediaSourceRequest{status: :not_released}
+       }) do
+    dgettext("contents", "Not Released")
+  end
+
+  defp request_label(%ContentRequest{
+         best_source_request: %MediaSourceRequest{status: :needs_attention}
+       }) do
+    dgettext("contents", "Error")
+  end
 end

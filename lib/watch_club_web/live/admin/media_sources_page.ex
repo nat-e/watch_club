@@ -290,22 +290,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   def handle_event("confirm_delete_media_source", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
       %Source{} = media_source ->
-        case MediaSources.destroy_media_source(media_source, actor: socket.assigns.current_user) do
-          :ok ->
-            {:noreply,
-             socket
-             |> reset_modals()
-             |> put_flash(:info, dgettext("admin_media_imports", "Media Source deleted"))}
+        MediaSources.destroy_media_source!(media_source, actor: socket.assigns.current_user)
 
-          {:error, _error} ->
-            {:noreply,
-             socket
-             |> reset_modals()
-             |> put_flash(
-               :error,
-               dgettext("admin_media_imports", "Could not delete Media Source")
-             )}
-        end
+        {:noreply,
+         socket
+         |> reset_modals()
+         |> put_flash(:info, dgettext("admin_media_imports", "Media Source deleted"))}
 
       nil ->
         {:noreply, reset_modals(socket)}

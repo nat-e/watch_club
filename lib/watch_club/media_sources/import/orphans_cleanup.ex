@@ -40,24 +40,14 @@ defmodule WatchClub.MediaSources.Import.OrphansCleanup do
       actor: SystemActor.actor(),
       bulk_options: [return_records?: true]
     )
-    |> log_result()
   catch
     kind, reason ->
       Logger.error(
-        "Import orphans cleanup failed: #{inspect(kind)} #{inspect(reason)}\n" <>
-          Exception.format_stacktrace(__STACKTRACE__)
+        "Import orphans cleanup failed",
+        event: :orphans_cleanup_failed,
+        error: Exception.format(kind, reason, __STACKTRACE__)
       )
 
       :ok
-  end
-
-  defp log_result(%Ash.BulkResult{status: :success, records: []}), do: :ok
-
-  defp log_result(%Ash.BulkResult{status: :success, records: records}) do
-    Logger.info("Cancelled #{length(records)} orphaned Import(s) from previous run")
-  end
-
-  defp log_result(%Ash.BulkResult{status: status, errors: errors}) do
-    Logger.error("Orphan Import cleanup finished with status #{status}: #{inspect(errors)}")
   end
 end

@@ -1,4 +1,4 @@
-defmodule WatchClub.Requests.ContentRequest.Changes.EnsureContentExists do
+defmodule WatchClub.Requests.Changes.EnsureContentExists do
   @moduledoc """
   Resolves the `:request` action's `:content` `ContentIdentity` argument into
   a real `Content`, creating it from the Metadata Provider if it does not exist

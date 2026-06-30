@@ -25,7 +25,7 @@ defmodule WatchClub.Requests.ContentRequestSort do
   # "Last update" tracks the Media Source Requests' transitions (the request
   # row itself doesn't move), so it sorts on the latest activity across them.
   def sort_query(query, :last_update),
-    do: Ash.Query.sort(query, last_activity_at: :desc, id: :desc)
+    do: Ash.Query.sort(query, updated_at: :desc, id: :desc)
 
   def sort_query(query, :created),
     do: Ash.Query.sort(query, inserted_at: :desc, id: :desc)

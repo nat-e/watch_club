@@ -38,7 +38,11 @@ defmodule WatchClub.MediaSources.Import.Changes.CancelObanJobs do
             :ok
 
           {:ok, count} ->
-            Logger.info("Cancelled #{count} Oban job(s) for Import #{media_import_id}")
+            Logger.info("Cancelled #{count} job(s) for Import #{media_import_id}",
+              event: :cancelled_import_jobs,
+              media_import_id: media_import_id,
+              num_jobs: count
+            )
         end
 
         {:ok, media_import}

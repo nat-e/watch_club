@@ -1,25 +1,28 @@
 defmodule WatchClub.Integrations.Radarr do
   @moduledoc """
-  Radarr v3 API facade. Owns Radarr's catalog endpoint (`/api/v3/movie`)
-  and its response parsing. Every other endpoint is flavor-agnostic and
-  lives on `Servarr.Client`.
+  Radarr v3 API client.
   """
 
-  alias WatchClub.Integrations.Radarr.Movie
+  alias WatchClub.Integrations.Radarr.{Movie, QueueResource}
   alias WatchClub.Integrations.Servarr.Client
-  alias WatchClub.Integrations.Servarr.QueueItem
 
   @doc """
   Returns every movie in the Radarr library (no server-side filtering or
-  pagination; callers filter client-side). Retries transient errors.
+  pagination; callers filter client-side).
   """
-  @spec list_movies(String.t(), String.t()) :: {:ok, [Movie.t()]} | {:error, term()}
+  @spec list_movies(String.t(), String.t()) :: {:ok, list(Movie.t())} | {:error, term()}
   def list_movies(base_url, api_key) do
-    case Client.get(base_url, api_key, "/api/v3/movie", retry: :transient) do
+    case Client.get(base_url, api_key, "/api/v3/movie") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Movie.from_api/1)}
       {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
+  end
+
+  @spec list_movies!(String.t(), String.t()) :: list(Movie.t())
+  def list_movies!(base_url, api_key) do
+    {:ok, movies} = list_movies(base_url, api_key)
+    movies
   end
 
   @doc """
@@ -28,7 +31,7 @@ defmodule WatchClub.Integrations.Radarr do
   """
   @spec get_movie(String.t(), String.t(), integer()) :: {:ok, Movie.t() | nil} | {:error, term()}
   def get_movie(base_url, api_key, tmdb_id) when is_integer(tmdb_id) do
-    case Client.get(base_url, api_key, "/api/v3/movie?tmdbId=#{tmdb_id}", retry: :transient) do
+    case Client.get(base_url, api_key, "/api/v3/movie", params: %{tmdbId: tmdb_id}) do
       {:ok, [movie | _]} when is_map(movie) -> {:ok, Movie.from_api(movie)}
       {:ok, []} -> {:ok, nil}
       {:ok, _other} -> {:error, :invalid_response}
@@ -62,32 +65,40 @@ defmodule WatchClub.Integrations.Radarr do
   end
 
   @doc """
-  Fetches one `Movie` by its Radarr id (`GET /api/v3/movie/{id}`).
+  Fetches one `Movie` by its Radarr id.
   `{:error, :not_found}` when the movie is no longer in the library.
   """
   @spec get_movie_by_id(String.t(), String.t(), integer()) :: {:ok, Movie.t()} | {:error, term()}
   def get_movie_by_id(base_url, api_key, movie_id) when is_integer(movie_id) do
-    case Client.get(base_url, api_key, "/api/v3/movie/#{movie_id}", retry: :transient) do
+    case Client.get(base_url, api_key, "/api/v3/movie/#{movie_id}") do
       {:ok, movie} when is_map(movie) -> {:ok, Movie.from_api(movie)}
       {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
 
+  @spec get_movie_by_id!(String.t(), String.t(), integer()) :: Movie.t()
+  def get_movie_by_id!(base_url, api_key, movie_id) do
+    {:ok, movie} = get_movie_by_id(base_url, api_key, movie_id)
+    movie
+  end
+
   @doc """
-  Returns the download-queue `QueueItem`s for one movie
-  (`GET /api/v3/queue/details?movieId=`). An empty list means nothing is
-  queued or downloading.
+  Returns the download-queue `QueueResource`s for one movie.
   """
   @spec queue_details(String.t(), String.t(), integer()) ::
-          {:ok, [QueueItem.t()]} | {:error, term()}
+          {:ok, [QueueResource.t()]} | {:error, term()}
   def queue_details(base_url, api_key, movie_id) when is_integer(movie_id) do
-    case Client.get(base_url, api_key, "/api/v3/queue/details?movieId=#{movie_id}",
-           retry: :transient
-         ) do
-      {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueItem.from_api/1)}
+    case Client.get(base_url, api_key, "/api/v3/queue/details", params: %{movieId: movie_id}) do
+      {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueResource.from_api/1)}
       {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
+  end
+
+  @spec queue_details!(String.t(), String.t(), integer()) :: list(QueueResource.t())
+  def queue_details!(base_url, api_key, movie_id) when is_integer(movie_id) do
+    {:ok, queue} = queue_details(base_url, api_key, movie_id)
+    queue
   end
 end

@@ -10,41 +10,40 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
 
   require Logger
 
-  def apply(%Candidate{media_type: media_type} = candidate) do
-    Logger.debug("Saving media for #{candidate}")
+  def apply(%Candidate{media_type: media_type} = candidate)
+      when media_type in [:movie, :tv_show_episode] do
+    media =
+      MediaCatalog.create_or_update_video!(
+        %{
+          path: candidate.path,
+          type: media_type,
+          video: build_video_input(media_type, candidate)
+        },
+        actor: SystemActor.actor()
+      )
 
-    case save_media(media_type, candidate) do
-      {:ok, _media} ->
-        {:ok, candidate}
-
-      {:error, reason} ->
-        Logger.error("Error saving media for #{candidate.path}: #{inspect(reason)}")
-        {:halt, "Error saving media"}
-    end
+    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
+    media
   end
 
-  defp save_media(media_type, %Candidate{} = candidate)
-       when media_type in [:movie, :tv_show_episode] do
-    MediaCatalog.create_or_update_video(
-      %{
-        path: candidate.path,
-        type: media_type,
-        video: build_video_input(media_type, candidate)
-      },
-      actor: SystemActor.actor()
-    )
+  def apply(%Candidate{media_type: :audiobook} = candidate) do
+    media =
+      MediaCatalog.create_or_update_audiobook!(%{path: candidate.path, audiobook: %{}},
+        actor: SystemActor.actor()
+      )
+
+    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
+    media
   end
 
-  defp save_media(:ebook, %Candidate{} = candidate) do
-    MediaCatalog.create_or_update_ebook(%{path: candidate.path, ebook: %{}},
-      actor: SystemActor.actor()
-    )
-  end
+  def apply(%Candidate{media_type: :ebook} = candidate) do
+    media =
+      MediaCatalog.create_or_update_ebook!(%{path: candidate.path, ebook: %{}},
+        actor: SystemActor.actor()
+      )
 
-  defp save_media(:audiobook, %Candidate{} = candidate) do
-    MediaCatalog.create_or_update_audiobook(%{path: candidate.path, audiobook: %{}},
-      actor: SystemActor.actor()
-    )
+    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
+    media
   end
 
   defp build_video_input(

@@ -122,7 +122,10 @@ defmodule WatchClub.Requests.Workers.SubmitMediaSourceRequest do
   # At the moment, we take the first result blindly, if that causes issues we could try better matching
   # with the release date in the future.
   defp resolve_tvdb_id(servarr, nil, original_title) do
-    Logger.info("No TVDB_ID for show #{original_title}. Searching by title")
+    Logger.warning("No TVDB_ID for show #{original_title}. Searching by title",
+      event: :resolve_sonarr_no_tvdb_id,
+      original_title: original_title
+    )
 
     case Sonarr.lookup_series(servarr.base_url, servarr.api_key, original_title) do
       {:ok, [%Series{tvdb_id: tvdb_id} | _]} -> {:ok, tvdb_id}

@@ -14,8 +14,6 @@ defmodule WatchClub.Accounts.Changes.ApplyInvitationCode do
   alias WatchClub.Accounts
   alias WatchClub.Clubs.Membership
 
-  require Logger
-
   @impl Ash.Resource.Change
   def change(changeset, _opts, context) do
     case Ash.Changeset.get_argument(changeset, :invitation_code) do
@@ -77,10 +75,6 @@ defmodule WatchClub.Accounts.Changes.ApplyInvitationCode do
 
       %{message: message} when is_binary(message) ->
         invalid(message)
-
-      other ->
-        Logger.warning("Unexpected invitation code error: #{inspect(other)}")
-        invalid(dgettext_noop("errors", "The invitation code is not valid"))
     end
   end
 
