@@ -114,6 +114,22 @@ defmodule WatchClub.Integrations.Servarr.Client do
     end
   end
 
+  @doc """
+  Asks the server to pull download progress from its download client now,
+  instead of waiting for its periodic "Refresh Monitored Downloads" task
+  (nominally ~1 min, in practice often 90–120s). The command runs
+  asynchronously server-side but completes within ~1s, and the server
+  coalesces duplicate concurrent commands — so callers can fire it freely
+  without coordinating. Identical endpoint on Radarr and Sonarr.
+  """
+  @spec refresh_monitored_downloads(String.t(), String.t()) :: {:ok, :queued} | {:error, term()}
+  def refresh_monitored_downloads(base_url, api_key) do
+    case post(base_url, api_key, "/api/v3/command", %{"name" => "RefreshMonitoredDownloads"}) do
+      {:ok, _body} -> {:ok, :queued}
+      {:error, _} = error -> error
+    end
+  end
+
   # ── Transport ─────────────────────────────────────────────────────
 
   @spec request(String.t(), String.t(), keyword()) :: {:ok, any()} | {:error, term()}

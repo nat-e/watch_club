@@ -100,6 +100,9 @@ defmodule WatchClub.Integrations.Servarr.TestStub do
   def call(%Plug.Conn{request_path: "/api/v3/queue/details"} = conn, _opts),
     do: ok(conn, [])
 
+  def call(%Plug.Conn{request_path: "/api/v3/command", method: "POST"} = conn, _opts),
+    do: ok(conn, %{"id" => :erlang.unique_integer([:positive]), "status" => "queued"})
+
   def call(conn, _opts), do: json(conn, 404, %{"message" => "Not Found"})
 
   # Servarr requires an api key on every call; absence is a 401.

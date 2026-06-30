@@ -14,6 +14,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
   alias WatchClub.MediaSources.Source
   alias WatchClub.Requests.Changes.UpdateContentRequests
   alias WatchClub.Requests.MediaSourceRequestStatus
+  alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
 
   postgres do
     table "media_source_requests"

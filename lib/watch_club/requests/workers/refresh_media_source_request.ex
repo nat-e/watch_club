@@ -6,7 +6,7 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
   This also takes care of re-scheduling itself until it's in a completed state (:downloaded):
   - If the request is considered active and we can expect frequent changes (it is recently submitted or downloading),
-    re-schedule in 5 seconds. This is particularly useful for refreshing the progress.
+    re-schedule in 10 seconds. This is particularly useful for refreshing the progress.
   - If the request is considered blocked (needs human attention, has not been found or is not released), we refresh it
     every hour.
 
@@ -22,6 +22,7 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
     ]
 
   alias WatchClub.Integrations.{Radarr, Sonarr}
+  alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr
   alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.SystemActor
@@ -78,21 +79,30 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
       status == :searching and
         request.inserted_at |> DateTime.before?(five_minutes_ago)
 
+    Logger.info("Status: #{status} - Progress: #{progress}")
+
     cond do
       # If the request is "blocked", re-schedule a refresh in 1 hour
       not_found? or status in [:not_released, :needs_attention] ->
-        Oban.insert!(new_job(id, schedule_in: 60 * 60))
+        {:snooze, 60 * 60}
 
       # If the request is "active", re-schedule a refresh in 5 seconds
       status in [:searching, :downloading] ->
-        Oban.insert!(new_job(id, schedule_in: 5))
+        # Radarr/Sonarr only pull progress from the download client on their own
+        # ~1 min schedule, so a 10s poll just re-reads stale bytes. While
+        # downloading, nudge the *arr to refresh now so the next poll is current.
+        # Best-effort: the command is async, server-coalesced, and never raises.
+        if status == :downloading do
+          servarr = request.media_source.implementation
+          Client.refresh_monitored_downloads(servarr.base_url, servarr.api_key)
+        end
 
-      # Otherwise, don't re-schedule it
+        {:snooze, 10}
+
+      # Downloaded — stop refreshing.
       true ->
         :ok
     end
-
-    :ok
   end
 
   defp compute_status_and_progress(%Servarr{flavor: :radarr} = servarr, movie_id) do
