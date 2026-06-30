@@ -108,21 +108,14 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     %{"media_source_id" => id} = params
     refresh_metadata? = params["refresh_metadata"] == "true"
 
-    case MediaSources.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, _media_import} ->
-        {:noreply,
-         socket
-         |> assign(:run_modal_open?, false)
-         |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
+    MediaSources.start_media_import!(id, %{refresh_metadata?: refresh_metadata?},
+      actor: socket.assigns.current_user
+    )
 
-      {:error, _error} ->
-        {:noreply,
-         socket
-         |> assign(:run_modal_open?, false)
-         |> put_flash(:error, dgettext("admin_media_imports", "Could not start import"))}
-    end
+    {:noreply,
+     socket
+     |> assign(:run_modal_open?, false)
+     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
   end
 
   def handle_event("close_modals", _params, socket) do
@@ -132,14 +125,10 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   def handle_event("cancel_media_import", %{"id" => media_import_id}, socket) do
     actor = socket.assigns.current_user
 
-    with {:ok, media_import} <- MediaSources.get_media_import_by_id(media_import_id, actor: actor),
-         {:ok, _media_import} <- MediaSources.cancel_media_import(media_import, actor: actor) do
-      {:noreply, put_flash(socket, :info, dgettext("admin_media_imports", "Import cancelled"))}
-    else
-      {:error, _error} ->
-        {:noreply,
-         put_flash(socket, :error, dgettext("admin_media_imports", "Could not cancel import"))}
-    end
+    media_import = MediaSources.get_media_import_by_id!(media_import_id, actor: actor)
+    MediaSources.cancel_media_import!(media_import, actor: actor)
+
+    {:noreply, put_flash(socket, :info, dgettext("admin_media_imports", "Import cancelled"))}
   end
 
   # ---------------------------------------------------------------------------

@@ -18,18 +18,18 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   @impl true
   def run(input, _opts, context) do
     actor = context.actor
+    content = Contents.get_or_create_content!(input.arguments.content_identity, actor)
 
-    with {:ok, content} <- Contents.get_or_create_content(input.arguments.content_identity, actor),
-         notifications <-
-           mark_watched!(
-             content,
-             Map.get(input.arguments, :season_number),
-             Map.get(input.arguments, :episode_number),
-             context
-           ) do
-      Oban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
-      {:ok, content, notifications}
-    end
+    notifications =
+      mark_watched!(
+        content,
+        Map.get(input.arguments, :season_number),
+        Map.get(input.arguments, :episode_number),
+        context
+      )
+
+    Oban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
+    {:ok, content, notifications}
   end
 
   defp mark_watched!(%{type: :movie, id: id}, _season, _episode, context) do

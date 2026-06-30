@@ -14,7 +14,6 @@ defmodule WatchClub.Integrations.Radarr do
   def list_movies(base_url, api_key) do
     case Client.get(base_url, api_key, "/api/v3/movie") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Movie.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -34,7 +33,6 @@ defmodule WatchClub.Integrations.Radarr do
     case Client.get(base_url, api_key, "/api/v3/movie", params: %{tmdbId: tmdb_id}) do
       {:ok, [movie | _]} when is_map(movie) -> {:ok, Movie.from_api(movie)}
       {:ok, []} -> {:ok, nil}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -59,7 +57,6 @@ defmodule WatchClub.Integrations.Radarr do
 
     case Client.post(base_url, api_key, "/api/v3/movie", body) do
       {:ok, %{"id" => _} = movie} -> {:ok, Movie.from_api(movie)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -72,7 +69,6 @@ defmodule WatchClub.Integrations.Radarr do
   def get_movie_by_id(base_url, api_key, movie_id) when is_integer(movie_id) do
     case Client.get(base_url, api_key, "/api/v3/movie/#{movie_id}") do
       {:ok, movie} when is_map(movie) -> {:ok, Movie.from_api(movie)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -91,7 +87,6 @@ defmodule WatchClub.Integrations.Radarr do
   def queue_details(base_url, api_key, movie_id) when is_integer(movie_id) do
     case Client.get(base_url, api_key, "/api/v3/queue/details", params: %{movieId: movie_id}) do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueResource.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end

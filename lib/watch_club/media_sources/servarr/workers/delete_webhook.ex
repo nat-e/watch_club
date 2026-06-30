@@ -34,9 +34,7 @@ defmodule WatchClub.MediaSources.Servarr.Workers.DeleteWebhook do
           "notification_id" => notification_id
         }
       }) do
-    case Client.delete_notification(base_url, api_key, notification_id) do
-      {:ok, _} -> :ok
-      {:error, reason} -> {:error, reason}
-    end
+    {:ok, :deleted} = Client.delete_notification(base_url, api_key, notification_id)
+    :ok
   end
 end

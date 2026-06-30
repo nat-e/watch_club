@@ -28,7 +28,6 @@ defmodule WatchClub.Integrations.Servarr.Client do
   def get_status(base_url, api_key) do
     case get(base_url, api_key, "/api/v3/system/status") do
       {:ok, body} when is_map(body) -> {:ok, System.from_api(body)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -39,7 +38,6 @@ defmodule WatchClub.Integrations.Servarr.Client do
   def list_quality_profiles(base_url, api_key) do
     case get(base_url, api_key, "/api/v3/qualityprofile") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QualityProfile.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -50,7 +48,6 @@ defmodule WatchClub.Integrations.Servarr.Client do
   def list_root_folders(base_url, api_key) do
     case get(base_url, api_key, "/api/v3/rootfolder") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &RootFolder.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -81,7 +78,6 @@ defmodule WatchClub.Integrations.Servarr.Client do
   def create_notification(base_url, api_key, event_flags, config) do
     case post(base_url, api_key, "/api/v3/notification", Webhook.body(event_flags, config)) do
       {:ok, %{"id" => id}} when is_integer(id) -> {:ok, %{id: id}}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -99,7 +95,6 @@ defmodule WatchClub.Integrations.Servarr.Client do
 
     case put(base_url, api_key, "/api/v3/notification/#{notification_id}", body) do
       {:ok, %{"id" => id}} when is_integer(id) -> {:ok, %{id: id}}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end

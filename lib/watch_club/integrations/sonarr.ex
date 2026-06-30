@@ -14,7 +14,6 @@ defmodule WatchClub.Integrations.Sonarr do
   def list_series(base_url, api_key) do
     case Client.get(base_url, api_key, "/api/v3/series") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Series.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -36,7 +35,6 @@ defmodule WatchClub.Integrations.Sonarr do
            params: %{seriesId: series_id, includeEpisodeFile: true}
          ) do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Episode.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -56,7 +54,6 @@ defmodule WatchClub.Integrations.Sonarr do
     case Client.get(base_url, api_key, "/api/v3/series", params: %{tvdbId: tvdb_id}) do
       {:ok, [series | _]} when is_map(series) -> {:ok, Series.from_api(series)}
       {:ok, []} -> {:ok, nil}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -95,7 +92,6 @@ defmodule WatchClub.Integrations.Sonarr do
 
     case Client.post(base_url, api_key, "/api/v3/series", body) do
       {:ok, %{"id" => _} = series} -> {:ok, Series.from_api(series)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -109,7 +105,6 @@ defmodule WatchClub.Integrations.Sonarr do
   def get_series_by_id(base_url, api_key, series_id) when is_integer(series_id) do
     case Client.get(base_url, api_key, "/api/v3/series/#{series_id}") do
       {:ok, series} when is_map(series) -> {:ok, Series.from_api(series)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end
@@ -122,7 +117,6 @@ defmodule WatchClub.Integrations.Sonarr do
   def queue_details(base_url, api_key, series_id) when is_integer(series_id) do
     case Client.get(base_url, api_key, "/api/v3/queue/details", params: %{seriesId: series_id}) do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueResource.from_api/1)}
-      {:ok, _other} -> {:error, :invalid_response}
       {:error, _} = error -> error
     end
   end

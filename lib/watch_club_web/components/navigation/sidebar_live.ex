@@ -559,21 +559,12 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     %{current_user: user} = socket.assigns
     %Membership{club: club} = Enum.find(user.memberships, fn m -> m.club.id == club_id end)
 
-    case Clubs.destroy_club(club, actor: user) do
-      :ok ->
-        WatchClubWeb.Hooks.Flash.send_flash(
-          :success,
-          dgettext("clubs", "Club %{club_name} deleted", club_name: club.name)
-        )
+    Clubs.destroy_club!(club, actor: user)
 
-      {:error, error} ->
-        Logger.error("Error deleting club: #{inspect(error)}")
-
-        WatchClubWeb.Hooks.Flash.send_flash(
-          :error,
-          dgettext("clubs", "Error deleting club, try again later")
-        )
-    end
+    WatchClubWeb.Hooks.Flash.send_flash(
+      :success,
+      dgettext("clubs", "Club %{club_name} deleted", club_name: club.name)
+    )
 
     {:noreply, socket |> assign(:club_to_delete, nil)}
   end
@@ -589,21 +580,12 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     %{current_user: user} = socket.assigns
     membership = Enum.find(user.memberships, fn m -> m.id == membership_id end)
 
-    case Clubs.leave_club(membership, actor: user) do
-      :ok ->
-        WatchClubWeb.Hooks.Flash.send_flash(
-          :success,
-          dgettext("clubs", "You left %{club_name}", club_name: membership.club.name)
-        )
+    Clubs.leave_club!(membership, actor: user)
 
-      {:error, error} ->
-        Logger.error("Error leaving club: #{inspect(error)}")
-
-        WatchClubWeb.Hooks.Flash.send_flash(
-          :error,
-          dgettext("clubs", "Error leaving club, try again later")
-        )
-    end
+    WatchClubWeb.Hooks.Flash.send_flash(
+      :success,
+      dgettext("clubs", "You left %{club_name}", club_name: membership.club.name)
+    )
 
     {:noreply, socket |> assign(:membership_to_leave, nil)}
   end

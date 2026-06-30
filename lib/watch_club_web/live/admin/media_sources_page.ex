@@ -316,21 +316,14 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     %{"media_source_id" => id} = params
     refresh_metadata? = params["refresh_metadata"] == "true"
 
-    case MediaSources.start_media_import(id, %{refresh_metadata?: refresh_metadata?},
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, _media_import} ->
-        {:noreply,
-         socket
-         |> reset_modals()
-         |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
+    MediaSources.start_media_import!(id, %{refresh_metadata?: refresh_metadata?},
+      actor: socket.assigns.current_user
+    )
 
-      {:error, _error} ->
-        {:noreply,
-         socket
-         |> reset_modals()
-         |> put_flash(:error, dgettext("admin_media_imports", "Could not start import"))}
-    end
+    {:noreply,
+     socket
+     |> reset_modals()
+     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
   end
 
   def handle_event("close_modals", _params, socket) do

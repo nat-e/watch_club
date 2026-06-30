@@ -70,23 +70,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   end
 
   def handle_event("open_drawer", %{"id" => id}, socket) do
-    case MediaCatalog.get_media(id,
-           actor: socket.assigns.current_user,
-           load: drawer_load_tree()
-         ) do
-      {:ok, media} ->
-        state = %{
-          socket.assigns.state
-          | drawer: State.Drawer.open(socket.assigns.state.drawer, media)
-        }
+    media =
+      MediaCatalog.get_media!(id,
+        actor: socket.assigns.current_user,
+        load: drawer_load_tree()
+      )
 
-        {:noreply, assign(socket, :state, state)}
+    state = %{
+      socket.assigns.state
+      | drawer: State.Drawer.open(socket.assigns.state.drawer, media)
+    }
 
-      {:error, _reason} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Could not load Media details.")}
-    end
+    {:noreply, assign(socket, :state, state)}
   end
 
   def handle_event("close_drawer", _params, socket) do
@@ -112,27 +107,19 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         {:noreply, socket}
 
       media ->
-        case MediaCatalog.destroy_media(media, actor: socket.assigns.current_user) do
-          :ok ->
-            state = %{
-              socket.assigns.state
-              | drawer: State.Drawer.close(socket.assigns.state.drawer)
-            }
+        MediaCatalog.destroy_media!(media, actor: socket.assigns.current_user)
 
-            {:noreply,
-             socket
-             |> assign(:state, state)
-             |> stream_delete(:media_rows, media)
-             |> stream_delete(:media_cards, media)
-             |> put_flash(:info, "Media deleted.")}
+        state = %{
+          socket.assigns.state
+          | drawer: State.Drawer.close(socket.assigns.state.drawer)
+        }
 
-          {:error, reason} ->
-            Logger.error("Failed to delete Media #{media.id}: #{inspect(reason)}")
-
-            {:noreply,
-             socket
-             |> put_flash(:error, "Could not delete Media.")}
-        end
+        {:noreply,
+         socket
+         |> assign(:state, state)
+         |> stream_delete(:media_rows, media)
+         |> stream_delete(:media_cards, media)
+         |> put_flash(:info, "Media deleted.")}
     end
   end
 

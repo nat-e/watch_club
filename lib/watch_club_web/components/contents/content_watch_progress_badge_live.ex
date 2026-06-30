@@ -87,28 +87,18 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
 
   @impl true
   def handle_event("mark_watched", _params, socket) do
-    case History.mark_content_watched(socket.assigns.content_identity,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, _content} ->
-        {:noreply, socket}
+    History.mark_content_watched!(socket.assigns.content_identity,
+      actor: socket.assigns.current_user
+    )
 
-      {:error, error} ->
-        Logger.error("Error marking content watched #{inspect(error)}")
-        {:noreply, socket |> put_flash(:error, "Something wrong happened")}
-    end
+    {:noreply, socket}
   end
 
   def handle_event("mark_not_watched", _params, socket) do
-    case History.mark_content_not_watched(socket.assigns.content_identity,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, _content} ->
-        {:noreply, socket}
+    History.mark_content_not_watched!(socket.assigns.content_identity,
+      actor: socket.assigns.current_user
+    )
 
-      {:error, error} ->
-        Logger.error("Error marking content not watched #{inspect(error)}")
-        {:noreply, socket |> put_flash(:error, "Something wrong happened")}
-    end
+    {:noreply, socket}
   end
 end

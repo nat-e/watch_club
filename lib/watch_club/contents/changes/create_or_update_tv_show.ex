@@ -121,9 +121,8 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       ordered: false,
       timeout: 10_000
     )
-    |> Enum.reduce(%{}, fn
-      {:ok, {season_number, details}}, acc -> Map.put(acc, season_number, details)
-      {:exit, _reason}, acc -> acc
+    |> Enum.reduce(%{}, fn {:ok, {season_number, details}}, acc ->
+      Map.put(acc, season_number, details)
     end)
   end
 

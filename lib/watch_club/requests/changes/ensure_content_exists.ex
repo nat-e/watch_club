@@ -18,17 +18,9 @@ defmodule WatchClub.Requests.Changes.EnsureContentExists do
   def change(changeset, _opts, context) do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       content_identity = Ash.Changeset.get_argument(changeset, :content_identity)
+      content = Contents.get_or_create_content!(content_identity, context.actor)
 
-      case Contents.get_or_create_content(content_identity, context.actor) do
-        {:ok, content} ->
-          Ash.Changeset.force_change_attribute(changeset, :content_id, content.id)
-
-        {:error, reason} ->
-          Ash.Changeset.add_error(changeset,
-            field: :external_id,
-            message: "could not resolve content: #{inspect(reason)}"
-          )
-      end
+      Ash.Changeset.force_change_attribute(changeset, :content_id, content.id)
     end)
   end
 end
