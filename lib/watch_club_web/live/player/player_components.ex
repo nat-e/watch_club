@@ -123,7 +123,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         </.player_menu>
 
         <media-mute-button
-          class={media_menu_button_style()}
+          class={["group/mute", media_menu_button_style()]}
           aria-label={dgettext("player", "Mute")}
         >
           <Lucideicons.volume_2 class="group-data-muted/mute:hidden" />
@@ -132,7 +132,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
         <media-fullscreen-button
           target="media"
-          class={media_menu_button_style()}
+          class={["group/fullscreen", media_menu_button_style()]}
           aria-label={dgettext("player", "Fullscreen")}
         >
           <Lucideicons.maximize class="group-data-active/fullscreen:hidden" />
