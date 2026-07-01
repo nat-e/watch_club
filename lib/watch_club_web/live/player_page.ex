@@ -36,6 +36,7 @@ defmodule WatchClubWeb.PlayerPage do
           duration={@session.active_playback.media.video.duration_seconds}
           preload="metadata"
           playsinline
+          autoplay
           class="group/player relative block size-full overflow-hidden bg-black outline-none [&[data-started]:not([data-controls])]:cursor-none"
         >
           <media-provider
