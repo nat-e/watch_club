@@ -111,12 +111,13 @@ const Player = {
 	},
 
 	// This is called on initial load and when the video changes in the player session
-	// We reset the video and playback from the start but keep track selection intact.
-	loadVideo(src) {
+	// Playback starts at the given position (the beginning by default) but keeps
+	// track selection intact. Vidstack queues the seek until the media can play.
+	loadVideo(src, startPositionSeconds = 0) {
 		if (!this.player) return;
 		this.pendingAutoplay = true;
 		this.player.src = { src, type: "application/x-mpegurl" };
-		this.player.currentTime = 0;
+		this.player.currentTime = startPositionSeconds;
 		this.player.startLoading?.();
 	},
 
@@ -135,7 +136,10 @@ const Player = {
 			if (this.disposed) return;
 
 			this.configurePlayer(vidstack);
-			this.loadVideo(this.player.dataset.src);
+			this.loadVideo(
+				this.player.dataset.src,
+				Number(this.player.dataset.startPosition) || 0,
+			);
 		} catch (_error) {
 			this.reportFailure();
 		}

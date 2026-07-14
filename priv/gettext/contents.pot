@@ -54,7 +54,7 @@ msgstr ""
 msgid "Official site"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:154
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:159
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
@@ -150,17 +150,17 @@ msgstr ""
 msgid "We couldn't load the season. Please try again"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:146
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:148
 #, elixir-autogen, elixir-format
 msgid "Added to your requests."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:150
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:152
 #, elixir-autogen, elixir-format
 msgid "Could not request this right now."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:184
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:199
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr ""
@@ -198,8 +198,8 @@ msgstr ""
 msgid "In your clubs"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:155
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:158
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:160
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:173
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
 msgstr ""
@@ -244,23 +244,33 @@ msgstr ""
 msgid "You need to create a List before adding content to it"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:193
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:197
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:208
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:212
 #, elixir-autogen, elixir-format
 msgid "Downloading"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:209
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:203
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:218
 #, elixir-autogen, elixir-format
 msgid "Not Released"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:189
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:204
 #, elixir-autogen, elixir-format
 msgid "Searching"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:157
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:168
+#, elixir-autogen, elixir-format
+msgid "Resume %{episode}"
 msgstr ""

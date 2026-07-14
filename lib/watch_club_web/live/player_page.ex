@@ -7,8 +7,9 @@ defmodule WatchClubWeb.PlayerPage do
     active_playback: [
       media: [
         video: [
-          movie: [:best_localization],
+          movie: [:best_localization, :actor_progress],
           tv_show_episode: [
+            :actor_progress,
             tv_show: [:best_localization],
             next_episode: [:has_media?, :videos],
             previous_episode: [:has_media?, :videos]
@@ -33,6 +34,7 @@ defmodule WatchClubWeb.PlayerPage do
           id="watch-club-vidstack-player"
           data-player-media
           data-src={hls_master_playlist_url(@session.active_playback)}
+          data-start-position={@start_position_seconds}
           duration={@session.active_playback.media.video.duration_seconds}
           preload="metadata"
           playsinline
@@ -154,7 +156,13 @@ defmodule WatchClubWeb.PlayerPage do
 
     case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
       {:ok, session} ->
-        socket |> assign(:session, session) |> assign(:playback_error, false)
+        socket
+        |> assign(:session, session)
+        |> assign(
+          :start_position_seconds,
+          resume_position_seconds(session.active_playback.media.video)
+        )
+        |> assign(:playback_error, false)
 
       {:error, error} ->
         Logger.error("Error starting new session: #{inspect(error)}")
@@ -175,6 +183,7 @@ defmodule WatchClubWeb.PlayerPage do
       {:ok, session} ->
         socket
         |> assign(:session, session)
+        |> assign(:start_position_seconds, 0.0)
         |> assign(:playback_error, false)
         # We manually push an event to the JS Hook to reload the video since Vidstack's media provider is phx-update="ignore"
         # It has to be the case, otherwise Morphdom deletes the <video> element injected at runtime by Vidstack
@@ -189,6 +198,18 @@ defmodule WatchClubWeb.PlayerPage do
         |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
         |> push_navigate(to: ~p"/")
     end
+  end
+
+  # Only the Session's first Playback resumes where the user stopped; completed
+  # or unwatched content restarts from the beginning.
+  defp resume_position_seconds(%Video{} = video) do
+    progress =
+      case video do
+        %Video{movie: %Movie{} = movie} -> movie.actor_progress
+        %Video{tv_show_episode: %TvShowEpisode{} = episode} -> episode.actor_progress
+      end
+
+    if progress && !progress.completed, do: progress.position_seconds, else: 0.0
   end
 
   defp hls_master_playlist_url(%Playback{id: playback_id}),
