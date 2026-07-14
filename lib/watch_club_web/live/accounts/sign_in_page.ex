@@ -36,17 +36,7 @@ defmodule WatchClubWeb.Accounts.SignInPage do
 
   @impl true
   def mount(_params, _session, socket) do
-    form =
-      Accounts.form_to_sign_in(
-        context: %{token_type: :sign_in},
-        transform_errors: fn
-          _, %AshAuthentication.Errors.AuthenticationFailed{} ->
-            {:password, dgettext("errors", "Your username or password is invalid"), []}
-
-          _, err ->
-            err
-        end
-      )
+    form = Accounts.form_to_sign_in(context: %{token_type: :sign_in})
 
     {:ok, socket |> assign(form: to_form(form))}
   end

@@ -18,7 +18,7 @@ msgid "Actions"
 msgstr "Actions"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:79
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:76
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
 msgstr "Actions pour %{username}"
@@ -32,7 +32,7 @@ msgstr "Clubs"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:10
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:26
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:91
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:96
 #, elixir-autogen, elixir-format
 msgid "Delete user"
 msgstr "Supprimer l'utilisateur"
@@ -50,7 +50,7 @@ msgid "User"
 msgstr "Utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:194
+#: lib/watch_club_web/live/admin/users_page.ex:207
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr "Utilisateur supprimé"
@@ -80,3 +80,15 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Manage access to %{name}."
 msgstr "Gérez l'accès à %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex:117
+#, elixir-autogen, elixir-format
+msgid "Password reset link copied to clipboard"
+msgstr "Lien de réinitialisation du mot de passe copié dans le presse-papiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:86
+#, elixir-autogen, elixir-format
+msgid "Reset password"
+msgstr "Réinitialiser le mot de passe"

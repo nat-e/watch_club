@@ -9,13 +9,15 @@ defmodule WatchClub.Accounts do
     resource WatchClub.Accounts.User do
       define :create_administrator
       define :administrator_exists, action: :administrator_exists?
-      define :get_administrator
       define :list_users, action: :read
       define :register_with_password
       define :sign_in, action: :sign_in_with_password
       define :get_current_user
       define :get_user_by_id, action: :read, get_by: [:id]
       define :destroy_user, action: :destroy
+      define :generate_password_reset_token, args: [:user_id]
+      define :reset_password_with_token
+      define :change_password
     end
 
     resource WatchClub.Accounts.InvitationCode do

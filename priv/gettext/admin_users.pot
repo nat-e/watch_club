@@ -16,7 +16,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:79
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:76
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
 msgstr ""
@@ -28,7 +28,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:10
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:26
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:91
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:96
 #, elixir-autogen, elixir-format
 msgid "Delete user"
 msgstr ""
@@ -43,7 +43,7 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:194
+#: lib/watch_club_web/live/admin/users_page.ex:207
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr ""
@@ -66,4 +66,14 @@ msgstr ""
 #: lib/watch_club_web/live/admin/users_page.ex:29
 #, elixir-autogen, elixir-format
 msgid "Manage access to %{name}."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex:117
+#, elixir-autogen, elixir-format
+msgid "Password reset link copied to clipboard"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex:86
+#, elixir-autogen, elixir-format
+msgid "Reset password"
 msgstr ""

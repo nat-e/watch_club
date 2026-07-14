@@ -112,28 +112,12 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:141
-#, elixir-autogen, elixir-format
-msgid "Could not cancel import"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources_page.ex:306
-#, elixir-autogen, elixir-format
-msgid "Could not delete Media Source"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources_page.ex:377
+#: lib/watch_club_web/live/admin/media_sources_page.ex:360
 #, elixir-autogen, elixir-format
 msgid "Could not save source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:124
-#: lib/watch_club_web/live/admin/media_sources_page.ex:342
-#, elixir-autogen, elixir-format
-msgid "Could not start import"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources_page.ex:448
+#: lib/watch_club_web/live/admin/media_sources_page.ex:431
 #, elixir-autogen, elixir-format
 msgid "Could not update Media Source"
 msgstr ""
@@ -194,7 +178,7 @@ msgstr ""
 msgid "Import TV shows from a Sonarr server."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:137
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:131
 #, elixir-autogen, elixir-format
 msgid "Import cancelled"
 msgstr ""
@@ -215,7 +199,7 @@ msgid "Import movies from a Radarr server."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_source_history_page.ex:118
-#: lib/watch_club_web/live/admin/media_sources_page.ex:336
+#: lib/watch_club_web/live/admin/media_sources_page.ex:326
 #, elixir-autogen, elixir-format
 msgid "Import started"
 msgstr ""
@@ -241,8 +225,8 @@ msgstr ""
 msgid "Manual only"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:363
-#: lib/watch_club_web/live/admin/media_sources_page.ex:422
+#: lib/watch_club_web/live/admin/media_sources_page.ex:346
+#: lib/watch_club_web/live/admin/media_sources_page.ex:405
 #, elixir-autogen, elixir-format
 msgid "Media Source configured"
 msgstr ""
@@ -257,13 +241,13 @@ msgstr ""
 msgid "Media Source not found"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex:362
-#: lib/watch_club_web/live/admin/media_sources_page.ex:441
+#: lib/watch_club_web/live/admin/media_sources_page.ex:345
+#: lib/watch_club_web/live/admin/media_sources_page.ex:424
 #, elixir-autogen, elixir-format
 msgid "Media Source updated"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_source_history_page.ex:155
+#: lib/watch_club_web/live/admin/media_source_history_page.ex:144
 #, elixir-autogen, elixir-format
 msgid "Media Source was deleted"
 msgstr ""

@@ -115,10 +115,17 @@ if (process.env.NODE_ENV === "development") {
 	);
 }
 
-// Copy to clipboard
-window.addEventListener("wc:copy_to_clipboard", (event) => {
+// Copy to clipboard, from an element's text (JS.dispatch) or a server payload (push_event)
+const copyToClipboard = (text) => {
 	if ("clipboard" in navigator) {
-		const text = event.target.textContent;
 		navigator.clipboard.writeText(text);
 	}
+};
+
+window.addEventListener("wc:copy_to_clipboard", (event) => {
+	copyToClipboard(event.target.textContent);
+});
+
+window.addEventListener("phx:wc:copy_to_clipboard", (event) => {
+	copyToClipboard(event.detail.text);
 });

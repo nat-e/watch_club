@@ -76,6 +76,16 @@ defmodule WatchClubWeb.Helpers.Url do
     }
   end
 
+  @spec reset_password_url(t(), String.t()) :: t()
+  def reset_password_url(%__MODULE__{} = url, token) when is_binary(token) do
+    %__MODULE__{
+      scheme: url.scheme,
+      authority: url.authority,
+      path: ~p"/reset-password",
+      query: %{"token" => token}
+    }
+  end
+
   @doc """
   Builds the callback URL Watch Club asks a request-capable Media
   Source to POST events to. Format is shared between wizard

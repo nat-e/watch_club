@@ -63,21 +63,6 @@ defmodule WatchClub.Accounts.UserTest do
     end
   end
 
-  describe "get_administrator?/*" do
-    test "returns the admin when exist" do
-      admin = generate(administrator())
-      admin_id = admin.id
-
-      assert %User{id: ^admin_id} = get_administrator!(actor: admin)
-    end
-
-    test "only the administrator can get the administrator" do
-      other_user = generate(user())
-
-      assert_raise Ash.Error.Forbidden, fn -> get_administrator!(actor: other_user) end
-    end
-  end
-
   describe "sign_in/*" do
     test "signs the user in with their username and password" do
       password = "passw0rd"
@@ -167,7 +152,7 @@ defmodule WatchClub.Accounts.UserTest do
                password_confirmation: "passw0rd"
              })
              |> assert_has_error(Ash.Error.Invalid, fn
-               %Ash.Error.Changes.Required{
+               %Ash.Error.Changes.InvalidAttribute{
                  field: :invitation_code
                } ->
                  true
@@ -256,7 +241,7 @@ defmodule WatchClub.Accounts.UserTest do
                locale: :en_US
              })
              |> assert_has_error(Ash.Error.Invalid, fn
-               %Ash.Error.Changes.InvalidArgument{field: :password_confirmation} -> true
+               %Ash.Error.Changes.InvalidAttribute{field: :password_confirmation} -> true
                _ -> false
              end)
     end

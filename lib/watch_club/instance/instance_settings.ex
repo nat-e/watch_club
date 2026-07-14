@@ -12,6 +12,8 @@ defmodule WatchClub.Instance.InstanceSettings do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   postgres do
     table "instance_settings"
     repo WatchClub.Repo
@@ -39,6 +41,22 @@ defmodule WatchClub.Instance.InstanceSettings do
     end
   end
 
+  validations do
+    # Customer-facing validations own localized messages for form errors.
+    # Keep shape rules here instead of duplicating them as attribute constraints.
+    validate present(:name) do
+      message dgettext_noop("errors", "Instance name is required")
+    end
+
+    validate string_length(:name, min: 3) do
+      message dgettext_noop("errors", "Instance name must be at least %{min} characters")
+    end
+
+    validate string_length(:name, max: 30) do
+      message dgettext_noop("errors", "Instance name cannot be longer than %{max} characters")
+    end
+  end
+
   attributes do
     uuid_v7_primary_key :id
 
@@ -46,7 +64,6 @@ defmodule WatchClub.Instance.InstanceSettings do
       allow_nil? false
       default "Watch Club"
       public? true
-      constraints min_length: 3, max_length: 30
     end
 
     attribute :singleton, :boolean do

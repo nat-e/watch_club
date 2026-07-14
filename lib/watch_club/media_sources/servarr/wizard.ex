@@ -20,6 +20,8 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
     domain: WatchClub.MediaSources,
     extensions: [AshStateMachine]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.MediaSources.Servarr.Flavor
   alias WatchClub.MediaSources.Source
 
@@ -77,8 +79,14 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       require_atomic? false
       accept [:base_url, :api_key]
 
-      validate present(:base_url)
-      validate present(:api_key)
+      validate present(:base_url) do
+        message dgettext_noop("errors", "The URL is required")
+      end
+
+      validate present(:api_key) do
+        message dgettext_noop("errors", "The API key is required")
+      end
+
       validate CheckConnection, only_when_valid?: true, before_action?: true
 
       change LoadProfiles
@@ -89,8 +97,13 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       require_atomic? false
       accept [:selected_root_path, :selected_quality_profile_id, :local_root_folder_path]
 
-      validate present(:selected_quality_profile_id)
-      validate present(:selected_root_path)
+      validate present(:selected_quality_profile_id) do
+        message dgettext_noop("errors", "The quality profile is required")
+      end
+
+      validate present(:selected_root_path) do
+        message dgettext_noop("errors", "The root folder is required")
+      end
 
       change transition_state(:webhook)
     end
@@ -99,7 +112,10 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       require_atomic? false
       accept [:webhook_callback_base_url]
 
-      validate present(:webhook_callback_base_url)
+      validate present(:webhook_callback_base_url) do
+        message dgettext_noop("errors", "The callback URL is required")
+      end
+
       validate CheckWebhookUrl, only_when_valid?: true, before_action?: true
 
       change transition_state(:finished)

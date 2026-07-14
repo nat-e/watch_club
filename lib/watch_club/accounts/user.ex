@@ -41,6 +41,16 @@ defmodule WatchClub.Accounts.User do
       password :password do
         identity_field :username
         hash_provider AshAuthentication.BcryptProvider
+
+        # Password confirmation is enforced by the resource-level `confirm`
+        # validation, which owns the localized message
+        confirmation_required? false
+
+        resettable do
+          password_reset_action_name :reset_password_with_token
+          # Reset links are handed out manually by the administrator, there is nothing to send
+          sender fn _user, _token, _opts -> :ok end
+        end
       end
 
       remember_me :remember_me
@@ -70,10 +80,6 @@ defmodule WatchClub.Accounts.User do
         sensitive? true
       end
 
-      # validates that the password matches the confirmation
-      validate {AshAuthentication.Strategy.Password.PasswordConfirmationValidation,
-                strategy_name: :password}
-
       change set_attribute(:administrator?, true)
 
       # Hashes the provided password
@@ -92,13 +98,6 @@ defmodule WatchClub.Accounts.User do
         description "A JWT that can be used to authenticate the user."
         allow_nil? false
       end
-    end
-
-    read :get_administrator do
-      description "Returns the administrator user, or nil if it was not setup yet"
-      get? true
-
-      filter expr(administrator? == true)
     end
 
     action :administrator_exists?, :boolean do
@@ -150,12 +149,25 @@ defmodule WatchClub.Accounts.User do
 
       argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
 
-      validate confirm(:password, :password_confirmation)
+      validate present(:current_password) do
+        message dgettext_noop("errors", "Your current password is required")
+      end
 
       validate {AshAuthentication.Strategy.Password.PasswordValidation,
-                strategy_name: :password, password_argument: :current_password}
+                strategy_name: :password, password_argument: :current_password} do
+        message dgettext_noop("errors", "Your current password is invalid")
+      end
 
       change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
+
+      # Generates an authentication token so the current session can be
+      # re-established after the password change revokes all tokens
+      change {AshAuthentication.GenerateTokenChange, strategy_name: :password}
+
+      metadata :token, :string do
+        description "A JWT that can be used to authenticate the user."
+        allow_nil? false
+      end
     end
 
     read :sign_in_with_password do
@@ -242,14 +254,15 @@ defmodule WatchClub.Accounts.User do
         allow_nil? false
       end
 
+      validate present(:invitation_code) do
+        message dgettext_noop("errors", "The invitation code is required")
+      end
+
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
 
       # Generates an authentication token for the user
       change AshAuthentication.GenerateTokenChange
-
-      # validates that the password matches the confirmation
-      validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
 
       # Validates the invitation code and creates one club member membership per granted club
       change WatchClub.Accounts.Changes.ApplyInvitationCode
@@ -266,20 +279,19 @@ defmodule WatchClub.Accounts.User do
       end
     end
 
-    action :request_password_reset_token do
-      description "Send password reset instructions to a user if they exist."
+    action :generate_password_reset_token, :string do
+      description "Generates a password reset token for a user. The administrator sends the reset link to the user manually."
 
-      argument :username, :string do
+      argument :user_id, :uuid do
         allow_nil? false
       end
 
-      # creates a reset token and invokes the relevant senders
-      run {AshAuthentication.Strategy.Password.RequestPasswordReset, action: :get_by_username}
-    end
+      run fn input, context ->
+        user = Ash.get!(__MODULE__, input.arguments.user_id, Ash.Context.to_opts(context))
+        strategy = AshAuthentication.Info.strategy!(__MODULE__, :password)
 
-    read :get_by_username do
-      description "Looks up a user by their username"
-      get_by :username
+        {:ok, _token} = AshAuthentication.Strategy.Password.reset_token_for(strategy, user)
+      end
     end
 
     destroy :destroy do
@@ -291,6 +303,10 @@ defmodule WatchClub.Accounts.User do
     end
 
     update :reset_password_with_token do
+      # Password hashing and token validation cannot be expressed as a
+      # database-atomic update
+      require_atomic? false
+
       argument :reset_token, :string do
         allow_nil? false
         sensitive? true
@@ -309,16 +325,20 @@ defmodule WatchClub.Accounts.User do
       end
 
       # validates the provided reset token
-      validate AshAuthentication.Strategy.Password.ResetTokenValidation
-
-      # validates that the password matches the confirmation
-      validate AshAuthentication.Strategy.Password.PasswordConfirmationValidation
+      validate AshAuthentication.Strategy.Password.ResetTokenValidation do
+        message dgettext_noop("errors", "This password reset link is invalid or has expired")
+      end
 
       # Hashes the provided password
       change AshAuthentication.Strategy.Password.HashPasswordChange
 
       # Generates an authentication token for the user
       change AshAuthentication.GenerateTokenChange
+
+      metadata :token, :string do
+        description "A JWT that can be used to authenticate the user."
+        allow_nil? false
+      end
     end
   end
 
@@ -332,11 +352,22 @@ defmodule WatchClub.Accounts.User do
       authorize_if always()
     end
 
-    policy action(:get_administrator) do
+    # Possession of a valid reset token is the credential, the action validates it
+    policy action(:reset_password_with_token) do
+      authorize_if always()
+    end
+
+    # Users can change their own password by providing their current one
+    policy action(:change_password) do
+      authorize_if expr(id == ^actor(:id))
+    end
+
+    # Only the instance administrator can create password reset links
+    policy action(:generate_password_reset_token) do
       authorize_if actor_attribute_equals(:administrator?, true)
     end
 
-    policy action([:administrator_exists?, :create_administrator, :user_exists?]) do
+    policy action([:administrator_exists?, :create_administrator]) do
       authorize_if always()
     end
 
@@ -399,6 +430,13 @@ defmodule WatchClub.Accounts.User do
       message dgettext_noop("errors", "Password must be at least %{min} characters")
     end
 
+    validate present(:password_confirmation) do
+      # `confirm` can't catch the empty confirmation when the password is
+      # empty too (nil == nil), this fills that gap with the same message
+      where absent(:password)
+      message dgettext_noop("errors", "Passwords do not match")
+    end
+
     validate confirm(:password, :password_confirmation) do
       message dgettext_noop("errors", "Passwords do not match")
     end
@@ -438,7 +476,9 @@ defmodule WatchClub.Accounts.User do
   end
 
   identities do
-    identity :unique_username, [:username]
+    identity :unique_username, [:username] do
+      message dgettext_noop("errors", "This username is already taken")
+    end
 
     identity :only_one_administrator, [:administrator?] do
       where expr(administrator? == true)

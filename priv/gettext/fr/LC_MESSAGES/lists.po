@@ -12,13 +12,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:96
+#: lib/watch_club_web/live/lists/list_page.ex:97
 #, elixir-autogen, elixir-format
 msgid "Add movies, shows and books to this list to see them here."
 msgstr "Ajoutez des films, séries et livres à cette liste pour les voir ici."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:248
+#: lib/watch_club_web/live/lists/list_page.ex:252
 #, elixir-autogen, elixir-format
 msgid "Added date"
 msgstr "Date d'ajout"
@@ -56,13 +56,13 @@ msgid "Edit list"
 msgstr "Modifier la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:673
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:655
 #, elixir-autogen, elixir-format
 msgid "List %{list_name} deleted"
 msgstr "Liste %{list_name} supprimée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:637
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:619
 #, elixir-autogen, elixir-format
 msgid "List created"
 msgstr "Liste créée"
@@ -74,25 +74,25 @@ msgid "List name"
 msgstr "Nom de la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:227
+#: lib/watch_club_web/live/lists/list_page.ex:231
 #, elixir-autogen, elixir-format
 msgid "List sort order"
 msgstr "Ordre de tri de la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:637
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:619
 #, elixir-autogen, elixir-format
 msgid "List updated"
 msgstr "Liste mise à jour"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:258
+#: lib/watch_club_web/live/lists/list_page.ex:262
 #, elixir-autogen, elixir-format
 msgid "Release date"
 msgstr "Date de sortie"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:338
+#: lib/watch_club_web/live/lists/list_page.ex:342
 #, elixir-autogen, elixir-format
 msgid "Removed from list"
 msgstr "Retiré de la liste"
@@ -104,7 +104,7 @@ msgid "Select an icon for your list"
 msgstr "Sélectionnez une icône pour votre liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:310
+#: lib/watch_club_web/live/lists/list_page.ex:314
 #, elixir-autogen, elixir-format
 msgid "Sort by %{field} %{order}"
 msgstr "Trier par %{field} %{order}"
@@ -116,13 +116,13 @@ msgid "The list you were looking for does not exist"
 msgstr "La liste que vous recherchez n'existe pas"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:94
+#: lib/watch_club_web/live/lists/list_page.ex:95
 #, elixir-autogen, elixir-format
 msgid "This list is empty"
 msgstr "Cette liste est vide"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:238
+#: lib/watch_club_web/live/lists/list_page.ex:242
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Titre"
@@ -152,7 +152,7 @@ msgid "My list"
 msgstr "Ma liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/lists/list_page.ex:146
+#: lib/watch_club_web/live/lists/list_page.ex:150
 #, elixir-autogen, elixir-format
 msgid "The list was deleted"
 msgstr "La liste a été supprimée"

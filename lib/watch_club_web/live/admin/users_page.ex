@@ -104,6 +104,19 @@ defmodule WatchClubWeb.Admin.UsersPage do
     {:noreply, socket |> assign(:user_to_delete, Enum.find(socket.assigns.users, &(&1.id == id)))}
   end
 
+  def handle_event("generate_password_reset_link", %{"id" => user_id}, socket) do
+    token = Accounts.generate_password_reset_token!(user_id, actor: socket.assigns.current_user)
+
+    link =
+      Url.reset_password_url(socket.assigns.current_url, token)
+      |> Url.to_url(absolute: true)
+
+    {:noreply,
+     socket
+     |> push_event("wc:copy_to_clipboard", %{text: link})
+     |> put_flash(:info, dgettext("admin_users", "Password reset link copied to clipboard"))}
+  end
+
   def handle_event("open_create_invitation_code_modal", _params, socket) do
     form =
       Accounts.form_to_create_invitation_code(

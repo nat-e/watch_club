@@ -3,7 +3,9 @@ defmodule WatchClubWeb.AuthController do
   use AshAuthentication.Phoenix.Controller
 
   def success(conn, activity, user, _token) do
-    return_to = get_session(conn, :return_to) || ~p"/"
+    # The query param is user-controlled: redirect/2 only accepts local paths,
+    # a tampered value raises instead of redirecting off-site
+    return_to = conn.params["return_to"] || get_session(conn, :return_to) || ~p"/"
 
     message =
       case activity do

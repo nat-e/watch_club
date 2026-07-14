@@ -35,3 +35,38 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Choose the language used across %{name}."
 msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:68
+#, elixir-autogen, elixir-format
+msgid "Change the password used to sign in. Your other devices will be signed out."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:95
+#, elixir-autogen, elixir-format
+msgid "Confirm password"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:83
+#, elixir-autogen, elixir-format
+msgid "Current password"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:89
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:66
+#, elixir-autogen, elixir-format
+msgid "Security"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:101
+#, elixir-autogen, elixir-format
+msgid "Update password"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex:158
+#, elixir-autogen, elixir-format
+msgid "Your password has been updated"
+msgstr ""

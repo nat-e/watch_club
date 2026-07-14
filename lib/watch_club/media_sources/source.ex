@@ -6,6 +6,8 @@ defmodule WatchClub.MediaSources.Source do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   import Ash.Expr
 
   alias WatchClub.MediaSources.Servarr.Flavor
@@ -46,6 +48,10 @@ defmodule WatchClub.MediaSources.Source do
       argument :filesystem_path, :string, allow_nil?: false
 
       accept [:media_type]
+
+      validate present(:filesystem_path) do
+        message dgettext_noop("errors", "The path is required")
+      end
 
       change set_attribute(:source_type, :filesystem)
       change {NormalizePath, argument: :filesystem_path}

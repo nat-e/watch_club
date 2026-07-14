@@ -11,32 +11,33 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:445
+#: lib/watch_club/accounts/user.ex:485
 #, elixir-autogen, elixir-format
 msgid "An administrator already exists"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:112
+#: lib/watch_club/clubs/club.ex:111
 #, elixir-autogen, elixir-format
 msgid "Club name cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:104
+#: lib/watch_club/clubs/club.ex:103
 #, elixir-autogen, elixir-format
 msgid "Club name is required"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex:108
+#: lib/watch_club/clubs/club.ex:107
 #, elixir-autogen, elixir-format
 msgid "Club name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:181
+#: lib/watch_club/accounts/user.ex:193
 #, elixir-autogen, elixir-format
 msgid "Password is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:403
+#: lib/watch_club/accounts/user.ex:437
+#: lib/watch_club/accounts/user.ex:441
 #, elixir-autogen, elixir-format
 msgid "Passwords do not match"
 msgstr ""
@@ -51,37 +52,37 @@ msgstr ""
 msgid "The invitation has expired"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:395
+#: lib/watch_club/accounts/user.ex:426
 #, elixir-autogen, elixir-format
 msgid "The password is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:376
+#: lib/watch_club/accounts/user.ex:407
 #, elixir-autogen, elixir-format
 msgid "The username is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:388
+#: lib/watch_club/accounts/user.ex:419
 #, elixir-autogen, elixir-format
 msgid "Username can only contain lower case letters, numbers and _"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:384
+#: lib/watch_club/accounts/user.ex:415
 #, elixir-autogen, elixir-format
 msgid "Username cannot be longer than %{max} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:177
+#: lib/watch_club/accounts/user.ex:189
 #, elixir-autogen, elixir-format
 msgid "Username is required"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:380
+#: lib/watch_club/accounts/user.ex:411
 #, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/sign_in_page.ex:44
+#: lib/watch_club/accounts/errors/authentication_failed.ex:10
 #, elixir-autogen, elixir-format
 msgid "Your username or password is invalid"
 msgstr ""
@@ -106,7 +107,7 @@ msgstr ""
 msgid "Library name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex:399
+#: lib/watch_club/accounts/user.ex:430
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
 msgstr ""
@@ -161,8 +162,7 @@ msgstr ""
 msgid "List name must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/apply_invitation_code.ex:72
-#: lib/watch_club/accounts/changes/apply_invitation_code.ex:83
+#: lib/watch_club/accounts/changes/apply_invitation_code.ex:70
 #, elixir-autogen, elixir-format
 msgid "The invitation code is not valid"
 msgstr ""
@@ -175,4 +175,74 @@ msgstr ""
 #: lib/watch_club/accounts/invitation_code.ex:69
 #, elixir-autogen, elixir-format
 msgid "This invitation has already been used more than that"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:329
+#, elixir-autogen, elixir-format
+msgid "This password reset link is invalid or has expired"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:158
+#, elixir-autogen, elixir-format
+msgid "Your current password is invalid"
+msgstr ""
+
+#: lib/watch_club/instance/instance_settings.ex:56
+#, elixir-autogen, elixir-format
+msgid "Instance name cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/instance/instance_settings.ex:48
+#, elixir-autogen, elixir-format
+msgid "Instance name is required"
+msgstr ""
+
+#: lib/watch_club/instance/instance_settings.ex:52
+#, elixir-autogen, elixir-format
+msgid "Instance name must be at least %{min} characters"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex:87
+#, elixir-autogen, elixir-format
+msgid "The API key is required"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex:83
+#, elixir-autogen, elixir-format
+msgid "The URL is required"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex:116
+#, elixir-autogen, elixir-format
+msgid "The callback URL is required"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:258
+#, elixir-autogen, elixir-format
+msgid "The invitation code is required"
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex:53
+#, elixir-autogen, elixir-format
+msgid "The path is required"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex:101
+#, elixir-autogen, elixir-format
+msgid "The quality profile is required"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex:105
+#, elixir-autogen, elixir-format
+msgid "The root folder is required"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:480
+#, elixir-autogen, elixir-format
+msgid "This username is already taken"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex:153
+#, elixir-autogen, elixir-format
+msgid "Your current password is required"
 msgstr ""

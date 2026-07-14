@@ -11,32 +11,32 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:18
+#: lib/watch_club/requests/content_request_status_group.ex:19
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:20
+#: lib/watch_club/requests/content_request_status_group.ex:21
 #, elixir-autogen, elixir-format
 msgid "Completed"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:21
+#: lib/watch_club/requests/content_request_status_group.ex:22
 #, elixir-autogen, elixir-format
 msgid "Failed"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:19
+#: lib/watch_club/requests/content_request_status_group.ex:20
 #, elixir-autogen, elixir-format
 msgid "In progress"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:26
+#: lib/watch_club/requests/content_request_status_group.ex:27
 #, elixir-autogen, elixir-format
 msgid "Not found"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_status_group.ex:24
+#: lib/watch_club/requests/content_request_status_group.ex:25
 #, elixir-autogen, elixir-format
 msgid "Not released"
 msgstr ""

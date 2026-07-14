@@ -11,12 +11,12 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:96
+#: lib/watch_club_web/live/lists/list_page.ex:97
 #, elixir-autogen, elixir-format
 msgid "Add movies, shows and books to this list to see them here."
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:248
+#: lib/watch_club_web/live/lists/list_page.ex:252
 #, elixir-autogen, elixir-format
 msgid "Added date"
 msgstr ""
@@ -48,12 +48,12 @@ msgstr ""
 msgid "Edit list"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:673
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:655
 #, elixir-autogen, elixir-format
 msgid "List %{list_name} deleted"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:637
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:619
 #, elixir-autogen, elixir-format
 msgid "List created"
 msgstr ""
@@ -63,22 +63,22 @@ msgstr ""
 msgid "List name"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:227
+#: lib/watch_club_web/live/lists/list_page.ex:231
 #, elixir-autogen, elixir-format
 msgid "List sort order"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex:637
+#: lib/watch_club_web/components/navigation/sidebar_live.ex:619
 #, elixir-autogen, elixir-format
 msgid "List updated"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:258
+#: lib/watch_club_web/live/lists/list_page.ex:262
 #, elixir-autogen, elixir-format
 msgid "Release date"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:338
+#: lib/watch_club_web/live/lists/list_page.ex:342
 #, elixir-autogen, elixir-format
 msgid "Removed from list"
 msgstr ""
@@ -88,7 +88,7 @@ msgstr ""
 msgid "Select an icon for your list"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:310
+#: lib/watch_club_web/live/lists/list_page.ex:314
 #, elixir-autogen, elixir-format
 msgid "Sort by %{field} %{order}"
 msgstr ""
@@ -98,12 +98,12 @@ msgstr ""
 msgid "The list you were looking for does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:94
+#: lib/watch_club_web/live/lists/list_page.ex:95
 #, elixir-autogen, elixir-format
 msgid "This list is empty"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:238
+#: lib/watch_club_web/live/lists/list_page.ex:242
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr ""
@@ -128,7 +128,7 @@ msgstr ""
 msgid "My list"
 msgstr ""
 
-#: lib/watch_club_web/live/lists/list_page.ex:146
+#: lib/watch_club_web/live/lists/list_page.ex:150
 #, elixir-autogen, elixir-format
 msgid "The list was deleted"
 msgstr ""

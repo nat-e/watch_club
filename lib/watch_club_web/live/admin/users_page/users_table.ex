@@ -67,10 +67,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
 
   defp user_actions(assigns) do
     ~H"""
-    <.dropdown_menu
-      :if={!@user.administrator?}
-      id={"user-actions-#{@user.id}"}
-    >
+    <.dropdown_menu id={"user-actions-#{@user.id}"}>
       <:trigger>
         <.button
           id={"user-actions-trigger-#{@user.id}"}
@@ -81,6 +78,14 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
           <Lucideicons.ellipsis_vertical />
         </.button>
       </:trigger>
+      <.dropdown_menu_item
+        id={"reset-password-#{@user.id}"}
+        phx-click="generate_password_reset_link"
+        phx-value-id={@user.id}
+      >
+        <Lucideicons.key_round /> {dgettext("admin_users", "Reset password")}
+      </.dropdown_menu_item>
+      <.dropdown_menu_separator :if={!@user.administrator?} />
       <.dropdown_menu_item
         :if={!@user.administrator?}
         id={"delete-user-#{@user.id}"}

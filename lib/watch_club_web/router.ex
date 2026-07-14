@@ -121,6 +121,18 @@ defmodule WatchClubWeb.Router do
       live "/join/:code", Invitations.InvitationPage
     end
 
+    ash_authentication_live_session :optional_user_routes,
+      on_mount: [
+        WatchClubWeb.Hooks.CurrentUrl,
+        WatchClubWeb.Hooks.Flash,
+        {WatchClubWeb.Hooks.Auth, :live_user_optional},
+        WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.InstanceSettings
+      ] do
+      # The reset link works whether the user is logged in or not
+      live "/reset-password", Accounts.ResetPasswordPage
+    end
+
     # Auto-generated POST and callbacks routes from Ash Authentication
     auth_routes AuthController, WatchClub.Accounts.User, path: "/auth"
     sign_out_route AuthController, "/sign-out"

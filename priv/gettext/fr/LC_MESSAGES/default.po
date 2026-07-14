@@ -16,12 +16,13 @@ msgstr ""
 #: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex:34
 #: lib/watch_club_web/components/navigation/sidebar/delete_list_modal.ex:23
 #: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex:34
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:408
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex:29
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:427
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex:56
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex:40
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex:55
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex:26
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:21
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:23
 #: lib/watch_club_web/live/clubs/members/remove_member_modal.ex:22
 #: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex:81
 #: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex:24
@@ -54,15 +55,15 @@ msgstr "Supprimer"
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex:44
 #: lib/watch_club_web/components/contents/add_to_list_modal_live.ex:37
 #: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex:20
-#: lib/watch_club_web/live/accounts/settings_page.ex:54
+#: lib/watch_club_web/live/accounts/settings_page.ex:59
+#: lib/watch_club_web/live/admin/instance_settings_page.ex:61
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/search_results.ex:49
-#: lib/watch_club_web/controllers/error_html.ex:53
-#: lib/watch_club_web/live/search_page.ex:87
+#: lib/watch_club_web/controllers/error_html.ex:54
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
@@ -75,35 +76,35 @@ msgid "Something went wrong, try again later"
 msgstr "Une erreur est survenue, réessayez plus tard"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/controllers/error_html.ex:86
+#: lib/watch_club_web/controllers/error_html.ex:87
 #, elixir-autogen, elixir-format
 msgid "Could not load page"
 msgstr "Impossible de charger la page"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/controllers/error_html.ex:61
+#: lib/watch_club_web/controllers/error_html.ex:62
 #, elixir-autogen, elixir-format
 msgid "Go home"
 msgstr "Retour à l’accueil"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/controllers/error_html.ex:83
 #: lib/watch_club_web/controllers/error_html.ex:84
 #: lib/watch_club_web/controllers/error_html.ex:85
+#: lib/watch_club_web/controllers/error_html.ex:86
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr "Page introuvable"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/controllers/error_html.ex:110
+#: lib/watch_club_web/controllers/error_html.ex:111
 #, elixir-autogen, elixir-format
 msgid "Something went wrong while loading this page."
 msgstr "Une erreur est survenue lors du chargement de cette page."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/controllers/error_html.ex:90
-#: lib/watch_club_web/controllers/error_html.ex:96
-#: lib/watch_club_web/controllers/error_html.ex:103
+#: lib/watch_club_web/controllers/error_html.ex:91
+#: lib/watch_club_web/controllers/error_html.ex:97
+#: lib/watch_club_web/controllers/error_html.ex:104
 #, elixir-autogen, elixir-format
 msgid "The page you are looking for does not exist or you do not have access to it."
 msgstr "La page que vous recherchez n’existe pas ou vous n’y avez pas accès."
@@ -126,9 +127,9 @@ msgstr "%{count} de plus"
 msgid "Select..."
 msgstr "Sélectionner..."
 
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:426
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:444
-#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:462
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:445
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:463
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex:481
 #, elixir-autogen, elixir-format
 msgid "Back"
 msgstr ""

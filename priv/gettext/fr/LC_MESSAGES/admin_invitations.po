@@ -30,13 +30,13 @@ msgid "Invitation actions"
 msgstr "Actions de l'invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:166
+#: lib/watch_club_web/live/admin/users_page.ex:179
 #, elixir-autogen, elixir-format
 msgid "Invitation created"
 msgstr "Invitation créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:200
+#: lib/watch_club_web/live/admin/users_page.ex:213
 #, elixir-autogen, elixir-format
 msgid "Invitation link copied to clipboard"
 msgstr "Lien d'invitation copié dans le presse-papiers"
@@ -107,13 +107,13 @@ msgid "Edit invitation code"
 msgstr "cette invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:215
+#: lib/watch_club_web/live/admin/users_page.ex:228
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Invitation code deleted"
 msgstr "Invitation créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:165
+#: lib/watch_club_web/live/admin/users_page.ex:178
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Invitation updated"
 msgstr "Invitation désactivée"
