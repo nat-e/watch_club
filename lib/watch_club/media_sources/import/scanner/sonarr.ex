@@ -45,7 +45,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
       candidates ->
         num_candidates = length(candidates)
 
-        Logger.info("Found #{num_candidates} eligible movies",
+        Logger.info("Found #{num_candidates} eligible episodes",
           event: :sonarr_scan_finished,
           num_candidates: num_candidates
         )
@@ -68,7 +68,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Sonarr do
         |> Enum.map(&to_candidate(&1, series, config))
 
       {:error, reason} ->
-        Logger.warning("Error listing episodes for: #{series}",
+        Logger.warning("Error listing episodes for: #{series.title}",
           event: :sonarr_list_episodes_error,
           series_id: series.id,
           title: series.title,
