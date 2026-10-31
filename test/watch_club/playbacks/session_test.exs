@@ -18,7 +18,7 @@ defmodule WatchClub.Playbacks.SessionTest do
 
       assert {:ok,
               %Session{id: session_id, started_by_id: started_by_id, active_playback: playback}} =
-               Playbacks.start_session(media.id, actor: user)
+               Playbacks.start_session(media.id, load: :active_playback, actor: user)
 
       assert is_binary(session_id)
       assert started_by_id == user.id
@@ -44,7 +44,7 @@ defmodule WatchClub.Playbacks.SessionTest do
       orphan = orphan_media(Path.join(tmp_dir, "admin.mkv"))
 
       assert {:ok, %Session{active_playback: %Playback{}}} =
-               Playbacks.start_session(orphan.id, actor: admin)
+               Playbacks.start_session(orphan.id, load: :active_playback, actor: admin)
     end
   end
 
@@ -56,10 +56,16 @@ defmodule WatchClub.Playbacks.SessionTest do
       first_media = accessible_media(user, Path.join(tmp_dir, "first.mkv"))
       second_media = accessible_media(user, Path.join(tmp_dir, "second.mkv"))
 
-      {:ok, session} = Playbacks.start_session(first_media.id, actor: user)
+      {:ok, session} =
+        Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
+
       first_playback = session.active_playback
 
-      {:ok, switched} = Playbacks.start_new_playback(session, second_media.id, actor: user)
+      {:ok, switched} =
+        Playbacks.start_new_playback(session, second_media.id,
+          load: :active_playback,
+          actor: user
+        )
 
       assert switched.id == session.id
       assert switched.active_playback.media_id == second_media.id
@@ -76,7 +82,9 @@ defmodule WatchClub.Playbacks.SessionTest do
       first_media = accessible_media(user, Path.join(tmp_dir, "owned.mkv"))
       other_media = accessible_media(other_user, Path.join(tmp_dir, "other.mkv"))
 
-      {:ok, session} = Playbacks.start_session(first_media.id, actor: user)
+      {:ok, session} =
+        Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
+
       first_playback = session.active_playback
 
       assert {:error, _} =
@@ -93,12 +101,14 @@ defmodule WatchClub.Playbacks.SessionTest do
       user = generate(user())
       media = accessible_media(user, Path.join(tmp_dir, "heartbeat.mkv"))
 
-      {:ok, session} = Playbacks.start_session(media.id, actor: user)
+      {:ok, session} = Playbacks.start_session(media.id, load: :active_playback, actor: user)
       original = session.active_playback
 
       Process.sleep(2)
 
-      {:ok, after_beat} = Playbacks.heartbeat_session(session, actor: user)
+      {:ok, after_beat} =
+        Playbacks.heartbeat_session(session, load: :active_playback, actor: user)
+
       beated = after_beat.active_playback
 
       assert DateTime.after?(beated.last_active_at, original.last_active_at)

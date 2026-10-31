@@ -90,8 +90,8 @@ defmodule WatchClub.Requests.MediaSourceRequest do
   attributes do
     uuid_v7_primary_key :id
 
-    # Reconciled from the *arr; see RefreshState. Plain attribute, not a status
-    # machine — any value can follow any other.
+    # Reconciled from the *arr; see RefreshMediaSourceRequest. Plain attribute,
+    # not a status machine — any value can follow any other.
     attribute :status, MediaSourceRequestStatus do
       allow_nil? false
       default :searching

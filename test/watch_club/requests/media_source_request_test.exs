@@ -1,11 +1,9 @@
 defmodule WatchClub.Requests.MediaSourceRequestTest do
   @moduledoc """
-  Exercises the `:create` action end-to-end: `RefreshState` derives the initial
-  `state` from the *arr's current truth (resource + download queue), stubbed at
-  the HTTP boundary. The series cases pin the cold-start fix — a just-added
-  aired show whose Sonarr statistics aren't computed yet (`episode_count == 0`)
-  derives `:submitted`, not `:not_released`; only a genuine `"upcoming"` status
-  is not-released.
+  Exercises the `:create` action end-to-end: creating a request schedules
+  `RefreshMediaSourceRequest`, which derives the `status` from the *arr's
+  current truth (episodes or movie + download queue), stubbed at the HTTP
+  boundary.
   """
   use WatchClub.DataCase, async: false
 
@@ -13,6 +11,7 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.Requests
+  alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.SystemActor
 
   setup do
@@ -22,61 +21,61 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
     :ok
   end
 
-  defp create(source, content, external_resource_id \\ 1) do
-    Requests.create_media_source_request!(
-      %{
-        content_id: content.id,
-        media_source_id: source.id,
-        external_resource_id: external_resource_id
-      },
-      actor: SystemActor.actor()
-    )
+  defp create_and_refresh(source, content) do
+    request =
+      Requests.create_media_source_request!(
+        %{content_id: content.id, media_source_id: source.id, external_resource_id: 1},
+        actor: SystemActor.actor()
+      )
+
+    Oban.drain_queue(queue: :media_source_requests, with_scheduled: true)
+
+    Ash.get!(MediaSourceRequest, request.id, actor: SystemActor.actor())
   end
 
   # ── Sonarr ────────────────────────────────────────────────────────────────
 
-  describe "create derives series state from Sonarr" do
+  describe "create derives series status from Sonarr" do
     setup do
       %{source: seed_servarr_source(:sonarr, :tv_show_episode), content: seed_content(:tv_show)}
     end
 
-    test "a just-added aired series with uncomputed stats is :submitted, not :not_released",
-         ctx do
-      stub_sonarr(series("ended", 0, 0), [])
-      assert create(ctx.source, ctx.content).state == :submitted
+    test "a just-added series with no episodes yet is :searching, not :not_released", ctx do
+      stub_sonarr([], [])
+      assert create_and_refresh(ctx.source, ctx.content).status == :searching
     end
 
-    test "a genuinely upcoming series is :not_released", ctx do
-      stub_sonarr(series("upcoming", 0, 0), [])
-      assert create(ctx.source, ctx.content).state == :not_released
+    test "a series whose episodes have all yet to air is :not_released", ctx do
+      stub_sonarr([episode(%{"airDateUtc" => "2999-01-01T00:00:00Z"})], [])
+      assert create_and_refresh(ctx.source, ctx.content).status == :not_released
     end
 
-    test "a series with all aired episodes present is :downloaded", ctx do
-      stub_sonarr(series("ended", 62, 62), [])
-      assert create(ctx.source, ctx.content).state == :downloaded
+    test "a series with all episodes present is :downloaded", ctx do
+      stub_sonarr([episode(%{"hasFile" => true}), episode(%{"hasFile" => true})], [])
+      assert create_and_refresh(ctx.source, ctx.content).status == :downloaded
     end
 
     test "a series with an active download queue is :downloading", ctx do
-      stub_sonarr(series("continuing", 10, 2), [queue_item()])
-      assert create(ctx.source, ctx.content).state == :downloading
+      stub_sonarr([episode(%{"hasFile" => false})], [queue_item()])
+      assert create_and_refresh(ctx.source, ctx.content).status == :downloading
     end
   end
 
   # ── Radarr ────────────────────────────────────────────────────────────────
 
-  describe "create derives movie state from Radarr" do
+  describe "create derives movie status from Radarr" do
     setup do
       %{source: seed_servarr_source(:radarr, :movie), content: seed_content(:movie)}
     end
 
     test "a movie not yet released is :not_released", ctx do
       stub_radarr(movie_json(%{"hasFile" => false, "isAvailable" => false}), [])
-      assert create(ctx.source, ctx.content).state == :not_released
+      assert create_and_refresh(ctx.source, ctx.content).status == :not_released
     end
 
     test "a movie whose file is present is :downloaded", ctx do
       stub_radarr(movie_json(%{"hasFile" => true}), [])
-      assert create(ctx.source, ctx.content).state == :downloaded
+      assert create_and_refresh(ctx.source, ctx.content).status == :downloaded
     end
   end
 
@@ -133,13 +132,18 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
     })
   end
 
-  defp series(status, episode_count, episode_file_count) do
-    %{
-      "id" => 1,
-      "title" => "Seeded show",
-      "status" => status,
-      "statistics" => %{"episodeCount" => episode_count, "episodeFileCount" => episode_file_count}
-    }
+  defp episode(attrs) do
+    Map.merge(
+      %{
+        "id" => System.unique_integer([:positive]),
+        "seriesId" => 1,
+        "seasonNumber" => 1,
+        "episodeNumber" => 1,
+        "hasFile" => false,
+        "airDateUtc" => "2020-01-01T00:00:00Z"
+      },
+      attrs
+    )
   end
 
   defp movie_json(attrs) do
@@ -151,19 +155,16 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
 
   # A non-blocked, actively-downloading queue item.
   defp queue_item do
-    %{
-      "status" => "downloading",
-      "trackedDownloadStatus" => "ok",
-      "trackedDownloadState" => "downloading"
-    }
+    %{"episodeId" => 1, "status" => "downloading", "size" => 100, "sizeleft" => 50}
   end
 
-  # `RefreshState` makes two calls per derivation: the resource then its queue.
-  defp stub_sonarr(series, queue) do
+  # A refresh makes two calls: the resource then its queue.
+  defp stub_sonarr(episodes, queue) do
     Req.Test.stub(Client, fn conn ->
       case conn.request_path do
-        "/api/v3/series/" <> _ -> Req.Test.json(conn, series)
+        "/api/v3/episode" -> Req.Test.json(conn, episodes)
         "/api/v3/queue/details" -> Req.Test.json(conn, queue)
+        "/api/v3/command" -> Req.Test.json(conn, %{})
       end
     end)
   end

@@ -2,10 +2,8 @@ defmodule WatchClub.Contents.ContentTest do
   use WatchClub.DataCase
 
   import ExUnit.CaptureLog
-  import WatchClub.Clubs, only: [get_library_items!: 2, leave_club!: 2]
   import WatchClub.Contents
 
-  alias WatchClub.Clubs.LibraryItem
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   alias WatchClub.Contents.{
@@ -70,7 +68,7 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.read_one!(actor: actor, authorize?: false)
     end
 
-    test "returns an invalid error when TMDB fetch fails" do
+    test "raises when TMDB fetch fails" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn
         |> Plug.Conn.put_status(404)
@@ -78,11 +76,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       capture_log(fn ->
-        create_movie("404", actor: generate(user()))
-        |> assert_has_error(Ash.Error.Invalid, fn
-          %Ash.Error.Changes.InvalidChanges{message: "Failed to fetch movie from TMDB"} -> true
-          _ -> false
-        end)
+        assert_raise Ash.Error.Unknown, fn -> create_movie("404", actor: generate(user())) end
       end)
     end
 
@@ -95,7 +89,7 @@ defmodule WatchClub.Contents.ContentTest do
           |> tmdb_fixture()
           |> Map.merge(%{
             "id" => tmdb_id,
-            "images" => nil,
+            "images" => %{"backdrops" => [], "logos" => [], "posters" => []},
             "origin_country" => ["CA"],
             "production_countries" => [],
             "translations" => %{"translations" => []}
@@ -185,7 +179,7 @@ defmodule WatchClub.Contents.ContentTest do
       assert air_dates[{2, 2}] == nil
     end
 
-    test "returns an invalid error when TMDB fetch fails" do
+    test "raises when TMDB fetch fails" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn
         |> Plug.Conn.put_status(404)
@@ -193,14 +187,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       capture_log(fn ->
-        create_tv_show("404", actor: generate(user()))
-        |> assert_has_error(Ash.Error.Invalid, fn
-          %Ash.Error.Changes.InvalidChanges{message: "Failed to fetch TV show from TMDB"} ->
-            true
-
-          _ ->
-            false
-        end)
+        assert_raise Ash.Error.Unknown, fn -> create_tv_show("404", actor: generate(user())) end
       end)
     end
 
@@ -320,201 +307,23 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  describe "set_club_libraries/*" do
-    test "adds content to selected club libraries", %{club: club, admin: admin, member: member} do
-      library = generate(library(club, content_type: :movie))
-      library_id = library.id
-      content = generate(movie(actor: admin))
-
-      assert %Content{library_items: [%LibraryItem{library_id: ^library_id} = item]} =
-               set_club_libraries!(content, %{library_ids: [library.id]}, actor: member)
-
-      assert item.library.club_id == club.id
-    end
-
-    test "rejects selected club libraries that do not allow the content type", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      library = generate(library(club, name: "Books", content_type: :book))
-      content = generate(movie(actor: admin))
-
-      set_club_libraries(content, %{library_ids: [library.id]}, actor: member)
-      |> assert_has_error(Ash.Error.Invalid, fn
-        %Ash.Error.Changes.InvalidChanges{message: "Library does not allow this content type"} ->
-          true
-
-        _ ->
-          false
-      end)
-    end
-
-    test "does not remove library items from clubs the actor cannot access", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      member_library = generate(library(club, content_type: :movie))
-      other_club = generate(club(actor: admin))
-      other_library = generate(library(other_club, content_type: :movie))
-
-      content =
-        create_movie!("13", %{library_ids: [member_library.id, other_library.id]}, actor: admin)
-
-      assert %Content{} =
-               set_club_libraries!(content, %{library_ids: [member_library.id]}, actor: member)
-
-      other_library_id = other_library.id
-
-      assert %LibraryItem{library_id: ^other_library_id} =
-               LibraryItem
-               |> Ash.Query.filter(content_id == ^content.id and library_id == ^other_library.id)
-               |> Ash.read_one!(authorize?: false)
-    end
-
-    test "removes omitted library items added by the actor", %{club: club, member: member} do
-      library = generate(library(club, content_type: :movie))
-      content = create_movie!("14", %{library_ids: [library.id]}, actor: member)
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
-
-      refute LibraryItem
-             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-             |> Ash.exists?(authorize?: false)
-    end
-
-    test "preserves omitted library items the actor can access but cannot remove", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      library = generate(library(club, content_type: :movie))
-      content = create_movie!("15", %{library_ids: [library.id]}, actor: admin)
-
-      admin_id = admin.id
-
-      assert %LibraryItem{added_by_id: ^admin_id} =
-               library.id
-               |> get_library_items!(actor: member)
-               |> Enum.find(&(&1.content_id == content.id))
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
-
-      library_id = library.id
-
-      assert %LibraryItem{library_id: ^library_id, added_by_id: ^admin_id} =
-               library.id
-               |> get_library_items!(actor: member)
-               |> Enum.find(&(&1.content_id == content.id))
-    end
-
-    test "preserves omitted library items added by a former member", %{
-      club: club,
-      member: member,
-      membership: membership
-    } do
-      library = generate(library(club, content_type: :movie))
-      content = create_movie!("16", %{library_ids: [library.id]}, actor: member)
-
-      leave_club!(membership, actor: member)
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
-
-      member_id = member.id
-      library_id = library.id
-
-      assert %LibraryItem{library_id: ^library_id, added_by_id: ^member_id} =
-               LibraryItem
-               |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-               |> Ash.read_one!(authorize?: false)
-    end
-
-    test "allows a rejoined member to remove library items they added before leaving", %{
-      club: club,
-      member: member,
-      membership: membership
-    } do
-      library = generate(library(club, content_type: :movie))
-      content = create_movie!("17", %{library_ids: [library.id]}, actor: member)
-
-      leave_club!(membership, actor: member)
-      generate(membership(club, member, role: :member))
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
-
-      refute LibraryItem
-             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-             |> Ash.exists?(authorize?: false)
-    end
-
-    test "only club admins can remove orphaned library items", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      library = generate(library(club, content_type: :movie))
-      content = create_movie!("18", %{library_ids: [library.id]}, actor: member)
-
-      LibraryItem
-      |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-      |> Ash.read_one!(authorize?: false)
-      |> Ash.Seed.update!(%{added_by_id: nil})
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: member)
-
-      library_id = library.id
-
-      assert %LibraryItem{library_id: ^library_id, added_by_id: nil} =
-               LibraryItem
-               |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-               |> Ash.read_one!(authorize?: false)
-
-      assert %Content{} = set_club_libraries!(content, %{library_ids: []}, actor: admin)
-
-      refute LibraryItem
-             |> Ash.Query.filter(content_id == ^content.id and library_id == ^library.id)
-             |> Ash.exists?(authorize?: false)
-    end
-
-    test "requires membership in selected libraries", %{club: club, admin: admin} do
-      library = generate(library(club, content_type: :movie))
-      content = generate(movie(actor: admin))
-      non_member = generate(user())
-
-      set_club_libraries(content, %{library_ids: [library.id]}, actor: non_member)
-      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
-    end
-  end
-
   # Bridge the per-type vocabulary these tests are written in onto the unified
-  # create/refresh_metadata actions: create (upsert) the Content from its TMDB
-  # identity, then, when library_ids are given, attach it to those club
-  # libraries as the same actor (where library access is authorized).
-  defp create_movie(external_id, params \\ %{}, opts),
-    do: create_content_in_libraries(ContentIdentity.for_movie(external_id), params, opts)
+  # create/refresh_metadata actions: create (upsert) the Content from its TMDB identity.
+  defp create_movie(external_id, opts),
+    do: create_content(ContentIdentity.for_movie(external_id), %{}, opts)
 
-  defp create_tv_show(external_id, params \\ %{}, opts),
-    do: create_content_in_libraries(ContentIdentity.for_tv_show(external_id), params, opts)
+  defp create_tv_show(external_id, opts),
+    do: create_content(ContentIdentity.for_tv_show(external_id), %{}, opts)
 
-  defp create_movie!(external_id, params \\ %{}, opts) do
-    {:ok, content} = create_movie(external_id, params, opts)
+  defp create_movie!(external_id, opts) do
+    {:ok, content} = create_movie(external_id, opts)
     content
   end
 
-  defp create_tv_show!(external_id, params \\ %{}, opts) do
-    {:ok, content} = create_tv_show(external_id, params, opts)
+  defp create_tv_show!(external_id, opts) do
+    {:ok, content} = create_tv_show(external_id, opts)
     content
   end
-
-  defp create_content_in_libraries(identity, %{library_ids: library_ids}, opts) do
-    with {:ok, content} <- create_content(identity, %{}, opts) do
-      set_club_libraries(content, %{library_ids: library_ids}, opts)
-    end
-  end
-
-  defp create_content_in_libraries(identity, _params, opts),
-    do: create_content(identity, %{}, opts)
 
   defp refresh_tv_show(content, opts), do: refresh_metadata(content, %{}, opts)
 

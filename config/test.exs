@@ -29,7 +29,8 @@ config :watch_club, WatchClubWeb.Endpoint,
 
 config :watch_club,
   tmdb_req_options: [
-    plug: {Req.Test, WatchClub.Integrations.Tmdb.Client}
+    plug: {Req.Test, WatchClub.Integrations.Tmdb.Client},
+    retry: false
   ],
   servarr_req_options: [
     plug: {WatchClub.Integrations.Servarr.TestStub, []}

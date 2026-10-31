@@ -284,27 +284,21 @@ defmodule WatchClub.Accounts.UserTest do
       assert Ash.get(Membership, membership.id, authorize?: false) |> elem(0) == :error
     end
 
-    test "deleting a user sends a clubs::<club_id> pubsub event for their memberships", %{
+    test "deleting a user sends a memberships:club:<club_id> pubsub event", %{
       admin: admin,
       club: club,
       member: member,
       membership: membership
     } do
-      topic = "clubs:#{club.id}:memberships"
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, topic)
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "memberships:club:#{club.id}")
       assert :ok = destroy_user!(member, actor: admin)
 
       membership_id = membership.id
 
-      assert_receive %Phoenix.Socket.Broadcast{
-                       topic: ^topic,
-                       payload: %Ash.Notifier.Notification{
-                         resource: Membership,
-                         action: %Ash.Resource.Actions.Destroy{},
-                         data: %Membership{
-                           id: ^membership_id
-                         }
-                       }
+      assert_receive %Ash.Notifier.Notification{
+                       resource: Membership,
+                       action: %Ash.Resource.Actions.Destroy{},
+                       data: %Membership{id: ^membership_id}
                      },
                      500
     end
