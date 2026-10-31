@@ -8,7 +8,7 @@ defmodule WatchClub.Accounts do
 
     resource WatchClub.Accounts.User do
       define :create_administrator
-      define :administrator_exists, action: :administrator_exists?
+      define :administrator_exists?
       define :list_users, action: :read
       define :register_with_password
       define :sign_in, action: :sign_in_with_password
@@ -34,6 +34,4 @@ defmodule WatchClub.Accounts do
       define :update_user_settings, action: :update
     end
   end
-
-  def administrator_exists?, do: administrator_exists!()
 end

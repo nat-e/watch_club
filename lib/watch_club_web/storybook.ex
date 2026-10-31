@@ -35,13 +35,14 @@ defmodule WatchClubWeb.Storybook do
     # The chosen theme key will be passed as an assign to all components.
     # ex: <.component theme={:colorful}/>
     #
-    # The chosen theme class will also be added to the `.psb-sandbox` container.
-    # ex: <div class="psb-sandbox theme-colorful">...</div>
-    #
     # If no theme has been selected or if no theme is present in the URL the first one is enabled.
     themes: [
       wc: [name: "Watch Club"]
     ],
+
+    # The chosen theme class is set on the root `html` element, so that it reaches content rendered
+    # outside of the sandbox container.
+    themes_strategies: [root_class: "theme"],
 
     # Color mode settings. Defaults to false and &#39;dark&#39;.
     color_mode: true,

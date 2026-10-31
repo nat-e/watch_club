@@ -21,7 +21,7 @@ defmodule WatchClub.DataCase do
 
   using do
     quote do
-      use AshOban.Test, repo: WatchClub.Repo
+      use Oban.Testing, repo: WatchClub.Repo
 
       import Ash.Test
       import WatchClub.DataCase

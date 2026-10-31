@@ -276,8 +276,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             <span
               class="mt-2 size-1.5 shrink-0 rounded-full"
               style="background: var(--wc-color-accent)"
-            >
-            </span>
+            ></span>
             <span>{use_case}</span>
           </li>
         </ul>
@@ -612,8 +611,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           <span
             class={["size-5 rounded-[var(--wc-radius-full)] transition", @checked && "translate-x-5"]}
             style="background: var(--wc-color-on-primary)"
-          >
-          </span>
+          ></span>
         </div>
       </div>
     </div>

@@ -57,12 +57,12 @@ defmodule WatchClub.Lists.ListItem do
   policies do
     policy action_type(:create) do
       description "Users can only add content to their own lists"
-      authorize_if relates_to_actor_via([:list, :owner])
+      authorize_if can_read(:list)
     end
 
     policy action_type([:read, :destroy]) do
       description "Users can only access list items in their own lists"
-      authorize_if expr(list.owner_id == ^actor(:id))
+      authorize_if can_read(:list)
     end
 
     # Per-list ownership is enforced by the :create this delegates to.

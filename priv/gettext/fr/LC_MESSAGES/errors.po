@@ -97,7 +97,7 @@ msgid "Username must be at least %{min} characters"
 msgstr "Le nom d'utilisateur doit contenir au moins %{min} caractères"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/errors/authentication_failed.ex:10
+#: lib/watch_club_web/live/accounts/sign_in_page.ex:44
 #, elixir-autogen, elixir-format
 msgid "Your username or password is invalid"
 msgstr "Votre nom d'utilisateur ou votre mot de passe est invalide"

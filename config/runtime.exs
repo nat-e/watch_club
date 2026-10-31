@@ -74,7 +74,10 @@ if config_env() != :test do
   # Configure the logger
   if env!("WC_LOG_FORMAT", :string, "text") == "json" do
     config :logger, :default_handler,
-      formatter: {LoggerJSON.Formatters.Basic, metadata: {:all_except, [:conn, :gl, :pid, :mfa]}}
+      formatter:
+        LoggerJSON.Formatters.Basic.new(
+          metadata: {:all_except, [:conn, :gl, :pid, :mfa, :file, :line]}
+        )
   end
 
   config :logger, level: env!("WC_LOG_LEVEL", :string, "info") |> String.to_existing_atom()

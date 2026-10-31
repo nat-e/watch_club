@@ -13,7 +13,7 @@ defmodule WatchClub.MediaSources.ImportTest do
   describe "start_media_import/*" do
     test "completes the Media Import when the pipeline succeeds" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       stub(ScannerMock, :scan, fn _media_import -> {:ok, []} end)
 
@@ -28,7 +28,7 @@ defmodule WatchClub.MediaSources.ImportTest do
 
     test "fails the Media Import when the pipeline returns an error" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       stub(ScannerMock, :scan, fn _media_import -> {:error, :boom} end)
 
@@ -42,7 +42,7 @@ defmodule WatchClub.MediaSources.ImportTest do
 
     test "fails the Media Import when the pipeline raises" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       stub(ScannerMock, :scan, fn _media_import -> raise "boom" end)
 
@@ -56,7 +56,7 @@ defmodule WatchClub.MediaSources.ImportTest do
 
     test "rejects a new Media Import while one is already processing for the same Media Source" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       start_media_import!(media_source.id, actor: admin)
 
@@ -70,7 +70,7 @@ defmodule WatchClub.MediaSources.ImportTest do
     test "rejects non-admin actors" do
       admin = generate(administrator())
       user = generate(user())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       start_media_import(media_source.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
@@ -90,7 +90,7 @@ defmodule WatchClub.MediaSources.ImportTest do
   describe "list_media_imports/*" do
     test "lists Media Imports for an administrator" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
       media_import = start_media_import!(media_source.id, actor: admin)
 
       assert [%Import{id: id}] = list_media_imports!(actor: admin)

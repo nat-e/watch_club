@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide [&:has([role=checkbox])]:pr-0",
+        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide has-[[role=checkbox]]:pr-0",
         @class
       ]}
       {@rest}
@@ -131,7 +131,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <td
       data-slot="table-cell"
       class={[
-        "p-group text-center align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "p-group text-center align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0",
         @class
       ]}
       {@rest}

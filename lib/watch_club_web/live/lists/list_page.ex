@@ -318,7 +318,7 @@ defmodule WatchClubWeb.Lists.ListPage do
       }
     >
       <:icon position="start">
-        {apply(Lucideicons, @target_icon, [%{__changed__: %{}}])}
+        <Lucideicons.render name={@target_icon} />
       </:icon>
       {@label}
     </.button>

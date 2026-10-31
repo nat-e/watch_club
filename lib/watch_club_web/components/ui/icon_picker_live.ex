@@ -4,7 +4,6 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
   """
   use WatchClubWeb, :live_component
 
-  @icon_names Lucideicons.icon_names() |> Enum.map(&Atom.to_string/1)
   @page_size 96
 
   @impl true
@@ -143,11 +142,8 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
     end
   end
 
-  defp matching_icons(query) do
-    query = query |> to_string() |> String.downcase() |> String.trim()
-
-    Enum.filter(@icon_names, &String.contains?(&1, query))
-  end
+  defp matching_icons(query),
+    do: query |> to_string() |> String.trim() |> Lucideicons.search_icons()
 
   defp icon_items(icon_names) do
     Enum.map(icon_names, fn icon_name ->

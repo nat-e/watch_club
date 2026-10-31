@@ -17,15 +17,11 @@ defmodule WatchClub.MediaCatalog.Preparations.FilterBrowseSearch do
         Ash.Query.filter(
           query,
           expr(
-            fragment("? ILIKE ?", path, ^pattern) or
-              fragment("? ILIKE ?", video.movie.content.original_title, ^pattern) or
-              fragment(
-                "? ILIKE ?",
-                video.tv_show_episode.tv_show.content.original_title,
-                ^pattern
-              ) or
-              fragment("? ILIKE ?", ebook.book.title, ^pattern) or
-              fragment("? ILIKE ?", audiobook.book.title, ^pattern)
+            ilike(path, ^pattern) or
+              ilike(video.movie.content.original_title, ^pattern) or
+              ilike(video.tv_show_episode.tv_show.content.original_title, ^pattern) or
+              ilike(ebook.book.title, ^pattern) or
+              ilike(audiobook.book.title, ^pattern)
           )
         )
 

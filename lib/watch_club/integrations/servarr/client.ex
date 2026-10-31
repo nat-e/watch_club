@@ -141,8 +141,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
       receive_timeout: @receive_timeout,
       compressed: true
     ]
-    |> Keyword.merge(Application.get_env(:watch_club, :servarr_req_options, []))
-    |> Req.new()
+    |> Req.new(Application.get_env(:watch_club, :servarr_req_options, []))
     |> Req.request(opts)
     |> handle_response()
   end

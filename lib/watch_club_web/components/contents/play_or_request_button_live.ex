@@ -165,9 +165,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
          }
        }),
        do:
-         dgettext("contents", "Resume %{episode}",
-           episode: "#{episode.formatted_episode_number}"
-         )
+         dgettext("contents", "Resume %{episode}", episode: "#{episode.formatted_episode_number}")
 
   defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
     do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")

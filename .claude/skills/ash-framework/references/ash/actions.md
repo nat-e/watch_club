@@ -6,6 +6,7 @@
   inside the same transaction.
 - Use hooks like `Ash.Changeset.after_transaction/2`, `Ash.Changeset.before_transaction/2` to add additional logic
   outside the transaction.
+- When other resources should react to an action, and your action doesn't depend on the return value, emit a signal with `emit` in the action (with `dynamic?: true` when you emit it yourself with `Ash.Signals.emit/4`) and listen to it in those resources, instead of calling them from a hook. See the signals rules.
 - Use action arguments for inputs that need validation
 - Use preparations to modify queries before execution
 - Preparations support `where` clauses for conditional execution
@@ -35,7 +36,7 @@ Validations ensure that data meets your business requirements before it gets pro
 
 Validations work on both changesets and queries. Built-in validations that support queries include:
 - `action_is`, `argument_does_not_equal`, `argument_equals`, `argument_in`
-- `compare`, `confirm`, `match`, `negate`, `one_of`, `present`, `string_length`
+- `byte_size`, `compare`, `confirm`, `match`, `negate`, `one_of`, `present`, `string_length`
 - Custom validations that implement the `supports/1` callback
 
 Common validation patterns:

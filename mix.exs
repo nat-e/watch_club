@@ -14,7 +14,8 @@ defmodule WatchClub.MixProject do
       listeners: [Phoenix.CodeReloader],
       consolidate_protocols: Mix.env() != :dev,
       usage_rules: usage_rules(),
-      elixirc_options: elixirc_options(Mix.env())
+      elixirc_options: elixirc_options(Mix.env()),
+      hex: [cooldown: "7d"]
     ]
   end
 
@@ -53,7 +54,6 @@ defmodule WatchClub.MixProject do
       {:tidewave, "~> 0.5", only: [:dev]},
       {:accept_language, "~> 0.1.0"},
       {:ash, "~> 3.0"},
-      {:ash_oban, "~> 0.8.10"},
       {:ash_authentication, "~> 4.0"},
       {:ash_authentication_phoenix, "~> 2.0"},
       {:ash_phoenix, "~> 2.0"},
@@ -64,7 +64,6 @@ defmodule WatchClub.MixProject do
       {:cachex, "~> 4.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:dns_cluster, "~> 0.2.0"},
       {:dotenvy, "~> 1.0"},
       {:ecto_sql, "~> 3.13"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
@@ -79,18 +78,18 @@ defmodule WatchClub.MixProject do
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:jason, "~> 1.2"},
       {:oban, "~> 2.22"},
-      {:lazy_html, ">= 0.1.0"},
+      {:lazy_html, ">= 0.1.0", only: :test},
       {:live_debugger, "~> 1.0.0", only: :dev},
-      {:logger_json, "~> 6.0"},
+      {:logger_json, "~> 7.0"},
       {:lucide_icons, "~> 2.0"},
       {:mox, "~> 1.2", only: :test},
       {:oban_web, "~> 2.11"},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_live_dashboard, "~> 0.9"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.1.0"},
+      {:phoenix_live_view, "~> 1.2.0"},
       {:phoenix_storybook, "~> 1.2"},
       {:picosat_elixir, "~> 0.2"},
       {:postgrex, ">= 0.0.0"},

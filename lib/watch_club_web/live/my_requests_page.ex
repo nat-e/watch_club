@@ -135,8 +135,7 @@ defmodule WatchClubWeb.MyRequestsPage do
           @group == :not_found && "bg-warning"
         ]}
         aria-hidden="true"
-      >
-      </span>
+      ></span>
       {ContentRequestStatusGroup.translated_label(@group)}
     </.link>
     """

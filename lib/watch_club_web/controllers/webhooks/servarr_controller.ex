@@ -212,7 +212,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
       # Replace schedules the refresh for now, instead of waiting the next scheduled one
       # https://github.com/oban-bg/oban/blob/main/guides/learning/unique_jobs.md#replacing-values
       request.id
-      |> RefreshMediaSourceRequest.new_job(schedule_in: 1, replace: [scheduled: [:scheduled_at]])
+      |> RefreshMediaSourceRequest.new_job(scheduled_in: 1, replace: [scheduled: [:scheduled_at]])
       |> Oban.insert!()
     end
   end

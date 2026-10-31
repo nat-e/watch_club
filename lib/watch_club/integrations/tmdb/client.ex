@@ -23,8 +23,7 @@ defmodule WatchClub.Integrations.Tmdb.Client do
       receive_timeout: 5_000,
       compressed: true
     ]
-    |> Keyword.merge(Application.get_env(:watch_club, :tmdb_req_options, []))
-    |> Req.new()
+    |> Req.new(Application.get_env(:watch_club, :tmdb_req_options, []))
     |> Req.request(opts)
     |> handle_response(opts)
   end

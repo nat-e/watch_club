@@ -172,7 +172,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
             {Time.relative_from_now(@event.created_at, @locale)}
           </span>
         </.stack>
-        <.link :if={@content} patch={Url.content_details_link(@content)}>
+        <.link :if={@content} navigate={Url.content_details_link(@content)}>
           <.tmdb_poster
             size="w342"
             path={@content.implementation.best_localization.poster_path}

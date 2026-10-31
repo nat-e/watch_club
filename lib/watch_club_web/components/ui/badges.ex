@@ -50,7 +50,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
   def library_ref(assigns) do
     ~H"""
     <.link
-      patch={Url.club_library_link(@library)}
+      navigate={Url.club_library_link(@library)}
       class="whitespace-nowrap text-accent hover:underline"
     >
       <.lucide_icon
@@ -66,7 +66,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
 
   def content_link(assigns) do
     ~H"""
-    <.link patch={Url.content_details_link(@content)} class="font-bold text-accent hover:underline">
+    <.link navigate={Url.content_details_link(@content)} class="font-bold text-accent hover:underline">
       {@content.implementation.best_localization.title}
     </.link>
     """

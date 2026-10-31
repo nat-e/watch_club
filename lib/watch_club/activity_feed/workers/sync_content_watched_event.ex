@@ -16,7 +16,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
     unique: [
       fields: [:worker, :args],
       keys: [:user_id, :content_id],
-      states: :scheduled,
+      states: [:available, :scheduled],
       period: :infinity
     ]
 

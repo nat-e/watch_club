@@ -3,8 +3,6 @@ defmodule WatchClub.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  @compile {:no_warn_undefined, {AshOban, :config, 3}}
-
   use Application
 
   @impl true
@@ -16,14 +14,8 @@ defmodule WatchClub.Application do
       WatchClubWeb.Telemetry,
       WatchClub.Repo,
       {Task.Supervisor, name: WatchClub.Shared.Fs.TaskSupervisor},
-      {Oban,
-       AshOban.config(
-         Application.fetch_env!(:watch_club, :ash_domains),
-         Application.fetch_env!(:watch_club, Oban),
-         []
-       )},
+      {Oban, Application.fetch_env!(:watch_club, Oban)},
       WatchClub.MediaSources.Import.OrphansCleanup,
-      {DNSCluster, query: Application.get_env(:watch_club, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WatchClub.PubSub},
       {AshAuthentication.Supervisor, [otp_app: :watch_club]},
       # Start to serve requests, typically the last entry

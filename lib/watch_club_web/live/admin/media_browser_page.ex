@@ -169,8 +169,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
             phx-click="close_drawer"
             aria-label="Close detail panel"
             class="fixed inset-0 z-40 bg-scrim backdrop-blur-sm lg:hidden"
-          >
-          </button>
+          ></button>
           <div
             role="dialog"
             aria-modal="true"

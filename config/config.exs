@@ -8,7 +8,9 @@
 import Config
 
 config :ash,
-  allow_forbidden_field_for_relationships_by_default?: true,
+  allow_forbidden_field_for_relationships_by_default: true,
+  default_string_length_count: :codepoints,
+  infer_generic_action_reactors?: false,
   include_embedded_source_by_default?: false,
   show_keysets_for_all_actions?: false,
   default_page_type: :keyset,
@@ -72,14 +74,11 @@ config :watch_club, WatchClub.Repo, parameters: [jit: "off"]
 config :watch_club, Oban,
   engine: Oban.Engines.Basic,
   repo: WatchClub.Repo,
-  plugins: [
-    {Oban.Plugins.Cron,
-     crontab: [
-       {"*/15 * * * *", WatchClub.Playbacks.Workers.PruneSegmentCache}
-     ]},
-    # Deletes jobs older than a week to avoid Oban table from growing indefinitely
-    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
-  ],
+  cron: [crontab: [{"*/15 * * * *", WatchClub.Playbacks.Workers.PruneSegmentCache}]],
+  # Deletes jobs older than a week to avoid Oban table from growing indefinitely
+  pruner: [max_age: {7, :days}],
+  # Retries jobs left in `executing` by a crash or a deploy
+  lifeline: [rescue_after: {2, :hours}],
   queues: [
     activity_feed_event_handlers: 5,
     media_source_scans: 1,
@@ -95,8 +94,6 @@ config :watch_club, Oban,
     trickplay_generation: 1
   ]
 
-config :ash_oban, :actor_persister, WatchClub.Shared.Oban.AshObanActorPersister
-
 # Configure the endpoint
 config :watch_club, WatchClubWeb.Endpoint,
   url: [host: "localhost"],
@@ -110,7 +107,7 @@ config :watch_club, WatchClubWeb.Endpoint,
 
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.25.4",
+  version: "0.28.2",
   watch_club: [
     args:
       ~w(js/app.js js/storybook.js js/player_vidstack.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
@@ -120,7 +117,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "4.2.4",
+  version: "4.3.3",
   watch_club: [
     args: ~w(
       --input=assets/css/app.css

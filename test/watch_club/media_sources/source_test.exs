@@ -178,7 +178,7 @@ defmodule WatchClub.MediaSources.SourceTest do
   describe "update_filesystem_media_source/*" do
     test "updates the filesystem path and re-normalizes it" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
       path = "tmp/media-imports/../movie-updates"
 
       assert %Filesystem{filesystem_path: normalized_path} =
@@ -230,7 +230,7 @@ defmodule WatchClub.MediaSources.SourceTest do
   describe "destroy_media_source/*" do
     test "destroys a Media Source and cascade-deletes past Media Imports" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
       media_import = generate(media_import(media_source))
 
       assert :ok = destroy_media_source!(media_source, actor: admin)
@@ -246,7 +246,7 @@ defmodule WatchClub.MediaSources.SourceTest do
 
     test "destroys the filesystem implementation row" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       assert :ok = destroy_media_source!(media_source, actor: admin)
 
@@ -259,7 +259,7 @@ defmodule WatchClub.MediaSources.SourceTest do
   describe "list_media_sources/*" do
     test "lists Media Sources for an administrator" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
 
       assert [%Source{id: id}] = list_media_sources!(actor: admin)
       assert id == media_source.id
@@ -267,7 +267,7 @@ defmodule WatchClub.MediaSources.SourceTest do
 
     test "loads :latest_import with the most recent Media Import" do
       admin = generate(administrator())
-      media_source = generate(media_source(actor: admin))
+      media_source = generate(filesystem_media_source(actor: admin))
       _older = generate(media_import(media_source, status: :completed))
       newer = generate(media_import(media_source, status: :failed))
 
@@ -279,7 +279,7 @@ defmodule WatchClub.MediaSources.SourceTest do
 
     test "loads :latest_import as nil when the Media Source has no Media Imports" do
       admin = generate(administrator())
-      generate(media_source(actor: admin))
+      generate(filesystem_media_source(actor: admin))
 
       assert [%Source{latest_import: nil}] =
                list_media_sources!(actor: admin, load: [:latest_import])

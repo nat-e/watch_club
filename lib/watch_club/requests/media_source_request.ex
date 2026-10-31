@@ -41,7 +41,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       # Schedule the first refresh in 5 seconds
       change fn changeset, _ctx ->
         Ash.Changeset.after_action(changeset, fn changeset, updated_request ->
-          RefreshMediaSourceRequest.new_job(updated_request.id, schedule_in: 5) |> Oban.insert!()
+          RefreshMediaSourceRequest.new_job(updated_request.id, scheduled_in: 5) |> Oban.insert!()
           {:ok, updated_request}
         end)
       end

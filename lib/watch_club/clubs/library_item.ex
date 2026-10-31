@@ -12,7 +12,7 @@ defmodule WatchClub.Clubs.LibraryItem do
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.Checks.{ActorCanCreateLibraryItem, ActorIsClubMemberFilter}
+  alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.Library
   alias WatchClub.Clubs.LibraryItem.Actions.{AddContentToLibraries, RemoveContentFromLibraries}
   alias WatchClub.Clubs.Validations.LibraryAllowsContentType
@@ -99,12 +99,12 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     policy action([:create]) do
       description "Only club members can create library items"
-      authorize_if ActorCanCreateLibraryItem
+      authorize_if can_read(:library)
     end
 
     policy action_type(:read) do
       description "Only club members can read library items"
-      authorize_if {ActorIsClubMemberFilter, club_path: [:library, :club]}
+      authorize_if can_read(:library)
     end
 
     # Per-library access is enforced by the :create / :destroy these delegate to.
