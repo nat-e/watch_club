@@ -64,7 +64,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "emits a candidate with Radarr identity and a locally-mapped path" do
       stub_movies([movie(%{})])
 
-      assert {:ok, [candidate]} = Radarr.scan(media_import())
+      assert [candidate] = Radarr.scan(media_import())
 
       assert %Candidate{
                path: "/data/movies/Star Wars (1977)/movie.mkv",
@@ -80,8 +80,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "uses the Radarr path verbatim when there is no local mapping" do
       stub_movies([movie(%{})])
 
-      assert {:ok, [candidate]} =
-               Radarr.scan(media_import(%{local_root_folder_path: nil}))
+      assert [candidate] = Radarr.scan(media_import(%{local_root_folder_path: nil}))
 
       assert candidate.path == "/movies/Star Wars (1977)/movie.mkv"
     end
@@ -89,32 +88,31 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "skips movies without a downloaded file" do
       stub_movies([movie(%{"hasFile" => false, "movieFile" => nil})])
 
-      assert {:ok, []} = Radarr.scan(media_import())
+      assert [] = Radarr.scan(media_import())
     end
 
     test "skips movies from a different quality profile" do
       stub_movies([movie(%{"qualityProfileId" => 8})])
 
-      assert {:ok, []} = Radarr.scan(media_import())
+      assert [] = Radarr.scan(media_import())
     end
 
     test "skips movies from a different root folder" do
       stub_movies([movie(%{"rootFolderPath" => "/movies-4k"})])
 
-      assert {:ok, []} = Radarr.scan(media_import())
+      assert [] = Radarr.scan(media_import())
     end
 
     test "tolerates a trailing slash on the configured root folder" do
       stub_movies([movie(%{})])
 
-      assert {:ok, [_candidate]} =
-               Radarr.scan(media_import(%{root_folder_path: "/movies/"}))
+      assert [_candidate] = Radarr.scan(media_import(%{root_folder_path: "/movies/"}))
     end
 
-    test "returns an error when the Radarr API fails" do
+    test "raises when the Radarr API fails" do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
-      assert {:error, _reason} = Radarr.scan(media_import())
+      assert_raise MatchError, fn -> Radarr.scan(media_import()) end
     end
   end
 end

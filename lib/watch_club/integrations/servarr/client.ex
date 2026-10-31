@@ -197,6 +197,17 @@ defmodule WatchClub.Integrations.Servarr.Client do
   end
 
   defp handle_response({:ok, %Req.Response{status: status, body: body}})
+       when status in 400..499 do
+    Logger.warning("Servarr — Client error #{status}",
+      event: :servarr_api_error,
+      status: status,
+      error: body
+    )
+
+    {:error, :client_error}
+  end
+
+  defp handle_response({:ok, %Req.Response{status: status, body: body}})
        when status in 500..599 do
     Logger.warning("Servarr — Server error #{status}",
       event: :servarr_api_error,
