@@ -49,3 +49,6 @@ npm-debug.log
 *.jpg
 
 /media/
+
+# Git worktrees
+/.wt/

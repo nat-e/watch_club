@@ -32,6 +32,10 @@ config :watch_club, WatchClubWeb.Endpoint,
     ]
   ]
 
+# Worktrees live under .wt/, so watching the whole project would reload this
+# server's browser tabs whenever one of them changes.
+config :phoenix_live_reload, dirs: ["lib", "priv"]
+
 # Enable dev routes for dashboard, oban and storybook
 config :watch_club, dev_routes: true
 

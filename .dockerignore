@@ -50,3 +50,5 @@ erl_crash.dump
 
 /media/
 /priv/trickplay/
+
+/.wt/

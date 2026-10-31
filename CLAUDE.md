@@ -9,6 +9,12 @@ Rules:
 - Always read source code and docs before answering. Use `mix usage_rules.docs` and `mix usage_rules.search_docs` for searching docs
 - When asked about a bug or issue, always debug and verify your hypothesis, do not guess
 
+## Worktrees
+
+- `wtn <branch>` creates a worktree in `.wt/` with its own tmux session, server and databases. `wt remove` deletes them. The hooks are in `.config/wt.toml` and `scripts/worktree/`
+- Each worktree's `.env` holds its URL, port and database names
+- Radarr, Sonarr and `media/` are shared with main and every other worktree, so changes to them affect all of them
+
 ## i18n
 
 - We use Gettext for internationalization. The app is currently translated in English (default) and French

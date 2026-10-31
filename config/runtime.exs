@@ -21,9 +21,20 @@ if env!("PHX_SERVER", :boolean, false) do
   config :watch_club, WatchClubWeb.Endpoint, server: true
 end
 
+# Each worktree sets these in its .env so that it can run alongside the others.
+test_database = env!("WC_TEST_DATABASE", :string, nil)
+
+if config_env() == :test and test_database do
+  config :watch_club, WatchClub.Repo, database: test_database
+end
+
+if config_env() == :dev do
+  config :live_debugger, port: env!("WC_LIVE_DEBUGGER_PORT", :integer, 4007)
+end
+
 # Everything below reads from the environment and applies to dev and prod
-# alike. Test configures itself entirely in config/test.exs (sandbox DB,
-# mocked HTTP clients), so it is excluded here.
+# alike. Test configures itself in config/test.exs (sandbox DB, mocked HTTP
+# clients), so it is excluded here.
 if config_env() != :test do
   config :watch_club, WatchClub.Repo,
     url: env!("WC_DATABASE_URL", :string!),
