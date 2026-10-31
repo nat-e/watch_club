@@ -1,4 +1,4 @@
-# Gives each worktree its own server, databases and tmux session.
+# Gives each worktree its own server and databases.
 # Scripts run from the primary worktree so that they don't depend on the branch.
 
 [[pre-start]]
@@ -15,10 +15,12 @@ webhooks = "{{ primary_worktree_path }}/scripts/worktree/register_webhooks.sh {{
 [pre-remove]
 teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
 
-# Runs last and in the background, because `wt remove` may be running inside
-# this session.
-[post-remove]
-tmux = "tmux kill-session -t '=wc-{{ branch | sanitize | replace('.', '-') }}' 2>/dev/null || true"
+[post-merge]
+update = "{{ primary_worktree_path }}/scripts/worktree/update_main.sh"
 
 [list]
-url = "{% if branch != default_branch %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ branch | hash_port }}{% endif %}"
+url = "{% if branch == 'main' %}http://localhost:4000{% else %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ branch | hash_port }}{% endif %}"
+
+[aliases]
+dev = "mix ecto.migrate && iex -S mix phx.server"
+open ="open \"$(wt list statusline --format=json | jq -r '.items[0].dev_server.url')\""

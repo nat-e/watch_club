@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Stops and deletes what setup.sh and register_webhooks.sh created. The post-remove
-# hook kills the tmux session afterwards. Safe to run again after a failure.
+# Stops and deletes what setup.sh and register_webhooks.sh created. Safe to run
+# again after a failure.
 #
 # Names come from the arguments and never from .env: after a failed setup, .env
 # can still hold main's values.

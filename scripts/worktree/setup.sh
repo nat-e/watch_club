@@ -7,7 +7,6 @@ slug=$1
 db="watch_club_$2"
 test_db="watch_club_test_$2"
 port=$3
-session="=wc-$slug"
 
 sed -E \
   -e "s|^(WC_DATABASE_URL=.*/).*|\1$db|" \
@@ -40,11 +39,3 @@ settings=.claude/settings.local.json
 [[ -f $settings ]] || echo '{}' >"$settings"
 jq '.enabledMcpjsonServers = ["tidewave-mcp"]' "$settings" >"$settings.worktree"
 mv "$settings.worktree" "$settings"
-
-tmux new-session -d -s "wc-$slug" -n claude -c "$PWD"
-tmux new-window -d -t "$session" -n nvim -c "$PWD"
-tmux new-window -d -t "$session" -n zsh -c "$PWD"
-tmux new-window -d -t "$session" -n server -c "$PWD"
-tmux send-keys -t "$session:claude" claude Enter
-tmux send-keys -t "$session:nvim" nvim Enter
-tmux send-keys -t "$session:server" 'mix ecto.migrate && iex -S mix phx.server' Enter
