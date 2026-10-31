@@ -1,0 +1,24 @@
+# Gives each worktree its own server, databases and tmux session.
+# Scripts run from the primary worktree so that they don't depend on the branch.
+
+[[pre-start]]
+copy = "wt step copy-ignored"
+
+[[pre-start]]
+setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
+
+# Radarr and Sonarr only accept a webhook they can reach, so this waits for the
+# worktree's server in the background.
+[post-start]
+webhooks = "{{ primary_worktree_path }}/scripts/worktree/register_webhooks.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
+
+[pre-remove]
+teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
+
+# Runs last and in the background, because `wt remove` may be running inside
+# this session.
+[post-remove]
+tmux = "tmux kill-session -t '=wc-{{ branch | sanitize | replace('.', '-') }}' 2>/dev/null || true"
+
+[list]
+url = "{% if branch != default_branch %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ branch | hash_port }}{% endif %}"

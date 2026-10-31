@@ -96,8 +96,8 @@ msgstr ""
 msgid "Play previous episode"
 msgstr ""
 
-#: lib/watch_club_web/live/player_page.ex:163
-#: lib/watch_club_web/live/player_page.ex:189
+#: lib/watch_club_web/live/player_page.ex:171
+#: lib/watch_club_web/live/player_page.ex:198
 #, elixir-autogen, elixir-format
 msgid "The video you were looking for does not exist"
 msgstr ""

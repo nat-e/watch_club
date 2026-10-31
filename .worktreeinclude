@@ -1,0 +1,7 @@
+.env
+.claude/settings.local.json
+_build/
+deps/
+assets/node_modules/
+priv/static/assets/
+priv/app_data/

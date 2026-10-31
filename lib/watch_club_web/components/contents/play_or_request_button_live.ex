@@ -14,8 +14,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   This requires using dom_id() as the ID for the LiveComponent and the LiveView to have
   subscribed to the correct topics via `WatchClub.PubSub.subscribe_to_current_user_content_topics`.
 
-  The button refreshes when Media have been added or removed from the Media center, or
-  when the Content Request of the user for this content has changed.
+  The button refreshes when Media have been added or removed from the Media center,
+  when the Content Request of the user for this content has changed, or when the
+  user's Watch Progress for this content has changed.
   """
   def handle_pubsub_message(
         %Notification{
@@ -24,7 +25,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         },
         %User{} = user
       )
-      when resource in [ContentRequest, Media] do
+      when resource in [ContentRequest, Media, WatchProgress] do
     send_update(__MODULE__,
       id: dom_id(identity),
       content_identity: identity,
@@ -114,7 +115,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         load: [
           :has_media?,
           :actor_next_medias_to_play,
-          implementation: %{load: [tv_show: [:actor_next_episode]]},
+          :actor_progress_status,
+          implementation: %{load: [tv_show: [actor_next_episode: [:actor_progress_status]]]},
           actor_request: [:best_source_request]
         ],
         actor: actor
@@ -151,8 +153,21 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     end
   end
 
+  defp play_label(:movie, %Content{actor_progress_status: :in_progress}),
+    do: dgettext("contents", "Resume")
+
   defp play_label(:movie, _content), do: dgettext("contents", "Play")
   defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
+
+  defp play_label(:tv_show, %{
+         implementation: %{
+           actor_next_episode: %TvShowEpisode{actor_progress_status: :in_progress} = episode
+         }
+       }),
+       do:
+         dgettext("contents", "Resume %{episode}",
+           episode: "#{episode.formatted_episode_number}"
+         )
 
   defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
     do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
