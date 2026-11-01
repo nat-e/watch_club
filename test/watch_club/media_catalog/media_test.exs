@@ -17,7 +17,9 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       media =
-        create_or_update_video!(video_input("tmp/list.mkv", movie), actor: SystemActor.actor())
+        create_or_update_video!(video_media_input("tmp/list.mkv", movie),
+          actor: SystemActor.actor()
+        )
 
       assert [%Media{id: id}] = list_media!(actor: user)
       assert id == media.id
@@ -34,12 +36,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       under =
-        create_or_update_video!(video_input("tmp/library-a/under.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/library-a/under.mkv", movie),
           actor: SystemActor.actor()
         )
 
       _outside =
-        create_or_update_video!(video_input("tmp/library-b/outside.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/library-b/outside.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -117,7 +119,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                type: :tv_show_episode,
                video: %Video{movie_id: nil, tv_show_episode_id: episode_id}
              } =
-               create_or_update_video!(video_input("tmp/tv-show.mkv", episode),
+               create_or_update_video!(video_media_input("tmp/tv-show.mkv", episode),
                  actor: SystemActor.actor(),
                  load: [:video]
                )
@@ -130,7 +132,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       path = "tmp/refresh.mkv"
 
       original =
-        create_or_update_video!(video_input(path, movie),
+        create_or_update_video!(video_media_input(path, movie),
           actor: SystemActor.actor(),
           load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
         )
@@ -185,7 +187,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       user = generate(user())
       movie = seed_movie()
 
-      create_or_update_video(video_input("tmp/forbidden.mkv", movie), actor: user)
+      create_or_update_video(video_media_input("tmp/forbidden.mkv", movie), actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -283,7 +285,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       media =
-        create_or_update_video!(video_input("tmp/destroy.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/destroy.mkv", movie),
           actor: SystemActor.actor(),
           load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
         )
@@ -294,17 +296,14 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       content = Ash.get!(Content, movie.id, authorize?: false)
 
-      topic = WatchClub.PubSub.content_topic(content.external_id_source, content.external_id)
-      Phoenix.PubSub.subscribe(WatchClub.PubSub, topic)
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       assert :ok = destroy_media!(media, actor: SystemActor.actor())
 
       # The content is resolved before the cascade delete, so the change still broadcasts
-      assert_receive %Phoenix.Socket.Broadcast{
-        topic: ^topic,
-        payload: %Ash.Notifier.Notification{
-          metadata: %{subject: :content_changed, content_id: content_id}
-        }
+      assert_receive %Ash.Notifier.Notification{
+        resource: Media,
+        metadata: %{content_id: content_id}
       }
 
       assert content_id == content.id
@@ -330,12 +329,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       m1 =
-        create_or_update_video!(video_input("tmp/browse/a.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/a.mkv", movie),
           actor: SystemActor.actor()
         )
 
       m2 =
-        create_or_update_video!(video_input("tmp/browse/b.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/b.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -356,7 +355,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       book = seed_book()
 
       _video =
-        create_or_update_video!(video_input("tmp/browse/v.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/v.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -374,12 +373,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       _a =
-        create_or_update_video!(video_input("tmp/browse/needle.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/needle.mkv", movie),
           actor: SystemActor.actor()
         )
 
       _b =
-        create_or_update_video!(video_input("tmp/browse/other.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/other.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -403,7 +402,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = Ash.Seed.seed!(Movie, %{id: content.id})
 
       _ =
-        create_or_update_video!(video_input("tmp/browse/unrelated.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/unrelated.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -416,12 +415,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       movie = seed_movie()
 
       _a =
-        create_or_update_video!(video_input("tmp/browse/aaa.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/aaa.mkv", movie),
           actor: SystemActor.actor()
         )
 
       _b =
-        create_or_update_video!(video_input("tmp/browse/bbb.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/bbb.mkv", movie),
           actor: SystemActor.actor()
         )
 
@@ -445,14 +444,14 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       })
 
       in_club =
-        create_or_update_video!(video_input("tmp/browse/in-club.mkv", movie),
+        create_or_update_video!(video_media_input("tmp/browse/in-club.mkv", movie),
           actor: SystemActor.actor()
         )
 
       other_movie = seed_movie()
 
       _out_of_club =
-        create_or_update_video!(video_input("tmp/browse/out-of-club.mkv", other_movie),
+        create_or_update_video!(video_media_input("tmp/browse/out-of-club.mkv", other_movie),
           actor: SystemActor.actor()
         )
 
@@ -461,13 +460,13 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
-  defp video_input(path, %Movie{} = movie),
-    do: video_input(path, :movie, %{movie_id: movie.id})
+  defp video_media_input(path, %Movie{} = movie),
+    do: video_media_input(path, :movie, %{movie_id: movie.id})
 
-  defp video_input(path, %TvShowEpisode{} = episode),
-    do: video_input(path, :tv_show_episode, %{tv_show_episode_id: episode.id})
+  defp video_media_input(path, %TvShowEpisode{} = episode),
+    do: video_media_input(path, :tv_show_episode, %{tv_show_episode_id: episode.id})
 
-  defp video_input(path, type, attachment) do
+  defp video_media_input(path, type, attachment) do
     %{
       path: path,
       type: type,

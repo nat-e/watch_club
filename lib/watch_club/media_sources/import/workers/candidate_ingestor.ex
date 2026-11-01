@@ -9,10 +9,10 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       (no Media Import), higher priority so live events preempt a running
       scan.
 
-  `:ok` on success and on `{:halt, _}` (clean per-file skip, no retry);
-  `{:error, _}` so Oban retries with backoff. Unique on `(media_import_id,
-  path)` over active states; webhook jobs have no `media_import_id` and
-  dedupe by `path`.
+  `:ok` on success and when `ExtractStructure` skips the file (no retry); an
+  exception makes Oban retry with backoff. Unique on `(media_import_id, path)`
+  over active states; webhook jobs have no `media_import_id` and dedupe by
+  `path`.
   """
 
   use Oban.Worker,

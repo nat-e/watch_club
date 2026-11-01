@@ -139,21 +139,15 @@ defmodule WatchClub.Clubs.ClubTest do
       %Club{name: "New name"} = update_club!(club, %{name: "New name"}, actor: admin)
     end
 
-    test "sends a clubs:<club_id> pubsub event", %{club: club, admin: admin} do
+    test "sends a club:<club_id> pubsub event", %{club: club, admin: admin} do
       club_id = club.id
-      topic = "clubs:#{club_id}"
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, topic)
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "club:#{club_id}")
       %Club{name: "New name"} = update_club!(club, %{name: "New name"}, actor: admin)
 
-      assert_receive %Phoenix.Socket.Broadcast{
-                       topic: ^topic,
-                       payload: %Ash.Notifier.Notification{
-                         resource: Club,
-                         action: %Ash.Resource.Actions.Update{},
-                         data: %Club{
-                           id: ^club_id
-                         }
-                       }
+      assert_receive %Ash.Notifier.Notification{
+                       resource: Club,
+                       action: %Ash.Resource.Actions.Update{},
+                       data: %Club{id: ^club_id}
                      },
                      500
     end
@@ -166,6 +160,49 @@ defmodule WatchClub.Clubs.ClubTest do
 
     test "cannot modify club without an actor", %{club: club} do
       assert_raise Ash.Error.Forbidden, fn -> update_club!(club, %{name: "New name"}) end
+    end
+  end
+
+  describe "add_club_members/*" do
+    test "club admins can add existing users to their club", %{club: club, admin: admin} do
+      new_user = generate(user())
+      club_id = club.id
+      user_id = new_user.id
+
+      add_club_members!(club, [user_id], actor: admin)
+
+      assert %Membership{role: :member} =
+               Membership
+               |> Ash.Query.filter(club_id == ^club_id and user_id == ^user_id)
+               |> Ash.read_one!(authorize?: false)
+    end
+
+    test "members cannot add users to the club", %{club: club, member: member} do
+      new_user = generate(user())
+
+      add_club_members(club, [new_user.id], actor: member)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "admins of another club cannot add users to this club", %{club: club} do
+      other_club_admin = generate(user())
+      generate(club(actor: other_club_admin))
+      new_user = generate(user())
+
+      add_club_members(club, [new_user.id], actor: other_club_admin)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "a user cannot be added to a club they already belong to", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      add_club_members(club, [member.id], actor: admin)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Changes.InvalidAttribute{} -> true
+        _ -> false
+      end)
     end
   end
 

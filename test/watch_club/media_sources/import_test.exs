@@ -15,7 +15,7 @@ defmodule WatchClub.MediaSources.ImportTest do
       admin = generate(administrator())
       media_source = generate(filesystem_media_source(actor: admin))
 
-      stub(ScannerMock, :scan, fn _media_import -> {:ok, []} end)
+      stub(ScannerMock, :scan, fn _media_import -> [] end)
 
       media_import = start_media_import!(media_source.id, actor: admin)
 
@@ -23,20 +23,6 @@ defmodule WatchClub.MediaSources.ImportTest do
       Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
 
       assert %Import{status: :completed} =
-               get_media_import_by_id!(media_import.id, actor: admin)
-    end
-
-    test "fails the Media Import when the pipeline returns an error" do
-      admin = generate(administrator())
-      media_source = generate(filesystem_media_source(actor: admin))
-
-      stub(ScannerMock, :scan, fn _media_import -> {:error, :boom} end)
-
-      media_import = start_media_import!(media_source.id, actor: admin)
-
-      Oban.drain_queue(queue: :media_source_scans)
-
-      assert %Import{status: :failed} =
                get_media_import_by_id!(media_import.id, actor: admin)
     end
 
@@ -49,6 +35,7 @@ defmodule WatchClub.MediaSources.ImportTest do
       media_import = start_media_import!(media_source.id, actor: admin)
 
       Oban.drain_queue(queue: :media_source_scans)
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
 
       assert %Import{status: :failed} =
                get_media_import_by_id!(media_import.id, actor: admin)

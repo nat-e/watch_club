@@ -3,10 +3,8 @@ defmodule WatchClub.Playbacks.Session do
   Aggregate root for the Playback domain. Owns the lifecycle of its Playbacks.
 
   All public lifecycle actions live here: starting a Playback Session,
-  switching to a new Playback inside it, heartbeating the current Playback,
-  and closing it. Every public action returns the Session with its
-  `:active_playback` loaded (with the HLS-rendering Media graph), or `nil`
-  when the Session has no active Playback.
+  switching to a new Playback inside it and heartbeating the current Playback.
+  Callers load `:active_playback` with the fields they need.
   """
 
   use Ash.Resource,

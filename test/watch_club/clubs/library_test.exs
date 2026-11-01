@@ -4,8 +4,7 @@ defmodule WatchClub.Clubs.LibraryTest do
   import WatchClub.Clubs
 
   alias WatchClub.Clubs.Library
-
-  require Ash.Query
+  alias WatchClub.Contents.ContentIdentity
 
   @library_sort_movies [
     %{
@@ -50,6 +49,11 @@ defmodule WatchClub.Clubs.LibraryTest do
       release_date: "2025-01-01",
       translations: [{"en", "US", "Eden"}, {"fr", "FR", "Eden"}]
     }
+  ]
+
+  @sorted_by_title [
+    load: [content: [movie: [:best_localization]]],
+    sort: [{"content.localized_title_key", :asc_nils_last}]
   ]
 
   setup do
@@ -147,54 +151,42 @@ defmodule WatchClub.Clubs.LibraryTest do
       generate(membership(club, actor, role: :member))
       library = generate(library(club, content_type: :movie))
 
-      Enum.each(@library_sort_movies, fn movie_details ->
-        generate(movie(tmdb_id: movie_details.tmdb_id, library_ids: [library.id], actor: admin))
+      Enum.each(@library_sort_movies, fn %{tmdb_id: tmdb_id} ->
+        add_content_to_libraries!(ContentIdentity.for_movie(tmdb_id), [library.id], actor: admin)
       end)
 
-      items = get_library_items!(library.id, %{sort_by: :title, sort_order: :asc}, actor: actor)
+      items = get_library_items!(library.id, query: @sorted_by_title, actor: actor)
 
-      assert ["Abricot", "Banana", "Cerise", "Dattel", "Éclair", "Eden"] =
-               Enum.map(items, fn item ->
-                 item.content
-                 |> Map.fetch!(:title)
-               end)
+      assert ["Abricot", "Banana", "Cerise", "Dattel", "Éclair", "Eden"] = titles(items)
     end
 
     test "paginates items with keysets", %{club: club, admin: admin} do
       library = generate(library(club, content_type: :movie))
 
       Enum.each([203, 201, 202], fn tmdb_id ->
-        generate(movie(tmdb_id: tmdb_id, library_ids: [library.id], actor: admin))
+        add_content_to_libraries!(ContentIdentity.for_movie(tmdb_id), [library.id], actor: admin)
       end)
 
       first_page =
-        get_library_items!(library.id, %{sort_by: :title, sort_order: :asc},
-          actor: admin,
-          page: [limit: 2]
-        )
+        get_library_items!(library.id, query: @sorted_by_title, actor: admin, page: [limit: 2])
 
       assert %Ash.Page.Keyset{results: first_items, more?: true} = first_page
-
-      assert ["Movie 201", "Movie 202"] =
-               Enum.map(first_items, fn item ->
-                 item.content
-                 |> Map.fetch!(:title)
-               end)
+      assert ["Movie 201", "Movie 202"] = titles(first_items)
 
       second_page =
-        get_library_items!(library.id, %{sort_by: :title, sort_order: :asc},
+        get_library_items!(library.id,
+          query: @sorted_by_title,
           actor: admin,
           page: [limit: 2, after: List.last(first_items).__metadata__.keyset]
         )
 
       assert %Ash.Page.Keyset{results: second_items, more?: false} = second_page
-
-      assert ["Movie 203"] =
-               Enum.map(second_items, fn item ->
-                 item.content
-                 |> Map.fetch!(:title)
-               end)
+      assert ["Movie 203"] = titles(second_items)
     end
+  end
+
+  defp titles(library_items) do
+    Enum.map(library_items, & &1.content.movie.best_localization.title)
   end
 
   describe "list_club_libraries/*" do

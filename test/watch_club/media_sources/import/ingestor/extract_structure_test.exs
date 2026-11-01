@@ -94,12 +94,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
   end
 
   describe "apply/1 —failure" do
-    test "halts when ffprobe returns an error" do
+    test "skips the file when ffprobe returns an error" do
       stub(ProbeMock, :probe, fn _path -> {:error, "ffprobe exited with 1"} end)
 
       candidate = Candidate.new("/library/broken.mkv", :movie)
 
-      assert {:halt, "ffprobe exited with 1"} = ExtractStructure.apply(candidate)
+      assert ExtractStructure.apply(candidate) == :skip
     end
   end
 

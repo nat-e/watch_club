@@ -20,7 +20,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
+      assert %Media{} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :movie,
@@ -51,7 +51,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
+      assert %Media{} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :tv_show_episode,
@@ -74,7 +74,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
+      assert %Media{} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :movie,
@@ -97,7 +97,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, %Candidate{}} = SaveMedia.apply(candidate)
+      assert %Media{} = SaveMedia.apply(candidate)
 
       assert %Media{
                type: :tv_show_episode,
@@ -118,7 +118,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_structure: sample_video_structure()
       }
 
-      assert {:ok, _} = SaveMedia.apply(candidate_original)
+      assert %Media{} = SaveMedia.apply(candidate_original)
       original = load_media!(path)
       original_track_id = hd(original.video.video_tracks).id
 
@@ -134,7 +134,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         }
       }
 
-      assert {:ok, _} = SaveMedia.apply(candidate_refresh)
+      assert %Media{} = SaveMedia.apply(candidate_refresh)
 
       refreshed = load_media!(path)
 
