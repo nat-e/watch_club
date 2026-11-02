@@ -53,7 +53,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           size="icon-sm"
           variant="ghost"
           phx-click="close_drawer"
-          aria-label="Close drawer"
+          aria-label={dgettext("admin_media", "Close drawer")}
         >
           <Lucideicons.x />
         </.button>
@@ -84,7 +84,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           phx-click="open_remove_media_modal"
         >
           <:icon><Lucideicons.trash_2 /></:icon>
-          Remove media
+          {dgettext("admin_media", "Remove media")}
         </.button>
       </.cluster>
     </header>
@@ -95,7 +95,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp content_section(%{media: %Media{video: %Video{movie: %Movie{}}}} = assigns) do
     ~H"""
-    <.section_block label="Content">
+    <.section_block label={dgettext("admin_media", "Content")}>
       <.matched_content_section content={@media.video.movie} />
     </.section_block>
     """
@@ -105,7 +105,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
          %{media: %Media{video: %Video{tv_show_episode: %TvShowEpisode{}}}} = assigns
        ) do
     ~H"""
-    <.section_block label="Content">
+    <.section_block label={dgettext("admin_media", "Content")}>
       <.matched_content_section content={@media.video.tv_show_episode} />
     </.section_block>
     """
@@ -113,7 +113,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp content_section(%{media: %Media{ebook: %Ebook{}}} = assigns) do
     ~H"""
-    <.section_block label="Content">
+    <.section_block label={dgettext("admin_media", "Content")}>
       <.matched_content_section content={@media.ebook.book} />
     </.section_block>
     """
@@ -121,7 +121,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp content_section(%{media: %Media{audiobook: %Audiobook{}}} = assigns) do
     ~H"""
-    <.section_block label="Content">
+    <.section_block label={dgettext("admin_media", "Content")}>
       <.matched_content_section content={@media.audiobook.book} />
     </.section_block>
     """
@@ -129,7 +129,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp content_section(assigns) do
     ~H"""
-    <.section_block label="Content">
+    <.section_block label={dgettext("admin_media", "Content")}>
       <.unmatched_content_section file_name={Path.basename(@media.path || "")} />
     </.section_block>
     """
@@ -139,7 +139,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp library_section(assigns) do
     ~H"""
-    <.section_block label="Libraries">
+    <.section_block label={dgettext("admin_media", "Libraries")}>
       <.media_libraries_list media={@media} />
     </.section_block>
     """
@@ -149,18 +149,25 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp video_section(assigns) do
     ~H"""
-    <.section_block label="Video">
+    <.section_block label={dgettext("admin_media", "Video")}>
       <.dl>
-        <.dl_badge_row label="Resolution">
+        <.dl_badge_row label={dgettext("admin_media", "Resolution")}>
           <.video_resolution_badge video={@media.video} />
         </.dl_badge_row>
-        <.dl_badge_row :if={video_codec(@media)} label="Codec">
+        <.dl_badge_row :if={video_codec(@media)} label={dgettext("admin_media", "Codec")}>
           <.badge variant="muted">{video_codec(@media)}</.badge>
         </.dl_badge_row>
-        <.dl_badge_row :if={@media.video && @media.video.container} label="Container">
+        <.dl_badge_row
+          :if={@media.video && @media.video.container}
+          label={dgettext("admin_media", "Container")}
+        >
           <.badge variant="muted">{@media.video.container}</.badge>
         </.dl_badge_row>
-        <.dl_row :if={frame_rate(@media)} label="Frame rate" value={frame_rate(@media)} />
+        <.dl_row
+          :if={frame_rate(@media)}
+          label={dgettext("admin_media", "Frame rate")}
+          value={frame_rate(@media)}
+        />
       </.dl>
     </.section_block>
     """
@@ -173,7 +180,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     assigns = assign(assigns, :tracks, tracks)
 
     ~H"""
-    <.section_block label={"Audio (#{length(@tracks)})"}>
+    <.section_block label={dgettext("admin_media", "Audio (%{count})", count: length(@tracks))}>
       <.stack as="ul" space="related">
         <li
           :for={track <- @tracks}
@@ -208,7 +215,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     assigns = assign(assigns, :tracks, tracks)
 
     ~H"""
-    <.section_block label={"Subtitles (#{length(@tracks)})"}>
+    <.section_block label={dgettext("admin_media", "Subtitles (%{count})", count: length(@tracks))}>
       <.stack as="ul" space="related">
         <li
           :for={track <- @tracks}
@@ -222,8 +229,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
               {WatchClub.Languages.to_name(track.language) || "—"}
             </span>
           </div>
-          <.badge :if={Map.get(track, :default?)} variant="muted">Default</.badge>
-          <.badge :if={Map.get(track, :forced?)} variant="muted">Forced</.badge>
+          <.badge :if={Map.get(track, :default?)} variant="muted">
+            {dgettext("admin_media", "Default")}
+          </.badge>
+          <.badge :if={Map.get(track, :forced?)} variant="muted">
+            {dgettext("admin_media", "Forced")}
+          </.badge>
         </li>
       </.stack>
     </.section_block>
@@ -237,12 +248,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
   defp file_section(assigns) do
     ~H"""
-    <.section_block label="File">
+    <.section_block label={dgettext("admin_media", "File")}>
       <.dl>
-        <.dl_row label="Path" value={@media.path} mono />
+        <.dl_row label={dgettext("admin_media", "Path")} value={@media.path} mono />
         <.dl_row
           :if={@media.updated_at}
-          label="Last updated"
+          label={dgettext("admin_media", "Last updated")}
           value={Time.relative_from_now(@media.updated_at, @locale)}
         />
       </.dl>
@@ -340,8 +351,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   defp play_icon(:ebook), do: :book_open
   defp play_icon(_), do: :play
 
-  defp play_label(:ebook), do: "Read"
-  defp play_label(_), do: "Play"
+  defp play_label(:ebook), do: dgettext("admin_media", "Read")
+  defp play_label(_), do: dgettext("admin_media", "Play")
 
   defp video_codec(%Media{video: %Video{default_video_track: %{codec: codec}}})
        when is_binary(codec),

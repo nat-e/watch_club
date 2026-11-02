@@ -183,7 +183,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
 
   defp identity_line(assigns) do
     ~H"""
-    <p class="text-sm italic text-text-subtle">Unmatched</p>
+    <p class="text-sm italic text-text-subtle">{dgettext("admin_media", "Unmatched")}</p>
     """
   end
 end

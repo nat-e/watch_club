@@ -62,6 +62,12 @@ msgstr "Nous n'avons trouvé aucun contenu pour %{query}"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
 #: lib/watch_club_web/components/navigation/navbar/mobile_search.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Search %{content_type}"
-msgstr "Rechercher tous les %{content_type}"
+msgstr "Rechercher dans %{content_type}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
+#, elixir-autogen, elixir-format
+msgid "Enter ⏎"
+msgstr "Entrée ⏎"

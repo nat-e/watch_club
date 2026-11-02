@@ -11,426 +11,509 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} URL"
-msgstr ""
+msgstr "URL de %{name}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "API Key"
-msgstr ""
+msgstr "Clé API"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{label}"
-msgstr ""
+msgstr "Actions pour %{label}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add %{title} source"
-msgstr ""
+msgstr "Ajouter une source %{title}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Add Source"
-msgstr ""
+msgstr "Ajouter la source"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "All media previously imported will not be removed from the instance."
-msgstr ""
+msgstr "Les médias déjà importés ne seront pas retirés de l'instance."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex
 #, elixir-autogen, elixir-format
 msgid "Back to Media Sources"
-msgstr ""
+msgstr "Retour aux sources de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Cancelled"
-msgstr ""
+msgstr "Annulé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Completed"
-msgstr ""
+msgstr "Terminé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Configure Media Source"
-msgstr ""
+msgstr "Configurer la source de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Configure Source"
-msgstr ""
+msgstr "Configurer la source"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Configure a Filesystem source to scan a directory for media."
-msgstr ""
+msgstr "Configurez une source Système de fichiers pour rechercher des médias dans un dossier."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Configure what media should be imported from your filesystem."
-msgstr ""
+msgstr "Choisissez les médias à importer depuis votre système de fichiers."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Connect"
-msgstr ""
+msgstr "Connecter"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Connect %{name} Server"
-msgstr ""
+msgstr "Connecter le serveur %{name}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Connect a Radarr server to import movies and fulfill movie requests."
-msgstr ""
+msgstr "Connectez un serveur Radarr pour importer des films et traiter les demandes de films."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Connect a Sonarr server to import TV shows and fulfill TV show requests."
-msgstr ""
+msgstr "Connectez un serveur Sonarr pour importer des séries TV et traiter les demandes de séries TV."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Continue"
-msgstr ""
+msgstr "Continuer"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Could not save source"
-msgstr ""
+msgstr "Impossible d'enregistrer la source"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Could not update Media Source"
-msgstr ""
+msgstr "Impossible de mettre à jour la source de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create Media Source"
-msgstr ""
+msgstr "Créer la source de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete Media Source"
-msgstr ""
+msgstr "Supprimer la source de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Delete…"
-msgstr ""
+msgstr "Supprimer…"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Directory"
-msgstr ""
+msgstr "Dossier"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Duration"
-msgstr ""
+msgstr "Durée"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Edit"
-msgstr ""
+msgstr "Modifier"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Edit Media Source"
-msgstr ""
+msgstr "Modifier la source de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Enter the credentials to connect to your %{name} server."
-msgstr ""
+msgstr "Saisissez les identifiants de connexion à votre serveur %{name}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Failed"
-msgstr ""
+msgstr "Échec"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Filesystem"
-msgstr ""
+msgstr "Système de fichiers"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import TV shows from a Sonarr server."
-msgstr ""
+msgstr "Importez des séries TV depuis un serveur Sonarr."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import cancelled"
-msgstr ""
+msgstr "Import annulé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import history"
-msgstr ""
+msgstr "Historique des imports"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import media from a directory on your hard drive or a remote filesystem."
-msgstr ""
+msgstr "Importez des médias depuis un dossier de votre disque dur ou d'un système de fichiers distant."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import movies from a Radarr server."
-msgstr ""
+msgstr "Importez des films depuis un serveur Radarr."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Import started"
-msgstr ""
+msgstr "Import lancé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/last_import_summary.ex
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "In progress"
-msgstr ""
+msgstr "En cours"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/last_import_summary.ex
 #, elixir-autogen, elixir-format
 msgid "Last ran %{relative_time}"
-msgstr ""
+msgstr "Dernier import %{relative_time}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Manual"
-msgstr ""
+msgstr "Manuel"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Manual only"
-msgstr ""
+msgstr "Manuel uniquement"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source configured"
-msgstr ""
+msgstr "Source de médias configurée"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source deleted"
-msgstr ""
+msgstr "Source de médias supprimée"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source not found"
-msgstr ""
+msgstr "Source de médias introuvable"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source updated"
-msgstr ""
+msgstr "Source de médias mise à jour"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source was deleted"
-msgstr ""
+msgstr "La source de médias a été supprimée"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Sources"
-msgstr ""
+msgstr "Sources de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Media type"
-msgstr ""
+msgstr "Type de média"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Media type cannot be changed after creation."
-msgstr ""
+msgstr "Le type de média ne peut pas être modifié après la création."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Never imported"
-msgstr ""
+msgstr "Aucun import"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "No %{title} sources yet"
-msgstr ""
+msgstr "Aucune source %{title} pour le moment"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "No Media Imports yet"
-msgstr ""
+msgstr "Aucun import pour le moment"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
-msgstr ""
+msgstr "Désactivé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
 #, elixir-autogen, elixir-format
 msgid "On"
-msgstr ""
+msgstr "Activé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Path mapping (Optional)"
-msgstr ""
+msgstr "Correspondance des chemins (facultatif)"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_status_badge.ex
 #, elixir-autogen, elixir-format
 msgid "Pending"
-msgstr ""
+msgstr "En attente"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Quality Profile"
-msgstr ""
+msgstr "Profil de qualité"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Radarr"
-msgstr ""
+msgstr "Radarr"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Refresh metadata"
-msgstr ""
+msgstr "Actualiser les métadonnées"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Root folder"
-msgstr ""
+msgstr "Dossier racine"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Run import"
-msgstr ""
+msgstr "Lancer l'import"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Run media import"
-msgstr ""
+msgstr "Lancer un import de médias"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Run now"
-msgstr ""
+msgstr "Lancer maintenant"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex
 #, elixir-autogen, elixir-format
 msgid "Running…"
-msgstr ""
+msgstr "En cours…"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save changes"
-msgstr ""
+msgstr "Enregistrer les modifications"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Schedule"
-msgstr ""
+msgstr "Planification"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Scheduled"
-msgstr ""
+msgstr "Planifié"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
-msgstr ""
+msgstr "Sonarr"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Start a new import of %{name} from:"
-msgstr ""
+msgstr "Lancer un nouvel import de %{name} depuis :"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Started"
-msgstr ""
+msgstr "Début"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Status"
-msgstr ""
+msgstr "Statut"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The directory and all its sub-directories will be scanned for media matching the selected type."
-msgstr ""
+msgstr "Le dossier et tous ses sous-dossiers seront analysés pour trouver les médias du type sélectionné."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The quality profile to use for making requests from this source."
-msgstr ""
+msgstr "Le profil de qualité à utiliser pour les demandes faites via cette source."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The root folder to use for making requests and importing data from this source."
-msgstr ""
+msgstr "Le dossier racine à utiliser pour les demandes et l'import des données de cette source."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "This Media Source has not been imported yet. Run an import to add your medias."
-msgstr ""
+msgstr "Cette source de médias n'a pas encore été importée. Lancez un import pour ajouter vos médias."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "This will delete the Media Source %{name}:"
-msgstr ""
+msgstr "Cela supprimera la source de médias %{name} :"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Trigger"
-msgstr ""
+msgstr "Déclencheur"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Use the address %{name} can reach from its network. In Docker setups this is usually different from your browser URL."
-msgstr ""
+msgstr "Utilisez une adresse que %{name} peut joindre depuis son réseau. Avec Docker, elle est généralement différente de l'URL de votre navigateur."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Verify Webhooks"
-msgstr ""
+msgstr "Vérifier les webhooks"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "View history"
-msgstr ""
+msgstr "Voir l'historique"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #, elixir-autogen, elixir-format
 msgid "When enabled, the media will be re-computed and potentially re-matched to another content."
-msgstr ""
+msgstr "Si activé, les médias seront recalculés et pourront être associés à un autre contenu."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. You can find it in %{name}'s settings > General."
-msgstr ""
+msgstr "Votre clé API %{name}. Vous la trouverez dans les paramètres de %{name} > Général."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex

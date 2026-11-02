@@ -18,7 +18,12 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
 
   def invitation_codes_section(assigns) do
     ~H"""
-    <.section space="related" padding="group" title="Active Invitations" icon={:mail}>
+    <.section
+      space="related"
+      padding="group"
+      title={dgettext("admin_invitations", "Active Invitations")}
+      icon={:mail}
+    >
       <.cluster>
         <.invitation_card
           :for={invitation <- @invitations}

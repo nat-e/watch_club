@@ -11,17 +11,20 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Filesystem"
-msgstr ""
+msgstr "Système de fichiers"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Radarr"
-msgstr ""
+msgstr "Radarr"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
-msgstr ""
+msgstr "Sonarr"

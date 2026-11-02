@@ -11,12 +11,14 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Created"
-msgstr ""
+msgstr "Date de création"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Last update"
-msgstr ""
+msgstr "Dernière mise à jour"

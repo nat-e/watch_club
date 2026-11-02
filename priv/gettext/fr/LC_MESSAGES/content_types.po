@@ -49,7 +49,8 @@ msgstr "Films"
 msgid "TV Shows"
 msgstr "Séries TV"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "All"
-msgstr ""
+msgstr "Tous"

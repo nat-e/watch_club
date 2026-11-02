@@ -100,3 +100,58 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Your content is ready to watch!"
 msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse movies and shows to request something for your club."
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel request"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filter by content type"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filter by status"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "My Requests"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests match"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests yet"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Requested %{relative_time}"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Share with a club"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sort: %{sort}"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Try clearing some filters, or browse content to add a request."
+msgstr ""

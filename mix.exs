@@ -21,8 +21,10 @@ defmodule WatchClub.MixProject do
         # (assent 0.3.2) needs ash_authentication 5.0.
         ignore_advisories: ["EEF-CVE-2026-117656"]
       ],
-      # Without line numbers, moving code doesn't make the .pot files outdated
-      gettext: [write_reference_line_numbers: false]
+      # Without line numbers, moving code doesn't make the .pot files outdated.
+      # A threshold of 1.0 turns off fuzzy matching: Gettext shows fuzzy guesses as real
+      # translations, so new messages must stay empty until someone translates them.
+      gettext: [write_reference_line_numbers: false, fuzzy_threshold: 1.0]
     ]
   end
 

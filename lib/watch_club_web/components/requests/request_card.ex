@@ -99,7 +99,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
             class="z-10"
           >
             <:icon><Lucideicons.share_2 /></:icon>
-            Share with a club
+            {dgettext("requests", "Share with a club")}
           </.button>
         </.cluster>
       </div>
@@ -304,7 +304,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           id={"#{@request.id}-cancel"}
           variant="ghost"
           size="icon-sm"
-          aria-label="Cancel Request"
+          aria-label={dgettext("requests", "Cancel request")}
           phx-click="cancel-request"
           phx-value-id={@request.id}
         >
@@ -338,7 +338,9 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       </.stack>
 
       <p class="text-xs text-text-muted">
-        Requested {Time.relative_from_now(@request.inserted_at, @locale)}
+        {dgettext("requests", "Requested %{relative_time}",
+          relative_time: Time.relative_from_now(@request.inserted_at, @locale)
+        )}
       </p>
     </div>
     """

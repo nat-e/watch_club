@@ -22,13 +22,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
       <form
         id="media-browser-toolbar"
         phx-change="apply_state"
-        aria-label="Filter media"
+        aria-label={dgettext("admin_media", "Filter media")}
       >
         <.stack space="related">
           <.cluster space="related">
             <div class="relative grow basis-full sm:basis-[18rem] min-w-0">
               <label for="media-browser-search" class="sr-only">
-                Search file name or matched content
+                {dgettext("admin_media", "Search file name or matched content")}
               </label>
               <Lucideicons.search
                 aria-hidden="true"
@@ -39,7 +39,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
                 type="search"
                 name="search"
                 value={@state.filter.search}
-                placeholder="Search file name or content…"
+                placeholder={dgettext("admin_media", "Search file name or content…")}
                 phx-debounce="300"
                 class="h-control-md w-full rounded-md border border-border bg-surface-inset pl-9 pr-3 text-sm text-text placeholder:text-text-subtle focus:border-border-focus focus:outline-none focus:ring-2 focus:ring-focus-ring"
               />
@@ -49,9 +49,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
               id="filter-media-type"
               name="media_type"
               value={@state.filter.media_type}
-              placeholder="Media: Any"
-              label_prefix="Media"
-              options={[{:video, "Video"}, {:ebook, "Ebook"}, {:audiobook, "Audiobook"}]}
+              placeholder={dgettext("admin_media", "Media: Any")}
+              label_prefix={dgettext("admin_media", "Media")}
+              options={Enum.map([:video, :ebook, :audiobook], &{&1, humanize(&1)})}
             />
 
             <div class="sm:ml-auto">
@@ -62,14 +62,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
           <.cluster :if={State.Filter.active?(@state.filter)} space="tight">
             <.applied_chip
               :if={present?(@state.filter.search)}
-              label="Search"
+              label={dgettext("admin_media", "Search")}
               field="search"
             >
               {@state.filter.search}
             </.applied_chip>
             <.applied_chip
               :if={@state.filter.media_type}
-              label="Media"
+              label={dgettext("admin_media", "Media")}
               field="media_type"
             >
               {humanize(@state.filter.media_type)}
@@ -79,7 +79,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
               phx-click="filter_clear"
               class="inline-flex h-control-sm items-center px-2 text-xs text-text-subtle hover:text-text"
             >
-              Clear all
+              {dgettext("admin_media", "Clear all")}
             </button>
           </.cluster>
         </.stack>
@@ -147,10 +147,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
   """
   def sort_options do
     [
-      {"imported_at:desc", "Last import (newest first)"},
-      {"imported_at:asc", "Last import (oldest first)"},
-      {"path:asc", "Path (A → Z)"},
-      {"path:desc", "Path (Z → A)"}
+      {"imported_at:desc", dgettext("admin_media", "Last import (newest first)")},
+      {"imported_at:asc", dgettext("admin_media", "Last import (oldest first)")},
+      {"path:asc", dgettext("admin_media", "Path (A → Z)")},
+      {"path:desc", dgettext("admin_media", "Path (Z → A)")}
     ]
   end
 
@@ -175,7 +175,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
         phx-click="filter_remove"
         phx-value-field={@field}
         class="grid size-icon-sm place-items-center rounded-full hover:bg-surface-hover"
-        aria-label={"Remove #{@label} filter"}
+        aria-label={dgettext("admin_media", "Remove %{label} filter", label: @label)}
       >
         <Lucideicons.x class="size-icon-sm" />
       </button>
@@ -191,8 +191,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Toolbar do
   defp present?(""), do: false
   defp present?(_), do: true
 
-  defp humanize(:video), do: "Video"
-  defp humanize(:ebook), do: "Ebook"
-  defp humanize(:audiobook), do: "Audiobook"
+  defp humanize(:video), do: dgettext("admin_media", "Video")
+  defp humanize(:ebook), do: dgettext("admin_media", "Ebook")
+  defp humanize(:audiobook), do: dgettext("admin_media", "Audiobook")
   defp humanize(other), do: to_string(other)
 end

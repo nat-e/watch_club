@@ -56,3 +56,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type}"
 msgstr ""
+
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
+#, elixir-autogen, elixir-format
+msgid "Enter ⏎"
+msgstr ""

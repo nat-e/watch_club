@@ -280,7 +280,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
           :if={@episode && @episode.has_media?}
           id={"#{@episode_details.id}-episode-play"}
           href={Url.player_link(@episode)}
-          aria-label="Play"
+          aria-label={dgettext("contents", "Play")}
           class="absolute inset-0 flex items-center justify-center"
         >
           <span class="flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-overlay">

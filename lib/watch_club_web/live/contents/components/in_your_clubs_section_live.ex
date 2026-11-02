@@ -74,7 +74,7 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
           phx-target={@myself}
         >
           <:icon><Lucideicons.plus /></:icon>
-          Share with another club
+          {dgettext("contents", "Share with another club")}
         </.button>
       </div>
       <.empty_state :if={@clubs == []} content_identity={@content_identity} myself={@myself} />
@@ -195,9 +195,13 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
     ~H"""
     <.generic_feed_card id={@id} icon={:plus} locale={@locale} created_at={@created_at}>
       <span class="text-sm text-text-muted leading-snug">
-        <.user_ref user={@event.actor} /> added
-        <.content_link content={@event.library_item.content} /> to
-        <.library_ref library={@event.library_item.library} />
+        {raw(
+          dgettext("feed", "%{user} added %{content} to %{library}",
+            user: gtcomponent(user_ref(%{user: @event.actor})),
+            content: gtcomponent(content_link(%{content: @event.library_item.content})),
+            library: gtcomponent(library_ref(%{library: @event.library_item.library}))
+          )
+        )}
       </span>
     </.generic_feed_card>
     """
@@ -207,13 +211,21 @@ defmodule WatchClubWeb.Live.Contents.Components.InYourClubsSectionLive do
     ~H"""
     <.generic_feed_card id={@id} icon={:circle_play} locale={@locale} created_at={@created_at}>
       <span class="text-sm text-text-muted leading-snug">
-        <.user_ref user={@event.actor} />
         <%= if @event.completed do %>
-          watched
+          {raw(
+            dgettext("feed", "%{user} watched %{content}",
+              user: gtcomponent(user_ref(%{user: @event.actor})),
+              content: gtcomponent(content_link(%{content: @event.content}))
+            )
+          )}
         <% else %>
-          is watching
+          {raw(
+            dgettext("feed", "%{user} is watching %{content}",
+              user: gtcomponent(user_ref(%{user: @event.actor})),
+              content: gtcomponent(content_link(%{content: @event.content}))
+            )
+          )}
         <% end %>
-        <.content_link content={@event.content} />
       </span>
     </.generic_feed_card>
     """

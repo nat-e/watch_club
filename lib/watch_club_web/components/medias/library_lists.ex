@@ -64,7 +64,7 @@ defmodule WatchClubWeb.Components.Medias.LibraryLists do
 
     ~H"""
     <p :if={@libraries == []} class="text-base text-text-subtle">
-      This content is not in any Library.
+      {dgettext("admin_media", "This content is not in any Library.")}
     </p>
     <.stack :if={@libraries != []} as="ul" space="related">
       <li

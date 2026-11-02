@@ -11,97 +11,116 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Auto"
-msgstr ""
+msgstr "Auto"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Retour"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Back home"
-msgstr ""
+msgstr "Retour à l'accueil"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Error loading video"
-msgstr ""
+msgstr "Erreur lors du chargement de la vidéo"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Fullscreen"
-msgstr ""
+msgstr "Plein écran"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Mute"
-msgstr ""
+msgstr "Couper le son"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
-msgstr ""
+msgstr "Désactivés"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play or pause"
-msgstr ""
+msgstr "Lecture ou pause"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Quality"
-msgstr ""
+msgstr "Qualité"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Seek"
-msgstr ""
+msgstr "Position de lecture"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Seek backward 10 seconds"
-msgstr ""
+msgstr "Reculer de 10 secondes"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Seek forward 10 seconds"
-msgstr ""
+msgstr "Avancer de 10 secondes"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
-msgstr ""
+msgstr "Sous-titres"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
-msgstr ""
+msgstr "Lire %{episode}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play next episode"
-msgstr ""
+msgstr "Lire l'épisode suivant"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play previous episode"
-msgstr ""
+msgstr "Lire l'épisode précédent"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "The video you were looking for does not exist"
-msgstr ""
+msgstr "La vidéo que vous cherchiez n'existe pas"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find the media you were looking for."
-msgstr ""
+msgstr "Nous n'avons pas trouvé le média que vous cherchiez."

@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
   standardized manner
   """
   use Phoenix.Component
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Library}
@@ -19,7 +20,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
   """
   def user_ref(%{user: nil} = assigns) do
     ~H"""
-    <span class="font-bold text-text-subtle">@Deleted user</span>
+    <span class="font-bold text-text-subtle">{dgettext("default", "@Deleted user")}</span>
     """
   end
 

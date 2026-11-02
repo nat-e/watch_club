@@ -123,7 +123,14 @@ msgstr "%{count} de plus"
 msgid "Select..."
 msgstr "Sélectionner..."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Retour"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/badges.ex
+#, elixir-autogen, elixir-format
+msgid "@Deleted user"
+msgstr "@Utilisateur supprimé"

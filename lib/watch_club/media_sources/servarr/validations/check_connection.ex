@@ -12,6 +12,7 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckConnection do
   highlight the offending input.
   """
   use Ash.Resource.Validation
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
@@ -36,42 +37,54 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckConnection do
   defp check_app_name(app_name, flavor) do
     expected = Flavor.label(flavor)
 
-    if app_name == expected do
-      :ok
-    else
-      {:error,
-       field: :base_url,
-       message: "This URL is a #{app_name || "different"} server, not #{expected}."}
+    cond do
+      app_name == expected ->
+        :ok
+
+      is_nil(app_name) ->
+        {:error,
+         field: :base_url,
+         message: dgettext_noop("errors", "This URL is not a %{expected} server."),
+         expected: expected}
+
+      true ->
+        {:error,
+         field: :base_url,
+         message: dgettext_noop("errors", "This URL is a %{app_name} server, not %{expected}."),
+         app_name: app_name,
+         expected: expected}
     end
   end
 
+  # The extra keys are the message's interpolation variables.
   defp attribute_error(flavor, reason) do
-    name = Flavor.label(flavor)
+    {field, message} =
+      case reason do
+        :unauthorized ->
+          {:api_key, dgettext_noop("errors", "%{name} rejected this API key.")}
 
-    case reason do
-      :unauthorized ->
-        {:error, field: :api_key, message: "#{name} rejected this API key."}
+        :not_found ->
+          {:base_url, dgettext_noop("errors", "%{name} API was not found at this URL.")}
 
-      :not_found ->
-        {:error, field: :base_url, message: "#{name} API was not found at this URL."}
+        :rate_limited ->
+          {:base_url, dgettext_noop("errors", "%{name} is rate-limiting requests. Try again.")}
 
-      :rate_limited ->
-        {:error, field: :base_url, message: "#{name} is rate-limiting requests. Try again."}
+        :client_error ->
+          {:base_url, dgettext_noop("errors", "%{name} rejected the request.")}
 
-      :client_error ->
-        {:error, field: :base_url, message: "#{name} rejected the request."}
+        :server_error ->
+          {:base_url, dgettext_noop("errors", "%{name} returned a server error.")}
 
-      :server_error ->
-        {:error, field: :base_url, message: "#{name} returned a server error."}
+        :invalid_response ->
+          {:base_url, dgettext_noop("errors", "This URL did not respond like a %{name} server.")}
 
-      :invalid_response ->
-        {:error, field: :base_url, message: "This URL did not respond like a #{name} server."}
+        {:transport_error, _} ->
+          {:base_url, dgettext_noop("errors", "Could not connect to %{name} at this URL.")}
 
-      {:transport_error, _} ->
-        {:error, field: :base_url, message: "Could not connect to #{name} at this URL."}
+        _other ->
+          {:base_url, dgettext_noop("errors", "Could not reach %{name}: %{reason}")}
+      end
 
-      other ->
-        {:error, field: :base_url, message: "Could not reach #{name}: #{inspect(other)}"}
-    end
+    {:error, field: field, message: message, name: Flavor.label(flavor), reason: inspect(reason)}
   end
 end

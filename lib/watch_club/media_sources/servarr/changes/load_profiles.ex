@@ -8,6 +8,7 @@ defmodule WatchClub.MediaSources.Servarr.Changes.LoadProfiles do
   needed. Uses the wizard's `flavor` to talk to the right product.
   """
   use Ash.Resource.Change
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
@@ -42,23 +43,32 @@ defmodule WatchClub.MediaSources.Servarr.Changes.LoadProfiles do
           )
 
         {{:error, reason}, _} ->
-          Ash.Changeset.add_error(changeset, message: connection_error_message(flavor, reason))
+          add_connection_error(changeset, flavor, reason)
 
         {_, {:error, reason}} ->
-          Ash.Changeset.add_error(changeset, message: connection_error_message(flavor, reason))
+          add_connection_error(changeset, flavor, reason)
       end
     end)
   end
 
-  defp connection_error_message(flavor, :unauthorized),
-    do: "#{Flavor.label(flavor)} rejected the API key."
+  # The extra keys are the message's interpolation variables.
+  defp add_connection_error(changeset, flavor, reason) do
+    Ash.Changeset.add_error(changeset,
+      message: connection_error_message(reason),
+      name: Flavor.label(flavor),
+      reason: inspect(reason)
+    )
+  end
 
-  defp connection_error_message(flavor, :not_found),
-    do: "#{Flavor.label(flavor)} API was not found at this URL."
+  defp connection_error_message(:unauthorized),
+    do: dgettext_noop("errors", "%{name} rejected the API key.")
 
-  defp connection_error_message(flavor, {:transport_error, _}),
-    do: "Could not connect to #{Flavor.label(flavor)}."
+  defp connection_error_message(:not_found),
+    do: dgettext_noop("errors", "%{name} API was not found at this URL.")
 
-  defp connection_error_message(flavor, other),
-    do: "Could not reach #{Flavor.label(flavor)}: #{inspect(other)}"
+  defp connection_error_message({:transport_error, _}),
+    do: dgettext_noop("errors", "Could not connect to %{name}.")
+
+  defp connection_error_message(_other),
+    do: dgettext_noop("errors", "Could not reach %{name}: %{reason}")
 end

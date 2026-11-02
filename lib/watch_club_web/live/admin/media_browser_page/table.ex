@@ -45,21 +45,25 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
         <.table>
           <.table_header>
             <.table_row>
-              <.table_head class="text-left w-full max-w-0 overflow-hidden">File</.table_head>
-              <.table_head class="text-left max-w-[20rem]">Matched</.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
-                Clubs
+              <.table_head class="text-left w-full max-w-0 overflow-hidden">
+                {dgettext("admin_media", "File")}
+              </.table_head>
+              <.table_head class="text-left max-w-[20rem]">
+                {dgettext("admin_media", "Matched")}
               </.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
-                Audio
+                {dgettext("admin_media", "Clubs")}
               </.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
-                Subtitles
+                {dgettext("admin_media", "Audio")}
               </.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
-                Video
+                {dgettext("admin_media", "Subtitles")}
               </.table_head>
-              <.table_head class="w-px text-left">Imported</.table_head>
+              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
+                {dgettext("admin_media", "Video")}
+              </.table_head>
+              <.table_head class="w-px text-left">{dgettext("admin_media", "Imported")}</.table_head>
             </.table_row>
           </.table_header>
           <tbody id="media-rows-tbody" phx-update="stream">

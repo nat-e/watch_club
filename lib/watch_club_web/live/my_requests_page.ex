@@ -32,9 +32,14 @@ defmodule WatchClubWeb.MyRequestsPage do
       instance_settings={@instance_settings}
       class="max-w-layout-page"
     >
-      <.settings_header title="My Requests" description="" />
+      <.settings_header title={dgettext("requests", "My Requests")} description="" />
 
-      <.cluster space="tight" role="group" aria-label="Filter by status" class="mb-related">
+      <.cluster
+        space="tight"
+        role="group"
+        aria-label={dgettext("requests", "Filter by status")}
+        class="mb-related"
+      >
         <.status_chip
           :for={group <- [nil | ContentRequestStatusGroup.values()]}
           group={group}
@@ -45,7 +50,10 @@ defmodule WatchClubWeb.MyRequestsPage do
       </.cluster>
 
       <div class="mb-cluster flex flex-wrap items-center justify-between gap-related">
-        <nav aria-label="Filter by content type" class="flex items-center gap-cluster">
+        <nav
+          aria-label={dgettext("requests", "Filter by content type")}
+          class="flex items-center gap-cluster"
+        >
           <.content_type_filter
             :for={type <- [nil | ContentType.library_display_order()]}
             type={type}
@@ -59,7 +67,7 @@ defmodule WatchClubWeb.MyRequestsPage do
           <:trigger>
             <.button id="my-requests-sort-button" variant="ghost">
               <:icon><Lucideicons.arrow_up_down /></:icon>
-              Sort: {ContentRequestSort.translated_label(@sort)}
+              {dgettext("requests", "Sort: %{sort}", sort: ContentRequestSort.translated_label(@sort))}
               <:icon position="end"><Lucideicons.chevron_down /></:icon>
             </.button>
           </:trigger>
@@ -171,8 +179,10 @@ defmodule WatchClubWeb.MyRequestsPage do
     ~H"""
     <.empty id="my-requests-empty" size="sm" class={@class}>
       <:icon><Lucideicons.inbox /></:icon>
-      <:title>No requests match</:title>
-      <:description>Try clearing some filters, or browse content to add a request.</:description>
+      <:title>{dgettext("requests", "No requests match")}</:title>
+      <:description>
+        {dgettext("requests", "Try clearing some filters, or browse content to add a request.")}
+      </:description>
     </.empty>
     """
   end
@@ -181,8 +191,10 @@ defmodule WatchClubWeb.MyRequestsPage do
     ~H"""
     <.empty id="my-requests-empty" size="sm" class={@class}>
       <:icon><Lucideicons.inbox /></:icon>
-      <:title>No requests yet</:title>
-      <:description>Browse movies and shows to request something for your club.</:description>
+      <:title>{dgettext("requests", "No requests yet")}</:title>
+      <:description>
+        {dgettext("requests", "Browse movies and shows to request something for your club.")}
+      </:description>
     </.empty>
     """
   end

@@ -25,32 +25,36 @@ msgstr "Livre numérique"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Audiobooks"
-msgstr "Livre audio"
+msgstr "Livres audio"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Ebooks"
-msgstr "Livre numérique"
+msgstr "Livres numériques"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movie"
-msgstr ""
+msgstr "Film"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
-msgstr ""
+msgstr "Films"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Show Episode"
-msgstr ""
+msgstr "Épisode de série TV"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Shows"
-msgstr ""
+msgstr "Séries TV"

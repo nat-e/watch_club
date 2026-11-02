@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Components.Medias.UnmatchedContentSection do
 
       <.stack space="related" class="min-w-0 flex-1 self-center">
         <h2 class="text-xl font-heading font-semibold leading-tight tracking-tight text-text">
-          Unmatched
+          {dgettext("admin_media", "Unmatched")}
         </h2>
         <.file_name file_name={@file_name} class="text-sm text-text-muted" wrap />
       </.stack>

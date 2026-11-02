@@ -25,3 +25,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr ""
+
+#: lib/watch_club_web/live/home/continue_watching_section.ex
+#, elixir-autogen, elixir-format
+msgid "Continue Watching"
+msgstr ""

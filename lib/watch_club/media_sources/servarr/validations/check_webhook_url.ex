@@ -9,6 +9,7 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
   wizard already has `flavor`/`base_url`/`api_key` from earlier steps.
   """
   use Ash.Resource.Validation
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
@@ -33,19 +34,22 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
         :ok
 
       {:error, reason} ->
-        {:error, field: :webhook_callback_base_url, message: error_message(flavor, reason)}
+        # The extra keys are the message's interpolation variables.
+        {:error,
+         field: :webhook_callback_base_url,
+         message: error_message(reason),
+         name: Flavor.label(flavor),
+         reason: inspect(reason)}
     end
   end
 
-  defp error_message(flavor, reason) do
-    name = Flavor.label(flavor)
-
+  defp error_message(reason) do
     case reason do
-      :not_found -> "#{name} could not reach this URL."
-      :client_error -> "#{name} rejected the webhook URL."
-      :server_error -> "#{name} returned a server error."
-      {:transport_error, _} -> "Could not connect to #{name}."
-      other -> "Webhook test failed: #{inspect(other)}"
+      :not_found -> dgettext_noop("errors", "%{name} could not reach this URL.")
+      :client_error -> dgettext_noop("errors", "%{name} rejected the webhook URL.")
+      :server_error -> dgettext_noop("errors", "%{name} returned a server error.")
+      {:transport_error, _} -> dgettext_noop("errors", "Could not connect to %{name}.")
+      _other -> dgettext_noop("errors", "Webhook test failed: %{reason}")
     end
   end
 end
