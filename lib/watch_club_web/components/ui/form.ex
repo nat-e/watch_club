@@ -98,23 +98,39 @@ defmodule WatchClubWeb.Components.UI.Form do
     include:
       ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required size step)
 
-  slot :control
+  slot :control,
+    doc:
+      "A custom control. Receives the ids of the hint and errors (or `nil`) to set as its `aria-describedby`."
+
   slot :hint
 
   def field(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if assigns.show_untouched || used_input?(field), do: field.errors, else: []
-    assigns = assign(assigns, :errors, errors)
+
+    # Screen readers read the hint and the errors when the control gets focus.
+    hint_id = assigns.hint != [] && "#{field.id}-hint"
+    errors_id = errors != [] && "#{field.id}-errors"
+    describedby = [hint_id, errors_id] |> Enum.filter(& &1) |> Enum.join(" ")
+
+    assigns =
+      assign(assigns,
+        errors: errors,
+        hint_id: hint_id,
+        errors_id: errors_id,
+        describedby: if(describedby != "", do: describedby)
+      )
 
     ~H"""
     <div data-slot="field" class={["grid gap-related", @class]}>
       <.label field={@field}>{@label}</.label>
 
       <p
-        :for={hint <- @hint}
+        :if={@hint_id}
+        id={@hint_id}
         data-slot="field-hint"
         class="text-sm leading-6 text-text-muted"
       >
-        {render_slot(hint)}
+        {render_slot(@hint)}
       </p>
 
       <%= if @control == [] do %>
@@ -123,19 +139,22 @@ defmodule WatchClubWeb.Components.UI.Form do
           type={@type}
           class={@input_class}
           phx-debounce={@debounce}
+          aria-describedby={@describedby}
           {@rest}
         />
       <% else %>
-        {render_slot(@control)}
+        {render_slot(@control, @describedby)}
       <% end %>
 
-      <p
-        :for={msg <- @errors}
-        data-slot="field-error"
-        class="text-sm leading-6 text-danger"
+      <%!-- role="alert" announces errors as they appear, e.g. after a failed submit. --%>
+      <div
+        :if={@errors_id}
+        id={@errors_id}
+        role="alert"
+        class="flex flex-col gap-related"
       >
-        {translate(msg)}
-      </p>
+        <.field_errors errors={@errors} />
+      </div>
     </div>
     """
   end

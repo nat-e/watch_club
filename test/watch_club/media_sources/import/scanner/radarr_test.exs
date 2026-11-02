@@ -10,10 +10,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
   setup do
     previous = Application.get_env(:watch_club, :servarr_req_options)
 
-    Application.put_env(:watch_club, :servarr_req_options,
-      plug: {Req.Test, Client},
-      retry: false
-    )
+    Application.put_env(:watch_club, :servarr_req_options, plug: {Req.Test, Client})
 
     on_exit(fn -> Application.put_env(:watch_club, :servarr_req_options, previous) end)
     :ok

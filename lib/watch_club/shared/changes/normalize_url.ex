@@ -1,15 +1,16 @@
-defmodule WatchClub.Shared.Changes.TrimUrl do
+defmodule WatchClub.Shared.Changes.NormalizeUrl do
   @moduledoc """
-  Normalizes a URL attribute on a changeset by trimming surrounding
-  whitespace and stripping a single trailing slash.
+  Normalizes a base URL attribute on a changeset: trims it, adds `http://`
+  when it has no scheme (`localhost:8989`) and strips trailing slashes.
 
-  Pairs with `NormalizePath` for filesystem paths; the two are deliberately
-  separate because URL semantics (trailing slash optional, scheme
-  preserved) differ from path normalization.
+  Run it in every action that accepts a typed URL (the Servarr wizard steps
+  and `Servarr` create and update), so code that reads the URL can use it
+  as it is.
+
+  Pairs with `NormalizePath` for filesystem paths; the two stay separate
+  because `Path.expand/1` would turn the `//` of `http://` into `/`.
   """
   use Ash.Resource.Change
-
-  alias WatchClub.Shared.Path
 
   @impl true
   def init(opts) do
@@ -28,7 +29,7 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
 
     case Ash.Changeset.get_attribute(changeset, attribute) do
       url when is_binary(url) ->
-        Ash.Changeset.change_attribute(changeset, attribute, Path.normalize_base_url(url))
+        Ash.Changeset.change_attribute(changeset, attribute, normalize(url))
 
       _ ->
         changeset
@@ -42,7 +43,7 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
     case Map.get(changeset.params, attribute) ||
            Map.get(changeset.params, Atom.to_string(attribute)) do
       url when is_binary(url) ->
-        atomics = %{attribute => Path.normalize_base_url(url)}
+        atomics = %{attribute => normalize(url)}
 
         case changeset.action.type do
           :create -> {:atomic_set, atomics}
@@ -52,5 +53,11 @@ defmodule WatchClub.Shared.Changes.TrimUrl do
       _ ->
         :ok
     end
+  end
+
+  defp normalize(url) do
+    url = String.trim(url)
+    url = if String.contains?(url, "://"), do: url, else: "http://#{url}"
+    String.replace_trailing(url, "/", "")
   end
 end

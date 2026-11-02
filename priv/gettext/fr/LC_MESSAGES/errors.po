@@ -294,7 +294,6 @@ msgid "Your current password is required"
 msgstr "Votre mot de passe actuel est requis"
 
 # AI-translated (Claude)
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} API was not found at this URL."
@@ -313,22 +312,10 @@ msgid "%{name} is rate-limiting requests. Try again."
 msgstr "%{name} limite le nombre de requêtes. Réessayez."
 
 # AI-translated (Claude)
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
-#, elixir-autogen, elixir-format
-msgid "%{name} rejected the API key."
-msgstr "%{name} a refusé la clé API."
-
-# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} rejected the request."
 msgstr "%{name} a refusé la requête."
-
-# AI-translated (Claude)
-#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
-#, elixir-autogen, elixir-format
-msgid "%{name} rejected the webhook URL."
-msgstr "%{name} a refusé l'URL du webhook."
 
 # AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -350,18 +337,10 @@ msgid "Could not connect to %{name} at this URL."
 msgstr "Impossible de se connecter à %{name} à cette URL."
 
 # AI-translated (Claude)
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "Could not connect to %{name}."
 msgstr "Impossible de se connecter à %{name}."
-
-# AI-translated (Claude)
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
-#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
-#, elixir-autogen, elixir-format
-msgid "Could not reach %{name}: %{reason}"
-msgstr "Impossible de joindre %{name} : %{reason}"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -382,7 +361,25 @@ msgid "This URL is not a %{expected} server."
 msgstr "Cette URL ne pointe pas vers un serveur %{expected}."
 
 # AI-translated (Claude)
+#: lib/watch_club/shared/validations/http_url.ex
+#, elixir-autogen, elixir-format
+msgid "This URL is not valid."
+msgstr "Cette URL n'est pas valide."
+
+# AI-translated (Claude)
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "Could not reach %{name}."
+msgstr "Impossible de joindre %{name}."
+
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
-msgid "Webhook test failed: %{reason}"
-msgstr "Le test du webhook a échoué : %{reason}"
+msgid "The webhook test failed."
+msgstr "Le test du webhook a échoué."
+
+# AI-translated (Claude)
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "The media type is required"
+msgstr "Le type de média est requis"

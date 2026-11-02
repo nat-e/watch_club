@@ -559,3 +559,15 @@ msgstr ""
 "Le chemin du dossier racine doit être accessible directement par %{instance} "
 "pour la lecture. Si les montages sont différents, saisissez le chemin vers le "
 "dossier racine depuis le système de fichiers de %{instance}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Connecting…"
+msgstr "Connexion…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Verifying…"
+msgstr "Vérification…"

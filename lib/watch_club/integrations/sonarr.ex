@@ -10,7 +10,7 @@ defmodule WatchClub.Integrations.Sonarr do
   Returns every series in the Sonarr library (no server-side filtering;
   callers filter client-side).
   """
-  @spec list_series(String.t(), String.t()) :: {:ok, list(Series.t())} | {:error, term()}
+  @spec list_series(String.t(), String.t()) :: {:ok, list(Series.t())} | {:error, Client.error()}
   def list_series(base_url, api_key) do
     case Client.get(base_url, api_key, "/api/v3/series") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Series.from_api/1)}
@@ -29,7 +29,7 @@ defmodule WatchClub.Integrations.Sonarr do
   files.
   """
   @spec list_episodes(String.t(), String.t(), integer()) ::
-          {:ok, [Episode.t()]} | {:error, term()}
+          {:ok, [Episode.t()]} | {:error, Client.error()}
   def list_episodes(base_url, api_key, series_id) when is_integer(series_id) do
     case Client.get(base_url, api_key, "/api/v3/episode",
            params: %{seriesId: series_id, includeEpisodeFile: true}
@@ -49,7 +49,7 @@ defmodule WatchClub.Integrations.Sonarr do
   Returns the `Series` for `tvdb_id` if Sonarr already has it, else `nil`.
   """
   @spec get_series(String.t(), String.t(), integer()) ::
-          {:ok, Series.t() | nil} | {:error, term()}
+          {:ok, Series.t() | nil} | {:error, Client.error()}
   def get_series(base_url, api_key, tvdb_id) when is_integer(tvdb_id) do
     case Client.get(base_url, api_key, "/api/v3/series", params: %{tvdbId: tvdb_id}) do
       {:ok, [series | _]} when is_map(series) -> {:ok, Series.from_api(series)}
@@ -63,7 +63,7 @@ defmodule WatchClub.Integrations.Sonarr do
   Original title yields the best result.
   """
   @spec lookup_series(String.t(), String.t(), String.t()) ::
-          {:ok, [Series.t()]} | {:error, term()}
+          {:ok, [Series.t()]} | {:error, Client.error()}
   def lookup_series(base_url, api_key, query) do
     with {:ok, results} <-
            Client.get(base_url, api_key, "/api/v3/series/lookup", params: %{term: query}) do
@@ -78,7 +78,7 @@ defmodule WatchClub.Integrations.Sonarr do
   title is sent alongside it. Returns the created `Series`.
   """
   @spec add_series(String.t(), String.t(), integer(), String.t(), integer(), String.t()) ::
-          {:ok, Series.t()} | {:error, term()}
+          {:ok, Series.t()} | {:error, Client.error()}
   def add_series(base_url, api_key, tvdb_id, title, quality_profile_id, root_folder_path) do
     body = %{
       "tvdbId" => tvdb_id,
@@ -101,7 +101,7 @@ defmodule WatchClub.Integrations.Sonarr do
   `{:error, :not_found}` when the series is no longer in the library.
   """
   @spec get_series_by_id(String.t(), String.t(), integer()) ::
-          {:ok, Series.t()} | {:error, term()}
+          {:ok, Series.t()} | {:error, Client.error()}
   def get_series_by_id(base_url, api_key, series_id) when is_integer(series_id) do
     case Client.get(base_url, api_key, "/api/v3/series/#{series_id}") do
       {:ok, series} when is_map(series) -> {:ok, Series.from_api(series)}
@@ -113,7 +113,7 @@ defmodule WatchClub.Integrations.Sonarr do
   Returns the download-queue `QueueResource`s for one series.
   """
   @spec queue_details(String.t(), String.t(), integer()) ::
-          {:ok, [QueueResource.t()]} | {:error, term()}
+          {:ok, [QueueResource.t()]} | {:error, Client.error()}
   def queue_details(base_url, api_key, series_id) when is_integer(series_id) do
     case Client.get(base_url, api_key, "/api/v3/queue/details", params: %{seriesId: series_id}) do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueResource.from_api/1)}

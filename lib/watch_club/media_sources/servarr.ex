@@ -21,7 +21,7 @@ defmodule WatchClub.MediaSources.Servarr do
     UpdateWebhook
   }
 
-  alias WatchClub.Shared.Changes.{NormalizePath, TrimUrl}
+  alias WatchClub.Shared.Changes.{NormalizePath, NormalizeUrl}
 
   postgres do
     table "servarr_media_sources"
@@ -49,8 +49,8 @@ defmodule WatchClub.MediaSources.Servarr do
         :webhook_callback_base_url
       ]
 
-      change {TrimUrl, attribute: :base_url}
-      change {TrimUrl, attribute: :webhook_callback_base_url}
+      change {NormalizeUrl, attribute: :base_url}
+      change {NormalizeUrl, attribute: :webhook_callback_base_url}
       change {NormalizePath, attribute: :local_root_folder_path}
       change GenerateWebhookSecret
       change RegisterWebhook
@@ -70,8 +70,8 @@ defmodule WatchClub.MediaSources.Servarr do
         :webhook_callback_base_url
       ]
 
-      change {TrimUrl, attribute: :base_url}
-      change {TrimUrl, attribute: :webhook_callback_base_url}
+      change {NormalizeUrl, attribute: :base_url}
+      change {NormalizeUrl, attribute: :webhook_callback_base_url}
       change {NormalizePath, attribute: :local_root_folder_path}
       change UpdateWebhook
     end

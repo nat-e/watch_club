@@ -10,7 +10,7 @@ defmodule WatchClub.Integrations.Radarr do
   Returns every movie in the Radarr library (no server-side filtering or
   pagination; callers filter client-side).
   """
-  @spec list_movies(String.t(), String.t()) :: {:ok, list(Movie.t())} | {:error, term()}
+  @spec list_movies(String.t(), String.t()) :: {:ok, list(Movie.t())} | {:error, Client.error()}
   def list_movies(base_url, api_key) do
     case Client.get(base_url, api_key, "/api/v3/movie") do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &Movie.from_api/1)}
@@ -28,7 +28,8 @@ defmodule WatchClub.Integrations.Radarr do
   Returns the `Movie` for `tmdb_id` if Radarr already has it, else `nil`. Used
   to adopt a movie rather than re-adding it.
   """
-  @spec get_movie(String.t(), String.t(), integer()) :: {:ok, Movie.t() | nil} | {:error, term()}
+  @spec get_movie(String.t(), String.t(), integer()) ::
+          {:ok, Movie.t() | nil} | {:error, Client.error()}
   def get_movie(base_url, api_key, tmdb_id) when is_integer(tmdb_id) do
     case Client.get(base_url, api_key, "/api/v3/movie", params: %{tmdbId: tmdb_id}) do
       {:ok, [movie | _]} when is_map(movie) -> {:ok, Movie.from_api(movie)}
@@ -44,7 +45,7 @@ defmodule WatchClub.Integrations.Radarr do
   Returns the created `Movie`.
   """
   @spec add_movie(String.t(), String.t(), integer(), String.t(), integer(), String.t()) ::
-          {:ok, Movie.t()} | {:error, term()}
+          {:ok, Movie.t()} | {:error, Client.error()}
   def add_movie(base_url, api_key, tmdb_id, title, quality_profile_id, root_folder_path) do
     body = %{
       "tmdbId" => tmdb_id,
@@ -65,7 +66,8 @@ defmodule WatchClub.Integrations.Radarr do
   Fetches one `Movie` by its Radarr id.
   `{:error, :not_found}` when the movie is no longer in the library.
   """
-  @spec get_movie_by_id(String.t(), String.t(), integer()) :: {:ok, Movie.t()} | {:error, term()}
+  @spec get_movie_by_id(String.t(), String.t(), integer()) ::
+          {:ok, Movie.t()} | {:error, Client.error()}
   def get_movie_by_id(base_url, api_key, movie_id) when is_integer(movie_id) do
     case Client.get(base_url, api_key, "/api/v3/movie/#{movie_id}") do
       {:ok, movie} when is_map(movie) -> {:ok, Movie.from_api(movie)}
@@ -83,7 +85,7 @@ defmodule WatchClub.Integrations.Radarr do
   Returns the download-queue `QueueResource`s for one movie.
   """
   @spec queue_details(String.t(), String.t(), integer()) ::
-          {:ok, [QueueResource.t()]} | {:error, term()}
+          {:ok, [QueueResource.t()]} | {:error, Client.error()}
   def queue_details(base_url, api_key, movie_id) when is_integer(movie_id) do
     case Client.get(base_url, api_key, "/api/v3/queue/details", params: %{movieId: movie_id}) do
       {:ok, list} when is_list(list) -> {:ok, Enum.map(list, &QueueResource.from_api/1)}

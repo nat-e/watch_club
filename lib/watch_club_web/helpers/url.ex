@@ -94,7 +94,7 @@ defmodule WatchClubWeb.Helpers.Url do
   @spec webhook_callback_url(String.t(), atom() | String.t(), String.t()) :: String.t()
   def webhook_callback_url(base, source_type, media_source_id)
       when is_binary(base) and is_binary(media_source_id) do
-    "#{WatchClub.Shared.Path.normalize_base_url(base)}/webhooks/#{source_type}/#{media_source_id}"
+    "#{base}/webhooks/#{source_type}/#{media_source_id}"
   end
 
   def list_link(list_id), do: ~p"/lists/#{list_id}"
