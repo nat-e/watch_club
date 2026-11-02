@@ -39,6 +39,13 @@ defmodule WatchClub.History.WatchProgress do
       # When the media this refers is deleted, set to nil
       reference :last_media, on_delete: :nilify
     end
+
+    # The unique_content_per_user index only serves lookups by user and book (its first columns).
+    # These serve the per-user progress lookups of movies and episodes (e.g. Continue Watching).
+    custom_indexes do
+      index [:user_id, :movie_id]
+      index [:user_id, :tv_show_episode_id]
+    end
   end
 
   actions do
