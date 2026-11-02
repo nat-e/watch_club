@@ -47,10 +47,12 @@ defmodule WatchClub.Shared.ObanLogger do
   end
 
   def handle_event([:oban, :job, :exception], _measure, meta, _config) do
+    # The :oban domain keeps Sentry from reporting the error a second time
     Logger.log(
       :error,
       "#{meta.worker} job error",
-      error: Exception.format(meta.kind, meta.reason, meta.stacktrace)
+      error: Exception.format(meta.kind, meta.reason, meta.stacktrace),
+      domain: [:oban]
     )
   end
 

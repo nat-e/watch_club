@@ -64,6 +64,9 @@ COPY lib lib
 # Compile the release
 RUN mix compile
 
+# Bundles the source code into the release so Sentry can show it around errors
+RUN mix sentry.package_source_code
+
 COPY assets assets
 
 # compile assets

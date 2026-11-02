@@ -51,6 +51,7 @@ defmodule WatchClubWeb do
   def live_view do
     quote do
       use Phoenix.LiveView
+      on_mount Sentry.LiveViewHook
       alias WatchClubWeb.Layouts
 
       unquote(html_helpers())

@@ -43,6 +43,8 @@ services:
       WC_TMDB_API_KEY: ${WC_TMDB_API_KEY}
       WC_LOG_LEVEL: ${WC_LOG_LEVEL}
       WC_LOG_FORMAT: ${WC_LOG_FORMAT}
+      WC_SENTRY_DSN: ${WC_SENTRY_DSN:-}
+      WC_SENTRY_LOG_LEVEL: ${WC_SENTRY_LOG_LEVEL:-}
     ports:
       - "${WC_PORT}:${WC_PORT}"
     volumes:

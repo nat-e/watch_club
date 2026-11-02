@@ -20,7 +20,10 @@ defmodule WatchClubWeb.ErrorHTML do
         title: title_from_template(template),
         description: description_from_template(template),
         retry?: retryable_template?(template),
-        instance_name: assigns.instance_settings.name
+        # Errors raised before the InstanceSettings plug runs, like unknown
+        # routes, have no settings, so they show the default name
+        instance_name:
+          Map.get(assigns, :instance_settings, %WatchClub.Instance.InstanceSettings{}).name
       })
 
     ~H"""
