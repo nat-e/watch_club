@@ -11,5 +11,12 @@ config :watch_club, WatchClubWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+# Shows the source code around errors in Sentry. Set at compile time because
+# the Dockerfile packages the source with `mix sentry.package_source_code`
+# before runtime.exs is available.
+config :sentry,
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()]
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

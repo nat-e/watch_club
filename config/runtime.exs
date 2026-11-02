@@ -93,4 +93,24 @@ if config_env() != :test do
   end
 
   config :logger, level: env!("WC_LOG_LEVEL", :string, "info") |> String.to_existing_atom()
+
+  # Errors are only reported when WC_SENTRY_DSN is set, and logs are only sent
+  # when WC_SENTRY_LOG_LEVEL is set too. Only these metadata keys are sent, so
+  # crash logs don't send the whole conn.
+  sentry_metadata = [:request_id, :event, :status, :error]
+
+  config :sentry,
+    dsn: env!("WC_SENTRY_DSN", :string?, nil),
+    environment_name: config_env(),
+    release: Application.spec(:watch_club, :vsn) |> to_string(),
+    integrations: [oban: [capture_errors: true]],
+    logs: [
+      level: env!("WC_SENTRY_LOG_LEVEL", :existing_atom?, nil),
+      metadata: sentry_metadata,
+      # Reports Logger.error messages as errors, on top of crashes
+      capture_log_messages: true,
+      capture_metadata: sentry_metadata,
+      # The Oban integration already reports failed jobs
+      capture_excluded_domains: [:oban]
+    ]
 end
