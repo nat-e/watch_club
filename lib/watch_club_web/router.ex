@@ -170,7 +170,7 @@ defmodule WatchClubWeb.Router do
 
   defp ensure_administrator_setup(%Plug.Conn{request_path: "/setup"} = conn, _opts) do
     if WatchClub.Accounts.administrator_exists?() do
-      conn |> redirect(to: ~p"/")
+      conn |> redirect(to: ~p"/") |> halt()
     else
       conn
     end
@@ -180,7 +180,7 @@ defmodule WatchClubWeb.Router do
     if WatchClub.Accounts.administrator_exists?() do
       conn
     else
-      conn |> redirect(to: ~p"/setup")
+      conn |> redirect(to: ~p"/setup") |> halt()
     end
   end
 end
