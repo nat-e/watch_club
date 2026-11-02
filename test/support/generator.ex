@@ -6,6 +6,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.Playbacks.{Playback, Session}
+  alias WatchClub.Requests.ContentRequest
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -258,6 +259,13 @@ defmodule WatchClub.Generator do
         session_id: Ash.Seed.seed!(Session, %{started_by_id: generate(user()).id}).id,
         media_id: media.id
       },
+      overrides: opts
+    )
+  end
+
+  def content_request(%User{} = user, %Content{} = content, opts \\ []) do
+    seed_generator(
+      %ContentRequest{user_id: user.id, content_id: content.id},
       overrides: opts
     )
   end

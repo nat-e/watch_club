@@ -197,6 +197,30 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       end
     end
 
+    test "updates the requests of the previous and new Content when a file is re-matched" do
+      previous_content = generate(movie())
+      new_content = generate(movie())
+      path = "tmp/rematch.mkv"
+
+      create_or_update_video!(video_media_input(path, previous_content.movie),
+        actor: SystemActor.actor()
+      )
+
+      user = generate(user())
+      updated_at = ~U[2020-01-01 00:00:00.000000Z]
+      previous_request = generate(content_request(user, previous_content, updated_at: updated_at))
+      new_request = generate(content_request(user, new_content, updated_at: updated_at))
+
+      create_or_update_video!(video_media_input(path, new_content.movie),
+        actor: SystemActor.actor()
+      )
+
+      for request <- [previous_request, new_request] do
+        reloaded_request = Ash.get!(ContentRequest, request.id, authorize?: false)
+        assert DateTime.after?(reloaded_request.updated_at, updated_at)
+      end
+    end
+
     test "rejects writes from a non-system actor" do
       user = generate(user())
       movie = seed_movie()
@@ -317,11 +341,9 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       content = Ash.get!(Content, movie.id, authorize?: false)
 
       request =
-        Ash.Seed.seed!(ContentRequest, %{
-          user_id: generate(user()).id,
-          content_id: content.id,
-          updated_at: ~U[2020-01-01 00:00:00.000000Z]
-        })
+        generate(
+          content_request(generate(user()), content, updated_at: ~U[2020-01-01 00:00:00.000000Z])
+        )
 
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 

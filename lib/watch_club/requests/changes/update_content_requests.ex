@@ -20,17 +20,44 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
   alias WatchClub.SystemActor
 
   @impl true
-  # When a media has been created or deleted, update the content request.
-  # Unmatched Media have no Content, so there are no requests to update.
-  def change(%Ash.Changeset{resource: Media} = changeset, _opts, _context) do
-    Ash.Changeset.after_action(changeset, fn
-      _changeset, %Media{content_id: nil} = updated_media ->
-        {:ok, updated_media}
+  # When a media has been created, update the content requests.
+  # Re-importing a file can match it to another Content than before, so the requests of the
+  # previous Content are updated too. Unmatched Media have no Content.
+  def change(%Ash.Changeset{resource: Media, action_type: :create} = changeset, _opts, _context) do
+    changeset
+    |> Ash.Changeset.before_action(fn changeset ->
+      path = Ash.Changeset.get_attribute(changeset, :path)
 
-      _changeset, %Media{content_id: content_id} = updated_media ->
+      previous_media =
+        Media |> Ash.Query.filter(path == ^path) |> Ash.read_one!(authorize?: false)
+
+      Ash.Changeset.put_context(
+        changeset,
+        :previous_content_id,
+        previous_media && previous_media.content_id
+      )
+    end)
+    |> Ash.Changeset.after_action(fn changeset, %Media{content_id: content_id} = updated_media ->
+      [changeset.context.previous_content_id, content_id]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.uniq()
+      |> Enum.each(&update_content_requests(&1, %{}))
+
+      {:ok, updated_media}
+    end)
+  end
+
+  # When a media has been deleted, update the content requests.
+  # Unmatched Media have no Content.
+  def change(%Ash.Changeset{resource: Media, action_type: :destroy} = changeset, _opts, _context) do
+    Ash.Changeset.after_action(changeset, fn
+      _changeset, %Media{content_id: nil} = destroyed_media ->
+        {:ok, destroyed_media}
+
+      _changeset, %Media{content_id: content_id} = destroyed_media ->
         update_content_requests(content_id, %{})
 
-        {:ok, updated_media}
+        {:ok, destroyed_media}
     end)
   end
 
