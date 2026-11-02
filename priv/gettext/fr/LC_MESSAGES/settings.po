@@ -12,73 +12,73 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:39
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Language"
 msgstr "Langue"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:18
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Paramètres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:19
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Manage your account preferences."
 msgstr "Gérez les préférences de votre compte."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:23
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Preferences"
 msgstr "Préférences"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:25
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Choose the language used across %{name}."
 msgstr "Choisissez la langue utilisée dans %{name}."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:68
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Change the password used to sign in. Your other devices will be signed out."
 msgstr "Modifiez le mot de passe utilisé pour vous connecter. Vos autres appareils seront déconnectés."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:95
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:83
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Current password"
 msgstr "Mot de passe actuel"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:89
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "New password"
 msgstr "Nouveau mot de passe"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:66
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Security"
 msgstr "Sécurité"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:101
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Update password"
 msgstr "Mettre à jour le mot de passe"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page.ex:158
+#: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Your password has been updated"
 msgstr "Votre mot de passe a été mis à jour"

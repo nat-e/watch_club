@@ -390,7 +390,10 @@ const Player = {
 	restartHeartbeatTimer() {
 		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
 
-		this.heartbeatTimer = window.setInterval(() => this.reportHeartbeat(), 5000);
+		this.heartbeatTimer = window.setInterval(
+			() => this.reportHeartbeat(),
+			5000,
+		);
 	},
 
 	reportReady() {

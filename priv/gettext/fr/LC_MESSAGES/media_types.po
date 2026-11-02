@@ -12,45 +12,45 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex:15
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Audiobook"
 msgstr "Livre audio"
 
 # AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex:14
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Ebook"
 msgstr "Livre numérique"
 
 # AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex:20
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Audiobooks"
 msgstr "Livre audio"
 
 # AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex:19
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Ebooks"
 msgstr "Livre numérique"
 
-#: lib/watch_club/media_catalog/media_type.ex:12
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movie"
 msgstr ""
 
-#: lib/watch_club/media_catalog/media_type.ex:17
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
 msgstr ""
 
-#: lib/watch_club/media_catalog/media_type.ex:13
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Show Episode"
 msgstr ""
 
-#: lib/watch_club/media_catalog/media_type.ex:18
+#: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Shows"
 msgstr ""

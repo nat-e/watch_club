@@ -8,7 +8,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
   require Logger
 
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, opts, _context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -21,7 +21,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
         tmdb_id: tmdb_id
       )
 
-      show = Tmdb.get_tv_details!(tmdb_id)
+      show = Tmdb.get_tv_details!(tmdb_id, cache: Keyword.get(opts, :cache?, true))
 
       changeset
       |> set_base_content(show)

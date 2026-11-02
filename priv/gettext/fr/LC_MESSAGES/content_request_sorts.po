@@ -11,12 +11,12 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club/requests/content_request_sort.ex:23
+#: lib/watch_club/requests/content_request_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Created"
 msgstr ""
 
-#: lib/watch_club/requests/content_request_sort.ex:22
+#: lib/watch_club/requests/content_request_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Last update"
 msgstr ""

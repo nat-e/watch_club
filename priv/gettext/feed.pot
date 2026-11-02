@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/home/activity_feed.ex:65
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Create club"
 msgstr ""
 
-#: lib/watch_club_web/live/home/activity_feed.ex:76
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to %{name}!"
 msgstr ""
 
-#: lib/watch_club_web/live/home/activity_feed.ex:53
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
 msgstr ""

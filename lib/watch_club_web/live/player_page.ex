@@ -185,7 +185,8 @@ defmodule WatchClubWeb.PlayerPage do
         |> assign(:session, session)
         |> assign(:start_position_seconds, 0.0)
         |> assign(:playback_error, false)
-        # We manually push an event to the JS Hook to reload the video since Vidstack's media provider is phx-update="ignore"
+        # We manually push an event to the JS Hook to reload the video since Vidstack's media
+        # provider is phx-update="ignore"
         # It has to be the case, otherwise Morphdom deletes the <video> element injected at runtime by Vidstack
         |> push_event("player:load_video", %{
           src: hls_master_playlist_url(session.active_playback)

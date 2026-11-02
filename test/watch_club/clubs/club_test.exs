@@ -228,13 +228,14 @@ defmodule WatchClub.Clubs.ClubTest do
       assert [%Membership{}, %Membership{}] = club.memberships
     end
 
-    test "members can only see their membership", %{club: club} do
-      other_user = generate(user())
-      membership_id = generate(membership(club, other_user, role: :member)).id
+    test "members can see club memberships", %{club: club, member: member} do
+      club = Ash.load!(club, :memberships, actor: member)
+      assert [%Membership{}, %Membership{}] = club.memberships
+    end
 
-      club = Ash.load!(club, :memberships, actor: other_user)
-
-      assert [%Membership{id: ^membership_id}] = club.memberships
+    test "users outside the club cannot see its memberships", %{club: club} do
+      club = Ash.load!(club, :memberships, actor: generate(user()))
+      assert [] = club.memberships
     end
   end
 end

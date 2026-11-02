@@ -47,6 +47,12 @@ defmodule WatchClubWeb.Router do
     plug :ensure_administrator_setup
   end
 
+  # For the Docker healthcheck. No pipeline, so it answers before the
+  # administrator is set up.
+  scope "/", WatchClubWeb do
+    get "/health", HealthController, :show
+  end
+
   scope "/webhooks", WatchClubWeb.Webhooks do
     pipe_through :webhook
 

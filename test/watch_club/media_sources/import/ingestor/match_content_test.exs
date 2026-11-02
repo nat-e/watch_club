@@ -126,7 +126,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       end)
 
       candidate =
-        candidate_with(%EpisodeIdentity{tvdb_id: 79168, season_number: 1, episode_number: 3})
+        candidate_with(%EpisodeIdentity{tvdb_id: 79_168, season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
                MatchContent.apply(candidate)
@@ -235,7 +235,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         id: content.id,
         original_name: "Show #{unique}",
         tmdb_id: tmdb_id,
-        tvdb_id: 79168
+        tvdb_id: 79_168
       })
 
     episode =

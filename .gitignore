@@ -53,5 +53,6 @@ npm-debug.log
 # Git worktrees
 /.wt/
 
-# Personal Claude instructions
+# Personal Claude instructions and settings
 /CLAUDE.local.md
+/.claude/settings.local.json

@@ -4,8 +4,8 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
 
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaCatalog.Media
-  alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
+  alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.SystemActor
 
   @token "secret"

@@ -24,7 +24,8 @@ defmodule WatchClub.Integrations.Tmdb.Client do
       compressed: true
     ]
     |> Req.new(Application.get_env(:watch_club, :tmdb_req_options, []))
-    |> Req.request(opts)
+    # :cache and :cache_ttl are this client's options, not Req's
+    |> Req.request(Keyword.drop(opts, [:cache, :cache_ttl]))
     |> handle_response(opts)
   end
 

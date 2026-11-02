@@ -2,6 +2,8 @@
 erlang = "latest"
 elixir = "latest"
 node = "latest"
+# Pinned: a new Biome version can reject biome.json until `biome migrate` runs.
+biome = "2.4.13"
 
 [settings]
 lockfile = true

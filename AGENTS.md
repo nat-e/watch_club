@@ -60,3 +60,8 @@ We write tests for all the functions exposed in our Ash domains and only for tho
 ## Documentation
 
 - Comments and docs should be concise and only document the current state of the code. Conversation details or changes compared to past implementations should not be reflected in documentation.
+
+## Pull requests
+
+- PR titles follow Conventional Commits (`fix: …`, `feat(player): …`), because release-please builds versions and the changelog from them. See `CONTRIBUTING.md`
+- `mix ci` runs every check CI runs

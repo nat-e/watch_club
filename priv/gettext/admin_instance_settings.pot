@@ -11,32 +11,32 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:31
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Instance settings"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:33
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Configure how your instance presents itself."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:38
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "General"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:55
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:81
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Instance settings updated."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/instance_settings_page.ex:40
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "The name shown across the app, in the browser tab, and in invitations."
 msgstr ""

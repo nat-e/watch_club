@@ -292,8 +292,7 @@ _Avoid_: Best localization, current localization
 - A **Club Admin** and a **Club Member** are both **Members**
 - A **Membership** belongs to exactly one **User** and exactly one **Club**
 - The **Club Admin** cannot **Leave Club** or be the target of **Remove Member**
-- Only a **Club Admin** can view the full member and invitation list for a **Club**
-- A **Club Member** can view only their own **Membership**
+- Every **Member** of a **Club** can view all of its **Memberships**
 - **Leave Club** ends the acting **Club Member**’s **Membership** without removing **Library Items** they added
 - **Remove Member** ends another **Member**’s **Membership** without removing **Library Items** they added
 - An **Invitation** is instance-wide and grants membership to zero or more **Clubs**

@@ -15,7 +15,14 @@ defmodule WatchClub.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       usage_rules: usage_rules(),
       elixirc_options: elixirc_options(Mix.env()),
-      hex: [cooldown: "7d"]
+      hex: [
+        cooldown: "7d",
+        # assent: only affects Sign in with Apple, which we don't use. The fix
+        # (assent 0.3.2) needs ash_authentication 5.0.
+        ignore_advisories: ["EEF-CVE-2026-117656"]
+      ],
+      # Without line numbers, moving code doesn't make the .pot files outdated
+      gettext: [write_reference_line_numbers: false]
     ]
   end
 
@@ -38,7 +45,7 @@ defmodule WatchClub.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, ci: :test]
     ]
   end
 
@@ -125,7 +132,24 @@ defmodule WatchClub.MixProject do
         "esbuild watch_club --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"],
+      # Everything CI checks. Needs Postgres and the tools from mise.toml.
+      ci: [
+        # Order matters: hex.audit can't be found once the project is compiled,
+        # and anything that compiles the project again (format, gettext.extract)
+        # after protocols are consolidated logs warnings that fail the next
+        # `compile --warnings-as-errors`. gettext.extract recompiles everything,
+        # so it runs in its own process.
+        "hex.audit",
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "deps.unlock --check-unused",
+        "credo --strict",
+        "cmd --shell MIX_ENV=test mix gettext.extract --check-up-to-date",
+        "ash.codegen --check",
+        "cmd biome ci .",
+        "test --warnings-as-errors"
+      ]
     ]
   end
 

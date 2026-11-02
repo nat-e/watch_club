@@ -11,17 +11,17 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex:125
+#: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "%{time} left"
 msgstr ""
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex:122
+#: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "Not available"
 msgstr ""
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex:128
+#: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr ""

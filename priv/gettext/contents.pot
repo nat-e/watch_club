@@ -11,266 +11,262 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:186
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:348
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} minute"
 msgid_plural "%{count} minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:194
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "%{hours}h"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:196
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "%{hours}h %{minutes}m"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/reviews_card.ex:35
+#: lib/watch_club_web/components/contents/details/reviews_card.ex
 #, elixir-autogen, elixir-format
 msgid "Based on %{count} TMDB vote."
 msgid_plural "Based on %{count} TMDB votes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/details/external_links_card.ex:19
-#: lib/watch_club_web/live/contents/movie_details_page.ex:98
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:91
+#: lib/watch_club_web/components/contents/details/external_links_card.ex
+#: lib/watch_club_web/live/contents/movie_details_page.ex
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex
 #, elixir-autogen, elixir-format
 msgid "External links"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/external_links_card.ex:69
+#: lib/watch_club_web/components/contents/details/external_links_card.ex
 #, elixir-autogen, elixir-format
 msgid "Letterboxd search"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/external_links_card.ex:64
-#: lib/watch_club_web/components/contents/details/external_links_card.ex:92
+#: lib/watch_club_web/components/contents/details/external_links_card.ex
 #, elixir-autogen, elixir-format
 msgid "Official site"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:159
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:206
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Released"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/reviews_card.ex:17
-#: lib/watch_club_web/live/contents/movie_details_page.ex:98
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:91
+#: lib/watch_club_web/components/contents/details/reviews_card.ex
+#: lib/watch_club_web/live/contents/movie_details_page.ex
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex
 #, elixir-autogen, elixir-format
 msgid "Reviews"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:156
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Watch Trailer"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/cast_section.ex:17
+#: lib/watch_club_web/components/contents/details/cast_section.ex
 #, elixir-autogen, elixir-format
 msgid "Cast"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:93
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Original title"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/movie_details_page.ex:86
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:70
+#: lib/watch_club_web/live/contents/movie_details_page.ex
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex
 #, elixir-autogen, elixir-format
 msgid "Overview"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:203
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:209
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Canceled"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:207
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Ended"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:38
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Episodes"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:208
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Returning Series"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:98
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:171
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:66
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Seasons"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:212
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Error loading season"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:232
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Loading season episodes"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:224
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex:214
+#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't load the season. Please try again"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:148
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Added to your requests."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:152
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Could not request this right now."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:197
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex:25
+#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Select library"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex:17
+#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex:12
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex:149
+#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "Share with club"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:113
-#: lib/watch_club_web/components/contents/details/hero_panel.ex:144
+#: lib/watch_club_web/components/contents/content_card.ex
+#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Add to List"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex:66
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex:56
+#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
+#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Already added"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex:65
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "In your clubs"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:160
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:171
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex:134
+#: lib/watch_club_web/components/contents/content_card.ex
 #, elixir-autogen, elixir-format
 msgid "Remove from list"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex:137
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "Share it to make it available for everybody and start exchanging about it."
 msgstr ""
 
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex:185
+#: lib/watch_club_web/live/contents/tv_show_details_page.ex
 #, elixir-autogen, elixir-format
 msgid "The TV Show you were looking for does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/movie_details_page.ex:155
+#: lib/watch_club_web/live/contents/movie_details_page.ex
 #, elixir-autogen, elixir-format
 msgid "The movie you were looking for does not exist"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex:132
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "This %{type} is not present in any of your clubs yet."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex:14
+#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "You don't have any list yet"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex:9
+#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Add %{title} to List"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex:16
+#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "You need to create a List before adding content to it"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:206
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:210
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Downloading"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:222
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:216
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not Released"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:202
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Searching"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:157
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Resume"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex:168
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Resume %{episode}"
 msgstr ""

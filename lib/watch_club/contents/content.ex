@@ -84,12 +84,13 @@ defmodule WatchClub.Contents.Content do
       require_atomic? false
 
       # Identity is already on the Content being refreshed, so each change
-      # gates on the persisted `type`.
-      change WatchClub.Contents.Changes.CreateOrUpdateMovie,
+      # gates on the persisted `type`. Skips the TMDB response cache so the
+      # refresh gets current data.
+      change {WatchClub.Contents.Changes.CreateOrUpdateMovie, cache?: false},
         only_when_valid?: true,
         where: attribute_equals(:type, :movie)
 
-      change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
+      change {WatchClub.Contents.Changes.CreateOrUpdateTvShow, cache?: false},
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
     end

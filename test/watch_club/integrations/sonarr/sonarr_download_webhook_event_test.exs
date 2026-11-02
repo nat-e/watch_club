@@ -10,7 +10,7 @@ defmodule WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEventTest do
       SonarrDownloadWebhookEvent.from_api(%{
         "eventType" => "Download",
         "series" => %{
-          "tvdbId" => 79168,
+          "tvdbId" => 79_168,
           "tmdbId" => 1668,
           "imdbId" => "tt0108778",
           "title" => "Friends",
@@ -27,7 +27,7 @@ defmodule WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEventTest do
       })
 
     assert %SonarrDownloadWebhookEvent{
-             tvdb_id: 79168,
+             tvdb_id: 79_168,
              tmdb_id: 1668,
              imdb_id: "tt0108778",
              title: "Friends",
