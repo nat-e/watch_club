@@ -2,9 +2,10 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
   @moduledoc """
   Sets the Content of a Media from the Movie, TV Show Episode or Book that its Video, Ebook or
   Audiobook is attached to. Movies, TV Shows and Books share the id of their Content.
-  An unmatched Media has no Content.
+  An unmatched Video has a `nil` `movie_id` or `tv_show_episode_id`, and its Media has no
+  Content. Any other input crashes.
 
-  `:attachment` is the action argument holding the Video, Ebook or Audiobook input.
+  `:attachment` is the action argument holding the Video, Ebook or Audiobook input, with atom keys.
   """
   use Ash.Resource.Change
 
@@ -24,7 +25,10 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
           %{book_id: book_id} ->
             book_id
 
-          _unmatched ->
+          %{movie_id: nil} ->
+            nil
+
+          %{tv_show_episode_id: nil} ->
             nil
         end
 
