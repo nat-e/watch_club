@@ -1,6 +1,6 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
   @moduledoc """
-  Searches content on external APIs (TMDB for Movies/Shows and Hardcover for books).
+  Searches Movies and Shows on TMDB.
   Returns a `SearchResultsPage` of MovieSearchResult/TvSearchResult with the
   provider's pagination metadata.
   """
@@ -46,13 +46,5 @@ defmodule WatchClub.Contents.Actions.SearchContent do
        page: response.page,
        total_pages: response.total_pages
      }}
-  end
-
-  def run(
-        %Ash.ActionInput{arguments: %{content_type: :books}},
-        _opts,
-        _context
-      ) do
-    raise "Not implemented"
   end
 end

@@ -1,7 +1,7 @@
 defmodule WatchClub.Contents.ContentType do
   use Gettext, backend: WatchClubWeb.Gettext
 
-  @library_display_order [:movie, :tv_show, :book]
+  @library_display_order [:movie, :tv_show]
 
   use Ash.Type.Enum,
     values: [

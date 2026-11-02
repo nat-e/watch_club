@@ -27,7 +27,6 @@ msgid "TV Show"
 msgstr ""
 
 #: lib/watch_club/contents/content_type.ex
-#: lib/watch_club/contents/search_content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Books"
 msgstr ""

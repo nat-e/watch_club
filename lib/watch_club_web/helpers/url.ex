@@ -113,9 +113,6 @@ defmodule WatchClubWeb.Helpers.Url do
   def content_details_link(:tv_show, external_id, selected_club_id),
     do: ~p"/shows/#{external_id}?#{content_details_params(selected_club_id)}"
 
-  def content_details_link(:book, external_id, selected_club_id),
-    do: ~p"/books/#{external_id}?#{content_details_params(selected_club_id)}"
-
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
   def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
