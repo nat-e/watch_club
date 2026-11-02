@@ -3,7 +3,8 @@ defmodule WatchClub.Playbacks.Session do
   Aggregate root for the Playback domain. Owns the lifecycle of its Playbacks.
 
   All public lifecycle actions live here: starting a Playback Session,
-  switching to a new Playback inside it and heartbeating the current Playback.
+  switching to a new Playback inside it, heartbeating the current Playback and
+  ending the Playbacks whose Player is no longer active.
   Callers load `:active_playback` with the fields they need.
   """
 
@@ -15,8 +16,11 @@ defmodule WatchClub.Playbacks.Session do
 
   import Ash.Expr
 
+  require Ash.Query
+
   alias WatchClub.Accounts.User
   alias WatchClub.Playbacks.Playback
+  alias WatchClub.Playbacks.Playback.SegmentCache
   alias WatchClub.Playbacks.Session.Changes
 
   postgres do
@@ -57,6 +61,19 @@ defmodule WatchClub.Playbacks.Session do
 
       change Changes.BumpCurrentPlayback
     end
+
+    action :end_inactive_playbacks do
+      description "End every current Playback whose Player has sent no heartbeat for six hours, then remove the segment cache of every ended Playback."
+
+      run fn _input, context ->
+        Playback
+        |> Ash.Query.filter(is_nil(ended_at) and last_active_at < ago(6, :hour))
+        |> Ash.bulk_update!(:end, %{}, strategy: :stream, scope: context)
+
+        SegmentCache.prune_stale()
+        :ok
+      end
+    end
   end
 
   policies do
@@ -69,6 +86,11 @@ defmodule WatchClub.Playbacks.Session do
       description "Only the starting User and Instance Administrator can access Playback Sessions"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via(:started_by)
+    end
+
+    policy action(:end_inactive_playbacks) do
+      description "Only the system actor can end inactive Playbacks"
+      authorize_if WatchClub.Checks.IsSystemActor
     end
 
     policy action_type(:update) do

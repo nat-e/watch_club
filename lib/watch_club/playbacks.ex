@@ -8,6 +8,7 @@ defmodule WatchClub.Playbacks do
       define :start_session, action: :start, args: [:media_id]
       define :start_new_playback, action: :start_new_playback, args: [:media_id]
       define :heartbeat_session, action: :heartbeat
+      define :end_inactive_playbacks, action: :end_inactive_playbacks
       define :get_session_by_id, action: :read, get_by: [:id]
     end
 

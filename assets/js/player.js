@@ -76,7 +76,6 @@ const Player = {
 		this.captionsEl = this.el.querySelector("media-captions");
 		this.abortController = new AbortController();
 		this.disposed = false;
-		this.playing = false;
 		this.heartbeatTimer = undefined;
 
 		this.bindDomEvents();
@@ -222,7 +221,6 @@ const Player = {
 		this.player.addEventListener(
 			"playing",
 			() => {
-				this.playing = true;
 				this.reportReady();
 				this.reportHeartbeat();
 				this.restartHeartbeatTimer();
@@ -232,18 +230,12 @@ const Player = {
 		this.player.addEventListener("play", () => this.reportHeartbeat(), {
 			signal,
 		});
-		this.player.addEventListener(
-			"pause",
-			() => {
-				this.playing = false;
-				this.reportHeartbeat();
-			},
-			{ signal },
-		);
+		this.player.addEventListener("pause", () => this.reportHeartbeat(), {
+			signal,
+		});
 		this.player.addEventListener(
 			"ended",
 			() => {
-				this.playing = false;
 				this.reportHeartbeat();
 				// Auto-advance once the episode ends. The server no-ops when there is no
 				// next episode
@@ -393,14 +385,12 @@ const Player = {
 		});
 	},
 
+	// Keeps running while paused, so the Playback stays current as long as the
+	// Player is open.
 	restartHeartbeatTimer() {
 		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
 
-		this.heartbeatTimer = window.setInterval(() => {
-			if (!this.disposed && this.playing) {
-				this.reportHeartbeat();
-			}
-		}, 5000);
+		this.heartbeatTimer = window.setInterval(() => this.reportHeartbeat(), 5000);
 	},
 
 	reportReady() {
