@@ -51,13 +51,8 @@
 		"**/mix.lock": true
 	},
 	"tailwindCSS.experimental.classRegex": [
-		[
-			"class[:=]\\s*\"([^\"]*)\""
-		],
-		[
-			"~H\"\"\"([\\s\\S]*?)\"\"\"",
-			"class[:=]\\s*\"([^\"]*)\""
-		]
+		["class[:=]\\s*\"([^\"]*)\""],
+		["~H\"\"\"([\\s\\S]*?)\"\"\"", "class[:=]\\s*\"([^\"]*)\""]
 	],
 	"tailwindCSS.includeLanguages": {
 		"phoenix-heex": "html",

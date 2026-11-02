@@ -11,8 +11,11 @@
 #   - https://pkgs.org/ - resource for finding needed packages
 #   - Ex: docker.io/hexpm/elixir:1.20.4-erlang-29.1.2-debian-trixie-20261020-slim
 #
+# renovate: datasource=hexpm-bob depName=elixir
 ARG ELIXIR_VERSION=1.20.4
+# renovate: datasource=github-tags depName=erlang packageName=erlang/otp versioning=regex:^(?<major>\d+?)\.(?<minor>\d+?)(\.(?<patch>\d+))?$ extractVersion=^OTP-(?<version>\S+)
 ARG OTP_VERSION=29.1.2
+# renovate: datasource=docker depName=debian versioning=regex:^trixie-(?<patch>\d{8})-slim$
 ARG DEBIAN_VERSION=trixie-20261020-slim
 
 ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
@@ -76,11 +79,12 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE} AS final
 
+# renovate: datasource=deb depName=ffmpeg
 ARG FFMPEG_VERSION=7:7.1.5-0+deb13u1
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  libstdc++6 openssl libncurses6 locales ca-certificates tini \
+  libstdc++6 openssl libncurses6 locales ca-certificates tini curl \
   ffmpeg=${FFMPEG_VERSION} \
   && rm -rf /var/lib/apt/lists/*
 
@@ -106,6 +110,10 @@ ENV MIX_ENV="prod"
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/watch_club ./
 
 USER nobody
+
+# Lets `docker compose up --wait` and orchestrators know when the app is ready
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --start-interval=2s \
+  CMD curl -fsS "http://localhost:${WC_PORT:-4000}/health" > /dev/null || exit 1
 
 # Using tini as an entrypoint to avoid zombie ffmpeg processes
 # See https://github.com/krallin/tini for details

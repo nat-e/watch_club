@@ -1,0 +1,12 @@
+{
+	"$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+	"bootstrap-sha": "e20bbc79b7249b48cf185c9752530398bd149976",
+	"include-component-in-tag": false,
+	"packages": {
+		".": {
+			"release-type": "elixir",
+			"package-name": "watch_club",
+			"bump-minor-pre-major": true
+		}
+	}
+}

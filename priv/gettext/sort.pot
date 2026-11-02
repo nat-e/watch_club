@@ -11,12 +11,12 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/shared/sort_order.ex:19
+#: lib/watch_club/shared/sort_order.ex
 #, elixir-autogen, elixir-format
 msgid "ascending"
 msgstr ""
 
-#: lib/watch_club/shared/sort_order.ex:20
+#: lib/watch_club/shared/sort_order.ex
 #, elixir-autogen, elixir-format
 msgid "descending"
 msgstr ""

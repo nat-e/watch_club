@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex:32
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex:19
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove media"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex:21
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove the media from %{name}. This will not delete the file on the disk."
 msgstr ""

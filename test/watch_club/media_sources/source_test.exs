@@ -3,7 +3,7 @@ defmodule WatchClub.MediaSources.SourceTest do
 
   import WatchClub.MediaSources
 
-  alias WatchClub.MediaSources.{Filesystem, Import, Source, Servarr}
+  alias WatchClub.MediaSources.{Filesystem, Import, Servarr, Source}
 
   require Ash.Query
 

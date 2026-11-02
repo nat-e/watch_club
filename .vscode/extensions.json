@@ -1,3 +1,8 @@
 {
-    "recommendations": ["biomejs.biome", "bradlc.vscode-tailwindcss", "expertlsp.expert", "pantajoe.vscode-elixir-credo"]
+	"recommendations": [
+		"biomejs.biome",
+		"bradlc.vscode-tailwindcss",
+		"expertlsp.expert",
+		"pantajoe.vscode-elixir-credo"
+	]
 }

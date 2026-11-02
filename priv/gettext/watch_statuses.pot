@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/history/watch_status.ex:7
+#: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not Watched"
 msgstr ""
 
-#: lib/watch_club/history/watch_status.ex:9
+#: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr ""
 
-#: lib/watch_club/history/watch_status.ex:8
+#: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Watching"
 msgstr ""

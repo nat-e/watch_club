@@ -128,7 +128,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
     end
 
     test "{tmdb-27205}" do
-      assert ExternalIdExtractor.from_text("Inception {tmdb-27205}.mkv").tmdb == 27205
+      assert ExternalIdExtractor.from_text("Inception {tmdb-27205}.mkv").tmdb == 27_205
     end
 
     test "(tvdbid=121361)" do
@@ -138,7 +138,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
     test "bracket attribute wins over no other source" do
       result = ExternalIdExtractor.from_text("File [imdb-tt1375666] [tmdb-27205].mkv")
       assert result.imdb == "tt1375666"
-      assert result.tmdb == 27205
+      assert result.tmdb == 27_205
     end
   end
 

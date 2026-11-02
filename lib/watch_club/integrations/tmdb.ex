@@ -140,7 +140,7 @@ defmodule WatchClub.Integrations.Tmdb do
     response
   end
 
-  @spec get_movie_details(integer() | String.t(), locale: atom()) ::
+  @spec get_movie_details(integer() | String.t(), locale: atom(), cache: boolean()) ::
           {:ok, MovieDetailsResponse.t()} | {:error, term()}
   def get_movie_details(tmdb_id, opts \\ []) do
     case request(
@@ -148,20 +148,22 @@ defmodule WatchClub.Integrations.Tmdb do
            params: [
              language: format_language(opts[:locale]),
              append_to_response: "translations,images,credits,videos"
-           ]
+           ],
+           cache: Keyword.get(opts, :cache, true)
          ) do
       {:ok, body} -> {:ok, MovieDetailsResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end
 
-  @spec get_movie_details!(integer() | String.t(), locale: atom()) :: MovieDetailsResponse.t()
+  @spec get_movie_details!(integer() | String.t(), locale: atom(), cache: boolean()) ::
+          MovieDetailsResponse.t()
   def get_movie_details!(tmdb_id, opts \\ []) do
     {:ok, response} = get_movie_details(tmdb_id, opts)
     response
   end
 
-  @spec get_tv_details(integer() | String.t(), locale: atom()) ::
+  @spec get_tv_details(integer() | String.t(), locale: atom(), cache: boolean()) ::
           {:ok, TvDetailsResponse.t()} | {:error, term()}
   def get_tv_details(tmdb_id, opts \\ []) do
     case request(
@@ -169,14 +171,16 @@ defmodule WatchClub.Integrations.Tmdb do
            params: [
              language: format_language(opts[:locale]),
              append_to_response: "translations,images,external_ids,credits,videos"
-           ]
+           ],
+           cache: Keyword.get(opts, :cache, true)
          ) do
       {:ok, body} -> {:ok, TvDetailsResponse.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end
 
-  @spec get_tv_details!(integer() | String.t(), locale: atom()) :: TvDetailsResponse.t()
+  @spec get_tv_details!(integer() | String.t(), locale: atom(), cache: boolean()) ::
+          TvDetailsResponse.t()
   def get_tv_details!(tmdb_id, opts \\ []) do
     {:ok, response} = get_tv_details(tmdb_id, opts)
     response

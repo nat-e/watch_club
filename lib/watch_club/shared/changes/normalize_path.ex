@@ -15,13 +15,11 @@ defmodule WatchClub.Shared.Changes.NormalizePath do
 
   @impl true
   def init(opts) do
-    cond do
-      Keyword.has_key?(opts, :argument) ->
-        validate_atom!(opts, :argument)
-
-      true ->
-        attribute = Keyword.get(opts, :attribute, :path)
-        validate_atom!(Keyword.put(opts, :attribute, attribute), :attribute)
+    if Keyword.has_key?(opts, :argument) do
+      validate_atom!(opts, :argument)
+    else
+      attribute = Keyword.get(opts, :attribute, :path)
+      validate_atom!(Keyword.put(opts, :attribute, attribute), :attribute)
     end
   end
 

@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/media_sources/source/type.ex:30
+#: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Filesystem"
 msgstr ""
 
-#: lib/watch_club/media_sources/source/type.ex:31
+#: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Radarr"
 msgstr ""
 
-#: lib/watch_club/media_sources/source/type.ex:32
+#: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
 msgstr ""

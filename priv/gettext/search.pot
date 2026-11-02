@@ -11,48 +11,48 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:76
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "See all results"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:27
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "Start typing to search"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:40
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:62
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for your search"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:103
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:92
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "No results"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:23
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Showing results for %{query}"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex:96
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for %{query}"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:94
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:110
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex
 #, elixir-autogen, elixir-format
 msgid "Search %{content_type}"
 msgstr ""

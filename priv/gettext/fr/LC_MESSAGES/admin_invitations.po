@@ -12,149 +12,149 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:76
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Copy invitation link"
 msgstr "Copier le lien d'invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:110
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Expires"
 msgstr "Expire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:131
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation actions"
 msgstr "Actions de l'invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:179
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation created"
 msgstr "Invitation créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:213
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation link copied to clipboard"
 msgstr "Lien d'invitation copié dans le presse-papiers"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:74
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Unlimited"
 msgstr "Illimité"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:96
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Uses"
 msgstr "Utilisations"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:90
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Clubs Access"
 msgstr "Clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:48
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Clubs access"
 msgstr "Clubs"
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:40
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:19
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:27
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create an invitation link and share it with your friends. The link will expire after 7 days"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:150
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex:33
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete code"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex:9
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete invitation code"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:141
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr ""
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:15
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit invitation code"
 msgstr "cette invitation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:228
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Invitation code deleted"
 msgstr "Invitation créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:178
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Invitation updated"
 msgstr "Invitation désactivée"
 
-#: lib/watch_club_web/live/admin/users_page.ex:53
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invite users"
 msgstr ""
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:77
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Maximum number of accounts this invitation can create. Leave empty for unlimited."
 msgstr "Nombre maximal de comptes que cette invitation peut créer."
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:18
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:45
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The code cannot be changed once created."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:71
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Usage limit"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex:50
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Users joining through this invitation will automatically be added to the Clubs you select below"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex:12
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Users will no longer be able to sign up with the %{code} code."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex:14
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "You don't have any active invite links"
 msgstr ""

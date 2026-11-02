@@ -8,7 +8,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   require Logger
 
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, opts, _context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -21,7 +21,10 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
         tmdb_id: tmdb_id
       )
 
-      movie = WatchClub.Integrations.Tmdb.get_movie_details!(tmdb_id)
+      movie =
+        WatchClub.Integrations.Tmdb.get_movie_details!(tmdb_id,
+          cache: Keyword.get(opts, :cache?, true)
+        )
 
       changeset
       |> set_base_content(movie)

@@ -11,44 +11,43 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:17
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Book"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:18
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movie"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:19
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Show"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:22
-#: lib/watch_club/contents/search_content_type.ex:11
+#: lib/watch_club/contents/content_type.ex
+#: lib/watch_club/contents/search_content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Books"
 msgstr ""
 
-#: lib/watch_club/contents/search_content_type.ex:10
+#: lib/watch_club/contents/search_content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies and Shows"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:23
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:24
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV Shows"
 msgstr ""
 
-#: lib/watch_club/contents/content_type.ex:16
-#: lib/watch_club/contents/content_type.ex:21
+#: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr ""

@@ -4,9 +4,9 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
   import ExUnit.CaptureLog
 
   alias WatchClub.Integrations.Servarr.Client
+  alias WatchClub.MediaSources.{Import, Servarr, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity
-  alias WatchClub.MediaSources.{Import, Source, Servarr}
   alias WatchClub.MediaSources.Import.Scanner.Sonarr
 
   setup do

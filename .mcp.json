@@ -1,10 +1,10 @@
 {
-  "mcpServers": {
-    "tidewave-mcp": {
-      "type": "stdio",
-      "command": "mix",
-      "args": ["tidewave.proxy"],
-      "directTools": true
-    }
-  }
+	"mcpServers": {
+		"tidewave-mcp": {
+			"type": "stdio",
+			"command": "mix",
+			"args": ["tidewave.proxy"],
+			"directTools": true
+		}
+	}
 }

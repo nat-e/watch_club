@@ -12,56 +12,56 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:76
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "See all results"
 msgstr "Voir tous les résultats"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:27
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "Start typing to search"
 msgstr "Commencez à taper pour rechercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:40
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "There was an error searching for your content"
 msgstr "Une erreur est survenue lors de la recherche de votre contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex:62
+#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for your search"
 msgstr "Nous n'avons trouvé aucun contenu pour votre recherche"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:103
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Rechercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex:92
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "No results"
 msgstr "Aucun résultat"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex:23
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Showing results for %{query}"
 msgstr "Résultats pour %{query}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex:96
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for %{query}"
 msgstr "Nous n'avons trouvé aucun contenu pour %{query}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex:94
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex:110
+#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
+#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Search %{content_type}"
 msgstr "Rechercher tous les %{content_type}"

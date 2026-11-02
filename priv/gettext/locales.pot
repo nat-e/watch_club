@@ -11,12 +11,12 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club/accounts/user_locale.ex:10
+#: lib/watch_club/accounts/user_locale.ex
 #, elixir-autogen, elixir-format
 msgid "English (US)"
 msgstr ""
 
-#: lib/watch_club/accounts/user_locale.ex:11
+#: lib/watch_club/accounts/user_locale.ex
 #, elixir-autogen, elixir-format
 msgid "French"
 msgstr ""

@@ -1,10 +1,10 @@
 defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
   use ExUnit.Case, async: true
 
+  alias WatchClub.MediaSources.{Filesystem, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MovieIdentity}
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify
-  alias WatchClub.MediaSources.{Filesystem, Source}
 
   describe "apply/2 — movies" do
     test "builds a MovieIdentity with title and year from the filename" do
@@ -63,7 +63,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
 
       source = source_for(:tv_show_episode, "/library")
 
-      assert %Candidate{identity: %EpisodeIdentity{tmdb_id: 46639}} =
+      assert %Candidate{identity: %EpisodeIdentity{tmdb_id: 46_639}} =
                Identify.apply(candidate, source)
     end
   end

@@ -11,69 +11,68 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:20
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:76
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:15
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Clubs"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:10
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:26
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:96
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Delete user"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:17
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Member since"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:13
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "User"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:207
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:27
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Users"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:53
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Instance Admin"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:13
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:29
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Manage access to %{name}."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex:117
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Password reset link copied to clipboard"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:86
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Reset password"
 msgstr ""

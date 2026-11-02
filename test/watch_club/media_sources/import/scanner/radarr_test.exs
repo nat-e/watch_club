@@ -2,9 +2,9 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
   use ExUnit.Case, async: false
 
   alias WatchClub.Integrations.Servarr.Client
+  alias WatchClub.MediaSources.{Import, Servarr, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
-  alias WatchClub.MediaSources.{Import, Source, Servarr}
   alias WatchClub.MediaSources.Import.Scanner.Radarr
 
   setup do

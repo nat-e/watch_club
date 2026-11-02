@@ -36,6 +36,8 @@ defmodule WatchClub.Clubs.LibraryItem do
 
     read :read do
       primary? true
+      # Lets `remove_content_from_libraries` stream the items it destroys
+      pagination keyset?: true, required?: false
     end
 
     read :by_identities do

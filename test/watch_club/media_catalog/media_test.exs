@@ -5,7 +5,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
 
-  alias WatchClub.MediaCatalog.{AudioTrack, Audiobook, Ebook, Media, TextTrack, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Audiobook, AudioTrack, Ebook, Media, TextTrack, Video, VideoTrack}
 
   alias WatchClub.Requests.ContentRequest
   alias WatchClub.SystemActor

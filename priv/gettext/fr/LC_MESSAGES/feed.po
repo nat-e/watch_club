@@ -11,19 +11,19 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
-#: lib/watch_club_web/live/home/activity_feed.ex:65
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Create club"
 msgstr ""
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex:76
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to %{name}!"
 msgstr "Bienvenue sur %{name} !"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex:53
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
 msgstr "Bienvenue sur Watch Club !"

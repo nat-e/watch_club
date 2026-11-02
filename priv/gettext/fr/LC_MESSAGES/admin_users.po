@@ -12,63 +12,62 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:20
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr "Actions"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:76
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
 msgstr "Actions pour %{username}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:15
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Clubs"
 msgstr "Clubs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:10
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:26
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:96
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Delete user"
 msgstr "Supprimer l'utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:17
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Member since"
 msgstr "Membre depuis"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:13
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "User"
 msgstr "Utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:207
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "User deleted"
 msgstr "Utilisateur supprimé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:27
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Users"
 msgstr "Utilisateurs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:53
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Instance Admin"
 msgstr "Administrateur de l'instance"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex:13
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
 msgstr ""
@@ -76,19 +75,19 @@ msgstr ""
 "%{name} et tout son historique sera effacé."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:29
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Manage access to %{name}."
 msgstr "Gérez l'accès à %{name}."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex:117
+#: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Password reset link copied to clipboard"
 msgstr "Lien de réinitialisation du mot de passe copié dans le presse-papiers"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex:86
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Reset password"
 msgstr "Réinitialiser le mot de passe"
