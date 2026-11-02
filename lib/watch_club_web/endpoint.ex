@@ -41,6 +41,12 @@ defmodule WatchClubWeb.Endpoint do
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :watch_club
   end
 
+  # A reverse proxy that terminates TLS forwards plain http. Its
+  # X-Forwarded-Proto header tells us the visitor used https, so the session
+  # cookie gets the Secure flag and request URLs use https. Any client can send
+  # this header, which is fine: it only changes that client's own request.
+  plug Plug.RewriteOn, [:x_forwarded_proto]
+
   plug Phoenix.LiveDashboard.RequestLogger,
     param_key: "request_logger",
     cookie_key: "request_logger"

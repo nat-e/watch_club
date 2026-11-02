@@ -76,7 +76,7 @@ If the fixes reshaped the code beyond local edits, run the affected reviewers on
 Tell the user briefly:
 
 - what changed, by file
-- how to try it: the app's URL (from `WC_SCHEME`, `WC_HOST` and `WC_PORT` in `.env`) and what to do there
+- how to try it: the app's URL (`WC_URL` in `.env`) and what to do there
 - what the reviewers found: what you fixed, what you dropped and why
 - anything still open
 

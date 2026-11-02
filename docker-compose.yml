@@ -36,9 +36,8 @@ services:
     environment:
       WC_DATABASE_URL: ${WC_DATABASE_URL}
       WC_SECRET: ${WC_SECRET}
-      WC_HOST: ${WC_HOST}
+      WC_URL: ${WC_URL}
       WC_PORT: ${WC_PORT}
-      WC_SCHEME: ${WC_SCHEME}
       WC_APP_DATA: /data
       WC_TMDB_API_KEY: ${WC_TMDB_API_KEY}
       WC_LOG_LEVEL: ${WC_LOG_LEVEL}

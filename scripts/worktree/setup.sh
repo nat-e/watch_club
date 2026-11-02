@@ -10,7 +10,7 @@ port=$3
 
 sed -E \
   -e "s|^(WC_DATABASE_URL=.*/).*|\1$db|" \
-  -e "s|^WC_HOST=.*|WC_HOST=$slug.localhost|" \
+  -e "s|^WC_URL=.*|WC_URL=http://$slug.localhost:$port|" \
   -e "s|^WC_PORT=.*|WC_PORT=$port|" \
   .env >.env.worktree
 printf '\nWC_TEST_DATABASE=%s\nWC_LIVE_DEBUGGER_PORT=%s\n' "$test_db" "$((port + 10000))" >>.env.worktree
