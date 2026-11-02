@@ -38,6 +38,7 @@ config :watch_club,
 
 config :watch_club, import_scanner_filesystem: WatchClub.MediaSources.Import.ScannerMock
 config :watch_club, :ffprobe, WatchClub.Ffmpeg.ProbeMock
+config :watch_club, :app_data, Path.expand("../tmp/test/app_data", __DIR__)
 
 # Servarr actions run their *arr HTTP calls in `before_transaction` hooks; under
 # the test sandbox those run inside the surrounding transaction, which is fine.

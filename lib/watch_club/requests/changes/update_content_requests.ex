@@ -15,16 +15,29 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
   """
   use Ash.Resource.Change
 
+  alias WatchClub.Contents.Content
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
   alias WatchClub.SystemActor
 
   @impl true
   # When a media has been created or deleted, update the content request.
+  def change(%Ash.Changeset{resource: Media, action_type: :destroy} = changeset, _opts, _context) do
+    # Ash loads the Content before deleting the Media. It can't be loaded after: the delete
+    # cascades to the Video, Ebook or Audiobook row that links the Media to its Content.
+    changeset
+    |> Ash.Changeset.load(:content)
+    |> Ash.Changeset.after_action(fn _changeset, %Media{content: content} = destroyed_media ->
+      update_media_content_requests(content)
+
+      {:ok, destroyed_media}
+    end)
+  end
+
   def change(%Ash.Changeset{resource: Media} = changeset, _opts, _context) do
     Ash.Changeset.after_action(changeset, fn _changeset, %Media{} = updated_media ->
       %Media{content: content} = Ash.load!(updated_media, :content, authorize?: false)
-      update_content_requests(content.id, %{})
+      update_media_content_requests(content)
 
       {:ok, updated_media}
     end)
@@ -84,4 +97,10 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
       authorize?: false
     )
   end
+
+  # Un-matched Media have no Content, so there are no requests to update
+  defp update_media_content_requests(nil), do: :ok
+
+  defp update_media_content_requests(%Content{id: content_id}),
+    do: update_content_requests(content_id, %{})
 end
