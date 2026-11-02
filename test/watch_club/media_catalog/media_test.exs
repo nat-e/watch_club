@@ -3,10 +3,11 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   import WatchClub.MediaCatalog
 
-  alias WatchClub.Contents.{Book, Content, Movie, TvShow, TvShowEpisode}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
 
   alias WatchClub.MediaCatalog.{AudioTrack, Audiobook, Ebook, Media, TextTrack, Video, VideoTrack}
 
+  alias WatchClub.Requests.ContentRequest
   alias WatchClub.SystemActor
 
   require Ash.Query
@@ -64,6 +65,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                id: media_id,
                path: normalized_path,
                type: :movie,
+               content_id: content_id,
                video: %Video{
                  id: video_id,
                  movie_id: movie_id,
@@ -108,6 +110,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       assert media_id == video_id
       assert movie_id == movie.id
+      assert content_id == movie.id
       assert normalized_path == Path.expand(path)
       assert normalized_sidecar_path == Path.expand(sidecar_path)
     end
@@ -117,6 +120,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       assert %Media{
                type: :tv_show_episode,
+               content_id: content_id,
                video: %Video{movie_id: nil, tv_show_episode_id: episode_id}
              } =
                create_or_update_video!(video_media_input("tmp/tv-show.mkv", episode),
@@ -125,6 +129,16 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                )
 
       assert episode_id == episode.id
+      assert content_id == episode.tv_show_id
+    end
+
+    test "creates an unmatched video" do
+      assert %Media{content_id: nil, video: %Video{movie_id: nil, tv_show_episode_id: nil}} =
+               create_or_update_video!(
+                 video_media_input("tmp/unmatched.mkv", :movie, %{movie_id: nil}),
+                 actor: SystemActor.actor(),
+                 load: [:video]
+               )
     end
 
     test "replaces an existing video at the same path" do
@@ -201,6 +215,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                id: media_id,
                path: normalized_path,
                type: :ebook,
+               content_id: content_id,
                ebook: %Ebook{id: ebook_id, book_id: book_id}
              } =
                create_or_update_ebook!(%{path: path, ebook: %{book_id: book.id}},
@@ -210,6 +225,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       assert media_id == ebook_id
       assert book_id == book.id
+      assert content_id == book.id
       assert normalized_path == Path.expand(path)
     end
 
@@ -233,6 +249,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert refreshed.id == original.id
       assert refreshed.ebook.id == original.ebook.id
       assert refreshed.ebook.book_id == new_book.id
+      assert refreshed.content_id == new_book.id
     end
   end
 
@@ -245,6 +262,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                id: media_id,
                path: normalized_path,
                type: :audiobook,
+               content_id: content_id,
                audiobook: %Audiobook{id: audiobook_id, book_id: book_id}
              } =
                create_or_update_audiobook!(%{path: path, audiobook: %{book_id: book.id}},
@@ -254,6 +272,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       assert media_id == audiobook_id
       assert book_id == book.id
+      assert content_id == book.id
       assert normalized_path == Path.expand(path)
     end
 
@@ -277,6 +296,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert refreshed.id == original.id
       assert refreshed.audiobook.id == original.audiobook.id
       assert refreshed.audiobook.book_id == new_book.id
+      assert refreshed.content_id == new_book.id
     end
   end
 
@@ -296,17 +316,29 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       content = Ash.get!(Content, movie.id, authorize?: false)
 
+      request =
+        Ash.Seed.seed!(ContentRequest, %{
+          user_id: generate(user()).id,
+          content_id: content.id,
+          updated_at: ~U[2020-01-01 00:00:00.000000Z]
+        })
+
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       assert :ok = destroy_media!(media, actor: SystemActor.actor())
 
-      # The content is resolved before the cascade delete, so the change still broadcasts
+      assert DateTime.after?(
+               Ash.get!(ContentRequest, request.id, authorize?: false).updated_at,
+               request.updated_at
+             )
+
       assert_receive %Ash.Notifier.Notification{
         resource: Media,
-        metadata: %{content_id: content_id}
+        metadata: %{content_id: content_id, content_identity: content_identity}
       }
 
       assert content_id == content.id
+      assert content_identity == ContentIdentity.from_content(content)
 
       refute Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
       refute Video |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)

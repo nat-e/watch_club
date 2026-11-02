@@ -15,6 +15,7 @@ defmodule WatchClub.MediaCatalog.Media do
     FilterBrowseSearch
   }
 
+  alias WatchClub.MediaCatalog.Changes.SetContent
   alias WatchClub.Requests.Changes.UpdateContentRequests
   alias WatchClub.Shared.Changes.NormalizePath
   alias WatchClub.Shared.SortOrder
@@ -22,6 +23,10 @@ defmodule WatchClub.MediaCatalog.Media do
   postgres do
     table "media"
     repo WatchClub.Repo
+
+    references do
+      reference :content, on_delete: :restrict
+    end
   end
 
   actions do
@@ -98,13 +103,14 @@ defmodule WatchClub.MediaCatalog.Media do
       accept [:path, :type]
       upsert? true
       upsert_identity :unique_path
-      upsert_fields []
+      upsert_fields [:content_id]
 
       argument :video, :map do
         allow_nil? false
       end
 
       change NormalizePath
+      change {SetContent, attachment: :video}
 
       change fn changeset, _ctx ->
         video_input =
@@ -127,7 +133,7 @@ defmodule WatchClub.MediaCatalog.Media do
       accept [:path]
       upsert? true
       upsert_identity :unique_path
-      upsert_fields []
+      upsert_fields [:content_id]
 
       argument :ebook, :map do
         allow_nil? false
@@ -135,6 +141,7 @@ defmodule WatchClub.MediaCatalog.Media do
 
       change set_attribute(:type, :ebook)
       change NormalizePath
+      change {SetContent, attachment: :ebook}
 
       change fn changeset, _ctx ->
         ebook_input =
@@ -156,7 +163,7 @@ defmodule WatchClub.MediaCatalog.Media do
       accept [:path]
       upsert? true
       upsert_identity :unique_path
-      upsert_fields []
+      upsert_fields [:content_id]
 
       argument :audiobook, :map do
         allow_nil? false
@@ -164,6 +171,7 @@ defmodule WatchClub.MediaCatalog.Media do
 
       change set_attribute(:type, :audiobook)
       change NormalizePath
+      change {SetContent, attachment: :audiobook}
 
       change fn changeset, _ctx ->
         audiobook_input =
@@ -220,17 +228,19 @@ defmodule WatchClub.MediaCatalog.Media do
 
     # Publish to the global content topic
     # We add :content_id and :content_identity in the metadata to make
-    # it easy for subscribers to know which media this is related to
+    # it easy for subscribers to know which media this is related to.
+    # The Content fields are listed because PubSub only selects the primary key
+    # of related records otherwise.
     publish_all :create, ["content", "global"],
-      load: :content,
+      load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
     publish_all :destroy, ["content", "global"],
-      load: :content,
+      load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
     defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
-      case notification.data.calculations[:content] do
+      case notification.data.content do
         nil ->
           notification
 
@@ -274,15 +284,10 @@ defmodule WatchClub.MediaCatalog.Media do
     has_one :audiobook, Audiobook do
       destination_attribute :id
     end
-  end
 
-  calculations do
-    # The Content this Media points to (can be nil for un-matched Media)
-    calculate :content,
-              :struct,
-              WatchClub.MediaCatalog.Calculations.MediaContent do
-      constraints instance_of: Content
-    end
+    # The Content of the Movie, TV Show Episode or Book this Media is attached to.
+    # nil for an unmatched Media.
+    belongs_to :content, Content
   end
 
   identities do
