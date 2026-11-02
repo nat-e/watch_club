@@ -70,7 +70,7 @@ defmodule WatchClub.Playbacks.Session do
         |> Ash.Query.filter(is_nil(ended_at) and last_active_at < ago(6, :hour))
         |> Ash.bulk_update!(:end, %{}, strategy: :stream, scope: context)
 
-        SegmentCache.prune_stale()
+        SegmentCache.prune_stale!()
         :ok
       end
     end

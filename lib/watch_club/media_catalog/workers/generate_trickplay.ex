@@ -50,7 +50,7 @@ defmodule WatchClub.MediaCatalog.Workers.GenerateTrickplay do
          path: source_path,
          video: %{duration_seconds: duration, default_video_track: %VideoTrack{} = track}
        }} ->
-        Trickplay.generate_sprites(video_id, source_path, track, duration)
+        Trickplay.generate_sprites!(video_id, source_path, track, duration)
     end
   end
 end
