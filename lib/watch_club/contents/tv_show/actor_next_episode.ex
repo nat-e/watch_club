@@ -18,7 +18,7 @@ defmodule WatchClub.Contents.TvShow.ActorNextEpisode do
     episodes_by_show =
       TvShowEpisode
       |> Ash.Query.filter(tv_show_id in ^Enum.map(shows, & &1.id))
-      |> Ash.Query.load([:actor_progress_status, :actor_last_watched_at])
+      |> Ash.Query.load([:rank, :actor_progress_status, :actor_last_watched_at])
       |> Ash.read!(actor: actor, authorize?: authorize?)
       |> Enum.group_by(& &1.tv_show_id)
 
