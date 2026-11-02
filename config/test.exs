@@ -7,6 +7,9 @@ config :ash, :missed_notifications, :ignore
 
 config :watch_club, Oban, testing: :manual
 
+# Tests prune the segment cache, so keep it apart from the dev servers' cache
+config :watch_club, :segment_cache_root, Path.expand("../tmp/segment_cache", __DIR__)
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used

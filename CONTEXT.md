@@ -339,7 +339,7 @@ _Avoid_: Best localization, current localization
 - What a **User** *sees* in WatchClub is constrained by their **Memberships** and their **Content Requests**; what they can *play* once reached is not
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
 - A **Playback Session** is not scoped to a **Club**, **Library**, or **Library Item**
-- A **Playback** is current while it has not ended; it ends when the **Player** closes or when another **Playback** starts on the same **Playback Session**
+- A **Playback** is current while it has not ended; it ends when another **Playback** starts on the same **Playback Session**, or once its **Player** has sent no heartbeat for six hours
 - A **Playback Session** has at most one current **Playback** at any time
 - A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
 - A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit

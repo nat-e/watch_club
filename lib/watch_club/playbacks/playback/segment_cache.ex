@@ -9,7 +9,13 @@ defmodule WatchClub.Playbacks.Playback.SegmentCache do
 
   @cache_dir_name "watch_club_hls"
 
-  def root, do: Path.join(System.tmp_dir!(), @cache_dir_name)
+  def root do
+    Application.get_env(
+      :watch_club,
+      :segment_cache_root,
+      Path.join(System.tmp_dir!(), @cache_dir_name)
+    )
+  end
 
   def playback_dir(playback_id), do: Path.join(root(), playback_id)
 

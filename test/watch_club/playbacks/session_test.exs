@@ -7,6 +7,7 @@ defmodule WatchClub.Playbacks.SessionTest do
   alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
+  alias WatchClub.Playbacks.Playback.SegmentCache
   alias WatchClub.SystemActor
 
   describe "start_session/*" do
@@ -124,6 +125,40 @@ defmodule WatchClub.Playbacks.SessionTest do
 
       assert {:error, _} = Playbacks.heartbeat_session(session, actor: other_user)
     end
+  end
+
+  describe "end_quiet_playbacks/*" do
+    @tag :tmp_dir
+    test "ends the Playbacks without a heartbeat for six hours and removes their segment cache",
+         %{tmp_dir: tmp_dir} do
+      media = orphan_media(Path.join(tmp_dir, "quiet.mkv"))
+      quiet = playback(media, DateTime.add(DateTime.utc_now(), -7, :hour))
+      playing = playback(media, DateTime.add(DateTime.utc_now(), -5, :hour))
+      File.mkdir_p!(SegmentCache.playback_dir(quiet.id))
+      File.mkdir_p!(SegmentCache.playback_dir(playing.id))
+
+      Playbacks.end_quiet_playbacks!(actor: SystemActor.actor())
+
+      refute is_nil(Ash.get!(Playback, quiet.id, actor: SystemActor.actor()).ended_at)
+      assert is_nil(Ash.get!(Playback, playing.id, actor: SystemActor.actor()).ended_at)
+      refute File.exists?(SegmentCache.playback_dir(quiet.id))
+      assert File.exists?(SegmentCache.playback_dir(playing.id))
+    end
+
+    test "forbids Users" do
+      Playbacks.end_quiet_playbacks(actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  def playback(%Media{} = media, last_active_at) do
+    session = Ash.Seed.seed!(Session, %{started_by_id: generate(user()).id})
+
+    Ash.Seed.seed!(Playback, %{
+      session_id: session.id,
+      media_id: media.id,
+      last_active_at: last_active_at
+    })
   end
 
   def orphan_media(path) do
