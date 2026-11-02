@@ -119,7 +119,7 @@ defmodule WatchClub.MixProject do
     [
       setup: ["deps.get", "deps.compile", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      reset: ["ash.reset --force-drop"],
+      reset: ["ash.tear_down --force-drop", "ash.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": [
         "tailwind.install --if-missing",
