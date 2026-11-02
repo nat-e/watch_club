@@ -70,3 +70,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Your password has been updated"
 msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "About"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB."
+msgstr ""

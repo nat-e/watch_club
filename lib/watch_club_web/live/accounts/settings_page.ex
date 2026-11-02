@@ -103,6 +103,26 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
           </:action>
         </.form>
       </.section>
+
+      <%!-- TMDB's terms require this exact notice, and their logo unaltered and less prominent than ours --%>
+      <.section
+        title={dgettext("settings", "About")}
+        description={
+          dgettext(
+            "settings",
+            "This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB."
+          )
+        }
+      >
+        <.link
+          id="settings-tmdb-link"
+          href="https://www.themoviedb.org"
+          target="_blank"
+          class="inline-flex min-h-touch-target items-center self-start"
+        >
+          <img src={~p"/images/tmdb/logo.svg"} alt="The Movie Database (TMDB)" class="h-icon-sm" />
+        </.link>
+      </.section>
     </Layouts.app>
     """
   end
