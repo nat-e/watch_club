@@ -13,6 +13,7 @@ defmodule WatchClub.Playbacks do
 
     resource WatchClub.Playbacks.Playback do
       define :get_playback_by_id, action: :read, get_by: [:id]
+      define :end_inactive_playbacks, action: :end_inactive
     end
   end
 end

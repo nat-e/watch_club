@@ -3,7 +3,9 @@ defmodule WatchClub.Generator do
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
   alias WatchClub.Clubs.{Club, Library, Membership}
   alias WatchClub.Contents.{Book, Content, Movie, TvShow}
+  alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
+  alias WatchClub.Playbacks.{Playback, Session}
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -245,6 +247,20 @@ defmodule WatchClub.Generator do
         status: status,
         refresh_metadata?: false,
         triggered_manually?: true
+      },
+      overrides: opts
+    )
+  end
+
+  def playback(opts \\ []) do
+    seed_generator(
+      %Playback{
+        session_id: Ash.Seed.seed!(Session, %{started_by_id: generate(user()).id}).id,
+        media_id:
+          Ash.Seed.seed!(Media, %{
+            path: "/movies/#{System.unique_integer([:positive])}/video.mkv",
+            type: :movie
+          }).id
       },
       overrides: opts
     )

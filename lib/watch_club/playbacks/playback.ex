@@ -5,7 +5,8 @@ defmodule WatchClub.Playbacks.Playback do
   Persisted in Postgres. A Playback Session has zero or more Playbacks over its
   lifetime; at any moment, a Playback Session has at most one current Playback —
   the one whose `ended_at` is `nil`. Starting a new Playback on a Session ends
-  the previous one.
+  the previous one, and Playbacks without a heartbeat for two hours are ended by
+  `WatchClub.Playbacks.Workers.PruneSegmentCache`.
 
   This resource is concerned only with persistence and lifecycle. HLS
   rendering and its on-disk segment cache live in
@@ -19,6 +20,8 @@ defmodule WatchClub.Playbacks.Playback do
     domain: WatchClub.Playbacks,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
+
+  require Ash.Query
 
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.Playbacks.Session
@@ -60,6 +63,18 @@ defmodule WatchClub.Playbacks.Playback do
       change set_attribute(:ended_at, &DateTime.utc_now/0)
       change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
     end
+
+    action :end_inactive do
+      description "End the Playbacks without a heartbeat for two hours, so their segment cache gets pruned."
+
+      run fn _input, context ->
+        __MODULE__
+        |> Ash.Query.filter(is_nil(ended_at) and last_active_at < ago(2, :hour))
+        |> Ash.bulk_update!(:end, %{}, strategy: :stream, scope: context)
+
+        :ok
+      end
+    end
   end
 
   policies do
@@ -74,6 +89,11 @@ defmodule WatchClub.Playbacks.Playback do
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via([:session, :started_by])
+    end
+
+    policy action(:end_inactive) do
+      description "Only the system actor can end inactive Playbacks"
+      authorize_if WatchClub.Checks.IsSystemActor
     end
   end
 
