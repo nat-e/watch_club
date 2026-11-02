@@ -347,9 +347,9 @@ _Avoid_: Best localization, current localization
 - A **Playback Session** can exist even when its **Playbacks** later fail
 - A **Playback Session** records only when it was created; its activity is derived from its **Playbacks**
 - A **Playback** records its selected **Media**, when it was created, when it was last active, and when it ended
-- The **Player** is active when it is playing or when the **User** interacts with playback controls
+- The **Player** is active from the first time it plays until it closes, including while paused
 - Only **Player** heartbeats update the current **Playback**'s last active time
-- While the **Player** is playing, it sends a heartbeat about every five seconds
+- While the **Player** is active, it sends a heartbeat about every five seconds
 - The **Player** also sends a heartbeat when the **User** interacts with playback controls
 - HLS playlist and segment requests do not update a **Playback**'s last active time
 - A **Playback** has an explicit ended time; a **Playback Session** has no explicit ended state and is considered active or dormant based on whether it has a current **Playback**

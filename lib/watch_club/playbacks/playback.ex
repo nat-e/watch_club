@@ -5,8 +5,8 @@ defmodule WatchClub.Playbacks.Playback do
   Persisted in Postgres. A Playback Session has zero or more Playbacks over its
   lifetime; at any moment, a Playback Session has at most one current Playback —
   the one whose `ended_at` is `nil`. Starting a new Playback on a Session ends
-  the previous one, and the Session's `:end_quiet_playbacks` action ends the
-  Playbacks whose Player has gone quiet.
+  the previous one, and the Session's `:end_inactive_playbacks` action ends the
+  Playbacks whose Player is no longer active.
 
   This resource is concerned only with persistence and lifecycle. HLS
   rendering and its on-disk segment cache live in

@@ -4,7 +4,7 @@ defmodule WatchClub.Playbacks.Session do
 
   All public lifecycle actions live here: starting a Playback Session,
   switching to a new Playback inside it, heartbeating the current Playback and
-  ending the Playbacks whose Player has gone quiet.
+  ending the Playbacks whose Player is no longer active.
   Callers load `:active_playback` with the fields they need.
   """
 
@@ -62,7 +62,7 @@ defmodule WatchClub.Playbacks.Session do
       change Changes.BumpCurrentPlayback
     end
 
-    action :end_quiet_playbacks do
+    action :end_inactive_playbacks do
       description "End every current Playback whose Player has sent no heartbeat for six hours, then remove the segment cache of every ended Playback."
 
       run fn _input, context ->
@@ -71,6 +71,7 @@ defmodule WatchClub.Playbacks.Session do
         |> Ash.bulk_update!(:end, %{}, strategy: :stream, scope: context)
 
         SegmentCache.prune_stale()
+        :ok
       end
     end
   end
@@ -87,8 +88,8 @@ defmodule WatchClub.Playbacks.Session do
       authorize_if relates_to_actor_via(:started_by)
     end
 
-    policy action(:end_quiet_playbacks) do
-      description "Only the system actor can end quiet Playbacks"
+    policy action(:end_inactive_playbacks) do
+      description "Only the system actor can end inactive Playbacks"
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
