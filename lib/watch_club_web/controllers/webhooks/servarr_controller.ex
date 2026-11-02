@@ -276,7 +276,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
     with path when is_binary(path) <- local_path(source, folder, file),
          false <- File.exists?(path),
          {:ok, media} <- MediaCatalog.get_media_by_path(path, actor: SystemActor.actor()) do
-      MediaCatalog.destroy_media(media, actor: SystemActor.actor())
+      MediaCatalog.destroy_media!(media, actor: SystemActor.actor())
       Logger.info("Media deleted: #{path}", event: :servarr_webhook_media_deleted, path: path)
     else
       _ ->
