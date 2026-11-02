@@ -62,7 +62,7 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   built from — until then the Video simply has no manifest. Returns `:ok`;
   crashes (and the job retries) if ffmpeg fails.
   """
-  def generate_sprites(video_id, source_path, %VideoTrack{} = track, duration) do
+  def generate_sprites!(video_id, source_path, %VideoTrack{} = track, duration) do
     dir = dir(video_id)
     File.rm_rf!(dir)
     File.mkdir_p!(dir)

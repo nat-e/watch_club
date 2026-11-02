@@ -2,14 +2,13 @@ defmodule WatchClub.Playbacks.Playback.SegmentCache do
   @moduledoc false
 
   require Ash.Query
-  require Logger
 
   alias WatchClub.Playbacks.Playback
   alias WatchClub.SystemActor
 
   @cache_dir_name "watch_club_hls"
 
-  def root do
+  defp root do
     Application.get_env(
       :watch_club,
       :segment_cache_root,
@@ -19,33 +18,29 @@ defmodule WatchClub.Playbacks.Playback.SegmentCache do
 
   def playback_dir(playback_id), do: Path.join(root(), playback_id)
 
-  def prune_stale do
+  @doc """
+  Deletes the cache folder of every Playback that isn't current. Raises when
+  the Playbacks can't be read or a folder can't be deleted.
+  """
+  def prune_stale! do
     File.mkdir_p!(root())
-    live_ids = live_playback_ids()
+    # A folder is only created once its Playback is saved, so listing the folders
+    # before reading the Playbacks keeps the folder of a Playback that starts in
+    # between.
+    cached_ids = File.ls!(root())
+    current_ids = current_playback_ids()
 
-    root()
-    |> File.ls!()
-    |> Enum.each(fn entry ->
-      unless MapSet.member?(live_ids, entry) do
-        File.rm_rf(Path.join(root(), entry))
-      end
-    end)
-  rescue
-    exception ->
-      Logger.debug(
-        "Could not clean stale playback segment cache: #{Exception.message(exception)}"
-      )
+    for playback_id <- cached_ids, playback_id not in current_ids do
+      File.rm_rf!(playback_dir(playback_id))
+    end
 
-      :ok
+    :ok
   end
 
-  defp live_playback_ids do
+  defp current_playback_ids do
     Playback
     |> Ash.Query.filter(is_nil(ended_at))
-    |> Ash.read(actor: SystemActor.actor())
-    |> case do
-      {:ok, playbacks} -> MapSet.new(playbacks, & &1.id)
-      _other -> MapSet.new()
-    end
+    |> Ash.read!(actor: SystemActor.actor())
+    |> MapSet.new(& &1.id)
   end
 end
