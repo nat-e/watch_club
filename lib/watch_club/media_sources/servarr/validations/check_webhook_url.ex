@@ -5,7 +5,7 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
   if the URL responded with 2xx, so a passing validation proves
   server→Watch Club reachability.
 
-  Runs only after `present(:webhook_callback_base_url)` has passed and the
+  Runs only once the callback URL is present and valid (`HttpUrl`), and the
   wizard already has `flavor`/`base_url`/`api_key` from earlier steps.
   """
   use Ash.Resource.Validation
@@ -38,18 +38,16 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
         {:error,
          field: :webhook_callback_base_url,
          message: error_message(reason),
-         name: Flavor.label(flavor),
-         reason: inspect(reason)}
+         name: Flavor.label(flavor)}
     end
   end
 
   defp error_message(reason) do
     case reason do
-      :not_found -> dgettext_noop("errors", "%{name} could not reach this URL.")
-      :client_error -> dgettext_noop("errors", "%{name} rejected the webhook URL.")
+      :webhook_unreachable -> dgettext_noop("errors", "%{name} could not reach this URL.")
       :server_error -> dgettext_noop("errors", "%{name} returned a server error.")
-      {:transport_error, _} -> dgettext_noop("errors", "Could not connect to %{name}.")
-      _other -> dgettext_noop("errors", "Webhook test failed: %{reason}")
+      :connection_failed -> dgettext_noop("errors", "Could not connect to %{name}.")
+      _other -> dgettext_noop("errors", "The webhook test failed.")
     end
   end
 end

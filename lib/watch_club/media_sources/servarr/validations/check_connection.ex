@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaSources.Servarr.Validations.CheckConnection do
   @moduledoc """
-  Calls the flavor's `get_status/2` to fetch the server's identity, then
+  Calls `Client.get_status/2` to fetch the server's identity, then
   asserts:
 
     * the server answered (transport / auth attribution)
@@ -78,13 +78,13 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckConnection do
         :invalid_response ->
           {:base_url, dgettext_noop("errors", "This URL did not respond like a %{name} server.")}
 
-        {:transport_error, _} ->
+        :connection_failed ->
           {:base_url, dgettext_noop("errors", "Could not connect to %{name} at this URL.")}
 
         _other ->
-          {:base_url, dgettext_noop("errors", "Could not reach %{name}: %{reason}")}
+          {:base_url, dgettext_noop("errors", "Could not reach %{name}.")}
       end
 
-    {:error, field: field, message: message, name: Flavor.label(flavor), reason: inspect(reason)}
+    {:error, field: field, message: message, name: Flavor.label(flavor)}
   end
 end

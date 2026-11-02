@@ -60,6 +60,17 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
       class={["grid w-full gap-related", @class]}
       {@rest}
     >
+      <%!-- Submitted when nothing is checked, so the field counts as used and
+      shows its errors after a submit, even with no options. Left out when
+      every option is disabled: the user can't change the value, so the group
+      submits nothing. --%>
+      <input
+        :if={@item == [] or Enum.any?(@item, &(!&1[:disabled]))}
+        type="hidden"
+        name={@name}
+        value=""
+      />
+
       <%= for item <- @item do %>
         <.tooltip
           :if={item[:tooltip]}

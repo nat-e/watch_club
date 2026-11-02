@@ -5,6 +5,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.Contents.{Book, Content, Movie, TvShow}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
+  alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClub.Requests.ContentRequest
 
@@ -235,6 +236,18 @@ defmodule WatchClub.Generator do
       ],
       authorize?: false,
       actor: opts[:actor],
+      overrides: opts
+    )
+  end
+
+  def servarr_wizard(opts \\ []) do
+    seed_generator(
+      %Wizard{
+        flavor: :radarr,
+        step: :connection,
+        base_url: "http://radarr:7878",
+        api_key: "securekey"
+      },
       overrides: opts
     )
   end

@@ -1,74 +1,35 @@
 defmodule WatchClub.MediaSources.Servarr.Changes.LoadProfiles do
   @moduledoc """
-  After a successful connection check, fetches quality profiles and root
-  folders from the server and stores them on the wizard so the next step
-  can render them as picker options.
+  Fetches quality profiles and root folders from the server and stores them
+  on the wizard so the next step can render them as picker options.
 
   Stored as plain map lists on the in-memory wizard — no related resource
-  needed. Uses the wizard's `flavor` to talk to the right product.
+  needed. Runs right after `CheckConnection`, so it expects a server that
+  answers and crashes on any error.
   """
   use Ash.Resource.Change
-  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Integrations.Servarr.Client
-  alias WatchClub.MediaSources.Servarr.Flavor, as: Flavor
-
-  @task_timeout :timer.seconds(15)
 
   @impl true
   def change(changeset, _opts, _context) do
-    Ash.Changeset.before_transaction(changeset, fn changeset ->
-      flavor = Ash.Changeset.get_attribute(changeset, :flavor)
+    Ash.Changeset.before_action(changeset, fn changeset ->
       base_url = Ash.Changeset.get_argument_or_attribute(changeset, :base_url)
       api_key = Ash.Changeset.get_argument_or_attribute(changeset, :api_key)
 
-      # Profiles and root folders are flavor-agnostic endpoints — call the
-      # shared client directly. `flavor` is only used to phrase errors.
       profiles_task = Task.async(fn -> Client.list_quality_profiles(base_url, api_key) end)
       root_folders_task = Task.async(fn -> Client.list_root_folders(base_url, api_key) end)
 
-      profiles_result = Task.await(profiles_task, @task_timeout)
-      root_folders_result = Task.await(root_folders_task, @task_timeout)
+      # Each request has its own timeout.
+      {:ok, profiles} = Task.await(profiles_task, :infinity)
+      {:ok, root_folders} = Task.await(root_folders_task, :infinity)
 
-      case {profiles_result, root_folders_result} do
-        {{:ok, profiles}, {:ok, root_folders}} ->
-          changeset
-          |> Ash.Changeset.force_change_attribute(
-            :quality_profiles,
-            Enum.map(profiles, &%{"id" => &1.id, "name" => &1.name})
-          )
-          |> Ash.Changeset.force_change_attribute(
-            :root_folders,
-            Enum.map(root_folders, & &1.path)
-          )
-
-        {{:error, reason}, _} ->
-          add_connection_error(changeset, flavor, reason)
-
-        {_, {:error, reason}} ->
-          add_connection_error(changeset, flavor, reason)
-      end
+      changeset
+      |> Ash.Changeset.force_change_attribute(
+        :quality_profiles,
+        Enum.map(profiles, &%{"id" => &1.id, "name" => &1.name})
+      )
+      |> Ash.Changeset.force_change_attribute(:root_folders, Enum.map(root_folders, & &1.path))
     end)
   end
-
-  # The extra keys are the message's interpolation variables.
-  defp add_connection_error(changeset, flavor, reason) do
-    Ash.Changeset.add_error(changeset,
-      message: connection_error_message(reason),
-      name: Flavor.label(flavor),
-      reason: inspect(reason)
-    )
-  end
-
-  defp connection_error_message(:unauthorized),
-    do: dgettext_noop("errors", "%{name} rejected the API key.")
-
-  defp connection_error_message(:not_found),
-    do: dgettext_noop("errors", "%{name} API was not found at this URL.")
-
-  defp connection_error_message({:transport_error, _}),
-    do: dgettext_noop("errors", "Could not connect to %{name}.")
-
-  defp connection_error_message(_other),
-    do: dgettext_noop("errors", "Could not reach %{name}: %{reason}")
 end

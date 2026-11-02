@@ -246,7 +246,6 @@ msgstr ""
 msgid "Your current password is required"
 msgstr ""
 
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} API was not found at this URL."
@@ -262,19 +261,9 @@ msgstr ""
 msgid "%{name} is rate-limiting requests. Try again."
 msgstr ""
 
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
-#, elixir-autogen, elixir-format
-msgid "%{name} rejected the API key."
-msgstr ""
-
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} rejected the request."
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
-#, elixir-autogen, elixir-format
-msgid "%{name} rejected the webhook URL."
 msgstr ""
 
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -293,16 +282,9 @@ msgstr ""
 msgid "Could not connect to %{name} at this URL."
 msgstr ""
 
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "Could not connect to %{name}."
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
-#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
-#, elixir-autogen, elixir-format
-msgid "Could not reach %{name}: %{reason}"
 msgstr ""
 
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -320,7 +302,22 @@ msgstr ""
 msgid "This URL is not a %{expected} server."
 msgstr ""
 
+#: lib/watch_club/shared/validations/http_url.ex
+#, elixir-autogen, elixir-format
+msgid "This URL is not valid."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "Could not reach %{name}."
+msgstr ""
+
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
-msgid "Webhook test failed: %{reason}"
+msgid "The webhook test failed."
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "The media type is required"
 msgstr ""

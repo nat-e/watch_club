@@ -36,8 +36,11 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
     CheckWebhookUrl
   }
 
+  alias WatchClub.Shared.Changes.NormalizeUrl
+  alias WatchClub.Shared.Validations.HttpUrl
+
   state_machine do
-    initial_states [:connection, :request_profile]
+    initial_states [:connection]
     default_initial_state :connection
     state_attribute :step
 
@@ -70,9 +73,10 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
         constraints instance_of: Source
       end
 
+      # Starts at the connection step, so a source whose server is down or
+      # moved can still be edited.
       change SeedFromSource
-      change LoadProfiles
-      change set_attribute(:step, :request_profile)
+      change set_attribute(:step, :connection)
     end
 
     update :configure_connection do
@@ -87,8 +91,12 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
         message dgettext_noop("errors", "The API key is required")
       end
 
+      change {NormalizeUrl, attribute: :base_url}
+      validate {HttpUrl, attribute: :base_url}, where: present(:base_url)
       validate CheckConnection, only_when_valid?: true, before_action?: true
 
+      # Both run as before_action hooks, in this order, so LoadProfiles only
+      # runs once CheckConnection has passed.
       change LoadProfiles
       change transition_state(:request_profile)
     end
@@ -115,6 +123,11 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       validate present(:webhook_callback_base_url) do
         message dgettext_noop("errors", "The callback URL is required")
       end
+
+      change {NormalizeUrl, attribute: :webhook_callback_base_url}
+
+      validate {HttpUrl, attribute: :webhook_callback_base_url},
+        where: present(:webhook_callback_base_url)
 
       validate CheckWebhookUrl, only_when_valid?: true, before_action?: true
 

@@ -1,9 +1,8 @@
 defmodule WatchClub.MediaSources.Servarr.Changes.SeedFromSource do
   @moduledoc """
   Copies the Servarr implementation attributes off a `Source` passed
-  as the `:media_source` argument onto the wizard. Runs as the first change
-  on `Wizard.for_edit` so subsequent validations and changes (connection
-  check, profile loading) see the seeded values.
+  as the `:media_source` argument onto the wizard, so `Wizard.for_edit`
+  opens the connection step with the saved values.
 
   The argument's `:implementation` must already be loaded — the
   LiveComponent always loads it before opening the modal.

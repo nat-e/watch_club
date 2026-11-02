@@ -461,3 +461,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "The root folder path must be accessible directly by %{instance} for playback. If the mounts are different, enter the path to the root folder from %{instance} file system."
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Connecting…"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Verifying…"
+msgstr ""

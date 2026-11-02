@@ -7,8 +7,9 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   In create mode the modal drives a three-step wizard backed by the
   in-memory `Servarr.Wizard` resource:
 
-    1. `:connection`      — base URL + API key (validates by loading the
-                            server's quality profiles and root folders)
+    1. `:connection`      — base URL + API key (validated by fetching the
+                            server's status, then loads its quality
+                            profiles and root folders)
     2. `:request_profile` — pick quality profile and root folder
     3. `:webhook`         — webhook callback URL (validated by asking the
                             server to fire a `Test` event)
@@ -18,8 +19,9 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   to `:finished` and the LiveComponent hands its attributes to
   `MediaSources.create_servarr_media_source/2`.
 
-  In edit mode the modal renders a single form against
-  `Servarr.update`.
+  In edit mode the wizard starts at `:connection` with the saved source's
+  values (`for_edit`), and the final step hands its attributes to
+  `MediaSources.update_servarr_media_source/3`.
   """
   use WatchClubWeb, :live_component
 
@@ -277,7 +279,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
     <.field
       field={@form[:base_url]}
       label={dgettext("admin_media_imports", "%{name} URL", name: app_name(@flavor))}
-      type="url"
+      inputmode="url"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
       input_class="font-mono"
       placeholder={connection_url_placeholder(@flavor)}
       autocomplete="off"
@@ -326,10 +331,11 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           "The quality profile to use for making requests from this source."
         )}
       </:hint>
-      <:control>
+      <:control :let={describedby}>
         <.radio_group
           field={@form[:selected_quality_profile_id]}
           class="grid grid-cols-1 gap-related sm:grid-cols-2"
+          aria-describedby={describedby}
         >
           <:item
             :for={profile <- @profiles}
@@ -354,10 +360,11 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           "The root folder to use for making requests and importing data from this source."
         )}
       </:hint>
-      <:control>
+      <:control :let={describedby}>
         <.radio_group
           field={@form[:selected_root_path]}
-          class="flex flex-col gap-tight"
+          class="grid-cols-1 gap-tight"
+          aria-describedby={describedby}
         >
           <:item
             :for={path <- @root_folders}
@@ -400,7 +407,10 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
           instance: @instance_settings.name
         )
       }
-      type="url"
+      inputmode="url"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
       input_class="font-mono"
       placeholder="http://host.docker.internal:4000"
       autocomplete="off"
@@ -426,7 +436,12 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
     <.button id="servarr-wizard-connection-cancel" type="button" variant="secondary" data-modal-close>
       {dgettext("default", "Cancel")}
     </.button>
-    <.button id="servarr-wizard-connection-submit" type="submit" variant="primary">
+    <.button
+      id="servarr-wizard-connection-submit"
+      type="submit"
+      variant="primary"
+      phx-disable-with={dgettext("admin_media_imports", "Connecting…")}
+    >
       {dgettext("admin_media_imports", "Connect")}
     </.button>
     """
@@ -462,7 +477,12 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:icon position="start"><Lucideicons.arrow_left class="size-icon-sm" /></:icon>
       {dgettext("default", "Back")}
     </.button>
-    <.button id="servarr-wizard-webhook-edit-submit" type="submit" variant="primary">
+    <.button
+      id="servarr-wizard-webhook-edit-submit"
+      type="submit"
+      variant="primary"
+      phx-disable-with={dgettext("admin_media_imports", "Verifying…")}
+    >
       {dgettext("admin_media_imports", "Save changes")}
     </.button>
     """
@@ -480,7 +500,12 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:icon position="start"><Lucideicons.arrow_left class="size-icon-sm" /></:icon>
       {dgettext("default", "Back")}
     </.button>
-    <.button id="servarr-wizard-webhook-submit" type="submit" variant="primary">
+    <.button
+      id="servarr-wizard-webhook-submit"
+      type="submit"
+      variant="primary"
+      phx-disable-with={dgettext("admin_media_imports", "Verifying…")}
+    >
       {dgettext("admin_media_imports", "Add Source")}
     </.button>
     """
