@@ -2,6 +2,9 @@
 
 WatchClub is a self-hosted, collaborative Media Center.
 
+> [!WARNING]
+> WatchClub is in early development (alpha). Expect bugs and breaking changes between releases until 1.0.
+
 ## Install
 
 ### Docker Compose

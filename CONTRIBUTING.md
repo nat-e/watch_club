@@ -22,7 +22,7 @@ Pull requests are squash merged, so the title becomes the commit message on `mai
 
 | Type | Use for | Release |
 | -- | -- | -- |
-| `feat` | A new feature | Minor version |
+| `feat` | A new feature | Minor version (patch before 1.0) |
 | `fix` | A bug fix | Patch version |
 | `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert` | Everything else | None on its own |
 
@@ -38,7 +38,9 @@ A CI check rejects titles that don't follow this format.
 
 ## Releases
 
-release-please keeps a release pull request open, which bumps the version in `mix.exs` and updates `CHANGELOG.md`. Merging it tags the release, and CI publishes the image.
+release-please keeps a release pull request open, which bumps the version in `mix.exs` and updates `CHANGELOG.md`. Merging it tags the release, and CI publishes the image. Before 1.0, GitHub releases are marked as pre-releases.
+
+To pick the next version yourself, add `Release-As: x.y.z` to the description of a pull request. It ends up in the squash commit's body, where release-please reads it.
 
 Images are published to `ghcr.io/nat-e/watch_club` with these tags:
 
