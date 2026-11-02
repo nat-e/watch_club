@@ -32,6 +32,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 
 - We use Gettext for internationalization. The app is currently translated in English (default) and French
 - Comment messages with `# AI-translated (Claude)` when translating in the .po files
+- Translate whole sentences, never parts of sentences, because word order changes between languages. When a sentence contains components (links, user names...), put them in placeholders with `gtcomponent/1` and render the result with `raw/1`: `raw(dgettext("feed", "%{user} joined the club", user: gtcomponent(user_ref(%{user: user}))))`
 
 ## Coding style
 

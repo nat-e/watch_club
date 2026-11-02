@@ -25,3 +25,61 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
 msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Create a club and invite your friends to get started"
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "In the mean time, you can still browse and watch some content on your own."
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "It's more fun with friends, contact the administrator so they can add you to some Clubs."
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Recent Activity"
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Your instance is successfully installed!"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} added %{content} to %{library}"
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} created the club"
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} created the library %{library}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} is watching %{content}"
+msgstr ""
+
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} joined the club"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
+#: lib/watch_club_web/live/home/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} watched %{content}"
+msgstr ""

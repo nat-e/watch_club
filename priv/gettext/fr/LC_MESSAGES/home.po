@@ -11,17 +11,26 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "%{time} left"
-msgstr ""
+msgstr "Il reste %{time}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "Not available"
-msgstr ""
+msgstr "Indisponible"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/home/continue_watching_section.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
-msgstr ""
+msgstr "Pas commencé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home/continue_watching_section.ex
+#, elixir-autogen, elixir-format
+msgid "Continue Watching"
+msgstr "Continuer à regarder"

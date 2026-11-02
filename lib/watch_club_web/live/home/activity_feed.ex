@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.section
       surface="transparent"
-      title="Recent Activity"
+      title={dgettext("feed", "Recent Activity")}
       space="related"
       padding="tight"
     >
@@ -52,8 +52,8 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       <:icon><Lucideicons.rocket /></:icon>
       <:title>{dgettext("feed", "Welcome to Watch Club!")}</:title>
       <:description>
-        Your instance is successfully installed!
-        <br />Create a club and invite your friends to get started
+        {dgettext("feed", "Your instance is successfully installed!")}
+        <br />{dgettext("feed", "Create a club and invite your friends to get started")}
       </:description>
       <.button
         id="empty-feed-create-club"
@@ -75,7 +75,15 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       <:icon><Lucideicons.mail /></:icon>
       <:title>{dgettext("feed", "Welcome to %{name}!", name: @instance_settings.name)}</:title>
       <:description>
-        It's more fun with friends, contact the administrator so they can add you to some Clubs.<br />In the mean time, you can still browse and watch some content on your own.
+        {dgettext(
+          "feed",
+          "It's more fun with friends, contact the administrator so they can add you to some Clubs."
+        )}
+        <br />
+        {dgettext(
+          "feed",
+          "In the mean time, you can still browse and watch some content on your own."
+        )}
       </:description>
     </.empty>
     """
@@ -89,7 +97,11 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.event.actor} /> created the club
+        {raw(
+          dgettext("feed", "%{user} created the club",
+            user: gtcomponent(user_ref(%{user: @event.event.actor}))
+          )
+        )}
       </span>
     </.generic_feed_card>
     """
@@ -99,8 +111,12 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.event.actor} /> created the library
-        <.library_ref library={@event.event.library} />
+        {raw(
+          dgettext("feed", "%{user} created the library %{library}",
+            user: gtcomponent(user_ref(%{user: @event.event.actor})),
+            library: gtcomponent(library_ref(%{library: @event.event.library}))
+          )
+        )}
       </span>
     </.generic_feed_card>
     """
@@ -115,9 +131,13 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       content={@event.event.library_item.content}
     >
       <span class="text-sm">
-        <.user_ref user={@event.event.actor} /> added
-        <.content_link content={@event.event.library_item.content} /> to
-        <.library_ref library={@event.event.library_item.library} />
+        {raw(
+          dgettext("feed", "%{user} added %{content} to %{library}",
+            user: gtcomponent(user_ref(%{user: @event.event.actor})),
+            content: gtcomponent(content_link(%{content: @event.event.library_item.content})),
+            library: gtcomponent(library_ref(%{library: @event.event.library_item.library}))
+          )
+        )}
       </span>
     </.generic_feed_card>
     """
@@ -132,13 +152,21 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       content={@event.event.content}
     >
       <span class="text-sm">
-        <.user_ref user={@event.event.actor} />
         <%= if @event.event.completed do %>
-          watched
+          {raw(
+            dgettext("feed", "%{user} watched %{content}",
+              user: gtcomponent(user_ref(%{user: @event.event.actor})),
+              content: gtcomponent(content_link(%{content: @event.event.content}))
+            )
+          )}
         <% else %>
-          is watching
+          {raw(
+            dgettext("feed", "%{user} is watching %{content}",
+              user: gtcomponent(user_ref(%{user: @event.event.actor})),
+              content: gtcomponent(content_link(%{content: @event.event.content}))
+            )
+          )}
         <% end %>
-        <.content_link content={@event.event.content} />
       </span>
     </.generic_feed_card>
     """
@@ -148,7 +176,11 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
     ~H"""
     <.generic_feed_card id={@id} event={@event} locale={@locale}>
       <span class="text-sm">
-        <.user_ref user={@event.event.membership.user} /> joined the club
+        {raw(
+          dgettext("feed", "%{user} joined the club",
+            user: gtcomponent(user_ref(%{user: @event.event.membership.user}))
+          )
+        )}
       </span>
     </.generic_feed_card>
     """

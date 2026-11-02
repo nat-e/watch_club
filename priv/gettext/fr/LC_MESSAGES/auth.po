@@ -80,10 +80,11 @@ msgstr "Bon retour !"
 msgid "Your password has successfully been reset"
 msgstr "Votre mot de passe a bien été réinitialisé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation Code"
-msgstr ""
+msgstr "Code d'invitation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex

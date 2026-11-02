@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
     <button class="w-fit" phx-target={@myself} phx-click="mark_not_watched">
       <.badge variant="success" size="lg">
         <:icon><Lucideicons.check_circle_2 /></:icon>
-        Watched
+        {dgettext("contents", "Watched")}
       </.badge>
     </button>
     """
@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Components.Contents.ContentWatchProgressBadge do
     <button class="w-fit" phx-target={@myself} phx-click="mark_watched">
       <.badge variant="muted" size="lg">
         <:icon><Lucideicons.check_circle_2 /></:icon>
-        Mark as watched
+        {dgettext("contents", "Mark as watched")}
       </.badge>
     </button>
     """

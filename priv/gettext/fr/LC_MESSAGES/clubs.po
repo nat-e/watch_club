@@ -455,70 +455,78 @@ msgstr "La bibliothèque que vous cherchiez n'existe pas"
 msgid "Manage %{club_name}'s members."
 msgstr "Gérez les membres de %{club_name}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members/add_members_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Add club members"
-msgstr ""
+msgstr "Ajouter des membres au club"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members/add_members_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Add existing users to this club. To invite new users to the instance, go to the Admin > Users page"
-msgstr ""
+msgstr "Ajoutez des utilisateurs existants à ce club. Pour inviter de nouveaux utilisateurs sur l'instance, allez sur la page Admin > Utilisateurs"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members/add_members_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Add member"
-msgstr ""
+msgstr "Ajouter au club"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add members"
-msgstr ""
+msgstr "Ajouter des membres"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Create"
-msgstr "Créer une bibliothèque"
+msgstr "Créer"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create invitation code"
-msgstr ""
+msgstr "Créer un code d'invitation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings_page.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Library updated"
-msgstr "Bibliothèque supprimée"
+msgstr "Bibliothèque mise à jour"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/content_card.ex
 #, elixir-autogen, elixir-format
 msgid "Share with club"
-msgstr ""
+msgstr "Partager avec un club"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/hooks/load_club.ex
 #: lib/watch_club_web/live/clubs/members_page.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "The page you were looking for does not exist"
-msgstr "La bibliothèque que vous cherchiez n'existe pas"
+msgstr "La page que vous cherchiez n'existe pas"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members/add_members_modal.ex
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Users"
-msgstr "Utilisateur"
+msgstr "Utilisateurs"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members_page.ex
 #, elixir-autogen, elixir-format
 msgid "Users added to club"
-msgstr ""
+msgstr "Utilisateurs ajoutés au club"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/library_page.ex

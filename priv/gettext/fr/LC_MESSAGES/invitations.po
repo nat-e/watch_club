@@ -23,10 +23,11 @@ msgstr "Demandez un nouveau lien à la personne qui vous a invité."
 msgid "This invitation is no longer available"
 msgstr "Cette invitation n'est plus active"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome!"
-msgstr ""
+msgstr "Bienvenue !"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex

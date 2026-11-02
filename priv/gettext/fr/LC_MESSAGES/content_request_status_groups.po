@@ -11,32 +11,38 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "All"
-msgstr ""
+msgstr "Tous"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "Completed"
-msgstr ""
+msgstr "Terminés"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "Failed"
-msgstr ""
+msgstr "En échec"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "In progress"
-msgstr ""
+msgstr "En cours"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "Not found"
-msgstr ""
+msgstr "Introuvables"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status_group.ex
 #, elixir-autogen, elixir-format
 msgid "Not released"
-msgstr ""
+msgstr "Pas encore sortis"

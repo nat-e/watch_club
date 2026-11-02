@@ -119,7 +119,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
          |> assign(:state, state)
          |> stream_delete(:media_rows, media)
          |> stream_delete(:media_cards, media)
-         |> put_flash(:info, "Media deleted.")}
+         |> put_flash(:info, dgettext("admin_media", "Media deleted."))}
     end
   end
 
@@ -140,8 +140,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       space="section"
     >
       <.settings_header
-        title="Media Browser"
-        description="View and manage all medias on this instance."
+        title={dgettext("admin_media", "Media Browser")}
+        description={dgettext("admin_media", "View and manage all medias on this instance.")}
       />
 
       <Toolbar.toolbar state={@state} />
@@ -167,13 +167,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           <button
             type="button"
             phx-click="close_drawer"
-            aria-label="Close detail panel"
+            aria-label={dgettext("admin_media", "Close detail panel")}
             class="fixed inset-0 z-40 bg-scrim backdrop-blur-sm lg:hidden"
           ></button>
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Media detail"
+            aria-label={dgettext("admin_media", "Media detail")}
             phx-window-keydown="close_drawer"
             phx-key="escape"
             class={[
@@ -214,13 +214,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search /></:icon>
-      <:title>You don't have any media yet</:title>
+      <:title>{dgettext("admin_media", "You don't have any media yet")}</:title>
       <:description>
-        Configure media imports or automations to add Media to your instance.
+        {dgettext(
+          "admin_media",
+          "Configure media imports or automations to add Media to your instance."
+        )}
       </:description>
       <.button id="empty-state-import-media" navigate={~p"/admin/media/sources"} variant="accent">
         <:icon><Lucideicons.download /></:icon>
-        Import Media
+        {dgettext("admin_media", "Import Media")}
       </.button>
     </.empty>
     """
@@ -230,11 +233,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search_x /></:icon>
-      <:title>No Media match your filters</:title>
-      <:description>Try clearing your filters or searching for something else</:description>
+      <:title>{dgettext("admin_media", "No Media match your filters")}</:title>
+      <:description>
+        {dgettext("admin_media", "Try clearing your filters or searching for something else")}
+      </:description>
       <.button id="empty-state-import-media" patch={~p"/admin/media"} variant="accent">
         <:icon><Lucideicons.x /></:icon>
-        Clear filters
+        {dgettext("admin_media", "Clear filters")}
       </.button>
     </.empty>
     """

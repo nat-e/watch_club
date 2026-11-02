@@ -11,92 +11,176 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Almost ready"
-msgstr ""
+msgstr "Presque prêt"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Completed"
-msgstr ""
+msgstr "Terminé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Downloading"
-msgstr ""
+msgstr "Téléchargement"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Missing episodes"
-msgstr ""
+msgstr "Épisodes manquants"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Needs attention"
-msgstr ""
+msgstr "Action requise"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Not found"
-msgstr ""
+msgstr "Introuvable"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Not released"
-msgstr ""
+msgstr "Pas encore sorti"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Requested"
-msgstr ""
+msgstr "Demandé"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Searching"
-msgstr ""
+msgstr "Recherche"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "The administrator has been informed of your request. You will be notified when this content is ready."
-msgstr ""
+msgstr "L'administrateur a été informé de votre demande. Vous serez prévenu quand ce contenu sera prêt."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "There was a problem with this request that requires human attention. The administrator has been informed."
-msgstr ""
+msgstr "Un problème avec cette demande nécessite une intervention manuelle. L'administrateur a été informé."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "We are looking for your content..."
-msgstr ""
+msgstr "Nous recherchons votre contenu..."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find some episodes of your show. We will keep looking for them."
-msgstr ""
+msgstr "Nous n'avons pas trouvé certains épisodes de votre série. Nous continuons à les chercher."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Your content has been downloaded and is being imported"
-msgstr ""
+msgstr "Votre contenu a été téléchargé et est en cours d'import"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Your content has not been found yet. It will be downloaded automatically when we find it."
-msgstr ""
+msgstr "Votre contenu n'a pas encore été trouvé. Il sera téléchargé automatiquement dès que nous le trouverons."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Your content is being downloaded"
-msgstr ""
+msgstr "Votre contenu est en cours de téléchargement"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Your content is not available yet. We will download it automatically as soon as it's released!"
-msgstr ""
+msgstr "Votre contenu n'est pas encore disponible. Nous le téléchargerons automatiquement dès sa sortie !"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Your content is ready to watch!"
-msgstr ""
+msgstr "Votre contenu est prêt à être regardé !"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse movies and shows to request something for your club."
+msgstr "Parcourez les films et séries pour faire une demande pour votre club."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel request"
+msgstr "Annuler la demande"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filter by content type"
+msgstr "Filtrer par type de contenu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filter by status"
+msgstr "Filtrer par statut"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "My Requests"
+msgstr "Mes demandes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests match"
+msgstr "Aucune demande ne correspond"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests yet"
+msgstr "Aucune demande pour le moment"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Requested %{relative_time}"
+msgstr "Demandé %{relative_time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Share with a club"
+msgstr "Partager avec un club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sort: %{sort}"
+msgstr "Tri : %{sort}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Try clearing some filters, or browse content to add a request."
+msgstr "Essayez d'effacer des filtres, ou parcourez les contenus pour faire une demande."

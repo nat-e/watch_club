@@ -74,7 +74,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
     >
       <span>
         {dgettext("search", "See all results")}
-        <.kbd>Enter ⏎</.kbd>
+        <.kbd>{dgettext("search", "Enter ⏎")}</.kbd>
       </span>
       <Lucideicons.chevron_right class="size-icon" />
     </button>

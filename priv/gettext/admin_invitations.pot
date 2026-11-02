@@ -145,3 +145,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "You don't have any active invite links"
 msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Active Invitations"
+msgstr ""

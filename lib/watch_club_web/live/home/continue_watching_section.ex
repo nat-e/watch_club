@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
     ~H"""
     <.section
       surface="transparent"
-      title="Continue Watching"
+      title={dgettext("home", "Continue Watching")}
       padding="none"
       space="related"
     >

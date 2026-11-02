@@ -245,3 +245,82 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Your current password is required"
 msgstr ""
+
+#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} API was not found at this URL."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} could not reach this URL."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} is rate-limiting requests. Try again."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} rejected the API key."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} rejected the request."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} rejected the webhook URL."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} rejected this API key."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} returned a server error."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "Could not connect to %{name} at this URL."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "Could not connect to %{name}."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/changes/load_profiles.ex
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "Could not reach %{name}: %{reason}"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "This URL did not respond like a %{name} server."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "This URL is a %{app_name} server, not %{expected}."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_connection.ex
+#, elixir-autogen, elixir-format
+msgid "This URL is not a %{expected} server."
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "Webhook test failed: %{reason}"
+msgstr ""

@@ -39,5 +39,16 @@ defmodule WatchClubWeb.Gettext do
       |> Phoenix.HTML.safe_to_string()
       |> then(&~s(<span class="font-bold">#{&1}</span>))
     end
+
+    @doc """
+    Renders a function component to HTML, to embed it in a translated sentence with `raw/1`.
+
+        raw(dgettext("feed", "%{user} joined the club", user: gtcomponent(user_ref(%{user: user}))))
+    """
+    def gtcomponent(rendered) do
+      rendered
+      |> Phoenix.HTML.Safe.to_iodata()
+      |> IO.iodata_to_binary()
+    end
   end
 end
