@@ -39,6 +39,10 @@ config :phoenix_live_reload, dirs: ["lib", "priv"]
 # Enable dev routes for dashboard, oban and storybook
 config :watch_club, dev_routes: true
 
+# Main and each worktree keep their own segment cache, because the cleanup job
+# deletes the cache of any Playback that its database doesn't see as current.
+config :watch_club, :segment_cache_root, Path.expand("../tmp/dev/segment_cache", __DIR__)
+
 # We only include the error metadata in development
 config :logger, :default_formatter,
   format: "[$level] $message $metadata\n",
