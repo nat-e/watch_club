@@ -4,7 +4,7 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   # 1 day
   @default_cache_ttl_ms 24 * 60 * 60 * 1000
 
-  @spec request(keyword()) :: {:ok, Req.Response.t()} | {:error, any()}
+  @spec request(keyword()) :: {:ok, term()} | {:error, any()}
   def request(opts) do
     # Returned the cached response if present unless cache is de-activated
     with true <- Keyword.get(opts, :cache, true),
@@ -45,16 +45,6 @@ defmodule WatchClub.Integrations.Tmdb.Client do
     {:ok, body}
   end
 
-  defp handle_response({:ok, %Req.Response{status: 400, body: body}}, _opts) do
-    Logger.error("TMDB — Invalid Request", event: :tmdb_api_error, status: 400, error: body)
-    {:error, :invalid_request}
-  end
-
-  defp handle_response({:ok, %Req.Response{status: 401, body: body}}, _opts) do
-    Logger.warning("TMDB — Unauthorized", event: :tmdb_api_error, status: 401, error: body)
-    {:error, :unauthorized}
-  end
-
   defp handle_response({:ok, %Req.Response{status: 404, body: body}}, _opts) do
     Logger.warning("TMDB — Not Found", event: :tmdb_api_error, status: 404, error: body)
     {:error, :not_found}
@@ -63,6 +53,17 @@ defmodule WatchClub.Integrations.Tmdb.Client do
   defp handle_response({:ok, %Req.Response{status: 429, body: body}}, _opts) do
     Logger.warning("TMDB — Rate limited", event: :tmdb_api_error, status: 429, error: body)
     {:error, :rate_limited}
+  end
+
+  defp handle_response({:ok, %Req.Response{status: status, body: body}}, _opts)
+       when status in 400..499 do
+    Logger.warning("TMDB — Client error #{status}",
+      event: :tmdb_api_error,
+      status: status,
+      error: body
+    )
+
+    {:error, :client_error}
   end
 
   defp handle_response({:ok, %Req.Response{status: status, body: body}}, _opts)
