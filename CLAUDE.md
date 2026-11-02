@@ -18,6 +18,16 @@ Rules:
 - After a merge, the `post-merge` hook updates main with `scripts/worktree/update_main.sh`. Main's dev server needs a restart to pick up new dependencies or config
 - To restart a dev server, stop it, wait for `WC_PORT` to be free, start it with `wt dev`, then check that the app responds on `WC_PORT`
 
+## Tidewave
+
+The `tidewave-mcp` server gives access to the running dev server. Prefer its tools to the shell:
+- `project_eval` runs Elixir code in the running app, instead of `mix run` or a new `iex`
+- `execute_sql_query` queries the dev database, instead of `psql`
+- `get_logs` reads the server logs
+- `get_source_location` finds where a module or function is defined
+
+Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while the dev server is running.
+
 ## i18n
 
 - We use Gettext for internationalization. The app is currently translated in English (default) and French

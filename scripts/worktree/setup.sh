@@ -27,14 +27,7 @@ docker exec wc-db psql -q -U postgres -d "$db" -c "
   where worker <> 'WatchClub.Requests.Workers.RefreshMediaSourceRequest'
     or state not in ('available', 'scheduled', 'retryable')"
 
-# Claude's local MCP scope is shared with main, so the worktree's Tidewave URL
-# goes in .mcp.json itself, hidden from git. Approving the server here avoids a
-# prompt in each new worktree.
-git update-index --skip-worktree .mcp.json
-jq --arg url "http://localhost:$port/tidewave/mcp" \
-  '.mcpServers["tidewave-mcp"].url = $url' .mcp.json >.mcp.json.worktree
-mv .mcp.json.worktree .mcp.json
-
+# Approving the Tidewave server here avoids a prompt in each new worktree.
 settings=.claude/settings.local.json
 [[ -f $settings ]] || echo '{}' >"$settings"
 jq '.enabledMcpjsonServers = ["tidewave-mcp"]' "$settings" >"$settings.worktree"

@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "tidewave-mcp": {
-      "type": "http",
-      "url": "http://localhost:4000/tidewave/mcp",
-      "headers": {},
+      "type": "stdio",
+      "command": "mix",
+      "args": ["tidewave.proxy"],
       "directTools": true
     }
   }

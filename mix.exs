@@ -51,7 +51,7 @@ defmodule WatchClub.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:tidewave, "~> 0.5", only: [:dev]},
+      {:tidewave, "~> 0.9", only: [:dev]},
       {:accept_language, "~> 0.1.0"},
       {:ash, "~> 3.0"},
       {:ash_authentication, "~> 4.0"},
