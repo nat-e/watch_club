@@ -52,12 +52,24 @@ if config_env() != :test do
 
   port = env!("WC_PORT", :integer, 4000)
 
+  # The public URL, which differs from the listen address behind a reverse
+  # proxy. URI.new fills in 443 or 80 when the URL has no port, so Phoenix
+  # never falls back to the listen port. A path is rejected because the app
+  # can't run under a sub-path.
+  wc_url = env!("WC_URL", :string, "http://localhost:#{port}")
+
+  public_url =
+    case URI.new(wc_url) do
+      {:ok, %URI{scheme: scheme, host: host, path: path} = uri}
+      when scheme in ["http", "https"] and host not in [nil, ""] and path in [nil, "/"] ->
+        uri
+
+      _ ->
+        raise "WC_URL must be a full URL without a path, such as https://watch.example.com, got: #{inspect(wc_url)}"
+    end
+
   config :watch_club, WatchClubWeb.Endpoint,
-    url: [
-      host: env!("WC_HOST", :string, "localhost"),
-      port: port,
-      scheme: env!("WC_SCHEME", :string, "http")
-    ],
+    url: [host: public_url.host, port: public_url.port, scheme: public_url.scheme],
     # Bind on all interfaces (IPv6 :: also accepts IPv4) so the container is
     # reachable; use {0, 0, 0, 0, 0, 0, 0, 1} for loopback-only access.
     http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: port],
