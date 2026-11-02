@@ -30,10 +30,4 @@ defmodule WatchClubWeb.Components.Contents.ContentTypeIcon do
     <Lucideicons.film class={@class} />
     """
   end
-
-  def content_type_icon(%{type: :books} = assigns) do
-    ~H"""
-    <Lucideicons.book_open class={@class} />
-    """
-  end
 end

@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Clubs.Settings.CreateOrEditLibraryModal do
           <:control>
             <.radio_group
               field={@form[:content_type]}
-              class="grid grid-cols-1 gap-related sm:grid-cols-3"
+              class="grid grid-cols-1 gap-related sm:grid-cols-2"
             >
               <:item
                 :for={content_type <- @content_types}
