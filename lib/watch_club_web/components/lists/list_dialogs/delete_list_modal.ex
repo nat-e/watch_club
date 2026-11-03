@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Components.Navigation.Sidebar.DeleteListModal do
+defmodule WatchClubWeb.Components.Lists.ListDialogs.DeleteListModal do
   @moduledoc """
   Confirmation modal for deleting a user's list.
   """

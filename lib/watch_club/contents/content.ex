@@ -99,7 +99,12 @@ defmodule WatchClub.Contents.Content do
       constraints instance_of: SearchResultsPage
 
       argument :query, :string, allow_nil?: false
-      argument :content_type, SearchContentType, allow_nil?: false
+
+      argument :content_type, SearchContentType,
+        allow_nil?: false,
+        default: :movies_and_shows,
+        description: "The only scope until books can be searched"
+
       argument :page, :integer, allow_nil?: false, default: 1
 
       run WatchClub.Contents.Actions.SearchContent

@@ -70,19 +70,15 @@ defmodule WatchClubWeb.Lists.ListPage do
       instance_settings={@instance_settings}
       class="p-2!"
       space="none"
+      title={@list.name}
     >
+      <:icon><.lucide_icon name={@list.icon} /></:icon>
       <.stack space="group" class="w-full @container">
-        <.stack space="related">
-          <.inline space="related">
-            <.lucide_icon name={@list.icon} class="size-icon-lg shrink-0 text-text-muted" />
-            <h1 class="min-w-0 flex-1 truncate text-3xl font-semibold">{@list.name}</h1>
-          </.inline>
-          <.list_sort_controls
-            list_id={@list.id}
-            current_sort_by={@sort_by}
-            current_sort_order={@sort_order}
-          />
-        </.stack>
+        <.list_sort_controls
+          list_id={@list.id}
+          current_sort_by={@sort_by}
+          current_sort_order={@sort_order}
+        />
 
         <div
           id="list-content-stream"
@@ -139,6 +135,15 @@ defmodule WatchClubWeb.Lists.ListPage do
   end
 
   @impl true
+  # The list was renamed or got another icon, e.g. from the bar's Edit list
+  def handle_info(
+        %Notification{data: %ContentList{id: list_id} = list, action: %{type: :update}},
+        socket
+      )
+      when list_id == socket.assigns.list.id do
+    {:noreply, assign(socket, :list, list)}
+  end
+
   # The List was deleted, navigate back to the home page
   def handle_info(
         %Notification{data: %ContentList{id: list_id}, action: %{name: :destroy}},

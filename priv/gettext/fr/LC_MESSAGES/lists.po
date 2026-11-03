@@ -24,51 +24,51 @@ msgid "Added date"
 msgstr "Date d'ajout"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Change list icon"
 msgstr "Changer l'icône de la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Choose an icon"
 msgstr "Choisir une icône"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create new list"
 msgstr "Créer une nouvelle liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete list"
 msgstr "Supprimer la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Edit list"
 msgstr "Modifier la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "List %{list_name} deleted"
 msgstr "Liste %{list_name} supprimée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "List created"
 msgstr "Liste créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "List name"
 msgstr "Nom de la liste"
@@ -80,7 +80,7 @@ msgid "List sort order"
 msgstr "Ordre de tri de la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "List updated"
 msgstr "Liste mise à jour"
@@ -98,7 +98,7 @@ msgid "Removed from list"
 msgstr "Retiré de la liste"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/lists/list_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Select an icon for your list"
 msgstr "Sélectionnez une icône pour votre liste"
@@ -134,19 +134,19 @@ msgid "To Watch"
 msgstr "À voir"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete the list %{list_name}?"
 msgstr "Voulez-vous vraiment supprimer la liste %{list_name} ?"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create a private content List to keep track of what you want to watch, read, ..."
 msgstr "Créez une liste de contenu privée pour suivre ce que vous voulez regarder, lire, ..."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "My list"
 msgstr "Ma liste"

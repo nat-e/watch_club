@@ -12,4 +12,13 @@ defmodule WatchClubWeb.Components.UI.Typography do
     </span>
     """
   end
+
+  attr :text, :string, required: true
+
+  @doc "The sentence that opens a page, under the app bar that shows its name."
+  def page_description(assigns) do
+    ~H"""
+    <p class="max-w-readable text-base leading-7 text-text-muted">{@text}</p>
+    """
+  end
 end

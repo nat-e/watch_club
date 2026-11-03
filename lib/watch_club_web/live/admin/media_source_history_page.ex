@@ -47,7 +47,14 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
+      title={@media_source.name}
     >
+      <:parent
+        navigate={~p"/admin/media/sources"}
+        label={dgettext("admin_media_imports", "Media Sources")}
+      >
+        <Lucideicons.folder_input />
+      </:parent>
       <.history_header media_source={@media_source} />
 
       <.section title={dgettext("admin_media_imports", "Import history")}>
@@ -90,6 +97,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      title={dgettext("admin_media_imports", "Media Sources")}
     >
     </Layouts.app>
     """

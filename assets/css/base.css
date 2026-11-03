@@ -142,6 +142,7 @@
 	--spacing-icon-lg: var(--wc-size-icon-lg);
 	--spacing-icon-xl: var(--wc-size-icon-xl);
 	--spacing-touch-target: var(--wc-size-touch-target);
+	--spacing-row-md: var(--wc-size-row-md);
 	--spacing-row-lg: var(--wc-size-row-lg);
 	--spacing-tight: var(--wc-space-tight);
 	--spacing-related: var(--wc-space-related);

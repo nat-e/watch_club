@@ -1,9 +1,9 @@
-defmodule WatchClubWeb.Components.Navigation.Sidebar.LeaveClubModal do
+defmodule WatchClubWeb.Components.Clubs.ClubDialogs.LeaveClubModal do
   @moduledoc """
-  Leave club modal owned by the sidebar.
+  Leave club modal owned by `ClubDialogsLive`.
 
-  Owner-private to `SidebarLive`. The hardcoded phx-click is a global sidebar
-  event handled by the owning LiveComponent rather than reusable component API.
+  Owner-private to `ClubDialogsLive`. The hardcoded phx-click is handled by the owning
+  LiveComponent rather than reusable component API.
   """
   use WatchClubWeb, :component
 

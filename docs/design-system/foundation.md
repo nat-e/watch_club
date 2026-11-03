@@ -133,6 +133,7 @@ Size tokens cover repeated, non-content dimensions. Prefer them over raw Tailwin
 | `size.icon-lg` | `--wc-size-icon-lg` | `size-icon-lg` | Prominent/mobile/nav icons |
 | `size.icon-xl` | `--wc-size-icon-xl` | `size-icon-xl` | Extra-prominent icons in callouts or empty states |
 | `size.touch-target` | `--wc-size-touch-target` | `min-h-touch-target`, `size-touch-target` | Minimum interactive target for nav/list/icon rows |
+| `size.row-md` | `--wc-size-row-md` | `h-row-md`, `top-row-md` | The compact app bar on phones |
 | `size.row-lg` | `--wc-size-row-lg` | `h-row-lg`, `min-h-row-lg` | App bars, overlay headers, and roomy selectable rows |
 
 Size usage rules:

@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Admin.UsersPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
-
   import WatchClubWeb.Live.Admin.UsersPage.{
     CreateOrEditInvitationCodeModal,
     DeleteUserModal,
@@ -20,19 +18,17 @@ defmodule WatchClubWeb.Admin.UsersPage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       space="section"
+      title={dgettext("admin_users", "Users")}
     >
       <div class="mx-auto w-full min-w-0 max-w-layout-page">
         <.stack space="cluster">
-          <.settings_header
-            title={dgettext("admin_users", "Users")}
-            description={
-              dgettext(
-                "admin_users",
-                "Manage access to %{name}.",
-                name: @instance_settings.name
-              )
-            }
-          />
+          <.page_description text={
+            dgettext(
+              "admin_users",
+              "Manage access to %{name}.",
+              name: @instance_settings.name
+            )
+          } />
 
           <.invitation_codes_section
             invitations={@invitations}

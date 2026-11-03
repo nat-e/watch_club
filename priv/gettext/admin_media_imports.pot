@@ -46,11 +46,6 @@ msgstr ""
 msgid "All media previously imported will not be removed from the instance."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/history_header.ex
-#, elixir-autogen, elixir-format
-msgid "Back to Media Sources"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
@@ -248,6 +243,7 @@ msgstr ""
 msgid "Media Source was deleted"
 msgstr ""
 
+#: lib/watch_club_web/live/admin/media_source_history_page.ex
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Sources"

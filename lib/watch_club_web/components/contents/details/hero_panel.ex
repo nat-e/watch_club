@@ -53,6 +53,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
               />
               <h1
                 id="content-details-title"
+                data-page-title
                 class="text-4xl leading-none font-semibold tracking-tight text-text"
               >
                 {title(@content)}

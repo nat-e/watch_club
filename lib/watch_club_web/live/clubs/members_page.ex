@@ -1,7 +1,6 @@
 defmodule WatchClubWeb.Clubs.MembersPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Live.Clubs.Members.{AddMembersModal, MembersTable, RemoveMemberModal}
 
   on_mount {WatchClubWeb.Hooks.LoadClub, true}
@@ -16,11 +15,14 @@ defmodule WatchClubWeb.Clubs.MembersPage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-layout-page"
+      title={dgettext("clubs", "Members")}
     >
-      <.settings_header
-        title={dgettext("clubs", "Members")}
-        description={dgettext("clubs", "Manage %{club_name}'s members.", club_name: @club.name)}
-      />
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
+        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
+      </:parent>
+      <.page_description text={
+        dgettext("clubs", "Manage %{club_name}'s members.", club_name: @club.name)
+      } />
 
       <.stack space="group">
         <div class="flex justify-end">

@@ -4,8 +4,6 @@ defmodule WatchClubWeb.Admin.InstanceSettingsPage do
   """
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
-
   @impl true
   def mount(_params, _session, socket) do
     form =
@@ -26,13 +24,11 @@ defmodule WatchClubWeb.Admin.InstanceSettingsPage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
+      title={dgettext("admin_instance_settings", "Instance settings")}
     >
-      <.settings_header
-        title={dgettext("admin_instance_settings", "Instance settings")}
-        description={
-          dgettext("admin_instance_settings", "Configure how your instance presents itself.")
-        }
-      />
+      <.page_description text={
+        dgettext("admin_instance_settings", "Configure how your instance presents itself.")
+      } />
 
       <.section
         title={dgettext("admin_instance_settings", "General")}
