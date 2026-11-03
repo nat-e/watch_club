@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
     |> JS.remove_class("invisible pointer-events-none", to: "#sidebar-backdrop")
     |> JS.remove_class("opacity-0", to: "#sidebar-backdrop")
     |> JS.remove_class("-translate-x-full", to: "#sidebar-panel")
-    |> JS.focus_first(to: "#sidebar-panel")
+    |> JS.focus(to: "#sidebar-close-button")
   end
 
   def hide_sidebar(js \\ %JS{}) do
@@ -52,15 +52,27 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
       <aside
         id="sidebar-panel"
-        class="fixed inset-y-0 left-0 z-50 flex w-[80vw] max-w-xs -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
+        class="fixed inset-y-0 left-0 z-50 flex w-[min(85vw,var(--wc-sidebar-width))] -translate-x-full flex-col bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-(--wc-sidebar-width) md:translate-x-0 md:shadow-none"
       >
-        <header class="flex h-row-lg shrink-0 items-center justify-between px-cluster">
-          <h2 class="font-heading text-xl font-semibold">{@instance_settings.name}</h2>
+        <header class="flex h-row-lg shrink-0 items-center gap-related pr-related pl-group">
+          <.link
+            id="sidebar-instance-link"
+            navigate={~p"/"}
+            class="flex min-w-0 items-center gap-related"
+            phx-click={hide_sidebar()}
+          >
+            <span class="flex size-control-sm shrink-0 items-center justify-center rounded-control bg-primary-bg text-primary">
+              <Lucideicons.popcorn class="size-icon-sm" />
+            </span>
+            <span class="truncate font-heading text-base font-semibold">
+              {@instance_settings.name}
+            </span>
+          </.link>
           <.button
             id="sidebar-close-button"
             variant="ghost"
             size="icon-sm"
-            class="md:hidden"
+            class="ml-auto md:hidden pointer-coarse:size-touch-target!"
             aria-label={dgettext("nav", "Close navigation")}
             phx-click={hide_sidebar()}
           >
@@ -70,17 +82,17 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
         <nav
           aria-label={dgettext("nav", "Main navigation")}
-          class="flex flex-1 flex-col gap-group overflow-y-auto p-group"
+          class="flex flex-1 flex-col gap-cluster overflow-y-auto px-related pt-related pb-group"
         >
-          <ul class="flex list-none flex-col gap-tight p-0">
+          <ul class="flex list-none flex-col gap-px p-0">
             <li>
               <.sidebar_item
                 id="sidebar-home-link"
                 navigate={~p"/"}
                 active={active?(@current_path, "/")}
+                label={dgettext("nav", "Home")}
               >
                 <Lucideicons.home />
-                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Home")}</span>
               </.sidebar_item>
             </li>
             <li>
@@ -88,108 +100,54 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
                 id="sidebar-my-requests-link"
                 navigate={~p"/my-requests"}
                 active={active?(@current_path, "/my-requests")}
+                label={dgettext("nav", "My Requests")}
               >
                 <Lucideicons.inbox />
-                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "My Requests")}</span>
               </.sidebar_item>
             </li>
           </ul>
 
-          <.text_label text={dgettext("nav", "Clubs")} class="px-group" />
-
-          <ul class="flex list-none flex-col gap-tight p-0">
-            <.club_nav_item
-              :for={membership <- @current_user.memberships}
-              membership={membership}
-              current_path={@current_path}
-              myself={@myself}
-            />
-
-            <li :if={@current_user.administrator?}>
-              <.sidebar_item
-                id="sidebar-create-club-button"
-                on_click={JS.push("open_create_club_modal", target: @myself) |> hide_sidebar()}
-              >
-                <Lucideicons.plus />
-                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Create new club")}</span>
-              </.sidebar_item>
-            </li>
-          </ul>
-
-          <div class="flex items-center justify-between gap-related pl-group">
-            <.text_label text={dgettext("nav", "My lists")} />
-            <.button
-              id="sidebar-create-list-button"
-              size="icon"
-              variant="ghost"
-              aria-label={dgettext("nav", "Create new list")}
-              phx-click={JS.push("open_create_list_modal", target: @myself) |> hide_sidebar()}
-            >
-              <Lucideicons.plus />
-            </.button>
-          </div>
-
-          <ul class="flex list-none flex-col gap-tight p-0">
-            <.list_nav_item
-              :for={list <- @current_user.lists}
-              list={list}
-              current_path={@current_path}
-              myself={@myself}
-            />
-          </ul>
-
-          <%!--
-            mt-auto pushes Admin to the bottom of the scroll viewport when there is room,
-            and lets it scroll naturally with the rest of the nav when there isn't.
-          --%>
-          <div
-            :if={@current_user.administrator?}
-            class="mt-auto flex flex-col gap-tight -mx-group border-t border-border-subtle px-group pt-group"
+          <.sidebar_section
+            :if={@current_user.memberships != [] or @current_user.administrator?}
+            id="sidebar-clubs"
+            title={dgettext("nav", "Clubs")}
+            create_label={dgettext("nav", "New club")}
+            on_create={
+              if @current_user.administrator?,
+                do: JS.push("open_create_club_modal", target: @myself) |> hide_sidebar()
+            }
           >
-            <h3 class="px-group text-xs font-semibold tracking-wider text-text-subtle uppercase">
-              {dgettext("nav", "Admin")}
-            </h3>
-            <ul class="flex list-none flex-col gap-tight p-0">
-              <.admin_links current_path={@current_path} />
+            <%!-- A user's clubs are intentionally few, so they are a plain list --%>
+            <ul class="flex list-none flex-col gap-related p-0">
+              <.club_nav_item
+                :for={membership <- @current_user.memberships}
+                membership={membership}
+                current_path={@current_path}
+                myself={@myself}
+              />
             </ul>
-          </div>
+          </.sidebar_section>
+
+          <.sidebar_section
+            id="sidebar-lists"
+            title={dgettext("nav", "Lists")}
+            create_label={dgettext("nav", "New list")}
+            on_create={JS.push("open_create_list_modal", target: @myself) |> hide_sidebar()}
+          >
+            <%!-- A user's lists are intentionally few, so they are a plain list --%>
+            <ul class="flex list-none flex-col gap-px p-0">
+              <.list_nav_item
+                :for={list <- @current_user.lists}
+                list={list}
+                current_path={@current_path}
+                myself={@myself}
+              />
+            </ul>
+          </.sidebar_section>
         </nav>
 
-        <%!--
-          Reuses the --club-nav-rail-offset trick (left padding + half the avatar size)
-          so Settings hangs under the user avatar like libraries hang under a club.
-        --%>
-        <div class={[
-          "flex flex-col gap-tight border-t border-border-subtle p-group",
-          "[--club-nav-avatar-size:2rem]",
-          "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
-        ]}>
-          <div class="flex min-h-touch-target items-center gap-related px-group text-sm font-semibold text-text">
-            <.avatar id={@current_user.id} name={@current_user.username} size="md" />
-            <span class="min-w-0 flex-1 truncate">{@current_user.username}</span>
-            <.button
-              id="sidebar-sign-out-button"
-              variant="ghost"
-              size="icon"
-              href={~p"/sign-out"}
-              method="delete"
-              aria-label={dgettext("nav", "Sign out")}
-            >
-              <Lucideicons.log_out class="text-danger" />
-            </.button>
-          </div>
-          <ul class="ml-(--club-nav-rail-offset) flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related">
-            <li>
-              <.sidebar_item
-                id="sidebar-settings-link"
-                navigate={~p"/settings"}
-                active={active?(@current_path, "/settings")}
-              >
-                <Lucideicons.settings />
-                <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Settings")}</span>
-              </.sidebar_item>
-            </li>
-          </ul>
+        <div class="shrink-0 border-t border-border-subtle p-related">
+          <.user_menu user={@current_user} />
         </div>
       </aside>
 
@@ -223,95 +181,188 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   end
 
   attr :id, :string, required: true
-  attr :href, :string, default: nil
-  attr :navigate, :string, default: nil
-  attr :active, :boolean, default: false
-  attr :class, :any, default: nil
-  attr :on_click, :any, default: nil
+  attr :title, :string, required: true
+  attr :create_label, :string, required: true
+  attr :on_create, JS, default: nil, doc: "shows a create button in the heading"
 
   slot :inner_block, required: true
 
-  defp sidebar_item(assigns) do
-    assigns =
-      assigns
-      |> assign(:on_click, assigns.on_click || hide_sidebar())
-      |> assign(
-        :rest,
-        cond do
-          assigns.href -> %{href: assigns.href}
-          assigns.navigate -> %{navigate: assigns.navigate}
-          true -> %{}
-        end
-      )
-
+  defp sidebar_section(assigns) do
     ~H"""
-    <.button
-      id={@id}
-      variant="ghost"
-      size="md"
-      type="button"
-      aria-current={@active && "page"}
-      class={[
-        "min-h-touch-target w-full justify-start overflow-hidden text-left",
-        @active && "bg-surface-selected!"
-      ]}
-      phx-click={@on_click}
-      {@rest}
-    >
+    <div class="flex flex-col gap-tight">
+      <div class="flex min-h-control-sm items-center justify-between pl-related">
+        <h2 class="text-xs">
+          <.text_label text={@title} />
+        </h2>
+        <.button
+          :if={@on_create}
+          id={"#{@id}-create-button"}
+          variant="ghost"
+          size="icon-sm"
+          class="pointer-coarse:size-touch-target!"
+          aria-label={@create_label}
+          phx-click={@on_create}
+        >
+          <Lucideicons.plus />
+        </.button>
+      </div>
       {render_slot(@inner_block)}
-    </.button>
+    </div>
     """
   end
 
-  attr :current_path, :string, required: true
+  attr :user, User, required: true
 
-  defp admin_links(assigns) do
+  defp user_menu(assigns) do
     ~H"""
-    <li>
-      <.sidebar_item
-        id="sidebar-admin-instance-settings-link"
-        navigate={~p"/admin/settings"}
-        active={active?(@current_path, "/admin/settings")}
+    <.dropdown_menu id="sidebar-user-menu" class="w-full">
+      <:trigger>
+        <button
+          id="sidebar-user-menu-button"
+          type="button"
+          class="flex w-full items-center gap-related rounded-control p-related text-left transition-colors hover:bg-surface-hover aria-expanded:bg-surface-hover"
+        >
+          <.avatar id={@user.id} name={@user.username} size="md" aria-hidden="true" />
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate text-sm font-semibold">{@user.username}</span>
+            <span :if={@user.administrator?} class="truncate text-xs text-text-muted">
+              {dgettext("nav", "Instance administrator")}
+            </span>
+          </span>
+          <Lucideicons.chevrons_up_down class="size-icon-sm shrink-0 text-text-subtle" />
+        </button>
+      </:trigger>
+
+      <%!-- Repeats the trigger, so screen readers skip it --%>
+      <div class="flex w-56 items-center gap-related p-related" aria-hidden="true">
+        <.avatar id={@user.id} name={@user.username} size="md" />
+        <div class="flex min-w-0 flex-col">
+          <span class="truncate text-sm font-semibold">{@user.username}</span>
+          <span :if={@user.administrator?} class="truncate text-xs text-text-muted">
+            {dgettext("nav", "Instance administrator")}
+          </span>
+        </div>
+      </div>
+      <.dropdown_menu_separator />
+      <.dropdown_menu_item
+        id="sidebar-settings-link"
+        navigate={~p"/settings"}
+        phx-click={hide_sidebar()}
       >
-        <Lucideicons.settings_2 />
-        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Instance settings")}</span>
-      </.sidebar_item>
-    </li>
-    <li>
-      <.sidebar_item
-        id="sidebar-admin-users-link"
-        navigate={~p"/admin/users"}
-        active={
-          active?(@current_path, "/admin/users") or active?(@current_path, "/admin/invitations")
-        }
+        <Lucideicons.settings />{dgettext("nav", "Settings")}
+      </.dropdown_menu_item>
+      <div
+        :if={@user.administrator?}
+        role="group"
+        aria-labelledby="sidebar-user-menu-administration-title"
       >
-        <Lucideicons.users />
-        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Users")}</span>
-      </.sidebar_item>
-    </li>
-    <li>
-      <.sidebar_item
-        id="sidebar-admin-media-browser-link"
-        navigate={~p"/admin/media"}
-        active={
-          active?(@current_path, "/admin/media") and
-            not String.starts_with?(@current_path, "/admin/media/sources")
-        }
+        <.dropdown_menu_separator />
+        <p id="sidebar-user-menu-administration-title" class="px-related pt-related pb-tight text-xs">
+          <.text_label text={dgettext("nav", "Administration")} />
+        </p>
+        <.dropdown_menu_item
+          id="sidebar-admin-instance-settings-link"
+          navigate={~p"/admin/settings"}
+          phx-click={hide_sidebar()}
+        >
+          <Lucideicons.settings_2 />
+          {dgettext("nav", "Instance settings")}
+        </.dropdown_menu_item>
+        <.dropdown_menu_item
+          id="sidebar-admin-users-link"
+          navigate={~p"/admin/users"}
+          phx-click={hide_sidebar()}
+        >
+          <Lucideicons.users />{dgettext("nav", "Users")}
+        </.dropdown_menu_item>
+        <.dropdown_menu_item
+          id="sidebar-admin-media-browser-link"
+          navigate={~p"/admin/media"}
+          phx-click={hide_sidebar()}
+        >
+          <Lucideicons.film />{dgettext("nav", "Media browser")}
+        </.dropdown_menu_item>
+        <.dropdown_menu_item
+          id="sidebar-admin-media-sources-link"
+          navigate={~p"/admin/media/sources"}
+          phx-click={hide_sidebar()}
+        >
+          <Lucideicons.folder_input />
+          {dgettext("nav", "Media Sources")}
+        </.dropdown_menu_item>
+      </div>
+      <.dropdown_menu_separator />
+      <.dropdown_menu_item id="sidebar-sign-out-link" href={~p"/sign-out"} method="delete">
+        <Lucideicons.log_out />{dgettext("nav", "Sign out")}
+      </.dropdown_menu_item>
+    </.dropdown_menu>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :navigate, :string, required: true
+  attr :active, :boolean, default: false
+
+  attr :nested, :boolean,
+    default: false,
+    doc: "a library row under its club: normal weight, its icon lined up with the club name"
+
+  attr :label, :string, required: true
+
+  slot :inner_block, required: true, doc: "the leading icon or avatar"
+
+  slot :menu, doc: "dropdown menu items, behind a button at the end of the row" do
+    attr :label, :string, required: true, doc: "the accessible name of the menu button"
+  end
+
+  defp sidebar_item(assigns) do
+    ~H"""
+    <div class={[
+      "group/item flex items-center rounded-control transition-colors",
+      @active && "bg-surface-selected",
+      !@active && "hover:bg-surface-hover has-aria-expanded:bg-surface-hover"
+    ]}>
+      <%!--
+        pl-8 lines a library icon up with its club's name:
+        the row's padding (space.related) + the club avatar (size-4) + the gap (space.related).
+      --%>
+      <.link
+        id={@id}
+        navigate={@navigate}
+        aria-current={@active && "page"}
+        class={[
+          "flex min-h-touch-target min-w-0 flex-1 items-center gap-related rounded-control pr-related text-sm pointer-fine:min-h-9",
+          "[&_svg]:size-icon-sm [&_svg]:shrink-0",
+          @nested && "pl-8",
+          !@nested && "pl-related font-semibold",
+          @active && "text-text [&_svg]:text-text-muted",
+          !@active && "text-text-muted group-hover/item:text-text [&_svg]:text-text-subtle"
+        ]}
+        phx-click={hide_sidebar()}
       >
-        <Lucideicons.film />
-        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Media browser")}</span>
-      </.sidebar_item>
-    </li>
-    <li>
-      <.sidebar_item
-        id="sidebar-admin-media-sources-link"
-        navigate={~p"/admin/media/sources"}
-        active={active?(@current_path, "/admin/media/sources")}
+        {render_slot(@inner_block)}
+        <span class="min-w-0 flex-1 truncate">{@label}</span>
+      </.link>
+      <%!-- Shown on hover, focus or while open, and always on screens that can't hover --%>
+      <.dropdown_menu
+        :for={menu <- @menu}
+        id={"#{@id}-menu"}
+        class="shrink-0 opacity-0 transition-opacity group-hover/item:opacity-100 group-focus-within/item:opacity-100 has-aria-expanded:opacity-100 [@media(hover:none)]:opacity-100"
       >
-        <Lucideicons.folder_input />
-        <span class="min-w-0 flex-1 truncate">{dgettext("nav", "Media Sources")}</span>
-      </.sidebar_item>
-    </li>
+        <:trigger>
+          <.button
+            id={"#{@id}-menu-button"}
+            variant="ghost"
+            size="icon-sm"
+            class="hover:bg-transparent! active:bg-transparent! pointer-coarse:size-touch-target!"
+            aria-label={menu.label}
+          >
+            <Lucideicons.ellipsis_vertical />
+          </.button>
+        </:trigger>
+        {render_slot(menu)}
+      </.dropdown_menu>
+    </div>
     """
   end
 
@@ -320,52 +371,41 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   attr :myself, :any, required: true
 
   defp club_nav_item(assigns) do
-    url = "/clubs/#{assigns.membership.club.id}"
+    url = ~p"/clubs/#{assigns.membership.club.id}"
 
     assigns =
       assigns
       |> assign(:url, url)
       |> assign(:libraries, assigns.membership.club.libraries)
-      |> assign(:active, active?(assigns.current_path, url))
+      |> assign(
+        :active,
+        active?(assigns.current_path, url) and
+          not Enum.any?(
+            assigns.membership.club.libraries,
+            &active?(assigns.current_path, Url.club_library_link(&1))
+          )
+      )
 
     ~H"""
-    <%!--
-      Align the submenu rail with the center of the club avatar:
-      club row left padding (space.group) + half the avatar size (2rem / 2).
-    --%>
-    <li class={[
-      "flex flex-col gap-tight",
-      "[--club-nav-avatar-size:2rem]",
-      "[--club-nav-rail-offset:calc(var(--wc-space-group)+(var(--club-nav-avatar-size)/2))]"
-    ]}>
-      <div class="flex h-control-md items-center overflow-hidden text-text-muted">
-        <.link
-          id={"club-nav-link-#{@membership.club.id}"}
-          navigate={@url}
-          aria-current={@active && "page"}
-          class="flex min-w-0 flex-1 items-center gap-related px-group text-sm font-semibold"
-          phx-click={hide_sidebar()}
-        >
-          <.avatar id={@membership.club.id} name={@membership.club.name} size="md" />
-          <span class="min-w-0 flex-1 truncate">{@membership.club.name}</span>
-        </.link>
+    <li class="flex flex-col gap-px">
+      <.sidebar_item
+        id={"club-nav-link-#{@membership.club.id}"}
+        navigate={@url}
+        active={@active}
+        label={@membership.club.name}
+      >
+        <.avatar
+          id={@membership.club.id}
+          name={@membership.club.name}
+          size="xs"
+          aria-hidden="true"
+        />
 
-        <.dropdown_menu id={"club-nav-actions-#{@membership.club.id}"} class="shrink-0">
-          <:trigger>
-            <.button
-              id={"club-nav-actions-trigger-#{@membership.club.id}"}
-              size="icon"
-              variant="ghost"
-              aria-label={dgettext("nav", "Club actions")}
-            >
-              <Lucideicons.ellipsis_vertical />
-            </.button>
-          </:trigger>
-
+        <:menu label={dgettext("nav", "Actions for %{name}", name: @membership.club.name)}>
           <.dropdown_menu_item
             :if={@membership.role == :admin}
             id={"club-nav-members-link-#{@membership.club.id}"}
-            navigate={"#{@url}/members"}
+            navigate={~p"/clubs/#{@membership.club.id}/members"}
             phx-click={hide_sidebar()}
           >
             <Lucideicons.user />{dgettext("clubs", "Manage members")}
@@ -373,7 +413,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           <.dropdown_menu_item
             :if={@membership.role == :admin}
             id={"club-nav-settings-link-#{@membership.club.id}"}
-            navigate={"#{@url}/settings"}
+            navigate={~p"/clubs/#{@membership.club.id}/settings"}
             phx-click={hide_sidebar()}
           >
             <Lucideicons.settings />{dgettext("clubs", "Club Settings")}
@@ -407,13 +447,10 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
           >
             <Lucideicons.door_open />{dgettext("clubs", "Leave club")}
           </.dropdown_menu_item>
-        </.dropdown_menu>
-      </div>
+        </:menu>
+      </.sidebar_item>
 
-      <ul
-        :if={@libraries != []}
-        class="ml-(--club-nav-rail-offset) flex list-none flex-col gap-tight border-l border-border-subtle py-tight pl-related"
-      >
+      <ul :if={@libraries != []} class="flex list-none flex-col gap-px p-0">
         <.library_nav_item
           :for={library <- @libraries}
           library={library}
@@ -428,7 +465,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
   attr :current_path, :string, required: true
 
   defp library_nav_item(assigns) do
-    url = ~p"/clubs/#{assigns.library.club_id}/libraries/#{assigns.library.id}"
+    url = Url.club_library_link(assigns.library)
 
     assigns =
       assigns
@@ -437,9 +474,14 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
     ~H"""
     <li>
-      <.sidebar_item id={"sidebar-library-link-#{@library.id}"} navigate={@url} active={@active}>
+      <.sidebar_item
+        id={"sidebar-library-link-#{@library.id}"}
+        navigate={@url}
+        active={@active}
+        label={@library.name}
+        nested
+      >
         <.library_icon library={@library} />
-        <span class="min-w-0 flex-1 truncate">{@library.name}</span>
       </.sidebar_item>
     </li>
     """
@@ -458,54 +500,37 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       |> assign(:active, active?(assigns.current_path, url))
 
     ~H"""
-    <li class={[
-      "relative flex h-control-md items-center justify-between overflow-hidden text-text-muted rounded-md hover:not-has-[button:hover]:bg-surface-hover",
-      @active && "bg-surface-selected"
-    ]}>
-      <.link
+    <li>
+      <.sidebar_item
         id={"list-nav-link-#{@list.id}"}
         navigate={@url}
-        aria-current={@active && "page"}
-        class="flex items-center gap-related px-group text-sm font-semibold after:absolute after:inset-0"
-        phx-click={hide_sidebar()}
+        active={@active}
+        label={@list.name}
       >
-        <.lucide_icon name={@list.icon} class="size-icon shrink-0" />
-        <span class="min-w-0 flex-1 truncate">{@list.name}</span>
-      </.link>
+        <.lucide_icon name={@list.icon} />
 
-      <.dropdown_menu id={"list-nav-actions-#{@list.id}"} class="shrink-0">
-        <:trigger>
-          <.button
-            id={"list-nav-actions-trigger-#{@list.id}"}
-            size="icon"
-            variant="ghost"
-            aria-label={dgettext("nav", "List actions")}
-            class="z-10"
+        <:menu label={dgettext("nav", "Actions for %{name}", name: @list.name)}>
+          <.dropdown_menu_item
+            id={"list-nav-edit-button-#{@list.id}"}
+            phx-click={
+              JS.push("open_edit_list_modal", target: @myself, value: %{list_id: @list.id})
+              |> hide_sidebar()
+            }
           >
-            <Lucideicons.ellipsis_vertical />
-          </.button>
-        </:trigger>
-
-        <.dropdown_menu_item
-          id={"list-nav-edit-button-#{@list.id}"}
-          phx-click={
-            JS.push("open_edit_list_modal", target: @myself, value: %{list_id: @list.id})
-            |> hide_sidebar()
-          }
-        >
-          <Lucideicons.pencil />{dgettext("lists", "Edit list")}
-        </.dropdown_menu_item>
-        <.dropdown_menu_item
-          id={"list-nav-delete-button-#{@list.id}"}
-          variant="destructive"
-          phx-click={
-            JS.push("open_delete_list_modal", target: @myself, value: %{list_id: @list.id})
-            |> hide_sidebar()
-          }
-        >
-          <Lucideicons.trash />{dgettext("lists", "Delete list")}
-        </.dropdown_menu_item>
-      </.dropdown_menu>
+            <Lucideicons.pencil />{dgettext("lists", "Edit list")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            id={"list-nav-delete-button-#{@list.id}"}
+            variant="destructive"
+            phx-click={
+              JS.push("open_delete_list_modal", target: @myself, value: %{list_id: @list.id})
+              |> hide_sidebar()
+            }
+          >
+            <Lucideicons.trash />{dgettext("lists", "Delete list")}
+          </.dropdown_menu_item>
+        </:menu>
+      </.sidebar_item>
     </li>
     """
   end

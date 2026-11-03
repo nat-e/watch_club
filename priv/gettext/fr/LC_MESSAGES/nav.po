@@ -26,12 +26,6 @@ msgstr "Fermer la navigation"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "Create new club"
-msgstr "Créer un nouveau club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
 msgid "Home"
 msgstr "Accueil"
 
@@ -58,18 +52,6 @@ msgstr "Paramètres"
 #, elixir-autogen, elixir-format
 msgid "Sign out"
 msgstr "Se déconnecter"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
-msgid "Club actions"
-msgstr "Actions du club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
-msgid "Admin"
-msgstr "Admin"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
@@ -104,17 +86,35 @@ msgstr "Utilisateurs"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "Create new list"
-msgstr "Créer une nouvelle liste"
+msgid "Administration"
+msgstr "Administration"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "List actions"
-msgstr "Actions de la liste"
+msgid "Instance administrator"
+msgstr "Administrateur de l'instance"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "My lists"
-msgstr "Mes listes"
+msgid "Lists"
+msgstr "Listes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "New club"
+msgstr "Nouveau club"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "New list"
+msgstr "Nouvelle liste"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "Actions for %{name}"
+msgstr "Actions pour %{name}"
