@@ -39,7 +39,7 @@ defmodule WatchClubWeb.Hooks.Auth do
     if user do
       {:cont, socket |> subscribe_to_current_user_pubsub(user)}
     else
-      {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
+      {:halt, redirect_to_sign_in(socket)}
     end
   end
 
@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Hooks.Auth do
 
     cond do
       is_nil(user) ->
-        {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")}
+        {:halt, redirect_to_sign_in(socket)}
 
       user.administrator? ->
         {:cont, socket |> subscribe_to_current_user_pubsub(user)}
@@ -63,6 +63,21 @@ defmodule WatchClubWeb.Hooks.Auth do
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
     else
       {:cont, assign(socket, :current_user, nil)}
+    end
+  end
+
+  # The sign-in page sends the user back to the page they asked for. Only the first, disconnected
+  # render knows that page: a socket that reconnects without a user goes to the default page.
+  defp redirect_to_sign_in(socket) do
+    case Phoenix.LiveView.get_connect_info(socket, :uri) do
+      %URI{path: path, query: ""} ->
+        Phoenix.LiveView.redirect(socket, to: ~p"/sign-in?#{[return_to: path]}")
+
+      %URI{path: path, query: query} ->
+        Phoenix.LiveView.redirect(socket, to: ~p"/sign-in?#{[return_to: path <> "?" <> query]}")
+
+      nil ->
+        Phoenix.LiveView.redirect(socket, to: ~p"/sign-in")
     end
   end
 

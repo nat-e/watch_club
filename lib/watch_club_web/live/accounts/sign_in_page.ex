@@ -35,7 +35,7 @@ defmodule WatchClubWeb.Accounts.SignInPage do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     form =
       Accounts.form_to_sign_in(
         context: %{token_type: :sign_in},
@@ -48,7 +48,8 @@ defmodule WatchClubWeb.Accounts.SignInPage do
         end
       )
 
-    {:ok, socket |> assign(form: to_form(form))}
+    # The page to open after sign-in, set when a page that needs a user redirects here
+    {:ok, socket |> assign(form: to_form(form), return_to: params["return_to"] || ~p"/")}
   end
 
   @impl true
@@ -64,7 +65,8 @@ defmodule WatchClubWeb.Accounts.SignInPage do
           :noreply,
           socket
           |> redirect(
-            to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
+            to:
+              ~p"/auth/user/password/sign_in_with_token?#{[token: user.__metadata__.token, return_to: socket.assigns.return_to]}"
           )
         }
 
