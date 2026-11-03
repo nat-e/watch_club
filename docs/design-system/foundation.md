@@ -31,7 +31,7 @@ Design-system notation uses dots for readability. Tailwind utilities use hyphena
 | `color.surface` | `--color-surface` | `bg-surface` |
 | `color.text-muted` | `--color-text-muted` | `text-text-muted` |
 | `color.border-focus` | `--color-border-focus` | `border-border-focus` |
-| `radius.card` | `--radius-card` | `rounded-xl` |
+| `radius.card` | `--radius-card` | `rounded-card` |
 | `shadow.card` | `--shadow-card` | `shadow-card` |
 
 Watch Club source variables may use a project prefix internally, e.g. `--wc-color-surface`, then map into Tailwind `@theme` aliases.
@@ -52,6 +52,8 @@ Watch Club source variables may use a project prefix internally, e.g. `--wc-colo
 | `color.surface-active` | Shared pressed state for neutral interactive surfaces |
 | `color.surface-selected` | Selected neutral surface, such as active nav/filter/card |
 
+Higher layers are lighter: `canvas` < `surface` < `surface-raised` = `surface-overlay`. `surface-inset` sits at canvas level, below the surface around it. Hover, pressed and selected each step lighter than every surface they appear on, in that order.
+
 ### Text
 
 | Token | Meaning |
@@ -61,6 +63,8 @@ Watch Club source variables may use a project prefix internally, e.g. `--wc-colo
 | `color.text-subtle` | Low-emphasis text: timestamps, placeholders, quiet hints |
 | `color.text-disabled` | Disabled or unavailable text |
 
+`text`, `text-muted` and `text-subtle` clear 4.5:1 on every neutral surface, `surface-selected` included.
+
 Inverse text is not part of v0. If needed later, add `color.surface-inverse` and `color.text-inverse` together.
 
 ### Borders and focus
@@ -69,9 +73,17 @@ Inverse text is not part of v0. If needed later, add `color.surface-inverse` and
 | --- | --- |
 | `color.border` | Default visible border |
 | `color.border-subtle` | Low-emphasis structural border/divider |
-| `color.border-strong` | High-emphasis neutral border |
-| `color.border-focus` | Focus and focused input border |
-| `color.focus-ring` | Neutral focus ring |
+| `color.border-control` | Boundary that is the only sign of a control: inputs, selects, checkboxes, radios, segmented controls, selectable cards. Clears 3:1 on every surface up to hover |
+| `color.border-focus` | Focus outline and focused input border |
+| `color.focus-ring` | Solid halo around a focused control's border |
+
+`border` and `border-subtle` are decorative. Buttons, cards and menus can use them because their text or background already identifies them.
+
+Focus rules:
+
+- `base.css` gives every `:focus-visible` element a solid 2px `border-focus` outline with a 2px gap. It clears 3:1 on every surface and fill, so buttons and links need nothing more.
+- Bordered controls (inputs, selects, checkboxes, radios) draw their own focus instead: `outline-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring`. The border carries the contrast; the halo only softens it.
+- Never remove the outline without one of these. Inside a container that clips its children (`overflow-*`), keep the outline inside with `focus-visible:-outline-offset-2`.
 
 ### Fills
 
@@ -84,13 +96,14 @@ All semantic fills use the same token API. Valid fill names are `primary`, `acce
 | `color.<fill>-active` | Pressed state for strong fills |
 | `color.<fill>-bg` | Tinted background for callouts, badges, and quiet fill-related controls |
 | `color.<fill>-border` | Border for tinted fill surfaces and fill-related invalid/focus states |
-| `color.<fill>-ring` | Ring color for fill-related focus or invalid states |
+| `color.<fill>-ring` | Solid halo for fill-related focus or invalid states: the fill's 800 shade |
 | `color.on-<fill>` | Foreground on strong fills |
 
 Fill usage rules:
 
 - Strong fills use `bg-<fill> text-on-<fill> hover:bg-<fill>-hover active:bg-<fill>-active`.
 - Tinted fill surfaces use `border-<fill>-border bg-<fill>-bg text-<fill>`.
+- Only primary actions get a strong fill, usually one per screen, plus `danger` inside a confirmation dialog. Accent buttons and badges are tinted or neutral, never strong fills, so they don't compete with it.
 - Fill-related focus or invalid rings use `ring-<fill>-ring`.
 - Do not derive fill states with opacity utilities such as `bg-danger/10` or `ring-danger/30`.
 
@@ -100,9 +113,11 @@ Fill usage rules:
 
 | Token | Meaning |
 | --- | --- |
-| `radius.control` | Buttons, inputs, select triggers |
-| `radius.card` | Cards, panels, recommendation cards |
+| `radius.control` | Controls and small surfaces: buttons, inputs, selects, menus, tooltips, alerts, toasts |
+| `radius.card` | Cards, panels, tables, dialogs, empty states |
 | `radius.full` | Badges, avatars, pills |
+
+Media components own their radius (posters, stills), like they own their sizes.
 
 ### Size
 
@@ -146,7 +161,7 @@ Spacing tokens name the relationship created by empty space. Prefer these tokens
 
 | Token | CSS variable | Tailwind utility examples | Meaning |
 | --- | --- | --- | --- |
-| `layout.readable` | `--wc-layout-readable` | `max-w-readable` | Long-form readable content width |
+| `layout.readable` | `--wc-layout-readable` | `max-w-readable` | Line length for paragraphs: 34em, about 45–75 characters. In `em`, so it follows the text size |
 | `layout.panel` | `--wc-layout-panel` | `max-w-panel` | Forms, settings panels, and focused workflows |
 | `layout.page` | `--wc-layout-page` | `max-w-layout-page` | Standard page content width |
 
@@ -185,11 +200,52 @@ Defer `<.form_group>`, `<.form_section>`, and `<.fieldset>` until repeated scree
 
 ### Shadow
 
+Pick a shadow by how high the element sits above the page, not by how it looks. On a dark UI shadows barely show, so lighter surfaces carry most of the depth.
+
 | Token | Meaning |
 | --- | --- |
-| `shadow.card` | Default card/panel elevation |
-| `shadow.overlay` | Dialog/dropdown/popover elevation |
+| `shadow.card` | Cards and panels resting on the page |
+| `shadow.overlay` | Floating menus, popovers, tooltips, and toasts |
+| `shadow.modal` | Dialogs, the highest layer |
 | `shadow.glow` | Rare brand glow for primary emphasis |
+
+### Typography
+
+| Font | CSS variable | Use |
+| --- | --- | --- |
+| Reddit Sans | `--font-sans` | Body and UI text |
+| Oxanium | `--font-heading` | Page and section titles |
+| Fira Code | `--font-mono` | Code and invitation codes |
+
+Typography rules:
+
+- Two weights: `font-normal` (400) for text, `font-semibold` (600) for emphasis — headings, buttons, labels, the main text of a row. They are the only weights loaded, so others fall back to them. To de-emphasize, use a lighter color or a smaller size, not a lighter weight.
+- Sizes come from Tailwind's scale only, `text-xs` (12px) to `text-7xl` (72px). No `em` font sizes: `em` compounds through nesting and leaves the scale. The only arbitrary size is the overflow count in the smallest avatar group.
+- Keep each size's built-in line height: it already gets tighter as text gets bigger. Long paragraphs may use `leading-relaxed`.
+- Paragraphs stop at `max-w-readable`.
+- All-caps text uses `tracking-wider` (0.05em). Headings set in the body font may use `tracking-tight`. Everything else keeps the font's own spacing.
+
+### Opacity
+
+Translucency is only for overlays on images and video, scrims, and disabled states. Use these steps only: `10`, `20`, `40`, `60`, `80`, `90` (`bg-black/60`, `opacity-40`). Disabled controls use `opacity-40`. To make a token color lighter or darker, pick another shade from its ramp instead.
+
+## Design rules
+
+The tokens can't enforce these rules from *Refactoring UI*, by Adam Wathan and Steve Schoger.
+
+- **Importance:** show it with weight and color before size (`text`, `text-muted`, `text-subtle`, `font-semibold`), and tone down what competes instead of making the main thing louder.
+- **Icons:** an icon next to text gets a quieter color than the text, such as `text-muted`, because icons look heavier than letters.
+- **Headings:** the tag follows the page structure and the size follows importance, so a section title can be an `h2` at `text-base`.
+- **Labels:** skip `label: value` when the format or context already says what the data is, like a release year, and fold a needed label into the value ("12 episodes").
+- **Buttons:** one `primary` button per screen, `secondary` or `accent` for secondary actions, `ghost` for minor ones, and `danger` only for the confirm button of a destructive dialog.
+- **Color:** never show meaning with color alone; add an icon, a label or a shape.
+- **Spacing:** leave more space around a group than inside it.
+- **Widths:** sidebars, panels and dialogs get a fixed width or a `max-w-*` so they stop growing; only the main area flexes.
+- **Small screens:** big text shrinks more than small text, so drop a heading a size or two on phones (`text-3xl sm:text-4xl`) and keep body text about the same.
+- **Borders:** separate things with space, a surface change or a shadow before reaching for a border, and use `border-subtle` for the dividers you keep.
+- **Images:** posters and artwork sit in a fixed frame with `object-cover`, as `<.tmdb_poster>` does.
+- **Icon size:** keep icons near their drawn size (`size-icon*`), and put a bigger one inside a shape instead of scaling it up.
+- **Empty states:** use `<.empty>` with an icon, a title, a short explanation and the next action.
 
 ## Component strategy
 

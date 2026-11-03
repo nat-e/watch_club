@@ -52,7 +52,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
 
       <aside
         id="sidebar-panel"
-        class="fixed inset-y-0 left-0 z-50 flex w-[80vw] -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
+        class="fixed inset-y-0 left-0 z-50 flex w-[80vw] max-w-xs -translate-x-full flex-col overflow-hidden border-r border-border-subtle bg-surface text-text shadow-overlay transition-transform duration-200 ease-out will-change-transform md:z-20 md:w-[var(--wc-sidebar-width)] md:translate-x-0 md:shadow-none"
       >
         <header class="flex h-row-lg shrink-0 items-center justify-between px-cluster">
           <h2 class="font-heading text-xl font-semibold">{@instance_settings.name}</h2>
@@ -146,7 +146,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
             :if={@current_user.administrator?}
             class="mt-auto flex flex-col gap-tight -mx-group border-t border-border-subtle px-group pt-group"
           >
-            <h3 class="px-group text-xs font-semibold tracking-wide text-text-subtle uppercase">
+            <h3 class="px-group text-xs font-semibold tracking-wider text-text-subtle uppercase">
               {dgettext("nav", "Admin")}
             </h3>
             <ul class="flex list-none flex-col gap-tight p-0">
@@ -252,7 +252,7 @@ defmodule WatchClubWeb.Components.Navigation.SidebarLive do
       type="button"
       aria-current={@active && "page"}
       class={[
-        "min-h-touch-target w-full justify-start overflow-hidden text-left font-medium",
+        "min-h-touch-target w-full justify-start overflow-hidden text-left",
         @active && "bg-surface-selected!"
       ]}
       phx-click={@on_click}

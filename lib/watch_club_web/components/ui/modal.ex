@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
       data-slot="modal"
       data-on-close={@on_close}
       class={[
-        "m-auto p-related rounded-xl border border-border bg-surface-overlay p-0 shadow-overlay backdrop:bg-scrim backdrop:backdrop-blur-sm",
+        "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
         @size == "sm" && "sm:max-w-md",
         @size == "md" && "sm:max-w-lg",
         @size == "lg" && "sm:max-w-2xl",
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
         data-modal-close
         data-slot="modal-close"
         aria-label={dgettext("default", "Close")}
-        class="absolute top-group right-group inline-flex size-control-sm items-center justify-center rounded-md border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
+        class="absolute top-group right-group inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
       >
         <Lucideicons.x />
       </button>

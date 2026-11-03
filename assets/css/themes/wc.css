@@ -1,27 +1,28 @@
 /* Watch Club design tokens — Velvet Club v0 */
 .theme-wc {
 	/* ── Custom neutral ramp ─────────────────────────────────────────────────
-   * Aubergine-tinted grey — the workhorse for surfaces, text, and borders. */
-	--wc-neutral-50: hsl(256 100% 97%);
-	--wc-neutral-200: hsl(256 30% 80%);
-	--wc-neutral-300: hsl(256 19% 67%);
-	--wc-neutral-400: hsl(256 24% 46%);
-	--wc-neutral-500: hsl(256 25% 30%);
-	--wc-neutral-600: hsl(256 35% 29%);
-	--wc-neutral-650: hsl(256 28% 27%);
-	--wc-neutral-700: hsl(256 29% 23%);
-	--wc-neutral-750: hsl(256 27% 18%);
-	--wc-neutral-800: hsl(256 29% 15%);
-	--wc-neutral-850: hsl(256 27% 12%);
-	--wc-neutral-900: hsl(256 27% 10%);
-	--wc-neutral-950: hsl(256 24% 8%);
+   * Aubergine-tinted grey — the workhorse for surfaces, text, and borders.
+   * Shades are spaced by contrast with the canvas (950): the surface shades
+   * (900–500) about 1.1:1 apart, with one bigger step to 700 so hovers show on
+   * menus; the text shades (400–100) about 1.36:1 apart. Saturation rises
+   * away from the middle (400) so the tint holds in the dark and light shades;
+   * 500, the selected surface, carries the most so selection reads purple. */
+	--wc-neutral-100: hsl(256 80% 93.4%);
+	--wc-neutral-200: hsl(256 34% 81.7%);
+	--wc-neutral-300: hsl(256 24% 71.3%);
+	--wc-neutral-400: hsl(256 20% 54.4%);
+	--wc-neutral-500: hsl(256 35% 31.3%);
+	--wc-neutral-600: hsl(256 31% 27.4%);
+	--wc-neutral-700: hsl(256 29% 23.7%);
+	--wc-neutral-800: hsl(256 29% 17.2%);
+	--wc-neutral-900: hsl(256 29% 13.1%);
+	--wc-neutral-950: hsl(256 30% 8%);
 
 	/* ── Custom brand ramps ──────────────────────────────────────────────────
-   * Pink (primary) and purple (accent). Following Refactoring UI, the 500 rung
-   * IS the button-background color — the Dracula hues (#ff79c6 / #bd93f9) live
-   * there, with lighter rungs above and darker below. These are saturated, so
-   * the hue rotates as it darkens (pink → crimson, purple → blue) to keep the
-   * dark shades rich. */
+   * Pink (primary) and purple (accent). The Dracula hues (#ff79c6 / #bd93f9)
+   * sit at 400, the fill for actions on the dark canvas, with lighter rungs
+   * above and darker below. Each ramp keeps one perceived hue (OKLCH 347° and
+   * 302°); the HSL hue numbers drift only because HSL isn't perceptual. */
 	--color-pink-50: hsl(332 100% 97.1%);
 	--color-pink-100: hsl(331 100% 93.9%);
 	--color-pink-200: hsl(329.1 100% 87.5%);
@@ -46,43 +47,42 @@
 	--color-purple-900: hsl(273.2 88.1% 16.5%);
 	--color-purple-950: hsl(272.2 90% 11.8%);
 
-	/* Surfaces — a slice of the neutral ramp. Lighter = raised, darker = inset. */
+	/* Surfaces — higher layers are lighter: canvas < surface < raised = overlay.
+   * Inset sits at canvas level, below the surface around it. Hover, pressed
+   * and selected each step lighter than every surface they appear on. */
 	--wc-color-canvas: var(--wc-neutral-950);
-	--wc-color-scrim: color-mix(in srgb, var(--wc-neutral-950) 70%, transparent);
-	--wc-color-surface: var(--wc-neutral-850);
-	--wc-color-surface-raised: var(--wc-neutral-750);
-	--wc-color-surface-inset: var(--wc-neutral-900);
+	--wc-color-scrim: color-mix(in srgb, var(--wc-neutral-950) 80%, transparent);
+	--wc-color-surface: var(--wc-neutral-900);
+	--wc-color-surface-raised: var(--wc-neutral-800);
+	--wc-color-surface-inset: var(--wc-neutral-950);
 	--wc-color-surface-overlay: var(--wc-neutral-800);
 	--wc-color-surface-hover: var(--wc-neutral-700);
-	--wc-color-surface-active: var(--wc-neutral-650);
-	--wc-color-surface-selected: var(--wc-neutral-600);
+	--wc-color-surface-active: var(--wc-neutral-600);
+	--wc-color-surface-selected: var(--wc-neutral-500);
 
-	--wc-color-text: var(--wc-neutral-50);
+	/* Text — every level clears 4.5:1 on every surface, selected included. */
+	--wc-color-text: var(--wc-neutral-100);
 	--wc-color-text-muted: var(--wc-neutral-200);
 	--wc-color-text-subtle: var(--wc-neutral-300);
 	--wc-color-text-disabled: var(--wc-neutral-400);
 
+	/* Borders — the control border clears 3:1 on every surface up to hover, for
+   * boundaries that are the only sign of a control. The others are decorative. */
 	--wc-color-border: var(--wc-neutral-500);
 	--wc-color-border-subtle: var(--wc-neutral-700);
-	--wc-color-border-strong: var(--wc-neutral-400);
-	/* Focus borrows the accent (purple) hue. */
+	--wc-color-border-control: var(--wc-neutral-400);
+	/* Focus borrows the accent (purple) hue. The ring is a solid halo around
+   * the focus border, picked from the ramp rather than mixed with alpha. */
 	--wc-color-border-focus: var(--color-purple-500);
-	--wc-color-focus-ring: color-mix(
-		in srgb,
-		var(--color-purple-500) 40%,
-		transparent
-	);
+	--wc-color-focus-ring: var(--color-purple-800);
 
+	/* Fill rings are the fill's 800 shade. */
 	--wc-color-primary: var(--color-pink-400);
 	--wc-color-primary-hover: var(--color-pink-300);
 	--wc-color-primary-active: var(--color-pink-500);
 	--wc-color-primary-bg: var(--color-pink-950);
 	--wc-color-primary-border: var(--color-pink-700);
-	--wc-color-primary-ring: color-mix(
-		in srgb,
-		var(--color-pink-500) 40%,
-		transparent
-	);
+	--wc-color-primary-ring: var(--color-pink-800);
 	--wc-color-on-primary: var(--color-pink-950);
 
 	/* Accent — custom Dracula purple. Same state logic as primary. */
@@ -91,37 +91,26 @@
 	--wc-color-accent-active: var(--color-purple-500);
 	--wc-color-accent-bg: var(--color-purple-950);
 	--wc-color-accent-border: var(--color-purple-700);
-	--wc-color-accent-ring: color-mix(
-		in srgb,
-		var(--color-purple-500) 40%,
-		transparent
-	);
+	--wc-color-accent-ring: var(--color-purple-800);
 	--wc-color-on-accent: var(--color-purple-950);
 
-	/* Danger — Tailwind red. */
+	/* Danger — Tailwind red. Text on the fill is the darkest neutral: red-950
+   * is too light to reach 4.5:1 on the pressed (500) fill. */
 	--wc-color-danger: var(--color-red-400);
 	--wc-color-danger-hover: var(--color-red-300);
 	--wc-color-danger-active: var(--color-red-500);
 	--wc-color-danger-bg: var(--color-red-950);
 	--wc-color-danger-border: var(--color-red-500);
-	--wc-color-danger-ring: color-mix(
-		in srgb,
-		var(--color-red-500) 40%,
-		transparent
-	);
-	--wc-color-on-danger: var(--color-red-950);
+	--wc-color-danger-ring: var(--color-red-800);
+	--wc-color-on-danger: var(--wc-neutral-950);
 
-	/* Success — Tailwind emerald. Base sits at 300 (the previous mint was light). */
+	/* Success — Tailwind emerald. */
 	--wc-color-success: var(--color-emerald-300);
 	--wc-color-success-hover: var(--color-emerald-200);
 	--wc-color-success-active: var(--color-emerald-400);
 	--wc-color-success-bg: var(--color-emerald-950);
 	--wc-color-success-border: var(--color-emerald-600);
-	--wc-color-success-ring: color-mix(
-		in srgb,
-		var(--color-emerald-600) 40%,
-		transparent
-	);
+	--wc-color-success-ring: var(--color-emerald-800);
 	--wc-color-on-success: var(--color-emerald-950);
 
 	/* Warning — Tailwind amber. */
@@ -130,11 +119,7 @@
 	--wc-color-warning-active: var(--color-amber-500);
 	--wc-color-warning-bg: var(--color-amber-950);
 	--wc-color-warning-border: var(--color-amber-700);
-	--wc-color-warning-ring: color-mix(
-		in srgb,
-		var(--color-amber-700) 40%,
-		transparent
-	);
+	--wc-color-warning-ring: var(--color-amber-800);
 	--wc-color-on-warning: var(--color-amber-950);
 
 	/* Info — Tailwind cyan. */
@@ -143,22 +128,22 @@
 	--wc-color-info-active: var(--color-cyan-400);
 	--wc-color-info-bg: var(--color-cyan-950);
 	--wc-color-info-border: var(--color-cyan-700);
-	--wc-color-info-ring: color-mix(
-		in srgb,
-		var(--color-cyan-700) 40%,
-		transparent
-	);
+	--wc-color-info-ring: var(--color-cyan-800);
 	--wc-color-on-info: var(--color-cyan-950);
 
 	/* Primitive shape scale */
 	--wc-radius-sm: 0.375rem;
 	--wc-radius-md: 0.5rem;
 	--wc-radius-lg: 0.625rem;
-	--wc-radius-xl: 0.78125rem;
+	--wc-radius-xl: 0.75rem;
 	--wc-radius-2xl: 1.5rem;
 	--wc-radius-3xl: 1.725rem;
 	--wc-radius-4xl: 1.95rem;
 	--wc-radius-full: 9999px;
+
+	/* Semantic radius aliases */
+	--wc-radius-control: var(--wc-radius-md);
+	--wc-radius-card: var(--wc-radius-xl);
 
 	--wc-size-control-sm: 2rem;
 	--wc-size-control-md: 2.5rem;
@@ -178,7 +163,8 @@
 	--wc-space-page: clamp(1rem, 3vw, 2rem);
 	--wc-space-page-y: clamp(1.5rem, 4vw, 3rem);
 
-	--wc-layout-readable: 42rem;
+	/* In em, so the width follows the text's own size: 45–75 characters a line. */
+	--wc-layout-readable: 34em;
 	--wc-layout-panel: 56rem;
 	--wc-layout-page: 72rem;
 
@@ -192,9 +178,11 @@
 	--wc-shadow-2xl: var(--wc-shadow-lg);
 	--wc-shadow-brand-glow: 0 8px 20px rgb(255 121 198 / 18%);
 
-	/* Semantic shadow aliases */
-	--wc-shadow-card: var(--wc-shadow-md);
-	--wc-shadow-overlay: var(--wc-shadow-lg);
+	/* Semantic shadow aliases, by height above the page: cards rest on it,
+   * popovers float over it, modals sit on top of everything. */
+	--wc-shadow-card: var(--wc-shadow-xs);
+	--wc-shadow-overlay: var(--wc-shadow-md);
+	--wc-shadow-modal: var(--wc-shadow-lg);
 	--wc-shadow-glow: var(--wc-shadow-brand-glow);
 
 	--font-sans: "Reddit Sans", "Raleway", ui-sans-serif, system-ui, sans-serif;

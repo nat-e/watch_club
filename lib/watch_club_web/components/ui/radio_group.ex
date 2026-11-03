@@ -117,23 +117,21 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
       tabindex={@focusable && "0"}
       class={[
         if @item[:class] do
-          "cursor-pointer rounded-md text-sm text-text transition-colors select-none"
+          "cursor-pointer rounded-control text-sm text-text transition-colors select-none"
         else
-          "inline-flex cursor-pointer items-center gap-related rounded-md text-sm text-text transition-colors select-none"
+          "inline-flex cursor-pointer items-center gap-related rounded-control text-sm text-text transition-colors select-none"
         end,
-        "has-disabled:cursor-not-allowed has-disabled:text-text-disabled has-disabled:opacity-50",
-        @focusable &&
-          "outline-none focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
+        "has-disabled:cursor-not-allowed has-disabled:text-text-disabled has-disabled:opacity-40",
         @item[:class]
       ]}
     >
       <span
         data-slot="radio-group-item"
         class={[
-          "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
+          "group/radio-control relative inline-grid size-4 shrink-0 place-items-center rounded-full border border-border-control bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
           "has-checked:border-primary has-checked:bg-primary has-checked:text-on-primary",
           "has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring",
-          "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring"
+          "has-[input[aria-invalid='true']]:not-has-focus-visible:border-danger-border has-[input[aria-invalid='true']]:not-has-focus-visible:ring-2 has-[input[aria-invalid='true']]:not-has-focus-visible:ring-danger-ring"
         ]}
       >
         <input

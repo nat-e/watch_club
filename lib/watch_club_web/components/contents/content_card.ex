@@ -141,14 +141,14 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           <span :if={@content.origin_country}>
             {WatchClub.Languages.country_flag(@content.origin_country)}
           </span>
-          <span :if={@content.release_date} class="font-medium">
+          <span :if={@content.release_date}>
             {@content.release_date.year}
           </span>
         </.inline>
 
         <.link
           navigate={Url.content_details_link(@content.type, @content.external_id)}
-          class="line-clamp-4 text-xl leading-tight font-bold after:absolute after:inset-0 after:content-['']"
+          class="line-clamp-4 text-xl leading-tight font-semibold after:absolute after:inset-0 after:content-['']"
         >
           {@content.implementation.best_localization.title}
         </.link>

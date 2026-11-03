@@ -23,6 +23,12 @@ Rules:
 - After a merge, the `post-merge` hook updates main with `scripts/worktree/update_main.sh`. Main's dev server needs a restart to pick up new dependencies or config
 - To restart a dev server, stop it, wait for `WC_PORT` to be free, start it with `wt dev`, then check that the app responds on `WC_PORT`
 
+## Prototypes
+
+- Throwaway UI prototypes go in `dev/prototypes/<name>.ex` as module `WatchClubWeb.Prototypes.<Name>`, and the dev server shows each one at `/dev/prototypes/<name>`
+- Git ignores this folder, and every worktree links to the primary worktree's copy, so all worktrees share the same prototypes
+- Never put prototypes in `lib/` or any other tracked file
+
 ## Tidewave
 
 The `tidewave-mcp` server gives access to the running dev server. Prefer its tools to the shell:

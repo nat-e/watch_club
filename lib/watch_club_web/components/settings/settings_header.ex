@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Components.Settings.SettingsHeader do
     <.stack space="related" class={["max-w-readable", @class]}>
       <p
         :if={@eyebrow}
-        class="text-xs font-semibold tracking-[0.22em] text-accent uppercase"
+        class="text-xs font-semibold tracking-wider text-accent uppercase"
       >
         {@eyebrow}
       </p>

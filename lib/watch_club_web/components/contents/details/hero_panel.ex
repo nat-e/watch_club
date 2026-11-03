@@ -30,7 +30,7 @@ defmodule WatchClubWeb.Components.Contents.Details.HeroPanel do
       <div class="relative flex flex-col gap-cluster">
         <p
           :if={@content.tagline}
-          class="text-center text-sm font-semibold tracking-[0.3em] text-accent uppercase"
+          class="text-center text-sm font-semibold tracking-wider text-accent uppercase"
         >
           {@content.tagline}
         </p>

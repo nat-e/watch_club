@@ -1,6 +1,6 @@
 /* See the Tailwind configuration guide for advanced usage
    https://tailwindcss.com/docs/configuration */
-@import url("https://fonts.googleapis.com/css2?family=Fira+Code&family=Oxanium:wght@400;500;700&family=Reddit+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code&family=Oxanium:wght@400;600&family=Reddit+Sans:wght@400;600&display=swap");
 
 @import "tailwindcss" source(none);
 @import "../vendor/tw-animate.css";
@@ -12,3 +12,5 @@
 @source "../css";
 @source "../js";
 @source "../../lib/watch_club_web";
+/* Local prototypes, ignored by git (see the router) */
+@source "../../dev/prototypes";

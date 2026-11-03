@@ -53,8 +53,8 @@ defmodule WatchClubWeb.Components.UI.ReorderableList do
             dataIdAttr: "data-sortable-id",
             draggable: "[data-sortable-id]",
             handle: "[data-sortable-handle]",
-            ghostClass: "opacity-50",
-            chosenClass: "opacity-50",
+            ghostClass: "opacity-40",
+            chosenClass: "opacity-40",
             forceFallback: true,
 
             onEnd: (event) => {

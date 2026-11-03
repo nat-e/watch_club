@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
     ~H"""
     <div
       class={[
-        "inline-flex w-full overflow-hidden rounded-md border border-border bg-surface-inset text-sm",
+        "inline-flex w-full overflow-hidden rounded-control border border-border-control bg-surface-inset text-sm",
         @class
       ]}
       {@rest}
@@ -53,7 +53,7 @@ defmodule WatchClubWeb.Components.UI.SegmentedControl do
       aria-current={@link? && @selected? && "page"}
       aria-pressed={!@link? && @selected?}
       class={[
-        "grow basis-0 rounded-none! border-0! text-center",
+        "grow basis-0 rounded-none! border-0! text-center focus-visible:-outline-offset-2",
         @selected? &&
           "pointer-events-none bg-surface-selected! text-text! hover:bg-surface-selected! active:bg-surface-selected!",
         @item[:class]

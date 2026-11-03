@@ -70,7 +70,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
     <button
       id={"#{@id_prefix}-see-all-results-button"}
       type="submit"
-      class="flex w-full shrink-0 items-center justify-center gap-related border-b border-border-subtle p-related text-sm font-semibold text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:bg-surface-hover focus-visible:text-text focus-visible:outline-none"
+      class="flex w-full shrink-0 items-center justify-center gap-related border-b border-border-subtle p-related text-sm font-semibold text-text-muted transition-colors hover:bg-surface-hover hover:text-text focus-visible:bg-surface-hover focus-visible:text-text focus-visible:-outline-offset-2"
     >
       <span>
         {dgettext("search", "See all results")}
@@ -99,7 +99,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
     ~H"""
     <.link
       id={"#{@id_prefix}-preview-link-#{@content_identity.external_id}"}
-      class="flex gap-related hover:bg-surface-hover p-related"
+      class="flex gap-related hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:-outline-offset-2 p-related"
       navigate={Url.content_details_link(@content_identity)}
     >
       <.tmdb_poster
@@ -108,7 +108,7 @@ defmodule WatchClubWeb.Components.Navigation.Navbar.SearchResults do
         class="w-20 shrink-0"
       />
       <.stack space="related" class="h-full flex-1">
-        <span class="font-bold">{@title}</span>
+        <span class="font-semibold">{@title}</span>
         <p class="line-clamp-2 text-sm text-text-muted">{@description}</p>
       </.stack>
     </.link>

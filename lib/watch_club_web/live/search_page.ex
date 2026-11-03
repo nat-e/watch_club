@@ -21,7 +21,7 @@ defmodule WatchClubWeb.SearchPage do
         description={
           raw(
             dgettext("search", "Showing results for %{query}",
-              query: gtspan("“#{@query}”", "font-bold text-text")
+              query: gtspan("“#{@query}”", "font-semibold text-text")
             )
           )
         }
@@ -61,7 +61,7 @@ defmodule WatchClubWeb.SearchPage do
     <.link
       id={@id}
       navigate={Url.content_details_link(content_identity(@result))}
-      class="flex items-start gap-group rounded-lg py-related transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
+      class="flex items-start gap-group rounded-lg py-related transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover"
     >
       <.tmdb_poster
         path={@result.poster_path}
@@ -94,7 +94,7 @@ defmodule WatchClubWeb.SearchPage do
       <:description>
         {raw(
           dgettext("search", "We didn't find any content for %{query}",
-            query: gtspan("“#{@query}”", "font-bold text-text")
+            query: gtspan("“#{@query}”", "font-semibold text-text")
           )
         )}
       </:description>

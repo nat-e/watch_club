@@ -30,7 +30,13 @@
 	}
 
 	* {
-		@apply border-border outline-border-focus/50;
+		@apply border-border outline-border-focus;
+	}
+
+	/* The focus indicator for everything that doesn't draw its own: a solid
+	   ring with a gap, so it reads on any background and any fill. */
+	:focus-visible {
+		@apply outline-2 outline-offset-2;
 	}
 }
 
@@ -78,7 +84,7 @@
 	--color-text-disabled: var(--wc-color-text-disabled);
 	--color-border: var(--wc-color-border);
 	--color-border-subtle: var(--wc-color-border-subtle);
-	--color-border-strong: var(--wc-color-border-strong);
+	--color-border-control: var(--wc-color-border-control);
 	--color-border-focus: var(--wc-color-border-focus);
 	--color-focus-ring: var(--wc-color-focus-ring);
 	--color-primary: var(--wc-color-primary);
@@ -151,6 +157,7 @@
 
 	--shadow-card: var(--wc-shadow-card);
 	--shadow-overlay: var(--wc-shadow-overlay);
+	--shadow-modal: var(--wc-shadow-modal);
 	--shadow-glow: var(--wc-shadow-glow);
 
 	--radius-sm: var(--radius-sm);

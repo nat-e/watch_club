@@ -1,6 +1,11 @@
 # Gives each worktree its own server and databases.
 # Scripts run from the primary worktree so that they don't depend on the branch.
 
+# Local prototypes (dev/prototypes, ignored by git and not in .worktreeinclude) live in the
+# primary worktree. Each worktree links to that folder, so they all share it.
+[[pre-start]]
+prototypes = "if [ -d '{{ primary_worktree_path }}/dev/prototypes' ]; then mkdir -p dev && ln -sfn '{{ primary_worktree_path }}/dev/prototypes' dev/prototypes; fi"
+
 [[pre-start]]
 copy = "wt step copy-ignored"
 

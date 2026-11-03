@@ -41,6 +41,7 @@
 			"!**/deps",
 			"!**/priv",
 			"!**/assets/vendor",
+			"!.claude/skills/refactoring-ui",
 			"!**/_build",
 			"!**/.expert"
 		]

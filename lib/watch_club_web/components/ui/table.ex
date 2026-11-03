@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <div
       data-slot="table-container"
       class={[
-        "relative w-full overflow-x-auto rounded-md border border-border bg-surface shadow-card",
+        "relative w-full overflow-x-auto rounded-card border border-border bg-surface shadow-card",
         @class
       ]}
     >
@@ -70,7 +70,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <tfoot
       data-slot="table-footer"
       class={[
-        "border-t border-border-subtle bg-surface-raised font-medium [&>tr]:last:border-b-0",
+        "border-t border-border-subtle bg-surface-raised font-semibold [&>tr]:last:border-b-0",
         @class
       ]}
       {@rest}
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wide has-[[role=checkbox]]:pr-0",
+        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wider has-[[role=checkbox]]:pr-0",
         @class
       ]}
       {@rest}

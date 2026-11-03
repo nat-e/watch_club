@@ -32,7 +32,7 @@ defmodule WatchClubWeb.Live.Clubs.Members.MembersTable do
     ~H"""
     <.table_row>
       <.table_cell class="text-left">
-        <.inline class="font-bold">
+        <.inline class="font-semibold">
           <.avatar id={@membership.user.id} name={@membership.user.username} />
           {@membership.user.username}
         </.inline>

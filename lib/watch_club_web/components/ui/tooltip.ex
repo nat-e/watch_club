@@ -59,7 +59,7 @@ defmodule WatchClubWeb.Components.UI.Tooltip do
         popover="manual"
         role="tooltip"
         class={[
-          "pointer-events-none fixed inset-auto z-50 m-0 max-w-[min(20rem,calc(100vw-2rem))] rounded-md border border-border bg-surface-overlay px-related py-tight text-sm leading-6 text-text shadow-overlay outline-none",
+          "pointer-events-none fixed inset-auto z-50 m-0 max-w-[min(20rem,calc(100vw-2rem))] rounded-control border border-border bg-surface-overlay px-related py-tight text-sm leading-6 text-text shadow-overlay outline-none",
           @content_class
         ]}
       >

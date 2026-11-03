@@ -46,7 +46,7 @@ defmodule WatchClubWeb.Layouts do
           class="absolute z-0 h-[400px] w-full bg-canvas xl:h-[500px]"
         >
           {render_slot(@backdrop)}
-          <div class="to-canvas from-canvas/50 absolute inset-0 bg-linear-to-b"></div>
+          <div class="to-canvas from-canvas/60 absolute inset-0 bg-linear-to-b"></div>
         </div>
         <.live_component
           id="navbar"
@@ -81,7 +81,7 @@ defmodule WatchClubWeb.Layouts do
         <.card padding="cluster" class="flex flex-col gap-cluster">
           <h1
             :if={@title}
-            class="inline-flex items-center gap-related font-heading text-xl font-medium"
+            class="inline-flex items-center gap-related font-heading text-xl font-semibold"
           >
             {@title}
           </h1>

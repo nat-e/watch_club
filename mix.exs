@@ -52,7 +52,9 @@ defmodule WatchClub.MixProject do
   end
 
   # Specifies which paths to compile per environment.
+  # dev/prototypes holds local prototypes, ignored by git (see the router).
   defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:dev), do: ["lib", "dev/prototypes"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.

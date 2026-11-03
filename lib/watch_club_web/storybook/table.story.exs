@@ -52,19 +52,19 @@ defmodule WatchClubWeb.Storybook.Table do
           </.table_header>
           <.table_body>
             <.table_row>
-              <.table_cell class="font-medium">INV001</.table_cell>
+              <.table_cell class="font-semibold">INV001</.table_cell>
               <.table_cell><.badge>Paid</.badge></.table_cell>
               <.table_cell>Credit card</.table_cell>
               <.table_cell class="text-right">$250.00</.table_cell>
             </.table_row>
             <.table_row>
-              <.table_cell class="font-medium">INV002</.table_cell>
+              <.table_cell class="font-semibold">INV002</.table_cell>
               <.table_cell><.badge variant="secondary">Pending</.badge></.table_cell>
               <.table_cell>PayPal</.table_cell>
               <.table_cell class="text-right">$150.00</.table_cell>
             </.table_row>
             <.table_row selected>
-              <.table_cell class="font-medium">INV003</.table_cell>
+              <.table_cell class="font-semibold">INV003</.table_cell>
               <.table_cell><.badge variant="danger">Failed</.badge></.table_cell>
               <.table_cell>Bank transfer</.table_cell>
               <.table_cell class="text-right">$350.00</.table_cell>
@@ -96,7 +96,7 @@ defmodule WatchClubWeb.Storybook.Table do
           <.table_body>
             <.table_row>
               <.table_cell>
-                <div class="flex items-center justify-center gap-2 font-bold">
+                <div class="flex items-center justify-center gap-2 font-semibold">
                   <.avatar id="user-ada" name="Ada Lovelace" />
                   Ada Lovelace
                 </div>
@@ -104,7 +104,7 @@ defmodule WatchClubWeb.Storybook.Table do
               <.table_cell><.badge>Admin</.badge></.table_cell>
               <.table_cell>2 days ago</.table_cell>
               <.table_cell>
-                <div class="flex items-center justify-center gap-2 font-bold">
+                <div class="flex items-center justify-center gap-2 font-semibold">
                   <.avatar id="user-grace" name="Grace Hopper" />
                   Grace Hopper
                 </div>
@@ -123,12 +123,12 @@ defmodule WatchClubWeb.Storybook.Table do
             </.table_row>
             <.table_row class="text-text-muted">
               <.table_cell>
-                <div class="font-bold italic">Invited guest</div>
+                <div class="font-semibold italic">Invited guest</div>
               </.table_cell>
               <.table_cell><.badge variant="secondary">Pending</.badge></.table_cell>
               <.table_cell></.table_cell>
               <.table_cell>
-                <div class="flex items-center justify-center gap-2 font-bold">
+                <div class="flex items-center justify-center gap-2 font-semibold">
                   <.avatar id="user-ada" name="Ada Lovelace" />
                   Ada Lovelace
                 </div>

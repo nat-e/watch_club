@@ -70,7 +70,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
           :if={@media.type in [:movie, :tv_show_episode]}
           id="drawer-play"
           navigate={~p"/play/#{@media.id}"}
-          variant="accent"
+          variant="primary"
           size="md"
           emphasis
         >
@@ -79,7 +79,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
         </.button>
         <.button
           id="drawer-remove"
-          variant="danger"
+          variant="secondary"
           size="md"
           phx-click="open_remove_media_modal"
         >
@@ -288,7 +288,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     <.dynamic_tag
       tag_name={@as}
       class={[
-        "text-xs font-semibold uppercase tracking-[0.18em] text-text-subtle",
+        "text-xs font-semibold uppercase tracking-wider text-text-subtle",
         @class
       ]}
     >

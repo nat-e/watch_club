@@ -83,7 +83,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       <.stack space="group" class="w-full @container">
         <.stack space="related">
           <.inline space="related">
-            <h1 class="min-w-0 flex-1 truncate text-3xl font-bold">{@library.name}</h1>
+            <h1 class="min-w-0 flex-1 truncate text-3xl font-semibold">{@library.name}</h1>
           </.inline>
           <.library_sort_controls
             club_id={@library.club_id}

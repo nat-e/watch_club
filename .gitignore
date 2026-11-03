@@ -53,6 +53,10 @@ npm-debug.log
 # Git worktrees
 /.wt/
 
+# Local prototypes (see the router). The primary worktree holds them, and the other worktrees
+# link to that folder.
+/dev/prototypes
+
 # Personal Claude instructions and settings
 /CLAUDE.local.md
 /.claude/settings.local.json

@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         id: :default,
         description: "Default checkbox",
         template: """
-        <label class="flex items-center gap-3 text-sm font-medium">
+        <label class="flex items-center gap-3 text-sm">
           <.checkbox id="wc-checkbox-default" />
           Add new recommendations to my watchlist
         </label>
@@ -31,7 +31,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         id: :checked,
         description: "Checked state",
         template: """
-        <label class="flex items-center gap-3 text-sm font-medium">
+        <label class="flex items-center gap-3 text-sm">
           <.checkbox id="wc-checkbox-checked" checked />
           Share updates with club members
         </label>
@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         <div class="flex items-start gap-3">
           <.checkbox id="wc-checkbox-description" checked />
           <div class="grid gap-1">
-            <label for="wc-checkbox-description" class="text-sm font-medium">
+            <label for="wc-checkbox-description" class="text-sm font-semibold">
               Enable club notifications
             </label>
             <p class="text-sm text-text-muted">
@@ -61,7 +61,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         <div class="flex items-start gap-3">
           <.checkbox id="wc-checkbox-invalid" errors={["Required"]} />
           <div class="grid gap-1">
-            <label for="wc-checkbox-invalid" class="text-sm font-medium">
+            <label for="wc-checkbox-invalid" class="text-sm">
               Accept the club rules
             </label>
             <p class="text-sm text-danger">This must be accepted before continuing.</p>
@@ -73,7 +73,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         id: :disabled,
         description: "Disabled state",
         template: """
-        <label class="flex items-center gap-3 text-sm font-medium text-text-disabled">
+        <label class="flex items-center gap-3 text-sm text-text-disabled">
           <.checkbox id="wc-checkbox-disabled" disabled />
           This option is unavailable
         </label>

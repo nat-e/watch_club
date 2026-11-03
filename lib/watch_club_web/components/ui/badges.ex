@@ -20,13 +20,13 @@ defmodule WatchClubWeb.Components.UI.Badges do
   """
   def user_ref(%{user: nil} = assigns) do
     ~H"""
-    <span class="font-bold text-text-subtle">{dgettext("default", "@Deleted user")}</span>
+    <span class="font-semibold text-text-subtle">{dgettext("default", "@Deleted user")}</span>
     """
   end
 
   def user_ref(assigns) do
     ~H"""
-    <span class="font-bold text-primary">@{@user.username}</span>
+    <span class="font-semibold text-primary">@{@user.username}</span>
     """
   end
 
@@ -67,7 +67,10 @@ defmodule WatchClubWeb.Components.UI.Badges do
 
   def content_link(assigns) do
     ~H"""
-    <.link navigate={Url.content_details_link(@content)} class="font-bold text-accent hover:underline">
+    <.link
+      navigate={Url.content_details_link(@content)}
+      class="font-semibold text-accent hover:underline"
+    >
       {@content.implementation.best_localization.title}
     </.link>
     """

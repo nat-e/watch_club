@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex shrink-0 items-center justify-center rounded-full font-bold text-white select-none",
+        "relative flex shrink-0 items-center justify-center rounded-full font-semibold text-white select-none",
         @size == "xs" && "size-4 text-xs leading-none",
         @size == "sm" && "size-5 text-sm leading-none",
         @size == "md" && "size-7 text-base",
@@ -89,7 +89,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
         :if={@overflow_count > 0}
         aria-label={dgettext("default", "%{count} more", count: @overflow_count)}
         class={[
-          "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised font-bold text-text select-none",
+          "relative flex shrink-0 items-center justify-center rounded-full border border-border bg-surface-raised font-semibold text-text select-none",
           @avatar_size == "xs" && "size-5 text-[0.625rem] leading-none",
           @avatar_size == "sm" && "size-6 text-xs leading-none",
           @avatar_size == "md" && "size-8 text-base",

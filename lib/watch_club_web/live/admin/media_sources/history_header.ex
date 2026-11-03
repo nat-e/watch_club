@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Admin.MediaSources.HistoryHeader do
     <.stack space="cluster">
       <.link
         navigate={~p"/admin/media/sources"}
-        class="inline-flex items-center gap-tight self-start text-sm font-medium text-text-muted outline-none hover:text-text"
+        class="inline-flex items-center gap-tight self-start text-sm text-text-muted hover:text-text"
       >
         <Lucideicons.arrow_left class="size-icon-sm" />
         {dgettext("admin_media_imports", "Back to Media Sources")}

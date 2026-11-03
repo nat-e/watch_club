@@ -75,7 +75,7 @@ defmodule WatchClubWeb.Lists.ListPage do
         <.stack space="related">
           <.inline space="related">
             <.lucide_icon name={@list.icon} class="size-icon-lg shrink-0 text-text-muted" />
-            <h1 class="min-w-0 flex-1 truncate text-3xl font-bold">{@list.name}</h1>
+            <h1 class="min-w-0 flex-1 truncate text-3xl font-semibold">{@list.name}</h1>
           </.inline>
           <.list_sort_controls
             list_id={@list.id}
