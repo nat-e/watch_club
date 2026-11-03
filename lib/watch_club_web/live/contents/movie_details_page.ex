@@ -27,8 +27,8 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      class="p-0!"
-      space="none"
+      title={@movie.title}
+      content_page?
     >
       <.movie_details
         movie={@movie}
@@ -59,7 +59,7 @@ defmodule WatchClubWeb.Contents.MovieDetailsPage do
     ~H"""
     <article
       aria-labelledby="content-details-title"
-      class="relative min-h-[calc(100svh-var(--wc-size-row-lg))] overflow-hidden bg-canvas"
+      class="relative min-h-svh overflow-hidden bg-canvas"
     >
       <.details_backdrop path={@movie.backdrop_path} />
 

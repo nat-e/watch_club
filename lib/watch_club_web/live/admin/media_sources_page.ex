@@ -18,7 +18,6 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   }
 
   import WatchClubWeb.Components.Media.SourceTypeIcon
-  import WatchClubWeb.Components.Settings.SettingsHeader
 
   alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
 
@@ -49,17 +48,15 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       instance_settings={@instance_settings}
       space="cluster"
       class="max-w-panel"
+      title={dgettext("admin_media_imports", "Media Sources")}
     >
-      <.settings_header
-        title={dgettext("admin_media_imports", "Media Sources")}
-        description={
-          dgettext(
-            "admin_media_imports",
-            "Configure Media Sources to import and request media to your %{name} instance.",
-            name: @instance_settings.name
-          )
-        }
-      />
+      <.page_description text={
+        dgettext(
+          "admin_media_imports",
+          "Configure Media Sources to import and request media to your %{name} instance.",
+          name: @instance_settings.name
+        )
+      } />
 
       <.stack space="group">
         <.source_type_section

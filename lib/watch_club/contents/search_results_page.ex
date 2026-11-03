@@ -3,12 +3,10 @@ defmodule WatchClub.Contents.SearchResultsPage do
   A single page of content search results, carrying the external provider's
   pagination metadata so callers can request the following pages.
   """
-  alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
-
-  @type result :: MovieSearchResult.t() | TvSearchResult.t()
+  alias WatchClub.Contents.SearchResult
 
   @type t :: %__MODULE__{
-          results: [result()],
+          results: [SearchResult.t()],
           page: pos_integer(),
           total_pages: non_neg_integer()
         }

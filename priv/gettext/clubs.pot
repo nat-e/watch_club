@@ -16,17 +16,17 @@ msgstr ""
 msgid "Admin"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "All the members will be removed and the data will be deleted permanently."
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete %{club_name}?"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to leave %{club_name}?"
 msgstr ""
@@ -41,29 +41,29 @@ msgstr ""
 msgid "Club Name"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #: lib/watch_club_web/live/clubs/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Club name"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create a new club to share your favorite movies and TV shows with your friends."
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create new club"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr ""
@@ -73,18 +73,18 @@ msgstr ""
 msgid "Edit Club"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Leave"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr ""
@@ -154,22 +154,22 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "You will loose access to the library and will not be able to join back unless re-invited"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} created"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} deleted"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "You left %{club_name}"
 msgstr ""

@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal
-  import WatchClubWeb.Components.Settings.SettingsHeader
   import WatchClubWeb.Components.UI.Empty
 
   alias WatchClubWeb.Admin.MediaBrowserPage.{DetailDrawer, State, Table, Toolbar}
@@ -138,11 +137,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       space="section"
+      title={dgettext("admin_media", "Media Browser")}
     >
-      <.settings_header
-        title={dgettext("admin_media", "Media Browser")}
-        description={dgettext("admin_media", "View and manage all medias on this instance.")}
-      />
+      <.page_description text={
+        dgettext("admin_media", "View and manage all medias on this instance.")
+      } />
 
       <Toolbar.toolbar state={@state} />
 

@@ -11,53 +11,76 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "See all results"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "Start typing to search"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "There was an error searching for your content"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "We didn't find any content for your search"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex
+#: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "No results"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex
-#, elixir-autogen, elixir-format
-msgid "Showing results for %{query}"
-msgstr ""
-
-#: lib/watch_club_web/live/search_page.ex
+#: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for %{query}"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
-msgid "Search %{content_type}"
+msgid "Clear search"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
+#: lib/watch_club_web/components/search/search_result_row.ex
 #, elixir-autogen, elixir-format
-msgid "Enter ⏎"
+msgid "In %{clubs}"
 msgstr ""
+
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search movies and TV shows"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Search movies and TV shows by title."
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search results"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Searching…"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "See all results for %{query}"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "The search didn't work."
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "soon"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} result"
+msgid_plural "%{count} results"
+msgstr[0] ""
+msgstr[1] ""

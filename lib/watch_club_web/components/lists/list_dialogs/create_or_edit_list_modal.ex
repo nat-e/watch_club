@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Components.Navigation.Sidebar.CreateOrEditListModal do
+defmodule WatchClubWeb.Components.Lists.ListDialogs.CreateOrEditListModal do
   @moduledoc """
   Create/edit modal for a user's List. The name is edited inline next to an
   icon button that opens the shared icon picker.

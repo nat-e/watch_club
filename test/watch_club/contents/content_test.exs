@@ -11,6 +11,8 @@ defmodule WatchClub.Contents.ContentTest do
     ContentIdentity,
     Movie,
     MovieLocalization,
+    SearchResult,
+    SearchResultsPage,
     TvShow,
     TvShowEpisode,
     TvShowLocalization
@@ -251,6 +253,91 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.Query.filter(tv_show_id == ^content.id)
                |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
                |> Ash.read!(authorize?: false)
+    end
+  end
+
+  describe "search_content/*" do
+    test "returns Movies and TV Shows with the clubs that have them", %{
+      club: club,
+      admin: admin,
+      member: member
+    } do
+      movie = generate(movie(actor: admin))
+      library = generate(library(club, content_type: :movie))
+
+      WatchClub.Clubs.add_content_to_libraries!(ContentIdentity.from_content(movie), [library.id],
+        actor: member
+      )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, %{
+          "page" => 1,
+          "total_pages" => 3,
+          "total_results" => 3,
+          "results" => [
+            %{
+              "media_type" => "movie",
+              "id" => String.to_integer(movie.external_id),
+              "title" => "Dune",
+              "overview" => "",
+              "release_date" => "2021-09-15"
+            },
+            %{"media_type" => "person", "id" => 1, "name" => "Denis Villeneuve"},
+            %{
+              "media_type" => "tv",
+              "id" => 42,
+              "name" => "Dune: Prophecy",
+              "overview" => "The Bene Gesserit.",
+              "first_air_date" => ""
+            }
+          ]
+        })
+      end)
+
+      assert %SearchResultsPage{
+               page: 1,
+               total_pages: 3,
+               results: [
+                 %SearchResult{title: "Dune", year: 2021, overview: nil, clubs: [found_club]},
+                 %SearchResult{
+                   identity: %ContentIdentity{type: :tv_show, external_id: "42"},
+                   title: "Dune: Prophecy",
+                   year: nil,
+                   overview: "The Bene Gesserit.",
+                   clubs: []
+                 }
+               ]
+             } =
+               search_content!(%{query: "dune"}, actor: member)
+
+      assert found_club.id == club.id
+    end
+
+    test "hides the clubs the actor isn't a member of", %{admin: admin, member: member} do
+      movie = generate(movie(actor: admin))
+      other_club = generate(club(actor: admin))
+      library = generate(library(other_club, content_type: :movie))
+
+      WatchClub.Clubs.add_content_to_libraries!(ContentIdentity.from_content(movie), [library.id],
+        actor: admin
+      )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, %{
+          "page" => 1,
+          "total_pages" => 1,
+          "results" => [
+            %{
+              "media_type" => "movie",
+              "id" => String.to_integer(movie.external_id),
+              "title" => "Dune"
+            }
+          ]
+        })
+      end)
+
+      assert %SearchResultsPage{results: [%SearchResult{clubs: []}]} =
+               search_content!(%{query: "dune"}, actor: member)
     end
   end
 

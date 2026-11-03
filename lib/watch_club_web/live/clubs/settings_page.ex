@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Clubs.SettingsPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
-
   import WatchClubWeb.Clubs.Settings.{
     CreateOrEditLibraryModal,
     DeleteLibraryModal,
@@ -23,13 +21,14 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
+      title={dgettext("clubs", "Club Settings")}
     >
-      <.settings_header
-        title={dgettext("clubs", "Club Settings")}
-        description={
-          dgettext("clubs", "Manage %{club_name}'s profile and libraries.", club_name: @club.name)
-        }
-      />
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
+        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
+      </:parent>
+      <.page_description text={
+        dgettext("clubs", "Manage %{club_name}'s profile and libraries.", club_name: @club.name)
+      } />
 
       <.section
         title={dgettext("clubs", "General")}

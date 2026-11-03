@@ -1,10 +1,9 @@
-defmodule WatchClubWeb.Components.Navigation.Sidebar.CreateClubModal do
+defmodule WatchClubWeb.Components.Clubs.ClubDialogs.CreateClubModal do
   @moduledoc """
-  Create club modal owned by the sidebar.
+  Create club modal owned by `ClubDialogsLive`.
 
-  Owner-private to `SidebarLive`. The hardcoded phx-* event names are global
-  sidebar events handled by the owning LiveComponent rather than reusable
-  component API.
+  Owner-private to `ClubDialogsLive`. The hardcoded phx-* event names are handled by the
+  owning LiveComponent rather than reusable component API.
   """
   use WatchClubWeb, :component
 

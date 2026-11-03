@@ -11,10 +11,10 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar/delete_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
@@ -35,28 +35,27 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar/delete_list_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#: lib/watch_club_web/components/navigation/sidebar/create_or_edit_list_modal.ex
+#: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Try again"

@@ -29,9 +29,10 @@ defmodule WatchClubWeb.HomePage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-layout-page @container"
+      title={dgettext("home", "Home")}
     >
+      <:icon><Lucideicons.house /></:icon>
       <:hero>
-        <h1 class="sr-only">{dgettext("home", "Home")}</h1>
         <.spotlight
           :if={@continue_watching != []}
           content={hd(@continue_watching)}

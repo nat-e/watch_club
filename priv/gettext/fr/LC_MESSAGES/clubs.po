@@ -18,19 +18,19 @@ msgid "Admin"
 msgstr "Administrateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "All the members will be removed and the data will be deleted permanently."
 msgstr "Tous les membres seront retirés et les données seront définitivement supprimées."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete %{club_name}?"
 msgstr "Êtes-vous sûr de vouloir supprimer %{club_name} ?"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to leave %{club_name}?"
 msgstr "Êtes-vous sûr de vouloir quitter %{club_name} ?"
@@ -48,33 +48,33 @@ msgid "Club Name"
 msgstr "Nom du club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #: lib/watch_club_web/live/clubs/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
 msgstr "Paramètres du club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Club name"
 msgstr "Nom du club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create a new club to share your favorite movies and TV shows with your friends."
 msgstr "Créez un nouveau club pour partager vos films et séries préférés avec vos amis."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/create_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create new club"
 msgstr "Créer un nouveau club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/delete_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr "Supprimer le club"
@@ -86,20 +86,20 @@ msgid "Edit Club"
 msgstr "Modifier le club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Leave"
 msgstr "Quitter"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr "Quitter le club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Manage members"
 msgstr "Gérer les membres"
@@ -183,25 +183,25 @@ msgid "User"
 msgstr "Utilisateur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar/leave_club_modal.ex
+#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #, elixir-autogen, elixir-format
 msgid "You will loose access to the library and will not be able to join back unless re-invited"
 msgstr "Vous perdrez l'accès à la bibliothèque et ne pourrez pas revenir sans être réinvité"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} created"
 msgstr "Club %{club_name} créé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Club %{club_name} deleted"
 msgstr "Club %{club_name} supprimé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#: lib/watch_club_web/components/clubs/club_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "You left %{club_name}"
 msgstr "Vous avez quitté %{club_name}"

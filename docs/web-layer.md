@@ -32,15 +32,19 @@ Example shape:
           reorderable_list.ex
           icon_picker_live.ex
 
+        clubs/
+          club_dialogs_live.ex
+          club_dialogs/
+            create_club_modal.ex
+
         contents/
           content_card.ex
           add_to_library_modal_live.ex
 
         navigation/
-          navbar_live.ex
-          sidebar_live.ex
-          sidebar/
-            create_club_modal.ex
+          app_bar.ex
+          search_field_live.ex
+          sidebar.ex
 
       live/
         accounts/

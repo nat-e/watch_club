@@ -47,8 +47,6 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
 
   # The feed can be empty for the administrator when they just created the instance
   # Use this as an onboarding screen for prompting them to create a Club
-  # We already have the entire club creation flow handled in the sidebar, so we just
-  # send the event to that LiveView
   defp empty_feed(%{current_user: %User{administrator?: true}} = assigns) do
     ~H"""
     <.empty>
@@ -61,8 +59,7 @@ defmodule WatchClubWeb.Live.Home.ActivityFeed do
       <.button
         id="empty-feed-create-club"
         variant="primary"
-        phx-click="open_create_club_modal"
-        phx-target={"##{WatchClubWeb.Components.Navigation.SidebarLive.dom_id()}"}
+        phx-click={WatchClubWeb.Components.Clubs.ClubDialogsLive.open_create_club_modal()}
       >
         <:icon position="start"><Lucideicons.plus /></:icon>
         {dgettext("feed", "Create club")}

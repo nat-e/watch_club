@@ -12,62 +12,89 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "See all results"
-msgstr "Voir tous les résultats"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "Start typing to search"
-msgstr "Commencez à taper pour rechercher"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "There was an error searching for your content"
-msgstr "Une erreur est survenue lors de la recherche de votre contenu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
-#, elixir-autogen, elixir-format
-msgid "We didn't find any content for your search"
-msgstr "Nous n'avons trouvé aucun contenu pour votre recherche"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Rechercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex
+#: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "No results"
 msgstr "Aucun résultat"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex
-#, elixir-autogen, elixir-format
-msgid "Showing results for %{query}"
-msgstr "Résultats pour %{query}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/search_page.ex
+#: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find any content for %{query}"
 msgstr "Nous n'avons trouvé aucun contenu pour %{query}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/desktop_search.ex
-#: lib/watch_club_web/components/navigation/navbar/mobile_search.ex
+#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
-msgid "Search %{content_type}"
-msgstr "Rechercher dans %{content_type}"
+msgid "Clear search"
+msgstr "Effacer la recherche"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/navbar/search_results.ex
+#: lib/watch_club_web/components/search/search_result_row.ex
 #, elixir-autogen, elixir-format
-msgid "Enter ⏎"
-msgstr "Entrée ⏎"
+msgid "In %{clubs}"
+msgstr "Dans %{clubs}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search movies and TV shows"
+msgstr "Rechercher des films et des séries"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Search movies and TV shows by title."
+msgstr "Recherchez des films et des séries par titre."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search results"
+msgstr "Résultats de recherche"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Searching…"
+msgstr "Recherche…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "See all results for %{query}"
+msgstr "Voir tous les résultats pour %{query}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "The search didn't work."
+msgstr "La recherche n'a pas fonctionné."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr "Réessayer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "soon"
+msgstr "bientôt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} result"
+msgid_plural "%{count} results"
+msgstr[0] "%{count} résultat"
+msgstr[1] "%{count} résultats"

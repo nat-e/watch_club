@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.MyRequestsPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
-
   alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup}
 
   alias WatchClubWeb.Components.Contents.{
@@ -31,8 +29,9 @@ defmodule WatchClubWeb.MyRequestsPage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       class="max-w-layout-page"
+      title={dgettext("requests", "My Requests")}
     >
-      <.settings_header title={dgettext("requests", "My Requests")} description="" />
+      <:icon><Lucideicons.inbox /></:icon>
 
       <.cluster
         space="tight"

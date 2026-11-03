@@ -1,8 +1,6 @@
 defmodule WatchClubWeb.Accounts.SettingsPage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Components.Settings.SettingsHeader
-
   @impl true
   def render(assigns) do
     ~H"""
@@ -13,11 +11,9 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       instance_settings={@instance_settings}
       space="section"
       class="max-w-panel"
+      title={dgettext("settings", "Settings")}
     >
-      <.settings_header
-        title={dgettext("settings", "Settings")}
-        description={dgettext("settings", "Manage your account preferences.")}
-      />
+      <.page_description text={dgettext("settings", "Manage your account preferences.")} />
 
       <.section
         title={dgettext("settings", "Preferences")}

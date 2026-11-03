@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   attr :rest, :global,
     include:
-      ~w(disabled form name value autofocus aria-label aria-busy aria-pressed) ++
+      ~w(disabled form name value autofocus aria-label aria-busy aria-pressed command commandfor) ++
         Enum.map(@link_attributes, &Atom.to_string/1)
 
   slot :icon do

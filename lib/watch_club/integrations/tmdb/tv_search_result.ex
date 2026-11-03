@@ -5,7 +5,7 @@ defmodule WatchClub.Integrations.Tmdb.TvSearchResult do
           name: String.t(),
           original_name: String.t(),
           original_language: String.t(),
-          overview: String.t(),
+          overview: String.t() | nil,
           poster_path: String.t() | nil,
           backdrop_path: String.t() | nil,
           genre_ids: [integer()],
@@ -41,7 +41,8 @@ defmodule WatchClub.Integrations.Tmdb.TvSearchResult do
       name: data["name"],
       original_name: data["original_name"],
       original_language: data["original_language"],
-      overview: data["overview"],
+      # TMDB sends an empty string when it has no overview
+      overview: if(data["overview"] == "", do: nil, else: data["overview"]),
       poster_path: data["poster_path"],
       backdrop_path: data["backdrop_path"],
       genre_ids: data["genre_ids"] || [],

@@ -4,6 +4,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   alias WatchClub.Shared.SortOrder
 
   import WatchClubWeb.Components.Contents.ContentCard
+  import WatchClubWeb.Components.Libraries.LibraryIcon
 
   alias WatchClubWeb.Components.Contents.{
     AddToLibraryModalLive,
@@ -79,19 +80,19 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       instance_settings={@instance_settings}
       class="p-2!"
       space="none"
+      title={@library.name}
     >
+      <:icon><.library_icon library={@library} /></:icon>
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
+        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
+      </:parent>
       <.stack space="group" class="w-full @container">
-        <.stack space="related">
-          <.inline space="related">
-            <h1 class="min-w-0 flex-1 truncate text-3xl font-semibold">{@library.name}</h1>
-          </.inline>
-          <.library_sort_controls
-            club_id={@library.club_id}
-            library_id={@library.id}
-            current_sort_by={@sort_by}
-            current_sort_order={@sort_order}
-          />
-        </.stack>
+        <.library_sort_controls
+          club_id={@library.club_id}
+          library_id={@library.id}
+          current_sort_by={@sort_by}
+          current_sort_order={@sort_order}
+        />
 
         <div
           id="library-content-stream"
@@ -204,6 +205,23 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   def handle_info("close_add_to_list_modal", socket) do
     {:noreply, socket |> reset_modals()}
+  end
+
+  # The library or its club was renamed: the bar shows both names
+  def handle_info(
+        %Notification{data: %Library{id: library_id} = library, action: %{type: :update}},
+        socket
+      )
+      when library_id == socket.assigns.library.id do
+    {:noreply, assign(socket, :library, library)}
+  end
+
+  def handle_info(
+        %Notification{data: %Club{id: club_id} = club, action: %{type: :update}},
+        socket
+      )
+      when club_id == socket.assigns.club.id do
+    {:noreply, assign(socket, :club, club)}
   end
 
   def handle_info(message, socket) do

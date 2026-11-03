@@ -97,6 +97,13 @@ defmodule WatchClubWeb.Helpers.Url do
     "#{base}/webhooks/#{source_type}/#{media_source_id}"
   end
 
+  @doc """
+  Whether `path` is the page at `section_path` or a page under it, such as a club's library under
+  the club.
+  """
+  def in_section?(path, section_path),
+    do: path == section_path or String.starts_with?(path, section_path <> "/")
+
   def list_link(list_id), do: ~p"/lists/#{list_id}"
 
   def content_details_link(%Content{type: type, external_id: id}),
