@@ -22,7 +22,7 @@ defmodule WatchClubWeb.Components.Navigation.NavbarLive do
         aria-controls="sidebar-panel"
         phx-click={SidebarLive.show_sidebar()}
       >
-        <Lucideicons.menu class="size-icon-lg font-bold" />
+        <Lucideicons.menu class="size-icon-lg" />
       </.button>
       <div class="w-full">
         <.desktop_search {assigns} />

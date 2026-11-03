@@ -46,11 +46,11 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     <span
       data-slot="checkbox"
       class={[
-        "relative inline-grid size-4 shrink-0 place-items-center rounded-sm border border-border bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
+        "relative inline-grid size-4 shrink-0 place-items-center rounded-sm border border-border-control bg-surface-inset text-transparent transition-[background-color,border-color,box-shadow,color] outline-none",
         "has-checked:border-primary has-checked:bg-primary has-checked:text-on-primary",
         "has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring",
-        "has-[input[aria-invalid='true']]:border-danger-border has-[input[aria-invalid='true']]:ring-2 has-[input[aria-invalid='true']]:ring-danger-ring",
-        "has-disabled:cursor-not-allowed has-disabled:opacity-50",
+        "has-[input[aria-invalid='true']]:not-has-focus-visible:border-danger-border has-[input[aria-invalid='true']]:not-has-focus-visible:ring-2 has-[input[aria-invalid='true']]:not-has-focus-visible:ring-danger-ring",
+        "has-disabled:cursor-not-allowed has-disabled:opacity-40",
         @class
       ]}
     >
@@ -99,8 +99,8 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
     <.label
       for={"#{@field.id}-#{@value}"}
       class={[
-        "flex flex-row justify-between w-full items-center rounded-xl border border-border-subtle bg-surface p-related h-control-lg",
-        @disabled? && "opacity-50 cursor-not-allowed"
+        "flex flex-row justify-between w-full items-center rounded-card border border-border-subtle bg-surface p-related h-control-lg",
+        @disabled? && "opacity-40 cursor-not-allowed"
       ]}
     >
       {render_slot(@label, @option)}

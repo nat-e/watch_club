@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
         <.stack space="tight" class="min-w-0 flex-1">
           <.link
             navigate={~p"/admin/media/sources/#{@media_source.id}/history"}
-            class="truncate text-base font-semibold tracking-tight text-text outline-none hover:text-text"
+            class="truncate text-base font-semibold tracking-tight text-text hover:text-text"
           >
             {@media_source.name}
           </.link>

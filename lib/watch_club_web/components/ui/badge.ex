@@ -25,12 +25,12 @@ defmodule WatchClubWeb.Components.UI.Badge do
     ~H"""
     <span
       class={[
-        "inline-flex size-fit items-center justify-center gap-tight overflow-hidden rounded-full border font-medium whitespace-nowrap",
+        "inline-flex size-fit items-center justify-center gap-tight overflow-hidden rounded-full border font-semibold whitespace-nowrap",
         @size == "sm" && "px-related py-0.5 text-xs",
         @size == "md" && "px-related py-0.5 text-sm",
         @size == "lg" && "px-related py-tight text-sm",
-        @variant == "default" && "border-transparent bg-primary text-on-primary",
-        @variant == "accent" && "border-transparent bg-accent text-on-accent",
+        @variant == "default" && "border-primary-border bg-primary-bg text-primary",
+        @variant == "accent" && "border-accent-border bg-accent-bg text-accent",
         @variant == "secondary" && "border-border bg-surface-raised text-text",
         @variant == "success" && "border-success-border bg-success-bg text-success",
         @variant == "muted" && "border-border-subtle bg-surface-inset text-text-muted",

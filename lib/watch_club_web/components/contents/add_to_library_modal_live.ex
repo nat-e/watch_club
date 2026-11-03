@@ -17,12 +17,12 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryModalLive do
               dgettext(
                 "contents",
                 "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content.",
-                content_name: gtspan(@content_title, "font-bold underline")
+                content_name: gtspan(@content_title, "font-semibold underline")
               )
             )}
           </.alert>
           <.stack space="group">
-            <h2 class="text-lg font-bold">{dgettext("contents", "Select library")}</h2>
+            <h2 class="text-lg font-semibold">{dgettext("contents", "Select library")}</h2>
             <.form
               for={%{}}
               id="club-selection-form"
@@ -58,7 +58,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryModalLive do
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
         <div class="min-w-0">
-          <p class="truncate font-bold">{@club.name}</p>
+          <p class="truncate font-semibold">{@club.name}</p>
           <p class="truncate text-sm text-text-muted">{@library.name}</p>
         </div>
       </div>
@@ -75,7 +75,7 @@ defmodule WatchClubWeb.Components.Contents.AddToLibraryModalLive do
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.avatar id={@club.id} name={@club.name} />
         <div class="min-w-0">
-          <p class="truncate font-bold">{@club.name}</p>
+          <p class="truncate font-semibold">{@club.name}</p>
           <p class="truncate text-sm text-text-muted">{@library.name}</p>
         </div>
       </div>

@@ -60,7 +60,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
     ~H"""
     <div class={[
       "relative flex flex-1 items-center gap-group p-group",
-      !@content.has_media? && "opacity-70"
+      !@content.has_media? && "opacity-80"
     ]}>
       <.tmdb_poster
         size="w342"
@@ -314,7 +314,7 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
 
       <.stack space="tight">
         <div class="flex items-baseline justify-between">
-          <p class="text-sm font-medium text-text">{@text}</p>
+          <p class="text-sm text-text">{@text}</p>
           <p :if={!is_nil(@progress)} class="text-xs tabular-nums">
             {@progress}%
           </p>

@@ -26,7 +26,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
     <div
       role="alert"
       class={[
-        "grid w-full gap-tight rounded-md border px-group py-related text-left text-sm",
+        "grid w-full gap-tight rounded-control border px-group py-related text-left text-sm",
         @icon != [] && @action != [] && "grid-cols-[auto_1fr_auto] gap-x-related",
         @icon != [] && @action == [] && "grid-cols-[auto_1fr] gap-x-related",
         @icon == [] && @action != [] && "grid-cols-[1fr_auto] gap-x-related",
@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Components.UI.Alert do
       </div>
 
       <div class={[
-        "text-sm/relaxed text-balance opacity-90 [&_a]:underline [&_a]:underline-offset-4 [&_p:not(:last-child)]:mb-group",
+        "text-sm/relaxed text-balance [&_a]:underline [&_a]:underline-offset-4 [&_p:not(:last-child)]:mb-group",
         @icon != [] && "col-start-2",
         @icon == [] && "col-start-1",
         @title != [] && "row-start-2",

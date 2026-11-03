@@ -223,7 +223,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           </p>
         </div>
         <span
-          class="rounded-[var(--wc-radius-full)] border px-3 py-1 text-xs font-medium"
+          class="rounded-[var(--wc-radius-full)] border px-3 py-1 text-xs font-semibold"
           style="border-color: var(--wc-color-border); color: var(--wc-color-text-muted); background: var(--wc-color-surface-raised)"
         >
           {length(@category.tokens)} tokens
@@ -346,7 +346,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
     >
       <div
         class="h-24 border"
-        style={"border-radius: var(#{token_var(@token)}); border-color: var(--wc-color-border-strong); background: var(--wc-color-surface-inset)"}
+        style={"border-radius: var(#{token_var(@token)}); border-color: var(--wc-color-border-control); background: var(--wc-color-surface-inset)"}
       >
       </div>
     </div>
@@ -377,7 +377,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
     >
       <div
         class="grid place-items-center rounded-[var(--wc-radius-control)] border text-xs"
-        style={"width: var(#{token_var(@token)}); height: var(#{token_var(@token)}); min-width: 2rem; min-height: 2rem; border-color: var(--wc-color-border-strong); color: var(--wc-color-text-muted)"}
+        style={"width: var(#{token_var(@token)}); height: var(#{token_var(@token)}); min-width: 2rem; min-height: 2rem; border-color: var(--wc-color-border-control); color: var(--wc-color-text-muted)"}
       >
         size
       </div>
@@ -423,7 +423,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           </p>
         </div>
         <div
-          class="rounded-[var(--wc-radius-full)] border px-3 py-1 text-xs font-medium"
+          class="rounded-[var(--wc-radius-full)] border px-3 py-1 text-xs font-semibold"
           style="border-color: var(--wc-color-success-border); background: var(--wc-color-success-bg); color: var(--wc-color-success)"
         >
           Saved 2 min ago
@@ -526,7 +526,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
   defp nav_item(assigns) do
     ~H"""
     <div
-      class="rounded-[var(--wc-radius-control)] px-3 py-2 font-medium"
+      class="rounded-[var(--wc-radius-control)] px-3 py-2"
       style={nav_item_style(@active)}
     >
       {@label}
@@ -548,7 +548,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
   defp field(assigns) do
     ~H"""
     <label for={@id} class="grid gap-2">
-      <span class="text-sm font-medium" style="color: var(--wc-color-text)">{@label}</span>
+      <span class="text-sm font-semibold" style="color: var(--wc-color-text)">{@label}</span>
       <input
         id={@id}
         value={@value}
@@ -575,7 +575,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
   defp select_field(assigns) do
     ~H"""
     <label class="grid gap-2">
-      <span class="text-sm font-medium" style="color: var(--wc-color-text)">{@label}</span>
+      <span class="text-sm font-semibold" style="color: var(--wc-color-text)">{@label}</span>
       <div
         class="flex h-[var(--wc-size-control-md)] items-center justify-between rounded-[var(--wc-radius-control)] border px-3 text-sm"
         style="background: var(--wc-color-surface-inset); border-color: var(--wc-color-border); color: var(--wc-color-text)"
@@ -595,7 +595,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
     ~H"""
     <div class="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
       <div>
-        <h4 class="font-medium" style="color: var(--wc-color-text)">{@title}</h4>
+        <h4 class="font-semibold" style="color: var(--wc-color-text)">{@title}</h4>
         <p class="mt-1 max-w-2xl text-sm leading-6" style="color: var(--wc-color-text-muted)">
           {@description}
         </p>
@@ -653,7 +653,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           <div class="relative z-10 flex h-full flex-col justify-between">
             <div>
               <div
-                class="grid size-12 place-items-center rounded-[var(--wc-radius-control)] text-xl font-bold"
+                class="grid size-12 place-items-center rounded-[var(--wc-radius-control)] text-xl font-semibold"
                 style="background: var(--wc-color-primary); color: var(--wc-color-on-primary)"
               >
                 W
@@ -808,12 +808,14 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
       >
         <div class="absolute inset-0" style={poster_style(@item)}></div>
         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3">
-          <p class="text-lg font-bold leading-none tracking-tight text-white">{@item.poster_label}</p>
+          <p class="text-lg font-semibold leading-none tracking-tight text-white">
+            {@item.poster_label}
+          </p>
           <p class="mt-1 text-[0.65rem] uppercase tracking-[0.2em] text-white/70">{@item.kind}</p>
         </div>
         <span
           :if={@item.watched}
-          class="absolute right-2 top-2 grid size-6 place-items-center rounded-full border text-xs font-bold"
+          class="absolute right-2 top-2 grid size-6 place-items-center rounded-full border text-xs font-semibold"
           style="background: var(--wc-color-success-bg); border-color: var(--wc-color-success-border); color: var(--wc-color-success)"
         >
           ✓
@@ -840,7 +842,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
     >
       <div class="flex items-start gap-4">
         <div
-          class="grid size-10 shrink-0 place-items-center rounded-[var(--wc-radius-control)] text-sm font-bold"
+          class="grid size-10 shrink-0 place-items-center rounded-[var(--wc-radius-control)] text-sm font-semibold"
           style="background: var(--wc-color-primary); color: var(--wc-color-on-primary)"
         >
           {@number}
@@ -937,17 +939,17 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
         title: "Borders and focus",
         description: "A compact set for structure, dividers, emphasis, and keyboard/input focus.",
         tokens: [
-          border_token("color.border", "Default visible border.", ["cards", "inputs", "menus"]),
+          border_token("color.border", "Default visible border.", ["cards", "buttons", "menus"]),
           border_token("color.border-subtle", "Low-emphasis structural border.", [
             "dividers",
             "table rows",
             "nested panels"
           ]),
-          border_token("color.border-strong", "High-emphasis neutral border.", [
-            "drop targets",
-            "important panels",
-            "selected boundaries"
-          ]),
+          border_token(
+            "color.border-control",
+            "Boundary that is the only sign of a control, at 3:1 or more.",
+            ["inputs", "checkboxes and radios", "select triggers"]
+          ),
           border_token("color.border-focus", "Focus and focused input border.", [
             "keyboard focus",
             "focused fields",
@@ -982,12 +984,12 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
           text_token("color.on-primary", "Foreground on primary fills.", [
             "primary button text",
             "primary icon",
-            "selected badge text"
+            "checked checkbox"
           ]),
           fill_token(
             "color.accent",
-            "Supporting action/accent fill or foreground.",
-            ["secondary CTA", "selected lower-emphasis action", "editorial flourish"],
+            "Supporting accent. Actions and badges use it as text on the accent tint.",
+            ["secondary CTA", "accent badge", "editorial flourish"],
             on: "var(--wc-color-on-accent)"
           ),
           fill_token(
@@ -1003,7 +1005,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             on: "var(--wc-color-on-accent)"
           ),
           text_token("color.on-accent", "Foreground on accent fills.", [
-            "accent badge text",
+            "text on a solid accent fill",
             "special CTA text",
             "accent icon foreground"
           ]),
@@ -1119,15 +1121,20 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             "nav icons",
             "content type icons"
           ]),
-          shadow_token("shadow.card", "Default card elevation.", [
+          shadow_token("shadow.card", "Cards and panels resting on the page.", [
             "content cards",
             "settings panels",
             "stats cards"
           ]),
-          shadow_token("shadow.overlay", "Floating overlay elevation.", [
-            "dialogs",
+          shadow_token("shadow.overlay", "Floating menus, popovers, tooltips, and toasts.", [
             "dropdowns",
-            "popovers"
+            "popovers",
+            "toasts"
+          ]),
+          shadow_token("shadow.modal", "Dialogs, the highest layer.", [
+            "dialogs",
+            "confirmation modals",
+            "icon picker"
           ]),
           shadow_token("shadow.glow", "Brand glow for rare emphasis.", [
             "primary CTA",

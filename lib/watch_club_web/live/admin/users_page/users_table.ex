@@ -43,7 +43,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
       <.table_cell class="w-full text-left">
         <.inline space="related">
           <.avatar id={@user.id} name={@user.username} />
-          <span class="truncate font-bold">{@user.username}</span>
+          <span class="truncate font-semibold">{@user.username}</span>
         </.inline>
       </.table_cell>
       <.table_cell class="text-left">

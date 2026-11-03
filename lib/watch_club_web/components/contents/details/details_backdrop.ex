@@ -17,16 +17,16 @@ defmodule WatchClubWeb.Components.Contents.Details.DetailsBackdrop do
       size="w1280"
       alt=""
       aria-hidden="true"
-      class="absolute inset-0 h-full w-full object-cover opacity-35"
+      class="absolute inset-0 h-full w-full object-cover opacity-40"
     />
     <div
       aria-hidden="true"
-      class="absolute inset-0 bg-linear-to-r from-canvas via-canvas/82 to-canvas/45"
+      class="absolute inset-0 bg-linear-to-r from-canvas via-canvas/80 to-canvas/40"
     >
     </div>
     <div
       aria-hidden="true"
-      class="absolute inset-0 bg-linear-to-b from-canvas/10 via-canvas/82 to-canvas"
+      class="absolute inset-0 bg-linear-to-b from-canvas/10 via-canvas/80 to-canvas"
     >
     </div>
     <div

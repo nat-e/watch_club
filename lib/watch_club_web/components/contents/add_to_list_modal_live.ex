@@ -50,7 +50,7 @@ defmodule WatchClubWeb.Components.Contents.AddToListModalLive do
     <div class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-md border border-border bg-surface-selected p-group text-text">
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.lucide_icon name={@list.icon} class="size-icon shrink-0" />
-        <p class="truncate font-bold">{@list.name}</p>
+        <p class="truncate font-semibold">{@list.name}</p>
       </div>
       <.badge variant="success">
         {dgettext("contents", "Already added")}
@@ -64,7 +64,7 @@ defmodule WatchClubWeb.Components.Contents.AddToListModalLive do
     <label class="flex min-h-row-lg w-full flex-row items-center justify-between rounded-md border border-border p-group transition-colors hover:bg-surface-hover active:bg-surface-active">
       <div class="flex min-w-0 flex-row items-center gap-related">
         <.lucide_icon name={@list.icon} class="size-icon shrink-0" />
-        <p class="truncate font-bold">{@list.name}</p>
+        <p class="truncate font-semibold">{@list.name}</p>
       </div>
       <.checkbox
         id={"list-checkbox-#{@list.id}"}

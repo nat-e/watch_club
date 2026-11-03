@@ -59,12 +59,12 @@ defmodule WatchClubWeb.Clubs.Settings.CreateOrEditLibraryModal do
                     dgettext("clubs", "A library's content type cannot be changed after creation.")
                 }
                 class={[
-                  "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-md border border-border bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-50 *:data-[slot=radio-group-item]:sr-only",
+                  "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-md border border-border-control bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-40 *:data-[slot=radio-group-item]:sr-only",
                   !@edit? && "hover:bg-surface-hover"
                 ]}
               >
                 <.content_type_icon type={content_type} class="size-icon text-text-muted" />
-                <span class="font-medium">{ContentType.translated_label(content_type)}</span>
+                <span>{ContentType.translated_label(content_type)}</span>
                 <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-checked/radio-card:opacity-100" />
               </:item>
             </.radio_group>

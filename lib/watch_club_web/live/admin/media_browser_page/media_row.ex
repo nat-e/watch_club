@@ -42,7 +42,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
         <div class="flex items-center gap-related min-w-0">
           <.file_name
             file_name={Path.basename(@row.path || "")}
-            class="text-sm font-medium text-text"
+            class="text-sm font-semibold text-text"
           />
         </div>
       </td>
@@ -88,7 +88,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       ]}
     >
       <div class="flex items-center gap-tight min-w-0">
-        <.file_name file_name={Path.basename(@row.path || "")} class="text-sm font-medium text-text" />
+        <.file_name
+          file_name={Path.basename(@row.path || "")}
+          class="text-sm font-semibold text-text"
+        />
       </div>
 
       <.identity_line row={@row} />

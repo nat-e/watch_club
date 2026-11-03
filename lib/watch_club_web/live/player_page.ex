@@ -69,7 +69,7 @@ defmodule WatchClubWeb.PlayerPage do
           <media-controls
             data-visible="true"
             hide-delay="3000"
-            class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/70 via-transparent to-black/70 opacity-0 transition-opacity data-visible:opacity-100"
+            class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100"
           >
             <.controls_header video={@session.active_playback.media.video} />
             <.controls_center_row />

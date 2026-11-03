@@ -6,7 +6,7 @@ defmodule WatchClubWeb.Components.UI.Typography do
 
   def text_label(assigns) do
     ~H"""
-    <span class={["text-xs font-medium tracking-wide text-text-subtle uppercase", @class]}>
+    <span class={["text-xs font-semibold tracking-wider text-text-subtle uppercase", @class]}>
       {@text}
     </span>
     """

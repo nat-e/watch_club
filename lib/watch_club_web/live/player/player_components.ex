@@ -16,8 +16,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         {render_slot(@icon)}
       </media-menu-button>
 
-      <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/95 p-group text-sm font-medium text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-16 sm:w-72">
-        <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wide text-white/55">
+      <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/90 p-group text-sm text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-16 sm:w-72">
+        <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wider text-white/60">
           {@label}
         </p>
         {render_slot(@inner_block)}
@@ -29,7 +29,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   @doc "A single option rendered inside a radio group's <template>."
   def player_radio(assigns) do
     ~H"""
-    <media-radio class="group/radio flex w-full items-center gap-related rounded-md p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/15 data-focus:ring-2 data-focus:ring-white/70">
+    <media-radio class="group/radio flex w-full items-center gap-related rounded-md p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/20 data-focus:ring-2 data-focus:ring-white/80">
       <Lucideicons.check class="size-icon-sm opacity-0 group-data-checked/radio:opacity-100" />
       <span data-part="label"></span>
     </media-radio>
@@ -51,17 +51,17 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
               clip the sprite sheet to a single tile, min/max scale it to a preview size. --%>
         <media-slider-thumbnail
           src={@thumbnails}
-          class="block overflow-hidden rounded-md border border-white/15 bg-black shadow-overlay data-hidden:hidden"
+          class="block overflow-hidden rounded-md border border-white/10 bg-black shadow-overlay data-hidden:hidden"
           style="width: var(--thumbnail-width); height: var(--thumbnail-height); contain: strict; min-width: 120px; min-height: 80px; max-width: 220px; max-height: 160px;"
         >
         </media-slider-thumbnail>
-        <media-slider-value class="rounded-md bg-black/80 px-related py-tight text-xs font-medium text-white tabular-nums">
+        <media-slider-value class="rounded-md bg-black/80 px-related py-tight text-xs text-white tabular-nums">
         </media-slider-value>
       </media-slider-preview>
 
-      <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/30 group-data-focus/timeline:ring-2 group-data-focus/timeline:ring-white/70">
+      <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/20 group-data-focus/timeline:ring-2 group-data-focus/timeline:ring-white/80">
         <div
-          class="absolute h-full rounded-full bg-white/45"
+          class="absolute h-full rounded-full bg-white/40"
           style="width: var(--slider-progress, 0%);"
         >
         </div>
@@ -153,7 +153,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           aria-label={dgettext("player", "Seek backward 10 seconds")}
         >
           <Lucideicons.rotate_ccw class="size-12! sm:size-16!" />
-          <span class="absolute mt-1 text-xs font-bold">10</span>
+          <span class="absolute mt-1 text-xs font-semibold">10</span>
         </media-seek-button>
 
         <media-play-button
@@ -170,7 +170,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           aria-label={dgettext("player", "Seek forward 10 seconds")}
         >
           <Lucideicons.rotate_cw class="size-12! sm:size-16!" />
-          <span class="absolute mt-1 text-xs font-bold">10</span>
+          <span class="absolute mt-1 text-xs font-semibold">10</span>
         </media-seek-button>
       </div>
     </div>
@@ -211,7 +211,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         </.button>
         <.inline
           space="tight"
-          class="relative text-sm font-medium text-white/90 tabular-nums"
+          class="relative text-sm text-white/90 tabular-nums"
         >
           <media-time type="current">0:00</media-time>
           <span class="text-white/60">/</span>
@@ -274,7 +274,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   def player_loader(assigns) do
     ~H"""
     <div class={["pointer-events-none grid place-items-center", @class]} aria-hidden="true">
-      <div class="grid size-24 place-items-center rounded-full bg-black/55 backdrop-blur-sm">
+      <div class="grid size-24 place-items-center rounded-full bg-black/60 backdrop-blur-sm">
         <Lucideicons.loader_circle class="size-14 animate-spin text-white/90" />
       </div>
     </div>
@@ -309,7 +309,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   defp media_menu_button_style,
     do:
-      "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/70"
+      "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/80"
 
   defp format_duration(duration) do
     total = duration |> trunc() |> max(0)

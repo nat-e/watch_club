@@ -22,7 +22,7 @@ defmodule WatchClubWeb.Storybook.Modal do
     ~H"""
     <div class="mx-auto grid max-w-5xl gap-8 p-6 text-text">
       <div class="grid gap-2">
-        <p class="text-sm font-medium text-primary">Dialog / Modal</p>
+        <p class="text-sm font-semibold text-primary">Dialog / Modal</p>
         <h1 class="text-3xl font-semibold tracking-tight">Watch Club modals</h1>
         <p class="max-w-2xl text-text-muted">
           Modals combine the overlay shell, header, body, footer, and close behavior in a single
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.Storybook.Modal do
 
       <div class="grid gap-4">
         <label class="grid gap-2">
-          <span class="text-sm font-medium text-text">Email address</span>
+          <span class="text-sm font-semibold text-text">Email address</span>
           <.input
             id="storybook-invite-email"
             name="email"

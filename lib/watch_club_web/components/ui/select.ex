@@ -104,11 +104,11 @@ defmodule WatchClubWeb.Components.UI.Select do
         class={[
           "flex w-full min-w-0 items-center justify-between gap-related px-group text-left text-text transition-[background-color,border-color,box-shadow,color] outline-none",
           @trigger_variant == "default" &&
-            "rounded-md border border-border bg-surface-inset hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
+            "rounded-control border border-border-control bg-surface-inset hover:bg-surface-hover focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
           @trigger_variant == "attached" &&
             "border-r border-border-subtle bg-surface-inset hover:bg-surface-hover focus-visible:relative focus-visible:z-10 focus-visible:bg-surface-hover focus-visible:border-border-subtle",
-          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-50",
-          "aria-invalid:border-danger-border aria-invalid:ring-2 aria-invalid:ring-danger-ring",
+          "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:opacity-40",
+          "aria-invalid:not-focus-visible:border-danger-border aria-invalid:not-focus-visible:ring-2 aria-invalid:not-focus-visible:ring-danger-ring",
           "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
           @size == "sm" && "h-control-sm text-xs",
           @size == "md" && "h-control-md text-sm",
@@ -136,7 +136,7 @@ defmodule WatchClubWeb.Components.UI.Select do
         popover="manual"
         role="listbox"
         tabindex="-1"
-        class="fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-md border border-border bg-surface-overlay p-tight text-text shadow-overlay outline-none"
+        class="fixed inset-auto z-50 m-0 max-h-(--watch-club-select-content-available-height) min-w-(--watch-club-select-trigger-width) overflow-x-hidden overflow-y-auto rounded-control border border-border bg-surface-overlay p-tight text-text shadow-overlay outline-none"
       >
         <div data-slot="select-viewport" class="scroll-my-1">
           {render_slot(@inner_block)}
@@ -511,9 +511,9 @@ defmodule WatchClubWeb.Components.UI.Select do
       aria-disabled={@disabled || nil}
       tabindex="-1"
       class={[
-        "group/select-item relative flex h-control-sm w-full cursor-default items-center gap-related overflow-hidden rounded-md pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
+        "group/select-item relative flex h-control-sm w-full cursor-default items-center gap-related overflow-hidden rounded-control pr-8 pl-related text-left text-sm outline-none transition-colors select-none",
         "focus:bg-surface-hover data-[selected=true]:bg-surface-selected",
-        "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-50",
+        "data-disabled:pointer-events-none data-disabled:text-text-disabled data-disabled:opacity-40",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-sm",
         @class
       ]}

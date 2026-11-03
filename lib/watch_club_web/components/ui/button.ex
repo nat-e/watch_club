@@ -85,18 +85,18 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   defp class(variant, size, emphasis) do
     [
-      "inline-flex items-center justify-center rounded-md border bg-clip-padding font-semibold whitespace-nowrap transition duration-150 outline-none select-none focus-visible:ring-1 disabled:pointer-events-none disabled:cursor-not-allowed active:shadow-none disabled:opacity-75 disabled:shadow-none aria-busy:cursor-progress [&_svg]:shrink-0",
+      "inline-flex items-center justify-center rounded-control border bg-clip-padding font-semibold whitespace-nowrap transition duration-150 select-none disabled:pointer-events-none disabled:cursor-not-allowed active:shadow-none disabled:opacity-40 disabled:shadow-none aria-busy:cursor-progress [&_svg]:shrink-0",
       variant == "primary" &&
-        "border-transparent bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active focus-visible:ring-primary-ring",
+        "border-transparent bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
       variant == "primary" && emphasis && "shadow-glow",
       variant == "accent" &&
-        "border-transparent bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-active focus-visible:ring-accent-ring",
+        "border-accent-border bg-accent-bg text-accent hover:border-accent hover:text-accent-hover active:border-accent-border active:text-accent",
       variant == "secondary" &&
-        "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active focus-visible:ring-ring",
+        "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active",
       variant == "ghost" &&
         "border-transparent bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
       variant == "danger" &&
-        "border-transparent bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active focus-visible:border-danger-border focus-visible:ring-danger-ring",
+        "border-transparent bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active",
       size == "sm" &&
         "h-control-sm gap-tight px-group text-xs [&_svg:not([class*='size-'])]:size-icon",
       size == "md" &&

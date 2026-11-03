@@ -40,7 +40,7 @@ defmodule WatchClubWeb.ErrorHTML do
           <section class="flex w-full max-w-readable flex-col gap-group text-center text-balance">
             <p class="text-sm font-semibold tracking-wide text-text-muted">{@status}</p>
             <div class="flex flex-col gap-related">
-              <h1 class="text-2xl font-bold tracking-tight text-text sm:text-3xl">
+              <h1 class="text-2xl font-semibold tracking-tight text-text sm:text-3xl">
                 {@title}
               </h1>
               <p class="text-sm/relaxed text-text-muted sm:text-base/relaxed">

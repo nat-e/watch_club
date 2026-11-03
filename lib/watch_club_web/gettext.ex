@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Gettext do
       text
       |> Phoenix.HTML.html_escape()
       |> Phoenix.HTML.safe_to_string()
-      |> then(&~s(<span class="font-bold">#{&1}</span>))
+      |> then(&~s(<span class="font-semibold">#{&1}</span>))
     end
 
     @doc """

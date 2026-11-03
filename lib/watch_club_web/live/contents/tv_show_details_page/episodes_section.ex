@@ -89,7 +89,7 @@ defmodule WatchClubWeb.Contents.TvShowDetailsPage.EpisodesSection do
       phx-click="select_season"
       phx-value-season={@season.season_number}
       class={[
-        "min-h-touch-target shrink-0 rounded-md border px-related py-related text-left transition-colors focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none @2xl:w-full",
+        "min-h-touch-target shrink-0 rounded-md border px-related py-related text-left transition-colors focus-visible:-outline-offset-2 @2xl:w-full",
         @selected? && "border-border bg-surface-selected text-text shadow-card",
         !@selected? && "border-transparent text-text-muted hover:bg-surface-hover hover:text-text"
       ]}

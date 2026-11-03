@@ -114,17 +114,17 @@ defmodule WatchClubWeb.Live.Home.ContinueWatchingSection do
         <.inline class="flex justify-end">
           <span
             :if={@additional_info}
-            class="flex-1 text-text-muted font-semibold text-sm tracking-wide uppercase"
+            class="flex-1 text-text-muted font-semibold text-sm tracking-wider uppercase"
           >
             {@additional_info}
           </span>
-          <span :if={@disabled} class="text-text-subtle font-medium text-sm">
+          <span :if={@disabled} class="text-text-subtle text-sm">
             {dgettext("home", "Not available")}
           </span>
-          <span :if={!@disabled && @time_left} class="text-text-subtle font-medium text-sm">
+          <span :if={!@disabled && @time_left} class="text-text-subtle text-sm">
             {dgettext("home", "%{time} left", time: @time_left)}
           </span>
-          <span :if={!@disabled && !@time_left} class="text-text-subtle font-medium text-sm">
+          <span :if={!@disabled && !@time_left} class="text-text-subtle text-sm">
             {dgettext("home", "Not started")}
           </span>
         </.inline>

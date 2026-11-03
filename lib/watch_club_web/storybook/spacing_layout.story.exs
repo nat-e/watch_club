@@ -581,7 +581,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       @tone == "default" && "border-border-subtle bg-surface-raised",
       @tone == "danger" && "border-danger-border bg-danger-bg text-danger"
     ]}>
-      <span class="font-medium">{@label}</span>
+      <span class="font-semibold">{@label}</span>
       <span class="size-2 rounded-full bg-current opacity-60"></span>
     </div>
     """
@@ -650,7 +650,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   defp field_mock(assigns) do
     ~H"""
     <div class="grid gap-related">
-      <label for={@id} class="text-sm font-medium leading-none text-text">{@label}</label>
+      <label for={@id} class="text-sm font-semibold leading-none text-text">{@label}</label>
 
       <input
         :if={@control == "input"}
@@ -808,7 +808,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
   defp migration_step(assigns) do
     ~H"""
     <article class="grid gap-related rounded-md border border-border-subtle bg-surface-raised p-group">
-      <div class="inline-flex size-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
+      <div class="inline-flex size-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-on-primary">
         {@number}
       </div>
       <h3 class="font-semibold">{@title}</h3>

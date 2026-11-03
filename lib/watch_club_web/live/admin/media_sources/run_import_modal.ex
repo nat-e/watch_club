@@ -38,7 +38,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModal do
         >
           <.checkbox field={@form[:refresh_metadata]} value="true" class="mt-1" />
           <.stack space="tight">
-            <span class="text-sm font-medium text-text">
+            <span class="text-sm font-semibold text-text">
               {dgettext("admin_media_imports", "Refresh metadata")}
             </span>
             <span class="text-xs text-text-muted">
