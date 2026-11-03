@@ -100,6 +100,11 @@ defmodule WatchClubWeb.Components.UI.Layout do
     """
   end
 
+  @doc """
+  Lays out a page as a grid. A grid child defaults to `min-width: auto`, so a
+  wide child, such as a horizontally scrolling row, widens the page instead of
+  scrolling. Give such a child `min-w-0`.
+  """
   attr :width, :string,
     values: ~w(full readable panel page),
     default: "page"

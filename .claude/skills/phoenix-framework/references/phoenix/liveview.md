@@ -1,71 +1,16 @@
 ## Phoenix LiveView guidelines
 
 - **Never** use the deprecated `live_redirect` and `live_patch` functions, instead **always** use the `<.link navigate={href}>` and  `<.link patch={href}>` in templates, and `push_navigate` and `push_patch` functions LiveViews
-- Use LiveComponents when a component owns dedicated events, loading, streams, async work, or lifecycle/state boundaries. Do **not** create LiveComponents solely to split markup.
-- Routed LiveViews should be named with a `Page` suffix and stored in files ending in `_page.ex`, for example `AppWeb.WeatherPage` in `weather_page.ex`.
-
-### Component organization
-
-- Organize the Phoenix web layer by ownership first, and use file suffixes to identify component type:
-  - Routed LiveViews end in `_page.ex` and use a `Page` module suffix.
-  - LiveComponents end in `_live.ex` and use a `Live` module suffix.
-  - Function components have no component-type suffix.
-- Generic reusable UI primitives live under `components/ui/` and are globally imported through a dedicated UI facade.
-- Shared domain or application components live under `components/<domain>/` and must be imported explicitly where used.
-- Routed pages and page-owned components live under `live/<domain>/<page>/`.
-- `components/` contains both generic UI components and shared domain/application components. `live/` contains routed pages and components owned by those pages.
-- Each component file exposes one public component by default. Tightly coupled semantic families may live together when their API is naturally one family, such as tables, dropdown menus, or avatar groups.
-- Owner-private subcomponents usually stay as private function components in the owning file. They may be extracted for readability, especially once the subcomponent starts having its own subcomponents or meaningful helper logic.
-- Extracted owner-private modules are imported only by their owner and are not globally registered.
-- Shared function components must not hardcode LiveView server events. If a shared function component needs behavior, the caller must pass explicit assigns such as event names, targets, callbacks or JS commands; otherwise the component should be a LiveComponent that owns the interaction. Hardcoding client side JS commands that are scoped internally is allowed.
-- Page-local components may hardcode page events because their event contract is owned by the page.
-- `WatchClubWeb.Components` must not be used as a broad auto-import registry. UI primitives are globally available through the UI facade; shared domain components are explicit dependencies of the modules that use them.
-
-Example shape:
-
-    lib/watch_club_web/
-      components/
-        ui/
-          button.ex
-          modal.ex
-          reorderable_list.ex
-          icon_picker_live.ex
-
-        accounts/
-          registration_form.ex
-          sign_in_form.ex
-
-        contents/
-          content_card.ex
-          add_to_library_button_live.ex
-
-        navigation/
-          navbar_live.ex
-          sidebar_live.ex
-
-      live/
-        accounts/
-          sign_in_page.ex
-          setup_page.ex
-
-        clubs/
-          settings_page.ex
-          settings/
-            libraries_live.ex
-            libraries/
-              library_list.ex
-              create_or_edit_library_modal.ex
-              delete_library_modal.ex
+- **Avoid LiveComponent's** unless you have a strong, specific need for them
+- LiveViews should be named like `AppWeb.WeatherLive`, with a `Live` suffix. When you go to add LiveView routes to the router, the default `:browser` scope is **already aliased** with the `AppWeb` module, so you can just do `live "/weather", WeatherLive`
 
 ### LiveView streams
 
-- Use LiveView streams for potentially unbounded or high-cardinality collections to avoid memory ballooning and runtime termination, especially with the following operations:
+- **Always** use LiveView streams for collections for assigning regular lists to avoid memory ballooning and runtime termination with the following operations:
   - basic append of N items - `stream(socket, :messages, [new_msg])`
   - resetting stream with new items - `stream(socket, :messages, [new_msg], reset: true)` (e.g. for filtering items)
   - prepend to stream - `stream(socket, :messages, [new_msg], at: -1)`
   - deleting items - `stream_delete(socket, :messages, msg)`
-
-- Regular list assigns are acceptable for intentionally bounded, low-cardinality collections where streams would add more complexity than value (for example club memberships, invitations, club libraries, and navigation lists). Add a nearby source comment explaining that the collection is intentionally low-cardinality.
 
 - When using the `stream/3` interfaces in the LiveView, the LiveView template must 1) always set `phx-update="stream"` on the parent element, with a DOM id on the parent element like `id="messages"` and 2) consume the `@streams.stream_name` collection and use the id as the DOM id for each child. For a call like `stream(socket, :messages, [new_msg])` in the LiveView, the template would be:
 

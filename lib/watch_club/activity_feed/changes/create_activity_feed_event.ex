@@ -98,6 +98,10 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
           record
         end
 
+      # Ash can't send notifications from inside the outer action's transaction.
+      # `return_notifications?: true` hands them back, and returning them from
+      # this hook makes the outer action send them after it commits. Dropping
+      # them skips the broadcast without any warning.
       {_event, notifications} =
         resource
         |> Ash.create!(

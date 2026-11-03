@@ -7,6 +7,11 @@ defmodule WatchClubWeb.Components.UI.Modal do
   `on_close` keeps LiveView state in sync when the user dismisses it with
   Escape, a backdrop click, the close button, or any descendant marked with
   `data-modal-close`.
+
+  Don't mark a submit button with `data-modal-close`: the modal cancels its
+  click, so the form never submits. To submit and close, push both events from
+  the form, for example
+  `phx-submit={JS.push("save") |> JS.push("close_modals", target: @myself)}`.
   """
 
   use Phoenix.Component
