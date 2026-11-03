@@ -1,5 +1,9 @@
 # Contributing
 
+## Reporting bugs
+
+Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security problems, follow [SECURITY.md](SECURITY.md) instead.
+
 ## Setup
 
 1. Install [mise](https://mise.jdx.dev) and run `mise install`. It installs Erlang, Elixir, Node and Biome at the versions in `mise.lock`.
@@ -11,6 +15,13 @@
 `mix ci` runs every check that CI runs: compilation without warnings, formatting, Credo, security advisories, Gettext and Ash codegen being up to date, Biome, and the tests. Run it before opening a pull request.
 
 CI also builds the Docker image, starts it with `docker-compose.yml` and checks that the app responds.
+
+## Translations
+
+The app is translated into English and French with Gettext. After changing text in the code:
+
+1. Run `mix gettext.extract --merge` to update the `.po` files in `priv/gettext/`.
+2. Fill in the `msgstr` of the new messages.
 
 ## Pull request titles
 

@@ -16,50 +16,6 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
-  
-  gluetun:
-    image: qmcgaw/gluetun:latest
-    # Switch to alpine to disable VPN
-    # image: alpine:latest
-    # command: sleep infinity
-    container_name: wc-gluetun
-    networks:
-      - watch_club
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=openvpn
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - SERVER_COUNTRIES=Netherlands
-      - SERVER_CATEGORIES=P2P
-    healthcheck:
-      test: ["CMD", "true"]
-      interval: 5s
-    ports:
-      - 9696:9696        # Prowlarr
-      - 8080:8080        # qbt WebUI
-      - 51413:51413      # qbt torrenting
-      - 51413:51413/udp  # qbt torrenting (UDP)
-    restart: unless-stopped
-
-  qbt:
-    image: lscr.io/linuxserver/qbittorrent:5.2.2
-    network_mode: "service:gluetun"
-    container_name: wc-qbt
-    environment:
-      - WEBUI_PORT=8080
-      - TORRENTING_PORT=51413
-    volumes:
-      - wc-qbt-config:/config
-      - ./media:/media
-    depends_on:
-      gluetun:
-        condition: service_healthy
-    restart: unless-stopped
 
   radarr:
     image: lscr.io/linuxserver/radarr:6.2.1
@@ -87,24 +43,11 @@ services:
       - ./media:/media
     restart: unless-stopped
 
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.4.0
-    container_name: wc-prowlarr
-    network_mode: "service:gluetun"
-    volumes:
-      - wc-prowlarr-config:/config
-    depends_on:
-      gluetun:
-        condition: service_healthy
-    restart: unless-stopped
-
 networks:
   watch_club:
     name: watch_club
 
 volumes:
   pgdata:
-  wc-qbt-config:
-  wc-prowlarr-config:
   wc-radarr-config:
   wc-sonarr-config:

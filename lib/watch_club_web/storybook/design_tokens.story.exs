@@ -450,7 +450,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             style="background: var(--wc-color-surface); border-color: var(--wc-color-border-subtle)"
           >
             <h3 class="text-lg font-semibold" style="color: var(--wc-color-text)">
-              Kflix preferences
+              Movie Night preferences
             </h3>
             <p class="mt-1 text-sm" style="color: var(--wc-color-text-muted)">
               Decide how recommendations and member activity appear for this club.
@@ -460,7 +460,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
               <.field
                 id="design-token-club-name-input"
                 label="Club name"
-                value="Kflix"
+                value="Movie Night"
                 helper="Visible to invited members."
                 focused
               />
@@ -676,7 +676,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
                 “Friday picks are finally organized. No more scrolling through old messages.”
               </p>
               <p class="mt-3 text-sm font-semibold" style="color: var(--wc-color-text)">
-                Camille · Kflix admin
+                Sam · Movie Night admin
               </p>
             </div>
           </div>
@@ -690,7 +690,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Sign in to continue to your clubs.
           </p>
           <div class="mt-8 grid gap-5">
-            <.field id="design-token-email-input" label="Email" value="nate@kflix.club" helper="" />
+            <.field id="design-token-email-input" label="Email" value="sam@example.com" helper="" />
             <.field
               id="design-token-password-input"
               label="Password"
@@ -735,10 +735,10 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Recommendation cards page
           </p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--wc-color-text)">
-            Recommended in Kflix
+            Recommended in Movie Night
           </h2>
           <p class="mt-2 max-w-3xl" style="color: var(--wc-color-text-muted)">
-            Dense media grid inspired by your screenshot: compact controls, poster art, watched state, and recommender metadata.
+            Dense media grid: compact controls, poster art, watched state, and recommender metadata.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
