@@ -49,5 +49,3 @@ mix usage_rules.search_docs "search term" -p phoenix -p phoenix_ecto -p phoenix_
 - `mix phoenix_storybook.install` - Installs PhoenixStorybook into a Phoenix application
 - `mix phx.gen.storybook` - Generates a Storybook to showcase your LiveComponents
 <!-- usage-rules-skill-end -->
-
-Do not use Ecto concepts directly, use Ash.
