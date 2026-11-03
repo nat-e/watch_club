@@ -71,6 +71,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           this.onTriggerClick = this.onTriggerClick.bind(this);
           this.onContentClick = this.onContentClick.bind(this);
           this.onToggle = this.onToggle.bind(this);
+          this.onKeydown = this.onKeydown.bind(this);
           this.position = this.position.bind(this);
           this.refreshRefs();
         },
@@ -95,11 +96,13 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           this.trigger.addEventListener("click", this.onTriggerClick);
           this.content.addEventListener("click", this.onContentClick);
           this.content.addEventListener("toggle", this.onToggle);
+          this.el.addEventListener("keydown", this.onKeydown);
         },
         removeListeners() {
           this.trigger?.removeEventListener("click", this.onTriggerClick);
           this.content?.removeEventListener("click", this.onContentClick);
           this.content?.removeEventListener("toggle", this.onToggle);
+          this.el.removeEventListener("keydown", this.onKeydown);
         },
         onTriggerClick(event) {
           event.preventDefault();
@@ -127,6 +130,11 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           }
 
           this.content.hidePopover();
+        },
+        onKeydown(event) {
+          // Escape closes only the open menu (the browser does it), not what
+          // holds it, such as a drawer listening with phx-window-keydown.
+          if (event.key === "Escape" && isOpen(this.content)) event.stopPropagation();
         },
         onToggle(event) {
           const open = event.newState === "open";
@@ -185,7 +193,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
 
   attr :rest, :global, include: ~w(href navigate patch method download replace target)
 
-  slot :inner_block, required: true
+  slot :inner_block,
+    required: true,
+    doc: "Icons are muted in the default variant. Give an icon `text-…!` to color it."
 
   def dropdown_menu_item(%{rest: rest} = assigns)
       when is_map_key(rest, :href) or is_map_key(rest, :navigate) or is_map_key(rest, :patch) do
@@ -241,7 +251,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
       "flex min-h-control-sm w-full items-center gap-related rounded-control px-related py-related text-left text-sm outline-none transition-colors select-none [&_svg]:pointer-events-none [&_svg]:size-icon-sm [&_svg]:shrink-0",
       disabled && "pointer-events-none text-text-disabled opacity-40",
       !disabled && variant == "default" &&
-        "text-text hover:bg-surface-hover focus-visible:bg-surface-hover",
+        "text-text hover:bg-surface-hover focus-visible:bg-surface-hover [&_svg]:text-text-muted",
       !disabled &&
         variant == "destructive" &&
         "text-danger hover:bg-danger-bg focus-visible:bg-danger-bg",

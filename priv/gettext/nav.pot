@@ -23,11 +23,6 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "Create new club"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
 msgid "Home"
 msgstr ""
 
@@ -49,16 +44,6 @@ msgstr ""
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
 msgid "Sign out"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
-msgid "Club actions"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar_live.ex
-#, elixir-autogen, elixir-format
-msgid "Admin"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
@@ -88,15 +73,30 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "Create new list"
+msgid "Administration"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "List actions"
+msgid "Instance administrator"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar_live.ex
 #, elixir-autogen, elixir-format
-msgid "My lists"
+msgid "Lists"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "New club"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "New list"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sidebar_live.ex
+#, elixir-autogen, elixir-format
+msgid "Actions for %{name}"
 msgstr ""
