@@ -116,6 +116,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           {dgettext("search", "Search movies and TV shows")}
         </label>
         <Lucideicons.search class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle" />
+        <%!-- While the results are open, the field grows to their width on desktop --%>
         <.input
           id={"#{@id}-input"}
           name="query"
@@ -127,7 +128,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           aria-controls={"#{@id}-listbox"}
           aria-autocomplete="list"
           data-search-field
-          class="peer w-56! pr-10! pl-9! transition-[width,border-color,box-shadow]! duration-200 focus:w-72! @3xl/bar:w-72! @3xl/bar:focus:w-[26rem]!"
+          class="peer w-56! pr-10! pl-9! transition-[width,border-color,box-shadow]! duration-200 aria-expanded:w-72! @3xl/bar:w-72! @3xl/bar:aria-expanded:w-[min(32rem,calc(100cqw-2rem))]!"
         />
         <.kbd class="absolute top-1/2 right-2.5 -translate-y-1/2 peer-focus:hidden pointer-coarse:hidden">
           /
