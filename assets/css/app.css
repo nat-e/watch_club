@@ -12,3 +12,5 @@
 @source "../css";
 @source "../js";
 @source "../../lib/watch_club_web";
+/* Local prototypes, ignored by git (see the router) */
+@source "../../dev/prototypes";

@@ -231,7 +231,7 @@ Translucency is only for overlays on images and video, scrims, and disabled stat
 
 ## Design rules
 
-The tokens can't enforce these rules from *Refactoring UI*. The reasons and examples are in the [book summary](../books/refactoring-ui.md).
+The tokens can't enforce these rules from *Refactoring UI*, by Adam Wathan and Steve Schoger.
 
 - **Importance:** show it with weight and color before size (`text`, `text-muted`, `text-subtle`, `font-semibold`), and tone down what competes instead of making the main thing louder.
 - **Icons:** an icon next to text gets a quieter color than the text, such as `text-muted`, because icons look heavier than letters.

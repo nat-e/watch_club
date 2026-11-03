@@ -11,6 +11,21 @@ defmodule WatchClubWeb.Router do
   import AshAuthentication.Plug.Helpers
   import PhoenixStorybook.Router
 
+  # Local prototypes: dev/prototypes/<name>.ex defines WatchClubWeb.Prototypes.<Name>, shown at
+  # /dev/prototypes/<name>. Git ignores the folder and only the dev server compiles it.
+  if Application.compile_env(:watch_club, :dev_routes) do
+    @prototype_names for path <- Path.wildcard("dev/prototypes/*.ex"),
+                         do: Path.basename(path, ".ex")
+
+    # Adds or removes the routes when a prototype file is added or removed.
+    def __mix_recompile__? do
+      for(path <- Path.wildcard("dev/prototypes/*.ex"), do: Path.basename(path, ".ex")) !=
+        @prototype_names
+    end
+  else
+    @prototype_names []
+  end
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -100,6 +115,11 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/", HomePage
+
+      for name <- @prototype_names do
+        live "/dev/prototypes/#{name}", Module.concat(Prototypes, Macro.camelize(name))
+      end
+
       live "/play/:media_id", PlayerPage
       live "/search", SearchPage
       live "/settings", Accounts.SettingsPage
