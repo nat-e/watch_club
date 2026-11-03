@@ -272,6 +272,20 @@ _Avoid_: Localization, translation, localized content
 The content localization selected for a user based on their preferred locale.
 _Avoid_: Best localization, current localization
 
+### Activity Feed
+
+**Activity Feed**:
+What a user can see of what happened in their clubs, newest first.
+_Avoid_: Timeline, news feed, event log
+
+**Feed Event**:
+One thing a user did that shows in an activity feed: created a club, created a library, added content to a library, joined a club, or is watching or watched content.
+_Avoid_: Activity, notification, action
+
+**Feed Entry**:
+One line of an activity feed: the feed events of one user doing the same thing, grouped together.
+_Avoid_: Group, aggregate, card, item
+
 
 ## Relationships
 
@@ -506,6 +520,15 @@ _Avoid_: Best localization, current localization
 - A **TV Show Episode** has an episode number greater than or equal to 1
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
 
+### Activity Feed
+
+- A **Feed Entry** holds the **Feed Events** of one **User** doing one thing: watching **Content**, adding **Content** to the **Libraries** of one **Club**, or joining **Clubs**
+- A **Feed Event** joins the latest **Feed Entry** of the same **User** doing the same thing when that entry's first **Feed Event** is less than 12 hours old; otherwise it starts a new **Feed Entry**
+- Creating a **Club** or a **Library** is always its own **Feed Entry**
+- A **Feed Entry** is placed at the time of its latest **Feed Event**
+- When a **User**'s **Watch Progress** on a **Content** changes, their watching **Feed Event** moves to that time, and to a new **Feed Entry** if the old one's 12 hours are over. While they play, this happens at most once a minute
+- A **User** sees only the **Feed Events** visible to them in a **Feed Entry**, so two **Users** can see the same **Feed Entry** with different **Content**
+
 ### Cross-domain
 
 - A **User** can have memberships in many **Clubs**
@@ -548,3 +571,4 @@ _Avoid_: Best localization, current localization
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
+- Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.

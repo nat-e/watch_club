@@ -3,10 +3,11 @@ defmodule WatchClubWeb.Components.UI.Typography do
 
   attr :text, :string, required: true
   attr :class, :any, default: nil
+  attr :rest, :global
 
   def text_label(assigns) do
     ~H"""
-    <span class={["text-xs font-semibold tracking-wider text-text-subtle uppercase", @class]}>
+    <span class={["text-xs font-semibold tracking-wider text-text-subtle uppercase", @class]} {@rest}>
       {@text}
     </span>
     """

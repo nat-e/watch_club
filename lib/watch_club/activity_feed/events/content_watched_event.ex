@@ -34,7 +34,14 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
+
+    destroy :destroy do
+      primary? true
+      # Destroys the scopes through Ash, before the database cascade would, so their Feed Entries
+      # are notified
+      change cascade_destroy(:scopes, return_notifications?: true, after_action?: false)
+    end
 
     create :upsert do
       primary? true

@@ -1,13 +1,14 @@
 # Gives each worktree its own server and databases.
 # Scripts run from the primary worktree so that they don't depend on the branch.
 
-# Local prototypes (dev/prototypes, ignored by git and not in .worktreeinclude) live in the
-# primary worktree. Each worktree links to that folder, so they all share it.
-[[pre-start]]
-prototypes = "if [ -d '{{ primary_worktree_path }}/dev/prototypes' ]; then mkdir -p dev && ln -sfn '{{ primary_worktree_path }}/dev/prototypes' dev/prototypes; fi"
-
+# Copies the files in .worktreeinclude from the primary worktree, including the local prototypes
+# (dev/prototypes, ignored by git). Each worktree gets its own copy, so a prototype that doesn't
+# compile on one branch can't break the others. prototypes.sh copies them back on removal.
 [[pre-start]]
 copy = "wt step copy-ignored"
+
+[[pre-start]]
+prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh snapshot"
 
 [[pre-start]]
 setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
@@ -17,7 +18,11 @@ setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanit
 [post-start]
 webhooks = "{{ primary_worktree_path }}/scripts/worktree/register_webhooks.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
 
-[pre-remove]
+# Steps run in order: the prototypes are saved before the teardown starts.
+[[pre-remove]]
+prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh save {{ primary_worktree_path }}"
+
+[[pre-remove]]
 teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
 
 [post-merge]

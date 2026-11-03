@@ -1,9 +1,8 @@
 defmodule WatchClubWeb.HomePage do
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Live.Home.{ActivityFeed, ContinueWatchingSection}
+  import WatchClubWeb.Live.Home.{ActivityFeed, ContinueWatching}
 
-  alias WatchClub.ActivityFeed.Preparations.LoadActivityFeedEvent
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @continue_watching_max_items 6
@@ -29,12 +28,20 @@ defmodule WatchClubWeb.HomePage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       space="section"
-      class="max-w-panel"
+      class="max-w-layout-page @container"
     >
-      <.continue_watching_section
-        :if={@continue_watching != []}
-        contents={@continue_watching}
-        current_user={@current_user}
+      <:hero>
+        <h1 class="sr-only">{dgettext("home", "Home")}</h1>
+        <.spotlight
+          :if={@continue_watching != []}
+          content={hd(@continue_watching)}
+          locale={@current_user.settings.locale}
+        />
+      </:hero>
+      <.up_next
+        :if={length(@continue_watching) > 1}
+        contents={tl(@continue_watching)}
+        locale={@current_user.settings.locale}
       />
       <.activity_feed
         stream={@streams.feed}
@@ -52,24 +59,31 @@ defmodule WatchClubWeb.HomePage do
      socket
      |> subscribe_to_activity_feed_topics()
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     # Key by the underlying event so that we don't duplicate events sent to multiple scope
-     # This is mainly for new events received via PubSub since we load distinct events on page load
-     |> stream_configure(:feed, dom_id: &"feed-#{&1.event.id}")
+     |> stream_configure(:feed, dom_id: &feed_entry_dom_id(&1.group_key))
      |> load_feed_page()
      |> load_continue_watching()}
   end
 
+  # A Feed Event joined or left a Feed Entry: reload the entry. A new event moves its entry to the
+  # top. A removed one updates the entry in place, or removes it once the user can't see any of
+  # its events.
   @impl true
-  def handle_info(%Notification{data: %FeedEventScope{} = scope}, socket) do
-    # A new activity feed scope has been received.
-    # Load the required fields (for some reason using load: option in pub_sub does not seem to work)
-    # and prepend it to the stream. The stream is keyed by the underlying event, so duplicate scopes
-    # of the same event (personal + club) collapse to a single card.
-    scope =
-      scope
-      |> Ash.load!(LoadActivityFeedEvent.load_statement(), actor: socket.assigns.current_user)
+  def handle_info(%Notification{action: action, data: %FeedEventScope{group_key: key}}, socket) do
+    entry = ActivityFeed.get_user_feed_entry!(key, actor: socket.assigns.current_user)
 
-    {:noreply, socket |> stream_insert(:feed, scope, at: 0)}
+    socket =
+      case {action.type, entry} do
+        {_type, nil} ->
+          stream_delete_by_dom_id(socket, :feed, feed_entry_dom_id(key))
+
+        {:create, entry} ->
+          socket |> stream_delete(:feed, entry) |> stream_insert(:feed, entry, at: 0)
+
+        {:destroy, entry} ->
+          stream_insert(socket, :feed, entry, update_only: true)
+      end
+
+    {:noreply, socket}
   end
 
   def handle_info(%Notification{resource: WatchProgress}, socket) do
@@ -100,6 +114,7 @@ defmodule WatchClubWeb.HomePage do
         ]
       )
 
+    # A plain list: it holds at most @continue_watching_max_items Contents
     socket |> assign(continue_watching: continue_watching)
   end
 
@@ -118,6 +133,8 @@ defmodule WatchClubWeb.HomePage do
     |> assign(:feed_stream_state, new_state)
     |> stream(:feed, items, reset: stream_state.status == :init)
   end
+
+  defp feed_entry_dom_id(group_key), do: "feed-entry-#{group_key}"
 
   defp subscribe_to_activity_feed_topics(socket) do
     user = socket.assigns.current_user

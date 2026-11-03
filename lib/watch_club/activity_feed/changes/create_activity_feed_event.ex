@@ -21,7 +21,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       changeset,
       ClubCreatedEvent,
       fn club ->
-        %{club_id: club.id, scopes: club_event_scope(club.id)}
+        %{club_id: club.id, scopes: club_event_scope(club.id, "club:#{club.id}")}
       end,
       context
     )
@@ -41,7 +41,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
           fn membership ->
             %{
               membership_id: membership.id,
-              scopes: club_event_scope(membership.club_id)
+              scopes: club_event_scope(membership.club_id, "joined:#{membership.user_id}")
             }
           end,
           context
@@ -59,7 +59,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       fn library ->
         %{
           library_id: library.id,
-          scopes: club_event_scope(library.club_id)
+          scopes: club_event_scope(library.club_id, "library:#{library.id}")
         }
       end,
       context
@@ -75,11 +75,14 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
       changeset,
       ContentAddedEvent,
       fn %LibraryItem{} = library_item ->
+        club_id = library_item.library.club_id
+
         %{
           library_item_id: library_item.id,
           scopes:
             club_event_scope(
-              library_item.library.club_id,
+              club_id,
+              "added:#{context.actor.id}:#{club_id}",
               library_item.content_id
             )
         }
@@ -116,7 +119,8 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
     end)
   end
 
-  def club_event_scope(club_id, content_id \\ nil) do
-    [%{scope_club_id: club_id, content_id: content_id}]
+  # The group says who did what, see SetGroupKey
+  defp club_event_scope(club_id, group, content_id \\ nil) do
+    [%{scope_club_id: club_id, content_id: content_id, group: group}]
   end
 end

@@ -27,7 +27,8 @@ defmodule WatchClubWeb.Layouts do
 
   slot :inner_block, required: true
 
-  slot :backdrop
+  slot :hero,
+    doc: "Full-width content between the navbar and the page, outside the page's padding"
 
   def app(assigns) do
     ~H"""
@@ -41,13 +42,6 @@ defmodule WatchClubWeb.Layouts do
       />
 
       <main class="relative min-h-svh md:pl-[var(--wc-sidebar-width)]">
-        <div
-          :if={@backdrop != []}
-          class="absolute z-0 h-[400px] w-full bg-canvas xl:h-[500px]"
-        >
-          {render_slot(@backdrop)}
-          <div class="to-canvas from-canvas/60 absolute inset-0 bg-linear-to-b"></div>
-        </div>
         <.live_component
           id="navbar"
           module={WatchClubWeb.Components.Navigation.NavbarLive}
@@ -55,6 +49,7 @@ defmodule WatchClubWeb.Layouts do
           current_user={@current_user}
           instance_settings={@instance_settings}
         />
+        {render_slot(@hero)}
         <.page width="full" space={@space} class={["relative z-1", @class]}>
           {render_slot(@inner_block)}
         </.page>

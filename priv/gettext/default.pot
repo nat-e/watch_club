@@ -114,6 +114,7 @@ msgid "Back"
 msgstr ""
 
 #: lib/watch_club_web/components/ui/badges.ex
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "@Deleted user"
+msgid "Deleted user"
 msgstr ""

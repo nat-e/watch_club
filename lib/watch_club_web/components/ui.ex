@@ -28,6 +28,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Modal
       import WatchClubWeb.Components.UI.RadioGroup
       import WatchClubWeb.Components.UI.ReorderableList
+      import WatchClubWeb.Components.UI.ScrollRow
       import WatchClubWeb.Components.UI.SegmentedControl
       import WatchClubWeb.Components.UI.Select
       import WatchClubWeb.Components.UI.Table

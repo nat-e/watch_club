@@ -11,22 +11,42 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "%{time} left"
 msgstr ""
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex
-#, elixir-autogen, elixir-format
-msgid "Not available"
-msgstr ""
-
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr ""
 
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
-msgid "Continue Watching"
+msgid "%{title}, not available"
+msgstr ""
+
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Continue watching"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr ""
+
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr ""
+
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
 msgstr ""
