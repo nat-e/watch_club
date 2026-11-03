@@ -131,6 +131,7 @@ msgstr "Retour"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/ui/badges.ex
+#: lib/watch_club_web/live/home/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "@Deleted user"
-msgstr "@Utilisateur supprimé"
+msgid "Deleted user"
+msgstr "Utilisateur supprimé"

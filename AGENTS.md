@@ -26,7 +26,7 @@ Rules:
 ## Prototypes
 
 - Throwaway UI prototypes go in `dev/prototypes/<name>.ex` as module `WatchClubWeb.Prototypes.<Name>`, and the dev server shows each one at `/dev/prototypes/<name>`
-- Git ignores this folder, and every worktree links to the primary worktree's copy, so all worktrees share the same prototypes
+- Git ignores this folder. A new worktree gets a copy of the primary worktree's prototypes, and `wt remove` or `wt merge` copies its new and changed ones back to the primary worktree. Worktrees that already exist never get them
 - Never put prototypes in `lib/` or any other tracked file
 
 ## Tidewave

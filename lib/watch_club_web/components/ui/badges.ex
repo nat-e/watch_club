@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Components.UI.Badges do
   """
   def user_ref(%{user: nil} = assigns) do
     ~H"""
-    <span class="font-semibold text-text-subtle">{dgettext("default", "@Deleted user")}</span>
+    <span class="font-semibold text-text-subtle">{dgettext("default", "Deleted user")}</span>
     """
   end
 

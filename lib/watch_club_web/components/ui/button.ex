@@ -5,6 +5,9 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   use Phoenix.Component
 
+  # The attributes that make the button a link
+  @link_attributes ~w(href navigate patch method download replace target)a
+
   attr :id, :string, required: true
   attr :class, :any, default: nil
 
@@ -21,7 +24,8 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   attr :rest, :global,
     include:
-      ~w(disabled form name value autofocus href navigate patch method download replace target aria-label aria-busy aria-pressed)
+      ~w(disabled form name value autofocus aria-label aria-busy aria-pressed) ++
+        Enum.map(@link_attributes, &Atom.to_string/1)
 
   slot :icon do
     attr :position, :string, values: ~w(start end)
@@ -29,12 +33,12 @@ defmodule WatchClubWeb.Components.UI.Button do
 
   slot :inner_block
 
-  def button(%{rest: rest, disabled: true})
+  # A link can't be disabled, so a disabled link renders as a disabled native button.
+  def button(%{rest: %{disabled: true} = rest} = assigns)
       when is_map_key(rest, :href) or is_map_key(rest, :navigate) or is_map_key(rest, :patch) do
-    raise ArgumentError, """
-    Button cannot be both `disabled` and a link (href/navigate/patch).
-    Use a native button element, or conditionally render the link.
-    """
+    assigns
+    |> assign(:rest, Map.drop(rest, @link_attributes))
+    |> button()
   end
 
   def button(%{rest: rest} = assigns)

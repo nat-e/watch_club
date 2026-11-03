@@ -5,7 +5,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
 
   It will delete the event if the Content is :not_started by the User, or update it otherwise.
   The jobs will be unique for user_id x content_id, so it is safe to be called multiple times when
-  marking multiple episodes watched/unwatched at once.
+  marking multiple episodes watched/unwatched at once, or on every player heartbeat.
   We chose to perform this action in an Oban Job since eventual consistency is good enough, and this
   allows the User facing actions to be faster, while keeping the complexity low.
   """
@@ -26,9 +26,23 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Contents.TvShow
 
-  @doc "Builds a sync content watched event job for a given user/content."
-  def new_job(user_id, content_id),
-    do: new(%{user_id: user_id, content_id: content_id})
+  @doc """
+  Builds a job that syncs a user/content now, and brings forward a delayed one for the same
+  user/content. `replace` only copies a time the job sets, hence the explicit `scheduled_at`.
+  """
+  def new_job(user_id, content_id) do
+    new(%{user_id: user_id, content_id: content_id},
+      scheduled_at: DateTime.utc_now(),
+      replace: [scheduled: [:scheduled_at]]
+    )
+  end
+
+  @doc """
+  Builds a job that syncs a user/content in a minute. The player records progress on every
+  heartbeat, every few seconds: the unique job merges them into one sync per minute.
+  """
+  def new_delayed_job(user_id, content_id),
+    do: new(%{user_id: user_id, content_id: content_id}, schedule_in: 60)
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"user_id" => user_id, "content_id" => content_id}}) do
@@ -51,8 +65,9 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
         |> Ash.Query.filter(actor_id == ^actor.id and content_id == ^content_id)
         |> Ash.read_one!(actor: actor)
         |> case do
-          nil -> []
-          event -> Ash.destroy!(event, actor: actor)
+          nil -> nil
+          # Scopes have no destroy policy: this is a system-derived projection
+          event -> Ash.destroy!(event, actor: actor, authorize?: false)
         end
 
       status ->
@@ -76,13 +91,16 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
     :ok
   end
 
+  # Every scope shares the group, see SetGroupKey
   defp event_scopes(content_id, user_id, library_items) do
+    group = "watched:#{user_id}"
+
     club_scopes =
       library_items
-      |> Enum.map(&%{scope_club_id: &1.library.club_id, content_id: &1.content_id})
+      |> Enum.map(&%{scope_club_id: &1.library.club_id, content_id: &1.content_id, group: group})
       |> Enum.uniq()
 
-    [%{scope_user_id: user_id, content_id: content_id} | club_scopes]
+    [%{scope_user_id: user_id, content_id: content_id, group: group} | club_scopes]
   end
 
   defp completed_episodes(%TvShow{episodes: episodes}) do

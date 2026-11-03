@@ -9,9 +9,10 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
   - Global: both scopes nil (not used yet)
 
   FeedEventScope is thin: it carries the scope, a denormalized `content` selection key (so the
-  content-detail feed can filter by Content without joining through the polymorphic event), and a
-  nullable FK to exactly one event (enforced by a DB check constraint). The `event` calculation
-  resolves the populated event. Deleting an event cascade-deletes its scopes via the per-type FK
+  content-detail feed can filter by Content without joining through the polymorphic event), the
+  `group_key` of its Feed Entry (see `WatchClub.ActivityFeed.FeedEntry`), and a nullable FK to
+  exactly one event (enforced by a DB check constraint). The `event` calculation resolves the
+  populated event. Deleting an event cascade-deletes its scopes via the per-type FK
   `on_delete: :delete` — this replaces the previous shared-PK + trigger machinery.
   """
   use Ash.Resource,
@@ -23,6 +24,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Calculations.ScopeEvent
+  alias WatchClub.ActivityFeed.Changes.SetGroupKey
   alias WatchClub.ActivityFeed.Preparations.{DistinctPerEvent, LoadActivityFeedEvent}
 
   alias WatchClub.ActivityFeed.Events.{
@@ -71,33 +73,32 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
                        name: "activity_feed_scopes_exactly_one_event_check",
                        message: "A feed scope must reference exactly one event"
     end
+
+    custom_indexes do
+      # text_pattern_ops serves both the Feed Entry joins (=) and SetGroupKey's prefix LIKE
+      index ["group_key text_pattern_ops"], name: "activity_feed_scopes_group_key_index"
+    end
   end
 
   actions do
     # :update is required so the event's `manage_relationship(:scopes, :direct_control)` can reconcile.
-    defaults [
-      :read,
-      :update,
-      :destroy,
-      create: [:scope_user_id, :scope_club_id, :content_id]
-    ]
+    defaults [:read, :update, :destroy]
 
-    read :for_actor do
-      description "Get the distinct Activity feed events visible to the current user"
-      # Filtering is done via the read policy, no need to filter explicitely
-      pagination keyset?: true, required?: false, stable_sort: [:id]
-      prepare DistinctPerEvent
-      prepare LoadActivityFeedEvent
+    create :create do
+      primary? true
+      accept [:scope_user_id, :scope_club_id, :content_id]
+
+      argument :group, :string do
+        allow_nil? false
+        description "Who did what, such as `watched:<user id>`. See SetGroupKey."
+      end
+
+      change SetGroupKey
     end
 
-    read :for_club do
-      description "Get the distinct Activity feed events scoped to a Club"
-      argument :club_id, :uuid_v7, allow_nil?: false
-
-      filter expr(scope_club_id == ^arg(:club_id))
-      pagination keyset?: true, required?: false, stable_sort: [:id]
+    read :distinct_per_event do
+      description "One scope per event, for events visible through several scopes"
       prepare DistinctPerEvent
-      prepare LoadActivityFeedEvent
     end
 
     read :for_content do
@@ -133,9 +134,13 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
     # Each scope row has exactly one routing key (or both nil for global). Ash skips a publication
     # whose key field is nil, so a club scope only hits feed:club:{id} and a personal scope only
-    # hits feed:user:{id}. Subscribers reload the scope via LoadActivityFeedEvent.
+    # hits feed:user:{id}. Subscribers reload the scope's Feed Entry. Destroys are published too, so
+    # an entry shrinks when one of its events moves to another entry. Scopes deleted by a database
+    # cascade, such as when content is removed from a library, aren't published.
     publish_all :create, ["club", :scope_club_id]
     publish_all :create, ["user", :scope_user_id]
+    publish_all :destroy, ["club", :scope_club_id]
+    publish_all :destroy, ["user", :scope_user_id]
 
     # We also publish on a feed content topic for the Content details page
     publish_all :create, ["content", :content_external_id_source, :content_external_id],
@@ -148,6 +153,9 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
   attributes do
     uuid_v7_primary_key :id
+
+    # The Feed Entry this scope's event belongs to, set by SetGroupKey
+    attribute :group_key, :string, allow_nil?: false
 
     create_timestamp :created_at
   end

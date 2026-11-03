@@ -12,25 +12,49 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "%{time} left"
 msgstr "Il reste %{time}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/continue_watching_section.ex
-#, elixir-autogen, elixir-format
-msgid "Not available"
-msgstr "Indisponible"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr "Pas commencé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/continue_watching_section.ex
+#: lib/watch_club_web/live/home/continue_watching.ex
 #, elixir-autogen, elixir-format
-msgid "Continue Watching"
+msgid "%{title}, not available"
+msgstr "%{title}, indisponible"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Continue watching"
 msgstr "Continuer à regarder"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr "Accueil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr "Reprendre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{title}"
+msgstr "Reprendre %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
+msgstr "À suivre"
