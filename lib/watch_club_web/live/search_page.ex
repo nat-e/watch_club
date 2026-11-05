@@ -22,8 +22,8 @@ defmodule WatchClubWeb.SearchPage do
       class="max-w-6xl @container"
       space="group"
       title={dgettext("search", "Search")}
+      search
     >
-      <:icon><Lucideicons.search /></:icon>
       <:hero>
         <.form
           id="search-page-form"

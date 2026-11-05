@@ -1,4 +1,7 @@
 defmodule WatchClubWeb.Lists.ListsPage do
+  @moduledoc """
+  The Playlists tab. Empty until the Playlists page.
+  """
   use WatchClubWeb, :live_view
 
   @impl true
@@ -9,9 +12,8 @@ defmodule WatchClubWeb.Lists.ListsPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      title={dgettext("nav", "Lists")}
+      title={dgettext("nav", "Playlists")}
     >
-      <:icon><Lucideicons.list_video /></:icon>
     </Layouts.app>
     """
   end

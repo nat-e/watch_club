@@ -72,7 +72,6 @@ defmodule WatchClubWeb.Lists.ListPage do
       space="none"
       title={@list.name}
     >
-      <:icon><.lucide_icon name={@list.icon} /></:icon>
       <.stack space="group" class="w-full @container">
         <.list_sort_controls
           list_id={@list.id}

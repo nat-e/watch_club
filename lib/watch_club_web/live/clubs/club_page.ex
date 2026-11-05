@@ -13,7 +13,6 @@ defmodule WatchClubWeb.Clubs.ClubPage do
       instance_settings={@instance_settings}
       title={@club.name}
     >
-      <:icon><.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" /></:icon>
     </Layouts.app>
     """
   end

@@ -11,17 +11,9 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#: lib/watch_club_web/components/navigation/tab_bar.ex
 #: lib/watch_club_web/live/clubs/clubs_page.ex
 #, elixir-autogen, elixir-format
 msgid "Clubs"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#: lib/watch_club_web/components/navigation/tab_bar.ex
-#, elixir-autogen, elixir-format
-msgid "Home"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sidebar.ex
@@ -55,11 +47,6 @@ msgstr ""
 msgid "Media browser"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#, elixir-autogen, elixir-format
-msgid "My Requests"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/account_menu.ex
 #, elixir-autogen, elixir-format
 msgid "Users"
@@ -75,30 +62,7 @@ msgstr ""
 msgid "Instance administrator"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#: lib/watch_club_web/components/navigation/tab_bar.ex
-#: lib/watch_club_web/live/lists/lists_page.ex
-#, elixir-autogen, elixir-format
-msgid "Lists"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#, elixir-autogen, elixir-format
-msgid "New club"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#, elixir-autogen, elixir-format
-msgid "New list"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#, elixir-autogen, elixir-format
-msgid "Actions for %{name}"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/account_menu.ex
-#: lib/watch_club_web/components/navigation/app_bar.ex
 #, elixir-autogen, elixir-format
 msgid "Account"
 msgstr ""
@@ -113,27 +77,35 @@ msgstr ""
 msgid "Back to %{page}"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/app_bar.ex
-#, elixir-autogen, elixir-format
-msgid "Breadcrumb"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/account_menu.ex
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/tab_bar.ex
+#: lib/watch_club_web/components/navigation/sections.ex
 #, elixir-autogen, elixir-format
 msgid "Requests"
 msgstr ""
 
-#: lib/watch_club_web/components/navigation/tab_bar.ex
-#, elixir-autogen, elixir-format
-msgid "Search"
-msgstr ""
-
+#: lib/watch_club_web/components/navigation/sections.ex
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Inbox"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/lists/lists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Playlists"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/tab_bar.ex
+#, elixir-autogen, elixir-format
+msgid "You"
 msgstr ""

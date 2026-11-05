@@ -17,9 +17,7 @@ defmodule WatchClubWeb.Clubs.MembersPage do
       class="max-w-layout-page"
       title={dgettext("clubs", "Members")}
     >
-      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
-        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
-      </:parent>
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name} />
       <.page_description text={
         dgettext("clubs", "Manage %{club_name}'s members.", club_name: @club.name)
       } />

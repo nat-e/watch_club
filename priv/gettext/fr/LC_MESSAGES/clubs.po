@@ -48,7 +48,6 @@ msgid "Club Name"
 msgstr "Nom du club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #: lib/watch_club_web/live/clubs/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Club Settings"
@@ -74,7 +73,6 @@ msgstr "Créer un nouveau club"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete club"
 msgstr "Supprimer le club"
@@ -93,16 +91,9 @@ msgstr "Quitter"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Leave club"
 msgstr "Quitter le club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/sidebar.ex
-#, elixir-autogen, elixir-format
-msgid "Manage members"
-msgstr "Gérer les membres"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/clubs/members/members_table.ex

@@ -25,6 +25,7 @@ defmodule WatchClubWeb.BrowsePage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       title={dgettext("nav", "Browse")}
+      search
       class="@container pt-group!"
     >
       <ul

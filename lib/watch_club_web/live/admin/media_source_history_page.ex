@@ -52,9 +52,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       <:parent
         navigate={~p"/admin/media/sources"}
         label={dgettext("admin_media_imports", "Media Sources")}
-      >
-        <Lucideicons.folder_input />
-      </:parent>
+      />
       <.history_header media_source={@media_source} />
 
       <.section title={dgettext("admin_media_imports", "Import history")}>

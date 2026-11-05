@@ -11,7 +11,6 @@ defmodule WatchClubWeb.Clubs.ClubsPage do
       instance_settings={@instance_settings}
       title={dgettext("nav", "Clubs")}
     >
-      <:icon><Lucideicons.users /></:icon>
     </Layouts.app>
     """
   end

@@ -1,10 +1,16 @@
 defmodule WatchClubWeb.Components.Navigation.TabBar do
   @moduledoc """
-  The tabs at the bottom of the screen on phones: Home, Clubs, Search, Lists and My Requests.
+  The tabs at the bottom of the screen on phones: the app's sections, then You, which opens the
+  account page.
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Navigation.AccountMenu
+
+  alias WatchClubWeb.Components.Navigation.Sections
+
   attr :current_path, :string, required: true
+  attr :current_user, User, required: true
 
   def tab_bar(assigns) do
     ~H"""
@@ -13,94 +19,63 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
       class="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface md:hidden"
     >
       <ul class="flex h-(--wc-tab-bar-height) list-none p-0">
-        <.tab
-          id="tab-home"
-          navigate={~p"/"}
-          label={dgettext("nav", "Home")}
-          current_path={@current_path}
-        >
-          <Lucideicons.house />
-        </.tab>
-        <.tab
-          id="tab-clubs"
-          navigate={~p"/clubs"}
-          label={dgettext("nav", "Clubs")}
-          current_path={@current_path}
-        >
-          <Lucideicons.users />
-        </.tab>
-        <.tab
-          id="tab-search"
-          navigate={~p"/search"}
-          label={dgettext("nav", "Search")}
-          current_path={@current_path}
-        >
-          <Lucideicons.search />
-        </.tab>
-        <.tab
-          id="tab-lists"
-          navigate={~p"/lists"}
-          label={dgettext("nav", "Lists")}
-          current_path={@current_path}
-        >
-          <Lucideicons.list_video />
-        </.tab>
-        <.tab
-          id="tab-my-requests"
-          navigate={~p"/my-requests"}
-          label={dgettext("nav", "Requests")}
-          current_path={@current_path}
-        >
-          <Lucideicons.inbox />
-        </.tab>
+        <li :for={section <- Sections.sections()} class="flex min-w-0 flex-1">
+          <.section_tab section={section} current={Sections.current(section, @current_path)} />
+        </li>
+        <li class="flex min-w-0 flex-1">
+          <button
+            id="tab-you"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="account-page"
+            commandfor="account-page"
+            command="show-modal"
+            class="flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs text-text-muted focus-visible:-outline-offset-2"
+          >
+            <span class="flex h-control-sm w-14 items-center justify-center">
+              <.avatar
+                id={@current_user.id}
+                name={@current_user.username}
+                size="md"
+                aria-hidden="true"
+              />
+            </span>
+            <span class="max-w-full truncate">{dgettext("nav", "You")}</span>
+          </button>
+        </li>
       </ul>
     </nav>
+
+    <.account_page id="account-page" user={@current_user} />
     """
   end
 
-  attr :id, :string, required: true
-  attr :navigate, :string, required: true
-  attr :label, :string, required: true
-  attr :current_path, :string, required: true
-  slot :inner_block, required: true, doc: "the icon"
+  attr :section, :map, required: true
+  attr :current, :string, required: true
 
-  # A tab is selected on its page, and on the pages under it, such as a club's libraries under
-  # Clubs.
-  defp tab(assigns) do
-    assigns =
-      assign(assigns,
-        current:
-          cond do
-            assigns.current_path == assigns.navigate -> "page"
-            Url.in_section?(assigns.current_path, assigns.navigate) -> "true"
-            true -> nil
-          end
-      )
-
+  defp section_tab(assigns) do
     ~H"""
-    <li class="flex min-w-0 flex-1">
-      <.link
-        id={@id}
-        navigate={@navigate}
-        aria-current={@current}
-        class="flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs focus-visible:-outline-offset-2"
-      >
-        <span class={[
-          "flex h-control-sm w-14 items-center justify-center rounded-full transition-colors [&_svg]:size-icon",
-          @current && "bg-accent-bg text-accent",
-          !@current && "text-text-muted"
-        ]}>
-          {render_slot(@inner_block)}
-        </span>
-        <span class={[
-          "max-w-full truncate",
-          @current && "font-semibold text-text",
-          !@current && "text-text-muted"
-        ]}>
-          {@label}
-        </span>
-      </.link>
-    </li>
+    <.link
+      id={"tab-#{@section.id}"}
+      navigate={@section.navigate}
+      aria-current={@current}
+      class="flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs focus-visible:-outline-offset-2"
+    >
+      <span class={[
+        "flex h-control-sm w-14 items-center justify-center rounded-full transition-colors [&_svg]:size-icon",
+        @current && "bg-surface-selected text-text",
+        !@current && "text-text-muted"
+      ]}>
+        <.lucide_icon name={@section.icon} />
+      </span>
+      <span class={[
+        "max-w-full truncate",
+        @current && "font-semibold text-text",
+        !@current && "text-text-muted"
+      ]}>
+        {@section.label}
+      </span>
+    </.link>
     """
   end
 end

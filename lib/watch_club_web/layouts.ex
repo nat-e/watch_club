@@ -19,15 +19,15 @@ defmodule WatchClubWeb.Layouts do
   @doc """
   The main app layout, used on most screens.
 
-  The bar at the top shows the page's name and its back button. A page is one of:
+  The bar at the top shows the page's name, its back button and, with `search`, the search field.
+  A page is one of:
 
-  - a top page, such as Home or a club: no back button.
-  - a child page, such as a library: it gives its `:parent`. The bar shows a breadcrumb, and back
-    goes to the parent.
+  - a top page, such as Browse: no back button.
+  - a child page, such as a library: it gives its `:parent`, and back goes to it.
   - a Content page, the page of a movie or TV Show: set `content_page?`. The page lays out its
     own full-bleed hero, without the page padding, and the hero holds its visible `h1`, marked
     `data-page-title`. The bar sits transparent over the hero and shows the title once the `h1`
-    scrolls away. Back goes to the previous page, or Home.
+    scrolls away. Back goes to the previous page, or Browse.
 
   Other pages don't render an `h1`: the layout renders the title as one for screen readers.
   """
@@ -50,15 +50,14 @@ defmodule WatchClubWeb.Layouts do
 
   attr :title, :string, required: true, doc: "the page's name"
   attr :content_page?, :boolean, default: false, doc: "the page of a movie or TV Show"
+  attr :search, :boolean, default: false, doc: "shows the search field in the bar"
 
   slot :inner_block, required: true
 
   slot :hero,
     doc: "Full-width content between the bar and the page, outside the page's padding"
 
-  slot :icon, doc: "the page's icon, before its name in the bar"
-
-  slot :parent, doc: "the page this page belongs to; its inner block is the parent's icon" do
+  slot :parent, doc: "the page this page belongs to" do
     attr :navigate, :string, required: true
     attr :label, :string, required: true
   end
@@ -79,11 +78,10 @@ defmodule WatchClubWeb.Layouts do
         <.app_bar
           title={@title}
           content_page?={@content_page?}
-          icon={@icon}
           parent={@parent}
+          search={@search}
           current_url={@current_url}
           current_user={@current_user}
-          instance_settings={@instance_settings}
         />
 
         <main class={["relative", @content_page? && "-mt-(--wc-app-bar-height)"]}>
@@ -97,7 +95,7 @@ defmodule WatchClubWeb.Layouts do
         </main>
       </div>
 
-      <.tab_bar current_path={@current_url.path} />
+      <.tab_bar current_path={@current_url.path} current_user={@current_user} />
     </div>
 
     <.live_component

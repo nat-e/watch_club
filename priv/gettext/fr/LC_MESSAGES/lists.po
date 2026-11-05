@@ -43,14 +43,12 @@ msgstr "Créer une nouvelle liste"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete list"
 msgstr "Supprimer la liste"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Edit list"
 msgstr "Modifier la liste"
