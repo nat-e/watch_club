@@ -72,4 +72,6 @@ Images are published to `ghcr.io/nat-e/watch_club` with these tags:
 - Major updates: one PR per dependency, merged by hand. `ash_authentication` and `ash_authentication_phoenix` share one, because each needs the matching major of the other.
 - `mix.lock` and `package-lock.json` maintenance: one PR, merged by hand.
 
-Updates to production mix dependencies and to the `Dockerfile` are titled `fix(deps): …`, so they appear in the changelog. The "Dependency Dashboard" issue lists pending updates.
+Updates to production mix dependencies, to the `Dockerfile` and to `config/config.exs` are titled `fix(deps): …`, so they appear in the changelog. The "Dependency Dashboard" issue lists pending updates.
+
+Renovate finds the versions in the `Dockerfile` and `config/config.exs` from the `# renovate:` comment above each.

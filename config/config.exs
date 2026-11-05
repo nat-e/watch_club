@@ -107,6 +107,7 @@ config :watch_club, WatchClubWeb.Endpoint,
 
 # Configure esbuild (the version is required)
 config :esbuild,
+  # renovate: datasource=npm depName=esbuild
   version: "0.28.2",
   watch_club: [
     args:
@@ -117,6 +118,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
+  # renovate: datasource=github-releases depName=tailwindcss packageName=tailwindlabs/tailwindcss extractVersion=^v(?<version>.+)$
   version: "4.3.3",
   watch_club: [
     args: ~w(

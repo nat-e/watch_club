@@ -10,6 +10,16 @@
 		"customManagers:biomeVersions",
 		"customManagers:githubActionsVersions"
 	],
+	"customManagers": [
+		{
+			"customType": "regex",
+			"description": "Versions in config/config.exs that follow a `# renovate:` comment, as in the Dockerfile",
+			"managerFilePatterns": ["/^config/config\\.exs$/"],
+			"matchStrings": [
+				"# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: packageName=(?<packageName>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+version: \"(?<currentValue>[^\"]+)\""
+			]
+		}
+	],
 	"schedule": ["* 0-5 * * 1"],
 	"minimumReleaseAge": "7 days",
 	"osvVulnerabilityAlerts": true,
@@ -84,7 +94,7 @@
 		},
 		{
 			"description": "Updates that change what runs in the published image are fixes, so release-please lists them and proposes a release",
-			"matchFileNames": ["Dockerfile"],
+			"matchFileNames": ["Dockerfile", "config/config.exs"],
 			"semanticCommitType": "fix"
 		},
 		{
