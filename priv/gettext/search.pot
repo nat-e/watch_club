@@ -32,11 +32,6 @@ msgstr ""
 msgid "Clear search"
 msgstr ""
 
-#: lib/watch_club_web/components/search/search_result_row.ex
-#, elixir-autogen, elixir-format
-msgid "In %{clubs}"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
@@ -84,3 +79,8 @@ msgid "%{count} result"
 msgid_plural "%{count} results"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/watch_club_web/components/search/search_result_row.ex
+#, elixir-autogen, elixir-format
+msgid "In the library"
+msgstr ""

@@ -1,21 +1,60 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
   @moduledoc """
-  Searches Movies and TV Shows on TMDB.
-  Returns a `SearchResultsPage` of `SearchResult`s, each with the actor's clubs that already have
-  it, and the provider's pagination metadata.
+  Searches Movies and TV Shows on TMDB, or only the Library's titles with `in_library?`.
+  Returns a `SearchResultsPage` of `SearchResult`s, each saying whether it's in the Library, and
+  the pagination metadata.
   """
   use Ash.Resource.Actions.Implementation
 
   require Logger
 
-  alias WatchClub.Clubs
+  alias WatchClub.Contents
   alias WatchClub.Contents.{ContentIdentity, SearchResult, SearchResultsPage}
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
 
+  # As many as a TMDB page
+  @library_page_size 20
+
   @impl true
   def run(
-        %Ash.ActionInput{arguments: %{query: query, content_type: :movies_and_shows, page: page}},
+        %Ash.ActionInput{
+          arguments: %{
+            query: query,
+            content_type: :movies_and_shows,
+            page: page,
+            in_library?: true
+          }
+        },
+        _opts,
+        context
+      ) do
+    library_page =
+      Contents.get_library!(
+        %{query: query},
+        Ash.Context.to_opts(context,
+          page: [limit: @library_page_size, offset: (page - 1) * @library_page_size, count: true],
+          load: [:implementation]
+        )
+      )
+
+    {:ok,
+     %SearchResultsPage{
+       results: Enum.map(library_page.results, &library_search_result/1),
+       page: page,
+       total_pages: ceil(library_page.count / @library_page_size)
+     }}
+  end
+
+  def run(
+        %Ash.ActionInput{
+          arguments: %{
+            query: query,
+            content_type: :movies_and_shows,
+            page: page,
+            in_library?: false
+          }
+        },
         _opts,
         context
       ) do
@@ -38,7 +77,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
 
     {:ok,
      %SearchResultsPage{
-       results: put_clubs!(results, context),
+       results: put_in_library!(results, context),
        page: response.page,
        total_pages: response.total_pages
      }}
@@ -71,18 +110,28 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   # People aren't Content
   defp search_result(_other), do: []
 
-  defp put_clubs!(results, context) do
-    clubs_by_identity =
+  defp put_in_library!(results, context) do
+    library =
       results
       |> Enum.map(& &1.identity)
-      |> Clubs.get_library_items_by_identities!(load: [:content, library: :club], scope: context)
-      |> Enum.group_by(&ContentIdentity.from_content(&1.content), & &1.library.club)
+      |> Contents.get_contents_by_identities!(
+        Ash.Context.to_opts(context, query: [filter: [has_media?: true]])
+      )
+      |> MapSet.new(&ContentIdentity.from_content/1)
 
-    Enum.map(results, fn result ->
-      %{
-        result
-        | clubs: clubs_by_identity |> Map.get(result.identity, []) |> Enum.uniq_by(& &1.id)
-      }
-    end)
+    Enum.map(results, &%{&1 | in_library?: MapSet.member?(library, &1.identity)})
+  end
+
+  defp library_search_result(content) do
+    localization = content.implementation.best_localization
+
+    %SearchResult{
+      identity: ContentIdentity.from_content(content),
+      title: localization.title,
+      year: content.release_date && content.release_date.year,
+      overview: localization.overview,
+      poster_path: localization.poster_path,
+      in_library?: true
+    }
   end
 end

@@ -5,6 +5,8 @@ defmodule WatchClub.Contents.ContentTest do
   import WatchClub.Contents
 
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
+  alias WatchClub.MediaCatalog
+  alias WatchClub.SystemActor
 
   alias WatchClub.Contents.{
     Content,
@@ -257,17 +259,9 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "search_content/*" do
-    test "returns Movies and TV Shows with the clubs that have them", %{
-      club: club,
-      admin: admin,
-      member: member
-    } do
-      movie = generate(movie(actor: admin))
-      library = generate(library(club, content_type: :movie))
-
-      WatchClub.Clubs.add_content_to_libraries!(ContentIdentity.from_content(movie), [library.id],
-        actor: member
-      )
+    test "returns Movies and TV Shows, and whether they're in the Library", %{member: member} do
+      movie = generate(movie())
+      add_video!(movie.id)
 
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         Req.Test.json(conn, %{
@@ -298,46 +292,68 @@ defmodule WatchClub.Contents.ContentTest do
                page: 1,
                total_pages: 3,
                results: [
-                 %SearchResult{title: "Dune", year: 2021, overview: nil, clubs: [found_club]},
+                 %SearchResult{title: "Dune", year: 2021, overview: nil, in_library?: true},
                  %SearchResult{
                    identity: %ContentIdentity{type: :tv_show, external_id: "42"},
                    title: "Dune: Prophecy",
                    year: nil,
                    overview: "The Bene Gesserit.",
-                   clubs: []
+                   in_library?: false
                  }
                ]
              } =
                search_content!(%{query: "dune"}, actor: member)
-
-      assert found_club.id == club.id
     end
 
-    test "hides the clubs the actor isn't a member of", %{admin: admin, member: member} do
-      movie = generate(movie(actor: admin))
-      other_club = generate(club(actor: admin))
-      library = generate(library(other_club, content_type: :movie))
+    test "searches the Library's titles with in_library?", %{member: member} do
+      dune = generate(movie(original_title: "Dune", release_date: ~D[2021-09-15]))
+      add_video!(dune.id)
+      # Not in the Library
+      generate(movie(original_title: "Dune: Part Two"))
 
-      WatchClub.Clubs.add_content_to_libraries!(ContentIdentity.from_content(movie), [library.id],
-        actor: admin
-      )
+      assert %SearchResultsPage{
+               page: 1,
+               total_pages: 1,
+               results: [%SearchResult{title: "Dune", year: 2021, in_library?: true} = result]
+             } = search_content!(%{query: "dune", in_library?: true}, actor: member)
 
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, %{
-          "page" => 1,
-          "total_pages" => 1,
-          "results" => [
-            %{
-              "media_type" => "movie",
-              "id" => String.to_integer(movie.external_id),
-              "title" => "Dune"
-            }
-          ]
-        })
-      end)
+      assert result.identity == ContentIdentity.from_content(dune)
+    end
+  end
 
-      assert %SearchResultsPage{results: [%SearchResult{clubs: []}]} =
-               search_content!(%{query: "dune"}, actor: member)
+  describe "get_library/*" do
+    test "returns the Movies and TV Shows with Media, most recently added first", %{
+      member: member
+    } do
+      # Not in the Library
+      generate(movie())
+      first_movie = generate(movie())
+      tv_show = generate(tv_show(num_seasons: 2, episodes_per_season: 1))
+      last_movie = generate(movie())
+
+      add_video!(first_movie.id)
+      # Any episode adds a TV Show to the Library
+      add_episode_video!(tv_show, 2)
+      add_video!(last_movie.id)
+      # A new episode doesn't move the TV Show
+      add_episode_video!(tv_show, 1)
+
+      first_page = get_library!(page: [limit: 2], actor: member)
+      assert Enum.map(first_page.results, & &1.id) == [last_movie.id, tv_show.id]
+
+      assert %{results: [%Content{id: first_movie_id}], more?: false} =
+               Ash.page!(first_page, :next)
+
+      assert first_movie_id == first_movie.id
+    end
+
+    test "keeps the Content with a title that contains the query", %{member: member} do
+      amelie = generate(movie(original_title: "Le Fabuleux Destin d'Amélie Poulain"))
+      add_video!(amelie.id)
+      add_video!(generate(movie()).id)
+
+      assert [%Content{id: id}] = get_library!(%{query: "AMELIE"}, actor: member)
+      assert id == amelie.id
     end
   end
 
@@ -396,6 +412,23 @@ defmodule WatchClub.Contents.ContentTest do
 
   # Bridge the per-type vocabulary these tests are written in onto the unified
   # create/refresh_metadata actions: create (upsert) the Content from its TMDB identity.
+  defp add_video!(movie_id) do
+    MediaCatalog.create_or_update_video!(media_movie_input(movie_id), actor: SystemActor.actor())
+  end
+
+  defp add_episode_video!(tv_show, season_number) do
+    episode =
+      Ash.get!(
+        TvShowEpisode,
+        %{tv_show_id: tv_show.id, season_number: season_number, episode_number: 1},
+        authorize?: false
+      )
+
+    MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
+      actor: SystemActor.actor()
+    )
+  end
+
   defp create_movie(external_id, opts),
     do: create_content(ContentIdentity.for_movie(external_id), %{}, opts)
 

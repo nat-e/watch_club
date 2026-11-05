@@ -1,7 +1,6 @@
 defmodule WatchClubWeb.Components.Search.SearchResultRow do
   @moduledoc """
-  A search result: poster, title, type, year and the clubs that already have it. Links to its
-  page.
+  A search result: poster, title, type, year and whether it's in the Library. Links to its page.
   """
   use WatchClubWeb, :component
 
@@ -42,13 +41,11 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
           <span :if={@result.year} aria-hidden="true">·</span>
           <span :if={@result.year}>{@result.year}</span>
           <span
-            :if={@result.clubs != []}
+            :if={@result.in_library?}
             class="inline-flex min-w-0 items-center gap-tight text-accent"
           >
             <Lucideicons.library class="size-icon-sm shrink-0" />
-            <span class="truncate">
-              {dgettext("search", "In %{clubs}", clubs: Enum.map_join(@result.clubs, ", ", & &1.name))}
-            </span>
+            <span class="truncate">{dgettext("search", "In the library")}</span>
           </span>
         </span>
         <span
