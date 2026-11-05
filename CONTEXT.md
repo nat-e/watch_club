@@ -1,6 +1,6 @@
 # WatchClub
 
-WatchClub is a space for small private groups to collect, share, and discuss content.
+WatchClub is a self-hosted, private, invite-only media server where people can watch and discuss content. Discovery is curated by other people's recommendations, and it invites users to engage about the content. They can also request missing content directly from the application.
 
 ## Language
 
@@ -23,41 +23,19 @@ A user’s personal choices that shape their WatchClub experience.
 _Avoid_: User settings, account settings
 
 **Instance Administrator**:
-The single user who administers the WatchClub instance and can create clubs.
+The single user who administers the WatchClub instance.
 _Avoid_: Administrator, admin, owner
 
-### Clubs
-
-**Club**:
-A private group of people who share content and coordinate watching or reading together.
-_Avoid_: Community, group, workspace
-
-**Member**:
-A user who belongs to a specific club.
-_Avoid_: Participant, club user
-
-**Membership**:
-A user’s belonging to a club as either a **Club Admin** or **Club Member**.
-_Avoid_: Subscription, enrolment
-
-**Club Admin**:
-A member who can manage the club, its libraries, members, invitations, and library items.
-_Avoid_: Admin, owner
-
-**Club Member**:
-A member who can view libraries, add content to them, and remove library items they added.
-_Avoid_: Regular user, participant
-
 **Invitation**:
-An instance-wide link created by the **Instance Administrator** that lets new people register and, on doing so, join zero or more **Clubs** as **Club Members**. Redeemable only while it is not **Expired**, not **Disabled**, and not **Used**.
-_Avoid_: Invite, invitation code, club invitation
+An instance-wide link created by the **Instance Administrator** that lets new people register. Redeemable only while it is not **Expired**, not **Disabled**, and not **Used**.
+_Avoid_: Invite, invitation code
 
 **Max Uses**:
 The optional maximum number of new accounts an **Invitation** can create. Unlimited when unset.
 _Avoid_: Use limit, seats, quota
 
 **Redeem Invitation**:
-A new person registers through an **Invitation**, creating their **User** and one **Club Member** **Membership** in each granted **Club**. Counts as one use against the **Max Uses**.
+A new person registers through an **Invitation**, creating their **User**. Counts as one use against the **Max Uses**.
 _Avoid_: Accept invitation, join instance
 
 **Expired Invitation**:
@@ -69,43 +47,65 @@ An invitation that has reached its **Max Uses** and can no longer be redeemed.
 _Avoid_: Exhausted invitation, used-up invitation, spent invitation
 
 **Disable Invitation**:
-Deactivate a still-redeemable **Invitation** so its link can no longer be redeemed, without removing the **Users** and **Memberships** it already created. Cannot be applied to a **Used Invitation**.
+Deactivate a still-redeemable **Invitation** so its link can no longer be redeemed, without removing the **Users** it already created. Cannot be applied to a **Used Invitation**.
 _Avoid_: Delete invitation, revoke invitation, cancel invitation, archive invitation
 
-**Library**:
-A named collection of content inside a club for exactly one content type.
-_Avoid_: Club Library, list, shelf, playlist
+### Playlists
 
-**Library Item**:
-A piece of content included in a library.
-_Avoid_: Recommendation, availability, selection
+**Playlist**:
+A named collection of **Content** owned by one **User**, private until they share it with other **Users**.
+_Avoid_: List, shelf, watchlist
 
-**Add to Library**:
-Include content in a library so it is visible to club members.
-_Avoid_: add to club, recommend, make available
+**Playlist Item**:
+One **Content** in a **Playlist**, with who added it and when.
+_Avoid_: Entry, track
 
-**Remove from Library**:
-Remove a library item from a library without deleting the underlying content.
-_Avoid_: Remove from club library, delete content, remove content
+**Add to Playlist**:
+Put a **Content** in one or more **Playlists**.
+_Avoid_: Save, bookmark
 
-**Delete Library**:
-Permanently remove a library and its library items without deleting the underlying content.
-_Avoid_: Delete club library, remove library
+**Remove from Playlist**:
+Take a **Content** out of a **Playlist** without deleting the **Content**.
+_Avoid_: Delete from playlist
 
-**Play Library Item**:
-Play available **Media** for a library item through WatchClub.
-_Avoid_: Stream content, watch media, play media server item
+**Share Playlist**:
+The owner of a **Playlist** gives one or more **Users** **Playlist Access** to it.
+_Avoid_: Invite to playlist, collaborate
 
-**Download Library Item**:
-Download a video, ebook, or audiobook for a library item through WatchClub.
-_Avoid_: Download content, download media, download media server item
+**Playlist Access**:
+What a **User** can do with a **Playlist** shared with them: View it, or Edit it to also add and remove **Content**.
+_Avoid_: Permission, role, viewer, editor, collaborator
+
+### Conversations
+
+**Recommend Content**:
+A **User** sends one **Content** to one or more other **Users**, which starts a **Conversation** with them.
+_Avoid_: Share content, send, suggest
+
+**Conversation**:
+The **Messages** about one **Content** between the **User** who recommended it and the **Users** they recommended it to.
+_Avoid_: Chat, thread
+
+**Participant**:
+A **User** in a **Conversation**.
+_Avoid_: Member
+
+**Message**:
+Something a **Participant** posts in a **Conversation**: the recommendation that starts it, or text.
+_Avoid_: Reply, chat message, note
+
+**Inbox**:
+The WatchClub interface where a **User** sees their **Conversations**.
+_Avoid_: Messages, chats
+
+### Requests
 
 **Content Request**:
-A user’s request for WatchClub to make a piece of content available on the media server for that user’s personal consumption.
+A user’s request for WatchClub to make a piece of content available on the media server for everybody.
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
 **Content Request Status**:
-The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Queued, Downloading, Importing, Completed, Failed. *Importing* means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. *Queued* is the label for a just-submitted request still within its grace window or whose **Media Source** call is still in flight.
+The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Queued, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Queued_ is the label for a just-submitted request still within its grace window or whose **Media Source** call is still in flight.
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
 
 **Content Request Status Group**:
@@ -113,36 +113,32 @@ The coarse grouping of **Content Request Statuses** used by the **My Requests** 
 _Avoid_: Status filter, request category
 
 **Media Source Request**:
-WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
+WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
 _Avoid_: Request Attempt, Profile Request, Sourcing
 
 **Media Source Request State**:
-The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and *reconciled from the **Media Source**'s current state* (not driven by individual events). One of: Submitted, Not Released, Downloading, Partially Downloaded, Downloaded, Needs Attention.
+The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and _reconciled from the **Media Source**'s current state_ (not driven by individual events). One of: Submitted, Not Released, Downloading, Partially Downloaded, Downloaded, Needs Attention.
 _Avoid_: Request Attempt State, *arr status, Grabbed, Searching, Cancelled, Created
 
 **Request Content**:
-A user creates a **Content Request** for one piece of **Content** so its media file is brought to the media server for them.
+A user creates a **Content Request** for one piece of **Content** so its media file is brought to the media server for everybody.
 _Avoid_: Request media, fetch content, grab content, add to my downloads, add to watchlist
 
-**Cancel Content Request**:
-A user removes one of their own **Content Requests**.
-_Avoid_: Delete request, abort request, unrequest
+**Get Notified**:
+A **User** becomes a **Request Subscriber** of a **Content Request** someone else made.
+_Avoid_: Follow, watch, me too
+
+**Request Subscriber**:
+A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it.
+_Avoid_: Follower, watcher
+
+**Delete Content Request**:
+The **Instance Administrator** removes a **Content Request**, for example a stuck one, so its **Content** can be requested again.
+_Avoid_: Cancel request, unrequest
 
 **My Requests**:
-The WatchClub interface where a user views and manages their own **Content Requests**.
+The WatchClub interface where a **User** views the **Content Requests** they are a **Request Subscriber** of.
 _Avoid_: My downloads, watchlist, request inbox
-
-**Leave Club**:
-A member ends their own membership in a club.
-_Avoid_: Quit club, unsubscribe
-
-**Remove Member**:
-A **Club Admin** ends another member’s membership in a club.
-_Avoid_: Delete member, ban
-
-**Delete Club**:
-Permanently remove a club and everything that exists only inside it, without deleting content that may be used elsewhere.
-_Avoid_: Archive club, close club
 
 ### Media
 
@@ -163,8 +159,16 @@ Media that can be played and is attached to a movie or TV show episode.
 _Avoid_: Media Version, video version
 
 **Player**:
-The WatchClub interface where a member watches a selected video.
+The WatchClub interface where a **User** watches a selected video.
 _Avoid_: Video player page, stream page
+
+**Play**:
+Play available **Media** through WatchClub.
+_Avoid_: Stream, watch media, play media server item
+
+**Download**:
+Save a **Video**, **Ebook**, or **Audiobook** to the **User**'s device through WatchClub.
+_Avoid_: Save offline, download media server item
 
 **Playback Session**:
 One continuous use of the **Player** by a user. A **Playback Session** does not itself reference a selected media file; that belongs to each **Playback** inside it.
@@ -233,7 +237,7 @@ _Avoid_: Stop media import, abort scan, kill import
 ### Contents
 
 **Content**:
-A creative work that can be added to a library, such as a movie, TV show, or book.
+A creative work, such as a movie, TV show, or book.
 _Avoid_: Media, title, item, recommendation
 
 **Content Type**:
@@ -272,20 +276,27 @@ _Avoid_: Localization, translation, localized content
 The content localization selected for a user based on their preferred locale.
 _Avoid_: Best localization, current localization
 
+**Library**:
+All the **Content** that is available on the **Instance** and has **Media**.
+_Avoid_: Catalog, available content, server content
+
+**Browse**:
+The WatchClub interface where a **User** looks through the **Library**.
+_Avoid_: Discover
+
 ### Activity Feed
 
 **Activity Feed**:
-What a user can see of what happened in their clubs, newest first.
+What a **User** can see of what **Users** do in WatchClub, newest first.
 _Avoid_: Timeline, news feed, event log
 
 **Feed Event**:
-One thing a user did that shows in an activity feed: created a club, created a library, added content to a library, joined a club, or is watching or watched content.
+One thing a **User** did that shows in an activity feed: watching or having watched **Content**, requesting **Content**, or sharing a **Playlist**.
 _Avoid_: Activity, notification, action
 
 **Feed Entry**:
-One line of an activity feed: the feed events of one user doing the same thing, grouped together.
+One line of an activity feed: the **Feed Events** of one **User** doing the same thing, grouped together.
 _Avoid_: Group, aggregate, card, item
-
 
 ## Relationships
 
@@ -297,66 +308,109 @@ _Avoid_: Group, aggregate, card, item
 - **User Preferences** belong to one **User** and are managed only by that **User**
 - **User Preferences** include the user’s preferred **Locale**
 - Deleting a **User** does not delete their **Playback Sessions** or **Playbacks**
-
-### Clubs
-
-- A **Club** is visible only to its **Members**, except through an **Invitation**
-- A **Club** has one or more **Members**
-- A **Club** has exactly one **Club Admin**
-- A **Club Admin** and a **Club Member** are both **Members**
-- A **Membership** belongs to exactly one **User** and exactly one **Club**
-- The **Club Admin** cannot **Leave Club** or be the target of **Remove Member**
-- Every **Member** of a **Club** can view all of its **Memberships**
-- **Leave Club** ends the acting **Club Member**’s **Membership** without removing **Library Items** they added
-- **Remove Member** ends another **Member**’s **Membership** without removing **Library Items** they added
-- An **Invitation** is instance-wide and grants membership to zero or more **Clubs**
-- An **Invitation** granting zero **Clubs** lets a new person register without joining any **Club**; the **Instance Administrator** adds them to **Clubs** later
+- Every **User** can see every other **User**
+- An **Invitation** is the only way a new person joins WatchClub
 - An **Invitation** is created and managed only by the **Instance Administrator**
 - An **Invitation** is link-based and is not tied to any **User** before redemption
 - An **Invitation** is redeemed only by a new person registering; an existing **User** can never redeem one
-- **Redeem Invitation** creates the new **User** and one **Club Member** **Membership** per granted **Club**, and counts as one use against the **Max Uses**
+- **Redeem Invitation** creates the new **User** and counts as one use against the **Max Uses**
 - An **Invitation** records its **Max Uses** and its use count, incremented each time it is redeemed
 - An **Expired Invitation**, a **Disabled** **Invitation**, and a **Used Invitation** cannot be redeemed
-- **Disable Invitation** can be applied at any time except to a **Used Invitation**, and leaves already-created **Users** and **Memberships** intact
-- A **Club** has zero or more **Libraries**
-- A **Library** belongs to exactly one **Club**
-- A **Library** has exactly one **Content Type**
-- A **Club** can have multiple **Libraries** with the same **Content Type**
-- Only **Members** can view a **Club**’s **Libraries** and **Library Items**
-- A **Library** contains zero or more **Library Items**
-- A **Library** contains only **Library Items** whose **Content** has the same **Content Type** as the **Library**
-- A **Library** can contain a given **Content** at most once
-- The same **Content** can appear in multiple **Libraries**
-- A **Library Item** belongs to exactly one **Library** and references exactly one **Content**
-- A **Library Item** is visible to all **Members** of its **Club**
-- A **Library Item** is added by a **Member**
-- **Add to Library** creates a **Library Item**
-- Any **Member** can **Add to Library** when the **Content** matches the **Library**’s **Content Type**
-- If the adding **Member** later leaves the **Club**, the **Library Item** remains in the **Library**
-- If a **User** is deleted, **Library Items** they added remain in their **Libraries** without an adding **Member**
-- **Remove from Library** removes a **Library Item** but not its **Content**
-- A **Club Admin** can **Remove from Library** for any **Library Item**
-- A current **Member** who added a **Library Item** can **Remove from Library** for that item
-- A former **Member** cannot **Remove from Library** unless they rejoin the **Club**
-- If a **Library Item** has no adding **Member**, only a **Club Admin** can **Remove from Library** for it
-- A **Member** can **Play Library Item** or **Download Library Item** for any **Library Item** visible to them in WatchClub
-- **Play Library Item** opens the **Player** after exactly one **Media** file has been selected
-- **Play Library Item** from outside the **Player** creates a **Playback Session** and its first **Playback** for the selected **Media** when the **Player** opens, before playback succeeds
+- **Disable Invitation** can be applied at any time except to a **Used Invitation**, and leaves already-created **Users** intact
+
+### Playlists
+
+- A **Playlist** is owned by exactly one **User**
+- A **User** can own any number of **Playlists**
+- A **Playlist** has a name and an icon, both chosen by its owner
+- A new **User** starts with one **Playlist**, named To Watch, which they can edit, share or delete like any other
+- A **Playlist** is private: only its owner sees it until they **Share Playlist**
+- **Share Playlist** gives each chosen **User** View or Edit **Playlist Access**
+- A **User** with View access sees the **Playlist**; with Edit access they can also **Add to Playlist** and **Remove from Playlist**
+- Only the owner can **Share Playlist**, change or remove a **User**'s **Playlist Access**, change the **Playlist**'s name or icon, or delete it
+- Everyone with **Playlist Access** sees who else has it
+- A **Playlist** has zero or more **Playlist Items**, shown newest added first
+- A **Playlist** can contain a given **Content** at most once
+- A **Playlist Item** records the **User** who added it
+- A **Playlist Item** stays in its **Playlist** when the **User** who added it loses their **Playlist Access** or is deleted
+- A **Playlist** can mix **Content Types**
+- A **Playlist** holds whole **Content**: for a **TV Show**, the entire show, never a **TV Show Episode**
+- A **Playlist** can hold **Content** that is not in the **Library**
+- **Add to Playlist** may create the **Content** from a **Metadata Provider** when it doesn't exist in WatchClub yet
+- **Remove from Playlist** does not delete the **Content**
+- Deleting a **User** deletes the **Playlists** they own, also for the **Users** they were shared with
+
+### Conversations
+
+- A **User** can **Recommend Content** to any other **Users**
+- **Recommend Content** starts a new **Conversation** whose **Participants** are the recommending **User** and every **User** they recommended it to
+- A **Conversation**'s **Participants** are set when it starts: nobody can join or leave it later
+- A **Conversation** is about exactly one **Content**: a **Movie**, a **TV Show**, or a **Book**, never a **TV Show Episode**
+- Recommending a **Content** again, even to the same **Users**, starts another **Conversation**
+- A **Conversation** always starts with the recommendation itself as its first **Message**, which can include text
+- Each **Participant** has read a **Conversation** up to one **Message**; the **Messages** after it are unread for them
+- Every **Participant** sees how far the other **Participants** have read
+- Any **Participant** can post **Messages** in the **Conversation**
+- Only **Participants** can see a **Conversation**
+- A **Conversation** shows in the **Inbox** of each of its **Participants**
+- Deleting a **User** keeps their **Messages** and their place among the **Participants**, shown as a deleted **User**; their **Conversations** go on for the others
+
+### Requests
+
+- **Add to Playlist** and **Request Content** are independent actions: neither one triggers the other
+- A **Content Request** belongs to exactly one **User** and references exactly one **Content**
+- A **Content** has at most one **Content Request**, made by the first **User** who requests it
+- **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media** for an aired part: the **Movie**, or an aired **TV Show Episode**
+- Any other **User** can **Get Notified** on a **Content Request** while it is not yet playable
+- The **User** who made a **Content Request** is always one of its **Request Subscribers**
+- When a **Content Request** becomes playable, each of its **Request Subscribers** gets a badge on **My Requests**
+- Other **Users** see who made a **Content Request**, but not its other **Request Subscribers**
+- Nobody can cancel a **Content Request** or stop getting notified on it; only the **Instance Administrator** can **Delete Content Request**
+- A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
+- Whether a **Content Request** is _playable_ is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** whose first episode is present while more are downloading), so playability drives the Play action independently of status
+- A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
+- A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair
+- A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
+- A **Media Source Request** comes into existence only _after_ a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted (or Not Released)
+- **Request Content** fans out to _every_ request-capable **Media Source** that can serve the **Content** (its **Media Type** produces the **Content**'s **Content Type**), creating one **Media Source Request** per such **Media Source**. This includes multiple **Media Sources** of the same **Media Source Type** (two `radarr` sources each get their own **Media Source Request**) and multiple **Media Types** for one **Content** (a **Book** fans out to both its **Ebook** and **Audiobook** **Media Sources**)
+- For a **TV Show**, the singleton is per (**TV Show**, **Media Source**): one **Media Source Request** covers the whole show, never one per **TV Show Episode**. It maps to the single series resource the **Media Source** creates. Per-**TV Show Episode** availability is read from **Media**, not from **Media Source Requests**
+- A **Content Request** has a derived progress, the share of the **Content**'s expected parts that have **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over _aired_ **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored
+- A **TV Show Episode** records its air date, sourced from the **Metadata Provider**
+- The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
+- A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created _only_ when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **Instance Administrator** uses **Delete Content Request** so the **Content** can be requested again
+- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** reads as complete regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
+- A **Media Source Request** carries one **Media Source Request State**, recomputed from the **Media Source**'s current state (its movie/series record plus download queue) whenever a webhook or poll arrives; the event triggers a refresh, it does not itself set the state
+- A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created _or adopted_ — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
+- A **Media Source Request** persists after **Delete Content Request** (the upstream resource still exists)
+- When a **Media Source**'s upstream system reports its movie or series deleted, WatchClub deletes the **Media Source Request** rather than keeping a terminal state; the **Content Request** survives and, with no progressing **Media Source Request**, reads as not found until the **Instance Administrator** fixes it in the **Media Source**'s upstream system or uses **Delete Content Request**
+- **Delete Content Request** does not delete any **Media**, any **Media Source Request**, or any resource in any **Media Source**, nor remove the **Content** from any **Playlist**
+- A **Media Source Request** in the Needs Attention state is recovered passively: the **Instance Administrator** resolves the problem on the **Media Source**'s upstream system, and the resulting webhook advances the **Media Source Request**. WatchClub has no manual retry action
+- A **User**’s **Content Request** persists independently of any **Playlist** that holds its **Content**
+- Every **User** sees every **Content Request**, who made it, and its **Content Request Status**
+- **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Playlist** may create missing **Content**
+- A **Content** can exist in WatchClub with no **Media**, referenced only by **Content Requests** or **Playlists**
+- **Request Content** currently creates a **Content Request** only for **Movies** and **TV Shows**; **Book** requests are not yet supported (no request-capable **Book** **Media Source** exists — that is the planned `chaptarr` — and the action rejects **Book** content). The **Book**-to-**Ebook**+**Audiobook** fan-out describes the intended design for when `chaptarr` lands, not current behaviour
+- Deleting a **User** keeps their **Content Requests**, shown as from a deleted **User**
+- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests**, and does not backfill **Media Source Requests** for existing **Content Requests**
+
+### Playback
+
+- A **User** can **Play** or **Download** the **Media** of any **Content** in the **Library**
+- **Play** opens the **Player** after exactly one **Media** file has been selected
+- **Play** from outside the **Player** creates a **Playback Session** and its first **Playback** for the selected **Media** when the **Player** opens, before playback succeeds
 - While the **Player** is open, advancing to another **Media** (for example the next **TV Show Episode**) creates a new **Playback** on the same **Playback Session**
 - Initially, **Playbacks** are created only for **Video** **Media**
 - A **Playback Session** is started by exactly one **User**
 - A **Playback Session** has zero or more **Playbacks** over its lifetime
 - A **Playback** belongs to exactly one **Playback Session** and references exactly one **Media**
 - Only the starting **User** and the **Instance Administrator** can access a **Playback Session** or any of its **Playbacks**
-- Any **User** can start a **Playback** for any **Media**; WatchClub does not gate playback on **Library Item** visibility or any other access rule
-- What a **User** *sees* in WatchClub is constrained by their **Memberships** and their **Content Requests**; what they can *play* once reached is not
+- Any **User** can start a **Playback** for any **Media** that has **Content**; WatchClub has no other access rule on playback
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
-- A **Playback Session** is not scoped to a **Club**, **Library**, or **Library Item**
 - A **Playback** is current while it has not ended; it ends when another **Playback** starts on the same **Playback Session**, or once its **Player** has sent no heartbeat for six hours
 - A **Playback Session** has at most one current **Playback** at any time
 - A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
 - A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit
-- A later **Play Library Item** from outside the **Player** for the same **Media** creates a separate **Playback Session** with its own first **Playback**
+- A later **Play** from outside the **Player** for the same **Media** creates a separate **Playback Session** with its own first **Playback**
 - A **Playback Session** can exist even when its **Playbacks** later fail
 - A **Playback Session** records only when it was created; its activity is derived from its **Playbacks**
 - A **Playback** records its selected **Media**, when it was created, when it was last active, and when it ended
@@ -368,56 +422,14 @@ _Avoid_: Group, aggregate, card, item
 - A **Playback** has an explicit ended time; a **Playback Session** has no explicit ended state and is considered active or dormant based on whether it has a current **Playback**
 - A **User** can inspect their own **Playback Sessions** and **Playbacks**
 - The **Instance Administrator** can inspect **Playback Sessions** by **User** and creation time, and inspect **Playbacks** by **Media**, creation time, and last active time
-- If the same **Content** is visible to a **User** through multiple **Library Items**, one **Playback** for its **Media** may be relevant to each corresponding club activity feed
-- A **Library Item** can exist when its **Movie**, **Book**, or **TV Show Episodes** have no **Media**
-- Adding **Content** to a **Library** and playing available **Media** are independent member actions
-- If exactly one **Video** is available for **Play Library Item**, playback can start without a selection step
-- When multiple **Videos** are available for **Play Library Item**, the **Member** chooses one before the **Player** opens, using visible **Video Track**, **Audio Track**, and **Text Track** details
-- For a **TV Show** **Library Item**, **Play Library Item** is offered on individual **TV Show Episodes**, not as a single show-level choice
-- When multiple **Media** files are available for **Play Library Item** or **Download Library Item**, the **Member** chooses one
-- **Add to Library** treats the **Library Item**’s **Content** as a whole; for **TV Show** content this is the entire **TV Show**, not a season or **TV Show Episode**
-- When the **Library** already contains the **Content**, **Add to Library** does not create a duplicate **Library Item**
-- **Add to Library** and **Request Content** are independent actions: **Add to Library** creates only a **Library Item**, **Request Content** creates only a **Content Request**, and neither one triggers the other
-- A **Content Request** belongs to exactly one **User** and references exactly one **Content**
-- A **User** has at most one **Content Request** for a given **Content**
-- A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
-- Whether a **Content Request** is *playable* is a read-time flag separate from its displayed status: true once the **Content** has **Media** for the **Movie** or for the **TV Show**'s first **TV Show Episode** (season 1, episode 1). A **Content Request** can be playable while still showing an in-progress status (a **TV Show** whose first episode is present while more are downloading), so playability drives the Play action independently of status
-- A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
-- A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair, shared by every **Content Request** for that **Content**
-- A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
-- A **Media Source Request** comes into existence only *after* a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted (or Not Released)
-- **Request Content** fans out to *every* request-capable **Media Source** that can serve the **Content** (its **Media Type** produces the **Content**'s **Content Type**), creating one **Media Source Request** per such **Media Source**. This includes multiple **Media Sources** of the same **Media Source Type** (two `radarr` sources each get their own **Media Source Request**) and multiple **Media Types** for one **Content** (a **Book** fans out to both its **Ebook** and **Audiobook** **Media Sources**)
-- For a **TV Show**, the singleton is per (**TV Show**, **Media Source**): one **Media Source Request** covers the whole show, never one per **TV Show Episode**. It maps to the single series resource the **Media Source** creates. Per-**TV Show Episode** availability is read from **Media**, not from **Media Source Requests**
-- A **Content Request** has a derived progress, the share of the **Content**'s expected parts that have **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over *aired* **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored
-- A **TV Show Episode** records its air date, sourced from the **Metadata Provider**
-- The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
-- A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created *only* when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **User** cancels and re-requests
-- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** reads as complete regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
-- A **Media Source Request** carries one **Media Source Request State**, recomputed from the **Media Source**'s current state (its movie/series record plus download queue) whenever a webhook or poll arrives; the event triggers a refresh, it does not itself set the state
-- A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created *or adopted* — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
-- A **Media Source Request** persists after every claiming **Content Request** is cancelled (it is shared, and the upstream resource still exists)
-- When a **Media Source**'s upstream system reports its movie or series deleted, WatchClub deletes the **Media Source Request** rather than keeping a terminal state; the **Content Request** survives and, with no progressing **Media Source Request**, reads as not found until cancelled and re-requested
-- **Cancel Content Request** removes the **Content Request** and does not delete any **Media**, any **Library Item**, any **Media Source Request**, or any resource in any **Media Source**
-- A **Media Source Request** in the Needs Attention state is recovered passively: the **Instance Administrator** resolves the problem on the **Media Source**'s upstream system, and the resulting webhook advances the **Media Source Request**. WatchClub has no manual retry action
-- **Remove from Library** does not affect the adding **Member**’s **Content Request** or any other **User**’s **Content Request**
-- A **User**’s **Content Request** persists independently of their **Memberships** and of the lifecycle of any **Library Item**
-- A **User**’s **Content Requests** are visible only to that **User** and to the **Instance Administrator**; other **Users**, including co-**Members** of any **Club**, cannot see them
-- The **Instance Administrator** can inspect all **Content Requests** in WatchClub
-- **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Library** may create missing **Content**
-- A **Content** can exist in WatchClub referenced only by **Content Requests**, with no **Library Items** and no **Media**
-- **Request Content** currently creates a **Content Request** only for **Movies** and **TV Shows**; **Book** requests are not yet supported (no request-capable **Book** **Media Source** exists — that is the planned `chaptarr` — and the action rejects **Book** content). The **Book**-to-**Ebook**+**Audiobook** fan-out describes the intended design for when `chaptarr` lands, not current behaviour
-- Deleting a **User** deletes their **Content Requests**; any **Media** acquired through those requests remains in WatchClub
-- Only a **Club Admin** can **Delete Library**
-- **Delete Library** removes the **Library** and its **Library Items**, but not their **Content**
-- Only a **Club Admin** can **Delete Club**
-- **Delete Club** removes the **Club**’s **Memberships**, **Libraries**, and **Library Items**, but not **Content** or **Media**
-- **Delete Club** drops the **Club** from every **Invitation** that grants it; those **Invitations** survive, even if left granting zero **Clubs**
-- Adding or removing a request-capable **Media Source** does not create or remove **Content Requests**, and does not backfill **Media Source Requests** for existing **Content Requests**
-- **Add to Library** cannot be repeated for **Content** that is already in the **Library**
+- If exactly one **Video** is available for **Play**, playback can start without a selection step
+- When multiple **Videos** are available for **Play**, the **User** chooses one before the **Player** opens, using visible **Video Track**, **Audio Track**, and **Text Track** details
+- For a **TV Show**, **Play** is offered on individual **TV Show Episodes**, not as a single show-level choice
+- When multiple **Media** files are available for **Play** or **Download**, the **User** chooses one
 
 ### Media
 
-- **Media** is instance-wide and belongs to no **Library**
+- **Media** is instance-wide
 - **Media** has exactly one normalized local filesystem path, and that path is globally unique
 - **Media** has exactly one **Media Type**
 - **Media** has exactly one concrete **Video**, **Ebook**, or **Audiobook**
@@ -439,13 +451,12 @@ _Avoid_: Group, aggregate, card, item
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
-- **Unmatched Media** cannot reach a **Library Item** and is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
+- **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
 
 ### Media Sources & Media Imports
 
 - Only the **Instance Administrator** can manage **Media Sources**
-- A **Media Source** is not scoped to a **Library** or **Club**
 - A **Media Source** is used only to import **Media** and, when its **Media Source Type** supports it, to accept **Media Source Requests**; it is not used to play or download **Media** to users
 - A **Media Source**'s name is calculated from its configuration
 - A **Media Source**'s **Media Type** and **Media Source Type** cannot be edited after creation
@@ -488,7 +499,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** creates **Media** only for files with a local filesystem path accessible to WatchClub
 - A **Media Import** inspects local files before creating **Videos**, **Ebooks**, or **Audiobooks**
 - **Playback Sessions** use the stored technical details of **Media**
-- **Play Library Item** does not refresh technical details before opening the **Player**
+- **Play** does not refresh technical details before opening the **Player**
 - A filesystem import discovers sidecar **Text Tracks** for **Videos**, without creating separate **Media** for those sidecar files
 - A **Media Import** may create missing **Content** when a **Metadata Provider** confidently identifies it
 - Content created by a **Media Import** includes all available **Content Localizations**
@@ -497,7 +508,6 @@ _Avoid_: Group, aggregate, card, item
 - When a **Media Import** needs a missing **TV Show Episode** for an existing **TV Show**, it refreshes the **TV Show** as a whole
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
-- A **Media Import** does not create **Library Items**
 - When **Refresh Metadata** is off, an existing **Media** found again by a **Media Import** is skipped
 - When **Refresh Metadata** is on, a **Media Import** rematches existing **Media** and recreates its concrete media details
 - When **Refresh Metadata** is off, a **Media Import** skips existing **Media** even when the same path would now match different **Content** or **Media Type**
@@ -519,54 +529,53 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
+- A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while its first **TV Show Episode** (season 1, episode 1) has **Media**
+- A **User** gets missing **Content** into the **Library** with **Request Content**
+- Every **User** sees the whole **Library** in **Browse**
 
 ### Activity Feed
 
-- A **Feed Entry** holds the **Feed Events** of one **User** doing one thing: watching **Content**, adding **Content** to the **Libraries** of one **Club**, or joining **Clubs**
+- A **Feed Entry** holds the **Feed Events** of one **User** doing the same thing
 - A **Feed Event** joins the latest **Feed Entry** of the same **User** doing the same thing when that entry's first **Feed Event** is less than 12 hours old; otherwise it starts a new **Feed Entry**
-- Creating a **Club** or a **Library** is always its own **Feed Entry**
 - A **Feed Entry** is placed at the time of its latest **Feed Event**
-- When a **User**'s **Watch Progress** on a **Content** changes, their watching **Feed Event** moves to that time, and to a new **Feed Entry** if the old one's 12 hours are over. While they play, this happens at most once a minute
-- A **User** sees only the **Feed Events** visible to them in a **Feed Entry**, so two **Users** can see the same **Feed Entry** with different **Content**
-
-### Cross-domain
-
-- A **User** can have memberships in many **Clubs**
-- A **Club** is created by the **Instance Administrator**, who becomes its **Club Admin**
-- The **Club Admin** cannot be replaced
-- An **Invitation** is the only way a new person joins **Clubs**; once a **User** exists, the **Instance Administrator** adds them to a **Club** directly rather than through an **Invitation**
+- When a **User**'s **Watch Progress** on a **Content** changes, their watching **Feed Event** for it moves to that time, and to a new **Feed Entry** if the old one's 12 hours are over. While they play, this happens at most once a minute
+- Every **User** sees the watching and requesting **Feed Events** of every **User**, their own included
+- A **Feed Event** for sharing a **Playlist** shows only to the **Users** who can see that **Playlist**
+- A **User** cannot hide what they watch from the **Activity Feed**
 
 ## Example dialogue
 
-> **Dev:** "Does adding a movie to a **Library** mean the club recommends it?"
-> **Domain expert:** "No — **Add to Library** creates a **Library Item** so the **Content** is visible to the **Club**."
+> **Dev:** "Does adding a movie to a **Playlist** recommend it to anyone?"
+> **Domain expert:** "No. A **Playlist** stays private until its owner shares it. To send a movie to people, you **Recommend Content**, which starts a **Conversation** with them."
 > **Dev:** "Where do playable files come from?"
-> **Domain expert:** "An **Instance Administrator** defines a **Media Source**, and each **Media Import** discovers instance-wide **Media** without adding anything to club **Libraries**."
+> **Domain expert:** "An **Instance Administrator** defines a **Media Source**, and each **Media Import** discovers instance-wide **Media**. Its **Content** joins the **Library**, which every **User** sees in **Browse**."
 
 ## Flagged ambiguities
 
-- "Admin" was used ambiguously; resolved: use **Instance Administrator** for the instance-level user and **Club Admin** for the privileged club membership assigned at club creation.
+- "Admin" is ambiguous; resolved: use **Instance Administrator** for the user who administers the instance.
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
-- "Club Library" is not canonical; resolved: the canonical term is **Library**.
+- "Share" means giving access to a **Playlist**; resolved: sending **Content** to people is **Recommend Content**.
+- **Download** is a **User** saving a file to their device; resolved: the Downloading **Content Request Status** is a **Media Source** fetching the file to the server.
+- **Browse** and the **Media Browser** are different interfaces: **Browse** shows **Content** to every **User**, the **Media Browser** shows **Media** files to the **Instance Administrator**.
 - "Media Version" is not canonical; resolved: use **Media** for the local file and **Video**, **Ebook**, or **Audiobook** for concrete media.
 - **Media Type** and **Content Type** are distinct but coupled; resolved: **Media Type** classifies **Media** with four values (Movie, TV Show Episode, Ebook, Audiobook) and implies the expected **Content Type** for the attached **Content**.
 - "Scan Library" and "sync" are not canonical; resolved: use **Media Source** for the configuration and **Media Import** for the one-way operation.
-- "Media Server Library" is not canonical; resolved: use **Media Source** for origins of media availability and **Library** for club-owned collections.
+- "Media Server Library" is not canonical; resolved: use **Media Source** for where **Media** comes from, and **Library** for all the **Content** that has **Media**.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
 - "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
-- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** and its **Content Request Status Group** *are* canonical, but as *derived read-model values* computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
-- The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is shared by every **Content Request** for that **Content**; it is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
-- "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Add to Library** — adding **Content** to a **Library** does not create a **Content Request**.
+- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** and its **Content Request Status Group** _are_ canonical, but as _derived read-model values_ computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
+- The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
+- "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Playlists**: **Add to Playlist** does not create a **Content Request**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
 - Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type. Because no request-capable **Book** source exists, **Request Content** today serves only **Movies** and **TV Shows**; the **Book** fan-out is intended design, not current behaviour.
-- "Play Media" and "Play Video" are not canonical member actions; resolved: use **Play Library Item** for member-facing playback and reserve **Media** and **Video** for what is selected to play.
+- "Play Media" and "Play Video" are not canonical user actions; resolved: use **Play** for the user action and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
 - **Playback Session** is distinct from **Watch Progress**; resolved: a Playback Session records one Player visit, while Watch Progress records how far a **User** has got through a **Movie** or **TV Show Episode** overall and whether they finished it.
-- **Playback Session** is not a club-scoped or library-scoped concept; resolved: it is scoped to the **User** for one **Player** visit, and the selected **Media** lives on each **Playback** inside it.
+- **Playback Session** is scoped to the **User** for one **Player** visit; the selected **Media** lives on each **Playback** inside it.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.

@@ -62,3 +62,7 @@ config :phoenix_live_view,
   debug_attributes: true,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
+
+# No LiveDebugger button floating over the app's pages. The debugger stays at its own URL, on
+# WC_LIVE_DEBUGGER_PORT.
+config :live_debugger, debug_button: false
