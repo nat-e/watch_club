@@ -11,41 +11,6 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Create club"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to %{name}!"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to Watch Club!"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Create a club and invite your friends to get started"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "In the mean time, you can still browse and watch some content on your own."
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "It's more fun with friends, contact the administrator so they can add you to some Clubs."
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Your instance is successfully installed!"
-msgstr ""
-
 #: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} added %{content} to %{library}"
@@ -59,51 +24,4 @@ msgstr ""
 #: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} watched %{content}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} more"
-msgid_plural "%{count} more"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} created the club %{club}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} created the library %{library} in %{club}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{watching}, and watched %{watched}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} joined %{clubs}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Activity"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} added %{contents} to %{club}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{contents}"
-msgstr ""
-
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} watched %{contents}"
 msgstr ""

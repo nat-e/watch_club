@@ -114,7 +114,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
-      live "/", HomePage
+      live "/", BrowsePage
 
       for name <- @prototype_names do
         live "/dev/prototypes/#{name}", Module.concat(Prototypes, Macro.camelize(name))

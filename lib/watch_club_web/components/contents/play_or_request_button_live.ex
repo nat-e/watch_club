@@ -44,6 +44,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     values: ~w(sm md lg),
     default: "md"
 
+  attr :variant, :string,
+    values: ~w(button round),
+    default: "button",
+    doc: "round: Play with only its icon, over a poster"
+
   @in_progress_statuses [:searching, :downloading, :downloaded]
 
   @impl true
@@ -63,6 +68,25 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       >
         <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
         {request_label(@request)}
+      </.button>
+    </div>
+    """
+  end
+
+  def render(%{variant: "round", has_media?: true} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.button
+        id={"#{@id}-play-button"}
+        variant="primary"
+        size="icon-lg"
+        href={@next_medias_to_play != [] && Url.player_link(@next_medias_to_play)}
+        disabled={@next_medias_to_play == []}
+        aria-label={"#{@play_label} #{@title}"}
+        title={@play_label}
+        class="rounded-full! shadow-overlay"
+      >
+        <Lucideicons.play />
       </.button>
     </div>
     """
@@ -133,6 +157,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         has_media?: (content && content.has_media?) || false,
         next_medias_to_play: (content && content.actor_next_medias_to_play) || [],
         play_label: play_label(assigns.content_identity.type, content),
+        title: content && content.implementation.best_localization.title,
         request: (content && content.actor_request) || nil
       )
     end)

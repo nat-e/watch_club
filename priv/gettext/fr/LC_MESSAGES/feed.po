@@ -12,48 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Create club"
-msgstr "Créer un club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to %{name}!"
-msgstr "Bienvenue sur %{name} !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to Watch Club!"
-msgstr "Bienvenue sur Watch Club !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Create a club and invite your friends to get started"
-msgstr "Créez un club et invitez vos amis pour commencer"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "In the mean time, you can still browse and watch some content on your own."
-msgstr "En attendant, vous pouvez parcourir et regarder des contenus de votre côté."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "It's more fun with friends, contact the administrator so they can add you to some Clubs."
-msgstr "C'est plus sympa entre amis : contactez l'administrateur pour qu'il vous ajoute à des clubs."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Your instance is successfully installed!"
-msgstr "Votre instance est bien installée !"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} added %{content} to %{library}"
@@ -70,59 +28,3 @@ msgstr "%{user} regarde %{content}"
 #, elixir-autogen, elixir-format
 msgid "%{user} watched %{content}"
 msgstr "%{user} a regardé %{content}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} more"
-msgid_plural "%{count} more"
-msgstr[0] "%{count} autre"
-msgstr[1] "%{count} autres"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} created the club %{club}"
-msgstr "%{user} a créé le club %{club}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} created the library %{library} in %{club}"
-msgstr "%{user} a créé la bibliothèque %{library} dans %{club}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{watching}, and watched %{watched}"
-msgstr "%{user} regarde %{watching} et a regardé %{watched}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} joined %{clubs}"
-msgstr "%{user} a rejoint %{clubs}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "Activity"
-msgstr "Activité"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} added %{contents} to %{club}"
-msgstr "%{user} a ajouté %{contents} à %{club}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{contents}"
-msgstr "%{user} regarde %{contents}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} watched %{contents}"
-msgstr "%{user} a regardé %{contents}"
