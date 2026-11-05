@@ -12,7 +12,7 @@ Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security 
 
 ## Checks
 
-`mix ci` runs every check that CI runs: compilation without warnings, formatting, Credo, security advisories, Gettext and Ash codegen being up to date, Biome, and the tests. Run it before opening a pull request.
+`mix ci` runs every check that CI runs: compilation without warnings, formatting, unused dependencies, Credo, Gettext and Ash codegen being up to date, Biome, and the tests. Run it before opening a pull request.
 
 CI also builds the Docker image, starts it with `docker-compose.yml` and checks that the app responds.
 
