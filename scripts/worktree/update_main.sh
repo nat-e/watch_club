@@ -10,5 +10,5 @@ git push
 
 mise install
 mise exec -- mix deps.get
-mise exec -- npm install --prefix assets
+mise exec -- mix assets.setup
 mise exec -- mix ecto.migrate
