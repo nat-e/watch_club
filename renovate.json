@@ -43,6 +43,13 @@
 			"groupSlug": "erlang-elixir"
 		},
 		{
+			"description": "Each ash_authentication_phoenix major needs the matching ash_authentication major, so their majors move together",
+			"matchDepNames": ["ash_authentication", "ash_authentication_phoenix"],
+			"matchUpdateTypes": ["major"],
+			"groupName": "ash_authentication",
+			"groupSlug": "ash-authentication"
+		},
+		{
 			"description": "Stay on the Elixir build for our OTP major. Update -otp-29 with the erlang constraint above",
 			"matchManagers": ["mise"],
 			"matchDepNames": ["elixir"],

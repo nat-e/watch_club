@@ -68,7 +68,7 @@ Images are published to `ghcr.io/nat-e/watch_club` with these tags:
 
 - Patch updates and GitHub Actions updates: one PR each, which Renovate merges itself once CI passes.
 - Minor updates, Erlang and Elixir, and Biome: one PR each, merged by hand. A new Biome version may need `biome migrate --write`.
-- Major updates: one PR per dependency, merged by hand.
+- Major updates: one PR per dependency, merged by hand. `ash_authentication` and `ash_authentication_phoenix` share one, because each needs the matching major of the other.
 - `mix.lock` and `package-lock.json` maintenance: one PR, merged by hand.
 
 Updates to production mix dependencies and to the `Dockerfile` are titled `fix(deps): …`, so they appear in the changelog. The "Dependency Dashboard" issue lists pending updates.
