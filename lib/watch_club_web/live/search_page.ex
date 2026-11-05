@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.SearchPage do
   @moduledoc """
-  Every result of a search. On phones it's the Search tab, with its own search field; on desktop
-  the app bar's field opens it.
+  Every result of a search. Browse's search field opens it, and stays in the bar to search again.
+  `library=1` keeps only the Library.
   """
   use WatchClubWeb, :live_view
 
@@ -24,64 +24,11 @@ defmodule WatchClubWeb.SearchPage do
       title={dgettext("search", "Search")}
       search
     >
-      <:hero>
-        <.form
-          id="search-page-form"
-          for={to_form(%{})}
-          layout="none"
-          role="search"
-          autocomplete="off"
-          phx-change="search"
-          phx-submit="search"
-          class="sticky top-(--wc-app-bar-height) z-10 flex flex-col gap-related border-b border-border-subtle bg-canvas px-page py-related md:hidden"
-        >
-          <label for="search-page-input" class="sr-only">
-            {dgettext("search", "Search movies and TV shows")}
-          </label>
-          <div class="relative">
-            <Lucideicons.search class="pointer-events-none absolute top-1/2 left-group size-icon -translate-y-1/2 text-text-subtle" />
-            <.input
-              id="search-page-input"
-              type="search"
-              name="query"
-              value={@query}
-              phx-debounce="300"
-              placeholder={dgettext("search", "Search movies and TV shows")}
-              enterkeyhint="search"
-              data-search-field
-              class="h-control-lg! rounded-full! pr-12! pl-12! text-base! [&::-webkit-search-cancel-button]:hidden"
-            />
-            <script :type={Phoenix.LiveView.ColocatedHook} name=".ClearSearch">
-              export default {
-                mounted() {
-                  // The focused field keeps its value through patches, so it's cleared here
-                  this.el.addEventListener("click", () => {
-                    const input = document.getElementById(this.el.dataset.input)
-                    input.value = ""
-                    input.dispatchEvent(new Event("input", {bubbles: true}))
-                    input.focus()
-                  })
-                }
-              }
-            </script>
-            <.button
-              :if={@query != ""}
-              id="search-page-clear-button"
-              variant="ghost"
-              size="icon"
-              class="absolute top-1/2 right-1 -translate-y-1/2 rounded-full! pointer-coarse:size-touch-target!"
-              aria-label={dgettext("search", "Clear search")}
-              phx-hook=".ClearSearch"
-              data-input="search-page-input"
-            >
-              <Lucideicons.x />
-            </.button>
-          </div>
-          <.search_scopes id="search-page-scopes-phone" />
-        </.form>
-      </:hero>
-
-      <.search_scopes id="search-page-scopes" class="max-md:hidden" />
+      <.search_scopes
+        id="search-page-scopes"
+        in_library={@in_library?}
+        on_toggle="toggle_in_library"
+      />
       <.search_status
         id="search-page-status"
         status={@status}
@@ -120,13 +67,14 @@ defmodule WatchClubWeb.SearchPage do
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(query: String.trim(params["query"] || ""))
+     |> assign(query: String.trim(params["query"] || ""), in_library?: params["library"] == "1")
      |> search()}
   end
 
   @impl true
-  def handle_event("search", %{"query" => query}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/search?#{%{query: query}}", replace: true)}
+  def handle_event("toggle_in_library", _params, socket) do
+    %{query: query, in_library?: in_library?} = socket.assigns
+    {:noreply, push_patch(socket, to: Url.search_link(query, !in_library?), replace: true)}
   end
 
   def handle_event("retry", _params, socket) do
@@ -139,9 +87,11 @@ defmodule WatchClubWeb.SearchPage do
       do: {:noreply, socket}
 
   def handle_event("load_more", _params, socket) do
-    %{query: query, page: page, current_user: user} = socket.assigns
+    %{query: query, in_library?: in_library?, page: page, current_user: user} = socket.assigns
 
-    case Contents.search_content(%{query: query, page: page + 1}, actor: user) do
+    case Contents.search_content(%{query: query, in_library?: in_library?, page: page + 1},
+           actor: user
+         ) do
       {:ok, %SearchResultsPage{} = results_page} ->
         {:noreply,
          socket
@@ -160,7 +110,7 @@ defmodule WatchClubWeb.SearchPage do
       |> assign(page: 0, total_pages: 0, result_count: 0)
       |> stream(:search_results, [], reset: true)
 
-    %{query: query, current_user: user} = socket.assigns
+    %{query: query, in_library?: in_library?, current_user: user} = socket.assigns
 
     case query do
       "" ->
@@ -169,7 +119,9 @@ defmodule WatchClubWeb.SearchPage do
       query ->
         socket
         |> assign(:status, :loading)
-        |> start_async(:search, fn -> Contents.search_content!(%{query: query}, actor: user) end)
+        |> start_async(:search, fn ->
+          Contents.search_content!(%{query: query, in_library?: in_library?}, actor: user)
+        end)
     end
   end
 

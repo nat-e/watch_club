@@ -27,13 +27,7 @@ msgstr ""
 msgid "We didn't find any content for %{query}"
 msgstr ""
 
-#: lib/watch_club_web/live/search_page.ex
-#, elixir-autogen, elixir-format
-msgid "Clear search"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/search_field_live.ex
-#: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search movies and TV shows"
 msgstr ""
@@ -81,6 +75,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: lib/watch_club_web/components/search/search_result_row.ex
+#: lib/watch_club_web/components/search/search_scopes.ex
 #, elixir-autogen, elixir-format
 msgid "In the library"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "Close search"
 msgstr ""

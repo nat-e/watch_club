@@ -106,6 +106,12 @@ defmodule WatchClubWeb.Helpers.Url do
 
   def list_link(list_id), do: ~p"/lists/#{list_id}"
 
+  @doc """
+  The search page for `query`, in the Library only when `in_library?`.
+  """
+  def search_link(query, true), do: ~p"/search?#{[query: query, library: "1"]}"
+  def search_link(query, false), do: ~p"/search?#{[query: query]}"
+
   def content_details_link(%Content{type: type, external_id: id}),
     do: content_details_link(type, id, nil)
 

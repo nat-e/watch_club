@@ -64,7 +64,7 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
       phx-hook=".AppBar"
       phx-mounted={JS.ignore_attributes(["data-scrolled", "data-past-title"])}
       class={[
-        "group/bar @container/bar sticky top-0 z-20 flex h-(--wc-app-bar-height) items-center border-b pr-page transition-colors duration-200 md:pl-page",
+        "group/bar @container/bar sticky top-0 z-20 flex h-(--wc-app-bar-height) items-center border-b pr-page transition-colors duration-200 max-md:has-[[data-open]]:z-50 md:pl-page",
         @back && "gap-tight pl-tight md:gap-group",
         !@back && "gap-group pl-page",
         @content_page? &&

@@ -2,16 +2,18 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
   @moduledoc """
   What a search looks in: one scope per Metadata Provider, because their results can't share one
   list. Movies and TV Shows are the only scope today, and Books show as coming soon, so they're
-  labels rather than choices.
+  labels rather than choices. Then the In the library filter, which keeps only the Library.
   """
   use WatchClubWeb, :component
 
   attr :id, :string, required: true
+  attr :in_library, :boolean, required: true, doc: "whether the In the library filter is on"
+  attr :on_toggle, :any, required: true, doc: "the event or JS commands of the filter"
   attr :class, :any, default: nil
 
   def search_scopes(assigns) do
     ~H"""
-    <div id={@id} class={["flex items-center gap-related", @class]}>
+    <div id={@id} class={["flex flex-wrap items-center gap-related", @class]}>
       <.badge id={"#{@id}-movies-and-shows"} variant="accent" size="lg">
         <:icon class="[&_svg]:size-icon-sm"><Lucideicons.clapperboard /></:icon>
         {SearchContentType.translated_label(:movies_and_shows)}
@@ -21,6 +23,17 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
         {ContentType.translated_plural_label(:book)}
         <span class="font-normal">{dgettext("search", "soon")}</span>
       </.badge>
+      <button
+        id={"#{@id}-in-library"}
+        type="button"
+        aria-pressed={to_string(@in_library)}
+        data-on={@in_library}
+        phx-click={@on_toggle}
+        class="ml-auto inline-flex h-control-sm shrink-0 items-center gap-tight rounded-full border border-border-control px-group text-sm font-semibold whitespace-nowrap text-text-muted transition-colors not-data-on:hover:bg-surface-hover not-data-on:hover:text-text data-on:border-primary-border data-on:bg-primary-bg data-on:text-primary [&_svg]:size-icon-sm [&_svg]:shrink-0"
+      >
+        <Lucideicons.library />
+        {dgettext("search", "In the library")}
+      </button>
     </div>
     """
   end

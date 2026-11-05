@@ -1,8 +1,13 @@
 defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
   @moduledoc """
   The search field of the app bar. While you type, a drop-down lists the first results; Enter
-  opens the search page with every result. Up and Down move through the results. On the search
-  page, the field shows the page's query.
+  opens the search page with every result. Up and Down move through the results. The In the
+  library filter keeps only the Library. On the search page, the field shows the page's query and
+  filter.
+
+  On phones, the field is a filled pill, and the drop-down fills the screen, where the field's
+  search icon becomes a back arrow: only that arrow, Escape or picking a result closes it, so
+  hiding the keyboard doesn't.
   """
   use WatchClubWeb, :live_component
 
@@ -25,7 +30,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
     {:ok,
      socket
      |> assign(id: assigns.id, current_user: assigns.current_user)
-     |> assign_new(:query, fn -> search_page_query(assigns.current_url) end)}
+     |> assign_new(:query, fn -> search_page_query(assigns.current_url) end)
+     |> assign_new(:in_library?, fn -> search_page_in_library?(assigns.current_url) end)}
   end
 
   @impl true
@@ -39,12 +45,22 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
             this.panel = this.el.querySelector("[data-results]")
             this.active = null
             this.options = () => [...this.el.querySelectorAll("[role=option]")]
-            // Opened here rather than with phx-focus, which the input's phx-debounce would delay
+            this.phone = () => window.matchMedia("(width < 48rem)").matches
+            // Opened here rather than with phx-focus, which the input's phx-debounce would delay.
+            // `data-open` makes it full screen on phones, closed by the back arrow (`data-cancel`).
             this.setOpen = (open) => {
               open ? this.js().show(this.panel) : this.js().hide(this.panel)
               this.js().setAttribute(this.input, "aria-expanded", open.toString())
+              open ? this.js().setAttribute(this.el, "data-open", "") : this.js().removeAttribute(this.el, "data-open")
+              document.body.style.overflow = open && this.phone() ? "hidden" : ""
               if (!open) this.select(null)
             }
+            this.el.querySelector("[data-cancel]").addEventListener("click", () => {
+              this.input.value = ""
+              this.input.dispatchEvent(new Event("input", {bubbles: true}))
+              this.setOpen(false)
+              this.input.blur()
+            })
             this.select = (option) => {
               this.options().forEach(o => o.removeAttribute("aria-selected"))
               this.active = option ? option.id : null
@@ -67,8 +83,13 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               this.select(null)
               this.setOpen(true)
             })
+            // A click on the In the library filter, which some browsers don't focus, keeps the
+            // drop-down open
+            this.el.addEventListener("pointerdown", () => { this.pointerInside = true })
+            document.addEventListener("pointerup", this.onPointerUp = () => { this.pointerInside = false })
             this.el.addEventListener("focusout", (e) => {
-              if (!this.el.contains(e.relatedTarget)) this.setOpen(false)
+              if (this.phone()) return
+              if (!this.pointerInside && !this.el.contains(e.relatedTarget)) this.setOpen(false)
             })
             this.el.addEventListener("click", (e) => {
               if (e.target.closest("a[role=option]")) this.setOpen(false)
@@ -96,6 +117,10 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           updated() {
             // A patch drops the attributes that only this hook sets
             this.select(this.options().find(o => o.id === this.active))
+          },
+          destroyed() {
+            document.removeEventListener("pointerup", this.onPointerUp)
+            document.body.style.overflow = ""
           }
         }
       </script>
@@ -110,39 +135,58 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         phx-target={@myself}
         phx-change="search"
         phx-submit="open_search_page"
-        class="relative"
+        class="group/combo relative max-md:data-open:fixed max-md:data-open:inset-0 max-md:data-open:flex max-md:data-open:flex-col max-md:data-open:bg-canvas"
       >
-        <label for={"#{@id}-input"} class="sr-only">
-          {dgettext("search", "Search movies and TV shows")}
-        </label>
-        <Lucideicons.search class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle" />
-        <%!-- While the results are open, the field grows to their width on desktop --%>
-        <.input
-          id={"#{@id}-input"}
-          name="query"
-          value={@query}
-          phx-debounce="300"
-          placeholder={dgettext("search", "Search")}
-          role="combobox"
-          aria-expanded="false"
-          aria-controls={"#{@id}-listbox"}
-          aria-autocomplete="list"
-          data-search-field
-          class="peer w-56! pr-10! pl-9! transition-[width,border-color,box-shadow]! duration-200 aria-expanded:w-72! @3xl/bar:w-72! @3xl/bar:aria-expanded:w-[min(32rem,calc(100cqw-2rem))]!"
-        />
-        <.kbd class="absolute top-1/2 right-2.5 -translate-y-1/2 peer-focus:hidden pointer-coarse:hidden">
-          /
-        </.kbd>
+        <div class="flex items-center gap-related max-md:group-data-open/combo:h-(--wc-app-bar-height) max-md:group-data-open/combo:shrink-0 max-md:group-data-open/combo:px-page">
+          <div class="relative max-md:min-w-0 max-md:flex-1">
+            <label for={"#{@id}-input"} class="sr-only">
+              {dgettext("search", "Search movies and TV shows")}
+            </label>
+            <Lucideicons.search class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle max-md:group-data-open/combo:hidden" />
+            <button
+              id={"#{@id}-back"}
+              type="button"
+              data-cancel
+              aria-label={dgettext("search", "Close search")}
+              class="absolute top-1/2 left-1 z-10 hidden size-8 -translate-y-1/2 place-items-center rounded-full text-text-muted transition-colors hover:bg-surface-hover hover:text-text max-md:group-data-open/combo:grid"
+            >
+              <Lucideicons.arrow_left class="size-icon-sm" />
+            </button>
+            <%!-- While the results are open, the field grows to their width on desktop. Phones
+            give it the room the page's name leaves, as a filled pill --%>
+            <.input
+              id={"#{@id}-input"}
+              name="query"
+              value={@query}
+              phx-debounce="300"
+              placeholder={dgettext("search", "Search")}
+              enterkeyhint="search"
+              role="combobox"
+              aria-expanded="false"
+              aria-controls={"#{@id}-listbox"}
+              aria-autocomplete="list"
+              data-search-field
+              class="peer w-56! pr-10! pl-9! transition-[width,border-color,box-shadow]! duration-200 aria-expanded:w-72! max-md:w-full! max-md:rounded-full! max-md:border-transparent! max-md:bg-surface-raised! max-md:focus-visible:ring-0! max-md:aria-expanded:w-full! @3xl/bar:w-72! @3xl/bar:aria-expanded:w-[min(32rem,calc(100cqw-2rem))]!"
+            />
+            <.kbd class="absolute top-1/2 right-2.5 -translate-y-1/2 peer-focus:hidden pointer-coarse:hidden">
+              /
+            </.kbd>
+          </div>
+        </div>
 
         <div
           id={"#{@id}-panel"}
           data-results
-          class="absolute top-full right-0 z-40 mt-related hidden w-[min(32rem,calc(100cqw-2rem))] overflow-hidden rounded-card border border-border bg-surface-overlay shadow-overlay"
+          class="absolute top-full right-0 z-40 mt-related hidden w-[min(32rem,calc(100cqw-2rem))] overflow-hidden rounded-card border border-border bg-surface-overlay shadow-overlay max-md:static max-md:mt-0 max-md:min-h-0 max-md:w-full max-md:flex-1 max-md:overflow-y-auto max-md:rounded-none max-md:border-0 max-md:bg-canvas max-md:shadow-none"
         >
-          <div class="border-b border-border-subtle p-related">
-            <.search_scopes id={"#{@id}-scopes"} />
+          <div class="border-b border-border-subtle p-related max-md:px-page">
+            <.search_scopes
+              id={"#{@id}-scopes"}
+              in_library={@in_library?}
+              on_toggle={JS.push("toggle_in_library", target: @myself)}
+            />
           </div>
-          <div class="max-h-[min(32rem,calc(100svh-10rem))] overflow-y-auto">
+          <div class="max-h-[min(32rem,calc(100svh-10rem))] overflow-y-auto max-md:max-h-none max-md:overflow-visible">
             <.search_status
               id={"#{@id}-status"}
               status={@status}
@@ -169,7 +213,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
                 type="submit"
                 role="option"
                 tabindex="-1"
-                class="sticky bottom-0 flex min-h-touch-target items-center gap-related rounded-control bg-surface-overlay px-related text-left text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text aria-selected:bg-surface-hover aria-selected:text-text"
+                class="sticky bottom-0 flex min-h-touch-target items-center gap-related rounded-control bg-surface-overlay px-related text-left text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text aria-selected:bg-surface-hover aria-selected:text-text max-md:bg-canvas"
               >
                 <span class="flex-1">
                   {raw(
@@ -197,15 +241,22 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
     {:noreply, search(socket)}
   end
 
+  def handle_event("toggle_in_library", _params, socket) do
+    {:noreply, socket |> update(:in_library?, &(!&1)) |> search()}
+  end
+
   def handle_event("open_search_page", %{"query" => query}, socket) do
     case String.trim(query) do
-      "" -> {:noreply, socket}
-      query -> {:noreply, push_navigate(socket, to: ~p"/search?#{%{query: query}}")}
+      "" ->
+        {:noreply, socket}
+
+      query ->
+        {:noreply, push_navigate(socket, to: Url.search_link(query, socket.assigns.in_library?))}
     end
   end
 
   defp search(socket) do
-    %{query: query, current_user: user} = socket.assigns
+    %{query: query, in_library?: in_library?, current_user: user} = socket.assigns
 
     case String.trim(query) do
       "" ->
@@ -215,7 +266,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         socket
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
-          Contents.search_content!(%{query: query}, actor: user)
+          Contents.search_content!(%{query: query, in_library?: in_library?}, actor: user)
         end)
     end
   end
@@ -233,4 +284,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
 
   defp search_page_query(%Url{path: "/search", query: %{"query" => query}}), do: query
   defp search_page_query(_current_url), do: ""
+
+  defp search_page_in_library?(%Url{path: "/search", query: %{"library" => "1"}}), do: true
+  defp search_page_in_library?(_current_url), do: false
 end
