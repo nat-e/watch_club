@@ -50,7 +50,7 @@ Watch Club source variables may use a project prefix internally, e.g. `--wc-colo
 | `color.surface-overlay` | Floating surface for dialogs, popovers, dropdowns |
 | `color.surface-hover` | Shared hover state for neutral interactive surfaces |
 | `color.surface-active` | Shared pressed state for neutral interactive surfaces |
-| `color.surface-selected` | Selected neutral surface, such as active nav/filter/card |
+| `color.surface-selected` | Selected neutral surface, such as active nav, the current item of a segmented control, or a selected card |
 
 Higher layers are lighter: `canvas` < `surface` < `surface-raised` = `surface-overlay`. `surface-inset` sits at canvas level, below the surface around it. Hover, pressed and selected each step lighter than every surface they appear on, in that order.
 
@@ -106,6 +106,18 @@ Fill usage rules:
 - Only primary actions get a strong fill, usually one per screen, plus `danger` inside a confirmation dialog. Accent buttons and badges are tinted or neutral, never strong fills, so they don't compete with it.
 - Fill-related focus or invalid rings use `ring-<fill>-ring`.
 - Do not derive fill states with opacity utilities such as `bg-danger/10` or `ring-danger/30`.
+
+### Color roles
+
+A starting point for choosing between pink, purple and neutral, not a strict rule: when a case doesn't fit, pick what reads best and use it the same way on every page. Each color has one job, and contrast, not hue, sets how much attention something gets: a strong fill is the main action, a tint is quiet.
+
+| Color | Job | Examples |
+| --- | --- | --- |
+| `primary` (pink) | What people act on or turn on | The strong fill for the main action, such as Play. The tint for selected controls, such as filter chips and search scopes |
+| `accent` (purple) | What the app points out | Unread counts, New badges, the highlight on something that just arrived |
+| Neutral (`surface-selected`) | Where people are | The current page in navigation, the current item of a segmented control |
+
+A selected chip shows its state with its tint alone, without a check mark: its fill sets it apart from the outlined chips around it.
 
 ## Non-color tokens
 
