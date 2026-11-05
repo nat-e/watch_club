@@ -15,12 +15,7 @@ defmodule WatchClub.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       usage_rules: usage_rules(),
       elixirc_options: elixirc_options(Mix.env()),
-      hex: [
-        cooldown: "7d",
-        # assent: only affects Sign in with Apple, which we don't use. The fix
-        # (assent 0.3.2) needs ash_authentication 5.0.
-        ignore_advisories: ["EEF-CVE-2026-117656"]
-      ],
+      hex: [cooldown: "7d"],
       # Without line numbers, moving code doesn't make the .pot files outdated.
       # A threshold of 1.0 turns off fuzzy matching: Gettext shows fuzzy guesses as real
       # translations, so new messages must stay empty until someone translates them.
@@ -142,12 +137,10 @@ defmodule WatchClub.MixProject do
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"],
       # Everything CI checks. Needs Postgres and the tools from mise.toml.
       ci: [
-        # Order matters: hex.audit can't be found once the project is compiled,
-        # and anything that compiles the project again (format, gettext.extract)
-        # after protocols are consolidated logs warnings that fail the next
-        # `compile --warnings-as-errors`. gettext.extract recompiles everything,
-        # so it runs in its own process.
-        "hex.audit",
+        # Order matters: anything that compiles the project again (format,
+        # gettext.extract) after protocols are consolidated logs warnings that
+        # fail the next `compile --warnings-as-errors`. gettext.extract
+        # recompiles everything, so it runs in its own process.
         "compile --warnings-as-errors",
         "format --check-formatted",
         "deps.unlock --check-unused",
