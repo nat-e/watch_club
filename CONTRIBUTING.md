@@ -67,7 +67,8 @@ Images are published to `ghcr.io/nat-e/watch_club` with these tags:
 [Renovate](https://docs.renovatebot.com) (`renovate.json`) opens update PRs on Mondays, only for releases at least 7 days old:
 
 - Patch updates and GitHub Actions updates: one PR each, which Renovate merges itself once CI passes.
-- Minor updates, Erlang and Elixir, and Biome: one PR each, merged by hand. A new Biome version may need `biome migrate --write`.
+- Minor updates and Biome: one PR each, merged by hand. A new Biome version may need `biome migrate --write`.
+- Erlang, Elixir and Debian: one PR, because the `Dockerfile`'s build image only exists for some combinations of the three. Renovate merges it itself only when it holds nothing but patch updates.
 - Major updates: one PR per dependency, merged by hand. `ash_authentication` and `ash_authentication_phoenix` share one, because each needs the matching major of the other.
 - `mix.lock` and `package-lock.json` maintenance: one PR, merged by hand.
 

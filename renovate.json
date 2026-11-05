@@ -37,10 +37,10 @@
 			"groupSlug": "minor"
 		},
 		{
-			"description": "Erlang and Elixir in mise.lock and in the Dockerfile move together",
-			"matchDepNames": ["erlang", "elixir"],
-			"groupName": "erlang and elixir",
-			"groupSlug": "erlang-elixir"
+			"description": "Erlang and Elixir in mise.lock and in the Dockerfile move together. Debian joins them because the Dockerfile's builder image only exists for some Elixir, Erlang and Debian combinations",
+			"matchDepNames": ["erlang", "elixir", "debian"],
+			"groupName": "erlang, elixir and debian",
+			"groupSlug": "erlang-elixir-debian"
 		},
 		{
 			"description": "Each ash_authentication_phoenix major needs the matching ash_authentication major, so their majors move together",
