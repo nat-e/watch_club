@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.Lists.ListsPage do
   @moduledoc """
-  The Playlists tab. Empty until the Playlists page.
+  The Playlists tab's page, empty.
   """
   use WatchClubWeb, :live_view
 

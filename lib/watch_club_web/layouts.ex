@@ -9,9 +9,6 @@ defmodule WatchClubWeb.Layouts do
   import WatchClubWeb.Components.Navigation.Sidebar
   import WatchClubWeb.Components.Navigation.TabBar
 
-  alias WatchClubWeb.Components.Clubs.ClubDialogsLive
-  alias WatchClubWeb.Components.Lists.ListDialogsLive
-
   alias WatchClub.Accounts.User
   alias WatchClub.Instance.InstanceSettings
   alias WatchClubWeb.Helpers.Url
@@ -40,9 +37,7 @@ defmodule WatchClubWeb.Layouts do
     default: "cluster",
     doc: "the space between the page's children, except on a Content page"
 
-  attr :current_user, User,
-    required: true,
-    doc: "the currently logged in user, with their club memberships"
+  attr :current_user, User, required: true, doc: "the currently logged in user"
 
   attr :instance_settings, InstanceSettings,
     required: true,
@@ -98,16 +93,6 @@ defmodule WatchClubWeb.Layouts do
       <.tab_bar current_path={@current_url.path} current_user={@current_user} />
     </div>
 
-    <.live_component
-      id={ClubDialogsLive.dom_id()}
-      module={ClubDialogsLive}
-      current_user={@current_user}
-    />
-    <.live_component
-      id={ListDialogsLive.dom_id()}
-      module={ListDialogsLive}
-      current_user={@current_user}
-    />
     <.flash flash={@flash} />
     """
   end

@@ -349,11 +349,28 @@ defmodule WatchClub.Contents.ContentTest do
 
     test "keeps the Content with a title that contains the query", %{member: member} do
       amelie = generate(movie(original_title: "Le Fabuleux Destin d'Amélie Poulain"))
+      spirited_away = generate(movie(original_title: "千と千尋の神隠し"))
+
+      money_heist =
+        generate(
+          tv_show(original_title: "La casa de papel", num_seasons: 1, episodes_per_season: 1)
+        )
+
+      rename!(MovieLocalization, spirited_away, "Spirited Away")
+      rename!(TvShowLocalization, money_heist, "Money Heist")
       add_video!(amelie.id)
+      add_video!(spirited_away.id)
+      add_episode_video!(money_heist, 1)
       add_video!(generate(movie()).id)
 
-      assert [%Content{id: id}] = get_library!(%{query: "AMELIE"}, actor: member)
-      assert id == amelie.id
+      # Ignoring case and accents
+      assert [%Content{id: amelie_id}] = get_library!(%{query: "AMELIE"}, actor: member)
+      # In localized titles
+      assert [%Content{id: spirited_away_id}] = get_library!(%{query: "spirited"}, actor: member)
+      assert [%Content{id: money_heist_id}] = get_library!(%{query: "heist"}, actor: member)
+
+      assert {amelie_id, spirited_away_id, money_heist_id} ==
+               {amelie.id, spirited_away.id, money_heist.id}
     end
   end
 
@@ -414,6 +431,14 @@ defmodule WatchClub.Contents.ContentTest do
   # create/refresh_metadata actions: create (upsert) the Content from its TMDB identity.
   defp add_video!(movie_id) do
     MediaCatalog.create_or_update_video!(media_movie_input(movie_id), actor: SystemActor.actor())
+  end
+
+  # Gives every localization of the Content the title
+  defp rename!(localization, content, title) do
+    localization
+    |> Ash.read!(authorize?: false)
+    |> Enum.filter(&(Map.get(&1, :movie_id, Map.get(&1, :tv_show_id)) == content.id))
+    |> Enum.each(&Ash.Seed.update!(&1, %{title: title}))
   end
 
   defp add_episode_video!(tv_show, season_number) do

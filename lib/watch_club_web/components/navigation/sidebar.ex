@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar do
       >
         <ul class="flex list-none flex-col gap-px p-0">
           <li :for={section <- Sections.sections()}>
-            <.section_link section={section} current={Sections.current(section, @current_path)} />
+            <.section_link section={section} current={Sections.aria_current(section, @current_path)} />
           </li>
         </ul>
       </nav>

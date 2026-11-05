@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
   def search_scopes(assigns) do
     ~H"""
     <div id={@id} class={["flex flex-wrap items-center gap-related", @class]}>
-      <.badge id={"#{@id}-movies-and-shows"} variant="accent" size="lg">
+      <.badge id={"#{@id}-movies-and-shows"} variant="default" size="lg">
         <:icon class="[&_svg]:size-icon-sm"><Lucideicons.clapperboard /></:icon>
         {SearchContentType.translated_label(:movies_and_shows)}
       </.badge>
@@ -23,17 +23,10 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
         {ContentType.translated_plural_label(:book)}
         <span class="font-normal">{dgettext("search", "soon")}</span>
       </.badge>
-      <button
-        id={"#{@id}-in-library"}
-        type="button"
-        aria-pressed={to_string(@in_library)}
-        data-on={@in_library}
-        phx-click={@on_toggle}
-        class="ml-auto inline-flex h-control-sm shrink-0 items-center gap-tight rounded-full border border-border-control px-group text-sm font-semibold whitespace-nowrap text-text-muted transition-colors not-data-on:hover:bg-surface-hover not-data-on:hover:text-text data-on:border-primary-border data-on:bg-primary-bg data-on:text-primary [&_svg]:size-icon-sm [&_svg]:shrink-0"
-      >
-        <Lucideicons.library />
+      <.filter_chip id={"#{@id}-in-library"} on={@in_library} phx-click={@on_toggle} class="ml-auto">
+        <:icon><Lucideicons.library /></:icon>
         {dgettext("search", "In the library")}
-      </button>
+      </.filter_chip>
     </div>
     """
   end

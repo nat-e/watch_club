@@ -13,11 +13,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "In progress"
-msgstr ""
-
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
 msgid "Movies and TV shows show up here once they're on the server."
 msgstr ""
 
@@ -29,9 +24,4 @@ msgstr ""
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
-msgstr ""
-
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Watched"
 msgstr ""

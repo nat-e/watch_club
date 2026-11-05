@@ -342,3 +342,9 @@ msgstr "Partager avec un autre club"
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr "Vu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{action} %{title}"
+msgstr "%{action} %{title}"

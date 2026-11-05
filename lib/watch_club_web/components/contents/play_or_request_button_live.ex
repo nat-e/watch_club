@@ -47,11 +47,31 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :variant, :string,
     values: ~w(button round),
     default: "button",
-    doc: "round: Play with only its icon, over a poster"
+    doc: "round: only Play, with only its icon, over a poster"
 
   @in_progress_statuses [:searching, :downloading, :downloaded]
 
+  # Only Play, when there's something to play
   @impl true
+  def render(%{variant: "round"} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.button
+        :if={@next_medias_to_play != []}
+        id={"#{@id}-play-button"}
+        variant="primary"
+        size="icon-lg"
+        href={Url.player_link(@next_medias_to_play)}
+        aria-label={dgettext("contents", "%{action} %{title}", action: @play_label, title: @title)}
+        title={@play_label}
+        class="rounded-full! shadow-overlay"
+      >
+        <Lucideicons.play />
+      </.button>
+    </div>
+    """
+  end
+
   def render(%{has_media?: false} = assigns) do
     ~H"""
     <div class={@class}>
@@ -68,25 +88,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       >
         <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
         {request_label(@request)}
-      </.button>
-    </div>
-    """
-  end
-
-  def render(%{variant: "round", has_media?: true} = assigns) do
-    ~H"""
-    <div class={@class}>
-      <.button
-        id={"#{@id}-play-button"}
-        variant="primary"
-        size="icon-lg"
-        href={@next_medias_to_play != [] && Url.player_link(@next_medias_to_play)}
-        disabled={@next_medias_to_play == []}
-        aria-label={"#{@play_label} #{@title}"}
-        title={@play_label}
-        class="rounded-full! shadow-overlay"
-      >
-        <Lucideicons.play />
       </.button>
     </div>
     """

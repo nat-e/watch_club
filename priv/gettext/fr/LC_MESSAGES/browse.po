@@ -14,12 +14,6 @@ msgstr ""
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "In progress"
-msgstr "En cours"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
 msgid "Movies and TV shows show up here once they're on the server."
 msgstr "Les films et les séries apparaissent ici une fois sur le serveur."
 
@@ -34,9 +28,3 @@ msgstr "La bibliothèque est encore vide"
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
 msgstr "Langue originale : %{language}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Watched"
-msgstr "Vu"

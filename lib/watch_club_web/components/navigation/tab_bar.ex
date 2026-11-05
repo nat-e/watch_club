@@ -15,12 +15,13 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
   def tab_bar(assigns) do
     ~H"""
     <nav
+      id="tab-bar"
       aria-label={dgettext("nav", "Main navigation")}
       class="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface md:hidden"
     >
       <ul class="flex h-(--wc-tab-bar-height) list-none p-0">
         <li :for={section <- Sections.sections()} class="flex min-w-0 flex-1">
-          <.section_tab section={section} current={Sections.current(section, @current_path)} />
+          <.section_tab section={section} current={Sections.aria_current(section, @current_path)} />
         </li>
         <li class="flex min-w-0 flex-1">
           <button

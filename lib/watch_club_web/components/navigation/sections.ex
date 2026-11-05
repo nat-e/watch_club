@@ -20,13 +20,26 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         navigate: ~p"/",
         pages: [~p"/search"]
       },
-      %{id: "playlists", label: dgettext("nav", "Playlists"), icon: :list, navigate: ~p"/lists"},
-      %{id: "inbox", label: dgettext("nav", "Inbox"), icon: :inbox, navigate: ~p"/inbox"},
+      %{
+        id: "playlists",
+        label: dgettext("nav", "Playlists"),
+        icon: :list,
+        navigate: ~p"/lists",
+        pages: []
+      },
+      %{
+        id: "inbox",
+        label: dgettext("nav", "Inbox"),
+        icon: :inbox,
+        navigate: ~p"/inbox",
+        pages: []
+      },
       %{
         id: "requests",
         label: dgettext("nav", "Requests"),
         icon: :download,
-        navigate: ~p"/my-requests"
+        navigate: ~p"/my-requests",
+        pages: []
       }
     ]
   end
@@ -35,10 +48,9 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
   The `aria-current` of a section's link: `"page"` on its page, `"true"` on the other pages it
   holds, `nil` elsewhere.
   """
-  def current(%{navigate: path}, path), do: "page"
+  def aria_current(%{navigate: path}, path), do: "page"
 
-  def current(section, path) do
-    if Url.in_section?(path, section.navigate) or path in Map.get(section, :pages, []),
-      do: "true"
+  def aria_current(section, path) do
+    if Url.in_section?(path, section.navigate) or path in section.pages, do: "true"
   end
 end

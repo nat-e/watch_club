@@ -19,7 +19,7 @@ defmodule WatchClubWeb.SearchPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      class="max-w-6xl @container"
+      class="max-w-6xl @container pt-0! md:pt-group!"
       space="group"
       title={dgettext("search", "Search")}
       search
@@ -67,7 +67,7 @@ defmodule WatchClubWeb.SearchPage do
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(query: String.trim(params["query"] || ""), in_library?: params["library"] == "1")
+     |> assign(Url.search_params(params))
      |> search()}
   end
 

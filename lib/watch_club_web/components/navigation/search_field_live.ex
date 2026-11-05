@@ -20,18 +20,22 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
   @max_results 6
 
   @impl true
-  def mount(socket) do
-    # Intentionally small: at most @max_results results
-    {:ok, assign(socket, status: :idle, results: [])}
-  end
-
-  @impl true
   def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(id: assigns.id, current_user: assigns.current_user)
-     |> assign_new(:query, fn -> search_page_query(assigns.current_url) end)
-     |> assign_new(:in_library?, fn -> search_page_in_library?(assigns.current_url) end)}
+    socket = assign(socket, id: assigns.id, current_user: assigns.current_user)
+
+    # The field follows the search page's query and filter when its URL changes, and keeps what
+    # you type in between
+    if socket.assigns[:current_url] == assigns.current_url do
+      {:ok, socket}
+    else
+      {:ok,
+       socket
+       |> cancel_async(:search)
+       |> assign(current_url: assigns.current_url, status: :idle)
+       # Intentionally small: at most @max_results results
+       |> assign(:results, [])
+       |> assign(search_page_params(assigns.current_url))}
+    end
   end
 
   @impl true
@@ -53,6 +57,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               this.js().setAttribute(this.input, "aria-expanded", open.toString())
               open ? this.js().setAttribute(this.el, "data-open", "") : this.js().removeAttribute(this.el, "data-open")
               document.body.style.overflow = open && this.phone() ? "hidden" : ""
+              // Keeps keyboards and screen readers out of the page behind the full screen
+              document.querySelectorAll("main, #tab-bar").forEach(el => el.inert = open && this.phone())
               if (!open) this.select(null)
             }
             this.el.querySelector("[data-cancel]").addEventListener("click", () => {
@@ -121,6 +127,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           destroyed() {
             document.removeEventListener("pointerup", this.onPointerUp)
             document.body.style.overflow = ""
+            document.querySelectorAll("main, #tab-bar").forEach(el => el.inert = false)
           }
         }
       </script>
@@ -143,15 +150,18 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               {dgettext("search", "Search movies and TV shows")}
             </label>
             <Lucideicons.search class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle max-md:group-data-open/combo:hidden" />
-            <button
-              id={"#{@id}-back"}
-              type="button"
-              data-cancel
-              aria-label={dgettext("search", "Close search")}
-              class="absolute top-1/2 left-1 z-10 hidden size-8 -translate-y-1/2 place-items-center rounded-full text-text-muted transition-colors hover:bg-surface-hover hover:text-text max-md:group-data-open/combo:grid"
-            >
-              <Lucideicons.arrow_left class="size-icon-sm" />
-            </button>
+            <span class="absolute top-1/2 left-1 z-10 hidden -translate-y-1/2 max-md:group-data-open/combo:block">
+              <.button
+                id={"#{@id}-back"}
+                variant="ghost"
+                size="icon-sm"
+                data-cancel
+                aria-label={dgettext("search", "Close search")}
+                class="rounded-full! text-text-muted!"
+              >
+                <Lucideicons.arrow_left />
+              </.button>
+            </span>
             <%!-- While the results are open, the field grows to their width on desktop. Phones
             give it the room the page's name leaves, as a filled pill --%>
             <.input
@@ -222,7 +232,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
                     )
                   )}
                 </span>
-                <.kbd>↵</.kbd>
+                <.kbd class="pointer-coarse:hidden">↵</.kbd>
               </button>
             </div>
           </div>
@@ -282,9 +292,6 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
     {:noreply, assign(socket, status: :error, results: [])}
   end
 
-  defp search_page_query(%Url{path: "/search", query: %{"query" => query}}), do: query
-  defp search_page_query(_current_url), do: ""
-
-  defp search_page_in_library?(%Url{path: "/search", query: %{"library" => "1"}}), do: true
-  defp search_page_in_library?(_current_url), do: false
+  defp search_page_params(%Url{path: "/search", query: params}), do: Url.search_params(params)
+  defp search_page_params(_current_url), do: Url.search_params(%{})
 end

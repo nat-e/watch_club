@@ -27,6 +27,7 @@ defmodule WatchClub.Contents.Content do
   alias WatchClub.Contents.Preparations.FilterByContentIdentities
 
   import Ash.Expr
+  require Ash.Query
 
   postgres do
     table "contents"
@@ -50,31 +51,14 @@ defmodule WatchClub.Contents.Content do
       end
 
       # Books join Browse later
-      filter expr(
-               type in [:movie, :tv_show] and has_media? and
-                 (is_nil(^arg(:query)) or
-                    fragment(
-                      "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
-                      original_title,
-                      ^arg(:query)
-                    ) or
-                    exists(
-                      movie.localizations,
-                      fragment(
-                        "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
-                        title,
-                        ^arg(:query)
-                      )
-                    ) or
-                    exists(
-                      tv_show.localizations,
-                      fragment(
-                        "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
-                        title,
-                        ^arg(:query)
-                      )
-                    ))
-             )
+      filter expr(type in [:movie, :tv_show] and has_media?)
+
+      prepare fn query, _context ->
+        case Ash.Query.get_argument(query, :query) do
+          nil -> query
+          text -> Ash.Query.filter(query, title_contains?(text: ^text))
+        end
+      end
 
       prepare build(sort: [added_to_library_at: :desc])
 
@@ -280,6 +264,36 @@ defmodule WatchClub.Contents.Content do
     calculate :actor_next_medias_to_play,
               {:array, :struct},
               ActorNextMediasToPlay
+
+    # Whether its original title or one of its localized titles contains the text, ignoring case
+    # and accents
+    calculate :title_contains?,
+              :boolean,
+              expr(
+                fragment(
+                  "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
+                  original_title,
+                  ^arg(:text)
+                ) or
+                  exists(
+                    movie.localizations,
+                    fragment(
+                      "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
+                      title,
+                      ^arg(:text)
+                    )
+                  ) or
+                  exists(
+                    tv_show.localizations,
+                    fragment(
+                      "strpos(unaccent(lower(?)), unaccent(lower(?))) > 0",
+                      title,
+                      ^arg(:text)
+                    )
+                  )
+              ) do
+      argument :text, :string, allow_nil?: false
+    end
 
     calculate :localized_title_key,
               :string,

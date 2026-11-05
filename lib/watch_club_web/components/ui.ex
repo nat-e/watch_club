@@ -13,6 +13,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Badges
       import WatchClubWeb.Components.UI.Button
       import WatchClubWeb.Components.UI.Checkbox
+      import WatchClubWeb.Components.UI.FilterChip
       import WatchClubWeb.Components.UI.DropdownMenu
       import WatchClubWeb.Components.UI.Empty
       import Phoenix.Component, except: [form: 1]

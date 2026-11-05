@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.InboxPage do
   @moduledoc """
-  The Inbox, where a User sees their Conversations. Empty until Conversations exist.
+  The Inbox tab's page, empty.
   """
   use WatchClubWeb, :live_view
 

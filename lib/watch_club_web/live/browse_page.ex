@@ -14,7 +14,7 @@ defmodule WatchClubWeb.BrowsePage do
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @page_size 40
-  @content_fields [:implementation, :actor_progress_status]
+  @content_fields [:implementation, :actor_progress_status, :added_to_library_at]
 
   @impl true
   def render(assigns) do
@@ -66,6 +66,7 @@ defmodule WatchClubWeb.BrowsePage do
       assigns
       |> assign(:title, assigns.content.implementation.best_localization.title)
       |> assign(:identity, ContentIdentity.from_content(assigns.content))
+      |> assign(:progress_id, "progress-#{assigns.content.id}")
 
     ~H"""
     <div class="group relative">
@@ -74,7 +75,7 @@ defmodule WatchClubWeb.BrowsePage do
         size="w342"
         class="w-full shadow-card"
       >
-        <.progress_badge status={@content.actor_progress_status} />
+        <.progress_badge id={@progress_id} status={@content.actor_progress_status} />
         <span
           aria-hidden="true"
           class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100"
@@ -99,51 +100,45 @@ defmodule WatchClubWeb.BrowsePage do
       <.link
         navigate={Url.content_details_link(@identity)}
         aria-label={@title}
+        aria-describedby={
+          @content.actor_progress_status in [:completed, :in_progress] && @progress_id
+        }
         class="absolute inset-0 rounded-lg"
       ></.link>
-      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 [&_a]:pointer-events-auto [&_button]:pointer-events-auto">
+      <%!-- Screens that can't hover have no Play: a tap opens the title --%>
+      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:hidden">
         <.live_component
           id={PlayOrRequestButtonLive.dom_id(@identity)}
           module={PlayOrRequestButtonLive}
           content_identity={@identity}
           current_user={@current_user}
           variant="round"
-          play_only
+          class="pointer-events-auto"
         />
       </div>
     </div>
     """
   end
 
-  attr :status, :atom, required: true
+  attr :id, :string, required: true
+  attr :status, :atom, required: true, doc: "a `WatchStatus`"
 
-  defp progress_badge(%{status: :completed} = assigns) do
+  # Watched or in progress
+  defp progress_badge(assigns) do
     ~H"""
     <span
+      :if={@status in [:completed, :in_progress]}
+      id={@id}
       role="img"
-      aria-label={dgettext("browse", "Watched")}
-      title={dgettext("browse", "Watched")}
+      aria-label={WatchStatus.translated_label(@status)}
+      title={WatchStatus.translated_label(@status)}
       class="absolute top-related right-related grid size-7 place-items-center rounded-full bg-black/80"
     >
-      <Lucideicons.check class="size-icon-sm text-success" />
+      <Lucideicons.check :if={@status == :completed} class="size-icon-sm text-success" />
+      <Lucideicons.contrast :if={@status == :in_progress} class="size-icon-sm text-primary" />
     </span>
     """
   end
-
-  defp progress_badge(%{status: :in_progress} = assigns) do
-    ~H"""
-    <span
-      role="img"
-      aria-label={dgettext("browse", "In progress")}
-      title={dgettext("browse", "In progress")}
-      class="absolute top-related right-related grid size-7 place-items-center rounded-full bg-black/80"
-    >
-      <Lucideicons.contrast class="size-icon-sm text-primary" />
-    </span>
-    """
-  end
-
-  defp progress_badge(assigns), do: ~H""
 
   @impl true
   def mount(_params, _session, socket) do
@@ -151,13 +146,13 @@ defmodule WatchClubWeb.BrowsePage do
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> assign(:stream_state, KeysetStreamState.init(@page_size))
-     |> load_page()}
+     |> load_page!()}
   end
 
   @impl true
   def handle_event("load_more", _params, socket) do
     if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
-      {:noreply, load_page(socket)}
+      {:noreply, load_page!(socket)}
     else
       {:noreply, socket}
     end
@@ -168,21 +163,24 @@ defmodule WatchClubWeb.BrowsePage do
     PlayOrRequestButtonLive.handle_pubsub_message(notification, socket.assigns.current_user)
 
     case notification do
-      %{resource: Content, data: %Content{id: id}} ->
-        {:noreply, refresh_content(socket, id)}
+      %{resource: Media, action: %{type: :create}, data: media, metadata: %{content_id: id}} ->
+        {:noreply, update_poster!(socket, id, media.inserted_at)}
 
       %{resource: Media, metadata: %{content_id: id}} ->
-        {:noreply, refresh_content(socket, id)}
+        {:noreply, update_poster!(socket, id)}
+
+      %{resource: Content, data: %Content{id: id}} ->
+        {:noreply, update_poster!(socket, id)}
 
       %{resource: WatchProgress, metadata: %{content_id: id}} ->
-        {:noreply, refresh_content(socket, id)}
+        {:noreply, update_poster!(socket, id)}
 
       _other ->
         {:noreply, socket}
     end
   end
 
-  defp load_page(socket) do
+  defp load_page!(socket) do
     %{stream_state: stream_state, current_user: user} = socket.assigns
 
     {:ok, new_state, contents} =
@@ -195,16 +193,22 @@ defmodule WatchClubWeb.BrowsePage do
     |> stream(:library, contents)
   end
 
-  # A Content that joins the Library goes first, one that leaves it goes, and the others update in
-  # place.
-  defp refresh_content(socket, content_id) do
+  # A Content that joins the Library with a new Media goes first, one that leaves it goes, and the
+  # others update in place if they're loaded.
+  defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
     case Contents.get_library!(
            query: [filter: [id: content_id]],
            load: @content_fields,
            actor: socket.assigns.current_user
          ) do
-      [content] -> stream_insert(socket, :library, content, at: 0)
-      [] -> stream_delete_by_dom_id(socket, :library, "library-#{content_id}")
+      [] ->
+        stream_delete_by_dom_id(socket, :library, "library-#{content_id}")
+
+      [%Content{added_to_library_at: ^new_media_added_at} = content] ->
+        stream_insert(socket, :library, content, at: 0)
+
+      [content] ->
+        stream_insert(socket, :library, content, update_only: true)
     end
   end
 end
