@@ -204,7 +204,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       )
 
     ~H"""
-    <div class="flex flex-col gap-related @3xl:flex-row @3xl:flex-wrap @3xl:items-start">
+    <div class="flex flex-col gap-related @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-cluster">
       <div class="flex w-full flex-col gap-tight @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto">
         <.live_component
           id={PlayOrRequestButtonLive.dom_id(@content_identity)}
@@ -216,7 +216,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
         />
         <.progress_line content={@content} locale={@current_user.settings.locale} />
       </div>
-      <.cluster class="justify-center @3xl:justify-start">
+      <%!-- On wide screens, narrower buttons pulled left by their padding: even gaps on one line, and
+      icons in line with Play once they wrap under it --%>
+      <.cluster class="justify-center @3xl:-ml-related @3xl:justify-start @3xl:*:px-related!">
         <.button
           :if={@episodes? and !@in_library?}
           id="episodes-button"
