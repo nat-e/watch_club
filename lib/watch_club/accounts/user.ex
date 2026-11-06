@@ -4,6 +4,7 @@ defmodule WatchClub.Accounts.User do
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
   alias WatchClub.Lists.ContentList
+  alias WatchClub.Requests.RequestSubscriber
 
   use Ash.Resource,
     otp_app: :watch_club,
@@ -117,9 +118,14 @@ defmodule WatchClub.Accounts.User do
       get? true
       prepare AshAuthentication.Preparations.FilterBySubject
 
-      # Load the club memberships when loading the logged in user
+      # Load what the navigation shows when loading the logged in user
       prepare build(
-                load: [:settings, :lists, memberships: [club: [:libraries]]],
+                load: [
+                  :settings,
+                  :lists,
+                  :ready_unseen_request_count,
+                  memberships: [club: [:libraries]]
+                ],
                 context: %{private: %{authorize?: false}}
               )
     end
@@ -129,8 +135,15 @@ defmodule WatchClub.Accounts.User do
       get? true
       filter expr(id == ^actor(:id))
 
-      # Load the club memberships when loading the logged in user
-      prepare build(load: [:settings, :lists, memberships: [club: [:libraries]]])
+      # Load what the navigation shows when loading the logged in user
+      prepare build(
+                load: [
+                  :settings,
+                  :lists,
+                  :ready_unseen_request_count,
+                  memberships: [club: [:libraries]]
+                ]
+              )
     end
 
     update :change_password do
@@ -472,6 +485,15 @@ defmodule WatchClub.Accounts.User do
 
     has_many :lists, ContentList do
       destination_attribute :owner_id
+    end
+
+    has_many :request_subscriptions, RequestSubscriber
+  end
+
+  aggregates do
+    # The Requests tab's badge
+    count :ready_unseen_request_count, :request_subscriptions do
+      filter expr(ready_unseen?)
     end
   end
 

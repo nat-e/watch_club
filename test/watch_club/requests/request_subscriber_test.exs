@@ -71,4 +71,28 @@ defmodule WatchClub.Requests.RequestSubscriberTest do
                Ash.read!(RequestSubscriber, authorize?: false)
     end
   end
+
+  describe "mark_current_user_requests_seen/*" do
+    test "none of the User's Content Requests is ready unseen anymore, on their user topic" do
+      user = generate(user())
+      user_id = user.id
+      request = generate(content_request(user, generate(movie())))
+      %{id: subscriber_id} = generate(request_subscriber(user, request, ready_unseen?: true))
+      other = generate(request_subscriber(generate(user()), request, ready_unseen?: true))
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "user:#{user_id}")
+
+      Requests.mark_current_user_requests_seen!(actor: user)
+
+      assert %RequestSubscriber{ready_unseen?: false} =
+               Ash.get!(RequestSubscriber, subscriber_id, authorize?: false)
+
+      assert %RequestSubscriber{ready_unseen?: true} = Ash.reload!(other, authorize?: false)
+
+      assert_receive %Ash.Notifier.Notification{
+        resource: RequestSubscriber,
+        action: %{name: :mark_ready_seen},
+        data: %RequestSubscriber{user_id: ^user_id, ready_unseen?: false}
+      }
+    end
+  end
 end

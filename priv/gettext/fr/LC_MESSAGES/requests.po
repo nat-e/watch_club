@@ -12,130 +12,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
+#: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Almost ready"
 msgstr "Presque prêt"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Completed"
-msgstr "Terminé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Downloading"
-msgstr "Téléchargement"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Missing episodes"
-msgstr "Épisodes manquants"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Needs attention"
-msgstr "Action requise"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Not found"
-msgstr "Introuvable"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Not released"
-msgstr "Pas encore sorti"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Requested"
-msgstr "Demandé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Searching"
-msgstr "Recherche"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "The administrator has been informed of your request. You will be notified when this content is ready."
-msgstr "L'administrateur a été informé de votre demande. Vous serez prévenu quand ce contenu sera prêt."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "There was a problem with this request that requires human attention. The administrator has been informed."
-msgstr "Un problème avec cette demande nécessite une intervention manuelle. L'administrateur a été informé."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "We are looking for your content..."
-msgstr "Nous recherchons votre contenu..."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "We couldn't find some episodes of your show. We will keep looking for them."
-msgstr "Nous n'avons pas trouvé certains épisodes de votre série. Nous continuons à les chercher."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content has been downloaded and is being imported"
-msgstr "Votre contenu a été téléchargé et est en cours d'import"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content has not been found yet. It will be downloaded automatically when we find it."
-msgstr "Votre contenu n'a pas encore été trouvé. Il sera téléchargé automatiquement dès que nous le trouverons."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is being downloaded"
-msgstr "Votre contenu est en cours de téléchargement"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is not available yet. We will download it automatically as soon as it's released!"
-msgstr "Votre contenu n'est pas encore disponible. Nous le téléchargerons automatiquement dès sa sortie !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is ready to watch!"
-msgstr "Votre contenu est prêt à être regardé !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Browse movies and shows to request something for your club."
-msgstr "Parcourez les films et séries pour faire une demande pour votre club."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Filter by content type"
-msgstr "Filtrer par type de contenu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Filter by status"
-msgstr "Filtrer par statut"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
@@ -146,47 +26,71 @@ msgstr "Mes demandes"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
-msgid "No requests match"
-msgstr "Aucune demande ne correspond"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
 msgid "No requests yet"
 msgstr "Aucune demande pour le moment"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Requested %{relative_time}"
-msgstr "Demandé %{relative_time}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Share with a club"
-msgstr "Partager avec un club"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Sort: %{sort}"
-msgstr "Tri : %{sort}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Try clearing some filters, or browse content to add a request."
-msgstr "Essayez d'effacer des filtres, ou parcourez les contenus pour faire une demande."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
 msgstr "Ne plus être prévenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
+#: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified about %{title}"
 msgstr "Ne plus être prévenu pour %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}% downloaded"
+msgstr "%{percent} % téléchargé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, we'll keep looking for it"
+msgstr "Introuvable, nous continuons à le chercher"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Not released yet"
+msgstr "Pas encore sorti"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "On the way"
+msgstr "En route"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr "Sort le %{date}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Queued"
+msgstr "En attente"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Ready to watch"
+msgstr "Prêt à regarder"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search for a title in Browse and request it. You'll see here when you can watch it."
+msgstr "Cherchez un titre dans Parcourir et demandez-le. Vous verrez ici quand vous pourrez le regarder."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "There was a problem, the instance administrator was told"
+msgstr "Il y a eu un problème, l'administrateur de l'instance a été prévenu"

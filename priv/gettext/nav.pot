@@ -89,6 +89,7 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sections.ex
 #: lib/watch_club_web/live/browse_page.ex
+#: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr ""
@@ -109,3 +110,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} new"
+msgid_plural "%{count} new"
+msgstr[0] ""
+msgstr[1] ""

@@ -21,7 +21,7 @@ msgstr ""
 msgid "Nothing in the library yet"
 msgstr ""
 
-#: lib/watch_club_web/live/browse_page.ex
+#: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
 msgstr ""

@@ -6,14 +6,12 @@ defmodule WatchClubWeb.BrowsePage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.ContentTypeIcon
-  import WatchClubWeb.Components.Contents.StarRating
-  import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
-  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
+  alias WatchClubWeb.Components.Contents.{PlayOrRequestButtonLive, PosterCard}
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @page_size 40
@@ -122,7 +120,17 @@ defmodule WatchClubWeb.BrowsePage do
           </.empty>
         </li>
         <li :for={{dom_id, content} <- @streams.library} id={dom_id}>
-          <.poster_card content={content} current_user={@current_user} />
+          <PosterCard.poster_card content={content} locale={@current_user.settings.locale}>
+            <:action>
+              <.live_component
+                id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(content))}
+                module={PlayOrRequestButtonLive}
+                content_identity={ContentIdentity.from_content(content)}
+                current_user={@current_user}
+                variant="round"
+              />
+            </:action>
+          </PosterCard.poster_card>
         </li>
       </ul>
 
@@ -303,103 +311,6 @@ defmodule WatchClubWeb.BrowsePage do
     """
   end
 
-  attr :content, Content, required: true
-  attr :current_user, User, required: true
-
-  # Its progress badge, and on hover its name, rating, original language, year and Play. Screens
-  # that can't hover show them on a first tap, and the next one opens the title or plays it.
-  defp poster_card(assigns) do
-    assigns =
-      assigns
-      |> assign(:title, assigns.content.implementation.best_localization.title)
-      |> assign(:identity, ContentIdentity.from_content(assigns.content))
-      |> assign(:progress_id, "progress-#{assigns.content.id}")
-
-    ~H"""
-    <div class="group relative">
-      <.tmdb_poster
-        path={@content.implementation.best_localization.poster_path}
-        size="w342"
-        class="w-full shadow-card"
-      >
-        <.progress_badge id={@progress_id} status={@content.actor_progress_status} />
-        <span
-          aria-hidden="true"
-          class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100"
-        >
-          <span class="line-clamp-3 text-sm font-semibold text-white">{@title}</span>
-          <span class="flex items-center gap-related text-xs text-white/80">
-            <.star_rating
-              :if={@content.rating}
-              rating={@content.rating}
-              locale={@current_user.settings.locale}
-              class="text-white"
-            />
-            <span
-              :if={@content.original_language}
-              class="text-base leading-none"
-              title={
-                dgettext("browse", "Original language: %{language}",
-                  language: Languages.to_name(@content.original_language)
-                )
-              }
-            >
-              {Languages.to_flag(@content.original_language)}
-            </span>
-            <span :if={@content.release_date}>{@content.release_date.year}</span>
-          </span>
-        </span>
-      </.tmdb_poster>
-      <.link
-        navigate={Url.content_details_link(@identity)}
-        aria-label={@title}
-        aria-describedby={
-          @content.actor_progress_status in [:completed, :in_progress] && @progress_id
-        }
-        class="absolute inset-0 rounded-lg"
-      ></.link>
-      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100">
-        <.live_component
-          id={PlayOrRequestButtonLive.dom_id(@identity)}
-          module={PlayOrRequestButtonLive}
-          content_identity={@identity}
-          current_user={@current_user}
-          variant="round"
-          class="pointer-events-auto"
-        />
-      </div>
-      <%!-- Screen readers reach the link and Play directly --%>
-      <button
-        type="button"
-        aria-hidden="true"
-        tabindex="-1"
-        phx-click={reveal_poster()}
-        class="absolute inset-0 rounded-lg [@media(hover:hover)]:hidden group-data-revealed:hidden"
-      ></button>
-    </div>
-    """
-  end
-
-  attr :id, :string, required: true
-  attr :status, :atom, required: true, doc: "a `WatchStatus`"
-
-  # Watched or in progress
-  defp progress_badge(assigns) do
-    ~H"""
-    <span
-      :if={@status in [:completed, :in_progress]}
-      id={@id}
-      role="img"
-      aria-label={WatchStatus.translated_label(@status)}
-      title={WatchStatus.translated_label(@status)}
-      class="absolute top-related right-related grid size-7 place-items-center rounded-full bg-black/80"
-    >
-      <Lucideicons.check :if={@status == :completed} class="size-icon-sm text-success" />
-      <Lucideicons.contrast :if={@status == :in_progress} class="size-icon-sm text-primary" />
-    </span>
-    """
-  end
-
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -537,13 +448,6 @@ defmodule WatchClubWeb.BrowsePage do
       )
 
     ~p"/?#{params}"
-  end
-
-  # Shows a poster's name, rating and Play, as hover does, and hides the ones shown before
-  defp reveal_poster do
-    "data-revealed"
-    |> JS.remove_attribute(to: "#library [data-revealed]")
-    |> JS.set_attribute({"data-revealed", ""}, to: {:closest, ".group"})
   end
 
   # Keeps the sort, and moves focus to the first filter, as the clear buttons hide

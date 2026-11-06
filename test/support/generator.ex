@@ -7,7 +7,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClub.Playbacks.{Playback, Session}
-  alias WatchClub.Requests.{ContentRequest, RequestSubscriber}
+  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest, RequestSubscriber}
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -289,6 +289,17 @@ defmodule WatchClub.Generator do
   def request_subscriber(%User{} = user, %ContentRequest{} = content_request, opts \\ []) do
     seed_generator(
       %RequestSubscriber{user_id: user.id, content_request_id: content_request.id},
+      overrides: opts
+    )
+  end
+
+  def media_source_request(%Content{} = content, %Source{} = media_source, opts \\ []) do
+    seed_generator(
+      %MediaSourceRequest{
+        content_id: content.id,
+        media_source_id: media_source.id,
+        external_resource_id: sequence(:external_resource_id, & &1)
+      },
       overrides: opts
     )
   end
