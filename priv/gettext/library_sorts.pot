@@ -30,3 +30,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Title, A to Z"
 msgstr ""
+
+#: lib/watch_club/contents/library_sort.ex
+#, elixir-autogen, elixir-format
+msgid "Best rated"
+msgstr ""

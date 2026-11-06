@@ -34,3 +34,9 @@ msgstr "Ajoutés récemment"
 #, elixir-autogen, elixir-format
 msgid "Title, A to Z"
 msgstr "Titre, de A à Z"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/library_sort.ex
+#, elixir-autogen, elixir-format
+msgid "Best rated"
+msgstr "Mieux notés"

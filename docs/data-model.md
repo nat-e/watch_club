@@ -65,6 +65,7 @@ classDiagram
     string origin_country
     date release_date
     Genre[] genres
+    float rating
     «unique» external_id_source + external_id
   }
   class ContentType {

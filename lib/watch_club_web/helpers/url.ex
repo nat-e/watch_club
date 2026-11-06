@@ -55,9 +55,9 @@ defmodule WatchClubWeb.Helpers.Url do
   end
 
   @doc """
-  Parses a URL param string into one of `allowed_values` (a list of atoms),
-  falling back to `default`. Matches on the stringified atom rather than
-  `String.to_atom/1`, so untrusted input never mints a new atom.
+  Parses a URL param string into one of `allowed_values`, such as atoms or
+  integers, falling back to `default`. Matches on each value's `to_string/1`
+  rather than `String.to_atom/1`, so untrusted input never mints a new atom.
   """
   def parse_url_param(value, allowed_values, default \\ nil)
   def parse_url_param(nil, _allowed_values, default), do: default

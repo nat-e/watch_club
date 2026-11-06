@@ -6,6 +6,7 @@ defmodule WatchClubWeb.BrowsePage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.ContentTypeIcon
+  import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
@@ -18,7 +19,18 @@ defmodule WatchClubWeb.BrowsePage do
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
   @content_fields [:implementation, :actor_progress_status]
-  @no_filters %{type: nil, not_watched?: false, genres: [], decades: [], original_languages: []}
+  @no_filters %{
+    type: nil,
+    not_watched?: false,
+    genres: [],
+    decades: [],
+    original_languages: [],
+    min_rating: nil
+  }
+  # The filters in More, which its button counts
+  @more_filters [:genres, :decades, :original_languages, :min_rating]
+  # More's Rating choices besides Any, which keep the Content rated at least this
+  @min_ratings [6, 7, 8]
 
   @impl true
   def render(assigns) do
@@ -134,10 +146,14 @@ defmodule WatchClubWeb.BrowsePage do
 
   attr :filters, :map, required: true
 
-  # Opens the genres, decades and original languages, with how many of them are on
+  # Opens the genres, decades, original languages and rating, with how many of them are on
   defp more_button(assigns) do
-    %{genres: genres, decades: decades, original_languages: languages} = assigns.filters
-    assigns = assign(assigns, :count, Enum.count([genres, decades, languages], &(&1 != [])))
+    assigns =
+      assign(
+        assigns,
+        :count,
+        Enum.count(@more_filters, &(assigns.filters[&1] != @no_filters[&1]))
+      )
 
     ~H"""
     <.button
@@ -200,6 +216,8 @@ defmodule WatchClubWeb.BrowsePage do
   # From the bottom of the screen on phones. Each choice applies at once, and a list without
   # choices is left out.
   defp more_filters(assigns) do
+    assigns = assign(assigns, :min_ratings, @min_ratings)
+
     ~H"""
     <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
@@ -234,6 +252,32 @@ defmodule WatchClubWeb.BrowsePage do
           </.filter_chip>
         </div>
       </fieldset>
+      <fieldset role="radiogroup" class="flex min-w-0 flex-col gap-related">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Rating")} /></legend>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            id="filter-rating-any"
+            on={@filters.min_rating == nil}
+            radio
+            phx-click="change_filter"
+            phx-value-filter="rating"
+          >
+            {dpgettext("browse", "rating", "Any")}
+          </.filter_chip>
+          <.filter_chip
+            :for={min_rating <- @min_ratings}
+            id={"filter-rating-#{min_rating}"}
+            on={@filters.min_rating == min_rating}
+            radio
+            phx-click="change_filter"
+            phx-value-filter="rating"
+            phx-value-choice={min_rating}
+          >
+            <:icon><Lucideicons.star class="fill-current text-warning" /></:icon>
+            {dgettext("browse", "%{rating}+", rating: min_rating)}
+          </.filter_chip>
+        </div>
+      </fieldset>
       <fieldset :if={@options.original_languages != []} class="flex min-w-0 flex-col">
         <legend class="mb-related">
           <.text_label text={dgettext("browse", "Original language")} />
@@ -262,7 +306,8 @@ defmodule WatchClubWeb.BrowsePage do
   attr :content, Content, required: true
   attr :current_user, User, required: true
 
-  # Its progress badge, and on hover its name, original language, year and Play
+  # Its progress badge, and on hover its name, rating, original language, year and Play. Screens
+  # that can't hover show them on a first tap, and the next one opens the title or plays it.
   defp poster_card(assigns) do
     assigns =
       assigns
@@ -280,10 +325,16 @@ defmodule WatchClubWeb.BrowsePage do
         <.progress_badge id={@progress_id} status={@content.actor_progress_status} />
         <span
           aria-hidden="true"
-          class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100"
         >
           <span class="line-clamp-3 text-sm font-semibold text-white">{@title}</span>
           <span class="flex items-center gap-related text-xs text-white/80">
+            <.star_rating
+              :if={@content.rating}
+              rating={@content.rating}
+              locale={@current_user.settings.locale}
+              class="text-white"
+            />
             <span
               :if={@content.original_language}
               class="text-base leading-none"
@@ -307,8 +358,7 @@ defmodule WatchClubWeb.BrowsePage do
         }
         class="absolute inset-0 rounded-lg"
       ></.link>
-      <%!-- Screens that can't hover have no Play: a tap opens the title --%>
-      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:hidden">
+      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100">
         <.live_component
           id={PlayOrRequestButtonLive.dom_id(@identity)}
           module={PlayOrRequestButtonLive}
@@ -318,6 +368,14 @@ defmodule WatchClubWeb.BrowsePage do
           class="pointer-events-auto"
         />
       </div>
+      <%!-- Screen readers reach the link and Play directly --%>
+      <button
+        type="button"
+        aria-hidden="true"
+        tabindex="-1"
+        phx-click={reveal_poster()}
+        class="absolute inset-0 rounded-lg [@media(hover:hover)]:hidden group-data-revealed:hidden"
+      ></button>
     </div>
     """
   end
@@ -416,7 +474,8 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
-  # The filters in the URL. Unknown types and genres, and decades that aren't numbers, are left out.
+  # The filters in the URL. Unknown types, genres and ratings, and decades that aren't numbers, are
+  # left out.
   defp filters(params) do
     %{
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
@@ -425,7 +484,8 @@ defmodule WatchClubWeb.BrowsePage do
         for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
         for({decade, ""} <- Enum.map(list_param(params["decades"]), &Integer.parse/1), do: decade),
-      original_languages: list_param(params["languages"])
+      original_languages: list_param(params["languages"]),
+      min_rating: Url.parse_url_param(params["rating"], @min_ratings)
     }
   end
 
@@ -433,11 +493,14 @@ defmodule WatchClubWeb.BrowsePage do
   # Missing, or a list from a hand-edited URL such as `decades[]=1990`
   defp list_param(_values), do: []
 
-  # A type replaces the one that's on. The other choices turn on or off.
+  # A type or rating replaces the one that's on. The other choices turn on or off.
   defp change_filter(_filters, "clear", _choice), do: @no_filters
 
   defp change_filter(filters, "type", type),
     do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
+
+  defp change_filter(filters, "rating", min_rating),
+    do: %{filters | min_rating: Url.parse_url_param(min_rating, @min_ratings)}
 
   defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
@@ -467,12 +530,20 @@ defmodule WatchClubWeb.BrowsePage do
           genres: Enum.join(filters.genres, ","),
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),
+          rating: filters.min_rating,
           sort: sort != LibrarySort.default() && sort
         ],
         fn {_param, value} -> value in [nil, false, ""] end
       )
 
     ~p"/?#{params}"
+  end
+
+  # Shows a poster's name, rating and Play, as hover does, and hides the ones shown before
+  defp reveal_poster do
+    "data-revealed"
+    |> JS.remove_attribute(to: "#library [data-revealed]")
+    |> JS.set_attribute({"data-revealed", ""}, to: {:closest, ".group"})
   end
 
   # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
