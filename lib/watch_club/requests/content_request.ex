@@ -81,7 +81,8 @@ defmodule WatchClub.Requests.ContentRequest do
       prepare fn query, _context ->
         Ash.Query.sort(query, [
           {:ready_unseen_for_actor?, :desc},
-          {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc}
+          {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
+          {:id, :desc}
         ])
       end
     end
@@ -94,7 +95,8 @@ defmodule WatchClub.Requests.ContentRequest do
         Ash.Query.sort(query, [
           {:status_rank, :desc},
           {:download_progress, :desc_nils_last},
-          {Ash.Sort.expr_sort(content.release_date, :date), :asc_nils_last}
+          {Ash.Sort.expr_sort(content.release_date, :date), :asc_nils_last},
+          {:id, :desc}
         ])
       end
     end

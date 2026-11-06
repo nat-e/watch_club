@@ -14,12 +14,6 @@ msgstr ""
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
-msgid "Almost ready"
-msgstr "Presque prêt"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
 msgid "My Requests"
 msgstr "Mes demandes"
 
@@ -74,12 +68,6 @@ msgstr "Sort le %{date}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
-msgid "Queued"
-msgstr "En attente"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
 msgid "Ready to watch"
 msgstr "Prêt à regarder"
 
@@ -87,7 +75,7 @@ msgstr "Prêt à regarder"
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search for a title in Browse and request it. You'll see here when you can watch it."
-msgstr "Cherchez un titre dans Parcourir et demandez-le. Vous verrez ici quand vous pourrez le regarder."
+msgstr "Cherchez un titre dans Parcourir et demandez‑le. Vous verrez ici quand vous pourrez le regarder."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex

@@ -82,6 +82,13 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
             this.track.addEventListener("scroll", this.update, { passive: true })
             this.resizeObserver = new ResizeObserver(this.update)
             this.resizeObserver.observe(this.track)
+            // An item added at the start of a row scrolled to its start shows, instead of the
+            // row keeping its first item snapped in place
+            this.mutationObserver = new MutationObserver(() => {
+              if (this.el.hasAttribute("data-at-start")) this.track.scrollLeft = 0
+              this.update()
+            })
+            this.mutationObserver.observe(this.track, { childList: true })
             this.behavior = () =>
               window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
             this.el.addEventListener("click", (event) => {
@@ -101,7 +108,10 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
             this.update()
           },
           updated() { this.update() },
-          destroyed() { this.resizeObserver.disconnect() },
+          destroyed() {
+            this.resizeObserver.disconnect()
+            this.mutationObserver.disconnect()
+          },
         }
       </script>
     </div>

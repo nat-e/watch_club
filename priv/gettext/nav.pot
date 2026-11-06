@@ -120,7 +120,7 @@ msgstr[1] ""
 
 #: lib/watch_club_web/components/navigation/sections.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} ready to watch"
-msgid_plural "%{count} ready to watch"
+msgid "%{count} new request ready to watch"
+msgid_plural "%{count} new requests ready to watch"
 msgstr[0] ""
 msgstr[1] ""

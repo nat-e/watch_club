@@ -13,11 +13,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
-msgid "Almost ready"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
 msgid "My Requests"
 msgstr ""
 
@@ -59,11 +54,6 @@ msgstr ""
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Out on %{date}"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Queued"
 msgstr ""
 
 #: lib/watch_club_web/live/my_requests_page.ex

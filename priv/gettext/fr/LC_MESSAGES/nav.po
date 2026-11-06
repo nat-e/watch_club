@@ -141,7 +141,7 @@ msgstr[1] "%{count} conversations non lues"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sections.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} ready to watch"
-msgid_plural "%{count} ready to watch"
-msgstr[0] "%{count} prêt à regarder"
-msgstr[1] "%{count} prêts à regarder"
+msgid "%{count} new request ready to watch"
+msgid_plural "%{count} new requests ready to watch"
+msgstr[0] "%{count} nouvelle demande prête à regarder"
+msgstr[1] "%{count} nouvelles demandes prêtes à regarder"

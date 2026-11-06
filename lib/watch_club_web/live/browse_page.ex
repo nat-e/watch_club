@@ -6,13 +6,14 @@ defmodule WatchClubWeb.BrowsePage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.ContentTypeIcon
+  import WatchClubWeb.Components.Contents.PosterCard
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
   alias WatchClub.Conversations.Participant
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
-  alias WatchClubWeb.Components.Contents.{PlayOrRequestButtonLive, PosterCard}
+  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @page_size 40
@@ -135,7 +136,7 @@ defmodule WatchClubWeb.BrowsePage do
           </.empty>
         </li>
         <li :for={{dom_id, content} <- @streams.library} id={dom_id}>
-          <PosterCard.poster_card content={content} locale={@current_user.settings.locale}>
+          <.poster_card content={content} locale={@current_user.settings.locale}>
             <:action>
               <.live_component
                 id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(content))}
@@ -145,7 +146,7 @@ defmodule WatchClubWeb.BrowsePage do
                 variant="round"
               />
             </:action>
-          </PosterCard.poster_card>
+          </.poster_card>
         </li>
       </ul>
 

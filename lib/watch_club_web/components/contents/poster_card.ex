@@ -46,9 +46,11 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
         ]}
       >
         <.recommenders id={@recommenders_id} users={@recommenders} locale={@locale} />
+        <%!-- The link reads its badges --%>
         <.badge
           :if={@ready_unseen}
           id={@badge_id}
+          aria-hidden="true"
           variant="accent"
           size="sm"
           class="absolute top-related right-related"
@@ -128,6 +130,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
     <span
       :if={@users != []}
       id={@id}
+      aria-hidden="true"
       role="img"
       aria-label={@label}
       title={@label}
@@ -172,6 +175,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
     <span
       :if={@status in [:completed, :in_progress]}
       id={@id}
+      aria-hidden="true"
       role="img"
       aria-label={WatchStatus.translated_label(@status)}
       title={WatchStatus.translated_label(@status)}

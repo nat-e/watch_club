@@ -134,7 +134,7 @@ _Avoid_: Follower
 
 **Ready Unseen**:
 A **Content Request** that became playable since its **Request Subscriber** last opened **My Requests**. The Requests tab's badge counts them, and **My Requests** shows them first, with a New badge, until the **Request Subscriber** leaves it.
-_Avoid_: New, unread, notification
+_Avoid_: Unread, notification
 
 **Delete Content Request**:
 The **Instance Administrator** removes a **Content Request**, for example a stuck one, so its **Content** can be requested again.

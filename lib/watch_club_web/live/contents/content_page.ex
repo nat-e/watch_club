@@ -476,20 +476,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  attr :id, :string, required: true, doc: "its heading's id"
-  attr :title, :string, required: true
-  slot :inner_block, required: true
-
-  # A section under the header: its heading, then what it holds
-  defp page_section(assigns) do
-    ~H"""
-    <section aria-labelledby={@id} class="flex min-w-0 flex-col gap-group">
-      <h2 id={@id} class="font-heading text-xl font-semibold">{@title}</h2>
-      {render_slot(@inner_block)}
-    </section>
-    """
-  end
-
   attr :id, :string, default: nil
   attr :name, :string, required: true
 

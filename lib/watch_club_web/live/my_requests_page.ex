@@ -7,9 +7,11 @@ defmodule WatchClubWeb.MyRequestsPage do
   """
   use WatchClubWeb, :live_view
 
+  import WatchClubWeb.Components.Contents.PosterCard
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClubWeb.Components.Contents.{PlayOrRequestButtonLive, PosterCard}
+  alias WatchClub.Conversations.Participant
+  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   @request_fields_to_load [
     :ready?,
@@ -32,13 +34,11 @@ defmodule WatchClubWeb.MyRequestsPage do
       class="@container"
     >
       <%!-- Hidden while the stream is empty --%>
-      <section
-        aria-labelledby="ready-requests-heading"
-        class="peer flex min-w-0 flex-col gap-group not-has-[[data-ready-request]]:hidden"
+      <.page_section
+        id="ready-requests-heading"
+        title={dgettext("requests", "Ready to watch")}
+        class="peer not-has-[[data-ready-request]]:hidden"
       >
-        <h2 id="ready-requests-heading" class="font-heading text-xl font-semibold">
-          {dgettext("requests", "Ready to watch")}
-        </h2>
         <.scroll_row id="ready-requests" stream>
           <div
             :for={{dom_id, request} <- @streams.ready_requests}
@@ -46,7 +46,7 @@ defmodule WatchClubWeb.MyRequestsPage do
             data-ready-request
             class="w-28 shrink-0 snap-start @3xl:w-36"
           >
-            <PosterCard.poster_card
+            <.poster_card
               content={request.content}
               locale={@current_user.settings.locale}
               ready_unseen={request.id in @ready_unseen_ids}
@@ -60,28 +60,28 @@ defmodule WatchClubWeb.MyRequestsPage do
                   variant="round"
                 />
               </:action>
-            </PosterCard.poster_card>
+            </.poster_card>
           </div>
         </.scroll_row>
-      </section>
+      </.page_section>
 
-      <section
+      <.page_section
         :if={@requests_on_the_way != []}
-        aria-labelledby="requests-on-the-way-heading"
-        class="flex min-w-0 max-w-readable flex-col gap-related"
+        id="requests-on-the-way-heading"
+        title={dgettext("requests", "On the way")}
+        class="max-w-readable"
       >
-        <h2 id="requests-on-the-way-heading" class="font-heading text-xl font-semibold">
-          {dgettext("requests", "On the way")}
-        </h2>
-        <ul class="flex flex-col">
+        <.stack as="ul" space="cluster">
           <.request_on_the_way
-            :for={request <- @requests_on_the_way}
+            :for={{request, index} <- Enum.with_index(@requests_on_the_way)}
             request={request}
+            focus_after_removal={focus_after_removal(@requests_on_the_way, index)}
             locale={@current_user.settings.locale}
           />
-        </ul>
-      </section>
+        </.stack>
+      </.page_section>
 
+      <%!-- Shown when the Ready section, its peer before it, is hidden too --%>
       <.empty
         :if={@requests_on_the_way == []}
         id="my-requests-empty"
@@ -105,6 +105,11 @@ defmodule WatchClubWeb.MyRequestsPage do
   end
 
   attr :request, ContentRequest, required: true
+
+  attr :focus_after_removal, :string,
+    required: true,
+    doc: "the id of what gets the focus once the User stops getting notified"
+
   attr :locale, :atom, required: true
 
   # Its poster and its name, which open its Content, and when it can be watched
@@ -118,7 +123,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       )
 
     ~H"""
-    <li id={"request-on-the-way-#{@request.id}"} class="flex items-center gap-group py-group">
+    <li id={"request-on-the-way-#{@request.id}"} class="flex items-center gap-group">
       <%!-- Screen readers and keyboards reach the name's link --%>
       <.link navigate={@path} tabindex="-1" aria-hidden="true" class="shrink-0">
         <.tmdb_poster
@@ -128,7 +133,7 @@ defmodule WatchClubWeb.MyRequestsPage do
         />
       </.link>
       <div class="flex min-w-0 flex-1 flex-col">
-        <.link navigate={@path} class="truncate text-lg font-semibold hover:underline">
+        <.link navigate={@path} class="line-clamp-2 text-lg font-semibold hover:underline">
           {@title}
         </.link>
         <span class="flex gap-tight text-sm text-text-muted">
@@ -149,8 +154,11 @@ defmodule WatchClubWeb.MyRequestsPage do
         size="icon-sm"
         aria-label={dgettext("requests", "Stop getting notified about %{title}", title: @title)}
         title={dgettext("requests", "Stop getting notified")}
-        phx-click="stop-getting-notified"
-        phx-value-id={@request.id}
+        phx-click={
+          JS.push("stop-getting-notified", value: %{id: @request.id})
+          |> JS.focus(to: "##{@focus_after_removal}")
+        }
+        class="pointer-coarse:size-touch-target!"
       >
         <Lucideicons.x />
       </.button>
@@ -176,14 +184,12 @@ defmodule WatchClubWeb.MyRequestsPage do
     """
   end
 
-  defp when_watchable(%ContentRequest{status: :importing}, _locale),
-    do: dgettext("requests", "Almost ready")
+  defp when_watchable(%ContentRequest{status: status}, _locale)
+       when status in [:importing, :queued],
+       do: ContentRequestStatus.translated_label(status)
 
   defp when_watchable(%ContentRequest{status: :downloading} = request, _locale),
     do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))
-
-  defp when_watchable(%ContentRequest{status: :queued}, _locale),
-    do: dgettext("requests", "Queued")
 
   # TMDB's date is often the cinema release, before the one we can download
   defp when_watchable(%ContentRequest{status: :not_released} = request, locale) do
@@ -202,27 +208,33 @@ defmodule WatchClubWeb.MyRequestsPage do
   defp when_watchable(%ContentRequest{status: :failed}, _locale),
     do: dgettext("requests", "There was a problem, the instance administrator was told")
 
+  # The previous row's button, or the heading for the first row. Not the next row's: the rows
+  # after the removed one move in the page, which drops their focus.
+  defp focus_after_removal(_requests, 0), do: "requests-on-the-way-heading"
+
+  defp focus_after_removal(requests, index),
+    do: "stop-getting-notified-#{Enum.at(requests, index - 1).id}"
+
   @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
+    socket = WatchClub.PubSub.subscribe_to_current_user_content_topics(socket)
 
     ready_requests =
       Requests.list_current_user_ready_requests!(load: @request_fields_to_load, actor: user)
 
+    # Intentionally small: the ones that just became playable
+    ready_unseen_ids =
+      for %{ready_unseen_for_actor?: true} = request <- ready_requests,
+          into: MapSet.new(),
+          do: request.id
+
+    # Only now that the list says which to ring
     if connected?(socket), do: Requests.mark_current_user_requests_seen!(actor: user)
 
     {:ok,
      socket
-     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     # Intentionally small: the ones that just became playable
-     |> assign(
-       :ready_unseen_ids,
-       for(
-         %{ready_unseen_for_actor?: true} = request <- ready_requests,
-         into: MapSet.new(),
-         do: request.id
-       )
-     )
+     |> assign(:ready_unseen_ids, ready_unseen_ids)
      |> stream_configure(:ready_requests, dom_id: &"ready-request-#{&1.content_id}")
      |> stream(:ready_requests, ready_requests)
      |> load_requests_on_the_way()}
@@ -230,34 +242,36 @@ defmodule WatchClubWeb.MyRequestsPage do
 
   @impl true
   def handle_event("stop-getting-notified", %{"id" => id}, socket) do
-    case Requests.stop_getting_notified(id, actor: socket.assigns.current_user) do
-      :ok -> {:noreply, socket}
-      # Clicked again before its row went away
-      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} -> {:noreply, socket}
-    end
-  end
-
-  @impl true
-  # A Content Request, the User's subscription to it, or its Content changed. Every User gets
-  # the notifications of every Content Request and Content, so this queries for each: fine with
-  # the few Users of an instance.
-  def handle_info(%Notification{resource: resource, metadata: %{content_id: content_id}}, socket)
-      when resource in [ContentRequest, RequestSubscriber] do
-    {:noreply, show_request(socket, content_id)}
-  end
-
-  def handle_info(%Notification{data: %Content{id: content_id}}, socket) do
-    {:noreply, show_request(socket, content_id)}
-  end
-
-  def handle_info(message, socket) do
-    # Send updates to all the Live Components we are using on the posters
-    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
-
+    Requests.stop_getting_notified!(id, actor: socket.assigns.current_user)
     {:noreply, socket}
   end
 
-  defp show_request(socket, content_id) do
+  @impl true
+  def handle_info(%Notification{} = notification, socket) do
+    # Updates the posters' Play buttons
+    PlayOrRequestButtonLive.handle_pubsub_message(notification, socket.assigns.current_user)
+
+    # A Content Request, the User's subscription to it, its Content, the User's Watch Progress on
+    # it, or a recommendation of it changed. Every User gets the notifications of every Content
+    # Request and Content, so this queries for each: fine with the few Users of an instance.
+    case notification do
+      %{resource: resource, metadata: %{content_id: content_id}}
+      when resource in [ContentRequest, RequestSubscriber, WatchProgress] ->
+        {:noreply, sync_request(socket, content_id)}
+
+      %{resource: Participant, action: %{name: :create}, metadata: %{content_id: content_id}} ->
+        {:noreply, sync_request(socket, content_id)}
+
+      %{resource: Content, data: %Content{id: content_id}} ->
+        {:noreply, sync_request(socket, content_id)}
+
+      _other ->
+        {:noreply, socket}
+    end
+  end
+
+  # Shows it where it belongs now, or removes it
+  defp sync_request(socket, content_id) do
     case Requests.get_current_user_request_for_content(content_id,
            load: @request_fields_to_load,
            actor: socket.assigns.current_user
@@ -271,7 +285,7 @@ defmodule WatchClubWeb.MyRequestsPage do
       # Deleted, or the User stopped getting notified, or a Content without a Content Request
       {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} ->
         socket
-        |> stream_delete_by_dom_id(:ready_requests, "ready-request-#{content_id}")
+        |> stream_delete(:ready_requests, %ContentRequest{content_id: content_id})
         |> remove_request_on_the_way(content_id)
     end
   end

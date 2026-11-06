@@ -57,8 +57,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         badge_label:
           dngettext(
             "nav",
-            "%{count} ready to watch",
-            "%{count} ready to watch",
+            "%{count} new request ready to watch",
+            "%{count} new requests ready to watch",
             user.ready_unseen_request_count
           )
       }

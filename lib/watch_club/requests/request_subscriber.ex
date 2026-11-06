@@ -123,7 +123,8 @@ defmodule WatchClub.Requests.RequestSubscriber do
       transform: &add_content_identity_to_metadata/1
 
     # The User's topic, so that every page updates the Requests tab's badge
-    publish_all :update, ["user", :user_id]
+    publish :mark_ready_unseen, ["user", :user_id]
+    publish :mark_ready_seen, ["user", :user_id]
 
     defp add_content_identity_to_metadata(%Ash.Notifier.Notification{} = notification) do
       content = notification.data.content_request.content
