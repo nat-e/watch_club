@@ -159,7 +159,7 @@ msgstr ""
 msgid "Could not request this right now."
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr ""
@@ -242,22 +242,22 @@ msgstr ""
 msgid "You need to create a List before adding content to it"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Downloading"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Not Released"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Searching"
 msgstr ""
@@ -291,7 +291,7 @@ msgstr ""
 msgid "Watched"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{action} %{title}"
 msgstr ""

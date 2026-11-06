@@ -187,7 +187,7 @@ msgid "Could not request this right now."
 msgstr "Impossible de faire cette demande pour le moment."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr "Demander"
@@ -286,25 +286,25 @@ msgid "You need to create a List before adding content to it"
 msgstr "Vous devez créer une liste avant d'y ajouter du contenu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Downloading"
 msgstr "Téléchargement"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr "Erreur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Not Released"
 msgstr "Pas encore sorti"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Searching"
 msgstr "Recherche"
@@ -344,7 +344,7 @@ msgid "Watched"
 msgstr "Vu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{action} %{title}"
 msgstr "%{action} %{title}"
