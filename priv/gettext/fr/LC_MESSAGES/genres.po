@@ -1,0 +1,162 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Action"
+msgstr "Action"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Adventure"
+msgstr "Aventure"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Animation"
+msgstr "Animation"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Comedy"
+msgstr "Comédie"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Crime"
+msgstr "Policier"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Documentary"
+msgstr "Documentaire"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Drama"
+msgstr "Drame"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Family"
+msgstr "Famille"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Fantasy"
+msgstr "Fantastique"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "History"
+msgstr "Histoire"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Horror"
+msgstr "Horreur"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Kids"
+msgstr "Jeunesse"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Music"
+msgstr "Musique"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Mystery"
+msgstr "Mystère"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "News"
+msgstr "Actualités"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Politics"
+msgstr "Politique"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Reality"
+msgstr "Téléréalité"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Romance"
+msgstr "Romance"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Science Fiction"
+msgstr "Science-fiction"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Soap"
+msgstr "Feuilleton"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "TV Movie"
+msgstr "Téléfilm"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Talk"
+msgstr "Talk-show"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Thriller"
+msgstr "Thriller"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "War"
+msgstr "Guerre"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/genre.ex
+#, elixir-autogen, elixir-format
+msgid "Western"
+msgstr "Western"

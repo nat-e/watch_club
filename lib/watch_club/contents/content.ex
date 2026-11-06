@@ -12,6 +12,7 @@ defmodule WatchClub.Contents.Content do
     ContentIdentity,
     ContentType,
     ExternalIdSource,
+    Genre,
     LibrarySort,
     Movie,
     SearchContentType,
@@ -226,6 +227,12 @@ defmodule WatchClub.Contents.Content do
 
     attribute :release_date, :date do
       allow_nil? true
+      public? true
+    end
+
+    attribute :genres, {:array, Genre} do
+      allow_nil? false
+      default []
       public? true
     end
 

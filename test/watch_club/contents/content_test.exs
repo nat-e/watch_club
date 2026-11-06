@@ -48,6 +48,7 @@ defmodule WatchClub.Contents.ContentTest do
                external_id: "11",
                original_language: "en",
                origin_country: "US",
+               genres: [:adventure, :action, :science_fiction],
                implementation: %Movie{
                  best_localization: %MovieLocalization{
                    iso_639_1: "fr",
@@ -134,6 +135,8 @@ defmodule WatchClub.Contents.ContentTest do
                original_language: "en",
                origin_country: "US",
                release_date: ~D[2015-12-14],
+               # Sci-Fi & Fantasy gives both
+               genres: [:drama, :science_fiction, :fantasy],
                implementation: %TvShow{
                  best_localization: %TvShowLocalization{
                    iso_639_1: "fr",
@@ -256,6 +259,18 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.Query.filter(tv_show_id == ^content.id)
                |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
                |> Ash.read!(authorize?: false)
+    end
+
+    test "stores the genres of a TV Show created without them" do
+      tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      tmdb_id = String.to_integer(tv_show.external_id)
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, Map.put(tv_details_fixture(), "id", tmdb_id))
+      end)
+
+      assert %Content{genres: [:drama, :science_fiction, :fantasy]} =
+               refresh_tv_show!(tv_show, actor: SystemActor.actor())
     end
   end
 
@@ -558,7 +573,10 @@ defmodule WatchClub.Contents.ContentTest do
       "origin_country" => ["US"],
       "first_air_date" => "2015-12-14",
       "backdrop_path" => "/backdrop.jpg",
-      "genres" => [%{"id" => 18, "name" => "Drama"}],
+      "genres" => [
+        %{"id" => 18, "name" => "Drama"},
+        %{"id" => 10_765, "name" => "Sci-Fi & Fantasy"}
+      ],
       "homepage" => "https://www.syfy.com/the-expanse",
       "overview" => "A mystery unfolds across the solar system.",
       "poster_path" => "/poster.jpg",
