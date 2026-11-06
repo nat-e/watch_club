@@ -90,36 +90,50 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  def play_or_request_button(assigns) do
+  # Play with a caret opening every episode, under one glow so they read as one button
+  def play_or_request_button(%{on_episodes: on_episodes} = assigns) when on_episodes != nil do
     ~H"""
-    <div class="flex w-full">
+    <div class="flex w-full rounded-control shadow-glow">
       <.button
         id={"#{@id}-play-button"}
         size={@size}
         variant="primary"
-        emphasis
         href={@play_href}
-        disabled={!@play_href}
-        class={["min-w-0 flex-1", @on_episodes && "rounded-r-none!"]}
+        class="min-w-0 flex-1 rounded-r-none! border-r-0!"
       >
         <:icon><Lucideicons.play /></:icon>
         {@play_label}
       </.button>
       <.button
-        :if={@on_episodes}
         id={"#{@id}-episodes-button"}
         size={caret_size(@size)}
         variant="primary"
-        emphasis
         phx-click={@on_episodes}
         aria-label={dgettext("contents", "All episodes")}
         aria-haspopup="dialog"
         title={dgettext("contents", "All episodes")}
-        class="rounded-l-none! border-l-primary-hover! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
+        class="rounded-l-none! border-l-primary-active! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
       >
         <Lucideicons.chevron_down />
       </.button>
     </div>
+    """
+  end
+
+  def play_or_request_button(assigns) do
+    ~H"""
+    <.button
+      id={"#{@id}-play-button"}
+      size={@size}
+      variant="primary"
+      emphasis
+      href={@play_href}
+      disabled={!@play_href}
+      class="w-full"
+    >
+      <:icon><Lucideicons.play /></:icon>
+      {@play_label}
+    </.button>
     """
   end
 

@@ -213,7 +213,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           content_identity={@content_identity}
           current_user={@current_user}
           size="lg"
-          on_episodes={@episodes? && JS.push("open_episodes")}
+          on_episodes={if @episodes?, do: JS.push("open_episodes")}
         />
         <.progress_line content={@content} locale={@current_user.settings.locale} />
       </div>
@@ -230,35 +230,36 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <:icon><Lucideicons.list_video /></:icon>
           {dgettext("contents", "Episodes")}
         </.button>
-        <%!-- Together, so Watched never wraps alone --%>
-        <.inline>
-          <.button
-            :if={@trailer_url}
-            id="trailer-button"
-            variant="overlay"
-            size="lg"
-            href={@trailer_url}
-            target="_blank"
-          >
-            <:icon><Lucideicons.circle_play /></:icon>
-            {dgettext("contents", "Watch trailer")}
-            <:icon position="end">
-              <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
-            </:icon>
-          </.button>
-          <.button
-            id="watched-button"
-            variant="overlay"
-            size="icon-lg"
-            phx-click="toggle_watched"
-            aria-pressed={to_string(@finished?)}
-            aria-label={dgettext("contents", "Watched")}
-            title={watched_hint(@tv_show?, @finished?)}
-          >
+        <.button
+          :if={@trailer_url}
+          id="trailer-button"
+          variant="overlay"
+          size="lg"
+          href={@trailer_url}
+          target="_blank"
+        >
+          <:icon><Lucideicons.circle_play /></:icon>
+          {dgettext("contents", "Watch trailer")}
+          <:icon position="end">
+            <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
+          </:icon>
+        </.button>
+        <%!-- Its label says what it does, so it has no aria-pressed --%>
+        <.button
+          id="watched-button"
+          variant="overlay"
+          size="lg"
+          phx-click="toggle_watched"
+          title={watched_hint(@tv_show?, @finished?)}
+        >
+          <:icon>
             <Lucideicons.circle_check :if={@finished?} class="text-success" />
             <Lucideicons.circle :if={!@finished?} />
-          </.button>
-        </.inline>
+          </:icon>
+          {if @finished?,
+            do: dgettext("contents", "Watched"),
+            else: dgettext("contents", "Mark as watched")}
+        </.button>
       </.cluster>
     </div>
     """
