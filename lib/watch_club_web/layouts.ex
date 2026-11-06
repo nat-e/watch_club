@@ -59,6 +59,8 @@ defmodule WatchClubWeb.Layouts do
   slot :parent, doc: "the page this page belongs to" do
     attr :navigate, :string, required: true
     attr :label, :string, required: true
+    attr :patch, :boolean, doc: "patches the LiveView, for a parent that is the same page"
+    attr :narrow_only, :boolean, doc: "only on narrow screens, where the parent isn't beside it"
   end
 
   def app(assigns) do

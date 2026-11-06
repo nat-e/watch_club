@@ -135,6 +135,7 @@ defmodule WatchClubWeb.Router do
       live "/inbox", Conversations.InboxPage
       live "/inbox/:conversation_id", Conversations.InboxPage
       live "/playlists", Playlists.PlaylistsPage
+      live "/playlists/:playlist_id", Playlists.PlaylistsPage
       live "/movies/:tmdb_id", Contents.ContentPage, :movie
       live "/shows/:tmdb_id", Contents.ContentPage, :tv_show
     end

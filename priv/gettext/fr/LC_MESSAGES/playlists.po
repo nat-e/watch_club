@@ -16,3 +16,221 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "To Watch"
 msgstr "À voir"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} TV show"
+msgid_plural "%{count} TV shows"
+msgstr[0] "%{count} série"
+msgstr[1] "%{count} séries"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} movie"
+msgid_plural "%{count} movies"
+msgstr[0] "%{count} film"
+msgstr[1] "%{count} films"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "%{users} will lose it too."
+msgstr "Elle disparaîtra aussi pour %{users}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Actions for %{playlist}"
+msgstr "Actions pour %{playlist}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add movies and TV shows from their page."
+msgstr "Ajoutez des films et des séries depuis leur page."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Added %{time}"
+msgstr "Ajouté %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Added by %{user}, %{time}"
+msgstr "Ajouté par %{user}, %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Are you sure you want to delete the playlist %{playlist}?"
+msgstr "Êtes-vous sûr de vouloir supprimer la playlist %{playlist} ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Change the icon"
+msgstr "Changer l'icône"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Choose an icon"
+msgstr "Choisir une icône"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Created by %{user}"
+msgstr "Créée par %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Delete playlist"
+msgstr "Supprimer la playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Edit playlist"
+msgstr "Modifier la playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#, elixir-autogen, elixir-format
+msgid "Empty"
+msgstr "Vide"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "It's private until you share it."
+msgstr "Elle reste privée tant que vous ne la partagez pas."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Keep what you want to watch in one place."
+msgstr "Gardez ce que vous voulez regarder au même endroit."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "More for %{content}"
+msgstr "Plus d'options pour %{content}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "My playlist"
+msgstr "Ma playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr "Nom"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr "Nouvelle"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New playlist"
+msgstr "Nouvelle playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "No playlists yet"
+msgstr "Aucune playlist pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing here yet"
+msgstr "Rien ici pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Playlist deleted."
+msgstr "Playlist supprimée."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Private"
+msgstr "Privée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remove from %{playlist}"
+msgstr "Retirer de %{playlist}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Removed %{content} from %{playlist}."
+msgstr "%{content} n'est plus dans %{playlist}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Select an icon for your playlist"
+msgstr "Sélectionnez une icône pour votre playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Shared with"
+msgstr "Partagée avec"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Shared with you"
+msgstr "Partagées avec vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "This playlist doesn't exist, or it isn't shared with you."
+msgstr "Cette playlist n'existe pas, ou elle n'est pas partagée avec vous."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "This playlist is no longer shared with you."
+msgstr "Cette playlist n'est plus partagée avec vous."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "This playlist was deleted."
+msgstr "Cette playlist a été supprimée."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your playlists"
+msgstr "Vos playlists"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "you"
+msgstr "vous"

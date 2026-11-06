@@ -23,6 +23,8 @@ msgstr ""
 #: lib/watch_club_web/live/clubs/members/remove_member_modal.ex
 #: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex
 #: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
@@ -34,11 +36,13 @@ msgid "Close"
 msgstr ""
 
 #: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr ""
 
 #: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
@@ -46,6 +50,7 @@ msgstr ""
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""

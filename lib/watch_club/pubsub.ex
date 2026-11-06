@@ -27,6 +27,19 @@ defmodule WatchClub.PubSub do
     socket
   end
 
+  @doc """
+  Subscribes a LiveView socket to the topic of each Playlist it loaded, once. It stays subscribed
+  to the Playlists it no longer loads: their notifications only make it reload.
+  """
+  def subscribe_to_playlists(socket, playlists) do
+    subscribed = socket.assigns[:subscribed_playlist_ids] || MapSet.new()
+    new_ids = playlists |> MapSet.new(& &1.id) |> MapSet.difference(subscribed)
+
+    socket
+    |> subscribe_if_connected(Enum.map(new_ids, &"playlist:#{&1}"))
+    |> Phoenix.Component.assign(:subscribed_playlist_ids, MapSet.union(subscribed, new_ids))
+  end
+
   defp content_topics(%User{} = user) do
     Enum.map(user.memberships, &"content:club:#{&1.club_id}") ++
       ["content:global", "content:user:#{user.id}"]
