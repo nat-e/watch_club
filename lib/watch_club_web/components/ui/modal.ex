@@ -28,6 +28,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
     doc: "Maximum modal width."
 
   attr :on_close, JS, required: true
+  attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
   attr :rest, :global
 
   slot :title, required: true do
@@ -55,13 +56,18 @@ defmodule WatchClubWeb.Components.UI.Modal do
       aria-describedby={@description != [] && "#{@id}-description"}
       data-slot="modal"
       data-on-close={@on_close}
-      class={[
-        "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
-        @size == "sm" && "sm:max-w-md",
-        @size == "md" && "sm:max-w-lg",
-        @size == "lg" && "sm:max-w-2xl",
-        @class
-      ]}
+      class={
+        [
+          "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+          @size == "sm" && "sm:max-w-md",
+          @size == "md" && "sm:max-w-lg",
+          @size == "lg" && "sm:max-w-2xl",
+          # `!`, or the sizes' `sm:` max widths win between the two breakpoints
+          @sheet &&
+            "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
+          @class
+        ]
+      }
       phx-hook=".Modal"
       phx-mounted={JS.ignore_attributes("open")}
       {@rest}

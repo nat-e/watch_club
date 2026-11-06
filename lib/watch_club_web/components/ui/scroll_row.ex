@@ -13,17 +13,29 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
 
   attr :id, :string, required: true
   attr :class, :any, default: nil
+
+  attr :variant, :string,
+    values: ~w(default chips),
+    default: "default",
+    doc:
+      "`chips`: closer, centered items, and smaller arrows, in a row that ends at its right edge"
+
   slot :inner_block, required: true
 
   # The track runs into the page gutter, so items scroll to the screen edge, and has vertical
-  # padding, so the items' focus outlines aren't clipped. Each edge fades while there's more to
-  # scroll that way, because on wide screens the track stops before the screen edge.
+  # padding, so the items' focus outlines aren't clipped. A row of chips runs into the left gutter
+  # only, so it ends before what follows it. Each edge fades while there's more to scroll that way,
+  # because on wide screens the track stops before the screen edge.
   def scroll_row(assigns) do
     ~H"""
     <div id={@id} phx-hook=".ScrollRow" data-at-start class={["group/row relative", @class]}>
       <div
         data-scroll-track
-        class="-mx-page -my-related flex snap-x snap-mandatory scroll-px-page gap-group overflow-x-auto px-page py-related [--fade-left:4rem] [--fade-right:4rem] [mask-image:linear-gradient(to_right,transparent,black_var(--fade-left),black_calc(100%_-_var(--fade-right)),transparent)] [scrollbar-width:none] group-data-at-start/row:[--fade-left:0px] group-data-at-end/row:[--fade-right:0px] [&::-webkit-scrollbar]:hidden"
+        class={[
+          "-my-related flex snap-x snap-mandatory scroll-px-page overflow-x-auto py-related [--fade-left:4rem] [--fade-right:4rem] [mask-image:linear-gradient(to_right,transparent,black_var(--fade-left),black_calc(100%_-_var(--fade-right)),transparent)] [scrollbar-width:none] group-data-at-start/row:[--fade-left:0px] group-data-at-end/row:[--fade-right:0px] [&::-webkit-scrollbar]:hidden",
+          @variant == "default" && "-mx-page gap-group px-page",
+          @variant == "chips" && "-ml-page items-center gap-related pr-tight pl-page"
+        ]}
       >
         {render_slot(@inner_block)}
       </div>
@@ -42,7 +54,7 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
         <.button
           id={"#{@id}-#{direction}"}
           variant="secondary"
-          size="icon"
+          size={if @variant == "chips", do: "icon-sm", else: "icon"}
           data-scroll={direction}
           tabindex="-1"
           aria-hidden="true"

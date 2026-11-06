@@ -53,21 +53,24 @@ defmodule WatchClub.Contents.Content do
       argument :type, ContentType
 
       argument :not_watched?, :boolean do
+        allow_nil? false
         default false
         description "Hides the Content the actor has finished"
       end
 
       argument :decades, {:array, :integer} do
+        allow_nil? false
         default []
         description "Keeps the Content from one of these decades, such as 1990 for the 1990s"
       end
 
       argument :original_languages, {:array, :string} do
+        allow_nil? false
         default []
         description "Keeps the Content in one of these original languages"
       end
 
-      argument :sort, LibrarySort, default: LibrarySort.default()
+      argument :sort, LibrarySort, allow_nil?: false, default: LibrarySort.default()
 
       filter expr(has_media?)
       prepare FilterByTitle, where: present(:query)

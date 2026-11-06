@@ -32,20 +32,15 @@ defmodule WatchClubWeb.BrowsePage do
       search
       class="@container pt-group!"
     >
-      <div class="mb-cluster flex min-w-0 items-center gap-related">
-        <%!--
-          The row fades at an edge while there's more to scroll that way. It runs into the page's
-          gutter on the left only, so its right fade ends before the sort.
-        --%>
-        <.scroll_row
-          id="filters"
-          class="min-w-0 flex-1 [&_[data-scroll-track]]:mr-0 [&_[data-scroll-track]]:items-center [&_[data-scroll-track]]:gap-related [&_[data-scroll-track]]:pr-tight"
-        >
+      <div class="flex min-w-0 items-center gap-related">
+        <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
           <.filter_chip
             :for={type <- [nil | ContentType.library_display_order()]}
             id={"filter-type-#{type || "all"}"}
             on={@filters.type == type}
-            phx-click={JS.patch(browse_path(%{@filters | type: type}, @sort))}
+            phx-click="toggle_filter"
+            phx-value-filter="type"
+            phx-value-choice={type}
           >
             <:icon :if={type}><.content_type_icon type={type} /></:icon>
             {ContentType.translated_plural_label(type)}
@@ -54,9 +49,8 @@ defmodule WatchClubWeb.BrowsePage do
           <.filter_chip
             id="filter-not-watched"
             on={@filters.not_watched?}
-            phx-click={
-              JS.patch(browse_path(%{@filters | not_watched?: not @filters.not_watched?}, @sort))
-            }
+            phx-click="toggle_filter"
+            phx-value-filter="not_watched"
           >
             <:icon><Lucideicons.eye_off /></:icon>
             {dgettext("browse", "Not watched")}
@@ -75,7 +69,7 @@ defmodule WatchClubWeb.BrowsePage do
         <%!-- Shown only when it's the stream's sole child --%>
         <li id="library-empty" class="col-span-full hidden only:block">
           <.empty :if={filtered?(@filters)}>
-            <:icon><Lucideicons.search_x /></:icon>
+            <:icon><Lucideicons.funnel_x /></:icon>
             <:title>{dgettext("browse", "Nothing matches these filters")}</:title>
             <:description>{dgettext("browse", "Remove a filter to see more.")}</:description>
             <.button id="library-clear-filters" variant="secondary" patch={clear_filters_path(@sort)}>
@@ -145,7 +139,7 @@ defmodule WatchClubWeb.BrowsePage do
     >
       <:icon><Lucideicons.sliders_horizontal class="size-icon-sm" /></:icon>
       {dgettext("browse", "More")}
-      <.badge :if={@count > 0} variant="accent" size="sm">{@count}</.badge>
+      <.badge :if={@count > 0} size="sm">{@count}</.badge>
     </.button>
     """
   end
@@ -173,8 +167,8 @@ defmodule WatchClubWeb.BrowsePage do
         :for={sort <- LibrarySort.values()}
         id={"sort-#{sort}"}
         patch={browse_path(@filters, sort)}
+        checked={@sort == sort}
       >
-        <Lucideicons.check class={["text-text!", @sort != sort && "invisible"]} />
         {LibrarySort.translated_label(sort)}
       </.dropdown_menu_item>
     </.dropdown_menu>
@@ -192,48 +186,48 @@ defmodule WatchClubWeb.BrowsePage do
     <.modal
       id="more-filters"
       size="md"
+      sheet
       on_close={JS.push("close_more_filters")}
-      class="max-md:mb-0! max-md:max-h-[85svh]! max-md:w-full! max-md:max-w-none! max-md:rounded-b-none! [&>[data-slot=modal-content]]:overflow-visible"
+      class="[&>[data-slot=modal-content]]:overflow-visible"
     >
       <:title>{dgettext("browse", "Filters")}</:title>
-      <section class="flex flex-col gap-related">
-        <h3><.text_label text={dgettext("browse", "Year")} /></h3>
+      <fieldset class="flex min-w-0 flex-col gap-related">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
         <div class="flex flex-wrap gap-related">
           <.filter_chip
             :for={decade <- @options.decades}
             id={"filter-decade-#{decade}"}
             on={decade in @filters.decades}
-            phx-click={
-              JS.patch(browse_path(%{@filters | decades: toggle(@filters.decades, decade)}, @sort))
-            }
+            phx-click="toggle_filter"
+            phx-value-filter="decade"
+            phx-value-choice={decade}
             class="tabular-nums"
           >
             {dgettext("browse", "%{decade}s", decade: decade)}
           </.filter_chip>
         </div>
-      </section>
-      <section class="flex flex-col gap-related">
-        <h3><.text_label text={dgettext("browse", "Original language")} /></h3>
-        <form id="language-filters" phx-change="filter_languages" class="-mx-related flex flex-col">
-          <%!-- Sends the field when the last box is unticked --%>
-          <input type="hidden" name="languages[]" value="" />
-          <label
-            :for={language <- @options.original_languages}
-            class="flex items-center gap-related rounded-control px-related py-related text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text md:py-tight"
-          >
-            <.checkbox
-              id={"filter-language-#{language}"}
-              name="languages[]"
-              value={language}
-              checked={language in @filters.original_languages}
-            />
-            <span class="text-base leading-none" aria-hidden="true">
-              {Languages.to_flag(language)}
-            </span>
-            <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
-          </label>
-        </form>
-      </section>
+      </fieldset>
+      <fieldset class="flex min-w-0 flex-col">
+        <legend class="mb-related">
+          <.text_label text={dgettext("browse", "Original language")} />
+        </legend>
+        <label
+          :for={language <- @options.original_languages}
+          class="-mx-related flex items-center gap-related rounded-control px-related py-tight text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text pointer-coarse:min-h-touch-target"
+        >
+          <.checkbox
+            id={"filter-language-#{language}"}
+            checked={language in @filters.original_languages}
+            phx-click="toggle_filter"
+            phx-value-filter="language"
+            phx-value-choice={language}
+          />
+          <span class="text-base leading-none" aria-hidden="true">
+            {Languages.to_flag(language)}
+          </span>
+          <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
+        </label>
+      </fieldset>
       <:footer class="sticky bottom-0 -mx-cluster -mb-cluster flex-row! items-center justify-between! border-t border-border-subtle bg-surface-overlay px-cluster py-group">
         <.button
           id="more-filters-clear"
@@ -339,7 +333,7 @@ defmodule WatchClubWeb.BrowsePage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     # More's decades and original languages, while it's open
+     # More's decades and original languages while it's open, as they were when it opened
      |> assign(:filter_options, nil)}
   end
 
@@ -378,12 +372,12 @@ defmodule WatchClubWeb.BrowsePage do
     {:noreply, assign(socket, :filter_options, nil)}
   end
 
-  def handle_event("filter_languages", %{"languages" => languages}, socket) do
+  # Changes the filters from the server's own state, so quick taps all count
+  def handle_event("toggle_filter", %{"filter" => filter} = params, socket) do
     %{filters: filters, sort: sort} = socket.assigns
-    languages = Enum.reject(languages, &(&1 == ""))
 
     {:noreply,
-     push_patch(socket, to: browse_path(%{filters | original_languages: languages}, sort))}
+     push_patch(socket, to: browse_path(toggle_filter(filters, filter, params["choice"]), sort))}
   end
 
   @impl true
@@ -426,8 +420,28 @@ defmodule WatchClubWeb.BrowsePage do
     }
   end
 
-  defp list_param(nil), do: []
-  defp list_param(values), do: String.split(values, ",", trim: true)
+  defp list_param(values) when is_binary(values), do: String.split(values, ",", trim: true)
+  # Missing, or a list from a hand-edited URL such as `decades[]=1990`
+  defp list_param(_values), do: []
+
+  # The type that's on goes back to All
+  defp toggle_filter(filters, "type", type) do
+    type = Url.parse_url_param(type, ContentType.library_display_order())
+    %{filters | type: if(type == filters.type, do: nil, else: type)}
+  end
+
+  defp toggle_filter(filters, "not_watched", _value),
+    do: %{filters | not_watched?: not filters.not_watched?}
+
+  defp toggle_filter(filters, "decade", decade),
+    do: %{filters | decades: toggle_choice(filters.decades, String.to_integer(decade))}
+
+  defp toggle_filter(filters, "language", language),
+    do: %{filters | original_languages: toggle_choice(filters.original_languages, language)}
+
+  defp toggle_choice(choices, choice) do
+    if choice in choices, do: List.delete(choices, choice), else: choices ++ [choice]
+  end
 
   # Browse's URL with these filters and sort, without the ones that are off
   defp browse_path(filters, sort) do
@@ -450,10 +464,6 @@ defmodule WatchClubWeb.BrowsePage do
 
   defp filtered?(filters), do: filters != @no_filters
 
-  defp toggle(values, value) do
-    if value in values, do: List.delete(values, value), else: values ++ [value]
-  end
-
   defp load_page!(socket) do
     %{stream_state: stream_state, filters: filters, sort: sort, current_user: user} =
       socket.assigns
@@ -472,8 +482,8 @@ defmodule WatchClubWeb.BrowsePage do
     |> stream(:library, contents, reset: stream_state.status == :init)
   end
 
-  # A Content that joins the Library goes first when the newest are, one that no longer matches
-  # the filters goes, and the others update in place if they're loaded.
+  # With the Recently added sort, a Content that joins the Library goes first. One that no longer
+  # matches the filters goes, and the others update in place if they're loaded.
   defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
     %{filters: filters, sort: sort, current_user: user} = socket.assigns
 
