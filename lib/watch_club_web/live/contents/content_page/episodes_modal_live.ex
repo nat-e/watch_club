@@ -1,8 +1,8 @@
-defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
+defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   @moduledoc """
-  Every TV Show Episode of a TV Show, one season at a time, in a drawer from the right on wide
-  screens and full screen on phones. Each aired episode has a check that marks it as watched or
-  not, and Play once it's in the Library. The season has a check too.
+  Every TV Show Episode of a TV Show, one season at a time, in a big modal, full screen on phones.
+  Each aired episode has a check that marks it as watched or not, and Play once it's in the
+  Library. The season has a check too.
 
   TMDB gives a season's episodes, with their names, stills and air dates, and WatchClub their
   Media and the User's Watch Progress. WatchClub has no TV Show Episodes for a TV Show nobody
@@ -13,9 +13,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   @doc """
-  The DOM id of the drawer, which shows at most once on a page.
+  The DOM id of the modal, which shows at most once on a page.
   """
-  def dom_id, do: "episodes-drawer"
+  def dom_id, do: "episodes"
 
   @doc """
   Reloads the episodes' Media and the User's Watch Progress on them, once they changed.
@@ -43,7 +43,14 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
 
     ~H"""
     <div>
-      <.modal id="episodes-drawer-modal" side="right" on_close={@on_close} class="@container">
+      <%!-- A container for the rows' breakpoints, so it needs a width of its own --%>
+      <.modal
+        id="episodes-modal"
+        full_screen
+        size="lg"
+        on_close={@on_close}
+        class="@container w-full"
+      >
         <:title>{@title}</:title>
         <:description>
           {if @in_library?,
@@ -52,16 +59,15 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
               dgettext("contents", "It isn't in the library yet. Mark what you've watched elsewhere.")}
         </:description>
 
-        <div class="flex items-center gap-related">
+        <div class="flex flex-col gap-related">
           <.scroll_row
             :if={length(@season_numbers) > 1}
-            id="episodes-drawer-seasons"
+            id="episodes-modal-seasons"
             variant="chips"
-            class="min-w-0 flex-1"
           >
             <button
               :for={number <- @season_numbers}
-              id={"episodes-drawer-season-#{number}"}
+              id={"episodes-modal-season-#{number}"}
               type="button"
               phx-click="select_season"
               phx-value-season={number}
@@ -78,13 +84,14 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
               {dgettext("contents", "Season %{number}", number: number)}
             </button>
           </.scroll_row>
-          <span :if={length(@season_numbers) == 1} class="min-w-0 flex-1 text-sm font-semibold">
+          <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
             {dgettext("contents", "Season %{number}", number: @season.season_number)}
           </span>
-          <%!-- Its label says what it does, so it has no aria-pressed --%>
+          <%!-- Its label says what it does, so it has no aria-pressed. Its circle sits above the
+          episodes' ones. --%>
           <.button
             :if={@any_aired?}
-            id="episodes-drawer-season-watched"
+            id="episodes-modal-season-watched"
             variant="ghost"
             size="sm"
             phx-click="toggle_season"
@@ -100,15 +107,15 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
                     number: @season.season_number
                   )
             }
-            class="shrink-0 @max-md:size-control-md! @max-md:px-0!"
+            class="self-end pr-related!"
           >
-            <Lucideicons.circle_check :if={@season_watched?} class="text-success" />
-            <Lucideicons.circle :if={!@season_watched?} />
-            <span class="@max-md:sr-only">
-              {if @season_watched?,
-                do: dgettext("contents", "Season watched"),
-                else: dgettext("contents", "Mark season as watched")}
-            </span>
+            {if @season_watched?,
+              do: dgettext("contents", "Watched"),
+              else: dgettext("contents", "Mark as watched")}
+            <:icon position="end">
+              <Lucideicons.circle_check :if={@season_watched?} class="text-success" />
+              <Lucideicons.circle :if={!@season_watched?} />
+            </:icon>
           </.button>
         </div>
 

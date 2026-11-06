@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Contents.ContentPage do
   @moduledoc """
   The page of a Movie or a TV Show: what it is, from TMDB, how far the User got, with Play or
-  Resume, every TV Show Episode in a drawer, and the other Users who watched it.
+  Resume, every TV Show Episode in a modal, and the other Users who watched it.
   """
   use WatchClubWeb, :live_view
 
@@ -12,7 +12,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
-  alias WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive
+  alias WatchClubWeb.Contents.ContentPage.EpisodesModalLive
 
   # The User's Watch Progress, for the actions under the overview
   @content_load [
@@ -53,8 +53,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
       <.live_component
         :if={@episodes_open?}
-        id={EpisodesDrawerLive.dom_id()}
-        module={EpisodesDrawerLive}
+        id={EpisodesModalLive.dom_id()}
+        module={EpisodesModalLive}
         content_identity={@content_identity}
         title={title(@details)}
         season_numbers={season_numbers(@details)}
@@ -405,7 +405,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     case notification do
       %{resource: resource, metadata: %{content_identity: ^identity}}
       when resource in [Media, WatchProgress] ->
-        if socket.assigns.episodes_open?, do: EpisodesDrawerLive.reload_episodes()
+        if socket.assigns.episodes_open?, do: EpisodesModalLive.reload_episodes()
         {:noreply, load_content!(socket)}
 
       # Created when someone first marks it, or refreshed

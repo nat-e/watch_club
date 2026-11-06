@@ -39,7 +39,7 @@ msgid "Episodes"
 msgstr "Épisodes"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
 msgstr "Saison %{number}"
@@ -161,13 +161,14 @@ msgstr "Reprendre %{episode}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as watched"
 msgstr "Marquer comme vu"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr "Vu"
@@ -198,28 +199,22 @@ msgstr "Tout marquer comme vu"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as not watched"
 msgstr "Marquer comme non vu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark season %{number} as not watched"
 msgstr "Marquer la saison %{number} comme non vue"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark season %{number} as watched"
 msgstr "Marquer la saison %{number} comme vue"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark season as watched"
-msgstr "Marquer la saison comme vue"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -234,7 +229,7 @@ msgid "Nobody has watched it yet."
 msgstr "Personne ne l'a encore regardé."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
 msgstr "Pas encore sorti"
@@ -252,28 +247,22 @@ msgid "Original language: %{language}"
 msgstr "Langue originale : %{language}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Out on %{date}"
 msgstr "Sort le %{date}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play any episode, or mark what you've watched."
 msgstr "Lancez n'importe quel épisode, ou marquez ce que vous avez vu."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play episode %{number}"
 msgstr "Lire l'épisode %{number}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Season watched"
-msgstr "Saison vue"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -306,25 +295,25 @@ msgid "Who watched it"
 msgstr "Qui l'a regardé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "You're watching it"
 msgstr "Vous le regardez"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "It isn't in the library yet. Mark what you've watched elsewhere."
 msgstr "Elle n'est pas encore dans la bibliothèque. Marquez ce que vous avez vu ailleurs."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not in the library yet"
 msgstr "Pas encore dans la bibliothèque"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr "Épisode %{number} vu"

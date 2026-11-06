@@ -34,7 +34,7 @@ msgstr[1] ""
 msgid "Episodes"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
 msgstr ""
@@ -136,12 +136,13 @@ msgid "Resume %{episode}"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr ""
@@ -167,24 +168,19 @@ msgid "Mark all as watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as not watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark season %{number} as not watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark season %{number} as watched"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark season as watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -197,7 +193,7 @@ msgstr ""
 msgid "Nobody has watched it yet."
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
 msgstr ""
@@ -212,24 +208,19 @@ msgstr ""
 msgid "Original language: %{language}"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Out on %{date}"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play any episode, or mark what you've watched."
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play episode %{number}"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Season watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -257,22 +248,22 @@ msgstr ""
 msgid "Who watched it"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "You're watching it"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "It isn't in the library yet. Mark what you've watched elsewhere."
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not in the library yet"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr ""

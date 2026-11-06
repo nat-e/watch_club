@@ -27,14 +27,9 @@ defmodule WatchClubWeb.Components.UI.Modal do
     default: "none",
     doc: "Maximum modal width."
 
-  attr :side, :string,
-    values: ~w(center right),
-    default: "center",
-    doc:
-      "right: a drawer along the right side of the screen, full screen on phones, whose width `size` doesn't change."
-
   attr :on_close, JS, required: true
   attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
+  attr :full_screen, :boolean, default: false, doc: "Fills the screen on phones."
   attr :rest, :global
 
   slot :title, required: true do
@@ -62,39 +57,36 @@ defmodule WatchClubWeb.Components.UI.Modal do
       aria-describedby={@description != [] && "#{@id}-description"}
       data-slot="modal"
       data-on-close={@on_close}
-      class={[
-        "border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
-        @side == "center" && "m-auto p-related rounded-card border",
-        @side == "right" &&
-          "my-0 mr-0 ml-auto h-svh max-h-svh w-full max-w-none md:max-w-lg md:border-l",
-        @side == "center" && @size == "sm" && "sm:max-w-md",
-        @side == "center" && @size == "md" && "sm:max-w-lg",
-        @side == "center" && @size == "lg" && "sm:max-w-2xl",
-        @sheet &&
-          "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
-        @class
-      ]}
+      class={
+        [
+          "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+          @size == "sm" && "sm:max-w-md",
+          @size == "md" && "sm:max-w-lg",
+          @size == "lg" && "sm:max-w-2xl",
+          @sheet &&
+            "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
+          # A column only while open: the browser hides a closed dialog with a display we'd override
+          "open:flex open:flex-col",
+          @full_screen &&
+            "max-md:m-0 max-md:h-svh max-md:max-h-svh max-md:w-full max-md:max-w-none! max-md:rounded-none max-md:border-0",
+          @class
+        ]
+      }
       phx-hook=".Modal"
       phx-mounted={JS.ignore_attributes("open")}
       {@rest}
     >
       <div
         data-slot="modal-content"
-        class={
-          [
-            "flex w-full flex-col gap-cluster overflow-y-auto text-sm text-text",
-            @side == "center" && "p-cluster",
-            # The drawer's content scrolls under its header, so the close button stays
-            @side == "right" && "h-full px-page pb-cluster"
-          ]
-        }
+        class={[
+          "flex min-h-0 w-full flex-col gap-cluster overflow-y-auto px-cluster pb-cluster text-sm text-text",
+          @full_screen && "max-md:px-page"
+        ]}
       >
+        <%!-- Long content scrolls under the header, so the title and the close button stay --%>
         <header
           data-slot="modal-header"
-          class={[
-            "flex flex-col gap-related pr-10",
-            @side == "right" && "sticky top-0 z-10 bg-surface-overlay pt-cluster pb-related"
-          ]}
+          class="sticky top-0 z-10 flex flex-col gap-related bg-surface-overlay pt-cluster pr-10"
         >
           <h2
             :for={title <- @title}
