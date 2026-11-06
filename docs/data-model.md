@@ -64,6 +64,7 @@ classDiagram
     string original_language
     string origin_country
     date release_date
+    Genre[] genres
     «unique» external_id_source + external_id
   }
   class ContentType {
@@ -71,6 +72,34 @@ classDiagram
     movie
     tv_show
     book
+  }
+  class Genre {
+    <<enumeration>>
+    action
+    adventure
+    animation
+    comedy
+    crime
+    documentary
+    drama
+    family
+    fantasy
+    history
+    horror
+    kids
+    music
+    mystery
+    news
+    politics
+    reality
+    romance
+    science_fiction
+    soap
+    talk
+    thriller
+    tv_movie
+    war
+    western
   }
   class ExternalIdSource {
     <<enumeration>>

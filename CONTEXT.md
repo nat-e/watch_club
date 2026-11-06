@@ -280,6 +280,10 @@ _Avoid_: Localization, translation, localized content
 The content localization selected for a user based on their preferred locale.
 _Avoid_: Best localization, current localization
 
+**Genre**:
+A kind of story a **Movie** or **TV Show** tells, such as Drama or Comedy.
+_Avoid_: Category, tag
+
 **Library**:
 All the **Content** that is available on the **Instance** and has **Media**.
 _Avoid_: Catalog, available content, server content
@@ -527,6 +531,8 @@ _Avoid_: Group, aggregate, card, item
 - A **Content** has exactly one **Content Type**
 - A **Content** can have multiple **Content Localizations**
 - A **Content** has at most one **Content Localization** per **Locale**
+- A **Movie** or **TV Show** has zero or more **Genres**, from its **Metadata Provider**
+- **Movies** and **TV Shows** share the same **Genres**: a TMDB TV genre that combines two, such as Action & Adventure, gives both
 - A **TV Show** has zero or more **TV Show Episodes**
 - A **TV Show Episode** belongs to exactly one **TV Show**
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number

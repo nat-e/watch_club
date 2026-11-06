@@ -8,7 +8,7 @@ defmodule WatchClubWeb.BrowsePage do
   import WatchClubWeb.Components.Contents.ContentTypeIcon
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.{Content, LibrarySort}
+  alias WatchClub.Contents.{Content, Genre, LibrarySort}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
@@ -18,7 +18,7 @@ defmodule WatchClubWeb.BrowsePage do
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
   @content_fields [:implementation, :actor_progress_status]
-  @no_filters %{type: nil, not_watched?: false, decades: [], original_languages: []}
+  @no_filters %{type: nil, not_watched?: false, genres: [], decades: [], original_languages: []}
 
   @impl true
   def render(assigns) do
@@ -134,14 +134,10 @@ defmodule WatchClubWeb.BrowsePage do
 
   attr :filters, :map, required: true
 
-  # Opens the decades and original languages, with how many of them are on
+  # Opens the genres, decades and original languages, with how many of them are on
   defp more_button(assigns) do
-    assigns =
-      assign(
-        assigns,
-        :count,
-        Enum.count([assigns.filters.decades, assigns.filters.original_languages], &(&1 != []))
-      )
+    %{genres: genres, decades: decades, original_languages: languages} = assigns.filters
+    assigns = assign(assigns, :count, Enum.count([genres, decades, languages], &(&1 != [])))
 
     ~H"""
     <.button
@@ -196,14 +192,33 @@ defmodule WatchClubWeb.BrowsePage do
   end
 
   attr :filters, :map, required: true
-  attr :options, :map, required: true, doc: "the Library's decades and original languages"
 
-  # From the bottom of the screen on phones. Each choice applies at once.
+  attr :options, :map,
+    required: true,
+    doc: "the Library's genres, decades and original languages"
+
+  # From the bottom of the screen on phones. Each choice applies at once, and a list without
+  # choices is left out.
   defp more_filters(assigns) do
     ~H"""
     <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
-      <fieldset class="flex min-w-0 flex-col gap-related">
+      <fieldset :if={@options.genres != []} class="flex min-w-0 flex-col gap-related">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Genre")} /></legend>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            :for={genre <- @options.genres}
+            id={"filter-genre-#{genre}"}
+            on={genre in @filters.genres}
+            phx-click="change_filter"
+            phx-value-filter="genre"
+            phx-value-choice={genre}
+          >
+            {Genre.translated_label(genre)}
+          </.filter_chip>
+        </div>
+      </fieldset>
+      <fieldset :if={@options.decades != []} class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
         <div class="flex flex-wrap gap-related">
           <.filter_chip
@@ -219,7 +234,7 @@ defmodule WatchClubWeb.BrowsePage do
           </.filter_chip>
         </div>
       </fieldset>
-      <fieldset class="flex min-w-0 flex-col">
+      <fieldset :if={@options.original_languages != []} class="flex min-w-0 flex-col">
         <legend class="mb-related">
           <.text_label text={dgettext("browse", "Original language")} />
         </legend>
@@ -332,7 +347,7 @@ defmodule WatchClubWeb.BrowsePage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     # More's decades and original languages while it's open, as they were when it opened
+     # More's genres, decades and original languages while it's open, as they were when it opened
      |> assign(:filter_options, nil)}
   end
 
@@ -401,20 +416,15 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
-  # The filters in the URL. Unknown types and decades that aren't numbers are left out.
+  # The filters in the URL. Unknown types and genres, and decades that aren't numbers, are left out.
   defp filters(params) do
     %{
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
       not_watched?: params["not_watched"] == "true",
+      genres:
+        for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
-        params["decades"]
-        |> list_param()
-        |> Enum.flat_map(fn decade ->
-          case Integer.parse(decade) do
-            {decade, ""} -> [decade]
-            _not_a_number -> []
-          end
-        end),
+        for({decade, ""} <- Enum.map(list_param(params["decades"]), &Integer.parse/1), do: decade),
       original_languages: list_param(params["languages"])
     }
   end
@@ -431,6 +441,11 @@ defmodule WatchClubWeb.BrowsePage do
 
   defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
+
+  defp change_filter(filters, "genre", genre) do
+    {:ok, genre} = Genre.match(genre)
+    %{filters | genres: toggle_choice(filters.genres, genre)}
+  end
 
   defp change_filter(filters, "decade", decade),
     do: %{filters | decades: toggle_choice(filters.decades, String.to_integer(decade))}
@@ -449,6 +464,7 @@ defmodule WatchClubWeb.BrowsePage do
         [
           type: filters.type,
           not_watched: filters.not_watched?,
+          genres: Enum.join(filters.genres, ","),
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),
           sort: sort != LibrarySort.default() && sort

@@ -2,6 +2,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
   use Ash.Resource.Change
 
   alias WatchClub.Accounts.UserLocale
+  alias WatchClub.Contents.Genre
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
@@ -38,6 +39,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
     |> Ash.Changeset.force_change_attribute(:original_language, tv_show.original_language)
     |> Ash.Changeset.force_change_attribute(:origin_country, List.first(tv_show.origin_country))
     |> Ash.Changeset.force_change_attribute(:release_date, tv_show.first_air_date)
+    |> Ash.Changeset.force_change_attribute(:genres, Genre.from_tmdb(tv_show.genres))
   end
 
   defp set_tv_show(%Ash.Changeset{} = changeset, %TvDetailsResponse{} = tv_show) do

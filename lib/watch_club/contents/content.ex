@@ -12,6 +12,7 @@ defmodule WatchClub.Contents.Content do
     ContentIdentity,
     ContentType,
     ExternalIdSource,
+    Genre,
     LibrarySort,
     Movie,
     SearchContentType,
@@ -58,6 +59,12 @@ defmodule WatchClub.Contents.Content do
         description "Hides the Content the actor has finished"
       end
 
+      argument :genres, {:array, Genre} do
+        allow_nil? false
+        default []
+        description "Keeps the Content that has any of these genres"
+      end
+
       argument :decades, {:array, :integer} do
         allow_nil? false
         default []
@@ -78,6 +85,9 @@ defmodule WatchClub.Contents.Content do
 
       prepare build(filter: expr(actor_progress_status != :completed)),
         where: argument_equals(:not_watched?, true)
+
+      prepare build(filter: expr(intersects(genres, ^arg(:genres)))),
+        where: argument_does_not_equal(:genres, [])
 
       prepare build(filter: expr(decade in ^arg(:decades))),
         where: argument_does_not_equal(:decades, [])
@@ -171,9 +181,10 @@ defmodule WatchClub.Contents.Content do
     end
 
     action :library_filter_options, :map do
-      description "The decades and original languages that Browse lets the actor filter by"
+      description "The genres, decades and original languages that Browse lets the actor filter by"
 
       constraints fields: [
+                    genres: [type: {:array, Genre}, allow_nil?: false],
                     decades: [type: {:array, :integer}, allow_nil?: false],
                     original_languages: [type: {:array, :string}, allow_nil?: false]
                   ]
@@ -226,6 +237,12 @@ defmodule WatchClub.Contents.Content do
 
     attribute :release_date, :date do
       allow_nil? true
+      public? true
+    end
+
+    attribute :genres, {:array, Genre} do
+      allow_nil? false
+      default []
       public? true
     end
 
