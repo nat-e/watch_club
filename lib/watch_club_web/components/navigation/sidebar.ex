@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar do
     >
       <.lucide_icon name={@section.icon} />
       <span class="min-w-0 flex-1 truncate">{@section.label}</span>
-      <Sections.section_badge count={@section.badge} />
+      <.unread_badge count={@section.badge} label={@section.badge_label} />
     </.link>
     """
   end

@@ -3,6 +3,7 @@ defmodule WatchClub.Accounts.User do
 
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
+  alias WatchClub.Conversations.Participant
   alias WatchClub.Lists.ContentList
   alias WatchClub.Requests.RequestSubscriber
 
@@ -124,6 +125,7 @@ defmodule WatchClub.Accounts.User do
                   :settings,
                   :lists,
                   :ready_unseen_request_count,
+                  :unread_conversation_count,
                   memberships: [club: [:libraries]]
                 ],
                 context: %{private: %{authorize?: false}}
@@ -141,6 +143,7 @@ defmodule WatchClub.Accounts.User do
                   :settings,
                   :lists,
                   :ready_unseen_request_count,
+                  :unread_conversation_count,
                   memberships: [club: [:libraries]]
                 ]
               )
@@ -487,11 +490,19 @@ defmodule WatchClub.Accounts.User do
       destination_attribute :owner_id
     end
 
+    # The User's place in each Conversation they're in
+    has_many :participations, Participant
+
     has_many :request_subscriptions, RequestSubscriber
   end
 
   aggregates do
-    # The Requests tab's badge
+    # The Inbox tab's count
+    count :unread_conversation_count, :participations do
+      filter expr(unread_count > 0)
+    end
+
+    # The Requests tab's count
     count :ready_unseen_request_count, :request_subscriptions do
       filter expr(ready_unseen?)
     end

@@ -385,7 +385,32 @@ msgid "The media type is required"
 msgstr "Le type de média est requis"
 
 # AI-translated (Claude)
+#: lib/watch_club/conversations/conversation.ex
+#, elixir-autogen, elixir-format
+msgid "Choose at least one person"
+msgstr "Choisissez au moins une personne"
+
+# AI-translated (Claude)
+#: lib/watch_club/conversations/conversation.ex
+#: lib/watch_club/conversations/message.ex
+#, elixir-autogen, elixir-format
+msgid "The message cannot be longer than %{max} characters"
+msgstr "Le message ne peut pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/conversations/message.ex
+#, elixir-autogen, elixir-format
+msgid "Write a message"
+msgstr "Écrivez un message"
+
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request.ex
 #, elixir-autogen, elixir-format
 msgid "This has already been requested"
 msgstr "Cela a déjà été demandé"
+
+# AI-translated (Claude)
+#: lib/watch_club/conversations/participant.ex
+#, elixir-autogen, elixir-format
+msgid "This person is already in the conversation"
+msgstr "Cette personne est déjà dans la conversation"

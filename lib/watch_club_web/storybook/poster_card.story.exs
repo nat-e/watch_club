@@ -1,7 +1,9 @@
 defmodule WatchClubWeb.Storybook.PosterCard do
   use PhoenixStorybook.Story, :component
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, Movie, MovieLocalization}
+  alias WatchClub.Conversations.Conversation
   alias WatchClubWeb.Components.Contents.{PlayOrRequestButton, PosterCard}
 
   def function, do: &PosterCard.poster_card/1
@@ -18,24 +20,26 @@ defmodule WatchClubWeb.Storybook.PosterCard do
 
   def variations do
     [
-      variation(:not_watched, "Not watched", :not_started, false),
-      variation(:in_progress, "In progress", :in_progress, false),
-      variation(:watched, "Watched", :completed, false),
+      variation(:not_watched, "Not watched", :not_started, false, []),
+      variation(:in_progress, "In progress", :in_progress, false, []),
+      variation(:watched, "Watched", :completed, false, []),
+      variation(:recommended, "Recommended by two Users", :not_started, false, ["lea", "vinz"]),
       variation(
         :ready_unseen,
         "Ready unseen, on My Requests: ringed, with a New badge instead of its progress",
         :in_progress,
-        true
+        true,
+        []
       )
     ]
   end
 
-  defp variation(id, description, progress_status, ready_unseen) do
+  defp variation(id, description, progress_status, ready_unseen, recommenders) do
     %Variation{
       id: id,
       description: description,
       attributes: %{
-        content: content(progress_status),
+        content: content(progress_status, recommenders),
         locale: :en_US,
         ready_unseen: ready_unseen
       },
@@ -56,7 +60,7 @@ defmodule WatchClubWeb.Storybook.PosterCard do
     }
   end
 
-  defp content(progress_status) do
+  defp content(progress_status, recommenders) do
     %Content{
       id: "dune",
       type: :movie,
@@ -66,6 +70,10 @@ defmodule WatchClubWeb.Storybook.PosterCard do
       original_language: "en",
       release_date: ~D[2021-09-15],
       actor_progress_status: progress_status,
+      actor_recommendations:
+        for username <- recommenders do
+          %Conversation{recommended_by: %User{id: username, username: username}}
+        end,
       implementation: %Movie{
         best_localization: %MovieLocalization{
           title: "Dune",

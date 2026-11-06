@@ -25,6 +25,7 @@ msgstr "Casting"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"
@@ -323,6 +324,103 @@ msgstr "Vous serez prévenu quand ce sera prêt"
 #, elixir-autogen, elixir-format
 msgid "Get notified when %{title} is ready"
 msgstr "Être prévenu quand %{title} sera prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{recommender} recommended it"
+msgstr "Recommandation de %{recommender}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Annuler"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Conversations"
+msgstr "Conversations"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message (optional)"
+msgstr "Message (facultatif)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "People"
+msgstr "Personnes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend"
+msgstr "Recommander"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend %{title}"
+msgstr "Recommander %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended it to you"
+msgstr "Vous a recommandé ce titre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended to %{names}. The conversation is in your Inbox."
+msgstr "Recommandé à %{names}. La conversation est dans votre messagerie."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts a conversation with %{name}."
+msgstr "Démarre une conversation avec %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts one group conversation with %{names}."
+msgstr "Démarre une conversation de groupe avec %{names}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "To one person or several. Several people share one conversation."
+msgstr "À une personne ou plusieurs. Plusieurs personnes partagent une seule conversation."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Why they'd love it"
+msgstr "Pourquoi ça va leur plaire"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You recommended it"
+msgstr "Votre recommandation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "to %{recipients}"
+msgstr "à %{recipients}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend it to people, with a message if you want. It starts a conversation."
+msgstr "Recommandez ce titre à des personnes, avec un message si vous le souhaitez. Cela démarre une conversation."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex

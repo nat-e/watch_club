@@ -55,6 +55,22 @@ defmodule WatchClub.Integrations.Tmdb.Types do
         posters: Enum.map(data["posters"] || [], &Image.from_api/1)
       }
     end
+
+    @doc """
+    The path of the backdrop to show: one without text first, then a 16:9 one. Nil when there's
+    none.
+    """
+    @spec best_backdrop_path(t() | nil) :: String.t() | nil
+    def best_backdrop_path(%__MODULE__{backdrops: [_ | _] = backdrops}) do
+      backdrops
+      |> Enum.min_by(fn backdrop ->
+        # Language-neutral first: nil → false. Then 16:9, which TMDB rounds up to 1.778.
+        {not is_nil(backdrop.iso_639_1), backdrop.aspect_ratio != 1.778}
+      end)
+      |> Map.fetch!(:file_path)
+    end
+
+    def best_backdrop_path(_images), do: nil
   end
 
   defmodule SpokenLanguage do

@@ -47,6 +47,10 @@ defmodule WatchClubWeb.Layouts do
   attr :content_page?, :boolean, default: false, doc: "the page of a movie or TV Show"
   attr :search, :boolean, default: false, doc: "shows the search field in the bar"
 
+  attr :full_screen?, :boolean,
+    default: false,
+    doc: "on phones, hides the bar and the tabs, as an open Conversation does"
+
   slot :inner_block, required: true
 
   slot :hero,
@@ -69,7 +73,10 @@ defmodule WatchClubWeb.Layouts do
         instance_settings={@instance_settings}
       />
 
-      <div class="pb-(--wc-tab-bar-height) md:pb-0 md:pl-(--wc-sidebar-width)">
+      <div class={[
+        "md:pb-0 md:pl-(--wc-sidebar-width)",
+        !@full_screen? && "pb-(--wc-tab-bar-height)"
+      ]}>
         <.app_bar
           title={@title}
           content_page?={@content_page?}
@@ -77,6 +84,7 @@ defmodule WatchClubWeb.Layouts do
           search={@search}
           current_url={@current_url}
           current_user={@current_user}
+          class={@full_screen? && "max-md:hidden"}
         />
 
         <main class={["relative", @content_page? && "-mt-(--wc-app-bar-height)"]}>
@@ -90,7 +98,11 @@ defmodule WatchClubWeb.Layouts do
         </main>
       </div>
 
-      <.tab_bar current_path={@current_url.path} current_user={@current_user} />
+      <.tab_bar
+        current_path={@current_url.path}
+        current_user={@current_user}
+        class={@full_screen? && "max-md:hidden"}
+      />
     </div>
 
     <.flash flash={@flash} />

@@ -1,19 +1,24 @@
 defmodule WatchClubWeb.Contents.ContentPage do
   @moduledoc """
   The page of a Movie or a TV Show: what it is, from TMDB, how far the User got, with Play or
-  Resume, every TV Show Episode in a modal, and the other Users who watched it.
+  Resume, every TV Show Episode in a modal, the User's Conversations about it, with Recommend
+  Content, and the other Users who watched it.
   """
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Accounts.UserAvatar
+  import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
 
   alias WatchClub.Contents.Rating
+  alias WatchClub.Conversations
+  alias WatchClub.Conversations.{Conversation, Message, Participant}
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
-  alias WatchClubWeb.Contents.ContentPage.EpisodesModalLive
+  alias WatchClubWeb.Contents.ContentPage.{EpisodesModalLive, RecommendModalLive}
 
   # The User's Watch Progress, for the actions under the overview
   @content_load [
@@ -47,6 +52,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         />
 
         <div class="flex flex-col gap-section px-page pt-cluster pb-page-y">
+          <.conversations_section conversations={@conversations} current_user={@current_user} />
           <.watchers_section watchers={@watchers} locale={@current_user.settings.locale} />
           <.cast_section credits={@details.credits} />
         </div>
@@ -63,6 +69,21 @@ defmodule WatchClubWeb.Contents.ContentPage do
         in_library?={in_library?(@content)}
         current_user={@current_user}
         on_close={JS.push("close_episodes")}
+      />
+
+      <.live_component
+        :if={@recommend_open?}
+        id="recommend"
+        module={RecommendModalLive}
+        content_identity={@content_identity}
+        title={title(@details)}
+        recommended_by_ids={
+          for conversation <- @conversations,
+              conversation.recommended_by_id != @current_user.id,
+              do: conversation.recommended_by_id
+        }
+        current_user={@current_user}
+        on_close={fn -> send(self(), :close_recommend) end}
       />
     </Layouts.app>
     """
@@ -281,6 +302,101 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
+  attr :conversations, :list,
+    required: true,
+    doc: "the User's Conversations about it, intentionally small"
+
+  attr :current_user, User, required: true
+
+  # The User's Conversations about it, then a card to Recommend Content, which starts another
+  defp conversations_section(assigns) do
+    ~H"""
+    <.page_section id="conversations-heading" title={dgettext("contents", "Conversations")}>
+      <.scroll_row id="conversations">
+        <.conversation_card
+          :for={conversation <- @conversations}
+          conversation={conversation}
+          current_user={@current_user}
+        />
+        <button
+          id="recommend-card"
+          type="button"
+          phx-click="open_recommend"
+          aria-haspopup="dialog"
+          class="flex w-80 shrink-0 snap-start items-center gap-group rounded-card border border-accent-border bg-accent-bg p-group text-left shadow-card transition-colors hover:border-accent"
+        >
+          <span class="grid size-control-lg shrink-0 place-items-center rounded-full border border-accent-border text-accent">
+            <Lucideicons.send class="size-icon" />
+          </span>
+          <span class="flex min-w-0 flex-col gap-tight">
+            <span class="font-semibold text-accent">{dgettext("contents", "Recommend")}</span>
+            <span class="text-sm text-text-muted">
+              {dgettext(
+                "contents",
+                "Recommend it to people, with a message if you want. It starts a conversation."
+              )}
+            </span>
+          </span>
+        </button>
+      </.scroll_row>
+    </.page_section>
+    """
+  end
+
+  attr :conversation, Conversation, required: true
+  attr :current_user, User, required: true
+
+  # A Conversation read as a sentence: who recommended it and when, its text as a quote, then who
+  # it went to. It opens the Conversation in the Inbox.
+  defp conversation_card(assigns) do
+    ~H"""
+    <.link
+      id={"conversation-#{@conversation.id}"}
+      navigate={~p"/inbox/#{@conversation.id}"}
+      class="flex w-80 shrink-0 snap-start flex-col gap-group rounded-card border border-border-subtle bg-surface p-group text-left shadow-card transition-colors hover:bg-surface-hover"
+    >
+      <span class="flex flex-col gap-related">
+        <span class="flex items-center gap-related text-sm">
+          <span aria-hidden="true"><.user_avatar user={@conversation.recommended_by} /></span>
+          <span class="min-w-0 flex-1 truncate text-text-muted">
+            {recommended_it(@conversation, @current_user)}
+          </span>
+          <span class="shrink-0 text-xs text-text-subtle">
+            {Time.relative_from_now(@conversation.inserted_at, @current_user.settings.locale)}
+          </span>
+        </span>
+        <.recommendation_text
+          :if={@conversation.recommendation.body}
+          body={@conversation.recommendation.body}
+          class="text-lg"
+        />
+      </span>
+      <span class="line-clamp-2 text-xs text-text-muted">{to_recipients(assigns)}</span>
+    </.link>
+    """
+  end
+
+  # "to [avatars] you, leadelpeut and vinz"
+  defp to_recipients(assigns) do
+    recipients =
+      gtcomponent(~H"""
+      <.recipients conversation={@conversation} current_user={@current_user} ring="ring-surface" />
+      """)
+
+    raw(dgettext("contents", "to %{recipients}", recipients: recipients))
+  end
+
+  defp recommended_it(%Conversation{recommended_by_id: id}, %User{id: id}),
+    do: dgettext("contents", "You recommended it")
+
+  defp recommended_it(conversation, _user) do
+    raw(
+      dgettext("contents", "%{recommender} recommended it",
+        recommender: gtspan(username(conversation.recommended_by), "font-semibold text-text")
+      )
+    )
+  end
+
   attr :watchers, :list, required: true, doc: "the `Watcher`s, intentionally small: the Users"
   attr :locale, :atom, required: true
 
@@ -407,7 +523,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> WatchClub.PubSub.subscribe_if_connected("history:global")
-     |> assign(:episodes_open?, false)}
+     |> assign(episodes_open?: false, recommend_open?: false)}
   end
 
   @impl true
@@ -420,7 +536,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
        socket
        |> assign(details: details, content_identity: identity)
        |> load_content!()
-       |> load_watchers!()}
+       |> load_watchers!()
+       |> load_conversations!()}
     else
       _not_found ->
         {:noreply,
@@ -444,6 +561,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
   def handle_event("close_episodes", _params, socket),
     do: {:noreply, assign(socket, :episodes_open?, false)}
 
+  def handle_event("open_recommend", _params, socket),
+    do: {:noreply, assign(socket, :recommend_open?, true)}
+
   def handle_event("toggle_watched", _params, socket) do
     %{content_identity: identity, content: content, current_user: user} = socket.assigns
 
@@ -454,8 +574,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
     {:noreply, socket}
   end
 
-  # Another User's Watch Progress, from history:global, only changes Who watched it
   @impl true
+  def handle_info(:close_recommend, socket),
+    do: {:noreply, assign(socket, :recommend_open?, false)}
+
+  # Another User's Watch Progress, from history:global, only changes Who watched it
   def handle_info(
         %Notification{resource: WatchProgress, data: %{user_id: user_id}} = notification,
         socket
@@ -477,10 +600,17 @@ defmodule WatchClubWeb.Contents.ContentPage do
         if socket.assigns.episodes_open?, do: EpisodesModalLive.reload_episodes()
         {:noreply, load_content!(socket)}
 
-      # Created when someone first marks it, or refreshed
+      # Created when someone first marks it or recommends it, or refreshed
       %{resource: Content, data: %Content{} = content} ->
         if ContentIdentity.from_content(content) == identity,
           do: {:noreply, socket |> load_content!() |> load_watchers!()},
+          else: {:noreply, socket}
+
+      # A Conversation about it that the User is in started, or got a Message
+      %{resource: resource, metadata: %{content_id: content_id}}
+      when resource in [Participant, Message] ->
+        if socket.assigns.content && socket.assigns.content.id == content_id,
+          do: {:noreply, load_conversations!(socket)},
           else: {:noreply, socket}
 
       _other ->
@@ -497,6 +627,22 @@ defmodule WatchClubWeb.Contents.ContentPage do
       Contents.get_content_by_external_id!(identity.external_id_source, identity.external_id,
         load: @content_load,
         not_found_error?: false,
+        actor: user
+      )
+    )
+  end
+
+  defp load_conversations!(%{assigns: %{content: nil}} = socket),
+    do: assign(socket, :conversations, [])
+
+  defp load_conversations!(socket) do
+    %{content: content, current_user: user} = socket.assigns
+
+    assign(
+      socket,
+      :conversations,
+      Conversations.list_conversations!(%{content_id: content.id},
+        load: [:recommendation, :recommended_by, recipients: [:user]],
         actor: user
       )
     )
@@ -547,13 +693,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp progress(_content, _locale), do: nil
 
-  # The seasons of a TV Show with episodes, without its specials
-  defp season_numbers(%TvDetailsResponse{} = details) do
-    for season <- details.seasons,
-        season.season_number >= 1 and season.episode_count > 0,
-        do: season.season_number
-  end
-
   # The season of the episode Play plays, else the first one
   defp current_season_number(
          %Content{implementation: %TvShow{actor_next_episode: %TvShowEpisode{} = episode}},
@@ -562,6 +701,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
        do: episode.season_number
 
   defp current_season_number(_content, details), do: details |> season_numbers() |> List.first()
+
+  # The seasons of a TV Show with episodes, without its specials
+  defp season_numbers(%TvDetailsResponse{} = details) do
+    for season <- details.seasons,
+        season.season_number >= 1 and season.episode_count > 0,
+        do: season.season_number
+  end
 
   defp title(%MovieDetailsResponse{title: title}), do: title
   defp title(%TvDetailsResponse{name: name}), do: name

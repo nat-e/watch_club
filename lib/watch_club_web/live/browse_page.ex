@@ -8,6 +8,7 @@ defmodule WatchClubWeb.BrowsePage do
   import WatchClubWeb.Components.Contents.ContentTypeIcon
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
+  alias WatchClub.Conversations.Participant
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
@@ -16,10 +17,15 @@ defmodule WatchClubWeb.BrowsePage do
 
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
-  @content_fields [:implementation, :actor_progress_status]
+  @content_fields [
+    :implementation,
+    :actor_progress_status,
+    actor_recommendations: [:recommended_by]
+  ]
   @no_filters %{
     type: nil,
     not_watched?: false,
+    recommended?: false,
     genres: [],
     decades: [],
     original_languages: [],
@@ -89,6 +95,15 @@ defmodule WatchClubWeb.BrowsePage do
           >
             <:icon><Lucideicons.eye_off /></:icon>
             {dgettext("browse", "Not watched")}
+          </.filter_chip>
+          <.filter_chip
+            id="filter-recommended"
+            on={@filters.recommended?}
+            phx-click="change_filter"
+            phx-value-filter="recommended"
+          >
+            <:icon><Lucideicons.user_round_check /></:icon>
+            {dgettext("browse", "Recommended to me")}
           </.filter_chip>
           <.divider />
           <.more_button filters={@filters} />
@@ -380,6 +395,10 @@ defmodule WatchClubWeb.BrowsePage do
       %{resource: WatchProgress, metadata: %{content_id: id}} ->
         {:noreply, update_poster!(socket, id)}
 
+      # Someone may have recommended it to the User
+      %{resource: Participant, action: %{name: :create}, metadata: %{content_id: id}} ->
+        {:noreply, update_poster!(socket, id)}
+
       _other ->
         {:noreply, socket}
     end
@@ -391,6 +410,7 @@ defmodule WatchClubWeb.BrowsePage do
     %{
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
       not_watched?: params["not_watched"] == "true",
+      recommended?: params["recommended"] == "true",
       genres:
         for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
@@ -416,6 +436,9 @@ defmodule WatchClubWeb.BrowsePage do
   defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
 
+  defp change_filter(filters, "recommended", _choice),
+    do: %{filters | recommended?: not filters.recommended?}
+
   defp change_filter(filters, "genre", genre) do
     {:ok, genre} = Genre.match(genre)
     %{filters | genres: toggle_choice(filters.genres, genre)}
@@ -438,6 +461,7 @@ defmodule WatchClubWeb.BrowsePage do
         [
           type: filters.type,
           not_watched: filters.not_watched?,
+          recommended: filters.recommended?,
           genres: Enum.join(filters.genres, ","),
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),

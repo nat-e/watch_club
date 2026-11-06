@@ -27,8 +27,9 @@ defmodule WatchClub.Requests.ContentRequest do
   require Ash.Sort
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Requests.Changes.{CreateMediaSourceRequests, EnsureContentExists}
+  alias WatchClub.Requests.Changes.CreateMediaSourceRequests
 
   alias WatchClub.Requests.{ContentRequestStatus, MediaSourceRequest, RequestSubscriber}
 

@@ -16,7 +16,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     :ready_unseen_for_actor?,
     :status,
     :download_progress,
-    content: [:implementation, :actor_progress_status]
+    content: [:implementation, :actor_progress_status, actor_recommendations: [:recommended_by]]
   ]
 
   @impl true

@@ -1,8 +1,9 @@
 defmodule WatchClubWeb.Components.Contents.PosterCard do
   @moduledoc """
-  A Content's poster that opens its page, as on Browse: a badge once watched or while in progress,
-  and on hover its name, rating, original language and year, with its Play button. Screens that
-  can't hover show them on a first tap, and the next one opens the Content or plays it.
+  A Content's poster that opens its page, as on Browse: the avatars of who recommended it to the
+  User, a badge once watched or while in progress, and on hover its name, rating, original
+  language and year, with its Play button. Screens that can't hover show them on a first tap, and
+  the next one opens the Content or plays it.
   """
   use WatchClubWeb, :component
 
@@ -13,9 +14,9 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
 
   attr :content, Content,
     required: true,
-    doc: "with its `implementation` and `actor_progress_status` loaded"
+    doc: "with its `implementation`, `actor_progress_status` and `actor_recommendations` loaded"
 
-  attr :locale, :atom, required: true, doc: "the locale its rating is written in"
+  attr :locale, :atom, required: true, doc: "the User's locale"
 
   attr :ready_unseen, :boolean,
     default: false,
@@ -28,6 +29,11 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       assigns
       |> assign(:title, assigns.content.implementation.best_localization.title)
       |> assign(:badge_id, "poster-badge-#{assigns.content.id}")
+      |> assign(:recommenders_id, "recommenders-#{assigns.content.id}")
+      |> assign(
+        :recommenders,
+        assigns.content.actor_recommendations |> Enum.map(& &1.recommended_by) |> Enum.uniq()
+      )
 
     ~H"""
     <div class="group relative">
@@ -39,6 +45,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
           @ready_unseen && "ring-2 ring-accent ring-offset-2 ring-offset-canvas"
         ]}
       >
+        <.recommenders id={@recommenders_id} users={@recommenders} locale={@locale} />
         <.badge
           :if={@ready_unseen}
           id={@badge_id}
@@ -84,8 +91,13 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
         navigate={Url.content_details_link(ContentIdentity.from_content(@content))}
         aria-label={@title}
         aria-describedby={
-          (@ready_unseen or @content.actor_progress_status in [:completed, :in_progress]) &&
-            @badge_id
+          [
+            @recommenders != [] && @recommenders_id,
+            (@ready_unseen or @content.actor_progress_status in [:completed, :in_progress]) &&
+              @badge_id
+          ]
+          |> Enum.filter(& &1)
+          |> Enum.join(" ")
         }
         class="absolute inset-0 rounded-lg"
       ></.link>
@@ -102,6 +114,53 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       ></button>
     </div>
     """
+  end
+
+  attr :id, :string, required: true
+  attr :users, :list, required: true, doc: "who recommended it to the User, the latest first"
+  attr :locale, :atom, required: true
+
+  # The avatars of who recommended it to the User
+  defp recommenders(assigns) do
+    assigns = assign(assigns, :label, recommended_by(assigns.users, assigns.locale))
+
+    ~H"""
+    <span
+      :if={@users != []}
+      id={@id}
+      role="img"
+      aria-label={@label}
+      title={@label}
+      class="absolute top-related left-related"
+    >
+      <.avatar_group
+        avatars={Enum.map(@users, &%{id: &1.id, name: &1.username})}
+        avatar_size="sm"
+        avatar_class="ring-2 ring-black/40"
+        class="-space-x-1.5!"
+      />
+    </span>
+    """
+  end
+
+  # "From guigui74", "From guigui74 and vinz", "From guigui74 and 2 others"
+  defp recommended_by([user | others], _locale) when length(others) > 1 do
+    dngettext(
+      "browse",
+      "From %{name} and %{count} other",
+      "From %{name} and %{count} others",
+      length(others),
+      name: user.username
+    )
+  end
+
+  defp recommended_by(users, locale) do
+    names =
+      users
+      |> Enum.map(& &1.username)
+      |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
+
+    dgettext("browse", "From %{names}", names: names)
   end
 
   attr :id, :string, required: true

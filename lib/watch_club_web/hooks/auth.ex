@@ -8,13 +8,15 @@ defmodule WatchClubWeb.Hooks.Auth do
 
   alias AshAuthentication.Phoenix.LiveSession
 
-  # What the navigation shows: the sidebar, and the Requests tab's badge
+  # What the navigation shows of the current user, such as the Inbox and Requests tabs' counts
   @navigation_resources [
     WatchClub.Accounts.UserSettings,
     WatchClub.Clubs.Membership,
     WatchClub.Clubs.Club,
     WatchClub.Clubs.Library,
     WatchClub.Lists.ContentList,
+    WatchClub.Conversations.Message,
+    WatchClub.Conversations.Participant,
     WatchClub.Requests.RequestSubscriber
   ]
 

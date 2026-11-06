@@ -37,5 +37,12 @@ defmodule WatchClubWeb.Storybook.Root do
     do: [name: "Play or request button", icon: {:fa, "play"}, index: 20]
 
   def entry("star_rating"), do: [name: "Star rating", icon: {:fa, "star"}, index: 21]
-  def entry("poster_card"), do: [name: "Poster card", icon: {:fa, "image"}, index: 22]
+  def entry("unread_badge"), do: [name: "Unread badge", icon: {:fa, "bell"}, index: 22]
+  def entry("user_avatar"), do: [name: "User avatar", icon: {:fa, "user"}, index: 23]
+  def entry("recipients"), do: [name: "Recipients", icon: {:fa, "users"}, index: 24]
+
+  def entry("recommendation_text"),
+    do: [name: "Recommendation text", icon: {:fa, "quote-left"}, index: 25]
+
+  def entry("poster_card"), do: [name: "Poster card", icon: {:fa, "image"}, index: 26]
 end

@@ -2,7 +2,8 @@ defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
   alias WatchClub.Clubs.{Club, Library, Membership}
-  alias WatchClub.Contents.{Book, Content, Movie, TvShow}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow}
+  alias WatchClub.Conversations.{Conversation, Message}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
@@ -300,6 +301,32 @@ defmodule WatchClub.Generator do
         media_source_id: media_source.id,
         external_resource_id: sequence(:external_resource_id, & &1)
       },
+      overrides: opts
+    )
+  end
+
+  def conversation(%User{} = recommended_by, %Content{} = content, recipients, opts \\ []) do
+    changeset_generator(
+      Conversation,
+      :recommend,
+      defaults: [
+        content_identity: ContentIdentity.from_content(content),
+        recipient_ids: Enum.map(recipients, & &1.id)
+      ],
+      actor: recommended_by,
+      overrides: opts
+    )
+  end
+
+  def message(%Conversation{} = conversation, %User{} = author, opts \\ []) do
+    changeset_generator(
+      Message,
+      :post,
+      defaults: [
+        conversation_id: conversation.id,
+        body: sequence(:message_body, &"Message #{&1}")
+      ],
+      actor: author,
       overrides: opts
     )
   end

@@ -37,10 +37,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   attr :variant, :string,
     values: ~w(button round),
     default: "button",
-    doc: "round: only Play, with only its icon, over a poster"
+    doc: "round: Play with only its icon, as over a poster. Without Media, the usual Request."
 
   # Only Play, when there's something to play
-  def play_or_request_button(%{variant: "round"} = assigns) do
+  def play_or_request_button(%{variant: "round", has_media?: true} = assigns) do
     ~H"""
     <.button
       :if={@play_href}
