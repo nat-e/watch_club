@@ -25,3 +25,75 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
 msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{decade}s"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Clear all"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Clear filters"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filters"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More filters"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More filters, %{count} on"
+msgid_plural "More filters, %{count} on"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Not watched"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing matches these filters"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remove a filter to see more."
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sort: %{sort}"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Year"
+msgstr ""

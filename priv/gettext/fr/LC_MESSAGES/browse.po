@@ -28,3 +28,89 @@ msgstr "La bibliothèque est encore vide"
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
 msgstr "Langue originale : %{language}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{decade}s"
+msgstr "Années %{decade}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Clear all"
+msgstr "Tout effacer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Clear filters"
+msgstr "Effacer les filtres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr "Terminé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Filters"
+msgstr "Filtres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr "Plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More filters"
+msgstr "Plus de filtres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "More filters, %{count} on"
+msgid_plural "More filters, %{count} on"
+msgstr[0] "Plus de filtres, %{count} actif"
+msgstr[1] "Plus de filtres, %{count} actifs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Not watched"
+msgstr "Non vus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing matches these filters"
+msgstr "Rien ne correspond à ces filtres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language"
+msgstr "Langue originale"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remove a filter to see more."
+msgstr "Retirez un filtre pour en voir plus."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sort: %{sort}"
+msgstr "Tri : %{sort}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Year"
+msgstr "Année"

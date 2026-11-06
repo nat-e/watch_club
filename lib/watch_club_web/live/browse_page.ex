@@ -1,12 +1,14 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
-  Browse: the Library's posters, most recently added first. Signing in opens it.
+  Browse: the Library's posters, with a row of filters and a sort menu. Filters and the sort live
+  in the URL, so Back undoes them. Signing in opens it.
   """
   use WatchClubWeb, :live_view
 
+  import WatchClubWeb.Components.Contents.ContentTypeIcon
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, LibrarySort}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
@@ -14,7 +16,9 @@ defmodule WatchClubWeb.BrowsePage do
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @page_size 40
-  @content_fields [:implementation, :actor_progress_status, :added_to_library_at]
+  # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
+  @content_fields [:implementation, :actor_progress_status]
+  @no_filters %{type: nil, not_watched?: false, decades: [], original_languages: []}
 
   @impl true
   def render(assigns) do
@@ -28,6 +32,41 @@ defmodule WatchClubWeb.BrowsePage do
       search
       class="@container pt-group!"
     >
+      <div class="mb-cluster flex min-w-0 items-center gap-related">
+        <%!--
+          The row fades at an edge while there's more to scroll that way. It runs into the page's
+          gutter on the left only, so its right fade ends before the sort.
+        --%>
+        <.scroll_row
+          id="filters"
+          class="min-w-0 flex-1 [&_[data-scroll-track]]:mr-0 [&_[data-scroll-track]]:items-center [&_[data-scroll-track]]:gap-related [&_[data-scroll-track]]:pr-tight"
+        >
+          <.filter_chip
+            :for={type <- [nil | ContentType.library_display_order()]}
+            id={"filter-type-#{type || "all"}"}
+            on={@filters.type == type}
+            phx-click={JS.patch(browse_path(%{@filters | type: type}, @sort))}
+          >
+            <:icon :if={type}><.content_type_icon type={type} /></:icon>
+            {ContentType.translated_plural_label(type)}
+          </.filter_chip>
+          <.divider />
+          <.filter_chip
+            id="filter-not-watched"
+            on={@filters.not_watched?}
+            phx-click={
+              JS.patch(browse_path(%{@filters | not_watched?: not @filters.not_watched?}, @sort))
+            }
+          >
+            <:icon><Lucideicons.eye_off /></:icon>
+            {dgettext("browse", "Not watched")}
+          </.filter_chip>
+          <.divider />
+          <.more_button filters={@filters} />
+        </.scroll_row>
+        <.sort_menu filters={@filters} sort={@sort} />
+      </div>
+
       <ul
         id="library"
         phx-update="stream"
@@ -35,7 +74,15 @@ defmodule WatchClubWeb.BrowsePage do
       >
         <%!-- Shown only when it's the stream's sole child --%>
         <li id="library-empty" class="col-span-full hidden only:block">
-          <.empty>
+          <.empty :if={filtered?(@filters)}>
+            <:icon><Lucideicons.search_x /></:icon>
+            <:title>{dgettext("browse", "Nothing matches these filters")}</:title>
+            <:description>{dgettext("browse", "Remove a filter to see more.")}</:description>
+            <.button id="library-clear-filters" variant="secondary" patch={clear_filters_path(@sort)}>
+              {dgettext("browse", "Clear filters")}
+            </.button>
+          </.empty>
+          <.empty :if={not filtered?(@filters)}>
             <:icon><Lucideicons.clapperboard /></:icon>
             <:title>{dgettext("browse", "Nothing in the library yet")}</:title>
             <:description>
@@ -53,7 +100,154 @@ defmodule WatchClubWeb.BrowsePage do
         id="library-load-more"
         event="load_more"
       />
+
+      <.more_filters
+        :if={@filter_options}
+        filters={@filters}
+        sort={@sort}
+        options={@filter_options}
+      />
     </Layouts.app>
+    """
+  end
+
+  # Between the type chips, Not watched and More
+  defp divider(assigns) do
+    ~H"""
+    <span class="h-6 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    """
+  end
+
+  attr :filters, :map, required: true
+
+  # Opens the decades and original languages, with how many of them are on
+  defp more_button(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :count,
+        Enum.count([assigns.filters.decades, assigns.filters.original_languages], &(&1 != []))
+      )
+
+    ~H"""
+    <.button
+      id="more-filters-button"
+      variant="secondary"
+      size="sm"
+      phx-click="open_more_filters"
+      aria-haspopup="dialog"
+      aria-label={
+        if @count > 0,
+          do: dngettext("browse", "More filters, %{count} on", "More filters, %{count} on", @count),
+          else: dgettext("browse", "More filters")
+      }
+      class="shrink-0 rounded-full! text-sm!"
+    >
+      <:icon><Lucideicons.sliders_horizontal class="size-icon-sm" /></:icon>
+      {dgettext("browse", "More")}
+      <.badge :if={@count > 0} variant="accent" size="sm">{@count}</.badge>
+    </.button>
+    """
+  end
+
+  attr :filters, :map, required: true
+  attr :sort, :atom, required: true, doc: "a `LibrarySort`"
+
+  # Its name where there's room, only its icon on phones
+  defp sort_menu(assigns) do
+    ~H"""
+    <.dropdown_menu id="sort" class="shrink-0">
+      <:trigger>
+        <.button
+          id="sort-button"
+          variant="secondary"
+          size="sm"
+          aria-label={dgettext("browse", "Sort: %{sort}", sort: LibrarySort.translated_label(@sort))}
+          class="rounded-full! text-sm! @max-2xl:px-related!"
+        >
+          <:icon><Lucideicons.arrow_down_up class="size-icon-sm" /></:icon>
+          <span class="@max-2xl:sr-only">{LibrarySort.translated_label(@sort)}</span>
+        </.button>
+      </:trigger>
+      <.dropdown_menu_item
+        :for={sort <- LibrarySort.values()}
+        id={"sort-#{sort}"}
+        patch={browse_path(@filters, sort)}
+      >
+        <Lucideicons.check class={["text-text!", @sort != sort && "invisible"]} />
+        {LibrarySort.translated_label(sort)}
+      </.dropdown_menu_item>
+    </.dropdown_menu>
+    """
+  end
+
+  attr :filters, :map, required: true
+  attr :sort, :atom, required: true, doc: "a `LibrarySort`"
+  attr :options, :map, required: true, doc: "the Library's decades and original languages"
+
+  # From the bottom of the screen on phones. Each choice applies at once, and the dialog scrolls,
+  # so its footer stays at its bottom.
+  defp more_filters(assigns) do
+    ~H"""
+    <.modal
+      id="more-filters"
+      size="md"
+      on_close={JS.push("close_more_filters")}
+      class="max-md:mb-0! max-md:max-h-[85svh]! max-md:w-full! max-md:max-w-none! max-md:rounded-b-none! [&>[data-slot=modal-content]]:overflow-visible"
+    >
+      <:title>{dgettext("browse", "Filters")}</:title>
+      <section class="flex flex-col gap-related">
+        <h3><.text_label text={dgettext("browse", "Year")} /></h3>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            :for={decade <- @options.decades}
+            id={"filter-decade-#{decade}"}
+            on={decade in @filters.decades}
+            phx-click={
+              JS.patch(browse_path(%{@filters | decades: toggle(@filters.decades, decade)}, @sort))
+            }
+            class="tabular-nums"
+          >
+            {dgettext("browse", "%{decade}s", decade: decade)}
+          </.filter_chip>
+        </div>
+      </section>
+      <section class="flex flex-col gap-related">
+        <h3><.text_label text={dgettext("browse", "Original language")} /></h3>
+        <form id="language-filters" phx-change="filter_languages" class="-mx-related flex flex-col">
+          <%!-- Sends the field when the last box is unticked --%>
+          <input type="hidden" name="languages[]" value="" />
+          <label
+            :for={language <- @options.original_languages}
+            class="flex items-center gap-related rounded-control px-related py-related text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text md:py-tight"
+          >
+            <.checkbox
+              id={"filter-language-#{language}"}
+              name="languages[]"
+              value={language}
+              checked={language in @filters.original_languages}
+            />
+            <span class="text-base leading-none" aria-hidden="true">
+              {Languages.to_flag(language)}
+            </span>
+            <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
+          </label>
+        </form>
+      </section>
+      <:footer class="sticky bottom-0 -mx-cluster -mb-cluster flex-row! items-center justify-between! border-t border-border-subtle bg-surface-overlay px-cluster py-group">
+        <.button
+          id="more-filters-clear"
+          variant="ghost"
+          patch={clear_filters_path(@sort)}
+          disabled={not filtered?(@filters)}
+        >
+          {dgettext("browse", "Clear all")}
+        </.button>
+        <.button id="more-filters-done" data-modal-close>
+          {dgettext("browse", "Done")}
+        </.button>
+      </:footer>
+    </.modal>
     """
   end
 
@@ -145,6 +339,19 @@ defmodule WatchClubWeb.BrowsePage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
+     # More's decades and original languages, while it's open
+     |> assign(:filter_options, nil)}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(:filters, filters(params))
+     |> assign(
+       :sort,
+       Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
+     )
      |> assign(:stream_state, KeysetStreamState.init(@page_size))
      |> load_page!()}
   end
@@ -156,6 +363,27 @@ defmodule WatchClubWeb.BrowsePage do
     else
       {:noreply, socket}
     end
+  end
+
+  def handle_event("open_more_filters", _params, socket) do
+    {:noreply,
+     assign(
+       socket,
+       :filter_options,
+       Contents.get_library_filter_options!(actor: socket.assigns.current_user)
+     )}
+  end
+
+  def handle_event("close_more_filters", _params, socket) do
+    {:noreply, assign(socket, :filter_options, nil)}
+  end
+
+  def handle_event("filter_languages", %{"languages" => languages}, socket) do
+    %{filters: filters, sort: sort} = socket.assigns
+    languages = Enum.reject(languages, &(&1 == ""))
+
+    {:noreply,
+     push_patch(socket, to: browse_path(%{filters | original_languages: languages}, sort))}
   end
 
   @impl true
@@ -180,31 +408,85 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
+  # The filters in the URL. Unknown types and decades that aren't numbers are left out.
+  defp filters(params) do
+    %{
+      type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
+      not_watched?: params["not_watched"] == "true",
+      decades:
+        params["decades"]
+        |> list_param()
+        |> Enum.flat_map(fn decade ->
+          case Integer.parse(decade) do
+            {decade, ""} -> [decade]
+            _not_a_number -> []
+          end
+        end),
+      original_languages: list_param(params["languages"])
+    }
+  end
+
+  defp list_param(nil), do: []
+  defp list_param(values), do: String.split(values, ",", trim: true)
+
+  # Browse's URL with these filters and sort, without the ones that are off
+  defp browse_path(filters, sort) do
+    params =
+      Enum.reject(
+        [
+          type: filters.type,
+          not_watched: filters.not_watched?,
+          decades: Enum.join(filters.decades, ","),
+          languages: Enum.join(filters.original_languages, ","),
+          sort: sort != LibrarySort.default() && sort
+        ],
+        fn {_param, value} -> value in [nil, false, ""] end
+      )
+
+    ~p"/?#{params}"
+  end
+
+  defp clear_filters_path(sort), do: browse_path(@no_filters, sort)
+
+  defp filtered?(filters), do: filters != @no_filters
+
+  defp toggle(values, value) do
+    if value in values, do: List.delete(values, value), else: values ++ [value]
+  end
+
   defp load_page!(socket) do
-    %{stream_state: stream_state, current_user: user} = socket.assigns
+    %{stream_state: stream_state, filters: filters, sort: sort, current_user: user} =
+      socket.assigns
 
     {:ok, new_state, contents} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
-        Contents.get_contents_in_library(load: @content_fields, page: page_options, actor: user)
+        Contents.get_contents_in_library(Map.put(filters, :sort, sort),
+          load: @content_fields,
+          page: page_options,
+          actor: user
+        )
       end)
 
     socket
     |> assign(:stream_state, new_state)
-    |> stream(:library, contents)
+    |> stream(:library, contents, reset: stream_state.status == :init)
   end
 
-  # A Content that joins the Library with a new Media goes first, one that leaves it goes, and the
-  # others update in place if they're loaded.
+  # A Content that joins the Library goes first when the newest are, one that no longer matches
+  # the filters goes, and the others update in place if they're loaded.
   defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
-    case Contents.get_contents_in_library!(
+    %{filters: filters, sort: sort, current_user: user} = socket.assigns
+
+    case Contents.get_contents_in_library!(filters,
            query: [filter: [id: content_id]],
-           load: @content_fields,
-           actor: socket.assigns.current_user
+           load: [:added_to_library_at | @content_fields],
+           actor: user
          ) do
       [] ->
         stream_delete_by_dom_id(socket, :library, "library-#{content_id}")
 
-      [%Content{added_to_library_at: ^new_media_added_at} = content] ->
+      [%Content{added_to_library_at: ^new_media_added_at} = content]
+      when sort == :recently_added ->
         stream_insert(socket, :library, content, at: 0)
 
       [content] ->
