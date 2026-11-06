@@ -17,7 +17,7 @@ Rules:
 
 ## Worktrees
 
-- `wt switch --create <branch>` creates a worktree with its own server and databases. `wt dev` starts the server and `wt remove` deletes the worktree. The hooks are in `.config/wt.toml` and `scripts/worktree/`
+- `wt switch --create <branch>` creates a worktree with its own server and databases. `wt dev` starts the server, `wt open` opens it in the browser, signed in as `WC_DEV_USERNAME` from `.env` when it is set, and `wt remove` deletes the worktree. The hooks are in `.config/wt.toml` and `scripts/worktree/`
 - Each worktree's `.env` holds its URL, port and database names
 - Radarr, Sonarr and `media/` are shared with main and every other worktree, so changes to them affect all of them
 - After a merge, the `post-merge` hook updates main with `scripts/worktree/update_main.sh`. Main's dev server needs a restart to pick up new dependencies or config

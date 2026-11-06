@@ -33,4 +33,5 @@ url = "{% if branch == 'main' %}http://localhost:4000{% else %}http://{{ branch 
 
 [aliases]
 dev = "mix ecto.migrate && iex -S mix phx.server"
-open ="open \"$(wt list statusline --format=json | jq -r '.items[0].dev_server.url')\""
+# Signs in as WC_DEV_USERNAME from .env when it is set.
+open = "{{ primary_worktree_path }}/scripts/worktree/open.sh {{ worktree_path }}"
