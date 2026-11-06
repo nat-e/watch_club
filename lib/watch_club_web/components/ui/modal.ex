@@ -47,7 +47,6 @@ defmodule WatchClubWeb.Components.UI.Modal do
 
   def modal(assigns) do
     ~H"""
-    <%!-- A sheet's `max-w-none!` beats the sizes' `sm:` max widths between the two breakpoints --%>
     <dialog
       id={@id}
       open={true}

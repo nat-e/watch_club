@@ -34,18 +34,25 @@ defmodule WatchClubWeb.BrowsePage do
     >
       <div class="flex min-w-0 items-center gap-related">
         <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
-          <.button
-            :if={filtered?(@filters)}
-            id="filters-clear"
-            variant="secondary"
-            size="icon-sm"
-            patch={clear_filters_path(@sort)}
-            aria-label={dgettext("browse", "Clear filters")}
-            class="shrink-0 rounded-full!"
-          >
-            <Lucideicons.x />
-          </.button>
+          <%!-- Hidden rather than removed, so the chips after it keep their focus --%>
           <div
+            id="filters-clear"
+            class={["flex shrink-0 items-center gap-related", not filtered?(@filters) && "hidden"]}
+          >
+            <.button
+              id="filters-clear-button"
+              variant="secondary"
+              size="icon-sm"
+              phx-click={clear_filters()}
+              aria-label={dgettext("browse", "Clear filters")}
+              class="rounded-full!"
+            >
+              <Lucideicons.x />
+            </.button>
+            <.divider />
+          </div>
+          <div
+            id="filter-types"
             role="radiogroup"
             aria-label={dgettext("browse", "Type")}
             class="flex shrink-0 items-center gap-related"
@@ -90,7 +97,7 @@ defmodule WatchClubWeb.BrowsePage do
             <:icon><Lucideicons.funnel_x /></:icon>
             <:title>{dgettext("browse", "Nothing matches these filters")}</:title>
             <:description>{dgettext("browse", "Remove a filter to see more.")}</:description>
-            <.button id="library-clear-filters" variant="secondary" patch={clear_filters_path(@sort)}>
+            <.button id="library-clear-filters" variant="secondary" phx-click={clear_filters()}>
               {dgettext("browse", "Clear filters")}
             </.button>
           </.empty>
@@ -417,6 +424,8 @@ defmodule WatchClubWeb.BrowsePage do
   defp list_param(_values), do: []
 
   # A type replaces the one that's on. The other choices turn on or off.
+  defp change_filter(_filters, "clear", _choice), do: @no_filters
+
   defp change_filter(filters, "type", type),
     do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
 
@@ -450,7 +459,12 @@ defmodule WatchClubWeb.BrowsePage do
     ~p"/?#{params}"
   end
 
-  defp clear_filters_path(sort), do: browse_path(@no_filters, sort)
+  # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
+  defp clear_filters do
+    "change_filter"
+    |> JS.push(value: %{filter: "clear"})
+    |> JS.focus_first(to: "#filter-types")
+  end
 
   defp filtered?(filters), do: filters != @no_filters
 
