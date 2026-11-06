@@ -2,8 +2,8 @@
 	"mcpServers": {
 		"tidewave-mcp": {
 			"type": "stdio",
-			"command": "mix",
-			"args": ["tidewave.proxy"],
+			"command": "sh",
+			"args": ["-c", "mix compile >&2; exec mix tidewave.proxy"],
 			"directTools": true
 		}
 	}
