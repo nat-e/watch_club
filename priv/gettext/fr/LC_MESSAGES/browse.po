@@ -133,3 +133,23 @@ msgstr "Note"
 msgctxt "rating"
 msgid "Any"
 msgstr "Toutes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "From %{names}"
+msgstr "De %{names}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "From %{name} and %{count} other"
+msgid_plural "From %{name} and %{count} others"
+msgstr[0] "De %{name} et %{count} autre"
+msgstr[1] "De %{name} et %{count} autres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended to me"
+msgstr "Qu’on m’a recommandés"

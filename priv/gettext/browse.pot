@@ -113,3 +113,20 @@ msgstr ""
 msgctxt "rating"
 msgid "Any"
 msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "From %{names}"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "From %{name} and %{count} other"
+msgid_plural "From %{name} and %{count} others"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended to me"
+msgstr ""

@@ -288,11 +288,12 @@ defmodule WatchClub.Contents.Content do
 
     has_one :request, ContentRequest
 
-    # The Conversations in which another User recommended it to the actor, the latest first
+    # The Conversations in which another User recommended it to the actor, the latest first. A
+    # deleted User's recommendations don't count.
     has_many :actor_recommendations, Conversation do
       filter expr(
-               exists(participants, user_id == ^actor(:id)) and
-                 is_distinct_from(recommended_by_id, ^actor(:id))
+               exists(participants, user_id == ^actor(:id)) and not is_nil(recommended_by_id) and
+                 recommended_by_id != ^actor(:id)
              )
 
       sort inserted_at: :desc
