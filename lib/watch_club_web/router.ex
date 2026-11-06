@@ -112,6 +112,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_user_required},
         WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.TimeZone,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/", BrowsePage

@@ -9,6 +9,69 @@ defmodule WatchClubWeb.Helpers.Time do
   end
 
   @doc """
+  Returns the localized time of day in the time zone, like "14:32" or "2:32 PM".
+  """
+  @spec clock(DateTime.t(), String.t(), atom()) :: String.t()
+  def clock(datetime, time_zone, locale) do
+    datetime
+    |> DateTime.shift_zone!(time_zone)
+    |> WatchClub.Cldr.Time.to_string!(format: :short, locale: cldr_locale(locale))
+  end
+
+  @doc """
+  Returns the day of a moment in the time zone, as a label: "Today", "Yesterday", the weekday in
+  the past week, else the date, like "October 21".
+  """
+  @spec day(DateTime.t(), String.t(), atom()) :: String.t()
+  def day(datetime, time_zone, locale) do
+    date = local_date(datetime, time_zone)
+    today = local_date(DateTime.utc_now(), time_zone)
+
+    if today.year == date.year,
+      do: recent_day(date, today, locale, :MMMMd),
+      else: recent_day(date, today, locale, :yMMMMd)
+  end
+
+  @doc """
+  Returns when a moment was in the time zone, in a few characters: the time of day for today,
+  else "Yesterday", the weekday in the past week, or the short date, like "10/21/26".
+  """
+  @spec clock_or_day(DateTime.t(), String.t(), atom()) :: String.t()
+  def clock_or_day(datetime, time_zone, locale) do
+    date = local_date(datetime, time_zone)
+    today = local_date(DateTime.utc_now(), time_zone)
+
+    if date == today,
+      do: clock(datetime, time_zone, locale),
+      else: recent_day(date, today, locale, :short)
+  end
+
+  # "Today", "Yesterday", the weekday in the past week, else the date in the format
+  defp recent_day(date, today, locale, format) do
+    locale = cldr_locale(locale)
+
+    case Date.diff(today, date) do
+      days when days in [0, 1] ->
+        -days
+        |> WatchClub.Cldr.DateTime.Relative.to_string!(unit: :day, locale: locale)
+        |> String.capitalize()
+
+      days when days < 7 ->
+        date
+        |> WatchClub.Cldr.Date.to_string!(format: "EEEE", locale: locale)
+        |> String.capitalize()
+
+      _days ->
+        WatchClub.Cldr.Date.to_string!(date, format: format, locale: locale)
+    end
+  end
+
+  defp local_date(datetime, time_zone),
+    do: datetime |> DateTime.shift_zone!(time_zone) |> DateTime.to_date()
+
+  defp cldr_locale(locale), do: UserLocale.to_cldr_locale_name(locale)
+
+  @doc """
   Returns a String representing the year of a Date, if a Date is provided.
   """
   @spec maybe_year(Date.t() | nil) :: String.t() | nil

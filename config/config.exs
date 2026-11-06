@@ -146,6 +146,9 @@ config :phoenix, :json_library, Jason
 
 config :ash, :default_belongs_to_type, :uuid_v7
 
+# Times show in each User's time zone, which the browser sends
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
