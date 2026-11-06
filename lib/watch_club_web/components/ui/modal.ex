@@ -27,6 +27,11 @@ defmodule WatchClubWeb.Components.UI.Modal do
     default: "none",
     doc: "Maximum modal width."
 
+  attr :side, :string,
+    values: ~w(center right),
+    default: "center",
+    doc: "right: a drawer along the right side of the screen, full screen on phones."
+
   attr :on_close, JS, required: true
   attr :rest, :global
 
@@ -56,7 +61,10 @@ defmodule WatchClubWeb.Components.UI.Modal do
       data-slot="modal"
       data-on-close={@on_close}
       class={[
-        "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+        "border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+        @side == "center" && "m-auto p-related rounded-card border",
+        @side == "right" &&
+          "my-0 mr-0 ml-auto h-svh max-h-svh w-full max-w-none md:max-w-lg md:border-l",
         @size == "sm" && "sm:max-w-md",
         @size == "md" && "sm:max-w-lg",
         @size == "lg" && "sm:max-w-2xl",
@@ -68,7 +76,11 @@ defmodule WatchClubWeb.Components.UI.Modal do
     >
       <div
         data-slot="modal-content"
-        class="flex w-full flex-col gap-cluster overflow-y-auto p-cluster text-sm text-text"
+        class={[
+          "flex w-full flex-col gap-cluster overflow-y-auto text-sm text-text",
+          @side == "center" && "p-cluster",
+          @side == "right" && "px-page py-cluster"
+        ]}
       >
         <header data-slot="modal-header" class="flex flex-col gap-related pr-10">
           <h2

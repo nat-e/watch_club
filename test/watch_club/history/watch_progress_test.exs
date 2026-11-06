@@ -436,12 +436,11 @@ defmodule WatchClub.History.WatchProgressTest do
 
       History.mark_content_watched!(identity, actor: actor)
 
-      assert [
-               %Watcher{user: %{id: watching_id}, status: :in_progress},
-               %Watcher{user: %{id: watched_id}, status: :completed}
-             ] = History.list_watchers!(identity, actor: actor)
+      assert [%Watcher{status: :in_progress} = first, %Watcher{status: :completed} = second] =
+               History.list_watchers!(identity, actor: actor)
 
-      assert {watching_id, watched_id} == {watching.id, watched.id}
+      assert first.user.id == watching.id
+      assert second.user.id == watched.id
     end
 
     test "has watched a TV show once every aired episode is watched" do
@@ -465,12 +464,11 @@ defmodule WatchClub.History.WatchProgressTest do
 
       History.mark_content_watched!(identity, %{season_number: 1}, actor: watched)
 
-      assert [
-               %Watcher{user: %{id: watched_id}, status: :completed},
-               %Watcher{user: %{id: watching_id}, status: :in_progress}
-             ] = History.list_watchers!(identity, actor: actor)
+      assert [%Watcher{status: :completed} = first, %Watcher{status: :in_progress} = second] =
+               History.list_watchers!(identity, actor: actor)
 
-      assert {watched_id, watching_id} == {watched.id, watching.id}
+      assert first.user.id == watched.id
+      assert second.user.id == watching.id
     end
 
     test "is empty for a Content WatchClub doesn't have" do

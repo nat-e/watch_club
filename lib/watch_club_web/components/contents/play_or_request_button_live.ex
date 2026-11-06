@@ -24,13 +24,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   user's Watch Progress for this content has changed.
   """
   def handle_pubsub_message(
-        %Notification{resource: WatchProgress, data: %{user_id: user_id}},
-        %User{id: id}
-      )
-      when user_id != id,
-      do: nil
-
-  def handle_pubsub_message(
         %Notification{
           resource: resource,
           metadata: %{content_identity: identity}
@@ -51,6 +44,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :current_user, User, required: true
   attr :class, :any, default: nil
   attr :play_only, :boolean, default: false
+
+  attr :on_episodes, :any,
+    default: nil,
+    doc: "the JS commands opening every TV Show Episode, from a caret joined to Play"
 
   attr :size, :string,
     values: ~w(sm md lg),
@@ -73,6 +70,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         title={@title}
         request={@request}
         on_request={JS.push("request-content", target: @myself)}
+        on_episodes={@on_episodes}
         play_only={@play_only}
         size={@size}
         variant={@variant}

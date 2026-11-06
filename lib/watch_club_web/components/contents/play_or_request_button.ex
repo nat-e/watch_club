@@ -16,6 +16,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     doc: "the actor's Content Request, with its `best_source_request`"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
+
+  attr :on_episodes, :any,
+    default: nil,
+    doc: "the JS commands opening every TV Show Episode, from a caret joined to Play"
+
   attr :play_only, :boolean, default: false
 
   attr :size, :string,
@@ -67,18 +72,34 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
 
   def play_or_request_button(assigns) do
     ~H"""
-    <.button
-      id={"#{@id}-play-button"}
-      size={@size}
-      variant="primary"
-      emphasis
-      href={@play_href}
-      disabled={!@play_href}
-      class="w-full"
-    >
-      <:icon><Lucideicons.play /></:icon>
-      {@play_label}
-    </.button>
+    <div class="flex w-full">
+      <.button
+        id={"#{@id}-play-button"}
+        size={@size}
+        variant="primary"
+        emphasis
+        href={@play_href}
+        disabled={!@play_href}
+        class={["min-w-0 flex-1", @on_episodes && "rounded-r-none!"]}
+      >
+        <:icon><Lucideicons.play /></:icon>
+        {@play_label}
+      </.button>
+      <.button
+        :if={@on_episodes}
+        id={"#{@id}-episodes-button"}
+        size={if @size == "lg", do: "icon-lg", else: "icon"}
+        variant="primary"
+        emphasis
+        phx-click={@on_episodes}
+        aria-label={dgettext("contents", "All episodes")}
+        aria-haspopup="dialog"
+        title={dgettext("contents", "All episodes")}
+        class="rounded-l-none! border-l-primary-hover!"
+      >
+        <Lucideicons.chevron_down />
+      </.button>
+    </div>
     """
   end
 

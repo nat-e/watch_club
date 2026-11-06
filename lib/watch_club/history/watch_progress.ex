@@ -108,9 +108,8 @@ defmodule WatchClub.History.WatchProgress do
       run MarkNotWatched
     end
 
-    action :watchers, {:array, :struct} do
+    action :watchers, {:array, Watcher} do
       description "The other Users who watched a Content or are watching it, the latest first"
-      constraints items: [instance_of: Watcher]
       argument :content_identity, ContentIdentity, allow_nil?: false
 
       run ListWatchers

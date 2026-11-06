@@ -12,26 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} minute"
-msgid_plural "%{count} minutes"
-msgstr[0] "%{count} minute"
-msgstr[1] "%{count} minutes"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{hours}h"
-msgstr "%{hours} h"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{hours}h %{minutes}m"
-msgstr "%{hours} h %{minutes} min"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
@@ -186,7 +166,7 @@ msgid "Mark as watched"
 msgstr "Marquer comme vu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr "Vu"
@@ -198,16 +178,10 @@ msgid "%{action} %{title}"
 msgstr "%{action} %{title}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "All episodes"
 msgstr "Tous les épisodes"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "It isn't on the server yet. Mark what you've watched elsewhere."
-msgstr "Elle n'est pas encore sur le serveur. Marquez ce que vous avez vu ailleurs."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -223,21 +197,10 @@ msgstr "Tout marquer comme vu"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as not watched"
 msgstr "Marquer comme non vu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark episode %{number} as not watched"
-msgstr "Marquer l'épisode %{number} comme non vu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark episode %{number} as watched"
-msgstr "Marquer l'épisode %{number} comme vu"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
@@ -268,12 +231,6 @@ msgstr "Prochain : %{episode} · %{percent} % de la série"
 #, elixir-autogen, elixir-format
 msgid "Nobody has watched it yet."
 msgstr "Personne ne l'a encore regardé."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Not on the server yet"
-msgstr "Pas encore sur le serveur"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
@@ -352,3 +309,21 @@ msgstr "Qui l'a regardé"
 #, elixir-autogen, elixir-format
 msgid "You're watching it"
 msgstr "Vous le regardez"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "It isn't in the library yet. Mark what you've watched elsewhere."
+msgstr "Elle n'est pas encore dans la bibliothèque. Marquez ce que vous avez vu ailleurs."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not in the library yet"
+msgstr "Pas encore dans la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Watched episode %{number}"
+msgstr "Épisode %{number} vu"

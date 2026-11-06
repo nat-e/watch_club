@@ -4,7 +4,8 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
 
   On devices with a mouse, arrows show on hover. The hook hides each arrow at its end of the row
   and scrolls by most of the visible width. Keyboard users scroll by focusing the items, which the
-  hook brings fully into view.
+  hook brings fully into view, as it does with the item marked `aria-current="true"` when the row
+  mounts.
   """
 
   use Phoenix.Component
@@ -12,6 +13,7 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
   import WatchClubWeb.Components.UI.Button
 
   attr :id, :string, required: true
+  attr :gap, :string, values: ~w(tight group), default: "group", doc: "the space between items"
   attr :class, :any, default: nil
   slot :inner_block, required: true
 
@@ -23,7 +25,11 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
     <div id={@id} phx-hook=".ScrollRow" data-at-start class={["group/row relative", @class]}>
       <div
         data-scroll-track
-        class="-mx-page -my-related flex snap-x snap-mandatory scroll-px-page gap-group overflow-x-auto px-page py-related [--fade-left:4rem] [--fade-right:4rem] [mask-image:linear-gradient(to_right,transparent,black_var(--fade-left),black_calc(100%_-_var(--fade-right)),transparent)] [scrollbar-width:none] group-data-at-start/row:[--fade-left:0px] group-data-at-end/row:[--fade-right:0px] [&::-webkit-scrollbar]:hidden"
+        class={[
+          "-mx-page -my-related flex snap-x snap-mandatory scroll-px-page overflow-x-auto px-page py-related [--fade-left:4rem] [--fade-right:4rem] [mask-image:linear-gradient(to_right,transparent,black_var(--fade-left),black_calc(100%_-_var(--fade-right)),transparent)] [scrollbar-width:none] group-data-at-start/row:[--fade-left:0px] group-data-at-end/row:[--fade-right:0px] [&::-webkit-scrollbar]:hidden",
+          @gap == "tight" && "gap-tight",
+          @gap == "group" && "gap-group"
+        ]}
       >
         {render_slot(@inner_block)}
       </div>
@@ -78,6 +84,9 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
               const item = [...this.track.children].find((child) => child.contains(event.target))
               item?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: this.behavior() })
             })
+            this.track
+              .querySelector("[aria-current=true]")
+              ?.scrollIntoView({ inline: "center", block: "nearest" })
             this.update()
           },
           updated() { this.update() },

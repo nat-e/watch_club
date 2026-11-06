@@ -1,6 +1,4 @@
 defmodule WatchClubWeb.Helpers.Time do
-  use Gettext, backend: WatchClubWeb.Gettext
-
   alias WatchClub.Accounts.UserLocale
 
   @spec relative_from_now(DateTime.t(), atom()) :: String.t()
@@ -29,22 +27,18 @@ defmodule WatchClubWeb.Helpers.Time do
   end
 
   @doc """
-  Returns how long a Movie or a TV Show Episode lasts, like "52 minutes" or "2h 9m".
+  Returns a localized number of minutes in hours and minutes, like "52 min" or "2 hr 9 min".
   """
-  @spec runtime(non_neg_integer() | nil) :: String.t() | nil
-  def runtime(nil), do: nil
-
-  def runtime(minutes) when minutes < 60,
-    do: dngettext("contents", "%{count} minute", "%{count} minutes", minutes)
-
-  def runtime(minutes) do
-    case rem(minutes, 60) do
-      0 ->
-        dgettext("contents", "%{hours}h", hours: div(minutes, 60))
-
-      rest ->
-        dgettext("contents", "%{hours}h %{minutes}m", hours: div(minutes, 60), minutes: rest)
-    end
+  @spec minutes(pos_integer(), atom()) :: String.t()
+  def minutes(minutes, locale) when is_integer(minutes) and minutes > 0 do
+    minutes
+    |> WatchClub.Cldr.Unit.new!(:minute)
+    |> WatchClub.Cldr.Unit.decompose([:hour, :minute])
+    |> WatchClub.Cldr.Unit.to_string!(
+      style: :short,
+      list_options: [format: :unit_narrow],
+      locale: UserLocale.to_cldr_locale_name(locale)
+    )
   end
 
   @doc """

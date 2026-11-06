@@ -58,11 +58,21 @@ defmodule WatchClubWeb.Storybook.Modal do
         >
           Useful when details need to stay in context.
         </.showcase_card>
+
+        <.showcase_card
+          modal="drawer"
+          title="Drawer"
+          description="From the right on wide screens, full screen on phones."
+          button_label="Open drawer"
+        >
+          Useful for a long list next to the page, such as every episode of a show.
+        </.showcase_card>
       </div>
 
       <.invite_modal :if={@modal == :invite} />
       <.danger_modal :if={@modal == :danger} />
       <.scrollable_modal :if={@modal == :scrollable} />
+      <.drawer_modal :if={@modal == :drawer} />
     </div>
     """
   end
@@ -190,10 +200,24 @@ defmodule WatchClubWeb.Storybook.Modal do
     """
   end
 
+  defp drawer_modal(assigns) do
+    ~H"""
+    <.modal id="storybook-drawer-modal" side="right" on_close={close_modal()}>
+      <:title>Severance</:title>
+      <:description>Play any episode, or mark what you've watched.</:description>
+
+      <ol class="grid gap-4">
+        <li :for={episode <- 1..12}>S01E{String.pad_leading("#{episode}", 2, "0")} · Episode</li>
+      </ol>
+    </.modal>
+    """
+  end
+
   defp close_modal, do: JS.push("close_modal")
 
   defp modal_name("invite"), do: :invite
   defp modal_name("danger"), do: :danger
   defp modal_name("scrollable"), do: :scrollable
+  defp modal_name("drawer"), do: :drawer
   defp modal_name(_unknown), do: nil
 end

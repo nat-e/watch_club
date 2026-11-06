@@ -151,6 +151,15 @@ defmodule WatchClub.Contents.TvShowEpisode do
     identity :unique_position_per_tv_show, [:tv_show_id, :season_number, :episode_number]
   end
 
+  @doc """
+  Formats a season and an episode number as the conventional `S01E01` used across media tooling,
+  also for a TV Show Episode WatchClub doesn't have yet.
+  """
+  def format_number(season_number, episode_number),
+    do: "S#{pad(season_number)}E#{pad(episode_number)}"
+
+  defp pad(number), do: number |> Integer.to_string() |> String.pad_leading(2, "0")
+
   defimpl String.Chars, for: __MODULE__ do
     def to_string(episode) do
       case episode.tv_show do

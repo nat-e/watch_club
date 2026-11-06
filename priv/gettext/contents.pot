@@ -11,23 +11,6 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} minute"
-msgid_plural "%{count} minutes"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{hours}h"
-msgstr ""
-
-#: lib/watch_club_web/helpers/time.ex
-#, elixir-autogen, elixir-format
-msgid "%{hours}h %{minutes}m"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
@@ -157,7 +140,7 @@ msgstr ""
 msgid "Mark as watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr ""
@@ -167,14 +150,9 @@ msgstr ""
 msgid "%{action} %{title}"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "All episodes"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "It isn't on the server yet. Mark what you've watched elsewhere."
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -188,18 +166,9 @@ msgid "Mark all as watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as not watched"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark episode %{number} as not watched"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Mark episode %{number} as watched"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
@@ -225,11 +194,6 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nobody has watched it yet."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
-#, elixir-autogen, elixir-format
-msgid "Not on the server yet"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
@@ -295,4 +259,19 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "You're watching it"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "It isn't in the library yet. Mark what you've watched elsewhere."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not in the library yet"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Watched episode %{number}"
 msgstr ""

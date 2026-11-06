@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Components.UI.ProgressBar do
     ~H"""
     <span
       aria-hidden="true"
-      class={["block h-1 overflow-hidden rounded-full bg-surface-raised", @class]}
+      class={["block h-1 overflow-hidden rounded-full bg-border", @class]}
     >
       <span class="block h-full rounded-full bg-primary" style={"width: #{@percent}%"}></span>
     </span>

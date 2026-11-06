@@ -130,7 +130,7 @@ _Avoid_: Follow, watch, me too
 
 **Request Subscriber**:
 A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it.
-_Avoid_: Follower, watcher
+_Avoid_: Follower
 
 **Delete Content Request**:
 The **Instance Administrator** removes a **Content Request**, for example a stuck one, so its **Content** can be requested again.

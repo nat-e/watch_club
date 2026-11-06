@@ -58,7 +58,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         content_identity={@content_identity}
         title={title(@details)}
         season_numbers={season_numbers(@details)}
-        season_number={current_season_number(@content, @details)}
+        initial_season={current_season_number(@content, @details)}
         in_library?={in_library?(@content)}
         current_user={@current_user}
         on_close={JS.push("close_episodes")}
@@ -76,7 +76,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
   # actions. Centered on phones, beside the poster on wide screens.
   defp content_header(assigns) do
     ~H"""
-    <header class="relative isolate">
+    <%!-- The app bar sits over the header --%>
+    <header class="relative isolate pt-(--wc-app-bar-height)">
       <div
         :if={@details.backdrop_path}
         aria-hidden="true"
@@ -85,46 +86,47 @@ defmodule WatchClubWeb.Contents.ContentPage do
         <.tmdb_backdrop path={@details.backdrop_path} size="w1280" class="size-full object-cover" />
         <span class="absolute inset-0 bg-canvas/80"></span>
       </div>
-      <%!-- The app bar sits over the header --%>
-      <div class="pt-(--wc-app-bar-height)">
-        <div class="flex flex-col items-center gap-group px-page py-cluster text-center @3xl:flex-row @3xl:items-start @3xl:gap-cluster @3xl:py-section @3xl:text-left">
-          <.tmdb_poster
-            path={@details.poster_path}
-            size="w342"
-            class="w-28 shrink-0 shadow-card @3xl:w-44"
-          />
-          <div class="flex w-full min-w-0 flex-1 flex-col gap-group">
-            <div class="flex flex-col gap-tight">
-              <h1
-                id="content-title"
-                data-page-title
-                class="font-heading text-3xl font-semibold text-balance @3xl:text-4xl"
-              >
-                {title(@details)}
-              </h1>
-              <.facts details={@details} content_identity={@content_identity} />
-            </div>
-            <ul
-              :if={@details.genres != []}
-              class="flex flex-wrap justify-center gap-tight @3xl:justify-start"
+      <div class="flex flex-col items-center gap-group px-page py-cluster text-center @3xl:flex-row @3xl:items-start @3xl:gap-cluster @3xl:py-section @3xl:text-left">
+        <.tmdb_poster
+          path={@details.poster_path}
+          size="w342"
+          class="w-28 shrink-0 shadow-card @3xl:w-44"
+        />
+        <div class="flex w-full min-w-0 flex-1 flex-col gap-group">
+          <div class="flex flex-col gap-tight">
+            <h1
+              id="content-title"
+              data-page-title
+              class="font-heading text-3xl font-semibold text-balance @3xl:text-4xl"
             >
-              <li :for={genre <- @details.genres}>
-                <.badge variant="secondary" size="sm">{genre.name}</.badge>
-              </li>
-            </ul>
-            <p
-              :if={@details.overview not in [nil, ""]}
-              class="max-w-readable text-text-muted @max-3xl:line-clamp-3"
-            >
-              {@details.overview}
-            </p>
-            <.actions
+              {title(@details)}
+            </h1>
+            <.facts
               details={@details}
-              content={@content}
               content_identity={@content_identity}
-              current_user={@current_user}
+              locale={@current_user.settings.locale}
             />
           </div>
+          <ul
+            :if={@details.genres != []}
+            class="flex flex-wrap justify-center gap-tight @3xl:justify-start"
+          >
+            <li :for={genre <- @details.genres}>
+              <.badge variant="secondary" size="sm">{genre.name}</.badge>
+            </li>
+          </ul>
+          <p
+            :if={@details.overview not in [nil, ""]}
+            class="max-w-readable text-text-muted @max-3xl:line-clamp-3"
+          >
+            {@details.overview}
+          </p>
+          <.actions
+            details={@details}
+            content={@content}
+            content_identity={@content_identity}
+            current_user={@current_user}
+          />
         </div>
       </div>
     </header>
@@ -133,14 +135,15 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   attr :details, :any, required: true
   attr :content_identity, ContentIdentity, required: true
+  attr :locale, :atom, required: true
 
-  # "🇺🇸 2022 · Movie · 3h 9m · ★ 7.3": the original language's flag next to the year, as on
+  # "🇺🇸 2022 · Movie · 3 hr 9 min · ★ 7.3": the original language's flag next to the year, as on
   # Browse's posters, and TMDB's rating, which opens the Content on TMDB.
   defp facts(assigns) do
     assigns =
       assign(assigns,
         language: Languages.to_name(assigns.details.original_language),
-        length: length_label(assigns.details)
+        length: length_label(assigns.details, assigns.locale)
       )
 
     ~H"""
@@ -171,7 +174,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
         class="inline-flex items-center gap-tight font-semibold text-text hover:underline"
       >
         <Lucideicons.star class="size-icon-sm fill-current text-warning" />
-        {:erlang.float_to_binary(@details.vote_average * 1.0, decimals: 1)}
+        {WatchClub.Cldr.Number.to_string!(@details.vote_average,
+          fractional_digits: 1,
+          locale: UserLocale.to_cldr_locale_name(@locale)
+        )}
         <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
       </.link>
     </p>
@@ -183,9 +189,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
-  # Play, Resume or Request first, with how far the User got under it. For a TV Show in the
-  # Library, a caret beside it opens every episode; for one that isn't, Episodes does. Then Watch
-  # trailer and Watched, which stay quiet.
+  # Play, Resume or Request first, with how far the User got under it. For a TV Show, a caret
+  # joined to Play opens every episode, or Episodes when there's no Play. Then Watch trailer and
+  # Watched, which stay quiet.
   defp actions(assigns) do
     tv_show? = assigns.content_identity.type == :tv_show
 
@@ -200,38 +206,25 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
     ~H"""
     <div class="flex flex-col gap-related @3xl:flex-row @3xl:flex-wrap @3xl:items-start">
-      <div class="flex w-full flex-col gap-tight @3xl:w-auto">
-        <div class="flex">
-          <.live_component
-            id={PlayOrRequestButtonLive.dom_id(@content_identity)}
-            module={PlayOrRequestButtonLive}
-            content_identity={@content_identity}
-            current_user={@current_user}
-            size="lg"
-            class={["min-w-0 flex-1", (@episodes? and @in_library?) && "*:rounded-r-none!"]}
-          />
-          <.button
-            :if={@episodes? and @in_library?}
-            id="all-episodes-button"
-            variant="primary"
-            size="icon-lg"
-            phx-click="open_episodes"
-            aria-label={dgettext("contents", "All episodes")}
-            title={dgettext("contents", "All episodes")}
-            class="rounded-l-none! border-l-primary-active!"
-          >
-            <Lucideicons.chevron_down />
-          </.button>
-        </div>
-        <.progress_line content={@content} />
+      <div class="flex w-full flex-col gap-tight @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto">
+        <.live_component
+          id={PlayOrRequestButtonLive.dom_id(@content_identity)}
+          module={PlayOrRequestButtonLive}
+          content_identity={@content_identity}
+          current_user={@current_user}
+          size="lg"
+          on_episodes={@episodes? && JS.push("open_episodes")}
+        />
+        <.progress_line content={@content} locale={@current_user.settings.locale} />
       </div>
-      <div class="flex items-center justify-center gap-related @3xl:justify-start">
+      <.cluster class="justify-center @3xl:justify-start">
         <.button
           :if={@episodes? and !@in_library?}
           id="episodes-button"
           variant="ghost"
           size="lg"
           phx-click="open_episodes"
+          aria-haspopup="dialog"
         >
           <:icon><Lucideicons.list_video /></:icon>
           {dgettext("contents", "Episodes")}
@@ -256,28 +249,29 @@ defmodule WatchClubWeb.Contents.ContentPage do
           size="icon-lg"
           phx-click="toggle_watched"
           aria-pressed={to_string(@finished?)}
-          aria-label={watched_hint(@tv_show?, @finished?)}
+          aria-label={dgettext("contents", "Watched")}
           title={watched_hint(@tv_show?, @finished?)}
         >
           <Lucideicons.circle_check :if={@finished?} class="text-success" />
           <Lucideicons.circle :if={!@finished?} />
         </.button>
-      </div>
+      </.cluster>
     </div>
     """
   end
 
   attr :content, :any, required: true, doc: "a `Content`, or nil"
+  attr :locale, :atom, required: true
 
   # How far the User got, under Resume: where they stopped a Movie, or the episode Play plays and
   # how much of the TV Show they finished.
   defp progress_line(assigns) do
-    assigns = assign(assigns, :progress, progress(assigns.content))
+    assigns = assign(assigns, :progress, progress(assigns.content, assigns.locale))
 
     ~H"""
     <div :if={@progress} class="flex flex-col gap-tight">
-      <.progress_bar percent={elem(@progress, 0)} />
-      <span class="text-xs text-text-muted">{elem(@progress, 1)}</span>
+      <.progress_bar percent={@progress.percent} />
+      <span class="text-xs text-text-muted">{@progress.label}</span>
     </div>
     """
   end
@@ -300,13 +294,14 @@ defmodule WatchClubWeb.Contents.ContentPage do
           class="flex w-24 shrink-0 snap-start flex-col items-center gap-related text-center"
         >
           <span class="relative">
+            <%!-- Its id picks its color, as everywhere else --%>
             <.avatar
-              id={"watcher-avatar-#{watcher.user.id}"}
+              id={watcher.user.id}
               name={watcher.user.username}
               size="lg"
               aria-hidden="true"
             />
-            <span class="absolute -right-tight -bottom-tight grid size-icon place-items-center rounded-full bg-surface-raised ring-2 ring-canvas">
+            <span class="absolute -right-tight -bottom-tight flex size-icon items-center justify-center rounded-full bg-surface-raised ring-2 ring-canvas">
               <Lucideicons.check :if={watcher.status == :completed} class="size-3 text-success" />
               <Lucideicons.contrast
                 :if={watcher.status == :in_progress}
@@ -346,17 +341,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
     %{live_action: type, current_user: user} = socket.assigns
 
     with {id, ""} <- Integer.parse(tmdb_id),
-         {:ok, details} <- get_details(type, id, user) do
+         {identity, {:ok, details}} <- get_details(type, id, user) do
       {:noreply,
        socket
-       |> assign(
-         details: details,
-         content_identity: %ContentIdentity{
-           type: type,
-           external_id_source: :tmdb,
-           external_id: Integer.to_string(id)
-         }
-       )
+       |> assign(details: details, content_identity: identity)
        |> load_content!()
        |> load_watchers!()}
     else
@@ -368,10 +356,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
     end
   end
 
-  defp get_details(:movie, tmdb_id, user), do: Contents.get_movie_details(tmdb_id, actor: user)
+  # The Content's identity, and what it is from TMDB
+  defp get_details(:movie, tmdb_id, user),
+    do: {ContentIdentity.for_movie(tmdb_id), Contents.get_movie_details(tmdb_id, actor: user)}
 
   defp get_details(:tv_show, tmdb_id, user),
-    do: Contents.get_tv_show_details(tmdb_id, actor: user)
+    do: {ContentIdentity.for_tv_show(tmdb_id), Contents.get_tv_show_details(tmdb_id, actor: user)}
 
   @impl true
   def handle_event("open_episodes", _params, socket),
@@ -390,27 +380,27 @@ defmodule WatchClubWeb.Contents.ContentPage do
     {:noreply, socket}
   end
 
+  # Another User's Watch Progress, from history:global, only changes Who watched it
   @impl true
+  def handle_info(
+        %Notification{resource: WatchProgress, data: %{user_id: user_id}} = notification,
+        socket
+      )
+      when user_id != socket.assigns.current_user.id do
+    if notification.metadata.content_identity == socket.assigns.content_identity,
+      do: {:noreply, load_watchers!(socket)},
+      else: {:noreply, socket}
+  end
+
   def handle_info(%Notification{} = notification, socket) do
     %{content_identity: identity, current_user: user} = socket.assigns
 
     PlayOrRequestButtonLive.handle_pubsub_message(notification, user)
 
-    if socket.assigns.episodes_open?,
-      do: EpisodesDrawerLive.handle_pubsub_message(notification, identity, user)
-
     case notification do
-      # Another User's Watch Progress
-      %{
-        resource: WatchProgress,
-        data: %{user_id: user_id},
-        metadata: %{content_identity: ^identity}
-      }
-      when user_id != user.id ->
-        {:noreply, load_watchers!(socket)}
-
       %{resource: resource, metadata: %{content_identity: ^identity}}
       when resource in [Media, WatchProgress] ->
+        if socket.assigns.episodes_open?, do: EpisodesDrawerLive.reload_episodes()
         {:noreply, load_content!(socket)}
 
       # Created when someone first marks it, or refreshed
@@ -447,30 +437,41 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp finished?(content), do: content != nil and content.actor_progress_status == :completed
 
-  # The episode Play plays and how much of the TV Show the User finished, or where they stopped
-  # the Movie, as {percent, text}. Nil until they start, and once they finish.
-  defp progress(%Content{actor_progress_status: :in_progress, type: :movie} = content) do
-    progress = content.implementation.actor_progress
+  # Where the User stopped the Movie, or the episode Play plays and how much of the TV Show they
+  # finished. Nil until they start, and once they finish.
+  defp progress(%Content{actor_progress_status: :in_progress, type: :movie} = content, locale) do
+    %{position_seconds: position, percent_watched: percent} =
+      content.implementation.actor_progress
 
-    {progress.percent_watched,
-     dgettext("contents", "Stopped at %{time}",
-       time: Time.runtime(div(trunc(progress.position_seconds), 60))
-     )}
+    %{
+      percent: percent,
+      label:
+        dgettext("contents", "Stopped at %{time}",
+          time: Time.minutes(max(div(trunc(position), 60), 1), locale)
+        )
+    }
   end
 
-  defp progress(%Content{actor_progress_status: :in_progress, type: :tv_show} = content) do
+  defp progress(%Content{actor_progress_status: :in_progress, type: :tv_show} = content, _locale) do
     %{actor_percent_watched: percent, actor_next_episode: episode} = content.implementation
-    bindings = [episode: episode.formatted_episode_number, percent: round(percent)]
+    # Never 0% once an episode is finished, nor 100% while one isn't
+    bindings = [
+      episode: episode.formatted_episode_number,
+      percent: percent |> round() |> max(1) |> min(99)
+    ]
 
-    {percent,
-     if episode.actor_progress_status == :in_progress do
-       dgettext("contents", "On %{episode} · %{percent}% of the show", bindings)
-     else
-       dgettext("contents", "Next: %{episode} · %{percent}% of the show", bindings)
-     end}
+    %{
+      percent: percent,
+      label:
+        if episode.actor_progress_status == :in_progress do
+          dgettext("contents", "On %{episode} · %{percent}% of the show", bindings)
+        else
+          dgettext("contents", "Next: %{episode} · %{percent}% of the show", bindings)
+        end
+    }
   end
 
-  defp progress(_content), do: nil
+  defp progress(_content, _locale), do: nil
 
   # The seasons of a TV Show with episodes, without its specials
   defp season_numbers(%TvDetailsResponse{} = details) do
@@ -494,9 +495,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
   defp release_date(%MovieDetailsResponse{release_date: date}), do: date
   defp release_date(%TvDetailsResponse{first_air_date: date}), do: date
 
-  defp length_label(%MovieDetailsResponse{runtime: minutes}), do: Time.runtime(minutes)
+  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale)
+       when is_integer(minutes) and minutes > 0,
+       do: Time.minutes(minutes, locale)
 
-  defp length_label(%TvDetailsResponse{} = details) do
+  defp length_label(%MovieDetailsResponse{}, _locale), do: nil
+
+  defp length_label(%TvDetailsResponse{} = details, _locale) do
     case length(season_numbers(details)) do
       0 -> nil
       count -> dngettext("contents", "%{count} season", "%{count} seasons", count)
