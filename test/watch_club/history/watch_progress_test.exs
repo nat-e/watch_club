@@ -136,6 +136,7 @@ defmodule WatchClub.History.WatchProgressTest do
           [
             tv_show: [
               :actor_progress_status,
+              :actor_percent_watched,
               :actor_last_watched_at,
               actor_next_episode: [:actor_progress_status, :actor_progress]
             ]
@@ -145,13 +146,57 @@ defmodule WatchClub.History.WatchProgressTest do
 
       next_episode = content.tv_show.actor_next_episode
 
-      # Show is in progress
+      # Show is in progress, half watched
       assert content.tv_show.actor_progress_status == :in_progress
+      assert content.tv_show.actor_percent_watched == 50.0
       assert DateTime.after?(content.tv_show.actor_last_watched_at, before)
 
       # Next episode should be unstarted S02E01
       assert %TvShowEpisode{season_number: 2, episode_number: 1} = next_episode
       assert next_episode.actor_progress_status == :not_started
+    end
+
+    test "finishes the show once every aired episode is watched" do
+      user = generate(user())
+
+      # Season 1 has aired, season 2 hasn't
+      tv_show =
+        generate(
+          tv_show(
+            num_seasons: 2,
+            episodes_per_season: 3,
+            start_date: Date.shift(Date.utc_today(), year: -2)
+          )
+        )
+
+      History.mark_content_watched!(ContentIdentity.from_content(tv_show), actor: user)
+
+      content =
+        tv_show
+        |> Ash.load!(
+          [
+            tv_show: [
+              :actor_progress_status,
+              :actor_percent_watched,
+              actor_next_episode: [:actor_progress_status],
+              episodes: [:actor_progress_status]
+            ]
+          ],
+          actor: user
+        )
+
+      assert content.tv_show.actor_progress_status == :completed
+      assert content.tv_show.actor_percent_watched == 100.0
+
+      # Only the aired episodes are marked
+      assert content.tv_show.episodes
+             |> Enum.filter(&(&1.actor_progress_status == :completed))
+             |> Enum.map(&{&1.season_number, &1.episode_number})
+             |> Enum.sort() == [{1, 1}, {1, 2}, {1, 3}]
+
+      # Next episode starts the show again instead of going to the unaired S02E01
+      assert %TvShowEpisode{season_number: 1, episode_number: 1} =
+               content.tv_show.actor_next_episode
     end
 
     test "continues with the current episode when it has not been watched entirely" do

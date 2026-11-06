@@ -130,6 +130,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   defp play_label(:movie, _content), do: dgettext("contents", "Play")
   defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
 
+  # No episode has aired yet
+  defp play_label(:tv_show, %{implementation: %{actor_next_episode: nil}}),
+    do: dgettext("contents", "Play")
+
   defp play_label(:tv_show, %{
          implementation: %{
            actor_next_episode: %TvShowEpisode{actor_progress_status: :in_progress} = episode

@@ -57,9 +57,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
 
     # Sourced from the Metadata Provider (TMDB season details). Nil when the
-    # provider has no date yet. Drives the "aired episodes" denominator for
-    # a TV Show's request completeness: an episode counts as aired when
-    # air_date is set and not in the future.
+    # provider has no date yet. See `aired?`.
     attribute :air_date, :date do
       allow_nil? true
       public? true
@@ -126,6 +124,10 @@ defmodule WatchClub.Contents.TvShowEpisode do
     calculate :rank, :integer, expr(season_number * 1000 + episode_number)
 
     calculate :has_media?, :boolean, expr(videos_count > 0)
+
+    # Once its air date has passed. Only aired episodes can be marked as watched, and they decide
+    # whether a TV Show is finished and how complete its Content Request is.
+    calculate :aired?, :boolean, expr(not is_nil(air_date) and air_date <= today())
 
     calculate :actor_progress_status,
               WatchStatus,

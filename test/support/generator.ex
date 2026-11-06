@@ -163,7 +163,9 @@ defmodule WatchClub.Generator do
   def tv_show(opts \\ []) do
     {num_seasons, opts} = Keyword.pop(opts, :num_seasons, 3)
     {episodes_per_season, opts} = Keyword.pop(opts, :episodes_per_season, 24)
-    {start_date, opts} = Keyword.pop(opts, :start_date, ~D[2025-01-01])
+    # Season N airs N years after start_date, one episode a week, so every season has aired by
+    # default
+    {start_date, opts} = Keyword.pop(opts, :start_date, ~D[2015-01-01])
 
     episodes =
       for season_number <- 1..num_seasons, episode_number <- 1..episodes_per_season do

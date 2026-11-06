@@ -108,8 +108,8 @@ defmodule WatchClub.Contents.TvShow do
     has_many :localizations, TvShowLocalization
     has_many :episodes, TvShowEpisode
 
-    # The next episode that the current user has not watched to completion.
-    # If all episodes have been watched, this returns the first one.
+    # The next aired episode that the current user has not watched to completion.
+    # If all aired episodes have been watched, this returns the first one.
     has_one :actor_next_episode, TvShowEpisode do
       manual WatchClub.Contents.TvShow.ActorNextEpisode
     end
@@ -122,14 +122,26 @@ defmodule WatchClub.Contents.TvShow do
 
   calculations do
     # The progress status of the show for the current user
-    # A show is completed when all known episodes are completed
+    # A show is completed when all aired episodes are completed
     calculate :actor_progress_status,
               WatchStatus,
               expr(
                 cond do
                   actor_episodes_started_count == 0 -> :not_started
-                  actor_episodes_completed_count == episodes_count -> :completed
+                  actor_aired_episodes_completed_count == aired_episodes_count -> :completed
                   true -> :in_progress
+                end
+              )
+
+    # The share of the aired episodes the current user has completed, from 0 to 100
+    calculate :actor_percent_watched,
+              :float,
+              expr(
+                if aired_episodes_count == 0 do
+                  0.0
+                else
+                  type(actor_aired_episodes_completed_count, :float) * 100.0 /
+                    aired_episodes_count
                 end
               )
   end
@@ -140,12 +152,14 @@ defmodule WatchClub.Contents.TvShow do
       filter expr(has_media?)
     end
 
-    count :episodes_count, :episodes
+    count :aired_episodes_count, :episodes do
+      filter expr(aired?)
+    end
 
-    # Number of episodes that the current user has completed.
+    # Number of aired episodes that the current user has completed.
     # Only used for internal calculation
-    count :actor_episodes_completed_count, :episodes do
-      filter expr(actor_progress_status == :completed)
+    count :actor_aired_episodes_completed_count, :episodes do
+      filter expr(aired? and actor_progress_status == :completed)
       public? false
     end
 

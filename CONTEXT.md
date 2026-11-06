@@ -528,6 +528,8 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1
+- A **TV Show Episode** has aired once its air date has passed
+- A **User** has finished a **TV Show** once they have finished every aired **TV Show Episode**. Marking a season or a whole **TV Show** as watched marks its aired **TV Show Episodes** only
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
 - A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while any of its **TV Show Episodes** has **Media**
 - A **User** gets missing **Content** into the **Library** with **Request Content**
