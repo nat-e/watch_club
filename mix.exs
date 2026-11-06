@@ -107,6 +107,7 @@ defmodule WatchClub.MixProject do
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
+      {:tz, "~> 0.28"},
       {:usage_rules, "~> 1.0", only: [:dev]}
     ]
   end

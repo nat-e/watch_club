@@ -22,7 +22,7 @@ defmodule WatchClub.Contents.TvShow do
 
     create :create do
       primary? true
-      accept [:original_name, :tmdb_id, :tvdb_id]
+      accept [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
 
       argument :localizations, {:array, :map}, allow_nil?: false, default: []
       argument :episodes, {:array, :map}, allow_nil?: false, default: []
@@ -41,7 +41,7 @@ defmodule WatchClub.Contents.TvShow do
     update :update do
       primary? true
       require_atomic? false
-      accept [:original_name, :tmdb_id, :tvdb_id]
+      accept [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
 
       argument :localizations, {:array, :map}, allow_nil?: false, default: []
       argument :episodes, {:array, :map}, allow_nil?: false, default: []
@@ -82,6 +82,10 @@ defmodule WatchClub.Contents.TvShow do
 
     attribute :original_name, :string do
       allow_nil? false
+      public? true
+    end
+
+    attribute :backdrop_path, :string do
       public? true
     end
 
@@ -147,6 +151,8 @@ defmodule WatchClub.Contents.TvShow do
   end
 
   aggregates do
+    count :season_count, :episodes, field: :season_number, uniq?: true
+
     exists :has_media?, :episodes do
       description "Whether a TV Show has videos for any of their episode"
       filter expr(has_media?)

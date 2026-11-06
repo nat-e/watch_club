@@ -25,6 +25,8 @@ defmodule WatchClub.Contents.Content do
 
   alias WatchClub.Requests.ContentRequest
 
+  alias WatchClub.Conversations.Conversation
+
   alias WatchClub.Contents.Calculations.{ActorNextMediasToPlay, GetContentImplementation}
   alias WatchClub.Contents.Preparations.{FilterByContentIdentities, FilterByTitle}
 
@@ -81,6 +83,12 @@ defmodule WatchClub.Contents.Content do
         description "Keeps the Content rated at least this"
       end
 
+      argument :recommended?, :boolean do
+        allow_nil? false
+        default false
+        description "Keeps the Content other Users recommended to the actor"
+      end
+
       argument :sort, LibrarySort, allow_nil?: false, default: LibrarySort.default()
 
       filter expr(has_media?)
@@ -100,6 +108,9 @@ defmodule WatchClub.Contents.Content do
         where: argument_does_not_equal(:original_languages, [])
 
       prepare build(filter: expr(rating >= ^arg(:min_rating))), where: present(:min_rating)
+
+      prepare build(filter: expr(exists(actor_recommendations, true))),
+        where: argument_equals(:recommended?, true)
 
       prepare build(sort: [added_to_library_at: :desc]),
         where: argument_equals(:sort, :recently_added)
@@ -276,6 +287,17 @@ defmodule WatchClub.Contents.Content do
     end
 
     has_one :request, ContentRequest
+
+    # The Conversations in which another User recommended it to the actor, the latest first. A
+    # deleted User's recommendations don't count.
+    has_many :actor_recommendations, Conversation do
+      filter expr(
+               exists(participants, user_id == ^actor(:id)) and not is_nil(recommended_by_id) and
+                 recommended_by_id != ^actor(:id)
+             )
+
+      sort inserted_at: :desc
+    end
 
     has_many :library_items, LibraryItem
     many_to_many :libraries, Library, through: LibraryItem

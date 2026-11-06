@@ -11,10 +11,15 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   @doc """
   The DOM id we recommend using for this Live Component
-  Stable DOM id allows us to simplify PubSub notification handling
+  Stable DOM id allows us to simplify PubSub notification handling. A page that shows the button
+  twice for a Content gives the second one a `placement`.
   """
-  def dom_id(%ContentIdentity{} = identity),
+  def dom_id(identity, placement \\ nil)
+
+  def dom_id(%ContentIdentity{} = identity, nil),
     do: "play-or-request-button-#{identity.external_id_source}-#{identity.external_id}"
+
+  def dom_id(%ContentIdentity{} = identity, placement), do: "#{dom_id(identity)}-#{placement}"
 
   @doc """
   Updates the component when a relevant Ash Notification is received.
@@ -26,22 +31,27 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   when the Content Request for this content or the user's Request Subscriber of it has
   changed, or when the user's Watch Progress for this content has changed.
   """
+  def handle_pubsub_message(notification, user, placements \\ [nil])
+
   def handle_pubsub_message(
         %Notification{
           resource: resource,
           metadata: %{content_identity: identity}
         },
-        %User{} = user
+        %User{} = user,
+        placements
       )
       when resource in [ContentRequest, RequestSubscriber, Media, WatchProgress] do
-    send_update(__MODULE__,
-      id: dom_id(identity),
-      content_identity: identity,
-      current_user: user
-    )
+    for placement <- placements do
+      send_update(__MODULE__,
+        id: dom_id(identity, placement),
+        content_identity: identity,
+        current_user: user
+      )
+    end
   end
 
-  def handle_pubsub_message(_msg, _user), do: nil
+  def handle_pubsub_message(_msg, _user, _placements), do: nil
 
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true

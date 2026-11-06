@@ -94,7 +94,7 @@ msgid "Browse"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sections.ex
-#: lib/watch_club_web/live/inbox_page.ex
+#: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Inbox"
 msgstr ""
@@ -109,3 +109,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread conversation"
+msgid_plural "%{count} unread conversations"
+msgstr[0] ""
+msgstr[1] ""

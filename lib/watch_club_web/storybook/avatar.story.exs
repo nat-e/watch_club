@@ -14,6 +14,11 @@ defmodule WatchClubWeb.Storybook.Avatar do
         attributes: %{id: "user-jane", name: "Jane Doe"}
       },
       %Variation{
+        id: :blank,
+        description: "Without an id, as for a deleted User",
+        attributes: %{id: nil, name: "Deleted user"}
+      },
+      %Variation{
         id: :group,
         description: "Avatar group",
         template: """

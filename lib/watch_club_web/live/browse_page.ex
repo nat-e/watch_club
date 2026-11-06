@@ -10,6 +10,7 @@ defmodule WatchClubWeb.BrowsePage do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
+  alias WatchClub.Conversations.Participant
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
@@ -18,10 +19,15 @@ defmodule WatchClubWeb.BrowsePage do
 
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
-  @content_fields [:implementation, :actor_progress_status]
+  @content_fields [
+    :implementation,
+    :actor_progress_status,
+    actor_recommendations: [:recommended_by]
+  ]
   @no_filters %{
     type: nil,
     not_watched?: false,
+    recommended?: false,
     genres: [],
     decades: [],
     original_languages: [],
@@ -91,6 +97,15 @@ defmodule WatchClubWeb.BrowsePage do
           >
             <:icon><Lucideicons.eye_off /></:icon>
             {dgettext("browse", "Not watched")}
+          </.filter_chip>
+          <.filter_chip
+            id="filter-recommended"
+            on={@filters.recommended?}
+            phx-click="change_filter"
+            phx-value-filter="recommended"
+          >
+            <:icon><Lucideicons.user_round_check /></:icon>
+            {dgettext("browse", "Recommended to me")}
           </.filter_chip>
           <.divider />
           <.more_button filters={@filters} />
@@ -314,6 +329,11 @@ defmodule WatchClubWeb.BrowsePage do
       |> assign(:title, assigns.content.implementation.best_localization.title)
       |> assign(:identity, ContentIdentity.from_content(assigns.content))
       |> assign(:progress_id, "progress-#{assigns.content.id}")
+      |> assign(:recommenders_id, "recommenders-#{assigns.content.id}")
+      |> assign(
+        :recommenders,
+        assigns.content.actor_recommendations |> Enum.map(& &1.recommended_by) |> Enum.uniq()
+      )
 
     ~H"""
     <div class="group relative">
@@ -322,6 +342,11 @@ defmodule WatchClubWeb.BrowsePage do
         size="w342"
         class="w-full shadow-card"
       >
+        <.recommenders
+          id={@recommenders_id}
+          users={@recommenders}
+          locale={@current_user.settings.locale}
+        />
         <.progress_badge id={@progress_id} status={@content.actor_progress_status} />
         <span
           aria-hidden="true"
@@ -354,7 +379,12 @@ defmodule WatchClubWeb.BrowsePage do
         navigate={Url.content_details_link(@identity)}
         aria-label={@title}
         aria-describedby={
-          @content.actor_progress_status in [:completed, :in_progress] && @progress_id
+          [
+            @recommenders != [] && @recommenders_id,
+            @content.actor_progress_status in [:completed, :in_progress] && @progress_id
+          ]
+          |> Enum.filter(& &1)
+          |> Enum.join(" ")
         }
         class="absolute inset-0 rounded-lg"
       ></.link>
@@ -378,6 +408,53 @@ defmodule WatchClubWeb.BrowsePage do
       ></button>
     </div>
     """
+  end
+
+  attr :id, :string, required: true
+  attr :users, :list, required: true, doc: "who recommended it to the User, the latest first"
+  attr :locale, :atom, required: true
+
+  # The avatars of who recommended it to the User
+  defp recommenders(assigns) do
+    assigns = assign(assigns, :label, recommended_by(assigns.users, assigns.locale))
+
+    ~H"""
+    <span
+      :if={@users != []}
+      id={@id}
+      role="img"
+      aria-label={@label}
+      title={@label}
+      class="absolute top-related left-related"
+    >
+      <.avatar_group
+        avatars={Enum.map(@users, &%{id: &1.id, name: &1.username})}
+        avatar_size="sm"
+        avatar_class="ring-2 ring-black/40"
+        class="-space-x-1.5!"
+      />
+    </span>
+    """
+  end
+
+  # "From guigui74", "From guigui74 and vinz", "From guigui74 and 2 others"
+  defp recommended_by([user | others], _locale) when length(others) > 1 do
+    dngettext(
+      "browse",
+      "From %{name} and %{count} other",
+      "From %{name} and %{count} others",
+      length(others),
+      name: user.username
+    )
+  end
+
+  defp recommended_by(users, locale) do
+    names =
+      users
+      |> Enum.map(& &1.username)
+      |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
+
+    dgettext("browse", "From %{names}", names: names)
   end
 
   attr :id, :string, required: true
@@ -469,6 +546,10 @@ defmodule WatchClubWeb.BrowsePage do
       %{resource: WatchProgress, metadata: %{content_id: id}} ->
         {:noreply, update_poster!(socket, id)}
 
+      # Someone may have recommended it to the User
+      %{resource: Participant, action: %{name: :create}, metadata: %{content_id: id}} ->
+        {:noreply, update_poster!(socket, id)}
+
       _other ->
         {:noreply, socket}
     end
@@ -480,6 +561,7 @@ defmodule WatchClubWeb.BrowsePage do
     %{
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
       not_watched?: params["not_watched"] == "true",
+      recommended?: params["recommended"] == "true",
       genres:
         for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
@@ -505,6 +587,9 @@ defmodule WatchClubWeb.BrowsePage do
   defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
 
+  defp change_filter(filters, "recommended", _choice),
+    do: %{filters | recommended?: not filters.recommended?}
+
   defp change_filter(filters, "genre", genre) do
     {:ok, genre} = Genre.match(genre)
     %{filters | genres: toggle_choice(filters.genres, genre)}
@@ -527,6 +612,7 @@ defmodule WatchClubWeb.BrowsePage do
         [
           type: filters.type,
           not_watched: filters.not_watched?,
+          recommended: filters.recommended?,
           genres: Enum.join(filters.genres, ","),
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),

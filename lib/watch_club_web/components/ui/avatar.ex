@@ -6,7 +6,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
   use Phoenix.Component
   use Gettext, backend: WatchClubWeb.Gettext
 
-  attr :id, :string, required: true
+  attr :id, :string, required: true, doc: "picks its color. Nil shows a blank avatar."
   attr :name, :string, required: true
 
   attr :size, :string,
@@ -17,10 +17,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
   attr :rest, :global, include: ~w(title aria-label)
 
   def avatar(assigns) do
-    assigns =
-      assigns
-      |> assign(:background_class, background_class(assigns.id))
-      |> assign(:initial, initial(assigns.name))
+    assigns = assign(assigns, :background_class, background_class(assigns.id))
 
     ~H"""
     <span
@@ -28,7 +25,9 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex shrink-0 items-center justify-center rounded-full font-semibold text-white select-none",
+        "relative flex shrink-0 items-center justify-center rounded-full font-semibold select-none",
+        @id && "text-white",
+        !@id && "bg-surface-raised text-text-subtle",
         @size == "xs" && "size-4 text-xs leading-none",
         @size == "sm" && "size-5 text-sm leading-none",
         @size == "md" && "size-7 text-base",
@@ -38,7 +37,8 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       ]}
       {@rest}
     >
-      {@initial}
+      <Lucideicons.user_round :if={!@id} class="size-[60%]" />
+      {@id && initial(@name)}
     </span>
     """
   end
@@ -109,6 +109,8 @@ defmodule WatchClubWeb.Components.UI.Avatar do
     |> String.first()
     |> String.upcase()
   end
+
+  defp background_class(nil), do: nil
 
   defp background_class(id) when is_binary(id) do
     # Intentional design-system exception: avatar identity colors are generated

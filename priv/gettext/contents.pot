@@ -22,6 +22,7 @@ msgid "Cast"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"
@@ -271,4 +272,85 @@ msgstr ""
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Get notified when %{title} is ready"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{recommender} recommended it"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Conversations"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message (optional)"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "People"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended to %{names}. The conversation is in your Inbox."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts a conversation with %{name}."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts one group conversation with %{names}."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "To one person or several. Several people share one conversation."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Why they'd love it"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You recommended it"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "to %{recipients}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend it to people, with a message if you want. It starts a conversation."
 msgstr ""

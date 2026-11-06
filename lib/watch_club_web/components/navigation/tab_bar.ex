@@ -11,16 +11,20 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
 
   attr :current_path, :string, required: true
   attr :current_user, User, required: true
+  attr :class, :any, default: nil
 
   def tab_bar(assigns) do
     ~H"""
     <nav
       id="tab-bar"
       aria-label={dgettext("nav", "Main navigation")}
-      class="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface md:hidden"
+      class={[
+        "fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface md:hidden",
+        @class
+      ]}
     >
       <ul class="flex h-(--wc-tab-bar-height) list-none p-0">
-        <li :for={section <- Sections.sections()} class="flex min-w-0 flex-1">
+        <li :for={section <- Sections.sections(@current_user)} class="flex min-w-0 flex-1">
           <.section_tab section={section} current={Sections.aria_current(section, @current_path)} />
         </li>
         <li class="flex min-w-0 flex-1">
@@ -60,7 +64,7 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
       id={"tab-#{@section.id}"}
       navigate={@section.navigate}
       aria-current={@current}
-      class="flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs focus-visible:-outline-offset-2"
+      class="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs focus-visible:-outline-offset-2"
     >
       <span class={[
         "flex h-control-sm w-14 items-center justify-center rounded-full transition-colors [&_svg]:size-icon",
@@ -76,6 +80,11 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
       ]}>
         {@section.label}
       </span>
+      <.unread_badge
+        count={@section.badge}
+        label={@section.badge_label}
+        class="absolute top-1 left-[calc(50%+0.75rem)]"
+      />
     </.link>
     """
   end

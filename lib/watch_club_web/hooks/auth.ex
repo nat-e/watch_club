@@ -8,12 +8,15 @@ defmodule WatchClubWeb.Hooks.Auth do
 
   alias AshAuthentication.Phoenix.LiveSession
 
-  @sidebar_resources [
+  # What the navigation shows of the current user, such as the Inbox tab's unread count
+  @navigation_resources [
     WatchClub.Accounts.UserSettings,
     WatchClub.Clubs.Membership,
     WatchClub.Clubs.Club,
     WatchClub.Clubs.Library,
-    WatchClub.Lists.ContentList
+    WatchClub.Lists.ContentList,
+    WatchClub.Conversations.Message,
+    WatchClub.Conversations.Participant
   ]
 
   # This is used for nested liveviews to fetch the current user.
@@ -96,7 +99,7 @@ defmodule WatchClubWeb.Hooks.Auth do
   end
 
   defp reload_user_on_change(%Ash.Notifier.Notification{resource: resource}, socket)
-       when resource in @sidebar_resources do
+       when resource in @navigation_resources do
     user = WatchClub.Accounts.get_current_user!(actor: socket.assigns.current_user)
     {:cont, socket |> assign(:current_user, user)}
   end

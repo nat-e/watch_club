@@ -129,6 +129,7 @@ msgid "Back"
 msgstr "Retour"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/accounts/user_avatar.ex
 #: lib/watch_club_web/components/ui/badges.ex
 #, elixir-autogen, elixir-format
 msgid "Deleted user"

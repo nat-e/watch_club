@@ -3,6 +3,7 @@ defmodule WatchClub.Accounts.User do
 
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
+  alias WatchClub.Conversations.Participant
   alias WatchClub.Lists.ContentList
 
   use Ash.Resource,
@@ -117,9 +118,14 @@ defmodule WatchClub.Accounts.User do
       get? true
       prepare AshAuthentication.Preparations.FilterBySubject
 
-      # Load the club memberships when loading the logged in user
+      # Load what the navigation shows when loading the logged in user
       prepare build(
-                load: [:settings, :lists, memberships: [club: [:libraries]]],
+                load: [
+                  :settings,
+                  :lists,
+                  :unread_conversation_count,
+                  memberships: [club: [:libraries]]
+                ],
                 context: %{private: %{authorize?: false}}
               )
     end
@@ -129,8 +135,15 @@ defmodule WatchClub.Accounts.User do
       get? true
       filter expr(id == ^actor(:id))
 
-      # Load the club memberships when loading the logged in user
-      prepare build(load: [:settings, :lists, memberships: [club: [:libraries]]])
+      # Load what the navigation shows when loading the logged in user
+      prepare build(
+                load: [
+                  :settings,
+                  :lists,
+                  :unread_conversation_count,
+                  memberships: [club: [:libraries]]
+                ]
+              )
     end
 
     update :change_password do
@@ -472,6 +485,16 @@ defmodule WatchClub.Accounts.User do
 
     has_many :lists, ContentList do
       destination_attribute :owner_id
+    end
+
+    # The User's place in each Conversation they're in
+    has_many :participations, Participant
+  end
+
+  aggregates do
+    # The Inbox tab's count
+    count :unread_conversation_count, :participations do
+      filter expr(unread_count > 0)
     end
   end
 

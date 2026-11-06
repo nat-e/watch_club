@@ -96,6 +96,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_administrator_required},
+        WatchClubWeb.Hooks.Conversations,
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
@@ -111,7 +112,9 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_user_required},
+        WatchClubWeb.Hooks.Conversations,
         WatchClubWeb.Hooks.Locale,
+        WatchClubWeb.Hooks.TimeZone,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
       live "/", BrowsePage
@@ -130,7 +133,8 @@ defmodule WatchClubWeb.Router do
       live "/clubs/:club_id/settings", Clubs.SettingsPage
       live "/clubs/:club_id/libraries/:library_id", Clubs.LibraryPage
       live "/lists", Lists.ListsPage
-      live "/inbox", InboxPage
+      live "/inbox", Conversations.InboxPage
+      live "/inbox/:conversation_id", Conversations.InboxPage
       live "/lists/:list_id", Lists.ListPage
       live "/movies/:tmdb_id", Contents.ContentPage, :movie
       live "/shows/:tmdb_id", Contents.ContentPage, :tv_show
