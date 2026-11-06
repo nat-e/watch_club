@@ -12,7 +12,12 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.PlaylistFormModal
     assigns = assign(assigns, :edit?, assigns.form.source.type == :update)
 
     ~H"""
-    <.modal id="playlist-modal" size="md" on_close={JS.push("close", target: @myself)}>
+    <.modal
+      id="playlist-modal"
+      size="md"
+      class="w-full"
+      on_close={JS.push("close", target: @myself)}
+    >
       <:title>
         {if @edit?,
           do: dgettext("playlists", "Edit playlist"),
@@ -33,7 +38,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.PlaylistFormModal
         <input type="hidden" name={@form[:icon].name} value={@form[:icon].value} />
 
         <.field field={@form[:name]} label={dgettext("playlists", "Name")}>
-          <:control>
+          <:control :let={describedby}>
             <div class="flex items-center gap-related">
               <.button
                 id="playlist-icon-button"
@@ -53,6 +58,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.PlaylistFormModal
                 phx-debounce="blur"
                 placeholder={dgettext("playlists", "My playlist")}
                 phx-mounted={JS.focus()}
+                aria-describedby={describedby}
               />
             </div>
           </:control>

@@ -84,14 +84,15 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
   def handle_event("open", %{"dialog" => "share"}, socket) do
     %{playlist: playlist, current_user: user} = socket.assigns
 
-    # Intentionally small: the instance's Users
+    levels = Map.new(playlist.accesses, &{&1.user_id, Atom.to_string(&1.level)})
+
+    # Intentionally small: the instance's Users. Those who have it come first.
     users =
       [actor: user]
       |> Accounts.list_users!()
       |> Enum.reject(&(&1.id == user.id))
-      |> Enum.sort_by(&String.downcase(&1.username))
+      |> Enum.sort_by(&{not Map.has_key?(levels, &1.id), String.downcase(&1.username)})
 
-    levels = Map.new(playlist.accesses, &{&1.user_id, Atom.to_string(&1.level)})
     {:noreply, assign(socket, dialog: :share, users: users, levels: levels)}
   end
 
@@ -127,7 +128,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
 
   def handle_event("confirm_delete", _params, socket) do
     Playlists.destroy_playlist!(socket.assigns.playlist, actor: socket.assigns.current_user)
-    Flash.send_flash(:info, dgettext("playlists", "Playlist deleted."))
+    Flash.send_flash(:success, dgettext("playlists", "Playlist deleted."))
     {:noreply, socket |> close() |> push_patch(to: ~p"/playlists")}
   end
 
@@ -142,7 +143,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
     Playlists.share_playlist!(playlist, accesses, actor: user)
 
     Flash.send_flash(
-      :info,
+      :success,
       if(accesses == [],
         do: dgettext("playlists", "The playlist is private."),
         else: dgettext("playlists", "Shared. It's in their Playlists now.")

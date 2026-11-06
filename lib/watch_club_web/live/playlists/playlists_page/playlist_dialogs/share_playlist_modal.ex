@@ -52,22 +52,6 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModa
         </div>
       </.form>
 
-      <p class="flex items-center gap-related text-sm text-text-muted">
-        <Lucideicons.lock
-          :if={@levels == %{}}
-          class="size-icon-sm shrink-0 text-text-subtle"
-          aria-hidden="true"
-        />
-        <Lucideicons.users
-          :if={@levels != %{}}
-          class="size-icon-sm shrink-0 text-text-subtle"
-          aria-hidden="true"
-        />
-        {if @levels == %{},
-          do: dgettext("playlists", "Private: only you can see it."),
-          else: who_can(@users, @levels, @current_user)}
-      </p>
-
       <:footer>
         <.button id="share-playlist-cancel" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
@@ -75,6 +59,26 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModa
         <.button id="share-playlist-save" phx-click="save_access" phx-target={@myself}>
           {dgettext("default", "Save")}
         </.button>
+        <%!-- In the footer, so it stays in view while the Users scroll: on top on phones, on the
+        left from small screens --%>
+        <p
+          id="share-playlist-summary"
+          class="flex items-center gap-related text-sm text-text-muted sm:order-first sm:mr-auto"
+        >
+          <Lucideicons.lock
+            :if={@levels == %{}}
+            class="size-icon-sm shrink-0 text-text-subtle"
+            aria-hidden="true"
+          />
+          <Lucideicons.users
+            :if={@levels != %{}}
+            class="size-icon-sm shrink-0 text-text-subtle"
+            aria-hidden="true"
+          />
+          {if @levels == %{},
+            do: dgettext("playlists", "Private: only you can see it."),
+            else: who_can(@users, @levels, @current_user)}
+        </p>
       </:footer>
     </.modal>
     """

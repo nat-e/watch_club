@@ -83,8 +83,8 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
         class={
           [
             "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
-            # The Playlists page shows its list beside the Playlist from the same @4xl width
-            @back.narrow_only? && "@4xl/bar:hidden"
+            # From the width at which a split view shows its list beside what's open
+            @back.narrow_only? && "@4xl/main:hidden"
           ]
         }
         {@back.link}

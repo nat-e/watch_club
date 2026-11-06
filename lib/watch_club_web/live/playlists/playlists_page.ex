@@ -49,101 +49,77 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         narrow_only
       />
 
-      <div class="@container">
-        <div class="flex md:h-[calc(100svh-var(--wc-app-bar-height))]">
-          <aside
-            aria-label={dgettext("nav", "Playlists")}
-            class={[
-              "w-full flex-col gap-group border-border-subtle pb-group max-md:pb-20 md:overflow-y-auto md:pt-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @4xl:flex @4xl:w-72 @4xl:shrink-0 @4xl:border-r",
-              @opened? && "hidden",
-              !@opened? && "flex"
-            ]}
-          >
-            <nav aria-label={dgettext("nav", "Playlists")} class="flex flex-col gap-group px-related">
-              <div class="flex flex-col gap-tight">
-                <div class="flex items-center justify-between gap-related">
-                  <h2 class="px-related text-xs">
-                    <.text_label text={dgettext("playlists", "Your playlists")} />
-                  </h2>
-                  <%!-- Its negative margins keep this heading as tall as Shared with you --%>
-                  <.button
-                    id="new-playlist"
-                    variant="ghost"
-                    size="sm"
-                    phx-click={PlaylistDialogsLive.open(:new)}
-                    class="-my-related max-md:hidden"
-                  >
-                    <:icon><Lucideicons.plus /></:icon>
-                    {dgettext("playlists", "New")}
-                  </.button>
-                </div>
-                <ul :if={@mine != []} class="flex flex-col gap-px">
-                  <li :for={playlist <- @mine}>
-                    <.list_link playlist={playlist} shown={@shown} current_user={@current_user} />
-                  </li>
-                </ul>
-              </div>
-              <div :if={@shared != []} class="flex flex-col gap-tight">
-                <h2 class="px-related text-xs">
-                  <.text_label text={dgettext("playlists", "Shared with you")} />
-                </h2>
-                <ul class="flex flex-col gap-px">
-                  <li :for={playlist <- @shared}>
-                    <.list_link playlist={playlist} shown={@shown} current_user={@current_user} />
-                  </li>
-                </ul>
-              </div>
-            </nav>
-          </aside>
-
-          <%!-- On phones, the list's main action floats above the tabs --%>
-          <div
-            :if={!@opened?}
-            class="fixed right-page bottom-[calc(var(--wc-tab-bar-height)+var(--spacing-group))] z-30 md:hidden"
-          >
-            <.button
-              id="new-playlist-fab"
-              size="lg"
-              phx-click={PlaylistDialogsLive.open(:new)}
-              class="rounded-full! shadow-overlay"
-            >
-              <:icon><Lucideicons.plus /></:icon>
-              {dgettext("playlists", "New")}
-            </.button>
-          </div>
-
-          <div class={[
-            "min-w-0 flex-1 flex-col md:overflow-y-auto [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @4xl:flex",
-            @opened? && "flex",
-            !@opened? && "hidden"
-          ]}>
-            <.playlist_detail
-              :if={@shown}
-              playlist={@shown}
-              items={@streams.items}
-              items_state={@items_state}
+      <%!-- Without Playlists, narrow screens show the empty state, which offers New playlist --%>
+      <.split_view open={@opened? or @playlists == []}>
+        <:list>
+          <nav aria-label={dgettext("nav", "Playlists")} class="flex flex-col gap-group px-related">
+            <.playlist_group
+              title={dgettext("playlists", "Your playlists")}
+              playlists={@mine}
+              shown={@shown}
               current_user={@current_user}
-            />
-            <div :if={!@shown} class="px-page pb-page-y md:pt-group">
-              <.empty id="no-playlists">
-                <:icon><Lucideicons.list /></:icon>
-                <:title>{dgettext("playlists", "No playlists yet")}</:title>
-                <:description>
-                  {dgettext("playlists", "Keep what you want to watch in one place.")}
-                </:description>
+            >
+              <:action>
+                <%!-- Its negative margins keep this heading as tall as Shared with you --%>
                 <.button
-                  id="empty-new-playlist"
-                  variant="secondary"
+                  id="new-playlist"
+                  variant="ghost"
+                  size="sm"
                   phx-click={PlaylistDialogsLive.open(:new)}
+                  class="-my-related max-md:hidden"
                 >
                   <:icon><Lucideicons.plus /></:icon>
-                  {dgettext("playlists", "New playlist")}
+                  {dgettext("playlists", "New")}
                 </.button>
-              </.empty>
-            </div>
+              </:action>
+            </.playlist_group>
+            <.playlist_group
+              :if={@shared != []}
+              title={dgettext("playlists", "Shared with you")}
+              playlists={@shared}
+              shown={@shown}
+              current_user={@current_user}
+            />
+          </nav>
+        </:list>
+        <:fab>
+          <.button
+            id="new-playlist-fab"
+            size="lg"
+            phx-click={PlaylistDialogsLive.open(:new)}
+            class="rounded-full! shadow-overlay"
+          >
+            <:icon><Lucideicons.plus /></:icon>
+            {dgettext("playlists", "New")}
+          </.button>
+        </:fab>
+        <:detail>
+          <.playlist_detail
+            :if={@shown}
+            playlist={@shown}
+            items={@streams.items}
+            items_state={@items_state}
+            current_user={@current_user}
+          />
+          <div :if={!@shown} class="px-page pb-page-y md:pt-group">
+            <.empty id="no-playlists">
+              <:icon><Lucideicons.list /></:icon>
+              <:title>{dgettext("playlists", "No playlists yet")}</:title>
+              <:description>
+                {dgettext("playlists", "Keep what you want to watch in one place.")}
+              </:description>
+              <.button
+                id="empty-new-playlist"
+                variant="secondary"
+                phx-click={PlaylistDialogsLive.open(:new)}
+              >
+                <:icon><Lucideicons.plus /></:icon>
+                {dgettext("playlists", "New playlist")}
+              </.button>
+            </.empty>
           </div>
-        </div>
-      </div>
+        </:detail>
+      </.split_view>
 
       <.live_component
         module={PlaylistDialogsLive}
@@ -155,21 +131,33 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
     """
   end
 
-  attr :playlist, Playlist, required: true
+  attr :title, :string, required: true
+  attr :playlists, :list, required: true
   attr :shown, Playlist, default: nil, doc: "the Playlist beside the list"
   attr :current_user, User, required: true
+  slot :action, doc: "a small button on the right of the title"
 
-  # A Playlist in the list. The one shown beside it is highlighted only where the list is beside
-  # it: narrow screens show the list alone until a Playlist is opened.
-  defp list_link(assigns) do
+  # A titled group of Playlists in the list. The one shown beside it is highlighted only where
+  # the list is beside it: narrow screens show the list alone until a Playlist is opened.
+  defp playlist_group(assigns) do
     ~H"""
-    <.playlist_link
-      playlist={@playlist}
-      current_user={@current_user}
-      patch={~p"/playlists/#{@playlist.id}"}
-      selected={@shown != nil and @playlist.id == @shown.id}
-      class="@4xl:aria-[current=true]:bg-surface-selected"
-    />
+    <div class="flex flex-col gap-tight">
+      <div class="flex items-center justify-between gap-related">
+        <h2 class="px-related text-xs"><.text_label text={@title} /></h2>
+        {render_slot(@action)}
+      </div>
+      <ul :if={@playlists != []} class="flex flex-col gap-px">
+        <li :for={playlist <- @playlists}>
+          <.playlist_link
+            playlist={playlist}
+            current_user={@current_user}
+            patch={~p"/playlists/#{playlist.id}"}
+            selected={@shown != nil and playlist.id == @shown.id}
+            class="@4xl/main:aria-[current=true]:bg-surface-selected"
+          />
+        </li>
+      </ul>
+    </div>
     """
   end
 
@@ -215,7 +203,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
     {:noreply,
      put_flash(
        socket,
-       :info,
+       :success,
        dgettext("playlists", "Removed %{content} from %{playlist}.",
          content: content.implementation.best_localization.title,
          playlist: playlist.name

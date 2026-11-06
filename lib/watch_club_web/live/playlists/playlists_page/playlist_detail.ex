@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             class="flex items-center gap-related font-heading text-2xl font-semibold @3xl:text-3xl"
           >
             <.lucide_icon name={@playlist.icon} class="size-icon-lg shrink-0 text-text-muted" />
-            <span class="min-w-0 truncate">{@playlist.name}</span>
+            <span class="min-w-0 break-words">{@playlist.name}</span>
           </h2>
           <div class="flex flex-wrap items-center gap-x-group gap-y-related text-sm text-text-muted">
             <span :if={!@owner?} class="inline-flex items-center gap-tight">

@@ -5,6 +5,8 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Playlists.PlaylistLink, only: [playlist_summary: 1]
+
   attr :title, :string, required: true, doc: "the Content's name"
 
   attr :playlists, :list,
@@ -27,17 +29,12 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
         <li :for={playlist <- @playlists}>
           <label
             for={"in-playlist-#{playlist.id}"}
-            class="flex cursor-pointer items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover"
+            class="flex cursor-pointer items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover has-checked:bg-surface-selected has-focus-visible:bg-surface-hover"
           >
-            <span class="grid size-control-sm shrink-0 place-items-center rounded-control bg-surface-raised text-text-muted">
-              <.lucide_icon name={playlist.icon} class="size-icon-sm" />
-            </span>
-            <span class="flex min-w-0 flex-1 flex-col">
-              <span class="truncate text-sm font-semibold">{playlist.name}</span>
-              <span class="truncate text-xs text-text-muted">
-                {sharing_line(playlist, @current_user)}
-              </span>
-            </span>
+            <%!-- The dialog's surface is the raised one --%>
+            <.playlist_summary playlist={playlist} tile_class="bg-surface-inset">
+              {sharing_line(playlist, @current_user)}
+            </.playlist_summary>
             <.checkbox
               id={"in-playlist-#{playlist.id}"}
               checked={playlist.holds_content?}
@@ -67,12 +64,16 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
             autocomplete="off"
             phx-debounce="blur"
             placeholder={dgettext("playlists", "New playlist")}
+            aria-describedby="new-playlist-errors"
           />
           <.button id="new-playlist-create" type="submit" variant="secondary">
             {dgettext("default", "Create")}
           </.button>
         </div>
-        <.field_errors field={@new_playlist_form[:name]} />
+        <%!-- role="alert" announces the errors as they appear --%>
+        <div id="new-playlist-errors" role="alert">
+          <.field_errors field={@new_playlist_form[:name]} />
+        </div>
       </.form>
 
       <:footer>

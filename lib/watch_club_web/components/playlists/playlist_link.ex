@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
   @moduledoc """
   A Playlist in a list, on the Playlists page and on a Content page: its icon, its name, what it
-  holds, and whether it's private or who else has it.
+  holds, and whether it's private or who else has it. Its summary also shows in Add to Playlist.
   """
   use WatchClubWeb, :component
 
@@ -32,13 +32,7 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
         @class
       ]}
     >
-      <span class="grid size-control-sm shrink-0 place-items-center rounded-control bg-surface-raised text-text-muted">
-        <.lucide_icon name={@playlist.icon} class="size-icon-sm" />
-      </span>
-      <span class="flex min-w-0 flex-1 flex-col">
-        <span class="truncate text-sm font-semibold">{@playlist.name}</span>
-        <span class="truncate text-xs text-text-muted">{content_counts(@playlist)}</span>
-      </span>
+      <.playlist_summary playlist={@playlist}>{content_counts(@playlist)}</.playlist_summary>
       <span :if={@others == []} class="shrink-0">
         <Lucideicons.lock class="size-icon-sm text-text-subtle" aria-hidden="true" />
         <span class="sr-only">{dgettext("playlists", "Private")}</span>
@@ -51,6 +45,32 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
         class="shrink-0 -space-x-1.5!"
       />
     </.link>
+    """
+  end
+
+  attr :playlist, Playlist, required: true
+
+  attr :tile_class, :any,
+    default: "bg-surface-raised",
+    doc: "the icon tile's background, which must differ from the surface it's on"
+
+  slot :inner_block, required: true, doc: "the line under its name"
+
+  @doc """
+  A Playlist's icon in a tile, its name, and a line under it.
+  """
+  def playlist_summary(assigns) do
+    ~H"""
+    <span class={[
+      "grid size-control-sm shrink-0 place-items-center rounded-control text-text-muted",
+      @tile_class
+    ]}>
+      <.lucide_icon name={@playlist.icon} class="size-icon-sm" />
+    </span>
+    <span class="flex min-w-0 flex-1 flex-col">
+      <span class="truncate text-sm font-semibold">{@playlist.name}</span>
+      <span class="truncate text-xs text-text-muted">{render_slot(@inner_block)}</span>
+    </span>
     """
   end
 
