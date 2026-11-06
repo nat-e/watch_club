@@ -107,8 +107,6 @@ defmodule WatchClubWeb.Helpers.Url do
   def in_section?(path, section_path),
     do: path == section_path or String.starts_with?(path, section_path <> "/")
 
-  def list_link(list_id), do: ~p"/lists/#{list_id}"
-
   @doc """
   The search page for `query`, in the Library only when `has_media?`.
   """

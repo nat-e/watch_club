@@ -8,6 +8,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClub.Playbacks.{Playback, Session}
+  alias WatchClub.Playlists.{Playlist, PlaylistAccess, PlaylistItem}
   alias WatchClub.Requests.{ContentRequest, RequestSubscriber}
 
   @default_password "passw0rd"
@@ -316,6 +317,36 @@ defmodule WatchClub.Generator do
         body: sequence(:message_body, &"Message #{&1}")
       ],
       actor: author,
+      overrides: opts
+    )
+  end
+
+  def playlist(%User{} = owner, opts \\ []) do
+    changeset_generator(
+      Playlist,
+      :create,
+      defaults: [
+        name: sequence(:playlist_name, &"Playlist #{&1}"),
+        icon: "list"
+      ],
+      authorize?: false,
+      actor: owner,
+      overrides: opts
+    )
+  end
+
+  def playlist_access(%Playlist{} = playlist, %User{} = user, level) do
+    seed_generator(%PlaylistAccess{playlist_id: playlist.id, user_id: user.id, level: level})
+  end
+
+  # Added by the Playlist's owner unless `added_by_id` says otherwise
+  def playlist_item(%Playlist{} = playlist, %Content{} = content, opts \\ []) do
+    seed_generator(
+      %PlaylistItem{
+        playlist_id: playlist.id,
+        content_id: content.id,
+        added_by_id: playlist.owner_id
+      },
       overrides: opts
     )
   end

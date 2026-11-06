@@ -4,7 +4,6 @@ defmodule WatchClub.Accounts.User do
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Clubs.{Club, Membership}
   alias WatchClub.Conversations.Participant
-  alias WatchClub.Lists.ContentList
   alias WatchClub.Requests.RequestSubscriber
 
   use Ash.Resource,
@@ -123,7 +122,6 @@ defmodule WatchClub.Accounts.User do
       prepare build(
                 load: [
                   :settings,
-                  :lists,
                   :ready_unseen_request_count,
                   :unread_conversation_count,
                   memberships: [club: [:libraries]]
@@ -141,7 +139,6 @@ defmodule WatchClub.Accounts.User do
       prepare build(
                 load: [
                   :settings,
-                  :lists,
                   :ready_unseen_request_count,
                   :unread_conversation_count,
                   memberships: [club: [:libraries]]
@@ -412,8 +409,8 @@ defmodule WatchClub.Accounts.User do
   end
 
   changes do
-    # Give every newly created user a default, localized "To Watch" list
-    change WatchClub.Accounts.Changes.CreateToWatchList, on: [:create]
+    # Give every newly created User a default, localized To Watch Playlist
+    change WatchClub.Accounts.Changes.CreateToWatchPlaylist, on: [:create]
   end
 
   validations do
@@ -485,10 +482,6 @@ defmodule WatchClub.Accounts.User do
     has_many :memberships, Membership
     many_to_many :clubs, Club, through: Membership
     has_one :settings, UserSettings
-
-    has_many :lists, ContentList do
-      destination_attribute :owner_id
-    end
 
     # The User's place in each Conversation they're in
     has_many :participations, Participant

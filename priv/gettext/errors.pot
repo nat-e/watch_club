@@ -141,26 +141,6 @@ msgstr ""
 msgid "Code must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/lists/content_list.ex
-#, elixir-autogen, elixir-format
-msgid "List icon is invalid"
-msgstr ""
-
-#: lib/watch_club/lists/content_list.ex
-#, elixir-autogen, elixir-format
-msgid "List name cannot be longer than %{max} characters"
-msgstr ""
-
-#: lib/watch_club/lists/content_list.ex
-#, elixir-autogen, elixir-format
-msgid "List name is required"
-msgstr ""
-
-#: lib/watch_club/lists/content_list.ex
-#, elixir-autogen, elixir-format
-msgid "List name must be at least %{min} characters"
-msgstr ""
-
 #: lib/watch_club/accounts/changes/apply_invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "The invitation code is not valid"
@@ -346,4 +326,24 @@ msgstr ""
 #: lib/watch_club/conversations/participant.ex
 #, elixir-autogen, elixir-format
 msgid "This person is already in the conversation"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Playlist icon is invalid"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Playlist name cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Playlist name is required"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Playlist name must be at least %{min} characters"
 msgstr ""

@@ -17,11 +17,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
     doc:
       "If we are in the context of displaying a LibraryItem, an avatar will be displayed in the overlay"
 
-  attr :list_item, ListItem,
-    default: nil,
-    doc:
-      "If we are in the context of displaying a ListItem (the List page), a 'Remove from list' action is shown"
-
   def content_card(assigns) do
     ~H"""
     <.card
@@ -52,7 +47,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           content={@content}
           current_user={@current_user}
           library_item={@library_item}
-          list_item={@list_item}
         />
       </.tmdb_poster>
     </.card>
@@ -63,7 +57,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
   attr :content, Content, required: true
   attr :current_user, User, required: true
   attr :library_item, LibraryItem, default: nil
-  attr :list_item, ListItem, default: nil
 
   defp overlay(assigns) do
     assigns =
@@ -104,15 +97,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
             <Lucideicons.share_2 />
             {dgettext("clubs", "Share with club")}
           </.dropdown_menu_item>
-          <.dropdown_menu_item
-            id={"content-card-actions-add-to-list-#{@id}"}
-            phx-click="open_add_to_list_modal"
-            phx-value-content_id={@content.id}
-          >
-            <Lucideicons.list_plus />
-            {dgettext("contents", "Add to List")}
-          </.dropdown_menu_item>
-          <.dropdown_menu_separator :if={@removable? || @list_item} />
+          <.dropdown_menu_separator :if={@removable?} />
           <.dropdown_menu_item
             :if={@removable?}
             id={"content-card-actions-remove-#{@id}"}
@@ -122,16 +107,6 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
           >
             <Lucideicons.trash_2 />
             {dgettext("clubs", "Remove from club")}
-          </.dropdown_menu_item>
-          <.dropdown_menu_item
-            :if={@list_item}
-            id={"content-card-actions-remove-from-list-#{@id}"}
-            variant="destructive"
-            phx-click="remove_list_item"
-            phx-value-content_id={@list_item.content_id}
-          >
-            <Lucideicons.trash_2 />
-            {dgettext("contents", "Remove from list")}
           </.dropdown_menu_item>
         </.dropdown_menu>
       </div>

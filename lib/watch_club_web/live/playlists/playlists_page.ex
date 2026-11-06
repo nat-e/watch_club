@@ -1,4 +1,4 @@
-defmodule WatchClubWeb.Lists.ListsPage do
+defmodule WatchClubWeb.Playlists.PlaylistsPage do
   @moduledoc """
   The Playlists tab's page, empty.
   """

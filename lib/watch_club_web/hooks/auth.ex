@@ -14,7 +14,6 @@ defmodule WatchClubWeb.Hooks.Auth do
     WatchClub.Clubs.Membership,
     WatchClub.Clubs.Club,
     WatchClub.Clubs.Library,
-    WatchClub.Lists.ContentList,
     WatchClub.Conversations.Message,
     WatchClub.Conversations.Participant,
     WatchClub.Requests.RequestSubscriber

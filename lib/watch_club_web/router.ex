@@ -132,10 +132,9 @@ defmodule WatchClubWeb.Router do
       live "/clubs/:club_id/members", Clubs.MembersPage
       live "/clubs/:club_id/settings", Clubs.SettingsPage
       live "/clubs/:club_id/libraries/:library_id", Clubs.LibraryPage
-      live "/lists", Lists.ListsPage
       live "/inbox", Conversations.InboxPage
       live "/inbox/:conversation_id", Conversations.InboxPage
-      live "/lists/:list_id", Lists.ListPage
+      live "/playlists", Playlists.PlaylistsPage
       live "/movies/:tmdb_id", Contents.ContentPage, :movie
       live "/shows/:tmdb_id", Contents.ContentPage, :tv_show
     end

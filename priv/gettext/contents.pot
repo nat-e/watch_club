@@ -65,13 +65,7 @@ msgstr ""
 msgid "Share with club"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_card.ex
-#, elixir-autogen, elixir-format
-msgid "Add to List"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Already added"
 msgstr ""
@@ -79,26 +73,6 @@ msgstr ""
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/content_card.ex
-#, elixir-autogen, elixir-format
-msgid "Remove from list"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any list yet"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Add %{title} to List"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "You need to create a List before adding content to it"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
