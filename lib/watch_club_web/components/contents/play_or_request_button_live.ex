@@ -7,6 +7,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   import WatchClubWeb.Components.Contents.PlayOrRequestButton
 
+  alias WatchClubWeb.Hooks.Flash
+
   @doc """
   The DOM id we recommend using for this Live Component
   Stable DOM id allows us to simplify PubSub notification handling
@@ -125,29 +127,29 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
            actor: socket.assigns.current_user
          ) do
       {:ok, request} ->
-        {:noreply,
-         put_flash(
-           socket,
-           :info,
-           told_when_ready(request.content.implementation.best_localization.title)
-         )}
+        send_told_when_ready(request.content.implementation.best_localization.title)
+        {:noreply, socket}
 
       {:error, _error} ->
-        {:noreply,
-         put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
+        Flash.send_flash(:error, dgettext("contents", "Could not request this right now."))
+        {:noreply, socket}
     end
   end
 
   def handle_event("get-notified", _params, socket) do
     Requests.get_notified!(socket.assigns.request.id, actor: socket.assigns.current_user)
-    {:noreply, put_flash(socket, :info, told_when_ready(socket.assigns.title))}
+    send_told_when_ready(socket.assigns.title)
+    {:noreply, socket}
   end
 
-  defp told_when_ready(title),
-    do:
+  defp send_told_when_ready(title) do
+    Flash.send_flash(
+      :info,
       dgettext("contents", "You'll be told when %{title} is ready. It's in your Requests.",
         title: title
       )
+    )
+  end
 
   defp play_label(:movie, %Content{actor_progress_status: :in_progress}),
     do: dgettext("contents", "Resume")
