@@ -49,6 +49,7 @@ defmodule WatchClub.Contents.ContentTest do
                original_language: "en",
                origin_country: "US",
                genres: [:adventure, :action, :science_fiction],
+               rating: 8.2,
                implementation: %Movie{
                  best_localization: %MovieLocalization{
                    iso_639_1: "fr",
@@ -115,6 +116,21 @@ defmodule WatchClub.Contents.ContentTest do
     test "system actor can create a movie without selecting libraries" do
       assert %Content{type: :movie, external_id: "11"} =
                create_movie!("11", actor: WatchClub.SystemActor.actor())
+    end
+
+    test "leaves out the rating of a movie too few people voted on" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+
+        response =
+          "movie_details_11"
+          |> tmdb_fixture()
+          |> Map.merge(%{"id" => tmdb_id, "vote_average" => 10.0, "vote_count" => 24})
+
+        Req.Test.json(conn, response)
+      end)
+
+      assert %Content{rating: nil} = create_movie!("12", actor: generate(user()))
     end
   end
 
@@ -261,7 +277,7 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.read!(authorize?: false)
     end
 
-    test "stores the genres of a TV Show created without them" do
+    test "stores the genres and rating of a TV Show created without them" do
       tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
       tmdb_id = String.to_integer(tv_show.external_id)
 
@@ -269,7 +285,7 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, Map.put(tv_details_fixture(), "id", tmdb_id))
       end)
 
-      assert %Content{genres: [:drama, :science_fiction, :fantasy]} =
+      assert %Content{genres: [:drama, :science_fiction, :fantasy], rating: 8.4} =
                refresh_tv_show!(tv_show, actor: SystemActor.actor())
     end
   end
@@ -395,16 +411,26 @@ defmodule WatchClub.Contents.ContentTest do
     end
 
     test "keeps the Content that matches every filter", %{member: member} do
-      watched = generate(movie(release_date: ~D[1994-05-01], genres: [:drama]))
+      watched = generate(movie(release_date: ~D[1994-05-01], genres: [:drama], rating: 7.0))
 
       french =
         generate(
-          movie(release_date: ~D[1999-12-31], original_language: "fr", genres: [:comedy, :drama])
+          movie(
+            release_date: ~D[1999-12-31],
+            original_language: "fr",
+            genres: [:comedy, :drama],
+            rating: 6.9
+          )
         )
 
       japanese =
         generate(
-          movie(release_date: ~D[2015-01-01], original_language: "ja", genres: [:animation])
+          movie(
+            release_date: ~D[2015-01-01],
+            original_language: "ja",
+            genres: [:animation],
+            rating: 8.6
+          )
         )
 
       tv_show =
@@ -433,18 +459,23 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert ids.(%{decades: [1990]}) == MapSet.new([watched.id, french.id, tv_show.id])
       assert ids.(%{original_languages: ["fr", "ja"]}) == MapSet.new([french.id, japanese.id])
+      assert ids.(%{min_rating: 7}) == MapSet.new([watched.id, japanese.id])
 
       assert ids.(%{type: :movie, not_watched?: true, decades: [1990]}) ==
                MapSet.new([french.id])
     end
 
-    test "sorts the Content, the Content without a release date last", %{member: member} do
-      for {title, release_date} <- [
-            {"Casablanca", ~D[1942-11-26]},
-            {"Amélie", nil},
-            {"Brazil", ~D[1985-02-20]}
+    test "sorts the Content, the Content without a release date or rating last", %{
+      member: member
+    } do
+      for {title, release_date, rating} <- [
+            {"Casablanca", ~D[1942-11-26], 8.1},
+            {"Amélie", nil, nil},
+            {"Brazil", ~D[1985-02-20], 7.8}
           ] do
-        add_video!(generate(movie(original_title: title, release_date: release_date)).id)
+        add_video!(
+          generate(movie(original_title: title, release_date: release_date, rating: rating)).id
+        )
       end
 
       titles = fn sort ->
@@ -452,6 +483,7 @@ defmodule WatchClub.Contents.ContentTest do
         Enum.map(first_page.results ++ Ash.page!(first_page, :next).results, & &1.original_title)
       end
 
+      assert titles.(:best_rated) == ["Casablanca", "Brazil", "Amélie"]
       assert titles.(:newest) == ["Brazil", "Casablanca", "Amélie"]
       assert titles.(:oldest) == ["Casablanca", "Brazil", "Amélie"]
       assert titles.(:title) == ["Amélie", "Brazil", "Casablanca"]

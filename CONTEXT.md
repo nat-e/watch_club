@@ -284,6 +284,10 @@ _Avoid_: Best localization, current localization
 A kind of story a **Movie** or **TV Show** tells, such as Drama or Comedy.
 _Avoid_: Category, tag
 
+**Rating**:
+How good people found a **Movie** or **TV Show**: its average score out of 10 on its **Metadata Provider**.
+_Avoid_: Score, vote average, grade
+
 **Library**:
 All the **Content** that is available on the **Instance** and has **Media**.
 _Avoid_: Catalog, available content, server content
@@ -533,6 +537,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Content** has at most one **Content Localization** per **Locale**
 - A **Movie** or **TV Show** has zero or more **Genres**, from its **Metadata Provider**
 - **Movies** and **TV Shows** share the same **Genres**: a TMDB TV genre that combines two, such as Action & Adventure, gives both
+- A **Movie** or **TV Show** has a **Rating** only once at least 25 people voted on its **Metadata Provider**, so a single vote can't top Best rated
 - A **TV Show** has zero or more **TV Show Episodes**
 - A **TV Show Episode** belongs to exactly one **TV Show**
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number

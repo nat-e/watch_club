@@ -77,6 +77,10 @@ defmodule WatchClub.Contents.Content do
         description "Keeps the Content in one of these original languages"
       end
 
+      argument :min_rating, :float do
+        description "Keeps the Content rated at least this"
+      end
+
       argument :sort, LibrarySort, allow_nil?: false, default: LibrarySort.default()
 
       filter expr(has_media?)
@@ -95,8 +99,12 @@ defmodule WatchClub.Contents.Content do
       prepare build(filter: expr(original_language in ^arg(:original_languages))),
         where: argument_does_not_equal(:original_languages, [])
 
+      prepare build(filter: expr(rating >= ^arg(:min_rating))), where: present(:min_rating)
+
       prepare build(sort: [added_to_library_at: :desc]),
         where: argument_equals(:sort, :recently_added)
+
+      prepare build(sort: [rating: :desc_nils_last]), where: argument_equals(:sort, :best_rated)
 
       # Content without a release date goes last both ways
       prepare build(sort: [release_date: :desc_nils_last]), where: argument_equals(:sort, :newest)
@@ -244,6 +252,11 @@ defmodule WatchClub.Contents.Content do
       allow_nil? false
       default []
       public? true
+    end
+
+    attribute :rating, :float do
+      public? true
+      description "Nil for Books, and when too few people voted. See `Rating`."
     end
 
     timestamps()

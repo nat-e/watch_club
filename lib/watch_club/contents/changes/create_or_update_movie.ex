@@ -2,7 +2,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   use Ash.Resource.Change
 
   alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.Genre
+  alias WatchClub.Contents.{Genre, Rating}
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
   alias WatchClub.Integrations.Tmdb.Types.Images
 
@@ -64,6 +64,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
     |> Ash.Changeset.force_change_attribute(:origin_country, production_country)
     |> Ash.Changeset.force_change_attribute(:release_date, movie.release_date)
     |> Ash.Changeset.force_change_attribute(:genres, Genre.from_tmdb(movie.genres))
+    |> Ash.Changeset.force_change_attribute(:rating, Rating.from_tmdb(movie))
   end
 
   defp best_global_backdrop(%MovieDetailsResponse{
