@@ -395,12 +395,27 @@ defmodule WatchClub.Contents.ContentTest do
     end
 
     test "keeps the Content that matches every filter", %{member: member} do
-      watched = generate(movie(release_date: ~D[1994-05-01]))
-      french = generate(movie(release_date: ~D[1999-12-31], original_language: "fr"))
-      japanese = generate(movie(release_date: ~D[2015-01-01], original_language: "ja"))
+      watched = generate(movie(release_date: ~D[1994-05-01], genres: [:drama]))
+
+      french =
+        generate(
+          movie(release_date: ~D[1999-12-31], original_language: "fr", genres: [:comedy, :drama])
+        )
+
+      japanese =
+        generate(
+          movie(release_date: ~D[2015-01-01], original_language: "ja", genres: [:animation])
+        )
 
       tv_show =
-        generate(tv_show(num_seasons: 1, episodes_per_season: 1, start_date: ~D[1995-01-01]))
+        generate(
+          tv_show(
+            num_seasons: 1,
+            episodes_per_season: 1,
+            start_date: ~D[1995-01-01],
+            genres: [:comedy]
+          )
+        )
 
       for movie <- [watched, french, japanese], do: add_video!(movie.id)
       add_episode_video!(tv_show, 1)
@@ -412,6 +427,10 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert ids.(%{type: :tv_show}) == MapSet.new([tv_show.id])
       assert ids.(%{not_watched?: true}) == MapSet.new([french.id, japanese.id, tv_show.id])
+
+      assert ids.(%{genres: [:animation, :comedy]}) ==
+               MapSet.new([french.id, japanese.id, tv_show.id])
+
       assert ids.(%{decades: [1990]}) == MapSet.new([watched.id, french.id, tv_show.id])
       assert ids.(%{original_languages: ["fr", "ja"]}) == MapSet.new([french.id, japanese.id])
 
@@ -440,21 +459,24 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "get_library_filter_options/*" do
-    test "returns the Library's decades, newest first, and original languages, most common first",
+    test "returns the Library's genres and original languages, most common first, and decades, newest first",
          %{member: member} do
       # Not in the Library
-      generate(movie(release_date: ~D[1960-01-01], original_language: "it"))
+      generate(movie(release_date: ~D[1960-01-01], original_language: "it", genres: [:western]))
 
-      for {release_date, language} <- [
-            {~D[1994-01-01], "fr"},
-            {~D[2015-01-01], "en"},
-            {~D[2019-01-01], "fr"},
-            {nil, "ja"}
+      for {release_date, language, genres} <- [
+            {~D[1994-01-01], "fr", [:drama]},
+            {~D[2015-01-01], "en", [:comedy, :drama]},
+            {~D[2019-01-01], "fr", [:animation, :comedy, :drama]},
+            {nil, "ja", []}
           ] do
-        add_video!(generate(movie(release_date: release_date, original_language: language)).id)
+        add_video!(
+          generate(movie(release_date: release_date, original_language: language, genres: genres)).id
+        )
       end
 
       assert get_library_filter_options!(actor: member) == %{
+               genres: [:drama, :comedy, :animation],
                decades: [2010, 1990],
                original_languages: ["fr", "en", "ja"]
              }

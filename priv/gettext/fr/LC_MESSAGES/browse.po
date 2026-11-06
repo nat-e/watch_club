@@ -108,3 +108,9 @@ msgstr "Année"
 #, elixir-autogen, elixir-format
 msgid "Type"
 msgstr "Type"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Genre"
+msgstr "Genre"
