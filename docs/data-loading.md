@@ -45,13 +45,12 @@ Data can be upated directly from the Notification payload if straight forward. I
 |---|---|---|---|---|---|
 | `memberships:club:<club_id>` | Club Memberships | Club | Notifications about Club Memberships | `ClubMembership:CUD` | `/clubs/:club_id/members` |
 | `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
-| `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
 | `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `ClubMembership:CUD` | Every page for current user |
 | `club:<club_id>` | - | Club | Notifications about a Club  | `Club:U`, `Library:CUD` | Every page for current user (Sidebar) |
 | `media_sources:admin` | MediaSources | Admin | Notifications about a a Media Source or Import  | `MediaSource:CUD`, `Import:CU` | `/admin/media_sources/*` |
-| `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `ContentRequest:CUD`, `WatchProgress:CUD` | Any page that display content (Content Details, Club Library, Browse...) |
-| `content:club:<club_id>` | Contents | Club | Notification about a Content that affects members of a Club | `LibraryItem:CUD` | Any page that displays content (Content Details, Club Library...) |
-| `content:global` | Contents | Global | Notification about a Content that affects everybody | `Media:CUD`, `Content:CUD` | Any page that displays content (Content Details, Club Library, Browse...) |
+| `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `ContentRequest:CUD`, `WatchProgress:CUD` | Any page that display content (Content page, Club Library, Browse...) |
+| `content:club:<club_id>` | Contents | Club | Notification about a Content that affects members of a Club | `LibraryItem:CUD` | Any page that displays content (Content page, Club Library...) |
+| `content:global` | Contents | Global | Notification about a Content that affects everybody | `Media:CUD`, `Content:CUD` | Any page that displays content (Content page, Club Library, Browse...) |
 | `history:global` | History | Global | Every User's Watch Progress, for the Watchers of a Content | `WatchProgress:CD` | `/movies/:tmdb_id`, `/shows/:tmdb_id` |
 
 

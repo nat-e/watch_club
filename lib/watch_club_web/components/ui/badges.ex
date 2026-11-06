@@ -8,7 +8,6 @@ defmodule WatchClubWeb.Components.UI.Badges do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Clubs.{Club, Library}
-  alias WatchClub.Contents.Content
   alias WatchClubWeb.Helpers.Url
 
   import WatchClubWeb.Components.UI.{Avatar, LucideIcon}
@@ -59,19 +58,6 @@ defmodule WatchClubWeb.Components.UI.Badges do
         class="inline-block size-[1em] align-[-0.15em] shrink-0"
       />
       <span class="font-semibold">{@library.name}</span>
-    </.link>
-    """
-  end
-
-  attr :content, Content, required: true
-
-  def content_link(assigns) do
-    ~H"""
-    <.link
-      navigate={Url.content_details_link(@content)}
-      class="font-semibold text-accent hover:underline"
-    >
-      {@content.implementation.best_localization.title}
     </.link>
     """
   end

@@ -1,6 +1,6 @@
-defmodule WatchClubWeb.Components.Contents.Details.CastSection do
+defmodule WatchClubWeb.Contents.ContentPage.CastSection do
   @moduledoc """
-  Cast & crew section shared by the Movie and TV Show detail pages.
+  The director and the actors of a Movie or a TV Show.
   """
   use WatchClubWeb, :component
 

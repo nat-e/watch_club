@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Helpers.Url do
     statics: WatchClubWeb.static_paths()
 
   alias WatchClub.Clubs.{Club, Library}
-  alias WatchClub.Contents.{Content, ContentIdentity, Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Movie, TvShowEpisode}
   alias WatchClub.MediaCatalog.Video
 
   @type t :: %__MODULE__{
@@ -118,19 +118,11 @@ defmodule WatchClubWeb.Helpers.Url do
   def search_params(params),
     do: %{query: String.trim(params["query"] || ""), has_media?: params["library"] == "1"}
 
-  def content_details_link(%Content{type: type, external_id: id}),
-    do: content_details_link(type, id, nil)
-
-  def content_details_link(%ContentIdentity{type: type, external_id: id}),
-    do: content_details_link(type, id, nil)
-
-  def content_details_link(content_type, external_id, selected_club_id \\ nil)
-
-  def content_details_link(:movie, external_id, selected_club_id),
-    do: ~p"/movies/#{external_id}?#{content_details_params(selected_club_id)}"
-
-  def content_details_link(:tv_show, external_id, selected_club_id),
-    do: ~p"/shows/#{external_id}?#{content_details_params(selected_club_id)}"
+  @doc """
+  The Content page of a Movie or a TV Show, from its `Content` or its `ContentIdentity`.
+  """
+  def content_details_link(%{type: :movie, external_id: id}), do: ~p"/movies/#{id}"
+  def content_details_link(%{type: :tv_show, external_id: id}), do: ~p"/shows/#{id}"
 
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
@@ -140,7 +132,4 @@ defmodule WatchClubWeb.Helpers.Url do
 
   def club_library_link(%Library{id: library_id, club_id: club_id}),
     do: ~p"/clubs/#{club_id}/libraries/#{library_id}"
-
-  defp content_details_params(nil), do: %{}
-  defp content_details_params(selected_club_id), do: %{selected_club_id: selected_club_id}
 end

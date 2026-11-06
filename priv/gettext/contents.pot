@@ -11,142 +11,48 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
+#: lib/watch_club_web/helpers/time.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} minute"
 msgid_plural "%{count} minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
+#: lib/watch_club_web/helpers/time.ex
 #, elixir-autogen, elixir-format
 msgid "%{hours}h"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
+#: lib/watch_club_web/helpers/time.ex
 #, elixir-autogen, elixir-format
 msgid "%{hours}h %{minutes}m"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/reviews_card.ex
-#, elixir-autogen, elixir-format
-msgid "Based on %{count} TMDB vote."
-msgid_plural "Based on %{count} TMDB votes."
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/components/contents/details/external_links_card.ex
-#: lib/watch_club_web/live/contents/movie_details_page.ex
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex
-#, elixir-autogen, elixir-format
-msgid "External links"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/external_links_card.ex
-#, elixir-autogen, elixir-format
-msgid "Letterboxd search"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/external_links_card.ex
-#, elixir-autogen, elixir-format
-msgid "Official site"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Released"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/reviews_card.ex
-#: lib/watch_club_web/live/contents/movie_details_page.ex
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex
-#, elixir-autogen, elixir-format
-msgid "Reviews"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Watch Trailer"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/cast_section.ex
+#: lib/watch_club_web/live/contents/content_page/cast_section.ex
 #, elixir-autogen, elixir-format
 msgid "Cast"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Original title"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/movie_details_page.ex
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex
-#, elixir-autogen, elixir-format
-msgid "Overview"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
+#: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Canceled"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Ended"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
+#: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Episodes"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
-#, elixir-autogen, elixir-format
-msgid "Returning Series"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Seasons"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Error loading season"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Loading season episodes"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Try again"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page/episodes_section.ex
-#, elixir-autogen, elixir-format
-msgid "We couldn't load the season. Please try again"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
@@ -175,13 +81,11 @@ msgid "Select the Club Library in which you want to add %{content_name}. All Clu
 msgstr ""
 
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
 #, elixir-autogen, elixir-format
 msgid "Share with club"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/content_card.ex
-#: lib/watch_club_web/components/contents/details/hero_panel.ex
 #, elixir-autogen, elixir-format
 msgid "Add to List"
 msgstr ""
@@ -192,11 +96,6 @@ msgstr ""
 msgid "Already added"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
-#, elixir-autogen, elixir-format
-msgid "In your clubs"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
@@ -205,26 +104,6 @@ msgstr ""
 #: lib/watch_club_web/components/contents/content_card.ex
 #, elixir-autogen, elixir-format
 msgid "Remove from list"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
-#, elixir-autogen, elixir-format
-msgid "Share it to make it available for everybody and start exchanging about it."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/tv_show_details_page.ex
-#, elixir-autogen, elixir-format
-msgid "The TV Show you were looking for does not exist"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/movie_details_page.ex
-#, elixir-autogen, elixir-format
-msgid "The movie you were looking for does not exist"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
-#, elixir-autogen, elixir-format
-msgid "This %{type} is not present in any of your clubs yet."
 msgstr ""
 
 #: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
@@ -272,21 +151,13 @@ msgstr ""
 msgid "Resume %{episode}"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/content_watch_progress_badge_live.ex
-#: lib/watch_club_web/components/contents/episode_watch_progress_badge_live.ex
-#: lib/watch_club_web/components/contents/season_watch_progress_badge_live.ex
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "Mark as watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/components/in_your_clubs_section_live.ex
-#, elixir-autogen, elixir-format
-msgid "Share with another club"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/content_watch_progress_badge_live.ex
-#: lib/watch_club_web/components/contents/episode_watch_progress_badge_live.ex
-#: lib/watch_club_web/components/contents/season_watch_progress_badge_live.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
 msgstr ""
@@ -294,4 +165,134 @@ msgstr ""
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{action} %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "All episodes"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "It isn't on the server yet. Mark what you've watched elsewhere."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Mark all as not watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Mark all as watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Mark as not watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark episode %{number} as not watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark episode %{number} as watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark season %{number} as not watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark season %{number} as watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark season as watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Next: %{episode} · %{percent}% of the show"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not on the server yet"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not out yet"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "On %{episode} · %{percent}% of the show"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language: %{language}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play any episode, or mark what you've watched."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play episode %{number}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "Season watched"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "See it on TMDB"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stopped at %{time}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "This movie or TV show doesn't exist"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Watch trailer"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Who watched it"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_drawer_live.ex
+#, elixir-autogen, elixir-format
+msgid "You're watching it"
 msgstr ""

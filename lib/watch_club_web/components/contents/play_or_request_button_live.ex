@@ -24,6 +24,13 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   user's Watch Progress for this content has changed.
   """
   def handle_pubsub_message(
+        %Notification{resource: WatchProgress, data: %{user_id: user_id}},
+        %User{id: id}
+      )
+      when user_id != id,
+      do: nil
+
+  def handle_pubsub_message(
         %Notification{
           resource: resource,
           metadata: %{content_identity: identity}

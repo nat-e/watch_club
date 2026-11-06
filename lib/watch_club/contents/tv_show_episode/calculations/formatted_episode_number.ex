@@ -11,10 +11,13 @@ defmodule WatchClub.Contents.TvShowEpisode.Calculations.FormattedEpisodeNumber d
 
   @impl true
   def calculate(records, _opts, _context) do
-    Enum.map(records, fn %{season_number: s, episode_number: e} ->
-      "S#{pad(s)}E#{pad(e)}"
-    end)
+    Enum.map(records, &format(&1.season_number, &1.episode_number))
   end
+
+  @doc """
+  Formats a season and an episode number, also for a TV Show Episode WatchClub doesn't have yet.
+  """
+  def format(season_number, episode_number), do: "S#{pad(season_number)}E#{pad(episode_number)}"
 
   defp pad(n), do: n |> Integer.to_string() |> String.pad_leading(2, "0")
 end
