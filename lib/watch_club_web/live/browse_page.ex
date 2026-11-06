@@ -197,12 +197,13 @@ defmodule WatchClubWeb.BrowsePage do
     required: true,
     doc: "the Library's genres, decades and original languages"
 
-  # From the bottom of the screen on phones. Each choice applies at once.
+  # From the bottom of the screen on phones. Each choice applies at once, and a list without
+  # choices is left out.
   defp more_filters(assigns) do
     ~H"""
     <.modal id="more-filters" size="md" sheet on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
-      <fieldset class="flex min-w-0 flex-col">
+      <fieldset :if={@options.genres != []} class="flex min-w-0 flex-col">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Genre")} /></legend>
         <.filter_checkbox
           :for={genre <- @options.genres}
@@ -214,7 +215,7 @@ defmodule WatchClubWeb.BrowsePage do
           <span class="min-w-0 truncate">{Genre.translated_label(genre)}</span>
         </.filter_checkbox>
       </fieldset>
-      <fieldset class="flex min-w-0 flex-col gap-related">
+      <fieldset :if={@options.decades != []} class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
         <div class="flex flex-wrap gap-related">
           <.filter_chip
@@ -230,7 +231,7 @@ defmodule WatchClubWeb.BrowsePage do
           </.filter_chip>
         </div>
       </fieldset>
-      <fieldset class="flex min-w-0 flex-col">
+      <fieldset :if={@options.original_languages != []} class="flex min-w-0 flex-col">
         <legend class="mb-related">
           <.text_label text={dgettext("browse", "Original language")} />
         </legend>
@@ -436,23 +437,9 @@ defmodule WatchClubWeb.BrowsePage do
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
       not_watched?: params["not_watched"] == "true",
       genres:
-        params["genres"]
-        |> list_param()
-        |> Enum.flat_map(fn genre ->
-          case Genre.match(genre) do
-            {:ok, genre} -> [genre]
-            :error -> []
-          end
-        end),
+        for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
-        params["decades"]
-        |> list_param()
-        |> Enum.flat_map(fn decade ->
-          case Integer.parse(decade) do
-            {decade, ""} -> [decade]
-            _not_a_number -> []
-          end
-        end),
+        for({decade, ""} <- Enum.map(list_param(params["decades"]), &Integer.parse/1), do: decade),
       original_languages: list_param(params["languages"])
     }
   end

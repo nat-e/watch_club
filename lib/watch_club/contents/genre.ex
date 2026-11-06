@@ -72,7 +72,9 @@ defmodule WatchClub.Contents.Genre do
 
   @doc "The genres TMDB gives a Movie or TV Show, without the ones TMDB added after this list"
   @spec from_tmdb([Types.Genre.t()]) :: [t()]
-  def from_tmdb(tmdb_genres), do: Enum.flat_map(tmdb_genres, &Map.get(@by_tmdb_id, &1.id, []))
+  def from_tmdb(tmdb_genres) do
+    tmdb_genres |> Enum.flat_map(&Map.get(@by_tmdb_id, &1.id, [])) |> Enum.uniq()
+  end
 
   def translated_label(:action), do: dgettext("genres", "Action")
   def translated_label(:adventure), do: dgettext("genres", "Adventure")
