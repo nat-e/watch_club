@@ -10,6 +10,8 @@ defmodule WatchClub.Playlists.PlaylistItem do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
@@ -45,7 +47,7 @@ defmodule WatchClub.Playlists.PlaylistItem do
       argument :content_identity, ContentIdentity, allow_nil?: false
 
       # EnsureContentExists creates the Content before the transaction, and the policy checks
-      # the new Playlist Item once it's inserted
+      # the new Playlist Item once it's inserted: a refused add can still create the Content
       allow_post_action_authorization? true
 
       change relate_actor(:added_by)
@@ -98,6 +100,8 @@ defmodule WatchClub.Playlists.PlaylistItem do
   end
 
   identities do
-    identity :playlist_and_content, [:playlist_id, :content_id]
+    identity :playlist_and_content, [:playlist_id, :content_id] do
+      message dgettext_noop("errors", "This is already in the playlist")
+    end
   end
 end

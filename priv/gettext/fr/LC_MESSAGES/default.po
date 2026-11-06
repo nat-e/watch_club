@@ -24,9 +24,9 @@ msgstr ""
 #: lib/watch_club_web/live/clubs/members/remove_member_modal.ex
 #: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex
 #: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "Annuler"
@@ -41,14 +41,14 @@ msgstr "Fermer"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "Créer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
@@ -57,8 +57,8 @@ msgstr "Supprimer"
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Enregistrer"
@@ -135,3 +135,9 @@ msgstr "Retour"
 #, elixir-autogen, elixir-format
 msgid "Deleted user"
 msgstr "Utilisateur supprimé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/helpers/usernames.ex
+#, elixir-autogen, elixir-format
+msgid "you"
+msgstr "vous"

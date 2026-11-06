@@ -80,10 +80,13 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
         id="app-bar-back"
         variant="ghost"
         size="icon"
-        class={[
-          "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
-          @back.narrow_only? && "@4xl/bar:hidden"
-        ]}
+        class={
+          [
+            "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
+            # The Playlists page shows its list beside the Playlist from the same @4xl width
+            @back.narrow_only? && "@4xl/bar:hidden"
+          ]
+        }
         {@back.link}
         data-back={@back.history?}
         aria-label={@back.label}

@@ -173,7 +173,7 @@ defmodule WatchClubWeb do
         RequestSubscriber
       }
 
-      alias WatchClubWeb.Helpers.{Time, Url}
+      alias WatchClubWeb.Helpers.{Time, Url, Usernames}
 
       # Allow Logger calls
       require Logger

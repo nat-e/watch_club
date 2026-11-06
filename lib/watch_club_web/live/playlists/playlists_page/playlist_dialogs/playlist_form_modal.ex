@@ -1,18 +1,18 @@
-defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistFormModal do
+defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.PlaylistFormModal do
   @moduledoc """
   The dialog that creates a Playlist, or edits its name and icon: the name, next to a button that
-  opens the icon picker.
+  opens the icon picker. Owner-private to `PlaylistDialogsLive`, which handles its events.
   """
   use WatchClubWeb, :component
 
   attr :form, Phoenix.HTML.Form, required: true
-  attr :icon, :string, required: true
+  attr :myself, :any, required: true
 
   def playlist_form_modal(assigns) do
     assigns = assign(assigns, :edit?, assigns.form.source.type == :update)
 
     ~H"""
-    <.modal id="playlist-modal" size="md" on_close={JS.push("close_playlist_form")}>
+    <.modal id="playlist-modal" size="md" on_close={JS.push("close", target: @myself)}>
       <:title>
         {if @edit?,
           do: dgettext("playlists", "Edit playlist"),
@@ -22,9 +22,15 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistFormModal do
         {dgettext("playlists", "It's private until you share it.")}
       </:description>
 
-      <.form for={@form} id="playlist-form" phx-change="validate_playlist" phx-submit="save_playlist">
+      <.form
+        for={@form}
+        id="playlist-form"
+        phx-change="validate"
+        phx-submit="save"
+        phx-target={@myself}
+      >
         <%!-- The icon picker sets the icon, which the form carries on submit --%>
-        <input type="hidden" name={@form[:icon].name} value={@icon} />
+        <input type="hidden" name={@form[:icon].name} value={@form[:icon].value} />
 
         <.field field={@form[:name]} label={dgettext("playlists", "Name")}>
           <:control>
@@ -35,10 +41,10 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistFormModal do
                 variant="secondary"
                 size="icon"
                 class="shrink-0"
-                phx-click="open_icon_picker"
+                phx-click={JS.push("open_icon_picker", target: @myself)}
                 aria-label={dgettext("playlists", "Change the icon")}
               >
-                <.lucide_icon name={@icon} class="size-icon-lg" />
+                <.lucide_icon name={@form[:icon].value} class="size-icon-lg" />
               </.button>
               <.input
                 field={@form[:name]}

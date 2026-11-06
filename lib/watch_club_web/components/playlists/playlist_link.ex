@@ -14,10 +14,9 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
   attr :navigate, :string, default: nil
   attr :selected, :boolean, default: false, doc: "the Playlist shown beside the list"
 
-  attr :opened, :boolean,
-    default: true,
-    doc:
-      "false while Playlists shows its first Playlist without one being opened: narrow screens then show only the list, so none is selected"
+  attr :class, :any,
+    default: nil,
+    doc: "for the selected one's highlight: only the page knows where the list is beside it"
 
   def playlist_link(assigns) do
     assigns = assign(assigns, :others, others(assigns.playlist, assigns.current_user))
@@ -30,8 +29,7 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
       aria-current={@selected && "true"}
       class={[
         "flex min-h-touch-target items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover",
-        @opened && "aria-[current=true]:bg-surface-selected",
-        !@opened && "@4xl:aria-[current=true]:bg-surface-selected"
+        @class
       ]}
     >
       <span class="grid size-control-sm shrink-0 place-items-center rounded-control bg-surface-raised text-text-muted">

@@ -9,6 +9,8 @@ defmodule WatchClub.Playlists.PlaylistAccess do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.Accounts.User
   alias WatchClub.Playlists.{Playlist, PlaylistAccessLevel}
 
@@ -58,6 +60,8 @@ defmodule WatchClub.Playlists.PlaylistAccess do
   end
 
   identities do
-    identity :playlist_and_user, [:playlist_id, :user_id]
+    identity :playlist_and_user, [:playlist_id, :user_id] do
+      message dgettext_noop("errors", "The playlist is already shared with this user")
+    end
   end
 end

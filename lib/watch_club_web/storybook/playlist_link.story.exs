@@ -59,12 +59,13 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
       },
       %Variation{
         id: :selected,
-        description: "The Playlist shown beside the list",
+        description: "The Playlist shown beside the list, highlighted by the page",
         attributes: %{
           playlist: playlist("To Watch", "popcorn", @viewer, [], 2, 1),
           current_user: @viewer,
           patch: "#",
-          selected: true
+          selected: true,
+          class: "aria-[current=true]:bg-surface-selected"
         }
       }
     ]

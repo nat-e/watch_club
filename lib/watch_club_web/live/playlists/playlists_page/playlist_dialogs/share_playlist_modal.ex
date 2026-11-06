@@ -1,7 +1,8 @@
-defmodule WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal do
+defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModal do
   @moduledoc """
   The dialog where the owner shares a Playlist: for each other User, no access, View or Edit
-  Playlist Access, and what that gives.
+  Playlist Access, and what that gives. Owner-private to `PlaylistDialogsLive`, which handles its
+  events.
   """
   use WatchClubWeb, :component
 
@@ -12,11 +13,12 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal do
     doc: "the other Users, intentionally small: the instance's Users"
 
   attr :levels, :map, required: true, doc: "the chosen `PlaylistAccessLevel` of each User's id"
-  attr :locale, :atom, required: true, doc: "a `UserLocale`"
+  attr :current_user, User, required: true
+  attr :myself, :any, required: true
 
   def share_playlist_modal(assigns) do
     ~H"""
-    <.modal id="share-playlist-modal" size="md" on_close={JS.push("close_share_playlist")}>
+    <.modal id="share-playlist-modal" size="md" on_close={JS.push("close", target: @myself)}>
       <:title>{dgettext("playlists", "Share “%{playlist}”", playlist: @playlist.name)}</:title>
       <:description>
         {dgettext(
@@ -29,7 +31,8 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal do
         for={%{}}
         id="share-playlist-form"
         layout="none"
-        phx-change="choose_playlist_access"
+        phx-change="choose_access"
+        phx-target={@myself}
         class="-mx-related flex flex-col"
       >
         <div :for={user <- @users} class="flex items-center gap-related p-related">
@@ -62,14 +65,14 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal do
         />
         {if @levels == %{},
           do: dgettext("playlists", "Private: only you can see it."),
-          else: who_can(@users, @levels, @locale)}
+          else: who_can(@users, @levels, @current_user)}
       </p>
 
       <:footer>
         <.button id="share-playlist-cancel" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
         </.button>
-        <.button id="share-playlist-save" phx-click="save_playlist_access">
+        <.button id="share-playlist-save" phx-click="save_access" phx-target={@myself}>
           {dgettext("default", "Save")}
         </.button>
       </:footer>
@@ -78,24 +81,21 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal do
   end
 
   # "leadelpeut can edit. guigui74 and vinz can view."
-  defp who_can(users, levels, locale) do
-    editors = for user <- users, levels[user.id] == "edit", do: user.username
-    viewers = for user <- users, levels[user.id] == "view", do: user.username
+  defp who_can(users, levels, current_user) do
+    editors = Enum.filter(users, &(levels[&1.id] == "edit"))
+    viewers = Enum.filter(users, &(levels[&1.id] == "view"))
 
     [
       editors != [] &&
         dngettext("playlists", "%{users} can edit.", "%{users} can edit.", length(editors),
-          users: list(editors, locale)
+          users: Usernames.join(editors, current_user)
         ),
       viewers != [] &&
         dngettext("playlists", "%{users} can view.", "%{users} can view.", length(viewers),
-          users: list(viewers, locale)
+          users: Usernames.join(viewers, current_user)
         )
     ]
     |> Enum.filter(& &1)
     |> Enum.join(" ")
   end
-
-  defp list(names, locale),
-    do: WatchClub.Cldr.List.to_string!(names, locale: UserLocale.to_cldr_locale_name(locale))
 end

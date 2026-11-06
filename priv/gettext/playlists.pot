@@ -30,59 +30,59 @@ msgid_plural "%{count} movies"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} will lose it too."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{playlist}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Add movies and TV shows from their page."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Added %{time}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}, %{time}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete the playlist %{playlist}?"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Change the icon"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Choose an icon"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Created by %{user}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
-#: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete playlist"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Edit playlist"
 msgstr ""
@@ -92,7 +92,7 @@ msgstr ""
 msgid "Empty"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "It's private until you share it."
 msgstr ""
@@ -102,17 +102,17 @@ msgstr ""
 msgid "Keep what you want to watch in one place."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "More for %{content}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "My playlist"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
@@ -124,7 +124,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "New playlist"
 msgstr ""
@@ -134,24 +134,24 @@ msgstr ""
 msgid "No playlists yet"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing here yet"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist deleted."
 msgstr ""
 
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Private"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Remove from %{playlist}"
 msgstr ""
@@ -161,12 +161,12 @@ msgstr ""
 msgid "Removed %{content} from %{playlist}."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Select an icon for your playlist"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Shared with"
 msgstr ""
@@ -196,71 +196,66 @@ msgstr ""
 msgid "Your playlists"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
-#, elixir-autogen, elixir-format
-msgid "you"
-msgstr ""
-
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} can edit."
 msgid_plural "%{users} can edit."
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} can view."
 msgid_plural "%{users} can view."
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Access for %{user}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Can edit"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Can view"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "No access"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Private: only you can see it."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Share"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Share “%{playlist}”"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Shared. It's in their Playlists now."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "The playlist is private."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "They'll find it in their Playlists. Choose who can only view it and who can also edit it."
 msgstr ""

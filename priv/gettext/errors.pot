@@ -347,3 +347,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Playlist name must be at least %{min} characters"
 msgstr ""
+
+#: lib/watch_club/playlists/playlist_access.ex
+#, elixir-autogen, elixir-format
+msgid "The playlist is already shared with this user"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist_item.ex
+#, elixir-autogen, elixir-format
+msgid "This is already in the playlist"
+msgstr ""

@@ -88,12 +88,7 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
 
   defp sharing_line(%Playlist{owner_id: owner_id} = playlist, %User{id: owner_id} = user) do
     dgettext("playlists", "Shared with %{users}",
-      users:
-        playlist.accesses
-        |> Enum.map(& &1.user.username)
-        |> WatchClub.Cldr.List.to_string!(
-          locale: UserLocale.to_cldr_locale_name(user.settings.locale)
-        )
+      users: Usernames.join(Enum.map(playlist.accesses, & &1.user), user)
     )
   end
 

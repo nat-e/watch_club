@@ -1,15 +1,17 @@
-defmodule WatchClubWeb.Playlists.PlaylistsPage.DeletePlaylistModal do
+defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.DeletePlaylistModal do
   @moduledoc """
-  The confirmation for deleting a Playlist, which says who loses it too.
+  The confirmation for deleting a Playlist, which says who loses it too. Owner-private to
+  `PlaylistDialogsLive`, which handles its events.
   """
   use WatchClubWeb, :component
 
   attr :playlist, Playlist, required: true, doc: "with the `user` of its `accesses`"
-  attr :locale, :atom, required: true, doc: "a `UserLocale`"
+  attr :current_user, User, required: true
+  attr :myself, :any, required: true
 
   def delete_playlist_modal(assigns) do
     ~H"""
-    <.modal id="delete-playlist-modal" size="sm" on_close={JS.push("close_delete_playlist")}>
+    <.modal id="delete-playlist-modal" size="sm" on_close={JS.push("close", target: @myself)}>
       <:title>{dgettext("playlists", "Delete playlist")}</:title>
       <p>
         {raw(
@@ -19,7 +21,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.DeletePlaylistModal do
         )}
         <span :if={@playlist.accesses != []}>
           {dgettext("playlists", "%{users} will lose it too.",
-            users: names(Enum.map(@playlist.accesses, & &1.user), @locale)
+            users: Usernames.join(Enum.map(@playlist.accesses, & &1.user), @current_user)
           )}
         </span>
       </p>
@@ -27,18 +29,16 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.DeletePlaylistModal do
         <.button id="delete-playlist-cancel" type="button" variant="secondary" data-modal-close>
           {dgettext("default", "Cancel")}
         </.button>
-        <.button id="delete-playlist-confirm" variant="danger" phx-click="confirm_delete_playlist">
+        <.button
+          id="delete-playlist-confirm"
+          variant="danger"
+          phx-click="confirm_delete"
+          phx-target={@myself}
+        >
           {dgettext("default", "Delete")}
         </.button>
       </:footer>
     </.modal>
     """
-  end
-
-  # "leadelpeut, guigui74 and vinz"
-  defp names(users, locale) do
-    users
-    |> Enum.map(& &1.username)
-    |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
   end
 end
