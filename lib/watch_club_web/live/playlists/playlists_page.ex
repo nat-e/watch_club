@@ -10,6 +10,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   import WatchClubWeb.Components.Playlists.PlaylistLink
   import WatchClubWeb.Playlists.PlaylistsPage.DeletePlaylistModal
   import WatchClubWeb.Playlists.PlaylistsPage.PlaylistFormModal
+  import WatchClubWeb.Playlists.PlaylistsPage.SharePlaylistModal
 
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Components.UI.IconPickerLive
@@ -176,6 +177,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         playlist={@playlist}
         locale={@current_user.settings.locale}
       />
+      <.share_playlist_modal
+        :if={@sharing}
+        playlist={@playlist}
+        users={@sharing.users}
+        levels={@sharing.levels}
+        locale={@current_user.settings.locale}
+      />
     </Layouts.app>
     """
   end
@@ -251,6 +259,10 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
           </div>
         </div>
         <div :if={@owner?} class="flex shrink-0 gap-related">
+          <.button id="share-playlist" variant="secondary" phx-click="share_playlist">
+            <:icon><Lucideicons.user_plus /></:icon>
+            {dgettext("playlists", "Share")}
+          </.button>
           <.dropdown_menu id="playlist-actions">
             <:trigger>
               <.button
@@ -459,7 +471,8 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
        playlist_form: nil,
        playlist_icon: nil,
        icon_picker_open?: false,
-       deleting?: false
+       deleting?: false,
+       sharing: nil
      )}
   end
 
@@ -547,6 +560,45 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
      |> put_flash(:info, dgettext("playlists", "Playlist deleted."))
      |> push_patch(to: ~p"/playlists")}
   end
+
+  def handle_event("share_playlist", _params, socket) do
+    user = socket.assigns.current_user
+
+    # Intentionally small: the instance's Users
+    users =
+      [actor: user]
+      |> Accounts.list_users!()
+      |> Enum.reject(&(&1.id == user.id))
+      |> Enum.sort_by(&String.downcase(&1.username))
+
+    levels = Map.new(shown_playlist(socket).accesses, &{&1.user_id, Atom.to_string(&1.level)})
+    {:noreply, assign(socket, :sharing, %{users: users, levels: levels})}
+  end
+
+  def handle_event("choose_playlist_access", %{"levels" => levels}, socket) do
+    levels = for {user_id, level} <- levels, level != "none", into: %{}, do: {user_id, level}
+    {:noreply, update(socket, :sharing, &%{&1 | levels: levels})}
+  end
+
+  def handle_event("save_playlist_access", _params, socket) do
+    %{sharing: %{levels: levels}, current_user: user} = socket.assigns
+    accesses = Enum.map(levels, fn {user_id, level} -> %{user_id: user_id, level: level} end)
+    Playlists.share_playlist!(shown_playlist(socket), accesses, actor: user)
+
+    {:noreply,
+     socket
+     |> assign(:sharing, nil)
+     |> put_flash(
+       :info,
+       if(accesses == [],
+         do: dgettext("playlists", "The playlist is private."),
+         else: dgettext("playlists", "Shared. It's in their Playlists now.")
+       )
+     )}
+  end
+
+  def handle_event("close_share_playlist", _params, socket),
+    do: {:noreply, assign(socket, :sharing, nil)}
 
   def handle_event("remove_item", %{"content_id" => content_id}, socket) do
     %{shown_id: playlist_id, current_user: user} = socket.assigns

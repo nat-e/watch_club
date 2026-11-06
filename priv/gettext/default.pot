@@ -25,6 +25,7 @@ msgstr ""
 #: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/delete_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr ""
@@ -51,6 +52,7 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""

@@ -198,3 +198,67 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "you"
 msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "%{users} can edit."
+msgid_plural "%{users} can edit."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "%{users} can view."
+msgid_plural "%{users} can view."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Access for %{user}"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Can edit"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Can view"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "No access"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Private: only you can see it."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Share"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Share “%{playlist}”"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Shared. It's in their Playlists now."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "The playlist is private."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "They'll find it in their Playlists. Choose who can only view it and who can also edit it."
+msgstr ""
