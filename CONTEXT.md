@@ -125,11 +125,15 @@ A user creates a **Content Request** for one piece of **Content** so its media f
 _Avoid_: Request media, fetch content, grab content, add to my downloads, add to watchlist
 
 **Get Notified**:
-A **User** becomes a **Request Subscriber** of a **Content Request** someone else made.
+A **User** becomes a **Request Subscriber** of a **Content Request**.
 _Avoid_: Follow, watch, me too
 
+**Stop Getting Notified**:
+A **Request Subscriber** stops being one, so the **Content Request** leaves their **My Requests**.
+_Avoid_: Unsubscribe, unfollow, mute
+
 **Request Subscriber**:
-A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it.
+A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it, until they **Stop Getting Notified**.
 _Avoid_: Follower
 
 **Delete Content Request**:
@@ -370,14 +374,16 @@ _Avoid_: Group, aggregate, card, item
 ### Requests
 
 - **Add to Playlist** and **Request Content** are independent actions: neither one triggers the other
-- A **Content Request** belongs to exactly one **User** and references exactly one **Content**
+- A **Content Request** is made by exactly one **User** and references exactly one **Content**
 - A **Content** has at most one **Content Request**, made by the first **User** who requests it
 - **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media** for an aired part: the **Movie**, or an aired **TV Show Episode**
-- Any other **User** can **Get Notified** on a **Content Request** while it is not yet playable
-- The **User** who made a **Content Request** is always one of its **Request Subscribers**
+- Any **User** who isn't a **Request Subscriber** can **Get Notified** on a **Content Request** while it is not yet playable
+- The **User** who made a **Content Request** becomes one of its **Request Subscribers**
+- Any **Request Subscriber**, the **User** who made the **Content Request** included, can **Stop Getting Notified**
+- Only **Request Subscribers** are told when a **Content Request** becomes playable: having made it doesn't count
 - When a **Content Request** becomes playable, each of its **Request Subscribers** gets a badge on **My Requests**
 - Other **Users** see who made a **Content Request**, but not its other **Request Subscribers**
-- Nobody can cancel a **Content Request** or stop getting notified on it; only the **Instance Administrator** can **Delete Content Request**
+- Nobody can cancel a **Content Request**; only the **Instance Administrator** can **Delete Content Request**
 - A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
 - Whether a **Content Request** is _playable_ is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present while more are downloading), so playability drives the Play action independently of status
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
