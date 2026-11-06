@@ -116,3 +116,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Deleted user"
 msgstr ""
+
+#: lib/watch_club_web/components/ui/unread_badge.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread"
+msgid_plural "%{count} unread"
+msgstr[0] ""
+msgstr[1] ""

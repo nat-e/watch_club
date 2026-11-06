@@ -36,6 +36,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Table
       import WatchClubWeb.Components.UI.Tooltip
       import WatchClubWeb.Components.UI.Typography
+      import WatchClubWeb.Components.UI.UnreadBadge
     end
   end
 end

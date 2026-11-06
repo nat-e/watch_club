@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar do
         class="flex flex-1 flex-col overflow-y-auto px-related pt-related pb-group"
       >
         <ul class="flex list-none flex-col gap-px p-0">
-          <li :for={section <- Sections.sections()}>
+          <li :for={section <- Sections.sections(@current_user)}>
             <.section_link section={section} current={Sections.aria_current(section, @current_path)} />
           </li>
         </ul>
@@ -63,6 +63,7 @@ defmodule WatchClubWeb.Components.Navigation.Sidebar do
     >
       <.lucide_icon name={@section.icon} />
       <span class="min-w-0 flex-1 truncate">{@section.label}</span>
+      <.unread_badge count={@section.badge} />
     </.link>
     """
   end

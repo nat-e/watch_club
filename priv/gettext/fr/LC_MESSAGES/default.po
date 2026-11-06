@@ -133,3 +133,11 @@ msgstr "Retour"
 #, elixir-autogen, elixir-format
 msgid "Deleted user"
 msgstr "Utilisateur supprimé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/unread_badge.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread"
+msgid_plural "%{count} unread"
+msgstr[0] "%{count} non lu"
+msgstr[1] "%{count} non lus"

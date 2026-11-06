@@ -5,41 +5,46 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
   use WatchClubWeb, :verified_routes
   use Gettext, backend: WatchClubWeb.Gettext
 
+  alias WatchClub.Accounts.User
   alias WatchClubWeb.Helpers.Url
 
   @doc """
-  Each section's id, name, icon, page, and the other pages it holds besides the ones under its
-  page.
+  Each section's id, name, icon, page, the other pages it holds besides the ones under its page,
+  and how many things the User hasn't seen in it.
   """
-  def sections do
+  def sections(%User{} = user) do
     [
       %{
         id: "browse",
         label: dgettext("nav", "Browse"),
         icon: :clapperboard,
         navigate: ~p"/",
-        pages: [~p"/search"]
+        pages: [~p"/search"],
+        badge: 0
       },
       %{
         id: "playlists",
         label: dgettext("nav", "Playlists"),
         icon: :list,
         navigate: ~p"/lists",
-        pages: []
+        pages: [],
+        badge: 0
       },
       %{
         id: "inbox",
         label: dgettext("nav", "Inbox"),
         icon: :inbox,
         navigate: ~p"/inbox",
-        pages: []
+        pages: [],
+        badge: user.unread_conversation_count
       },
       %{
         id: "requests",
         label: dgettext("nav", "Requests"),
         icon: :download,
         navigate: ~p"/my-requests",
-        pages: []
+        pages: [],
+        badge: 0
       }
     ]
   end

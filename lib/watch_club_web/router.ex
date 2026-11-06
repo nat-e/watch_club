@@ -96,6 +96,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_administrator_required},
+        WatchClubWeb.Hooks.Conversations,
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
@@ -111,6 +112,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.CurrentUrl,
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_user_required},
+        WatchClubWeb.Hooks.Conversations,
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.TimeZone,
         WatchClubWeb.Hooks.InstanceSettings
