@@ -8,46 +8,52 @@ defmodule WatchClubWeb.Contents.ContentPage.CastSection do
 
   attr :credits, Credits, required: true
 
+  # Like Who watched it: a heading, then round photos in a row that scrolls sideways
   def cast_section(assigns) do
     assigns = assigns |> assign(cast_and_crew: cast_and_crew(assigns.credits))
 
     ~H"""
-    <.section
+    <section
       :if={@cast_and_crew != []}
-      title={dgettext("contents", "Cast")}
-      icon={:users}
+      aria-labelledby="cast-heading"
+      class="flex min-w-0 flex-col gap-group"
     >
-      <ul class="flex max-h-[calc(33.5rem+var(--wc-space-group)+var(--wc-space-tight))] flex-wrap justify-center gap-group overflow-hidden sm:max-h-[calc(36.5rem+var(--wc-space-group)+var(--wc-space-tight))] sm:justify-start">
-        <.cast_card :for={person <- @cast_and_crew} person={person} />
-      </ul>
-    </.section>
+      <h2 id="cast-heading" class="font-heading text-xl font-semibold">
+        {dgettext("contents", "Cast")}
+      </h2>
+      <.scroll_row id="cast">
+        <.cast_member :for={person <- @cast_and_crew} person={person} />
+      </.scroll_row>
+    </section>
     """
   end
 
   attr :person, :map, required: true
 
-  defp cast_card(assigns) do
+  # Their photo, or their initials, then their name and their role
+  defp cast_member(assigns) do
     ~H"""
-    <li class="grid w-28 shrink-0 grid-rows-[10.5rem_6.25rem] overflow-hidden rounded-xl border border-border-subtle bg-surface-inset shadow-card sm:w-32 sm:grid-rows-[12rem_6.25rem]">
-      <div class="relative bg-surface-raised">
+    <div class="flex w-24 shrink-0 snap-start flex-col items-center gap-related text-center">
+      <span class="relative size-20 shrink-0 overflow-hidden rounded-full bg-surface-raised">
         <img
           :if={@person.profile_path}
           src={tmdb_profile_url(@person.profile_path)}
           alt=""
-          class="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          class="absolute inset-0 size-full object-cover"
         />
-        <div
+        <span
           :if={!@person.profile_path}
-          class="absolute inset-0 grid place-items-center text-lg font-semibold text-accent"
+          class="absolute inset-0 flex items-center justify-center text-sm font-semibold text-text-muted"
         >
           {@person.initials}
-        </div>
-      </div>
-      <.stack space="tight" class="overflow-hidden p-related">
-        <p class="text-sm leading-5 font-semibold wrap-break-words text-text">{@person.name}</p>
-        <p class="line-clamp-1 text-xs leading-5 wrap-break-words text-text-muted">{@person.role}</p>
-      </.stack>
-    </li>
+        </span>
+      </span>
+      <span class="flex w-full flex-col">
+        <span class="line-clamp-2 text-sm font-semibold">{@person.name}</span>
+        <span class="line-clamp-2 text-xs text-text-muted">{@person.role}</span>
+      </span>
+    </div>
     """
   end
 
