@@ -24,7 +24,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       "the Content's Content Request, with its `status`, `download_progress`, `actor_subscriber?` and `requested_by`"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
-  attr :on_get_notified, JS, default: %JS{}, doc: "the JS commands of Get Notified"
+
+  attr :on_get_notified, :any,
+    default: %JS{},
+    doc: "the JS commands of Get Notified, from a bell beside the status; nil for no bell"
 
   attr :on_episodes, :any,
     default: nil,
@@ -107,7 +110,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
         <span :if={@request.actor_subscriber?} class="sr-only">{status_tooltip(@request)}</span>
       </span>
       <.button
-        :if={!@request.actor_subscriber?}
+        :if={@on_get_notified && !@request.actor_subscriber?}
         id={"#{@id}-get-notified-button"}
         size={caret_size(@size)}
         variant="secondary"

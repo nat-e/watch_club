@@ -160,8 +160,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   attr :current_user, User, required: true
 
   # Its poster and name, which open the Content, then Play, Resume or Request, who added it once
-  # the Playlist is shared, and a menu to remove it for the Users who can. They spread over the
-  # poster's height: what it is at its top, the last of them at its bottom.
+  # the Playlist is shared, and a menu to Get Notified while it's on its way, or to remove it for
+  # the Users who can. They spread over the poster's height: what it is at its top, the last of
+  # them at its bottom.
   defp item_row(assigns) do
     %{item: %{content: content}} = assigns
 
@@ -170,7 +171,11 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
         content: content,
         identity: ContentIdentity.from_content(content),
         title: content.implementation.best_localization.title,
-        progress: progress_percent(content)
+        progress: progress_percent(content),
+        # Someone requested it, it isn't ready yet, and the User isn't told when it will be
+        get_notified?:
+          !content.has_media? and content.request != nil and
+            !content.request.actor_subscriber?
       )
 
     ~H"""
@@ -208,6 +213,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             module={PlayOrRequestButtonLive}
             content_identity={@identity}
             current_user={@current_user}
+            get_notified={false}
           />
         </div>
         <span
@@ -226,7 +232,10 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
         </span>
       </div>
       <%!-- As tall as the name's line, so the menu is centered on it --%>
-      <div :if={@playlist.editable_by?} class="flex h-[1lh] shrink-0 items-center text-lg">
+      <div
+        :if={@playlist.editable_by? or @get_notified?}
+        class="flex h-[1lh] shrink-0 items-center text-lg"
+      >
         <.dropdown_menu id={"#{@id}-menu"}>
           <:trigger>
             <.button
@@ -239,6 +248,15 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             </.button>
           </:trigger>
           <.dropdown_menu_item
+            :if={@get_notified?}
+            id={"#{@id}-get-notified"}
+            phx-click="get_notified"
+            phx-value-content_request_id={@content.request.id}
+          >
+            <Lucideicons.bell /> {dgettext("playlists", "Get notified when ready")}
+          </.dropdown_menu_item>
+          <.dropdown_menu_item
+            :if={@playlist.editable_by?}
             id={"#{@id}-remove"}
             variant="destructive"
             phx-click="remove_item"

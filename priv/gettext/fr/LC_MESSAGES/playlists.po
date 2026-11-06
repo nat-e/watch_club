@@ -354,3 +354,9 @@ msgstr "Vos playlists, et les playlists partagées que vous pouvez modifier."
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}"
 msgstr "Ajouté par %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when ready"
+msgstr "Être prévenu quand c'est prêt"

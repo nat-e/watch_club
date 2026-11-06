@@ -278,6 +278,7 @@ msgstr "Être prévenu quand c'est prêt"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "You'll be told when %{title} is ready. It's in your Requests."
 msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."

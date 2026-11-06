@@ -15,14 +15,15 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
 
   @items_page_size 40
 
-  # A Playlist Item's row: who added it, and its Content's poster, name, progress, and whether
-  # it can be played
+  # A Playlist Item's row: who added it, and its Content's poster, name, progress, whether it can
+  # be played, and whether the User can Get Notified
   @item_load [
     :added_by,
     content: [
       :has_media?,
       :actor_progress_status,
-      implementation: %{load: [movie: [:actor_progress], tv_show: [:actor_percent_watched]]}
+      implementation: %{load: [movie: [:actor_progress], tv_show: [:actor_percent_watched]]},
+      request: [:actor_subscriber?]
     ]
   ]
 
@@ -188,6 +189,23 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
       else: {:noreply, socket}
   end
 
+  def handle_event("get_notified", %{"content_request_id" => content_request_id}, socket) do
+    %RequestSubscriber{content_request: %{content: content}} =
+      Requests.get_notified!(content_request_id,
+        load: [content_request: [content: [:implementation]]],
+        actor: socket.assigns.current_user
+      )
+
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       dgettext("contents", "You'll be told when %{title} is ready. It's in your Requests.",
+         title: content.implementation.best_localization.title
+       )
+     )}
+  end
+
   def handle_event("remove_item", %{"content_id" => content_id}, socket) do
     %{shown: playlist, current_user: user} = socket.assigns
 
@@ -219,9 +237,10 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
      |> update_items(notification)}
   end
 
-  # What a row shows of its Content changed: its poster, its progress, or whether it can be played
+  # What a row shows of its Content changed: its poster, its progress, whether it can be played,
+  # or whether the User can Get Notified
   def handle_info(%Notification{resource: resource} = notification, socket)
-      when resource in [Content, Media, WatchProgress] do
+      when resource in [Content, Media, WatchProgress, ContentRequest, RequestSubscriber] do
     %{shown: playlist, current_user: user} = socket.assigns
     PlayOrRequestButtonLive.handle_pubsub_message(notification, user)
 

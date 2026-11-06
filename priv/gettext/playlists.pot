@@ -299,3 +299,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}"
 msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when ready"
+msgstr ""
