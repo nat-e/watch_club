@@ -4,7 +4,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   alias WatchClub.Shared.SortOrder
 
   import WatchClubWeb.Components.Contents.ContentCard
-  import WatchClubWeb.Components.Libraries.LibraryIcon
 
   alias WatchClubWeb.Components.Contents.{
     AddToLibraryModalLive,
@@ -82,10 +81,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
       space="none"
       title={@library.name}
     >
-      <:icon><.library_icon library={@library} /></:icon>
-      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
-        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
-      </:parent>
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name} />
       <.stack space="group" class="w-full @container">
         <.library_sort_controls
           club_id={@library.club_id}

@@ -37,13 +37,11 @@ msgid "Create new list"
 msgstr ""
 
 #: lib/watch_club_web/components/lists/list_dialogs/delete_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Delete list"
 msgstr ""
 
 #: lib/watch_club_web/components/lists/list_dialogs/create_or_edit_list_modal.ex
-#: lib/watch_club_web/components/navigation/sidebar.ex
 #, elixir-autogen, elixir-format
 msgid "Edit list"
 msgstr ""

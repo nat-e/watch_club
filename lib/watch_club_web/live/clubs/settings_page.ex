@@ -23,9 +23,7 @@ defmodule WatchClubWeb.Clubs.SettingsPage do
       class="max-w-panel"
       title={dgettext("clubs", "Club Settings")}
     >
-      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name}>
-        <.avatar id={@club.id} name={@club.name} size="xs" aria-hidden="true" />
-      </:parent>
+      <:parent navigate={~p"/clubs/#{@club.id}"} label={@club.name} />
       <.page_description text={
         dgettext("clubs", "Manage %{club_name}'s profile and libraries.", club_name: @club.name)
       } />

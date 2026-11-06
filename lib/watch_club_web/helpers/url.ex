@@ -106,6 +106,18 @@ defmodule WatchClubWeb.Helpers.Url do
 
   def list_link(list_id), do: ~p"/lists/#{list_id}"
 
+  @doc """
+  The search page for `query`, in the Library only when `has_media?`.
+  """
+  def search_link(query, true), do: ~p"/search?#{[query: query, library: "1"]}"
+  def search_link(query, false), do: ~p"/search?#{[query: query]}"
+
+  @doc """
+  The query and filter of the search page's URL parameters, as `search_link/2` writes them.
+  """
+  def search_params(params),
+    do: %{query: String.trim(params["query"] || ""), has_media?: params["library"] == "1"}
+
   def content_details_link(%Content{type: type, external_id: id}),
     do: content_details_link(type, id, nil)
 

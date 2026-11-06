@@ -19,11 +19,12 @@ defmodule WatchClub.Contents.Content do
   }
 
   alias WatchClub.History.WatchStatus
+  alias WatchClub.MediaCatalog.Media
 
   alias WatchClub.Requests.ContentRequest
 
   alias WatchClub.Contents.Calculations.{ActorNextMediasToPlay, GetContentImplementation}
-  alias WatchClub.Contents.Preparations.FilterByContentIdentities
+  alias WatchClub.Contents.Preparations.{FilterByContentIdentities, FilterByTitle}
 
   import Ash.Expr
 
@@ -39,6 +40,21 @@ defmodule WatchClub.Contents.Content do
       argument :content_identities, {:array, ContentIdentity}, allow_nil?: false
 
       prepare FilterByContentIdentities
+    end
+
+    read :in_library do
+      description "The Content in the Library, most recently added first"
+
+      argument :query, :string do
+        description "Keeps the Content with a title that contains it, ignoring case and accents"
+      end
+
+      filter expr(has_media?)
+      prepare FilterByTitle, where: present(:query)
+
+      prepare build(sort: [added_to_library_at: :desc])
+
+      pagination keyset?: true, offset?: true, countable: true, required?: false
     end
 
     read :user_recently_watched do
@@ -106,6 +122,11 @@ defmodule WatchClub.Contents.Content do
         description: "The only scope until books can be searched"
 
       argument :page, :integer, allow_nil?: false, default: 1
+
+      argument :has_media?, :boolean,
+        allow_nil?: false,
+        default: false,
+        description: "Searches the Library's titles instead of TMDB"
 
       run WatchClub.Contents.Actions.SearchContent
     end
@@ -183,6 +204,9 @@ defmodule WatchClub.Contents.Content do
 
     has_many :library_items, LibraryItem
     many_to_many :libraries, Library, through: LibraryItem
+
+    # Of its Movie, its TV Show Episodes or its Book
+    has_many :medias, Media
   end
 
   calculations do
@@ -258,6 +282,11 @@ defmodule WatchClub.Contents.Content do
       public? true
       allow_nil? false
     end
+  end
+
+  aggregates do
+    # When it joined the Library
+    min :added_to_library_at, :medias, :inserted_at
   end
 
   identities do

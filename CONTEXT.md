@@ -367,7 +367,7 @@ _Avoid_: Group, aggregate, card, item
 - Other **Users** see who made a **Content Request**, but not its other **Request Subscribers**
 - Nobody can cancel a **Content Request** or stop getting notified on it; only the **Instance Administrator** can **Delete Content Request**
 - A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
-- Whether a **Content Request** is _playable_ is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** whose first episode is present while more are downloading), so playability drives the Play action independently of status
+- Whether a **Content Request** is _playable_ is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present while more are downloading), so playability drives the Play action independently of status
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
@@ -529,7 +529,7 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
-- A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while its first **TV Show Episode** (season 1, episode 1) has **Media**
+- A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while any of its **TV Show Episodes** has **Media**
 - A **User** gets missing **Content** into the **Library** with **Request Content**
 - Every **User** sees the whole **Library** in **Browse**
 

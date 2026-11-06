@@ -31,8 +31,6 @@ defmodule WatchClubWeb.MyRequestsPage do
       class="max-w-layout-page"
       title={dgettext("requests", "My Requests")}
     >
-      <:icon><Lucideicons.inbox /></:icon>
-
       <.cluster
         space="tight"
         role="group"

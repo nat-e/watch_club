@@ -1,8 +1,7 @@
 defmodule WatchClub.Contents.SearchResult do
   @moduledoc """
-  A Movie or TV Show found by a search, with the actor's clubs whose libraries already have it.
+  A Movie or TV Show found by a search, and whether it's in the Library.
   """
-  alias WatchClub.Clubs.Club
   alias WatchClub.Contents.ContentIdentity
 
   @type t :: %__MODULE__{
@@ -11,8 +10,8 @@ defmodule WatchClub.Contents.SearchResult do
           year: pos_integer() | nil,
           overview: String.t() | nil,
           poster_path: String.t() | nil,
-          clubs: [Club.t()]
+          has_media?: boolean()
         }
 
-  defstruct [:identity, :title, :year, :overview, :poster_path, clubs: []]
+  defstruct [:identity, :title, :year, :overview, :poster_path, has_media?: false]
 end
