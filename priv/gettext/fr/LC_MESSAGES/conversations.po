@@ -71,20 +71,8 @@ msgstr "Nouveau"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
-msgid "No conversation open"
-msgstr "Aucune conversation ouverte"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
 msgid "No conversations yet"
 msgstr "Pas encore de conversation"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
-msgid "Pick one in the list to read it."
-msgstr "Choisissez-en une dans la liste pour la lire."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex

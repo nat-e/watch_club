@@ -61,17 +61,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
-msgid "No conversation open"
-msgstr ""
-
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
 msgid "No conversations yet"
-msgstr ""
-
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
-msgid "Pick one in the list to read it."
 msgstr ""
 
 #: lib/watch_club_web/live/conversations/inbox_page.ex

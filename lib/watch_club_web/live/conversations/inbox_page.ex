@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Conversations.InboxPage do
   @moduledoc """
   The Inbox: the User's Conversations, the one with the latest Message first, beside the one that's
-  open. Narrow screens show the list or the open Conversation, which fills the screen on phones.
+  open, the latest unless the User picks another. Narrow screens show the list or the open
+  Conversation, which fills the screen on phones.
   """
   use WatchClubWeb, :live_view
 
@@ -36,12 +37,28 @@ defmodule WatchClubWeb.Conversations.InboxPage do
       space="none"
       class="p-0!"
     >
+      <div :if={!@any_conversation?} class="px-page py-page-y">
+        <.empty>
+          <:icon><Lucideicons.inbox /></:icon>
+          <:title>{dgettext("conversations", "No conversations yet")}</:title>
+          <:description>
+            {dgettext("conversations", "Recommend a movie or a TV show from its page to start one.")}
+          </:description>
+          <.button id="conversations-browse" variant="secondary" navigate={~p"/"}>
+            {dgettext("conversations", "Browse")}
+          </.button>
+        </.empty>
+      </div>
+
       <%!-- Narrow screens show the list or the open Conversation, wide ones both, each scrolling on
       its own under the bar --%>
-      <div class={[
-        "group/inbox @container flex md:h-[calc(100svh-var(--wc-app-bar-height))]",
-        @conversation && "max-md:h-svh"
-      ]}>
+      <div
+        :if={@any_conversation?}
+        class={[
+          "@container flex md:h-[calc(100svh-var(--wc-app-bar-height))]",
+          @conversation && "max-md:h-svh"
+        ]}
+      >
         <aside
           aria-label={dgettext("conversations", "Conversations")}
           class={[
@@ -59,21 +76,6 @@ defmodule WatchClubWeb.Conversations.InboxPage do
                 selected={@conversation != nil and @conversation.id == conversation.id}
               />
             </li>
-            <li id="conversations-empty" class="hidden px-related only:block">
-              <.empty size="sm">
-                <:icon><Lucideicons.inbox /></:icon>
-                <:title>{dgettext("conversations", "No conversations yet")}</:title>
-                <:description>
-                  {dgettext(
-                    "conversations",
-                    "Recommend a movie or a TV show from its page to start one."
-                  )}
-                </:description>
-                <.button id="conversations-browse" variant="secondary" navigate={~p"/"}>
-                  {dgettext("conversations", "Browse")}
-                </.button>
-              </.empty>
-            </li>
           </ul>
         </aside>
 
@@ -90,18 +92,18 @@ defmodule WatchClubWeb.Conversations.InboxPage do
             current_user={@current_user}
             time_zone={@time_zone}
           />
-          <%!-- Not beside an empty list --%>
-          <div
-            :if={!@conversation}
-            class="px-page pb-page-y group-has-[#conversations-empty:only-child]/inbox:hidden md:pt-group"
-          >
-            <.empty>
-              <:icon><Lucideicons.messages_square /></:icon>
-              <:title>{dgettext("conversations", "No conversation open")}</:title>
-              <:description>
-                {dgettext("conversations", "Pick one in the list to read it.")}
-              </:description>
-            </.empty>
+          <script :type={Phoenix.LiveView.ColocatedHook} name=".OpenLatestConversation">
+            export default {
+              mounted() {
+                const latest = document.querySelector("#conversations a")
+                // Only where the list shows beside it: elsewhere the list shows alone
+                if (latest && this.el.offsetParent !== null) {
+                  this.js().patch(latest.getAttribute("href"), {replace: true})
+                }
+              }
+            }
+          </script>
+          <div :if={!@conversation} id="open-latest-conversation" phx-hook=".OpenLatestConversation">
           </div>
         </div>
       </div>
@@ -221,14 +223,16 @@ defmodule WatchClubWeb.Conversations.InboxPage do
 
   @impl true
   def mount(_params, _session, socket) do
+    conversations =
+      Conversations.list_conversations!(load: @row_load, actor: socket.assigns.current_user)
+
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
+     # Conversations never go, so once there's one, there's always one
+     |> assign(:any_conversation?, conversations != [])
      |> stream_configure(:conversations, dom_id: &"conversation-#{&1.id}")
-     |> stream(
-       :conversations,
-       Conversations.list_conversations!(load: @row_load, actor: socket.assigns.current_user)
-     )}
+     |> stream(:conversations, conversations)}
   end
 
   @impl true
@@ -269,7 +273,10 @@ defmodule WatchClubWeb.Conversations.InboxPage do
     case notification do
       # A new Conversation, or a new Message in one: it goes first
       %{resource: Participant, action: %{name: :create}, data: participant} ->
-        {:noreply, put_first!(socket, participant.conversation_id)}
+        {:noreply,
+         socket
+         |> assign(:any_conversation?, true)
+         |> put_first!(participant.conversation_id)}
 
       %{resource: Message, data: message} ->
         if open && open.id == message.conversation_id,
