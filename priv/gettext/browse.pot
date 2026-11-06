@@ -33,17 +33,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Clear all"
-msgstr ""
-
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
 msgid "Clear filters"
-msgstr ""
-
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Done"
 msgstr ""
 
 #: lib/watch_club_web/live/browse_page.ex

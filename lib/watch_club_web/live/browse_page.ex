@@ -113,12 +113,7 @@ defmodule WatchClubWeb.BrowsePage do
         event="load_more"
       />
 
-      <.more_filters
-        :if={@filter_options}
-        filters={@filters}
-        sort={@sort}
-        options={@filter_options}
-      />
+      <.more_filters :if={@filter_options} filters={@filters} options={@filter_options} />
     </Layouts.app>
     """
   end
@@ -194,20 +189,12 @@ defmodule WatchClubWeb.BrowsePage do
   end
 
   attr :filters, :map, required: true
-  attr :sort, :atom, required: true, doc: "a `LibrarySort`"
   attr :options, :map, required: true, doc: "the Library's decades and original languages"
 
-  # From the bottom of the screen on phones. Each choice applies at once, and the dialog scrolls,
-  # so its footer stays at its bottom.
+  # From the bottom of the screen on phones. Each choice applies at once.
   defp more_filters(assigns) do
     ~H"""
-    <.modal
-      id="more-filters"
-      size="md"
-      sheet
-      on_close={JS.push("close_more_filters")}
-      class="[&>[data-slot=modal-content]]:overflow-visible"
-    >
+    <.modal id="more-filters" size="md" sheet on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
       <fieldset class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
@@ -246,19 +233,6 @@ defmodule WatchClubWeb.BrowsePage do
           <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
         </label>
       </fieldset>
-      <:footer class="sticky bottom-0 -mx-cluster -mb-cluster flex-row! items-center justify-between! border-t border-border-subtle bg-surface-overlay px-cluster py-group">
-        <.button
-          id="more-filters-clear"
-          variant="ghost"
-          patch={clear_filters_path(@sort)}
-          disabled={not filtered?(@filters)}
-        >
-          {dgettext("browse", "Clear all")}
-        </.button>
-        <.button id="more-filters-done" data-modal-close>
-          {dgettext("browse", "Done")}
-        </.button>
-      </:footer>
     </.modal>
     """
   end

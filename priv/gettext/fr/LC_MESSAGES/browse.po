@@ -38,20 +38,8 @@ msgstr "Années %{decade}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Clear all"
-msgstr "Tout effacer"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
 msgid "Clear filters"
 msgstr "Effacer les filtres"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Done"
-msgstr "Terminé"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
