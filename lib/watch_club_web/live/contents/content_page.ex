@@ -221,7 +221,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         <.button
           :if={@episodes? and !@in_library?}
           id="episodes-button"
-          variant="ghost"
+          variant="overlay"
           size="lg"
           phx-click="open_episodes"
           aria-haspopup="dialog"
@@ -235,7 +235,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <.button
             :if={@trailer_url}
             id="trailer-button"
-            variant="ghost"
+            variant="overlay"
             size="lg"
             href={@trailer_url}
             target="_blank"
@@ -248,13 +248,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
           </.button>
           <.button
             id="watched-button"
-            variant="ghost"
+            variant="overlay"
             size="icon-lg"
             phx-click="toggle_watched"
             aria-pressed={to_string(@finished?)}
             aria-label={dgettext("contents", "Watched")}
             title={watched_hint(@tv_show?, @finished?)}
-            class="rounded-full!"
           >
             <Lucideicons.circle_check :if={@finished?} class="text-success" />
             <Lucideicons.circle :if={!@finished?} />

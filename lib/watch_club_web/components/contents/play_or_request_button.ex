@@ -78,7 +78,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     <.button
       id={"#{@id}-episodes-button"}
       size={@size}
-      variant="secondary"
+      variant="primary"
+      emphasis
       phx-click={@on_episodes}
       aria-haspopup="dialog"
       class="w-full phx-click-loading:cursor-progress phx-click-loading:opacity-60"
