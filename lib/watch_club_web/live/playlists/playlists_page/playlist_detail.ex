@@ -160,7 +160,8 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   attr :current_user, User, required: true
 
   # Its poster and name, which open the Content, who added it once the Playlist is shared, then
-  # Play, Resume or Request, and a menu to remove it for the Users who can
+  # Play, Resume or Request, and a menu to remove it for the Users who can. What it is starts at
+  # the poster's top and its action ends at the poster's bottom.
   defp item_row(assigns) do
     %{item: %{content: content}} = assigns
 
@@ -173,7 +174,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
       )
 
     ~H"""
-    <li id={@id} class="flex items-center gap-group py-group">
+    <li id={@id} class="flex items-start gap-group py-group">
       <.link navigate={Url.content_details_link(@identity)} class="shrink-0" tabindex="-1">
         <.tmdb_poster
           path={@content.implementation.best_localization.poster_path}
@@ -187,7 +188,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           />
         </.tmdb_poster>
       </.link>
-      <div class="flex min-w-0 flex-1 flex-col gap-related">
+      <div class="flex min-w-0 flex-1 flex-col justify-between gap-group self-stretch">
         <div class="flex min-w-0 flex-col">
           <.link
             navigate={Url.content_details_link(@identity)}
@@ -201,17 +202,18 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             |> Enum.join(" · ")}
           </span>
           <span
-            :if={@playlist.accesses != []}
+            :if={@playlist.accesses != [] and @item.added_by}
             class="flex min-w-0 items-center gap-tight text-xs text-text-subtle"
           >
             <.avatar
-              :if={@item.added_by}
               id={@item.added_by.id}
               name={@item.added_by.username}
-              size="sm"
+              size="xs"
               aria-hidden="true"
             />
-            <span class="truncate">{added_line(@item, @current_user.settings.locale)}</span>
+            <span class="truncate">
+              {dgettext("playlists", "Added by %{user}", user: @item.added_by.username)}
+            </span>
           </span>
         </div>
         <div class="flex flex-wrap items-center gap-related">
@@ -223,27 +225,30 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           />
         </div>
       </div>
-      <.dropdown_menu :if={@playlist.editable_by?} id={"#{@id}-menu"}>
-        <:trigger>
-          <.button
-            id={"#{@id}-menu-button"}
-            variant="ghost"
-            size="icon"
-            aria-label={dgettext("playlists", "More for %{content}", content: @title)}
+      <%!-- As tall as the name's line, so the menu is centered on it --%>
+      <div :if={@playlist.editable_by?} class="flex h-[1lh] shrink-0 items-center text-lg">
+        <.dropdown_menu id={"#{@id}-menu"}>
+          <:trigger>
+            <.button
+              id={"#{@id}-menu-button"}
+              variant="ghost"
+              size="icon"
+              aria-label={dgettext("playlists", "More for %{content}", content: @title)}
+            >
+              <Lucideicons.ellipsis_vertical />
+            </.button>
+          </:trigger>
+          <.dropdown_menu_item
+            id={"#{@id}-remove"}
+            variant="destructive"
+            phx-click="remove_item"
+            phx-value-content_id={@content.id}
           >
-            <Lucideicons.ellipsis_vertical />
-          </.button>
-        </:trigger>
-        <.dropdown_menu_item
-          id={"#{@id}-remove"}
-          variant="destructive"
-          phx-click="remove_item"
-          phx-value-content_id={@content.id}
-        >
-          <Lucideicons.list_minus />
-          {dgettext("playlists", "Remove from %{playlist}", playlist: @playlist.name)}
-        </.dropdown_menu_item>
-      </.dropdown_menu>
+            <Lucideicons.list_minus />
+            {dgettext("playlists", "Remove from %{playlist}", playlist: @playlist.name)}
+          </.dropdown_menu_item>
+        </.dropdown_menu>
+      </div>
     </li>
     """
   end
@@ -258,18 +263,6 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
       <span class="font-semibold text-text">{@user.username}</span>
     </span>
     """
-  end
-
-  # "Added by leadelpeut, 3 days ago", without who once they're deleted
-  defp added_line(%PlaylistItem{added_by: nil} = item, locale),
-    do:
-      dgettext("playlists", "Added %{time}", time: Time.relative_from_now(item.added_at, locale))
-
-  defp added_line(item, locale) do
-    dgettext("playlists", "Added by %{user}, %{time}",
-      user: item.added_by.username,
-      time: Time.relative_from_now(item.added_at, locale)
-    )
   end
 
   # How much of it the User watched, while they're watching it

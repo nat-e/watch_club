@@ -45,16 +45,6 @@ msgstr ""
 msgid "Add movies and TV shows from their page."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
-#, elixir-autogen, elixir-format
-msgid "Added %{time}"
-msgstr ""
-
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
-#, elixir-autogen, elixir-format
-msgid "Added by %{user}, %{time}"
-msgstr ""
-
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete the playlist %{playlist}?"
@@ -303,4 +293,9 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Your playlists, and the shared playlists you can edit."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Added by %{user}"
 msgstr ""
