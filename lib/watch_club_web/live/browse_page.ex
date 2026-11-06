@@ -203,17 +203,20 @@ defmodule WatchClubWeb.BrowsePage do
     ~H"""
     <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
-      <fieldset :if={@options.genres != []} class="flex min-w-0 flex-col">
+      <fieldset :if={@options.genres != []} class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Genre")} /></legend>
-        <.filter_checkbox
-          :for={genre <- @options.genres}
-          id={"filter-genre-#{genre}"}
-          checked={genre in @filters.genres}
-          filter="genre"
-          choice={genre}
-        >
-          <span class="min-w-0 truncate">{Genre.translated_label(genre)}</span>
-        </.filter_checkbox>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            :for={genre <- @options.genres}
+            id={"filter-genre-#{genre}"}
+            on={genre in @filters.genres}
+            phx-click="change_filter"
+            phx-value-filter="genre"
+            phx-value-choice={genre}
+          >
+            {Genre.translated_label(genre)}
+          </.filter_chip>
+        </div>
       </fieldset>
       <fieldset :if={@options.decades != []} class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
@@ -235,42 +238,24 @@ defmodule WatchClubWeb.BrowsePage do
         <legend class="mb-related">
           <.text_label text={dgettext("browse", "Original language")} />
         </legend>
-        <.filter_checkbox
+        <label
           :for={language <- @options.original_languages}
-          id={"filter-language-#{language}"}
-          checked={language in @filters.original_languages}
-          filter="language"
-          choice={language}
+          class="-mx-related flex items-center gap-related rounded-control px-related py-tight text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text pointer-coarse:min-h-touch-target"
         >
+          <.checkbox
+            id={"filter-language-#{language}"}
+            checked={language in @filters.original_languages}
+            phx-click="change_filter"
+            phx-value-filter="language"
+            phx-value-choice={language}
+          />
           <span class="text-base leading-none" aria-hidden="true">
             {Languages.to_flag(language)}
           </span>
           <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
-        </.filter_checkbox>
+        </label>
       </fieldset>
     </.modal>
-    """
-  end
-
-  attr :id, :string, required: true
-  attr :checked, :boolean, required: true
-  attr :filter, :string, required: true, doc: "the filter it changes, as `change_filter` names it"
-  attr :choice, :any, required: true
-  slot :inner_block, required: true
-
-  # A choice in one of More's lists, such as a genre
-  defp filter_checkbox(assigns) do
-    ~H"""
-    <label class="-mx-related flex items-center gap-related rounded-control px-related py-tight text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text pointer-coarse:min-h-touch-target">
-      <.checkbox
-        id={@id}
-        checked={@checked}
-        phx-click="change_filter"
-        phx-value-filter={@filter}
-        phx-value-choice={@choice}
-      />
-      {render_slot(@inner_block)}
-    </label>
     """
   end
 
