@@ -556,7 +556,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp current_season_number(_content, details), do: details |> season_numbers() |> List.first()
 
-
   # The director, then up to 17 actors in billing order
   defp cast(credits) do
     cast = (credits && credits.cast) || []
