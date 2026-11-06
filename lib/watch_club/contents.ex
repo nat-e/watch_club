@@ -20,6 +20,7 @@ defmodule WatchClub.Contents do
     resource Content do
       define :search_content, action: :search
       define :get_contents_in_library, action: :in_library
+      define :get_library_filter_options, action: :library_filter_options
 
       define :get_contents_by_identities,
         action: :by_content_identities,

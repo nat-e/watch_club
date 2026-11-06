@@ -12,6 +12,7 @@ defmodule WatchClub.Contents.Content do
     ContentIdentity,
     ContentType,
     ExternalIdSource,
+    LibrarySort,
     Movie,
     SearchContentType,
     SearchResultsPage,
@@ -43,16 +44,54 @@ defmodule WatchClub.Contents.Content do
     end
 
     read :in_library do
-      description "The Content in the Library, most recently added first"
+      description "The Content in the Library that matches every filter given, in the chosen order"
 
       argument :query, :string do
         description "Keeps the Content with a title that contains it, ignoring case and accents"
       end
 
+      argument :type, ContentType
+
+      argument :not_watched?, :boolean do
+        allow_nil? false
+        default false
+        description "Hides the Content the actor has finished"
+      end
+
+      argument :decades, {:array, :integer} do
+        allow_nil? false
+        default []
+        description "Keeps the Content from one of these decades, such as 1990 for the 1990s"
+      end
+
+      argument :original_languages, {:array, :string} do
+        allow_nil? false
+        default []
+        description "Keeps the Content in one of these original languages"
+      end
+
+      argument :sort, LibrarySort, allow_nil?: false, default: LibrarySort.default()
+
       filter expr(has_media?)
       prepare FilterByTitle, where: present(:query)
+      prepare build(filter: expr(type == ^arg(:type))), where: present(:type)
 
-      prepare build(sort: [added_to_library_at: :desc])
+      prepare build(filter: expr(actor_progress_status != :completed)),
+        where: argument_equals(:not_watched?, true)
+
+      prepare build(filter: expr(decade in ^arg(:decades))),
+        where: argument_does_not_equal(:decades, [])
+
+      prepare build(filter: expr(original_language in ^arg(:original_languages))),
+        where: argument_does_not_equal(:original_languages, [])
+
+      prepare build(sort: [added_to_library_at: :desc]),
+        where: argument_equals(:sort, :recently_added)
+
+      # Content without a release date goes last both ways
+      prepare build(sort: [release_date: :desc_nils_last]), where: argument_equals(:sort, :newest)
+      prepare build(sort: [release_date: :asc_nils_last]), where: argument_equals(:sort, :oldest)
+      prepare build(sort: [localized_title_key: :asc]), where: argument_equals(:sort, :title)
 
       pagination keyset?: true, offset?: true, countable: true, required?: false
     end
@@ -129,6 +168,17 @@ defmodule WatchClub.Contents.Content do
         description: "Searches the Library's titles instead of TMDB"
 
       run WatchClub.Contents.Actions.SearchContent
+    end
+
+    action :library_filter_options, :map do
+      description "The decades and original languages that Browse lets the actor filter by"
+
+      constraints fields: [
+                    decades: [type: {:array, :integer}, allow_nil?: false],
+                    original_languages: [type: {:array, :string}, allow_nil?: false]
+                  ]
+
+      run WatchClub.Contents.Actions.GetLibraryFilterOptions
     end
   end
 
@@ -256,6 +306,11 @@ defmodule WatchClub.Contents.Content do
     calculate :actor_next_medias_to_play,
               {:array, :struct},
               ActorNextMediasToPlay
+
+    # The decade it came out in, such as 1990 for 1994
+    calculate :decade,
+              :integer,
+              expr(fragment("(date_part('decade', ?) * 10)::integer", release_date))
 
     calculate :localized_title_key,
               :string,

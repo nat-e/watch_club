@@ -12,7 +12,7 @@ defmodule WatchClubWeb.Storybook.FilterChip do
         id: :states,
         description: "Off and on",
         template: """
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-related">
           <.psb-variation-group />
         </div>
         """,
@@ -27,6 +27,19 @@ defmodule WatchClubWeb.Storybook.FilterChip do
             attributes: %{on: true},
             slots: ["<:icon><Lucideicons.library /></:icon>", "In the library"]
           }
+        ]
+      },
+      %VariationGroup{
+        id: :radio,
+        description: "One of a group where only one is on",
+        template: """
+        <div role="radiogroup" aria-label="Type" class="flex flex-wrap items-center gap-related">
+          <.psb-variation-group />
+        </div>
+        """,
+        variations: [
+          %Variation{id: :movies, attributes: %{on: true, radio: true}, slots: ["Movies"]},
+          %Variation{id: :tv_shows, attributes: %{on: false, radio: true}, slots: ["TV Shows"]}
         ]
       },
       %Variation{

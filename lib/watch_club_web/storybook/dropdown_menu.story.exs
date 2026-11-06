@@ -49,6 +49,16 @@ defmodule WatchClubWeb.Storybook.DropdownMenu do
         ]
       },
       %Variation{
+        id: :choices,
+        description: "One choice of a group, checked when chosen",
+        attributes: %{id: "wc-dropdown-choices"},
+        slots: [
+          ~s(<:trigger><.button id="dropdown-story-choices-trigger" variant="secondary">Sort</.button></:trigger>),
+          ~s(<.dropdown_menu_item id="dropdown-story-recently-added-item" checked>Recently added</.dropdown_menu_item>),
+          ~s(<.dropdown_menu_item id="dropdown-story-newest-item" checked={false}>Newest</.dropdown_menu_item>)
+        ]
+      },
+      %Variation{
         id: :disabled_item,
         description: "Disabled item",
         attributes: %{id: "wc-dropdown-disabled"},

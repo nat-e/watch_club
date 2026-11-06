@@ -60,6 +60,15 @@ defmodule WatchClubWeb.Storybook.Modal do
         </.showcase_card>
 
         <.showcase_card
+          modal="sheet"
+          title="Sheet on phones"
+          description="Opens from the bottom of the screen on phones, centered elsewhere."
+          button_label="Open sheet modal"
+        >
+          Narrow the window to see it slide up from the bottom.
+        </.showcase_card>
+
+        <.showcase_card
           modal="drawer"
           title="Drawer"
           description="From the right on wide screens, full screen on phones."
@@ -72,6 +81,7 @@ defmodule WatchClubWeb.Storybook.Modal do
       <.invite_modal :if={@modal == :invite} />
       <.danger_modal :if={@modal == :danger} />
       <.scrollable_modal :if={@modal == :scrollable} />
+      <.sheet_modal :if={@modal == :sheet} />
       <.drawer_modal :if={@modal == :drawer} />
     </div>
     """
@@ -200,6 +210,15 @@ defmodule WatchClubWeb.Storybook.Modal do
     """
   end
 
+  defp sheet_modal(assigns) do
+    ~H"""
+    <.modal id="storybook-sheet-modal" sheet on_close={close_modal()}>
+      <:title>Filters</:title>
+      <p class="text-sm text-text-muted">Choices that apply at once, close to the thumb.</p>
+    </.modal>
+    """
+  end
+
   defp drawer_modal(assigns) do
     ~H"""
     <.modal id="storybook-drawer-modal" side="right" on_close={close_modal()}>
@@ -218,6 +237,7 @@ defmodule WatchClubWeb.Storybook.Modal do
   defp modal_name("invite"), do: :invite
   defp modal_name("danger"), do: :danger
   defp modal_name("scrollable"), do: :scrollable
+  defp modal_name("sheet"), do: :sheet
   defp modal_name("drawer"), do: :drawer
   defp modal_name(_unknown), do: nil
 end

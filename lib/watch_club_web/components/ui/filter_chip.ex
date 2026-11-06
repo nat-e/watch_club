@@ -8,6 +8,11 @@ defmodule WatchClubWeb.Components.UI.FilterChip do
 
   attr :id, :string, required: true
   attr :on, :boolean, required: true
+
+  attr :radio, :boolean,
+    default: false,
+    doc: "One of a group where only one is on, inside a `role=\"radiogroup\"`."
+
   attr :class, :any, default: nil
   attr :rest, :global
 
@@ -19,7 +24,9 @@ defmodule WatchClubWeb.Components.UI.FilterChip do
     <button
       id={@id}
       type="button"
-      aria-pressed={to_string(@on)}
+      role={@radio && "radio"}
+      aria-checked={@radio && to_string(@on)}
+      aria-pressed={!@radio && to_string(@on)}
       data-on={@on}
       class={[
         "inline-flex h-control-sm shrink-0 items-center gap-tight rounded-full border border-border-control px-group text-sm font-semibold whitespace-nowrap text-text-muted transition-colors not-data-on:hover:bg-surface-hover not-data-on:hover:text-text [&_svg]:size-icon-sm [&_svg]:shrink-0",

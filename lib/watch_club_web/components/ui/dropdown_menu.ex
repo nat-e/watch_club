@@ -191,6 +191,10 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   attr :variant, :string, values: ~w(default destructive), default: "default"
   attr :disabled, :boolean, default: false
 
+  attr :checked, :boolean,
+    default: nil,
+    doc: "Makes it one of a group of choices, with a check mark when it's the chosen one."
+
   attr :rest, :global, include: ~w(href navigate patch method download replace target)
 
   slot :inner_block,
@@ -202,13 +206,15 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
     ~H"""
     <.link
       id={@id}
-      role="menuitem"
+      role={if @checked == nil, do: "menuitem", else: "menuitemradio"}
+      aria-checked={@checked != nil && to_string(@checked)}
       data-slot="dropdown-menu-item"
       data-variant={@variant}
       aria-disabled={@disabled || nil}
       class={item_class(@variant, @disabled, @class)}
       {@rest}
     >
+      <Lucideicons.check :if={@checked != nil} class={["text-text!", !@checked && "invisible"]} />
       {render_slot(@inner_block)}
     </.link>
     """
@@ -219,13 +225,15 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
     <button
       id={@id}
       type="button"
-      role="menuitem"
+      role={if @checked == nil, do: "menuitem", else: "menuitemradio"}
+      aria-checked={@checked != nil && to_string(@checked)}
       data-slot="dropdown-menu-item"
       data-variant={@variant}
       disabled={@disabled}
       class={item_class(@variant, @disabled, @class)}
       {@rest}
     >
+      <Lucideicons.check :if={@checked != nil} class={["text-text!", !@checked && "invisible"]} />
       {render_slot(@inner_block)}
     </button>
     """

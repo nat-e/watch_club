@@ -56,7 +56,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
           <.scroll_row
             :if={length(@season_numbers) > 1}
             id="episodes-drawer-seasons"
-            gap="tight"
+            variant="chips"
             class="min-w-0 flex-1"
           >
             <button

@@ -34,6 +34,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
       "right: a drawer along the right side of the screen, full screen on phones, whose width `size` doesn't change."
 
   attr :on_close, JS, required: true
+  attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
   attr :rest, :global
 
   slot :title, required: true do
@@ -69,6 +70,8 @@ defmodule WatchClubWeb.Components.UI.Modal do
         @side == "center" && @size == "sm" && "sm:max-w-md",
         @side == "center" && @size == "md" && "sm:max-w-lg",
         @side == "center" && @size == "lg" && "sm:max-w-2xl",
+        @sheet &&
+          "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
         @class
       ]}
       phx-hook=".Modal"

@@ -4,6 +4,7 @@ defmodule WatchClub.Contents.ContentTest do
   import ExUnit.CaptureLog
   import WatchClub.Contents
 
+  alias WatchClub.History
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.MediaCatalog
   alias WatchClub.SystemActor
@@ -376,6 +377,72 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert {amelie_id, spirited_away_id, money_heist_id} ==
                {amelie.id, spirited_away.id, money_heist.id}
+    end
+
+    test "keeps the Content that matches every filter", %{member: member} do
+      watched = generate(movie(release_date: ~D[1994-05-01]))
+      french = generate(movie(release_date: ~D[1999-12-31], original_language: "fr"))
+      japanese = generate(movie(release_date: ~D[2015-01-01], original_language: "ja"))
+
+      tv_show =
+        generate(tv_show(num_seasons: 1, episodes_per_season: 1, start_date: ~D[1995-01-01]))
+
+      for movie <- [watched, french, japanese], do: add_video!(movie.id)
+      add_episode_video!(tv_show, 1)
+      History.mark_content_watched!(ContentIdentity.from_content(watched), actor: member)
+
+      ids = fn filters ->
+        filters |> get_contents_in_library!(actor: member) |> MapSet.new(& &1.id)
+      end
+
+      assert ids.(%{type: :tv_show}) == MapSet.new([tv_show.id])
+      assert ids.(%{not_watched?: true}) == MapSet.new([french.id, japanese.id, tv_show.id])
+      assert ids.(%{decades: [1990]}) == MapSet.new([watched.id, french.id, tv_show.id])
+      assert ids.(%{original_languages: ["fr", "ja"]}) == MapSet.new([french.id, japanese.id])
+
+      assert ids.(%{type: :movie, not_watched?: true, decades: [1990]}) ==
+               MapSet.new([french.id])
+    end
+
+    test "sorts the Content, the Content without a release date last", %{member: member} do
+      for {title, release_date} <- [
+            {"Casablanca", ~D[1942-11-26]},
+            {"Amélie", nil},
+            {"Brazil", ~D[1985-02-20]}
+          ] do
+        add_video!(generate(movie(original_title: title, release_date: release_date)).id)
+      end
+
+      titles = fn sort ->
+        first_page = get_contents_in_library!(%{sort: sort}, page: [limit: 2], actor: member)
+        Enum.map(first_page.results ++ Ash.page!(first_page, :next).results, & &1.original_title)
+      end
+
+      assert titles.(:newest) == ["Brazil", "Casablanca", "Amélie"]
+      assert titles.(:oldest) == ["Casablanca", "Brazil", "Amélie"]
+      assert titles.(:title) == ["Amélie", "Brazil", "Casablanca"]
+    end
+  end
+
+  describe "get_library_filter_options/*" do
+    test "returns the Library's decades, newest first, and original languages, most common first",
+         %{member: member} do
+      # Not in the Library
+      generate(movie(release_date: ~D[1960-01-01], original_language: "it"))
+
+      for {release_date, language} <- [
+            {~D[1994-01-01], "fr"},
+            {~D[2015-01-01], "en"},
+            {~D[2019-01-01], "fr"},
+            {nil, "ja"}
+          ] do
+        add_video!(generate(movie(release_date: release_date, original_language: language)).id)
+      end
+
+      assert get_library_filter_options!(actor: member) == %{
+               decades: [2010, 1990],
+               original_languages: ["fr", "en", "ja"]
+             }
     end
   end
 

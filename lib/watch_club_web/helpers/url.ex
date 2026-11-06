@@ -66,6 +66,9 @@ defmodule WatchClubWeb.Helpers.Url do
     Enum.find(allowed_values, default, &(to_string(&1) == value))
   end
 
+  # A hand-edited URL can send a list, such as `type[]=movie`
+  def parse_url_param(_value, _allowed_values, default), do: default
+
   @spec invitation_url(t(), InvitationCode.t()) :: t()
   def invitation_url(%__MODULE__{} = url, %InvitationCode{} = invitation) do
     %__MODULE__{

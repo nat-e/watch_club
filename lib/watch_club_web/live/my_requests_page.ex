@@ -72,8 +72,8 @@ defmodule WatchClubWeb.MyRequestsPage do
             :for={sort <- ContentRequestSort.values()}
             id={"my-requests-sort-#{sort}"}
             patch={path(status: @status_filter, type: @content_type_filter, sort: sort)}
+            checked={@sort == sort}
           >
-            <Lucideicons.check class={["text-text!", @sort != sort && "invisible"]} />
             {ContentRequestSort.translated_label(sort)}
           </.dropdown_menu_item>
         </.dropdown_menu>
