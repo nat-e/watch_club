@@ -28,8 +28,12 @@ defmodule WatchClubWeb.Components.UI.Modal do
     doc: "Maximum modal width."
 
   attr :on_close, JS, required: true
-  attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
-  attr :full_screen, :boolean, default: false, doc: "Fills the screen on phones."
+
+  attr :phone, :string,
+    values: ~w(centered sheet full_screen),
+    default: "centered",
+    doc: "How it opens on phones: centered, from the bottom of the screen, or filling the screen."
+
   attr :rest, :global
 
   slot :title, required: true do
@@ -59,16 +63,16 @@ defmodule WatchClubWeb.Components.UI.Modal do
       data-on-close={@on_close}
       class={
         [
-          "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+          "m-auto rounded-card border border-border bg-surface-overlay p-related text-text shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+          # A column only while open: the browser hides a closed dialog with a display we'd override
+          "open:flex open:flex-col",
           @size == "sm" && "sm:max-w-md",
           @size == "md" && "sm:max-w-lg",
           @size == "lg" && "sm:max-w-2xl",
-          @sheet &&
+          @phone == "sheet" &&
             "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
-          # A column only while open: the browser hides a closed dialog with a display we'd override
-          "open:flex open:flex-col",
-          @full_screen &&
-            "max-md:m-0 max-md:h-svh max-md:max-h-svh max-md:w-full max-md:max-w-none! max-md:rounded-none max-md:border-0",
+          @phone == "full_screen" &&
+            "max-md:m-0 max-md:h-svh max-md:max-h-svh max-md:w-full max-md:max-w-none! max-md:rounded-none max-md:border-0 max-md:p-0",
           @class
         ]
       }
@@ -76,52 +80,60 @@ defmodule WatchClubWeb.Components.UI.Modal do
       phx-mounted={JS.ignore_attributes("open")}
       {@rest}
     >
-      <div
-        data-slot="modal-content"
+      <header
+        data-slot="modal-header"
         class={[
-          "flex min-h-0 w-full flex-col gap-cluster overflow-y-auto px-cluster pb-cluster text-sm text-text",
-          @full_screen && "max-md:px-page"
+          "flex flex-col gap-related pt-cluster pb-cluster",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster"
         ]}
       >
-        <%!-- Long content scrolls under the header, so the title and the close button stay --%>
-        <header
-          data-slot="modal-header"
-          class="sticky top-0 z-10 flex flex-col gap-related bg-surface-overlay pt-cluster pr-10"
+        <h2
+          :for={title <- @title}
+          id={"#{@id}-title"}
+          data-slot="modal-title"
+          class={["pr-10 text-lg font-semibold leading-none", title[:class]]}
         >
-          <h2
-            :for={title <- @title}
-            id={"#{@id}-title"}
-            data-slot="modal-title"
-            class={["text-lg font-semibold leading-none", title[:class]]}
-          >
-            {render_slot(title)}
-          </h2>
+          {render_slot(title)}
+        </h2>
 
-          <p
-            :for={description <- @description}
-            id={"#{@id}-description"}
-            data-slot="modal-description"
-            class={[
-              "text-sm text-text-muted text-pretty [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
-              description[:class]
-            ]}
-          >
-            {render_slot(description)}
-          </p>
-        </header>
-
-        <div data-slot="modal-body" class="flex flex-col gap-group text-sm/relaxed text-text">
-          {render_slot(@inner_block)}
-        </div>
-
-        <footer
-          :for={footer <- @footer}
-          data-slot="modal-footer"
-          class={["flex flex-col-reverse gap-related sm:flex-row sm:justify-end", footer[:class]]}
+        <p
+          :for={description <- @description}
+          id={"#{@id}-description"}
+          data-slot="modal-description"
+          class={[
+            "pr-10 text-sm text-text-muted text-pretty [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
+            description[:class]
+          ]}
         >
-          {render_slot(footer)}
-        </footer>
+          {render_slot(description)}
+        </p>
+      </header>
+
+      <%!-- Only the body scrolls, so the title, the close button and the footer stay --%>
+      <div
+        data-slot="modal-body"
+        class={[
+          "flex min-h-0 flex-col gap-group overflow-y-auto pb-cluster text-sm/relaxed text-text",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster"
+        ]}
+      >
+        {render_slot(@inner_block)}
       </div>
+
+      <footer
+        :for={footer <- @footer}
+        data-slot="modal-footer"
+        class={[
+          "flex flex-col-reverse gap-related pb-cluster sm:flex-row sm:justify-end",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster",
+          footer[:class]
+        ]}
+      >
+        {render_slot(footer)}
+      </footer>
 
       <button
         id={"#{@id}-close-button"}
@@ -129,7 +141,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
         data-modal-close
         data-slot="modal-close"
         aria-label={dgettext("default", "Close")}
-        class="absolute top-group right-group z-20 inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
+        class="absolute top-group right-group inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
       >
         <Lucideicons.x />
       </button>

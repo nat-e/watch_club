@@ -18,7 +18,7 @@ msgid "Play"
 msgstr "Lire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/cast_section.ex
+#: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Cast"
 msgstr "Casting"

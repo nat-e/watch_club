@@ -71,7 +71,7 @@ defmodule WatchClubWeb.Storybook.Modal do
         <.showcase_card
           modal="full_screen"
           title="Full screen on phones"
-          description="Fills the screen on phones, centered elsewhere, its title staying while the list scrolls."
+          description="Fills the screen on phones, centered elsewhere, its title staying while its body scrolls."
           button_label="Open full screen modal"
         >
           Useful for a long list, such as every episode of a show.
@@ -212,7 +212,7 @@ defmodule WatchClubWeb.Storybook.Modal do
 
   defp sheet_modal(assigns) do
     ~H"""
-    <.modal id="storybook-sheet-modal" sheet on_close={close_modal()}>
+    <.modal id="storybook-sheet-modal" phone="sheet" on_close={close_modal()}>
       <:title>Filters</:title>
       <p class="text-sm text-text-muted">Choices that apply at once, close to the thumb.</p>
     </.modal>
@@ -221,7 +221,13 @@ defmodule WatchClubWeb.Storybook.Modal do
 
   defp full_screen_modal(assigns) do
     ~H"""
-    <.modal id="storybook-full-screen-modal" full_screen size="lg" on_close={close_modal()}>
+    <.modal
+      id="storybook-full-screen-modal"
+      phone="full_screen"
+      size="lg"
+      class="w-full"
+      on_close={close_modal()}
+    >
       <:title>Severance</:title>
       <:description>Play any episode, or mark what you've watched.</:description>
 

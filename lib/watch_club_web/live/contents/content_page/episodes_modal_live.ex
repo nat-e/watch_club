@@ -43,13 +43,13 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
     ~H"""
     <div>
-      <%!-- A container for the rows' breakpoints, so it needs a width of its own --%>
+      <%!-- As wide as its size, whatever the season's episodes --%>
       <.modal
         id="episodes-modal"
-        full_screen
+        phone="full_screen"
         size="lg"
         on_close={@on_close}
-        class="@container w-full"
+        class="w-full"
       >
         <:title>{@title}</:title>
         <:description>
@@ -59,75 +59,78 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               dgettext("contents", "It isn't in the library yet. Mark what you've watched elsewhere.")}
         </:description>
 
-        <div class="flex flex-col gap-related">
-          <.scroll_row
-            :if={length(@season_numbers) > 1}
-            id="episodes-modal-seasons"
-            variant="chips"
-          >
-            <button
-              :for={number <- @season_numbers}
-              id={"episodes-modal-season-#{number}"}
-              type="button"
-              phx-click="select_season"
-              phx-value-season={number}
-              phx-target={@myself}
-              aria-current={to_string(number == @season.season_number)}
-              autofocus={number == @season.season_number}
-              class={[
-                "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
-                number == @season.season_number && "bg-surface-selected text-text",
-                number != @season.season_number &&
-                  "text-text-muted hover:bg-surface-hover hover:text-text"
-              ]}
+        <%!-- A container for the rows' breakpoints --%>
+        <div class="@container flex flex-col gap-group">
+          <div class="flex flex-col gap-related">
+            <.scroll_row
+              :if={length(@season_numbers) > 1}
+              id="episodes-modal-seasons"
+              variant="chips"
             >
-              {dgettext("contents", "Season %{number}", number: number)}
-            </button>
-          </.scroll_row>
-          <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
-            {dgettext("contents", "Season %{number}", number: @season.season_number)}
-          </span>
-          <%!-- Its label says what it does, so it has no aria-pressed. Its circle sits above the
-          episodes' ones. --%>
-          <.button
-            :if={@any_aired?}
-            id="episodes-modal-season-watched"
-            variant="ghost"
-            size="sm"
-            phx-click="toggle_season"
-            phx-target={@myself}
-            title={
-              if @season_watched?,
-                do:
-                  dgettext("contents", "Mark season %{number} as not watched",
-                    number: @season.season_number
-                  ),
-                else:
-                  dgettext("contents", "Mark season %{number} as watched",
-                    number: @season.season_number
-                  )
-            }
-            class="self-end pr-related!"
-          >
-            {if @season_watched?,
-              do: dgettext("contents", "Watched"),
-              else: dgettext("contents", "Mark as watched")}
-            <:icon position="end">
-              <Lucideicons.circle_check :if={@season_watched?} class="text-success" />
-              <Lucideicons.circle :if={!@season_watched?} />
-            </:icon>
-          </.button>
-        </div>
+              <button
+                :for={number <- @season_numbers}
+                id={"episodes-modal-season-#{number}"}
+                type="button"
+                phx-click="select_season"
+                phx-value-season={number}
+                phx-target={@myself}
+                aria-current={to_string(number == @season.season_number)}
+                autofocus={number == @season.season_number}
+                class={[
+                  "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
+                  number == @season.season_number && "bg-surface-selected text-text",
+                  number != @season.season_number &&
+                    "text-text-muted hover:bg-surface-hover hover:text-text"
+                ]}
+              >
+                {dgettext("contents", "Season %{number}", number: number)}
+              </button>
+            </.scroll_row>
+            <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
+              {dgettext("contents", "Season %{number}", number: @season.season_number)}
+            </span>
+            <%!-- Its label changes with its state, so it has no aria-pressed. Its circle sits above
+          the episodes' ones. --%>
+            <.button
+              :if={@any_aired?}
+              id="episodes-modal-season-watched"
+              variant="ghost"
+              size="sm"
+              phx-click="toggle_season"
+              phx-target={@myself}
+              title={
+                if @season_watched?,
+                  do:
+                    dgettext("contents", "Mark season %{number} as not watched",
+                      number: @season.season_number
+                    ),
+                  else:
+                    dgettext("contents", "Mark season %{number} as watched",
+                      number: @season.season_number
+                    )
+              }
+              class="self-end pr-related!"
+            >
+              {if @season_watched?,
+                do: dgettext("contents", "Watched"),
+                else: dgettext("contents", "Mark as watched")}
+              <:icon position="end">
+                <Lucideicons.circle_check :if={@season_watched?} class="text-success" />
+                <Lucideicons.circle :if={!@season_watched?} />
+              </:icon>
+            </.button>
+          </div>
 
-        <ol class="flex flex-col">
-          <.episode_row
-            :for={row <- @rows}
-            row={row}
-            in_library?={@in_library?}
-            locale={@current_user.settings.locale}
-            myself={@myself}
-          />
-        </ol>
+          <ol class="flex flex-col">
+            <.episode_row
+              :for={row <- @rows}
+              row={row}
+              in_library?={@in_library?}
+              locale={@current_user.settings.locale}
+              myself={@myself}
+            />
+          </ol>
+        </div>
       </.modal>
     </div>
     """

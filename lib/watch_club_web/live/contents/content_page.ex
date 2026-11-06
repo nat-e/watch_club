@@ -7,7 +7,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.TmdbPoster
-  import WatchClubWeb.Contents.ContentPage.CastSection
 
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
@@ -213,7 +212,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           content_identity={@content_identity}
           current_user={@current_user}
           size="lg"
-          on_episodes={if @episodes?, do: JS.push("open_episodes")}
+          on_episodes={if @episodes? and @in_library?, do: JS.push("open_episodes")}
         />
         <.progress_line content={@content} locale={@current_user.settings.locale} />
       </div>
@@ -244,7 +243,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
           </:icon>
         </.button>
-        <%!-- Its label says what it does, so it has no aria-pressed --%>
+        <%!-- Its label changes with its state, so it has no aria-pressed --%>
         <.button
           id="watched-button"
           variant="overlay"
@@ -288,47 +287,116 @@ defmodule WatchClubWeb.Contents.ContentPage do
   # half circle, their name, their status and when they last watched it.
   defp watchers_section(assigns) do
     ~H"""
-    <section aria-labelledby="watchers-heading" class="flex min-w-0 flex-col gap-group">
-      <h2 id="watchers-heading" class="font-heading text-xl font-semibold">
-        {dgettext("contents", "Who watched it")}
-      </h2>
+    <.page_section id="watchers-heading" title={dgettext("contents", "Who watched it")}>
       <.scroll_row :if={@watchers != []} id="watchers">
-        <div
+        <.person_tile
           :for={watcher <- @watchers}
           id={"watcher-#{watcher.user.id}"}
-          class="flex w-24 shrink-0 snap-start flex-col items-center gap-related text-center"
+          name={watcher.user.username}
         >
-          <span class="relative">
-            <%!-- Its id picks its color, as everywhere else --%>
-            <.avatar
-              id={watcher.user.id}
-              name={watcher.user.username}
-              size="lg"
-              aria-hidden="true"
-            />
-            <span class="absolute -right-tight -bottom-tight flex size-icon items-center justify-center rounded-full bg-surface-raised ring-2 ring-canvas">
-              <Lucideicons.check :if={watcher.status == :completed} class="size-3 text-success" />
-              <Lucideicons.contrast
-                :if={watcher.status == :in_progress}
-                class="size-3 text-primary"
+          <:picture>
+            <span class="relative">
+              <%!-- Its id picks its color, as everywhere else --%>
+              <.avatar
+                id={watcher.user.id}
+                name={watcher.user.username}
+                size="lg"
+                aria-hidden="true"
               />
+              <span class="absolute -right-tight -bottom-tight flex size-icon items-center justify-center rounded-full bg-surface-raised ring-2 ring-canvas">
+                <Lucideicons.check :if={watcher.status == :completed} class="size-3 text-success" />
+                <Lucideicons.contrast
+                  :if={watcher.status == :in_progress}
+                  class="size-3 text-primary"
+                />
+              </span>
             </span>
-          </span>
-          <span class="flex w-full flex-col">
-            <span class="truncate text-xs font-semibold">{watcher.user.username}</span>
-            <span class="truncate text-xs text-text-muted">
-              {WatchStatus.translated_label(watcher.status)}
-            </span>
-            <span class="truncate text-xs text-text-subtle">
-              {Time.relative_from_now(watcher.last_watched_at, @locale)}
-            </span>
-          </span>
-        </div>
+          </:picture>
+          <:line class="text-text-muted">{WatchStatus.translated_label(watcher.status)}</:line>
+          <:line class="text-text-subtle">
+            {Time.relative_from_now(watcher.last_watched_at, @locale)}
+          </:line>
+        </.person_tile>
       </.scroll_row>
       <p :if={@watchers == []} class="text-sm text-text-muted">
         {dgettext("contents", "Nobody has watched it yet.")}
       </p>
+    </.page_section>
+    """
+  end
+
+  attr :credits, :any, required: true, doc: "TMDB's `Credits`"
+
+  # Who directed it, then who's in it, as round photos
+  defp cast_section(assigns) do
+    assigns = assign(assigns, :people, cast(assigns.credits))
+
+    ~H"""
+    <.page_section :if={@people != []} id="cast-heading" title={dgettext("contents", "Cast")}>
+      <.scroll_row id="cast">
+        <.person_tile :for={person <- @people} name={person.name}>
+          <:picture>
+            <span class="relative size-20 shrink-0 overflow-hidden rounded-full bg-surface-raised">
+              <img
+                :if={person.profile_path}
+                src={"https://image.tmdb.org/t/p/w185#{person.profile_path}"}
+                alt=""
+                loading="lazy"
+                class="absolute inset-0 size-full object-cover"
+              />
+              <span
+                :if={!person.profile_path}
+                class="absolute inset-0 flex items-center justify-center text-sm font-semibold text-text-muted"
+              >
+                {initials(person.name)}
+              </span>
+            </span>
+          </:picture>
+          <:line class="text-text-muted">{person.role}</:line>
+        </.person_tile>
+      </.scroll_row>
+    </.page_section>
+    """
+  end
+
+  attr :id, :string, required: true, doc: "its heading's id"
+  attr :title, :string, required: true
+  slot :inner_block, required: true
+
+  # A section under the header: its heading, then what it holds
+  defp page_section(assigns) do
+    ~H"""
+    <section aria-labelledby={@id} class="flex min-w-0 flex-col gap-group">
+      <h2 id={@id} class="font-heading text-xl font-semibold">{@title}</h2>
+      {render_slot(@inner_block)}
     </section>
+    """
+  end
+
+  attr :id, :string, default: nil
+  attr :name, :string, required: true
+
+  slot :picture, required: true
+
+  slot :line, doc: "a line under the name" do
+    attr :class, :any
+  end
+
+  # A person in a row of a section: their picture, their name, then a line or two about them
+  defp person_tile(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      class="flex w-24 shrink-0 snap-start flex-col items-center gap-related text-center"
+    >
+      {render_slot(@picture)}
+      <span class="flex w-full flex-col">
+        <span class="line-clamp-2 text-sm font-semibold">{@name}</span>
+        <span :for={line <- @line} class={["truncate text-xs", line[:class]]}>
+          {render_slot(line)}
+        </span>
+      </span>
+    </div>
     """
   end
 
@@ -511,6 +579,21 @@ defmodule WatchClubWeb.Contents.ContentPage do
   end
 
   defp rated?(details), do: is_number(details.vote_average) and details.vote_average > 0
+
+  # The director, then up to 17 actors in billing order
+  defp cast(credits) do
+    cast = (credits && credits.cast) || []
+    crew = (credits && credits.crew) || []
+    directors = crew |> Enum.filter(&(&1.job == "Director")) |> Enum.take(1)
+    actors = cast |> Enum.sort_by(&(&1.order || 999_999)) |> Enum.take(17)
+
+    (directors ++ actors)
+    |> Enum.uniq_by(&(&1.id || &1.name))
+    |> Enum.map(&%{name: &1.name, role: &1.character || &1.job, profile_path: &1.profile_path})
+  end
+
+  defp initials(name),
+    do: name |> String.split(" ", trim: true) |> Enum.take(2) |> Enum.map_join(&String.first/1)
 
   defp tmdb_url(%ContentIdentity{type: :movie, external_id: id}),
     do: "https://www.themoviedb.org/movie/#{id}"
