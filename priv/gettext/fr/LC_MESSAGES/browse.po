@@ -114,3 +114,9 @@ msgstr "Tri : %{sort}"
 #, elixir-autogen, elixir-format
 msgid "Year"
 msgstr "Année"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Type"
+msgstr "Type"

@@ -29,6 +29,19 @@ defmodule WatchClubWeb.Storybook.FilterChip do
           }
         ]
       },
+      %VariationGroup{
+        id: :radio,
+        description: "One of a group where only one is on",
+        template: """
+        <div role="radiogroup" aria-label="Type" class="flex flex-wrap items-center gap-2">
+          <.psb-variation-group />
+        </div>
+        """,
+        variations: [
+          %Variation{id: :all, attributes: %{on: true, radio: true}, slots: ["All"]},
+          %Variation{id: :movies, attributes: %{on: false, radio: true}, slots: ["Movies"]}
+        ]
+      },
       %Variation{
         id: :without_icon,
         description: "Without icon",

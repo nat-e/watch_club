@@ -34,22 +34,29 @@ defmodule WatchClubWeb.BrowsePage do
     >
       <div class="flex min-w-0 items-center gap-related">
         <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
-          <.filter_chip
-            :for={type <- [nil | ContentType.library_display_order()]}
-            id={"filter-type-#{type || "all"}"}
-            on={@filters.type == type}
-            phx-click="toggle_filter"
-            phx-value-filter="type"
-            phx-value-choice={type}
+          <div
+            role="radiogroup"
+            aria-label={dgettext("browse", "Type")}
+            class="flex shrink-0 items-center gap-related"
           >
-            <:icon :if={type}><.content_type_icon type={type} /></:icon>
-            {ContentType.translated_plural_label(type)}
-          </.filter_chip>
+            <.filter_chip
+              :for={type <- [nil | ContentType.library_display_order()]}
+              id={"filter-type-#{type || "all"}"}
+              on={@filters.type == type}
+              radio
+              phx-click="change_filter"
+              phx-value-filter="type"
+              phx-value-choice={type}
+            >
+              <:icon :if={type}><.content_type_icon type={type} /></:icon>
+              {ContentType.translated_plural_label(type)}
+            </.filter_chip>
+          </div>
           <.divider />
           <.filter_chip
             id="filter-not-watched"
             on={@filters.not_watched?}
-            phx-click="toggle_filter"
+            phx-click="change_filter"
             phx-value-filter="not_watched"
           >
             <:icon><Lucideicons.eye_off /></:icon>
@@ -198,7 +205,7 @@ defmodule WatchClubWeb.BrowsePage do
             :for={decade <- @options.decades}
             id={"filter-decade-#{decade}"}
             on={decade in @filters.decades}
-            phx-click="toggle_filter"
+            phx-click="change_filter"
             phx-value-filter="decade"
             phx-value-choice={decade}
             class="tabular-nums"
@@ -218,7 +225,7 @@ defmodule WatchClubWeb.BrowsePage do
           <.checkbox
             id={"filter-language-#{language}"}
             checked={language in @filters.original_languages}
-            phx-click="toggle_filter"
+            phx-click="change_filter"
             phx-value-filter="language"
             phx-value-choice={language}
           />
@@ -373,11 +380,11 @@ defmodule WatchClubWeb.BrowsePage do
   end
 
   # Changes the filters from the server's own state, so quick taps all count
-  def handle_event("toggle_filter", %{"filter" => filter} = params, socket) do
+  def handle_event("change_filter", %{"filter" => filter} = params, socket) do
     %{filters: filters, sort: sort} = socket.assigns
 
     {:noreply,
-     push_patch(socket, to: browse_path(toggle_filter(filters, filter, params["choice"]), sort))}
+     push_patch(socket, to: browse_path(change_filter(filters, filter, params["choice"]), sort))}
   end
 
   @impl true
@@ -424,19 +431,17 @@ defmodule WatchClubWeb.BrowsePage do
   # Missing, or a list from a hand-edited URL such as `decades[]=1990`
   defp list_param(_values), do: []
 
-  # The type that's on goes back to All
-  defp toggle_filter(filters, "type", type) do
-    type = Url.parse_url_param(type, ContentType.library_display_order())
-    %{filters | type: if(type == filters.type, do: nil, else: type)}
-  end
+  # A type replaces the one that's on. The other choices turn on or off.
+  defp change_filter(filters, "type", type),
+    do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
 
-  defp toggle_filter(filters, "not_watched", _value),
+  defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
 
-  defp toggle_filter(filters, "decade", decade),
+  defp change_filter(filters, "decade", decade),
     do: %{filters | decades: toggle_choice(filters.decades, String.to_integer(decade))}
 
-  defp toggle_filter(filters, "language", language),
+  defp change_filter(filters, "language", language),
     do: %{filters | original_languages: toggle_choice(filters.original_languages, language)}
 
   defp toggle_choice(choices, choice) do
