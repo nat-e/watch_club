@@ -88,7 +88,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       <.button
         :if={@on_episodes}
         id={"#{@id}-episodes-button"}
-        size={if @size == "lg", do: "icon-lg", else: "icon"}
+        size={caret_size(@size)}
         variant="primary"
         emphasis
         phx-click={@on_episodes}
@@ -102,6 +102,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     </div>
     """
   end
+
+  # As tall as Play
+  defp caret_size("sm"), do: "icon-sm"
+  defp caret_size("md"), do: "icon"
+  defp caret_size("lg"), do: "icon-lg"
 
   defp icon_spin(nil), do: false
 

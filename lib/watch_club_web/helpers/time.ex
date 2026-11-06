@@ -27,10 +27,13 @@ defmodule WatchClubWeb.Helpers.Time do
   end
 
   @doc """
-  Returns a localized number of minutes in hours and minutes, like "52 min" or "2 hr 9 min".
+  Returns a localized number of minutes in hours and minutes, like "52 min" or "2 hr 9 min", or
+  nil without any, as TMDB gives for an unknown runtime.
   """
-  @spec minutes(pos_integer(), atom()) :: String.t()
-  def minutes(minutes, locale) when is_integer(minutes) and minutes > 0 do
+  @spec minutes(non_neg_integer() | nil, atom()) :: String.t() | nil
+  def minutes(minutes, _locale) when minutes in [nil, 0], do: nil
+
+  def minutes(minutes, locale) do
     minutes
     |> WatchClub.Cldr.Unit.new!(:minute)
     |> WatchClub.Cldr.Unit.decompose([:hour, :minute])

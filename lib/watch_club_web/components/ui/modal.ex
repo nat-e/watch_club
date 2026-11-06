@@ -30,7 +30,8 @@ defmodule WatchClubWeb.Components.UI.Modal do
   attr :side, :string,
     values: ~w(center right),
     default: "center",
-    doc: "right: a drawer along the right side of the screen, full screen on phones."
+    doc:
+      "right: a drawer along the right side of the screen, full screen on phones, whose width `size` doesn't change."
 
   attr :on_close, JS, required: true
   attr :rest, :global
@@ -65,9 +66,9 @@ defmodule WatchClubWeb.Components.UI.Modal do
         @side == "center" && "m-auto p-related rounded-card border",
         @side == "right" &&
           "my-0 mr-0 ml-auto h-svh max-h-svh w-full max-w-none md:max-w-lg md:border-l",
-        @size == "sm" && "sm:max-w-md",
-        @size == "md" && "sm:max-w-lg",
-        @size == "lg" && "sm:max-w-2xl",
+        @side == "center" && @size == "sm" && "sm:max-w-md",
+        @side == "center" && @size == "md" && "sm:max-w-lg",
+        @side == "center" && @size == "lg" && "sm:max-w-2xl",
         @class
       ]}
       phx-hook=".Modal"
@@ -76,13 +77,22 @@ defmodule WatchClubWeb.Components.UI.Modal do
     >
       <div
         data-slot="modal-content"
-        class={[
-          "flex w-full flex-col gap-cluster overflow-y-auto text-sm text-text",
-          @side == "center" && "p-cluster",
-          @side == "right" && "px-page py-cluster"
-        ]}
+        class={
+          [
+            "flex w-full flex-col gap-cluster overflow-y-auto text-sm text-text",
+            @side == "center" && "p-cluster",
+            # The drawer's content scrolls under its header, so the close button stays
+            @side == "right" && "h-full px-page pb-cluster"
+          ]
+        }
       >
-        <header data-slot="modal-header" class="flex flex-col gap-related pr-10">
+        <header
+          data-slot="modal-header"
+          class={[
+            "flex flex-col gap-related pr-10",
+            @side == "right" && "sticky top-0 z-10 bg-surface-overlay pt-cluster pb-related"
+          ]}
+        >
           <h2
             :for={title <- @title}
             id={"#{@id}-title"}
@@ -124,7 +134,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
         data-modal-close
         data-slot="modal-close"
         aria-label={dgettext("default", "Close")}
-        class="absolute top-group right-group inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
+        class="absolute top-group right-group z-20 inline-flex size-control-sm items-center justify-center rounded-control border border-transparent text-text-muted transition-colors outline-none hover:bg-surface-hover hover:text-text focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring [&_svg]:size-icon-sm"
       >
         <Lucideicons.x />
       </button>

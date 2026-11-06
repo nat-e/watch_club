@@ -67,6 +67,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
               phx-value-season={number}
               phx-target={@myself}
               aria-current={to_string(number == @season.season_number)}
+              autofocus={number == @season.season_number}
               class={[
                 "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
                 number == @season.season_number && "bg-surface-selected text-text",
@@ -146,6 +147,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
         aired?: aired?,
         playable?: playable?,
         watching?: watching?,
+        runtime: Time.minutes(details.runtime, assigns.locale),
         watched?: watched?(episode),
         note:
           cond do
@@ -207,7 +209,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
           · {@details.name}
         </span>
         <span class="flex flex-wrap gap-x-related text-xs text-text-muted">
-          <span :if={(@details.runtime || 0) > 0}>{Time.minutes(@details.runtime, @locale)}</span>
+          <span :if={@runtime}>{@runtime}</span>
           <span :if={@note} class="font-semibold">{@note}</span>
         </span>
         <span

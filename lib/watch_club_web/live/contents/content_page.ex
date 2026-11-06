@@ -230,32 +230,35 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <:icon><Lucideicons.list_video /></:icon>
           {dgettext("contents", "Episodes")}
         </.button>
-        <.button
-          :if={@trailer_url}
-          id="trailer-button"
-          variant="ghost"
-          size="lg"
-          href={@trailer_url}
-          target="_blank"
-        >
-          <:icon><Lucideicons.circle_play /></:icon>
-          {dgettext("contents", "Watch trailer")}
-          <:icon position="end">
-            <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
-          </:icon>
-        </.button>
-        <.button
-          id="watched-button"
-          variant="ghost"
-          size="icon-lg"
-          phx-click="toggle_watched"
-          aria-pressed={to_string(@finished?)}
-          aria-label={dgettext("contents", "Watched")}
-          title={watched_hint(@tv_show?, @finished?)}
-        >
-          <Lucideicons.circle_check :if={@finished?} class="text-success" />
-          <Lucideicons.circle :if={!@finished?} />
-        </.button>
+        <%!-- Together, so Watched never wraps alone --%>
+        <.inline>
+          <.button
+            :if={@trailer_url}
+            id="trailer-button"
+            variant="ghost"
+            size="lg"
+            href={@trailer_url}
+            target="_blank"
+          >
+            <:icon><Lucideicons.circle_play /></:icon>
+            {dgettext("contents", "Watch trailer")}
+            <:icon position="end">
+              <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
+            </:icon>
+          </.button>
+          <.button
+            id="watched-button"
+            variant="ghost"
+            size="icon-lg"
+            phx-click="toggle_watched"
+            aria-pressed={to_string(@finished?)}
+            aria-label={dgettext("contents", "Watched")}
+            title={watched_hint(@tv_show?, @finished?)}
+          >
+            <Lucideicons.circle_check :if={@finished?} class="text-success" />
+            <Lucideicons.circle :if={!@finished?} />
+          </.button>
+        </.inline>
       </.cluster>
     </div>
     """
@@ -496,11 +499,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
   defp release_date(%MovieDetailsResponse{release_date: date}), do: date
   defp release_date(%TvDetailsResponse{first_air_date: date}), do: date
 
-  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale)
-       when is_integer(minutes) and minutes > 0,
-       do: Time.minutes(minutes, locale)
-
-  defp length_label(%MovieDetailsResponse{}, _locale), do: nil
+  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale),
+    do: Time.minutes(minutes, locale)
 
   defp length_label(%TvDetailsResponse{} = details, _locale) do
     case length(season_numbers(details)) do
