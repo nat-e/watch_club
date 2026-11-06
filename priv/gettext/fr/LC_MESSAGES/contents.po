@@ -24,7 +24,7 @@ msgid "Cast"
 msgstr "Casting"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/helpers/content_details.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} season"
 msgid_plural "%{count} seasons"

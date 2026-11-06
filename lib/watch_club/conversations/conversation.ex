@@ -111,6 +111,11 @@ defmodule WatchClub.Conversations.Conversation do
 
     has_many :participants, Participant
 
+    # Who it was recommended to. Deleted Users are left out once the recommender is deleted too.
+    has_many :recipients, Participant do
+      filter expr(is_distinct_from(user_id, parent(recommended_by_id)))
+    end
+
     has_many :messages, Message do
       sort id: :asc
     end

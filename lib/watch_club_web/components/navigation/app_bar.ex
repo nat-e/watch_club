@@ -14,6 +14,7 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
   attr :search, :boolean, required: true
   attr :current_url, Url, required: true
   attr :current_user, User, required: true
+  attr :class, :any, default: nil
 
   def app_bar(assigns) do
     assigns = assign(assigns, :back, back(assigns.parent, assigns.content_page?))
@@ -70,7 +71,8 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
         @content_page? &&
           "border-transparent bg-transparent data-scrolled:border-border-subtle data-scrolled:bg-canvas",
         !@content_page? &&
-          "border-transparent bg-canvas data-scrolled:border-border-subtle md:border-border-subtle"
+          "border-transparent bg-canvas data-scrolled:border-border-subtle md:border-border-subtle",
+        @class
       ]}
     >
       <.button

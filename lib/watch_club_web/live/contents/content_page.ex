@@ -8,9 +8,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Helpers.ContentDetails
 
   alias WatchClub.Contents.Rating
-  alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Contents.ContentPage.EpisodesModalLive
@@ -547,13 +547,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp progress(_content, _locale), do: nil
 
-  # The seasons of a TV Show with episodes, without its specials
-  defp season_numbers(%TvDetailsResponse{} = details) do
-    for season <- details.seasons,
-        season.season_number >= 1 and season.episode_count > 0,
-        do: season.season_number
-  end
-
   # The season of the episode Play plays, else the first one
   defp current_season_number(
          %Content{implementation: %TvShow{actor_next_episode: %TvShowEpisode{} = episode}},
@@ -563,21 +556,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp current_season_number(_content, details), do: details |> season_numbers() |> List.first()
 
-  defp title(%MovieDetailsResponse{title: title}), do: title
-  defp title(%TvDetailsResponse{name: name}), do: name
-
-  defp release_date(%MovieDetailsResponse{release_date: date}), do: date
-  defp release_date(%TvDetailsResponse{first_air_date: date}), do: date
-
-  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale),
-    do: Time.minutes(minutes, locale)
-
-  defp length_label(%TvDetailsResponse{} = details, _locale) do
-    case length(season_numbers(details)) do
-      0 -> nil
-      count -> dngettext("contents", "%{count} season", "%{count} seasons", count)
-    end
-  end
 
   # The director, then up to 17 actors in billing order
   defp cast(credits) do

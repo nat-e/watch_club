@@ -38,4 +38,9 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("star_rating"), do: [name: "Star rating", icon: {:fa, "star"}, index: 21]
   def entry("unread_badge"), do: [name: "Unread badge", icon: {:fa, "bell"}, index: 22]
+  def entry("user_avatar"), do: [name: "User avatar", icon: {:fa, "user"}, index: 23]
+  def entry("recipients"), do: [name: "Recipients", icon: {:fa, "users"}, index: 24]
+
+  def entry("recommendation_note"),
+    do: [name: "Recommendation note", icon: {:fa, "quote-left"}, index: 25]
 end

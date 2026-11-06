@@ -1,0 +1,126 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread message"
+msgid_plural "%{count} unread messages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{name}: %{text}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{recommender} recommended it to %{recipients}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Back to Inbox"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Conversation about %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Conversations"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message…"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "No conversation open"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "No conversations yet"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Pick one in the list to read it."
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend a movie or a TV show from its page to start one."
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{name}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by you"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended it"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Send"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "This conversation doesn't exist"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "You recommended it to %{recipients}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "You: %{text}"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "and %{count} other"
+msgid_plural "and %{count} others"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/components/conversations/recipients.ex
+#, elixir-autogen, elixir-format
+msgid "you"
+msgstr ""

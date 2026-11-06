@@ -1,0 +1,148 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread message"
+msgid_plural "%{count} unread messages"
+msgstr[0] "%{count} message non lu"
+msgstr[1] "%{count} messages non lus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{name}: %{text}"
+msgstr "%{name} : %{text}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{recommender} recommended it to %{recipients}"
+msgstr "%{recommender} l’a recommandé à %{recipients}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Back to Inbox"
+msgstr "Retour à la messagerie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Conversation about %{title}"
+msgstr "Conversation sur %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Conversations"
+msgstr "Conversations"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message"
+msgstr "Message"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message…"
+msgstr "Message…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr "Nouveau"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "No conversation open"
+msgstr "Aucune conversation ouverte"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "No conversations yet"
+msgstr "Pas encore de conversation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Pick one in the list to read it."
+msgstr "Choisissez-en une dans la liste pour la lire."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend a movie or a TV show from its page to start one."
+msgstr "Recommandez un film ou une série depuis sa page pour en commencer une."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{name}"
+msgstr "Recommandé par %{name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by you"
+msgstr "Recommandé par vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended it"
+msgstr "L’a recommandé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "Send"
+msgstr "Envoyer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "This conversation doesn't exist"
+msgstr "Cette conversation n’existe pas"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "You recommended it to %{recipients}"
+msgstr "Vous l’avez recommandé à %{recipients}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "You: %{text}"
+msgstr "Vous : %{text}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "and %{count} other"
+msgid_plural "and %{count} others"
+msgstr[0] "et %{count} autre"
+msgstr[1] "et %{count} autres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/conversations/recipients.ex
+#, elixir-autogen, elixir-format
+msgid "you"
+msgstr "vous"

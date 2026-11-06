@@ -34,6 +34,14 @@ defmodule WatchClub.Conversations.Message do
   actions do
     defaults [:read]
 
+    read :in_conversation do
+      description "A Conversation's Messages, in the order they were posted"
+      argument :conversation_id, :uuid, allow_nil?: false
+
+      filter expr(conversation_id == ^arg(:conversation_id))
+      prepare build(sort: [id: :asc])
+    end
+
     create :recommendation do
       description "The recommendation that starts a Conversation, from the actor"
       accept [:conversation_id, :body]

@@ -66,7 +66,11 @@ defmodule WatchClubWeb.Helpers.Time do
     end
   end
 
-  defp local_date(datetime, time_zone),
+  @doc """
+  Returns the date of a moment in the time zone.
+  """
+  @spec local_date(DateTime.t(), String.t()) :: Date.t()
+  def local_date(datetime, time_zone),
     do: datetime |> DateTime.shift_zone!(time_zone) |> DateTime.to_date()
 
   defp cldr_locale(locale), do: UserLocale.to_cldr_locale_name(locale)

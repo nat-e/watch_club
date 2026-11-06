@@ -22,6 +22,7 @@ defmodule WatchClub.Conversations do
 
     resource Message do
       define :post_message, action: :post, args: [:conversation_id]
+      define :list_messages, action: :in_conversation, args: [:conversation_id]
       define :get_message, action: :read, get_by: [:id]
     end
   end
