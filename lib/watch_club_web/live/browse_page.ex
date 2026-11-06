@@ -34,21 +34,32 @@ defmodule WatchClubWeb.BrowsePage do
     >
       <div class="flex min-w-0 items-center gap-related">
         <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
+          <.button
+            :if={filtered?(@filters)}
+            id="filters-clear"
+            variant="secondary"
+            size="icon-sm"
+            patch={clear_filters_path(@sort)}
+            aria-label={dgettext("browse", "Clear filters")}
+            class="shrink-0 rounded-full!"
+          >
+            <Lucideicons.x />
+          </.button>
           <div
             role="radiogroup"
             aria-label={dgettext("browse", "Type")}
             class="flex shrink-0 items-center gap-related"
           >
             <.filter_chip
-              :for={type <- [nil | ContentType.library_display_order()]}
-              id={"filter-type-#{type || "all"}"}
+              :for={type <- ContentType.library_display_order()}
+              id={"filter-type-#{type}"}
               on={@filters.type == type}
               radio
               phx-click="change_filter"
               phx-value-filter="type"
               phx-value-choice={type}
             >
-              <:icon :if={type}><.content_type_icon type={type} /></:icon>
+              <:icon><.content_type_icon type={type} /></:icon>
               {ContentType.translated_plural_label(type)}
             </.filter_chip>
           </div>
