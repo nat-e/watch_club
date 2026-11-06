@@ -58,6 +58,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 - A class you pass to a UI primitive doesn't override the primitive's own class for the same property, because the order in the CSS decides, not the order in `class`. Add a trailing `!` to make it win, such as `text-danger!`, as `components/ui/segmented_control.ex` does.
 - Name and place LiveViews, LiveComponents and function components as `docs/web-layer.md` describes. It overrides the Phoenix usage rules on LiveView names and on when to use LiveComponents.
 - Use LiveView streams for unbounded or large collections. Plain list assigns are fine for small, bounded ones, such as club memberships, invitations, club libraries and navigation lists: add a comment next to them saying the collection is intentionally small. This overrides the Phoenix usage rule to always use streams.
+- Give every reusable component a story in `lib/watch_club_web/storybook/`, with an entry in `_root.index.exs`. Stories don't use the database, so a LiveComponent that loads its data renders it through a function component. The story shows that function component: `PlayOrRequestButtonLive` renders `PlayOrRequestButton`.
 
 ### Data Loading
 
