@@ -159,9 +159,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   attr :playlist, Playlist, required: true
   attr :current_user, User, required: true
 
-  # Its poster and name, which open the Content, who added it once the Playlist is shared, then
-  # Play, Resume or Request, and a menu to remove it for the Users who can. What it is starts at
-  # the poster's top and its action ends at the poster's bottom.
+  # Its poster and name, which open the Content, then Play, Resume or Request, who added it once
+  # the Playlist is shared, and a menu to remove it for the Users who can. They spread over the
+  # poster's height: what it is at its top, the last of them at its bottom.
   defp item_row(assigns) do
     %{item: %{content: content}} = assigns
 
@@ -188,7 +188,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           />
         </.tmdb_poster>
       </.link>
-      <div class="flex min-w-0 flex-1 flex-col justify-between gap-group self-stretch">
+      <div class="flex min-w-0 flex-1 flex-col justify-between gap-related self-stretch">
         <div class="flex min-w-0 flex-col">
           <.link
             navigate={Url.content_details_link(@identity)}
@@ -201,20 +201,6 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             |> Enum.filter(& &1)
             |> Enum.join(" · ")}
           </span>
-          <span
-            :if={@playlist.accesses != [] and @item.added_by}
-            class="flex min-w-0 items-center gap-tight text-xs text-text-subtle"
-          >
-            <.avatar
-              id={@item.added_by.id}
-              name={@item.added_by.username}
-              size="xs"
-              aria-hidden="true"
-            />
-            <span class="truncate">
-              {dgettext("playlists", "Added by %{user}", user: @item.added_by.username)}
-            </span>
-          </span>
         </div>
         <div class="flex flex-wrap items-center gap-related">
           <.live_component
@@ -224,6 +210,20 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             current_user={@current_user}
           />
         </div>
+        <span
+          :if={@playlist.accesses != [] and @item.added_by}
+          class="flex min-w-0 items-center gap-tight text-xs text-text-subtle"
+        >
+          <.avatar
+            id={@item.added_by.id}
+            name={@item.added_by.username}
+            size="xs"
+            aria-hidden="true"
+          />
+          <span class="truncate">
+            {dgettext("playlists", "Added by %{user}", user: @item.added_by.username)}
+          </span>
+        </span>
       </div>
       <%!-- As tall as the name's line, so the menu is centered on it --%>
       <div :if={@playlist.editable_by?} class="flex h-[1lh] shrink-0 items-center text-lg">
