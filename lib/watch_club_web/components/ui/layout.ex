@@ -144,16 +144,21 @@ defmodule WatchClubWeb.Components.UI.Layout do
   attr :title, :string, required: true
   attr :class, :any, default: nil
   attr :rest, :global
+  slot :action, doc: "a small button on the right of its heading"
   slot :inner_block, required: true
 
   @doc """
-  A section of a page, without a card: its heading, then what it holds.
+  A section of a page, without a card: its heading, with a small action on its right, then what
+  it holds.
   """
   def page_section(assigns) do
     ~H"""
     <section aria-labelledby={@id} class={["flex min-w-0 flex-col gap-group", @class]} {@rest}>
-      <%!-- Focusable from code, for when what had the focus goes --%>
-      <h2 id={@id} tabindex="-1" class="font-heading text-xl font-semibold">{@title}</h2>
+      <div class="flex items-center justify-between gap-group">
+        <%!-- Focusable from code, for when what had the focus goes --%>
+        <h2 id={@id} tabindex="-1" class="font-heading text-xl font-semibold">{@title}</h2>
+        {render_slot(@action)}
+      </div>
       {render_slot(@inner_block)}
     </section>
     """

@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   @moduledoc """
   The page of a Movie or a TV Show: what it is, from TMDB, how far the User got, with Play or
   Resume, every TV Show Episode in a modal, the User's Conversations about it, with Recommend
-  Content, and the other Users who watched it.
+  Content, the other Users who watched it, and the Playlists that hold it, with Add to Playlist.
   """
   use WatchClubWeb, :live_view
 
@@ -11,6 +11,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
+  import WatchClubWeb.Components.Playlists.PlaylistLink
+  import WatchClubWeb.Contents.ContentPage.AddToPlaylistModal
 
   alias WatchClub.Contents.Rating
   alias WatchClub.Conversations
@@ -54,6 +56,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
         <div class="flex flex-col gap-section px-page pt-cluster pb-page-y">
           <.conversations_section conversations={@conversations} current_user={@current_user} />
           <.watchers_section watchers={@watchers} locale={@current_user.settings.locale} />
+          <.playlists_section
+            playlists={Enum.filter(@playlists, & &1.holds_content?)}
+            current_user={@current_user}
+          />
           <.cast_section credits={@details.credits} />
         </div>
       </article>
@@ -84,6 +90,14 @@ defmodule WatchClubWeb.Contents.ContentPage do
         }
         current_user={@current_user}
         on_close={fn -> send(self(), :close_recommend) end}
+      />
+
+      <.add_to_playlist_modal
+        :if={@new_playlist_form}
+        title={title(@details)}
+        playlists={Enum.filter(@playlists, & &1.editable_by?)}
+        new_playlist_form={@new_playlist_form}
+        current_user={@current_user}
       />
     </Layouts.app>
     """
@@ -442,6 +456,52 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
+  attr :playlists, :list, required: true, doc: "the Playlists the User sees that hold it"
+  attr :current_user, User, required: true
+
+  # The Playlists the User sees that hold it, with Add to playlist, or the empty state
+  defp playlists_section(assigns) do
+    ~H"""
+    <.page_section
+      id="playlists-heading"
+      title={dgettext("playlists", "In playlists")}
+      class="max-w-readable"
+    >
+      <:action :if={@playlists != []}>
+        <.button
+          id="add-to-playlist"
+          variant="secondary"
+          size="sm"
+          phx-click="open_add_to_playlist"
+        >
+          <:icon><Lucideicons.list_plus /></:icon>
+          {dgettext("playlists", "Add to playlist")}
+        </.button>
+      </:action>
+      <ul :if={@playlists != []} class="-mx-related flex flex-col gap-px">
+        <li :for={playlist <- @playlists}>
+          <.playlist_link
+            playlist={playlist}
+            current_user={@current_user}
+            navigate={~p"/playlists/#{playlist.id}"}
+          />
+        </li>
+      </ul>
+      <.empty :if={@playlists == []} id="no-playlists">
+        <:icon><Lucideicons.list /></:icon>
+        <:title>{dgettext("playlists", "Not in your playlists yet")}</:title>
+        <:description>
+          {dgettext("playlists", "Save it to one of your playlists, or to a shared one you can edit.")}
+        </:description>
+        <.button id="empty-add-to-playlist" variant="secondary" phx-click="open_add_to_playlist">
+          <:icon><Lucideicons.list_plus /></:icon>
+          {dgettext("playlists", "Add to playlist")}
+        </.button>
+      </.empty>
+    </.page_section>
+    """
+  end
+
   attr :credits, :any, required: true, doc: "TMDB's `Credits`"
 
   # Who directed it, then who's in it, as round photos
@@ -509,7 +569,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> WatchClub.PubSub.subscribe_if_connected("history:global")
-     |> assign(episodes_open?: false, recommend_open?: false)}
+     |> assign(episodes_open?: false, recommend_open?: false, new_playlist_form: nil)}
   end
 
   @impl true
@@ -523,7 +583,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
        |> assign(details: details, content_identity: identity)
        |> load_content!()
        |> load_watchers!()
-       |> load_conversations!()}
+       |> load_conversations!()
+       |> load_playlists!()}
     else
       _not_found ->
         {:noreply,
@@ -550,6 +611,45 @@ defmodule WatchClubWeb.Contents.ContentPage do
   def handle_event("open_recommend", _params, socket),
     do: {:noreply, assign(socket, :recommend_open?, true)}
 
+  def handle_event("open_add_to_playlist", _params, socket) do
+    form = Playlists.form_to_create_playlist(actor: socket.assigns.current_user)
+    {:noreply, assign(socket, :new_playlist_form, to_form(form))}
+  end
+
+  def handle_event("close_add_to_playlist", _params, socket),
+    do: {:noreply, assign(socket, :new_playlist_form, nil)}
+
+  def handle_event("toggle_in_playlist", %{"playlist_id" => playlist_id}, socket) do
+    %{playlists: playlists, content: content, content_identity: identity, current_user: user} =
+      socket.assigns
+
+    if Enum.find(playlists, &(&1.id == playlist_id)).holds_content?,
+      do: Playlists.remove_from_playlist!(playlist_id, content.id, actor: user),
+      else: Playlists.add_to_playlist!(playlist_id, identity, actor: user)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("validate_new_playlist", %{"form" => params}, socket) do
+    form = AshPhoenix.Form.validate(socket.assigns.new_playlist_form, params)
+    {:noreply, assign(socket, :new_playlist_form, form)}
+  end
+
+  # A new Playlist that starts with the Content
+  def handle_event("create_playlist_with_content", %{"form" => params}, socket) do
+    %{new_playlist_form: form, content_identity: identity, current_user: user} = socket.assigns
+
+    case AshPhoenix.Form.submit(form, params: params) do
+      {:ok, playlist} ->
+        Playlists.add_to_playlist!(playlist.id, identity, actor: user)
+        form = Playlists.form_to_create_playlist(actor: user)
+        {:noreply, assign(socket, :new_playlist_form, to_form(form))}
+
+      {:error, form} ->
+        {:noreply, assign(socket, :new_playlist_form, form)}
+    end
+  end
+
   def handle_event("toggle_watched", _params, socket) do
     %{content_identity: identity, content: content, current_user: user} = socket.assigns
 
@@ -563,6 +663,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
   @impl true
   def handle_info(:close_recommend, socket),
     do: {:noreply, assign(socket, :recommend_open?, false)}
+
+  # A Playlist the User sees, or what it holds, changed. It may also be new to them, or gone.
+  def handle_info(%Notification{resource: resource}, socket)
+      when resource in [Playlist, PlaylistAccess, PlaylistItem],
+      do: {:noreply, load_playlists!(socket)}
 
   # Another User's Watch Progress, from history:global, only changes Who watched it
   def handle_info(
@@ -632,6 +737,30 @@ defmodule WatchClubWeb.Contents.ContentPage do
         actor: user
       )
     )
+  end
+
+  # Intentionally small: a User sees a handful of Playlists. In playlists shows the ones that hold
+  # the Content, and Add to Playlist the ones they can edit, theirs first.
+  defp load_playlists!(socket) do
+    %{content_identity: identity, current_user: user} = socket.assigns
+
+    playlists =
+      Playlists.list_playlists!(
+        load: [
+          :movie_count,
+          :tv_show_count,
+          :owner,
+          accesses: [:user],
+          editable_by?: %{user_id: user.id},
+          holds_content?: %{content_identity: identity}
+        ],
+        actor: user
+      )
+      |> Enum.sort_by(&(&1.owner_id != user.id))
+
+    socket
+    |> assign(:playlists, playlists)
+    |> WatchClub.PubSub.subscribe_to_playlists(playlists)
   end
 
   defp load_watchers!(socket) do

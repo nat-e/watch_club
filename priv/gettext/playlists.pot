@@ -122,6 +122,7 @@ msgstr ""
 msgid "New"
 msgstr ""
 
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
@@ -144,6 +145,7 @@ msgid "Playlist deleted."
 msgstr ""
 
 #: lib/watch_club_web/components/playlists/playlist_link.ex
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Private"
@@ -261,4 +263,49 @@ msgstr ""
 #: lib/watch_club_web/live/playlists/playlists_page/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "They'll find it in their Playlists. Choose who can only view it and who can also edit it."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "%{user}'s playlist"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Add %{content} to a playlist"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add to playlist"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "In playlists"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Not in your playlists yet"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Save it to one of your playlists, or to a shared one you can edit."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Shared with %{users}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Your playlists, and the shared playlists you can edit."
 msgstr ""

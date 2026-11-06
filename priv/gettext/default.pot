@@ -37,6 +37,7 @@ msgid "Close"
 msgstr ""
 
 #: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
