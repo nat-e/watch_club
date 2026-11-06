@@ -23,9 +23,7 @@ defmodule WatchClub.ActivityFeed do
         not_found_error?: false
     end
 
-    resource FeedEventScope do
-      define :get_content_activity_feed, action: :for_content, args: [:content_identity]
-    end
+    resource FeedEventScope
 
     resource ClubCreatedEvent
     resource ContentAddedEvent

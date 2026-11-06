@@ -8,8 +8,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
   - Club: all members of a Club (e.g. a Content added to the Club's library)
   - Global: both scopes nil (not used yet)
 
-  FeedEventScope is thin: it carries the scope, a denormalized `content` selection key (so the
-  content-detail feed can filter by Content without joining through the polymorphic event), the
+  FeedEventScope is thin: it carries the scope, a denormalized `content` key, the
   `group_key` of its Feed Entry (see `WatchClub.ActivityFeed.FeedEntry`), and a nullable FK to
   exactly one event (enforced by a DB check constraint). The `event` calculation resolves the
   populated event. Deleting an event cascade-deletes its scopes via the per-type FK
@@ -25,7 +24,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Calculations.ScopeEvent
   alias WatchClub.ActivityFeed.Changes.SetGroupKey
-  alias WatchClub.ActivityFeed.Preparations.{DistinctPerEvent, LoadActivityFeedEvent}
+  alias WatchClub.ActivityFeed.Preparations.DistinctPerEvent
 
   alias WatchClub.ActivityFeed.Events.{
     ClubCreatedEvent,
@@ -37,8 +36,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.Club
-  alias WatchClub.Contents.{Content, ContentIdentity, ExternalIdSource}
-  alias WatchClub.Contents.Preparations.FilterByContentIdentities
+  alias WatchClub.Contents.Content
 
   postgres do
     table "activity_feed_scopes"
@@ -100,21 +98,6 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
       description "One scope per event, for events visible through several scopes"
       prepare DistinctPerEvent
     end
-
-    read :for_content do
-      description "Get the distinct Activity feed events about a Content, potentially filtered by Club"
-      argument :content_identity, ContentIdentity, allow_nil?: false
-      argument :club_id, :uuid_v7, allow_nil?: true
-
-      prepare {FilterByContentIdentities, content_path: [:content]}
-
-      # Filter by club if one is provided
-      filter expr(is_nil(^arg(:club_id)) or scope_club_id == ^arg(:club_id))
-
-      pagination keyset?: true, required?: false, stable_sort: [:id]
-      prepare DistinctPerEvent
-      prepare LoadActivityFeedEvent
-    end
   end
 
   policies do
@@ -141,10 +124,6 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
     publish_all :create, ["user", :scope_user_id]
     publish_all :destroy, ["club", :scope_club_id]
     publish_all :destroy, ["user", :scope_user_id]
-
-    # We also publish on a feed content topic for the Content details page
-    publish_all :create, ["content", :content_external_id_source, :content_external_id],
-      load: [:content_external_id_source, :content_external_id]
   end
 
   preparations do
@@ -165,7 +144,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
     belongs_to :scope_user, User, allow_nil?: true
     belongs_to :scope_club, Club, allow_nil?: true
 
-    # Denormalized selection key for the content-detail feed. Nil for events without a Content
+    # Denormalized key of the event's Content. Nil for events without a Content
     # (club_created, library_created, member_added).
     belongs_to :content, Content, allow_nil?: true
 
@@ -184,10 +163,5 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
       allow_nil? false
       argument :load, :term
     end
-
-    # The external_id and external_id_source of the Content, if non null
-    # This is used internally to compute the Content pubsub topic
-    calculate :content_external_id_source, ExternalIdSource, expr(content.external_id_source)
-    calculate :content_external_id, :string, expr(content.external_id)
   end
 end
