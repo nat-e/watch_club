@@ -45,6 +45,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :class, :any, default: nil
   attr :play_only, :boolean, default: false
 
+  attr :on_episodes, :any,
+    default: nil,
+    doc:
+      "the JS commands opening every TV Show Episode, from a caret joined to Play, or from Episodes when there's nothing to play"
+
   attr :size, :string,
     values: ~w(sm md lg),
     default: "md"
@@ -66,6 +71,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         title={@title}
         request={@request}
         on_request={JS.push("request-content", target: @myself)}
+        on_episodes={@on_episodes}
         play_only={@play_only}
         size={@size}
         variant={@variant}
@@ -129,6 +135,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   defp play_label(:movie, _content), do: dgettext("contents", "Play")
   defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
+
+  # No episode has aired yet
+  defp play_label(:tv_show, %{implementation: %{actor_next_episode: nil}}),
+    do: dgettext("contents", "Play")
 
   defp play_label(:tv_show, %{
          implementation: %{

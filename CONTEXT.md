@@ -130,7 +130,7 @@ _Avoid_: Follow, watch, me too
 
 **Request Subscriber**:
 A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it.
-_Avoid_: Follower, watcher
+_Avoid_: Follower
 
 **Delete Content Request**:
 The **Instance Administrator** removes a **Content Request**, for example a stuck one, so its **Content** can be requested again.
@@ -181,6 +181,10 @@ _Avoid_: Stream, HLS Stream, play, playthrough
 **Watch Progress**:
 How far a **User** has got through one **Movie** or one **TV Show Episode**, and whether they have finished it. Tied to the watchable work, not to a specific **Media**, so the several **Videos** that back one **Movie** or **Episode** share a single Watch Progress. Covers video only for now; reading a **Book** or listening to an **Audiobook** would be sibling concepts, not the same record.
 _Avoid_: watch history, watch session, resume point, playhead, watched flag
+
+**Watcher**:
+A **User** with **Watch Progress** on a **Movie** or a **TV Show**: they watched it or are watching it.
+_Avoid_: Viewer, audience
 
 **Ebook**:
 Media that can be read or downloaded and is attached to a book.
@@ -528,6 +532,9 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1
+- A **TV Show Episode** has aired once its air date has passed
+- A **User** has finished a **TV Show** once they have finished every aired **TV Show Episode**. Marking a season or a whole **TV Show** as watched marks its aired **TV Show Episodes** only
+- Every **User** sees the **Watchers** of every **Content**, whether each finished it, and when they last watched it
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
 - A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while any of its **TV Show Episodes** has **Media**
 - A **User** gets missing **Content** into the **Library** with **Request Content**

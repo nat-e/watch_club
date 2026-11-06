@@ -201,7 +201,7 @@ defmodule WatchClubWeb.BrowsePage do
   # From the bottom of the screen on phones. Each choice applies at once.
   defp more_filters(assigns) do
     ~H"""
-    <.modal id="more-filters" size="md" sheet on_close={JS.push("close_more_filters")}>
+    <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
       <fieldset class="flex min-w-0 flex-col gap-related">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>

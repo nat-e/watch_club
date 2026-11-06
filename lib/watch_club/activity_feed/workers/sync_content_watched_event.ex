@@ -78,7 +78,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
             content_id: content_id,
             completed: status == :completed,
             completed_episodes: completed_episodes(content.implementation),
-            scopes: event_scopes(content_id, user_id, content.library_items)
+            scopes: event_scopes(user_id, content.library_items)
           },
           action: :upsert,
           # System-derived projection: skip policies on the write (actor still set so relate_actor
@@ -92,15 +92,15 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
   end
 
   # Every scope shares the group, see SetGroupKey
-  defp event_scopes(content_id, user_id, library_items) do
+  defp event_scopes(user_id, library_items) do
     group = "watched:#{user_id}"
 
     club_scopes =
       library_items
-      |> Enum.map(&%{scope_club_id: &1.library.club_id, content_id: &1.content_id, group: group})
+      |> Enum.map(&%{scope_club_id: &1.library.club_id, group: group})
       |> Enum.uniq()
 
-    [%{scope_user_id: user_id, content_id: content_id, group: group} | club_scopes]
+    [%{scope_user_id: user_id, group: group} | club_scopes]
   end
 
   defp completed_episodes(%TvShow{episodes: episodes}) do

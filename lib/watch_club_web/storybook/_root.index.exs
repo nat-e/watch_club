@@ -31,7 +31,8 @@ defmodule WatchClubWeb.Storybook.Root do
     do: [name: "Segmented control", icon: {:fa, "grip-lines"}, index: 17]
 
   def entry("filter_chip"), do: [name: "Filter chip", icon: {:fa, "filter"}, index: 18]
+  def entry("progress_bar"), do: [name: "Progress bar", icon: {:fa, "bars-progress"}, index: 19]
 
   def entry("play_or_request_button"),
-    do: [name: "Play or request button", icon: {:fa, "play"}, index: 19]
+    do: [name: "Play or request button", icon: {:fa, "play"}, index: 20]
 end

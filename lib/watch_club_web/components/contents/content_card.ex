@@ -147,7 +147,7 @@ defmodule WatchClubWeb.Components.Contents.ContentCard do
         </.inline>
 
         <.link
-          navigate={Url.content_details_link(@content.type, @content.external_id)}
+          navigate={Url.content_details_link(@content)}
           class="line-clamp-4 text-xl leading-tight font-semibold after:absolute after:inset-0 after:content-['']"
         >
           {@content.implementation.best_localization.title}

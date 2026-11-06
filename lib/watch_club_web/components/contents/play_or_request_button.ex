@@ -16,6 +16,12 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     doc: "the actor's Content Request, with its `best_source_request`"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
+
+  attr :on_episodes, :any,
+    default: nil,
+    doc:
+      "the JS commands opening every TV Show Episode, from a caret joined to Play, or from Episodes when there's nothing to play"
+
   attr :play_only, :boolean, default: false
 
   attr :size, :string,
@@ -65,6 +71,55 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
+  # Nothing to play yet, such as an episode missing from the Library: every episode instead
+  def play_or_request_button(%{play_href: nil, on_episodes: on_episodes} = assigns)
+      when on_episodes != nil do
+    ~H"""
+    <.button
+      id={"#{@id}-episodes-button"}
+      size={@size}
+      variant="primary"
+      emphasis
+      phx-click={@on_episodes}
+      aria-haspopup="dialog"
+      class="w-full phx-click-loading:cursor-progress phx-click-loading:opacity-60"
+    >
+      <:icon><Lucideicons.list_video /></:icon>
+      {dgettext("contents", "Episodes")}
+    </.button>
+    """
+  end
+
+  # Play with a caret opening every episode, under one glow so they read as one button
+  def play_or_request_button(%{on_episodes: on_episodes} = assigns) when on_episodes != nil do
+    ~H"""
+    <div class="flex w-full rounded-control shadow-glow">
+      <.button
+        id={"#{@id}-play-button"}
+        size={@size}
+        variant="primary"
+        href={@play_href}
+        class="min-w-0 flex-1 rounded-r-none! border-r-0!"
+      >
+        <:icon><Lucideicons.play /></:icon>
+        {@play_label}
+      </.button>
+      <.button
+        id={"#{@id}-episodes-button"}
+        size={caret_size(@size)}
+        variant="primary"
+        phx-click={@on_episodes}
+        aria-label={dgettext("contents", "All episodes")}
+        aria-haspopup="dialog"
+        title={dgettext("contents", "All episodes")}
+        class="rounded-l-none! border-l-primary-active! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
+      >
+        <Lucideicons.chevron_down />
+      </.button>
+    </div>
+    """
+  end
+
   def play_or_request_button(assigns) do
     ~H"""
     <.button
@@ -81,6 +136,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     </.button>
     """
   end
+
+  # As tall as Play
+  defp caret_size("sm"), do: "icon-sm"
+  defp caret_size("md"), do: "icon"
+  defp caret_size("lg"), do: "icon-lg"
 
   defp icon_spin(nil), do: false
 

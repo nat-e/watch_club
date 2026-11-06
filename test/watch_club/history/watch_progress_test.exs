@@ -6,6 +6,7 @@ defmodule WatchClub.History.WatchProgressTest do
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.History
+  alias WatchClub.History.Watcher
 
   describe "movies" do
     test "movie is unwatched by default" do
@@ -136,6 +137,7 @@ defmodule WatchClub.History.WatchProgressTest do
           [
             tv_show: [
               :actor_progress_status,
+              :actor_percent_watched,
               :actor_last_watched_at,
               actor_next_episode: [:actor_progress_status, :actor_progress]
             ]
@@ -145,13 +147,57 @@ defmodule WatchClub.History.WatchProgressTest do
 
       next_episode = content.tv_show.actor_next_episode
 
-      # Show is in progress
+      # Show is in progress, half watched
       assert content.tv_show.actor_progress_status == :in_progress
+      assert content.tv_show.actor_percent_watched == 50.0
       assert DateTime.after?(content.tv_show.actor_last_watched_at, before)
 
       # Next episode should be unstarted S02E01
       assert %TvShowEpisode{season_number: 2, episode_number: 1} = next_episode
       assert next_episode.actor_progress_status == :not_started
+    end
+
+    test "finishes the show once every aired episode is watched" do
+      user = generate(user())
+
+      # Season 1 has aired, season 2 hasn't
+      tv_show =
+        generate(
+          tv_show(
+            num_seasons: 2,
+            episodes_per_season: 3,
+            start_date: Date.shift(Date.utc_today(), year: -2)
+          )
+        )
+
+      History.mark_content_watched!(ContentIdentity.from_content(tv_show), actor: user)
+
+      content =
+        tv_show
+        |> Ash.load!(
+          [
+            tv_show: [
+              :actor_progress_status,
+              :actor_percent_watched,
+              actor_next_episode: [:actor_progress_status],
+              episodes: [:actor_progress_status]
+            ]
+          ],
+          actor: user
+        )
+
+      assert content.tv_show.actor_progress_status == :completed
+      assert content.tv_show.actor_percent_watched == 100.0
+
+      # Only the aired episodes are marked
+      assert content.tv_show.episodes
+             |> Enum.filter(&(&1.actor_progress_status == :completed))
+             |> Enum.map(&{&1.season_number, &1.episode_number})
+             |> Enum.sort() == [{1, 1}, {1, 2}, {1, 3}]
+
+      # Next episode starts the show again instead of going to the unaired S02E01
+      assert %TvShowEpisode{season_number: 1, episode_number: 1} =
+               content.tv_show.actor_next_episode
     end
 
     test "continues with the current episode when it has not been watched entirely" do
@@ -372,6 +418,61 @@ defmodule WatchClub.History.WatchProgressTest do
       # Next episode should be unstarted S02E02
       assert %TvShowEpisode{season_number: 2, episode_number: 2} = next_episode
       assert next_episode.actor_progress_status == :not_started
+    end
+  end
+
+  describe "list_watchers/*" do
+    test "lists who else watched a movie or is watching it, the latest first" do
+      [watched, watching, actor] = generate_many(user(), 3)
+      movie = generate(movie())
+      identity = ContentIdentity.from_content(movie)
+
+      History.mark_content_watched!(identity, actor: watched)
+
+      History.record_watch_progress!(
+        %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+        actor: watching
+      )
+
+      History.mark_content_watched!(identity, actor: actor)
+
+      assert [%Watcher{status: :in_progress} = first, %Watcher{status: :completed} = second] =
+               History.list_watchers!(identity, actor: actor)
+
+      assert first.user.id == watching.id
+      assert second.user.id == watched.id
+    end
+
+    test "has watched a TV show once every aired episode is watched" do
+      [watched, watching, actor] = generate_many(user(), 3)
+
+      # Season 1 has aired, season 2 hasn't
+      tv_show =
+        generate(
+          tv_show(
+            num_seasons: 2,
+            episodes_per_season: 2,
+            start_date: Date.shift(Date.utc_today(), year: -2)
+          )
+        )
+
+      identity = ContentIdentity.from_content(tv_show)
+
+      History.mark_content_watched!(identity, %{season_number: 1, episode_number: 1},
+        actor: watching
+      )
+
+      History.mark_content_watched!(identity, %{season_number: 1}, actor: watched)
+
+      assert [%Watcher{status: :completed} = first, %Watcher{status: :in_progress} = second] =
+               History.list_watchers!(identity, actor: actor)
+
+      assert first.user.id == watched.id
+      assert second.user.id == watching.id
+    end
+
+    test "is empty for a Content WatchClub doesn't have" do
+      assert [] = History.list_watchers!(ContentIdentity.for_movie(42), actor: generate(user()))
     end
   end
 
