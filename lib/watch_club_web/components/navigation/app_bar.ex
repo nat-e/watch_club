@@ -80,13 +80,10 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
         id="app-bar-back"
         variant="ghost"
         size="icon"
-        class={
-          [
-            "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
-            # From the width at which a split view shows its list beside what's open
-            @back.narrow_only? && "@4xl/main:hidden"
-          ]
-        }
+        class={[
+          "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
+          @back.narrow_only? && "@split-view/main:hidden"
+        ]}
         {@back.link}
         data-back={@back.history?}
         aria-label={@back.label}

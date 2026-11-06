@@ -137,8 +137,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   attr :current_user, User, required: true
   slot :action, doc: "a small button on the right of the title"
 
-  # A titled group of Playlists in the list. The one shown beside it is highlighted only where
-  # the list is beside it: narrow screens show the list alone until a Playlist is opened.
+  # A titled group of Playlists in the list
   defp playlist_group(assigns) do
     ~H"""
     <div class="flex flex-col gap-tight">
@@ -153,7 +152,6 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
             current_user={@current_user}
             patch={~p"/playlists/#{playlist.id}"}
             selected={@shown != nil and playlist.id == @shown.id}
-            class="@4xl/main:aria-[current=true]:bg-surface-selected"
           />
         </li>
       </ul>

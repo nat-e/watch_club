@@ -12,11 +12,10 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
   attr :current_user, User, required: true
   attr :patch, :string, default: nil
   attr :navigate, :string, default: nil
-  attr :selected, :boolean, default: false, doc: "the Playlist shown beside the list"
 
-  attr :class, :any,
-    default: nil,
-    doc: "for the selected one's highlight: only the page knows where the list is beside it"
+  attr :selected, :boolean,
+    default: false,
+    doc: "the Playlist a split view shows beside the list, highlighted where it does"
 
   def playlist_link(assigns) do
     assigns = assign(assigns, :others, others(assigns.playlist, assigns.current_user))
@@ -27,10 +26,7 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
       patch={@patch}
       navigate={@navigate}
       aria-current={@selected && "true"}
-      class={[
-        "flex min-h-touch-target items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover",
-        @class
-      ]}
+      class="flex min-h-touch-target items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover @split-view/main:aria-[current=true]:bg-surface-selected"
     >
       <.playlist_summary playlist={@playlist}>{content_counts(@playlist)}</.playlist_summary>
       <span :if={@others == []} class="shrink-0">

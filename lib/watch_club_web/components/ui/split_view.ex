@@ -4,8 +4,8 @@ defmodule WatchClubWeb.Components.UI.SplitView do
   the list, or what's open. Wider screens show both, each scrolling on its own under the app bar.
   Phones float the list's main action above the tabs.
 
-  It switches at the `@4xl` width of the layout's main column, like the app bar's back arrow for
-  a `narrow_only` parent, so the arrow shows exactly while the list isn't beside what's open.
+  It switches at the `split-view` width of the layout's main column, as the app bar's back arrow
+  for a `narrow_only` parent does.
   """
 
   use Phoenix.Component
@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
     ~H"""
     <div class="flex md:h-[calc(100svh-var(--wc-app-bar-height))]">
       <div class={[
-        "w-full flex-col gap-group border-border-subtle pb-group md:overflow-y-auto md:pt-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @4xl/main:flex @4xl/main:w-72 @4xl/main:shrink-0 @4xl/main:border-r",
+        "w-full flex-col gap-group border-border-subtle pb-group md:overflow-y-auto md:pt-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @split-view/main:flex @split-view/main:w-72 @split-view/main:shrink-0 @split-view/main:border-r",
         @fab != [] && "max-md:pb-[calc(var(--spacing-control-lg)+2*var(--spacing-group))]",
         @open && "hidden",
         !@open && "flex"
@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
         {render_slot(@fab)}
       </div>
       <div class={[
-        "@container min-w-0 flex-1 flex-col md:overflow-y-auto [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @4xl/main:flex",
+        "@container min-w-0 flex-1 flex-col md:overflow-y-auto [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @split-view/main:flex",
         @open && "flex",
         !@open && "hidden"
       ]}>

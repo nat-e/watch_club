@@ -11,10 +11,13 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
 
   def function, do: &PlaylistLink.playlist_link/1
 
+  # The layout's main column, wide enough for a split view to show the list beside the Playlist
   def template do
     """
-    <div class="w-72 p-4 text-text">
-      <.psb-variation/>
+    <div class="@container/main w-[60rem]">
+      <div class="w-72 p-4 text-text">
+        <.psb-variation/>
+      </div>
     </div>
     """
   end
@@ -59,13 +62,12 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
       },
       %Variation{
         id: :selected,
-        description: "The Playlist shown beside the list, highlighted by the page",
+        description: "The Playlist shown beside the list",
         attributes: %{
           playlist: playlist("To Watch", "popcorn", @viewer, [], 2, 1),
           current_user: @viewer,
           patch: "#",
-          selected: true,
-          class: "aria-[current=true]:bg-surface-selected"
+          selected: true
         }
       }
     ]

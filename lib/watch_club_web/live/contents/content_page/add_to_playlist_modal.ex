@@ -51,29 +51,29 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
         layout="none"
         phx-change="validate_new_playlist"
         phx-submit="create_playlist_with_content"
-        class="flex flex-col gap-related"
       >
         <input type="hidden" name={@new_playlist_form[:icon].name} value="list" />
-        <.label field={@new_playlist_form[:name]} class="sr-only">
-          {dgettext("playlists", "New playlist")}
-        </.label>
-        <div class="flex items-center gap-related">
-          <.input
-            field={@new_playlist_form[:name]}
-            class="flex-1"
-            autocomplete="off"
-            phx-debounce="blur"
-            placeholder={dgettext("playlists", "New playlist")}
-            aria-describedby="new-playlist-errors"
-          />
-          <.button id="new-playlist-create" type="submit" variant="secondary">
-            {dgettext("default", "Create")}
-          </.button>
-        </div>
-        <%!-- role="alert" announces the errors as they appear --%>
-        <div id="new-playlist-errors" role="alert">
-          <.field_errors field={@new_playlist_form[:name]} />
-        </div>
+        <.field
+          field={@new_playlist_form[:name]}
+          label={dgettext("playlists", "New playlist")}
+          label_class="sr-only!"
+        >
+          <:control :let={describedby}>
+            <div class="flex items-center gap-related">
+              <.input
+                field={@new_playlist_form[:name]}
+                class="flex-1"
+                autocomplete="off"
+                phx-debounce="blur"
+                placeholder={dgettext("playlists", "New playlist")}
+                aria-describedby={describedby}
+              />
+              <.button id="new-playlist-create" type="submit" variant="secondary">
+                {dgettext("default", "Create")}
+              </.button>
+            </div>
+          </:control>
+        </.field>
       </.form>
 
       <:footer>
