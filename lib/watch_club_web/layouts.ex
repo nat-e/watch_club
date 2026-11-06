@@ -61,7 +61,7 @@ defmodule WatchClubWeb.Layouts do
     ~H"""
     <div
       id="app-shell"
-      class="min-h-svh bg-canvas text-text [--wc-app-bar-height:var(--wc-size-row-md)] [--wc-sidebar-width:16rem] [--wc-tab-bar-height:var(--wc-size-row-lg)] md:[--wc-app-bar-height:var(--wc-size-row-lg)]"
+      class="min-h-svh bg-canvas text-text [--wc-app-bar-height:var(--wc-size-row-lg)] [--wc-sidebar-width:16rem] [--wc-tab-bar-height:var(--wc-size-row-lg)]"
     >
       <.sidebar
         current_path={@current_url.path}

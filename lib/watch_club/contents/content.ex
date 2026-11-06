@@ -50,7 +50,7 @@ defmodule WatchClub.Contents.Content do
       end
 
       filter expr(has_media?)
-      prepare FilterByTitle
+      prepare FilterByTitle, where: present(:query)
 
       prepare build(sort: [added_to_library_at: :desc])
 
