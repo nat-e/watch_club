@@ -6,6 +6,7 @@ defmodule WatchClub.History.WatchProgressTest do
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.History
+  alias WatchClub.History.Watcher
 
   describe "movies" do
     test "movie is unwatched by default" do
@@ -417,6 +418,63 @@ defmodule WatchClub.History.WatchProgressTest do
       # Next episode should be unstarted S02E02
       assert %TvShowEpisode{season_number: 2, episode_number: 2} = next_episode
       assert next_episode.actor_progress_status == :not_started
+    end
+  end
+
+  describe "list_watchers/*" do
+    test "lists who else watched a movie or is watching it, the latest first" do
+      [watched, watching, actor] = generate_many(user(), 3)
+      movie = generate(movie())
+      identity = ContentIdentity.from_content(movie)
+
+      History.mark_content_watched!(identity, actor: watched)
+
+      History.record_watch_progress!(
+        %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+        actor: watching
+      )
+
+      History.mark_content_watched!(identity, actor: actor)
+
+      assert [
+               %Watcher{user: %{id: watching_id}, status: :in_progress},
+               %Watcher{user: %{id: watched_id}, status: :completed}
+             ] = History.list_watchers!(identity, actor: actor)
+
+      assert {watching_id, watched_id} == {watching.id, watched.id}
+    end
+
+    test "has watched a TV show once every aired episode is watched" do
+      [watched, watching, actor] = generate_many(user(), 3)
+
+      # Season 1 has aired, season 2 hasn't
+      tv_show =
+        generate(
+          tv_show(
+            num_seasons: 2,
+            episodes_per_season: 2,
+            start_date: Date.shift(Date.utc_today(), year: -2)
+          )
+        )
+
+      identity = ContentIdentity.from_content(tv_show)
+
+      History.mark_content_watched!(identity, %{season_number: 1, episode_number: 1},
+        actor: watching
+      )
+
+      History.mark_content_watched!(identity, %{season_number: 1}, actor: watched)
+
+      assert [
+               %Watcher{user: %{id: watched_id}, status: :completed},
+               %Watcher{user: %{id: watching_id}, status: :in_progress}
+             ] = History.list_watchers!(identity, actor: actor)
+
+      assert {watched_id, watching_id} == {watched.id, watching.id}
+    end
+
+    test "is empty for a Content WatchClub doesn't have" do
+      assert [] = History.list_watchers!(ContentIdentity.for_movie(42), actor: generate(user()))
     end
   end
 
