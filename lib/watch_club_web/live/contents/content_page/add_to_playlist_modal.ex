@@ -19,7 +19,12 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
 
   def add_to_playlist_modal(assigns) do
     ~H"""
-    <.modal id="add-to-playlist-modal" size="md" on_close={JS.push("close_add_to_playlist")}>
+    <.modal
+      id="add-to-playlist-modal"
+      size="md"
+      class="w-full"
+      on_close={JS.push("close_add_to_playlist")}
+    >
       <:title>{dgettext("playlists", "Add %{content} to a playlist", content: @title)}</:title>
       <:description>
         {dgettext("playlists", "Your playlists, and the shared playlists you can edit.")}
@@ -29,7 +34,7 @@ defmodule WatchClubWeb.Contents.ContentPage.AddToPlaylistModal do
         <li :for={playlist <- @playlists}>
           <label
             for={"in-playlist-#{playlist.id}"}
-            class="flex cursor-pointer items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover has-checked:bg-surface-selected has-focus-visible:bg-surface-hover"
+            class="flex cursor-pointer items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover has-checked:bg-surface-selected not-has-checked:has-focus-visible:bg-surface-hover"
           >
             <%!-- The dialog's surface is the raised one --%>
             <.playlist_summary playlist={playlist} tile_class="bg-surface-inset">

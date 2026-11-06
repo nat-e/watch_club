@@ -8,9 +8,11 @@ defmodule WatchClubWeb.Storybook.SplitView do
   def imports, do: [{WatchClubWeb.Components.UI.Button, [button: 1]}]
 
   # The layout's main column is the container it switches on
-  def template do
+  def template, do: main_column("w-full")
+
+  defp main_column(width) do
     """
-    <div class="@container/main h-96 w-full overflow-hidden text-text">
+    <div class="@container/main h-96 #{width} overflow-hidden text-text">
       <.psb-variation/>
     </div>
     """
@@ -30,6 +32,13 @@ defmodule WatchClubWeb.Storybook.SplitView do
         description: "Something open: narrow screens show it instead of the list",
         attributes: %{open: true},
         slots: example_slots()
+      },
+      %Variation{
+        id: :wide,
+        description: "A wide main column: the list beside what's open",
+        attributes: %{open: true},
+        slots: example_slots(),
+        template: main_column("w-[60rem]")
       }
     ]
   end

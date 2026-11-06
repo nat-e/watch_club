@@ -42,9 +42,12 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
         <div class="flex min-w-0 flex-col gap-related">
           <h2
             id="playlist-name"
-            class="flex items-center gap-related font-heading text-2xl font-semibold @3xl:text-3xl"
+            class="flex items-start gap-related font-heading text-2xl font-semibold @3xl:text-3xl"
           >
-            <.lucide_icon name={@playlist.icon} class="size-icon-lg shrink-0 text-text-muted" />
+            <%!-- As tall as a line, so the icon stays beside the first one when the name wraps --%>
+            <span class="flex h-[1lh] shrink-0 items-center">
+              <.lucide_icon name={@playlist.icon} class="size-icon-lg text-text-muted" />
+            </span>
             <span class="min-w-0 break-words">{@playlist.name}</span>
           </h2>
           <div class="flex flex-wrap items-center gap-x-group gap-y-related text-sm text-text-muted">
