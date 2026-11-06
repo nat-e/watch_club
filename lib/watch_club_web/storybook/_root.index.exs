@@ -29,4 +29,6 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("segmented_control"),
     do: [name: "Segmented control", icon: {:fa, "grip-lines"}, index: 17]
+
+  def entry("filter_chip"), do: [name: "Filter chip", icon: {:fa, "filter"}, index: 18]
 end
