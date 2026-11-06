@@ -10,3 +10,38 @@
 #
 msgid ""
 msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Almost ready"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Completed"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Downloading"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Failed"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not released"
+msgstr ""
+
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Queued"
+msgstr ""

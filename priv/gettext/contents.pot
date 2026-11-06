@@ -41,11 +41,6 @@ msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
-msgid "Added to your requests."
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
 msgid "Could not request this right now."
 msgstr ""
 
@@ -103,26 +98,6 @@ msgstr ""
 #: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "You need to create a List before adding content to it"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Downloading"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Error"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Not Released"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Searching"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
@@ -266,4 +241,29 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{username}'s request"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "A deleted user's request"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when it's ready"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "You'll be told when %{title} is ready. It's in your Requests."
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "You'll be told when it's ready"
 msgstr ""

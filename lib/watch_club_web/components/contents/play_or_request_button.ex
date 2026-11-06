@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   @moduledoc """
-  Play for a Content with Media, or Request, with the state of the actor's Content Request.
-  `PlayOrRequestButtonLive` loads what it shows and makes the request.
+  Play for a Content with Media. Otherwise Request, or the status of the Content's Content
+  Request, with Get Notified when the actor isn't one of its Request Subscribers.
+  `PlayOrRequestButtonLive` loads what it shows, makes the request and gets the actor notified.
   """
   use WatchClubWeb, :component
 
@@ -13,9 +14,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
 
   attr :request, ContentRequest,
     default: nil,
-    doc: "the actor's Content Request, with its `best_source_request`"
+    doc:
+      "the Content's Content Request, with its `status`, `actor_subscriber?`, `requested_by` and `best_source_request`"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
+  attr :on_get_notified, :any, default: nil, doc: "the event or JS commands of Get Notified"
 
   attr :on_episodes, :any,
     default: nil,
@@ -32,8 +35,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     values: ~w(button round),
     default: "button",
     doc: "round: only Play, with only its icon, over a poster"
-
-  @in_progress_statuses [:searching, :downloading, :downloaded]
 
   # Only Play, when there's something to play
   def play_or_request_button(%{variant: "round"} = assigns) do
@@ -53,21 +54,60 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  def play_or_request_button(%{has_media?: false} = assigns) do
+  def play_or_request_button(%{has_media?: false, play_only: true} = assigns), do: ~H""
+
+  def play_or_request_button(%{has_media?: false, request: nil} = assigns) do
     ~H"""
     <.button
-      :if={!@play_only}
       id={"#{@id}-request-button"}
       size={@size}
-      variant="primary"
-      emphasis
+      variant="secondary"
       phx-click={@on_request}
-      disabled={@request != nil}
       class="w-full"
     >
-      <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
-      {request_label(@request)}
+      <:icon><Lucideicons.download /></:icon>
+      {dgettext("contents", "Request")}
     </.button>
+    """
+  end
+
+  # The status opens My Requests, and fills up while it downloads. A ringing bell shows that the
+  # actor will be told when it's ready; until then, a bell joined to it does Get Notified.
+  def play_or_request_button(%{has_media?: false} = assigns) do
+    ~H"""
+    <div class="flex w-full">
+      <.button
+        id={"#{@id}-request-status"}
+        size={@size}
+        variant="secondary"
+        navigate={~p"/my-requests"}
+        title={status_tooltip(@request)}
+        class={[
+          "relative isolate min-w-0 flex-1 overflow-hidden",
+          !@request.actor_subscriber? && "rounded-r-none!"
+        ]}
+      >
+        <:icon :if={@request.actor_subscriber?}><Lucideicons.bell_ring /></:icon>
+        <span
+          :if={@request.status in [:downloading, :importing]}
+          class="absolute inset-y-0 left-0 -z-10 bg-surface-selected"
+          style={"width: #{@request.best_source_request.download_progress}%"}
+        ></span>
+        {ContentRequestStatus.translated_label(@request.status)}
+      </.button>
+      <.button
+        :if={!@request.actor_subscriber?}
+        id={"#{@id}-get-notified-button"}
+        size={caret_size(@size)}
+        variant="secondary"
+        phx-click={@on_get_notified}
+        aria-label={dgettext("contents", "Get notified when it's ready")}
+        title={dgettext("contents", "Get notified when it's ready")}
+        class="-ml-px rounded-l-none!"
+      >
+        <Lucideicons.bell />
+      </.button>
+    </div>
     """
   end
 
@@ -137,60 +177,17 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  # As tall as Play
+  # As tall as the button it's joined to
   defp caret_size("sm"), do: "icon-sm"
   defp caret_size("md"), do: "icon"
   defp caret_size("lg"), do: "icon-lg"
 
-  defp icon_spin(nil), do: false
+  defp status_tooltip(%ContentRequest{actor_subscriber?: true}),
+    do: dgettext("contents", "You'll be told when it's ready")
 
-  defp icon_spin(%ContentRequest{best_source_request: nil}), do: true
+  defp status_tooltip(%ContentRequest{requested_by: nil}),
+    do: dgettext("contents", "A deleted user's request")
 
-  defp icon_spin(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}}),
-    do: status in @in_progress_statuses
-
-  defp request_icon(nil), do: :download
-
-  defp request_icon(%ContentRequest{best_source_request: nil}), do: :loader_circle
-
-  defp request_icon(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
-       when status in @in_progress_statuses, do: :loader_circle
-
-  defp request_icon(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :not_released}
-       }),
-       do: :calendar
-
-  defp request_icon(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :needs_attention}
-       }),
-       do: :triangle_alert
-
-  defp request_label(nil), do: dgettext("contents", "Request")
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :searching}
-       }) do
-    dgettext("contents", "Searching")
-  end
-
-  defp request_label(%ContentRequest{best_source_request: nil}),
-    do: dgettext("contents", "Downloading")
-
-  defp request_label(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
-       when status in @in_progress_statuses do
-    dgettext("contents", "Downloading")
-  end
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :not_released}
-       }) do
-    dgettext("contents", "Not Released")
-  end
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :needs_attention}
-       }) do
-    dgettext("contents", "Error")
-  end
+  defp status_tooltip(%ContentRequest{requested_by: %User{username: username}}),
+    do: dgettext("contents", "%{username}'s request", username: username)
 end

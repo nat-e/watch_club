@@ -321,3 +321,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "The media type is required"
 msgstr ""
+
+#: lib/watch_club/requests/content_request.ex
+#, elixir-autogen, elixir-format
+msgid "This has already been requested"
+msgstr ""

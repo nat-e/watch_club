@@ -1,7 +1,7 @@
 defmodule WatchClub.Requests.ContentRequestTest do
   @moduledoc """
-  Verifies the read model derived for a ContentRequest (`percent_imported`,
-  `status_group`, `best_source_request`) and that it stays in sync as the
+  Verifies the Content Request functions, the read model derived for a ContentRequest
+  (`percent_imported`, `status_group`, `best_source_request`) and that it stays in sync as the
   request's dependencies change — media imported, Media Source Request created.
 
   Servarr (Radarr / Sonarr) is faked globally by `Servarr.TestStub`, so the
@@ -16,8 +16,68 @@ defmodule WatchClub.Requests.ContentRequestTest do
   alias WatchClub.Contents.ContentIdentity
   alias WatchClub.MediaCatalog
   alias WatchClub.Requests
-  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
+  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest, RequestSubscriber}
   alias WatchClub.SystemActor
+
+  describe "request_content/*" do
+    test "makes the Content's only Content Request, with the User as its first Request Subscriber" do
+      user = generate(user())
+      movie = generate(movie())
+
+      request =
+        Requests.request_content!(ContentIdentity.from_content(movie),
+          load: [:subscribers],
+          actor: user
+        )
+
+      assert request.requested_by_id == user.id
+      assert [%RequestSubscriber{user_id: subscriber_id}] = request.subscribers
+      assert subscriber_id == user.id
+    end
+
+    test "fails when the Content already has a Content Request" do
+      movie = generate(movie())
+      generate(content_request(generate(user()), movie))
+
+      Requests.request_content(ContentIdentity.from_content(movie), actor: generate(user()))
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Changes.InvalidAttribute{field: :content_id} -> true
+        _ -> false
+      end)
+    end
+  end
+
+  describe "list_current_user_content_requests/*" do
+    test "lists the Content Requests the User is a Request Subscriber of" do
+      user = generate(user())
+      subscribed = generate(content_request(generate(user()), generate(movie())))
+      generate(request_subscriber(user, subscribed))
+      # Made by the User, who isn't one of its Request Subscribers
+      generate(content_request(user, generate(movie())))
+
+      assert [%ContentRequest{id: id}] = Requests.list_current_user_content_requests!(actor: user)
+      assert id == subscribed.id
+    end
+  end
+
+  describe "delete_content_request/*" do
+    test "the Instance Administrator deletes a Content Request" do
+      admin = generate(administrator())
+      request = generate(content_request(generate(user()), generate(movie())))
+
+      Requests.delete_content_request!(request, actor: admin)
+
+      assert {:error, _} = Ash.get(ContentRequest, request.id, authorize?: false)
+    end
+
+    test "the User who made it can't delete it" do
+      user = generate(user())
+      request = generate(content_request(user, generate(movie())))
+
+      Requests.delete_content_request(request, actor: user)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
 
   describe "with no requestable media source" do
     test "updates movie when media is imported" do
@@ -40,7 +100,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
 
       Oban.drain_queue(queue: :media_source_requests)
 
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:user:#{user.id}")
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       # Import a video for the movie
       MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
@@ -91,7 +151,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
 
       Oban.drain_queue(queue: :media_source_requests)
 
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:user:#{user.id}")
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       # Import the first episode
       MediaCatalog.create_or_update_video!(media_episode_input(episode1.id),
@@ -172,7 +232,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
         status_group: :in_progress
       } = Ash.reload!(request, load: [:percent_imported, :status_group], actor: user)
 
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:user:#{user.id}")
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       # Importing a video completes the request
       MediaCatalog.create_or_update_video!(media_movie_input(movie.id),

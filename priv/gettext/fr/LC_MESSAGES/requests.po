@@ -126,12 +126,6 @@ msgid "Browse movies and shows to request something for your club."
 msgstr "Parcourez les films et séries pour faire une demande pour votre club."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Cancel request"
-msgstr "Annuler la demande"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Filter by content type"
@@ -184,3 +178,9 @@ msgstr "Tri : %{sort}"
 #, elixir-autogen, elixir-format
 msgid "Try clearing some filters, or browse content to add a request."
 msgstr "Essayez d'effacer des filtres, ou parcourez les contenus pour faire une demande."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified"
+msgstr "Ne plus être prévenu"

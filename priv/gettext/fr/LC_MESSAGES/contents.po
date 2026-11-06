@@ -47,12 +47,6 @@ msgstr "Saison %{number}"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
-msgid "Added to your requests."
-msgstr "Ajouté à vos demandes."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
 msgid "Could not request this right now."
 msgstr "Impossible de faire cette demande pour le moment."
 
@@ -122,30 +116,6 @@ msgstr "Ajouter %{title} à une liste"
 #, elixir-autogen, elixir-format
 msgid "You need to create a List before adding content to it"
 msgstr "Vous devez créer une liste avant d'y ajouter du contenu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Downloading"
-msgstr "Téléchargement"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Error"
-msgstr "Erreur"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Not Released"
-msgstr "Pas encore sorti"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Searching"
-msgstr "Recherche"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
@@ -317,3 +287,33 @@ msgstr "Pas encore dans la bibliothèque"
 #, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr "Épisode %{number} vu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{username}'s request"
+msgstr "Demande de %{username}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "A deleted user's request"
+msgstr "Demande d'un utilisateur supprimé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when it's ready"
+msgstr "Être prévenu quand c'est prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "You'll be told when %{title} is ready. It's in your Requests."
+msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "You'll be told when it's ready"
+msgstr "Vous serez prévenu quand ce sera prêt"

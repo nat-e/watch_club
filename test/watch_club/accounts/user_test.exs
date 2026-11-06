@@ -3,6 +3,7 @@ defmodule WatchClub.Accounts.UserTest do
 
   alias WatchClub.Accounts.{InvitationCode, User}
   alias WatchClub.Clubs.Membership
+  alias WatchClub.Requests.ContentRequest
 
   import WatchClub.Accounts
 
@@ -282,6 +283,18 @@ defmodule WatchClub.Accounts.UserTest do
 
       assert Ash.get(User, member.id, authorize?: false) |> elem(0) == :error
       assert Ash.get(Membership, membership.id, authorize?: false) |> elem(0) == :error
+    end
+
+    test "keeps the user's Content Requests, as from a deleted User", %{
+      admin: admin,
+      member: member
+    } do
+      request = generate(content_request(member, generate(movie())))
+
+      assert :ok = destroy_user!(member, actor: admin)
+
+      assert %ContentRequest{requested_by_id: nil} =
+               Ash.get!(ContentRequest, request.id, authorize?: false)
     end
 
     test "deleting a user sends a memberships:club:<club_id> pubsub event", %{

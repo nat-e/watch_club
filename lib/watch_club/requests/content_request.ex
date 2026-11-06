@@ -1,6 +1,9 @@
 defmodule WatchClub.Requests.ContentRequest do
   @moduledoc """
-  A user's request to make a piece of `Content` available on the Watch Club instance.
+  A request to make a piece of `Content` available on the Watch Club instance, for everybody.
+
+  A Content has at most one, made by the first User who asks. That User becomes its first
+  `RequestSubscriber`, and only its Request Subscribers are told when it becomes playable.
 
   If the instance has some requestable Media Sources configured (Radarr, Sonarr...)
   creating a Request will automatically create one `Media Source Request` per source (if it did not
@@ -17,6 +20,8 @@ defmodule WatchClub.Requests.ContentRequest do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   import Ash.Expr
 
   alias WatchClub.Accounts.User
@@ -25,8 +30,10 @@ defmodule WatchClub.Requests.ContentRequest do
 
   alias WatchClub.Requests.{
     ContentRequestSort,
+    ContentRequestStatus,
     ContentRequestStatusGroup,
-    MediaSourceRequest
+    MediaSourceRequest,
+    RequestSubscriber
   }
 
   postgres do
@@ -34,24 +41,28 @@ defmodule WatchClub.Requests.ContentRequest do
     repo WatchClub.Repo
 
     references do
-      reference :user, on_delete: :delete
+      reference :requested_by, on_delete: :nilify
       reference :content, on_delete: :delete
       reference :best_source_request, on_delete: :nilify
     end
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy]
 
     create :request do
-      upsert? true
-      upsert_identity :unique_user_content
+      description "Makes the Content's only Content Request, with the actor as its first Request Subscriber."
 
       argument :content_identity, WatchClub.Contents.ContentIdentity, allow_nil?: false
 
-      change relate_actor(:user)
+      change relate_actor(:requested_by)
       change EnsureContentExists
       change CreateMediaSourceRequests
+
+      # The Request Subscriber's own create relates the actor
+      change fn changeset, _context ->
+        Ash.Changeset.manage_relationship(changeset, :subscribers, [%{}], type: :create)
+      end
     end
 
     update :update do
@@ -62,7 +73,7 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     read :for_current_user do
-      description "The acting user's own Content Requests, for the My Requests page."
+      description "The Content Requests the actor is a Request Subscriber of, for the My Requests page."
 
       argument :content_type, :atom do
         allow_nil? true
@@ -76,6 +87,8 @@ defmodule WatchClub.Requests.ContentRequest do
       end
 
       pagination keyset?: true, default_limit: 25, required?: false
+
+      filter expr(exists(subscribers, user_id == ^actor(:id)))
 
       prepare build(filter: expr(content.type == ^arg(:content_type))) do
         where present(:content_type)
@@ -91,18 +104,6 @@ defmodule WatchClub.Requests.ContentRequest do
         query |> ContentRequestSort.sort_query(Ash.Query.get_argument(query, :sort))
       end
     end
-
-    read :for_content do
-      argument :content_id, :uuid, allow_nil?: false
-
-      filter expr(content_id == ^arg(:content_id))
-    end
-
-    destroy :cancel do
-      primary? true
-
-      description "Remove the acting user's own request. Touches no Media, Library Item, or Media Source Request."
-    end
   end
 
   policies do
@@ -112,16 +113,13 @@ defmodule WatchClub.Requests.ContentRequest do
       forbid_if always()
     end
 
-    # Reads are filtered to the actor's own requests; the Instance
-    # Administrator can inspect all.
     policy action_type(:read) do
-      authorize_if expr(user_id == ^actor(:id))
-      authorize_if WatchClub.Checks.IsSystemActor
-      authorize_if actor_attribute_equals(:administrator?, true)
+      description "Every User sees every Content Request"
+      authorize_if always()
     end
 
     policy action_type(:create) do
-      description "Any authenticated user can request content for themselves"
+      description "Any authenticated user can request content"
       authorize_if always()
     end
 
@@ -131,9 +129,7 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     policy action_type(:destroy) do
-      description "A user can cancel their own request; the Instance Administrator can cancel any"
-      authorize_if expr(user_id == ^actor(:id))
-      authorize_if WatchClub.Checks.IsSystemActor
+      description "Only the Instance Administrator can delete a Content Request"
       authorize_if actor_attribute_equals(:administrator?, true)
     end
   end
@@ -142,18 +138,18 @@ defmodule WatchClub.Requests.ContentRequest do
     module Phoenix.PubSub
     name WatchClub.PubSub
 
-    # Publish to the User's content topic
+    # Publish to the global content topic, since every User sees every Content Request
     # We add :content_id and :content_identity in the metadata to make
     # it easy for subscribers to know which media this is related to
-    publish_all :create, ["content", "user", :user_id],
+    publish_all :create, ["content", "global"],
       load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
-    publish_all :update, ["content", "user", :user_id],
+    publish_all :update, ["content", "global"],
       load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
-    publish_all :destroy, ["content", "user", :user_id],
+    publish_all :destroy, ["content", "global"],
       load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 
@@ -176,8 +172,9 @@ defmodule WatchClub.Requests.ContentRequest do
   end
 
   relationships do
-    belongs_to :user, User do
-      allow_nil? false
+    # Nil once that User is deleted
+    belongs_to :requested_by, User do
+      allow_nil? true
       attribute_writable? false
     end
 
@@ -191,6 +188,8 @@ defmodule WatchClub.Requests.ContentRequest do
     belongs_to :best_source_request, MediaSourceRequest do
       allow_nil? true
     end
+
+    has_many :subscribers, RequestSubscriber
   end
 
   calculations do
@@ -227,40 +226,60 @@ defmodule WatchClub.Requests.ContentRequest do
                 end
               )
 
-    calculate :status_group,
-              ContentRequestStatusGroup,
+    calculate :status,
+              ContentRequestStatus,
               expr(
                 cond do
                   percent_imported == 100.0 ->
                     :completed
 
                   is_nil(best_source_request) ->
-                    :in_progress
+                    :queued
 
                   best_source_request.status == :not_released ->
                     :not_released
 
                   best_source_request.status == :needs_attention ->
-                    :needs_attention
+                    :failed
 
                   # If it has been more than 5 minutes and we're still searching, we consider
                   # that the content has not been found
                   best_source_request.status == :searching and inserted_at < ago(5, :minute) ->
                     :not_found
 
-                  best_source_request.status in [
-                    :searching,
-                    :downloading,
-                    :downloaded
-                  ] ->
-                    :in_progress
+                  best_source_request.status == :searching ->
+                    :queued
+
+                  best_source_request.status == :downloading ->
+                    :downloading
+
+                  best_source_request.status == :downloaded ->
+                    :importing
                 end
               ) do
       public? true
     end
+
+    calculate :status_group,
+              ContentRequestStatusGroup,
+              expr(
+                cond do
+                  status in [:queued, :downloading, :importing] -> :in_progress
+                  status == :completed -> :completed
+                  status == :not_released -> :not_released
+                  status == :not_found -> :not_found
+                  status == :failed -> :needs_attention
+                end
+              ) do
+      public? true
+    end
+
+    calculate :actor_subscriber?, :boolean, expr(exists(subscribers, user_id == ^actor(:id)))
   end
 
   identities do
-    identity :unique_user_content, [:user_id, :content_id]
+    identity :unique_content, [:content_id] do
+      message dgettext_noop("errors", "This has already been requested")
+    end
   end
 end

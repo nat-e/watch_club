@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
   use PhoenixStorybook.Story, :component
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
   alias WatchClubWeb.Components.Contents.PlayOrRequestButton
 
@@ -62,18 +63,30 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       },
       %VariationGroup{
         id: :request,
-        description: "Request, then the state of the Content Request",
+        description:
+          "Request, then the Content Request's status, for one of its Request Subscribers",
         template: group_template(),
         variations: [
           %Variation{
             id: :request,
             attributes: %{id: "request", has_media?: false, play_label: "Play"}
           },
-          request_variation(:queued, nil),
-          request_variation(:searching, :searching),
-          request_variation(:downloading, :downloading),
-          request_variation(:not_released, :not_released),
-          request_variation(:needs_attention, :needs_attention)
+          request_variation(:queued, :queued, true),
+          request_variation(:downloading, :downloading, true),
+          request_variation(:importing, :importing, true),
+          request_variation(:not_released, :not_released, true),
+          request_variation(:not_found, :not_found, true),
+          request_variation(:failed, :failed, true)
+        ]
+      },
+      %VariationGroup{
+        id: :get_notified,
+        description:
+          "Get Notified, for the other Users, with who made the Content Request in the status' tooltip: lea, or a deleted User",
+        template: group_template(),
+        variations: [
+          request_variation(:requested_by_user, :downloading, false),
+          request_variation(:requested_by_deleted_user, :queued, false, nil)
         ]
       },
       %Variation{
@@ -117,8 +130,8 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
     """
   end
 
-  # A Content Request whose best Media Source Request has this status, or has none yet
-  defp request_variation(id, status) do
+  # A Content Request with this status, at 40% while it downloads
+  defp request_variation(id, status, actor_subscriber?, requested_by \\ %User{username: "lea"}) do
     %Variation{
       id: id,
       attributes: %{
@@ -126,7 +139,12 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
         has_media?: false,
         play_label: "Play",
         request: %ContentRequest{
-          best_source_request: status && %MediaSourceRequest{status: status}
+          status: status,
+          actor_subscriber?: actor_subscriber?,
+          requested_by: requested_by,
+          best_source_request: %MediaSourceRequest{
+            download_progress: if(status == :importing, do: 100.0, else: 40.0)
+          }
         }
       }
     }

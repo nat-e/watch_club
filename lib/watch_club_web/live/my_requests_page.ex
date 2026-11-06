@@ -236,8 +236,8 @@ defmodule WatchClubWeb.MyRequestsPage do
     end
   end
 
-  def handle_event("cancel-request", %{"id" => id}, socket) do
-    Requests.cancel_content_request(id, actor: socket.assigns.current_user)
+  def handle_event("stop-getting-notified", %{"id" => id}, socket) do
+    Requests.stop_getting_notified!(id, actor: socket.assigns.current_user)
     {:noreply, socket}
   end
 
@@ -265,32 +265,45 @@ defmodule WatchClubWeb.MyRequestsPage do
     {:noreply, socket |> stream_delete(:requests, request)}
   end
 
-  # A ContentRequest has been been created or updated
+  # The User stopped getting notified
   def handle_info(
         %Notification{
-          data: %ContentRequest{} = request,
-          action: %{type: type}
+          data: %RequestSubscriber{content_request_id: content_request_id},
+          action: %{type: :destroy}
+        },
+        socket
+      ) do
+    {:noreply, socket |> stream_delete_by_dom_id(:requests, "request-#{content_request_id}")}
+  end
+
+  # A ContentRequest has been created or updated, or the User became one of its Request
+  # Subscribers. Every User gets the notifications of every ContentRequest, so this only
+  # shows the ones the User is a Request Subscriber of.
+  def handle_info(
+        %Notification{
+          resource: resource,
+          action: %{type: type},
+          metadata: %{content_id: content_id}
         },
         socket
       )
-      when type in [:create, :update] do
-    # We need to add :status_group to the fields in order to match the filters
-    request =
-      Ash.load!(request, @request_fields_to_load ++ [:status_group],
-        actor: socket.assigns.current_user
-      )
+      when (resource == ContentRequest and type in [:create, :update]) or
+             (resource == RequestSubscriber and type == :create) do
+    case Requests.get_current_user_request_for_content(content_id,
+           load: @request_fields_to_load,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, request} ->
+        if matches_filters?(request, socket) do
+          # Update it if it's already in the list, or add it at the beginning
+          {:noreply, socket |> stream_insert(:requests, request, at: 0)}
+        else
+          {:noreply, socket |> stream_delete(:requests, request)}
+        end
 
-    if matches_filters?(request, socket) do
-      # Update it if it's already in the list, or add it at the beginning
-      {:noreply,
-       socket
-       |> stream_insert(
-         :requests,
-         request,
-         at: 0
-       )}
-    else
-      {:noreply, socket |> stream_delete(:requests, request)}
+      # The User isn't one of its Request Subscribers
+      {:error, _} ->
+        {:noreply, socket}
     end
   end
 

@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   @moduledoc """
-  Loads the actor's `PlayOrRequestButton` for a Content, and makes the request.
+  Loads the actor's `PlayOrRequestButton` for a Content, makes the request and gets the actor
+  notified.
   """
   use WatchClubWeb, :live_component
 
@@ -20,8 +21,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   subscribed to the correct topics via `WatchClub.PubSub.subscribe_to_current_user_content_topics`.
 
   The button refreshes when Media have been added or removed from the Media center,
-  when the Content Request of the user for this content has changed, or when the
-  user's Watch Progress for this content has changed.
+  when the Content Request for this content or the user's Request Subscriber of it has
+  changed, or when the user's Watch Progress for this content has changed.
   """
   def handle_pubsub_message(
         %Notification{
@@ -30,7 +31,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         },
         %User{} = user
       )
-      when resource in [ContentRequest, Media, WatchProgress] do
+      when resource in [ContentRequest, RequestSubscriber, Media, WatchProgress] do
     send_update(__MODULE__,
       id: dom_id(identity),
       content_identity: identity,
@@ -71,6 +72,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         title={@title}
         request={@request}
         on_request={JS.push("request-content", target: @myself)}
+        on_get_notified={JS.push("get-notified", target: @myself)}
         on_episodes={@on_episodes}
         play_only={@play_only}
         size={@size}
@@ -93,7 +95,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
           :actor_next_medias_to_play,
           :actor_progress_status,
           implementation: %{load: [tv_show: [actor_next_episode: [:actor_progress_status]]]},
-          actor_request: [:best_source_request]
+          request: [:status, :actor_subscriber?, :requested_by, :best_source_request]
         ],
         actor: actor
       )
@@ -110,7 +112,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         play_href: play_href((content && content.actor_next_medias_to_play) || []),
         play_label: play_label(assigns.content_identity.type, content),
         title: content && content.implementation.best_localization.title,
-        request: (content && content.actor_request) || nil
+        request: content && content.request
       )
     end)
   end
@@ -119,16 +121,33 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   def handle_event("request-content", _params, socket) do
     case Requests.request_content(
            socket.assigns.content_identity,
+           load: [content: [:implementation]],
            actor: socket.assigns.current_user
          ) do
-      {:ok, _request} ->
-        {:noreply, put_flash(socket, :info, dgettext("contents", "Added to your requests."))}
+      {:ok, request} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :info,
+           told_when_ready(request.content.implementation.best_localization.title)
+         )}
 
       {:error, _error} ->
         {:noreply,
          put_flash(socket, :error, dgettext("contents", "Could not request this right now."))}
     end
   end
+
+  def handle_event("get-notified", _params, socket) do
+    Requests.get_notified!(socket.assigns.request.id, actor: socket.assigns.current_user)
+    {:noreply, put_flash(socket, :info, told_when_ready(socket.assigns.title))}
+  end
+
+  defp told_when_ready(title),
+    do:
+      dgettext("contents", "You'll be told when %{title} is ready. It's in your Requests.",
+        title: title
+      )
 
   defp play_label(:movie, %Content{actor_progress_status: :in_progress}),
     do: dgettext("contents", "Resume")

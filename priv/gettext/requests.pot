@@ -106,11 +106,6 @@ msgstr ""
 msgid "Browse movies and shows to request something for your club."
 msgstr ""
 
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Cancel request"
-msgstr ""
-
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Filter by content type"
@@ -154,4 +149,9 @@ msgstr ""
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Try clearing some filters, or browse content to add a request."
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified"
 msgstr ""
