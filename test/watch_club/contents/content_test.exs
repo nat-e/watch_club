@@ -321,8 +321,8 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  describe "get_library/*" do
-    test "returns the Movies and TV Shows with Media, most recently added first", %{
+  describe "get_contents_in_library/*" do
+    test "returns the Content with Media, most recently added first", %{
       member: member
     } do
       # Not in the Library
@@ -338,7 +338,7 @@ defmodule WatchClub.Contents.ContentTest do
       # A new episode doesn't move the TV Show
       add_episode_video!(tv_show, 1)
 
-      first_page = get_library!(page: [limit: 2], actor: member)
+      first_page = get_contents_in_library!(page: [limit: 2], actor: member)
       assert Enum.map(first_page.results, & &1.id) == [last_movie.id, tv_show.id]
 
       assert %{results: [%Content{id: first_movie_id}], more?: false} =
@@ -364,10 +364,15 @@ defmodule WatchClub.Contents.ContentTest do
       add_video!(generate(movie()).id)
 
       # Ignoring case and accents
-      assert [%Content{id: amelie_id}] = get_library!(%{query: "AMELIE"}, actor: member)
+      assert [%Content{id: amelie_id}] =
+               get_contents_in_library!(%{query: "AMELIE"}, actor: member)
+
       # In localized titles
-      assert [%Content{id: spirited_away_id}] = get_library!(%{query: "spirited"}, actor: member)
-      assert [%Content{id: money_heist_id}] = get_library!(%{query: "heist"}, actor: member)
+      assert [%Content{id: spirited_away_id}] =
+               get_contents_in_library!(%{query: "spirited"}, actor: member)
+
+      assert [%Content{id: money_heist_id}] =
+               get_contents_in_library!(%{query: "heist"}, actor: member)
 
       assert {amelie_id, spirited_away_id, money_heist_id} ==
                {amelie.id, spirited_away.id, money_heist.id}

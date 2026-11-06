@@ -185,7 +185,7 @@ defmodule WatchClubWeb.BrowsePage do
 
     {:ok, new_state, contents} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
-        Contents.get_library(load: @content_fields, page: page_options, actor: user)
+        Contents.get_contents_in_library(load: @content_fields, page: page_options, actor: user)
       end)
 
     socket
@@ -196,7 +196,7 @@ defmodule WatchClubWeb.BrowsePage do
   # A Content that joins the Library with a new Media goes first, one that leaves it goes, and the
   # others update in place if they're loaded.
   defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
-    case Contents.get_library!(
+    case Contents.get_contents_in_library!(
            query: [filter: [id: content_id]],
            load: @content_fields,
            actor: socket.assigns.current_user

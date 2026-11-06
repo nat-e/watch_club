@@ -30,7 +30,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
         context
       ) do
     library_page =
-      Contents.get_library!(
+      Contents.get_contents_in_library!(
         %{query: query},
         Ash.Context.to_opts(context,
           page: [limit: @library_page_size, offset: (page - 1) * @library_page_size, count: true],
