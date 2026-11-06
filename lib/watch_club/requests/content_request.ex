@@ -25,8 +25,9 @@ defmodule WatchClub.Requests.ContentRequest do
   import Ash.Expr
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Requests.Changes.{CreateMediaSourceRequests, EnsureContentExists}
+  alias WatchClub.Requests.Changes.CreateMediaSourceRequests
 
   alias WatchClub.Requests.{
     ContentRequestSort,

@@ -316,6 +316,26 @@ defmodule WatchClub.Accounts.UserTest do
                      500
     end
 
+    test "a deleted user's Messages and place in Conversations stay", %{
+      admin: admin,
+      member: member
+    } do
+      friend = generate(user())
+      conversation = generate(conversation(member, generate(movie()), [friend]))
+      generate(message(conversation, member))
+
+      assert :ok = destroy_user!(member, actor: admin)
+
+      assert %{recommended_by_id: nil, participants: participants, messages: messages} =
+               WatchClub.Conversations.get_conversation!(conversation.id,
+                 load: [:participants, :messages],
+                 actor: friend
+               )
+
+      assert participants |> Enum.map(& &1.user_id) |> Enum.sort() == Enum.sort([nil, friend.id])
+      assert Enum.map(messages, & &1.author_id) == [nil, nil]
+    end
+
     test "only the administrator can delete users", %{member: member} do
       other_user = generate(user())
 

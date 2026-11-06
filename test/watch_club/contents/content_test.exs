@@ -503,6 +503,18 @@ defmodule WatchClub.Contents.ContentTest do
       assert titles.(:oldest) == ["Casablanca", "Brazil", "Amélie"]
       assert titles.(:title) == ["Amélie", "Brazil", "Casablanca"]
     end
+
+    test "keeps the Content other Users recommended to the actor", %{member: member} do
+      [friend, stranger] = generate_many(user(), 2)
+      [recommended, recommended_by_member, recommended_to_stranger] = generate_many(movie(), 3)
+      Enum.each([recommended, recommended_by_member, recommended_to_stranger], &add_video!(&1.id))
+      generate(conversation(friend, recommended, [member]))
+      generate(conversation(member, recommended_by_member, [friend]))
+      generate(conversation(friend, recommended_to_stranger, [stranger]))
+
+      assert [%Content{id: id}] = get_contents_in_library!(%{recommended?: true}, actor: member)
+      assert id == recommended.id
+    end
   end
 
   describe "get_library_filter_options/*" do
