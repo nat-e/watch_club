@@ -285,7 +285,7 @@ A kind of story a **Movie** or **TV Show** tells, such as Drama or Comedy.
 _Avoid_: Category, tag
 
 **Rating**:
-How good people found a **Movie** or **TV Show**: its average score out of 10 on its **Metadata Provider**.
+How good people found a **Movie** or **TV Show**: the average of their votes out of 10 on its **Metadata Provider**.
 _Avoid_: Score, vote average, grade
 
 **Library**:

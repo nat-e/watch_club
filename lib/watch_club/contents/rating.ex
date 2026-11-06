@@ -1,7 +1,7 @@
 defmodule WatchClub.Contents.Rating do
   @moduledoc """
-  A Movie's or TV Show's Rating: TMDB's average score out of 10, to one decimal, so the number
-  people see is the one the filters compare. A score from too few votes isn't one.
+  A Movie's or TV Show's Rating: the average of its TMDB votes out of 10, to one decimal, so the
+  number people see is the one the filters compare. Too few votes give no Rating.
   """
 
   # Below it, a single vote of 10 would top Best rated

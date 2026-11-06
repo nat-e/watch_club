@@ -132,6 +132,21 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert %Content{rating: nil} = create_movie!("12", actor: generate(user()))
     end
+
+    test "rounds the rating to one decimal" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+
+        response =
+          "movie_details_11"
+          |> tmdb_fixture()
+          |> Map.merge(%{"id" => tmdb_id, "vote_average" => 7.96, "vote_count" => 25})
+
+        Req.Test.json(conn, response)
+      end)
+
+      assert %Content{rating: 8.0} = create_movie!("12", actor: generate(user()))
+    end
   end
 
   describe "create_tv_show/*" do

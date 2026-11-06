@@ -39,4 +39,4 @@ msgstr "Titre, de A à Z"
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Best rated"
-msgstr "Les mieux notés"
+msgstr "Mieux notés"

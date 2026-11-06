@@ -6,6 +6,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.TmdbBackdrop
+  import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.Rating
@@ -172,13 +173,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
         href={tmdb_url(@content_identity)}
         target="_blank"
         title={dgettext("contents", "See it on TMDB")}
-        class="inline-flex items-center gap-tight font-semibold text-text hover:underline"
+        class="inline-flex items-center gap-tight text-text hover:underline"
       >
-        <Lucideicons.star class="size-icon-sm fill-current text-warning" />
-        {WatchClub.Cldr.Number.to_string!(@rating,
-          fractional_digits: 1,
-          locale: UserLocale.to_cldr_locale_name(@locale)
-        )}
+        <.star_rating rating={@rating} locale={@locale} />
         <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
       </.link>
     </p>

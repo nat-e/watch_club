@@ -105,10 +105,11 @@ msgstr ""
 
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Any"
+msgid "Rating"
 msgstr ""
 
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Rating"
+msgctxt "rating"
+msgid "Any"
 msgstr ""

@@ -6,6 +6,7 @@ defmodule WatchClubWeb.BrowsePage do
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.ContentTypeIcon
+  import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
@@ -26,6 +27,8 @@ defmodule WatchClubWeb.BrowsePage do
     original_languages: [],
     min_rating: nil
   }
+  # The filters in More, which its button counts
+  @more_filters [:genres, :decades, :original_languages, :min_rating]
   # More's Rating choices besides Any, which keep the Content rated at least this
   @min_ratings [6, 7, 8]
 
@@ -145,14 +148,11 @@ defmodule WatchClubWeb.BrowsePage do
 
   # Opens the genres, decades, original languages and rating, with how many of them are on
   defp more_button(assigns) do
-    %{genres: genres, decades: decades, original_languages: languages, min_rating: min_rating} =
-      assigns.filters
-
     assigns =
       assign(
         assigns,
         :count,
-        Enum.count([genres, decades, languages, min_rating], &(&1 not in [[], nil]))
+        Enum.count(@more_filters, &(assigns.filters[&1] != @no_filters[&1]))
       )
 
     ~H"""
@@ -252,6 +252,32 @@ defmodule WatchClubWeb.BrowsePage do
           </.filter_chip>
         </div>
       </fieldset>
+      <fieldset role="radiogroup" class="flex min-w-0 flex-col gap-related">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Rating")} /></legend>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            id="filter-rating-any"
+            on={@filters.min_rating == nil}
+            radio
+            phx-click="change_filter"
+            phx-value-filter="rating"
+          >
+            {dpgettext("browse", "rating", "Any")}
+          </.filter_chip>
+          <.filter_chip
+            :for={min_rating <- @min_ratings}
+            id={"filter-rating-#{min_rating}"}
+            on={@filters.min_rating == min_rating}
+            radio
+            phx-click="change_filter"
+            phx-value-filter="rating"
+            phx-value-choice={min_rating}
+          >
+            <:icon><Lucideicons.star class="fill-current text-warning" /></:icon>
+            {dgettext("browse", "%{rating}+", rating: min_rating)}
+          </.filter_chip>
+        </div>
+      </fieldset>
       <fieldset :if={@options.original_languages != []} class="flex min-w-0 flex-col">
         <legend class="mb-related">
           <.text_label text={dgettext("browse", "Original language")} />
@@ -272,29 +298,6 @@ defmodule WatchClubWeb.BrowsePage do
           </span>
           <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
         </label>
-      </fieldset>
-      <fieldset class="flex min-w-0 flex-col">
-        <legend class="mb-related"><.text_label text={dgettext("browse", "Rating")} /></legend>
-        <div
-          role="radiogroup"
-          aria-label={dgettext("browse", "Rating")}
-          class="flex flex-wrap gap-related"
-        >
-          <.filter_chip
-            :for={min_rating <- [nil | @min_ratings]}
-            id={"filter-rating-#{min_rating || "any"}"}
-            on={@filters.min_rating == min_rating}
-            radio
-            phx-click="change_filter"
-            phx-value-filter="rating"
-            phx-value-choice={min_rating}
-          >
-            <:icon :if={min_rating}><Lucideicons.star class="fill-current text-warning" /></:icon>
-            {if min_rating,
-              do: dgettext("browse", "%{rating}+", rating: min_rating),
-              else: dgettext("browse", "Any")}
-          </.filter_chip>
-        </div>
       </fieldset>
     </.modal>
     """
@@ -325,13 +328,12 @@ defmodule WatchClubWeb.BrowsePage do
         >
           <span class="line-clamp-3 text-sm font-semibold text-white">{@title}</span>
           <span class="flex items-center gap-related text-xs text-white/80">
-            <span :if={@content.rating} class="inline-flex items-center gap-tight font-semibold">
-              <Lucideicons.star class="size-icon-sm fill-current text-warning" />
-              {WatchClub.Cldr.Number.to_string!(@content.rating,
-                fractional_digits: 1,
-                locale: UserLocale.to_cldr_locale_name(@current_user.settings.locale)
-              )}
-            </span>
+            <.star_rating
+              :if={@content.rating}
+              rating={@content.rating}
+              locale={@current_user.settings.locale}
+              class="text-white"
+            />
             <span
               :if={@content.original_language}
               class="text-base leading-none"

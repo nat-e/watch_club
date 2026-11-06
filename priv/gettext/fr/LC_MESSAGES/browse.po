@@ -124,11 +124,12 @@ msgstr "%{rating}+"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Any"
-msgstr "Toutes"
+msgid "Rating"
+msgstr "Note"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "Rating"
-msgstr "Note"
+msgctxt "rating"
+msgid "Any"
+msgstr "Toutes"
