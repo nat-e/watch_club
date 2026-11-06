@@ -47,6 +47,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
 
   def modal(assigns) do
     ~H"""
+    <%!-- A sheet's `max-w-none!` beats the sizes' `sm:` max widths between the two breakpoints --%>
     <dialog
       id={@id}
       open={true}
@@ -56,18 +57,15 @@ defmodule WatchClubWeb.Components.UI.Modal do
       aria-describedby={@description != [] && "#{@id}-description"}
       data-slot="modal"
       data-on-close={@on_close}
-      class={
-        [
-          "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
-          @size == "sm" && "sm:max-w-md",
-          @size == "md" && "sm:max-w-lg",
-          @size == "lg" && "sm:max-w-2xl",
-          # `!`, or the sizes' `sm:` max widths win between the two breakpoints
-          @sheet &&
-            "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
-          @class
-        ]
-      }
+      class={[
+        "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+        @size == "sm" && "sm:max-w-md",
+        @size == "md" && "sm:max-w-lg",
+        @size == "lg" && "sm:max-w-2xl",
+        @sheet &&
+          "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
+        @class
+      ]}
       phx-hook=".Modal"
       phx-mounted={JS.ignore_attributes("open")}
       {@rest}
