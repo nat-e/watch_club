@@ -8,11 +8,11 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
   - Club: all members of a Club (e.g. a Content added to the Club's library)
   - Global: both scopes nil (not used yet)
 
-  FeedEventScope is thin: it carries the scope, a denormalized `content` key, the
-  `group_key` of its Feed Entry (see `WatchClub.ActivityFeed.FeedEntry`), and a nullable FK to
-  exactly one event (enforced by a DB check constraint). The `event` calculation resolves the
-  populated event. Deleting an event cascade-deletes its scopes via the per-type FK
-  `on_delete: :delete` — this replaces the previous shared-PK + trigger machinery.
+  FeedEventScope is thin: it carries the scope, the `group_key` of its Feed Entry (see
+  `WatchClub.ActivityFeed.FeedEntry`), and a nullable FK to exactly one event (enforced by a DB
+  check constraint). The `event` calculation resolves the populated event. Deleting an event
+  cascade-deletes its scopes via the per-type FK `on_delete: :delete` — this replaces the
+  previous shared-PK + trigger machinery.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -36,7 +36,6 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
   alias WatchClub.Clubs.Checks.ActorIsClubMemberFilter
   alias WatchClub.Clubs.Club
-  alias WatchClub.Contents.Content
 
   postgres do
     table "activity_feed_scopes"
@@ -46,9 +45,6 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
       # Cascade deletes the scope when its scope object gets deleted
       reference :scope_user, on_delete: :delete
       reference :scope_club, on_delete: :delete
-
-      # Denormalized selection key, cascades from the Content
-      reference :content, on_delete: :delete
 
       # Delete the scope when its event get deleted
       reference :club_created_event, on_delete: :delete
@@ -84,7 +80,7 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
 
     create :create do
       primary? true
-      accept [:scope_user_id, :scope_club_id, :content_id]
+      accept [:scope_user_id, :scope_club_id]
 
       argument :group, :string do
         allow_nil? false
@@ -143,10 +139,6 @@ defmodule WatchClub.ActivityFeed.FeedEventScope do
     # A scope concerns either a single User, all members of a Club, or all Users (both nil, unused yet).
     belongs_to :scope_user, User, allow_nil?: true
     belongs_to :scope_club, Club, allow_nil?: true
-
-    # Denormalized key of the event's Content. Nil for events without a Content
-    # (club_created, library_created, member_added).
-    belongs_to :content, Content, allow_nil?: true
 
     # Polymorphism: exactly one is set (enforced by the check constraint). Accessed via :event.
     belongs_to :club_created_event, ClubCreatedEvent, allow_nil?: true

@@ -79,12 +79,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
 
         %{
           library_item_id: library_item.id,
-          scopes:
-            club_event_scope(
-              club_id,
-              "added:#{context.actor.id}:#{club_id}",
-              library_item.content_id
-            )
+          scopes: club_event_scope(club_id, "added:#{context.actor.id}:#{club_id}")
         }
       end,
       context,
@@ -120,7 +115,7 @@ defmodule WatchClub.ActivityFeed.Changes.CreateActivityFeedEvent do
   end
 
   # The group says who did what, see SetGroupKey
-  defp club_event_scope(club_id, group, content_id \\ nil) do
-    [%{scope_club_id: club_id, content_id: content_id, group: group}]
+  defp club_event_scope(club_id, group) do
+    [%{scope_club_id: club_id, group: group}]
   end
 end
