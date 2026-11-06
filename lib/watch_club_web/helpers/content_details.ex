@@ -5,8 +5,19 @@ defmodule WatchClubWeb.Helpers.ContentDetails do
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
+  alias WatchClub.Contents
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClubWeb.Helpers.Time
+
+  @doc """
+  The Content's details from TMDB.
+  """
+  def get_details(%ContentIdentity{type: :movie, external_id: id}, actor),
+    do: Contents.get_movie_details(id, actor: actor)
+
+  def get_details(%ContentIdentity{type: :tv_show, external_id: id}, actor),
+    do: Contents.get_tv_show_details(id, actor: actor)
 
   def title(%MovieDetailsResponse{title: title}), do: title
   def title(%TvDetailsResponse{name: name}), do: name

@@ -1,9 +1,9 @@
-defmodule WatchClubWeb.Storybook.RecommendationNote do
+defmodule WatchClubWeb.Storybook.RecommendationText do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClubWeb.Components.Conversations.RecommendationNote
+  alias WatchClubWeb.Components.Conversations.RecommendationText
 
-  def function, do: &RecommendationNote.recommendation_note/1
+  def function, do: &RecommendationText.recommendation_text/1
 
   def variations do
     [

@@ -152,4 +152,4 @@ msgstr[1] "De %{name} et %{count} autres"
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended to me"
-msgstr "Qu’on m’a recommandés"
+msgstr "Recommandés pour moi"

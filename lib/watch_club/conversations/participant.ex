@@ -1,7 +1,7 @@
 defmodule WatchClub.Conversations.Participant do
   @moduledoc """
   A User in a Conversation, and how far they have read it: the Messages after their
-  `last_read_message` are unread for them.
+  `last_read_message`, by someone else, are unread for them.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -9,6 +9,8 @@ defmodule WatchClub.Conversations.Participant do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
+
+  use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Accounts.User
   alias WatchClub.Conversations.{Conversation, Message}
@@ -34,7 +36,7 @@ defmodule WatchClub.Conversations.Participant do
 
     create :create do
       description "Recommend Content adds the Participants when it starts a Conversation"
-      accept [:conversation_id, :user_id, :last_read_message_id]
+      accept [:conversation_id, :user_id]
     end
 
     update :mark_read do
@@ -52,7 +54,7 @@ defmodule WatchClub.Conversations.Participant do
 
     policy action_type(:read) do
       description "Participants see who else is in their Conversations"
-      authorize_if expr(exists(conversation.participants, user_id == ^actor(:id)))
+      authorize_if can_read(:conversation)
     end
 
     policy action(:mark_read) do
@@ -65,10 +67,18 @@ defmodule WatchClub.Conversations.Participant do
     module Phoenix.PubSub
     name WatchClub.PubSub
 
-    # The User's pages subscribe to the new Conversation
-    publish :create, ["user", :user_id]
+    # The User's pages subscribe to the new Conversation. The metadata says its Content.
+    publish :create, ["user", :user_id],
+      load: [conversation: [:content_id]],
+      transform: &add_content_id_to_metadata/1
+
     # The User's other pages update their unread counts
     publish :mark_read, ["user", :user_id]
+
+    defp add_content_id_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      content_id = notification.data.conversation.content_id
+      %{notification | metadata: Map.put(notification.metadata, :content_id, content_id)}
+    end
   end
 
   attributes do
@@ -87,9 +97,12 @@ defmodule WatchClub.Conversations.Participant do
   end
 
   aggregates do
-    # Message ids follow the time they're posted
+    # As `unread?/2`. Message ids follow the time they're posted.
     count :unread_count, [:conversation, :messages] do
-      filter expr(is_nil(parent(last_read_message_id)) or id > parent(last_read_message_id))
+      filter expr(
+               (is_nil(parent(last_read_message_id)) or id > parent(last_read_message_id)) and
+                 is_distinct_from(author_id, parent(user_id))
+             )
     end
 
     first :latest_message_id, [:conversation, :messages], :id do
@@ -98,6 +111,17 @@ defmodule WatchClub.Conversations.Participant do
   end
 
   identities do
-    identity :user_in_conversation, [:conversation_id, :user_id]
+    identity :user_in_conversation, [:conversation_id, :user_id] do
+      message dgettext_noop("errors", "This person is already in the conversation")
+    end
+  end
+
+  @doc """
+  Whether a Message is unread for the Participant: posted after the one they read last, by someone
+  else. As the `unread_count` aggregate.
+  """
+  def unread?(%__MODULE__{} = participant, %Message{} = message) do
+    message.author_id != participant.user_id and
+      (participant.last_read_message_id == nil or message.id > participant.last_read_message_id)
   end
 end

@@ -408,3 +408,9 @@ msgstr "Écrivez un message"
 #, elixir-autogen, elixir-format
 msgid "This has already been requested"
 msgstr "Cela a déjà été demandé"
+
+# AI-translated (Claude)
+#: lib/watch_club/conversations/participant.ex
+#, elixir-autogen, elixir-format
+msgid "This person is already in the conversation"
+msgstr "Cette personne est déjà dans la conversation"

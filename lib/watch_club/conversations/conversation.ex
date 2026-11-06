@@ -136,6 +136,5 @@ defmodule WatchClub.Conversations.Conversation do
 
   aggregates do
     max :last_message_at, :messages, :inserted_at
-    count :participant_count, :participants
   end
 end

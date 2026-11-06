@@ -319,11 +319,6 @@ msgstr ""
 msgid "Recommended to %{names}. The conversation is in your Inbox."
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Send it to people, with a note. It starts a conversation."
-msgstr ""
-
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Starts a conversation with %{name}."
@@ -352,4 +347,9 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "to %{recipients}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend it to people, with a message if you want. It starts a conversation."
 msgstr ""

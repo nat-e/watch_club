@@ -21,16 +21,14 @@ defmodule WatchClubWeb.Components.Conversations.Recipients do
       |> Enum.split_with(& &1)
 
     {you, others} = Enum.split_with(users, &(&1.id == assigns.current_user.id))
-    users = you ++ Enum.sort_by(others, & &1.username)
+    users = you ++ Enum.sort_by(others, & &1.username) ++ deleted
 
     names =
-      Enum.map(users, &if(&1 in you, do: dgettext("conversations", "you"), else: &1.username)) ++
-        Enum.map(deleted, fn _user -> username(nil) end)
+      Enum.map(users, &if(&1 in you, do: dgettext("conversations", "you"), else: username(&1)))
 
     assigns =
       assign(assigns,
-        avatars: Enum.map(users, &%{id: &1.id, name: &1.username}),
-        deleted?: deleted != [],
+        avatars: Enum.map(users, &%{id: &1 && &1.id, name: username(&1)}),
         names:
           WatchClub.Cldr.List.to_string!(names,
             locale: UserLocale.to_cldr_locale_name(assigns.current_user.settings.locale)
@@ -39,15 +37,14 @@ defmodule WatchClubWeb.Components.Conversations.Recipients do
 
     ~H"""
     <span class={@class}>
-      <span class="mr-tight inline-flex shrink-0 items-center align-middle">
+      <%!-- The names follow --%>
+      <span aria-hidden="true" class="mr-tight inline-flex shrink-0 items-center align-middle">
         <.avatar_group
-          :if={@avatars != []}
           avatars={@avatars}
           avatar_size="sm"
           avatar_class={["ring-2", @ring]}
           class="-space-x-1.5!"
         />
-        <.user_avatar :if={@deleted?} size="sm" class={["ring-2", @avatars != [] && "-ml-1.5", @ring]} />
       </span>{@names}
     </span>
     """

@@ -80,7 +80,11 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
       ]}>
         {@section.label}
       </span>
-      <.unread_badge count={@section.badge} class="absolute top-1 left-[calc(50%+0.75rem)]" />
+      <.unread_badge
+        count={@section.badge}
+        label={@section.badge_label}
+        class="absolute top-1 left-[calc(50%+0.75rem)]"
+      />
     </.link>
     """
   end

@@ -13,12 +13,12 @@ defmodule WatchClub.Conversations.MessageTest do
 
       :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "conversation:#{conversation.id}")
 
-      message = post_message!(conversation.id, %{body: "What did you think?"}, actor: friend)
+      message = post_message!(conversation.id, %{body: "What did you think?"}, actor: user)
 
       assert %Message{kind: :text, body: "What did you think?"} = message
-      assert message.author_id == friend.id
-      assert Accounts.get_current_user!(actor: user).unread_conversation_count == 1
-      assert Accounts.get_current_user!(actor: friend).unread_conversation_count == 0
+      assert message.author_id == user.id
+      assert Accounts.get_current_user!(actor: user).unread_conversation_count == 0
+      assert Accounts.get_current_user!(actor: friend).unread_conversation_count == 1
 
       assert_receive %Ash.Notifier.Notification{resource: Message, data: %Message{id: id}}
       assert id == message.id

@@ -328,7 +328,7 @@ msgstr "Être prévenu quand %{title} sera prêt"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{recommender} recommended it"
-msgstr "%{recommender} l’a recommandé"
+msgstr "Recommandation de %{recommender}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -371,19 +371,13 @@ msgstr "Recommander %{title}"
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended it to you"
-msgstr "Vous l’a recommandé"
+msgstr "Vous a recommandé ce titre"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended to %{names}. The conversation is in your Inbox."
 msgstr "Recommandé à %{names}. La conversation est dans votre messagerie."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Send it to people, with a note. It starts a conversation."
-msgstr "Envoyez-le à des personnes, avec un mot. Cela démarre une conversation."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -413,10 +407,16 @@ msgstr "Pourquoi ça va leur plaire"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "You recommended it"
-msgstr "Vous l’avez recommandé"
+msgstr "Votre recommandation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "to %{recipients}"
 msgstr "à %{recipients}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend it to people, with a message if you want. It starts a conversation."
+msgstr "Recommandez ce titre à des personnes, avec un message si vous le souhaitez. Cela démarre une conversation."

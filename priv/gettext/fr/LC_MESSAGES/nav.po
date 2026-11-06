@@ -128,3 +128,11 @@ msgstr "Playlists"
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr "Vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread conversation"
+msgid_plural "%{count} unread conversations"
+msgstr[0] "%{count} conversation non lue"
+msgstr[1] "%{count} conversations non lues"

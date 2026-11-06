@@ -12,12 +12,12 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.TmdbPoster
-  import WatchClubWeb.Components.Conversations.{Recipients, RecommendationNote}
+  import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
   import WatchClubWeb.Helpers.ContentDetails
 
-  alias WatchClub.{Contents, Conversations}
-  alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Conversations.{Conversation, Message}
+  alias Ash.Notifier.Notification
+  alias WatchClub.Conversations
+  alias WatchClub.Conversations.{Conversation, Message, Participant}
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   @doc """
@@ -27,24 +27,20 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     [
       :recommendation,
       :recommended_by,
+      :actor_participant,
       recipients: [:user],
-      actor_participant: [:unread_count],
       content: [:implementation]
     ]
   end
 
-  def dom_id, do: "conversation"
+  def dom_id(%Conversation{id: id}), do: "open-conversation-#{id}"
 
   @doc """
-  The placements of its Play or Request buttons, to keep them up to date.
+  Shows a notification the page received while the Conversation is open: a new Message, or a
+  change to its Content for Play or Request.
   """
-  def play_placements, do: [nil, :compact]
-
-  @doc """
-  Shows a Message posted in the open Conversation.
-  """
-  def show_message(%Message{} = message),
-    do: send_update(__MODULE__, id: dom_id(), posted: message)
+  def handle_pubsub_message(%Notification{} = notification, %Conversation{} = conversation),
+    do: send_update(__MODULE__, id: dom_id(conversation), notification: notification)
 
   attr :conversation, Conversation, required: true, doc: "with `conversation_load/0`"
   attr :current_user, User, required: true
@@ -52,26 +48,27 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
 
   @impl true
   def render(assigns) do
+    assigns =
+      assign(assigns, :identity, ContentIdentity.from_content(assigns.conversation.content))
+
     ~H"""
     <section
       id={"#{@id}-panel"}
-      aria-label={dgettext("conversations", "Conversation about %{title}", title: title(@details))}
+      aria-label={
+        dgettext("conversations", "Conversation about %{title}", title: content_title(@conversation))
+      }
       phx-mounted={JS.ignore_attributes(["data-collapsed"])}
       class="group/conversation relative flex min-h-0 min-w-0 flex-1 flex-col"
     >
-      <.compact_bar
-        conversation={@conversation}
-        details={@details}
-        identity={@identity}
-        current_user={@current_user}
-      />
+      <.compact_bar conversation={@conversation} identity={@identity} current_user={@current_user} />
 
       <script :type={Phoenix.LiveView.ColocatedHook} name=".Messages">
         export default {
           mounted() {
             this.last = this.el.dataset.last
             const unread = this.el.querySelector("[data-unread]")
-            this.el.scrollTop = unread ? unread.offsetTop - 8 : this.el.scrollHeight
+            if (unread) unread.scrollIntoView({block: "center"})
+            else this.el.scrollTop = this.el.scrollHeight
             this.observePlay()
           },
           updated() {
@@ -104,7 +101,6 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
         id={"#{@id}-messages"}
         phx-hook=".Messages"
         data-last={@last_message && @last_message.id}
-        role="log"
         class="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-page pt-related pb-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] *:shrink-0 @4xl:px-cluster"
       >
         <.hero
@@ -112,15 +108,16 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
           details={@details}
           identity={@identity}
           current_user={@current_user}
-          unread?={@recommendation_unread?}
         />
-        <div id={"#{@id}-stream"} phx-update="stream" class="flex flex-col">
-          <div :for={{dom_id, item} <- @streams.messages} id={dom_id} class="flex flex-col">
+        <%!-- Items are contents, so the day labels stick over the whole stream, under the bar
+        once it shows --%>
+        <div id={"#{@id}-stream"} phx-update="stream" role="log" class="flex flex-col">
+          <div :for={{dom_id, item} <- @streams.messages} id={dom_id} class="contents">
             <.badge
               :if={item.day}
               variant="secondary"
               size="sm"
-              class="sticky top-related z-10 my-related self-center"
+              class="sticky top-related z-10 my-related self-center group-data-collapsed/conversation:top-22"
             >
               {item.day}
             </.badge>
@@ -139,7 +136,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
             <.message
               message={item.message}
               first?={item.first?}
-              group?={@group?}
+              group?={length(@conversation.recipients) > 1}
               current_user={@current_user}
               time_zone={@time_zone}
             />
@@ -160,14 +157,14 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
             <label for={"#{@id}-body"} class="sr-only">{dgettext("conversations", "Message")}</label>
             <.input
               id={"#{@id}-body"}
-              name={@form[:body].name}
-              value={@form[:body].value}
+              field={@form[:body]}
               autocomplete="off"
+              maxlength="2000"
               placeholder={dgettext("conversations", "Message…")}
               phx-patch-focused
               class="h-control-lg!"
             />
-            <.field_errors field={@form[:body]} role="alert" class="text-xs" />
+            <.field_errors field={@form[:body]} role="alert" class="text-xs leading-tight!" />
           </div>
           <.button
             id={"#{@id}-send"}
@@ -186,39 +183,37 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   end
 
   attr :conversation, Conversation, required: true
-  attr :details, :any, required: true, doc: "a `MovieDetailsResponse` or a `TvDetailsResponse`"
+  attr :details, :any, required: true, doc: "its TMDB details, nil when TMDB doesn't answer"
   attr :identity, ContentIdentity, required: true
   attr :current_user, User, required: true
-  attr :unread?, :boolean, required: true, doc: "whether the User hasn't read the recommendation"
 
   # On the dimmed wide image, centered: who recommended it to whom, the Content's name, the
-  # recommendation's text as a big quote, then Play
+  # recommendation's text as a big quote, then Play. "New" until the User has read it.
   defp hero(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :unread?,
+        Participant.unread?(
+          assigns.conversation.actor_participant,
+          assigns.conversation.recommendation
+        )
+      )
+
     ~H"""
     <div
       data-unread={@unread?}
       class="relative isolate -mx-page -mt-related overflow-hidden @4xl:-mx-cluster"
     >
       <.tmdb_backdrop
-        :if={@details.backdrop_path}
+        :if={@details && @details.backdrop_path}
         path={@details.backdrop_path}
         size="w1280"
         class="absolute inset-0 -z-10 size-full object-cover"
       />
       <span class="absolute inset-0 -z-10 bg-canvas/80"></span>
       <div class="flex flex-col items-center gap-group px-page pt-related pb-group text-center @4xl:px-cluster @4xl:pt-cluster">
-        <%!-- Phones hide the bar, which has back elsewhere --%>
-        <.button
-          id="conversation-back"
-          variant="ghost"
-          size="icon"
-          patch={~p"/inbox"}
-          aria-label={dgettext("conversations", "Back to Inbox")}
-          title={dgettext("conversations", "Back to Inbox")}
-          class="-ml-related self-start text-text! rounded-full! pointer-coarse:size-touch-target! md:hidden"
-        >
-          <Lucideicons.arrow_left />
-        </.button>
+        <.back_to_inbox id="conversation-back" class="self-start" />
         <div class="min-w-0 text-sm text-text-muted">
           {recommended_it(assigns)}
           <span class="ml-related inline-flex items-center gap-tight align-middle text-xs text-text-subtle">
@@ -234,14 +229,14 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
         <div class="flex flex-col">
           <h2 class="font-heading text-2xl font-semibold text-balance @3xl:text-3xl">
             <.link navigate={Url.content_details_link(@identity)} class="hover:underline">
-              {title(@details)}
+              {content_title(@conversation)}
             </.link>
           </h2>
           <span class="text-sm text-text-muted">
-            {facts(@details, @identity, @current_user.settings.locale)}
+            {facts(@conversation, @details, @current_user.settings.locale)}
           </span>
         </div>
-        <.recommendation_note
+        <.recommendation_text
           :if={@conversation.recommendation.body}
           body={@conversation.recommendation.body}
           class="max-w-readable text-lg"
@@ -253,6 +248,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
             content_identity={@identity}
             current_user={@current_user}
             size="lg"
+            on_episodes={episodes_on_content_page(@identity)}
           />
         </span>
       </div>
@@ -261,7 +257,6 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   end
 
   attr :conversation, Conversation, required: true
-  attr :details, :any, required: true
   attr :identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
@@ -269,40 +264,73 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   defp compact_bar(assigns) do
     ~H"""
     <div class="absolute inset-x-0 top-0 z-20 hidden items-center gap-group border-b border-border-subtle bg-canvas px-page py-related group-data-collapsed/conversation:flex @4xl:px-cluster">
-      <.button
-        id="compact-back"
-        patch={~p"/inbox"}
-        variant="ghost"
-        size="icon"
-        aria-label={dgettext("conversations", "Back to Inbox")}
-        title={dgettext("conversations", "Back to Inbox")}
-        class="-ml-related text-text! rounded-full! pointer-coarse:size-touch-target! md:hidden"
-      >
-        <Lucideicons.arrow_left />
-      </.button>
-      <.tmdb_poster path={@details.poster_path} size="w154" class="w-10 shrink-0" />
+      <.back_to_inbox id="compact-back" />
+      <.tmdb_poster
+        path={@conversation.content.implementation.best_localization.poster_path}
+        size="w154"
+        class="w-10 shrink-0"
+      />
       <div class="flex min-w-0 flex-1 flex-col">
         <.link
           navigate={Url.content_details_link(@identity)}
           class="truncate font-semibold hover:underline"
         >
-          {title(@details)}
+          {content_title(@conversation)}
         </.link>
         <span class="truncate text-xs text-text-muted">
           {recommended_by(@conversation, @current_user)}
         </span>
       </div>
-      <%!-- Only its icon: a label would squeeze the name --%>
+      <%!-- On phones only its icon: a label would squeeze the name --%>
+      <.live_component
+        id={PlayOrRequestButtonLive.dom_id(@identity, :compact_round)}
+        module={PlayOrRequestButtonLive}
+        content_identity={@identity}
+        current_user={@current_user}
+        variant="round"
+        class="md:hidden [&_a]:shadow-none"
+      />
       <.live_component
         id={PlayOrRequestButtonLive.dom_id(@identity, :compact)}
         module={PlayOrRequestButtonLive}
         content_identity={@identity}
         current_user={@current_user}
-        variant="round"
+        on_episodes={episodes_on_content_page(@identity)}
+        class="max-md:hidden"
       />
     </div>
     """
   end
+
+  attr :id, :string, required: true
+  attr :class, :any, default: nil
+
+  # Back to the list, where it isn't beside the Conversation
+  defp back_to_inbox(assigns) do
+    ~H"""
+    <.button
+      id={@id}
+      variant="ghost"
+      size="icon"
+      patch={~p"/inbox"}
+      aria-label={dgettext("conversations", "Back to Inbox")}
+      title={dgettext("conversations", "Back to Inbox")}
+      class={[
+        "-ml-related text-text! rounded-full! pointer-coarse:size-touch-target! @4xl:hidden",
+        @class
+      ]}
+    >
+      <Lucideicons.arrow_left />
+    </.button>
+    """
+  end
+
+  # For a TV Show, Play's caret, or Episodes when there's nothing to play, opens its page, which has
+  # every TV Show Episode
+  defp episodes_on_content_page(%ContentIdentity{type: :tv_show} = identity),
+    do: JS.navigate(Url.content_details_link(identity))
+
+  defp episodes_on_content_page(_identity), do: nil
 
   attr :message, Message, required: true
   attr :first?, :boolean, required: true, doc: "whether it starts a run of Messages by one User"
@@ -321,7 +349,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       @first? && "mt-group",
       !@first? && "mt-tight"
     ]}>
-      <div :if={@group? and !@mine?} class="w-7 shrink-0">
+      <div :if={@group? and !@mine?} aria-hidden="true" class="w-7 shrink-0">
         <.user_avatar :if={@first?} user={@message.author} />
       </div>
       <div class={[
@@ -363,7 +391,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       recommender =
         gtcomponent(~H"""
         <span class="inline-flex items-center gap-tight align-middle">
-          <.user_avatar user={@conversation.recommended_by} size="sm" />
+          <span aria-hidden="true"><.user_avatar user={@conversation.recommended_by} size="sm" /></span>
           <span class="font-semibold text-text">{username(@conversation.recommended_by)}</span>
         </span>
         """)
@@ -386,74 +414,74 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
         name: username(conversation.recommended_by)
       )
 
-  # "2022 · Movie · 2 hr 9 min"
-  defp facts(details, identity, locale) do
+  defp content_title(conversation),
+    do: conversation.content.implementation.best_localization.title
+
+  # "2022 · Movie · 2 hr 9 min", the length from TMDB
+  defp facts(conversation, details, locale) do
     [
-      Time.maybe_year(release_date(details)),
-      ContentType.translated_label(identity.type),
-      length_label(details, locale)
+      Time.maybe_year(conversation.content.release_date),
+      ContentType.translated_label(conversation.content.type),
+      details && length_label(details, locale)
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" · ")
   end
 
   @impl true
-  def update(%{posted: %Message{} = message}, socket) do
-    %{conversation: conversation, current_user: user} = socket.assigns
+  def update(%{notification: %Notification{resource: Message, data: message}}, socket) do
+    message =
+      Conversations.get_message!(message.id, load: [:author], actor: socket.assigns.current_user)
 
-    if message.conversation_id == conversation.id do
-      message = Conversations.get_message!(message.id, load: [:author], actor: user)
-      if message.author_id != user.id, do: mark_read!(socket)
+    if message.author_id != socket.assigns.current_user.id, do: mark_read!(socket)
 
-      {:ok,
-       socket
-       |> stream_insert(:messages, item(message, socket.assigns.last_message, nil, socket))
-       |> assign(:last_message, message)}
-    else
-      {:ok, socket}
-    end
+    {:ok,
+     socket
+     |> stream_insert(:messages, item(message, socket.assigns.last_message, nil, socket))
+     |> assign(:last_message, message)}
+  end
+
+  def update(%{notification: notification}, socket) do
+    PlayOrRequestButtonLive.handle_pubsub_message(
+      notification,
+      socket.assigns.current_user,
+      [nil, :compact, :compact_round]
+    )
+
+    {:ok, socket}
   end
 
   def update(assigns, socket) do
-    opened? = socket.assigns[:conversation] && socket.assigns.conversation.id
-
+    opened? = Map.has_key?(socket.assigns, :conversation)
     socket = assign(socket, assigns)
-
-    if opened? == assigns.conversation.id,
-      do: {:ok, socket},
-      else: {:ok, open(socket)}
+    if opened?, do: {:ok, socket}, else: {:ok, open!(socket)}
   end
 
-  # The Messages, the line where the unread ones start, and the composer. The unread Messages are
-  # the latest ones, after the User's read position: the recommendation, then the others.
-  defp open(socket) do
+  # The Messages, with the line where the User's unread ones start, and the field to post one
+  defp open!(socket) do
     %{conversation: conversation, current_user: user} = socket.assigns
+    participant = conversation.actor_participant
 
     messages =
       conversation.id
       |> Conversations.list_messages!(load: [:author], actor: user)
       |> Enum.filter(&(&1.kind == :text))
 
-    unread_count = conversation.actor_participant.unread_count
-    unread_messages = min(unread_count, length(messages))
-    first_unread = length(messages) - unread_messages
+    unread = Enum.filter(messages, &Participant.unread?(participant, &1))
+    first_unread_id = unread |> List.first() |> then(&(&1 && &1.id))
 
     {items, _last} =
-      messages
-      |> Enum.with_index()
-      |> Enum.map_reduce(nil, fn {message, index}, previous ->
-        unread = if index == first_unread and unread_messages > 0, do: unread_messages
-        {item(message, previous, unread, socket), message}
+      Enum.map_reduce(messages, nil, fn message, previous ->
+        unread_count = if message.id == first_unread_id, do: length(unread)
+        {item(message, previous, unread_count, socket), message}
       end)
 
-    if unread_count > 0, do: mark_read!(socket)
+    if unread != [] or Participant.unread?(participant, conversation.recommendation),
+      do: mark_read!(socket)
 
     socket
     |> assign(
-      details: details!(conversation.content, user),
-      identity: ContentIdentity.from_content(conversation.content),
-      group?: length(conversation.recipients) > 1,
-      recommendation_unread?: unread_count > length(messages),
+      details: details(conversation, user),
       last_message: List.last(messages),
       form: new_form(socket)
     )
@@ -490,11 +518,14 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     end
   end
 
-  defp details!(%Content{type: :movie, external_id: id}, user),
-    do: Contents.get_movie_details!(id, actor: user)
-
-  defp details!(%Content{type: :tv_show, external_id: id}, user),
-    do: Contents.get_tv_show_details!(id, actor: user)
+  # The wide image and the length, which only TMDB has: the header shows without them when it
+  # doesn't answer
+  defp details(conversation, user) do
+    case get_details(ContentIdentity.from_content(conversation.content), user) do
+      {:ok, details} -> details
+      {:error, _error} -> nil
+    end
+  end
 
   defp new_form(socket) do
     %{conversation: conversation, current_user: user} = socket.assigns
@@ -510,10 +541,17 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
 
   @impl true
   def handle_event("post", %{"form" => params}, socket) do
+    # Enter in the empty field does nothing
+    if String.trim(params["body"]) == "",
+      do: {:noreply, socket},
+      else: {:noreply, post(socket, params)}
+  end
+
+  # The Message shows once it comes back from PubSub, as for the other Participants
+  defp post(socket, params) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
-      # The Message shows once it comes back from PubSub, as for the other Participants
-      {:ok, _message} -> {:noreply, assign(socket, :form, new_form(socket))}
-      {:error, form} -> {:noreply, assign(socket, :form, form)}
+      {:ok, _message} -> assign(socket, :form, new_form(socket))
+      {:error, form} -> assign(socket, :form, form)
     end
   end
 end

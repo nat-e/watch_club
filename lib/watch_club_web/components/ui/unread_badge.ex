@@ -4,11 +4,11 @@ defmodule WatchClubWeb.Components.UI.UnreadBadge do
   Messages. Nothing shows at 0.
   """
   use Phoenix.Component
-  use Gettext, backend: WatchClubWeb.Gettext
 
   import WatchClubWeb.Components.UI.Badge
 
   attr :count, :integer, required: true
+  attr :label, :string, required: true, doc: "what it counts, such as \"3 unread messages\""
   attr :class, :any, default: nil
 
   def unread_badge(assigns) do
@@ -17,7 +17,7 @@ defmodule WatchClubWeb.Components.UI.UnreadBadge do
       :if={@count > 0}
       variant="accent"
       size="sm"
-      aria-label={dngettext("default", "%{count} unread", "%{count} unread", @count)}
+      aria-label={@label}
       class={@class}
     >
       {@count}

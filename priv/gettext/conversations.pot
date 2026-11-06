@@ -11,6 +11,7 @@
 msgid ""
 msgstr ""
 
+#: lib/watch_club_web/live/conversations/inbox_page.ex
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} unread message"
@@ -123,4 +124,9 @@ msgstr[1] ""
 #: lib/watch_club_web/components/conversations/recipients.ex
 #, elixir-autogen, elixir-format
 msgid "you"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse"
 msgstr ""

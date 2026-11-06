@@ -8,29 +8,9 @@ defmodule WatchClubWeb.Components.Accounts.UserAvatar do
   attr :size, :string, values: ~w(xs sm md lg), default: "md"
   attr :class, :any, default: nil
 
-  def user_avatar(%{user: nil} = assigns) do
-    ~H"""
-    <span
-      role="img"
-      aria-label={username(nil)}
-      title={username(nil)}
-      class={[
-        "relative flex shrink-0 items-center justify-center rounded-full bg-surface-raised text-text-subtle",
-        @size == "xs" && "size-4 [&_svg]:size-3",
-        @size == "sm" && "size-5 [&_svg]:size-3.5",
-        @size == "md" && "size-7 [&_svg]:size-4",
-        @size == "lg" && "size-10 [&_svg]:size-6",
-        @class
-      ]}
-    >
-      <Lucideicons.user_round />
-    </span>
-    """
-  end
-
   def user_avatar(assigns) do
     ~H"""
-    <.avatar id={@user.id} name={@user.username} size={@size} class={@class} />
+    <.avatar id={@user && @user.id} name={username(@user)} size={@size} class={@class} />
     """
   end
 

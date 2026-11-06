@@ -7,8 +7,12 @@ defmodule WatchClubWeb.Storybook.UnreadBadge do
 
   def variations do
     [
-      %Variation{id: :some, attributes: %{count: 3}},
-      %Variation{id: :none, description: "Nothing shows at 0", attributes: %{count: 0}}
+      %Variation{id: :some, attributes: %{count: 3, label: "3 unread messages"}},
+      %Variation{
+        id: :none,
+        description: "Nothing shows at 0",
+        attributes: %{count: 0, label: "No unread messages"}
+      }
     ]
   end
 end

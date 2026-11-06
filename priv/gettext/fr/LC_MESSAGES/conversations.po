@@ -12,6 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} unread message"
@@ -29,7 +30,7 @@ msgstr "%{name} : %{text}"
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{recommender} recommended it to %{recipients}"
-msgstr "%{recommender} l’a recommandé à %{recipients}"
+msgstr "Recommandation de %{recommender} à %{recipients}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
@@ -95,19 +96,19 @@ msgstr "Recommandez un film ou une série depuis sa page pour en commencer une."
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by %{name}"
-msgstr "Recommandé par %{name}"
+msgstr "Recommandation de %{name}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by you"
-msgstr "Recommandé par vous"
+msgstr "Votre recommandation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended it"
-msgstr "L’a recommandé"
+msgstr "Recommandation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
@@ -125,7 +126,7 @@ msgstr "Cette conversation n’existe pas"
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "You recommended it to %{recipients}"
-msgstr "Vous l’avez recommandé à %{recipients}"
+msgstr "Votre recommandation à %{recipients}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
@@ -146,3 +147,9 @@ msgstr[1] "et %{count} autres"
 #, elixir-autogen, elixir-format
 msgid "you"
 msgstr "vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse"
+msgstr "Parcourir"

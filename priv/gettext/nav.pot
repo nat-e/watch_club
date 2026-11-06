@@ -109,3 +109,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread conversation"
+msgid_plural "%{count} unread conversations"
+msgstr[0] ""
+msgstr[1] ""

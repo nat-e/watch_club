@@ -14,7 +14,6 @@ defmodule WatchClub.Conversations.Message do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Conversations.{Conversation, MessageKind}
-  alias WatchClub.Conversations.Message.Changes.MarkConversationReadForAuthor
 
   postgres do
     table "messages"
@@ -51,7 +50,7 @@ defmodule WatchClub.Conversations.Message do
     end
 
     create :post do
-      description "A Participant posts text in their Conversation, which they have then read"
+      description "A Participant posts text in their Conversation"
       accept [:conversation_id, :body]
 
       validate present(:body) do
@@ -60,7 +59,6 @@ defmodule WatchClub.Conversations.Message do
 
       change set_attribute(:kind, :text)
       change relate_actor(:author)
-      change MarkConversationReadForAuthor
     end
   end
 
@@ -73,12 +71,12 @@ defmodule WatchClub.Conversations.Message do
 
     policy action_type(:read) do
       description "Only the Participants of its Conversation see a Message"
-      authorize_if expr(exists(conversation.participants, user_id == ^actor(:id)))
+      authorize_if can_read(:conversation)
     end
 
     policy action(:post) do
       description "Only a Participant can post in a Conversation"
-      authorize_if expr(exists(conversation.participants, user_id == ^actor(:id)))
+      authorize_if can_read(:conversation)
     end
   end
 
@@ -86,7 +84,15 @@ defmodule WatchClub.Conversations.Message do
     module Phoenix.PubSub
     name WatchClub.PubSub
 
-    publish :post, ["conversation", :conversation_id]
+    # The metadata says its Content
+    publish :post, ["conversation", :conversation_id],
+      load: [conversation: [:content_id]],
+      transform: &add_content_id_to_metadata/1
+
+    defp add_content_id_to_metadata(%Ash.Notifier.Notification{} = notification) do
+      content_id = notification.data.conversation.content_id
+      %{notification | metadata: Map.put(notification.metadata, :content_id, content_id)}
+    end
   end
 
   validations do

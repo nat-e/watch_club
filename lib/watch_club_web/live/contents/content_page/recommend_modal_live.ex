@@ -45,7 +45,8 @@ defmodule WatchClubWeb.Contents.ContentPage.RecommendModalLive do
         >
           <fieldset class="flex flex-col gap-tight">
             <legend class="sr-only">{dgettext("contents", "People")}</legend>
-            <ul class="-mx-related flex flex-col">
+            <%!-- Scrolls on its own, so the message stays in view --%>
+            <ul class="-mx-related flex max-h-[45svh] flex-col overflow-y-auto">
               <li :for={user <- @users}>
                 <label
                   for={"#{@id}-to-#{user.id}"}

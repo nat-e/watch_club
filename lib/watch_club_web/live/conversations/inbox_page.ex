@@ -11,7 +11,6 @@ defmodule WatchClubWeb.Conversations.InboxPage do
   alias Ash.Notifier.Notification
   alias WatchClub.Conversations
   alias WatchClub.Conversations.{Conversation, Message, Participant}
-  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Conversations.InboxPage.ConversationLive
 
   # What a row shows
@@ -40,7 +39,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
       <%!-- Narrow screens show the list or the open Conversation, wide ones both, each scrolling on
       its own under the bar --%>
       <div class={[
-        "@container flex md:h-[calc(100svh-var(--wc-app-bar-height))]",
+        "group/inbox @container flex md:h-[calc(100svh-var(--wc-app-bar-height))]",
         @conversation && "max-md:h-svh"
       ]}>
         <aside
@@ -70,6 +69,9 @@ defmodule WatchClubWeb.Conversations.InboxPage do
                     "Recommend a movie or a TV show from its page to start one."
                   )}
                 </:description>
+                <.button id="conversations-browse" variant="secondary" navigate={~p"/"}>
+                  {dgettext("conversations", "Browse")}
+                </.button>
               </.empty>
             </li>
           </ul>
@@ -82,13 +84,17 @@ defmodule WatchClubWeb.Conversations.InboxPage do
         ]}>
           <.live_component
             :if={@conversation}
-            id={ConversationLive.dom_id()}
+            id={ConversationLive.dom_id(@conversation)}
             module={ConversationLive}
             conversation={@conversation}
             current_user={@current_user}
             time_zone={@time_zone}
           />
-          <div :if={!@conversation} class="px-page pb-page-y md:pt-group">
+          <%!-- Not beside an empty list --%>
+          <div
+            :if={!@conversation}
+            class="px-page pb-page-y group-has-[#conversations-empty:only-child]/inbox:hidden md:pt-group"
+          >
             <.empty>
               <:icon><Lucideicons.messages_square /></:icon>
               <:title>{dgettext("conversations", "No conversation open")}</:title>
@@ -141,7 +147,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
             aria-label={
               dngettext("conversations", "and %{count} other", "and %{count} others", @others)
             }
-            class="absolute top-1/2 left-full -ml-2.5 grid size-5 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface-raised text-xs font-semibold text-text ring-2 ring-canvas"
+            class="absolute top-1/2 left-full -ml-1 grid size-5 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface-raised text-xs font-semibold text-text ring-2 ring-canvas"
           >
             +{@others}
           </span>
@@ -168,7 +174,17 @@ defmodule WatchClubWeb.Conversations.InboxPage do
             current_user={@current_user}
             group?={@group?}
           />
-          <.unread_badge count={@unread_count} />
+          <.unread_badge
+            count={@unread_count}
+            label={
+              dngettext(
+                "conversations",
+                "%{count} unread message",
+                "%{count} unread messages",
+                @unread_count
+              )
+            }
+          />
         </div>
       </div>
     </.link>
@@ -222,7 +238,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
            actor: socket.assigns.current_user
          ) do
       {:ok, conversation} ->
-        {:noreply, assign(socket, :conversation, conversation)}
+        {:noreply, open_conversation!(socket, conversation)}
 
       {:error, _not_found} ->
         {:noreply,
@@ -232,38 +248,50 @@ defmodule WatchClubWeb.Conversations.InboxPage do
     end
   end
 
-  def handle_params(_params, _uri, socket), do: {:noreply, assign(socket, :conversation, nil)}
+  def handle_params(_params, _uri, socket), do: {:noreply, open_conversation!(socket, nil)}
+
+  # The rows of the Conversations closed and opened render again, to show which one is open
+  defp open_conversation!(socket, conversation) do
+    rows =
+      [socket.assigns[:conversation], conversation]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.map(&get_row!(socket, &1.id))
+
+    socket
+    |> assign(:conversation, conversation)
+    |> stream(:conversations, rows)
+  end
 
   @impl true
   def handle_info(%Notification{} = notification, socket) do
-    PlayOrRequestButtonLive.handle_pubsub_message(
-      notification,
-      socket.assigns.current_user,
-      ConversationLive.play_placements()
-    )
+    %{conversation: open} = socket.assigns
 
     case notification do
       # A new Conversation, or a new Message in one: it goes first
       %{resource: Participant, action: %{name: :create}, data: participant} ->
-        {:noreply, put_first(socket, participant.conversation_id)}
+        {:noreply, put_first!(socket, participant.conversation_id)}
 
       %{resource: Message, data: message} ->
-        if socket.assigns.conversation, do: ConversationLive.show_message(message)
-        {:noreply, put_first(socket, message.conversation_id)}
+        if open && open.id == message.conversation_id,
+          do: ConversationLive.handle_pubsub_message(notification, open)
+
+        {:noreply, put_first!(socket, message.conversation_id)}
 
       # The User read it, maybe in another tab
       %{resource: Participant, action: %{name: :mark_read}, data: participant} ->
         {:noreply,
          stream_insert(socket, :conversations, get_row!(socket, participant.conversation_id))}
 
+      # For Play or Request in the open Conversation
       _other ->
+        if open, do: ConversationLive.handle_pubsub_message(notification, open)
         {:noreply, socket}
     end
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
 
-  defp put_first(socket, conversation_id) do
+  defp put_first!(socket, conversation_id) do
     conversation = get_row!(socket, conversation_id)
 
     socket

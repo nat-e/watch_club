@@ -10,7 +10,6 @@ defmodule WatchClubWeb.BrowsePage do
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.Contents.{Content, Genre, LibrarySort}
-  alias WatchClub.Conversations
   alias WatchClub.Conversations.Participant
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
@@ -548,13 +547,8 @@ defmodule WatchClubWeb.BrowsePage do
         {:noreply, update_poster!(socket, id)}
 
       # Someone may have recommended it to the User
-      %{resource: Participant, action: %{name: :create}, data: participant} ->
-        conversation =
-          Conversations.get_conversation!(participant.conversation_id,
-            actor: socket.assigns.current_user
-          )
-
-        {:noreply, update_poster!(socket, conversation.content_id)}
+      %{resource: Participant, action: %{name: :create}, metadata: %{content_id: id}} ->
+        {:noreply, update_poster!(socket, id)}
 
       _other ->
         {:noreply, socket}

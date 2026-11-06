@@ -342,3 +342,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "This has already been requested"
 msgstr ""
+
+#: lib/watch_club/conversations/participant.ex
+#, elixir-autogen, elixir-format
+msgid "This person is already in the conversation"
+msgstr ""

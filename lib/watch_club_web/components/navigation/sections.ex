@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
 
   @doc """
   Each section's id, name, icon, page, the other pages it holds besides the ones under its page,
-  and how many things the User hasn't seen in it.
+  how many things the User hasn't seen in it, and what that count is for screen readers.
   """
   def sections(%User{} = user) do
     [
@@ -20,7 +20,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :clapperboard,
         navigate: ~p"/",
         pages: [~p"/search"],
-        badge: 0
+        badge: 0,
+        badge_label: nil
       },
       %{
         id: "playlists",
@@ -28,7 +29,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :list,
         navigate: ~p"/lists",
         pages: [],
-        badge: 0
+        badge: 0,
+        badge_label: nil
       },
       %{
         id: "inbox",
@@ -36,7 +38,14 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :inbox,
         navigate: ~p"/inbox",
         pages: [],
-        badge: user.unread_conversation_count
+        badge: user.unread_conversation_count,
+        badge_label:
+          dngettext(
+            "nav",
+            "%{count} unread conversation",
+            "%{count} unread conversations",
+            user.unread_conversation_count
+          )
       },
       %{
         id: "requests",
@@ -44,7 +53,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :download,
         navigate: ~p"/my-requests",
         pages: [],
-        badge: 0
+        badge: 0,
+        badge_label: nil
       }
     ]
   end

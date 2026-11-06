@@ -10,7 +10,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Accounts.UserAvatar
-  import WatchClubWeb.Components.Conversations.{Recipients, RecommendationNote}
+  import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
   import WatchClubWeb.Helpers.ContentDetails
 
   alias WatchClub.Contents.Rating
@@ -331,7 +331,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <span class="flex min-w-0 flex-col gap-tight">
             <span class="font-semibold text-accent">{dgettext("contents", "Recommend")}</span>
             <span class="text-sm text-text-muted">
-              {dgettext("contents", "Send it to people, with a note. It starts a conversation.")}
+              {dgettext(
+                "contents",
+                "Recommend it to people, with a message if you want. It starts a conversation."
+              )}
             </span>
           </span>
         </button>
@@ -354,7 +357,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     >
       <span class="flex flex-col gap-related">
         <span class="flex items-center gap-related text-sm">
-          <.user_avatar user={@conversation.recommended_by} />
+          <span aria-hidden="true"><.user_avatar user={@conversation.recommended_by} /></span>
           <span class="min-w-0 flex-1 truncate text-text-muted">
             {recommended_it(@conversation, @current_user)}
           </span>
@@ -362,7 +365,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             {Time.relative_from_now(@conversation.inserted_at, @current_user.settings.locale)}
           </span>
         </span>
-        <.recommendation_note
+        <.recommendation_text
           :if={@conversation.recommendation.body}
           body={@conversation.recommendation.body}
           class="text-lg"
@@ -528,7 +531,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
     %{live_action: type, current_user: user} = socket.assigns
 
     with {id, ""} <- Integer.parse(tmdb_id),
-         {identity, {:ok, details}} <- get_details(type, id, user) do
+         identity = identity(type, id),
+         {:ok, details} <- get_details(identity, user) do
       {:noreply,
        socket
        |> assign(details: details, content_identity: identity)
@@ -544,12 +548,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
     end
   end
 
-  # The Content's identity, and what it is from TMDB
-  defp get_details(:movie, tmdb_id, user),
-    do: {ContentIdentity.for_movie(tmdb_id), Contents.get_movie_details(tmdb_id, actor: user)}
-
-  defp get_details(:tv_show, tmdb_id, user),
-    do: {ContentIdentity.for_tv_show(tmdb_id), Contents.get_tv_show_details(tmdb_id, actor: user)}
+  defp identity(:movie, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
+  defp identity(:tv_show, tmdb_id), do: ContentIdentity.for_tv_show(tmdb_id)
 
   @impl true
   def handle_event("open_episodes", _params, socket),
@@ -603,9 +603,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
           do: {:noreply, socket |> load_content!() |> load_watchers!()},
           else: {:noreply, socket}
 
-      # A Conversation the User is in started, or got a Message
-      %{resource: resource} when resource in [Participant, Message] ->
-        {:noreply, load_conversations!(socket)}
+      # A Conversation about it that the User is in started, or got a Message
+      %{resource: resource, metadata: %{content_id: content_id}}
+      when resource in [Participant, Message] ->
+        if socket.assigns.content && socket.assigns.content.id == content_id,
+          do: {:noreply, load_conversations!(socket)},
+          else: {:noreply, socket}
 
       _other ->
         {:noreply, socket}
