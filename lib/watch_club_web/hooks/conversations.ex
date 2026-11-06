@@ -10,25 +10,30 @@ defmodule WatchClubWeb.Hooks.Conversations do
   alias WatchClub.Conversations.Participant
 
   def on_mount(:default, _params, _session, socket) do
-    if connected?(socket) do
-      [actor: socket.assigns.current_user, query: [select: [:id]]]
-      |> Conversations.list_conversations!()
-      |> Enum.each(&subscribe(&1.id))
-    end
+    conversations =
+      if connected?(socket),
+        do:
+          Conversations.list_conversations!(
+            actor: socket.assigns.current_user,
+            query: [select: [:id]]
+          ),
+        else: []
 
-    {:cont, attach_hook(socket, :conversations, :handle_info, &subscribe_to_new_conversation/2)}
+    {:cont,
+     socket
+     |> WatchClub.PubSub.subscribe_if_connected(Enum.map(conversations, &topic(&1.id)))
+     |> attach_hook(:conversations, :handle_info, &subscribe_to_new_conversation/2)}
   end
 
   defp subscribe_to_new_conversation(
          %Notification{resource: Participant, action: %{name: :create}, data: participant},
          socket
-       ) do
-    subscribe(participant.conversation_id)
-    {:cont, socket}
-  end
+       ),
+       do:
+         {:cont,
+          WatchClub.PubSub.subscribe_if_connected(socket, topic(participant.conversation_id))}
 
   defp subscribe_to_new_conversation(_message, socket), do: {:cont, socket}
 
-  defp subscribe(conversation_id),
-    do: Phoenix.PubSub.subscribe(WatchClub.PubSub, "conversation:#{conversation_id}")
+  defp topic(conversation_id), do: "conversation:#{conversation_id}"
 end
