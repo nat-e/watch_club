@@ -114,3 +114,21 @@ msgstr "Type"
 #, elixir-autogen, elixir-format
 msgid "Genre"
 msgstr "Genre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{rating}+"
+msgstr "%{rating}+"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Any"
+msgstr "Toutes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Rating"
+msgstr "Note"

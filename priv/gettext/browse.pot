@@ -97,3 +97,18 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Genre"
 msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{rating}+"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Any"
+msgstr ""
+
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Rating"
+msgstr ""

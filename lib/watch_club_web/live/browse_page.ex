@@ -18,7 +18,16 @@ defmodule WatchClubWeb.BrowsePage do
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
   @content_fields [:implementation, :actor_progress_status]
-  @no_filters %{type: nil, not_watched?: false, genres: [], decades: [], original_languages: []}
+  @no_filters %{
+    type: nil,
+    not_watched?: false,
+    genres: [],
+    decades: [],
+    original_languages: [],
+    min_rating: nil
+  }
+  # More's Rating choices besides Any, which keep the Content rated at least this
+  @min_ratings [6, 7, 8]
 
   @impl true
   def render(assigns) do
@@ -134,10 +143,17 @@ defmodule WatchClubWeb.BrowsePage do
 
   attr :filters, :map, required: true
 
-  # Opens the genres, decades and original languages, with how many of them are on
+  # Opens the genres, decades, original languages and rating, with how many of them are on
   defp more_button(assigns) do
-    %{genres: genres, decades: decades, original_languages: languages} = assigns.filters
-    assigns = assign(assigns, :count, Enum.count([genres, decades, languages], &(&1 != [])))
+    %{genres: genres, decades: decades, original_languages: languages, min_rating: min_rating} =
+      assigns.filters
+
+    assigns =
+      assign(
+        assigns,
+        :count,
+        Enum.count([genres, decades, languages, min_rating], &(&1 not in [[], nil]))
+      )
 
     ~H"""
     <.button
@@ -200,6 +216,8 @@ defmodule WatchClubWeb.BrowsePage do
   # From the bottom of the screen on phones. Each choice applies at once, and a list without
   # choices is left out.
   defp more_filters(assigns) do
+    assigns = assign(assigns, :min_ratings, @min_ratings)
+
     ~H"""
     <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
@@ -255,6 +273,29 @@ defmodule WatchClubWeb.BrowsePage do
           <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
         </label>
       </fieldset>
+      <fieldset class="flex min-w-0 flex-col">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Rating")} /></legend>
+        <div
+          role="radiogroup"
+          aria-label={dgettext("browse", "Rating")}
+          class="flex flex-wrap gap-related"
+        >
+          <.filter_chip
+            :for={min_rating <- [nil | @min_ratings]}
+            id={"filter-rating-#{min_rating || "any"}"}
+            on={@filters.min_rating == min_rating}
+            radio
+            phx-click="change_filter"
+            phx-value-filter="rating"
+            phx-value-choice={min_rating}
+          >
+            <:icon :if={min_rating}><Lucideicons.star class="fill-current text-warning" /></:icon>
+            {if min_rating,
+              do: dgettext("browse", "%{rating}+", rating: min_rating),
+              else: dgettext("browse", "Any")}
+          </.filter_chip>
+        </div>
+      </fieldset>
     </.modal>
     """
   end
@@ -262,7 +303,7 @@ defmodule WatchClubWeb.BrowsePage do
   attr :content, Content, required: true
   attr :current_user, User, required: true
 
-  # Its progress badge, and on hover its name, original language, year and Play
+  # Its progress badge, and on hover its name, rating, original language, year and Play
   defp poster_card(assigns) do
     assigns =
       assigns
@@ -284,6 +325,13 @@ defmodule WatchClubWeb.BrowsePage do
         >
           <span class="line-clamp-3 text-sm font-semibold text-white">{@title}</span>
           <span class="flex items-center gap-related text-xs text-white/80">
+            <span :if={@content.rating} class="inline-flex items-center gap-tight font-semibold">
+              <Lucideicons.star class="size-icon-sm fill-current text-warning" />
+              {WatchClub.Cldr.Number.to_string!(@content.rating,
+                fractional_digits: 1,
+                locale: UserLocale.to_cldr_locale_name(@current_user.settings.locale)
+              )}
+            </span>
             <span
               :if={@content.original_language}
               class="text-base leading-none"
@@ -416,7 +464,8 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
-  # The filters in the URL. Unknown types and genres, and decades that aren't numbers, are left out.
+  # The filters in the URL. Unknown types, genres and ratings, and decades that aren't numbers, are
+  # left out.
   defp filters(params) do
     %{
       type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
@@ -425,7 +474,8 @@ defmodule WatchClubWeb.BrowsePage do
         for({:ok, genre} <- Enum.map(list_param(params["genres"]), &Genre.match/1), do: genre),
       decades:
         for({decade, ""} <- Enum.map(list_param(params["decades"]), &Integer.parse/1), do: decade),
-      original_languages: list_param(params["languages"])
+      original_languages: list_param(params["languages"]),
+      min_rating: Url.parse_url_param(params["rating"], @min_ratings)
     }
   end
 
@@ -433,11 +483,14 @@ defmodule WatchClubWeb.BrowsePage do
   # Missing, or a list from a hand-edited URL such as `decades[]=1990`
   defp list_param(_values), do: []
 
-  # A type replaces the one that's on. The other choices turn on or off.
+  # A type or rating replaces the one that's on. The other choices turn on or off.
   defp change_filter(_filters, "clear", _choice), do: @no_filters
 
   defp change_filter(filters, "type", type),
     do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
+
+  defp change_filter(filters, "rating", min_rating),
+    do: %{filters | min_rating: Url.parse_url_param(min_rating, @min_ratings)}
 
   defp change_filter(filters, "not_watched", _choice),
     do: %{filters | not_watched?: not filters.not_watched?}
@@ -467,6 +520,7 @@ defmodule WatchClubWeb.BrowsePage do
           genres: Enum.join(filters.genres, ","),
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),
+          rating: filters.min_rating,
           sort: sort != LibrarySort.default() && sort
         ],
         fn {_param, value} -> value in [nil, false, ""] end

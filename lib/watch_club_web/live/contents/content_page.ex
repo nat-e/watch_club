@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.TmdbPoster
 
+  alias WatchClub.Contents.Rating
   alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
@@ -142,7 +143,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
     assigns =
       assign(assigns,
         language: Languages.to_name(assigns.details.original_language),
-        length: length_label(assigns.details, assigns.locale)
+        length: length_label(assigns.details, assigns.locale),
+        rating: Rating.from_tmdb(assigns.details)
       )
 
     ~H"""
@@ -163,9 +165,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
       <span>{ContentType.translated_label(@content_identity.type)}</span>
       <span :if={@length} aria-hidden="true">·</span>
       <span :if={@length}>{@length}</span>
-      <span :if={rated?(@details)} aria-hidden="true">·</span>
+      <span :if={@rating} aria-hidden="true">·</span>
       <.link
-        :if={rated?(@details)}
+        :if={@rating}
         id="tmdb-rating"
         href={tmdb_url(@content_identity)}
         target="_blank"
@@ -173,7 +175,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         class="inline-flex items-center gap-tight font-semibold text-text hover:underline"
       >
         <Lucideicons.star class="size-icon-sm fill-current text-warning" />
-        {WatchClub.Cldr.Number.to_string!(@details.vote_average,
+        {WatchClub.Cldr.Number.to_string!(@rating,
           fractional_digits: 1,
           locale: UserLocale.to_cldr_locale_name(@locale)
         )}
@@ -579,8 +581,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
       count -> dngettext("contents", "%{count} season", "%{count} seasons", count)
     end
   end
-
-  defp rated?(details), do: is_number(details.vote_average) and details.vote_average > 0
 
   # The director, then up to 17 actors in billing order
   defp cast(credits) do
