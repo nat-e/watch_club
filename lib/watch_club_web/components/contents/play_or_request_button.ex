@@ -19,7 +19,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
 
   attr :on_episodes, :any,
     default: nil,
-    doc: "the JS commands opening every TV Show Episode, from a caret joined to Play"
+    doc:
+      "the JS commands opening every TV Show Episode, from a caret joined to Play, or from Episodes when there's nothing to play"
 
   attr :play_only, :boolean, default: false
 
@@ -66,6 +67,24 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     >
       <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
       {request_label(@request)}
+    </.button>
+    """
+  end
+
+  # Nothing to play yet, such as an episode missing from the Library: every episode instead
+  def play_or_request_button(%{play_href: nil, on_episodes: on_episodes} = assigns)
+      when on_episodes != nil do
+    ~H"""
+    <.button
+      id={"#{@id}-episodes-button"}
+      size={@size}
+      variant="secondary"
+      phx-click={@on_episodes}
+      aria-haspopup="dialog"
+      class="w-full phx-click-loading:cursor-progress phx-click-loading:opacity-60"
+    >
+      <:icon><Lucideicons.list_video /></:icon>
+      {dgettext("contents", "Episodes")}
     </.button>
     """
   end

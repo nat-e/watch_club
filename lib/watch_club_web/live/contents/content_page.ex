@@ -254,6 +254,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             aria-pressed={to_string(@finished?)}
             aria-label={dgettext("contents", "Watched")}
             title={watched_hint(@tv_show?, @finished?)}
+            class="rounded-full!"
           >
             <Lucideicons.circle_check :if={@finished?} class="text-success" />
             <Lucideicons.circle :if={!@finished?} />

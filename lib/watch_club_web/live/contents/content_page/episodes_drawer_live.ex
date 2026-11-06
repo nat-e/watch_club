@@ -100,7 +100,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
                     number: @season.season_number
                   )
             }
-            class="shrink-0 @max-md:size-control-md! @max-md:px-0!"
+            class="shrink-0 @max-md:size-control-md! @max-md:rounded-full! @max-md:px-0!"
           >
             <Lucideicons.circle_check :if={@season_watched?} class="text-success" />
             <Lucideicons.circle :if={!@season_watched?} />
@@ -236,7 +236,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
             do: dgettext("contents", "Mark as not watched"),
             else: dgettext("contents", "Mark as watched")
         }
-        class="shrink-0"
+        class="shrink-0 rounded-full!"
       >
         <Lucideicons.circle_check :if={@watched?} class="text-success" />
         <Lucideicons.circle :if={!@watched?} />

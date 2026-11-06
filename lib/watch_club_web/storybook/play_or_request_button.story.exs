@@ -18,7 +18,8 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
     [
       %VariationGroup{
         id: :play,
-        description: "Play, Resume, nothing to play yet, and with every episode",
+        description:
+          "Play, Resume, nothing to play yet, and with every episode, also when there's nothing to play",
         template: group_template(),
         variations: [
           %Variation{
@@ -45,6 +46,15 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
               has_media?: true,
               play_href: "#",
               play_label: "Resume S01E03",
+              on_episodes: "open_episodes"
+            }
+          },
+          %Variation{
+            id: :nothing_to_play_with_episodes,
+            attributes: %{
+              id: "nothing-to-play-with-episodes",
+              has_media?: true,
+              play_label: "Play S01E03",
               on_episodes: "open_episodes"
             }
           }
