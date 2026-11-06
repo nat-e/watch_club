@@ -12,7 +12,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Source
-  alias WatchClub.Requests.Changes.UpdateContentRequests
+  alias WatchClub.Requests.Changes.UpdateContentRequest
   alias WatchClub.Requests.MediaSourceRequestStatus
   alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
 
@@ -46,7 +46,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
         end)
       end
 
-      change UpdateContentRequests
+      change UpdateContentRequest
     end
 
     update :update do
@@ -55,14 +55,14 @@ defmodule WatchClub.Requests.MediaSourceRequest do
       require_atomic? false
       accept [:status, :download_progress]
 
-      change UpdateContentRequests
+      change UpdateContentRequest
     end
 
     destroy :destroy do
       primary? true
 
       require_atomic? false
-      change UpdateContentRequests
+      change UpdateContentRequest
     end
   end
 

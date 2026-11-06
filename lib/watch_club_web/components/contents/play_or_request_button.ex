@@ -10,15 +10,18 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   attr :has_media?, :boolean, required: true
   attr :play_href, :string, default: nil, doc: "the Player, nil when there's nothing to play"
   attr :play_label, :string, required: true, doc: "such as Play, or Resume S01E03"
-  attr :title, :string, default: nil, doc: "the Content's name, in the round Play's label"
+
+  attr :title, :string,
+    default: nil,
+    doc: "the Content's name, in the labels of the round Play and of Get Notified"
 
   attr :request, ContentRequest,
     default: nil,
     doc:
-      "the Content's Content Request, with its `status`, `actor_subscriber?`, `requested_by` and `best_source_request`"
+      "the Content's Content Request, with its `status`, `download_progress`, `actor_subscriber?` and `requested_by`"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
-  attr :on_get_notified, :any, default: nil, doc: "the event or JS commands of Get Notified"
+  attr :on_get_notified, JS, default: %JS{}, doc: "the JS commands of Get Notified"
 
   attr :on_episodes, :any,
     default: nil,
@@ -72,42 +75,42 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   end
 
   # The status opens My Requests, and fills up while it downloads. A ringing bell shows that the
-  # actor will be told when it's ready; until then, a bell joined to it does Get Notified.
+  # actor will be told when it's ready; until then, a bell joined to it does Get Notified, and
+  # then hands the focus to the status, since it goes away.
   def play_or_request_button(%{has_media?: false} = assigns) do
     ~H"""
-    <div class="flex w-full">
+    <.joined_buttons>
       <.button
         id={"#{@id}-request-status"}
         size={@size}
         variant="secondary"
         navigate={~p"/my-requests"}
         title={status_tooltip(@request)}
-        class={[
-          "relative isolate min-w-0 flex-1 overflow-hidden",
-          !@request.actor_subscriber? && "rounded-r-none!"
-        ]}
+        class="relative isolate min-w-0 flex-1 overflow-hidden"
       >
         <:icon :if={@request.actor_subscriber?}><Lucideicons.bell_ring /></:icon>
         <span
-          :if={@request.status in [:downloading, :importing]}
+          :if={@request.download_progress}
           class="absolute inset-y-0 left-0 -z-10 bg-surface-selected"
-          style={"width: #{@request.best_source_request.download_progress}%"}
+          style={"width: #{@request.download_progress}%"}
         ></span>
         {ContentRequestStatus.translated_label(@request.status)}
+        <span :if={@request.download_progress} class="sr-only">
+          {round(@request.download_progress)}%
+        </span>
       </.button>
       <.button
         :if={!@request.actor_subscriber?}
         id={"#{@id}-get-notified-button"}
         size={caret_size(@size)}
         variant="secondary"
-        phx-click={@on_get_notified}
-        aria-label={dgettext("contents", "Get notified when it's ready")}
+        phx-click={JS.focus(@on_get_notified, to: "##{@id}-request-status")}
+        aria-label={dgettext("contents", "Get notified when %{title} is ready", title: @title)}
         title={dgettext("contents", "Get notified when it's ready")}
-        class="-ml-px rounded-l-none!"
       >
         <Lucideicons.bell />
       </.button>
-    </div>
+    </.joined_buttons>
     """
   end
 
@@ -133,13 +136,13 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   # Play with a caret opening every episode, under one glow so they read as one button
   def play_or_request_button(%{on_episodes: on_episodes} = assigns) when on_episodes != nil do
     ~H"""
-    <div class="flex w-full rounded-control shadow-glow">
+    <.joined_buttons class="rounded-control shadow-glow">
       <.button
         id={"#{@id}-play-button"}
         size={@size}
         variant="primary"
         href={@play_href}
-        class="min-w-0 flex-1 rounded-r-none! border-r-0!"
+        class="min-w-0 flex-1"
       >
         <:icon><Lucideicons.play /></:icon>
         {@play_label}
@@ -152,11 +155,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
         aria-label={dgettext("contents", "All episodes")}
         aria-haspopup="dialog"
         title={dgettext("contents", "All episodes")}
-        class="rounded-l-none! border-l-primary-active! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
+        class="border-l-primary-active! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
       >
         <Lucideicons.chevron_down />
       </.button>
-    </div>
+    </.joined_buttons>
     """
   end
 
@@ -174,6 +177,21 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       <:icon><Lucideicons.play /></:icon>
       {@play_label}
     </.button>
+    """
+  end
+
+  attr :class, :any, default: nil
+  slot :inner_block, required: true
+
+  # Buttons joined into one: inner corners squared, one shared border, the focused one on top
+  defp joined_buttons(assigns) do
+    ~H"""
+    <div class={[
+      "flex w-full *:focus-visible:z-10 *:not-first:-ml-px *:not-first:rounded-l-none! *:not-last:rounded-r-none!",
+      @class
+    ]}>
+      {render_slot(@inner_block)}
+    </div>
     """
   end
 

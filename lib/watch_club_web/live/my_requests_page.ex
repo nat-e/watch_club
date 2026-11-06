@@ -237,8 +237,11 @@ defmodule WatchClubWeb.MyRequestsPage do
   end
 
   def handle_event("stop-getting-notified", %{"id" => id}, socket) do
-    Requests.stop_getting_notified!(id, actor: socket.assigns.current_user)
-    {:noreply, socket}
+    case Requests.stop_getting_notified(id, actor: socket.assigns.current_user) do
+      :ok -> {:noreply, socket}
+      # Clicked again before its card went away
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} -> {:noreply, socket}
+    end
   end
 
   def handle_event("open_add_to_library_modal", %{"content_id" => content_id}, socket) do
@@ -273,12 +276,13 @@ defmodule WatchClubWeb.MyRequestsPage do
         },
         socket
       ) do
-    {:noreply, socket |> stream_delete_by_dom_id(:requests, "request-#{content_request_id}")}
+    {:noreply, socket |> stream_delete(:requests, %ContentRequest{id: content_request_id})}
   end
 
   # A ContentRequest has been created or updated, or the User became one of its Request
   # Subscribers. Every User gets the notifications of every ContentRequest, so this only
-  # shows the ones the User is a Request Subscriber of.
+  # shows the ones the User is a Request Subscriber of. It queries for every one: fine
+  # with the few Users of an instance.
   def handle_info(
         %Notification{
           resource: resource,

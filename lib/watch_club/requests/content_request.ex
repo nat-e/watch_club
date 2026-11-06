@@ -68,7 +68,7 @@ defmodule WatchClub.Requests.ContentRequest do
     update :update do
       accept [:best_source_request_id]
       # This forces updates of the row, even when updating with an empty input map
-      # (which is the case in UpdateContentRequests when a media has changed)
+      # (which is the case in UpdateContentRequest when a media has changed)
       change atomic_update(:updated_at, expr(now()))
     end
 
@@ -88,7 +88,7 @@ defmodule WatchClub.Requests.ContentRequest do
 
       pagination keyset?: true, default_limit: 25, required?: false
 
-      filter expr(exists(subscribers, user_id == ^actor(:id)))
+      filter expr(actor_subscriber?)
 
       prepare build(filter: expr(content.type == ^arg(:content_type))) do
         where present(:content_type)
@@ -273,6 +273,17 @@ defmodule WatchClub.Requests.ContentRequest do
               ) do
       public? true
     end
+
+    # How much the Media Source has downloaded, while it downloads or imports, in %
+    calculate :download_progress,
+              :float,
+              expr(
+                if status in [:downloading, :importing] do
+                  best_source_request.download_progress
+                else
+                  nil
+                end
+              )
 
     calculate :actor_subscriber?, :boolean, expr(exists(subscribers, user_id == ^actor(:id)))
   end

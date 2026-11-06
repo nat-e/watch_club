@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
   use PhoenixStorybook.Story, :component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
+  alias WatchClub.Requests.ContentRequest
   alias WatchClubWeb.Components.Contents.PlayOrRequestButton
 
   def function, do: &PlayOrRequestButton.play_or_request_button/1
@@ -142,9 +142,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
           status: status,
           actor_subscriber?: actor_subscriber?,
           requested_by: requested_by,
-          best_source_request: %MediaSourceRequest{
-            download_progress: if(status == :importing, do: 100.0, else: 40.0)
-          }
+          download_progress: %{downloading: 40.0, importing: 100.0}[status]
         }
       }
     }

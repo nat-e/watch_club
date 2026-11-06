@@ -317,3 +317,9 @@ msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."
 #, elixir-autogen, elixir-format
 msgid "You'll be told when it's ready"
 msgstr "Vous serez prévenu quand ce sera prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when %{title} is ready"
+msgstr "Être prévenu quand %{title} sera prêt"

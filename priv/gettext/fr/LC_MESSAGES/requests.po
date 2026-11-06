@@ -184,3 +184,9 @@ msgstr "Essayez d'effacer des filtres, ou parcourez les contenus pour faire une 
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
 msgstr "Ne plus être prévenu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified about %{title}"
+msgstr "Ne plus être prévenu pour %{title}"

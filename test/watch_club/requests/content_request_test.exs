@@ -61,13 +61,20 @@ defmodule WatchClub.Requests.ContentRequestTest do
   end
 
   describe "delete_content_request/*" do
-    test "the Instance Administrator deletes a Content Request" do
+    test "the Instance Administrator deletes a Content Request, for everybody" do
       admin = generate(administrator())
-      request = generate(content_request(generate(user()), generate(movie())))
+      %{id: request_id} = request = generate(content_request(generate(user()), generate(movie())))
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
       Requests.delete_content_request!(request, actor: admin)
 
-      assert {:error, _} = Ash.get(ContentRequest, request.id, authorize?: false)
+      assert {:error, _} = Ash.get(ContentRequest, request_id, authorize?: false)
+
+      assert_receive %Ash.Notifier.Notification{
+        resource: ContentRequest,
+        action: %{type: :destroy},
+        data: %ContentRequest{id: ^request_id}
+      }
     end
 
     test "the User who made it can't delete it" do

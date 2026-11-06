@@ -7,18 +7,7 @@ defmodule WatchClub.Requests.ContentRequestStatus do
   use Gettext, backend: WatchClubWeb.Gettext
 
   use Ash.Type.Enum,
-    values: [
-      # No Media Source Request yet, or still searching within the grace window
-      :queued,
-      :downloading,
-      # Downloaded by the Media Source, but its Media isn't in WatchClub yet
-      :importing,
-      :not_released,
-      # Still searching after the grace window
-      :not_found,
-      :failed,
-      :completed
-    ]
+    values: [:queued, :downloading, :importing, :not_released, :not_found, :failed, :completed]
 
   def translated_label(:queued), do: dgettext("content_request_statuses", "Queued")
   def translated_label(:downloading), do: dgettext("content_request_statuses", "Downloading")

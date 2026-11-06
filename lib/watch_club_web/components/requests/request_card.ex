@@ -304,7 +304,11 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           id={"#{@request.id}-stop-getting-notified"}
           variant="ghost"
           size="icon-sm"
-          aria-label={dgettext("requests", "Stop getting notified")}
+          aria-label={
+            dgettext("requests", "Stop getting notified about %{title}",
+              title: @request.content.implementation.best_localization.title
+            )
+          }
           title={dgettext("requests", "Stop getting notified")}
           phx-click="stop-getting-notified"
           phx-value-id={@request.id}

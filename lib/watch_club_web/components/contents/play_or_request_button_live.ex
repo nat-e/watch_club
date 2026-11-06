@@ -97,7 +97,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
           :actor_next_medias_to_play,
           :actor_progress_status,
           implementation: %{load: [tv_show: [actor_next_episode: [:actor_progress_status]]]},
-          request: [:status, :actor_subscriber?, :requested_by, :best_source_request]
+          request: [:status, :download_progress, :actor_subscriber?, :requested_by]
         ],
         actor: actor
       )
@@ -123,6 +123,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   def handle_event("request-content", _params, socket) do
     case Requests.request_content(
            socket.assigns.content_identity,
+           # For its title: the Content may not exist before its request
            load: [content: [:implementation]],
            actor: socket.assigns.current_user
          ) do

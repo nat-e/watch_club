@@ -43,7 +43,8 @@ defmodule WatchClub.Requests.RequestSubscriber do
       description "Stop Getting Notified: the actor stops being a Request Subscriber."
       primary? true
 
-      # So that finding it by its Content Request finds the actor's own
+      # Found by its Content Request, so only the actor's own: the read policy would forbid
+      # other Users' rows, not skip them
       change filter(expr(user_id == ^actor(:id)))
     end
   end

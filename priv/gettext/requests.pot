@@ -155,3 +155,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
 msgstr ""
+
+#: lib/watch_club_web/components/requests/request_card.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified about %{title}"
+msgstr ""

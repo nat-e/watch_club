@@ -267,3 +267,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "You'll be told when it's ready"
 msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Get notified when %{title} is ready"
+msgstr ""

@@ -403,7 +403,7 @@ _Avoid_: Group, aggregate, card, item
 - When a **Media Source**'s upstream system reports its movie or series deleted, WatchClub deletes the **Media Source Request** rather than keeping a terminal state; the **Content Request** survives and, with no progressing **Media Source Request**, reads as not found until the **Instance Administrator** fixes it in the **Media Source**'s upstream system or uses **Delete Content Request**
 - **Delete Content Request** does not delete any **Media**, any **Media Source Request**, or any resource in any **Media Source**, nor remove the **Content** from any **Playlist**
 - A **Media Source Request** in the Needs Attention state is recovered passively: the **Instance Administrator** resolves the problem on the **Media Source**'s upstream system, and the resulting webhook advances the **Media Source Request**. WatchClub has no manual retry action
-- A **User**’s **Content Request** persists independently of any **Playlist** that holds its **Content**
+- A **Content Request** persists independently of any **Playlist** that holds its **Content**
 - Every **User** sees every **Content Request**, who made it, and its **Content Request Status**
 - **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Playlist** may create missing **Content**
 - A **Content** can exist in WatchClub with no **Media**, referenced only by **Content Requests** or **Playlists**
