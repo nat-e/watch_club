@@ -1,5 +1,10 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
+  @moduledoc """
+  Loads the actor's `PlayOrRequestButton` for a Content, and makes the request.
+  """
   use WatchClubWeb, :live_component
+
+  import WatchClubWeb.Components.Contents.PlayOrRequestButton
 
   @doc """
   The DOM id we recommend using for this Live Component
@@ -49,82 +54,22 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     default: "button",
     doc: "round: only Play, with only its icon, over a poster"
 
-  @in_progress_statuses [:searching, :downloading, :downloaded]
-
-  # Only Play, when there's something to play
   @impl true
-  def render(%{variant: "round"} = assigns) do
+  def render(assigns) do
     ~H"""
     <div class={@class}>
-      <.button
-        :if={@next_medias_to_play != []}
-        id={"#{@id}-play-button"}
-        variant="primary"
-        size="icon-lg"
-        href={Url.player_link(@next_medias_to_play)}
-        aria-label={dgettext("contents", "%{action} %{title}", action: @play_label, title: @title)}
-        title={@play_label}
-        class="rounded-full! shadow-overlay"
-      >
-        <Lucideicons.play />
-      </.button>
-    </div>
-    """
-  end
-
-  def render(%{has_media?: false} = assigns) do
-    ~H"""
-    <div class={@class}>
-      <.button
-        :if={!@play_only}
-        id={"#{@id}-request-button"}
+      <.play_or_request_button
+        id={@id}
+        has_media?={@has_media?}
+        play_href={@play_href}
+        play_label={@play_label}
+        title={@title}
+        request={@request}
+        on_request={JS.push("request-content", target: @myself)}
+        play_only={@play_only}
         size={@size}
-        variant="primary"
-        emphasis
-        phx-click="request-content"
-        phx-target={@myself}
-        disabled={@request != nil}
-        class="w-full"
-      >
-        <.lucide_icon name={request_icon(@request)} class={[icon_spin(@request) && "animate-spin"]} />
-        {request_label(@request)}
-      </.button>
-    </div>
-    """
-  end
-
-  def render(%{has_media?: true, next_medias_to_play: []} = assigns) do
-    ~H"""
-    <div class={@class}>
-      <.button
-        id={"#{@id}-play-button"}
-        size={@size}
-        variant="primary"
-        emphasis
-        disabled
-        class="w-full"
-      >
-        <:icon><Lucideicons.play /></:icon>
-        {@play_label}
-      </.button>
-    </div>
-    """
-  end
-
-  def render(%{has_media?: true} = assigns) do
-    ~H"""
-    <div class={@class}>
-      <.button
-        id={"#{@id}-play-button"}
-        size={@size}
-        variant="primary"
-        emphasis
-        href={Url.player_link(@next_medias_to_play)}
-        class="w-full"
-      >
-        <:icon><Lucideicons.play /></:icon>
-        {@play_label}
-      </.button>
+        variant={@variant}
+      />
     </div>
     """
   end
@@ -156,7 +101,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       |> assign(assigns)
       |> assign(
         has_media?: (content && content.has_media?) || false,
-        next_medias_to_play: (content && content.actor_next_medias_to_play) || [],
+        play_href: play_href((content && content.actor_next_medias_to_play) || []),
         play_label: play_label(assigns.content_identity.type, content),
         title: content && content.implementation.best_localization.title,
         request: (content && content.actor_request) || nil
@@ -196,55 +141,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
     do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
 
-  defp icon_spin(nil), do: false
-
-  defp icon_spin(%ContentRequest{best_source_request: nil}), do: true
-
-  defp icon_spin(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}}),
-    do: status in @in_progress_statuses
-
-  defp request_icon(nil), do: :download
-
-  defp request_icon(%ContentRequest{best_source_request: nil}), do: :loader_circle
-
-  defp request_icon(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
-       when status in @in_progress_statuses, do: :loader_circle
-
-  defp request_icon(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :not_released}
-       }),
-       do: :calendar
-
-  defp request_icon(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :needs_attention}
-       }),
-       do: :triangle_alert
-
-  defp request_label(nil), do: dgettext("contents", "Request")
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :searching}
-       }) do
-    dgettext("contents", "Searching")
-  end
-
-  defp request_label(%ContentRequest{best_source_request: nil}),
-    do: dgettext("contents", "Downloading")
-
-  defp request_label(%ContentRequest{best_source_request: %MediaSourceRequest{status: status}})
-       when status in @in_progress_statuses do
-    dgettext("contents", "Downloading")
-  end
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :not_released}
-       }) do
-    dgettext("contents", "Not Released")
-  end
-
-  defp request_label(%ContentRequest{
-         best_source_request: %MediaSourceRequest{status: :needs_attention}
-       }) do
-    dgettext("contents", "Error")
-  end
+  defp play_href([]), do: nil
+  defp play_href(medias), do: Url.player_link(medias)
 end
