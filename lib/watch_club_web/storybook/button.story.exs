@@ -37,6 +37,12 @@ defmodule WatchClubWeb.Storybook.Button do
             slots: ["Ghost"]
           },
           %Variation{
+            id: :overlay,
+            description: "Over an image or a video",
+            attributes: %{id: "button-overlay", variant: "overlay"},
+            slots: ["Overlay"]
+          },
+          %Variation{
             id: :danger,
             attributes: %{id: "button-danger", variant: "danger"},
             slots: ["Delete"]

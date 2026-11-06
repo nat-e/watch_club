@@ -209,18 +209,17 @@ defmodule WatchClub.Requests.ContentRequest do
                     100.0
 
                   # Guard the 0 denominator before any episode has aired
-                  content.type == :tv_show and
-                      not exists(content.tv_show.episodes, air_date <= today()) ->
+                  content.type == :tv_show and not exists(content.tv_show.episodes, aired?) ->
                     0.0
 
                   content.type == :tv_show ->
                     type(
                       count(content.tv_show.episodes,
-                        query: [filter: expr(has_media? and air_date <= today())]
+                        query: [filter: expr(has_media? and aired?)]
                       ),
                       :float
                     ) * 100.0 /
-                      count(content.tv_show.episodes, query: [filter: expr(air_date <= today())])
+                      count(content.tv_show.episodes, query: [filter: expr(aired?)])
 
                   # Movie and books without content
                   true ->

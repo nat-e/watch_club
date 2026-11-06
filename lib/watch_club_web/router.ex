@@ -132,8 +132,8 @@ defmodule WatchClubWeb.Router do
       live "/lists", Lists.ListsPage
       live "/inbox", InboxPage
       live "/lists/:list_id", Lists.ListPage
-      live "/movies/:tmdb_id", Contents.MovieDetailsPage
-      live "/shows/:tmdb_id", Contents.TvShowDetailsPage
+      live "/movies/:tmdb_id", Contents.ContentPage, :movie
+      live "/shows/:tmdb_id", Contents.ContentPage, :tv_show
     end
 
     ash_authentication_live_session :unauthenticated_routes,

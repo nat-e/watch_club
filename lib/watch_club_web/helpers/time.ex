@@ -16,6 +16,35 @@ defmodule WatchClubWeb.Helpers.Time do
   def maybe_year(_), do: nil
 
   @doc """
+  Returns a localized date like "July 8, 2027".
+  """
+  @spec long_date(Date.t(), atom()) :: String.t()
+  def long_date(%Date{} = date, locale) do
+    WatchClub.Cldr.Date.to_string!(date,
+      format: :long,
+      locale: UserLocale.to_cldr_locale_name(locale)
+    )
+  end
+
+  @doc """
+  Returns a localized number of minutes in hours and minutes, like "52 min" or "2 hr 9 min", or
+  nil without any, as TMDB gives for an unknown runtime.
+  """
+  @spec minutes(non_neg_integer() | nil, atom()) :: String.t() | nil
+  def minutes(minutes, _locale) when minutes in [nil, 0], do: nil
+
+  def minutes(minutes, locale) do
+    minutes
+    |> WatchClub.Cldr.Unit.new!(:minute)
+    |> WatchClub.Cldr.Unit.decompose([:hour, :minute])
+    |> WatchClub.Cldr.Unit.to_string!(
+      style: :short,
+      list_options: [format: :unit_narrow],
+      locale: UserLocale.to_cldr_locale_name(locale)
+    )
+  end
+
+  @doc """
   Returns a localized string for a pretty duration like "3 seconds", "19 minutes", ...
   """
   @spec pretty_duration(number(), atom()) :: String.t()

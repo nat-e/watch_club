@@ -17,7 +17,8 @@ defmodule WatchClub.History.WatchProgress do
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Changes.ScheduleContentWatchedEventSync
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}
-  alias WatchClub.History.WatchProgress.Actions.{MarkNotWatched, MarkWatched}
+  alias WatchClub.History.Watcher
+  alias WatchClub.History.WatchProgress.Actions.{ListWatchers, MarkNotWatched, MarkWatched}
   alias WatchClub.MediaCatalog.Media
 
   # When a user has watched more than 90% of a media, we consider it fully watched
@@ -106,6 +107,13 @@ defmodule WatchClub.History.WatchProgress do
 
       run MarkNotWatched
     end
+
+    action :watchers, {:array, Watcher} do
+      description "The other Users who watched a Content or are watching it, the latest first"
+      argument :content_identity, ContentIdentity, allow_nil?: false
+
+      run ListWatchers
+    end
   end
 
   policies do
@@ -120,16 +128,22 @@ defmodule WatchClub.History.WatchProgress do
       authorize_if relating_to_actor(:user)
     end
 
-    policy action_type([:read, :update, :destroy]) do
-      description "Only the related User can read or destroy their Watch Progress"
+    policy action_type([:update, :destroy]) do
+      description "Only the related User can update or destroy their Watch Progress"
       authorize_if relates_to_actor_via(:user)
+    end
+
+    policy action_type(:read) do
+      description "Every User sees what every User watches"
+      authorize_if always()
     end
 
     policy action([
              :mark_content_watched,
-             :mark_content_not_watched
+             :mark_content_not_watched,
+             :watchers
            ]) do
-      description "Any User can mark content watched"
+      description "Any User can mark content watched and see who watched it"
       authorize_if always()
     end
   end
@@ -147,6 +161,15 @@ defmodule WatchClub.History.WatchProgress do
       transform: &add_content_identity_to_metadata/1
 
     publish_all :destroy, ["content", "user", :user_id],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    # Every User sees who watched a Content
+    publish_all :create, ["history", "global"],
+      load: :content,
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :destroy, ["history", "global"],
       load: :content,
       transform: &add_content_identity_to_metadata/1
 

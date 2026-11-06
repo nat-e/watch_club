@@ -28,7 +28,12 @@ defmodule WatchClubWeb.Components.UI.Modal do
     doc: "Maximum modal width."
 
   attr :on_close, JS, required: true
-  attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
+
+  attr :phone, :string,
+    values: ~w(centered sheet full_screen),
+    default: "centered",
+    doc: "How it opens on phones: centered, from the bottom of the screen, or filling the screen."
+
   attr :rest, :global
 
   slot :title, required: true do
@@ -56,58 +61,79 @@ defmodule WatchClubWeb.Components.UI.Modal do
       aria-describedby={@description != [] && "#{@id}-description"}
       data-slot="modal"
       data-on-close={@on_close}
-      class={[
-        "m-auto p-related rounded-card border border-border bg-surface-overlay p-0 shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
-        @size == "sm" && "sm:max-w-md",
-        @size == "md" && "sm:max-w-lg",
-        @size == "lg" && "sm:max-w-2xl",
-        @sheet &&
-          "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
-        @class
-      ]}
+      class={
+        [
+          "m-auto rounded-card border border-border bg-surface-overlay p-related text-text shadow-modal backdrop:bg-scrim backdrop:backdrop-blur-sm",
+          # A column only while open: the browser hides a closed dialog with a display we'd override
+          "open:flex open:flex-col",
+          @size == "sm" && "sm:max-w-md",
+          @size == "md" && "sm:max-w-lg",
+          @size == "lg" && "sm:max-w-2xl",
+          @phone == "sheet" &&
+            "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
+          @phone == "full_screen" &&
+            "max-md:m-0 max-md:h-svh max-md:max-h-svh max-md:w-full max-md:max-w-none! max-md:rounded-none max-md:border-0 max-md:p-0",
+          @class
+        ]
+      }
       phx-hook=".Modal"
       phx-mounted={JS.ignore_attributes("open")}
       {@rest}
     >
-      <div
-        data-slot="modal-content"
-        class="flex w-full flex-col gap-cluster overflow-y-auto p-cluster text-sm text-text"
+      <header
+        data-slot="modal-header"
+        class={[
+          "flex flex-col gap-related pt-cluster pb-cluster",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster"
+        ]}
       >
-        <header data-slot="modal-header" class="flex flex-col gap-related pr-10">
-          <h2
-            :for={title <- @title}
-            id={"#{@id}-title"}
-            data-slot="modal-title"
-            class={["text-lg font-semibold leading-none", title[:class]]}
-          >
-            {render_slot(title)}
-          </h2>
-
-          <p
-            :for={description <- @description}
-            id={"#{@id}-description"}
-            data-slot="modal-description"
-            class={[
-              "text-sm text-text-muted text-pretty [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
-              description[:class]
-            ]}
-          >
-            {render_slot(description)}
-          </p>
-        </header>
-
-        <div data-slot="modal-body" class="flex flex-col gap-group text-sm/relaxed text-text">
-          {render_slot(@inner_block)}
-        </div>
-
-        <footer
-          :for={footer <- @footer}
-          data-slot="modal-footer"
-          class={["flex flex-col-reverse gap-related sm:flex-row sm:justify-end", footer[:class]]}
+        <h2
+          :for={title <- @title}
+          id={"#{@id}-title"}
+          data-slot="modal-title"
+          class={["pr-10 text-lg font-semibold leading-none", title[:class]]}
         >
-          {render_slot(footer)}
-        </footer>
+          {render_slot(title)}
+        </h2>
+
+        <p
+          :for={description <- @description}
+          id={"#{@id}-description"}
+          data-slot="modal-description"
+          class={[
+            "pr-10 text-sm text-text-muted text-pretty [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-text",
+            description[:class]
+          ]}
+        >
+          {render_slot(description)}
+        </p>
+      </header>
+
+      <%!-- Only the body scrolls, so the title, the close button and the footer stay --%>
+      <div
+        data-slot="modal-body"
+        class={[
+          "flex min-h-0 flex-col gap-group overflow-y-auto pb-cluster text-sm/relaxed text-text",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster"
+        ]}
+      >
+        {render_slot(@inner_block)}
       </div>
+
+      <footer
+        :for={footer <- @footer}
+        data-slot="modal-footer"
+        class={[
+          "flex flex-col-reverse gap-related pb-cluster sm:flex-row sm:justify-end",
+          @phone == "full_screen" && "px-page",
+          @phone != "full_screen" && "px-cluster",
+          footer[:class]
+        ]}
+      >
+        {render_slot(footer)}
+      </footer>
 
       <button
         id={"#{@id}-close-button"}

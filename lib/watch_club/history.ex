@@ -11,6 +11,7 @@ defmodule WatchClub.History do
 
       define :mark_content_watched, args: [:content_identity]
       define :mark_content_not_watched, args: [:content_identity]
+      define :list_watchers, action: :watchers, args: [:content_identity]
     end
   end
 end

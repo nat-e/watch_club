@@ -201,7 +201,7 @@ defmodule WatchClubWeb.BrowsePage do
   # choices is left out.
   defp more_filters(assigns) do
     ~H"""
-    <.modal id="more-filters" size="md" sheet on_close={JS.push("close_more_filters")}>
+    <.modal id="more-filters" size="md" phone="sheet" on_close={JS.push("close_more_filters")}>
       <:title>{dgettext("browse", "Filters")}</:title>
       <fieldset :if={@options.genres != []} class="flex min-w-0 flex-col">
         <legend class="mb-related"><.text_label text={dgettext("browse", "Genre")} /></legend>

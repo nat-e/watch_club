@@ -4,7 +4,8 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
 
   On devices with a mouse, arrows show on hover. The hook hides each arrow at its end of the row
   and scrolls by most of the visible width. Keyboard users scroll by focusing the items, which the
-  hook brings fully into view.
+  hook brings fully into view, as it does with the item marked `aria-current="true"` when the row
+  mounts.
   """
 
   use Phoenix.Component
@@ -90,6 +91,9 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
               const item = [...this.track.children].find((child) => child.contains(event.target))
               item?.scrollIntoView({ inline: "nearest", block: "nearest", behavior: this.behavior() })
             })
+            this.track
+              .querySelector("[aria-current=true]")
+              ?.scrollIntoView({ inline: "center", block: "nearest" })
             this.update()
           },
           updated() { this.update() },

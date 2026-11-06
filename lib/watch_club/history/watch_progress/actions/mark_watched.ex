@@ -1,7 +1,7 @@
 defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   @moduledoc """
   Marks a Content watched for the acting user.
-  Can be filtered by season_id and/or episode_id for TV Shows.
+  For TV Shows, marks the aired episodes only, and can be filtered by season and/or episode.
 
   This will return a single notification, even when multiple TV Shows
   episodes are marked.
@@ -79,7 +79,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   # nil season/episode mean "all", so the filter is a no-op for that scope.
   defp episode_ids(tv_show_id, season, episode, context) do
     TvShowEpisode
-    |> Ash.Query.filter(tv_show_id == ^tv_show_id)
+    |> Ash.Query.filter(tv_show_id == ^tv_show_id and aired?)
     |> filter_by_season_number(season)
     |> filter_by_episode_number(episode)
     |> Ash.read!(scope: context)

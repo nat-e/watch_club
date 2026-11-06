@@ -12,8 +12,9 @@ defmodule WatchClubWeb.Components.UI.Button do
   attr :class, :any, default: nil
 
   attr :variant, :string,
-    values: ~w(primary accent secondary ghost danger),
-    default: "primary"
+    values: ~w(primary accent secondary ghost overlay danger),
+    default: "primary",
+    doc: "overlay: a ghost button over an image or a video, with a translucent hover"
 
   attr :size, :string,
     values: ~w(sm md lg icon-sm icon icon-lg),
@@ -99,6 +100,8 @@ defmodule WatchClubWeb.Components.UI.Button do
         "border-border bg-surface-raised text-text hover:bg-surface-hover active:bg-surface-active",
       variant == "ghost" &&
         "border-transparent bg-transparent text-text-muted hover:bg-surface-hover hover:text-text active:bg-surface-active",
+      variant == "overlay" &&
+        "border-transparent bg-transparent text-text-muted hover:bg-white/10 hover:text-text active:bg-white/20",
       variant == "danger" &&
         "border-transparent bg-danger text-on-danger hover:bg-danger-hover active:bg-danger-active",
       size == "sm" &&
