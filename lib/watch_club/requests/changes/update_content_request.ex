@@ -1,6 +1,6 @@
-defmodule WatchClub.Requests.Changes.UpdateContentRequests do
+defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   @moduledoc """
-  Updates all the ContentRequests for a Content when their dependencies have changed.
+  Updates the Content's ContentRequest, if it has one, when its dependencies have changed.
   This is called when:
   - A MediaSourceRequest has been created/updated/destroyed for this Content
   - A Media has been created/destroyed for this Content
@@ -8,7 +8,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
   This will trigger Pubsub notifications to be sent.
   We try to not spam by only detecting if the ContentRequest derived status will be impacted.
 
-  In most cases, this won't update anything besides the `updated_at` field of the requests but this
+  In most cases, this won't update anything besides the `updated_at` field of the request but this
   is still necessary to:
   - re-order the most recently updated requests
   - trigger pubsub notifications when dependencies have changed
@@ -20,9 +20,9 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
   alias WatchClub.SystemActor
 
   @impl true
-  # When a media has been created, update the content requests.
-  # Re-importing a file can match it to another Content than before, so the requests of the
-  # previous Content are updated too. Unmatched Media have no Content.
+  # When a media has been created, update the content request.
+  # Re-importing a file can match it to another Content than before, so the request of the
+  # previous Content is updated too. Unmatched Media have no Content.
   def change(%Ash.Changeset{resource: Media, action_type: :create} = changeset, _opts, _context) do
     changeset
     |> Ash.Changeset.before_action(fn changeset ->
@@ -41,13 +41,13 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
       [changeset.context.previous_content_id, content_id]
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
-      |> Enum.each(&update_content_requests(&1, %{}))
+      |> Enum.each(&update_content_request(&1, %{}))
 
       {:ok, updated_media}
     end)
   end
 
-  # When a media has been deleted, update the content requests.
+  # When a media has been deleted, update the content request.
   # Unmatched Media have no Content.
   def change(%Ash.Changeset{resource: Media, action_type: :destroy} = changeset, _opts, _context) do
     Ash.Changeset.after_action(changeset, fn
@@ -55,7 +55,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
         {:ok, destroyed_media}
 
       _changeset, %Media{content_id: content_id} = destroyed_media ->
-        update_content_requests(content_id, %{})
+        update_content_request(content_id, %{})
 
         {:ok, destroyed_media}
     end)
@@ -86,7 +86,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
         changeset.action_type == :create or
           updated_status != original_status or updated_progress != original_progress
 
-      # 3 scenarios in which we refresh the ContentRequests:
+      # 3 scenarios in which we refresh the ContentRequest:
       # - The MSR has been deleted (re-point to the remaining best, or nil)
       # - The best MSR has just been created
       # - The best MSR status / progress changed
@@ -95,7 +95,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
       # one anymore. But this is so niche that it doesn't justify the extra query
       # (we would have to check the original best MSR in a before_action and compare).
       if changeset.action_type == :destroy or (is_best_msr? and changed?) do
-        update_content_requests(content_id, %{
+        update_content_request(content_id, %{
           best_source_request_id: (best_msr && best_msr.id) || nil
         })
       end
@@ -104,7 +104,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequests do
     end)
   end
 
-  def update_content_requests(content_id, input) do
+  def update_content_request(content_id, input) do
     ContentRequest
     |> Ash.Query.filter(content_id == ^content_id)
     |> Ash.bulk_update(

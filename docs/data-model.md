@@ -389,7 +389,7 @@ classDiagram
   ContentRequest "0..1" --> "1" Content
   ContentRequest "*" --> "0..1" User : requested_by
   ContentRequest "0..1" --> "0..1" MediaSourceRequest : best_source_request
-  RequestSubscriber "1..*" --> "1" ContentRequest
+  RequestSubscriber "*" --> "1" ContentRequest
   RequestSubscriber "*" --> "1" User
   MediaSourceRequest "*" --> "1" Content
   MediaSourceRequest "*" --> "1" MediaSource

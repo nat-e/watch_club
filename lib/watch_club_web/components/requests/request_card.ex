@@ -10,8 +10,8 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
       status), then the content-type badge, title, year, and an "Add to Library"
       button revealed on card hover (or focus-within).
     - Right (Status): fixed-width tinted panel headed by the status'
-      `translated_label`, with a cancel/delete icon, the status body (a progress
-      bar for the three in-progress statuses), and "Requested X ago".
+      `translated_label`, with an X to Stop Getting Notified, the status body (a
+      progress bar for the three in-progress statuses), and "Requested X ago".
 
   Status is grouped by color: `not_released`/`not_found` gray, the in-flight
   trio (`requested`/`downloading`/`importing`) accent, `failed` danger,
@@ -301,14 +301,19 @@ defmodule WatchClubWeb.Components.Requests.RequestCard do
           {@status_label}
         </p>
         <.button
-          id={"#{@request.id}-cancel"}
+          id={"#{@request.id}-stop-getting-notified"}
           variant="ghost"
           size="icon-sm"
-          aria-label={dgettext("requests", "Cancel request")}
-          phx-click="cancel-request"
+          aria-label={
+            dgettext("requests", "Stop getting notified about %{title}",
+              title: @request.content.implementation.best_localization.title
+            )
+          }
+          title={dgettext("requests", "Stop getting notified")}
+          phx-click="stop-getting-notified"
           phx-value-id={@request.id}
         >
-          <Lucideicons.trash_2 />
+          <Lucideicons.x />
         </.button>
       </div>
 

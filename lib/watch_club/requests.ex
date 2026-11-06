@@ -1,8 +1,8 @@
 defmodule WatchClub.Requests do
   @moduledoc """
-  The request subsystem: a user's `ContentRequest`s and the
-  `MediaSourceRequest`s they fan out to. Status is derived, not stored —
-  see the resources for details.
+  The request subsystem: each Content's `ContentRequest`, its `RequestSubscriber`s, and the
+  `MediaSourceRequest`s it fans out to. Status is derived, not stored — see the resources for
+  details.
   """
   use Ash.Domain,
     otp_app: :watch_club,
@@ -17,7 +17,12 @@ defmodule WatchClub.Requests do
         action: :for_current_user,
         get_by: [:content_id]
 
-      define :cancel_content_request, action: :cancel
+      define :delete_content_request, action: :destroy
+    end
+
+    resource WatchClub.Requests.RequestSubscriber do
+      define :get_notified, action: :create, args: [:content_request_id]
+      define :stop_getting_notified, action: :destroy, get_by: [:content_request_id]
     end
 
     resource WatchClub.Requests.MediaSourceRequest do

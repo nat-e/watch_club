@@ -1,12 +1,11 @@
 defmodule WatchClub.Requests.ContentRequestStatusGroup do
   @moduledoc """
-  The coarse, UI-level grouping of a `MediaSourceRequestStatus`, used by the
+  The coarse, UI-level grouping of a `ContentRequestStatus`, used by the
   My Requests page filter.
 
   The card still shows the fine-grained status (queued / downloading X% /
-  importing); this collapses the three in-flight statuses into `:in_progress`,
-  and `:not_released` + `:not_found` into `:not_released`. Derived at read time
-  by `ContentRequest`'s `status_group` calculation.
+  importing); this collapses those three in-flight statuses into `:in_progress`.
+  Derived at read time by `ContentRequest`'s `status_group` calculation.
 
   Declared in display order, with `translated_label/1` for the UI (same
   convention as `MediaSourceRequestStatus` / `Contents.ContentType`).

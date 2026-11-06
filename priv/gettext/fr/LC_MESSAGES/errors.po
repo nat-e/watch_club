@@ -383,3 +383,9 @@ msgstr "Le test du webhook a échoué."
 #, elixir-autogen, elixir-format
 msgid "The media type is required"
 msgstr "Le type de média est requis"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request.ex
+#, elixir-autogen, elixir-format
+msgid "This has already been requested"
+msgstr "Cela a déjà été demandé"

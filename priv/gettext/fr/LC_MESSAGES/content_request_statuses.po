@@ -10,3 +10,45 @@ msgid ""
 msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Almost ready"
+msgstr "Presque prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Completed"
+msgstr "Terminé"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Downloading"
+msgstr "Téléchargement"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Failed"
+msgstr "En échec"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found"
+msgstr "Introuvable"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not released"
+msgstr "Pas encore sorti"
+
+# AI-translated (Claude)
+#: lib/watch_club/requests/content_request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Queued"
+msgstr "En attente"

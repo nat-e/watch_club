@@ -2,13 +2,12 @@ defmodule WatchClub.Requests.Changes.EnsureContentExists do
   @moduledoc """
   Resolves the `:request` action's `:content` `ContentIdentity` argument into
   a real `Content`, creating it from the Metadata Provider if it does not exist
-  yet, and sets `content_id` on the changeset before the upsert. Mirrors how Add
+  yet, and sets `content_id` on the changeset before the insert. Mirrors how Add
   to Library may create missing Content.
 
   Runs `before_transaction` so the nested `Content.create` (which fetches from
   the Metadata Provider in its own `before_transaction` hook) happens before this
   action's transaction opens, keeping the HTTP fetch out of the transaction.
-  `content_id` is still set in time for the `unique_user_content` upsert identity.
   """
   use Ash.Resource.Change
 

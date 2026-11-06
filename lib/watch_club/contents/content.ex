@@ -275,12 +275,7 @@ defmodule WatchClub.Contents.Content do
       destination_attribute :id
     end
 
-    has_many :requests, ContentRequest
-
-    has_one :actor_request, ContentRequest do
-      from_many? true
-      filter expr(user_id == ^actor(:id))
-    end
+    has_one :request, ContentRequest
 
     has_many :library_items, LibraryItem
     many_to_many :libraries, Library, through: LibraryItem
