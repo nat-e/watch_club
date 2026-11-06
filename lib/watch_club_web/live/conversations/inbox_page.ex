@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
   @row_load [
     :last_message_at,
     :recommended_by,
-    :recipients,
+    recipients: [:user],
     last_message: [:author],
     actor_participant: [:unread_count],
     content: [:implementation]
@@ -116,16 +116,18 @@ defmodule WatchClubWeb.Conversations.InboxPage do
   attr :time_zone, :string, required: true
   attr :selected, :boolean, required: true
 
-  # The Content's poster with the recommender's avatar, its name and when the latest Message came,
-  # then that Message and how many the User hasn't read
+  # The Content's poster with the avatar of who the User talks with, its name and when the latest
+  # Message came, then that Message and how many the User hasn't read
   defp conversation_row(assigns) do
     %{conversation: conversation, current_user: user} = assigns
+    {other, others_count} = other_participant(conversation, user)
 
     assigns =
       assign(assigns,
         title: conversation.content.implementation.best_localization.title,
         unread_count: conversation.actor_participant.unread_count,
-        others: Enum.count(conversation.recipients, &(&1.user_id != user.id)),
+        other: other,
+        others_count: others_count,
         group?: length(conversation.recipients) > 1
       )
 
@@ -143,15 +145,20 @@ defmodule WatchClubWeb.Conversations.InboxPage do
           class="w-12"
         />
         <div class="absolute -right-tight -bottom-related">
-          <.user_avatar user={@conversation.recommended_by} class="ring-2 ring-canvas" />
+          <.user_avatar user={@other} class="ring-2 ring-canvas" />
           <span
             :if={@group?}
             aria-label={
-              dngettext("conversations", "and %{count} other", "and %{count} others", @others)
+              dngettext(
+                "conversations",
+                "and %{count} other",
+                "and %{count} others",
+                @others_count
+              )
             }
             class="absolute top-1/2 left-full -ml-1 grid size-5 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface-raised text-xs font-semibold text-text ring-2 ring-canvas"
           >
-            +{@others}
+            +{@others_count}
           </span>
         </div>
       </div>
@@ -215,6 +222,21 @@ defmodule WatchClubWeb.Conversations.InboxPage do
     </span>
     """
   end
+
+  # Who the User talks with: who recommended it, or the first recipient when it's the User. Then
+  # how many other Participants there are besides them and the User.
+  defp other_participant(%Conversation{recommended_by_id: id} = conversation, %User{id: id}) do
+    [first | others] =
+      conversation.recipients
+      |> Enum.map(& &1.user)
+      |> Enum.sort_by(&{is_nil(&1), &1 && &1.username})
+
+    {first, length(others)}
+  end
+
+  defp other_participant(conversation, user),
+    do:
+      {conversation.recommended_by, Enum.count(conversation.recipients, &(&1.user_id != user.id))}
 
   defp text(%Message{kind: :recommendation, body: nil}),
     do: dgettext("conversations", "Recommended it")
