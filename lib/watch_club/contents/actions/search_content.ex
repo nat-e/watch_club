@@ -1,6 +1,6 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
   @moduledoc """
-  Searches Movies and TV Shows on TMDB, or only the Library's titles with `in_library?`.
+  Searches Movies and TV Shows on TMDB, or only the Library's titles with `has_media?`.
   Returns a `SearchResultsPage` of `SearchResult`s, each saying whether it's in the Library, and
   the pagination metadata.
   """
@@ -23,7 +23,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
             query: query,
             content_type: :movies_and_shows,
             page: page,
-            in_library?: true
+            has_media?: true
           }
         },
         _opts,
@@ -52,7 +52,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
             query: query,
             content_type: :movies_and_shows,
             page: page,
-            in_library?: false
+            has_media?: false
           }
         },
         _opts,
@@ -77,7 +77,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
 
     {:ok,
      %SearchResultsPage{
-       results: put_in_library!(results, context),
+       results: put_has_media!(results, context),
        page: response.page,
        total_pages: response.total_pages
      }}
@@ -110,8 +110,8 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   # People aren't Content
   defp search_result(_other), do: []
 
-  defp put_in_library!(results, context) do
-    library =
+  defp put_has_media!(results, context) do
+    with_media =
       results
       |> Enum.map(& &1.identity)
       |> Contents.get_contents_by_identities!(
@@ -119,7 +119,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       )
       |> MapSet.new(&ContentIdentity.from_content/1)
 
-    Enum.map(results, &%{&1 | in_library?: MapSet.member?(library, &1.identity)})
+    Enum.map(results, &%{&1 | has_media?: MapSet.member?(with_media, &1.identity)})
   end
 
   defp library_search_result(content) do
@@ -131,7 +131,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       year: content.release_date && content.release_date.year,
       overview: localization.overview,
       poster_path: localization.poster_path,
-      in_library?: true
+      has_media?: true
     }
   end
 end

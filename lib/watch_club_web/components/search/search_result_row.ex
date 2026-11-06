@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
           <span :if={@result.year} aria-hidden="true">·</span>
           <span :if={@result.year}>{@result.year}</span>
           <span
-            :if={@result.in_library?}
+            :if={@result.has_media?}
             class="inline-flex min-w-0 items-center gap-tight text-accent"
           >
             <Lucideicons.library class="size-icon-sm shrink-0" />

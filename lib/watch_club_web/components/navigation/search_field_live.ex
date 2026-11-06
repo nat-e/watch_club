@@ -192,8 +192,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           <div class="border-b border-border-subtle p-related max-md:px-page">
             <.search_scopes
               id={"#{@id}-scopes"}
-              in_library={@in_library?}
-              on_toggle={JS.push("toggle_in_library", target: @myself)}
+              has_media={@has_media?}
+              on_toggle={JS.push("toggle_has_media", target: @myself)}
             />
           </div>
           <div class="max-h-[min(32rem,calc(100svh-10rem))] overflow-y-auto max-md:max-h-none max-md:overflow-visible">
@@ -251,8 +251,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
     {:noreply, search(socket)}
   end
 
-  def handle_event("toggle_in_library", _params, socket) do
-    {:noreply, socket |> update(:in_library?, &(!&1)) |> search()}
+  def handle_event("toggle_has_media", _params, socket) do
+    {:noreply, socket |> update(:has_media?, &(!&1)) |> search()}
   end
 
   def handle_event("open_search_page", %{"query" => query}, socket) do
@@ -261,12 +261,12 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         {:noreply, socket}
 
       query ->
-        {:noreply, push_navigate(socket, to: Url.search_link(query, socket.assigns.in_library?))}
+        {:noreply, push_navigate(socket, to: Url.search_link(query, socket.assigns.has_media?))}
     end
   end
 
   defp search(socket) do
-    %{query: query, in_library?: in_library?, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, current_user: user} = socket.assigns
 
     case String.trim(query) do
       "" ->
@@ -276,7 +276,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         socket
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
-          Contents.search_content!(%{query: query, in_library?: in_library?}, actor: user)
+          Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
         end)
     end
   end

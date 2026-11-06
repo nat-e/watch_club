@@ -26,8 +26,8 @@ defmodule WatchClubWeb.SearchPage do
     >
       <.search_scopes
         id="search-page-scopes"
-        in_library={@in_library?}
-        on_toggle="toggle_in_library"
+        has_media={@has_media?}
+        on_toggle="toggle_has_media"
       />
       <.search_status
         id="search-page-status"
@@ -72,9 +72,9 @@ defmodule WatchClubWeb.SearchPage do
   end
 
   @impl true
-  def handle_event("toggle_in_library", _params, socket) do
-    %{query: query, in_library?: in_library?} = socket.assigns
-    {:noreply, push_patch(socket, to: Url.search_link(query, !in_library?), replace: true)}
+  def handle_event("toggle_has_media", _params, socket) do
+    %{query: query, has_media?: has_media?} = socket.assigns
+    {:noreply, push_patch(socket, to: Url.search_link(query, !has_media?), replace: true)}
   end
 
   def handle_event("retry", _params, socket) do
@@ -87,9 +87,9 @@ defmodule WatchClubWeb.SearchPage do
       do: {:noreply, socket}
 
   def handle_event("load_more", _params, socket) do
-    %{query: query, in_library?: in_library?, page: page, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, page: page, current_user: user} = socket.assigns
 
-    case Contents.search_content(%{query: query, in_library?: in_library?, page: page + 1},
+    case Contents.search_content(%{query: query, has_media?: has_media?, page: page + 1},
            actor: user
          ) do
       {:ok, %SearchResultsPage{} = results_page} ->
@@ -110,7 +110,7 @@ defmodule WatchClubWeb.SearchPage do
       |> assign(page: 0, total_pages: 0, result_count: 0)
       |> stream(:search_results, [], reset: true)
 
-    %{query: query, in_library?: in_library?, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, current_user: user} = socket.assigns
 
     case query do
       "" ->
@@ -120,7 +120,7 @@ defmodule WatchClubWeb.SearchPage do
         socket
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
-          Contents.search_content!(%{query: query, in_library?: in_library?}, actor: user)
+          Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
         end)
     end
   end

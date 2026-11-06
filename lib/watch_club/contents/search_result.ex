@@ -10,8 +10,8 @@ defmodule WatchClub.Contents.SearchResult do
           year: pos_integer() | nil,
           overview: String.t() | nil,
           poster_path: String.t() | nil,
-          in_library?: boolean()
+          has_media?: boolean()
         }
 
-  defstruct [:identity, :title, :year, :overview, :poster_path, in_library?: false]
+  defstruct [:identity, :title, :year, :overview, :poster_path, has_media?: false]
 end

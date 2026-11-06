@@ -131,7 +131,7 @@ defmodule WatchClub.Contents.Content do
 
       argument :page, :integer, allow_nil?: false, default: 1
 
-      argument :in_library?, :boolean,
+      argument :has_media?, :boolean,
         allow_nil?: false,
         default: false,
         description: "Searches the Library's titles instead of TMDB"

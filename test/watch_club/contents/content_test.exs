@@ -292,20 +292,20 @@ defmodule WatchClub.Contents.ContentTest do
                page: 1,
                total_pages: 3,
                results: [
-                 %SearchResult{title: "Dune", year: 2021, overview: nil, in_library?: true},
+                 %SearchResult{title: "Dune", year: 2021, overview: nil, has_media?: true},
                  %SearchResult{
                    identity: %ContentIdentity{type: :tv_show, external_id: "42"},
                    title: "Dune: Prophecy",
                    year: nil,
                    overview: "The Bene Gesserit.",
-                   in_library?: false
+                   has_media?: false
                  }
                ]
              } =
                search_content!(%{query: "dune"}, actor: member)
     end
 
-    test "searches the Library's titles with in_library?", %{member: member} do
+    test "searches the Library's titles with has_media?", %{member: member} do
       dune = generate(movie(original_title: "Dune", release_date: ~D[2021-09-15]))
       add_video!(dune.id)
       # Not in the Library
@@ -314,8 +314,8 @@ defmodule WatchClub.Contents.ContentTest do
       assert %SearchResultsPage{
                page: 1,
                total_pages: 1,
-               results: [%SearchResult{title: "Dune", year: 2021, in_library?: true} = result]
-             } = search_content!(%{query: "dune", in_library?: true}, actor: member)
+               results: [%SearchResult{title: "Dune", year: 2021, has_media?: true} = result]
+             } = search_content!(%{query: "dune", has_media?: true}, actor: member)
 
       assert result.identity == ContentIdentity.from_content(dune)
     end

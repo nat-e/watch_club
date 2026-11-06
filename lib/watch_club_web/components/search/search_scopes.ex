@@ -7,7 +7,7 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
   use WatchClubWeb, :component
 
   attr :id, :string, required: true
-  attr :in_library, :boolean, required: true, doc: "whether the In the library filter is on"
+  attr :has_media, :boolean, required: true, doc: "whether the In the library filter is on"
   attr :on_toggle, :any, required: true, doc: "the event or JS commands of the filter"
   attr :class, :any, default: nil
 
@@ -23,7 +23,7 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
         {ContentType.translated_plural_label(:book)}
         <span class="font-normal">{dgettext("search", "soon")}</span>
       </.badge>
-      <.filter_chip id={"#{@id}-in-library"} on={@in_library} phx-click={@on_toggle} class="ml-auto">
+      <.filter_chip id={"#{@id}-in-library"} on={@has_media} phx-click={@on_toggle} class="ml-auto">
         <:icon><Lucideicons.library /></:icon>
         {dgettext("search", "In the library")}
       </.filter_chip>
