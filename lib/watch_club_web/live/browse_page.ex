@@ -306,7 +306,8 @@ defmodule WatchClubWeb.BrowsePage do
   attr :content, Content, required: true
   attr :current_user, User, required: true
 
-  # Its progress badge, and on hover its name, rating, original language, year and Play
+  # Its progress badge, and on hover its name, rating, original language, year and Play. Screens
+  # that can't hover show them on a first tap, and the next one opens the title or plays it.
   defp poster_card(assigns) do
     assigns =
       assigns
@@ -324,7 +325,7 @@ defmodule WatchClubWeb.BrowsePage do
         <.progress_badge id={@progress_id} status={@content.actor_progress_status} />
         <span
           aria-hidden="true"
-          class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100"
+          class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100"
         >
           <span class="line-clamp-3 text-sm font-semibold text-white">{@title}</span>
           <span class="flex items-center gap-related text-xs text-white/80">
@@ -357,8 +358,7 @@ defmodule WatchClubWeb.BrowsePage do
         }
         class="absolute inset-0 rounded-lg"
       ></.link>
-      <%!-- Screens that can't hover have no Play: a tap opens the title --%>
-      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:hidden">
+      <div class="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100">
         <.live_component
           id={PlayOrRequestButtonLive.dom_id(@identity)}
           module={PlayOrRequestButtonLive}
@@ -368,6 +368,14 @@ defmodule WatchClubWeb.BrowsePage do
           class="pointer-events-auto"
         />
       </div>
+      <%!-- Screen readers reach the link and Play directly --%>
+      <button
+        type="button"
+        aria-hidden="true"
+        tabindex="-1"
+        phx-click={reveal_poster()}
+        class="absolute inset-0 rounded-lg [@media(hover:hover)]:hidden group-data-revealed:hidden"
+      ></button>
     </div>
     """
   end
@@ -529,6 +537,13 @@ defmodule WatchClubWeb.BrowsePage do
       )
 
     ~p"/?#{params}"
+  end
+
+  # Shows a poster's name, rating and Play, as hover does, and hides the ones shown before
+  defp reveal_poster do
+    "data-revealed"
+    |> JS.remove_attribute(to: "#library [data-revealed]")
+    |> JS.set_attribute({"data-revealed", ""}, to: {:closest, ".group"})
   end
 
   # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
