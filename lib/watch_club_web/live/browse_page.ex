@@ -1,12 +1,14 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
-  Browse: the Library's posters, most recently added first. Signing in opens it.
+  Browse: the Library's posters, with a row of filters and a sort menu. Filters and the sort live
+  in the URL, so Back undoes them. Signing in opens it.
   """
   use WatchClubWeb, :live_view
 
+  import WatchClubWeb.Components.Contents.ContentTypeIcon
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, LibrarySort}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
@@ -14,7 +16,9 @@ defmodule WatchClubWeb.BrowsePage do
   alias WatchClubWeb.Helpers.KeysetStreamState
 
   @page_size 40
-  @content_fields [:implementation, :actor_progress_status, :added_to_library_at]
+  # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
+  @content_fields [:implementation, :actor_progress_status]
+  @no_filters %{type: nil, not_watched?: false, decades: [], original_languages: []}
 
   @impl true
   def render(assigns) do
@@ -28,6 +32,60 @@ defmodule WatchClubWeb.BrowsePage do
       search
       class="@container pt-group!"
     >
+      <div class="flex min-w-0 items-center gap-related">
+        <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
+          <%!-- Hidden rather than removed, so the chips after it keep their focus --%>
+          <div
+            id="filters-clear"
+            class={["flex shrink-0 items-center gap-related", not filtered?(@filters) && "hidden"]}
+          >
+            <.button
+              id="filters-clear-button"
+              variant="secondary"
+              size="icon-sm"
+              phx-click={clear_filters()}
+              aria-label={dgettext("browse", "Clear filters")}
+              class="rounded-full!"
+            >
+              <Lucideicons.x />
+            </.button>
+            <.divider />
+          </div>
+          <div
+            id="filter-types"
+            role="radiogroup"
+            aria-label={dgettext("browse", "Type")}
+            class="flex shrink-0 items-center gap-related"
+          >
+            <.filter_chip
+              :for={type <- ContentType.library_display_order()}
+              id={"filter-type-#{type}"}
+              on={@filters.type == type}
+              radio
+              phx-click="change_filter"
+              phx-value-filter="type"
+              phx-value-choice={type}
+            >
+              <:icon><.content_type_icon type={type} /></:icon>
+              {ContentType.translated_plural_label(type)}
+            </.filter_chip>
+          </div>
+          <.divider />
+          <.filter_chip
+            id="filter-not-watched"
+            on={@filters.not_watched?}
+            phx-click="change_filter"
+            phx-value-filter="not_watched"
+          >
+            <:icon><Lucideicons.eye_off /></:icon>
+            {dgettext("browse", "Not watched")}
+          </.filter_chip>
+          <.divider />
+          <.more_button filters={@filters} />
+        </.scroll_row>
+        <.sort_menu filters={@filters} sort={@sort} />
+      </div>
+
       <ul
         id="library"
         phx-update="stream"
@@ -35,7 +93,15 @@ defmodule WatchClubWeb.BrowsePage do
       >
         <%!-- Shown only when it's the stream's sole child --%>
         <li id="library-empty" class="col-span-full hidden only:block">
-          <.empty>
+          <.empty :if={filtered?(@filters)}>
+            <:icon><Lucideicons.funnel_x /></:icon>
+            <:title>{dgettext("browse", "Nothing matches these filters")}</:title>
+            <:description>{dgettext("browse", "Remove a filter to see more.")}</:description>
+            <.button id="library-clear-filters" variant="secondary" phx-click={clear_filters()}>
+              {dgettext("browse", "Clear filters")}
+            </.button>
+          </.empty>
+          <.empty :if={not filtered?(@filters)}>
             <:icon><Lucideicons.clapperboard /></:icon>
             <:title>{dgettext("browse", "Nothing in the library yet")}</:title>
             <:description>
@@ -53,7 +119,128 @@ defmodule WatchClubWeb.BrowsePage do
         id="library-load-more"
         event="load_more"
       />
+
+      <.more_filters :if={@filter_options} filters={@filters} options={@filter_options} />
     </Layouts.app>
+    """
+  end
+
+  # Between the type chips, Not watched and More
+  defp divider(assigns) do
+    ~H"""
+    <span class="h-6 w-px shrink-0 bg-border" aria-hidden="true"></span>
+    """
+  end
+
+  attr :filters, :map, required: true
+
+  # Opens the decades and original languages, with how many of them are on
+  defp more_button(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :count,
+        Enum.count([assigns.filters.decades, assigns.filters.original_languages], &(&1 != []))
+      )
+
+    ~H"""
+    <.button
+      id="more-filters-button"
+      variant="secondary"
+      size="sm"
+      phx-click="open_more_filters"
+      aria-haspopup="dialog"
+      aria-label={
+        if @count > 0,
+          do: dngettext("browse", "More filters, %{count} on", "More filters, %{count} on", @count),
+          else: dgettext("browse", "More filters")
+      }
+      class="shrink-0 rounded-full! text-sm!"
+    >
+      <:icon><Lucideicons.sliders_horizontal class="size-icon-sm" /></:icon>
+      {dgettext("browse", "More")}
+      <.badge :if={@count > 0} size="sm">{@count}</.badge>
+    </.button>
+    """
+  end
+
+  attr :filters, :map, required: true
+  attr :sort, :atom, required: true, doc: "a `LibrarySort`"
+
+  # Its name where there's room, only its icon on phones
+  defp sort_menu(assigns) do
+    ~H"""
+    <.dropdown_menu id="sort" class="shrink-0">
+      <:trigger>
+        <.button
+          id="sort-button"
+          variant="secondary"
+          size="sm"
+          aria-label={dgettext("browse", "Sort: %{sort}", sort: LibrarySort.translated_label(@sort))}
+          class="rounded-full! text-sm! @max-2xl:px-related!"
+        >
+          <:icon><Lucideicons.arrow_down_up class="size-icon-sm" /></:icon>
+          <span class="@max-2xl:sr-only">{LibrarySort.translated_label(@sort)}</span>
+        </.button>
+      </:trigger>
+      <.dropdown_menu_item
+        :for={sort <- LibrarySort.values()}
+        id={"sort-#{sort}"}
+        patch={browse_path(@filters, sort)}
+        checked={@sort == sort}
+      >
+        {LibrarySort.translated_label(sort)}
+      </.dropdown_menu_item>
+    </.dropdown_menu>
+    """
+  end
+
+  attr :filters, :map, required: true
+  attr :options, :map, required: true, doc: "the Library's decades and original languages"
+
+  # From the bottom of the screen on phones. Each choice applies at once.
+  defp more_filters(assigns) do
+    ~H"""
+    <.modal id="more-filters" size="md" sheet on_close={JS.push("close_more_filters")}>
+      <:title>{dgettext("browse", "Filters")}</:title>
+      <fieldset class="flex min-w-0 flex-col gap-related">
+        <legend class="mb-related"><.text_label text={dgettext("browse", "Year")} /></legend>
+        <div class="flex flex-wrap gap-related">
+          <.filter_chip
+            :for={decade <- @options.decades}
+            id={"filter-decade-#{decade}"}
+            on={decade in @filters.decades}
+            phx-click="change_filter"
+            phx-value-filter="decade"
+            phx-value-choice={decade}
+            class="tabular-nums"
+          >
+            {dgettext("browse", "%{decade}s", decade: decade)}
+          </.filter_chip>
+        </div>
+      </fieldset>
+      <fieldset class="flex min-w-0 flex-col">
+        <legend class="mb-related">
+          <.text_label text={dgettext("browse", "Original language")} />
+        </legend>
+        <label
+          :for={language <- @options.original_languages}
+          class="-mx-related flex items-center gap-related rounded-control px-related py-tight text-sm text-text-muted transition-colors hover:bg-surface-hover hover:text-text has-checked:text-text pointer-coarse:min-h-touch-target"
+        >
+          <.checkbox
+            id={"filter-language-#{language}"}
+            checked={language in @filters.original_languages}
+            phx-click="change_filter"
+            phx-value-filter="language"
+            phx-value-choice={language}
+          />
+          <span class="text-base leading-none" aria-hidden="true">
+            {Languages.to_flag(language)}
+          </span>
+          <span class="min-w-0 truncate">{Languages.to_name(language)}</span>
+        </label>
+      </fieldset>
+    </.modal>
     """
   end
 
@@ -145,6 +332,19 @@ defmodule WatchClubWeb.BrowsePage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
+     # More's decades and original languages while it's open, as they were when it opened
+     |> assign(:filter_options, nil)}
+  end
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(:filters, filters(params))
+     |> assign(
+       :sort,
+       Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
+     )
      |> assign(:stream_state, KeysetStreamState.init(@page_size))
      |> load_page!()}
   end
@@ -156,6 +356,27 @@ defmodule WatchClubWeb.BrowsePage do
     else
       {:noreply, socket}
     end
+  end
+
+  def handle_event("open_more_filters", _params, socket) do
+    {:noreply,
+     assign(
+       socket,
+       :filter_options,
+       Contents.get_library_filter_options!(actor: socket.assigns.current_user)
+     )}
+  end
+
+  def handle_event("close_more_filters", _params, socket) do
+    {:noreply, assign(socket, :filter_options, nil)}
+  end
+
+  # Changes the filters from the server's own state, so quick taps all count
+  def handle_event("change_filter", %{"filter" => filter} = params, socket) do
+    %{filters: filters, sort: sort} = socket.assigns
+
+    {:noreply,
+     push_patch(socket, to: browse_path(change_filter(filters, filter, params["choice"]), sort))}
   end
 
   @impl true
@@ -180,31 +401,106 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
+  # The filters in the URL. Unknown types and decades that aren't numbers are left out.
+  defp filters(params) do
+    %{
+      type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
+      not_watched?: params["not_watched"] == "true",
+      decades:
+        params["decades"]
+        |> list_param()
+        |> Enum.flat_map(fn decade ->
+          case Integer.parse(decade) do
+            {decade, ""} -> [decade]
+            _not_a_number -> []
+          end
+        end),
+      original_languages: list_param(params["languages"])
+    }
+  end
+
+  defp list_param(values) when is_binary(values), do: String.split(values, ",", trim: true)
+  # Missing, or a list from a hand-edited URL such as `decades[]=1990`
+  defp list_param(_values), do: []
+
+  # A type replaces the one that's on. The other choices turn on or off.
+  defp change_filter(_filters, "clear", _choice), do: @no_filters
+
+  defp change_filter(filters, "type", type),
+    do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
+
+  defp change_filter(filters, "not_watched", _choice),
+    do: %{filters | not_watched?: not filters.not_watched?}
+
+  defp change_filter(filters, "decade", decade),
+    do: %{filters | decades: toggle_choice(filters.decades, String.to_integer(decade))}
+
+  defp change_filter(filters, "language", language),
+    do: %{filters | original_languages: toggle_choice(filters.original_languages, language)}
+
+  defp toggle_choice(choices, choice) do
+    if choice in choices, do: List.delete(choices, choice), else: choices ++ [choice]
+  end
+
+  # Browse's URL with these filters and sort, without the ones that are off
+  defp browse_path(filters, sort) do
+    params =
+      Enum.reject(
+        [
+          type: filters.type,
+          not_watched: filters.not_watched?,
+          decades: Enum.join(filters.decades, ","),
+          languages: Enum.join(filters.original_languages, ","),
+          sort: sort != LibrarySort.default() && sort
+        ],
+        fn {_param, value} -> value in [nil, false, ""] end
+      )
+
+    ~p"/?#{params}"
+  end
+
+  # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
+  defp clear_filters do
+    "change_filter"
+    |> JS.push(value: %{filter: "clear"})
+    |> JS.focus_first(to: "#filter-types")
+  end
+
+  defp filtered?(filters), do: filters != @no_filters
+
   defp load_page!(socket) do
-    %{stream_state: stream_state, current_user: user} = socket.assigns
+    %{stream_state: stream_state, filters: filters, sort: sort, current_user: user} =
+      socket.assigns
 
     {:ok, new_state, contents} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
-        Contents.get_contents_in_library(load: @content_fields, page: page_options, actor: user)
+        Contents.get_contents_in_library(Map.put(filters, :sort, sort),
+          load: @content_fields,
+          page: page_options,
+          actor: user
+        )
       end)
 
     socket
     |> assign(:stream_state, new_state)
-    |> stream(:library, contents)
+    |> stream(:library, contents, reset: stream_state.status == :init)
   end
 
-  # A Content that joins the Library with a new Media goes first, one that leaves it goes, and the
-  # others update in place if they're loaded.
+  # With the Recently added sort, a Content that joins the Library goes first. One that no longer
+  # matches the filters goes, and the others update in place if they're loaded.
   defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
-    case Contents.get_contents_in_library!(
+    %{filters: filters, sort: sort, current_user: user} = socket.assigns
+
+    case Contents.get_contents_in_library!(filters,
            query: [filter: [id: content_id]],
-           load: @content_fields,
-           actor: socket.assigns.current_user
+           load: [:added_to_library_at | @content_fields],
+           actor: user
          ) do
       [] ->
         stream_delete_by_dom_id(socket, :library, "library-#{content_id}")
 
-      [%Content{added_to_library_at: ^new_media_added_at} = content] ->
+      [%Content{added_to_library_at: ^new_media_added_at} = content]
+      when sort == :recently_added ->
         stream_insert(socket, :library, content, at: 0)
 
       [content] ->

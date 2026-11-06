@@ -28,6 +28,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
     doc: "Maximum modal width."
 
   attr :on_close, JS, required: true
+  attr :sheet, :boolean, default: false, doc: "Opens from the bottom of the screen on phones."
   attr :rest, :global
 
   slot :title, required: true do
@@ -60,6 +61,8 @@ defmodule WatchClubWeb.Components.UI.Modal do
         @size == "sm" && "sm:max-w-md",
         @size == "md" && "sm:max-w-lg",
         @size == "lg" && "sm:max-w-2xl",
+        @sheet &&
+          "max-md:mb-0 max-md:max-h-[85svh] max-md:w-full max-md:max-w-none! max-md:rounded-b-none",
         @class
       ]}
       phx-hook=".Modal"
