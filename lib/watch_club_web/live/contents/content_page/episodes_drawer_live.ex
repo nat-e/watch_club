@@ -68,7 +68,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesDrawerLive do
               phx-target={@myself}
               aria-current={to_string(number == @season.season_number)}
               class={[
-                "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors",
+                "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
                 number == @season.season_number && "bg-surface-selected text-text",
                 number != @season.season_number &&
                   "text-text-muted hover:bg-surface-hover hover:text-text"

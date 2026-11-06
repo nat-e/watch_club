@@ -225,6 +225,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           size="lg"
           phx-click="open_episodes"
           aria-haspopup="dialog"
+          class="phx-click-loading:cursor-progress phx-click-loading:opacity-60"
         >
           <:icon><Lucideicons.list_video /></:icon>
           {dgettext("contents", "Episodes")}

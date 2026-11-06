@@ -95,7 +95,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
         aria-label={dgettext("contents", "All episodes")}
         aria-haspopup="dialog"
         title={dgettext("contents", "All episodes")}
-        class="rounded-l-none! border-l-primary-hover!"
+        class="rounded-l-none! border-l-primary-hover! phx-click-loading:cursor-progress phx-click-loading:opacity-60"
       >
         <Lucideicons.chevron_down />
       </.button>
