@@ -13,9 +13,9 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
-  import WatchClubWeb.Helpers.ContentDetails
 
   alias Ash.Notifier.Notification
+  alias WatchClub.Contents.Content
   alias WatchClub.Conversations
   alias WatchClub.Conversations.{Conversation, Message, Participant}
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
@@ -29,7 +29,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       :recommended_by,
       :actor_participant,
       recipients: [:user],
-      content: [:implementation]
+      content: [implementation: %{load: [tv_show: [:season_count]]}]
     ]
   end
 
@@ -103,12 +103,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
         data-last={@last_message && @last_message.id}
         class="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-page pt-related pb-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] *:shrink-0 @4xl:px-cluster"
       >
-        <.hero
-          conversation={@conversation}
-          details={@details}
-          identity={@identity}
-          current_user={@current_user}
-        />
+        <.hero conversation={@conversation} identity={@identity} current_user={@current_user} />
         <%!-- Items are contents, so the day labels stick over the whole stream, under the bar
         once it shows --%>
         <div id={"#{@id}-stream"} phx-update="stream" role="log" class="flex flex-col">
@@ -183,7 +178,6 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   end
 
   attr :conversation, Conversation, required: true
-  attr :details, :any, required: true, doc: "its TMDB details, nil when TMDB doesn't answer"
   attr :identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
@@ -206,8 +200,8 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       class="relative isolate -mx-page -mt-related overflow-hidden @4xl:-mx-cluster"
     >
       <.tmdb_backdrop
-        :if={@details && @details.backdrop_path}
-        path={@details.backdrop_path}
+        :if={@conversation.content.implementation.backdrop_path}
+        path={@conversation.content.implementation.backdrop_path}
         size="w1280"
         class="absolute inset-0 -z-10 size-full object-cover"
       />
@@ -233,7 +227,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
             </.link>
           </h2>
           <span class="text-sm text-text-muted">
-            {facts(@conversation, @details, @current_user.settings.locale)}
+            {facts(@conversation.content, @current_user.settings.locale)}
           </span>
         </div>
         <.recommendation_text
@@ -417,16 +411,28 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   defp content_title(conversation),
     do: conversation.content.implementation.best_localization.title
 
-  # "2022 · Movie · 2 hr 9 min", the length from TMDB
-  defp facts(conversation, details, locale) do
+  # "2022 · Movie · 2 hr 9 min"
+  defp facts(content, locale) do
     [
-      Time.maybe_year(conversation.content.release_date),
-      ContentType.translated_label(conversation.content.type),
-      details && length_label(details, locale)
+      Time.maybe_year(content.release_date),
+      ContentType.translated_label(content.type),
+      length_label(content, locale)
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" · ")
   end
+
+  defp length_label(%Content{type: :movie, implementation: movie}, locale),
+    do: Time.minutes(movie.best_localization.runtime, locale)
+
+  defp length_label(%Content{type: :tv_show, implementation: %{season_count: 0}}, _locale),
+    do: nil
+
+  defp length_label(%Content{type: :tv_show, implementation: tv_show}, _locale),
+    do:
+      dngettext("contents", "%{count} season", "%{count} seasons", tv_show.season_count,
+        count: tv_show.season_count
+      )
 
   @impl true
   def update(%{notification: %Notification{resource: Message, data: message}}, socket) do
@@ -480,11 +486,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       do: mark_read!(socket)
 
     socket
-    |> assign(
-      details: details(conversation, user),
-      last_message: List.last(messages),
-      form: new_form(socket)
-    )
+    |> assign(last_message: List.last(messages), form: new_form(socket))
     |> stream(:messages, items, reset: true)
   end
 
@@ -515,15 +517,6 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     if connected?(socket) do
       %{conversation: conversation, current_user: user} = socket.assigns
       Conversations.mark_conversation_read!(conversation.actor_participant, actor: user)
-    end
-  end
-
-  # The wide image and the length, which only TMDB has: the header shows without them when it
-  # doesn't answer
-  defp details(conversation, user) do
-    case get_details(ContentIdentity.from_content(conversation.content), user) do
-      {:ok, details} -> details
-      {:error, _error} -> nil
     end
   end
 

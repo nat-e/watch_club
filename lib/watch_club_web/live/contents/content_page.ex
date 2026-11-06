@@ -11,11 +11,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
-  import WatchClubWeb.Helpers.ContentDetails
 
   alias WatchClub.Contents.Rating
   alias WatchClub.Conversations
   alias WatchClub.Conversations.{Conversation, Message, Participant}
+  alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Contents.ContentPage.{EpisodesModalLive, RecommendModalLive}
@@ -531,8 +531,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     %{live_action: type, current_user: user} = socket.assigns
 
     with {id, ""} <- Integer.parse(tmdb_id),
-         identity = identity(type, id),
-         {:ok, details} <- get_details(identity, user) do
+         {identity, {:ok, details}} <- get_details(type, id, user) do
       {:noreply,
        socket
        |> assign(details: details, content_identity: identity)
@@ -548,8 +547,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
     end
   end
 
-  defp identity(:movie, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
-  defp identity(:tv_show, tmdb_id), do: ContentIdentity.for_tv_show(tmdb_id)
+  # The Content's identity, and what it is from TMDB
+  defp get_details(:movie, tmdb_id, user),
+    do: {ContentIdentity.for_movie(tmdb_id), Contents.get_movie_details(tmdb_id, actor: user)}
+
+  defp get_details(:tv_show, tmdb_id, user),
+    do: {ContentIdentity.for_tv_show(tmdb_id), Contents.get_tv_show_details(tmdb_id, actor: user)}
 
   @impl true
   def handle_event("open_episodes", _params, socket),
@@ -698,6 +701,29 @@ defmodule WatchClubWeb.Contents.ContentPage do
        do: episode.season_number
 
   defp current_season_number(_content, details), do: details |> season_numbers() |> List.first()
+
+  # The seasons of a TV Show with episodes, without its specials
+  defp season_numbers(%TvDetailsResponse{} = details) do
+    for season <- details.seasons,
+        season.season_number >= 1 and season.episode_count > 0,
+        do: season.season_number
+  end
+
+  defp title(%MovieDetailsResponse{title: title}), do: title
+  defp title(%TvDetailsResponse{name: name}), do: name
+
+  defp release_date(%MovieDetailsResponse{release_date: date}), do: date
+  defp release_date(%TvDetailsResponse{first_air_date: date}), do: date
+
+  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale),
+    do: Time.minutes(minutes, locale)
+
+  defp length_label(%TvDetailsResponse{} = details, _locale) do
+    case length(season_numbers(details)) do
+      0 -> nil
+      count -> dngettext("contents", "%{count} season", "%{count} seasons", count)
+    end
+  end
 
   # The director, then up to 17 actors in billing order
   defp cast(credits) do

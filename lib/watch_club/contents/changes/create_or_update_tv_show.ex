@@ -5,6 +5,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
   alias WatchClub.Contents.{Genre, Rating}
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
+  alias WatchClub.Integrations.Tmdb.Types.Images
 
   require Logger
 
@@ -49,6 +50,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       :tv_show,
       %{
         original_name: tv_show.original_name,
+        backdrop_path: Images.best_backdrop_path(tv_show.images),
         tmdb_id: tv_show.id,
         tvdb_id: tv_show.external_ids.tvdb_id,
         localizations: build_localizations(tv_show),
