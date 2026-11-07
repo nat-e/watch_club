@@ -43,5 +43,5 @@ msgstr ""
 
 #: lib/watch_club/requests/content_request_status.ex
 #, elixir-autogen, elixir-format
-msgid "Queued"
+msgid "Searching"
 msgstr ""

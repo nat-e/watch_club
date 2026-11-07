@@ -105,7 +105,7 @@ A user’s request for WatchClub to make a piece of content available on the med
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
 **Content Request Status**:
-The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Queued, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Queued_ is the label for a just-submitted request still within its grace window or whose **Media Source** call is still in flight.
+The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
 
 **Media Source Request**:

@@ -76,7 +76,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
       :if={@status in [:importing, :downloading]}
       class="size-icon-sm shrink-0 text-accent"
     />
-    <Lucideicons.clock :if={@status == :queued} class="size-icon-sm shrink-0 text-text-subtle" />
+    <Lucideicons.search :if={@status == :searching} class="size-icon-sm shrink-0 text-text-subtle" />
     <Lucideicons.calendar
       :if={@status == :not_released}
       class="size-icon-sm shrink-0 text-text-subtle"
@@ -87,7 +87,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
   end
 
   defp when_watchable(%ContentRequest{status: status}, _locale)
-       when status in [:importing, :queued],
+       when status in [:importing, :searching],
        do: ContentRequestStatus.translated_label(status)
 
   defp when_watchable(%ContentRequest{status: :downloading} = request, _locale),

@@ -187,7 +187,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
         id: request_id,
         best_source_request: nil,
         percent_imported: +0.0,
-        status: :queued,
+        status: :searching,
         updated_at: initial_updated_at
       } =
         request =
@@ -239,7 +239,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
         id: request_id,
         best_source_request: nil,
         percent_imported: +0.0,
-        status: :queued
+        status: :searching
       } =
         request =
         Requests.request_content!(ContentIdentity.from_content(show),
@@ -267,7 +267,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request: nil,
         percent_imported: 50.0,
-        status: :queued
+        status: :searching
       } =
         Ash.reload!(request,
           load: [:best_source_request, :percent_imported, :status],
@@ -307,7 +307,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       radarr_id = radarr.id
 
       # Request the movie — this only enqueues the submit job; no MSR exists yet
-      %ContentRequest{id: request_id, best_source_request_id: nil, status: :queued} =
+      %ContentRequest{id: request_id, best_source_request_id: nil, status: :searching} =
         request =
         Requests.request_content!(ContentIdentity.from_content(movie),
           load: [:status],
@@ -327,7 +327,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request_id: ^msr_id,
         percent_imported: +0.0,
-        status: :queued
+        status: :searching
       } = Ash.reload!(request, load: [:percent_imported, :status], actor: user)
 
       :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")

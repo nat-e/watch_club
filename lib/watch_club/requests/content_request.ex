@@ -221,7 +221,7 @@ defmodule WatchClub.Requests.ContentRequest do
                     :completed
 
                   is_nil(best_source_request) ->
-                    :queued
+                    :searching
 
                   best_source_request.status == :not_released ->
                     :not_released
@@ -235,7 +235,7 @@ defmodule WatchClub.Requests.ContentRequest do
                     :not_found
 
                   best_source_request.status == :searching ->
-                    :queued
+                    :searching
 
                   best_source_request.status == :downloading ->
                     :downloading
