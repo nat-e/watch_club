@@ -3,8 +3,8 @@ defmodule WatchClubWeb.MyRequestsPage do
   My Requests: the Content Requests the User is a Request Subscriber of. The playable ones come
   first, as a row of Browse's posters, the most recently playable first. The ready unseen ones
   lead the row, ringed, with a New badge, until the User leaves the page, since opening it marks
-  them seen. The others follow as a list, the most recently changed first, each saying when it
-  can be watched.
+  them seen. The others follow as a list, the most recently changed first when the page opens,
+  each saying when it can be watched.
   """
   use WatchClubWeb, :live_view
 
@@ -134,7 +134,14 @@ defmodule WatchClubWeb.MyRequestsPage do
      |> assign(:ready_unseen_ids, ready_unseen_ids)
      |> stream_configure(:ready_requests, dom_id: &"ready-request-#{&1.content_id}")
      |> stream(:ready_requests, ready_requests)
-     |> load_requests_on_the_way()}
+     # Intentionally small: what's still downloading or waiting to be
+     |> assign(
+       :requests_on_the_way,
+       Requests.list_current_user_requests_on_the_way!(
+         load: @request_fields_to_load,
+         actor: user
+       )
+     )}
   end
 
   @impl true
@@ -177,7 +184,7 @@ defmodule WatchClubWeb.MyRequestsPage do
         socket |> remove_request_on_the_way(content_id) |> show_ready_request(request)
 
       {:ok, %ContentRequest{ready?: false} = request} ->
-        socket |> stream_delete(:ready_requests, request) |> load_requests_on_the_way()
+        socket |> stream_delete(:ready_requests, request) |> show_request_on_the_way(request)
 
       # Deleted, or the User stopped getting notified, or a Content without a Content Request
       {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} ->
@@ -208,15 +215,13 @@ defmodule WatchClubWeb.MyRequestsPage do
         &Enum.reject(&1, fn request -> request.content_id == content_id end)
       )
 
-  defp load_requests_on_the_way(socket) do
-    # Intentionally small: what's still downloading or waiting to be
-    assign(
-      socket,
-      :requests_on_the_way,
-      Requests.list_current_user_requests_on_the_way!(
-        load: @request_fields_to_load,
-        actor: socket.assigns.current_user
-      )
-    )
+  # While the User is on the page, one that changes keeps its place, so the rows don't move under
+  # them, and one new to the list leads it
+  defp show_request_on_the_way(socket, %ContentRequest{id: id} = request) do
+    update(socket, :requests_on_the_way, fn requests ->
+      if Enum.any?(requests, &(&1.id == id)),
+        do: Enum.map(requests, &if(&1.id == id, do: request, else: &1)),
+        else: [request | requests]
+    end)
   end
 end
