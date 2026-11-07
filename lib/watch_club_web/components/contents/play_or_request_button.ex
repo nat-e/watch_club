@@ -119,7 +119,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
           stroke-width="3"
           class="text-border-control"
         />
+        <%!-- Left out without a percentage: its round end would show as a dot --%>
         <circle
+          :if={@percent}
           cx="24"
           cy="24"
           r="21"
@@ -127,7 +129,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
           stroke="currentColor"
           stroke-width="3"
           pathLength="100"
-          stroke-dasharray={"#{@percent || 0} 100"}
+          stroke-dasharray={"#{@percent} 100"}
           stroke-linecap="round"
           class="text-primary"
         />
