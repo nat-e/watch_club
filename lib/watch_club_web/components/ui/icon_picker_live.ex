@@ -49,7 +49,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
           <.input
             id={"#{@id}-search-input"}
             field={@form[:query]}
-            placeholder={dgettext("clubs", "Search icons")}
+            placeholder={dgettext("default", "Search icons")}
             phx-debounce="200"
             autocomplete="off"
           />
@@ -64,8 +64,8 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
             class="min-h-48"
           >
             <:icon><Lucideicons.search_x /></:icon>
-            <:title>{dgettext("clubs", "No icons found")}</:title>
-            <:description>{dgettext("clubs", "Try a different search term.")}</:description>
+            <:title>{dgettext("default", "No icons found")}</:title>
+            <:description>{dgettext("default", "Try a different search term.")}</:description>
           </.empty>
 
           <div
@@ -82,7 +82,7 @@ defmodule WatchClubWeb.Components.UI.IconPickerLive do
               size="icon"
               phx-click={@on_select}
               phx-value-icon={icon.name}
-              aria-label={dgettext("clubs", "Use %{icon_name} icon", icon_name: icon.name)}
+              aria-label={dgettext("default", "Use %{icon_name} icon", icon_name: icon.name)}
               title={icon.name}
             >
               <.lucide_icon name={icon.name} class="size-icon-lg" />

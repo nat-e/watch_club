@@ -28,8 +28,6 @@ defmodule WatchClub.Accounts do
       define :view_invitation, action: :view_invitation, args: [:code]
     end
 
-    resource WatchClub.Accounts.ClubInvitation
-
     resource WatchClub.Accounts.UserSettings do
       define :update_user_settings, action: :update
     end

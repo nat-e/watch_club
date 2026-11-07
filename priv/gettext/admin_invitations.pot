@@ -46,16 +46,6 @@ msgstr ""
 msgid "Uses"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs Access"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs access"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Code"
@@ -131,11 +121,6 @@ msgstr ""
 msgid "Usage limit"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Users joining through this invitation will automatically be added to the Clubs you select below"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Users will no longer be able to sign up with the %{code} code."
@@ -149,4 +134,9 @@ msgstr ""
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Active Invitations"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Create invitation code"
 msgstr ""

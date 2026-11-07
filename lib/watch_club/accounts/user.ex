@@ -2,7 +2,6 @@ defmodule WatchClub.Accounts.User do
   require Ash.Query
 
   alias WatchClub.Accounts.{UserLocale, UserSettings}
-  alias WatchClub.Clubs.{Club, Membership}
   alias WatchClub.Conversations.Participant
   alias WatchClub.Requests.RequestSubscriber
 
@@ -59,7 +58,7 @@ defmodule WatchClub.Accounts.User do
   end
 
   actions do
-    defaults [:read]
+    defaults [:read, :destroy]
 
     create :create_administrator do
       description "Creates the administrator for this instance."
@@ -123,8 +122,7 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :ready_unseen_request_count,
-                  :unread_conversation_count,
-                  memberships: [club: [:libraries]]
+                  :unread_conversation_count
                 ],
                 context: %{private: %{authorize?: false}}
               )
@@ -140,8 +138,7 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :ready_unseen_request_count,
-                  :unread_conversation_count,
-                  memberships: [club: [:libraries]]
+                  :unread_conversation_count
                 ]
               )
     end
@@ -277,7 +274,7 @@ defmodule WatchClub.Accounts.User do
       # Generates an authentication token for the user
       change AshAuthentication.GenerateTokenChange
 
-      # Validates the invitation code and creates one club member membership per granted club
+      # Validates the invitation code and increments its use count
       change WatchClub.Accounts.Changes.ApplyInvitationCode
 
       change manage_relationship(:locale, :settings,
@@ -305,14 +302,6 @@ defmodule WatchClub.Accounts.User do
 
         {:ok, _token} = AshAuthentication.Strategy.Password.reset_token_for(strategy, user)
       end
-    end
-
-    destroy :destroy do
-      description "Deletes a user account. The Library items they created will remain."
-
-      # Delete memberships through the action (not the DB cascade) so the
-      # membership PubSub notifications are sent
-      change cascade_destroy(:memberships, return_notifications?: true, after_action?: false)
     end
 
     update :reset_password_with_token do
@@ -479,8 +468,6 @@ defmodule WatchClub.Accounts.User do
   end
 
   relationships do
-    has_many :memberships, Membership
-    many_to_many :clubs, Club, through: Membership
     has_one :settings, UserSettings
 
     # The User's place in each Conversation they're in

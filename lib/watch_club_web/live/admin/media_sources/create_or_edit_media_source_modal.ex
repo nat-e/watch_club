@@ -1,12 +1,4 @@
 defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
-  @moduledoc """
-  Modal that creates a new `Media Source` or edits the filesystem path of an
-  existing one. Mirrors the create-or-edit pattern from
-  `WatchClubWeb.Clubs.Settings.Libraries.CreateOrEditLibraryModal`.
-
-  In `:edit` mode the media type is shown read-only because the domain forbids
-  editing it after creation.
-  """
   use WatchClubWeb, :component
 
   import WatchClubWeb.Components.Media.MediaTypeBadge

@@ -484,34 +484,6 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert first.path =~ "aaa.mkv"
       assert second.path =~ "bbb.mkv"
     end
-
-    test "filters by club_id through Movie attachment" do
-      admin = generate(administrator())
-      club = generate(club(actor: admin))
-      library = generate(library(club))
-      movie = seed_movie()
-
-      Ash.Seed.seed!(WatchClub.Clubs.LibraryItem, %{
-        library_id: library.id,
-        content_id: movie.id,
-        added_by_id: admin.id
-      })
-
-      in_club =
-        create_or_update_video!(video_media_input("tmp/browse/in-club.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      other_movie = seed_movie()
-
-      _out_of_club =
-        create_or_update_video!(video_media_input("tmp/browse/out-of-club.mkv", other_movie),
-          actor: SystemActor.actor()
-        )
-
-      assert [row] = browse_media!(%{club_id: club.id}, actor: admin)
-      assert row.id == in_club.id
-    end
   end
 
   defp video_media_input(path, %Movie{} = movie),

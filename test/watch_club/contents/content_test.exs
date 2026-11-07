@@ -25,17 +25,14 @@ defmodule WatchClub.Contents.ContentTest do
 
   setup do
     admin = generate(administrator())
-    club = generate(club(actor: admin))
-    # Add a member
     member = generate(user())
-    membership = generate(membership(club, member, role: :member))
 
     Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
       tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
       Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", tmdb_id))
     end)
 
-    {:ok, admin: admin, club: club, member: member, membership: membership}
+    {:ok, admin: admin, member: member}
   end
 
   describe "create_movie/*" do

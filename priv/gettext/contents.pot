@@ -50,26 +50,6 @@ msgstr ""
 msgid "Request"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Select library"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content."
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Share with club"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Already added"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"

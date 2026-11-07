@@ -1,8 +1,6 @@
 defmodule WatchClub.Playbacks.SessionTest do
   use WatchClub.DataCase, async: false
 
-  alias WatchClub.Accounts.User
-  alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership}
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
   alias WatchClub.Playbacks
@@ -15,7 +13,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "creates a Playback Session and its first Playback for accessible Media",
          %{tmp_dir: tmp_dir} do
       user = generate(user())
-      media = accessible_media(user, Path.join(tmp_dir, "start.mkv"))
+      media = matched_media!(Path.join(tmp_dir, "start.mkv"))
 
       assert {:ok,
               %Session{id: session_id, started_by_id: started_by_id, active_playback: playback}} =
@@ -29,10 +27,10 @@ defmodule WatchClub.Playbacks.SessionTest do
     end
 
     @tag :tmp_dir
-    test "forbids a User whose Clubs have no Library Item for the Content",
+    test "forbids a User from playing Unmatched Media",
          %{tmp_dir: tmp_dir} do
       user = generate(user())
-      orphan = orphan_media(Path.join(tmp_dir, "orphan.mkv"))
+      orphan = unmatched_media!(Path.join(tmp_dir, "orphan.mkv"))
 
       Playbacks.start_session(orphan.id, actor: user)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
@@ -42,7 +40,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "allows the Instance Administrator to start a Playback Session for any Media",
          %{tmp_dir: tmp_dir} do
       admin = generate(administrator())
-      orphan = orphan_media(Path.join(tmp_dir, "admin.mkv"))
+      orphan = unmatched_media!(Path.join(tmp_dir, "admin.mkv"))
 
       assert {:ok, %Session{active_playback: %Playback{}}} =
                Playbacks.start_session(orphan.id, load: :active_playback, actor: admin)
@@ -54,8 +52,8 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "ends the current Playback and starts a new one on the same Session",
          %{tmp_dir: tmp_dir} do
       user = generate(user())
-      first_media = accessible_media(user, Path.join(tmp_dir, "first.mkv"))
-      second_media = accessible_media(user, Path.join(tmp_dir, "second.mkv"))
+      first_media = matched_media!(Path.join(tmp_dir, "first.mkv"))
+      second_media = matched_media!(Path.join(tmp_dir, "second.mkv"))
 
       {:ok, session} =
         Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
@@ -80,8 +78,8 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "fails for a User who does not own the Session", %{tmp_dir: tmp_dir} do
       user = generate(user())
       other_user = generate(user())
-      first_media = accessible_media(user, Path.join(tmp_dir, "owned.mkv"))
-      other_media = accessible_media(other_user, Path.join(tmp_dir, "other.mkv"))
+      first_media = matched_media!(Path.join(tmp_dir, "owned.mkv"))
+      other_media = matched_media!(Path.join(tmp_dir, "other.mkv"))
 
       {:ok, session} =
         Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
@@ -100,7 +98,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     @tag :tmp_dir
     test "updates the current Playback's last active time", %{tmp_dir: tmp_dir} do
       user = generate(user())
-      media = accessible_media(user, Path.join(tmp_dir, "heartbeat.mkv"))
+      media = matched_media!(Path.join(tmp_dir, "heartbeat.mkv"))
 
       {:ok, session} = Playbacks.start_session(media.id, load: :active_playback, actor: user)
       original = session.active_playback
@@ -119,7 +117,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "forbids other Users", %{tmp_dir: tmp_dir} do
       user = generate(user())
       other_user = generate(user())
-      media = accessible_media(user, Path.join(tmp_dir, "other-user.mkv"))
+      media = matched_media!(Path.join(tmp_dir, "other-user.mkv"))
 
       {:ok, session} = Playbacks.start_session(media.id, actor: user)
 
@@ -131,7 +129,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     @tag :tmp_dir
     test "ends the Playbacks without a heartbeat for six hours and removes their segment cache",
          %{tmp_dir: tmp_dir} do
-      media = orphan_media(Path.join(tmp_dir, "inactive.mkv"))
+      media = unmatched_media!(Path.join(tmp_dir, "inactive.mkv"))
 
       inactive =
         generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -7, :hour)))
@@ -156,14 +154,14 @@ defmodule WatchClub.Playbacks.SessionTest do
     end
   end
 
-  def orphan_media(path) do
+  defp unmatched_media!(path) do
     File.mkdir_p!(Path.dirname(path))
     File.write!(path, "")
     Ash.Seed.seed!(Media, %{path: Path.expand(path), type: :movie})
   end
 
-  def accessible_media(%User{} = user, path) do
-    media = orphan_media(path)
+  defp matched_media!(path) do
+    media = unmatched_media!(path)
 
     content =
       Ash.Seed.seed!(Content, %{
@@ -188,20 +186,6 @@ defmodule WatchClub.Playbacks.SessionTest do
       bit_rate: 5_000_000
     })
 
-    club = Ash.Seed.seed!(Club, %{name: "Club #{System.unique_integer([:positive])}"})
-    Ash.Seed.seed!(Membership, %{club_id: club.id, user_id: user.id, role: :member})
-
-    library =
-      Ash.Seed.seed!(Library, %{
-        club_id: club.id,
-        name: "Library #{System.unique_integer([:positive])}",
-        content_type: :movie,
-        icon: "film",
-        index: 0
-      })
-
-    Ash.Seed.seed!(LibraryItem, %{library_id: library.id, content_id: content.id})
-
-    media
+    Ash.Seed.update!(media, %{content_id: content.id})
   end
 end

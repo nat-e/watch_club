@@ -6,7 +6,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
   use WatchClubWeb, :html
 
   import WatchClubWeb.Components.Medias.LanguageFlags
-  import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.MatchedContentIdentity
   import WatchClubWeb.Components.Medias.MatchedContentInline
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
@@ -48,9 +47,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       </td>
       <td class="px-related py-2.5 align-middle max-w-[20rem]">
         <.content_cell row={@row} />
-      </td>
-      <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
-        <.media_clubs_avatars media={@row} />
       </td>
       <td class="px-related py-2.5 align-middle w-px whitespace-nowrap [[data-browser][data-drawer=open]_&]:hidden">
         <.audio_languages_flags video={@row.video} />
@@ -95,8 +91,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaRow do
       </div>
 
       <.identity_line row={@row} />
-
-      <.media_libraries_chips media={@row} />
     </li>
     """
   end

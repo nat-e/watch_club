@@ -43,7 +43,7 @@ defmodule WatchClubWeb.Gettext do
     @doc """
     Renders a function component to HTML, to embed it in a translated sentence with `raw/1`.
 
-        raw(dgettext("feed", "%{user} joined the club", user: gtcomponent(user_ref(%{user: user}))))
+        raw(dgettext("feed", "%{user} recommended this content", user: gtcomponent(user_ref(%{user: user}))))
     """
     def gtcomponent(rendered) do
       rendered

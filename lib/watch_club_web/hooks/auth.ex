@@ -11,9 +11,6 @@ defmodule WatchClubWeb.Hooks.Auth do
   # What the navigation shows of the current user, such as the Inbox and Requests tabs' counts
   @navigation_resources [
     WatchClub.Accounts.UserSettings,
-    WatchClub.Clubs.Membership,
-    WatchClub.Clubs.Club,
-    WatchClub.Clubs.Library,
     WatchClub.Conversations.Message,
     WatchClub.Conversations.Participant,
     WatchClub.Requests.RequestSubscriber
@@ -87,7 +84,7 @@ defmodule WatchClubWeb.Hooks.Auth do
   defp subscribe_to_current_user_pubsub(socket, user) do
     WatchClub.PubSub.subscribe_if_connected(
       socket,
-      ["user:#{user.id}" | Enum.map(user.memberships, &"club:#{&1.club.id}")]
+      "user:#{user.id}"
     )
 
     socket

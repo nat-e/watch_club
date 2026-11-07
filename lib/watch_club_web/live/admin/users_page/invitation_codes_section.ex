@@ -92,11 +92,6 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
 
       <.stack space="group">
         <.stack space="related">
-          <.text_label text={dgettext("admin_invitations", "Clubs Access")} />
-          <.avatar_group avatars={@invitation.clubs} avatar_size="sm" />
-        </.stack>
-
-        <.stack space="related">
           <.inline class="justify-between">
             <.text_label text={dgettext("admin_invitations", "Uses")} />
             <span class="font-mono text-sm tabular-nums text-text">

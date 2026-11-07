@@ -110,7 +110,6 @@ defmodule WatchClubWeb do
       alias WatchClub.{
         Accounts,
         ActivityFeed,
-        Clubs,
         Contents,
         History,
         Instance,
@@ -122,9 +121,6 @@ defmodule WatchClubWeb do
       }
 
       alias WatchClub.Accounts.{InvitationCode, User, UserLocale, UserSettings}
-      alias WatchClub.ActivityFeed.FeedEventScope
-
-      alias WatchClub.Clubs.{Club, Library, LibraryItem, Membership, MembershipRole}
 
       alias WatchClub.Contents.{
         Book,
@@ -136,14 +132,6 @@ defmodule WatchClubWeb do
         SearchContentType,
         TvShow,
         TvShowEpisode
-      }
-
-      alias WatchClub.ActivityFeed.Events.{
-        ClubCreatedEvent,
-        ContentAddedEvent,
-        ContentWatchedEvent,
-        LibraryCreatedEvent,
-        MemberAddedEvent
       }
 
       alias WatchClub.History.{WatchProgress, WatchStatus}

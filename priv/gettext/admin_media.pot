@@ -62,11 +62,6 @@ msgstr ""
 msgid "Close drawer"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
@@ -141,11 +136,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
 #, elixir-autogen, elixir-format
 msgid "Last updated"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Libraries"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/table.ex
@@ -241,11 +231,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles (%{count})"
-msgstr ""
-
-#: lib/watch_club_web/components/medias/library_lists.ex
-#, elixir-autogen, elixir-format
-msgid "This content is not in any Library."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex

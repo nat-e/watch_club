@@ -11,7 +11,6 @@ defmodule WatchClub.MediaCatalog.Media do
 
   alias WatchClub.MediaCatalog.Preparations.{
     ApplyBrowseSort,
-    FilterBrowseClub,
     FilterBrowseSearch
   }
 
@@ -49,15 +48,12 @@ defmodule WatchClub.MediaCatalog.Media do
       description """
       Admin Media browser action.
 
-      Returns Media filtered by media_type, club_id, and a free-text search
-      across path and attached-content titles. Paginated with keyset.
-      Preloads the attached-content + library + club tree so callers can
-      compute the per-row "in N clubs" list in Elixir.
+      Returns Media filtered by media_type and a free-text search across path
+      and attached-content titles. Paginated with keyset.
       """
 
       argument :search, :string, allow_nil?: true, default: nil
       argument :media_type, MediaType, allow_nil?: true, default: nil
-      argument :club_id, :uuid_v7, allow_nil?: true, default: nil
 
       argument :sort_by, :atom do
         allow_nil? false
@@ -78,13 +74,11 @@ defmodule WatchClub.MediaCatalog.Media do
                     :default_video_track,
                     :audio_tracks,
                     :text_tracks,
-                    movie: [content: [library_items: [library: :club]]],
-                    tv_show_episode: [
-                      tv_show: [content: [library_items: [library: :club]]]
-                    ]
+                    movie: [:content],
+                    tv_show_episode: [tv_show: [:content]]
                   ],
-                  ebook: [book: [content: [library_items: [library: :club]]]],
-                  audiobook: [book: [content: [library_items: [library: :club]]]]
+                  ebook: [book: [:content]],
+                  audiobook: [book: [:content]]
                 ]
               )
 
@@ -94,7 +88,6 @@ defmodule WatchClub.MediaCatalog.Media do
         where present(:media_type)
       end
 
-      prepare FilterBrowseClub
       prepare ApplyBrowseSort
     end
 

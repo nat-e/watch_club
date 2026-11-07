@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
   use WatchClubWeb, :component
 
   attr :form, Phoenix.HTML.Form, required: true
-  attr :current_user, User, required: true
 
   def create_invitation_code_modal(assigns) do
     edit? = assigns.form.source.type == :update
@@ -13,11 +12,10 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
         edit?: edit?,
         title:
           (edit? && dgettext("admin_invitations", "Edit invitation code")) ||
-            dgettext("clubs", "Create invitation code"),
+            dgettext("admin_invitations", "Create invitation code"),
         submit_label:
           (edit? && dgettext("admin_invitations", "Save")) ||
-            dgettext("admin_invitations", "Create"),
-        clubs: Enum.map(assigns.current_user.memberships, & &1.club)
+            dgettext("admin_invitations", "Create")
       )
 
     ~H"""
@@ -44,26 +42,6 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
           <:hint :if={@edit?}>
             {dgettext("admin_invitations", "The code cannot be changed once created.")}
           </:hint>
-        </.field>
-        <.field field={@form[:club_ids]} label={dgettext("admin_invitations", "Clubs access")}>
-          <:hint>
-            {dgettext(
-              "admin_invitations",
-              "Users joining through this invitation will automatically be added to the Clubs you select below"
-            )}
-          </:hint>
-          <:control>
-            <.checkbox_group
-              field={@form[:club_ids]}
-              options={@clubs}
-              to_value={& &1.id}
-            >
-              <:label :let={club}>
-                <.inline space="related"><.avatar id={club.id} name={club.name} />
-                  <span>{club.name}</span></.inline>
-              </:label>
-            </.checkbox_group>
-          </:control>
         </.field>
 
         <.field

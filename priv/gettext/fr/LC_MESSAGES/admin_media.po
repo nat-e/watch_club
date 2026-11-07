@@ -73,12 +73,6 @@ msgid "Close drawer"
 msgstr "Fermer le panneau"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs"
-msgstr "Clubs"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
@@ -168,12 +162,6 @@ msgstr "Dernier import (plus ancien d'abord)"
 #, elixir-autogen, elixir-format
 msgid "Last updated"
 msgstr "Dernière mise à jour"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Libraries"
-msgstr "Bibliothèques"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/table.ex
@@ -288,12 +276,6 @@ msgstr "Sous-titres"
 #, elixir-autogen, elixir-format
 msgid "Subtitles (%{count})"
 msgstr "Sous-titres (%{count})"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/medias/library_lists.ex
-#, elixir-autogen, elixir-format
-msgid "This content is not in any Library."
-msgstr "Ce contenu n'est dans aucune bibliothèque."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex

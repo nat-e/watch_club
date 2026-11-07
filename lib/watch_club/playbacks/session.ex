@@ -78,8 +78,8 @@ defmodule WatchClub.Playbacks.Session do
 
   policies do
     policy action(:start) do
-      description "Any authenticated User can start a Playback Session; visibility of the selected Media is checked when the first Playback is created."
-      authorize_if always()
+      description "A User can start a Playback Session; access to its Media is checked when the first Playback is created."
+      authorize_if actor_present()
     end
 
     policy action_type(:read) do

@@ -41,7 +41,6 @@ defmodule WatchClub.PubSub do
   end
 
   defp content_topics(%User{} = user) do
-    Enum.map(user.memberships, &"content:club:#{&1.club_id}") ++
-      ["content:global", "content:user:#{user.id}"]
+    ["content:global", "content:user:#{user.id}"]
   end
 end

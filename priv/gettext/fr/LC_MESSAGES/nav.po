@@ -12,12 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/clubs/clubs_page.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs"
-msgstr "Clubs"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sidebar.ex
 #: lib/watch_club_web/components/navigation/tab_bar.ex
 #, elixir-autogen, elixir-format

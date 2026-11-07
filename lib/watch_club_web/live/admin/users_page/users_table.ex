@@ -12,7 +12,6 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
           <.table_head class="w-full max-w-0 text-left">
             {dgettext("admin_users", "User")}
           </.table_head>
-          <.table_head class="text-left">{dgettext("admin_users", "Clubs")}</.table_head>
           <.table_head class="@max-2xl:hidden text-left">
             {dgettext("admin_users", "Member since")}
           </.table_head>
@@ -36,22 +35,19 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
   attr :locale, :atom, required: true
 
   defp user_row(assigns) do
-    assigns = assigns |> assign(:clubs, Enum.map(assigns.user.memberships, & &1.club))
-
     ~H"""
     <.table_row>
       <.table_cell class="w-full text-left">
         <.inline space="related">
           <.avatar id={@user.id} name={@user.username} />
-          <span class="truncate font-semibold">{@user.username}</span>
+          <.stack space="tight" class="min-w-0">
+            <span class="truncate font-semibold">{@user.username}</span>
+            <.badge :if={@user.administrator?} variant="accent" class="w-fit">
+              <:icon><Lucideicons.shield /></:icon>
+              {dgettext("admin_users", "Instance Admin")}
+            </.badge>
+          </.stack>
         </.inline>
-      </.table_cell>
-      <.table_cell class="text-left">
-        <.avatar_group :if={!@user.administrator?} avatars={@clubs} />
-        <.badge :if={@user.administrator?} variant="accent">
-          <:icon><Lucideicons.shield /></:icon>
-          {dgettext("admin_users", "Instance Admin")}
-        </.badge>
       </.table_cell>
       <.table_cell class="hidden @2xl:table-cell text-left">
         <span class="text-text-muted">{Time.relative_from_now(@user.inserted_at, @locale)}</span>

@@ -1,7 +1,7 @@
 defmodule WatchClub.Accounts.InvitationCode do
   @moduledoc """
   An instance-wide Invitation Code created by the Instance Administrator that lets new
-  people register and, on doing so, join zero or more clubs as club members.
+  people register.
 
   Redeemable only while its derived `status` is `:active`
   """
@@ -14,8 +14,7 @@ defmodule WatchClub.Accounts.InvitationCode do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
-  alias WatchClub.Accounts.{ClubInvitation, InvitationCodeStatus}
-  alias WatchClub.Clubs.Club
+  alias WatchClub.Accounts.InvitationCodeStatus
 
   postgres do
     table "invitation_codes"
@@ -32,35 +31,19 @@ defmodule WatchClub.Accounts.InvitationCode do
       argument :code, :string, allow_nil?: false
       get? true
       filter expr(code == ^arg(:code))
-
-      # Anyone is able to view a club name through an invitation
-      prepare build(
-                load: [clubs: [:name]],
-                context: %{private: %{authorize?: false}}
-              )
     end
 
     create :create do
       description "Create an invitation code"
       accept [:code, :max_uses]
-
-      argument :club_ids, {:array, :uuid_v7} do
-        allow_nil? false
-        # Default is needed so that the form default value is [] and not nil
-        default []
-      end
-
-      change manage_relationship(:club_ids, :clubs, type: :append)
-      load [:club_ids]
     end
 
     update :update do
-      description "Update an invitation code associated clubs and max uses"
+      description "Update an invitation code max uses"
       primary? true
       require_atomic? false
 
       accept [:max_uses]
-      argument :club_ids, {:array, :uuid_v7}
 
       validate compare(:max_uses, greater_than_or_equal_to: :uses) do
         # nil max_uses means unlimited, so only guard when a limit is set
@@ -71,9 +54,6 @@ defmodule WatchClub.Accounts.InvitationCode do
                   "This invitation has already been used more than that"
                 )
       end
-
-      change manage_relationship(:club_ids, :clubs, type: :append_and_remove)
-      change load(:club_ids)
     end
 
     update :use do
@@ -121,7 +101,7 @@ defmodule WatchClub.Accounts.InvitationCode do
   end
 
   preparations do
-    prepare build(load: [:club_ids, :status])
+    prepare build(load: [:status])
   end
 
   validations do
@@ -182,16 +162,6 @@ defmodule WatchClub.Accounts.InvitationCode do
     timestamps()
   end
 
-  relationships do
-    has_many :club_invitations, ClubInvitation
-
-    many_to_many :clubs, Club do
-      through ClubInvitation
-      source_attribute_on_join_resource :invitation_code_id
-      destination_attribute_on_join_resource :club_id
-    end
-  end
-
   calculations do
     calculate :status,
               InvitationCodeStatus,
@@ -204,12 +174,6 @@ defmodule WatchClub.Accounts.InvitationCode do
               ) do
       public? true
     end
-  end
-
-  aggregates do
-    # This is required to populate the edit form
-    # https://ash-phoenix.hexdocs.pm/forms-for-relationships-between-existing-records.html
-    list :club_ids, :clubs, :id
   end
 
   identities do

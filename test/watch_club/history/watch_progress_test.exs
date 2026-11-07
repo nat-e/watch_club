@@ -617,7 +617,6 @@ defmodule WatchClub.History.WatchProgressTest do
 
     ContentWatchedEvent
     |> Ash.Query.filter(actor_id == ^user.id and content_id == ^content_id)
-    |> Ash.Query.load(:scopes)
     |> Ash.read_one!(authorize?: false)
   end
 
