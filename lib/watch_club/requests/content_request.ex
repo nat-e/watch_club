@@ -75,12 +75,11 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     read :ready_for_current_user do
-      description "The actor's playable Content Requests: the ready unseen ones first, then the most recently playable."
+      description "The actor's playable Content Requests, the most recently playable first, so the ready unseen ones lead."
       filter expr(actor_subscriber? and ready?)
 
       prepare fn query, _context ->
         Ash.Query.sort(query, [
-          {:ready_unseen_for_actor?, :desc},
           {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
           {:id, :desc}
         ])
@@ -88,17 +87,9 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     read :on_the_way_for_current_user do
-      description "The actor's Content Requests that aren't playable yet, soonest first."
+      description "The actor's Content Requests that aren't playable yet, the most recently changed first."
       filter expr(actor_subscriber? and not ready?)
-
-      prepare fn query, _context ->
-        Ash.Query.sort(query, [
-          {:status_rank, :desc},
-          {:download_progress, :desc_nils_last},
-          {Ash.Sort.expr_sort(content.release_date, :date), :asc_nils_last},
-          {:id, :desc}
-        ])
-      end
+      prepare build(sort: [updated_at: :desc, id: :desc])
     end
   end
 
@@ -255,20 +246,6 @@ defmodule WatchClub.Requests.ContentRequest do
               ) do
       public? true
     end
-
-    # Higher is sooner to be playable
-    calculate :status_rank,
-              :integer,
-              expr(
-                cond do
-                  status == :importing -> 5
-                  status == :downloading -> 4
-                  status == :queued -> 3
-                  status == :not_released -> 2
-                  status == :not_found -> 1
-                  status == :failed -> 0
-                end
-              )
 
     # How much the Media Source has downloaded, while it downloads or imports, in %
     calculate :download_progress,

@@ -49,19 +49,16 @@ defmodule WatchClub.Requests.ContentRequestTest do
   end
 
   describe "list_current_user_ready_requests/*" do
-    test "lists the User's playable Content Requests, the ready unseen ones first, then the most recently playable" do
+    test "lists the User's playable Content Requests, the most recently playable first" do
       user = generate(user())
-      [ready_unseen, older, newer] = movies = generate_many(movie(), 3)
+      [older, newer] = movies = generate_many(movie(), 2)
 
       for movie <- movies do
         MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
           actor: SystemActor.actor()
         )
-      end
 
-      for {movie, ready_unseen?} <- [{ready_unseen, true}, {older, false}, {newer, false}] do
-        request = generate(content_request(generate(user()), movie))
-        generate(request_subscriber(user, request, ready_unseen?: ready_unseen?))
+        generate(request_subscriber(user, generate(content_request(generate(user()), movie))))
       end
 
       # Not playable yet
@@ -77,40 +74,21 @@ defmodule WatchClub.Requests.ContentRequestTest do
       generate(content_request(user, playable))
 
       assert Requests.list_current_user_ready_requests!(actor: user)
-             |> Enum.map(& &1.content_id) == [ready_unseen.id, newer.id, older.id]
+             |> Enum.map(& &1.content_id) == [newer.id, older.id]
     end
   end
 
   describe "list_current_user_requests_on_the_way/*" do
-    test "lists the User's Content Requests that aren't playable yet, soonest first" do
+    test "lists the User's Content Requests that aren't playable yet, the most recently changed first" do
       user = generate(user())
-      radarr = generate(radarr_media_source())
 
-      requests =
-        for {name, msr_attributes, release_date} <- [
-              {:failed, [status: :needs_attention], nil},
-              {:out_later, [status: :not_released], ~D[2027-06-01]},
-              {:queued, nil, nil},
-              {:out_sooner, [status: :not_released], ~D[2027-01-01]},
-              {:less_downloaded, [status: :downloading, download_progress: 30.0], nil},
-              {:importing, [status: :downloaded, download_progress: 100.0], nil},
-              {:more_downloaded, [status: :downloading, download_progress: 60.0], nil}
-            ],
-            into: %{} do
-          movie = generate(movie(release_date: release_date))
-
-          best_source_request_id =
-            msr_attributes && generate(media_source_request(movie, radarr, msr_attributes)).id
-
+      [older, newer] =
+        for updated_at <- [~U[2026-01-01 00:00:00.000000Z], ~U[2026-02-01 00:00:00.000000Z]] do
           request =
-            generate(
-              content_request(generate(user()), movie,
-                best_source_request_id: best_source_request_id
-              )
-            )
+            generate(content_request(generate(user()), generate(movie()), updated_at: updated_at))
 
           generate(request_subscriber(user, request))
-          {name, request.id}
+          request
         end
 
       # Playable
@@ -123,18 +101,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       generate(request_subscriber(user, generate(content_request(user, playable))))
 
       assert Requests.list_current_user_requests_on_the_way!(actor: user) |> Enum.map(& &1.id) ==
-               Enum.map(
-                 [
-                   :importing,
-                   :more_downloaded,
-                   :less_downloaded,
-                   :queued,
-                   :out_sooner,
-                   :out_later,
-                   :failed
-                 ],
-                 &requests[&1]
-               )
+               [newer.id, older.id]
     end
   end
 
