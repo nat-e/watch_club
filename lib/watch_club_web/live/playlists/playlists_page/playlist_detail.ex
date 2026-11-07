@@ -193,7 +193,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           <div class="flex min-w-0 flex-1 flex-col">
             <.link
               navigate={Url.content_details_link(@identity)}
-              class="truncate text-lg font-semibold hover:underline"
+              class="line-clamp-2 text-lg font-semibold hover:underline"
             >
               {@title}
             </.link>

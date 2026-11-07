@@ -276,15 +276,10 @@ msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
-msgid "%{action} %{title}: %{status}"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
 msgid "%{title}: %{status}"
 msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
-msgid "Request progress for %{title}"
+msgid "%{percent}%"
 msgstr ""

@@ -34,159 +34,57 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
 
   attr :size, :string,
     values: ~w(sm md lg),
-    default: "md"
+    default: "md",
+    doc: "the button variant's"
 
   attr :variant, :string,
-    values: ~w(button round),
+    values: ~w(button round poster),
     default: "button",
     doc:
-      "round: a circle with only an icon, or a ring for the request's status. The lg one sits over posters, with a shadow."
+      "round: a 40px circle with only an icon, or a ring for the request's status. poster: the same at 48px, with a shadow, over a poster."
+
+  attr :focus_status, :boolean,
+    default: false,
+    doc: "true moves the focus to the request's status when it shows up, after Request"
 
   # Only Play, when there's something to play
-  def play_or_request_button(%{variant: "round", has_media?: true} = assigns) do
+  def play_or_request_button(%{variant: variant, has_media?: true} = assigns)
+      when variant in ~w(round poster) do
     ~H"""
     <.button
       :if={@play_href}
       id={"#{@id}-play-button"}
       variant="primary"
-      size={icon_size(@size)}
+      size={if @variant == "poster", do: "icon-lg", else: "icon"}
       href={@play_href}
       aria-label={dgettext("contents", "%{action} %{title}", action: @play_label, title: @title)}
       title={@play_label}
-      class={["rounded-full!", @size == "lg" && "shadow-overlay"]}
+      class={["rounded-full!", @variant == "poster" && "shadow-overlay"]}
     >
       <Lucideicons.play />
     </.button>
     """
   end
 
-  # How far it got, in a ring: its percentage while it downloads, full when almost ready, empty
-  # while it has none. Stuck, its icon in a grey circle instead. Its words are its tooltip.
   def play_or_request_button(
-        %{variant: "round", has_media?: false, request: %ContentRequest{actor_subscriber?: true}} =
+        %{has_media?: false, request: %ContentRequest{actor_subscriber?: true} = request} =
           assigns
       ) do
-    assigns =
-      assign(assigns,
-        percent: progress_percent(assigns.request),
-        words: status_words(assigns.request, assigns.release_date, assigns.locale)
-      )
-
-    ~H"""
-    <span
-      :if={@request.status in [:failed, :not_released]}
-      id={"#{@id}-request-status"}
-      role="img"
-      aria-label={dgettext("contents", "%{title}: %{status}", title: @title, status: @words)}
-      title={@words}
-      class={[
-        "flex items-center justify-center rounded-full bg-surface-raised",
-        control_size(@size),
-        @size == "lg" && "shadow-overlay"
-      ]}
-    >
-      <.status_icon status={@request.status} class="size-icon" />
-    </span>
-    <div
-      :if={@request.status not in [:failed, :not_released]}
-      id={"#{@id}-request-status"}
-      role="progressbar"
-      aria-label={dgettext("contents", "Request progress for %{title}", title: @title)}
-      aria-valuemin="0"
-      aria-valuemax="100"
-      aria-valuenow={@percent}
-      aria-valuetext={@words}
-      title={@words}
-      class={[
-        "relative flex items-center justify-center rounded-full text-xs font-semibold text-text",
-        control_size(@size),
-        @size == "lg" && "bg-canvas/80 shadow-overlay"
-      ]}
-    >
-      <span :if={@percent} aria-hidden="true">{round(@percent)}%</span>
-      <Lucideicons.download
-        :if={!@percent}
-        class="size-icon-sm text-text-muted"
-        aria-hidden="true"
-      />
-      <svg viewBox="0 0 48 48" class="absolute inset-0 size-full -rotate-90" aria-hidden="true">
-        <circle
-          cx="24"
-          cy="24"
-          r="21"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="3"
-          class="text-border-control"
-        />
-        <%!-- Left out without a percentage: its round end would show as a dot --%>
-        <circle
-          :if={@percent}
-          cx="24"
-          cy="24"
-          r="21"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="3"
-          pathLength="100"
-          stroke-dasharray={"#{@percent} 100"}
-          stroke-linecap="round"
-          class="text-primary"
-        />
-      </svg>
-    </div>
-    """
+    assigns
+    |> assign(
+      percent: download_percent(request),
+      words: status_words(request, assigns.release_date, assigns.locale)
+    )
+    |> request_progress()
   end
 
-  # In Play's spot and shaped like it, but quiet and not clickable: how far it got in words,
-  # over a fill from the left, its percentage while it downloads and full when almost ready
-  def play_or_request_button(
-        %{has_media?: false, request: %ContentRequest{actor_subscriber?: true}} = assigns
-      ) do
-    assigns =
-      assign(assigns,
-        percent: progress_percent(assigns.request),
-        words: status_words(assigns.request, assigns.release_date, assigns.locale)
-      )
-
-    ~H"""
-    <.button
-      id={"#{@id}-request-status"}
-      variant="secondary"
-      size={@size}
-      aria-disabled="true"
-      aria-label={
-        dgettext("contents", "%{action} %{title}: %{status}",
-          action: @play_label,
-          title: @title,
-          status: @words
-        )
-      }
-      class="relative w-full cursor-not-allowed overflow-hidden border-primary-border! bg-primary-bg! font-medium text-text! hover:bg-primary-bg! active:bg-primary-bg!"
-    >
-      <span
-        :if={@percent}
-        aria-hidden="true"
-        class="absolute inset-y-0 left-0 bg-primary-ring"
-        style={"width: #{@percent}%"}
-      ></span>
-      <span class="relative flex min-w-0 items-center gap-related">
-        <.status_icon
-          status={@request.status}
-          class={["size-icon", @request.status != :failed && "text-text!"]}
-        />
-        <span class="truncate">{@words}</span>
-      </span>
-    </.button>
-    """
-  end
-
-  def play_or_request_button(%{variant: "round", has_media?: false} = assigns) do
+  def play_or_request_button(%{variant: variant, has_media?: false} = assigns)
+      when variant in ~w(round poster) do
     ~H"""
     <.button
       id={"#{@id}-request-button"}
       variant="primary"
-      size={icon_size(@size)}
+      size={if @variant == "poster", do: "icon-lg", else: "icon"}
       phx-click={@on_request}
       aria-label={
         dgettext("contents", "%{action} %{title}",
@@ -195,7 +93,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
         )
       }
       title={dgettext("contents", "Request")}
-      class={["rounded-full!", @size == "lg" && "shadow-overlay"]}
+      class={["rounded-full!", @variant == "poster" && "shadow-overlay"]}
     >
       <Lucideicons.download />
     </.button>
@@ -252,7 +150,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       </.button>
       <.button
         id={"#{@id}-episodes-button"}
-        size={icon_size(@size)}
+        size={caret_size(@size)}
         variant="primary"
         phx-click={@on_episodes}
         aria-label={dgettext("contents", "All episodes")}
@@ -283,6 +181,102 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
+  # In Play's spot and shaped like it, but quiet and not clickable: how far it got in words,
+  # over a fill from the left, its percentage while it downloads and full when almost ready
+  defp request_progress(%{variant: "button"} = assigns) do
+    ~H"""
+    <.button
+      id={"#{@id}-request-status"}
+      variant="secondary"
+      size={@size}
+      aria-disabled="true"
+      aria-label={dgettext("contents", "%{title}: %{status}", title: @title, status: @words)}
+      phx-mounted={@focus_status && JS.focus()}
+      class="relative w-full cursor-not-allowed overflow-hidden border-primary-border! bg-primary-bg! text-text! hover:bg-primary-bg! active:bg-primary-bg!"
+    >
+      <%!-- The halo token, as the stronger pink no other token offers --%>
+      <span
+        :if={@percent}
+        aria-hidden="true"
+        class="absolute inset-y-0 left-0 bg-primary-ring"
+        style={"width: #{@percent}%"}
+      ></span>
+      <span class="relative flex min-w-0 items-center gap-related">
+        <.status_icon
+          status={@request.status}
+          class={["size-icon", @request.status != :failed && "text-text!"]}
+        />
+        <span class="truncate">{@words}</span>
+      </span>
+    </.button>
+    """
+  end
+
+  # How far it got, in a ring: its percentage while it downloads, full when almost ready, empty
+  # while it has none. Stuck, its icon in a grey circle instead. One element for every status,
+  # so it keeps the focus when the status changes. Its words are its tooltip and name.
+  defp request_progress(assigns) do
+    assigns = assign(assigns, :stuck?, assigns.request.status in [:failed, :not_released])
+
+    ~H"""
+    <div
+      id={"#{@id}-request-status"}
+      role={if @stuck?, do: "img", else: "progressbar"}
+      aria-label={dgettext("contents", "%{title}: %{status}", title: @title, status: @words)}
+      aria-valuenow={!@stuck? && @percent}
+      title={@words}
+      tabindex="-1"
+      phx-mounted={@focus_status && JS.focus()}
+      class={[
+        "relative flex items-center justify-center rounded-full text-xs font-semibold text-text",
+        if(@variant == "poster", do: "size-control-lg shadow-overlay", else: "size-control-md"),
+        @stuck? && "bg-surface-raised",
+        !@stuck? && @variant == "poster" && "bg-canvas/80"
+      ]}
+    >
+      <.status_icon :if={@stuck?} status={@request.status} class="size-icon" />
+      <span :if={@request.status == :downloading} aria-hidden="true">
+        {dgettext("contents", "%{percent}%", percent: round(@percent))}
+      </span>
+      <.status_icon
+        :if={!@stuck? and @request.status != :downloading}
+        status={@request.status}
+        class="size-icon-sm text-text-muted!"
+      />
+      <svg
+        :if={!@stuck?}
+        viewBox="0 0 48 48"
+        class="absolute inset-0 size-full -rotate-90"
+        aria-hidden="true"
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r="21"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          class="text-border-control"
+        />
+        <%!-- Left out without a percentage: its round end would show as a dot --%>
+        <circle
+          :if={@percent && @percent > 0}
+          cx="24"
+          cy="24"
+          r="21"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          pathLength="100"
+          stroke-dasharray={"#{@percent} 100"}
+          stroke-linecap="round"
+          class="text-primary"
+        />
+      </svg>
+    </div>
+    """
+  end
+
   attr :class, :any, default: nil
   slot :inner_block, required: true
 
@@ -299,18 +293,14 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   end
 
   # How far a Content Request got, in %: nil while it has no percentage
-  defp progress_percent(%ContentRequest{status: :downloading, download_progress: percent}),
+  defp download_percent(%ContentRequest{status: :downloading, download_progress: percent}),
     do: percent
 
-  defp progress_percent(%ContentRequest{status: :importing}), do: 100
-  defp progress_percent(_request), do: nil
+  defp download_percent(%ContentRequest{status: :importing}), do: 100
+  defp download_percent(_request), do: nil
 
-  # A square button as tall as a button of this size
-  defp icon_size("sm"), do: "icon-sm"
-  defp icon_size("md"), do: "icon"
-  defp icon_size("lg"), do: "icon-lg"
-
-  defp control_size("sm"), do: "size-control-sm"
-  defp control_size("md"), do: "size-control-md"
-  defp control_size("lg"), do: "size-control-lg"
+  # As tall as the button it's joined to
+  defp caret_size("sm"), do: "icon-sm"
+  defp caret_size("md"), do: "icon"
+  defp caret_size("lg"), do: "icon-lg"
 end

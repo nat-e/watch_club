@@ -64,13 +64,14 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   attr :size, :string,
     values: ~w(sm md lg),
-    default: "md"
+    default: "md",
+    doc: "the button variant's"
 
   attr :variant, :string,
-    values: ~w(button round),
+    values: ~w(button round poster),
     default: "button",
     doc:
-      "round: a circle with only an icon, or a ring for the request's status. The lg one sits over posters, with a shadow."
+      "round: a 40px circle with only an icon, or a ring for the request's status. poster: the same at 48px, with a shadow, over a poster."
 
   @impl true
   def render(assigns) do
@@ -87,12 +88,16 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         release_date={@release_date}
         locale={@current_user.settings.locale}
         on_episodes={@on_episodes}
+        focus_status={@focus_status}
         size={@size}
         variant={@variant}
       />
     </div>
     """
   end
+
+  @impl true
+  def mount(socket), do: {:ok, assign(socket, :focus_status, false)}
 
   @impl true
   def update_many(assigns_sockets) do
@@ -140,7 +145,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
          ) do
       {:ok, request} ->
         send_told_when_ready(request.content.implementation.best_localization.title)
-        {:noreply, socket}
+        {:noreply, assign(socket, :focus_status, true)}
 
       {:error, _error} ->
         Flash.send_flash(:error, dgettext("contents", "Could not request this right now."))
@@ -152,7 +157,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   def handle_event("request", _params, socket) do
     Requests.get_notified!(socket.assigns.request.id, actor: socket.assigns.current_user)
     send_told_when_ready(socket.assigns.title)
-    {:noreply, socket}
+    {:noreply, assign(socket, :focus_status, true)}
   end
 
   defp send_told_when_ready(title) do

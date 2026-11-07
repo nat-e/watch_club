@@ -328,17 +328,11 @@ msgstr "Nouveau"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
-msgid "%{action} %{title}: %{status}"
-msgstr "%{action} %{title} : %{status}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
 msgid "%{title}: %{status}"
 msgstr "%{title} : %{status}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
-msgid "Request progress for %{title}"
-msgstr "Avancement de la demande de %{title}"
+msgid "%{percent}%"
+msgstr "%{percent} %"

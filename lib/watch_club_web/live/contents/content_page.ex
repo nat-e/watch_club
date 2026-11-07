@@ -250,7 +250,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           aria-haspopup="dialog"
           class="phx-click-loading:cursor-progress phx-click-loading:opacity-60"
         >
-          <Lucideicons.list_video class="size-icon" />
+          <Lucideicons.list_video />
         </.round_action>
         <.round_action
           :if={@trailer_url}
@@ -259,7 +259,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           href={@trailer_url}
           target="_blank"
         >
-          <Lucideicons.circle_play class="size-icon" />
+          <Lucideicons.circle_play />
         </.round_action>
         <%!-- Its label changes with its state, so it has no aria-pressed --%>
         <.round_action
@@ -272,8 +272,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
           phx-click="toggle_watched"
           title={watched_hint(@tv_show?, @finished?)}
         >
-          <Lucideicons.circle_check :if={@finished?} class="size-icon text-success" />
-          <Lucideicons.circle :if={!@finished?} class="size-icon" />
+          <Lucideicons.circle_check :if={@finished?} class="text-success" />
+          <Lucideicons.circle :if={!@finished?} />
         </.round_action>
       </div>
     </div>
@@ -296,9 +296,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
         "group/action flex w-20 flex-col items-center gap-tight text-xs text-text-muted",
         @class
       ]}
-      {if @rest[:href], do: @rest, else: Map.put(@rest, :type, "button")}
+      {@rest}
     >
-      <span class="grid size-control-lg place-items-center rounded-full border border-border bg-surface-raised text-text transition-colors group-hover/action:bg-surface-hover">
+      <span class="grid size-control-lg place-items-center rounded-full border border-border bg-surface-raised text-text transition-colors group-hover/action:bg-surface-hover group-active/action:bg-surface-active [&_svg]:size-icon">
         {render_slot(@inner_block)}
       </span>
       {@label}

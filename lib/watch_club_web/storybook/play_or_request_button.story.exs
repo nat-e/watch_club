@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
 
   def template do
     """
-    <div class="w-56 p-4 text-text">
+    <div class="w-72 p-4 text-text">
       <.psb-variation/>
     </div>
     """
@@ -76,54 +76,52 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       },
       %VariationGroup{
         id: :round,
-        description: "Round: Play, Request, then how far it got, at 40px, and 48px over a poster",
-        template: """
-        <div class="flex flex-wrap items-center gap-2 p-4 text-text">
-          <.psb-variation-group />
-        </div>
-        """,
-        variations:
-          [
-            %Variation{
-              id: :play,
-              attributes: %{
-                id: "play",
-                has_media?: true,
-                play_href: "#",
-                play_label: "Resume",
-                title: "Dune"
-              }
-            },
-            %Variation{
-              id: :request,
-              attributes: %{id: "request", has_media?: false, play_label: "Play"}
+        description: "Round: Play, Request, then how far it got",
+        template: row_template(),
+        variations: [
+          %Variation{
+            id: :play,
+            attributes: %{
+              id: "round-play",
+              variant: "round",
+              has_media?: true,
+              play_href: "#",
+              play_label: "Resume",
+              title: "Dune"
             }
-            | for(status <- statuses(), do: request_variation(status, status, true))
-          ]
-          |> Enum.map(fn variation ->
-            %{
-              variation
-              | attributes:
-                  Map.merge(variation.attributes, %{
-                    id: "round-#{variation.attributes.id}",
-                    variant: "round"
-                  })
+          },
+          %Variation{
+            id: :request,
+            attributes: %{
+              id: "round-request",
+              variant: "round",
+              has_media?: false,
+              play_label: "Play",
+              title: "Dune"
             }
-          end)
-          |> Kernel.++([
-            %Variation{
-              id: :over_poster,
-              attributes: %{
-                id: "round-lg",
-                variant: "round",
-                size: "lg",
-                has_media?: true,
-                play_href: "#",
-                play_label: "Resume",
-                title: "Dune"
-              }
+          }
+          | for(status <- statuses(), do: request_variation(status, status, true, "round"))
+        ]
+      },
+      %VariationGroup{
+        id: :poster,
+        description: "Over a poster: Play, Request, then how far it got",
+        template: row_template(),
+        variations: [
+          %Variation{
+            id: :play,
+            attributes: %{
+              id: "poster-play",
+              variant: "poster",
+              has_media?: true,
+              play_href: "#",
+              play_label: "Resume",
+              title: "Dune"
             }
-          ])
+          },
+          request_variation(:downloading, :downloading, true, "poster"),
+          request_variation(:failed, :failed, true, "poster")
+        ]
       },
       %VariationGroup{
         id: :sizes,
@@ -148,7 +146,15 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
 
   defp group_template do
     """
-    <div class="flex w-56 flex-col gap-2 p-4 text-text">
+    <div class="flex w-72 flex-col gap-2 p-4 text-text">
+      <.psb-variation-group />
+    </div>
+    """
+  end
+
+  defp row_template do
+    """
+    <div class="flex flex-wrap items-center gap-2 p-4 text-text">
       <.psb-variation-group />
     </div>
     """
@@ -157,11 +163,12 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
   defp statuses, do: [:searching, :downloading, :importing, :not_released, :not_found, :failed]
 
   # A Content Request with this status, at 40% while it downloads
-  defp request_variation(id, status, actor_subscriber?) do
+  defp request_variation(id, status, actor_subscriber?, variant \\ "button") do
     %Variation{
       id: id,
       attributes: %{
-        id: "request-#{id}",
+        id: "#{variant}-request-#{id}",
+        variant: variant,
         has_media?: false,
         play_label: "Play",
         title: "Dune",
