@@ -45,4 +45,7 @@ defmodule WatchClubWeb.Storybook.Root do
     do: [name: "Recommendation text", icon: {:fa, "quote-left"}, index: 25]
 
   def entry("poster_card"), do: [name: "Poster card", icon: {:fa, "image"}, index: 26]
+
+  def entry("request_on_the_way"),
+    do: [name: "Request on the way", icon: {:fa, "download"}, index: 27]
 end
