@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
   use Phoenix.Component
 
   def doc do
-    "A simplified semantic token system for Watch Club's Velvet Club design direction."
+    "A simplified semantic token system for Watch Club's Velvet design direction."
   end
 
   def navigation do
@@ -83,7 +83,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
 
     ~H"""
     <.page_shell>
-      <.intro eyebrow="Selected direction" title="Velvet Club: simplified semantic tokens">
+      <.intro eyebrow="Selected direction" title="Velvet: simplified semantic tokens">
         Dark aubergine surfaces, pink primary actions, lavender supporting accents, comfortable
         rounded shapes, and readable contrast — with a smaller token set.
       </.intro>
@@ -416,7 +416,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Settings section
           </p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--wc-color-text)">
-            Club settings
+            Playlist settings
           </h2>
           <p class="mt-2 max-w-3xl" style="color: var(--wc-color-text-muted)">
             Navigation, grouped fields, toggles, helper copy, save state, and warning callout.
