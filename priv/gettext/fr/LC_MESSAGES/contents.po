@@ -135,12 +135,6 @@ msgstr "Marquer la saison %{number} comme vue"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
-msgid "Next: %{episode} · %{percent}% of the show"
-msgstr "Prochain : %{episode} · %{percent} % de la série"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
 msgid "Nobody has watched it yet."
 msgstr "Personne ne l'a encore regardé."
 
@@ -149,12 +143,6 @@ msgstr "Personne ne l'a encore regardé."
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
 msgstr "Pas encore sorti"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "On %{episode} · %{percent}% of the show"
-msgstr "En cours : %{episode} · %{percent} % de la série"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -185,12 +173,6 @@ msgstr "Lire l'épisode %{number}"
 #, elixir-autogen, elixir-format
 msgid "See it on TMDB"
 msgstr "Voir sur TMDB"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Stopped at %{time}"
-msgstr "Arrêté à %{time}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -235,41 +217,10 @@ msgid "Watched episode %{number}"
 msgstr "Épisode %{number} vu"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "%{username}'s request"
-msgstr "Demande de %{username}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "A deleted user's request"
-msgstr "Demande d'un utilisateur supprimé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Get notified when it's ready"
-msgstr "Être prévenu quand c'est prêt"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "You'll be told when %{title} is ready. It's in your Requests."
 msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "You'll be told when it's ready"
-msgstr "Vous serez prévenu quand ce sera prêt"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Get notified when %{title} is ready"
-msgstr "Être prévenu quand %{title} sera prêt"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -373,3 +324,15 @@ msgstr "Recommandez ce titre à des personnes, avec un message si vous le souhai
 #, elixir-autogen, elixir-format
 msgid "New"
 msgstr "Nouveau"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{title}: %{status}"
+msgstr "%{title} : %{status}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}%"
+msgstr "%{percent} %"

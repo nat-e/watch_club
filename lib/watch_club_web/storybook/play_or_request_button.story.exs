@@ -1,7 +1,6 @@
 defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClub.Accounts.User
   alias WatchClub.Requests.ContentRequest
   alias WatchClubWeb.Components.Contents.PlayOrRequestButton
 
@@ -9,7 +8,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
 
   def template do
     """
-    <div class="w-56 p-4 text-text">
+    <div class="w-72 p-4 text-text">
       <.psb-variation/>
     </div>
     """
@@ -64,42 +63,65 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       %VariationGroup{
         id: :request,
         description:
-          "Request, then the Content Request's status, for one of its Request Subscribers",
+          "Request, also when somebody else made the Content Request, then how far it got, for one of its Request Subscribers",
         template: group_template(),
         variations: [
           %Variation{
             id: :request,
             attributes: %{id: "request", has_media?: false, play_label: "Play"}
           },
-          request_variation(:searching, :searching, true),
-          request_variation(:downloading, :downloading, true),
-          request_variation(:importing, :importing, true),
-          request_variation(:not_released, :not_released, true),
-          request_variation(:not_found, :not_found, true),
-          request_variation(:failed, :failed, true)
+          request_variation(:requested_by_somebody_else, :downloading, false)
+          | for(status <- statuses(), do: request_variation(status, status, true))
         ]
       },
       %VariationGroup{
-        id: :get_notified,
-        description:
-          "Get Notified, for the other Users, with who made the Content Request in the status' tooltip: lea, or a deleted User",
-        template: group_template(),
+        id: :round,
+        description: "Round: Play, Request, then how far it got",
+        template: row_template(),
         variations: [
-          request_variation(:requested_by_user, :downloading, false),
-          request_variation(:requested_by_deleted_user, :searching, false, nil)
+          %Variation{
+            id: :play,
+            attributes: %{
+              id: "round-play",
+              variant: "round",
+              has_media?: true,
+              play_href: "#",
+              play_label: "Resume",
+              title: "Dune"
+            }
+          },
+          %Variation{
+            id: :request,
+            attributes: %{
+              id: "round-request",
+              variant: "round",
+              has_media?: false,
+              play_label: "Play",
+              title: "Dune"
+            }
+          }
+          | for(status <- statuses(), do: request_variation(status, status, true, "round"))
         ]
       },
-      %Variation{
-        id: :round,
-        description: "Round, over a poster",
-        attributes: %{
-          id: "round",
-          variant: "round",
-          has_media?: true,
-          play_href: "#",
-          play_label: "Resume",
-          title: "Dune"
-        }
+      %VariationGroup{
+        id: :poster,
+        description: "Over a poster: Play, Request, then how far it got",
+        template: row_template(),
+        variations: [
+          %Variation{
+            id: :play,
+            attributes: %{
+              id: "poster-play",
+              variant: "poster",
+              has_media?: true,
+              play_href: "#",
+              play_label: "Resume",
+              title: "Dune"
+            }
+          },
+          request_variation(:downloading, :downloading, true, "poster"),
+          request_variation(:failed, :failed, true, "poster")
+        ]
       },
       %VariationGroup{
         id: :sizes,
@@ -124,26 +146,37 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
 
   defp group_template do
     """
-    <div class="flex w-56 flex-col gap-2 p-4 text-text">
+    <div class="flex w-72 flex-col gap-2 p-4 text-text">
       <.psb-variation-group />
     </div>
     """
   end
 
+  defp row_template do
+    """
+    <div class="flex flex-wrap items-center gap-2 p-4 text-text">
+      <.psb-variation-group />
+    </div>
+    """
+  end
+
+  defp statuses, do: [:searching, :downloading, :importing, :not_released, :not_found, :failed]
+
   # A Content Request with this status, at 40% while it downloads
-  defp request_variation(id, status, actor_subscriber?, requested_by \\ %User{username: "lea"}) do
+  defp request_variation(id, status, actor_subscriber?, variant \\ "button") do
     %Variation{
       id: id,
       attributes: %{
-        id: "request-#{id}",
+        id: "#{variant}-request-#{id}",
+        variant: variant,
         has_media?: false,
         play_label: "Play",
+        title: "Dune",
         locale: :en_US,
         release_date: ~D[2099-03-12],
         request: %ContentRequest{
           status: status,
           actor_subscriber?: actor_subscriber?,
-          requested_by: requested_by,
           download_progress: %{downloading: 40.0, importing: 100.0}[status]
         }
       }

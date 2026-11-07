@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Components.Requests.RequestStatus do
   @moduledoc """
   When a requested Content can be watched: an icon for its Content Request Status, a few words,
-  and a bar while it downloads. My Requests, Playlist Items and the Content page show it.
+  and a bar while it downloads, as My Requests shows it. `status_icon/1` and `status_words/3`
+  let `PlayOrRequestButton` say it in one line.
   """
   use WatchClubWeb, :component
 
@@ -30,39 +31,72 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
 
   attr :status, :atom, required: true, doc: "a `ContentRequestStatus`"
 
-  defp status_icon(assigns) do
+  attr :class, :any,
+    default: "size-icon-sm",
+    doc: "its size, and a color with a trailing `!` to replace its own"
+
+  @doc "An icon for a Content Request Status, in its color."
+  def status_icon(assigns) do
     ~H"""
     <Lucideicons.download
       :if={@status in [:importing, :downloading]}
-      class="size-icon-sm shrink-0 text-accent"
+      class={["shrink-0 text-accent", @class]}
+      aria-hidden="true"
     />
-    <Lucideicons.search :if={@status == :searching} class="size-icon-sm shrink-0 text-text-subtle" />
+    <Lucideicons.search
+      :if={@status == :searching}
+      class={["shrink-0 text-text-subtle", @class]}
+      aria-hidden="true"
+    />
     <Lucideicons.calendar
       :if={@status == :not_released}
-      class="size-icon-sm shrink-0 text-text-subtle"
+      class={["shrink-0 text-text-subtle", @class]}
+      aria-hidden="true"
     />
-    <Lucideicons.search_x :if={@status == :not_found} class="size-icon-sm shrink-0 text-text-subtle" />
-    <Lucideicons.circle_alert :if={@status == :failed} class="size-icon-sm shrink-0 text-danger" />
+    <Lucideicons.search_x
+      :if={@status == :not_found}
+      class={["shrink-0 text-text-subtle", @class]}
+      aria-hidden="true"
+    />
+    <Lucideicons.circle_alert
+      :if={@status == :failed}
+      class={["shrink-0 text-danger", @class]}
+      aria-hidden="true"
+    />
     """
   end
 
-  defp when_watchable(%ContentRequest{status: status}, _release_date, _locale)
-       when status in [:importing, :searching],
-       do: ContentRequestStatus.translated_label(status)
-
-  defp when_watchable(%ContentRequest{status: :downloading} = request, _release_date, _locale),
-    do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))
-
-  # TMDB's date is often the cinema release, before the one we can download
-  defp when_watchable(%ContentRequest{status: :not_released}, release_date, locale) do
-    if release_date && Date.after?(release_date, Date.utc_today()),
-      do: dgettext("requests", "Out on %{date}", date: Time.long_date(release_date, locale)),
-      else: dgettext("requests", "Not released yet")
-  end
-
+  # My Requests says a little more when it's stuck
   defp when_watchable(%ContentRequest{status: :not_found}, _release_date, _locale),
     do: dgettext("requests", "Not found, we'll keep looking for it")
 
   defp when_watchable(%ContentRequest{status: :failed}, _release_date, _locale),
     do: dgettext("requests", "There was a problem, the instance administrator was told")
+
+  defp when_watchable(request, release_date, locale),
+    do: status_words(request, release_date, locale)
+
+  @doc """
+  When a requested Content can be watched, in words that fit on one line. The release date is
+  the Content's, for when it's not released yet.
+  """
+  def status_words(%ContentRequest{status: status}, _release_date, _locale)
+      when status in [:importing, :searching],
+      do: ContentRequestStatus.translated_label(status)
+
+  def status_words(%ContentRequest{status: :downloading} = request, _release_date, _locale),
+    do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))
+
+  # TMDB's date is often the cinema release, before the one we can download
+  def status_words(%ContentRequest{status: :not_released}, release_date, locale) do
+    if release_date && Date.after?(release_date, Date.utc_today()),
+      do: dgettext("requests", "Out on %{date}", date: Time.long_date(release_date, locale)),
+      else: dgettext("requests", "Not released yet")
+  end
+
+  def status_words(%ContentRequest{status: :not_found}, _release_date, _locale),
+    do: dgettext("requests", "Not found, still looking")
+
+  def status_words(%ContentRequest{status: :failed}, _release_date, _locale),
+    do: dgettext("requests", "Error downloading")
 end

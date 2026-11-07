@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Storybook.PosterCard do
         <:action>
           <.play_or_request_button
             id="play-#{id}"
-            variant="round"
+            variant="poster"
             has_media?={true}
             play_href="#"
             play_label="Play"

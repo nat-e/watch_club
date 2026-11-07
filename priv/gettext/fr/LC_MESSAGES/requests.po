@@ -82,3 +82,15 @@ msgstr "Cherchez un titre dans Parcourir et demandez‑le. Vous verrez ici quand
 #, elixir-autogen, elixir-format
 msgid "There was a problem, the instance administrator was told"
 msgstr "Il y a eu un problème, l'administrateur de l'instance a été prévenu"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Error downloading"
+msgstr "Erreur de téléchargement"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, still looking"
+msgstr "Introuvable, on continue à chercher"

@@ -282,7 +282,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
         content_identity={@identity}
         current_user={@current_user}
         variant="round"
-        class="md:hidden [&_a]:shadow-none"
+        class="md:hidden"
       />
       <.live_component
         id={PlayOrRequestButtonLive.dom_id(@identity, :compact)}

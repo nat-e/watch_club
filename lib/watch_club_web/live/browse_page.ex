@@ -143,7 +143,7 @@ defmodule WatchClubWeb.BrowsePage do
                 module={PlayOrRequestButtonLive}
                 content_identity={ContentIdentity.from_content(content)}
                 current_user={@current_user}
-                variant="round"
+                variant="poster"
               />
             </:action>
           </.poster_card>
