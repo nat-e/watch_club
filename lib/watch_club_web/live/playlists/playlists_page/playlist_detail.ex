@@ -179,7 +179,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
         <.tmdb_poster
           path={@content.implementation.best_localization.poster_path}
           size="w154"
-          class={["w-20", !@content.has_media? && "opacity-60 grayscale"]}
+          class="w-20"
         >
           <.progress_bar
             :if={@progress}
