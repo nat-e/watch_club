@@ -9,21 +9,25 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
     TV Show whose every episode is completed)
   - `completed_episodes` lists the completed episodes (empty for Movies/Books and partial watches)
 
-  It fans out to one personal scope (the User) plus one scope per Club whose library holds the
-  Content, all sharing this single event.
+  Every User sees the event. Its group_key identifies its Feed Entry.
   """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.ActivityFeed,
-    data_layer: AshPostgres.DataLayer
+    data_layer: AshPostgres.DataLayer,
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.ActivityFeed.FeedEventScope
+  alias WatchClub.ActivityFeed.Changes.SetGroupKey
   alias WatchClub.Contents.Content
 
   postgres do
     table "activity_feed_content_watched_events"
     repo WatchClub.Repo
+
+    custom_indexes do
+      index [:group_key]
+    end
 
     identity_index_names unique_per_actor_content: "acwe_unique_per_actor_content_index"
 
@@ -34,32 +38,35 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
   end
 
   actions do
-    defaults [:read]
-
-    destroy :destroy do
-      primary? true
-      # Destroys the scopes through Ash, before the database cascade would, so their Feed Entries
-      # are notified
-      change cascade_destroy(:scopes, return_notifications?: true, after_action?: false)
-    end
+    defaults [:read, :destroy]
 
     create :upsert do
       primary? true
       upsert? true
       upsert_identity :unique_per_actor_content
-      upsert_fields [:completed, :completed_episodes]
+      upsert_fields [:completed, :completed_episodes, :group_key, :created_at]
 
       accept [:actor_id, :content_id, :completed, :completed_episodes]
-      argument :scopes, {:array, :map}, allow_nil?: false
 
       change relate_actor(:actor)
-      # Reconcile the scope set on every sync so it converges to the current club fan-out
-      change manage_relationship(:scopes, type: :direct_control)
+      change set_attribute(:created_at, &DateTime.utc_now/0)
+      change SetGroupKey
     end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+    prefix "feed"
+
+    publish_all :create, ["global"]
+    publish_all :destroy, ["global"]
   end
 
   attributes do
     uuid_v7_primary_key :id
+    attribute :group_key, :string, allow_nil?: false
+    create_timestamp :created_at
 
     # Whether the entire Content has been completed
     attribute :completed, :boolean, allow_nil?: false, default: false
@@ -80,7 +87,6 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
   relationships do
     belongs_to :actor, User, allow_nil?: false
     belongs_to :content, Content, allow_nil?: false
-    has_many :scopes, FeedEventScope, destination_attribute: :content_watched_event_id
   end
 
   identities do

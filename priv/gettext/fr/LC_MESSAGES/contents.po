@@ -58,30 +58,6 @@ msgid "Request"
 msgstr "Demander"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Select library"
-msgstr "Sélectionner une bibliothèque"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Select the Club Library in which you want to add %{content_name}. All Club members will be able to access and see this content."
-msgstr "Sélectionnez la bibliothèque du club dans laquelle ajouter %{content_name}. Tous les membres du club pourront voir ce contenu et y accéder."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Share with club"
-msgstr "Partager avec un club"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Already added"
-msgstr "Déjà ajouté"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"

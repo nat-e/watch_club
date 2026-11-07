@@ -32,14 +32,8 @@ Example shape:
           reorderable_list.ex
           icon_picker_live.ex
 
-        clubs/
-          club_dialogs_live.ex
-          club_dialogs/
-            create_club_modal.ex
-
         contents/
-          content_card.ex
-          add_to_library_modal_live.ex
+          poster_card.ex
 
         navigation/
           app_bar.ex
@@ -51,9 +45,8 @@ Example shape:
           sign_in_page.ex
           setup_page.ex
 
-        clubs/
-          settings_page.ex
-          settings/
-            library_list.ex
-            create_or_edit_library_modal.ex
-            delete_library_modal.ex
+        playlists/
+          playlists_page.ex
+          playlists_page/
+            playlist_detail.ex
+            playlist_dialogs_live.ex

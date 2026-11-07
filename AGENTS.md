@@ -43,7 +43,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 
 - We use Gettext for internationalization. The app is currently translated in English (default) and French
 - Comment messages with `# AI-translated (Claude)` when translating in the .po files
-- Translate whole sentences, never parts of sentences, because word order changes between languages. When a sentence contains components (links, user names...), put them in placeholders with `gtcomponent/1` and render the result with `raw/1`: `raw(dgettext("feed", "%{user} joined the club", user: gtcomponent(user_ref(%{user: user}))))`
+- Translate whole sentences, never parts of sentences, because word order changes between languages. When a sentence contains components (links, user names...), put them in placeholders with `gtcomponent/1` and render the result with `raw/1`: `raw(dgettext("feed", "%{user} recommended this content", user: gtcomponent(user_ref(%{user: user}))))`
 
 ## Coding style
 
@@ -57,7 +57,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 - Prefer simpler `flex` layouts instead of `grid` when possible.
 - A class you pass to a UI primitive doesn't override the primitive's own class for the same property, because the order in the CSS decides, not the order in `class`. Add a trailing `!` to make it win, such as `text-danger!`, as `components/ui/segmented_control.ex` does.
 - Name and place LiveViews, LiveComponents and function components as `docs/web-layer.md` describes. It overrides the Phoenix usage rules on LiveView names and on when to use LiveComponents.
-- Use LiveView streams for unbounded or large collections. Plain list assigns are fine for small, bounded ones, such as club memberships, invitations, club libraries and navigation lists: add a comment next to them saying the collection is intentionally small. This overrides the Phoenix usage rule to always use streams.
+- Use LiveView streams for unbounded or large collections. Plain list assigns are fine for small, bounded ones, such as invitations, playlist access and navigation lists: add a comment next to them saying the collection is intentionally small. This overrides the Phoenix usage rule to always use streams.
 - Give every reusable component a story in `lib/watch_club_web/storybook/`, with an entry in `_root.index.exs`. Stories don't use the database, so a LiveComponent that loads its data renders it through a function component. The story shows that function component: `PlayOrRequestButtonLive` renders `PlayOrRequestButton`.
 
 ### Data Loading
@@ -76,7 +76,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 - Name relationships by their role, such as `owner` rather than `user`.
 - Never name a resource after an Elixir standard library module, such as `List`, because aliasing it shadows that module.
 - Reuse shared helpers, such as `WatchClub.Shared.LucideIcon.names/0`, instead of copying them per domain.
-- User-facing fields get explicit validations with localized messages, as in `WatchClub.Clubs.Club`. These validations own the shape rules, so don't repeat min, max or format as attribute or argument constraints. Keep `allow_nil? false` when it is the persistence or input contract, with a comment saying the validations own the user-facing message. Internal data can rely on constraints alone. This overrides the Ash usage rule against validations that repeat constraints.
+- User-facing fields get explicit validations with localized messages, as in `WatchClub.Playlists.Playlist`. These validations own the shape rules, so don't repeat min, max or format as attribute or argument constraints. Keep `allow_nil? false` when it is the persistence or input contract, with a comment saying the validations own the user-facing message. Internal data can rely on constraints alone. This overrides the Ash usage rule against validations that repeat constraints.
 - Users never see a framework's generic error message. Give identities a localized `message` too. For a framework error without a message option, map it to a localized message in the form's `transform_errors`, as `lib/watch_club_web/live/accounts/sign_in_page.ex` does. Don't translate Ash's built-in messages with `mix ash.gen.gettext` instead.
 
 ## Coding guidelines

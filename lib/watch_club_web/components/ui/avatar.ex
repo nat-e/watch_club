@@ -114,7 +114,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
 
   defp background_class(id) when is_binary(id) do
     # Intentional design-system exception: avatar identity colors are generated
-    # deterministically to help distinguish users and clubs. Keep raw palette
+    # deterministically to help distinguish users. Keep raw palette
     # colors encapsulated in this primitive; product code should use semantic tokens.
     colors = {
       "bg-blue-500",

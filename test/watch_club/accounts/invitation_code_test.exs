@@ -4,21 +4,16 @@ defmodule WatchClub.Accounts.InvitationCodeTest do
   import WatchClub.Accounts
 
   alias WatchClub.Accounts.InvitationCode
-  alias WatchClub.Clubs.Club
 
   setup do
     admin = generate(administrator())
-    club = generate(club(actor: admin))
     member = generate(user())
-    generate(membership(club, member, role: :member))
 
-    {:ok, admin: admin, club: club, member: member}
+    {:ok, admin: admin, member: member}
   end
 
   describe "create_invitation_code/*" do
-    test "creates an invitation code granting access to clubs", %{admin: admin, club: club} do
-      club_id = club.id
-
+    test "creates an invitation code", %{admin: admin} do
       assert %InvitationCode{
                code: "FAMILY_2026",
                max_uses: 5,
@@ -27,60 +22,30 @@ defmodule WatchClub.Accounts.InvitationCodeTest do
              } =
                invitation_code =
                create_invitation_code!(
-                 %{code: "FAMILY_2026", max_uses: 5, club_ids: [club.id]},
+                 %{code: "FAMILY_2026", max_uses: 5},
                  actor: admin
                )
 
       assert DateTime.after?(expires_at, DateTime.add(DateTime.utc_now(), 6, :day))
 
-      assert %InvitationCode{status: :active, clubs: [%Club{id: ^club_id}]} =
-               Ash.load!(invitation_code, [:status, :clubs], actor: admin)
-    end
-
-    test "creates an invitation code not granting access to clubs", %{admin: admin} do
-      invitation_code = create_invitation_code!(%{code: "OPEN_HOUSE", club_ids: []}, actor: admin)
-
-      assert %InvitationCode{max_uses: nil, clubs: []} =
-               Ash.load!(invitation_code, :clubs, actor: admin)
+      assert %InvitationCode{status: :active} =
+               Ash.load!(invitation_code, :status, actor: admin)
     end
 
     test "only the instance administrator can create invitation codes", %{
-      member: member,
-      club: club
+      member: member
     } do
-      # A club admin is not enough: invitation codes are instance-wide
-      create_invitation_code(%{code: "NOT_ALLOWED", club_ids: [club.id]}, actor: member)
+      create_invitation_code(%{code: "NOT_ALLOWED"}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
   describe "update_invitation_code/*" do
-    test "it can modify the list of clubs this invitation grants access to", %{
-      admin: admin,
-      club: club
-    } do
-      club2 = generate(club(actor: admin))
-
-      invitation_code =
-        create_invitation_code!(%{code: "OPEN_HOUSE", club_ids: [club.id]}, actor: admin)
-
-      updated_club =
-        update_invitation_code!(
-          invitation_code,
-          %{club_ids: [club2.id]},
-          actor: admin
-        )
-
-      # The :update action loads :club_ids, so assert on the returned record.
-      assert updated_club.club_ids == [club2.id]
-    end
-
     test "it can modify the max number of uses", %{
-      admin: admin,
-      club: club
+      admin: admin
     } do
       invitation_code =
-        create_invitation_code!(%{code: "OPEN_HOUSE", club_ids: [club.id]}, actor: admin)
+        create_invitation_code!(%{code: "OPEN_HOUSE"}, actor: admin)
 
       assert %InvitationCode{max_uses: 4} =
                update_invitation_code!(invitation_code, %{max_uses: 4}, actor: admin)
@@ -112,7 +77,6 @@ defmodule WatchClub.Accounts.InvitationCodeTest do
       invitation_code =
         create_invitation_code!(%{code: "OPEN_HOUSE"}, actor: admin)
 
-      # A club admin is not enough: invitation codes are instance-wide
       update_invitation_code(invitation_code, %{max_uses: 4}, actor: member)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
@@ -138,15 +102,13 @@ defmodule WatchClub.Accounts.InvitationCodeTest do
   end
 
   describe "view_invitation/*" do
-    test "anyone with the code can view the invitation and its granted clubs", %{
-      admin: admin,
-      club: club
+    test "anyone with the code can view the invitation", %{
+      admin: admin
     } do
-      generate(invitation_code(actor: admin, code: "WELCOME_CLUB", club_ids: [club.id]))
-      club_id = club.id
+      generate(invitation_code(actor: admin, code: "WELCOME"))
 
-      assert %InvitationCode{status: :active, clubs: [%Club{id: ^club_id}]} =
-               view_invitation!("WELCOME_CLUB")
+      assert %InvitationCode{status: :active} =
+               view_invitation!("WELCOME")
     end
   end
 end

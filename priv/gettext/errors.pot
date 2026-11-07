@@ -16,21 +16,6 @@ msgstr ""
 msgid "An administrator already exists"
 msgstr ""
 
-#: lib/watch_club/clubs/club.ex
-#, elixir-autogen, elixir-format
-msgid "Club name cannot be longer than %{max} characters"
-msgstr ""
-
-#: lib/watch_club/clubs/club.ex
-#, elixir-autogen, elixir-format
-msgid "Club name is required"
-msgstr ""
-
-#: lib/watch_club/clubs/club.ex
-#, elixir-autogen, elixir-format
-msgid "Club name must be at least %{min} characters"
-msgstr ""
-
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Password is required"
@@ -86,39 +71,9 @@ msgstr ""
 msgid "Your username or password is invalid"
 msgstr ""
 
-#: lib/watch_club/clubs/library.ex
-#, elixir-autogen, elixir-format
-msgid "Library icon is invalid"
-msgstr ""
-
-#: lib/watch_club/clubs/library.ex
-#, elixir-autogen, elixir-format
-msgid "Library name cannot be longer than %{max} characters"
-msgstr ""
-
-#: lib/watch_club/clubs/library.ex
-#, elixir-autogen, elixir-format
-msgid "Library name is required"
-msgstr ""
-
-#: lib/watch_club/clubs/library.ex
-#, elixir-autogen, elixir-format
-msgid "Library name must be at least %{min} characters"
-msgstr ""
-
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club/clubs/library_item.ex
-#, elixir-autogen, elixir-format
-msgid "Library does not allow this content type"
-msgstr ""
-
-#: lib/watch_club/clubs/library.ex
-#, elixir-autogen, elixir-format
-msgid "Library content type is required"
 msgstr ""
 
 #: lib/watch_club/accounts/invitation_code.ex

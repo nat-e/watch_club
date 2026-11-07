@@ -56,12 +56,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   end
 
   def handle_event("filter_remove", %{"field" => field}, socket)
-      when field in ~w(search media_type club_id) do
+      when field in ~w(search media_type) do
     filter =
       case field do
         "search" -> State.Filter.set(socket.assigns.state.filter, :search, "")
         "media_type" -> State.Filter.set(socket.assigns.state.filter, :media_type, nil)
-        "club_id" -> State.Filter.set(socket.assigns.state.filter, :club_id, nil)
       end
 
     state = %{socket.assigns.state | filter: filter}
@@ -259,13 +258,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         :default_video_track,
         :audio_tracks,
         :text_tracks,
-        movie: [:best_localization, content: [library_items: [library: :club]]],
+        movie: [:best_localization, :content],
         tv_show_episode: [
-          tv_show: [:best_localization, content: [library_items: [library: :club]]]
+          tv_show: [:best_localization, :content]
         ]
       ],
-      ebook: [book: [content: [library_items: [library: :club]]]],
-      audiobook: [book: [content: [library_items: [library: :club]]]]
+      ebook: [book: [:content]],
+      audiobook: [book: [:content]]
     ]
   end
 
@@ -285,7 +284,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     %{}
     |> put_if(params["search"], "search")
     |> put_if(params["media_type"], "media_type")
-    |> put_if(params["club_id"], "club_id")
     |> put_if(sort_by, "sort_by")
     |> put_if(sort_order, "sort_order")
   end

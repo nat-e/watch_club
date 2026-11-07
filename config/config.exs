@@ -55,7 +55,6 @@ config :watch_club,
   ash_domains: [
     WatchClub.Accounts,
     WatchClub.ActivityFeed,
-    WatchClub.Clubs,
     WatchClub.Contents,
     WatchClub.Conversations,
     WatchClub.History,

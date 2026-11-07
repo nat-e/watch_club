@@ -52,9 +52,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Table do
                 {dgettext("admin_media", "Matched")}
               </.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
-                {dgettext("admin_media", "Clubs")}
-              </.table_head>
-              <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">
                 {dgettext("admin_media", "Audio")}
               </.table_head>
               <.table_head class="w-px text-left [[data-browser][data-drawer=open]_&]:hidden">

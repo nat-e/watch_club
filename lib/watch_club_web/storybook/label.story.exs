@@ -28,8 +28,8 @@ defmodule WatchClubWeb.Storybook.Label do
         id: :with_input,
         description: "Label paired with an input",
         template: """
-        <.label for="club-name">Club name</.label>
-        <.input id="club-name" name="club_name" placeholder="Friday movie night" />
+        <.label for="playlist-name">Playlist name</.label>
+        <.input id="playlist-name" name="playlist_name" placeholder="Friday movie night" />
         """
       },
       %Variation{

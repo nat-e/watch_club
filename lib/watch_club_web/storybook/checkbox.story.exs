@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
         template: """
         <label class="flex items-center gap-3 text-sm">
           <.checkbox id="wc-checkbox-checked" checked />
-          Share updates with club members
+          Share updates with other Users
         </label>
         """
       },
@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
           <.checkbox id="wc-checkbox-description" checked />
           <div class="grid gap-1">
             <label for="wc-checkbox-description" class="text-sm font-semibold">
-              Enable club notifications
+              Enable notifications
             </label>
             <p class="text-sm text-text-muted">
               Receive updates when members add recommendations or invitations change.
@@ -62,7 +62,7 @@ defmodule WatchClubWeb.Storybook.Checkbox do
           <.checkbox id="wc-checkbox-invalid" errors={["Required"]} />
           <div class="grid gap-1">
             <label for="wc-checkbox-invalid" class="text-sm">
-              Accept the club rules
+              Accept the instance rules
             </label>
             <p class="text-sm text-danger">This must be accepted before continuing.</p>
           </div>

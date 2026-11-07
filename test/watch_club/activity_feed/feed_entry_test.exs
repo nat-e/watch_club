@@ -3,104 +3,78 @@ defmodule WatchClub.ActivityFeed.FeedEntryTest do
 
   import WatchClub.ActivityFeed
 
-  alias WatchClub.ActivityFeed.Events.{ContentAddedEvent, ContentWatchedEvent}
-  alias WatchClub.ActivityFeed.FeedEventScope
-  alias WatchClub.{Clubs, History}
+  alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Contents.ContentIdentity
-
-  setup do
-    admin = generate(administrator())
-    club = generate(club(actor: admin))
-    member = generate(user())
-    generate(membership(club, member))
-    library = generate(library(club))
-
-    {:ok, admin: admin, club: club, member: member, library: library}
-  end
+  alias WatchClub.History
 
   describe "get_user_activity_feed/*" do
-    test "groups what a member does in a club within 12 hours into one entry", %{
-      admin: admin,
-      member: member,
-      library: library
-    } do
-      first = add_movie!(library, member)
-      second = add_movie!(library, member)
+    test "groups a User's watching events and shows them to every User" do
+      watcher = generate(user())
+      viewer = generate(user())
+      movies = for _ <- 1..2, do: generate(movie())
+      for movie <- movies, do: mark_watched!(movie, watcher)
 
-      assert [added | _club_news] = get_user_activity_feed!(actor: admin)
-      assert added_content_ids(added) == [second.id, first.id]
+      assert [entry] = get_user_activity_feed!(actor: viewer)
+
+      assert Enum.sort(Enum.map(entry.events, & &1.content_id)) ==
+               Enum.sort(Enum.map(movies, & &1.id))
+
+      assert Enum.all?(entry.events, &(&1.actor_id == watcher.id))
+      assert [^entry] = get_user_activity_feed!(actor: watcher)
     end
 
-    test "starts a new entry 12 hours after the first event of the latest one", %{
-      admin: admin,
-      member: member,
-      library: library
-    } do
-      first = add_movie!(library, member)
-      start_entries_13_hours_earlier!()
-      second = add_movie!(library, member)
+    test "starts a new entry after 12 hours" do
+      watcher = generate(user())
+      first = generate(movie())
+      mark_watched!(first, watcher)
+      [event] = Ash.read!(ContentWatchedEvent)
+      [group, actor_id, started_at] = String.split(event.group_key, ":")
+      earlier = String.to_integer(started_at) - 13 * 60 * 60
 
-      assert [newer, older | _club_news] = get_user_activity_feed!(actor: admin)
-      assert added_content_ids(newer) == [second.id]
-      assert added_content_ids(older) == [first.id]
+      Ash.Seed.update!(event, %{
+        group_key: "#{group}:#{actor_id}:#{earlier}",
+        created_at: DateTime.add(event.created_at, -13, :hour)
+      })
+
+      second = generate(movie())
+      mark_watched!(second, watcher)
+
+      assert [newer, older] = get_user_activity_feed!(actor: watcher)
+      assert Enum.map(newer.events, & &1.content_id) == [second.id]
+      assert Enum.map(older.events, & &1.content_id) == [first.id]
     end
 
-    test "shows the watcher each of their watched events once, in one entry", %{
-      member: member,
-      library: library
-    } do
-      # The watcher sees each event through their own scope and the club's
-      movies = for _ <- 1..2, do: add_movie!(library, member)
-      for movie <- movies, do: mark_watched!(movie, member)
+    test "keeps different Users' watching events separate" do
+      first = generate(user())
+      second = generate(user())
+      movie = generate(movie())
+      mark_watched!(movie, first)
+      mark_watched!(movie, second)
 
-      assert [watched | _club_news] = get_user_activity_feed!(actor: member)
+      assert entries = get_user_activity_feed!(actor: first)
+      assert length(entries) == 2
 
-      assert Enum.sort(watched_content_ids(watched)) ==
-               movies |> Enum.map(& &1.id) |> Enum.sort()
+      assert Enum.sort(for entry <- entries, event <- entry.events, do: event.actor_id) ==
+               Enum.sort([first.id, second.id])
     end
 
-    test "hides the entries of clubs the user is not a member of", %{
-      member: member,
-      library: library
-    } do
-      add_movie!(library, member)
-      outsider = generate(user())
+    test "updates the existing event and removes it when marked unwatched" do
+      watcher = generate(user())
+      viewer = generate(user())
+      movie = generate(movie())
+      mark_watched!(movie, watcher)
+      mark_watched!(movie, watcher)
 
-      assert get_user_activity_feed!(actor: outsider) == []
+      assert [%{events: [_event]}] = get_user_activity_feed!(actor: viewer)
+
+      History.mark_content_not_watched!(ContentIdentity.from_content(movie), actor: watcher)
+      Oban.drain_queue(queue: :activity_feed_event_handlers, with_scheduled: true)
+      assert get_user_activity_feed!(actor: viewer) == []
     end
-  end
-
-  defp add_movie!(library, actor) do
-    movie = generate(movie())
-
-    Clubs.add_content_to_libraries!(ContentIdentity.from_content(movie), [library.id],
-      actor: actor
-    )
-
-    movie
   end
 
   defp mark_watched!(movie, actor) do
     History.mark_content_watched!(ContentIdentity.from_content(movie), actor: actor)
     Oban.drain_queue(queue: :activity_feed_event_handlers, with_scheduled: true)
-  end
-
-  defp watched_content_ids(entry) do
-    for %FeedEventScope{event: %ContentWatchedEvent{} = event} <- entry.scopes,
-        do: event.content_id
-  end
-
-  defp added_content_ids(entry) do
-    for %FeedEventScope{event: %ContentAddedEvent{} = event} <- entry.scopes,
-        do: event.library_item.content_id
-  end
-
-  defp start_entries_13_hours_earlier! do
-    for scope <- Ash.read!(FeedEventScope, authorize?: false) do
-      [started_at | group] = scope.group_key |> String.split(":") |> Enum.reverse()
-      earlier = String.to_integer(started_at) - 13 * 60 * 60
-      key = [Integer.to_string(earlier) | group] |> Enum.reverse() |> Enum.join(":")
-      Ash.Seed.update!(scope, %{group_key: key})
-    end
   end
 end

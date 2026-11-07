@@ -27,11 +27,11 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
       %Variation{
         id: :default,
         description: "Default stacked radio group",
-        attributes: %{id: "wc-radio-group-default", name: "plan", value: "club"},
+        attributes: %{id: "wc-radio-group-default", name: "plan", value: "user"},
         slots: [
           ~s(<:item value="solo">Solo watcher</:item>),
-          ~s(<:item value="club">Club member</:item>),
-          ~s(<:item value="host">Club host</:item>)
+          ~s(<:item value="user">User</:item>),
+          ~s(<:item value="host">Instance Administrator</:item>)
         ]
       },
       %Variation{

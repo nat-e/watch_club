@@ -65,7 +65,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     %{}
     |> maybe_put(:search, f.search)
     |> maybe_put(:media_type, f.media_type)
-    |> maybe_put(:club_id, f.club_id)
     |> Map.put(:sort_by, s.by)
     |> Map.put(:sort_order, s.order)
   end
@@ -85,24 +84,21 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     `search`     — free-text search across Media path and attached-content
                    titles.
     `media_type` — `:video | :ebook | :audiobook | nil`
-    `club_id`    — UUID of the Club to narrow by, or `nil`.
     """
 
     defstruct search: "",
-              media_type: nil,
-              club_id: nil
+              media_type: nil
 
     @type t :: %__MODULE__{
             search: String.t(),
-            media_type: :video | :ebook | :audiobook | nil,
-            club_id: binary() | nil
+            media_type: :video | :ebook | :audiobook | nil
           }
 
     @spec new() :: t()
     def new, do: %__MODULE__{}
 
     @spec set(t(), atom(), term()) :: t()
-    def set(%__MODULE__{} = f, key, value) when key in [:search, :media_type, :club_id] do
+    def set(%__MODULE__{} = f, key, value) when key in [:search, :media_type] do
       Map.put(f, key, normalize(key, value))
     end
 
@@ -112,16 +108,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     @spec active?(t()) :: boolean()
     def active?(%__MODULE__{} = f) do
       f.search not in [nil, ""] or
-        not is_nil(f.media_type) or
-        not is_nil(f.club_id)
+        not is_nil(f.media_type)
     end
 
     @spec from_params(map()) :: t()
     def from_params(params) when is_map(params) do
       %__MODULE__{
         search: params["search"] || "",
-        media_type: parse_atom(params["media_type"], [:video, :ebook, :audiobook]),
-        club_id: nilify_blank(params["club_id"])
+        media_type: parse_atom(params["media_type"], [:video, :ebook, :audiobook])
       }
     end
 
@@ -130,7 +124,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
       %{}
       |> put_if(f.search not in [nil, ""], "search", f.search)
       |> put_if(not is_nil(f.media_type), "media_type", to_string(f.media_type))
-      |> put_if(not is_nil(f.club_id), "club_id", f.club_id)
     end
 
     defp put_if(map, true, k, v), do: Map.put(map, k, v)
@@ -157,10 +150,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.State do
     defp parse_atom(value, allowed) when is_atom(value) do
       if value in allowed, do: value, else: nil
     end
-
-    defp nilify_blank(nil), do: nil
-    defp nilify_blank(""), do: nil
-    defp nilify_blank(v) when is_binary(v), do: v
   end
 
   # --------------------------------------------------------------------------

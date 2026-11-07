@@ -105,7 +105,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
           code={stack_code()}
         >
           <.stack space="group" class="rounded-md border border-border-subtle bg-surface p-group">
-            <.demo_item label="Club details" />
+            <.demo_item label="Playlist details" />
             <.demo_item label="Member permissions" />
             <.demo_item label="Danger zone" tone="danger" />
           </.stack>
@@ -624,14 +624,14 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       class="grid gap-cluster rounded-xl border border-border-subtle bg-surface p-cluster shadow-card"
     >
       <div class="grid gap-related">
-        <h3 class="text-xl font-semibold">Create library</h3>
+        <h3 class="text-xl font-semibold">Create playlist</h3>
         <p class="text-sm leading-6 text-text-muted">
-          Add a new library to this club. Choose which content type it will contain.
+          Create a playlist and give it a name.
         </p>
       </div>
 
       <.field_mock
-        id="spacing-layout-library-name-input"
+        id="spacing-layout-playlist-name-input"
         label="Library name"
         hint="Use a name members will recognize."
       />
@@ -645,7 +645,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         <.button id="spacing-form-mock-cancel-button" type="button" variant="secondary">
           Cancel
         </.button>
-        <.button id="spacing-form-mock-create-library-button" type="button">Create library</.button>
+        <.button id="spacing-form-mock-create-playlist-button" type="button">Create playlist</.button>
       </div>
     </form>
     """
@@ -933,9 +933,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp section_code do
     """
-    <.section title="Libraries" description="Create and reorder club libraries." icon={:library}>
+    <.section title="Libraries" description="Create and share playlists." icon={:library}>
       <:action>
-        <.button id="create-library-button">Create library</.button>
+        <.button id="create-playlist-button">Create playlist</.button>
       </:action>
 
       ...
@@ -960,7 +960,7 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
 
   defp field_wrapper_code do
     """
-    <.field field={@form[:name]} label="Club name" />
+    <.field field={@form[:name]} label="Playlist name" />
 
     <.field field={@form[:role]} label="Role">
       <:control>
@@ -976,9 +976,9 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
     """
     <.form
       for={@form}
-      id="create-library-form"
-      phx-change="validate_create_library"
-      phx-submit="submit_create_library"
+      id="create-playlist-form"
+      phx-change="validate_create_playlist"
+      phx-submit="submit_create_playlist"
     >
       <.field field={@form[:name]} label="Library name">
         <:hint>Use a name members will recognize.</:hint>
@@ -993,8 +993,8 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       </.field>
 
       <:action>
-        <.button id="create-library-cancel-button" type="button" variant="secondary">Cancel</.button>
-        <.button id="create-library-submit-button" type="submit">Create library</.button>
+        <.button id="create-playlist-cancel-button" type="button" variant="secondary">Cancel</.button>
+        <.button id="create-playlist-submit-button" type="submit">Create playlist</.button>
       </:action>
     </.form>
     """

@@ -54,18 +54,6 @@ msgid "Uses"
 msgstr "Utilisations"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs Access"
-msgstr "Accès aux clubs"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs access"
-msgstr "Accès aux clubs"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Code"
@@ -156,12 +144,6 @@ msgid "Usage limit"
 msgstr "Limite d'utilisation"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Users joining through this invitation will automatically be added to the Clubs you select below"
-msgstr "Les utilisateurs inscrits avec cette invitation seront automatiquement ajoutés aux clubs sélectionnés ci-dessous"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Users will no longer be able to sign up with the %{code} code."
@@ -178,3 +160,9 @@ msgstr "Vous n'avez aucun lien d'invitation actif"
 #, elixir-autogen, elixir-format
 msgid "Active Invitations"
 msgstr "Invitations actives"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Create invitation code"
+msgstr "Créer un code d'invitation"

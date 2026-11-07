@@ -416,7 +416,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Settings section
           </p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--wc-color-text)">
-            Club settings
+            Playlist settings
           </h2>
           <p class="mt-2 max-w-3xl" style="color: var(--wc-color-text-muted)">
             Navigation, grouped fields, toggles, helper copy, save state, and warning callout.
@@ -453,13 +453,13 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
               Movie Night preferences
             </h3>
             <p class="mt-1 text-sm" style="color: var(--wc-color-text-muted)">
-              Decide how recommendations and member activity appear for this club.
+              Decide how recommendations and member activity appear for other Users.
             </p>
 
             <div class="mt-6 grid gap-5 lg:grid-cols-2">
               <.field
-                id="design-token-club-name-input"
-                label="Club name"
+                id="design-token-playlist-name-input"
+                label="Playlist name"
                 value="Movie Night"
                 helper="Visible to invited members."
                 focused
@@ -665,7 +665,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
                 Pick the next movie night without the group chat chaos.
               </h3>
               <p class="mt-4 max-w-sm text-sm leading-6" style="color: var(--wc-color-text-muted)">
-                Collect recommendations, vote asynchronously, and keep a shared memory of what your club watched.
+                Collect recommendations, vote asynchronously, and keep a shared memory of what you watched.
               </p>
             </div>
             <div
@@ -687,7 +687,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
             Welcome back
           </h3>
           <p class="mt-2 text-sm" style="color: var(--wc-color-text-muted)">
-            Sign in to continue to your clubs.
+            Sign in to continue to WatchClub.
           </p>
           <div class="mt-8 grid gap-5">
             <.field id="design-token-email-input" label="Email" value="sam@example.com" helper="" />
@@ -702,7 +702,7 @@ defmodule WatchClubWeb.Storybook.DesignTokens do
               class="rounded-[var(--wc-radius-card)] border p-3 text-sm"
               style="background: var(--wc-color-info-bg); border-color: var(--wc-color-info-border); color: var(--wc-color-info)"
             >
-              New device sign-ins require email confirmation for club safety.
+              New device sign-ins require email confirmation for your security.
             </div>
             <button
               id="design-token-sign-in-button"

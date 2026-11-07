@@ -6,7 +6,6 @@ defmodule WatchClubWeb.Helpers.Url do
     router: WatchClubWeb.Router,
     statics: WatchClubWeb.static_paths()
 
-  alias WatchClub.Clubs.{Club, Library}
   alias WatchClub.Contents.{Movie, TvShowEpisode}
   alias WatchClub.MediaCatalog.Video
 
@@ -101,8 +100,7 @@ defmodule WatchClubWeb.Helpers.Url do
   end
 
   @doc """
-  Whether `path` is the page at `section_path` or a page under it, such as a club's library under
-  the club.
+  Whether `path` is the page at `section_path` or a page under it.
   """
   def in_section?(path, section_path),
     do: path == section_path or String.starts_with?(path, section_path <> "/")
@@ -128,9 +126,4 @@ defmodule WatchClubWeb.Helpers.Url do
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
   def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
-
-  def club_link(%Club{id: club_id}), do: ~p"/clubs/#{club_id}"
-
-  def club_library_link(%Library{id: library_id, club_id: club_id}),
-    do: ~p"/clubs/#{club_id}/libraries/#{library_id}"
 end

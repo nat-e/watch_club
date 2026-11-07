@@ -43,22 +43,19 @@ Data can be upated directly from the Notification payload if straight forward. I
 
 | Topic | Domain | Scope | Description | Triggered | Subscribers |
 |---|---|---|---|---|---|
-| `memberships:club:<club_id>` | Club Memberships | Club | Notifications about Club Memberships | `ClubMembership:CUD` | `/clubs/:club_id/members` |
 | `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
-| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `ClubMembership:CUD`, `Participant:C` (a new Conversation), `Participant:U` (read), `RequestSubscriber:U` (ready unseen), `Playlist:C` (owner), `PlaylistAccess:CD` | Every page for current user |
+| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `Participant:C` (a new Conversation), `Participant:U` (read), `RequestSubscriber:U` (ready unseen), `Playlist:C` (owner), `PlaylistAccess:CD` | Every page for current user |
 | `playlist:<playlist_id>` | Playlists | Playlist | Notifications about a Playlist, for everyone who sees it | `Playlist:UD`, `PlaylistItem:CD` | `/playlists`, `/movies/:tmdb_id`, `/shows/:tmdb_id`: each subscribes to the Playlists it loads |
-| `club:<club_id>` | - | Club | Notifications about a Club  | `Club:U`, `Library:CUD` | Every page for current user (Sidebar) |
 | `media_sources:admin` | MediaSources | Admin | Notifications about a a Media Source or Import  | `MediaSource:CUD`, `Import:CU` | `/admin/media_sources/*` |
-| `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `RequestSubscriber:CD`, `WatchProgress:CUD` | Any page that display content (Content page, Club Library, Browse...) |
-| `content:club:<club_id>` | Contents | Club | Notification about a Content that affects members of a Club | `LibraryItem:CUD` | Any page that displays content (Content page, Club Library...) |
-| `content:global` | Contents | Global | Notification about a Content that affects everybody | `ContentRequest:CUD`, `Media:CUD`, `Content:CUD` | Any page that displays content (Content page, Club Library, Browse...) |
+| `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `RequestSubscriber:CD`, `WatchProgress:CUD` | Any page that display content (Content page, Browse...) |
+| `content:global` | Contents | Global | Notification about a Content that affects everybody | `ContentRequest:CUD`, `Media:CUD`, `Content:CUD` | Any page that displays content (Content page, Browse...) |
 | `history:global` | History | Global | Every User's Watch Progress, for the Watchers of a Content | `WatchProgress:CD` | `/movies/:tmdb_id`, `/shows/:tmdb_id` |
 | `conversation:<conversation_id>` | Conversations | Conversation | A Message posted in a Conversation | `Message:C` | Every page of its Participants, subscribed to all their Conversations |
 
 
 ## LiveComponents
 
-To provide a better separation of concern, some complex interactive components (PlayOrRequestButton, AddToLibraryButton, ...) are extracted to `LiveComponents` that handle their own data loading and mutation.
+To provide a better separation of concern, some complex interactive components (PlayOrRequestButton, ...) are extracted to `LiveComponents` that handle their own data loading and mutation.
 For these, data loading is performed in `update_many()` in order to avoir N+1 queries in lists.
 They cannot directly receive PubSub event since they share the same process as the LiveView that host them, but they provide a `handle_pubsub_message()` function to collocate notification handling and make it easy for the host LiveViews to deal with.
 

@@ -1,7 +1,6 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
-  alias WatchClub.Clubs.{Club, Library, Membership}
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow}
   alias WatchClub.Conversations.{Conversation, Message}
   alias WatchClub.MediaCatalog.Media
@@ -62,61 +61,17 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def club(opts \\ []) do
-    changeset_generator(
-      Club,
-      :create,
-      defaults: [
-        name: sequence(:name, fn i -> "Club #{i}" end)
-      ],
-      authorize?: false,
-      actor: opts[:actor],
-      overrides: opts
-    )
-  end
-
   def invitation_code(opts \\ []) do
     changeset_generator(
       InvitationCode,
       :create,
       defaults: [
         code: sequence(:invitation_code, fn i -> "CODE_#{i}" end),
-        club_ids: [],
         max_uses: nil
       ],
       authorize?: false,
       actor: opts[:actor],
       overrides: Keyword.drop(opts, [:actor])
-    )
-  end
-
-  def membership(%Club{} = club, %User{} = user, opts \\ []) do
-    changeset_generator(
-      Membership,
-      :create,
-      defaults: [
-        user_id: user.id,
-        club_id: club.id,
-        role: :member
-      ],
-      authorize?: false,
-      actor: opts[:actor],
-      overrides: opts
-    )
-  end
-
-  def library(%Club{} = club, opts \\ []) do
-    content_type = Keyword.get(opts, :content_type, :movie)
-
-    seed_generator(
-      %Library{
-        name: sequence(:library_name, fn i -> "Library #{i}" end),
-        club_id: club.id,
-        content_type: content_type,
-        icon: Keyword.get(opts, :icon, "film"),
-        index: sequence(:library_index, fn i -> i end)
-      },
-      overrides: opts
     )
   end
 

@@ -12,8 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
-#: lib/watch_club_web/components/clubs/club_dialogs/leave_club_modal.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
@@ -21,9 +19,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
-#: lib/watch_club_web/live/clubs/members/remove_member_modal.ex
-#: lib/watch_club_web/live/clubs/settings/create_or_edit_library_modal.ex
-#: lib/watch_club_web/live/clubs/settings/delete_library_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
@@ -39,7 +34,6 @@ msgid "Close"
 msgstr "Fermer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/clubs/club_dialogs/create_club_modal.ex
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
@@ -47,14 +41,12 @@ msgid "Create"
 msgstr "Créer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/clubs/club_dialogs/delete_club_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
@@ -68,12 +60,6 @@ msgstr "Enregistrer"
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Something went wrong, try again later"
-msgstr "Une erreur est survenue, réessayez plus tard"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
@@ -141,3 +127,27 @@ msgstr "Utilisateur supprimé"
 #, elixir-autogen, elixir-format
 msgid "you"
 msgstr "vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "No icons found"
+msgstr "Aucune icône trouvée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search icons"
+msgstr "Rechercher des icônes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Try a different search term."
+msgstr "Essayez un autre terme de recherche."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Use %{icon_name} icon"
+msgstr "Utiliser l’icône %{icon_name}"

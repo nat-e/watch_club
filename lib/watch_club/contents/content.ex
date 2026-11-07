@@ -5,8 +5,6 @@ defmodule WatchClub.Contents.Content do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Clubs.{Library, LibraryItem}
-
   alias WatchClub.Contents.{
     Book,
     ContentIdentity,
@@ -298,9 +296,6 @@ defmodule WatchClub.Contents.Content do
 
       sort inserted_at: :desc
     end
-
-    has_many :library_items, LibraryItem
-    many_to_many :libraries, Library, through: LibraryItem
 
     # Of its Movie, its TV Show Episodes or its Book
     has_many :medias, Media

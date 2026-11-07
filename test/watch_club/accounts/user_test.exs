@@ -2,7 +2,6 @@ defmodule WatchClub.Accounts.UserTest do
   use WatchClub.DataCase
 
   alias WatchClub.Accounts.{InvitationCode, User}
-  alias WatchClub.Clubs.Membership
   alias WatchClub.Playlists
   alias WatchClub.Playlists.{Playlist, PlaylistItem}
   alias WatchClub.Requests.ContentRequest
@@ -96,22 +95,17 @@ defmodule WatchClub.Accounts.UserTest do
   describe "register_with_password/*" do
     setup do
       admin = generate(administrator())
-      club = generate(club(actor: admin))
-      other_club = generate(club(actor: admin))
 
-      {:ok, admin: admin, club: club, other_club: other_club}
+      {:ok, admin: admin}
     end
 
-    test "registering uses the invitation code and joins the granted clubs", %{
-      admin: admin,
-      club: club,
-      other_club: other_club
+    test "registering uses the invitation code", %{
+      admin: admin
     } do
       invitation_code =
-        generate(invitation_code(actor: admin, club_ids: [club.id, other_club.id]))
+        generate(invitation_code(actor: admin))
 
       assert %User{settings: %{locale: :en_US}} =
-               user =
                register_with_password!(%{
                  username: "nate",
                  password: "passw0rd",
@@ -120,36 +114,12 @@ defmodule WatchClub.Accounts.UserTest do
                  locale: :en_US
                })
 
-      memberships = Ash.load!(user, :memberships, authorize?: false).memberships
-
-      assert memberships |> Enum.map(& &1.club_id) |> Enum.sort() ==
-               Enum.sort([club.id, other_club.id])
-
-      assert Enum.all?(memberships, &(&1.role == :member))
-
       assert %InvitationCode{uses: 1} =
                Ash.get!(InvitationCode, invitation_code.id, authorize?: false)
     end
 
-    test "an invitation code granting zero clubs registers the user without memberships", %{
-      admin: admin
-    } do
-      invitation_code = generate(invitation_code(actor: admin, club_ids: []))
-
-      user =
-        register_with_password!(%{
-          username: "nate",
-          password: "passw0rd",
-          password_confirmation: "passw0rd",
-          invitation_code: invitation_code.code,
-          locale: :en_US
-        })
-
-      assert Ash.load!(user, :memberships, authorize?: false).memberships == []
-    end
-
     test "a new user starts with a To Watch playlist, named in their locale", %{admin: admin} do
-      invitation_code = generate(invitation_code(actor: admin, club_ids: []))
+      invitation_code = generate(invitation_code(actor: admin))
 
       user =
         register_with_password!(%{
@@ -180,9 +150,9 @@ defmodule WatchClub.Accounts.UserTest do
              end)
     end
 
-    test "users can't register with a used invitation code", %{admin: admin, club: club} do
+    test "users can't register with a used invitation code", %{admin: admin} do
       invitation_code =
-        generate(invitation_code(actor: admin, club_ids: [club.id], max_uses: 1))
+        generate(invitation_code(actor: admin, max_uses: 1))
         |> Ash.Seed.update!(%{uses: 1})
 
       assert register_with_password(%{
@@ -204,9 +174,9 @@ defmodule WatchClub.Accounts.UserTest do
              end)
     end
 
-    test "users can't register with an expired invitation code", %{admin: admin, club: club} do
+    test "users can't register with an expired invitation code", %{admin: admin} do
       invitation_code =
-        generate(invitation_code(actor: admin, club_ids: [club.id]))
+        generate(invitation_code(actor: admin))
         |> Ash.Seed.update!(%{expires_at: DateTime.utc_now() |> DateTime.add(-10, :day)})
 
       assert register_with_password(%{
@@ -248,8 +218,8 @@ defmodule WatchClub.Accounts.UserTest do
              end)
     end
 
-    test "fails when the password does not match", %{admin: admin, club: club} do
-      invitation_code = generate(invitation_code(actor: admin, club_ids: [club.id]))
+    test "fails when the password does not match", %{admin: admin} do
+      invitation_code = generate(invitation_code(actor: admin))
 
       assert register_with_password(%{
                username: "nate",
@@ -264,8 +234,8 @@ defmodule WatchClub.Accounts.UserTest do
              end)
     end
 
-    test "fails with an invalid locale", %{admin: admin, club: club} do
-      invitation_code = generate(invitation_code(actor: admin, club_ids: [club.id]))
+    test "fails with an invalid locale", %{admin: admin} do
+      invitation_code = generate(invitation_code(actor: admin))
 
       register_with_password(%{
         username: "nate",
@@ -284,22 +254,18 @@ defmodule WatchClub.Accounts.UserTest do
   describe "destroy_user/*" do
     setup do
       admin = generate(administrator())
-      club = generate(club(actor: admin))
       member = generate(user())
-      membership = generate(membership(club, member, role: :member))
 
-      {:ok, admin: admin, club: club, member: member, membership: membership}
+      {:ok, admin: admin, member: member}
     end
 
-    test "the administrator can delete a user and their memberships", %{
+    test "the administrator can delete a user", %{
       admin: admin,
-      member: member,
-      membership: membership
+      member: member
     } do
       assert :ok = destroy_user!(member, actor: admin)
 
       assert Ash.get(User, member.id, authorize?: false) |> elem(0) == :error
-      assert Ash.get(Membership, membership.id, authorize?: false) |> elem(0) == :error
     end
 
     test "keeps the user's Content Requests, as from a deleted User", %{
@@ -312,25 +278,6 @@ defmodule WatchClub.Accounts.UserTest do
 
       assert %ContentRequest{requested_by_id: nil} =
                Ash.get!(ContentRequest, request.id, authorize?: false)
-    end
-
-    test "deleting a user sends a memberships:club:<club_id> pubsub event", %{
-      admin: admin,
-      club: club,
-      member: member,
-      membership: membership
-    } do
-      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "memberships:club:#{club.id}")
-      assert :ok = destroy_user!(member, actor: admin)
-
-      membership_id = membership.id
-
-      assert_receive %Ash.Notifier.Notification{
-                       resource: Membership,
-                       action: %Ash.Resource.Actions.Destroy{},
-                       data: %Membership{id: ^membership_id}
-                     },
-                     500
     end
 
     test "a deleted user's Messages and place in Conversations stay", %{

@@ -141,7 +141,7 @@ defmodule WatchClubWeb.Storybook.Modal do
           />
         </label>
         <p class="text-sm text-text-muted">
-          Invitation links can only be used once and inherit the selected club role.
+          Invitation links can only be used once and let new people register.
         </p>
       </div>
 
@@ -163,12 +163,12 @@ defmodule WatchClubWeb.Storybook.Modal do
   defp danger_modal(assigns) do
     ~H"""
     <.modal id="storybook-danger-modal" on_close={close_modal()}>
-      <:title>Delete library?</:title>
-      <:description>This action removes the library from the club.</:description>
+      <:title>Delete playlist?</:title>
+      <:description>This action deletes the playlist.</:description>
 
       <.alert variant="danger">
         <:title>Deletion cannot be undone from this screen.</:title>
-        The underlying content records are kept, but members will lose access to this library.
+        The Content stays in the Library, but this playlist will no longer be available.
       </.alert>
 
       <:footer>
@@ -181,7 +181,7 @@ defmodule WatchClubWeb.Storybook.Modal do
           Cancel
         </.button>
         <.button id="storybook-danger-delete-button" type="button" variant="danger">
-          Delete library
+          Delete playlist
         </.button>
       </:footer>
     </.modal>
@@ -191,13 +191,13 @@ defmodule WatchClubWeb.Storybook.Modal do
   defp scrollable_modal(assigns) do
     ~H"""
     <.modal id="storybook-scrollable-modal" on_close={close_modal()}>
-      <:title>Club guidelines</:title>
+      <:title>Recommendations</:title>
       <:description>Long content scrolls within the modal panel.</:description>
 
       <div class="grid gap-4">
         <p :for={section <- 1..8}>
           Guideline {section}: keep recommendations thoughtful, spoiler-free, and useful for the
-          rest of the club. Add context about why the movie, show, or book belongs in the library.
+          other Users. Add context about why the movie, show, or book is worth watching.
         </p>
       </div>
 

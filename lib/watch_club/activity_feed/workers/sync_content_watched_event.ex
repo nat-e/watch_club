@@ -52,8 +52,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
       Contents.get_content_by_id!(content_id,
         load: [
           :actor_progress_status,
-          implementation: %{load: [tv_show: [episodes: [:actor_progress_status]]]},
-          library_items: [:library]
+          implementation: %{load: [tv_show: [episodes: [:actor_progress_status]]]}
         ],
         actor: actor
       )
@@ -66,7 +65,6 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
         |> Ash.read_one!(actor: actor)
         |> case do
           nil -> nil
-          # Scopes have no destroy policy: this is a system-derived projection
           event -> Ash.destroy!(event, actor: actor, authorize?: false)
         end
 
@@ -77,8 +75,7 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
           %{
             content_id: content_id,
             completed: status == :completed,
-            completed_episodes: completed_episodes(content.implementation),
-            scopes: event_scopes(user_id, content.library_items)
+            completed_episodes: completed_episodes(content.implementation)
           },
           action: :upsert,
           # System-derived projection: skip policies on the write (actor still set so relate_actor
@@ -89,18 +86,6 @@ defmodule WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent do
     end
 
     :ok
-  end
-
-  # Every scope shares the group, see SetGroupKey
-  defp event_scopes(user_id, library_items) do
-    group = "watched:#{user_id}"
-
-    club_scopes =
-      library_items
-      |> Enum.map(&%{scope_club_id: &1.library.club_id, group: group})
-      |> Enum.uniq()
-
-    [%{scope_user_id: user_id, group: group} | club_scopes]
   end
 
   defp completed_episodes(%TvShow{episodes: episodes}) do

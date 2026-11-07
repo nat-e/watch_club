@@ -12,7 +12,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Layout
   import WatchClubWeb.Components.Media.MediaTypeBadge
-  import WatchClubWeb.Components.Medias.LibraryLists
   import WatchClubWeb.Components.Medias.MatchedContentSection
   import WatchClubWeb.Components.Medias.UnmatchedContentSection
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
@@ -31,7 +30,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
 
       <.stack space="cluster" class="p-cluster">
         <.content_section media={@media} />
-        <.library_section media={@media} />
         <.video_section :if={@has_video?} media={@media} />
         <.audio_section :if={@has_video?} media={@media} />
         <.subtitle_section :if={@has_video?} media={@media} />
@@ -131,16 +129,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.DetailDrawer do
     ~H"""
     <.section_block label={dgettext("admin_media", "Content")}>
       <.unmatched_content_section file_name={Path.basename(@media.path || "")} />
-    </.section_block>
-    """
-  end
-
-  attr :media, Media, required: true
-
-  defp library_section(assigns) do
-    ~H"""
-    <.section_block label={dgettext("admin_media", "Libraries")}>
-      <.media_libraries_list media={@media} />
     </.section_block>
     """
   end

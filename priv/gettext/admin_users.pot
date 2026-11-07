@@ -21,11 +21,6 @@ msgstr ""
 msgid "Actions for %{username}"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/users_table.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format

@@ -24,10 +24,10 @@ defmodule WatchClubWeb.Storybook.Avatar do
         template: """
         <.avatar_group
           avatars={[
-            %{id: "club-cinema", name: "Cinema Club"},
-            %{id: "club-books", name: "Book Club"},
-            %{id: "club-series", name: "Series Club"},
-            %{id: "club-games", name: "Game Club"}
+            %{id: "user-cinema", name: "Alice"},
+            %{id: "user-books", name: "Ben"},
+            %{id: "user-series", name: "Clara"},
+            %{id: "user-games", name: "Daniel"}
           ]}
         />
         """

@@ -24,12 +24,6 @@ msgid "Actions for %{username}"
 msgstr "Actions pour %{username}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/users_table.ex
-#, elixir-autogen, elixir-format
-msgid "Clubs"
-msgstr "Clubs"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format

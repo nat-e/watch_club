@@ -62,7 +62,6 @@ defmodule WatchClubWeb.Admin.UsersPage do
         <.create_invitation_code_modal
           :if={@invitation_form}
           form={@invitation_form}
-          current_user={@current_user}
         />
         <.delete_invitation_code_modal
           :if={@invitation_code_to_delete}
@@ -122,11 +121,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
           code:
             :crypto.strong_rand_bytes(10)
             |> Base.encode32(padding: false)
-        },
-        prepare_params: fn params, _ ->
-          # Unchecked checkbox groups submit no key at all
-          Map.put_new(params, "club_ids", [])
-        end
+        }
       )
 
     {:noreply, socket |> assign(:invitation_form, to_form(form))}
@@ -140,13 +135,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
     form =
       socket.assigns.invitations
       |> Enum.find(&(&1.id == invitation_code_id))
-      |> Accounts.form_to_update_invitation_code(
-        actor: socket.assigns.current_user,
-        prepare_params: fn params, _ ->
-          # Unchecked checkbox groups submit no key at all
-          Map.put_new(params, "club_ids", [])
-        end
-      )
+      |> Accounts.form_to_update_invitation_code(actor: socket.assigns.current_user)
 
     {:noreply, socket |> assign(:invitation_form, to_form(form))}
   end
@@ -238,7 +227,6 @@ defmodule WatchClubWeb.Admin.UsersPage do
       :invitations,
       Accounts.list_invitation_codes!(
         actor: socket.assigns.current_user,
-        load: [:clubs],
         query: [filter: [status: :active]]
       )
     )
@@ -250,7 +238,6 @@ defmodule WatchClubWeb.Admin.UsersPage do
       :users,
       Accounts.list_users!(%{},
         actor: socket.assigns.current_user,
-        load: [memberships: [:club]],
         query: [sort: [inserted_at: :asc]]
       )
     )

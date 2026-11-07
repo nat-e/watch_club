@@ -3,15 +3,8 @@ defmodule WatchClub.ActivityFeed do
     otp_app: :watch_club,
     extensions: [AshPhoenix]
 
-  alias WatchClub.ActivityFeed.{FeedEntry, FeedEventScope}
-
-  alias WatchClub.ActivityFeed.Events.{
-    ClubCreatedEvent,
-    ContentAddedEvent,
-    ContentWatchedEvent,
-    LibraryCreatedEvent,
-    MemberAddedEvent
-  }
+  alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
+  alias WatchClub.ActivityFeed.FeedEntry
 
   resources do
     resource FeedEntry do
@@ -23,12 +16,6 @@ defmodule WatchClub.ActivityFeed do
         not_found_error?: false
     end
 
-    resource FeedEventScope
-
-    resource ClubCreatedEvent
-    resource ContentAddedEvent
     resource ContentWatchedEvent
-    resource LibraryCreatedEvent
-    resource MemberAddedEvent
   end
 end
