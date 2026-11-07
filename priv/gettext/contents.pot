@@ -115,22 +115,12 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
-msgid "Next: %{episode} · %{percent}% of the show"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
 msgid "Nobody has watched it yet."
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "On %{episode} · %{percent}% of the show"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -156,11 +146,6 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "See it on TMDB"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Stopped at %{time}"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -198,35 +183,9 @@ msgstr ""
 msgid "Watched episode %{number}"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "%{username}'s request"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "A deleted user's request"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Get notified when it's ready"
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "You'll be told when %{title} is ready. It's in your Requests."
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "You'll be told when it's ready"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
-#, elixir-autogen, elixir-format
-msgid "Get notified when %{title} is ready"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -313,4 +272,19 @@ msgstr ""
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "New"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{action} %{title}: %{status}"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{title}: %{status}"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Request progress for %{title}"
 msgstr ""

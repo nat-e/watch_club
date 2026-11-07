@@ -121,7 +121,7 @@ A user creates a **Content Request** for one piece of **Content** so its media f
 _Avoid_: Request media, fetch content, grab content, add to my downloads, add to watchlist
 
 **Get Notified**:
-A **User** becomes a **Request Subscriber** of a **Content Request**.
+A **User** becomes a **Request Subscriber** of a **Content Request**. Outside **My Requests**, it shows as Request, the same as **Request Content**.
 _Avoid_: Follow, watch, me too
 
 **Stop Getting Notified**:
@@ -377,6 +377,9 @@ _Avoid_: Group, aggregate, card, item
 - A **Content Request** is made by exactly one **User** and references exactly one **Content**
 - A **Content** has at most one **Content Request**, made by the first **User** who requests it
 - **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media** for an aired part: the **Movie**, or an aired **TV Show Episode**
+- Request does **Request Content** while the **Content** has no **Content Request**, and **Get Notified** once it has one
+- Outside **My Requests**, playable **Content** shows Play; unplayable **Content** shows Request to a **User** who is not a **Request Subscriber**, or its **Content Request Status** to one who is
+- Outside **My Requests**, a **User** who is not a **Request Subscriber** sees unplayable **Content** the same way whether or not somebody else already made its **Content Request**
 - Any **User** who isn't a **Request Subscriber** can **Get Notified** on a **Content Request** while it is not yet playable
 - The **User** who made a **Content Request** becomes one of its **Request Subscribers**
 - Any **Request Subscriber**, the **User** who made the **Content Request** included, can **Stop Getting Notified**
@@ -579,6 +582,7 @@ _Avoid_: Group, aggregate, card, item
 - "Admin" is ambiguous; resolved: use **Instance Administrator** for the user who administers the instance.
 - "Invitee" can imply a known person, but an **Invitation** only stores an **Invitee Name** until someone accepts it.
 - "Share" means giving access to a **Playlist**; resolved: sending **Content** to people is **Recommend Content**.
+- A separate **Get Notified** action next to somebody else's **Content Request** was considered; resolved: outside **My Requests**, a **User** who is not a **Request Subscriber** only sees Request, because whether somebody else already requested the **Content** doesn't change what they can do.
 - **Download** is a **User** saving a file to their device; resolved: the Downloading **Content Request Status** is a **Media Source** fetching the file to the server.
 - **Browse** and the **Media Browser** are different interfaces: **Browse** shows **Content** to every **User**, the **Media Browser** shows **Media** files to the **Instance Administrator**.
 - "Media Version" is not canonical; resolved: use **Media** for the local file and **Video**, **Ebook**, or **Audiobook** for concrete media.

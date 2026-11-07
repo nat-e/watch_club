@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   @moduledoc """
-  Loads the actor's `PlayOrRequestButton` for a Content, makes the request and gets the actor
-  notified.
+  Loads the actor's `PlayOrRequestButton` for a Content. Its Request does Request Content, or
+  Get Notified once somebody else made the Content Request.
   """
   use WatchClubWeb, :live_component
 
@@ -56,11 +56,6 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
   attr :class, :any, default: nil
-  attr :play_only, :boolean, default: false
-
-  attr :get_notified, :boolean,
-    default: true,
-    doc: "false leaves out the bell, for a list that offers Get Notified in its menu"
 
   attr :on_episodes, :any,
     default: nil,
@@ -74,7 +69,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :variant, :string,
     values: ~w(button round),
     default: "button",
-    doc: "round: only Play, with only its icon, over a poster"
+    doc:
+      "round: a circle with only an icon, or a ring for the request's status. The lg one sits over posters, with a shadow."
 
   @impl true
   def render(assigns) do
@@ -87,12 +83,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         play_label={@play_label}
         title={@title}
         request={@request}
-        on_request={JS.push("request-content", target: @myself)}
-        on_get_notified={@get_notified && JS.push("get-notified", target: @myself)}
+        on_request={JS.push("request", target: @myself)}
         release_date={@release_date}
         locale={@current_user.settings.locale}
         on_episodes={@on_episodes}
-        play_only={@play_only}
         size={@size}
         variant={@variant}
       />
@@ -113,7 +107,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
           :actor_next_medias_to_play,
           :actor_progress_status,
           implementation: %{load: [tv_show: [actor_next_episode: [:actor_progress_status]]]},
-          request: [:status, :download_progress, :actor_subscriber?, :requested_by]
+          request: [:status, :download_progress, :actor_subscriber?]
         ],
         actor: actor
       )
@@ -137,7 +131,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   end
 
   @impl true
-  def handle_event("request-content", _params, socket) do
+  def handle_event("request", _params, %{assigns: %{request: nil}} = socket) do
     case Requests.request_content(
            socket.assigns.content_identity,
            # For its title: the Content may not exist before its request
@@ -154,7 +148,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     end
   end
 
-  def handle_event("get-notified", _params, socket) do
+  # Somebody else requested it
+  def handle_event("request", _params, socket) do
     Requests.get_notified!(socket.assigns.request.id, actor: socket.assigns.current_user)
     send_told_when_ready(socket.assigns.title)
     {:noreply, socket}

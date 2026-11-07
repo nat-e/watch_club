@@ -159,10 +159,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   attr :playlist, Playlist, required: true
   attr :current_user, User, required: true
 
-  # Its poster and name, which open the Content, then Play, Resume or Request, who added it once
-  # the Playlist is shared, and a menu to Get Notified while it's on its way, or to remove it for
-  # the Users who can. They spread over the poster's height: what it is at its top, the last of
-  # them at its bottom.
+  # Its poster and name, which open the Content, with Play, Request or how far the request got
+  # beside the name, then a menu to remove it for the Users who can, and who added it once the
+  # Playlist is shared, at the poster's bottom.
   defp item_row(assigns) do
     %{item: %{content: content}} = assigns
 
@@ -171,11 +170,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
         content: content,
         identity: ContentIdentity.from_content(content),
         title: content.implementation.best_localization.title,
-        progress: progress_percent(content),
-        # Someone requested it, it isn't ready yet, and the User isn't told when it will be
-        get_notified?:
-          !content.has_media? and content.request != nil and
-            !content.request.actor_subscriber?
+        progress: progress_percent(content)
       )
 
     ~H"""
@@ -193,32 +188,54 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           />
         </.tmdb_poster>
       </.link>
-      <div class="flex min-w-0 flex-1 flex-col justify-between gap-related self-stretch">
-        <div class="flex min-w-0 flex-col">
-          <.link
-            navigate={Url.content_details_link(@identity)}
-            class="truncate text-lg font-semibold hover:underline"
-          >
-            {@title}
-          </.link>
-          <span class="truncate text-sm text-text-muted">
-            {[Time.maybe_year(@content.release_date), ContentType.translated_label(@content.type)]
-            |> Enum.filter(& &1)
-            |> Enum.join(" · ")}
-          </span>
-        </div>
-        <div class="flex flex-wrap items-center gap-related">
+      <div class="flex min-w-0 flex-1 flex-col gap-related self-stretch">
+        <div class="flex min-w-0 items-start gap-related">
+          <div class="flex min-w-0 flex-1 flex-col">
+            <.link
+              navigate={Url.content_details_link(@identity)}
+              class="truncate text-lg font-semibold hover:underline"
+            >
+              {@title}
+            </.link>
+            <span class="truncate text-sm text-text-muted">
+              {[Time.maybe_year(@content.release_date), ContentType.translated_label(@content.type)]
+              |> Enum.filter(& &1)
+              |> Enum.join(" · ")}
+            </span>
+          </div>
           <.live_component
             id={PlayOrRequestButtonLive.dom_id(@identity)}
             module={PlayOrRequestButtonLive}
             content_identity={@identity}
             current_user={@current_user}
-            get_notified={false}
+            variant="round"
+            class="shrink-0"
           />
+          <.dropdown_menu :if={@playlist.editable_by?} id={"#{@id}-menu"}>
+            <:trigger>
+              <.button
+                id={"#{@id}-menu-button"}
+                variant="ghost"
+                size="icon"
+                aria-label={dgettext("playlists", "More for %{content}", content: @title)}
+              >
+                <Lucideicons.ellipsis_vertical />
+              </.button>
+            </:trigger>
+            <.dropdown_menu_item
+              id={"#{@id}-remove"}
+              variant="destructive"
+              phx-click="remove_item"
+              phx-value-content_id={@content.id}
+            >
+              <Lucideicons.list_minus />
+              {dgettext("playlists", "Remove from %{playlist}", playlist: @playlist.name)}
+            </.dropdown_menu_item>
+          </.dropdown_menu>
         </div>
         <span
           :if={@playlist.accesses != [] and @item.added_by}
-          class="flex min-w-0 items-center gap-tight text-xs text-text-subtle"
+          class="mt-auto flex min-w-0 items-center gap-tight text-xs text-text-subtle"
         >
           <.avatar
             id={@item.added_by.id}
@@ -230,42 +247,6 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             {dgettext("playlists", "Added by %{user}", user: @item.added_by.username)}
           </span>
         </span>
-      </div>
-      <%!-- As tall as the name's line, so the menu is centered on it --%>
-      <div
-        :if={@playlist.editable_by? or @get_notified?}
-        class="flex h-[1lh] shrink-0 items-center text-lg"
-      >
-        <.dropdown_menu id={"#{@id}-menu"}>
-          <:trigger>
-            <.button
-              id={"#{@id}-menu-button"}
-              variant="ghost"
-              size="icon"
-              aria-label={dgettext("playlists", "More for %{content}", content: @title)}
-            >
-              <Lucideicons.ellipsis_vertical />
-            </.button>
-          </:trigger>
-          <.dropdown_menu_item
-            :if={@get_notified?}
-            id={"#{@id}-get-notified"}
-            phx-click="get_notified"
-            phx-value-content_request_id={@content.request.id}
-          >
-            <Lucideicons.bell /> {dgettext("playlists", "Get notified when ready")}
-          </.dropdown_menu_item>
-          <.dropdown_menu_item
-            :if={@playlist.editable_by?}
-            id={"#{@id}-remove"}
-            variant="destructive"
-            phx-click="remove_item"
-            phx-value-content_id={@content.id}
-          >
-            <Lucideicons.list_minus />
-            {dgettext("playlists", "Remove from %{playlist}", playlist: @playlist.name)}
-          </.dropdown_menu_item>
-        </.dropdown_menu>
       </div>
     </li>
     """

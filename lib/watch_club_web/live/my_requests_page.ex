@@ -59,6 +59,7 @@ defmodule WatchClubWeb.MyRequestsPage do
                   content_identity={ContentIdentity.from_content(request.content)}
                   current_user={@current_user}
                   variant="round"
+                  size="lg"
                 />
               </:action>
             </.poster_card>

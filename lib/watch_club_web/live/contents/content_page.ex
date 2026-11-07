@@ -22,16 +22,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Contents.ContentPage.{EpisodesModalLive, RecommendModalLive}
 
-  # The User's Watch Progress, for the actions under the overview
+  # Whether it's in the Library and the User finished it, and the episode Play plays, for the
+  # season Episodes opens on
   @content_load [
     :has_media?,
     :actor_progress_status,
-    implementation: %{
-      load: [
-        movie: [:actor_progress],
-        tv_show: [:actor_percent_watched, actor_next_episode: [:actor_progress_status]]
-      ]
-    }
+    implementation: %{load: [tv_show: [:actor_next_episode]]}
   ]
 
   @impl true
@@ -222,9 +218,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
-  # Play, Resume or Request first, with how far the User got under it. For a TV Show, a caret
-  # joined to Play opens every episode, or Episodes when there's no Play. Then Watch trailer and
-  # Watched, which stay quiet.
+  # Play, Resume or Request first, or how far the request got. Then round Episodes for a TV Show,
+  # Watch trailer and Watched, which stay quiet.
   defp actions(assigns) do
     tv_show? = assigns.content_identity.type == :tv_show
 
@@ -232,87 +227,82 @@ defmodule WatchClubWeb.Contents.ContentPage do
       assign(assigns,
         tv_show?: tv_show?,
         episodes?: tv_show? and season_numbers(assigns.details) != [],
-        in_library?: in_library?(assigns.content),
         finished?: finished?(assigns.content),
         trailer_url: trailer_url(assigns.details)
       )
 
     ~H"""
-    <div class="flex flex-col gap-related @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-cluster">
-      <div class="flex w-full flex-col gap-tight @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto">
-        <.live_component
-          id={PlayOrRequestButtonLive.dom_id(@content_identity)}
-          module={PlayOrRequestButtonLive}
-          content_identity={@content_identity}
-          current_user={@current_user}
-          size="lg"
-          on_episodes={if @episodes? and @in_library?, do: JS.push("open_episodes")}
-        />
-        <.progress_line content={@content} locale={@current_user.settings.locale} />
-      </div>
-      <%!-- On wide screens, narrower buttons pulled left by their padding: even gaps on one line, and
-      icons in line with Play once they wrap under it --%>
-      <.cluster class="justify-center @3xl:-ml-related @3xl:justify-start @3xl:*:px-related!">
-        <.button
-          :if={@episodes? and !@in_library?}
+    <div class="flex flex-col gap-group @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-cluster">
+      <.live_component
+        id={PlayOrRequestButtonLive.dom_id(@content_identity)}
+        module={PlayOrRequestButtonLive}
+        content_identity={@content_identity}
+        current_user={@current_user}
+        size="lg"
+        class="w-full @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto @3xl:min-w-64"
+      />
+      <div class="flex justify-center gap-group @3xl:justify-start">
+        <.round_action
+          :if={@episodes?}
           id="episodes-button"
-          variant="overlay"
-          size="lg"
+          label={dgettext("contents", "Episodes")}
           phx-click="open_episodes"
           aria-haspopup="dialog"
           class="phx-click-loading:cursor-progress phx-click-loading:opacity-60"
         >
-          <:icon><Lucideicons.list_video /></:icon>
-          {dgettext("contents", "Episodes")}
-        </.button>
-        <.button
+          <Lucideicons.list_video class="size-icon" />
+        </.round_action>
+        <.round_action
           :if={@trailer_url}
           id="trailer-button"
-          variant="overlay"
-          size="lg"
+          label={dgettext("contents", "Watch trailer")}
           href={@trailer_url}
           target="_blank"
         >
-          <:icon><Lucideicons.circle_play /></:icon>
-          {dgettext("contents", "Watch trailer")}
-          <:icon position="end">
-            <Lucideicons.external_link class="size-icon-sm text-text-subtle" />
-          </:icon>
-        </.button>
+          <Lucideicons.circle_play class="size-icon" />
+        </.round_action>
         <%!-- Its label changes with its state, so it has no aria-pressed --%>
-        <.button
+        <.round_action
           id="watched-button"
-          variant="overlay"
-          size="lg"
+          label={
+            if @finished?,
+              do: dgettext("contents", "Watched"),
+              else: dgettext("contents", "Mark as watched")
+          }
           phx-click="toggle_watched"
           title={watched_hint(@tv_show?, @finished?)}
         >
-          <:icon>
-            <Lucideicons.circle_check :if={@finished?} class="text-success" />
-            <Lucideicons.circle :if={!@finished?} />
-          </:icon>
-          {if @finished?,
-            do: dgettext("contents", "Watched"),
-            else: dgettext("contents", "Mark as watched")}
-        </.button>
-      </.cluster>
+          <Lucideicons.circle_check :if={@finished?} class="size-icon text-success" />
+          <Lucideicons.circle :if={!@finished?} class="size-icon" />
+        </.round_action>
+      </div>
     </div>
     """
   end
 
-  attr :content, :any, required: true, doc: "a `Content`, or nil"
-  attr :locale, :atom, required: true
+  attr :id, :string, required: true
+  attr :label, :string, required: true
+  attr :class, :any, default: nil
+  attr :rest, :global, include: ~w(href target), doc: "a link with an href, else a button"
+  slot :inner_block, required: true, doc: "its icon"
 
-  # How far the User got, under Resume: where they stopped a Movie, or the episode Play plays and
-  # how much of the TV Show they finished.
-  defp progress_line(assigns) do
-    assigns = assign(assigns, :progress, progress(assigns.content, assigns.locale))
-
+  # A quiet action beside Play: its icon in a circle, with a small label under it
+  defp round_action(assigns) do
     ~H"""
-    <div :if={@progress} class="flex flex-col gap-tight">
-      <.progress_bar percent={@progress.percent} />
-      <span class="text-xs text-text-muted">{@progress.label}</span>
-    </div>
+    <.dynamic_tag
+      tag_name={if @rest[:href], do: "a", else: "button"}
+      id={@id}
+      class={[
+        "group/action flex w-20 flex-col items-center gap-tight text-xs text-text-muted",
+        @class
+      ]}
+      {if @rest[:href], do: @rest, else: Map.put(@rest, :type, "button")}
+    >
+      <span class="grid size-control-lg place-items-center rounded-full border border-border bg-surface-raised text-text transition-colors group-hover/action:bg-surface-hover">
+        {render_slot(@inner_block)}
+      </span>
+      {@label}
+    </.dynamic_tag>
     """
   end
 
@@ -771,42 +761,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
   defp in_library?(content), do: content != nil and content.has_media?
 
   defp finished?(content), do: content != nil and content.actor_progress_status == :completed
-
-  # Where the User stopped the Movie, or the episode Play plays and how much of the TV Show they
-  # finished. Nil until they start, and once they finish.
-  defp progress(%Content{actor_progress_status: :in_progress, type: :movie} = content, locale) do
-    %{position_seconds: position, percent_watched: percent} =
-      content.implementation.actor_progress
-
-    %{
-      percent: percent,
-      label:
-        dgettext("contents", "Stopped at %{time}",
-          time: Time.minutes(max(div(trunc(position), 60), 1), locale)
-        )
-    }
-  end
-
-  defp progress(%Content{actor_progress_status: :in_progress, type: :tv_show} = content, _locale) do
-    %{actor_percent_watched: percent, actor_next_episode: episode} = content.implementation
-    # Never 0% once an episode is finished, nor 100% while one isn't
-    bindings = [
-      episode: episode.formatted_episode_number,
-      percent: percent |> round() |> max(1) |> min(99)
-    ]
-
-    %{
-      percent: percent,
-      label:
-        if episode.actor_progress_status == :in_progress do
-          dgettext("contents", "On %{episode} · %{percent}% of the show", bindings)
-        else
-          dgettext("contents", "Next: %{episode} · %{percent}% of the show", bindings)
-        end
-    }
-  end
-
-  defp progress(_content, _locale), do: nil
 
   # The season of the episode Play plays, else the first one
   defp current_season_number(
