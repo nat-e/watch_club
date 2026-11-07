@@ -1,10 +1,13 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   @moduledoc """
   Play for a Content with Media. Otherwise Request, or the status of the Content's Content
-  Request, with Get Notified when the actor isn't one of its Request Subscribers.
+  Request, as My Requests shows it, with Get Notified when the actor isn't one of its Request
+  Subscribers.
   `PlayOrRequestButtonLive` loads what it shows, makes the request and gets the actor notified.
   """
   use WatchClubWeb, :component
+
+  import WatchClubWeb.Components.Requests.RequestStatus, only: [request_status: 1]
 
   attr :id, :string, required: true
   attr :has_media?, :boolean, required: true
@@ -74,31 +77,35 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  # The status opens My Requests, and fills up while it downloads. A ringing bell shows that the
-  # actor will be told when it's ready; until then, a bell joined to it does Get Notified, and
-  # then hands the focus to the status, since it goes away.
+  # The status, which isn't an action, with how much it downloaded. A ringing bell shows that the
+  # actor will be told when it's ready; until then, a bell beside it does Get Notified, and then
+  # hands the focus to the status, since it goes away. Who made it shows in the status' tooltip.
   def play_or_request_button(%{has_media?: false} = assigns) do
     ~H"""
-    <.joined_buttons>
-      <.button
+    <%!-- As tall as a button of its size, with or without the bell --%>
+    <div class={[
+      "flex w-full items-center gap-related",
+      @size == "sm" && "min-h-control-sm",
+      @size == "md" && "min-h-control-md",
+      @size == "lg" && "min-h-control-lg"
+    ]}>
+      <span
         id={"#{@id}-request-status"}
-        size={@size}
-        variant="secondary"
-        navigate={~p"/my-requests"}
+        tabindex="-1"
         title={status_tooltip(@request)}
-        class="relative isolate min-w-0 flex-1 overflow-hidden"
+        class="flex min-w-0 flex-1 items-center gap-tight outline-none"
       >
-        <:icon :if={@request.actor_subscriber?}><Lucideicons.bell_ring /></:icon>
-        <span
-          :if={@request.download_progress}
-          class="absolute inset-y-0 left-0 -z-10 bg-surface-selected"
-          style={"width: #{@request.download_progress}%"}
-        ></span>
-        {ContentRequestStatus.translated_label(@request.status)}
-        <span :if={@request.download_progress} class="sr-only">
+        <Lucideicons.bell_ring
+          :if={@request.actor_subscriber?}
+          class="size-icon-sm shrink-0 text-text-muted"
+          aria-hidden="true"
+        />
+        <.request_status status={@request.status} />
+        <span :if={@request.download_progress} class="text-xs text-text-muted tabular-nums">
           {round(@request.download_progress)}%
         </span>
-      </.button>
+        <span :if={@request.actor_subscriber?} class="sr-only">{status_tooltip(@request)}</span>
+      </span>
       <.button
         :if={!@request.actor_subscriber?}
         id={"#{@id}-get-notified-button"}
@@ -110,7 +117,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       >
         <Lucideicons.bell />
       </.button>
-    </.joined_buttons>
+    </div>
     """
   end
 
