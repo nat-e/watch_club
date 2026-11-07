@@ -21,6 +21,8 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
     doc:
       "`chips`: closer, centered items, and smaller arrows, in a row that ends at its right edge"
 
+  attr :stream, :boolean, default: false, doc: "its items are a LiveView stream"
+
   slot :inner_block, required: true
 
   # The track runs into the page gutter, so items scroll to the screen edge, and has vertical
@@ -31,6 +33,8 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
     ~H"""
     <div id={@id} phx-hook=".ScrollRow" data-at-start class={["group/row relative", @class]}>
       <div
+        id={@stream && "#{@id}-track"}
+        phx-update={@stream && "stream"}
         data-scroll-track
         class={[
           "-my-related flex snap-x snap-mandatory scroll-px-page overflow-x-auto py-related [--fade-left:4rem] [--fade-right:4rem] [mask-image:linear-gradient(to_right,transparent,black_var(--fade-left),black_calc(100%_-_var(--fade-right)),transparent)] [scrollbar-width:none] group-data-at-start/row:[--fade-left:0px] group-data-at-end/row:[--fade-right:0px] [&::-webkit-scrollbar]:hidden",
@@ -78,6 +82,13 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
             this.track.addEventListener("scroll", this.update, { passive: true })
             this.resizeObserver = new ResizeObserver(this.update)
             this.resizeObserver.observe(this.track)
+            // An item added at the start of a row scrolled to its start shows, instead of the
+            // row keeping its first item snapped in place
+            this.mutationObserver = new MutationObserver(() => {
+              if (this.el.hasAttribute("data-at-start")) this.track.scrollLeft = 0
+              this.update()
+            })
+            this.mutationObserver.observe(this.track, { childList: true })
             this.behavior = () =>
               window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
             this.el.addEventListener("click", (event) => {
@@ -97,7 +108,10 @@ defmodule WatchClubWeb.Components.UI.ScrollRow do
             this.update()
           },
           updated() { this.update() },
-          destroyed() { this.resizeObserver.disconnect() },
+          destroyed() {
+            this.resizeObserver.disconnect()
+            this.mutationObserver.disconnect()
+          },
         }
       </script>
     </div>

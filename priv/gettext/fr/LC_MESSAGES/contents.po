@@ -421,3 +421,9 @@ msgstr "à %{recipients}"
 #, elixir-autogen, elixir-format
 msgid "Recommend it to people, with a message if you want. It starts a conversation."
 msgstr "Recommandez ce titre à des personnes, avec un message si vous le souhaitez. Cela démarre une conversation."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr "Nouveau"

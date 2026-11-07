@@ -7,9 +7,9 @@ defmodule WatchClub.Requests.ContentRequestStatus do
   use Gettext, backend: WatchClubWeb.Gettext
 
   use Ash.Type.Enum,
-    values: [:queued, :downloading, :importing, :not_released, :not_found, :failed, :completed]
+    values: [:searching, :downloading, :importing, :not_released, :not_found, :failed, :completed]
 
-  def translated_label(:queued), do: dgettext("content_request_statuses", "Queued")
+  def translated_label(:searching), do: dgettext("content_request_statuses", "Searching")
   def translated_label(:downloading), do: dgettext("content_request_statuses", "Downloading")
   def translated_label(:importing), do: dgettext("content_request_statuses", "Almost ready")
   def translated_label(:not_released), do: dgettext("content_request_statuses", "Not released")

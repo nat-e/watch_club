@@ -50,5 +50,5 @@ msgstr "Pas encore sorti"
 # AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status.ex
 #, elixir-autogen, elixir-format
-msgid "Queued"
-msgstr "En attente"
+msgid "Searching"
+msgstr "Recherche en cours"

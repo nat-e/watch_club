@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Hooks.Auth do
 
   alias AshAuthentication.Phoenix.LiveSession
 
-  # What the navigation shows of the current user, such as the Inbox tab's unread count
+  # What the navigation shows of the current user, such as the Inbox and Requests tabs' counts
   @navigation_resources [
     WatchClub.Accounts.UserSettings,
     WatchClub.Clubs.Membership,
@@ -16,7 +16,8 @@ defmodule WatchClubWeb.Hooks.Auth do
     WatchClub.Clubs.Library,
     WatchClub.Lists.ContentList,
     WatchClub.Conversations.Message,
-    WatchClub.Conversations.Participant
+    WatchClub.Conversations.Participant,
+    WatchClub.Requests.RequestSubscriber
   ]
 
   # This is used for nested liveviews to fetch the current user.
@@ -98,10 +99,21 @@ defmodule WatchClubWeb.Hooks.Auth do
     )
   end
 
+  # A bulk action sends one notification per record, such as opening My Requests: the user
+  # reloads once, after the notifications already received
   defp reload_user_on_change(%Ash.Notifier.Notification{resource: resource}, socket)
        when resource in @navigation_resources do
+    if !socket.private[:reload_user_pending?], do: send(self(), :reload_user)
+    {:cont, Phoenix.LiveView.put_private(socket, :reload_user_pending?, true)}
+  end
+
+  defp reload_user_on_change(:reload_user, socket) do
     user = WatchClub.Accounts.get_current_user!(actor: socket.assigns.current_user)
-    {:cont, socket |> assign(:current_user, user)}
+
+    {:halt,
+     socket
+     |> assign(:current_user, user)
+     |> Phoenix.LiveView.put_private(:reload_user_pending?, false)}
   end
 
   defp reload_user_on_change(_msg, socket) do

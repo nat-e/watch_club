@@ -1,6 +1,7 @@
 defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   @moduledoc """
-  Updates the Content's ContentRequest, if it has one, when its dependencies have changed.
+  Updates the Content's ContentRequest, if it has one, when its dependencies have changed, and
+  marks its Request Subscribers ready unseen when its first Media makes it playable.
   This is called when:
   - A MediaSourceRequest has been created/updated/destroyed for this Content
   - A Media has been created/destroyed for this Content
@@ -16,7 +17,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   use Ash.Resource.Change
 
   alias WatchClub.MediaCatalog.Media
-  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest}
+  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest, RequestSubscriber}
   alias WatchClub.SystemActor
 
   @impl true
@@ -27,14 +28,19 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
     changeset
     |> Ash.Changeset.before_action(fn changeset ->
       path = Ash.Changeset.get_attribute(changeset, :path)
+      content_id = Ash.Changeset.get_attribute(changeset, :content_id)
 
       previous_media =
         Media |> Ash.Query.filter(path == ^path) |> Ash.read_one!(authorize?: false)
 
-      Ash.Changeset.put_context(
-        changeset,
+      changeset
+      |> Ash.Changeset.put_context(
         :previous_content_id,
         previous_media && previous_media.content_id
+      )
+      |> Ash.Changeset.put_context(
+        :makes_request_ready?,
+        content_id && not_ready_request?(content_id)
       )
     end)
     |> Ash.Changeset.after_action(fn changeset, %Media{content_id: content_id} = updated_media ->
@@ -42,6 +48,16 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
       |> Enum.each(&update_content_request(&1, %{}))
+
+      if changeset.context.makes_request_ready? do
+        RequestSubscriber
+        |> Ash.Query.filter(content_request.content_id == ^content_id)
+        |> Ash.bulk_update!(:mark_ready_unseen, %{},
+          notify?: true,
+          actor: SystemActor.actor(),
+          authorize?: false
+        )
+      end
 
       {:ok, updated_media}
     end)
@@ -102,6 +118,12 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
 
       {:ok, updated_msr}
     end)
+  end
+
+  defp not_ready_request?(content_id) do
+    ContentRequest
+    |> Ash.Query.filter(content_id == ^content_id and not ready?)
+    |> Ash.exists?(authorize?: false)
   end
 
   def update_content_request(content_id, input) do

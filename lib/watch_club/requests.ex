@@ -11,7 +11,8 @@ defmodule WatchClub.Requests do
   resources do
     resource WatchClub.Requests.ContentRequest do
       define :request_content, action: :request, args: [:content_identity]
-      define :list_current_user_content_requests, action: :for_current_user
+      define :list_current_user_ready_requests, action: :ready_for_current_user
+      define :list_current_user_requests_on_the_way, action: :on_the_way_for_current_user
 
       define :get_current_user_request_for_content,
         action: :for_current_user,
@@ -23,6 +24,7 @@ defmodule WatchClub.Requests do
     resource WatchClub.Requests.RequestSubscriber do
       define :get_notified, action: :create, args: [:content_request_id]
       define :stop_getting_notified, action: :destroy, get_by: [:content_request_id]
+      define :mark_current_user_requests_seen, action: :mark_all_ready_seen
     end
 
     resource WatchClub.Requests.MediaSourceRequest do

@@ -45,7 +45,7 @@ Data can be upated directly from the Notification payload if straight forward. I
 |---|---|---|---|---|---|
 | `memberships:club:<club_id>` | Club Memberships | Club | Notifications about Club Memberships | `ClubMembership:CUD` | `/clubs/:club_id/members` |
 | `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
-| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `ClubMembership:CUD`, `Participant:C` (a new Conversation), `Participant:U` (read) | Every page for current user |
+| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `ClubMembership:CUD`, `Participant:C` (a new Conversation), `Participant:U` (read), `RequestSubscriber:U` (ready unseen) | Every page for current user |
 | `club:<club_id>` | - | Club | Notifications about a Club  | `Club:U`, `Library:CUD` | Every page for current user (Sidebar) |
 | `media_sources:admin` | MediaSources | Admin | Notifications about a a Media Source or Import  | `MediaSource:CUD`, `Import:CU` | `/admin/media_sources/*` |
 | `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `RequestSubscriber:CD`, `WatchProgress:CUD` | Any page that display content (Content page, Club Library, Browse...) |

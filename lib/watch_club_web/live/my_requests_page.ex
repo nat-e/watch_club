@@ -1,23 +1,25 @@
 defmodule WatchClubWeb.MyRequestsPage do
+  @moduledoc """
+  My Requests: the Content Requests the User is a Request Subscriber of. The playable ones come
+  first, as a row of Browse's posters, the most recently playable first. The ready unseen ones
+  lead the row, ringed, with a New badge, until the User leaves the page, since opening it marks
+  them seen. The others follow as a list, the most recently changed first when the page opens,
+  each saying when it can be watched.
+  """
   use WatchClubWeb, :live_view
 
-  alias WatchClub.Requests.{ContentRequestSort, ContentRequestStatusGroup}
+  import WatchClubWeb.Components.Contents.PosterCard
+  import WatchClubWeb.MyRequestsPage.RequestOnTheWay
 
-  alias WatchClubWeb.Components.Contents.{
-    AddToLibraryModalLive,
-    PlayOrRequestButtonLive
-  }
-
-  alias WatchClubWeb.Components.Requests.RequestCard
-  alias WatchClubWeb.Helpers.KeysetStreamState
-
-  @page_size 25
+  alias WatchClub.Conversations.Participant
+  alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   @request_fields_to_load [
-    :best_source_request,
-    :status_group,
-    :percent_imported,
-    content: [:implementation]
+    :ready?,
+    :ready_unseen_for_actor?,
+    :status,
+    :download_progress,
+    content: [:implementation, :actor_progress_status, actor_recommendations: [:recommended_by]]
   ]
 
   @impl true
@@ -28,366 +30,198 @@ defmodule WatchClubWeb.MyRequestsPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      class="max-w-layout-page"
       title={dgettext("requests", "My Requests")}
+      space="section"
+      class="@container"
     >
-      <.cluster
-        space="tight"
-        role="group"
-        aria-label={dgettext("requests", "Filter by status")}
-        class="mb-related"
+      <%!-- Hidden while the stream is empty --%>
+      <.page_section
+        id="ready-requests-heading"
+        title={dgettext("requests", "Ready to watch")}
+        class="peer not-has-[[data-ready-request]]:hidden"
       >
-        <.status_chip
-          :for={group <- [nil | ContentRequestStatusGroup.values()]}
-          group={group}
-          current={@status_filter}
-          sort={@sort}
-          type={@content_type_filter}
-        />
-      </.cluster>
-
-      <div class="mb-cluster flex flex-wrap items-center justify-between gap-related">
-        <nav
-          aria-label={dgettext("requests", "Filter by content type")}
-          class="flex items-center gap-cluster"
-        >
-          <.content_type_filter
-            :for={type <- [nil | ContentType.library_display_order()]}
-            type={type}
-            current={@content_type_filter}
-            sort={@sort}
-            status={@status_filter}
-          />
-        </nav>
-
-        <.dropdown_menu id="my-requests-sort">
-          <:trigger>
-            <.button id="my-requests-sort-button" variant="ghost">
-              <:icon><Lucideicons.arrow_up_down /></:icon>
-              {dgettext("requests", "Sort: %{sort}", sort: ContentRequestSort.translated_label(@sort))}
-              <:icon position="end"><Lucideicons.chevron_down /></:icon>
-            </.button>
-          </:trigger>
-          <.dropdown_menu_item
-            :for={sort <- ContentRequestSort.values()}
-            id={"my-requests-sort-#{sort}"}
-            patch={path(status: @status_filter, type: @content_type_filter, sort: sort)}
-            checked={@sort == sort}
+        <.scroll_row id="ready-requests" stream>
+          <div
+            :for={{dom_id, request} <- @streams.ready_requests}
+            id={dom_id}
+            data-ready-request
+            class="w-28 shrink-0 snap-start @3xl:w-36"
           >
-            {ContentRequestSort.translated_label(sort)}
-          </.dropdown_menu_item>
-        </.dropdown_menu>
-      </div>
+            <.poster_card
+              content={request.content}
+              locale={@current_user.settings.locale}
+              ready_unseen={request.id in @ready_unseen_ids}
+            >
+              <:action>
+                <.live_component
+                  id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(request.content))}
+                  module={PlayOrRequestButtonLive}
+                  content_identity={ContentIdentity.from_content(request.content)}
+                  current_user={@current_user}
+                  variant="round"
+                />
+              </:action>
+            </.poster_card>
+          </div>
+        </.scroll_row>
+      </.page_section>
 
-      <.stack id="my-requests" class="@container" phx-update="stream" space="related">
-        <%!-- `hidden only:flex`: shown only when it's the stream's sole child (no cards). --%>
-        <.requests_empty_state
-          filtered={@status_filter != nil or @content_type_filter != nil}
-          class="hidden only:flex"
-        />
+      <.page_section
+        :if={@requests_on_the_way != []}
+        id="requests-on-the-way-heading"
+        title={dgettext("requests", "On the way")}
+        class="max-w-readable"
+      >
+        <.stack as="ul" space="cluster">
+          <.request_on_the_way
+            :for={{request, index} <- Enum.with_index(@requests_on_the_way)}
+            request={request}
+            focus_after_removal={focus_after_removal(@requests_on_the_way, index)}
+            locale={@current_user.settings.locale}
+          />
+        </.stack>
+      </.page_section>
 
-        <RequestCard.request_card
-          :for={{dom_id, request} <- @streams.requests}
-          id={dom_id}
-          request={request}
-          current_user={@current_user}
-        />
-      </.stack>
-
-      <.infinite_scroll_trigger
-        :if={KeysetStreamState.can_load_more?(@stream_state)}
-        id="my-requests-load-more"
-        event="load_more"
-      />
-      <.live_component
-        :if={@content_to_add_to_library}
-        id="library-page-add-to-library-modal"
-        module={AddToLibraryModalLive}
-        content_identity={ContentIdentity.from_content(@content_to_add_to_library)}
-        content_title={@content_to_add_to_library.implementation.best_localization.title}
-        current_user={@current_user}
-        on_close={fn -> send(self(), "close_add_to_library_modal") end}
-      />
+      <%!-- Shown when the Ready section, its peer before it, is hidden too --%>
+      <.empty
+        :if={@requests_on_the_way == []}
+        id="my-requests-empty"
+        class="peer-has-[[data-ready-request]]:hidden"
+      >
+        <:icon><Lucideicons.download /></:icon>
+        <:title>{dgettext("requests", "No requests yet")}</:title>
+        <:description>
+          {dgettext(
+            "requests",
+            "Search for a title in Browse and request it. You'll see here when you can watch it."
+          )}
+        </:description>
+        <.button id="my-requests-browse" variant="secondary" navigate={~p"/"}>
+          <:icon><Lucideicons.clapperboard /></:icon>
+          {dgettext("nav", "Browse")}
+        </.button>
+      </.empty>
     </Layouts.app>
     """
   end
 
-  attr :group, :atom
-  attr :current, :atom, required: true
-  attr :sort, :atom, required: true
-  attr :type, :atom, required: true
+  # The previous row's button, or the heading for the first row. Not the next row's: the rows
+  # after the removed one move in the page, which drops their focus.
+  defp focus_after_removal(_requests, 0), do: "requests-on-the-way-heading"
 
-  defp status_chip(assigns) do
-    ~H"""
-    <.link
-      patch={path(sort: @sort, type: @type, status: @group)}
-      aria-current={@current == @group && "page"}
-      class={[
-        "inline-flex items-center gap-tight rounded-full border px-related py-tight text-sm transition-colors",
-        @current == @group && "border-border bg-surface-selected text-text",
-        @current != @group &&
-          "border-border-subtle bg-surface-inset text-text-muted hover:border-border hover:text-text"
-      ]}
-    >
-      <span
-        :if={@group != nil}
-        class={[
-          "inline-block size-2 shrink-0 rounded-full",
-          @group == :in_progress && "bg-accent",
-          @group == :completed && "bg-success",
-          @group == :needs_attention && "bg-danger",
-          @group == :not_released && "bg-text-subtle",
-          @group == :not_found && "bg-warning"
-        ]}
-        aria-hidden="true"
-      ></span>
-      {ContentRequestStatusGroup.translated_label(@group)}
-    </.link>
-    """
-  end
-
-  attr :type, :atom, required: true
-  attr :current, :atom, required: true
-  attr :sort, :atom, required: true
-  attr :status, :atom, required: true
-
-  defp content_type_filter(assigns) do
-    ~H"""
-    <.link
-      patch={path(sort: @sort, status: @status, type: @type)}
-      aria-current={@current == @type && "page"}
-      class={[
-        "border-b-2 pb-tight transition-colors",
-        @current == @type && "border-accent text-text",
-        @current != @type && "border-transparent text-text-muted hover:text-text"
-      ]}
-    >
-      {ContentType.translated_plural_label(@type)}
-    </.link>
-    """
-  end
-
-  # The `:filtered` flavor tells the user a filter is hiding everything; the
-  # other greets a user with no requests at all.
-  attr :filtered, :boolean, required: true
-  attr :class, :any, default: nil
-
-  defp requests_empty_state(%{filtered: true} = assigns) do
-    ~H"""
-    <.empty id="my-requests-empty" size="sm" class={@class}>
-      <:icon><Lucideicons.inbox /></:icon>
-      <:title>{dgettext("requests", "No requests match")}</:title>
-      <:description>
-        {dgettext("requests", "Try clearing some filters, or browse content to add a request.")}
-      </:description>
-    </.empty>
-    """
-  end
-
-  defp requests_empty_state(assigns) do
-    ~H"""
-    <.empty id="my-requests-empty" size="sm" class={@class}>
-      <:icon><Lucideicons.inbox /></:icon>
-      <:title>{dgettext("requests", "No requests yet")}</:title>
-      <:description>
-        {dgettext("requests", "Browse movies and shows to request something for your club.")}
-      </:description>
-    </.empty>
-    """
-  end
+  defp focus_after_removal(requests, index),
+    do: "stop-getting-notified-#{Enum.at(requests, index - 1).id}"
 
   @impl true
   def mount(_params, _session, socket) do
+    user = socket.assigns.current_user
+    socket = WatchClub.PubSub.subscribe_to_current_user_content_topics(socket)
+
+    ready_requests =
+      Requests.list_current_user_ready_requests!(load: @request_fields_to_load, actor: user)
+
+    # Intentionally small: the ones that just became playable
+    ready_unseen_ids =
+      for %{ready_unseen_for_actor?: true} = request <- ready_requests,
+          into: MapSet.new(),
+          do: request.id
+
+    # Only now that the list says which to ring
+    if connected?(socket), do: Requests.mark_current_user_requests_seen!(actor: user)
+
     {:ok,
      socket
-     |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
-     |> stream_configure(:requests, dom_id: &"request-#{&1.id}")
-     |> reset_modals()}
-  end
-
-  @impl true
-  def handle_params(params, _uri, socket) do
-    {:noreply,
-     socket
+     |> assign(:ready_unseen_ids, ready_unseen_ids)
+     |> stream_configure(:ready_requests, dom_id: &"ready-request-#{&1.content_id}")
+     |> stream(:ready_requests, ready_requests)
+     # Intentionally small: what's still downloading or waiting to be
      |> assign(
-       :sort,
-       Url.parse_url_param(
-         params["sort"],
-         ContentRequestSort.values(),
-         ContentRequestSort.default()
+       :requests_on_the_way,
+       Requests.list_current_user_requests_on_the_way!(
+         load: @request_fields_to_load,
+         actor: user
        )
-     )
-     |> assign(
-       status_filter: Url.parse_url_param(params["status"], ContentRequestStatusGroup.values())
-     )
-     |> assign(:content_type_filter, Url.parse_url_param(params["type"], ContentType.values()))
-     # Reset the keyset stream so a sort/filter change reloads from the first page
-     # and replaces the existing cards instead of resuming the previous cursor.
-     |> assign(:stream_state, KeysetStreamState.init(@page_size))
-     |> load_requests_page()}
-  end
-
-  @impl true
-  def handle_event("load_more", _params, socket) do
-    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
-      {:noreply, socket |> load_requests_page()}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  def handle_event("stop-getting-notified", %{"id" => id}, socket) do
-    case Requests.stop_getting_notified(id, actor: socket.assigns.current_user) do
-      :ok -> {:noreply, socket}
-      # Clicked again before its card went away
-      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} -> {:noreply, socket}
-    end
-  end
-
-  def handle_event("open_add_to_library_modal", %{"content_id" => content_id}, socket) do
-    {:noreply,
-     socket
-     |> assign(
-       content_to_add_to_library:
-         Contents.get_content_by_id!(content_id,
-           load: [:implementation],
-           actor: socket.assigns.current_user
-         )
      )}
   end
 
   @impl true
-  # A ContentRequest has been deleted. Remove it from the stream
-  def handle_info(
-        %Notification{
-          data: %ContentRequest{} = request,
-          action: %{type: :destroy}
-        },
-        socket
-      ) do
-    {:noreply, socket |> stream_delete(:requests, request)}
-  end
-
-  # The User stopped getting notified
-  def handle_info(
-        %Notification{
-          data: %RequestSubscriber{content_request_id: content_request_id},
-          action: %{type: :destroy}
-        },
-        socket
-      ) do
-    {:noreply, socket |> stream_delete(:requests, %ContentRequest{id: content_request_id})}
-  end
-
-  # A ContentRequest has been created or updated, or the User became one of its Request
-  # Subscribers. Every User gets the notifications of every ContentRequest, so this only
-  # shows the ones the User is a Request Subscriber of. It queries for every one: fine
-  # with the few Users of an instance.
-  def handle_info(
-        %Notification{
-          resource: resource,
-          action: %{type: type},
-          metadata: %{content_id: content_id}
-        },
-        socket
-      )
-      when (resource == ContentRequest and type in [:create, :update]) or
-             (resource == RequestSubscriber and type == :create) do
-    case Requests.get_current_user_request_for_content(content_id,
-           load: @request_fields_to_load,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, request} ->
-        if matches_filters?(request, socket) do
-          # Update it if it's already in the list, or add it at the beginning
-          {:noreply, socket |> stream_insert(:requests, request, at: 0)}
-        else
-          {:noreply, socket |> stream_delete(:requests, request)}
-        end
-
-      # The User isn't one of its Request Subscribers
-      {:error, _} ->
-        {:noreply, socket}
-    end
-  end
-
-  # A content has changed
-  # Note that we only match `Content` here, this is because it's the only resource besides ContentRequest
-  # on which the cards depend, otherwise we would need to match them as well.
-  def handle_info(%Notification{data: %Content{id: content_id}}, socket) do
-    # This is slightly ineficient since we make a DB query even when the Contents are not in this
-    # stream.
-    # This is OK for now. The alternative would be to keep a list of content IDs in the stream
-    case Requests.get_current_user_request_for_content(content_id,
-           load: @request_fields_to_load,
-           actor: socket.assigns.current_user
-         ) do
-      {:ok, request} ->
-        {:noreply, socket |> stream_insert(:requests, request, update_only: true)}
-
-      # Ignore the message if the content is not in the requests list
-      {:error, _} ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_info("close_add_to_library_modal", socket) do
-    {:noreply, socket |> reset_modals()}
-  end
-
-  def handle_info(message, socket) do
-    # Send updates to all the Live Components we are using on the request cards
-    PlayOrRequestButtonLive.handle_pubsub_message(message, socket.assigns.current_user)
-
+  def handle_event("stop-getting-notified", %{"id" => id}, socket) do
+    Requests.stop_getting_notified!(id, actor: socket.assigns.current_user)
     {:noreply, socket}
   end
 
-  defp load_requests_page(socket) do
-    stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@page_size)
+  @impl true
+  def handle_info(%Notification{} = notification, socket) do
+    # Updates the posters' Play buttons
+    PlayOrRequestButtonLive.handle_pubsub_message(notification, socket.assigns.current_user)
 
-    {:ok, new_state, requests} =
-      KeysetStreamState.load_page(
-        stream_state,
-        fn page_options ->
-          Requests.list_current_user_content_requests(
-            %{
-              sort: socket.assigns.sort,
-              status_group: socket.assigns.status_filter,
-              content_type: socket.assigns.content_type_filter
-            },
-            load: @request_fields_to_load,
-            actor: socket.assigns.current_user,
-            page: page_options
-          )
-        end
-      )
+    # A Content Request, the User's subscription to it, its Content, the User's Watch Progress on
+    # it, or a recommendation of it changed. Every User gets the notifications of every Content
+    # Request and Content, so this queries for each: fine with the few Users of an instance.
+    case notification do
+      %{resource: resource, metadata: %{content_id: content_id}}
+      when resource in [ContentRequest, RequestSubscriber, WatchProgress] ->
+        {:noreply, sync_request(socket, content_id)}
+
+      %{resource: Participant, action: %{name: :create}, metadata: %{content_id: content_id}} ->
+        {:noreply, sync_request(socket, content_id)}
+
+      %{resource: Content, data: %Content{id: content_id}} ->
+        {:noreply, sync_request(socket, content_id)}
+
+      _other ->
+        {:noreply, socket}
+    end
+  end
+
+  # Shows it where it belongs now, or removes it
+  defp sync_request(socket, content_id) do
+    case Requests.get_current_user_request_for_content(content_id,
+           load: @request_fields_to_load,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, %ContentRequest{ready?: true} = request} ->
+        socket |> remove_request_on_the_way(content_id) |> show_ready_request(request)
+
+      {:ok, %ContentRequest{ready?: false} = request} ->
+        socket |> stream_delete(:ready_requests, request) |> show_request_on_the_way(request)
+
+      # Deleted, or the User stopped getting notified, or a Content without a Content Request
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Query.NotFound{}]}} ->
+        socket
+        |> stream_delete(:ready_requests, %ContentRequest{content_id: content_id})
+        |> remove_request_on_the_way(content_id)
+    end
+  end
+
+  # One that became playable while the User is on the page is seen at once, and leads the row.
+  # The others update in place.
+  defp show_ready_request(socket, %ContentRequest{ready_unseen_for_actor?: true} = request) do
+    Requests.mark_current_user_requests_seen!(actor: socket.assigns.current_user)
 
     socket
-    |> assign(stream_state: new_state)
-    |> stream(:requests, requests, reset: stream_state.status == :init)
+    |> update(:ready_unseen_ids, &MapSet.put(&1, request.id))
+    |> stream_insert(:ready_requests, request, at: 0)
   end
 
-  defp reset_modals(socket) do
-    socket |> assign(content_to_add_to_library: nil)
-  end
+  defp show_ready_request(socket, request),
+    do: stream_insert(socket, :ready_requests, request, at: 0)
 
-  defp matches_filters?(request, socket) do
-    status_filter = socket.assigns.status_filter
-    type_filter = socket.assigns.content_type_filter
+  defp remove_request_on_the_way(socket, content_id),
+    do:
+      update(
+        socket,
+        :requests_on_the_way,
+        &Enum.reject(&1, fn request -> request.content_id == content_id end)
+      )
 
-    (status_filter == nil or request.status_group == status_filter) and
-      (type_filter == nil or request.content.type == type_filter)
-  end
-
-  defp path(opts) do
-    params =
-      %{
-        sort: Keyword.get(opts, :sort),
-        status: Keyword.get(opts, :status),
-        type: Keyword.get(opts, :type)
-      }
-      |> Map.reject(fn {_key, value} -> value == nil end)
-
-    ~p"/my-requests?#{params}"
+  # While the User is on the page, one that changes keeps its place, so the rows don't move under
+  # them, and one new to the list leads it
+  defp show_request_on_the_way(socket, %ContentRequest{id: id} = request) do
+    update(socket, :requests_on_the_way, fn requests ->
+      if Enum.any?(requests, &(&1.id == id)),
+        do: Enum.map(requests, &if(&1.id == id, do: request, else: &1)),
+        else: [request | requests]
+    end)
   end
 end

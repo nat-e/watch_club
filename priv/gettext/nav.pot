@@ -89,6 +89,7 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/sections.ex
 #: lib/watch_club_web/live/browse_page.ex
+#: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr ""
@@ -114,5 +115,12 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "%{count} unread conversation"
 msgid_plural "%{count} unread conversations"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} new request ready to watch"
+msgid_plural "%{count} new requests ready to watch"
 msgstr[0] ""
 msgstr[1] ""

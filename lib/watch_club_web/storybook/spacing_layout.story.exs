@@ -148,6 +148,16 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
         </.primitive_card>
 
         <.primitive_card
+          name="Page section"
+          purpose="A heading, then what it holds, without a card"
+          code={page_section_code()}
+        >
+          <.page_section id="spacing-page-section-heading" title="On the way">
+            <.demo_item label="Dune: Part Three" />
+          </.page_section>
+        </.primitive_card>
+
+        <.primitive_card
           name="Section"
           purpose="Carded semantic content section"
           code={section_code()}
@@ -908,6 +918,15 @@ defmodule WatchClubWeb.Storybook.SpacingLayout do
       <.page_header />
       <.content_grid />
     </.page>
+    """
+    |> String.trim()
+  end
+
+  defp page_section_code do
+    """
+    <.page_section id="cast-heading" title="Cast">
+      ...
+    </.page_section>
     """
     |> String.trim()
   end

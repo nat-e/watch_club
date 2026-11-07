@@ -11,111 +11,6 @@
 msgid ""
 msgstr ""
 
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Almost ready"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Completed"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Downloading"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Missing episodes"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Needs attention"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Not found"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Not released"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Requested"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Searching"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "The administrator has been informed of your request. You will be notified when this content is ready."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "There was a problem with this request that requires human attention. The administrator has been informed."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "We are looking for your content..."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "We couldn't find some episodes of your show. We will keep looking for them."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content has been downloaded and is being imported"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content has not been found yet. It will be downloaded automatically when we find it."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is being downloaded"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is not available yet. We will download it automatically as soon as it's released!"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Your content is ready to watch!"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Browse movies and shows to request something for your club."
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Filter by content type"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Filter by status"
-msgstr ""
-
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "My Requests"
@@ -123,40 +18,55 @@ msgstr ""
 
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
-msgid "No requests match"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
 msgid "No requests yet"
 msgstr ""
 
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Requested %{relative_time}"
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
-#, elixir-autogen, elixir-format
-msgid "Share with a club"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Sort: %{sort}"
-msgstr ""
-
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Try clearing some filters, or browse content to add a request."
-msgstr ""
-
-#: lib/watch_club_web/components/requests/request_card.ex
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
 msgstr ""
 
-#: lib/watch_club_web/components/requests/request_card.ex
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified about %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}% downloaded"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, we'll keep looking for it"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Not released yet"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "On the way"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Ready to watch"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search for a title in Browse and request it. You'll see here when you can watch it."
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "There was a problem, the instance administrator was told"
 msgstr ""

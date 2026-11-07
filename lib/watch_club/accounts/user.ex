@@ -5,6 +5,7 @@ defmodule WatchClub.Accounts.User do
   alias WatchClub.Clubs.{Club, Membership}
   alias WatchClub.Conversations.Participant
   alias WatchClub.Lists.ContentList
+  alias WatchClub.Requests.RequestSubscriber
 
   use Ash.Resource,
     otp_app: :watch_club,
@@ -123,6 +124,7 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :lists,
+                  :ready_unseen_request_count,
                   :unread_conversation_count,
                   memberships: [club: [:libraries]]
                 ],
@@ -140,6 +142,7 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :lists,
+                  :ready_unseen_request_count,
                   :unread_conversation_count,
                   memberships: [club: [:libraries]]
                 ]
@@ -489,12 +492,19 @@ defmodule WatchClub.Accounts.User do
 
     # The User's place in each Conversation they're in
     has_many :participations, Participant
+
+    has_many :request_subscriptions, RequestSubscriber
   end
 
   aggregates do
     # The Inbox tab's count
     count :unread_conversation_count, :participations do
       filter expr(unread_count > 0)
+    end
+
+    # The Requests tab's count
+    count :ready_unseen_request_count, :request_subscriptions do
+      filter expr(ready_unseen?)
     end
   end
 

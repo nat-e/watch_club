@@ -71,7 +71,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
             id: :request,
             attributes: %{id: "request", has_media?: false, play_label: "Play"}
           },
-          request_variation(:queued, :queued, true),
+          request_variation(:searching, :searching, true),
           request_variation(:downloading, :downloading, true),
           request_variation(:importing, :importing, true),
           request_variation(:not_released, :not_released, true),
@@ -86,7 +86,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
         template: group_template(),
         variations: [
           request_variation(:requested_by_user, :downloading, false),
-          request_variation(:requested_by_deleted_user, :queued, false, nil)
+          request_variation(:requested_by_deleted_user, :searching, false, nil)
         ]
       },
       %Variation{

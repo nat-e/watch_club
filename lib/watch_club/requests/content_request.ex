@@ -24,18 +24,14 @@ defmodule WatchClub.Requests.ContentRequest do
 
   import Ash.Expr
 
+  require Ash.Sort
+
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Requests.Changes.CreateMediaSourceRequests
 
-  alias WatchClub.Requests.{
-    ContentRequestSort,
-    ContentRequestStatus,
-    ContentRequestStatusGroup,
-    MediaSourceRequest,
-    RequestSubscriber
-  }
+  alias WatchClub.Requests.{ContentRequestStatus, MediaSourceRequest, RequestSubscriber}
 
   postgres do
     table "content_requests"
@@ -74,36 +70,26 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     read :for_current_user do
-      description "The Content Requests the actor is a Request Subscriber of, for the My Requests page."
-
-      argument :content_type, :atom do
-        allow_nil? true
-        constraints one_of: [:movie, :tv_show, :book]
-      end
-
-      argument :status_group, ContentRequestStatusGroup, allow_nil?: true
-
-      argument :sort, ContentRequestSort do
-        default ContentRequestSort.default()
-      end
-
-      pagination keyset?: true, default_limit: 25, required?: false
-
+      description "The Content Requests the actor is a Request Subscriber of."
       filter expr(actor_subscriber?)
+    end
 
-      prepare build(filter: expr(content.type == ^arg(:content_type))) do
-        where present(:content_type)
-      end
+    read :ready_for_current_user do
+      description "The actor's playable Content Requests, the most recently playable first, so the ready unseen ones lead."
+      filter expr(actor_subscriber? and ready?)
 
-      prepare build(filter: expr(status_group == ^arg(:status_group))) do
-        where present(:status_group)
+      prepare fn query, _context ->
+        Ash.Query.sort(query, [
+          {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
+          {:id, :desc}
+        ])
       end
+    end
 
-      # Apply the requested sort, then load the read model and the content
-      # (through its `:for_view` read action).
-      prepare fn query, context ->
-        query |> ContentRequestSort.sort_query(Ash.Query.get_argument(query, :sort))
-      end
+    read :on_the_way_for_current_user do
+      description "The actor's Content Requests that aren't playable yet, the most recently changed first."
+      filter expr(actor_subscriber? and not ready?)
+      prepare build(sort: [updated_at: :desc, id: :desc])
     end
   end
 
@@ -235,7 +221,7 @@ defmodule WatchClub.Requests.ContentRequest do
                     :completed
 
                   is_nil(best_source_request) ->
-                    :queued
+                    :searching
 
                   best_source_request.status == :not_released ->
                     :not_released
@@ -249,27 +235,13 @@ defmodule WatchClub.Requests.ContentRequest do
                     :not_found
 
                   best_source_request.status == :searching ->
-                    :queued
+                    :searching
 
                   best_source_request.status == :downloading ->
                     :downloading
 
                   best_source_request.status == :downloaded ->
                     :importing
-                end
-              ) do
-      public? true
-    end
-
-    calculate :status_group,
-              ContentRequestStatusGroup,
-              expr(
-                cond do
-                  status in [:queued, :downloading, :importing] -> :in_progress
-                  status == :completed -> :completed
-                  status == :not_released -> :not_released
-                  status == :not_found -> :not_found
-                  status == :failed -> :needs_attention
                 end
               ) do
       public? true
@@ -287,6 +259,13 @@ defmodule WatchClub.Requests.ContentRequest do
               )
 
     calculate :actor_subscriber?, :boolean, expr(exists(subscribers, user_id == ^actor(:id)))
+
+    # Playable: its Content has Media
+    calculate :ready?, :boolean, expr(content.has_media?)
+
+    calculate :ready_unseen_for_actor?,
+              :boolean,
+              expr(exists(subscribers, user_id == ^actor(:id) and ready_unseen?))
   end
 
   identities do

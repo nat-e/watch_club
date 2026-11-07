@@ -53,8 +53,14 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :download,
         navigate: ~p"/my-requests",
         pages: [],
-        badge: 0,
-        badge_label: nil
+        badge: user.ready_unseen_request_count,
+        badge_label:
+          dngettext(
+            "nav",
+            "%{count} new request ready to watch",
+            "%{count} new requests ready to watch",
+            user.ready_unseen_request_count
+          )
       }
     ]
   end

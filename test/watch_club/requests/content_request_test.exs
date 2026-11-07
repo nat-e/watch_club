@@ -1,7 +1,7 @@
 defmodule WatchClub.Requests.ContentRequestTest do
   @moduledoc """
   Verifies the Content Request functions, the read model derived for a ContentRequest
-  (`percent_imported`, `status_group`, `best_source_request`) and that it stays in sync as the
+  (`percent_imported`, `status`, `best_source_request`) and that it stays in sync as the
   request's dependencies change — media imported, Media Source Request created.
 
   Servarr (Radarr / Sonarr) is faked globally by `Servarr.TestStub`, so the
@@ -13,6 +13,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
 
   import WatchClub.Generator
 
+  alias WatchClub.Accounts
   alias WatchClub.Contents.ContentIdentity
   alias WatchClub.MediaCatalog
   alias WatchClub.Requests
@@ -47,16 +48,60 @@ defmodule WatchClub.Requests.ContentRequestTest do
     end
   end
 
-  describe "list_current_user_content_requests/*" do
-    test "lists the Content Requests the User is a Request Subscriber of" do
+  describe "list_current_user_ready_requests/*" do
+    test "lists the User's playable Content Requests, the most recently playable first" do
       user = generate(user())
-      subscribed = generate(content_request(generate(user()), generate(movie())))
-      generate(request_subscriber(user, subscribed))
-      # Made by the User, who isn't one of its Request Subscribers
-      generate(content_request(user, generate(movie())))
+      [older, newer] = movies = generate_many(movie(), 2)
 
-      assert [%ContentRequest{id: id}] = Requests.list_current_user_content_requests!(actor: user)
-      assert id == subscribed.id
+      for movie <- movies do
+        MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
+          actor: SystemActor.actor()
+        )
+
+        generate(request_subscriber(user, generate(content_request(generate(user()), movie))))
+      end
+
+      # Not playable yet
+      generate(request_subscriber(user, generate(content_request(user, generate(movie())))))
+
+      # Playable, but the User isn't one of its Request Subscribers
+      playable = generate(movie())
+
+      MediaCatalog.create_or_update_video!(media_movie_input(playable.id),
+        actor: SystemActor.actor()
+      )
+
+      generate(content_request(user, playable))
+
+      assert Requests.list_current_user_ready_requests!(actor: user)
+             |> Enum.map(& &1.content_id) == [newer.id, older.id]
+    end
+  end
+
+  describe "list_current_user_requests_on_the_way/*" do
+    test "lists the User's Content Requests that aren't playable yet, the most recently changed first" do
+      user = generate(user())
+
+      [older, newer] =
+        for updated_at <- [~U[2026-01-01 00:00:00.000000Z], ~U[2026-02-01 00:00:00.000000Z]] do
+          request =
+            generate(content_request(generate(user()), generate(movie()), updated_at: updated_at))
+
+          generate(request_subscriber(user, request))
+          request
+        end
+
+      # Playable
+      playable = generate(movie())
+
+      MediaCatalog.create_or_update_video!(media_movie_input(playable.id),
+        actor: SystemActor.actor()
+      )
+
+      generate(request_subscriber(user, generate(content_request(user, playable))))
+
+      assert Requests.list_current_user_requests_on_the_way!(actor: user) |> Enum.map(& &1.id) ==
+               [newer.id, older.id]
     end
   end
 
@@ -87,6 +132,52 @@ defmodule WatchClub.Requests.ContentRequestTest do
   end
 
   describe "with no requestable media source" do
+    test "the first Media makes its Request Subscribers ready unseen, on their user topic" do
+      user = generate(user())
+      user_id = user.id
+      movie = generate(movie())
+      request = Requests.request_content!(ContentIdentity.from_content(movie), actor: user)
+      :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "user:#{user_id}")
+
+      MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
+        actor: SystemActor.actor()
+      )
+
+      assert_receive %Ash.Notifier.Notification{
+        resource: RequestSubscriber,
+        action: %{name: :mark_ready_unseen},
+        data: %RequestSubscriber{user_id: ^user_id, ready_unseen?: true}
+      }
+
+      assert %{ready_unseen_for_actor?: true} =
+               Ash.load!(request, :ready_unseen_for_actor?, actor: user)
+
+      assert %{ready_unseen_request_count: 1} = Accounts.get_current_user!(actor: user)
+    end
+
+    test "a show's next episodes keep it seen" do
+      user = generate(user())
+      show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+
+      %{implementation: %{episodes: [episode1, episode2]}} =
+        Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false)
+
+      request = Requests.request_content!(ContentIdentity.from_content(show), actor: user)
+
+      MediaCatalog.create_or_update_video!(media_episode_input(episode1.id),
+        actor: SystemActor.actor()
+      )
+
+      Requests.mark_current_user_requests_seen!(actor: user)
+
+      MediaCatalog.create_or_update_video!(media_episode_input(episode2.id),
+        actor: SystemActor.actor()
+      )
+
+      assert %{ready_unseen_for_actor?: false} =
+               Ash.load!(request, :ready_unseen_for_actor?, actor: user)
+    end
+
     test "updates movie when media is imported" do
       user = generate(user())
       movie = generate(movie())
@@ -96,12 +187,12 @@ defmodule WatchClub.Requests.ContentRequestTest do
         id: request_id,
         best_source_request: nil,
         percent_imported: +0.0,
-        status_group: :in_progress,
+        status: :searching,
         updated_at: initial_updated_at
       } =
         request =
         Requests.request_content!(ContentIdentity.from_content(movie),
-          load: [:best_source_request, :percent_imported, :status_group],
+          load: [:best_source_request, :percent_imported, :status],
           actor: user
         )
 
@@ -125,11 +216,11 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request: nil,
         percent_imported: 100.0,
-        status_group: :completed,
+        status: :completed,
         updated_at: updated_at
       } =
         Ash.reload!(request,
-          load: [:best_source_request, :percent_imported, :status_group],
+          load: [:best_source_request, :percent_imported, :status],
           actor: user
         )
 
@@ -148,11 +239,11 @@ defmodule WatchClub.Requests.ContentRequestTest do
         id: request_id,
         best_source_request: nil,
         percent_imported: +0.0,
-        status_group: :in_progress
+        status: :searching
       } =
         request =
         Requests.request_content!(ContentIdentity.from_content(show),
-          load: [:best_source_request, :percent_imported, :status_group],
+          load: [:best_source_request, :percent_imported, :status],
           actor: user
         )
 
@@ -176,10 +267,10 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request: nil,
         percent_imported: 50.0,
-        status_group: :in_progress
+        status: :searching
       } =
         Ash.reload!(request,
-          load: [:best_source_request, :percent_imported, :status_group],
+          load: [:best_source_request, :percent_imported, :status],
           actor: user
         )
 
@@ -199,10 +290,10 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request: nil,
         percent_imported: 100.0,
-        status_group: :completed
+        status: :completed
       } =
         Ash.reload!(request,
-          load: [:best_source_request, :percent_imported, :status_group],
+          load: [:best_source_request, :percent_imported, :status],
           actor: user
         )
     end
@@ -216,10 +307,10 @@ defmodule WatchClub.Requests.ContentRequestTest do
       radarr_id = radarr.id
 
       # Request the movie — this only enqueues the submit job; no MSR exists yet
-      %ContentRequest{id: request_id, best_source_request_id: nil, status_group: :in_progress} =
+      %ContentRequest{id: request_id, best_source_request_id: nil, status: :searching} =
         request =
         Requests.request_content!(ContentIdentity.from_content(movie),
-          load: [:status_group],
+          load: [:status],
           actor: user
         )
 
@@ -232,12 +323,12 @@ defmodule WatchClub.Requests.ContentRequestTest do
         |> Ash.Query.filter(content_id == ^movie.id)
         |> Ash.read!(authorize?: false)
 
-      # The ContentRequest now links to its MSR (searching collapses to :in_progress)
+      # The ContentRequest now links to its MSR, still searching
       %ContentRequest{
         best_source_request_id: ^msr_id,
         percent_imported: +0.0,
-        status_group: :in_progress
-      } = Ash.reload!(request, load: [:percent_imported, :status_group], actor: user)
+        status: :searching
+      } = Ash.reload!(request, load: [:percent_imported, :status], actor: user)
 
       :ok = Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
@@ -255,8 +346,8 @@ defmodule WatchClub.Requests.ContentRequestTest do
       %ContentRequest{
         best_source_request_id: ^msr_id,
         percent_imported: 100.0,
-        status_group: :completed
-      } = Ash.reload!(request, load: [:percent_imported, :status_group], actor: user)
+        status: :completed
+      } = Ash.reload!(request, load: [:percent_imported, :status], actor: user)
     end
   end
 end

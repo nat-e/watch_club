@@ -105,12 +105,8 @@ A user’s request for WatchClub to make a piece of content available on the med
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
 **Content Request Status**:
-The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Queued, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Queued_ is the label for a just-submitted request still within its grace window or whose **Media Source** call is still in flight.
+The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
-
-**Content Request Status Group**:
-The coarse grouping of **Content Request Statuses** used by the **My Requests** filter. One of: In Progress (Queued, Downloading, Importing), Completed, Failed, Not Released, Not Found.
-_Avoid_: Status filter, request category
 
 **Media Source Request**:
 WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
@@ -135,6 +131,10 @@ _Avoid_: Unsubscribe, unfollow, mute
 **Request Subscriber**:
 A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it, until they **Stop Getting Notified**.
 _Avoid_: Follower
+
+**Ready Unseen**:
+A **Content Request** that became playable since its **Request Subscriber** last opened **My Requests**. The Requests tab's badge counts them, and **My Requests** shows them first, with a New badge, until the **Request Subscriber** leaves it.
+_Avoid_: Unread, notification
 
 **Delete Content Request**:
 The **Instance Administrator** removes a **Content Request**, for example a stuck one, so its **Content** can be requested again.
@@ -381,11 +381,11 @@ _Avoid_: Group, aggregate, card, item
 - The **User** who made a **Content Request** becomes one of its **Request Subscribers**
 - Any **Request Subscriber**, the **User** who made the **Content Request** included, can **Stop Getting Notified**
 - Only **Request Subscribers** are told when a **Content Request** becomes playable: having made it doesn't count
-- When a **Content Request** becomes playable, each of its **Request Subscribers** gets a badge on **My Requests**
+- When a **Content Request** becomes playable, it is **Ready Unseen** for each of its **Request Subscribers** until they open **My Requests**. More episodes of a playable **TV Show** don't make it **Ready Unseen** again
 - Other **Users** see who made a **Content Request**, but not its other **Request Subscribers**
 - Nobody can cancel a **Content Request**; only the **Instance Administrator** can **Delete Content Request**
 - A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
-- Whether a **Content Request** is _playable_ is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present while more are downloading), so playability drives the Play action independently of status
+- Whether a **Content Request** is _playable_ (_ready_ in code) is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present while more are downloading), so playability drives the Play action independently of status
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
@@ -587,7 +587,7 @@ _Avoid_: Group, aggregate, card, item
 - "Media Server Library" is not canonical; resolved: use **Media Source** for where **Media** comes from, and **Library** for all the **Content** that has **Media**.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
 - "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
-- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** and its **Content Request Status Group** _are_ canonical, but as _derived read-model values_ computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
+- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** _is_ canonical, but as a _derived read-model value_ computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
 - The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
 - "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Playlists**: **Add to Playlist** does not create a **Content Request**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.
