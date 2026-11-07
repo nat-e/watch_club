@@ -10,8 +10,7 @@
 #     worktree. A prototype that only changed in the primary worktree since the snapshot is left
 #     alone. Prototypes deleted in this worktree stay in the primary worktree.
 #
-#     Only a merged branch's prototypes are copied as they are, because the dev server compiles
-#     every .ex file and a prototype can use code that only exists on its branch. When one changed
+#     Only a merged branch's prototypes replace the primary copy. When one changed
 #     in both worktrees, the newer copy wins and the other one is kept next to it, as
 #     <name>.ex.before-<branch>.bak (the primary worktree's) or <name>.ex.from-<branch>.bak (this
 #     worktree's). An unmerged branch's prototypes are all kept as <name>.ex.from-<branch>.bak.
@@ -21,13 +20,13 @@ checksums=dev/prototypes/.base-checksums
 
 snapshot() {
   [ -d dev/prototypes ] || return 0
-  (cd dev/prototypes && shasum -a 256 -- * > .base-checksums 2> /dev/null) || true
+  (cd dev/prototypes && find . -type f ! -name .base-checksums -exec shasum -a 256 -- {} + > .base-checksums)
 }
 
 checksum() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
 
 checksum_at_snapshot() {
-  awk -v name="$1" '$2 == name { print $1 }' "$checksums" 2> /dev/null || true
+  awk -v name="$1" '$2 == name || $2 == "./" name { print $1 }' "$checksums" 2> /dev/null || true
 }
 
 # worktrunk counts a branch as merged when merging it would add nothing, which also catches squash
@@ -53,12 +52,12 @@ save() {
   local is_merged=false
   if merged "$branch"; then is_merged=true; fi
 
-  for file in dev/prototypes/*; do
-    [ -f "$file" ] || continue
+  while IFS= read -r -d '' file; do
     local name target copied
-    name="$(basename "$file")"
+    name="${file#dev/prototypes/}"
     target="$primary/$name"
     copied="$(checksum_at_snapshot "$name")"
+    mkdir -p "$(dirname "$target")"
 
     if [ "$(checksum "$file")" = "$copied" ] || cmp -s "$file" "$target"; then
       continue
@@ -72,7 +71,7 @@ save() {
     else
       cp -p "$file" "$target.from-$suffix.bak"
     fi
-  done
+  done < <(find dev/prototypes -type f ! -name .base-checksums -print0)
 }
 
 case "$1" in

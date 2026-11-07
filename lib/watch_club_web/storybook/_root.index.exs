@@ -52,4 +52,10 @@ defmodule WatchClubWeb.Storybook.Root do
   def entry("playlist_link"), do: [name: "Playlist link", icon: {:fa, "list"}, index: 28]
   def entry("split_view"), do: [name: "Split view", icon: {:fa, "table-columns"}, index: 29]
   def entry("request_status"), do: [name: "Request status", icon: {:fa, "clock"}, index: 30]
+  def entry("prototype_frame"), do: [name: "Prototype frame", icon: {:fa, "flask"}, index: 31]
+
+  def entry("prototype_controls"),
+    do: [name: "Prototype controls", icon: {:fa, "flask"}, index: 32]
+
+  def entry("variation_picker"), do: [name: "Variation picker", icon: {:fa, "sliders"}, index: 33]
 end
