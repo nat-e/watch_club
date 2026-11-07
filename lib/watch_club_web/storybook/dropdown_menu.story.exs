@@ -63,11 +63,11 @@ defmodule WatchClubWeb.Storybook.DropdownMenu do
         description: "Disabled item",
         attributes: %{id: "wc-dropdown-disabled"},
         slots: [
-          ~s(<:trigger><.button id="dropdown-story-disabled-trigger" variant="secondary">Club actions</.button></:trigger>),
+          ~s(<:trigger><.button id="dropdown-story-disabled-trigger" variant="secondary">Playlist actions</.button></:trigger>),
           ~s(<.dropdown_menu_item id="dropdown-story-manage-members-item">Manage members</.dropdown_menu_item>),
           ~s(<.dropdown_menu_item id="dropdown-story-transfer-ownership-item" disabled>Transfer ownership</.dropdown_menu_item>),
           ~s(<.dropdown_menu_separator />),
-          ~s(<.dropdown_menu_item id="dropdown-story-delete-club-item" variant="destructive">Delete club</.dropdown_menu_item>)
+          ~s(<.dropdown_menu_item id="dropdown-story-delete-playlist-item" variant="destructive">Delete playlist</.dropdown_menu_item>)
         ]
       }
     ]

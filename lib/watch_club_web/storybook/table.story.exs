@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Storybook.Table do
         description: "Default table with caption, selected row, and footer",
         template: """
         <.table>
-          <.table_caption>A list of recent club invoices.</.table_caption>
+          <.table_caption>A list of recent invoices.</.table_caption>
           <.table_header>
             <.table_row>
               <.table_head class="w-[100px]">Invoice</.table_head>

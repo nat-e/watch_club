@@ -2,10 +2,10 @@
 
 ## Direction
 
-Watch Club uses the **Velvet Club** direction:
+Watch Club uses the **Velvet** direction:
 
 - Dark-only UI
-- Cozy club + modern product feel
+- Cozy atmosphere + modern product feel
 - Purple/aubergine foundation
 - Dracula-inspired accents, not a Dracula clone
 - Comfortable rounded shapes

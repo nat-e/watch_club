@@ -27,7 +27,7 @@ defmodule WatchClubWeb.Storybook.Select do
   def template, do: container_template("<.psb-variation/>")
 
   @genre_groups [
-    {"Club staples",
+    {"Favorites",
      [
        {"noir", "Noir"},
        {"sci-fi", "Science fiction"},
@@ -100,7 +100,7 @@ defmodule WatchClubWeb.Storybook.Select do
         slots: [
           """
           <.select_group>
-            <.select_label>Club staples</.select_label>
+            <.select_label>Favorites</.select_label>
             <.select_item value="noir">Noir</.select_item>
             <.select_item value="sci-fi">Science fiction</.select_item>
             <.select_item value="thriller">Thriller</.select_item>
@@ -142,14 +142,14 @@ defmodule WatchClubWeb.Storybook.Select do
         description: "Whole select disabled",
         attributes: %{
           id: "wc-select-disabled",
-          name: "club",
+          name: "playlist",
           disabled: true,
-          placeholder: "No clubs available"
+          placeholder: "No playlists available"
         },
         slots: [
-          ~s(<.select_item value="cinema">Cinema club</.select_item>),
-          ~s(<.select_item value="books">Book club</.select_item>),
-          ~s(<.select_item value="series">Series club</.select_item>)
+          ~s(<.select_item value="cinema">Cinema playlist</.select_item>),
+          ~s(<.select_item value="books">Book playlist</.select_item>),
+          ~s(<.select_item value="series">Series playlist</.select_item>)
         ]
       },
       %Variation{

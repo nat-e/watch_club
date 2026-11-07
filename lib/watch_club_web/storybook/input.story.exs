@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Storybook.Input do
       %Variation{
         id: :default,
         description: "Default text input",
-        attributes: %{placeholder: "Search the club"}
+        attributes: %{placeholder: "Search the Library"}
       },
       %Variation{
         id: :email,
@@ -45,7 +45,7 @@ defmodule WatchClubWeb.Storybook.Input do
       %Variation{
         id: :custom_width,
         description: "Consumer classes can adjust layout",
-        attributes: %{placeholder: "Club name", class: "sm:w-80"}
+        attributes: %{placeholder: "Playlist name", class: "sm:w-80"}
       }
     ]
   end

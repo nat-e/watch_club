@@ -30,8 +30,8 @@ defmodule WatchClubWeb.Storybook.Empty do
         slots: [
           ~s|<:icon><Lucideicons.library /></:icon>|,
           ~s|<:title>No libraries yet</:title>|,
-          ~s|<:description>Create libraries to add movies, TV shows, or books to your club.</:description>|,
-          ~s|<.button id="empty-story-create-library-button"><Lucideicons.plus />Create library</.button>|
+          ~s|<:description>Add movies, TV shows, or books to a playlist.</:description>|,
+          ~s|<.button id="empty-story-create-playlist-button"><Lucideicons.plus />Create playlist</.button>|
         ]
       },
       %Variation{
@@ -61,7 +61,7 @@ defmodule WatchClubWeb.Storybook.Empty do
         slots: [
           ~s|<:icon class="bg-surface-inset"><Lucideicons.bell /></:icon>|,
           ~s|<:title>No notifications</:title>|,
-          ~s|<:description>You're all caught up. New club updates will appear here.</:description>|
+          ~s|<:description>You're all caught up. New activity will appear here.</:description>|
         ]
       },
       %Variation{
@@ -78,7 +78,7 @@ defmodule WatchClubWeb.Storybook.Empty do
         description: "Empty state without an icon",
         slots: [
           ~s|<:title>Nothing here yet</:title>|,
-          ~s|<:description>Once activity starts, the latest club updates will appear here.</:description>|,
+          ~s|<:description>Once activity starts, the latest activity will appear here.</:description>|,
           ~s|<.button id="empty-story-refresh-button" variant="secondary">Refresh</.button>|
         ]
       }

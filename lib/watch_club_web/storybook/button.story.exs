@@ -101,7 +101,7 @@ defmodule WatchClubWeb.Storybook.Button do
         id: :link,
         description: "Rendered as a link when href/navigate/patch is passed",
         attributes: %{id: "button-link", href: "#", variant: "secondary"},
-        slots: ["Open club"]
+        slots: ["Open playlist"]
       }
     ]
   end

@@ -29,7 +29,7 @@ defmodule WatchClubWeb.Storybook.Alert do
         attributes: %{variant: "accent", class: "max-w-md"},
         slots: [
           "<:icon><Lucideicons.info /></:icon>",
-          "<:title>Featured club night</:title>",
+          "<:title>Featured movie night</:title>",
           "Use accent callouts for supporting emphasis that is not a status message."
         ]
       },
