@@ -99,10 +99,21 @@ defmodule WatchClubWeb.Hooks.Auth do
     )
   end
 
+  # A bulk action sends one notification per record, such as opening My Requests: the user
+  # reloads once, after the notifications already received
   defp reload_user_on_change(%Ash.Notifier.Notification{resource: resource}, socket)
        when resource in @navigation_resources do
+    if !socket.private[:reload_user_pending?], do: send(self(), :reload_user)
+    {:cont, Phoenix.LiveView.put_private(socket, :reload_user_pending?, true)}
+  end
+
+  defp reload_user_on_change(:reload_user, socket) do
     user = WatchClub.Accounts.get_current_user!(actor: socket.assigns.current_user)
-    {:cont, socket |> assign(:current_user, user)}
+
+    {:halt,
+     socket
+     |> assign(:current_user, user)
+     |> Phoenix.LiveView.put_private(:reload_user_pending?, false)}
   end
 
   defp reload_user_on_change(_msg, socket) do
