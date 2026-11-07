@@ -17,10 +17,15 @@ defmodule WatchClub.Application do
       {Oban, Application.fetch_env!(:watch_club, Oban)},
       WatchClub.MediaSources.Import.OrphansCleanup,
       {Phoenix.PubSub, name: WatchClub.PubSub},
-      {AshAuthentication.Supervisor, [otp_app: :watch_club]},
-      # Start to serve requests, typically the last entry
-      WatchClubWeb.Endpoint
+      {AshAuthentication.Supervisor, [otp_app: :watch_club]}
     ]
+
+    children =
+      children ++
+        if(Application.get_env(:watch_club, :dev_routes, false),
+          do: [WatchClub.Dev.PrototypeRuntime],
+          else: []
+        ) ++ [WatchClubWeb.Endpoint]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

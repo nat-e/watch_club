@@ -25,9 +25,15 @@ Rules:
 
 ## Prototypes
 
-- Throwaway UI prototypes go in `dev/prototypes/<name>.ex` as module `WatchClubWeb.Prototypes.<Name>`, and the dev server shows each one at `/dev/prototypes/<name>`
+- `mix dev.prototype.new <name>` creates an experiment in `dev/prototypes/<name>/`, with `prototype.json`, a page, and URL-based variation controls. Metadata lists its pages and their module names; routes are `/dev/prototypes/<name>/<page>`, with an empty page path for its first page
+- `/dev` lists developer tools and experiments; `/dev/prototypes` lists all experiments. The Instance Administrator can permanently delete an experiment's folder from either page
+- Prototypes are excluded from Mix compilation and loaded only when opened. Keep this boundary: never add prototype code to `elixirc_paths`, startup or the app's asset bundle
+- A prototype page is a full page of the app: it renders `Layouts.app` and copies main's whole page, sample data included, so only the part being redesigned varies
+- Put its variation pickers and sample data in `WatchClubWeb.Components.Prototypes.Controls.prototype_controls/1`, a panel floating over the page, with `WatchClubWeb.Components.Prototypes.VariationPicker.variation_picker/1`. Each variation axis has its own URL parameter; switching one keeps the others
+- Prototype JavaScript hooks use `<script :type={Phoenix.LiveView.ColocatedHook} name=".Name" runtime>` with a hook object, without `export default`. They run in the preview without a build step
+- Shared legacy prototype helpers live in `dev/prototypes/_shared/`; an experiment lists the files it needs in its metadata's `shared` array
 - Git ignores this folder. A new worktree gets a copy of the primary worktree's prototypes, and `wt remove` or `wt merge` copies its new and changed ones back to the primary worktree. Worktrees that already exist never get them
-- Never put prototypes in `lib/` or any other tracked file
+- Prototype pages and fixtures stay Git-ignored. Reusable developer tooling and components live in tracked application code
 
 ## Tidewave
 

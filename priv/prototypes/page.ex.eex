@@ -1,0 +1,52 @@
+defmodule <%= module %> do
+  @moduledoc "Replace this sentence with the task this screen helps someone do."
+  use WatchClubWeb, :live_view
+
+  import WatchClubWeb.Components.Prototypes.Controls
+  import WatchClubWeb.Components.Prototypes.VariationPicker
+
+  @impl true
+  def mount(_params, _session, socket), do: {:ok, socket}
+
+  @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply, assign(socket,
+      layout_variant: Url.parse_url_param(params["layout"], ~w(rows cards compact), "rows"),
+      density: Url.parse_url_param(params["density"], ~w(comfortable compact), "comfortable")
+    )}
+  end
+
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <%%!-- The whole app page, as on main; only the part being redesigned varies --%>
+    <Layouts.app
+      flash={@flash}
+      current_url={@current_url}
+      current_user={@current_user}
+      instance_settings={@instance_settings}
+      title=<%= inspect(name) %>
+    >
+      <.card class={[
+        "flex flex-col",
+        @density == "comfortable" && "gap-cluster",
+        @density == "compact" && "gap-related"
+      ]}>
+        <h2 class="font-semibold">Your <%= name %> experiment</h2>
+        <p class="text-text-muted">Replace this card with the page. The current layout is {@layout_variant}.</p>
+      </.card>
+    </Layouts.app>
+    <.prototype_controls title=<%= inspect(name) %>>
+      <.variation_picker id="layout-picker" label="Layout" param="layout" current_url={@current_url}>
+        <:option value="rows" description="One item per row, with room for its details.">Rows</:option>
+        <:option value="cards" description="A visual overview, with one card per item.">Cards</:option>
+        <:option value="compact" description="A dense list for scanning many items.">Compact</:option>
+      </.variation_picker>
+      <.variation_picker id="density-picker" label="Density" param="density" current_url={@current_url}>
+        <:option value="comfortable">Comfortable</:option>
+        <:option value="compact">Compact</:option>
+      </.variation_picker>
+    </.prototype_controls>
+    """
+  end
+end
