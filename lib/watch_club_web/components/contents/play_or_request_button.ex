@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   @moduledoc """
   Play for a Content with Media. Otherwise Request, or the status of the Content's Content
-  Request, as My Requests shows it, with Get Notified when the actor isn't one of its Request
+  Request, as My Requests says it, with Get Notified when the actor isn't one of its Request
   Subscribers.
   `PlayOrRequestButtonLive` loads what it shows, makes the request and gets the actor notified.
   """
@@ -22,6 +22,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     default: nil,
     doc:
       "the Content's Content Request, with its `status`, `download_progress`, `actor_subscriber?` and `requested_by`"
+
+  attr :release_date, Date, default: nil, doc: "the Content's, for its Content Request's status"
+  attr :locale, :atom, default: nil, doc: "a `UserLocale`, for the Content Request's status"
 
   attr :on_request, :any, default: nil, doc: "the event or JS commands of Request"
 
@@ -80,9 +83,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  # The status, which isn't an action, with how much it downloaded. A ringing bell shows that the
-  # actor will be told when it's ready; until then, a bell beside it does Get Notified, and then
-  # hands the focus to the status, since it goes away. Who made it shows in the status' tooltip.
+  # When it can be watched, as My Requests says it. A ringing bell shows that the actor will
+  # be told when it's ready; until then, a bell beside it does Get Notified, and then hands the
+  # focus to the status, since it goes away. Who made it shows in the status' tooltip.
   def play_or_request_button(%{has_media?: false} = assigns) do
     ~H"""
     <%!-- As tall as a button of its size, with or without the bell --%>
@@ -92,22 +95,17 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
       @size == "md" && "min-h-control-md",
       @size == "lg" && "min-h-control-lg"
     ]}>
-      <span
+      <.request_status
         id={"#{@id}-request-status"}
         tabindex="-1"
         title={status_tooltip(@request)}
-        class="flex min-w-0 flex-1 items-center gap-tight outline-none"
-      >
-        <Lucideicons.bell_ring
-          :if={@request.actor_subscriber?}
-          class="size-icon-sm shrink-0 text-text-muted"
-          aria-hidden="true"
-        />
-        <.request_status status={@request.status} />
-        <span :if={@request.download_progress} class="text-xs text-text-muted tabular-nums">
-          {round(@request.download_progress)}%
-        </span>
-        <span :if={@request.actor_subscriber?} class="sr-only">{status_tooltip(@request)}</span>
+        request={@request}
+        release_date={@release_date}
+        locale={@locale}
+      />
+      <span :if={@request.actor_subscriber?} title={status_tooltip(@request)} class="shrink-0">
+        <Lucideicons.bell_ring class="size-icon-sm text-text-subtle" aria-hidden="true" />
+        <span class="sr-only">{status_tooltip(@request)}</span>
       </span>
       <.button
         :if={@on_get_notified && !@request.actor_subscriber?}

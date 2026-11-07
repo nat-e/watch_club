@@ -6,6 +6,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
   use WatchClubWeb, :component
 
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Requests.RequestStatus, only: [request_status: 1]
 
   attr :request, ContentRequest, required: true
 
@@ -38,16 +39,10 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
         <.link navigate={@path} class="line-clamp-2 text-lg font-semibold hover:underline">
           {@title}
         </.link>
-        <span class="flex gap-tight text-sm text-text-muted">
-          <span class="flex h-lh shrink-0 items-center">
-            <.status_icon status={@request.status} />
-          </span>
-          {when_watchable(@request, @locale)}
-        </span>
-        <.progress_bar
-          :if={@request.status == :downloading}
-          percent={@request.download_progress}
-          class="mt-related max-w-48"
+        <.request_status
+          request={@request}
+          release_date={@request.content.release_date}
+          locale={@locale}
         />
       </div>
       <.button
@@ -67,46 +62,4 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
     </li>
     """
   end
-
-  attr :status, :atom, required: true, doc: "a `ContentRequestStatus`"
-
-  defp status_icon(assigns) do
-    ~H"""
-    <Lucideicons.download
-      :if={@status in [:importing, :downloading]}
-      class="size-icon-sm shrink-0 text-accent"
-    />
-    <Lucideicons.search :if={@status == :searching} class="size-icon-sm shrink-0 text-text-subtle" />
-    <Lucideicons.calendar
-      :if={@status == :not_released}
-      class="size-icon-sm shrink-0 text-text-subtle"
-    />
-    <Lucideicons.search_x :if={@status == :not_found} class="size-icon-sm shrink-0 text-text-subtle" />
-    <Lucideicons.circle_alert :if={@status == :failed} class="size-icon-sm shrink-0 text-danger" />
-    """
-  end
-
-  defp when_watchable(%ContentRequest{status: status}, _locale)
-       when status in [:importing, :searching],
-       do: ContentRequestStatus.translated_label(status)
-
-  defp when_watchable(%ContentRequest{status: :downloading} = request, _locale),
-    do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))
-
-  # TMDB's date is often the cinema release, before the one we can download
-  defp when_watchable(%ContentRequest{status: :not_released} = request, locale) do
-    release_date = request.content.release_date
-
-    if release_date && Date.after?(release_date, Date.utc_today()) do
-      dgettext("requests", "Out on %{date}", date: Time.long_date(release_date, locale))
-    else
-      dgettext("requests", "Not released yet")
-    end
-  end
-
-  defp when_watchable(%ContentRequest{status: :not_found}, _locale),
-    do: dgettext("requests", "Not found, we'll keep looking for it")
-
-  defp when_watchable(%ContentRequest{status: :failed}, _locale),
-    do: dgettext("requests", "There was a problem, the instance administrator was told")
 end

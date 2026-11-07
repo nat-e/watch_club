@@ -138,6 +138,8 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
         id: "request-#{id}",
         has_media?: false,
         play_label: "Play",
+        locale: :en_US,
+        release_date: ~D[2099-03-12],
         request: %ContentRequest{
           status: status,
           actor_subscriber?: actor_subscriber?,

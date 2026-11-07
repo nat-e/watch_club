@@ -89,6 +89,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         request={@request}
         on_request={JS.push("request-content", target: @myself)}
         on_get_notified={@get_notified && JS.push("get-notified", target: @myself)}
+        release_date={@release_date}
+        locale={@current_user.settings.locale}
         on_episodes={@on_episodes}
         play_only={@play_only}
         size={@size}
@@ -128,7 +130,8 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         play_href: play_href((content && content.actor_next_medias_to_play) || []),
         play_label: play_label(assigns.content_identity.type, content),
         title: content && content.implementation.best_localization.title,
-        request: content && content.request
+        request: content && content.request,
+        release_date: content && content.release_date
       )
     end)
   end
