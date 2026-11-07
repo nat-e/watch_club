@@ -1,0 +1,43 @@
+# Changelog
+
+## [0.1.0](https://github.com/nat-e/watch_club/compare/v0.1.0...v0.1.0) (2026-11-07)
+
+
+### Features
+
+* **auth:** return to the requested page after sign-in ([#34](https://github.com/nat-e/watch_club/issues/34)) ([f4745f3](https://github.com/nat-e/watch_club/commit/f4745f33ed8e818264e8d7a3ec3fd078a8e3b8dc))
+* **browse:** filter and sort Browse ([#42](https://github.com/nat-e/watch_club/issues/42)) ([8e24ea9](https://github.com/nat-e/watch_club/commit/8e24ea9815fd0745b335871b0a37433a19b95efb))
+* **browse:** filter Browse by genre ([#44](https://github.com/nat-e/watch_club/issues/44)) ([f19cfe2](https://github.com/nat-e/watch_club/commit/f19cfe2785ac40a01a5d8582bede3e669dd14b08))
+* **browse:** replace Home with Browse and the new tabs ([#40](https://github.com/nat-e/watch_club/issues/40)) ([2a3cb26](https://github.com/nat-e/watch_club/commit/2a3cb266d57ba5801351d71b5942c32b60e4b872))
+* **browse:** show ratings and filter Browse by them ([#45](https://github.com/nat-e/watch_club/issues/45)) ([19102da](https://github.com/nat-e/watch_club/commit/19102da4d23d4e16564cf48fdc9308d6302a0ec4))
+* check the database in /health and report errors to Sentry ([#22](https://github.com/nat-e/watch_club/issues/22)) ([dc357a7](https://github.com/nat-e/watch_club/commit/dc357a7c95e262b6ea6de42b6101aaaf06211906))
+* **contents:** replace the Movie and TV Show pages with one Content page ([#43](https://github.com/nat-e/watch_club/issues/43)) ([b5b0d76](https://github.com/nat-e/watch_club/commit/b5b0d764e3cd7440990693ccd10d23cf620fae61))
+* **conversations:** recommend Content and talk about it in the Inbox ([#49](https://github.com/nat-e/watch_club/issues/49)) ([78546dc](https://github.com/nat-e/watch_club/commit/78546dcfe5c92ff96eaeb8d207657ed2cff253d3))
+* hide books until they are supported ([#19](https://github.com/nat-e/watch_club/issues/19)) ([ff73fbf](https://github.com/nat-e/watch_club/commit/ff73fbfcf1da6c31f33124aada7a2115a1a4e847))
+* **home:** spotlight, Up next and a grouped activity feed ([#31](https://github.com/nat-e/watch_club/issues/31)) ([40979ec](https://github.com/nat-e/watch_club/commit/40979ec6d1710dbfc73fc16378843f94c8152b73))
+* **nav:** new app bar, phone tabs and search drop-down ([#35](https://github.com/nat-e/watch_club/issues/35)) ([f8f722c](https://github.com/nat-e/watch_club/commit/f8f722c301181ea819937457f9773137eb9e9549))
+* **nav:** redesign the sidebar ([#32](https://github.com/nat-e/watch_club/issues/32)) ([b3a3dfe](https://github.com/nat-e/watch_club/commit/b3a3dfe1aef6b1bc56239bbe74208e6581ce6c42))
+* **playlists:** turn lists into Playlists, with Share Playlist ([#48](https://github.com/nat-e/watch_club/issues/48)) ([6de5273](https://github.com/nat-e/watch_club/commit/6de52734ebf07d002a89e430ed3c71dfaa22518e))
+* remove clubs ([#52](https://github.com/nat-e/watch_club/issues/52)) ([92dbadf](https://github.com/nat-e/watch_club/commit/92dbadf9f9fc742ef00a518f12ddae97a5870c97))
+* **requests:** keep one Content Request per Content, with Get Notified ([#46](https://github.com/nat-e/watch_club/issues/46)) ([f6e3e0e](https://github.com/nat-e/watch_club/commit/f6e3e0e65495296703aabab9a9f4bc9c78d93bdc))
+* **requests:** show Play, Request and request progress on Playlist Items and the Content page ([#54](https://github.com/nat-e/watch_club/issues/54)) ([9ff7af0](https://github.com/nat-e/watch_club/commit/9ff7af0355da75786c68e7f43caa199302013c4c))
+* **requests:** show what's ready first on My Requests, with a badge ([#51](https://github.com/nat-e/watch_club/issues/51)) ([58e62bc](https://github.com/nat-e/watch_club/commit/58e62bccf4f8b9453816b65e3960adb4667fa940))
+* **settings:** add the required TMDB attribution ([#24](https://github.com/nat-e/watch_club/issues/24)) ([69f5869](https://github.com/nat-e/watch_club/commit/69f586929d2078c85cdf7dfc54cbfd3718f5f37f))
+* **ui:** apply Refactoring UI to the design system ([#30](https://github.com/nat-e/watch_club/issues/30)) ([19134b3](https://github.com/nat-e/watch_club/commit/19134b39919a186d9eeec5df8b4356dd63a7665b))
+
+
+### Bug Fixes
+
+* **deps:** update dependency ash_authentication to v4.15.1 [security] ([#38](https://github.com/nat-e/watch_club/issues/38)) ([190a8f3](https://github.com/nat-e/watch_club/commit/190a8f385aab41184bbbe951dba5f69a4e204d32))
+* **i18n:** translate the remaining English text in French ([#21](https://github.com/nat-e/watch_club/issues/21)) ([0d9cb90](https://github.com/nat-e/watch_club/commit/0d9cb909976d943ec145337bc78a8e45684c0e64))
+* make HTTPS work behind a TLS-terminating proxy ([#20](https://github.com/nat-e/watch_club/issues/20)) ([52a8f16](https://github.com/nat-e/watch_club/commit/52a8f16fa3254040d85c1bec6d98c09161d98875))
+* make mix reset recreate the database ([c9eb38e](https://github.com/nat-e/watch_club/commit/c9eb38ea1864ccd1f7ba8e73526513a902d5b681))
+* **player:** fail the segment cache cleanup instead of deleting live caches ([#23](https://github.com/nat-e/watch_club/issues/23)) ([e01bfb4](https://github.com/nat-e/watch_club/commit/e01bfb40b0553716d751125ac32e809aa7500d82))
+* return an error for every 4xx response from TMDB ([#25](https://github.com/nat-e/watch_club/issues/25)) ([502cd93](https://github.com/nat-e/watch_club/commit/502cd9389a091de255ac37a0b6b3a5c5b15d11d2))
+* show Servarr connection errors when adding or editing a source ([#26](https://github.com/nat-e/watch_club/issues/26)) ([3ec7a36](https://github.com/nat-e/watch_club/commit/3ec7a36c9e657eed74488439d91440d93948ccef))
+* speed up Continue Watching for users with a long watch history ([#27](https://github.com/nat-e/watch_club/issues/27)) ([2b77cee](https://github.com/nat-e/watch_club/commit/2b77ceedf7776d6eb30b0f06d8c3179e147d432b))
+
+
+### Miscellaneous Chores
+
+* version releases as alpha until 1.0 ([ca6e3f5](https://github.com/nat-e/watch_club/commit/ca6e3f5b1a6d2cbee0bc0175ee19a530677b865e))
