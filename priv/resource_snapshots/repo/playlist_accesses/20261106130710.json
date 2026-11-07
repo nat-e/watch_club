@@ -14,6 +14,18 @@
     },
     {
       "allow_nil?": false,
+      "default": "nil",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "level",
+      "type": "text"
+    },
+    {
+      "allow_nil?": false,
       "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
       "generated?": false,
       "precision": null,
@@ -21,7 +33,19 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "created_at",
+      "source": "inserted_at",
+      "type": "utc_datetime_usec"
+    },
+    {
+      "allow_nil?": false,
+      "default": "fragment(\"(now() AT TIME ZONE 'utc')\")",
+      "generated?": false,
+      "precision": null,
+      "primary_key?": false,
+      "references": null,
+      "scale": null,
+      "size": null,
+      "source": "updated_at",
       "type": "utc_datetime_usec"
     },
     {
@@ -36,6 +60,8 @@
         "destination_attribute_default": null,
         "destination_attribute_generated": null,
         "index?": false,
+        "index_where": null,
+        "match_tenant?": false,
         "match_type": null,
         "match_with": null,
         "multitenancy": {
@@ -43,16 +69,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "list_items_list_id_fkey",
+        "name": "playlist_accesses_playlist_id_fkey",
         "on_delete": "delete",
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "lists"
+        "table": "playlists"
       },
       "scale": null,
       "size": null,
-      "source": "list_id",
+      "source": "playlist_id",
       "type": "uuid"
     },
     {
@@ -67,6 +93,8 @@
         "destination_attribute_default": null,
         "destination_attribute_generated": null,
         "index?": false,
+        "index_where": null,
+        "match_tenant?": false,
         "match_type": null,
         "match_with": null,
         "multitenancy": {
@@ -74,16 +102,16 @@
           "global": null,
           "strategy": null
         },
-        "name": "list_items_content_id_fkey",
+        "name": "playlist_accesses_user_id_fkey",
         "on_delete": "delete",
         "on_update": null,
         "primary_key?": true,
         "schema": "public",
-        "table": "contents"
+        "table": "users"
       },
       "scale": null,
       "size": null,
-      "source": "content_id",
+      "source": "user_id",
       "type": "uuid"
     }
   ],
@@ -93,23 +121,23 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "C46AFD1F1089B53B8E6296AA96DBF11AE6BC458903DBC27FEF14D547B720277E",
+  "hash": "40304BE718AB893F3D64F52271696508F55FE259F3DCF4BD1DC4FC2B36E64298",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "list_items_list_and_content_index",
+      "index_name": "playlist_accesses_playlist_and_user_index",
       "keys": [
         {
           "type": "atom",
-          "value": "list_id"
+          "value": "playlist_id"
         },
         {
           "type": "atom",
-          "value": "content_id"
+          "value": "user_id"
         }
       ],
-      "name": "list_and_content",
+      "name": "playlist_and_user",
       "nils_distinct?": true,
       "where": null
     }
@@ -121,5 +149,6 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "list_items"
+  "table": "playlist_accesses",
+  "temporal": null
 }

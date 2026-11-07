@@ -80,8 +80,11 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
         id="app-bar-back"
         variant="ghost"
         size="icon"
-        class="text-text! max-md:rounded-full! pointer-coarse:size-touch-target!"
-        navigate={@back.navigate}
+        class={[
+          "text-text! max-md:rounded-full! pointer-coarse:size-touch-target!",
+          @back.narrow_only? && "@split-view/main:hidden"
+        ]}
+        {@back.link}
         data-back={@back.history?}
         aria-label={@back.label}
         title={@back.label}
@@ -108,11 +111,23 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
   # A child page goes up to its parent. A Content page goes back to the previous page, or Browse
   # when the history has no previous page of the app: see the hook.
   defp back([parent], _content_page?) do
-    label = dgettext("nav", "Back to %{page}", page: parent.label)
-    %{navigate: parent.navigate, label: label, history?: false}
+    %{
+      link: if(parent[:patch], do: [patch: parent.navigate], else: [navigate: parent.navigate]),
+      label: dgettext("nav", "Back to %{page}", page: parent.label),
+      history?: false,
+      narrow_only?: parent[:narrow_only] || false
+    }
   end
 
-  defp back([], true), do: %{navigate: ~p"/", label: dgettext("nav", "Back"), history?: true}
+  defp back([], true) do
+    %{
+      link: [navigate: ~p"/"],
+      label: dgettext("nav", "Back"),
+      history?: true,
+      narrow_only?: false
+    }
+  end
+
   defp back([], false), do: nil
 
   attr :title, :string, required: true

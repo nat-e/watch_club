@@ -5,11 +5,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
 
   import WatchClubWeb.Components.Contents.ContentCard
 
-  alias WatchClubWeb.Components.Contents.{
-    AddToLibraryModalLive,
-    AddToListModalLive,
-    PlayOrRequestButtonLive
-  }
+  alias WatchClubWeb.Components.Contents.{AddToLibraryModalLive, PlayOrRequestButtonLive}
 
   alias WatchClubWeb.Helpers.KeysetStreamState
 
@@ -130,16 +126,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
         current_user={@current_user}
         on_close={fn -> send(self(), "close_add_to_library_modal") end}
       />
-
-      <.live_component
-        :if={@content_to_add_to_list}
-        id="library-page-add-to-list-modal"
-        module={AddToListModalLive}
-        content_identity={ContentIdentity.from_content(@content_to_add_to_list)}
-        content_title={@content_to_add_to_list.implementation.best_localization.title}
-        current_user={@current_user}
-        on_close={fn -> send(self(), "close_add_to_list_modal") end}
-      />
     </Layouts.app>
     """
   end
@@ -196,10 +182,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   def handle_info("close_add_to_library_modal", socket) do
-    {:noreply, socket |> reset_modals()}
-  end
-
-  def handle_info("close_add_to_list_modal", socket) do
     {:noreply, socket |> reset_modals()}
   end
 
@@ -368,18 +350,6 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
      )}
   end
 
-  def handle_event("open_add_to_list_modal", %{"content_id" => content_id}, socket) do
-    {:noreply,
-     socket
-     |> assign(
-       content_to_add_to_list:
-         Contents.get_content_by_id!(content_id,
-           load: [:implementation],
-           actor: socket.assigns.current_user
-         )
-     )}
-  end
-
   defp load_library_items_page(socket) do
     stream_state = socket.assigns[:stream_state] || KeysetStreamState.init(@contents_page_size)
 
@@ -413,7 +383,7 @@ defmodule WatchClubWeb.Clubs.LibraryPage do
   end
 
   defp reset_modals(socket) do
-    socket |> assign(content_to_add_to_library: nil, content_to_add_to_list: nil)
+    socket |> assign(content_to_add_to_library: nil)
   end
 
   # Parses the field and direction on which to sort the library items, based on the value

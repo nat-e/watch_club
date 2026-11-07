@@ -90,6 +90,7 @@ msgstr ""
 #: lib/watch_club_web/components/navigation/sections.ex
 #: lib/watch_club_web/live/browse_page.ex
 #: lib/watch_club_web/live/my_requests_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr ""
@@ -101,7 +102,7 @@ msgid "Inbox"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/sections.ex
-#: lib/watch_club_web/live/lists/lists_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Playlists"
 msgstr ""

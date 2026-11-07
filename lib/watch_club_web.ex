@@ -114,10 +114,10 @@ defmodule WatchClubWeb do
         Contents,
         History,
         Instance,
-        Lists,
         MediaCatalog,
         MediaSources,
         Playbacks,
+        Playlists,
         Requests
       }
 
@@ -148,7 +148,7 @@ defmodule WatchClubWeb do
 
       alias WatchClub.History.{WatchProgress, WatchStatus}
       alias WatchClub.Instance.InstanceSettings
-      alias WatchClub.Lists.{ContentList, ListItem}
+      alias WatchClub.Playlists.{Playlist, PlaylistAccess, PlaylistAccessLevel, PlaylistItem}
 
       alias WatchClub.MediaCatalog.{
         Audiobook,
@@ -173,7 +173,7 @@ defmodule WatchClubWeb do
         RequestSubscriber
       }
 
-      alias WatchClubWeb.Helpers.{Time, Url}
+      alias WatchClubWeb.Helpers.{Time, Url, Usernames}
 
       # Allow Logger calls
       require Logger

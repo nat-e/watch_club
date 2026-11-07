@@ -1,7 +1,6 @@
-defmodule WatchClub.Accounts.Changes.CreateToWatchList do
+defmodule WatchClub.Accounts.Changes.CreateToWatchPlaylist do
   @moduledoc """
-  Creates a default "To Watch" list for a newly created user.
-  The name will be localized to the locale the user registered with.
+  Creates the To Watch Playlist of a new User, named in the locale they registered with.
   """
   use Ash.Resource.Change
 
@@ -15,10 +14,10 @@ defmodule WatchClub.Accounts.Changes.CreateToWatchList do
     Ash.Changeset.after_action(changeset, fn _changeset, user ->
       name =
         Gettext.with_locale(WatchClubWeb.Gettext, language(locale), fn ->
-          dgettext("lists", "To Watch")
+          dgettext("playlists", "To Watch")
         end)
 
-      WatchClub.Lists.create_list!(%{name: name, icon: "popcorn"}, actor: user)
+      WatchClub.Playlists.create_playlist!(%{name: name, icon: "popcorn"}, actor: user)
 
       {:ok, user}
     end)

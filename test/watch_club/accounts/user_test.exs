@@ -3,6 +3,8 @@ defmodule WatchClub.Accounts.UserTest do
 
   alias WatchClub.Accounts.{InvitationCode, User}
   alias WatchClub.Clubs.Membership
+  alias WatchClub.Playlists
+  alias WatchClub.Playlists.{Playlist, PlaylistItem}
   alias WatchClub.Requests.ContentRequest
 
   import WatchClub.Accounts
@@ -144,6 +146,21 @@ defmodule WatchClub.Accounts.UserTest do
         })
 
       assert Ash.load!(user, :memberships, authorize?: false).memberships == []
+    end
+
+    test "a new user starts with a To Watch playlist, named in their locale", %{admin: admin} do
+      invitation_code = generate(invitation_code(actor: admin, club_ids: []))
+
+      user =
+        register_with_password!(%{
+          username: "nate",
+          password: "passw0rd",
+          password_confirmation: "passw0rd",
+          invitation_code: invitation_code.code,
+          locale: :fr_FR
+        })
+
+      assert [%Playlist{name: "À voir", icon: "popcorn"}] = Playlists.list_playlists!(actor: user)
     end
 
     test "users can't register without an invitation code" do
@@ -334,6 +351,21 @@ defmodule WatchClub.Accounts.UserTest do
 
       assert participants |> Enum.map(& &1.user_id) |> Enum.sort() == Enum.sort([nil, friend.id])
       assert Enum.map(messages, & &1.author_id) == [nil, nil]
+    end
+
+    test "the content a deleted user added stays in the playlists shared with them", %{
+      admin: admin,
+      member: member
+    } do
+      owner = generate(user())
+      playlist = generate(playlist(owner))
+      generate(playlist_access(playlist, member, :edit))
+      generate(playlist_item(playlist, generate(movie()), added_by_id: member.id))
+
+      destroy_user!(member, actor: admin)
+
+      assert [%PlaylistItem{added_by_id: nil}] =
+               Playlists.list_playlist_items!(playlist.id, actor: owner)
     end
 
     test "only the administrator can delete users", %{member: member} do

@@ -33,6 +33,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.ScrollRow
       import WatchClubWeb.Components.UI.SegmentedControl
       import WatchClubWeb.Components.UI.Select
+      import WatchClubWeb.Components.UI.SplitView
       import WatchClubWeb.Components.UI.Table
       import WatchClubWeb.Components.UI.Tooltip
       import WatchClubWeb.Components.UI.Typography

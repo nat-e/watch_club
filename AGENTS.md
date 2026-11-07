@@ -74,7 +74,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 - Prefer built-in policy checks, such as `relates_to_actor_via(:owner)`, to custom check modules.
 - Prefer the `defaults` shorthand to an explicit action block when the action has no extra logic.
 - Name relationships by their role, such as `owner` rather than `user`.
-- Never name a resource after an Elixir standard library module, because aliasing it shadows that module. That's why the list resource is `WatchClub.Lists.ContentList`.
+- Never name a resource after an Elixir standard library module, such as `List`, because aliasing it shadows that module.
 - Reuse shared helpers, such as `WatchClub.Shared.LucideIcon.names/0`, instead of copying them per domain.
 - User-facing fields get explicit validations with localized messages, as in `WatchClub.Clubs.Club`. These validations own the shape rules, so don't repeat min, max or format as attribute or argument constraints. Keep `allow_nil? false` when it is the persistence or input contract, with a comment saying the validations own the user-facing message. Internal data can rely on constraints alone. This overrides the Ash usage rule against validations that repeat constraints.
 - Users never see a framework's generic error message. Give identities a localized `message` too. For a framework error without a message option, map it to a localized message in the form's `transform_errors`, as `lib/watch_club_web/live/accounts/sign_in_page.ex` does. Don't translate Ash's built-in messages with `mix ash.gen.gettext` instead.

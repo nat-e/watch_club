@@ -89,6 +89,11 @@ defmodule WatchClubWeb.Components.UI.Form do
   attr :field, Phoenix.HTML.FormField, required: true
   attr :label, :string, required: true
   attr :class, :any, default: nil
+
+  attr :label_class, :any,
+    default: nil,
+    doc: "such as `sr-only!` for a label that only screen readers read"
+
   attr :input_class, :any, default: nil
   attr :type, :string, default: "text"
   attr :debounce, :string, default: "blur"
@@ -122,7 +127,7 @@ defmodule WatchClubWeb.Components.UI.Form do
 
     ~H"""
     <div data-slot="field" class={["grid gap-related", @class]}>
-      <.label field={@field}>{@label}</.label>
+      <.label field={@field} class={@label_class}>{@label}</.label>
 
       <p
         :if={@hint_id}

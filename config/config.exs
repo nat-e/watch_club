@@ -60,10 +60,10 @@ config :watch_club,
     WatchClub.Conversations,
     WatchClub.History,
     WatchClub.Instance,
-    WatchClub.Lists,
     WatchClub.MediaCatalog,
     WatchClub.MediaSources,
     WatchClub.Playbacks,
+    WatchClub.Playlists,
     WatchClub.Requests
   ]
 

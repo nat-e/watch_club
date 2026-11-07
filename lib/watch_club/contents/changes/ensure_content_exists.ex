@@ -2,7 +2,8 @@ defmodule WatchClub.Contents.Changes.EnsureContentExists do
   @moduledoc """
   Resolves the action's `:content_identity` argument into a real `Content`, creating it from the
   Metadata Provider if it does not exist yet, and sets `content_id` on the changeset. Request
-  Content and Recommend Content use it, since any Content can be requested or recommended.
+  Content, Recommend Content and Add to Playlist use it, since any Content can be requested,
+  recommended or added to a Playlist.
 
   Runs `before_transaction` so the nested `Content.create` (which fetches from the Metadata
   Provider in its own `before_transaction` hook) happens before this action's transaction opens,

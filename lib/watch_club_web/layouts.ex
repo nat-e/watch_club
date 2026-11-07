@@ -59,6 +59,10 @@ defmodule WatchClubWeb.Layouts do
   slot :parent, doc: "the page this page belongs to" do
     attr :navigate, :string, required: true
     attr :label, :string, required: true
+    attr :patch, :boolean, doc: "patches the LiveView, for a parent that is the same page"
+
+    attr :narrow_only, :boolean,
+      doc: "only on narrow screens, where a split view doesn't show the parent beside it"
   end
 
   def app(assigns) do
@@ -73,8 +77,9 @@ defmodule WatchClubWeb.Layouts do
         instance_settings={@instance_settings}
       />
 
+      <%!-- Pages lay out by the main column's width, which leaves out the sidebar --%>
       <div class={[
-        "md:pb-0 md:pl-(--wc-sidebar-width)",
+        "@container/main md:pb-0 md:pl-(--wc-sidebar-width)",
         !@full_screen? && "pb-(--wc-tab-bar-height)"
       ]}>
         <.app_bar

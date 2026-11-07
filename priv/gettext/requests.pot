@@ -31,17 +31,17 @@ msgstr ""
 msgid "Stop getting notified about %{title}"
 msgstr ""
 
-#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}% downloaded"
 msgstr ""
 
-#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not found, we'll keep looking for it"
 msgstr ""
 
-#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not released yet"
 msgstr ""
@@ -51,7 +51,7 @@ msgstr ""
 msgid "On the way"
 msgstr ""
 
-#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Out on %{date}"
 msgstr ""
@@ -66,7 +66,7 @@ msgstr ""
 msgid "Search for a title in Browse and request it. You'll see here when you can watch it."
 msgstr ""
 
-#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "There was a problem, the instance administrator was told"
 msgstr ""

@@ -27,7 +27,7 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         id: "playlists",
         label: dgettext("nav", "Playlists"),
         icon: :list,
-        navigate: ~p"/lists",
+        navigate: ~p"/playlists",
         pages: [],
         badge: 0,
         badge_label: nil

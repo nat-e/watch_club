@@ -72,6 +72,8 @@
         "destination_attribute_default": null,
         "destination_attribute_generated": null,
         "index?": false,
+        "index_where": null,
+        "match_tenant?": false,
         "match_type": null,
         "match_with": null,
         "multitenancy": {
@@ -79,7 +81,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "lists_owner_id_fkey",
+        "name": "playlists_owner_id_fkey",
         "on_delete": "delete",
         "on_update": null,
         "primary_key?": true,
@@ -98,7 +100,7 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "494070B4E9A0DCE5C9B46368B528DEFC6780918CB8EBA880E1F2B537BB4715A1",
+  "hash": "85127183D44F857D8863A10C47A09225826169336E6CEAF880BF9B54D4E6F261",
   "identities": [],
   "multitenancy": {
     "attribute": null,
@@ -107,5 +109,6 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "lists"
+  "table": "playlists",
+  "temporal": null
 }

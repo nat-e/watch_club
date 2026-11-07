@@ -76,14 +76,7 @@ msgid "Share with club"
 msgstr "Partager avec un club"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex
-#, elixir-autogen, elixir-format
-msgid "Add to List"
-msgstr "Ajouter à une liste"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/add_to_library_modal_live.ex
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Already added"
 msgstr "Déjà ajouté"
@@ -93,30 +86,6 @@ msgstr "Déjà ajouté"
 #, elixir-autogen, elixir-format
 msgid "Play %{episode}"
 msgstr "Lire %{episode}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/content_card.ex
-#, elixir-autogen, elixir-format
-msgid "Remove from list"
-msgstr "Retirer de la liste"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any list yet"
-msgstr "Vous n'avez pas encore de liste"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Add %{title} to List"
-msgstr "Ajouter %{title} à une liste"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/add_to_list_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "You need to create a List before adding content to it"
-msgstr "Vous devez créer une liste avant d'y ajouter du contenu"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
@@ -309,6 +278,7 @@ msgstr "Être prévenu quand c'est prêt"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "You'll be told when %{title} is ready. It's in your Requests."
 msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."

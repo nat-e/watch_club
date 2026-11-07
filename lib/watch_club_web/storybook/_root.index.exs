@@ -48,4 +48,8 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("request_on_the_way"),
     do: [name: "Request on the way", icon: {:fa, "download"}, index: 27]
+
+  def entry("playlist_link"), do: [name: "Playlist link", icon: {:fa, "list"}, index: 28]
+  def entry("split_view"), do: [name: "Split view", icon: {:fa, "table-columns"}, index: 29]
+  def entry("request_status"), do: [name: "Request status", icon: {:fa, "clock"}, index: 30]
 end

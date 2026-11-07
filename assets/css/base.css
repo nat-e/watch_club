@@ -154,6 +154,8 @@
 	--container-readable: var(--wc-layout-readable);
 	--container-panel: var(--wc-layout-panel);
 	--container-layout-page: var(--wc-layout-page);
+	/* Where a split view shows its list beside what's open */
+	--container-split-view: 56rem;
 
 	--shadow-card: var(--wc-shadow-card);
 	--shadow-overlay: var(--wc-shadow-overlay);
