@@ -2,7 +2,7 @@
 
 ## Direction
 
-Watch Club uses the **Velvet** direction:
+Watch Club uses the **Velvet Club** direction:
 
 - Dark-only UI
 - Cozy atmosphere + modern product feel
