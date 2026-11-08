@@ -4,8 +4,8 @@ defmodule WatchClub.Contents.Preparations.FilterByContentIdentities do
   list of ContentIdentity.
   The query must declare a `content_identities` argument that accepts a list of Content Identity, or a single `content_identity`.
   This will compile to a giant SQL OR statement like this:
-    WHERE (external_id_source = 'tmdb' AND external_id = 1)
-      OR (external_id_source = 'tmdb' AND external_id = 2)...
+    WHERE (type = 'movie' AND external_id_source = 'tmdb' AND external_id = '1')
+      OR (type = 'tv_show' AND external_id_source = 'tmdb' AND external_id = '2')...
 
   Options:
   - content_path: A relationship path to the Content resource, defaults to [] (meaning, on the Content resource)
@@ -24,6 +24,7 @@ defmodule WatchClub.Contents.Preparations.FilterByContentIdentities do
         Ash.Query.get_argument(query, :content_identity) |> List.wrap()
 
     content_path = Keyword.get(opts, :content_path, []) |> List.wrap()
+    type_ref = ref(content_path, :type)
     external_source_ref = ref(content_path, :external_id_source)
     external_id_ref = ref(content_path, :external_id)
 
@@ -31,7 +32,8 @@ defmodule WatchClub.Contents.Preparations.FilterByContentIdentities do
       Enum.reduce(identities, nil, fn id, acc ->
         clause =
           expr(
-            ^external_source_ref == ^id.external_id_source and
+            ^type_ref == ^id.type and
+              ^external_source_ref == ^id.external_id_source and
               ^external_id_ref == ^id.external_id
           )
 

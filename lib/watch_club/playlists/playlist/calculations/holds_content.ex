@@ -10,7 +10,8 @@ defmodule WatchClub.Playlists.Playlist.Calculations.HoldsContent do
     expr(
       exists(
         items,
-        content.external_id_source == ^identity.external_id_source and
+        content.type == ^identity.type and
+          content.external_id_source == ^identity.external_id_source and
           content.external_id == ^identity.external_id
       )
     )

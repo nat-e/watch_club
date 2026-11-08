@@ -12,9 +12,7 @@ defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
 
   @impl true
   def run(input, _opts, context) do
-    %{external_id_source: source, external_id: external_id} = input.arguments.content_identity
-
-    case Contents.get_content_by_external_id!(source, external_id,
+    case Contents.get_content_by_identity!(input.arguments.content_identity,
            load: [tv_show: [:aired_episodes_count]],
            not_found_error?: false,
            actor: context.actor

@@ -104,8 +104,20 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
     end
 
     test "creates and matches an episode whose show does not exist" do
-      stub_tmdb(fn _conn, _path ->
-        tmdb_fixture("tv_details_1668")
+      stub_tmdb(fn _conn, path ->
+        case Regex.run(~r{/tv/\d+/season/(\d+)$}, path) do
+          [_, "1"] ->
+            %{
+              "season_number" => 1,
+              "episodes" => [%{"episode_number" => 3, "name" => "The One Where Ross Finds Out"}]
+            }
+
+          [_, _season] ->
+            %{"episodes" => []}
+
+          nil ->
+            tmdb_fixture("tv_details_1668")
+        end
       end)
 
       candidate =
@@ -210,7 +222,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         external_id: to_string(tmdb_id),
         original_title: "Movie #{unique}",
         original_language: "en",
-        origin_country: "US"
+        origin_country: "US",
+        metadata_refreshed_at: DateTime.utc_now()
       })
 
     Ash.Seed.seed!(Movie, %{id: content.id})
@@ -227,7 +240,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         external_id: to_string(tmdb_id),
         original_title: "Show #{unique}",
         original_language: "en",
-        origin_country: "US"
+        origin_country: "US",
+        metadata_refreshed_at: DateTime.utc_now()
       })
 
     tv_show =

@@ -66,7 +66,8 @@ classDiagram
     date release_date
     Genre[] genres
     float rating
-    «unique» external_id_source + external_id
+    datetime metadata_refreshed_at
+    «unique» type + external_id_source + external_id
   }
   class ContentType {
     <<enumeration>>
@@ -120,11 +121,14 @@ classDiagram
     string overview
     string poster_path
     integer runtime
+    CastMember[] cast
+    string trailer_url
     «unique» movie_id + iso_639_1 + iso_3166_1
   }
   class TvShow {
     uuid id «same as Content»
     string original_name
+    string backdrop_path
     integer tmdb_id «unique»
     integer tvdb_id «unique»
   }
@@ -136,7 +140,15 @@ classDiagram
     string title
     string overview
     string poster_path
+    CastMember[] cast
+    string trailer_url
     «unique» tv_show_id + iso_639_1 + iso_3166_1
+  }
+  class CastMember {
+    <<embedded>>
+    string name
+    string role
+    string profile_path
   }
   class TvShowEpisode {
     uuid id
@@ -145,7 +157,17 @@ classDiagram
     integer episode_number
     date air_date
     string still_path
+    integer runtime
     «unique» tv_show_id + season_number + episode_number
+  }
+  class TvShowEpisodeLocalization {
+    uuid id
+    uuid tv_show_episode_id
+    string iso_639_1
+    string iso_3166_1
+    string title
+    string overview
+    «unique» tv_show_episode_id + iso_639_1 + iso_3166_1
   }
   class Book {
     uuid id «same as Content»
@@ -158,6 +180,7 @@ classDiagram
   MovieLocalization "*" --> "1" Movie
   TvShowLocalization "*" --> "1" TvShow
   TvShowEpisode "*" --> "1" TvShow
+  TvShowEpisodeLocalization "*" --> "1" TvShowEpisode
 ```
 
 ## Media Catalog

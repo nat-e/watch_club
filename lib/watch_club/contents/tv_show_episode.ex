@@ -4,7 +4,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.TvShow
+  alias WatchClub.Contents.{TvShow, TvShowEpisodeLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
 
@@ -18,7 +18,32 @@ defmodule WatchClub.Contents.TvShowEpisode do
   end
 
   actions do
-    defaults [:read, :destroy, create: :*, update: :*]
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:season_number, :episode_number, :air_date, :still_path, :runtime]
+      argument :localizations, {:array, :map}, allow_nil?: false, default: []
+
+      change manage_relationship(:localizations,
+               type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_tv_show_episode],
+               on_missing: :ignore
+             )
+    end
+
+    update :update do
+      primary? true
+      require_atomic? false
+      accept [:season_number, :episode_number, :air_date, :still_path, :runtime]
+      argument :localizations, {:array, :map}
+
+      change manage_relationship(:localizations,
+               type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_tv_show_episode],
+               on_missing: :ignore
+             )
+    end
 
     read :for_show do
       description "Retrieves all episodes of a TV show for a given TMDB ID"
@@ -68,11 +93,21 @@ defmodule WatchClub.Contents.TvShowEpisode do
       allow_nil? true
       public? true
     end
+
+    attribute :runtime, :integer do
+      public? true
+    end
   end
 
   relationships do
     belongs_to :tv_show, TvShow do
       allow_nil? false
+    end
+
+    has_many :localizations, TvShowEpisodeLocalization
+
+    has_one :best_localization, TvShowEpisodeLocalization do
+      from_many? true
     end
 
     has_many :videos, Video

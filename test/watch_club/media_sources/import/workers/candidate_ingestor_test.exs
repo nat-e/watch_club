@@ -94,7 +94,8 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
         external_id: to_string(tmdb_id),
         original_title: "Movie #{unique}",
         original_language: "en",
-        origin_country: "US"
+        origin_country: "US",
+        metadata_refreshed_at: DateTime.utc_now()
       })
 
     Ash.Seed.seed!(Movie, %{id: content.id})

@@ -57,6 +57,14 @@ defmodule WatchClub.Contents.MovieLocalization do
       public? true
     end
 
+    attribute :cast, {:array, WatchClub.Contents.CastMember} do
+      allow_nil? false
+      default []
+      public? true
+    end
+
+    attribute :trailer_url, :string, public?: true
+
     timestamps()
   end
 

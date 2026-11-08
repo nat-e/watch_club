@@ -54,7 +54,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   # 1. Match by TMDB ID
   defp get_or_create_content(%MovieIdentity{tmdb_id: tmdb_id}) when is_integer(tmdb_id) do
-    Contents.get_or_create_content!(ContentIdentity.for_movie(tmdb_id), SystemActor.actor())
+    Contents.get_or_refresh_content!(ContentIdentity.for_movie(tmdb_id),
+      actor: SystemActor.actor()
+    )
   end
 
   # 2. Match by IMDB ID. We just fetch the TMDB ID and go back to step 1.
@@ -87,7 +89,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
        })
        when is_integer(tmdb_id) do
     content =
-      Contents.get_or_create_content!(ContentIdentity.for_tv_show(tmdb_id), SystemActor.actor(),
+      Contents.get_or_refresh_content!(ContentIdentity.for_tv_show(tmdb_id),
+        actor: SystemActor.actor(),
         load: [implementation: %{load: [tv_show: [:episodes]]}]
       )
 

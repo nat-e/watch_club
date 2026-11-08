@@ -11,10 +11,9 @@ defmodule WatchClub.Contents do
     MovieLocalization,
     TvShow,
     TvShowEpisode,
+    TvShowEpisodeLocalization,
     TvShowLocalization
   }
-
-  require Ash.Query
 
   resources do
     resource Content do
@@ -28,12 +27,14 @@ defmodule WatchClub.Contents do
 
       define :get_content_by_id, action: :read, get_by: [:id]
 
-      define :get_content_by_external_id,
-        action: :read,
-        get_by: [:external_id_source, :external_id]
+      define :get_content_by_identity,
+        action: :by_content_identity,
+        args: [:content_identity],
+        get?: true
 
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
+      define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
       define :get_user_recently_watched, action: :user_recently_watched
     end
 
@@ -58,6 +59,7 @@ defmodule WatchClub.Contents do
     end
 
     resource TvShowLocalization
+    resource TvShowEpisodeLocalization
   end
 
   @doc """
@@ -67,12 +69,11 @@ defmodule WatchClub.Contents do
   @spec get_or_create_content(ContentIdentity.t(), User.t()) ::
           {:ok, Content.t()} | {:error, term()}
   def get_or_create_content(%ContentIdentity{} = content_identity, actor, opts \\ []) do
-    case Content
-         |> Ash.Query.filter(
-           external_id_source == ^content_identity.external_id_source and
-             external_id == ^content_identity.external_id
-         )
-         |> Ash.read_one(load: opts[:load], actor: actor) do
+    case get_content_by_identity(content_identity,
+           load: opts[:load],
+           not_found_error?: false,
+           actor: actor
+         ) do
       {:ok, nil} ->
         create_content(content_identity, load: opts[:load], actor: actor)
 

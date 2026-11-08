@@ -186,19 +186,23 @@ defmodule WatchClub.Integrations.Tmdb do
     response
   end
 
-  @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom()) ::
+  @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom(), cache: boolean()) ::
           {:ok, TvDetailsResponse.SeasonDetails.t()} | {:error, term()}
   def get_tv_season_details(tmdb_id, season_number, opts \\ []) do
     case request(
            url: "/tv/#{tmdb_id}/season/#{season_number}",
-           params: [language: format_language(opts[:locale])]
+           params: [language: format_language(opts[:locale])],
+           cache: Keyword.get(opts, :cache, true)
          ) do
       {:ok, body} -> {:ok, TvDetailsResponse.SeasonDetails.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end
 
-  @spec get_tv_season_details!(integer() | String.t(), integer(), locale: atom()) ::
+  @spec get_tv_season_details!(integer() | String.t(), integer(),
+          locale: atom(),
+          cache: boolean()
+        ) ::
           TvDetailsResponse.SeasonDetails.t()
   def get_tv_season_details!(tmdb_id, season_number, opts \\ []) do
     {:ok, details} = get_tv_season_details(tmdb_id, season_number, opts)

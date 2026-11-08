@@ -264,6 +264,10 @@ _Avoid_: Show, series
 A numbered part of TV show content.
 _Avoid_: Episode, TV media, show item
 
+**TV Show Episode Localization**:
+A TV Show Episode's title and overview adapted for a Locale.
+_Avoid_: Episode translation, localized episode
+
 **Book**:
 Content whose content type is book.
 _Avoid_: Volume
@@ -539,7 +543,7 @@ _Avoid_: Group, aggregate, card, item
 ### Contents
 
 - A **Movie**, **TV Show**, and **Book** are kinds of **Content**
-- A **Content** is identified in a **Metadata Provider** by an **External ID**
+- A **Content** is identified by its **Content Type**, **Metadata Provider** and **External ID**; different **Content Types** may share the same **External ID**
 - The same real-world work from two **Metadata Providers** may be represented as separate **Content** until explicitly reconciled
 - A **Content** has exactly one **Content Type**
 - A **Content** can have multiple **Content Localizations**
@@ -549,6 +553,11 @@ _Avoid_: Group, aggregate, card, item
 - A **Movie** or **TV Show** has a **Rating** only once at least 25 people voted on its **Metadata Provider**, so a single vote can't top Best rated
 - A **TV Show** has zero or more **TV Show Episodes**
 - A **TV Show Episode** belongs to exactly one **TV Show**
+- A **TV Show Episode** has at most one **TV Show Episode Localization** per **Locale**
+- Opening a **Content** page creates missing **Content** or refreshes metadata older than 24 hours; **Media Imports** use the same operation
+- **Content** pages display stored metadata, including retained **TV Show Episodes** no longer listed by the **Metadata Provider**
+- Refreshing metadata updates existing **Content**, **Content Localizations** and **TV Show Episodes** in place, preserving **Watch Progress** and **Media** links
+- If the **Metadata Provider** is unavailable, existing **Content** remains usable with its last stored metadata
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
 - A **TV Show Episode** has a season number greater than or equal to 1
 - A **TV Show Episode** has an episode number greater than or equal to 1

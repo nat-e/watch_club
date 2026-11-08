@@ -1,12 +1,8 @@
 defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   @moduledoc """
-  Every TV Show Episode of a TV Show, one season at a time, in a big modal, full screen on phones.
-  Each aired episode has a check that marks it as watched or not, and Play once it's in the
+  Every persisted TV Show Episode of a TV Show, one season at a time, in a big modal, full screen on
+  phones. Each aired episode has a check that marks it as watched or not, and Play once it's in the
   Library. The season has a check too.
-
-  TMDB gives a season's episodes, with their names, stills and air dates, and WatchClub their
-  Media and the User's Watch Progress. WatchClub has no TV Show Episodes for a TV Show nobody
-  marked or requested yet.
   """
   use WatchClubWeb, :live_component
 
@@ -18,9 +14,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   def dom_id, do: "episodes"
 
   @doc """
-  Reloads the episodes' Media and the User's Watch Progress on them, once they changed.
+  Reloads persisted episode metadata, Media, and the User's Watch Progress when Content changes.
   """
-  def reload_episodes, do: send_update(__MODULE__, id: dom_id(), reload_episodes: true)
+  def reload_episodes, do: send_update(__MODULE__, id: dom_id(), reload_episodes?: true)
 
   attr :content_identity, ContentIdentity, required: true
   attr :title, :string, required: true, doc: "the TV Show's name"
@@ -32,13 +28,10 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
   @impl true
   def render(assigns) do
-    rows = rows(assigns.season, assigns.episodes)
-
     assigns =
       assign(assigns,
-        rows: rows,
-        any_aired?: Enum.any?(rows, &aired?/1),
-        season_watched?: season_watched?(rows)
+        any_aired?: Enum.any?(assigns.episodes, & &1.aired?),
+        season_watched?: season_watched?(assigns.episodes)
       )
 
     ~H"""
@@ -74,12 +67,12 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
                 phx-click="select_season"
                 phx-value-season={number}
                 phx-target={@myself}
-                aria-current={to_string(number == @season.season_number)}
-                autofocus={number == @season.season_number}
+                aria-current={to_string(number == @season)}
+                autofocus={number == @season}
                 class={[
                   "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
-                  number == @season.season_number && "bg-surface-selected text-text",
-                  number != @season.season_number &&
+                  number == @season && "bg-surface-selected text-text",
+                  number != @season &&
                     "text-text-muted hover:bg-surface-hover hover:text-text"
                 ]}
               >
@@ -87,7 +80,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               </button>
             </.scroll_row>
             <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
-              {dgettext("contents", "Season %{number}", number: @season.season_number)}
+              {dgettext("contents", "Season %{number}", number: @season)}
             </span>
             <%!-- Its label changes with its state, so it has no aria-pressed. Its circle sits above
           the episodes' ones. --%>
@@ -100,14 +93,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               phx-target={@myself}
               title={
                 if @season_watched?,
-                  do:
-                    dgettext("contents", "Mark season %{number} as not watched",
-                      number: @season.season_number
-                    ),
-                  else:
-                    dgettext("contents", "Mark season %{number} as watched",
-                      number: @season.season_number
-                    )
+                  do: dgettext("contents", "Mark season %{number} as not watched", number: @season),
+                  else: dgettext("contents", "Mark season %{number} as watched", number: @season)
               }
               class="self-end pr-related!"
             >
@@ -123,8 +110,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
           <ol class="flex flex-col">
             <.episode_row
-              :for={row <- @rows}
-              row={row}
+              :for={episode <- @episodes}
+              episode={episode}
               in_library?={@in_library?}
               locale={@current_user.settings.locale}
               myself={@myself}
@@ -136,7 +123,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
     """
   end
 
-  attr :row, :map, required: true, doc: "TMDB's `details` and WatchClub's `episode`, or nil"
+  attr :episode, TvShowEpisode, required: true
   attr :in_library?, :boolean, required: true
   attr :locale, :atom, required: true
   attr :myself, :any, required: true
@@ -145,28 +132,28 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   # where it is, its story, and a check to mark it as watched or not once it aired. The still is
   # grey while it isn't out, and when a TV Show in the Library misses it.
   defp episode_row(assigns) do
-    %{details: details, episode: episode} = assigns.row
-    aired? = aired?(assigns.row)
-    playable? = episode != nil and episode.has_media?
-    watching? = episode != nil and episode.actor_progress_status == :in_progress
+    episode = assigns.episode
+    localization = episode.best_localization || %{title: nil, overview: nil}
+    aired? = episode.aired?
+    playable? = episode.has_media?
+    watching? = episode.actor_progress_status == :in_progress
 
     assigns =
       assign(assigns,
-        details: details,
-        episode: episode,
+        localization: localization,
         aired?: aired?,
         playable?: playable?,
         watching?: watching?,
-        runtime: Time.minutes(details.runtime, assigns.locale),
-        watched?: watched?(episode),
+        runtime: Time.minutes(episode.runtime, assigns.locale),
+        watched?: episode.actor_progress_status == :completed,
         note:
           cond do
-            !aired? and details.air_date == nil ->
+            !aired? and episode.air_date == nil ->
               dgettext("contents", "Not out yet")
 
             !aired? ->
               dgettext("contents", "Out on %{date}",
-                date: Time.long_date(details.air_date, assigns.locale)
+                date: Time.long_date(episode.air_date, assigns.locale)
               )
 
             assigns.in_library? and !playable? ->
@@ -181,10 +168,10 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
       )
 
     ~H"""
-    <li id={"episode-#{@details.episode_number}"} class="flex items-start gap-group py-related">
+    <li id={"episode-#{@episode.episode_number}"} class="flex items-start gap-group py-related">
       <.tmdb_still
         size="w300"
-        path={@details.still_path}
+        path={@episode.still_path}
         class={[
           "w-28 shrink-0 rounded-control @md:w-40",
           (!@aired? or (@in_library? and !@playable?)) && "opacity-60 grayscale"
@@ -192,14 +179,14 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
       >
         <span :if={@playable?} class="absolute inset-0 flex items-center justify-center">
           <.button
-            id={"episode-#{@details.episode_number}-play"}
+            id={"episode-#{@episode.episode_number}-play"}
             variant="primary"
             size="icon"
             href={Url.player_link(@episode)}
             aria-label={
-              dgettext("contents", "Play episode %{number}", number: @details.episode_number)
+              dgettext("contents", "Play episode %{number}", number: @episode.episode_number)
             }
-            title={dgettext("contents", "Play episode %{number}", number: @details.episode_number)}
+            title={dgettext("contents", "Play episode %{number}", number: @episode.episode_number)}
             class="rounded-full! shadow-overlay"
           >
             <Lucideicons.play class="size-icon-sm" />
@@ -214,32 +201,32 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
       <div class="flex min-w-0 flex-1 flex-col gap-tight">
         <span>
           <span class="font-semibold">
-            {TvShowEpisode.format_number(@details.season_number, @details.episode_number)}
+            {TvShowEpisode.format_number(@episode.season_number, @episode.episode_number)}
           </span>
-          · {@details.name}
+          <span :if={@localization.title}>· {@localization.title}</span>
         </span>
         <span class="flex flex-wrap gap-x-related text-xs text-text-muted">
           <span :if={@runtime}>{@runtime}</span>
           <span :if={@note} class="font-semibold">{@note}</span>
         </span>
         <span
-          :if={@details.overview not in [nil, ""]}
+          :if={@localization.overview not in [nil, ""]}
           class="line-clamp-2 max-w-readable text-sm text-text-muted"
         >
-          {@details.overview}
+          {@localization.overview}
         </span>
       </div>
       <.button
         :if={@aired?}
-        id={"episode-#{@details.episode_number}-watched"}
+        id={"episode-#{@episode.episode_number}-watched"}
         variant="ghost"
         size="icon"
         phx-click="toggle_episode"
-        phx-value-episode={@details.episode_number}
+        phx-value-episode={@episode.episode_number}
         phx-target={@myself}
         aria-pressed={to_string(@watched?)}
         aria-label={
-          dgettext("contents", "Watched episode %{number}", number: @details.episode_number)
+          dgettext("contents", "Watched episode %{number}", number: @episode.episode_number)
         }
         title={
           if @watched?,
@@ -257,17 +244,23 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   end
 
   @impl true
-  def update(%{reload_episodes: true}, socket) do
+  def update(%{reload_episodes?: true} = assigns, socket) do
+    socket = assign(socket, Map.delete(assigns, :reload_episodes?))
+
+    season_number =
+      if socket.assigns.season in socket.assigns.season_numbers,
+        do: socket.assigns.season,
+        else: socket.assigns.initial_season
+
     {:ok,
-     assign(socket, :episodes, episodes!(socket.assigns, socket.assigns.season.season_number))}
+     assign(socket, season: season_number, episodes: episodes!(socket.assigns, season_number))}
   end
 
-  # Only the first update loads: the page's later ones change nothing the season shows
   def update(assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_new(:season, &season!(&1, &1.initial_season))
+     |> assign_new(:season, & &1.initial_season)
      |> assign_new(:episodes, &episodes!(&1, &1.initial_season))}
   end
 
@@ -277,7 +270,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
     {:noreply,
      assign(socket,
-       season: season!(socket.assigns, season_number),
+       season: season_number,
        episodes: episodes!(socket.assigns, season_number)
      )}
   end
@@ -288,8 +281,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
     mark!(
       socket,
-      %{season_number: season.season_number, episode_number: number},
-      watched?(Map.get(episodes, number))
+      %{season_number: season, episode_number: number},
+      Enum.find(episodes, &(&1.episode_number == number)).actor_progress_status == :completed
     )
 
     {:noreply, socket}
@@ -297,7 +290,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
   def handle_event("toggle_season", _params, socket) do
     %{season: season, episodes: episodes} = socket.assigns
-    mark!(socket, %{season_number: season.season_number}, season_watched?(rows(season, episodes)))
+    mark!(socket, %{season_number: season}, season_watched?(episodes))
     {:noreply, socket}
   end
 
@@ -313,39 +306,26 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         actor: socket.assigns.current_user
       )
 
-  # TMDB's season, with its episodes' names, stills and air dates
-  defp season!(assigns, season_number) do
-    assigns.content_identity.external_id
-    |> String.to_integer()
-    |> Contents.get_tv_show_season_details!(season_number, actor: assigns.current_user)
-  end
-
-  # WatchClub's episodes of the season, by number, with their Media and the User's Watch Progress
+  # The persisted episodes of the selected season, with metadata and watch state.
   defp episodes!(assigns, season_number) do
     assigns.content_identity.external_id
     |> String.to_integer()
     |> Contents.get_episodes_for_show!(
       query: [filter: [season_number: season_number]],
-      load: [:has_media?, :videos, :actor_progress_status, :actor_progress],
+      load: [
+        :best_localization,
+        :aired?,
+        :has_media?,
+        :videos,
+        :actor_progress_status,
+        :actor_progress
+      ],
       actor: assigns.current_user
     )
-    |> Map.new(&{&1.episode_number, &1})
   end
 
-  # TMDB's episodes of the season, each with WatchClub's, or nil
-  defp rows(season, episodes) do
-    for details <- season.episodes,
-        do: %{details: details, episode: Map.get(episodes, details.episode_number)}
-  end
-
-  # TvShowEpisode.aired?, from TMDB's air date: WatchClub may not have the episode
-  defp aired?(%{details: %{air_date: date}}),
-    do: date != nil and Date.compare(date, Date.utc_today()) != :gt
-
-  defp watched?(episode), do: episode != nil and episode.actor_progress_status == :completed
-
-  defp season_watched?(rows) do
-    aired = Enum.filter(rows, &aired?/1)
-    aired != [] and Enum.all?(aired, &watched?(&1.episode))
+  defp season_watched?(episodes) do
+    aired = Enum.filter(episodes, & &1.aired?)
+    aired != [] and Enum.all?(aired, &(&1.actor_progress_status == :completed))
   end
 end
