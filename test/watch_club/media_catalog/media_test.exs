@@ -141,6 +141,45 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                )
     end
 
+    test "preserves subtitles with missing codecs without offering them for playback" do
+      input =
+        video_media_input("tmp/unknown-subtitle-codec.mkv", :movie, %{movie_id: nil})
+        |> put_in([:video, :text_tracks], [
+          %{stream_index: 2, codec: nil, language: "eng", title: "Commentary", forced?: true},
+          %{stream_index: 3, language: "fra"},
+          %{stream_index: 4, codec: "subrip", language: "spa"}
+        ])
+
+      tracks = TextTrack |> Ash.Query.load(:hls_supported?) |> Ash.Query.sort(:stream_index)
+
+      media =
+        create_or_update_video!(input,
+          actor: SystemActor.actor(),
+          load: [video: [text_tracks: tracks]]
+        )
+
+      assert [
+               %TextTrack{
+                 stream_index: 2,
+                 codec: nil,
+                 language: "eng",
+                 title: "Commentary",
+                 forced?: true,
+                 hls_supported?: false
+               },
+               %TextTrack{stream_index: 3, codec: nil, language: "fra", hls_supported?: false},
+               %TextTrack{stream_index: 4, codec: "subrip", hls_supported?: true}
+             ] = media.video.text_tracks
+
+      playable =
+        get_media!(media.id,
+          actor: SystemActor.actor(),
+          load: [video: [text_tracks: Ash.Query.filter(TextTrack, hls_supported? == true)]]
+        )
+
+      assert [%TextTrack{stream_index: 4}] = playable.video.text_tracks
+    end
+
     test "replaces an existing video at the same path" do
       movie = seed_movie()
       path = "tmp/refresh.mkv"
