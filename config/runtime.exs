@@ -10,7 +10,50 @@ import Dotenvy
 # release the file is absent and the real process environment (e.g. set by
 # docker-compose) is used instead — System.get_env() is listed last so it
 # always wins over the .env file. Missing .env files are ignored.
-source!([".env", System.get_env()])
+runtime_environment = source!([".env", System.get_env()])
+
+# The SDK reads OS variables directly. Empty OTEL values mean unset.
+for {key, value} <- runtime_environment, String.starts_with?(key, "OTEL_") do
+  if value == "", do: System.delete_env(key), else: System.put_env(key, value)
+end
+
+otel_disabled? = System.get_env("OTEL_SDK_DISABLED") == "true"
+
+otel_signals =
+  for signal <- [:traces, :metrics, :logs] do
+    variable = "OTEL_#{signal |> Atom.to_string() |> String.upcase()}_EXPORTER"
+
+    enabled? =
+      case System.get_env(variable, "none") do
+        "otlp" -> not otel_disabled?
+        "none" -> false
+        _ -> raise "#{variable} must be otlp or none"
+      end
+
+    {signal, enabled?}
+  end
+
+config :watch_club, :opentelemetry, otel_signals
+
+config :opentelemetry, :resource,
+  service: [name: "watch_club", version: Application.spec(:watch_club, :vsn) |> to_string()],
+  deployment: [environment: [name: Atom.to_string(config_env())]]
+
+config :ash, :tracer, if(otel_signals[:traces], do: [OpentelemetryAsh], else: [])
+
+# The experimental SDK does not select a reader from OTEL_METRICS_EXPORTER.
+if otel_signals[:metrics] do
+  config :opentelemetry_experimental,
+    readers: [
+      %{
+        module: :otel_metric_reader,
+        config: %{
+          exporter: {:otel_exporter_metrics_otlp, %{}},
+          export_interval_ms: env!("OTEL_METRIC_EXPORT_INTERVAL", :integer, 60_000)
+        }
+      }
+    ]
+end
 
 # ## Using releases
 #

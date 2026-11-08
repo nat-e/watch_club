@@ -7,6 +7,9 @@
 # General application configuration
 import Config
 
+# Export is enabled per signal through runtime OTEL_* settings.
+config :opentelemetry, traces_exporter: :none
+
 config :ash,
   allow_forbidden_field_for_relationships_by_default: true,
   default_string_length_count: :codepoints,
