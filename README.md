@@ -36,7 +36,7 @@ All signals share the service name, app version, environment and instance identi
 
 Metrics cover requests, database timings, jobs, VM memory and run queues. Metric labels use route patterns, response statuses, worker names and queue names. Logs keep their existing messages and export only selected request, job and trace metadata.
 
-The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitation codes. Database work outside a request or job creates separate traces. Only enable export to an endpoint you trust with this data.
+The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database work outside a request or job creates separate traces. Only enable export to an endpoint you trust with this data.
 
 ## Contributing
 

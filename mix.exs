@@ -13,7 +13,11 @@ defmodule WatchClub.MixProject do
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       listeners: [Phoenix.CodeReloader],
       consolidate_protocols: Mix.env() != :dev,
-      releases: [watch_club: [applications: [opentelemetry: :temporary]]],
+      releases: [
+        watch_club: [
+          applications: [opentelemetry: :temporary, opentelemetry_experimental: :temporary]
+        ]
+      ],
       usage_rules: usage_rules(),
       elixirc_options: elixirc_options(Mix.env()),
       hex: [cooldown: "7d"],

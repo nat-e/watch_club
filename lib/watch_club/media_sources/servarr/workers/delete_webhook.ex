@@ -16,7 +16,7 @@ defmodule WatchClub.MediaSources.Servarr.Workers.DeleteWebhook do
 
   @doc """
   Builds an `Oban.Job` from a `Servarr` record (typically a
-  freshly destroyed one). Insert with `Oban.insert/1` or `insert!/1`.
+  freshly destroyed one). Insert with `OpentelemetryOban.insert!/1`.
   """
   def new_job(%Servarr{} = record) do
     new(%{

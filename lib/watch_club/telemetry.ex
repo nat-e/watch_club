@@ -11,6 +11,7 @@ defmodule WatchClub.Telemetry do
     :request_id,
     :event,
     :status,
+    :error,
     :worker,
     :job_id,
     :attempt,
@@ -28,8 +29,8 @@ defmodule WatchClub.Telemetry do
       end
 
       :ok = OpentelemetryPhoenix.setup(adapter: :bandit, liveview: true)
-      # The dependency otherwise includes the database URL's credentials.
 
+      # The dependency otherwise includes the database URL's credentials.
       case OpentelemetryEcto.setup([:watch_club, :repo],
              additional_attributes: %{:"db.url" => ""}
            ) do

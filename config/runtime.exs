@@ -17,6 +17,9 @@ for {key, value} <- runtime_environment, String.starts_with?(key, "OTEL_") do
   if value == "", do: System.delete_env(key), else: System.put_env(key, value)
 end
 
+# Tests never export, whatever .env says.
+if config_env() == :test, do: System.put_env("OTEL_SDK_DISABLED", "true")
+
 otel_disabled? = System.get_env("OTEL_SDK_DISABLED") == "true"
 
 otel_signals =
@@ -40,6 +43,11 @@ config :opentelemetry, :resource,
   deployment: [environment: [name: Atom.to_string(config_env())]]
 
 config :ash, :tracer, if(otel_signals[:traces], do: [OpentelemetryAsh], else: [])
+
+# Spans aren't recorded unless trace export is on.
+unless otel_signals[:traces] do
+  config :opentelemetry, sampler: :always_off
+end
 
 # The experimental SDK does not select a reader from OTEL_METRICS_EXPORTER.
 if otel_signals[:metrics] do
