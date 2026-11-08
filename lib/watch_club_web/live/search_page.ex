@@ -117,9 +117,12 @@ defmodule WatchClubWeb.SearchPage do
         socket |> cancel_async(:search) |> assign(:status, :idle)
 
       query ->
+        otel_context = OpenTelemetry.Ctx.get_current()
+
         socket
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
+          OpenTelemetry.Ctx.attach(otel_context)
           Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
         end)
     end

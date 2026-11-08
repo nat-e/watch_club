@@ -213,7 +213,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
       # https://github.com/oban-bg/oban/blob/main/guides/learning/unique_jobs.md#replacing-values
       request.id
       |> RefreshMediaSourceRequest.new_job(scheduled_in: 1, replace: [scheduled: [:scheduled_at]])
-      |> Oban.insert!()
+      |> OpentelemetryOban.insert!()
     end
   end
 
@@ -266,7 +266,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   defp enqueue_ingest(candidates) do
     candidates
     |> Enum.map(&CandidateIngestor.new_job/1)
-    |> Oban.insert_all()
+    |> OpentelemetryOban.insert_all()
   end
 
   # The disk is the authority: only drop the Media when the file is actually

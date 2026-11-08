@@ -267,6 +267,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
 
   defp search(socket) do
     %{query: query, has_media?: has_media?, current_user: user} = socket.assigns
+    otel_context = OpenTelemetry.Ctx.get_current()
 
     case String.trim(query) do
       "" ->
@@ -276,6 +277,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         socket
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
+          OpenTelemetry.Ctx.attach(otel_context)
           Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
         end)
     end

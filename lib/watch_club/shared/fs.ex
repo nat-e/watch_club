@@ -18,6 +18,8 @@ defmodule WatchClub.Shared.Fs do
   as a per-path failure and decide whether to skip or bail.
   """
 
+  alias OpentelemetryProcessPropagator.Task
+
   @default_timeout :timer.seconds(3)
 
   @type error :: :timeout | {:crash, term()} | File.posix() | atom()

@@ -8,13 +8,12 @@ defmodule WatchClubWeb.Telemetry do
 
   @impl true
   def init(_arg) do
-    children = [
-      # Telemetry poller will execute the given period measurements
-      # every 10_000ms. Learn more here: https://hexdocs.pm/telemetry_metrics
-      {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}
-      # Add reporters as children of your supervision tree.
-      # {Telemetry.Metrics.ConsoleReporter, metrics: metrics()}
-    ]
+    children =
+      if Application.fetch_env!(:watch_club, :opentelemetry)[:metrics] do
+        [{WatchClub.Telemetry.Metrics, metrics()}]
+      else
+        []
+      end
 
     Supervisor.init(children, strategy: :one_for_one)
   end
@@ -22,23 +21,23 @@ defmodule WatchClubWeb.Telemetry do
   def metrics do
     [
       # Phoenix Metrics
-      summary("phoenix.endpoint.start.system_time",
-        unit: {:native, :millisecond}
-      ),
+      counter("phoenix.endpoint.stop.count"),
       summary("phoenix.endpoint.stop.duration",
         unit: {:native, :millisecond}
       ),
-      summary("phoenix.router_dispatch.start.system_time",
-        tags: [:route],
-        unit: {:native, :millisecond}
-      ),
+      counter("phoenix.router_dispatch.exception.count", tags: [:route]),
       summary("phoenix.router_dispatch.exception.duration",
         tags: [:route],
         unit: {:native, :millisecond}
       ),
       summary("phoenix.router_dispatch.stop.duration",
-        tags: [:route],
+        tags: [:route, :status],
+        tag_values: &request_tags/1,
         unit: {:native, :millisecond}
+      ),
+      counter("phoenix.router_dispatch.stop.count",
+        tags: [:route, :status],
+        tag_values: &request_tags/1
       ),
       summary("phoenix.socket_connected.duration",
         unit: {:native, :millisecond}
@@ -48,7 +47,6 @@ defmodule WatchClubWeb.Telemetry do
         unit: {:native, :millisecond}
       ),
       summary("phoenix.channel_handled_in.duration",
-        tags: [:event],
         unit: {:native, :millisecond}
       ),
 
@@ -75,19 +73,40 @@ defmodule WatchClubWeb.Telemetry do
           "The time the connection spent waiting before being checked out for the query"
       ),
 
-      # VM Metrics
-      summary("vm.memory.total", unit: {:byte, :kilobyte}),
-      summary("vm.total_run_queue_lengths.total"),
-      summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      # Oban Metrics
+      counter("oban.job.stop.count", tags: [:queue, :worker], tag_values: &job_tags/1),
+      counter("oban.job.exception.count", tags: [:queue, :worker], tag_values: &job_tags/1),
+      summary("oban.job.stop.duration",
+        tags: [:queue, :worker],
+        tag_values: &job_tags/1,
+        unit: {:native, :millisecond}
+      ),
+      summary("oban.job.exception.duration",
+        tags: [:queue, :worker],
+        tag_values: &job_tags/1,
+        unit: {:native, :millisecond}
+      ),
+      summary("oban.job.stop.queue_time",
+        tags: [:queue, :worker],
+        tag_values: &job_tags/1,
+        unit: {:native, :millisecond}
+      ),
+      summary("oban.job.exception.queue_time",
+        tags: [:queue, :worker],
+        tag_values: &job_tags/1,
+        unit: {:native, :millisecond}
+      ),
+
+      # The dependency's default poller emits these VM measurements.
+      last_value("vm.memory.total", unit: :byte),
+      last_value("vm.total_run_queue_lengths.total"),
+      last_value("vm.total_run_queue_lengths.cpu"),
+      last_value("vm.total_run_queue_lengths.io")
     ]
   end
 
-  defp periodic_measurements do
-    [
-      # A module, function and arguments to be invoked periodically.
-      # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {WatchClubWeb, :count_users, []}
-    ]
-  end
+  defp job_tags(%{job: job}), do: Map.take(job, [:queue, :worker])
+
+  defp request_tags(%{conn: conn} = metadata),
+    do: %{route: metadata[:route], status: conn.status}
 end

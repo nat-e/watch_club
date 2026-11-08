@@ -13,7 +13,7 @@ defmodule WatchClub.ActivityFeed.Changes.ScheduleContentWatchedEventSync do
     Ash.Changeset.after_action(changeset, fn _changeset, watch_progress ->
       %WatchProgress{content: content} = Ash.load!(watch_progress, [:content], authorize?: false)
 
-      Oban.insert!(
+      OpentelemetryOban.insert!(
         SyncContentWatchedFeedEvent.new_delayed_job(watch_progress.user_id, content.id)
       )
 

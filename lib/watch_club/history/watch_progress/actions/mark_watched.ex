@@ -28,7 +28,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
         context
       )
 
-    Oban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
+    OpentelemetryOban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
     {:ok, content, notifications}
   end
 

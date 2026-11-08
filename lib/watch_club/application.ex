@@ -7,6 +7,7 @@ defmodule WatchClub.Application do
 
   @impl true
   def start(_type, _args) do
+    WatchClub.Telemetry.setup!()
     WatchClub.Shared.ObanLogger.attach()
 
     children = [

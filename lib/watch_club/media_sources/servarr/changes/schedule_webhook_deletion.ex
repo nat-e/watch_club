@@ -12,7 +12,7 @@ defmodule WatchClub.MediaSources.Servarr.Changes.ScheduleWebhookDeletion do
   def change(changeset, _opts, _context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, record} <- result do
-        record |> DeleteWebhook.new_job() |> Oban.insert!()
+        record |> DeleteWebhook.new_job() |> OpentelemetryOban.insert!()
         {:ok, record}
       end
     end)
