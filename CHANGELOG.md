@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1](https://github.com/nat-e/watch_club/compare/v0.1.0...v0.1.1) (2026-11-08)
+
+
+### Features
+
+* **observability:** add OpenTelemetry metrics, logs and traces ([#57](https://github.com/nat-e/watch_club/issues/57)) ([ce1a64b](https://github.com/nat-e/watch_club/commit/ce1a64b76749e7e072dc3be61499d5464b8e2cdd))
+
+
+### Bug Fixes
+
+* **media:** preserve subtitles with unknown codecs ([#55](https://github.com/nat-e/watch_club/issues/55)) ([f238c3d](https://github.com/nat-e/watch_club/commit/f238c3d4a81dce35cb801c8f50ad01c6c16ba9af))
+
 ## [0.1.0](https://github.com/nat-e/watch_club/compare/v0.1.0...v0.1.0) (2026-11-07)
 
 
