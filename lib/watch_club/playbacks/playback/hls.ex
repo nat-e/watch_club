@@ -148,7 +148,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           Ffmpeg.transcode_subtitle_file(%{
             source_path: track.sidecar_path || playback.media.path,
             output_path: output_path,
-            stream_index: track.stream_index || 0
+            stream_index: track.stream_index || 0,
+            character_encoding: sidecar_character_encoding(track)
           })
 
         with {:ok, _output_path} <- result do
@@ -159,6 +160,22 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           result
         end
       end)
+    end
+  end
+
+  # Matroska and MP4 store text subtitles as UTF-8. A sidecar file that isn't
+  # UTF-8 is most likely an old Western European file in Windows-1252.
+  defp sidecar_character_encoding(%TextTrack{sidecar_path: nil}), do: nil
+
+  defp sidecar_character_encoding(%TextTrack{sidecar_path: path}) do
+    if String.valid?(File.read!(path)) do
+      nil
+    else
+      Logger.warning("Sidecar Text Track isn't UTF-8, reading it as Windows-1252: #{path}",
+        event: :text_track_read_as_windows_1252
+      )
+
+      "CP1252"
     end
   end
 

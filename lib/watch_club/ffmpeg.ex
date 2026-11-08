@@ -183,21 +183,24 @@ defmodule WatchClub.Ffmpeg do
     File.mkdir_p!(Path.dirname(job.output_path))
     tmp_path = tmp_path(job.output_path)
 
-    args = [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-y",
-      "-i",
-      job.source_path,
-      "-map",
-      "0:#{job.stream_index}",
-      "-c:s",
-      "webvtt",
-      "-f",
-      "webvtt",
-      tmp_path
-    ]
+    # Without an encoding, FFmpeg reads text subtitles as UTF-8
+    character_encoding_args =
+      if job.character_encoding, do: ["-sub_charenc", job.character_encoding], else: []
+
+    args =
+      ["-hide_banner", "-loglevel", "error", "-y"] ++
+        character_encoding_args ++
+        [
+          "-i",
+          job.source_path,
+          "-map",
+          "0:#{job.stream_index}",
+          "-c:s",
+          "webvtt",
+          "-f",
+          "webvtt",
+          tmp_path
+        ]
 
     run_command(args, tmp_path, job)
   end
