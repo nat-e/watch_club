@@ -35,7 +35,7 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
 
       # We just return a single notification for one of the episode to avoid flooding the subscribers
       # This is fine since we reload data anyway
-      Oban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
+      OpentelemetryOban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
       {:ok, content, Enum.take(notifications, 1)}
     end
   end

@@ -2,6 +2,8 @@ defmodule WatchClub.Dev.PrototypeRuntime do
   @moduledoc "Compiles prototype code on demand, separately from Mix and app startup."
   use GenServer
 
+  alias OpentelemetryProcessPropagator.Task
+
   @table __MODULE__
 
   def start_link(_opts), do: GenServer.start_link(__MODULE__, %{}, name: __MODULE__)

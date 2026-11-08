@@ -13,7 +13,7 @@ defmodule WatchClub.MediaCatalog.Changes.ScheduleTrickplay do
   def change(changeset, _opts, _context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, media} <- result do
-        Oban.insert!(GenerateTrickplay.new_job(media.id))
+        OpentelemetryOban.insert!(GenerateTrickplay.new_job(media.id))
         {:ok, media}
       end
     end)

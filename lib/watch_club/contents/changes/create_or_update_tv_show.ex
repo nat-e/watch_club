@@ -1,6 +1,7 @@
 defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
   use Ash.Resource.Change
 
+  alias OpentelemetryProcessPropagator.Task
   alias WatchClub.Accounts.UserLocale
   alias WatchClub.Contents.{Genre, Rating}
   alias WatchClub.Integrations.Tmdb

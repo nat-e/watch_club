@@ -9,6 +9,7 @@ defmodule WatchClub.MediaSources.Servarr.Changes.LoadProfiles do
   """
   use Ash.Resource.Change
 
+  alias OpentelemetryProcessPropagator.Task
   alias WatchClub.Integrations.Servarr.Client
 
   @impl true

@@ -104,7 +104,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
     |> Enum.reduce(0, fn chunk, acc ->
       chunk
       |> Enum.map(&CandidateIngestor.new_job(media_import, &1))
-      |> Oban.insert_all()
+      |> OpentelemetryOban.insert_all()
 
       acc + length(chunk)
     end)

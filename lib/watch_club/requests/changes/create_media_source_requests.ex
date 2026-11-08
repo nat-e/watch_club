@@ -18,7 +18,7 @@ defmodule WatchClub.Requests.Changes.CreateMediaSourceRequests do
       |> ContentType.media_types()
       |> MediaSources.list_request_capable_sources!(authorize?: false)
       |> Enum.map(&SubmitMediaSourceRequest.new_job(content_request.content_id, &1.id))
-      |> Oban.insert_all()
+      |> OpentelemetryOban.insert_all()
 
       {:ok, content_request}
     end)
