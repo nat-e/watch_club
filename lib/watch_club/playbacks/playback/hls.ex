@@ -6,6 +6,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   Transcoded segments are cached on disk at the Playback level.
   """
 
+  require Logger
+
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
   alias WatchClub.Playbacks.Playback
@@ -121,12 +123,29 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if cached?(output_path) do
       {:ok, output_path}
     else
-      # An external subtitle file holds a single stream, at index 0
-      Ffmpeg.transcode_subtitle_file(%{
+      source = if track.sidecar_path, do: :sidecar, else: :embedded
+
+      # A sidecar file holds a single stream, at index 0
+      job = %{
         source_path: track.sidecar_path || playback.media.path,
         output_path: output_path,
         stream_index: track.stream_index || 0
-      })
+      }
+
+      {duration_ms, result} =
+        :timer.tc(fn -> Ffmpeg.transcode_subtitle_file(job) end, :millisecond)
+
+      with {:ok, _output_path} <- result do
+        Logger.info(
+          "Converted #{source} #{track.codec} Text Track to WebVTT in #{duration_ms} ms",
+          event: :text_track_converted,
+          source: source,
+          codec: track.codec,
+          duration_ms: duration_ms
+        )
+
+        result
+      end
     end
   end
 

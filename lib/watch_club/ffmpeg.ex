@@ -135,7 +135,7 @@ defmodule WatchClub.Ffmpeg do
       tmp_path
     ]
 
-    run_command(args, tmp_path, job.output_path)
+    run_command(args, tmp_path, job)
   end
 
   defp run_ffmpeg(%{type: :audio} = job) do
@@ -176,7 +176,7 @@ defmodule WatchClub.Ffmpeg do
       tmp_path
     ]
 
-    run_command(args, tmp_path, job.output_path)
+    run_command(args, tmp_path, job)
   end
 
   defp run_ffmpeg(%{type: :subtitle} = job) do
@@ -199,25 +199,25 @@ defmodule WatchClub.Ffmpeg do
       tmp_path
     ]
 
-    run_command(args, tmp_path, job.output_path)
+    run_command(args, tmp_path, job)
   end
 
-  defp run_command(args, tmp_path, output_path) do
+  defp run_command(args, tmp_path, job) do
     Logger.debug("Running HLS ffmpeg job: ffmpeg #{Enum.join(args, " ")}")
 
     case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
       {_output, 0} ->
-        File.rename!(tmp_path, output_path)
-        {:ok, output_path}
+        File.rename!(tmp_path, job.output_path)
+        {:ok, job.output_path}
 
       {output, status} ->
         File.rm(tmp_path)
-        {:error, "ffmpeg exited with #{status}: #{String.trim(output)}"}
+        {:error, "ffmpeg exited with #{status} for #{job.source_path}: #{String.trim(output)}"}
     end
   rescue
     exception ->
       File.rm(tmp_path)
-      {:error, Exception.message(exception)}
+      {:error, "ffmpeg failed for #{job.source_path}: #{Exception.message(exception)}"}
   end
 
   defp tmp_path(output_path) do

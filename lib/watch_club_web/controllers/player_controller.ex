@@ -2,6 +2,7 @@ defmodule WatchClubWeb.PlayerController do
   use WatchClubWeb, :controller
 
   require Ash.Query
+  require Logger
 
   alias WatchClub.Accounts.User
   alias WatchClub.Ffmpeg.Trickplay
@@ -154,8 +155,8 @@ defmodule WatchClubWeb.PlayerController do
   defp send_text_result(conn, {:error, :not_found}, _content_type, _cache_control),
     do: send_not_found(conn)
 
-  defp send_text_result(conn, {:error, _reason}, _content_type, _cache_control),
-    do: send_server_error(conn)
+  defp send_text_result(conn, {:error, reason}, _content_type, _cache_control),
+    do: send_server_error(conn, reason)
 
   defp send_file_result(conn, {:ok, path}, content_type, cache_control) do
     conn
@@ -173,8 +174,8 @@ defmodule WatchClubWeb.PlayerController do
     |> send_resp(400, "Bad request")
   end
 
-  defp send_file_result(conn, {:error, _reason}, _content_type, _cache_control),
-    do: send_server_error(conn)
+  defp send_file_result(conn, {:error, reason}, _content_type, _cache_control),
+    do: send_server_error(conn, reason)
 
   defp send_not_found(conn) do
     conn
@@ -182,7 +183,9 @@ defmodule WatchClubWeb.PlayerController do
     |> send_resp(404, "Not found")
   end
 
-  defp send_server_error(conn) do
+  defp send_server_error(conn, reason) do
+    Logger.error("Player — Request failed", event: :player_request_failed, error: reason)
+
     conn
     |> put_resp_content_type("text/plain")
     |> send_resp(500, "Internal server error")
