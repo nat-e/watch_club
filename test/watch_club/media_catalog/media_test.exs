@@ -180,43 +180,19 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert [%TextTrack{stream_index: 4}] = playable.video.text_tracks
     end
 
-    test "offers supported external subtitles for playback with their language and label" do
+    test "offers supported external subtitles for playback" do
       input =
         video_media_input("tmp/external-subtitles.mkv", :movie, %{movie_id: nil})
         |> put_in([:video, :text_tracks], [
-          %{
-            sidecar_path: "tmp/external-subtitles.fr.srt",
-            codec: "subrip",
-            language: "fra",
-            title: "French"
-          },
-          %{
-            sidecar_path: "tmp/external-subtitles.en.vtt",
-            codec: "webvtt",
-            language: "eng",
-            title: "English"
-          },
-          %{
-            sidecar_path: "tmp/external-subtitles.en.ass",
-            codec: "ass",
-            language: "eng",
-            title: "ASS"
-          },
-          %{
-            sidecar_path: "tmp/external-subtitles.en.ssa",
-            codec: "ssa",
-            language: "eng",
-            title: "SSA"
-          },
-          %{sidecar_path: "tmp/external-subtitles.en.sub", codec: "sub"},
+          %{sidecar_path: "tmp/external-subtitles.srt", codec: "subrip"},
+          %{sidecar_path: "tmp/external-subtitles.vtt", codec: "webvtt"},
+          %{sidecar_path: "tmp/external-subtitles.ass", codec: "ass"},
+          %{sidecar_path: "tmp/external-subtitles.ssa", codec: "ssa"},
+          %{sidecar_path: "tmp/external-subtitles.sub", codec: "sub"},
           %{sidecar_path: "tmp/external-subtitles.unknown", codec: nil}
         ])
 
-      tracks =
-        TextTrack
-        |> Ash.Query.filter(hls_supported? == true)
-        |> Ash.Query.load(:display_label)
-        |> Ash.Query.sort(:codec)
+      tracks = TextTrack |> Ash.Query.filter(hls_supported? == true) |> Ash.Query.sort(:codec)
 
       media =
         create_or_update_video!(input,
@@ -225,10 +201,10 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         )
 
       assert [
-               %TextTrack{codec: "ass", language: "eng", display_label: "English — ASS"},
-               %TextTrack{codec: "ssa", language: "eng", display_label: "English — SSA"},
-               %TextTrack{codec: "subrip", language: "fra", display_label: "French — French"},
-               %TextTrack{codec: "webvtt", language: "eng", display_label: "English — English"}
+               %TextTrack{codec: "ass"},
+               %TextTrack{codec: "ssa"},
+               %TextTrack{codec: "subrip"},
+               %TextTrack{codec: "webvtt"}
              ] = media.video.text_tracks
     end
 

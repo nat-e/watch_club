@@ -121,6 +121,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if cached?(output_path) do
       {:ok, output_path}
     else
+      # An external subtitle file holds a single stream, at index 0
       Ffmpeg.transcode_subtitle_file(%{
         source_path: track.sidecar_path || playback.media.path,
         output_path: output_path,
