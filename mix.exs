@@ -15,7 +15,12 @@ defmodule WatchClub.MixProject do
       consolidate_protocols: Mix.env() != :dev,
       releases: [
         watch_club: [
-          applications: [opentelemetry: :temporary, opentelemetry_experimental: :temporary]
+          # The SDKs set up their exporters when they start, so the exporter must start first.
+          applications: [
+            opentelemetry_exporter: :permanent,
+            opentelemetry: :temporary,
+            opentelemetry_experimental: :temporary
+          ]
         ]
       ],
       usage_rules: usage_rules(),
