@@ -135,7 +135,7 @@ defmodule WatchClub.Ffmpeg do
       tmp_path
     ]
 
-    run_command(args, tmp_path, job.output_path)
+    run_command(args, tmp_path, job)
   end
 
   defp run_ffmpeg(%{type: :audio} = job) do
@@ -176,48 +176,51 @@ defmodule WatchClub.Ffmpeg do
       tmp_path
     ]
 
-    run_command(args, tmp_path, job.output_path)
+    run_command(args, tmp_path, job)
   end
 
   defp run_ffmpeg(%{type: :subtitle} = job) do
     File.mkdir_p!(Path.dirname(job.output_path))
     tmp_path = tmp_path(job.output_path)
 
-    args = [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-y",
-      "-i",
-      job.source_path,
-      "-map",
-      "0:#{job.stream_index}",
-      "-c:s",
-      "webvtt",
-      "-f",
-      "webvtt",
-      tmp_path
-    ]
+    # Without an encoding, FFmpeg reads text subtitles as UTF-8
+    character_encoding_args =
+      if job.character_encoding, do: ["-sub_charenc", job.character_encoding], else: []
 
-    run_command(args, tmp_path, job.output_path)
+    args =
+      ["-hide_banner", "-loglevel", "error", "-y"] ++
+        character_encoding_args ++
+        [
+          "-i",
+          job.source_path,
+          "-map",
+          "0:#{job.stream_index}",
+          "-c:s",
+          "webvtt",
+          "-f",
+          "webvtt",
+          tmp_path
+        ]
+
+    run_command(args, tmp_path, job)
   end
 
-  defp run_command(args, tmp_path, output_path) do
+  defp run_command(args, tmp_path, job) do
     Logger.debug("Running HLS ffmpeg job: ffmpeg #{Enum.join(args, " ")}")
 
     case System.cmd("ffmpeg", args, stderr_to_stdout: true) do
       {_output, 0} ->
-        File.rename!(tmp_path, output_path)
-        {:ok, output_path}
+        File.rename!(tmp_path, job.output_path)
+        {:ok, job.output_path}
 
       {output, status} ->
         File.rm(tmp_path)
-        {:error, "ffmpeg exited with #{status}: #{String.trim(output)}"}
+        {:error, "ffmpeg exited with #{status} for #{job.source_path}: #{String.trim(output)}"}
     end
   rescue
     exception ->
       File.rm(tmp_path)
-      {:error, Exception.message(exception)}
+      {:error, "ffmpeg failed for #{job.source_path}: #{Exception.message(exception)}"}
   end
 
   defp tmp_path(output_path) do

@@ -180,6 +180,34 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert [%TextTrack{stream_index: 4}] = playable.video.text_tracks
     end
 
+    test "offers supported external subtitles for playback" do
+      input =
+        video_media_input("tmp/external-subtitles.mkv", :movie, %{movie_id: nil})
+        |> put_in([:video, :text_tracks], [
+          %{sidecar_path: "tmp/external-subtitles.srt", codec: "subrip"},
+          %{sidecar_path: "tmp/external-subtitles.vtt", codec: "webvtt"},
+          %{sidecar_path: "tmp/external-subtitles.ass", codec: "ass"},
+          %{sidecar_path: "tmp/external-subtitles.ssa", codec: "ssa"},
+          %{sidecar_path: "tmp/external-subtitles.sub", codec: "sub"},
+          %{sidecar_path: "tmp/external-subtitles.unknown", codec: nil}
+        ])
+
+      tracks = TextTrack |> Ash.Query.filter(hls_supported? == true) |> Ash.Query.sort(:codec)
+
+      media =
+        create_or_update_video!(input,
+          actor: SystemActor.actor(),
+          load: [video: [text_tracks: tracks]]
+        )
+
+      assert [
+               %TextTrack{codec: "ass"},
+               %TextTrack{codec: "ssa"},
+               %TextTrack{codec: "subrip"},
+               %TextTrack{codec: "webvtt"}
+             ] = media.video.text_tracks
+    end
+
     test "replaces an existing video at the same path" do
       movie = seed_movie()
       path = "tmp/refresh.mkv"

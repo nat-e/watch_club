@@ -6,6 +6,9 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   Transcoded segments are cached on disk at the Playback level.
   """
 
+  require Logger
+  require OpenTelemetry.Tracer, as: Tracer
+
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
   alias WatchClub.Playbacks.Playback
@@ -86,16 +89,20 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if cached?(output_path) do
       {:ok, output_path}
     else
-      Ffmpeg.transcode_video_segment(%{
-        source_path: playback.media.path,
-        output_path: output_path,
-        start_time: index * @segment_duration,
-        duration: segment_duration_at(playback.media.video, index),
-        segment_duration: @segment_duration,
-        width: quality.width,
-        height: quality.height,
-        video_bitrate: quality.video_bitrate
-      })
+      attributes = %{"watch_club.hls.quality": quality.id, "watch_club.hls.segment_index": index}
+
+      trace_transcode("transcode video segment", attributes, fn ->
+        Ffmpeg.transcode_video_segment(%{
+          source_path: playback.media.path,
+          output_path: output_path,
+          start_time: index * @segment_duration,
+          duration: segment_duration_at(playback.media.video, index),
+          segment_duration: @segment_duration,
+          width: quality.width,
+          height: quality.height,
+          video_bitrate: quality.video_bitrate
+        })
+      end)
     end
   end
 
@@ -105,13 +112,20 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if cached?(output_path) do
       {:ok, output_path}
     else
-      Ffmpeg.transcode_audio_segment(%{
-        source_path: playback.media.path,
-        output_path: output_path,
-        start_time: index * @segment_duration,
-        duration: segment_duration_at(playback.media.video, index),
-        stream_index: track.stream_index
-      })
+      attributes = %{
+        "watch_club.audio_track.stream_index": track.stream_index,
+        "watch_club.hls.segment_index": index
+      }
+
+      trace_transcode("transcode audio segment", attributes, fn ->
+        Ffmpeg.transcode_audio_segment(%{
+          source_path: playback.media.path,
+          output_path: output_path,
+          start_time: index * @segment_duration,
+          duration: segment_duration_at(playback.media.video, index),
+          stream_index: track.stream_index
+        })
+      end)
     end
   end
 
@@ -121,11 +135,57 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if cached?(output_path) do
       {:ok, output_path}
     else
-      Ffmpeg.transcode_subtitle_file(%{
-        source_path: playback.media.path,
-        output_path: output_path,
-        stream_index: track.stream_index
-      })
+      source = if track.sidecar_path, do: :sidecar, else: :embedded
+
+      attributes = %{
+        "watch_club.text_track.source": source,
+        "watch_club.text_track.codec": track.codec
+      }
+
+      trace_transcode("transcode Text Track", attributes, fn ->
+        # A sidecar file holds a single stream, at index 0
+        result =
+          Ffmpeg.transcode_subtitle_file(%{
+            source_path: track.sidecar_path || playback.media.path,
+            output_path: output_path,
+            stream_index: track.stream_index || 0,
+            character_encoding: sidecar_character_encoding(track)
+          })
+
+        with {:ok, _output_path} <- result do
+          Logger.info("Converted #{source} #{track.codec} Text Track to WebVTT",
+            event: :text_track_converted
+          )
+
+          result
+        end
+      end)
+    end
+  end
+
+  # Matroska and MP4 store text subtitles as UTF-8. A sidecar file that isn't
+  # UTF-8 is most likely an old Western European file in Windows-1252.
+  defp sidecar_character_encoding(%TextTrack{sidecar_path: nil}), do: nil
+
+  defp sidecar_character_encoding(%TextTrack{sidecar_path: path}) do
+    if String.valid?(File.read!(path)) do
+      nil
+    else
+      Logger.warning("Sidecar Text Track isn't UTF-8, reading it as Windows-1252: #{path}",
+        event: :text_track_read_as_windows_1252
+      )
+
+      "CP1252"
+    end
+  end
+
+  # Runs an FFmpeg transcode in its own span, marked as an error when it fails
+  defp trace_transcode(span_name, attributes, transcode) do
+    Tracer.with_span span_name, %{attributes: attributes} do
+      with {:error, reason} = error <- transcode.() do
+        Tracer.set_status(:error, reason)
+        error
+      end
     end
   end
 
