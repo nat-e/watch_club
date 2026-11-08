@@ -7,6 +7,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   """
 
   require Logger
+  require OpenTelemetry.Tracer, as: Tracer
 
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
@@ -125,24 +126,29 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     else
       source = if track.sidecar_path, do: :sidecar, else: :embedded
 
-      # A sidecar file holds a single stream, at index 0
-      job = %{
-        source_path: track.sidecar_path || playback.media.path,
-        output_path: output_path,
-        stream_index: track.stream_index || 0
+      attributes = %{
+        "watch_club.text_track.source": source,
+        "watch_club.text_track.codec": track.codec
       }
 
-      {duration_ms, result} =
-        :timer.tc(fn -> Ffmpeg.transcode_subtitle_file(job) end, :millisecond)
+      Tracer.with_span "convert Text Track", %{attributes: attributes} do
+        # A sidecar file holds a single stream, at index 0
+        result =
+          Ffmpeg.transcode_subtitle_file(%{
+            source_path: track.sidecar_path || playback.media.path,
+            output_path: output_path,
+            stream_index: track.stream_index || 0
+          })
 
-      with {:ok, _output_path} <- result do
-        Logger.info(
-          "Converted #{source} #{track.codec} Text Track to WebVTT in #{duration_ms} ms",
-          event: :text_track_converted,
-          source: source,
-          codec: track.codec,
-          duration_ms: duration_ms
-        )
+        case result do
+          {:ok, _output_path} ->
+            Logger.info("Converted #{source} #{track.codec} Text Track to WebVTT",
+              event: :text_track_converted
+            )
+
+          {:error, reason} ->
+            Tracer.set_status(:error, reason)
+        end
 
         result
       end
