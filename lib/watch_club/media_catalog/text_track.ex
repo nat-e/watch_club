@@ -121,7 +121,7 @@ defmodule WatchClub.MediaCatalog.TextTrack do
 
     calculate :hls_supported?,
               :boolean,
-              expr(is_nil(sidecar_path) and not is_nil(codec) and codec in ^@hls_supported_codecs) do
+              expr(not is_nil(codec) and codec in ^@hls_supported_codecs) do
       public? true
     end
   end

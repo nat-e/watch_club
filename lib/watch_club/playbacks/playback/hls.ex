@@ -122,9 +122,9 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       {:ok, output_path}
     else
       Ffmpeg.transcode_subtitle_file(%{
-        source_path: playback.media.path,
+        source_path: track.sidecar_path || playback.media.path,
         output_path: output_path,
-        stream_index: track.stream_index
+        stream_index: track.stream_index || 0
       })
     end
   end
