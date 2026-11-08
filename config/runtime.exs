@@ -43,13 +43,19 @@ config :ash, :tracer, if(otel_signals[:traces], do: [OpentelemetryAsh], else: []
 
 # The experimental SDK does not select a reader from OTEL_METRICS_EXPORTER.
 if otel_signals[:metrics] do
+  export_interval_ms =
+    case Integer.parse(System.get_env("OTEL_METRIC_EXPORT_INTERVAL", "60000")) do
+      {interval, ""} when interval > 0 -> interval
+      _ -> raise "OTEL_METRIC_EXPORT_INTERVAL must be a positive integer in milliseconds"
+    end
+
   config :opentelemetry_experimental,
     readers: [
       %{
         module: :otel_metric_reader,
         config: %{
           exporter: {:otel_exporter_metrics_otlp, %{}},
-          export_interval_ms: env!("OTEL_METRIC_EXPORT_INTERVAL", :integer, 60_000)
+          export_interval_ms: export_interval_ms
         }
       }
     ]

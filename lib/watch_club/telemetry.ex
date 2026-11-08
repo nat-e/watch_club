@@ -22,23 +22,32 @@ defmodule WatchClub.Telemetry do
     signals = Application.fetch_env!(:watch_club, :opentelemetry)
 
     if signals[:traces] do
-      :ok = OpentelemetryBandit.setup()
+      case OpentelemetryBandit.setup() do
+        :ok -> :ok
+        {:error, :already_exists} -> :ok
+      end
+
       :ok = OpentelemetryPhoenix.setup(adapter: :bandit, liveview: true)
       # The dependency otherwise includes the database URL's credentials.
-      :ok =
-        OpentelemetryEcto.setup([:watch_club, :repo],
-          additional_attributes: %{:"db.url" => ""}
-        )
+
+      case OpentelemetryEcto.setup([:watch_club, :repo],
+             additional_attributes: %{:"db.url" => ""}
+           ) do
+        :ok -> :ok
+        {:error, :already_exists} -> :ok
+      end
 
       :ok = OpentelemetryOban.setup()
     end
 
     if signals[:logs] do
-      :ok =
-        :logger.add_handler(:watch_club_otel, :otel_log_handler, %{
-          filters: [metadata: {&__MODULE__.filter_log/2, []}],
-          exporter: {:otel_exporter_logs_otlp, %{protocol: :http_protobuf}}
-        })
+      case :logger.add_handler(:watch_club_otel, :otel_log_handler, %{
+             filters: [metadata: {&__MODULE__.filter_log/2, []}],
+             exporter: {:otel_exporter_logs_otlp, %{protocol: :http_protobuf}}
+           }) do
+        :ok -> :ok
+        {:error, {:already_exist, :watch_club_otel}} -> :ok
+      end
     end
 
     :ok

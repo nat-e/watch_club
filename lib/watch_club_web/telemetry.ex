@@ -31,8 +31,13 @@ defmodule WatchClubWeb.Telemetry do
         unit: {:native, :millisecond}
       ),
       summary("phoenix.router_dispatch.stop.duration",
-        tags: [:route],
+        tags: [:route, :status],
+        tag_values: &request_tags/1,
         unit: {:native, :millisecond}
+      ),
+      counter("phoenix.router_dispatch.stop.count",
+        tags: [:route, :status],
+        tag_values: &request_tags/1
       ),
       summary("phoenix.socket_connected.duration",
         unit: {:native, :millisecond}
@@ -101,4 +106,7 @@ defmodule WatchClubWeb.Telemetry do
   end
 
   defp job_tags(%{job: job}), do: Map.take(job, [:queue, :worker])
+
+  defp request_tags(%{conn: conn} = metadata),
+    do: %{route: metadata[:route], status: conn.status}
 end

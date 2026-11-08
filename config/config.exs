@@ -8,7 +8,10 @@
 import Config
 
 # Export is enabled per signal through runtime OTEL_* settings.
-config :opentelemetry, traces_exporter: :none
+config :opentelemetry,
+  traces_exporter: :none,
+  # Operator resource attributes override the application's defaults.
+  resource_detectors: [:otel_resource_app_env, :otel_resource_env_var]
 
 config :ash,
   allow_forbidden_field_for_relationships_by_default: true,

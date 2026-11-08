@@ -57,6 +57,7 @@ defmodule WatchClub.Telemetry.Metrics do
           end)
 
         id = {__MODULE__, event}
+        :telemetry.detach(id)
         :ok = :telemetry.attach(id, event, &__MODULE__.handle_event/4, {meter, instruments})
         id
       end)
