@@ -6,7 +6,6 @@ defmodule WatchClub.Contents.Movie do
 
   alias WatchClub.Contents.{Content, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
-  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
   alias WatchClub.MediaCatalog.Video
 
   postgres do
@@ -44,13 +43,6 @@ defmodule WatchClub.Contents.Movie do
                use_identities: [:_primary_key, :unique_locale_per_movie],
                on_missing: :ignore
              )
-    end
-
-    action :details, :struct do
-      constraints instance_of: MovieDetailsResponse
-      argument :tmdb_id, :integer, allow_nil?: false
-
-      run WatchClub.Contents.Actions.GetMovieDetails
     end
   end
 

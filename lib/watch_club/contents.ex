@@ -38,21 +38,13 @@ defmodule WatchClub.Contents do
       define :get_user_recently_watched, action: :user_recently_watched
     end
 
-    resource Movie do
-      define :get_movie_details, action: :details, args: [:tmdb_id]
-    end
+    resource Movie
 
     resource Book
 
     resource MovieLocalization
 
-    resource TvShow do
-      define :get_tv_show_details, action: :details, args: [:tmdb_id]
-
-      define :get_tv_show_season_details,
-        action: :season_details,
-        args: [:tmdb_id, :season_number]
-    end
+    resource TvShow
 
     resource TvShowEpisode do
       define :get_episodes_for_show, action: :for_show, args: [:tmdb_id]

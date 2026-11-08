@@ -5,7 +5,6 @@ defmodule WatchClub.Contents.ContentTest do
   import WatchClub.Contents
 
   alias WatchClub.History
-  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.MediaCatalog
   alias WatchClub.SystemActor
 
@@ -68,7 +67,7 @@ defmodule WatchClub.Contents.ContentTest do
                    title: "La Guerre des étoiles"
                  }
                }
-             } = content = create_movie!("11", actor: actor)
+             } = content = create_content!(ContentIdentity.for_movie("11"), actor: actor)
 
       assert [
                %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
@@ -95,7 +94,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       capture_log(fn ->
         assert {:error, %Ash.Error.Unknown{} = error} =
-                 create_movie("404", actor: generate(user()))
+                 create_content(ContentIdentity.for_movie("404"), actor: generate(user()))
 
         assert Enum.any?(error.errors, fn error ->
                  match?(%WatchClub.Contents.MetadataUnavailable{reason: :not_found}, error)
@@ -126,12 +125,14 @@ defmodule WatchClub.Contents.ContentTest do
                implementation: %Movie{
                  best_localization: %MovieLocalization{title: "Star Wars"}
                }
-             } = create_movie!("12", actor: generate(user()))
+             } = create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
 
     test "system actor can create a movie without selecting libraries" do
       assert %Content{type: :movie, external_id: "11"} =
-               create_movie!("11", actor: WatchClub.SystemActor.actor())
+               create_content!(ContentIdentity.for_movie("11"),
+                 actor: WatchClub.SystemActor.actor()
+               )
     end
 
     test "leaves out the rating of a movie too few people voted on" do
@@ -146,7 +147,8 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, response)
       end)
 
-      assert %Content{rating: nil} = create_movie!("12", actor: generate(user()))
+      assert %Content{rating: nil} =
+               create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
 
     test "rounds the rating to one decimal" do
@@ -161,7 +163,8 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, response)
       end)
 
-      assert %Content{rating: 8.0} = create_movie!("12", actor: generate(user()))
+      assert %Content{rating: 8.0} =
+               create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
 
     test "creates a TV show with all available episodes" do
@@ -197,7 +200,7 @@ defmodule WatchClub.Contents.ContentTest do
                    title: "The Expanse FR"
                  }
                }
-             } = content = create_tv_show!("42", actor: actor)
+             } = content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       assert [
                %TvShowEpisode{
@@ -225,7 +228,7 @@ defmodule WatchClub.Contents.ContentTest do
       # Root counts can exceed the positions returned by the season endpoints.
       stub_tv_metadata(tv_details_fixture(), %{2 => tv_season_details_fixture(2, [1, 2])})
 
-      content = create_tv_show!("42", actor: actor)
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       air_dates =
         TvShowEpisode
@@ -249,7 +252,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       capture_log(fn ->
         assert {:error, %Ash.Error.Unknown{} = error} =
-                 create_tv_show("404", actor: generate(user()))
+                 create_content(ContentIdentity.for_tv_show("404"), actor: generate(user()))
 
         assert Enum.any?(error.errors, fn error ->
                  match?(%WatchClub.Contents.MetadataUnavailable{reason: :not_found}, error)
@@ -261,7 +264,9 @@ defmodule WatchClub.Contents.ContentTest do
       stub_tv_metadata()
 
       assert %Content{type: :tv_show, external_id: "42"} =
-               create_tv_show!("42", actor: WatchClub.SystemActor.actor())
+               create_content!(ContentIdentity.for_tv_show("42"),
+                 actor: WatchClub.SystemActor.actor()
+               )
     end
   end
 
@@ -273,7 +278,7 @@ defmodule WatchClub.Contents.ContentTest do
       # Create only the episode positions present in the season endpoint payload.
       stub_tv_metadata(tv_details_fixture(), %{2 => tv_season_details_fixture(2, [1, 2])})
 
-      content = create_tv_show!("42", actor: actor)
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       original_episodes =
         TvShowEpisode
@@ -335,7 +340,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       stub_tv_metadata(refreshed_fixture, %{1 => refreshed_season})
 
-      assert %Content{type: :tv_show} = refresh_tv_show!(content, actor: system)
+      assert %Content{type: :tv_show} = refresh_metadata!(content, %{}, actor: system)
 
       assert [
                %TvShowEpisode{season_number: 1, episode_number: 1, id: ^s1e1_id},
@@ -397,7 +402,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       assert %Content{genres: [:drama, :science_fiction, :fantasy], rating: 8.4} =
-               refresh_tv_show!(tv_show, actor: SystemActor.actor())
+               refresh_metadata!(tv_show, %{}, actor: SystemActor.actor())
     end
   end
 
@@ -865,59 +870,6 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  describe "get_tv_show_details/*" do
-    test "returns TV show details with season summaries" do
-      actor = generate(user(locale: :en_US))
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        if String.ends_with?(conn.request_path, "/tv/42") do
-          Req.Test.json(conn, tv_details_fixture())
-        else
-          conn
-          |> Plug.Conn.put_status(500)
-          |> Req.Test.json(%{})
-        end
-      end)
-
-      assert %TvDetailsResponse{
-               backdrop_path: "/backdrop.jpg",
-               status: "Ended",
-               season_details: [],
-               seasons: [
-                 %TvDetailsResponse.Season{season_number: 0, episode_count: 1},
-                 %TvDetailsResponse.Season{season_number: 1, episode_count: 3},
-                 %TvDetailsResponse.Season{season_number: 2, episode_count: 2},
-                 %TvDetailsResponse.Season{season_number: 3, episode_count: 0}
-               ]
-             } = get_tv_show_details!("42", actor: actor)
-    end
-  end
-
-  describe "get_tv_show_season_details/*" do
-    test "returns TV Show Episode metadata for one season" do
-      actor = generate(user(locale: :en_US))
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, tv_season_details_fixture(1))
-      end)
-
-      assert %TvDetailsResponse.SeasonDetails{
-               season_number: 1,
-               name: "Season 1",
-               episodes: [
-                 %TvDetailsResponse.SeasonDetails.Episode{
-                   episode_number: 1,
-                   name: "Dulcinea",
-                   overview: "The Canterbury answers a distress call.",
-                   runtime: 48,
-                   still_path: "/dulcinea.jpg"
-                 },
-                 %TvDetailsResponse.SeasonDetails.Episode{episode_number: 2}
-               ]
-             } = get_tv_show_season_details!("42", 1, actor: actor)
-    end
-  end
-
   defp stub_movie_metadata(details) do
     Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
       Req.Test.json(conn, details)
@@ -967,8 +919,6 @@ defmodule WatchClub.Contents.ContentTest do
     Map.put(fixture, "episodes", episodes)
   end
 
-  # Bridge the per-type vocabulary these tests are written in onto the unified
-  # create/refresh_metadata actions: create (upsert) the Content from its TMDB identity.
   defp add_video!(movie_id) do
     MediaCatalog.create_or_update_video!(media_movie_input(movie_id), actor: SystemActor.actor())
   end
@@ -992,29 +942,6 @@ defmodule WatchClub.Contents.ContentTest do
     MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
       actor: SystemActor.actor()
     )
-  end
-
-  defp create_movie(external_id, opts),
-    do: create_content(ContentIdentity.for_movie(external_id), %{}, opts)
-
-  defp create_tv_show(external_id, opts),
-    do: create_content(ContentIdentity.for_tv_show(external_id), %{}, opts)
-
-  defp create_movie!(external_id, opts) do
-    {:ok, content} = create_movie(external_id, opts)
-    content
-  end
-
-  defp create_tv_show!(external_id, opts) do
-    {:ok, content} = create_tv_show(external_id, opts)
-    content
-  end
-
-  defp refresh_tv_show(content, opts), do: refresh_metadata(content, %{}, opts)
-
-  defp refresh_tv_show!(content, opts) do
-    {:ok, content} = refresh_tv_show(content, opts)
-    content
   end
 
   defp tv_details_fixture do

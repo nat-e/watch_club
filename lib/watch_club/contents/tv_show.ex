@@ -6,7 +6,6 @@ defmodule WatchClub.Contents.TvShow do
 
   alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
   alias WatchClub.History.WatchStatus
-  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   postgres do
     table "tv_shows"
@@ -59,21 +58,6 @@ defmodule WatchClub.Contents.TvShow do
                use_identities: [:_primary_key, :unique_position_per_tv_show],
                on_missing: :ignore
              )
-    end
-
-    action :details, :struct do
-      constraints instance_of: TvDetailsResponse
-      argument :tmdb_id, :integer, allow_nil?: false
-
-      run WatchClub.Contents.Actions.GetTvShowDetails
-    end
-
-    action :season_details, :struct do
-      constraints instance_of: TvDetailsResponse.SeasonDetails
-      argument :tmdb_id, :integer, allow_nil?: false
-      argument :season_number, :integer, allow_nil?: false
-
-      run WatchClub.Contents.Actions.GetTvShowSeasonDetails
     end
   end
 
