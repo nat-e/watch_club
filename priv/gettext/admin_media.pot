@@ -16,7 +16,7 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove media"
@@ -27,24 +27,14 @@ msgstr ""
 msgid "Remove the media from %{name}. This will not delete the file on the disk."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Audio (%{count})"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Audiobook"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Clear all"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -52,17 +42,7 @@ msgstr ""
 msgid "Clear filters"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Close detail panel"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Close drawer"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
 msgstr ""
@@ -72,43 +52,27 @@ msgstr ""
 msgid "Configure media imports or automations to add Media to your instance."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Container"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Content"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Default"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Ebook"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "File"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Filter media"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Forced"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Frame rate"
 msgstr ""
@@ -118,36 +82,6 @@ msgstr ""
 msgid "Import Media"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Imported"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Last import (newest first)"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Last import (oldest first)"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Last updated"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Matched"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Media"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Browser"
@@ -155,80 +89,25 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "Media deleted."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Media detail"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Media: Any"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "No Media match your filters"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Path"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Path (A → Z)"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Path (Z → A)"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Read"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Remove %{label} filter"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Resolution"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search file name or content…"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search file name or matched content"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles (%{count})"
 msgstr ""
@@ -238,15 +117,13 @@ msgstr ""
 msgid "Try clearing your filters or searching for something else"
 msgstr ""
 
-#: lib/watch_club_web/components/medias/unmatched_content_section.ex
-#: lib/watch_club_web/live/admin/media_browser_page/media_row.ex
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Unmatched"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Video"
 msgstr ""
@@ -259,4 +136,101 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "You don't have any media yet"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} fps"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{range} of %{count}"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "A Media Import couldn't identify this file."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Added"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Close details"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Media Type"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media details"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media removed."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Next page"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No file selected"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "None"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Page %{page}"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Page %{page} of %{count}"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Pages"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Previous page"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search Media"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search file name or title"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Select a file to see its details."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Title"
 msgstr ""

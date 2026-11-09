@@ -18,7 +18,7 @@ msgid "Remove"
 msgstr "Retirer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove media"
@@ -31,28 +31,16 @@ msgid "Remove the media from %{name}. This will not delete the file on the disk.
 msgstr "Retirez le média de %{name}. Cela ne supprimera pas le fichier sur le disque."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
 msgstr "Audio"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Audio (%{count})"
 msgstr "Audio (%{count})"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Audiobook"
-msgstr "Livre audio"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Clear all"
-msgstr "Tout effacer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -61,19 +49,7 @@ msgid "Clear filters"
 msgstr "Effacer les filtres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Close detail panel"
-msgstr "Fermer le panneau de détails"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Close drawer"
-msgstr "Fermer le panneau"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
 msgstr "Codec"
@@ -85,50 +61,31 @@ msgid "Configure media imports or automations to add Media to your instance."
 msgstr "Configurez des imports de médias ou des automatisations pour ajouter des médias à votre instance."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Container"
 msgstr "Conteneur"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Content"
-msgstr "Contenu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Default"
 msgstr "Par défaut"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Ebook"
-msgstr "Livre numérique"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "File"
 msgstr "Fichier"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Filter media"
-msgstr "Filtrer les médias"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Forced"
 msgstr "Forcé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Frame rate"
 msgstr "Fréquence d'images"
@@ -140,42 +97,6 @@ msgid "Import Media"
 msgstr "Importer des médias"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Imported"
-msgstr "Importé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Last import (newest first)"
-msgstr "Dernier import (plus récent d'abord)"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Last import (oldest first)"
-msgstr "Dernier import (plus ancien d'abord)"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Last updated"
-msgstr "Dernière mise à jour"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#, elixir-autogen, elixir-format
-msgid "Matched"
-msgstr "Contenu associé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Media"
-msgstr "Média"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Browser"
@@ -184,95 +105,29 @@ msgstr "Explorateur de médias"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "Media deleted."
-msgstr "Média supprimé."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Media detail"
-msgstr "Détails du média"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Media: Any"
-msgstr "Média : tous"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "No Media match your filters"
 msgstr "Aucun média ne correspond à vos filtres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Path"
-msgstr "Chemin"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Path (A → Z)"
-msgstr "Chemin (A → Z)"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Path (Z → A)"
-msgstr "Chemin (Z → A)"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
 msgstr "Lire"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#, elixir-autogen, elixir-format
-msgid "Read"
-msgstr "Lire"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Remove %{label} filter"
-msgstr "Retirer le filtre %{label}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Resolution"
 msgstr "Résolution"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search"
-msgstr "Recherche"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search file name or content…"
-msgstr "Rechercher un nom de fichier ou un contenu…"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
-#, elixir-autogen, elixir-format
-msgid "Search file name or matched content"
-msgstr "Rechercher un nom de fichier ou un contenu associé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
 msgstr "Sous-titres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles (%{count})"
 msgstr "Sous-titres (%{count})"
@@ -284,16 +139,14 @@ msgid "Try clearing your filters or searching for something else"
 msgstr "Essayez d'effacer vos filtres ou de chercher autre chose"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/medias/unmatched_content_section.ex
-#: lib/watch_club_web/live/admin/media_browser_page/media_row.ex
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Unmatched"
 msgstr "Non associé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/detail_drawer.ex
-#: lib/watch_club_web/live/admin/media_browser_page/table.ex
-#: lib/watch_club_web/live/admin/media_browser_page/toolbar.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Video"
 msgstr "Vidéo"
@@ -309,3 +162,119 @@ msgstr "Consultez et gérez tous les médias de cette instance."
 #, elixir-autogen, elixir-format
 msgid "You don't have any media yet"
 msgstr "Vous n'avez encore aucun média"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} fps"
+msgstr "%{count} i/s"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{range} of %{count}"
+msgstr "%{range} sur %{count}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "A Media Import couldn't identify this file."
+msgstr "L'import de médias n'a pas pu identifier ce fichier."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Added"
+msgstr "Ajouté"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Close details"
+msgstr "Fermer les détails"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Media Type"
+msgstr "Type de média"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media details"
+msgstr "Détails du média"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media removed."
+msgstr "Média retiré."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Next page"
+msgstr "Page suivante"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No file selected"
+msgstr "Aucun fichier sélectionné"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "None"
+msgstr "Aucun"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Page %{page}"
+msgstr "Page %{page}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Page %{page} of %{count}"
+msgstr "Page %{page} sur %{count}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Pages"
+msgstr "Pages"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Previous page"
+msgstr "Page précédente"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search Media"
+msgstr "Rechercher des médias"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search file name or title"
+msgstr "Rechercher un nom de fichier ou un titre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Select a file to see its details."
+msgstr "Sélectionnez un fichier pour voir ses détails."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Title"
+msgstr "Titre"
