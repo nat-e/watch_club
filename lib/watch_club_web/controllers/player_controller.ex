@@ -4,7 +4,6 @@ defmodule WatchClubWeb.PlayerController do
   require Ash.Query
   require Logger
 
-  alias WatchClub.Accounts.User
   alias WatchClub.Ffmpeg.Trickplay
   alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks
@@ -24,8 +23,6 @@ defmodule WatchClubWeb.PlayerController do
       ]
     ]
   ]
-
-  plug :require_current_user
 
   def master_playlist(conn, %{"playback_id" => playback_id}) do
     send_text_result(
@@ -137,15 +134,6 @@ defmodule WatchClubWeb.PlayerController do
       {:ok, playback} -> fun.(playback)
       {:error, _reason} -> {:error, :not_found}
     end
-  end
-
-  defp require_current_user(%{assigns: %{current_user: %User{}}} = conn, _opts), do: conn
-
-  defp require_current_user(conn, _opts) do
-    conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(401, "Unauthorized")
-    |> halt()
   end
 
   # Cache-control is applied only on success so error responses are never
