@@ -44,13 +44,14 @@ Data can be upated directly from the Notification payload if straight forward. I
 | Topic | Domain | Scope | Description | Triggered | Subscribers |
 |---|---|---|---|---|---|
 | `users:admin` | Users | Admin | Notifications for admin about Users | `User:CUD`, `InvitationCode:CUD` | `/admin/users` |
-| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `Participant:C` (a new Conversation), `Participant:U` (read), `RequestSubscriber:U` (ready unseen), `Playlist:C` (owner), `PlaylistAccess:CD` | Every page for current user |
+| `user:<user_id>` | - | User | Notifications about Current User  | `User:U`, `UserSettings:U`, `Participant:C` (a new Conversation), `Participant:U` (read), `RequestSubscriber:U` (ready unseen), `Playlist:C` (owner), `PlaylistAccess:CD`, `PlaylistAccess:U` (shared unseen) | Every page for current user |
 | `playlist:<playlist_id>` | Playlists | Playlist | Notifications about a Playlist, for everyone who sees it | `Playlist:UD`, `PlaylistItem:CD` | `/playlists`, `/movies/:tmdb_id`, `/shows/:tmdb_id`: each subscribes to the Playlists it loads |
 | `media_sources:admin` | MediaSources | Admin | Notifications about a a Media Source or Import  | `MediaSource:CUD`, `Import:CU` | `/admin/media_sources/*` |
 | `content:user:<user_id>` | Contents | User | Notification about a Content that only affects a User | `RequestSubscriber:CD`, `WatchProgress:CUD` | Any page that display content (Content page, Browse...) |
 | `content:global` | Contents | Global | Notification about a Content that affects everybody | `ContentRequest:CUD`, `Media:CUD`, `Content:CUD` | Any page that displays content (Content page, Browse...) |
 | `history:global` | History | Global | Every User's Watch Progress, for the Watchers of a Content | `WatchProgress:CD` | `/movies/:tmdb_id`, `/shows/:tmdb_id` |
 | `conversation:<conversation_id>` | Conversations | Conversation | A Message posted in a Conversation | `Message:C` | Every page of its Participants, subscribed to all their Conversations |
+| `feed:global` | ActivityFeed | Global | A Feed Event joined or left a Feed Entry | `ContentWatchedEvent:CD` | `/` (Home) |
 | `video:<video_id>` | Markers | Video | The Markers of a Video, found in the background after its import | `Marker:CD` | `/play/:media_id`, subscribed to each Video it plays |
 
 

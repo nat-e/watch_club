@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
           <:description>
             {dgettext("conversations", "Recommend a movie or a TV show from its page to start one.")}
           </:description>
-          <.button id="conversations-browse" variant="secondary" navigate={~p"/"}>
+          <.button id="conversations-browse" variant="secondary" navigate={~p"/browse"}>
             {dgettext("conversations", "Browse")}
           </.button>
         </.empty>

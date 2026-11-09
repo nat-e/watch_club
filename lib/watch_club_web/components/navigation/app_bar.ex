@@ -121,7 +121,7 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
 
   defp back([], true) do
     %{
-      link: [navigate: ~p"/"],
+      link: [navigate: ~p"/browse"],
       label: dgettext("nav", "Back"),
       history?: true,
       narrow_only?: false

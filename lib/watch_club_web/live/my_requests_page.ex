@@ -96,7 +96,7 @@ defmodule WatchClubWeb.MyRequestsPage do
             "Search for a title in Browse and request it. You'll see here when you can watch it."
           )}
         </:description>
-        <.button id="my-requests-browse" variant="secondary" navigate={~p"/"}>
+        <.button id="my-requests-browse" variant="secondary" navigate={~p"/browse"}>
           <:icon><Lucideicons.clapperboard /></:icon>
           {dgettext("nav", "Browse")}
         </.button>

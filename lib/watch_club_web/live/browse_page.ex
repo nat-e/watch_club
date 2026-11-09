@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
   Browse: the Library's posters, with a row of filters and a sort menu. Filters and the sort live
-  in the URL, so Back undoes them. Signing in opens it.
+  in the URL, so Back undoes them.
   """
   use WatchClubWeb, :live_view
 
@@ -472,7 +472,7 @@ defmodule WatchClubWeb.BrowsePage do
         fn {_param, value} -> value in [nil, false, ""] end
       )
 
-    ~p"/?#{params}"
+    ~p"/browse?#{params}"
   end
 
   # Keeps the sort, and moves focus to the first filter, as the clear buttons hide

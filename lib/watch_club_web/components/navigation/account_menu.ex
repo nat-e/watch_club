@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
 
   `account_menu/1` shows them in a drop-down, at the bottom of the sidebar. `account_page/1` shows
   them on a full page for phones, a `<dialog>` that a button opens with
-  `commandfor={id} command="show-modal"`.
+  `commandfor={id} command="show-modal"`, after the sections that have no phone tab.
   """
   use WatchClubWeb, :component
 
@@ -64,6 +64,10 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
   attr :id, :string, required: true
   attr :user, User, required: true
 
+  attr :sections, :list,
+    required: true,
+    doc: "the sections without a phone tab, with their badges"
+
   def account_page(assigns) do
     ~H"""
     <dialog
@@ -93,7 +97,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
           <.user_name user={@user} />
         </div>
 
-        <.account_page_links id={"#{@id}-account"} links={account_links()} />
+        <.account_page_links id={"#{@id}-account"} links={@sections ++ account_links()} />
 
         <div :if={@user.administrator?} class="flex flex-col gap-related">
           <h2 id={"#{@id}-administration-title"} class="px-related text-xs">
@@ -154,6 +158,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
         >
           <.lucide_icon name={link.icon} class="size-icon text-text-muted" />
           <span class="flex-1">{link.label}</span>
+          <.unread_badge :if={link[:badge]} count={link.badge} label={link.badge_label} />
           <Lucideicons.chevron_right class="size-icon text-text-subtle" />
         </.link>
       </li>
