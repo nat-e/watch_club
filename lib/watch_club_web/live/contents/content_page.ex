@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.Contents.ContentPage do
   @moduledoc """
-  The page of a Movie or a TV Show: what it is, from TMDB, how far the User got, with Play or
+  The page of a Movie or a TV Show: its persisted metadata, how far the User got, with Play or
   Resume, every TV Show Episode in a modal, the User's Conversations about it, with Recommend
   Content, the other Users who watched it, and the Playlists that hold it, with Add to Playlist.
   """
@@ -14,20 +14,27 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Playlists.PlaylistLink
   import WatchClubWeb.Contents.ContentPage.AddToPlaylistModal
 
-  alias WatchClub.Contents.Rating
+  alias WatchClub.Contents.{
+    Content,
+    ContentIdentity,
+    ContentType,
+    Genre,
+    MetadataUnavailable,
+    TvShow,
+    TvShowEpisode
+  }
+
   alias WatchClub.Conversations
   alias WatchClub.Conversations.{Conversation, Message, Participant}
-  alias WatchClub.Integrations.Tmdb.{MovieDetailsResponse, TvDetailsResponse}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Contents.ContentPage.{EpisodesModalLive, RecommendModalLive}
 
-  # Whether it's in the Library and the User finished it, and the episode Play plays, for the
-  # season Episodes opens on
+  # The Content and its implementation data shown on the page.
   @content_load [
     :has_media?,
     :actor_progress_status,
-    implementation: %{load: [tv_show: [:actor_next_episode]]}
+    implementation: %{load: [tv_show: [:actor_next_episode, :season_numbers, :season_count]]}
   ]
 
   @impl true
@@ -38,12 +45,29 @@ defmodule WatchClubWeb.Contents.ContentPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      title={title(@details)}
+      title={title(@content)}
       content_page?
     >
-      <article aria-labelledby="content-title" class="@container">
+      <div :if={!@content} class="@container pt-(--wc-app-bar-height)">
+        <.page width="full">
+          <.stack
+            id="content-loading"
+            role="status"
+            class="items-center py-section text-center text-text-muted @lg:flex-row @lg:justify-center"
+          >
+            <Lucideicons.loader_circle
+              aria-hidden="true"
+              class="size-icon-lg shrink-0 motion-safe:animate-spin"
+            />
+            <h1 id="content-title" data-page-title class="font-heading text-xl font-semibold">
+              {dgettext("contents", "Loading content…")}
+            </h1>
+          </.stack>
+        </.page>
+      </div>
+
+      <article :if={@content} aria-labelledby="content-title" class="@container">
         <.content_header
-          details={@details}
           content={@content}
           content_identity={@content_identity}
           current_user={@current_user}
@@ -56,29 +80,29 @@ defmodule WatchClubWeb.Contents.ContentPage do
             playlists={Enum.filter(@playlists, & &1.holds_content?)}
             current_user={@current_user}
           />
-          <.cast_section credits={@details.credits} />
+          <.cast_section people={localization(@content).cast} />
         </div>
       </article>
 
       <.live_component
-        :if={@episodes_open?}
+        :if={@content && @episodes_open?}
         id={EpisodesModalLive.dom_id()}
         module={EpisodesModalLive}
         content_identity={@content_identity}
-        title={title(@details)}
-        season_numbers={season_numbers(@details)}
-        initial_season={current_season_number(@content, @details)}
+        title={title(@content)}
+        season_numbers={season_numbers(@content)}
+        initial_season={current_season_number(@content)}
         in_library?={in_library?(@content)}
         current_user={@current_user}
         on_close={JS.push("close_episodes")}
       />
 
       <.live_component
-        :if={@recommend_open?}
+        :if={@content && @recommend_open?}
         id="recommend"
         module={RecommendModalLive}
         content_identity={@content_identity}
-        title={title(@details)}
+        title={title(@content)}
         recommended_by_ids={
           for conversation <- @conversations,
               conversation.recommended_by_id != @current_user.id,
@@ -89,8 +113,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
       />
 
       <.add_to_playlist_modal
-        :if={@new_playlist_form}
-        title={title(@details)}
+        :if={@content && @new_playlist_form}
+        title={title(@content)}
         playlists={Enum.filter(@playlists, & &1.editable_by?)}
         new_playlist_form={@new_playlist_form}
         current_user={@current_user}
@@ -99,8 +123,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  attr :details, :any, required: true, doc: "a `MovieDetailsResponse` or a `TvDetailsResponse`"
-  attr :content, :any, required: true, doc: "a `Content`, nil when WatchClub doesn't have it yet"
+  attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
@@ -111,16 +134,16 @@ defmodule WatchClubWeb.Contents.ContentPage do
     <%!-- The app bar sits over the header --%>
     <header class="relative isolate pt-(--wc-app-bar-height)">
       <div
-        :if={@details.backdrop_path}
+        :if={backdrop_path(@content)}
         aria-hidden="true"
         class="absolute inset-0 -z-10 overflow-hidden"
       >
-        <.tmdb_backdrop path={@details.backdrop_path} size="w1280" class="size-full object-cover" />
+        <.tmdb_backdrop path={backdrop_path(@content)} size="w1280" class="size-full object-cover" />
         <span class="absolute inset-0 bg-canvas/80"></span>
       </div>
       <div class="flex flex-col items-center gap-group px-page py-cluster text-center @3xl:flex-row @3xl:items-start @3xl:gap-cluster @3xl:py-section @3xl:text-left">
         <.tmdb_poster
-          path={@details.poster_path}
+          path={localization(@content).poster_path}
           size="w342"
           class="w-28 shrink-0 shadow-card @3xl:w-44"
         />
@@ -131,30 +154,29 @@ defmodule WatchClubWeb.Contents.ContentPage do
               data-page-title
               class="font-heading text-3xl font-semibold text-balance @3xl:text-4xl"
             >
-              {title(@details)}
+              {title(@content)}
             </h1>
             <.facts
-              details={@details}
+              content={@content}
               content_identity={@content_identity}
               locale={@current_user.settings.locale}
             />
           </div>
           <ul
-            :if={@details.genres != []}
+            :if={@content.genres != []}
             class="flex flex-wrap justify-center gap-tight @3xl:justify-start"
           >
-            <li :for={genre <- @details.genres}>
-              <.badge variant="secondary" size="sm">{genre.name}</.badge>
+            <li :for={genre <- @content.genres}>
+              <.badge variant="secondary" size="sm">{Genre.translated_label(genre)}</.badge>
             </li>
           </ul>
           <p
-            :if={@details.overview not in [nil, ""]}
+            :if={localization(@content).overview not in [nil, ""]}
             class="max-w-readable text-text-muted @max-3xl:line-clamp-3"
           >
-            {@details.overview}
+            {localization(@content).overview}
           </p>
           <.actions
-            details={@details}
             content={@content}
             content_identity={@content_identity}
             current_user={@current_user}
@@ -165,18 +187,18 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  attr :details, :any, required: true
+  attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :locale, :atom, required: true
 
   # "🇺🇸 2022 · Movie · 3 hr 9 min · ★ 7.3": the original language's flag next to the year, as on
-  # Browse's posters, and TMDB's rating, which opens the Content on TMDB.
+  # Browse's posters, and the persisted Rating, which opens the Content on TMDB.
   defp facts(assigns) do
     assigns =
       assign(assigns,
-        language: Languages.to_name(assigns.details.original_language),
-        length: length_label(assigns.details, assigns.locale),
-        rating: Rating.from_tmdb(assigns.details)
+        language: Languages.to_name(assigns.content.original_language),
+        length: length_label(assigns.content, assigns.locale),
+        rating: assigns.content.rating
       )
 
     ~H"""
@@ -189,9 +211,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
           title={dgettext("contents", "Original language: %{language}", language: @language)}
           class="text-base leading-none"
         >
-          {Languages.to_flag(@details.original_language)}
+          {Languages.to_flag(@content.original_language)}
         </span>
-        {Time.maybe_year(release_date(@details))}
+        {Time.maybe_year(@content.release_date)}
       </span>
       <span aria-hidden="true">·</span>
       <span>{ContentType.translated_label(@content_identity.type)}</span>
@@ -213,8 +235,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  attr :details, :any, required: true
-  attr :content, :any, required: true, doc: "a `Content`, or nil"
+  attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
 
@@ -226,9 +247,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
     assigns =
       assign(assigns,
         tv_show?: tv_show?,
-        episodes?: tv_show? and season_numbers(assigns.details) != [],
+        episodes?: tv_show? and season_numbers(assigns.content) != [],
         finished?: finished?(assigns.content),
-        trailer_url: trailer_url(assigns.details)
+        trailer_url: localization(assigns.content).trailer_url
       )
 
     ~H"""
@@ -492,12 +513,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  attr :credits, :any, required: true, doc: "TMDB's `Credits`"
+  attr :people, :list, required: true, doc: "the persisted cast, intentionally small"
 
   # Who directed it, then who's in it, as round photos
   defp cast_section(assigns) do
-    assigns = assign(assigns, :people, cast(assigns.credits))
-
     ~H"""
     <.page_section :if={@people != []} id="cast-heading" title={dgettext("contents", "Cast")}>
       <.scroll_row id="cast">
@@ -566,17 +585,24 @@ defmodule WatchClubWeb.Contents.ContentPage do
   def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     %{live_action: type, current_user: user} = socket.assigns
 
-    with {id, ""} <- Integer.parse(tmdb_id),
-         {identity, {:ok, details}} <- get_details(type, id, user) do
-      {:noreply,
-       socket
-       |> assign(details: details, content_identity: identity)
-       |> load_content!()
-       |> load_watchers!()
-       |> load_conversations!()
-       |> load_playlists!()}
-    else
-      _not_found ->
+    case Integer.parse(tmdb_id) do
+      {id, ""} ->
+        identity = content_identity_for(type, id)
+        otel_context = OpenTelemetry.Ctx.get_current()
+
+        {:noreply,
+         socket
+         |> assign(content_identity: identity)
+         |> load_content!()
+         |> load_watchers!()
+         |> load_conversations!()
+         |> load_playlists!()
+         |> start_async(:refresh_content, fn ->
+           OpenTelemetry.Ctx.attach(otel_context)
+           Contents.get_or_refresh_content(identity, actor: user)
+         end)}
+
+      _invalid_url ->
         {:noreply,
          socket
          |> put_flash(:error, dgettext("contents", "This movie or TV show doesn't exist"))
@@ -584,12 +610,21 @@ defmodule WatchClubWeb.Contents.ContentPage do
     end
   end
 
-  # The Content's identity, and what it is from TMDB
-  defp get_details(:movie, tmdb_id, user),
-    do: {ContentIdentity.for_movie(tmdb_id), Contents.get_movie_details(tmdb_id, actor: user)}
+  @impl true
+  def handle_async(:refresh_content, {:ok, {:ok, _content}}, socket), do: {:noreply, socket}
 
-  defp get_details(:tv_show, tmdb_id, user),
-    do: {ContentIdentity.for_tv_show(tmdb_id), Contents.get_tv_show_details(tmdb_id, actor: user)}
+  def handle_async(:refresh_content, {:ok, {:error, %{errors: errors}}}, socket) do
+    message =
+      if Enum.any?(errors, &match?(%MetadataUnavailable{reason: :not_found}, &1)),
+        do: dgettext("contents", "This movie or TV show doesn't exist"),
+        else: dgettext("contents", "Content details are unavailable. Please try again later.")
+
+    {:noreply, socket |> put_flash(:error, message) |> push_navigate(to: ~p"/")}
+  end
+
+  # The Content's identity from the URL
+  defp content_identity_for(:movie, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
+  defp content_identity_for(:tv_show, tmdb_id), do: ContentIdentity.for_tv_show(tmdb_id)
 
   @impl true
   def handle_event("open_episodes", _params, socket),
@@ -684,7 +719,15 @@ defmodule WatchClubWeb.Contents.ContentPage do
       # Created when someone first marks it or recommends it, or refreshed
       %{resource: Content, data: %Content{} = content} ->
         if ContentIdentity.from_content(content) == identity,
-          do: {:noreply, socket |> load_content!() |> load_watchers!()},
+          do:
+            {:noreply,
+             socket
+             |> load_content!()
+             |> load_watchers!()
+             |> then(fn socket ->
+               if socket.assigns.episodes_open?, do: EpisodesModalLive.reload_episodes()
+               socket
+             end)},
           else: {:noreply, socket}
 
       # A Conversation about it that the User is in started, or got a Message
@@ -705,9 +748,9 @@ defmodule WatchClubWeb.Contents.ContentPage do
     assign(
       socket,
       :content,
-      Contents.get_content_by_external_id!(identity.external_id_source, identity.external_id,
-        load: @content_load,
+      Contents.get_content_by_identity!(identity,
         not_found_error?: false,
+        load: @content_load,
         actor: user
       )
     )
@@ -762,48 +805,43 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp finished?(content), do: content != nil and content.actor_progress_status == :completed
 
-  # The season of the episode Play plays, else the first one
-  defp current_season_number(
-         %Content{implementation: %TvShow{actor_next_episode: %TvShowEpisode{} = episode}},
-         _details
-       ),
-       do: episode.season_number
-
-  defp current_season_number(_content, details), do: details |> season_numbers() |> List.first()
-
-  # The seasons of a TV Show with episodes, without its specials
-  defp season_numbers(%TvDetailsResponse{} = details) do
-    for season <- details.seasons,
-        season.season_number >= 1 and season.episode_count > 0,
-        do: season.season_number
+  defp localization(%Content{implementation: implementation} = content) do
+    implementation.best_localization ||
+      %{
+        title: content.original_title,
+        overview: nil,
+        poster_path: nil,
+        runtime: nil,
+        cast: [],
+        trailer_url: nil
+      }
   end
 
-  defp title(%MovieDetailsResponse{title: title}), do: title
-  defp title(%TvDetailsResponse{name: name}), do: name
+  defp title(nil), do: dgettext("contents", "Loading content…")
+  defp title(content), do: localization(content).title
 
-  defp release_date(%MovieDetailsResponse{release_date: date}), do: date
-  defp release_date(%TvDetailsResponse{first_air_date: date}), do: date
+  defp backdrop_path(%Content{implementation: implementation}),
+    do: implementation.backdrop_path
 
-  defp length_label(%MovieDetailsResponse{runtime: minutes}, locale),
-    do: Time.minutes(minutes, locale)
+  # The season of the episode Play plays, else the first one
+  defp current_season_number(%Content{
+         implementation: %TvShow{actor_next_episode: %TvShowEpisode{} = episode}
+       }),
+       do: episode.season_number
 
-  defp length_label(%TvDetailsResponse{} = details, _locale) do
-    case length(season_numbers(details)) do
+  defp current_season_number(content), do: content |> season_numbers() |> List.first()
+
+  defp season_numbers(%Content{type: :tv_show, implementation: show}), do: show.season_numbers
+  defp season_numbers(%Content{}), do: []
+
+  defp length_label(%Content{type: :movie} = content, locale),
+    do: Time.minutes(localization(content).runtime, locale)
+
+  defp length_label(%Content{type: :tv_show, implementation: show}, _locale) do
+    case show.season_count do
       0 -> nil
       count -> dngettext("contents", "%{count} season", "%{count} seasons", count)
     end
-  end
-
-  # The director, then up to 17 actors in billing order
-  defp cast(credits) do
-    cast = (credits && credits.cast) || []
-    crew = (credits && credits.crew) || []
-    directors = crew |> Enum.filter(&(&1.job == "Director")) |> Enum.take(1)
-    actors = cast |> Enum.sort_by(&(&1.order || 999_999)) |> Enum.take(17)
-
-    (directors ++ actors)
-    |> Enum.uniq_by(&(&1.id || &1.name))
-    |> Enum.map(&%{name: &1.name, role: &1.character || &1.job, profile_path: &1.profile_path})
   end
 
   defp initials(name),
@@ -814,19 +852,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp tmdb_url(%ContentIdentity{type: :tv_show, external_id: id}),
     do: "https://www.themoviedb.org/tv/#{id}"
-
-  # The official YouTube trailer, else any YouTube trailer, else a teaser
-  defp trailer_url(details) do
-    videos = (details.videos && details.videos.results) || []
-
-    trailer =
-      Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Trailer" and &1.official)) ||
-        Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Trailer")) ||
-        Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Teaser"))
-
-    if trailer && trailer.key not in [nil, ""],
-      do: "https://www.youtube.com/watch?v=#{trailer.key}"
-  end
 
   defp watched_hint(true = _tv_show?, true = _finished?),
     do: dgettext("contents", "Mark all as not watched")

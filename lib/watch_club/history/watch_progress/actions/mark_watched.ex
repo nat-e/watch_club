@@ -18,7 +18,11 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
   @impl true
   def run(input, _opts, context) do
     actor = context.actor
-    content = Contents.get_or_create_content!(input.arguments.content_identity, actor)
+
+    content =
+      Contents.get_or_refresh_content!(input.arguments.content_identity, %{max_age: :infinity},
+        scope: context
+      )
 
     notifications =
       mark_watched!(

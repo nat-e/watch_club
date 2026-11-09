@@ -1,23 +1,24 @@
 defmodule WatchClub.Contents.ContentTest do
-  use WatchClub.DataCase
+  use WatchClub.DataCase, async: false
 
   import ExUnit.CaptureLog
   import WatchClub.Contents
 
   alias WatchClub.History
-  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.MediaCatalog
   alias WatchClub.SystemActor
 
   alias WatchClub.Contents.{
     Content,
     ContentIdentity,
+    MetadataUnavailable,
     Movie,
     MovieLocalization,
     SearchResult,
     SearchResultsPage,
     TvShow,
     TvShowEpisode,
+    TvShowEpisodeLocalization,
     TvShowLocalization
   }
 
@@ -28,14 +29,26 @@ defmodule WatchClub.Contents.ContentTest do
     member = generate(user())
 
     Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-      tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
-      Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", tmdb_id))
+      case Regex.run(~r{/tv/(\d+)/season/(\d+)$}, conn.request_path) do
+        [_, _tmdb_id, season] ->
+          Req.Test.json(conn, tv_season_details_fixture(String.to_integer(season)))
+
+        nil ->
+          case Regex.run(~r{/tv/(\d+)$}, conn.request_path) do
+            [_, tmdb_id] ->
+              Req.Test.json(conn, Map.put(tv_details_fixture(), "id", String.to_integer(tmdb_id)))
+
+            nil ->
+              tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+              Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", tmdb_id))
+          end
+      end
     end)
 
     {:ok, admin: admin, member: member}
   end
 
-  describe "create_movie/*" do
+  describe "create_content/*" do
     test "creates a movie" do
       actor = generate(user(locale: :fr_FR))
 
@@ -54,7 +67,7 @@ defmodule WatchClub.Contents.ContentTest do
                    title: "La Guerre des étoiles"
                  }
                }
-             } = content = create_movie!("11", actor: actor)
+             } = content = create_content!(ContentIdentity.for_movie("11"), actor: actor)
 
       assert [
                %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
@@ -72,7 +85,7 @@ defmodule WatchClub.Contents.ContentTest do
                |> Ash.read_one!(actor: actor, authorize?: false)
     end
 
-    test "raises when TMDB fetch fails" do
+    test "returns an error when TMDB fetch fails" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn
         |> Plug.Conn.put_status(404)
@@ -80,7 +93,12 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       capture_log(fn ->
-        assert_raise Ash.Error.Unknown, fn -> create_movie("404", actor: generate(user())) end
+        assert {:error, %Ash.Error.Unknown{} = error} =
+                 create_content(ContentIdentity.for_movie("404"), actor: generate(user()))
+
+        assert Enum.any?(error.errors, fn error ->
+                 match?(%WatchClub.Contents.MetadataUnavailable{reason: :not_found}, error)
+               end)
       end)
     end
 
@@ -107,12 +125,14 @@ defmodule WatchClub.Contents.ContentTest do
                implementation: %Movie{
                  best_localization: %MovieLocalization{title: "Star Wars"}
                }
-             } = create_movie!("12", actor: generate(user()))
+             } = create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
 
     test "system actor can create a movie without selecting libraries" do
       assert %Content{type: :movie, external_id: "11"} =
-               create_movie!("11", actor: WatchClub.SystemActor.actor())
+               create_content!(ContentIdentity.for_movie("11"),
+                 actor: WatchClub.SystemActor.actor()
+               )
     end
 
     test "leaves out the rating of a movie too few people voted on" do
@@ -127,7 +147,8 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, response)
       end)
 
-      assert %Content{rating: nil} = create_movie!("12", actor: generate(user()))
+      assert %Content{rating: nil} =
+               create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
 
     test "rounds the rating to one decimal" do
@@ -142,18 +163,25 @@ defmodule WatchClub.Contents.ContentTest do
         Req.Test.json(conn, response)
       end)
 
-      assert %Content{rating: 8.0} = create_movie!("12", actor: generate(user()))
+      assert %Content{rating: 8.0} =
+               create_content!(ContentIdentity.for_movie("12"), actor: generate(user()))
     end
-  end
 
-  describe "create_tv_show/*" do
     test "creates a TV show with all available episodes" do
       actor = generate(user(locale: :fr_FR))
 
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
-        Req.Test.json(conn, Map.put(tv_details_fixture(), "id", tmdb_id))
-      end)
+      french_season =
+        tv_season_details_fixture(1)
+        |> Map.update!("episodes", fn [first | rest] ->
+          [
+            first
+            |> Map.put("name", "Dulcinea FR")
+            |> Map.put("overview", "Un appel de détresse.")
+            | rest
+          ]
+        end)
+
+      stub_tv_metadata(tv_details_fixture(), %{{1, "fr-FR"} => french_season})
 
       assert %Content{
                type: :tv_show,
@@ -169,38 +197,39 @@ defmodule WatchClub.Contents.ContentTest do
                  best_localization: %TvShowLocalization{
                    iso_639_1: "fr",
                    iso_3166_1: "FR",
-                   title: "The Expanse FR"
+                   title: "The Expanse FR",
+                   poster_path: "/poster-fr.jpg"
                  }
                }
-             } = content = create_tv_show!("42", actor: actor)
+             } = content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       assert [
-               %TvShowEpisode{season_number: 1, episode_number: 1},
+               %TvShowEpisode{
+                 season_number: 1,
+                 episode_number: 1,
+                 runtime: 48,
+                 best_localization: %TvShowEpisodeLocalization{
+                   title: "Dulcinea FR",
+                   overview: "Un appel de détresse."
+                 }
+               },
                %TvShowEpisode{season_number: 1, episode_number: 2},
-               %TvShowEpisode{season_number: 1, episode_number: 3},
-               %TvShowEpisode{season_number: 2, episode_number: 1},
-               %TvShowEpisode{season_number: 2, episode_number: 2}
+               %TvShowEpisode{season_number: 2, episode_number: 1}
              ] =
                TvShowEpisode
                |> Ash.Query.filter(tv_show_id == ^content.id)
                |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
+               |> Ash.Query.load(:best_localization)
                |> Ash.read!(actor: actor, authorize?: false)
     end
 
-    test "maps per-season air dates onto episodes, concurrently and best-effort" do
+    test "stores only the episode positions returned by the season endpoint" do
       actor = generate(user(locale: :en_US))
 
-      # Route the base details vs. the per-season endpoints the concurrent
-      # fan-out hits. Season 1's fixture lists 2 episodes though details say 3,
-      # so S1E3 has no date — best-effort leaves it nil rather than failing.
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        case Regex.run(~r{/season/(\d+)$}, conn.request_path) do
-          [_, season] -> Req.Test.json(conn, tv_season_details_fixture(String.to_integer(season)))
-          nil -> Req.Test.json(conn, tv_details_fixture())
-        end
-      end)
+      # Root counts can exceed the positions returned by the season endpoints.
+      stub_tv_metadata(tv_details_fixture(), %{2 => tv_season_details_fixture(2, [1, 2])})
 
-      content = create_tv_show!("42", actor: actor)
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       air_dates =
         TvShowEpisode
@@ -210,12 +239,12 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert air_dates[{1, 1}] == ~D[2015-12-14]
       assert air_dates[{1, 2}] == ~D[2015-12-15]
-      assert air_dates[{1, 3}] == nil
+      assert Map.get(air_dates, {1, 3}) == nil
       assert air_dates[{2, 1}] == ~D[2017-02-01]
-      assert air_dates[{2, 2}] == nil
+      assert air_dates[{2, 2}] == ~D[2015-12-16]
     end
 
-    test "raises when TMDB fetch fails" do
+    test "returns an error when a TV Show fetch fails" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn
         |> Plug.Conn.put_status(404)
@@ -223,31 +252,34 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       capture_log(fn ->
-        assert_raise Ash.Error.Unknown, fn -> create_tv_show("404", actor: generate(user())) end
+        assert {:error, %Ash.Error.Unknown{} = error} =
+                 create_content(ContentIdentity.for_tv_show("404"), actor: generate(user()))
+
+        assert Enum.any?(error.errors, fn error ->
+                 match?(%WatchClub.Contents.MetadataUnavailable{reason: :not_found}, error)
+               end)
       end)
     end
 
     test "system actor can create a TV show without selecting libraries" do
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, tv_details_fixture())
-      end)
+      stub_tv_metadata()
 
       assert %Content{type: :tv_show, external_id: "42"} =
-               create_tv_show!("42", actor: WatchClub.SystemActor.actor())
+               create_content!(ContentIdentity.for_tv_show("42"),
+                 actor: WatchClub.SystemActor.actor()
+               )
     end
   end
 
-  describe "refresh_tv_show/*" do
-    test "mirrors TMDB: inserts missing episodes, preserves existing ones, destroys vanished ones" do
+  describe "refresh_metadata/*" do
+    test "retains absent episodes and refreshes returned episode positions in place" do
       actor = generate(user(locale: :en_US))
       system = WatchClub.SystemActor.actor()
 
-      # Initial create with the standard fixture (S1: 3 eps, S2: 2 eps).
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, tv_details_fixture())
-      end)
+      # Create only the episode positions present in the season endpoint payload.
+      stub_tv_metadata(tv_details_fixture(), %{2 => tv_season_details_fixture(2, [1, 2])})
 
-      content = create_tv_show!("42", actor: actor)
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
 
       original_episodes =
         TvShowEpisode
@@ -255,13 +287,44 @@ defmodule WatchClub.Contents.ContentTest do
         |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
         |> Ash.read!(authorize?: false)
 
-      assert length(original_episodes) == 5
+      assert length(original_episodes) == 4
 
       # Capture the id of S1E1 so we can verify it survives the refresh.
       s1e1_id =
         Enum.find(original_episodes, &(&1.season_number == 1 and &1.episode_number == 1)).id
 
-      # Refresh returns: S1 grows to 4 eps, S2 shrinks to 1 ep.
+      original_s2e2 =
+        Enum.find(original_episodes, &(&1.season_number == 2 and &1.episode_number == 2))
+
+      History.mark_content_watched!(
+        ContentIdentity.from_content(content),
+        %{season_number: 2, episode_number: 2},
+        actor: actor
+      )
+
+      add_episode_video!(content, 2, 2)
+
+      original_s2e2_with_relations =
+        TvShowEpisode
+        |> Ash.Query.filter(id == ^original_s2e2.id)
+        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.read_one!(authorize?: false)
+
+      original_s2e2_localizations =
+        TvShowEpisodeLocalization
+        |> Ash.read!(authorize?: false)
+        |> Enum.filter(&(&1.tv_show_episode_id == original_s2e2.id))
+        |> Map.new(&{{&1.iso_639_1, &1.iso_3166_1}, {&1.id, &1.title, &1.overview}})
+
+      original_localization_ids =
+        TvShowEpisodeLocalization
+        |> Ash.read!(authorize?: false)
+        |> Enum.filter(
+          &(&1.tv_show_episode_id in Enum.map(original_episodes, fn episode -> episode.id end))
+        )
+        |> Map.new(&{{&1.tv_show_episode_id, &1.iso_639_1, &1.iso_3166_1}, &1.id})
+
+      # The season endpoint adds S1E4. Missing S2E2 is retained.
       refreshed_fixture =
         tv_details_fixture()
         |> Map.put("seasons", [
@@ -270,23 +333,65 @@ defmodule WatchClub.Contents.ContentTest do
           %{"season_number" => 2, "episode_count" => 1}
         ])
 
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, refreshed_fixture)
-      end)
+      refreshed_season =
+        tv_season_details_fixture(1, [1, 2, 3, 4])
+        |> Map.update!("episodes", fn [first | rest] ->
+          [Map.put(first, "name", "Dulcinea, Updated") | rest]
+        end)
 
-      assert %Content{type: :tv_show} = refresh_tv_show!(content, actor: system)
+      stub_tv_metadata(refreshed_fixture, %{1 => refreshed_season})
+
+      assert %Content{type: :tv_show} = refresh_metadata!(content, %{}, actor: system)
 
       assert [
                %TvShowEpisode{season_number: 1, episode_number: 1, id: ^s1e1_id},
                %TvShowEpisode{season_number: 1, episode_number: 2},
                %TvShowEpisode{season_number: 1, episode_number: 3},
                %TvShowEpisode{season_number: 1, episode_number: 4},
-               %TvShowEpisode{season_number: 2, episode_number: 1}
+               %TvShowEpisode{season_number: 2, episode_number: 1},
+               %TvShowEpisode{season_number: 2, episode_number: 2}
              ] =
                TvShowEpisode
                |> Ash.Query.filter(tv_show_id == ^content.id)
                |> Ash.Query.sort(season_number: :asc, episode_number: :asc)
                |> Ash.read!(authorize?: false)
+
+      refreshed_localizations =
+        TvShowEpisodeLocalization
+        |> Ash.read!(authorize?: false)
+        |> Enum.filter(
+          &(&1.tv_show_episode_id in Enum.map(original_episodes, fn episode -> episode.id end))
+        )
+
+      assert Map.new(
+               refreshed_localizations,
+               &{{&1.tv_show_episode_id, &1.iso_639_1, &1.iso_3166_1}, &1.id}
+             ) ==
+               original_localization_ids
+
+      assert Enum.any?(refreshed_localizations, &(&1.title == "Dulcinea, Updated"))
+
+      refreshed_s2e2 =
+        TvShowEpisode
+        |> Ash.Query.filter(id == ^original_s2e2.id)
+        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.read_one!(authorize?: false)
+
+      assert refreshed_s2e2.air_date == original_s2e2.air_date
+      assert refreshed_s2e2.runtime == original_s2e2.runtime
+      assert refreshed_s2e2.still_path == original_s2e2.still_path
+
+      assert Enum.map(refreshed_s2e2.videos, & &1.id) ==
+               Enum.map(original_s2e2_with_relations.videos, & &1.id)
+
+      assert Enum.map(refreshed_s2e2.watch_progresses, & &1.id) ==
+               Enum.map(original_s2e2_with_relations.watch_progresses, & &1.id)
+
+      assert TvShowEpisodeLocalization
+             |> Ash.read!(authorize?: false)
+             |> Enum.filter(&(&1.tv_show_episode_id == original_s2e2.id))
+             |> Map.new(&{{&1.iso_639_1, &1.iso_3166_1}, {&1.id, &1.title, &1.overview}}) ==
+               original_s2e2_localizations
     end
 
     test "stores the genres and rating of a TV Show created without them" do
@@ -298,7 +403,574 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       assert %Content{genres: [:drama, :science_fiction, :fantasy], rating: 8.4} =
-               refresh_tv_show!(tv_show, actor: SystemActor.actor())
+               refresh_metadata!(tv_show, %{}, actor: SystemActor.actor())
+    end
+  end
+
+  describe "get_or_refresh_content/*" do
+    setup do
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [
+          [:watch_club, :contents, :metadata_fetch, :stop],
+          [:watch_club, :contents, :metadata_fetch, :exception],
+          [:watch_club, :contents, :metadata_fetch],
+          [:watch_club, :contents, :metadata_request],
+          [:watch_club, :tmdb, :request, :stop]
+        ])
+
+      on_exit(fn ->
+        :telemetry.detach(ref)
+
+        # A test that fails while its fetch is blocked must not leave it to the next tests
+        for task <- Task.Supervisor.children(WatchClub.Contents.MetadataFetcher.TaskSupervisor),
+            do:
+              Task.Supervisor.terminate_child(
+                WatchClub.Contents.MetadataFetcher.TaskSupervisor,
+                task
+              )
+      end)
+
+      {:ok, telemetry_ref: ref}
+    end
+
+    test "creates missing content and loads its implementation with the caller's actor", %{
+      telemetry_ref: ref
+    } do
+      actor = generate(user(locale: :fr_FR))
+
+      details =
+        tmdb_fixture("movie_details_11")
+        |> Map.put("id", 871)
+        |> Map.put("original_title", "Freshly imported")
+
+      stub_movie_metadata(details)
+
+      assert %Content{
+               type: :movie,
+               external_id: "871",
+               original_title: "Freshly imported",
+               metadata_refreshed_at: %DateTime{},
+               implementation: %Movie{
+                 best_localization: %MovieLocalization{title: "La Guerre des étoiles"}
+               }
+             } =
+               get_or_refresh_content!(ContentIdentity.for_movie("871"),
+                 actor: actor,
+                 load: [:implementation]
+               )
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 1}, %{type: :movie, result: :created}}
+
+      assert duration > 0
+
+      assert_received {[:watch_club, :contents, :metadata_request], ^ref, %{count: 1},
+                       %{served: :fetched}}
+
+      for _ <- 1..2 do
+        assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                         %{endpoint: "/movie/:id", status: "2xx"}}
+
+        assert duration > 0
+      end
+    end
+
+    test "refreshes stale metadata and updates localizations in place", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -25 * 60 * 60, :second)
+      content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+      localization_ids =
+        MovieLocalization
+        |> Ash.Query.filter(movie_id == ^content.id)
+        |> Ash.read!(authorize?: false)
+        |> Map.new(&{{&1.iso_639_1, &1.iso_3166_1}, &1.id})
+
+      details =
+        tmdb_fixture("movie_details_11")
+        |> Map.put("id", String.to_integer(content.external_id))
+        |> Map.put("original_title", "Corrected title")
+        |> Map.put("credits", %{
+          "cast" => [
+            %{
+              "id" => 42,
+              "name" => "Mark Hamill",
+              "character" => "Luke Skywalker",
+              "profile_path" => "/mark-hamill.jpg",
+              "order" => 0
+            }
+          ],
+          "crew" => []
+        })
+        |> Map.put("videos", %{
+          "results" => [
+            %{
+              "id" => "trailer",
+              "key" => "abc123",
+              "name" => "Official trailer",
+              "site" => "YouTube",
+              "type" => "Trailer",
+              "official" => true
+            }
+          ]
+        })
+        |> Map.update!("translations", fn translations ->
+          Map.update!(translations, "translations", fn translations ->
+            Enum.map(translations, fn translation ->
+              if translation["iso_639_1"] == "fr" do
+                update_in(translation, ["data"], &Map.put(&1, "title", "Titre corrigé"))
+              else
+                translation
+              end
+            end)
+          end)
+        end)
+
+      stub_movie_metadata(details)
+
+      assert %Content{original_title: "Corrected title", metadata_refreshed_at: new_refreshed_at} =
+               get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+
+      assert DateTime.compare(new_refreshed_at, refreshed_at) == :gt
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 1}, %{type: :movie, result: :refreshed}}
+
+      assert duration > 0
+
+      localizations =
+        MovieLocalization
+        |> Ash.Query.filter(movie_id == ^content.id)
+        |> Ash.read!(authorize?: false)
+
+      assert Map.new(localizations, &{{&1.iso_639_1, &1.iso_3166_1}, &1.id}) == localization_ids
+      assert Enum.find(localizations, &(&1.iso_639_1 == "fr")).title == "Titre corrigé"
+
+      assert Enum.all?(localizations, fn localization ->
+               localization.cast == [
+                 %WatchClub.Contents.CastMember{
+                   name: "Mark Hamill",
+                   role: "Luke Skywalker",
+                   profile_path: "/mark-hamill.jpg"
+                 }
+               ] and localization.trailer_url == "https://www.youtube.com/watch?v=abc123"
+             end)
+    end
+
+    test "keeps Movies and TV Shows with the same TMDB ID separate", %{member: actor} do
+      movie = get_or_refresh_content!(ContentIdentity.for_movie(42), actor: actor)
+      tv_show = get_or_refresh_content!(ContentIdentity.for_tv_show(42), actor: actor)
+
+      assert movie.type == :movie
+      assert tv_show.type == :tv_show
+      assert movie.id != tv_show.id
+
+      assert get_or_refresh_content!(ContentIdentity.for_movie(42), actor: actor).id == movie.id
+
+      assert get_or_refresh_content!(ContentIdentity.for_tv_show(42), actor: actor).id ==
+               tv_show.id
+    end
+
+    test "concurrent creators share one fetch and load with each caller's actor", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      parent = self()
+      french_user = generate(user(locale: :fr_FR))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        send(parent, {:fetched_movie_metadata, URI.decode_query(conn.query_string)["language"]})
+
+        if URI.decode_query(conn.query_string)["language"] == "en-US" do
+          send(parent, {:fetch_started, self()})
+          receive do: (:finish_fetch -> :ok)
+        end
+
+        Req.Test.json(conn, tmdb_fixture("movie_details_11"))
+      end)
+
+      callers =
+        for user <- [actor, french_user, actor, french_user] do
+          Task.async(fn ->
+            get_or_refresh_content!(ContentIdentity.for_movie(11),
+              actor: user,
+              load: [:implementation]
+            )
+          end)
+        end
+
+      assert_receive {:fetch_started, fetch}
+      await_metadata_callers(ContentIdentity.for_movie(11), 4)
+      send(fetch, :finish_fetch)
+      contents = Task.await_many(callers)
+
+      assert length(Enum.uniq_by(contents, & &1.id)) == 1
+
+      assert Enum.map(contents, & &1.implementation.best_localization.title) ==
+               ["Star Wars", "La Guerre des étoiles", "Star Wars", "La Guerre des étoiles"]
+
+      assert_receive {:fetched_movie_metadata, "en-US"}
+      assert_receive {:fetched_movie_metadata, "fr-FR"}
+      refute_receive {:fetched_movie_metadata, _}, 0
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 4}, %{type: :movie, result: :created}}
+
+      assert duration > 0
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
+
+      assert_received {[:watch_club, :contents, :metadata_fetch], ^ref, %{callers: 4},
+                       %{type: :movie}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch], ^ref, _, _}
+
+      for _ <- 1..4 do
+        assert_received {[:watch_club, :contents, :metadata_request], ^ref, _,
+                         %{served: :fetched}}
+      end
+    end
+
+    test "concurrent callers share one failed refresh and all receive stored Content", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      content =
+        generate(movie(metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -2, :day)))
+
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      log =
+        capture_log(fn ->
+          callers =
+            for _ <- 1..4 do
+              Task.async(fn ->
+                get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+              end)
+            end
+
+          assert_receive {:fetch_started, fetch}
+          await_metadata_callers(ContentIdentity.from_content(content), 4)
+          send(fetch, :finish_fetch)
+
+          for stored <- Task.await_many(callers) do
+            assert stored.id == content.id
+            assert stored.metadata_refreshed_at == content.metadata_refreshed_at
+            assert stored.updated_at == content.updated_at
+          end
+
+          refute_receive {:fetch_started, _}, 0
+        end)
+
+      assert length(Regex.scan(~r/Content metadata is unavailable/, log)) == 1
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 4},
+                       %{type: :movie, result: :kept_stored}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
+    end
+
+    test "unexpected fetch crashes exit every waiting caller", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+        raise "broken metadata"
+      end)
+
+      capture_log(fn ->
+        callers =
+          for _ <- 1..4 do
+            Task.async(fn ->
+              catch_exit(get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor))
+            end)
+          end
+
+        assert_receive {:fetch_started, fetch}
+        await_metadata_callers(ContentIdentity.for_movie(11), 4)
+        send(fetch, :finish_fetch)
+
+        for reason <- Task.await_many(callers) do
+          assert {%Ash.Error.Unknown{} = error, stacktrace} = reason
+          assert Exception.message(error) =~ "broken metadata"
+          assert stacktrace != []
+        end
+
+        refute_receive {:fetch_started, _}, 0
+
+        assert_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref,
+                         %{duration: duration, callers: 4},
+                         %{type: :movie, kind: :exit, stacktrace: stacktrace}}
+
+        assert duration > 0
+        assert stacktrace != []
+
+        assert_received {[:watch_club, :contents, :metadata_fetch], ^ref, %{callers: 4},
+                         %{type: :movie}}
+
+        refute_received {[:watch_club, :contents, :metadata_fetch], ^ref, _, _}
+        refute_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref, _, _}
+        refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
+      end)
+    end
+
+    test "a killed fetch exits every waiting caller without crashing the fetcher", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+      end)
+
+      capture_log(fn ->
+        callers =
+          for _ <- 1..4 do
+            Task.async(fn ->
+              catch_exit(get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor))
+            end)
+          end
+
+        assert_receive {:fetch_started, fetch}
+        await_metadata_callers(ContentIdentity.for_movie(11), 4)
+        Process.exit(fetch, :kill)
+
+        assert Task.await_many(callers) == [:killed, :killed, :killed, :killed]
+        assert Process.alive?(Process.whereis(WatchClub.Contents.MetadataFetcher))
+
+        assert_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref,
+                         %{callers: 4}, %{type: :movie, reason: :killed, stacktrace: []}}
+      end)
+    end
+
+    test "respects a shorter max_age", %{member: actor} do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -16, :minute)
+      content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+      assert %Content{id: id, metadata_refreshed_at: new_refreshed_at} =
+               get_or_refresh_content!(ContentIdentity.from_content(content), %{max_age: 15 * 60},
+                 actor: actor
+               )
+
+      assert id == content.id
+      assert DateTime.compare(new_refreshed_at, refreshed_at) == :gt
+    end
+
+    test "max_age: :infinity never refreshes stored Content", %{member: actor} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("any-age metadata must not make a TMDB request")
+      end)
+
+      for refreshed_at <- [DateTime.add(DateTime.utc_now(), -2, :day), nil] do
+        content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+        assert %Content{id: id, metadata_refreshed_at: ^refreshed_at, updated_at: updated_at} =
+                 get_or_refresh_content!(
+                   ContentIdentity.from_content(content),
+                   %{max_age: :infinity},
+                   actor: actor
+                 )
+
+        assert id == content.id
+        assert updated_at == content.updated_at
+      end
+    end
+
+    test "returns fresh content without HTTP requests or writes", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -60, :second)
+      content = generate(movie(metadata_refreshed_at: refreshed_at))
+      original_updated_at = content.updated_at
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("fresh metadata must not make a TMDB request")
+      end)
+
+      assert %Content{
+               id: id,
+               metadata_refreshed_at: ^refreshed_at,
+               updated_at: ^original_updated_at
+             } =
+               get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+
+      assert id == content.id
+
+      assert_received {[:watch_club, :contents, :metadata_request], ^ref, %{count: 1},
+                       %{served: :stored}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
+    end
+
+    test "returns stored content unchanged when a refresh fails", %{member: actor} do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -25 * 60 * 60, :second)
+      content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      assert %Content{id: id, metadata_refreshed_at: ^refreshed_at} =
+               get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+
+      assert id == content.id
+    end
+
+    test "keeps stale TV Show data when one season localization fails", %{member: actor} do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -25 * 60 * 60, :second)
+
+      content =
+        generate(
+          tv_show(
+            num_seasons: 2,
+            episodes_per_season: 1,
+            metadata_refreshed_at: refreshed_at
+          )
+        )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        case Regex.run(~r{/tv/(\d+)/season/(\d+)$}, conn.request_path) do
+          [_, _tmdb_id, "2"] ->
+            if URI.decode_query(conn.query_string)["language"] == "fr-FR" do
+              Plug.Conn.send_resp(conn, 503, "")
+            else
+              Req.Test.json(conn, tv_season_details_fixture(2))
+            end
+
+          [_, _tmdb_id, _season] ->
+            Req.Test.json(conn, tv_season_details_fixture(1))
+
+          nil ->
+            [_, tmdb_id] = Regex.run(~r{/tv/(\d+)$}, conn.request_path)
+            Req.Test.json(conn, Map.put(tv_details_fixture(), "id", String.to_integer(tmdb_id)))
+        end
+      end)
+
+      episodes_before =
+        TvShowEpisode
+        |> Ash.Query.filter(tv_show_id == ^content.id)
+        |> Ash.read!(authorize?: false)
+
+      assert %Content{metadata_refreshed_at: ^refreshed_at} =
+               get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+
+      assert Ash.get!(Content, content.id, authorize?: false).original_title ==
+               content.original_title
+
+      assert TvShowEpisode
+             |> Ash.Query.filter(tv_show_id == ^content.id)
+             |> Ash.read!(authorize?: false) == episodes_before
+    end
+
+    test "returns a metadata error when content is missing upstream", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(404)
+        |> Req.Test.json(%{"status_message" => "Not found"})
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie("404"), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :not_found}, error)
+      end)
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
+                       %{type: :movie, result: :not_found}}
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                       %{endpoint: "/movie/:id", status: "404"}}
+
+      assert duration > 0
+    end
+
+    test "returns an error when Content is not stored and TMDB is unavailable", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :server_error}, error)
+      end)
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
+                       %{type: :movie, result: :unavailable}}
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                       %{endpoint: "/movie/:id", status: "5xx"}}
+
+      assert duration > 0
+    end
+
+    test "returns a metadata error when TMDB rate limits requests", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 429, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :rate_limited}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "429"}}
+    end
+
+    test "returns a metadata error when TMDB rejects the request", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 401, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :client_error}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "4xx"}}
+    end
+
+    test "returns a metadata error when the TMDB connection times out", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.transport_error(conn, :timeout)
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :unknown_error}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "error"}}
     end
   end
 
@@ -539,61 +1211,92 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  describe "get_tv_show_details/*" do
-    test "returns TV show details with season summaries" do
-      actor = generate(user(locale: :en_US))
+  # Keeps the HTTP request blocked until every caller joined the Content's fetch, for up to 5 seconds
+  defp await_metadata_callers(identity, count, attempts \\ 500)
 
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        if String.ends_with?(conn.request_path, "/tv/42") do
-          Req.Test.json(conn, tv_details_fixture())
-        else
-          conn
-          |> Plug.Conn.put_status(500)
-          |> Req.Test.json(%{})
-        end
-      end)
+  defp await_metadata_callers(_identity, _count, 0),
+    do: flunk("callers did not join the metadata fetch")
 
-      assert %TvDetailsResponse{
-               backdrop_path: "/backdrop.jpg",
-               status: "Ended",
-               season_details: [],
-               seasons: [
-                 %TvDetailsResponse.Season{season_number: 0, episode_count: 1},
-                 %TvDetailsResponse.Season{season_number: 1, episode_count: 3},
-                 %TvDetailsResponse.Season{season_number: 2, episode_count: 2},
-                 %TvDetailsResponse.Season{season_number: 3, episode_count: 0}
-               ]
-             } = get_tv_show_details!("42", actor: actor)
+  defp await_metadata_callers(identity, count, attempts) do
+    case :sys.get_state(WatchClub.Contents.MetadataFetcher) do
+      %{^identity => %{callers: callers}} when length(callers) == count ->
+        :ok
+
+      _not_yet ->
+        Process.sleep(10)
+        await_metadata_callers(identity, count, attempts - 1)
     end
   end
 
-  describe "get_tv_show_season_details/*" do
-    test "returns TV Show Episode metadata for one season" do
-      actor = generate(user(locale: :en_US))
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        Req.Test.json(conn, tv_season_details_fixture(1))
-      end)
-
-      assert %TvDetailsResponse.SeasonDetails{
-               season_number: 1,
-               name: "Season 1",
-               episodes: [
-                 %TvDetailsResponse.SeasonDetails.Episode{
-                   episode_number: 1,
-                   name: "Dulcinea",
-                   overview: "The Canterbury answers a distress call.",
-                   runtime: 48,
-                   still_path: "/dulcinea.jpg"
-                 },
-                 %TvDetailsResponse.SeasonDetails.Episode{episode_number: 2}
-               ]
-             } = get_tv_show_season_details!("42", 1, actor: actor)
-    end
+  defp stub_movie_metadata(details) do
+    Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+      Req.Test.json(conn, details)
+    end)
   end
 
-  # Bridge the per-type vocabulary these tests are written in onto the unified
-  # create/refresh_metadata actions: create (upsert) the Content from its TMDB identity.
+  defp stub_tv_metadata(details \\ tv_details_fixture(), season_details \\ %{}) do
+    Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+      case Regex.run(~r{/tv/(\d+)/season/(\d+)$}, conn.request_path) do
+        [_, tmdb_id, season] ->
+          season = String.to_integer(season)
+          language = URI.decode_query(conn.query_string)["language"]
+
+          response =
+            Map.get(
+              season_details,
+              {season, language},
+              Map.get(season_details, season, tv_season_details_fixture(season))
+            )
+
+          Req.Test.json(conn, Map.put(response, "id", String.to_integer(tmdb_id)))
+
+        nil ->
+          [_, tmdb_id] = Regex.run(~r{/tv/(\d+)$}, conn.request_path)
+
+          Req.Test.json(
+            conn,
+            details |> Map.put("id", String.to_integer(tmdb_id)) |> filter_tmdb_posters(conn)
+          )
+      end
+    end)
+  end
+
+  # Like TMDB: the posters in `include_image_language`, else only those in the request's language
+  defp filter_tmdb_posters(%{"images" => %{"posters" => posters}} = details, conn) do
+    query = URI.decode_query(conn.query_string)
+
+    languages =
+      String.split(query["include_image_language"] || String.slice(query["language"], 0, 2), ",")
+
+    put_in(
+      details,
+      ["images", "posters"],
+      Enum.filter(posters, &((&1["iso_639_1"] || "null") in languages))
+    )
+  end
+
+  defp filter_tmdb_posters(details, _conn), do: details
+
+  defp tv_season_details_fixture(season_number, episode_numbers) do
+    fixture = tv_season_details_fixture(season_number)
+    existing = Map.new(fixture["episodes"], &{&1["episode_number"], &1})
+
+    episodes =
+      Enum.map(episode_numbers, fn episode_number ->
+        Map.get(existing, episode_number, %{
+          "episode_number" => episode_number,
+          "season_number" => season_number,
+          "name" => "Episode #{episode_number}",
+          "overview" => "Episode #{episode_number} overview",
+          "runtime" => 45,
+          "air_date" => "2015-12-16",
+          "still_path" => "/episode-#{episode_number}.jpg"
+        })
+      end)
+
+    Map.put(fixture, "episodes", episodes)
+  end
+
   defp add_video!(movie_id) do
     MediaCatalog.create_or_update_video!(media_movie_input(movie_id), actor: SystemActor.actor())
   end
@@ -606,40 +1309,17 @@ defmodule WatchClub.Contents.ContentTest do
     |> Enum.each(&Ash.Seed.update!(&1, %{title: title}))
   end
 
-  defp add_episode_video!(tv_show, season_number) do
+  defp add_episode_video!(tv_show, season_number, episode_number \\ 1) do
     episode =
       Ash.get!(
         TvShowEpisode,
-        %{tv_show_id: tv_show.id, season_number: season_number, episode_number: 1},
+        %{tv_show_id: tv_show.id, season_number: season_number, episode_number: episode_number},
         authorize?: false
       )
 
     MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
       actor: SystemActor.actor()
     )
-  end
-
-  defp create_movie(external_id, opts),
-    do: create_content(ContentIdentity.for_movie(external_id), %{}, opts)
-
-  defp create_tv_show(external_id, opts),
-    do: create_content(ContentIdentity.for_tv_show(external_id), %{}, opts)
-
-  defp create_movie!(external_id, opts) do
-    {:ok, content} = create_movie(external_id, opts)
-    content
-  end
-
-  defp create_tv_show!(external_id, opts) do
-    {:ok, content} = create_tv_show(external_id, opts)
-    content
-  end
-
-  defp refresh_tv_show(content, opts), do: refresh_metadata(content, %{}, opts)
-
-  defp refresh_tv_show!(content, opts) do
-    {:ok, content} = refresh_tv_show(content, opts)
-    content
   end
 
   defp tv_details_fixture do

@@ -183,6 +183,19 @@ defmodule WatchClub.Integrations.Tmdb.Types do
     def from_api(data) do
       %__MODULE__{results: Enum.map(data["results"] || [], &Video.from_api/1)}
     end
+
+    @doc "The official YouTube trailer, else any YouTube trailer, else a teaser."
+    def youtube_trailer_url(nil), do: nil
+
+    def youtube_trailer_url(%__MODULE__{results: videos}) do
+      trailer =
+        Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Trailer" and &1.official)) ||
+          Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Trailer")) ||
+          Enum.find(videos, &(&1.site == "YouTube" and &1.type == "Teaser"))
+
+      if trailer && trailer.key not in [nil, ""],
+        do: "https://www.youtube.com/watch?v=#{trailer.key}"
+    end
   end
 
   defmodule ProductionCountry do

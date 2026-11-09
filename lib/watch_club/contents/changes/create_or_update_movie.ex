@@ -2,14 +2,15 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   use Ash.Resource.Change
 
   alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.{Genre, Rating}
+  alias WatchClub.Contents.{CastMember, Genre, MetadataUnavailable, Rating}
+  alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
-  alias WatchClub.Integrations.Tmdb.Types.Images
+  alias WatchClub.Integrations.Tmdb.Types.{Images, Videos}
 
   require Logger
 
   @impl true
-  def change(changeset, opts, _context) do
+  def change(changeset, _opts, _context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -17,26 +18,33 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
       )
 
     Ash.Changeset.before_transaction(changeset, fn changeset ->
-      Logger.info("Creating movie for TMDB ID: #{tmdb_id}",
-        event: :creating_movie,
+      Logger.info("Refreshing Movie metadata for TMDB ID: #{tmdb_id}",
+        event: :refreshing_movie_metadata,
         tmdb_id: tmdb_id
       )
 
-      movie =
-        WatchClub.Integrations.Tmdb.get_movie_details!(tmdb_id,
-          cache: Keyword.get(opts, :cache?, true)
-        )
+      case fetch_details_by_locale(tmdb_id) do
+        {:ok, details_by_locale} ->
+          # Each Locale's response has every translation and image; the default one is the base
+          movie = Map.fetch!(details_by_locale, UserLocale.default())
 
-      changeset
-      |> set_base_content(movie)
-      |> set_movie(movie)
+          localizations =
+            Enum.map(details_by_locale, fn {locale, details} ->
+              build_localization(movie, locale, details)
+            end)
+
+          changeset
+          |> set_base_content(movie)
+          |> set_movie(movie, localizations)
+          |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
+
+        {:error, reason} ->
+          Ash.Changeset.add_error(changeset, MetadataUnavailable.exception(reason: reason))
+      end
     end)
   end
 
-  defp set_movie(%Ash.Changeset{} = changeset, %MovieDetailsResponse{} = movie) do
-    localizations =
-      UserLocale.values() |> Enum.map(fn locale -> build_localizations(movie, locale) end)
-
+  defp set_movie(%Ash.Changeset{} = changeset, %MovieDetailsResponse{} = movie, localizations) do
     changeset
     |> Ash.Changeset.manage_relationship(
       :movie,
@@ -65,8 +73,18 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
     |> Ash.Changeset.force_change_attribute(:rating, Rating.from_tmdb(movie))
   end
 
-  defp build_localizations(%MovieDetailsResponse{} = movie, locale) do
-    [iso_639_1, iso_3166_1] = locale |> Atom.to_string() |> String.split("_")
+  # One response per Locale, for its cast and trailer
+  defp fetch_details_by_locale(tmdb_id) do
+    Enum.reduce_while(UserLocale.values(), {:ok, %{}}, fn locale, {:ok, details_by_locale} ->
+      case Tmdb.get_movie_details(tmdb_id, locale: locale, cache: false) do
+        {:ok, details} -> {:cont, {:ok, Map.put(details_by_locale, locale, details)}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp build_localization(%MovieDetailsResponse{} = movie, locale, localized_details) do
+    [iso_639_1, iso_3166_1] = UserLocale.split(locale)
 
     translation =
       movie.translations
@@ -84,7 +102,9 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
       title: translated_or_default(translation_data, :title, movie.title),
       overview: translated_or_default(translation_data, :overview, movie.overview),
       poster_path: translated_or_default(best_poster, :file_path, movie.poster_path),
-      runtime: translated_or_default(translation_data, :runtime, movie.runtime)
+      runtime: translated_or_default(translation_data, :runtime, movie.runtime),
+      cast: CastMember.from_tmdb(localized_details.credits),
+      trailer_url: Videos.youtube_trailer_url(localized_details.videos)
     }
   end
 

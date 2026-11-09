@@ -6,7 +6,6 @@ defmodule WatchClub.Contents.TvShow do
 
   alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
   alias WatchClub.History.WatchStatus
-  alias WatchClub.Integrations.Tmdb.TvDetailsResponse
 
   postgres do
     table "tv_shows"
@@ -29,12 +28,14 @@ defmodule WatchClub.Contents.TvShow do
 
       change manage_relationship(:localizations,
                type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show]
+               use_identities: [:_primary_key, :unique_locale_per_tv_show],
+               on_missing: :ignore
              )
 
       change manage_relationship(:episodes,
                type: :direct_control,
-               use_identities: [:_primary_key, :unique_position_per_tv_show]
+               use_identities: [:_primary_key, :unique_position_per_tv_show],
+               on_missing: :ignore
              )
     end
 
@@ -43,33 +44,20 @@ defmodule WatchClub.Contents.TvShow do
       require_atomic? false
       accept [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
 
-      argument :localizations, {:array, :map}, allow_nil?: false, default: []
-      argument :episodes, {:array, :map}, allow_nil?: false, default: []
+      argument :localizations, {:array, :map}
+      argument :episodes, {:array, :map}
 
       change manage_relationship(:localizations,
                type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show]
+               use_identities: [:_primary_key, :unique_locale_per_tv_show],
+               on_missing: :ignore
              )
 
       change manage_relationship(:episodes,
                type: :direct_control,
-               use_identities: [:_primary_key, :unique_position_per_tv_show]
+               use_identities: [:_primary_key, :unique_position_per_tv_show],
+               on_missing: :ignore
              )
-    end
-
-    action :details, :struct do
-      constraints instance_of: TvDetailsResponse
-      argument :tmdb_id, :integer, allow_nil?: false
-
-      run WatchClub.Contents.Actions.GetTvShowDetails
-    end
-
-    action :season_details, :struct do
-      constraints instance_of: TvDetailsResponse.SeasonDetails
-      argument :tmdb_id, :integer, allow_nil?: false
-      argument :season_number, :integer, allow_nil?: false
-
-      run WatchClub.Contents.Actions.GetTvShowSeasonDetails
     end
   end
 
@@ -152,6 +140,11 @@ defmodule WatchClub.Contents.TvShow do
 
   aggregates do
     count :season_count, :episodes, field: :season_number, uniq?: true
+
+    list :season_numbers, :episodes, :season_number do
+      uniq? true
+      sort season_number: :asc
+    end
 
     exists :has_media?, :episodes do
       description "Whether a TV Show has videos for any of their episode"

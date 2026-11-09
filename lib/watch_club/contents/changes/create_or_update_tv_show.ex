@@ -3,15 +3,15 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
   alias OpentelemetryProcessPropagator.Task
   alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.{Genre, Rating}
+  alias WatchClub.Contents.{CastMember, Genre, MetadataUnavailable, Rating, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
-  alias WatchClub.Integrations.Tmdb.Types.Images
+  alias WatchClub.Integrations.Tmdb.Types.{Images, Videos}
 
   require Logger
 
   @impl true
-  def change(changeset, opts, _context) do
+  def change(changeset, _opts, _context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -19,16 +19,40 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       )
 
     Ash.Changeset.before_transaction(changeset, fn changeset ->
-      Logger.info("Creating TV show for TMDB ID: #{tmdb_id}",
-        event: :creating_tv_show,
+      Logger.info("Refreshing TV Show metadata for TMDB ID: #{tmdb_id}",
+        event: :refreshing_tv_show_metadata,
         tmdb_id: tmdb_id
       )
 
-      show = Tmdb.get_tv_details!(tmdb_id, cache: Keyword.get(opts, :cache?, true))
+      with {:ok, details_by_locale} <- fetch_details_by_locale(tmdb_id),
+           # Each Locale's response has every translation and image; the default one is the base
+           show = Map.fetch!(details_by_locale, UserLocale.default()),
+           {:ok, episodes} <- fetch_episodes(show) do
+        localizations =
+          Enum.map(details_by_locale, fn {locale, details} ->
+            build_localization(show, locale, details)
+          end)
 
-      changeset
-      |> set_base_content(show)
-      |> set_tv_show(show)
+        changeset
+        |> set_base_content(show)
+        |> Ash.Changeset.manage_relationship(
+          :tv_show,
+          %{
+            original_name: show.original_name,
+            backdrop_path: Images.best_backdrop_path(show.images),
+            tmdb_id: show.id,
+            tvdb_id: show.external_ids.tvdb_id,
+            localizations: localizations,
+            episodes: episodes
+          },
+          type: :direct_control,
+          authorize?: false
+        )
+        |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
+      else
+        {:error, reason} ->
+          Ash.Changeset.add_error(changeset, MetadataUnavailable.exception(reason: reason))
+      end
     end)
   end
 
@@ -45,90 +69,108 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
     |> Ash.Changeset.force_change_attribute(:rating, Rating.from_tmdb(tv_show))
   end
 
-  defp set_tv_show(%Ash.Changeset{} = changeset, %TvDetailsResponse{} = tv_show) do
-    Ash.Changeset.manage_relationship(
-      changeset,
-      :tv_show,
-      %{
-        original_name: tv_show.original_name,
-        backdrop_path: Images.best_backdrop_path(tv_show.images),
-        tmdb_id: tv_show.id,
-        tvdb_id: tv_show.external_ids.tvdb_id,
-        localizations: build_localizations(tv_show),
-        episodes: build_episodes(tv_show)
-      },
-      type: :direct_control,
-      authorize?: false
-    )
-  end
-
-  defp build_localizations(%TvDetailsResponse{} = tv_show) do
-    Enum.map(UserLocale.values(), fn locale ->
-      [iso_639_1, iso_3166_1] = locale |> Atom.to_string() |> String.split("_")
-
-      translation =
-        Enum.find(tv_show.translations, fn t ->
-          t.iso_639_1 == iso_639_1 and t.iso_3166_1 == iso_3166_1
-        end)
-
-      translation_data = translation && translation.data
-
-      best_poster =
-        ((tv_show.images && tv_show.images.posters) || [])
-        |> Enum.find(fn p -> p.iso_639_1 == iso_639_1 end)
-
-      %{
-        iso_639_1: iso_639_1,
-        iso_3166_1: iso_3166_1,
-        title: translated_or_default(translation_data, :name, tv_show.name),
-        overview: translated_or_default(translation_data, :overview, tv_show.overview),
-        poster_path: translated_or_default(best_poster, :file_path, tv_show.poster_path)
-      }
+  # One response per Locale, for its cast and trailer
+  defp fetch_details_by_locale(tmdb_id) do
+    Enum.reduce_while(UserLocale.values(), {:ok, %{}}, fn locale, {:ok, details_by_locale} ->
+      case Tmdb.get_tv_details(tmdb_id, locale: locale, cache: false) do
+        {:ok, details} -> {:cont, {:ok, Map.put(details_by_locale, locale, details)}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
     end)
   end
 
-  defp build_episodes(%TvDetailsResponse{id: tmdb_id} = tv_show) do
-    seasons = Enum.filter(tv_show.seasons, &(&1.season_number >= 1 and &1.episode_count >= 1))
-    episode_details = fetch_episode_details(tmdb_id, seasons)
+  defp build_localization(%TvDetailsResponse{} = show, locale, localized_details) do
+    [iso_639_1, iso_3166_1] = UserLocale.split(locale)
 
+    translation =
+      Enum.find(show.translations, fn translation ->
+        translation.iso_639_1 == iso_639_1 and translation.iso_3166_1 == iso_3166_1
+      end)
+
+    translation_data = translation && translation.data
+
+    best_poster =
+      ((show.images && show.images.posters) || [])
+      |> Enum.find(&(&1.iso_639_1 == iso_639_1))
+
+    %{
+      iso_639_1: iso_639_1,
+      iso_3166_1: iso_3166_1,
+      title: translated_or_default(translation_data, :name, show.name),
+      overview: translated_or_default(translation_data, :overview, show.overview),
+      poster_path: translated_or_default(best_poster, :file_path, show.poster_path),
+      cast: CastMember.from_tmdb(localized_details.credits),
+      trailer_url: Videos.youtube_trailer_url(localized_details.videos)
+    }
+  end
+
+  defp fetch_episodes(%TvDetailsResponse{} = show) do
+    seasons = Enum.filter(show.seasons, &(&1.season_number >= 1 and &1.episode_count >= 1))
+
+    # All seasons and Locales must succeed before any metadata is persisted.
+    for(season <- seasons, locale <- UserLocale.values(), do: {season.season_number, locale})
+    |> Task.async_stream(
+      fn {season_number, locale} ->
+        case Tmdb.get_tv_season_details(show.id, season_number, locale: locale, cache: false) do
+          {:ok, details} ->
+            {:ok, {{season_number, locale}, Map.new(details.episodes, &{&1.episode_number, &1})}}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end,
+      max_concurrency: 4,
+      ordered: false,
+      timeout: :infinity
+    )
+    |> Enum.reduce_while({:ok, %{}}, fn
+      {:ok, {:ok, {key, episodes}}}, {:ok, season_details} ->
+        {:cont, {:ok, Map.put(season_details, key, episodes)}}
+
+      {:ok, {:error, reason}}, _acc ->
+        {:halt, {:error, reason}}
+    end)
+    |> case do
+      {:ok, season_details} -> {:ok, build_episodes(seasons, season_details)}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp build_episodes(seasons, season_details) do
     Enum.flat_map(seasons, fn season ->
-      season_episode_details = Map.get(episode_details, season.season_number, %{})
-
-      Enum.map(1..season.episode_count, fn episode_number ->
-        episode_details = Map.get(season_episode_details, episode_number)
-
+      season_details
+      |> Map.fetch!({season.season_number, UserLocale.default()})
+      |> Enum.map(fn {episode_number, details} ->
         %{
           season_number: season.season_number,
           episode_number: episode_number,
-          air_date: (episode_details && episode_details.air_date) || nil,
-          still_path: (episode_details && episode_details.still_path) || nil
+          air_date: details.air_date,
+          still_path: details.still_path,
+          runtime: details.runtime,
+          localizations:
+            Enum.map(UserLocale.values(), fn locale ->
+              [iso_639_1, iso_3166_1] = UserLocale.split(locale)
+
+              translation =
+                season_details
+                |> Map.fetch!({season.season_number, locale})
+                |> Map.get(episode_number)
+
+              %{
+                iso_639_1: iso_639_1,
+                iso_3166_1: iso_3166_1,
+                title:
+                  translated_or_default(
+                    translation,
+                    :name,
+                    details.name ||
+                      TvShowEpisode.format_number(season.season_number, episode_number)
+                  ),
+                overview: translated_or_default(translation, :overview, details.overview)
+              }
+            end)
         }
       end)
-    end)
-  end
-
-  # Per-episode detail only come from the season-details endpoint (the base
-  # TV details payload carries season counts, not episode air dates or still images),
-  # so we fetch one season at a time — concurrently, since a long-running show has many
-  # seasons and this runs inline before the Content is created.
-  # Crashes the process when one call fails, so that the entire action fails.
-  # We do not take care of max concurrency here, this is handled by the Tmdb client.
-  @spec fetch_episode_details(integer(), [integer()]) :: %{
-          integer() => %{integer() => WatchClub.Integrations.Tmdb.TvDetailsResponse.SeasonDetails}
-        }
-  defp fetch_episode_details(tmdb_id, seasons) do
-    seasons
-    |> Task.async_stream(
-      fn season ->
-        {season.season_number,
-         Tmdb.get_tv_season_details!(tmdb_id, season.season_number).episodes
-         |> Map.new(&{&1.episode_number, &1})}
-      end,
-      ordered: false,
-      timeout: 10_000
-    )
-    |> Enum.reduce(%{}, fn {:ok, {season_number, details}}, acc ->
-      Map.put(acc, season_number, details)
     end)
   end
 

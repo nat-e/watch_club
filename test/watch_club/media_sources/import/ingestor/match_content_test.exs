@@ -1,20 +1,46 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
-  use WatchClub.DataCase
+  use WatchClub.DataCase, async: false
 
-  alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
-  alias WatchClub.MediaSources.Import.Candidate
+  import ExUnit.CaptureLog
+
+  alias WatchClub.Contents.Content
+  alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
   alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MatchResult, MovieIdentity}
   alias WatchClub.MediaSources.Import.Ingestor.MatchContent
 
-  describe "apply/1 — movie" do
-    test "matches a movie that already exists in the DB" do
-      movie = seed_movie(tmdb_id: 11)
+  setup do
+    ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :media_import, :match]])
+    on_exit(fn -> :telemetry.detach(ref) end)
+    {:ok, telemetry_ref: ref}
+  end
+
+  describe "apply!/1" do
+    test "matches a Movie refreshed under 15 minutes ago without HTTP requests", %{
+      telemetry_ref: ref
+    } do
+      movie =
+        generate(
+          movie(
+            external_id: "11",
+            metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -14, :minute)
+          )
+        )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("a recently refreshed Movie must not make a TMDB request")
+      end)
+
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == movie.id
+
+      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
+                       %{result: :matched}}
+
+      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
     end
 
     test "creates and matches a movie that does not exist" do
@@ -26,13 +52,73 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert is_binary(matched_id)
     end
 
+    test "refreshes a Movie older than 15 minutes and reuses it for later files" do
+      movie =
+        generate(
+          movie(
+            external_id: "11",
+            metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -16, :minute)
+          )
+        )
+
+      parent = self()
+
+      stub_tmdb(fn _conn, _path ->
+        send(parent, :fetched_metadata)
+        tmdb_fixture("movie_details_11")
+      end)
+
+      candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
+
+      for _ <- 1..2 do
+        assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+                 MatchContent.apply!(candidate)
+
+        assert matched_id == movie.id
+      end
+
+      assert_receive :fetched_metadata
+      assert_receive :fetched_metadata
+      refute_receive :fetched_metadata, 0
+    end
+
+    test "matches files with different IMDB ids to their own Movies, asking TMDB once per id" do
+      first = generate(movie(external_id: "11"))
+      second = generate(movie(external_id: "12"))
+      ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :tmdb, :request, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+
+      stub_tmdb(fn _conn, path ->
+        %{
+          "movie_results" => [
+            %{"id" => if(String.ends_with?(path, "tt0000011"), do: 11, else: 12)}
+          ]
+        }
+      end)
+
+      for {imdb_id, movie} <- [{"tt0000011", first}, {"tt0000012", second}, {"tt0000011", first}] do
+        assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+                 MatchContent.apply!(candidate_with(%MovieIdentity{imdb_id: imdb_id}))
+
+        assert matched_id == movie.id
+      end
+
+      # The third file is answered from the cache
+      for _ <- 1..2 do
+        assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: _},
+                         %{endpoint: "/find/:external_id", status: "2xx"}}
+      end
+
+      refute_received {[:watch_club, :tmdb, :request, :stop], ^ref, _, _}
+    end
+
     test "matches by IMDB id" do
-      movie = seed_movie(tmdb_id: 11)
+      movie = generate(movie(external_id: "11"))
 
       stub_tmdb(fn conn, _path ->
         assert String.ends_with?(conn.request_path, "/find/tt0076759")
@@ -42,13 +128,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == movie.id
     end
 
     test "matches by title and year" do
-      movie = seed_movie(tmdb_id: 11)
+      movie = generate(movie(external_id: "11"))
 
       stub_tmdb(fn conn, _path ->
         assert String.ends_with?(conn.request_path, "/search/movie")
@@ -58,16 +144,23 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{title: "Star Wars", year: 1977})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == movie.id
     end
 
-    test "passes through with matched_id: nil when no movie strategy matches" do
+    test "passes through with matched_id: nil when no movie strategy matches", %{
+      telemetry_ref: ref
+    } do
       candidate = candidate_with(%MovieIdentity{})
 
       assert %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
+
+      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
+                       %{result: :not_matched}}
+
+      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
     end
 
     test "passes through with matched_id: nil when TMDB title search returns no results" do
@@ -76,7 +169,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       candidate = candidate_with(%MovieIdentity{title: "Unknown Film", year: 1999})
 
       assert %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
     end
 
     test "raises when TMDB returns an HTTP error, so that the Oban job retries" do
@@ -86,39 +179,50 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{imdb_id: "tt0076759"})
 
-      assert_raise MatchError, fn -> MatchContent.apply(candidate) end
+      assert_raise MatchError, fn -> MatchContent.apply!(candidate) end
     end
-  end
 
-  describe "apply/1 — tv episode" do
-    test "matches an episode whose show already exists in the DB" do
-      %{episode: episode} = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
+    test "matches a TV Show Episode refreshed under 15 minutes ago without HTTP requests" do
+      show =
+        generate(
+          tv_show(
+            external_id: "1668",
+            num_seasons: 1,
+            episodes_per_season: 3,
+            metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -14, :minute)
+          )
+        )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("a recently refreshed TV Show must not make a TMDB request")
+      end)
+
+      episode = Enum.find(show.tv_show.episodes, &(&1.episode_number == 3))
 
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == episode.id
     end
 
     test "creates and matches an episode whose show does not exist" do
-      stub_tmdb(fn _conn, _path ->
-        tmdb_fixture("tv_details_1668")
-      end)
+      stub_tv_metadata(%{1 => [3]})
 
       candidate =
         candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert is_binary(matched_id)
     end
 
     test "matches by show's TVDB id" do
-      %{episode: episode} = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
+      show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 3))
+      episode = Enum.find(show.tv_show.episodes, &(&1.episode_number == 3))
 
       stub_tmdb(fn conn, _path ->
         assert String.ends_with?(conn.request_path, "/find/79168")
@@ -129,13 +233,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         candidate_with(%EpisodeIdentity{tvdb_id: 79_168, season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == episode.id
     end
 
     test "matches by show's IMDB id" do
-      %{episode: episode} = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
+      show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 3))
+      episode = Enum.find(show.tv_show.episodes, &(&1.episode_number == 3))
 
       stub_tmdb(fn conn, _path ->
         assert String.ends_with?(conn.request_path, "/find/tt0108778")
@@ -150,13 +255,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         })
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == episode.id
     end
 
     test "matches by show title search" do
-      %{episode: episode} = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
+      show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 3))
+      episode = Enum.find(show.tv_show.episodes, &(&1.episode_number == 3))
 
       stub_tmdb(fn conn, _path ->
         assert String.ends_with?(conn.request_path, "/search/tv")
@@ -167,26 +273,165 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         candidate_with(%EpisodeIdentity{title: "Friends", season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
 
       assert matched_id == episode.id
     end
 
-    test "passes through with matched_id: nil when the show resolves but season/episode is missing" do
-      _ = seed_tv_show(tmdb_id: 1668, season: 1, episode: 3)
+    test "matches a TV Show Episode added by TMDB after the TV Show was stored" do
+      show =
+        generate(
+          tv_show(
+            external_id: "1668",
+            num_seasons: 1,
+            episodes_per_season: 1,
+            metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -16, :minute)
+          )
+        )
+
+      stub_tv_metadata(%{1 => [1, 2]})
 
       candidate =
-        candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 99, episode_number: 99})
+        candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 1, episode_number: 2})
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}} =
-               MatchContent.apply(candidate)
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(candidate)
+
+      assert %{tv_show_id: show_id, season_number: 1, episode_number: 2} =
+               Ash.get!(WatchClub.Contents.TvShowEpisode, matched_id)
+
+      assert show_id == show.id
+    end
+
+    test "the first file of a new season refreshes the TV Show and later files reuse it" do
+      generate(
+        tv_show(
+          external_id: "1668",
+          num_seasons: 1,
+          episodes_per_season: 1,
+          metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -16, :minute)
+        )
+      )
+
+      parent = self()
+
+      stub_tv_metadata(%{1 => [1], 2 => [1, 2, 3]}, fn conn ->
+        send(parent, {:fetched_metadata, conn.request_path})
+      end)
+
+      for number <- 1..3 do
+        assert %Candidate{match_result: %MatchResult{result: :success, matched_id: id}} =
+                 MatchContent.apply!(
+                   candidate_with(%EpisodeIdentity{
+                     tmdb_id: 1668,
+                     season_number: 2,
+                     episode_number: number
+                   })
+                 )
+
+        assert is_binary(id)
+      end
+
+      # Only the first file fetches: two Locales, each with the TV Show's details and two seasons
+      for _ <- 1..6, do: assert_receive({:fetched_metadata, _})
+      refute_receive {:fetched_metadata, _}, 0
+    end
+
+    test "matches a stored TV Show Episode when TMDB is unavailable during a refresh" do
+      show =
+        generate(
+          tv_show(
+            external_id: "1668",
+            num_seasons: 1,
+            episodes_per_season: 1,
+            metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -16, :minute)
+          )
+        )
+
+      [episode] = show.tv_show.episodes
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(
+                 candidate_with(%EpisodeIdentity{
+                   tmdb_id: 1668,
+                   season_number: 1,
+                   episode_number: 1
+                 })
+               )
+
+      assert matched_id == episode.id
+      assert Ash.get!(Content, show.id).metadata_refreshed_at == show.metadata_refreshed_at
+    end
+
+    test "raises when TMDB still does not list the file's TV Show Episode", %{telemetry_ref: ref} do
+      generate(
+        tv_show(
+          external_id: "1668",
+          num_seasons: 1,
+          episodes_per_season: 1,
+          metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -16, :minute)
+        )
+      )
+
+      stub_tv_metadata(%{1 => [1]})
+
+      candidate =
+        candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 2, episode_number: 1})
+
+      log =
+        capture_log(
+          [format: "$metadata$message", metadata: [:event, :path, :tmdb_id, :episode]],
+          fn ->
+            assert %TvShowEpisodeNotListedError{
+                     tmdb_id: 1668,
+                     season_number: 2,
+                     episode_number: 1
+                   } =
+                     assert_raise(
+                       TvShowEpisodeNotListedError,
+                       ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
+                       fn -> MatchContent.apply!(candidate) end
+                     )
+          end
+        )
+
+      assert log =~ "event=tv_show_episode_not_listed"
+      assert log =~ "path=/library/file.mkv"
+      assert log =~ "tmdb_id=1668"
+      assert log =~ "episode=S02E01"
+
+      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
+                       %{result: :episode_not_listed}}
+
+      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
+    end
+
+    test "does not fetch again for a missing TV Show Episode under the 15-minute max_age" do
+      generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 1))
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("a recently refreshed TV Show must not make a TMDB request")
+      end)
+
+      candidate =
+        candidate_with(%EpisodeIdentity{tmdb_id: 1668, season_number: 2, episode_number: 1})
+
+      assert_raise TvShowEpisodeNotListedError,
+                   ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
+                   fn ->
+                     MatchContent.apply!(candidate)
+                   end
     end
 
     test "passes through with matched_id: nil when no TV strategy matches" do
       candidate = candidate_with(%EpisodeIdentity{season_number: 1, episode_number: 3})
 
       assert %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}} =
-               MatchContent.apply(candidate)
+               MatchContent.apply!(candidate)
     end
   end
 
@@ -200,51 +445,29 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
     end)
   end
 
-  defp seed_movie(tmdb_id: tmdb_id) do
-    unique = System.unique_integer([:positive])
+  defp stub_tv_metadata(episodes_by_season, before_response \\ fn _conn -> :ok end) do
+    stub_tmdb(fn conn, path ->
+      before_response.(conn)
 
-    content =
-      Ash.Seed.seed!(Content, %{
-        type: :movie,
-        external_id_source: :tmdb,
-        external_id: to_string(tmdb_id),
-        original_title: "Movie #{unique}",
-        original_language: "en",
-        origin_country: "US"
-      })
+      case Regex.run(~r{/tv/1668/season/(\d+)$}, path) do
+        [_, season] ->
+          %{
+            "season_number" => String.to_integer(season),
+            "episodes" =>
+              Enum.map(Map.fetch!(episodes_by_season, String.to_integer(season)), fn number ->
+                %{"episode_number" => number, "name" => "Episode #{number}"}
+              end)
+          }
 
-    Ash.Seed.seed!(Movie, %{id: content.id})
-    content
-  end
-
-  defp seed_tv_show(tmdb_id: tmdb_id, season: season_number, episode: episode_number) do
-    unique = System.unique_integer([:positive])
-
-    content =
-      Ash.Seed.seed!(Content, %{
-        type: :tv_show,
-        external_id_source: :tmdb,
-        external_id: to_string(tmdb_id),
-        original_title: "Show #{unique}",
-        original_language: "en",
-        origin_country: "US"
-      })
-
-    tv_show =
-      Ash.Seed.seed!(TvShow, %{
-        id: content.id,
-        original_name: "Show #{unique}",
-        tmdb_id: tmdb_id,
-        tvdb_id: 79_168
-      })
-
-    episode =
-      Ash.Seed.seed!(TvShowEpisode, %{
-        tv_show_id: tv_show.id,
-        season_number: season_number,
-        episode_number: episode_number
-      })
-
-    %{content: content, tv_show: tv_show, episode: episode}
+        nil ->
+          tmdb_fixture("tv_details_1668")
+          |> Map.put(
+            "seasons",
+            Enum.map(episodes_by_season, fn {season, episodes} ->
+              %{"season_number" => season, "episode_count" => length(episodes)}
+            end)
+          )
+      end
+    end)
   end
 end

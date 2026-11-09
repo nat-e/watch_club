@@ -98,7 +98,8 @@ defmodule WatchClub.Generator do
         original_title: sequence(:movie_title, &"Movie #{&1}"),
         original_language: "en",
         origin_country: "US",
-        release_date: opts[:release_date] || ~D[2025-01-01]
+        release_date: opts[:release_date] || ~D[2025-01-01],
+        metadata_refreshed_at: DateTime.utc_now()
       },
       overrides: opts,
       after_action: fn content ->
@@ -141,7 +142,8 @@ defmodule WatchClub.Generator do
         original_title: sequence(:tv_show_name, &"Show #{&1}"),
         original_language: "en",
         origin_country: "US",
-        release_date: start_date
+        release_date: start_date,
+        metadata_refreshed_at: DateTime.utc_now()
       },
       overrides: opts,
       after_action: fn content ->

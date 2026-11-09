@@ -38,6 +38,12 @@ defmodule WatchClub.Contents.Content do
   actions do
     defaults [:read]
 
+    read :by_content_identity do
+      argument :content_identity, ContentIdentity, allow_nil?: false
+
+      prepare FilterByContentIdentities
+    end
+
     read :by_content_identities do
       argument :content_identities, {:array, ContentIdentity}, allow_nil?: false
 
@@ -162,19 +168,44 @@ defmodule WatchClub.Contents.Content do
     end
 
     update :refresh_metadata do
-      description "Re-fetches content from an external metadata provider (TMDB, Hardcover, ...) and updates the content and its relations"
+      description "Fetches current metadata and updates Content and its relations in place"
       require_atomic? false
 
-      # Identity is already on the Content being refreshed, so each change
-      # gates on the persisted `type`. Skips the TMDB response cache so the
-      # refresh gets current data.
-      change {WatchClub.Contents.Changes.CreateOrUpdateMovie, cache?: false},
+      change WatchClub.Contents.Changes.CreateOrUpdateMovie,
         only_when_valid?: true,
         where: attribute_equals(:type, :movie)
 
-      change {WatchClub.Contents.Changes.CreateOrUpdateTvShow, cache?: false},
+      change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
+    end
+
+    action :get_or_refresh, :struct do
+      description """
+      Returns stored Content, creating it when missing and refreshing metadata older than max_age
+      when the Metadata Provider answers. Concurrent calls for the same Content share one fetch.
+      A Metadata Provider failure returns the stored Content, or an error when none is stored.
+      """
+
+      constraints instance_of: __MODULE__
+      argument :content_identity, ContentIdentity, allow_nil?: false
+
+      argument :max_age, :term do
+        allow_nil? false
+        default 24 * 60 * 60
+
+        description "Maximum metadata age in seconds from this call; :infinity never refreshes stored Content"
+      end
+
+      validate fn input, _context ->
+        case input.arguments.max_age do
+          :infinity -> :ok
+          seconds when is_integer(seconds) and seconds >= 0 -> :ok
+          _ -> {:error, field: :max_age, message: "must be non-negative seconds or :infinity"}
+        end
+      end
+
+      run WatchClub.Contents.Actions.GetOrRefreshContent
     end
 
     action :search, :struct do
@@ -266,6 +297,10 @@ defmodule WatchClub.Contents.Content do
     attribute :rating, :float do
       public? true
       description "Nil for Books, and when too few people voted. See `Rating`."
+    end
+
+    attribute :metadata_refreshed_at, :utc_datetime_usec do
+      description "The last successful metadata refresh; nil means it has not been refreshed"
     end
 
     timestamps()
@@ -387,7 +422,7 @@ defmodule WatchClub.Contents.Content do
   end
 
   identities do
-    identity :external_id, [:external_id_source, :external_id]
+    identity :external_id, [:type, :external_id_source, :external_id]
   end
 
   defimpl String.Chars, for: __MODULE__ do

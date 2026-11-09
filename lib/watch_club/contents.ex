@@ -6,15 +6,13 @@ defmodule WatchClub.Contents do
   alias WatchClub.Contents.{
     Book,
     Content,
-    ContentIdentity,
     Movie,
     MovieLocalization,
     TvShow,
     TvShowEpisode,
+    TvShowEpisodeLocalization,
     TvShowLocalization
   }
-
-  require Ash.Query
 
   resources do
     resource Content do
@@ -28,65 +26,32 @@ defmodule WatchClub.Contents do
 
       define :get_content_by_id, action: :read, get_by: [:id]
 
-      define :get_content_by_external_id,
-        action: :read,
-        get_by: [:external_id_source, :external_id]
+      define :get_content_by_identity,
+        action: :by_content_identity,
+        args: [:content_identity],
+        get?: true
 
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
+
+      define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
+
       define :get_user_recently_watched, action: :user_recently_watched
     end
 
-    resource Movie do
-      define :get_movie_details, action: :details, args: [:tmdb_id]
-    end
+    resource Movie
 
     resource Book
 
     resource MovieLocalization
 
-    resource TvShow do
-      define :get_tv_show_details, action: :details, args: [:tmdb_id]
-
-      define :get_tv_show_season_details,
-        action: :season_details,
-        args: [:tmdb_id, :season_number]
-    end
+    resource TvShow
 
     resource TvShowEpisode do
       define :get_episodes_for_show, action: :for_show, args: [:tmdb_id]
     end
 
     resource TvShowLocalization
-  end
-
-  @doc """
-  Creates a Content if it does not exist
-  The create action is an upsert, so there is no race condition.
-  """
-  @spec get_or_create_content(ContentIdentity.t(), User.t()) ::
-          {:ok, Content.t()} | {:error, term()}
-  def get_or_create_content(%ContentIdentity{} = content_identity, actor, opts \\ []) do
-    case Content
-         |> Ash.Query.filter(
-           external_id_source == ^content_identity.external_id_source and
-             external_id == ^content_identity.external_id
-         )
-         |> Ash.read_one(load: opts[:load], actor: actor) do
-      {:ok, nil} ->
-        create_content(content_identity, load: opts[:load], actor: actor)
-
-      {:ok, existing} ->
-        {:ok, existing}
-
-      {:error, error} ->
-        {:error, error}
-    end
-  end
-
-  @spec get_or_create_content!(ContentIdentity.t(), User.t()) :: Content.t()
-  def get_or_create_content!(%ContentIdentity{} = content_identity, actor, opts \\ []) do
-    {:ok, content} = get_or_create_content(content_identity, actor, opts)
-    content
+    resource TvShowEpisodeLocalization
   end
 end

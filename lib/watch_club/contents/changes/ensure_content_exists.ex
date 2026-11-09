@@ -17,7 +17,9 @@ defmodule WatchClub.Contents.Changes.EnsureContentExists do
   def change(changeset, _opts, context) do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       content_identity = Ash.Changeset.get_argument(changeset, :content_identity)
-      content = Contents.get_or_create_content!(content_identity, context.actor)
+
+      content =
+        Contents.get_or_refresh_content!(content_identity, %{max_age: :infinity}, scope: context)
 
       Ash.Changeset.force_change_attribute(changeset, :content_id, content.id)
     end)

@@ -55,7 +55,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   defp ingest(%Candidate{} = candidate) do
     with {:ok, candidate} <- ExtractStructure.apply(candidate),
-         candidate <- MatchContent.apply(candidate),
+         candidate <- MatchContent.apply!(candidate),
          _candidate <- SaveMedia.apply(candidate) do
       :ok
     else

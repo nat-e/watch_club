@@ -34,7 +34,16 @@ The shared endpoint is a base URL: HTTP export appends `/v1/traces`, `/v1/metric
 
 All signals share the service name, app version, environment and instance identity. Override resource attributes with `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_METRIC_EXPORT_INTERVAL` sets the metric export interval in milliseconds (default: 60000); VM measurements update every 5 seconds. Tracing uses the SDK's sampling settings, including `OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG`.
 
-Metrics cover requests, database timings, jobs, VM memory and run queues. Metric labels use route patterns, response statuses, worker names and queue names. Logs keep their existing messages and export only selected request, job and trace metadata.
+Metrics cover requests, database timings, jobs, VM memory and run queues. Metric labels use route patterns, response statuses, worker names and queue names. Metadata refreshes also expose:
+
+- `watch_club.contents.metadata_request.count`, labelled by `served` (`stored`, `fetched`).
+- `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.callers` measures callers per fetch, including crashes, by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
+- `watch_club.tmdb.request.stop.count` and `.stop.duration`, labelled by `endpoint` (path templates) and `status` (`2xx`, `404`, `429`, `4xx`, `5xx`, `error`). These count each HTTP attempt, including retries, but not cache hits.
+- `watch_club.media_import.match.count`, labelled by `result` (`matched`, `not_matched`, `episode_not_listed`).
+
+Durations and callers per fetch are exported as histograms. Suggested alerts: TMDB errors or rate limiting above a threshold, and Content metadata fetch failures above a threshold, including failed refreshes that kept stored Content.
+
+Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths.
 
 The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database work outside a request or job creates separate traces. Only enable export to an endpoint you trust with this data.
 

@@ -1,6 +1,8 @@
 defmodule WatchClub.Integrations.Tmdb do
   import WatchClub.Integrations.Tmdb.Client
 
+  alias WatchClub.Accounts.UserLocale
+
   alias WatchClub.Integrations.Tmdb.{
     FindByExternalIdResponse,
     MovieDetailsResponse,
@@ -126,7 +128,8 @@ defmodule WatchClub.Integrations.Tmdb do
           {:ok, FindByExternalIdResponse.t()} | {:error, term()}
   def find_by_external_id(external_id, source) when source in [:imdb_id, :tvdb_id] do
     case request(
-           url: "/find/#{external_id}",
+           url: "/find/:external_id",
+           path_params: [external_id: external_id],
            params: [external_source: Atom.to_string(source)]
          ) do
       {:ok, body} -> {:ok, FindByExternalIdResponse.from_api(body)}
@@ -144,10 +147,12 @@ defmodule WatchClub.Integrations.Tmdb do
           {:ok, MovieDetailsResponse.t()} | {:error, term()}
   def get_movie_details(tmdb_id, opts \\ []) do
     case request(
-           url: "/movie/#{tmdb_id}",
+           url: "/movie/:id",
+           path_params: [id: tmdb_id],
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images,credits,videos"
+             append_to_response: "translations,images,credits,videos",
+             include_image_language: image_languages()
            ],
            cache: Keyword.get(opts, :cache, true)
          ) do
@@ -167,10 +172,12 @@ defmodule WatchClub.Integrations.Tmdb do
           {:ok, TvDetailsResponse.t()} | {:error, term()}
   def get_tv_details(tmdb_id, opts \\ []) do
     case request(
-           url: "/tv/#{tmdb_id}",
+           url: "/tv/:id",
+           path_params: [id: tmdb_id],
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images,external_ids,credits,videos"
+             append_to_response: "translations,images,external_ids,credits,videos",
+             include_image_language: image_languages()
            ],
            cache: Keyword.get(opts, :cache, true)
          ) do
@@ -186,23 +193,37 @@ defmodule WatchClub.Integrations.Tmdb do
     response
   end
 
-  @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom()) ::
+  @spec get_tv_season_details(integer() | String.t(), integer(), locale: atom(), cache: boolean()) ::
           {:ok, TvDetailsResponse.SeasonDetails.t()} | {:error, term()}
   def get_tv_season_details(tmdb_id, season_number, opts \\ []) do
     case request(
-           url: "/tv/#{tmdb_id}/season/#{season_number}",
-           params: [language: format_language(opts[:locale])]
+           url: "/tv/:id/season/:season_number",
+           path_params: [id: tmdb_id, season_number: season_number],
+           params: [language: format_language(opts[:locale])],
+           cache: Keyword.get(opts, :cache, true)
          ) do
       {:ok, body} -> {:ok, TvDetailsResponse.SeasonDetails.from_api(body)}
       {:error, error} -> {:error, error}
     end
   end
 
-  @spec get_tv_season_details!(integer() | String.t(), integer(), locale: atom()) ::
+  @spec get_tv_season_details!(integer() | String.t(), integer(),
+          locale: atom(),
+          cache: boolean()
+        ) ::
           TvDetailsResponse.SeasonDetails.t()
   def get_tv_season_details!(tmdb_id, season_number, opts \\ []) do
     {:ok, details} = get_tv_season_details(tmdb_id, season_number, opts)
     details
+  end
+
+  # TMDB otherwise filters images by `language`: ask for every Locale's, and those without text
+  defp image_languages do
+    UserLocale.values()
+    |> Enum.map(&(&1 |> UserLocale.split() |> List.first()))
+    |> Enum.concat(["null"])
+    |> Enum.uniq()
+    |> Enum.join(",")
   end
 
   defp format_language(nil), do: nil

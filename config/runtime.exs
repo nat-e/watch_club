@@ -160,7 +160,18 @@ if config_env() != :test do
     dsn: env!("WC_SENTRY_DSN", :string?, nil),
     environment_name: config_env(),
     release: Application.spec(:watch_club, :vsn) |> to_string(),
-    integrations: [oban: [capture_errors: true]],
+    integrations: [
+      oban: [
+        capture_errors: true,
+        should_report_error_callback: fn
+          WatchClub.MediaSources.Import.Workers.CandidateIngestor, job ->
+            job.attempt >= job.max_attempts
+
+          _worker, _job ->
+            true
+        end
+      ]
+    ],
     logs: [
       level: env!("WC_SENTRY_LOG_LEVEL", :existing_atom?, nil),
       metadata: sentry_metadata,

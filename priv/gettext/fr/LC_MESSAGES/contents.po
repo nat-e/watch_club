@@ -336,3 +336,15 @@ msgstr "%{title} : %{status}"
 #, elixir-autogen, elixir-format
 msgid "%{percent}%"
 msgstr "%{percent} %"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Content details are unavailable. Please try again later."
+msgstr "Les détails de ce contenu sont indisponibles. Veuillez réessayer plus tard."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Loading content…"
+msgstr "Chargement du contenu…"

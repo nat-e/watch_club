@@ -6,7 +6,6 @@ defmodule WatchClub.Contents.Movie do
 
   alias WatchClub.Contents.{Content, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
-  alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
   alias WatchClub.MediaCatalog.Video
 
   postgres do
@@ -19,20 +18,31 @@ defmodule WatchClub.Contents.Movie do
   end
 
   actions do
-    defaults [:read, :destroy, update: [:backdrop_path]]
+    defaults [:read, :destroy]
 
     create :create do
       accept [:backdrop_path]
       primary? true
       argument :localizations, {:array, :map}, allow_nil?: false
-      change manage_relationship(:localizations, type: :direct_control)
+
+      change manage_relationship(:localizations,
+               type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_movie],
+               on_missing: :ignore
+             )
     end
 
-    action :details, :struct do
-      constraints instance_of: MovieDetailsResponse
-      argument :tmdb_id, :integer, allow_nil?: false
+    update :update do
+      primary? true
+      require_atomic? false
+      accept [:backdrop_path]
+      argument :localizations, {:array, :map}
 
-      run WatchClub.Contents.Actions.GetMovieDetails
+      change manage_relationship(:localizations,
+               type: :direct_control,
+               use_identities: [:_primary_key, :unique_locale_per_movie],
+               on_missing: :ignore
+             )
     end
   end
 
