@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
           <.table_cell>
             <.refresh_metadata_badge value={media_import.refresh_metadata?} />
           </.table_cell>
-          <.table_cell class="text-right!">
+          <.table_cell class="text-end!">
             <.button
               :if={media_import.status == :processing}
               id={"cancel-media-import-#{media_import.id}"}

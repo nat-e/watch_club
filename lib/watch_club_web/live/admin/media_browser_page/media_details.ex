@@ -88,20 +88,17 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
         :if={@video?}
         label={dgettext("admin_media", "Audio (%{count})", count: length(@media.video.audio_tracks))}
       >
-        <ul class="flex flex-col gap-related text-sm">
-          <li
-            :for={track <- @media.video.audio_tracks}
-            class="flex items-center gap-group"
-          >
-            <.language language={track.language} />
-            <span class="flex shrink-0 items-center gap-tight">
+        <dl class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-group gap-y-related text-sm">
+          <%= for track <- @media.video.audio_tracks do %>
+            <dt><.language language={track.language} /></dt>
+            <dd class="flex items-center gap-tight">
               <.badge :if={track.codec} variant="muted" size="sm">{track.codec}</.badge>
               <.badge :if={track.channels} variant="muted" size="sm">
                 {channels_label(track.channels)}
               </.badge>
-            </span>
-          </li>
-        </ul>
+            </dd>
+          <% end %>
+        </dl>
       </.details_section>
 
       <.details_section
@@ -113,22 +110,22 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
         <p :if={@media.video.text_tracks == []} class="text-sm text-text-muted">
           {dgettext("admin_media", "None")}
         </p>
-        <ul :if={@media.video.text_tracks != []} class="flex flex-col gap-related text-sm">
-          <li
-            :for={track <- @media.video.text_tracks}
-            class="flex items-center gap-group"
-          >
-            <.language language={track.language} />
-            <span class="flex shrink-0 items-center gap-tight">
+        <dl
+          :if={@media.video.text_tracks != []}
+          class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-group gap-y-related text-sm"
+        >
+          <%= for track <- @media.video.text_tracks do %>
+            <dt><.language language={track.language} /></dt>
+            <dd class="flex items-center gap-tight">
               <.badge :if={track.default?} variant="muted" size="sm">
                 {dgettext("admin_media", "Default")}
               </.badge>
               <.badge :if={track.forced?} variant="muted" size="sm">
                 {dgettext("admin_media", "Forced")}
               </.badge>
-            </span>
-          </li>
-        </ul>
+            </dd>
+          <% end %>
+        </dl>
       </.details_section>
 
       <.details_section label={dgettext("admin_media", "File")}>

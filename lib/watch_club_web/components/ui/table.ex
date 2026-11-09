@@ -4,7 +4,10 @@ defmodule WatchClubWeb.Components.UI.Table do
 
   Table elements (`table`, `thead`, `tbody`, `tr`, `th`, `td`, `caption`)
   must keep their literal HTML nesting, so each is exposed as a composable
-  component. Text starts at the left; pass `text-right!` for numbers.
+  component. Text starts at the start of the line; pass `text-end!` for numbers.
+
+  `table_footer` adds rows at the end of the table, such as totals. The `table`'s `:footer` slot
+  goes below the rows, outside the table, such as its pages.
   """
 
   use Phoenix.Component
@@ -129,7 +132,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-control-md px-group text-left align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wider has-[[role=checkbox]]:pr-0",
+        "h-control-md px-group text-start align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wider has-[[role=checkbox]]:pr-0",
         @class
       ]}
       {@rest}
@@ -148,7 +151,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <td
       data-slot="table-cell"
       class={[
-        "p-group text-left align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0 [[data-density=compact]_&]:py-related",
+        "p-group text-start align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0 [[data-density=compact]_&]:py-related",
         @class
       ]}
       {@rest}

@@ -119,7 +119,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
             <button
               type="button"
               aria-current={@selected && "true"}
-              class="block w-full min-w-0 text-left focus-visible:outline-none"
+              class="block w-full min-w-0 text-start focus-visible:outline-none"
             >
               <span :if={@media.content} class="flex min-w-0 items-center gap-related">
                 <span class="truncate font-semibold text-text">{content_title(@media.content)}</span>

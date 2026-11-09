@@ -47,7 +47,7 @@ defmodule WatchClubWeb.Storybook.Table do
               <.table_head class="w-[100px]">Invoice</.table_head>
               <.table_head>Status</.table_head>
               <.table_head>Method</.table_head>
-              <.table_head class="text-right!">Amount</.table_head>
+              <.table_head class="text-end!">Amount</.table_head>
             </.table_row>
           </.table_header>
           <.table_body>
@@ -55,25 +55,25 @@ defmodule WatchClubWeb.Storybook.Table do
               <.table_cell class="font-semibold">INV001</.table_cell>
               <.table_cell><.badge>Paid</.badge></.table_cell>
               <.table_cell>Credit card</.table_cell>
-              <.table_cell class="text-right!">$250.00</.table_cell>
+              <.table_cell class="text-end!">$250.00</.table_cell>
             </.table_row>
             <.table_row>
               <.table_cell class="font-semibold">INV002</.table_cell>
               <.table_cell><.badge variant="secondary">Pending</.badge></.table_cell>
               <.table_cell>PayPal</.table_cell>
-              <.table_cell class="text-right!">$150.00</.table_cell>
+              <.table_cell class="text-end!">$150.00</.table_cell>
             </.table_row>
             <.table_row selected>
               <.table_cell class="font-semibold">INV003</.table_cell>
               <.table_cell><.badge variant="danger">Failed</.badge></.table_cell>
               <.table_cell>Bank transfer</.table_cell>
-              <.table_cell class="text-right!">$350.00</.table_cell>
+              <.table_cell class="text-end!">$350.00</.table_cell>
             </.table_row>
           </.table_body>
           <.table_footer>
             <.table_row>
               <.table_cell colspan="3">Total</.table_cell>
-              <.table_cell class="text-right!">$750.00</.table_cell>
+              <.table_cell class="text-end!">$750.00</.table_cell>
             </.table_row>
           </.table_footer>
         </.table>
@@ -90,7 +90,7 @@ defmodule WatchClubWeb.Storybook.Table do
               <.table_head>Role</.table_head>
               <.table_head>Member since</.table_head>
               <.table_head>Invited by</.table_head>
-              <.table_head class="text-right!"></.table_head>
+              <.table_head class="text-end!"></.table_head>
             </.table_row>
           </.table_header>
           <.table_body>
@@ -109,7 +109,7 @@ defmodule WatchClubWeb.Storybook.Table do
                   Grace Hopper
                 </div>
               </.table_cell>
-              <.table_cell class="text-right!">
+              <.table_cell class="text-end!">
                 <.dropdown_menu id="table-story-actions">
                   <:trigger>
                     <.button id="table-story-member-actions-trigger" size="icon" variant="ghost" aria-label="Member actions">
@@ -133,7 +133,7 @@ defmodule WatchClubWeb.Storybook.Table do
                   Ada Lovelace
                 </div>
               </.table_cell>
-              <.table_cell class="text-right!"></.table_cell>
+              <.table_cell class="text-end!"></.table_cell>
             </.table_row>
           </.table_body>
         </.table>
@@ -147,17 +147,17 @@ defmodule WatchClubWeb.Storybook.Table do
           <.table_header>
             <.table_row>
               <.table_head>File</.table_head>
-              <.table_head class="text-right!">Size</.table_head>
+              <.table_head class="text-end!">Size</.table_head>
             </.table_row>
           </.table_header>
           <.table_body>
             <.table_row>
               <.table_cell>Dune Part Two (2024).mkv</.table_cell>
-              <.table_cell class="text-right!">18.2 GB</.table_cell>
+              <.table_cell class="text-end!">18.2 GB</.table_cell>
             </.table_row>
             <.table_row>
               <.table_cell>Arrival (2016).mkv</.table_cell>
-              <.table_cell class="text-right!">9.4 GB</.table_cell>
+              <.table_cell class="text-end!">9.4 GB</.table_cell>
             </.table_row>
           </.table_body>
           <:footer>

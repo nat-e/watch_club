@@ -15,7 +15,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
           <.table_head class="@max-2xl:hidden">
             {dgettext("admin_users", "Member since")}
           </.table_head>
-          <.table_head class="text-right!">
+          <.table_head class="text-end!">
             <span class="sr-only">{dgettext("admin_users", "Actions")}</span>
           </.table_head>
         </.table_row>
@@ -52,7 +52,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
       <.table_cell class="hidden @2xl:table-cell">
         <span class="text-text-muted">{Time.relative_from_now(@user.inserted_at, @locale)}</span>
       </.table_cell>
-      <.table_cell class="text-right!">
+      <.table_cell class="text-end!">
         <.user_actions user={@user} />
       </.table_cell>
     </.table_row>
