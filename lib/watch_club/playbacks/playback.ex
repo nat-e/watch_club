@@ -76,8 +76,16 @@ defmodule WatchClub.Playbacks.Playback do
       authorize_if expr(not is_nil(media.content_id))
     end
 
-    policy action_type([:read, :update]) do
-      description "Only the starting User (via the parent Session), the Instance Administrator, and the system actor can access Playbacks"
+    policy action_type(:read) do
+      description "The starting User (via the parent Session), the Instance Administrator and the system actor see every Playback; every User sees the ones watched now"
+      authorize_if WatchClub.Checks.IsSystemActor
+      authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if relates_to_actor_via([:session, :started_by])
+      authorize_if expr(watched_now?)
+    end
+
+    policy action_type(:update) do
+      description "Only the starting User (via the parent Session), the Instance Administrator, and the system actor can update Playbacks"
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via([:session, :started_by])
@@ -118,6 +126,16 @@ defmodule WatchClub.Playbacks.Playback do
   end
 
   calculations do
+    # The Player heartbeats every 5 seconds, paused included
+    calculate :watched_now?,
+              :boolean,
+              expr(
+                is_nil(ended_at) and last_active_at > ago(30, :second) and
+                  not is_nil(media.content_id)
+              ) do
+      description "Whether it's current and its Player is active, playing a Content: its User is Watching Now"
+    end
+
     calculate :preferred_audio_track_id, :uuid, {PreferredTrack, track: :audio} do
       description "The Audio Track the Player starts with, from the User Preferences."
       public? true

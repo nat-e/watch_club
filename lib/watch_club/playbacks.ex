@@ -10,6 +10,7 @@ defmodule WatchClub.Playbacks do
       define :heartbeat_session, action: :heartbeat
       define :end_inactive_playbacks, action: :end_inactive_playbacks
       define :get_session_by_id, action: :read, get_by: [:id]
+      define :list_watching_now, action: :watching_now
     end
 
     resource WatchClub.Playbacks.Playback do

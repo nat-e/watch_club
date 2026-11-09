@@ -4,7 +4,8 @@ defmodule WatchClub.Playbacks.Session do
 
   All public lifecycle actions live here: starting a Playback Session,
   switching to a new Playback inside it, heartbeating the current Playback and
-  ending the Playbacks whose Player is no longer active.
+  ending the Playbacks whose Player is no longer active. `:watching_now` lists
+  who is Watching Now.
   Callers load `:active_playback` with the fields they need.
   """
 
@@ -62,6 +63,18 @@ defmodule WatchClub.Playbacks.Session do
       change Changes.BumpCurrentPlayback
     end
 
+    read :watching_now do
+      description "The other Users Watching Now: for each, the Session they started last among those whose current Playback is watched now, the latest first."
+
+      filter expr(started_by_id != ^actor(:id) and exists(playbacks, watched_now?))
+
+      prepare build(
+                distinct: [:started_by_id],
+                distinct_sort: [inserted_at: :desc],
+                sort: [inserted_at: :desc]
+              )
+    end
+
     action :end_inactive_playbacks do
       description "End every current Playback whose Player has sent no heartbeat for six hours, then remove the segment cache of every ended Playback."
 
@@ -77,6 +90,11 @@ defmodule WatchClub.Playbacks.Session do
   end
 
   policies do
+    bypass action(:watching_now) do
+      description "Every User sees who is Watching Now, but not their other Playback Sessions"
+      authorize_if actor_present()
+    end
+
     policy action(:start) do
       description "A User can start a Playback Session; access to its Media is checked when the first Playback is created."
       authorize_if actor_present()

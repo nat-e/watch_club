@@ -176,6 +176,35 @@ defmodule WatchClub.Playbacks.SessionTest do
     end
   end
 
+  describe "list_watching_now/*" do
+    @tag :tmp_dir
+    test "lists the other Users whose Player is active, once each, with the Session they started last",
+         %{tmp_dir: tmp_dir} do
+      [user, watcher] = generate_many(user(), 2)
+      media = matched_media!(Path.join(tmp_dir, "watched.mkv"))
+      generate(playback(media, started_by: watcher))
+      %{session_id: last_session_id} = generate(playback(media, started_by: watcher))
+
+      assert [%Session{id: ^last_session_id, active_playback: %Playback{media_id: media_id}}] =
+               Playbacks.list_watching_now!(load: :active_playback, actor: user)
+
+      assert media_id == media.id
+    end
+
+    @tag :tmp_dir
+    test "leaves out the actor, the inactive Players, the ended Playbacks and the Unmatched Media",
+         %{tmp_dir: tmp_dir} do
+      user = generate(user())
+      media = matched_media!(Path.join(tmp_dir, "watched.mkv"))
+      generate(playback(media, started_by: user))
+      generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -1, :minute)))
+      generate(playback(media, ended_at: DateTime.utc_now()))
+      generate(playback(unmatched_media!(Path.join(tmp_dir, "unmatched.mkv"))))
+
+      assert [] = Playbacks.list_watching_now!(actor: user)
+    end
+  end
+
   defp unmatched_media!(path) do
     File.mkdir_p!(Path.dirname(path))
     File.write!(path, "")
