@@ -29,6 +29,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   alias WatchClub.Conversations.{Conversation, Message, Participant}
   alias WatchClub.Languages
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
+  alias WatchClubWeb.Components.Medias.VideoDownload
   alias WatchClubWeb.Contents.ContentPage.{EpisodesModalLive, RecommendModalLive}
 
   # The Content and its implementation data shown on the page.
@@ -37,7 +38,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     :actor_progress_status,
     implementation: %{
       load: [
-        movie: [videos: [:default_video_track, media: [:file_name, :file_size]]],
+        movie: [videos: VideoDownload.videos_load()],
         tv_show: [:actor_next_episode, :season_numbers, :season_count]
       ]
     }
@@ -342,7 +343,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       ]}
       {@rest}
     >
-      <span class="grid size-control-lg place-items-center rounded-full border border-border bg-surface-raised text-text transition-colors group-hover/action:bg-surface-hover group-active/action:bg-surface-active [&_svg]:size-icon">
+      <span class="grid size-control-lg place-items-center rounded-full border border-border bg-surface-raised text-text transition-colors group-hover/action:bg-surface-hover group-active/action:bg-surface-active group-aria-expanded/action:bg-surface-hover [&_svg]:size-icon">
         {render_slot(@inner_block)}
       </span>
       {@label}

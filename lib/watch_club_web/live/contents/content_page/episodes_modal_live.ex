@@ -9,6 +9,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Medias.VideoDownload
 
+  alias WatchClubWeb.Components.Medias.VideoDownload
+
   @doc """
   The DOM id of the modal, which shows at most once on a page.
   """
@@ -131,8 +133,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
   # Its still, with Play once it's in the Library, its number and name, its length and a word on
   # where it is, its story, Download once it's in the Library, and a check to mark it as watched or
-  # not once it aired. The still is
-  # grey while it isn't out, and when a TV Show in the Library misses it.
+  # not once it aired. The still is grey while it isn't out, and when a TV Show in the Library
+  # misses it.
   defp episode_row(assigns) do
     episode = assigns.episode
     localization = episode.best_localization || %{title: nil, overview: nil}
@@ -218,53 +220,55 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
           {@localization.overview}
         </span>
       </div>
-      <.video_download
-        :if={@playable?}
-        id={"episode-#{@episode.episode_number}-download"}
-        videos={@episode.videos}
-        locale={@locale}
-      >
-        <:trigger :let={attrs}>
-          <.button
-            id={"episode-#{@episode.episode_number}-download-button"}
-            variant="ghost"
-            size="icon"
-            aria-label={
-              dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
-            }
-            title={
-              dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
-            }
-            class="shrink-0"
-            {attrs}
-          >
-            <Lucideicons.hard_drive_download />
-          </.button>
-        </:trigger>
-      </.video_download>
-      <.button
-        :if={@aired?}
-        id={"episode-#{@episode.episode_number}-watched"}
-        variant="ghost"
-        size="icon"
-        phx-click="toggle_episode"
-        phx-value-episode={@episode.episode_number}
-        phx-target={@myself}
-        aria-pressed={to_string(@watched?)}
-        aria-label={
-          dgettext("contents", "Watched episode %{number}", number: @episode.episode_number)
-        }
-        title={
-          if @watched?,
-            do: dgettext("contents", "Mark as not watched"),
-            else: dgettext("contents", "Mark as watched")
-        }
-        class="shrink-0"
-      >
-        <Lucideicons.circle_check :if={@watched?} class="text-success" />
-        <Lucideicons.circle :if={!@watched?} />
-      </.button>
-      <span :if={!@aired?} class="size-control-md shrink-0"></span>
+      <%!-- Download and the check, as one group --%>
+      <div class="flex shrink-0 items-center">
+        <.video_download
+          :if={@playable?}
+          id={"episode-#{@episode.episode_number}-download"}
+          videos={@episode.videos}
+          locale={@locale}
+        >
+          <:trigger :let={attrs}>
+            <.button
+              id={"episode-#{@episode.episode_number}-download-button"}
+              variant="ghost"
+              size="icon"
+              aria-label={
+                dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+              }
+              title={
+                dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+              }
+              class="aria-expanded:bg-surface-hover"
+              {attrs}
+            >
+              <Lucideicons.hard_drive_download />
+            </.button>
+          </:trigger>
+        </.video_download>
+        <.button
+          :if={@aired?}
+          id={"episode-#{@episode.episode_number}-watched"}
+          variant="ghost"
+          size="icon"
+          phx-click="toggle_episode"
+          phx-value-episode={@episode.episode_number}
+          phx-target={@myself}
+          aria-pressed={to_string(@watched?)}
+          aria-label={
+            dgettext("contents", "Watched episode %{number}", number: @episode.episode_number)
+          }
+          title={
+            if @watched?,
+              do: dgettext("contents", "Mark as not watched"),
+              else: dgettext("contents", "Mark as watched")
+          }
+        >
+          <Lucideicons.circle_check :if={@watched?} class="text-success" />
+          <Lucideicons.circle :if={!@watched?} />
+        </.button>
+        <span :if={!@aired?} class="size-control-md shrink-0"></span>
+      </div>
     </li>
     """
   end
@@ -344,7 +348,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :has_media?,
         :actor_progress_status,
         :actor_progress,
-        videos: [:default_video_track, media: [:file_name, :file_size]]
+        videos: VideoDownload.videos_load()
       ],
       actor: assigns.current_user
     )

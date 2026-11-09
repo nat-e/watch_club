@@ -14,6 +14,7 @@ defmodule WatchClub.MediaCatalog.Media do
     FilterBrowseSearch
   }
 
+  alias WatchClub.MediaCatalog.Calculations.{FileName, FileSize}
   alias WatchClub.MediaCatalog.Changes.SetContent
   alias WatchClub.Requests.Changes.UpdateContentRequest
   alias WatchClub.Shared.Changes.NormalizePath
@@ -293,15 +294,11 @@ defmodule WatchClub.MediaCatalog.Media do
   end
 
   calculations do
-    # The name a Download saves its file as
-    calculate :file_name, :string, fn medias, _context ->
-      Enum.map(medias, &Path.basename(&1.path))
-    end do
-      load [:path]
+    calculate :file_name, :string, FileName do
       public? true
     end
 
-    calculate :file_size, :integer, WatchClub.MediaCatalog.Calculations.FileSize do
+    calculate :file_size, :integer, FileSize do
       public? true
     end
   end

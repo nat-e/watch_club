@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Storybook.VideoDownload do
       },
       %Variation{
         id: :file_gone,
-        description: "A Video whose file is gone has no size",
+        description: "A Video whose file is gone is left out, in French",
         attributes: %{
           id: "download-gone",
           locale: :fr,

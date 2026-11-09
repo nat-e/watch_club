@@ -70,7 +70,7 @@ defmodule WatchClub.Playbacks.Playback do
     end
 
     policy action(:create) do
-      description "The Instance Administrator can play any Media; other Users can play Media with Content"
+      description "Like Download: the Instance Administrator can play any Media; other Users can play Media with Content"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if expr(not is_nil(media.content_id))
     end
