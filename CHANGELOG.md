@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2](https://github.com/nat-e/watch_club/compare/v0.1.1...v0.1.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* **contents:** store Content metadata and refresh it on page views and Media Imports ([#59](https://github.com/nat-e/watch_club/issues/59)) ([83a49cd](https://github.com/nat-e/watch_club/commit/83a49cd70a2c4f774d7df3a692cb5d1e3c4fb5c2))
+* **observability:** correct metrics and reduce trace noise ([#62](https://github.com/nat-e/watch_club/issues/62)) ([b545fbd](https://github.com/nat-e/watch_club/commit/b545fbdd6a2f3f265c6880a0a090dbfcb7da8b84))
+* **observability:** start the OTLP exporter before the SDKs in releases ([#61](https://github.com/nat-e/watch_club/issues/61)) ([7bc460c](https://github.com/nat-e/watch_club/commit/7bc460cb227b561151a0bba34beddbf5c04dd82c))
+* **player:** play external subtitle files ([#58](https://github.com/nat-e/watch_club/issues/58)) ([38ae405](https://github.com/nat-e/watch_club/commit/38ae405e76499db4ecf22c0043c903ae9364df72))
+
 ## [0.1.1](https://github.com/nat-e/watch_club/compare/v0.1.0...v0.1.1) (2026-11-08)
 
 
