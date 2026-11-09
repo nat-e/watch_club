@@ -6,7 +6,7 @@ defmodule WatchClub.MediaCatalog.Workers.DetectMarkers do
   A Video deleted between enqueue and run is the one expected miss and completes
   the job; anything else crashes it so Oban retries.
 
-  Runs on a single-worker queue, because two detections must not run at once.
+  Runs on a single-worker queue, so detections never take more than one core.
   """
 
   use Oban.Worker,

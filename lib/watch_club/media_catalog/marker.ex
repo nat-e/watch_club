@@ -8,7 +8,8 @@ defmodule WatchClub.MediaCatalog.Marker do
     otp_app: :watch_club,
     domain: WatchClub.MediaCatalog,
     data_layer: AshPostgres.DataLayer,
-    authorizers: [Ash.Policy.Authorizer]
+    authorizers: [Ash.Policy.Authorizer],
+    notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.MediaCatalog.{MarkerKind, Video}
 
@@ -24,6 +25,15 @@ defmodule WatchClub.MediaCatalog.Marker do
 
   actions do
     defaults [:read, :destroy, create: [:video_id, :kind, :start_seconds, :end_seconds]]
+
+    create :add_if_missing do
+      description "Gives the Video this Marker, unless it already has one of its kind."
+      accept [:video_id, :kind, :start_seconds, :end_seconds]
+      upsert? true
+      upsert_identity :unique_kind_per_video
+      # The Video keeps the Marker it has
+      upsert_fields []
+    end
   end
 
   policies do
@@ -42,6 +52,15 @@ defmodule WatchClub.MediaCatalog.Marker do
       description "Only the system actor can write Markers"
       authorize_if actor_attribute_equals(:system?, true)
     end
+  end
+
+  pub_sub do
+    module Phoenix.PubSub
+    name WatchClub.PubSub
+
+    # For the Players playing the Video
+    publish_all :create, ["video", :video_id]
+    publish_all :destroy, ["video", :video_id]
   end
 
   attributes do

@@ -4,8 +4,9 @@ defmodule WatchClub.Ffmpeg.AudioFingerprint do
   the search for the audio two of them share, such as an Intro.
 
   A fingerprint covers the first or the last 10 minutes of the Video, at most a
-  quarter of it. Fingerprints are cached in `<app data>/fingerprints/<video_id>/`:
-  deleting them only costs computing them again.
+  quarter of it. Fingerprints are cached in `<app data>/fingerprints/<video_id>/`,
+  for as long as the file keeps its size and modification time: deleting them
+  only costs computing them again.
   """
 
   import Bitwise
@@ -32,12 +33,17 @@ defmodule WatchClub.Ffmpeg.AudioFingerprint do
   def fetch!(video_id, path, duration_seconds, part) when part in [:beginning, :end] do
     seconds = min(@max_window_seconds, duration_seconds / 4)
     offset_seconds = if part == :beginning, do: 0.0, else: duration_seconds - seconds
-    file = Path.join(dir(video_id), "#{part}.raw")
+    %File.Stat{size: size, mtime: mtime} = File.stat!(path, time: :posix)
+    # A cached fingerprint is only good for the same file and the same part of it
+    key = {size, mtime, offset_seconds, seconds}
+    cache = Path.join(dir(video_id), "#{part}.fingerprint")
 
     binary =
-      case File.read(file) do
-        {:ok, binary} -> binary
-        {:error, :enoent} -> compute!(path, offset_seconds, seconds, file)
+      with {:ok, cached} <- File.read(cache),
+           {^key, binary} <- :erlang.binary_to_term(cached, [:safe]) do
+        binary
+      else
+        _missing_or_stale -> compute!(path, key, cache)
       end
 
     points = for <<point::little-32 <- binary>>, do: point
@@ -125,14 +131,14 @@ defmodule WatchClub.Ffmpeg.AudioFingerprint do
     (value * 0x01010101 &&& 0xFFFFFFFF) >>> 24
   end
 
-  defp compute!(path, offset_seconds, seconds, file) do
+  defp compute!(path, {_size, _mtime, offset_seconds, seconds} = key, cache) do
     {:ok, points} = @ffprobe.audio_fingerprint(path, offset_seconds, seconds)
     binary = for point <- points, into: <<>>, do: <<point::little-32>>
 
     # Written to a tmp name then renamed, so a reader never sees a partial file
-    File.mkdir_p!(Path.dirname(file))
-    File.write!("#{file}.tmp", binary)
-    File.rename!("#{file}.tmp", file)
+    File.mkdir_p!(Path.dirname(cache))
+    File.write!("#{cache}.tmp", :erlang.term_to_binary({key, binary}))
+    File.rename!("#{cache}.tmp", cache)
     binary
   end
 

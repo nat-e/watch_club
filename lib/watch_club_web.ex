@@ -142,6 +142,7 @@ defmodule WatchClubWeb do
         Audiobook,
         AudioTrack,
         Ebook,
+        Marker,
         Media,
         MediaType,
         TextTrack,

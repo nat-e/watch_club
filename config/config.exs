@@ -98,7 +98,7 @@ config :watch_club, Oban,
     # Single worker so trickplay's full-decode ffmpeg pass never crowds out
     # imports.
     trickplay_generation: 1,
-    # Single worker: two detections at once could give an episode the same Marker
+    # Single worker so marker detection's audio decoding stays in the background
     marker_detection: 1
   ]
 

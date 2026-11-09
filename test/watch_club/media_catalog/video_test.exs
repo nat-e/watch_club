@@ -11,9 +11,11 @@ defmodule WatchClub.MediaCatalog.VideoTest do
   @seconds_per_point 4096 / 3 / 11_025
 
   describe "detect_markers/*" do
-    test "finds the Markers in the named chapters" do
+    @describetag :tmp_dir
+
+    test "finds the Markers in the named chapters", %{tmp_dir: tmp_dir} do
       [episode] = episodes(1)
-      video = episode_video(episode)
+      video = episode_video(episode, tmp_dir)
 
       stub(ProbeMock, :probe, fn _path ->
         {:ok,
@@ -37,10 +39,11 @@ defmodule WatchClub.MediaCatalog.VideoTest do
              ]
     end
 
-    test "finds the Intro and Credits that the nearest episode shares, and gives them to it" do
+    test "finds the Intro and Credits that the nearest episode shares, and gives them to it",
+         %{tmp_dir: tmp_dir} do
       [first_episode, second_episode, _third] = episodes(3)
-      first = episode_video(first_episode)
-      second = episode_video(second_episode)
+      first = episode_video(first_episode, tmp_dir)
+      second = episode_video(second_episode, tmp_dir)
       stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
       stub_fingerprints(%{first.media.path => 100, second.media.path => 500})
 
@@ -50,10 +53,10 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       assert_markers(first, intro: intro(100), credits: credits())
     end
 
-    test "keeps the Markers that the nearest episode already has" do
+    test "keeps the Markers that the nearest episode already has", %{tmp_dir: tmp_dir} do
       [first_episode, second_episode] = episodes(2)
-      first = episode_video(first_episode)
-      second = episode_video(second_episode)
+      first = episode_video(first_episode, tmp_dir)
+      second = episode_video(second_episode, tmp_dir)
 
       stub(ProbeMock, :probe, fn path ->
         chapters = if path == first.media.path, do: [chapter(30, 60, "Intro")], else: []
@@ -68,9 +71,9 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       assert markers(first)[:intro] == {30.0, 60.0}
     end
 
-    test "finds no Markers without chapters or other episodes" do
+    test "finds no Markers without chapters or other episodes", %{tmp_dir: tmp_dir} do
       [episode] = episodes(1)
-      video = episode_video(episode)
+      video = episode_video(episode, tmp_dir)
       stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
 
       MediaCatalog.detect_markers!(video, actor: SystemActor.actor())
@@ -78,11 +81,11 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       assert markers(video) == []
     end
 
-    test "forbids Users" do
+    test "forbids Users", %{tmp_dir: tmp_dir} do
       [episode] = episodes(1)
 
       episode
-      |> episode_video()
+      |> episode_video(tmp_dir)
       |> MediaCatalog.detect_markers(actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
@@ -93,9 +96,13 @@ defmodule WatchClub.MediaCatalog.VideoTest do
     |> Enum.sort_by(& &1.episode_number)
   end
 
-  # Their fingerprints of the end start 990 seconds in: they cover a quarter of the Video
-  defp episode_video(episode) do
-    generate(video_media(episode, video: %{duration_seconds: 1320.0}))
+  # Their fingerprints of the end start 990 seconds in: they cover a quarter of the Video. The
+  # cache of fingerprints needs the file.
+  defp episode_video(episode, tmp_dir) do
+    path = Path.join(tmp_dir, "#{episode.episode_number}.mkv")
+    File.write!(path, "")
+
+    generate(video_media(episode, path: path, video: %{duration_seconds: 1320.0}))
     |> Ash.load!([video: :media], authorize?: false)
     |> Map.fetch!(:video)
   end

@@ -4,8 +4,7 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
   its Intro or Credits also gets them from the audio it shares with the nearest
   episodes of its TV Show, which then get the Marker they lack too.
 
-  Runs ffprobe, ffmpeg and fpcalc before the transaction. Two detections must not
-  run at once: they could give the same episode the same Marker.
+  Runs ffprobe, ffmpeg and fpcalc before the transaction.
   """
 
   use Ash.Resource.Change
@@ -14,6 +13,7 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
 
   require Ash.Query
 
+  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Ffmpeg.AudioFingerprint
   alias WatchClub.MediaCatalog.{Marker, Video}
 
@@ -36,12 +36,13 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
   @impl true
   def change(changeset, _opts, context) do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
-      video = Ash.load!(changeset.data, [:media, tv_show_episode: [:rank]], scope: context)
-      # The file may have changed since its fingerprints were cached
-      AudioFingerprint.delete!(video.id)
+      video =
+        Ash.load!(changeset.data, [:media, :audio_tracks, tv_show_episode: [:rank]],
+          scope: context
+        )
 
       {markers, markers_of_others} =
-        video |> chapter_markers() |> add_audio_markers(video, context)
+        video |> chapter_markers!() |> add_audio_markers!(video, context)
 
       changeset
       |> Ash.Changeset.manage_relationship(:markers, markers,
@@ -49,13 +50,18 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
         on_missing: :destroy
       )
       |> Ash.Changeset.after_action(fn _changeset, video ->
-        Ash.bulk_create!(markers_of_others, Marker, :create, scope: context)
-        {:ok, video}
+        %Ash.BulkResult{notifications: notifications} =
+          Ash.bulk_create!(markers_of_others, Marker, :add_if_missing,
+            scope: context,
+            return_notifications?: true
+          )
+
+        {:ok, video, notifications}
       end)
     end)
   end
 
-  defp chapter_markers(%Video{media: media}) do
+  defp chapter_markers!(%Video{media: media}) do
     {:ok, metadata} = @ffprobe.probe(media.path)
 
     metadata
@@ -87,22 +93,25 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
     end)
   end
 
-  defp add_audio_markers(markers, %Video{tv_show_episode: nil}, _context), do: {markers, []}
-  defp add_audio_markers(markers, %Video{duration_seconds: nil}, _context), do: {markers, []}
+  # Only the audio of a TV Show Episode can be compared with other episodes
+  defp add_audio_markers!(markers, %Video{} = video, _context)
+       when is_nil(video.tv_show_episode) or is_nil(video.duration_seconds) or
+              video.audio_tracks == [],
+       do: {markers, []}
 
-  defp add_audio_markers(markers, video, context) do
+  defp add_audio_markers!(markers, video, context) do
     missing =
       Enum.reject(@audio_kinds, fn {kind, _} -> Enum.any?(markers, &(&1.kind == kind)) end)
 
-    episodes = if missing == [], do: [], else: nearest_episodes(video, context)
+    others = if missing == [], do: [], else: nearest_episode_videos!(video, context)
 
     for {kind, {part, min_seconds, max_seconds}} <- missing,
-        episodes != [],
+        others != [],
         reduce: {markers, []} do
       {markers, markers_of_others} ->
         own = fingerprint!(video, part)
 
-        Enum.find_value(episodes, fn other ->
+        Enum.find_value(others, fn other ->
           theirs = fingerprint!(other, part)
 
           with {range, other_range} <-
@@ -115,42 +124,44 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
             {markers, markers_of_others}
 
           {other, {start_seconds, end_seconds}, {other_start_seconds, other_end_seconds}} ->
-            marker = %{kind: kind, start_seconds: start_seconds, end_seconds: end_seconds}
-
-            marker_of_other = %{
-              video_id: other.id,
-              kind: kind,
-              start_seconds: other_start_seconds,
-              end_seconds: other_end_seconds
-            }
-
-            if Enum.any?(other.markers, &(&1.kind == kind)),
-              do: {[marker | markers], markers_of_others},
-              else: {[marker | markers], [marker_of_other | markers_of_others]}
+            {[%{kind: kind, start_seconds: start_seconds, end_seconds: end_seconds} | markers],
+             [
+               %{
+                 video_id: other.id,
+                 kind: kind,
+                 start_seconds: other_start_seconds,
+                 end_seconds: other_end_seconds
+               }
+               | markers_of_others
+             ]}
         end
     end
   end
 
-  # Videos of other episodes of the TV Show, the same season first
-  defp nearest_episodes(%Video{tv_show_episode: episode}, context) do
+  # A Video of each of the nearest other episodes of the TV Show, the same season first
+  defp nearest_episode_videos!(%Video{tv_show_episode: episode}, context) do
     distance =
       calc(
-        if(tv_show_episode.rank > ^episode.rank,
-          do: tv_show_episode.rank - ^episode.rank,
-          else: ^episode.rank - tv_show_episode.rank
-        ),
+        if(rank > ^episode.rank, do: rank - ^episode.rank, else: ^episode.rank - rank),
         type: :integer
       )
 
-    Video
+    with_audio =
+      Video
+      |> Ash.Query.filter(not is_nil(duration_seconds) and exists(audio_tracks, true))
+      |> Ash.Query.sort(:id)
+      |> Ash.Query.load(:media)
+
+    TvShowEpisode
     |> Ash.Query.filter(
-      tv_show_episode.tv_show_id == ^episode.tv_show_id and
-        tv_show_episode_id != ^episode.id and not is_nil(duration_seconds)
+      tv_show_id == ^episode.tv_show_id and id != ^episode.id and
+        exists(videos, not is_nil(duration_seconds) and exists(audio_tracks, true))
     )
-    |> Ash.Query.sort([{distance, :asc}])
+    |> Ash.Query.sort([{distance, :asc}, rank: :asc])
     |> Ash.Query.limit(@compared_episodes)
-    |> Ash.Query.load([:media, :markers])
+    |> Ash.Query.load(videos: with_audio)
     |> Ash.read!(scope: context)
+    |> Enum.map(&hd(&1.videos))
   end
 
   defp fingerprint!(video, part),
