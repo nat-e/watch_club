@@ -135,9 +135,13 @@ defmodule WatchClubWeb.Telemetry do
       counter("watch_club.contents.metadata_fetch.stop.count", tags: [:type, :result]),
       summary("watch_club.contents.metadata_fetch.stop.duration",
         tags: [:type, :result],
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
-      summary("watch_club.contents.metadata_fetch.callers", tags: [:type]),
+      summary("watch_club.contents.metadata_fetch.callers",
+        tags: [:type],
+        reporter_options: [buckets: [1, 2, 3, 5, 10, 20, 50, 100]]
+      ),
       counter("watch_club.contents.metadata_fetch.exception.count", tags: [:type]),
       counter("watch_club.contents.metadata_request.count", tags: [:served]),
 
@@ -145,7 +149,8 @@ defmodule WatchClubWeb.Telemetry do
       counter("watch_club.tmdb.request.stop.count", tags: [:endpoint, :status]),
       summary("watch_club.tmdb.request.stop.duration",
         tags: [:endpoint, :status],
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       counter("watch_club.media_import.match.count", tags: [:result]),
 
