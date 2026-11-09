@@ -129,7 +129,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   end
 
   # The same code for a language in every playlist, so the Player can find the
-  # language the User picked in the next video's tracks
+  # previous video's languages in the next video's tracks
   defp language(track), do: escape(Languages.to_code(track.language) || "und")
 
   defp segment_duration_at(duration, index, segment_duration) do

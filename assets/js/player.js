@@ -58,7 +58,10 @@ const playerStorage = {
 
 const Player = {
 	mounted() {
-		this.handleEvent("player:load_video", ({ src }) => this.loadVideo(src));
+		this.handleEvent("player:load_video", ({ src }) => {
+			this.carryTracksOver();
+			this.loadVideo(src);
+		});
 		this.vidstackScriptUrl =
 			this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
 		this.player = this.el.querySelector("[data-player-media]");
@@ -66,9 +69,10 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
-		// The subtitle language the User picked, for the next videos of the session: null
-		// when they turned subtitles off
+		// The subtitles to carry over to the next video: a language, null for none, or
+		// undefined for the ones the master playlist marks as default
 		this.subtitleLanguage = undefined;
+		this.defaultSubtitles = null;
 
 		this.bindDomEvents();
 		this.boot();
@@ -108,6 +112,7 @@ const Player = {
 		if (!this.player) return;
 		this.pendingAutoplay = true;
 		this.subtitlesToStart = true;
+		this.defaultSubtitles = null;
 		// Vidstack keeps the previous video's subtitles, under the ids of the new ones
 		this.player.textTracks.clear();
 		this.player.src = { src, type: "application/x-mpegurl" };
@@ -312,24 +317,10 @@ const Player = {
 				group.addEventListener(
 					"change",
 					(event) => {
-						// The tracks the User picks carry over to the next videos of the session.
-						// The groups also fire when the player changes tracks itself.
-						const picked = event.isOriginTrusted;
-
-						switch (event.currentTarget.localName) {
-							case "media-captions-radio-group":
-								this.syncCaptionLayer(event.detail);
-								if (picked) {
-									this.subtitleLanguage = event.detail?.language ?? null;
-								}
-								break;
-							case "media-audio-radio-group":
-								if (picked) {
-									this.player.provider.instance.config.audioPreference = {
-										lang: event.detail.language,
-									};
-								}
-								break;
+						if (
+							event.currentTarget.localName === "media-captions-radio-group"
+						) {
+							this.syncCaptionLayer(event.detail);
 						}
 
 						// Return focus to the trigger before closing, otherwise the menu is
@@ -384,22 +375,44 @@ const Player = {
 		if (providerType === "hls") this.disableNativeTextTracks();
 	},
 
-	// Starts the subtitles the User picked earlier in the session when the video has
-	// them, otherwise the ones the master playlist marks as default
+	// The next video of the session starts with the audio language and the subtitles
+	// playing now, when it has them
+	carryTracksOver() {
+		const audio = this.player.audioTracks.selected;
+		if (audio) {
+			this.player.provider.instance.config.audioPreference = {
+				lang: audio.language,
+			};
+		}
+
+		// The next video's default subtitles replace this one's: a language alone doesn't
+		// tell forced subtitles apart from full ones
+		const subtitles = this.player.textTracks.selected;
+		this.subtitleLanguage =
+			subtitles === this.defaultSubtitles
+				? undefined
+				: (subtitles?.language ?? null);
+	},
+
+	// Starts the subtitles carried over from the previous video when this one has them,
+	// otherwise the ones the master playlist marks as default
 	startSubtitles(subtitleTracks) {
+		const defaultIndex = subtitleTracks.findIndex((track) => track.default);
+		this.defaultSubtitles =
+			this.player.textTracks.getById(`hls-subtitles-${defaultIndex}`) ?? null;
+
 		if (this.subtitleLanguage === null) {
 			this.player.provider.instance.subtitleTrack = -1;
 			return;
 		}
 
-		const picked = subtitleTracks.findIndex(
+		const carried = subtitleTracks.findIndex(
 			(track) => track.lang === this.subtitleLanguage,
 		);
-		const index =
-			picked === -1
-				? subtitleTracks.findIndex((track) => track.default)
-				: picked;
-		const track = this.player.textTracks.getById(`hls-subtitles-${index}`);
+		const track =
+			carried === -1
+				? this.defaultSubtitles
+				: this.player.textTracks.getById(`hls-subtitles-${carried}`);
 		if (track) track.mode = "showing";
 	},
 

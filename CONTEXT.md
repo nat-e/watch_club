@@ -486,7 +486,7 @@ _Avoid_: Group, aggregate, card, item
 - The **Preferred Text Track** is a full **Text Track** in the **Preferred Subtitle Language**, unless the audio is in one of the **Languages Without Subtitles**; otherwise, or when the **Video** has none, it is a **Forced Text Track** in the audio's language, if any
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
 - In the **Player**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
-- The **Audio Track** language and the subtitles the **User** picks in the **Player** carry over to the next **Playbacks** of the **Playback Session**; when the next **Video** has no track in that language, the **Preferred Audio Track** or **Preferred Text Track** applies
+- Each **Playback** after the first one in a **Playback Session** starts with the audio language and the subtitles, or no subtitles, of the previous one, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 
 ### Media
 
