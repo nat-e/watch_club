@@ -206,6 +206,18 @@ _Avoid_: watch history, watch session, resume point, playhead, watched flag
 A **User** with **Watch Progress** on a **Movie** or a **TV Show**: they watched it or are watching it.
 _Avoid_: Viewer, audience
 
+**Problem Report**:
+What a **User** reports from the **Player** about the **Video** they're playing: what's wrong, an optional comment, and what the **Player** showed at that moment.
+_Avoid_: Feedback, issue, bug report, ticket
+
+**Report a Problem**:
+Send a **Problem Report** to the **Instance Administrator** from the **Player**.
+_Avoid_: Send feedback, flag, report an issue
+
+**Archive a Problem Report**:
+The **Instance Administrator** sets a handled **Problem Report** aside, without telling its **User**.
+_Avoid_: Resolve, close, dismiss
+
 **Ebook**:
 Media that can be read or downloaded and is attached to a book.
 _Avoid_: Media Version, digital book copy
@@ -487,6 +499,10 @@ _Avoid_: Group, aggregate, card, item
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
 - In the **Player**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
 - Each **Playback** after the first one in a **Playback Session** starts with the audio language and the subtitles, or no subtitles, of the previous one, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
+- A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
+- A **Problem Report** belongs to the **Playback** it was sent from, which gives its **User**, **Video** and **Content**
+- Only the **Instance Administrator** can read and **Archive a Problem Report**; an archived **Problem Report** stays archived
+- Deleting a **Video** or a **User** deletes their **Problem Reports**
 
 ### Media
 
