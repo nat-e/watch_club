@@ -408,7 +408,21 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "get_or_refresh_content/*" do
-    test "creates missing content and loads its implementation with the caller's actor" do
+    setup do
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [
+          [:watch_club, :contents, :metadata_fetch, :stop],
+          [:watch_club, :contents, :metadata_fetch, :exception],
+          [:watch_club, :contents, :metadata_request]
+        ])
+
+      on_exit(fn -> :telemetry.detach(ref) end)
+      {:ok, telemetry_ref: ref}
+    end
+
+    test "creates missing content and loads its implementation with the caller's actor", %{
+      telemetry_ref: ref
+    } do
       actor = generate(user(locale: :fr_FR))
 
       details =
@@ -431,9 +445,20 @@ defmodule WatchClub.Contents.ContentTest do
                  actor: actor,
                  load: [:implementation]
                )
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 1}, %{type: :movie, result: :created}}
+
+      assert duration > 0
+
+      assert_received {[:watch_club, :contents, :metadata_request], ^ref, %{count: 1},
+                       %{served: :fetched}}
     end
 
-    test "refreshes stale metadata and updates localizations in place", %{member: actor} do
+    test "refreshes stale metadata and updates localizations in place", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       refreshed_at = DateTime.add(DateTime.utc_now(), -25 * 60 * 60, :second)
       content = generate(movie(metadata_refreshed_at: refreshed_at))
 
@@ -490,6 +515,11 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert DateTime.compare(new_refreshed_at, refreshed_at) == :gt
 
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 1}, %{type: :movie, result: :refreshed}}
+
+      assert duration > 0
+
       localizations =
         MovieLocalization
         |> Ash.Query.filter(movie_id == ^content.id)
@@ -523,7 +553,10 @@ defmodule WatchClub.Contents.ContentTest do
                tv_show.id
     end
 
-    test "concurrent creators share one fetch and load with each caller's actor", %{member: actor} do
+    test "concurrent creators share one fetch and load with each caller's actor", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       parent = self()
       french_user = generate(user(locale: :fr_FR))
 
@@ -561,10 +594,22 @@ defmodule WatchClub.Contents.ContentTest do
       assert_receive {:fetched_movie_metadata, "en-US"}
       assert_receive {:fetched_movie_metadata, "fr-FR"}
       refute_receive {:fetched_movie_metadata, _}, 0
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,
+                       %{duration: duration, callers: 4}, %{type: :movie, result: :created}}
+
+      assert duration > 0
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
+
+      for _ <- 1..4 do
+        assert_received {[:watch_club, :contents, :metadata_request], ^ref, _,
+                         %{served: :fetched}}
+      end
     end
 
     test "concurrent callers share one failed refresh and all receive stored Content", %{
-      member: actor
+      member: actor,
+      telemetry_ref: ref
     } do
       content =
         generate(movie(metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -2, :day)))
@@ -577,27 +622,40 @@ defmodule WatchClub.Contents.ContentTest do
         Plug.Conn.send_resp(conn, 503, "")
       end)
 
-      callers =
-        for _ <- 1..4 do
-          Task.async(fn ->
-            get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
-          end)
-        end
+      log =
+        capture_log(fn ->
+          callers =
+            for _ <- 1..4 do
+              Task.async(fn ->
+                get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+              end)
+            end
 
-      assert_receive {:fetch_started, fetch}
-      await_metadata_callers(4)
-      send(fetch, :finish_fetch)
+          assert_receive {:fetch_started, fetch}
+          await_metadata_callers(4)
+          send(fetch, :finish_fetch)
 
-      for stored <- Task.await_many(callers) do
-        assert stored.id == content.id
-        assert stored.metadata_refreshed_at == content.metadata_refreshed_at
-        assert stored.updated_at == content.updated_at
-      end
+          for stored <- Task.await_many(callers) do
+            assert stored.id == content.id
+            assert stored.metadata_refreshed_at == content.metadata_refreshed_at
+            assert stored.updated_at == content.updated_at
+          end
 
-      refute_receive {:fetch_started, _}, 0
+          refute_receive {:fetch_started, _}, 0
+        end)
+
+      assert length(Regex.scan(~r/Content metadata is unavailable/, log)) == 1
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 4},
+                       %{type: :movie, result: :kept_stored}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
     end
 
-    test "unexpected fetch crashes exit every waiting caller", %{member: actor} do
+    test "unexpected fetch crashes exit every waiting caller", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       parent = self()
 
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
@@ -625,6 +683,15 @@ defmodule WatchClub.Contents.ContentTest do
         end
 
         refute_receive {:fetch_started, _}, 0
+
+        assert_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref,
+                         %{duration: duration, callers: 4},
+                         %{type: :movie, kind: :exit, stacktrace: stacktrace}}
+
+        assert duration > 0
+        assert stacktrace != []
+        refute_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref, _, _}
+        refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
       end)
     end
 
@@ -661,7 +728,10 @@ defmodule WatchClub.Contents.ContentTest do
       end
     end
 
-    test "returns fresh content without HTTP requests or writes", %{member: actor} do
+    test "returns fresh content without HTTP requests or writes", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       refreshed_at = DateTime.add(DateTime.utc_now(), -60, :second)
       content = generate(movie(metadata_refreshed_at: refreshed_at))
       original_updated_at = content.updated_at
@@ -678,6 +748,11 @@ defmodule WatchClub.Contents.ContentTest do
                get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
 
       assert id == content.id
+
+      assert_received {[:watch_club, :contents, :metadata_request], ^ref, %{count: 1},
+                       %{served: :stored}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
     end
 
     test "returns stored content unchanged when a refresh fails", %{member: actor} do
@@ -740,7 +815,10 @@ defmodule WatchClub.Contents.ContentTest do
              |> Ash.read!(authorize?: false) == episodes_before
     end
 
-    test "returns a metadata error when content is missing upstream", %{member: actor} do
+    test "returns a metadata error when content is missing upstream", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn
         |> Plug.Conn.put_status(404)
@@ -751,9 +829,15 @@ defmodule WatchClub.Contents.ContentTest do
       |> assert_has_error(Ash.Error.Unknown, fn error ->
         match?(%MetadataUnavailable{reason: :not_found}, error)
       end)
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
+                       %{type: :movie, result: :not_found}}
     end
 
-    test "returns an error when Content is not stored and TMDB is unavailable", %{member: actor} do
+    test "returns an error when Content is not stored and TMDB is unavailable", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         Plug.Conn.send_resp(conn, 503, "")
       end)
@@ -762,6 +846,9 @@ defmodule WatchClub.Contents.ContentTest do
       |> assert_has_error(Ash.Error.Unknown, fn error ->
         match?(%MetadataUnavailable{reason: :server_error}, error)
       end)
+
+      assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
+                       %{type: :movie, result: :unavailable}}
     end
   end
 

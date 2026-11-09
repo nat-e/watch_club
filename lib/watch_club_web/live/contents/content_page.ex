@@ -588,6 +588,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     case Integer.parse(tmdb_id) do
       {id, ""} ->
         identity = content_identity_for(type, id)
+        otel_context = OpenTelemetry.Ctx.get_current()
 
         {:noreply,
          socket
@@ -597,6 +598,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
          |> load_conversations!()
          |> load_playlists!()
          |> start_async(:refresh_content, fn ->
+           OpenTelemetry.Ctx.attach(otel_context)
            Contents.get_or_refresh_content(identity, actor: user)
          end)}
 

@@ -97,6 +97,16 @@ defmodule WatchClubWeb.Telemetry do
         unit: {:native, :millisecond}
       ),
 
+      # Content metadata: only Content Type, result and serving path are labels.
+      counter("watch_club.contents.metadata_fetch.stop.count", tags: [:type, :result]),
+      summary("watch_club.contents.metadata_fetch.stop.duration",
+        tags: [:type, :result],
+        unit: {:native, :millisecond}
+      ),
+      summary("watch_club.contents.metadata_fetch.stop.callers", tags: [:type]),
+      counter("watch_club.contents.metadata_fetch.exception.count", tags: [:type]),
+      counter("watch_club.contents.metadata_request.count", tags: [:served]),
+
       # The dependency's default poller emits these VM measurements.
       last_value("vm.memory.total", unit: :byte),
       last_value("vm.total_run_queue_lengths.total"),
