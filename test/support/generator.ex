@@ -330,18 +330,18 @@ defmodule WatchClub.Generator do
   def video_media(movie_or_episode, opts \\ []) do
     {video, opts} = Keyword.pop(opts, :video, %{})
 
-    {type, id} =
+    {type, folder, id} =
       case movie_or_episode do
-        %Content{type: :movie, id: id} -> {:movie, id}
-        %TvShowEpisode{id: id} -> {:tv_show_episode, id}
-        nil -> {:movie, nil}
+        %Content{type: :movie, id: id} -> {:movie, "movies", id}
+        %TvShowEpisode{id: id} -> {:tv_show_episode, "episodes", id}
+        nil -> {:movie, "unmatched", nil}
       end
 
     changeset_generator(
       Media,
       :create_video,
       defaults: [
-        path: sequence(:video_media_path, &"/movies/#{&1}/video.mkv"),
+        path: sequence(:video_media_path, &"/#{folder}/#{&1}/video.mkv"),
         type: type,
         video: Map.merge(video_input(type, id), video)
       ],

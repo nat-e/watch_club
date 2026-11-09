@@ -18,6 +18,7 @@ defmodule WatchClub.MediaCatalog.Video do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
 
   postgres do
@@ -167,6 +168,18 @@ defmodule WatchClub.MediaCatalog.Video do
 
     has_many :text_tracks, TextTrack do
       public? true
+    end
+
+    has_many :markers, Marker do
+      public? true
+    end
+  end
+
+  aggregates do
+    # Where the Player offers the next episode and Watch Progress stops counting
+    first :credits_start_seconds, :markers, :start_seconds do
+      public? true
+      filter expr(kind == :credits)
     end
   end
 end

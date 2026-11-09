@@ -24,7 +24,7 @@ ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
 FROM ${BUILDER_IMAGE} AS builder
 
 # install build dependencies. Node.js + npm are needed to install the JS
-# dependencies (hls.js, vidstack, sortablejs) that esbuild bundles.
+# dependencies (Video.js, sortablejs) that esbuild bundles.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential git nodejs npm \
   && rm -rf /var/lib/apt/lists/*
@@ -84,11 +84,15 @@ FROM ${RUNNER_IMAGE} AS final
 
 # renovate: datasource=deb depName=ffmpeg
 ARG FFMPEG_VERSION=7:7.1.5-0+deb13u1
+# fpcalc, which fingerprints audio to find the Markers of Videos
+# renovate: datasource=deb depName=libchromaprint-tools
+ARG CHROMAPRINT_VERSION=1.5.1-7
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   libstdc++6 openssl libncurses6 locales ca-certificates tini curl \
   ffmpeg=${FFMPEG_VERSION} \
+  libchromaprint-tools=${CHROMAPRINT_VERSION} \
   && rm -rf /var/lib/apt/lists/*
 
 # Set the locale

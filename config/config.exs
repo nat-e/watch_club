@@ -65,6 +65,7 @@ config :watch_club,
     WatchClub.Conversations,
     WatchClub.History,
     WatchClub.Instance,
+    WatchClub.Markers,
     WatchClub.MediaCatalog,
     WatchClub.MediaSources,
     WatchClub.Playbacks,
@@ -97,7 +98,9 @@ config :watch_club, Oban,
     media_source_requests: 2,
     # Single worker so trickplay's full-decode ffmpeg pass never crowds out
     # imports.
-    trickplay_generation: 1
+    trickplay_generation: 1,
+    # Single worker so marker detection's audio decoding stays in the background
+    marker_detection: 1
   ]
 
 # Configure the endpoint
@@ -117,7 +120,7 @@ config :esbuild,
   version: "0.28.2",
   watch_club: [
     args:
-      ~w(js/app.js js/storybook.js js/player_vidstack.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
+      ~w(js/app.js js/storybook.js js/player_videojs.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]

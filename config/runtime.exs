@@ -172,7 +172,11 @@ if config_env() != :test do
       oban: [
         capture_errors: true,
         should_report_error_callback: fn
-          WatchClub.MediaSources.Import.Workers.CandidateIngestor, job ->
+          worker, job
+          when worker in [
+                 WatchClub.MediaSources.Import.Workers.CandidateIngestor,
+                 WatchClub.Markers.Workers.DetectMarkers
+               ] ->
             job.attempt >= job.max_attempts
 
           _worker, _job ->

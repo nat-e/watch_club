@@ -7,6 +7,8 @@ defmodule WatchClubWeb.PlayerPage do
     active_playback: [
       media: [
         video: [
+          :markers,
+          :credits_start_seconds,
           movie: [:best_localization, :actor_progress],
           tv_show_episode: [
             :actor_progress,
@@ -22,67 +24,68 @@ defmodule WatchClubWeb.PlayerPage do
   @impl true
   def render(assigns) do
     ~H"""
-    <main class="fixed inset-0 grid place-items-center overflow-hidden bg-black text-white">
+    <main class="relative grid h-dvh place-items-center overflow-hidden bg-black text-white">
       <div
         :if={@session}
         id="watch-club-player"
         phx-hook="Player"
-        data-vidstack-src={~p"/assets/js/player_vidstack.js"}
+        data-videojs-src={~p"/assets/js/player_videojs.js"}
+        data-src={hls_master_playlist_url(@session.active_playback)}
+        data-thumbnails-src={thumbnails_url(@session.active_playback)}
+        data-start-position={@start_position_seconds}
         class="size-full"
       >
-        <media-player
-          id="watch-club-vidstack-player"
-          data-player-media
-          data-src={hls_master_playlist_url(@session.active_playback)}
-          data-start-position={@start_position_seconds}
-          duration={@session.active_playback.media.video.duration_seconds}
-          preload="metadata"
-          playsinline
-          autoplay
-          class="group/player relative block size-full overflow-hidden bg-black outline-none [&[data-started]:not([data-controls])]:cursor-none"
-        >
-          <media-provider
-            id="watch-club-media-provider"
-            phx-update="ignore"
-            class="absolute inset-0 block [&_video]:size-full [&_video]:object-contain"
-          />
+        <%!-- Video.js sets the attributes and fills the children of its elements, which
+              LiveView would undo: the ones holding server content ignore attribute changes,
+              the others sit in phx-update="ignore" containers --%>
+        <media-i18n class="contents">
+          <video-player class="contents">
+            <%!-- The browser draws the captions, raised by the footer's height while the controls show --%>
+            <media-container
+              phx-mounted={JS.ignore_attributes("*")}
+              class="group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)] has-[[data-show-from][data-active]]:[--media-caption-track-y:calc(--spacing(44)*-1)]!"
+            >
+              <div id="watch-club-player-media" phx-update="ignore" class="contents">
+                <hlsjs-video preload="metadata" playsinline autoplay class="absolute inset-0 block">
+                </hlsjs-video>
 
-          <%!-- On touch, a tap toggles play/pause only while the controls are showing
-                (data-controls). When they're hidden the gesture is display:none, so its
-                hit-test misses, the tap falls through to Vidstack's native control reveal
-                (with auto-hide), and nothing is paused. Hover pointers always pause. --%>
-          <media-gesture
-            event="pointerup"
-            action="toggle:paused"
-            class="absolute inset-0 z-10 hidden group-data-controls/player:block [@media(hover:hover)]:block"
-            aria-hidden="true"
-          />
+                <media-gesture type="tap" action="togglePaused" pointer="mouse" />
+                <media-gesture type="tap" action="toggleControls" pointer="touch" />
+                <media-hotkey keys="k" action="togglePaused" target="document" />
+                <media-hotkey keys="Space" action="togglePaused" target="document" />
+                <media-hotkey keys="m" action="toggleMuted" target="document" />
+                <media-hotkey keys="f" action="toggleFullscreen" target="document" />
+                <media-hotkey keys="ArrowLeft" action="seekStep" value="-10" target="document" />
+                <media-hotkey keys="ArrowRight" action="seekStep" value="10" target="document" />
 
-          <media-captions
-            id="watch-club-media-captions"
-            phx-update="ignore"
-            class="pointer-events-none absolute inset-x-4 bottom-32 z-20 mx-auto block max-w-[80%] text-center text-lg font-semibold [text-shadow:0_2px_4px_rgb(0_0_0/0.85)] sm:text-2xl"
-          />
+                <media-buffering-indicator class="absolute inset-0 z-20 opacity-0 transition-opacity data-visible:opacity-100">
+                  <.player_loader class="size-full" />
+                </media-buffering-indicator>
 
-          <.player_loader class="absolute inset-0 z-20 opacity-0 transition-opacity group-data-buffering/player:opacity-100" />
+                <media-status-announcer class="sr-only" />
+              </div>
 
-          <media-controls
-            data-visible="true"
-            hide-delay="3000"
-            class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100"
-          >
-            <.controls_header video={@session.active_playback.media.video} />
-            <.controls_center_row />
-            <.controls_footer
-              playback_id={@session.active_playback.id}
-              video={@session.active_playback.media.video}
-            />
-          </media-controls>
+              <%!-- Before the controls, so a prompt is the first Tab stop --%>
+              <.skip_marker_buttons video={@session.active_playback.media.video} />
+              <.up_next_button
+                playback_id={@session.active_playback.id}
+                video={@session.active_playback.media.video}
+              />
 
-          <.up_next_button video={@session.active_playback.media.video} />
-
-          <media-announcer />
-        </media-player>
+              <media-controls
+                phx-mounted={JS.ignore_attributes("*")}
+                class="group/controls pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100 has-focus-visible:opacity-100"
+              >
+                <.controls_header video={@session.active_playback.media.video} />
+                <.controls_center_row />
+                <.controls_footer
+                  playback_id={@session.active_playback.id}
+                  video={@session.active_playback.media.video}
+                />
+              </media-controls>
+            </media-container>
+          </video-player>
+        </media-i18n>
       </div>
 
       <.player_load_error_overlay :if={@playback_error} />
@@ -132,11 +135,14 @@ defmodule WatchClubWeb.PlayerPage do
     {:noreply, socket}
   end
 
-  def handle_event("play_next_episode", _params, socket) do
-    video = socket.assigns.session.active_playback.media.video
+  # A click or the countdown that arrives once the next episode started must not skip another one
+  def handle_event("play_next_episode", %{"playback_id" => playback_id}, socket) do
+    %Playback{id: active_id, media: %{video: video}} = socket.assigns.session.active_playback
     next_episode = video.tv_show_episode && video.tv_show_episode.next_episode
 
-    {:noreply, socket |> switch_episode(next_episode)}
+    if playback_id == active_id,
+      do: {:noreply, socket |> switch_episode(next_episode)},
+      else: {:noreply, socket}
   end
 
   def handle_event("play_previous_episode", _params, socket) do
@@ -145,6 +151,25 @@ defmodule WatchClubWeb.PlayerPage do
 
     {:noreply, socket |> switch_episode(previous_episode)}
   end
+
+  # The Markers of the Video playing are found in the background after its import
+  @impl true
+  def handle_info(%Notification{resource: Marker, data: %Marker{video_id: video_id}}, socket) do
+    %{session: session, current_user: user} = socket.assigns
+
+    if session.active_playback.media_id == video_id do
+      video =
+        Ash.load!(session.active_playback.media.video, [:markers, :credits_start_seconds],
+          actor: user
+        )
+
+      {:noreply, assign(socket, :session, put_in(session.active_playback.media.video, video))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   defp switch_episode(socket, nil), do: socket
 
@@ -157,6 +182,7 @@ defmodule WatchClubWeb.PlayerPage do
     case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
       {:ok, session} ->
         socket
+        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
         |> assign(:session, session)
         |> assign(
           :start_position_seconds,
@@ -181,16 +207,16 @@ defmodule WatchClubWeb.PlayerPage do
            actor: actor
          ) do
       {:ok, session} ->
+        Phoenix.PubSub.unsubscribe(
+          WatchClub.PubSub,
+          "video:#{socket.assigns.session.active_playback.media_id}"
+        )
+
         socket
+        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
         |> assign(:session, session)
         |> assign(:start_position_seconds, 0.0)
         |> assign(:playback_error, false)
-        # We manually push an event to the JS Hook to reload the video since Vidstack's media
-        # provider is phx-update="ignore"
-        # It has to be the case, otherwise Morphdom deletes the <video> element injected at runtime by Vidstack
-        |> push_event("player:load_video", %{
-          src: hls_master_playlist_url(session.active_playback)
-        })
 
       {:error, error} ->
         Logger.error("Error starting new playback: #{inspect(error)}")
@@ -215,4 +241,7 @@ defmodule WatchClubWeb.PlayerPage do
 
   defp hls_master_playlist_url(%Playback{id: playback_id}),
     do: ~p"/player/hls/#{playback_id}/master.m3u8"
+
+  defp thumbnails_url(%Playback{id: playback_id}),
+    do: ~p"/player/thumbnails/#{playback_id}/thumbnails.vtt"
 end

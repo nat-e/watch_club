@@ -74,7 +74,7 @@ defmodule WatchClub.Integrations.Tmdb do
     response
   end
 
-  @spec search_movie(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+  @spec search_movie(String.t(), year: pos_integer() | nil, page: pos_integer(), locale: atom()) ::
           {:ok, MovieSearchResponse.t()} | {:error, term()}
   def search_movie(query, opts \\ []) do
     case request(
@@ -92,7 +92,7 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
-  @spec search_movie!(String.t(), year: pos_integer(), page: pos_integer(), locale: atom()) ::
+  @spec search_movie!(String.t(), year: pos_integer() | nil, page: pos_integer(), locale: atom()) ::
           MovieSearchResponse.t()
   def search_movie!(query, opts \\ []) do
     {:ok, results} = search_movie(query, opts)
