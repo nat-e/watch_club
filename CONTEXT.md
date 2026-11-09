@@ -22,6 +22,22 @@ _Avoid_: Language, region
 A user’s personal choices that shape their WatchClub experience.
 _Avoid_: User settings, account settings
 
+**Track Language**:
+A language a **User** can choose for audio and subtitles: English or French.
+_Avoid_: Locale
+
+**Preferred Audio Language**:
+The language a **User** wants to hear: the original language of the **Content**, or a **Track Language**.
+_Avoid_: Default audio, audio setting
+
+**Preferred Subtitle Language**:
+The **Track Language** a **User** wants subtitles in, or none.
+_Avoid_: Default subtitles, caption language
+
+**Languages Without Subtitles**:
+The audio languages a **User** watches without subtitles.
+_Avoid_: Hidden subtitle languages, understood languages
+
 **Instance Administrator**:
 The single user who administers the WatchClub instance.
 _Avoid_: Administrator, admin, owner
@@ -214,6 +230,18 @@ _Avoid_: Stream metadata, playback option
 A persisted subtitle or caption track for a video.
 _Avoid_: Subtitle track, caption track, stream metadata
 
+**Forced Text Track**:
+A **Text Track** that only translates what the audio's language doesn't cover, such as signs or lines in another language.
+_Avoid_: Forced subtitles, foreign parts subtitles
+
+**Preferred Audio Track**:
+The **Audio Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**.
+_Avoid_: Default audio track, selected audio
+
+**Preferred Text Track**:
+The **Text Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**, or none.
+_Avoid_: Default subtitles, selected subtitles
+
 **Media Browser**:
 The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
 _Avoid_: Media admin, media library page, file browser
@@ -327,6 +355,8 @@ _Avoid_: Group, aggregate, card, item
 - A **User** has one set of **User Preferences**
 - **User Preferences** belong to one **User** and are managed only by that **User**
 - **User Preferences** include the user’s preferred **Locale**
+- **User Preferences** include the user’s **Preferred Audio Language**, **Preferred Subtitle Language** and **Languages Without Subtitles**
+- A new **User** gets subtitles in the language of their **Locale**, except when the audio is already in it
 - Deleting a **User** does not delete their **Playback Sessions** or **Playbacks**
 - Every **User** can see every other **User**
 - An **Invitation** is the only way a new person joins WatchClub
@@ -451,6 +481,12 @@ _Avoid_: Group, aggregate, card, item
 - When multiple **Videos** are available for **Play**, the **User** chooses one before the **Player** opens, using visible **Video Track**, **Audio Track**, and **Text Track** details
 - For a **TV Show**, **Play** is offered on individual **TV Show Episodes**, not as a single show-level choice
 - When multiple **Media** files are available for **Play** or **Download**, the **User** chooses one
+- The **Player** starts each **Playback** with its **Preferred Audio Track** and **Preferred Text Track**
+- The **Preferred Audio Track** is in the **Preferred Audio Language**, otherwise in the original language of the **Content**, otherwise the **Video**'s default **Audio Track**
+- The **Preferred Text Track** is a full **Text Track** in the **Preferred Subtitle Language**, unless the audio is in one of the **Languages Without Subtitles**; otherwise, or when the **Video** has none, it is a **Forced Text Track** in the audio's language, if any
+- An **Audio Track** without a language is taken to be in the original language of the **Content**
+- In the **Player**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
+- The **Audio Track** language and the subtitles the **User** picks in the **Player** carry over to the next **Playbacks** of the **Playback Session**; when the next **Video** has no track in that language, the **Preferred Audio Track** or **Preferred Text Track** applies
 
 ### Media
 
