@@ -43,7 +43,19 @@ defmodule WatchClub.Conversations.Conversation do
         description "Keeps the Conversations about this Content"
       end
 
+      argument :unread?, :boolean do
+        allow_nil? false
+        default false
+        description "Keeps the Conversations with Messages the actor hasn't read"
+      end
+
       prepare build(filter: expr(content_id == ^arg(:content_id))), where: present(:content_id)
+
+      prepare build(
+                filter: expr(exists(participants, user_id == ^actor(:id) and unread_count > 0))
+              ),
+              where: argument_equals(:unread?, true)
+
       prepare build(sort: [last_message_at: :desc])
     end
 

@@ -86,6 +86,18 @@ defmodule WatchClub.Requests.ContentRequest do
       end
     end
 
+    read :ready_unseen_for_current_user do
+      description "The actor's Content Requests that became playable since they last opened My Requests, the most recently playable first."
+      filter expr(ready_unseen_for_actor?)
+
+      prepare fn query, _context ->
+        Ash.Query.sort(query, [
+          {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
+          {:id, :desc}
+        ])
+      end
+    end
+
     read :on_the_way_for_current_user do
       description "The actor's Content Requests that aren't playable yet, the most recently changed first."
       filter expr(actor_subscriber? and not ready?)

@@ -78,6 +78,28 @@ defmodule WatchClub.Requests.ContentRequestTest do
     end
   end
 
+  describe "list_current_user_ready_unseen_requests/*" do
+    test "lists the User's Content Requests that became playable since they last opened My Requests" do
+      user = generate(user())
+      [unseen, seen] = movies = generate_many(movie(), 2)
+
+      for movie <- movies do
+        MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
+          actor: SystemActor.actor()
+        )
+      end
+
+      generate(
+        request_subscriber(user, generate(content_request(user, unseen)), ready_unseen?: true)
+      )
+
+      generate(request_subscriber(user, generate(content_request(user, seen))))
+
+      assert Requests.list_current_user_ready_unseen_requests!(actor: user)
+             |> Enum.map(& &1.content_id) == [unseen.id]
+    end
+  end
+
   describe "list_current_user_requests_on_the_way/*" do
     test "lists the User's Content Requests that aren't playable yet, the most recently changed first" do
       user = generate(user())
