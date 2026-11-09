@@ -1,0 +1,126 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{username}, %{time}"
+msgstr "%{username}, %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Archive"
+msgstr "Archiver"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Archived reports"
+msgstr "Signalements archivés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio"
+msgstr "Audio"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Back to open reports"
+msgstr "Retour aux signalements ouverts"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Device"
+msgstr "Appareil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Didn't play"
+msgstr "Pas lue"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr "Plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "No open reports"
+msgstr "Aucun signalement ouvert"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr "Désactivés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Open reports"
+msgstr "Signalements ouverts"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Play at %{time}"
+msgstr "Lire à %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Problems users report from the Player show up here."
+msgstr "Les problèmes signalés depuis le lecteur s'affichent ici."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Quality"
+msgstr "Qualité"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Report archived."
+msgstr "Signalement archivé."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reported by"
+msgstr "Signalé par"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Subtitles"
+msgstr "Sous-titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "This report doesn't exist."
+msgstr "Ce signalement n'existe pas."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Time in video"
+msgstr "Moment de la vidéo"

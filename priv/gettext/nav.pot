@@ -120,3 +120,9 @@ msgid "%{count} new request ready to watch"
 msgid_plural "%{count} new requests ready to watch"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Problem reports"
+msgstr ""
