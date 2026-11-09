@@ -61,7 +61,9 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:route, :status],
         tag_values: &request_tags/1
       ),
+      # A long-poll transport means the browser's websocket failed to connect.
       summary("phoenix.socket_connected.duration",
+        tags: [:transport],
         unit: {:native, :second},
         reporter_options: [buckets: @duration_buckets]
       ),
