@@ -25,6 +25,8 @@ defmodule WatchClub.Playlists do
       define :remove_from_playlist, action: :destroy, get_by: [:playlist_id, :content_id]
     end
 
-    resource PlaylistAccess
+    resource PlaylistAccess do
+      define :mark_current_user_playlists_seen, action: :mark_all_shared_seen
+    end
   end
 end

@@ -3,6 +3,7 @@ defmodule WatchClub.Accounts.User do
 
   alias WatchClub.Accounts.{UserLocale, UserSettings}
   alias WatchClub.Conversations.Participant
+  alias WatchClub.Playlists.PlaylistAccess
   alias WatchClub.Requests.RequestSubscriber
 
   use Ash.Resource,
@@ -122,7 +123,8 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :ready_unseen_request_count,
-                  :unread_conversation_count
+                  :unread_conversation_count,
+                  :shared_unseen_playlist_count
                 ],
                 context: %{private: %{authorize?: false}}
               )
@@ -138,7 +140,8 @@ defmodule WatchClub.Accounts.User do
                 load: [
                   :settings,
                   :ready_unseen_request_count,
-                  :unread_conversation_count
+                  :unread_conversation_count,
+                  :shared_unseen_playlist_count
                 ]
               )
     end
@@ -474,6 +477,8 @@ defmodule WatchClub.Accounts.User do
     has_many :participations, Participant
 
     has_many :request_subscriptions, RequestSubscriber
+
+    has_many :playlist_accesses, PlaylistAccess
   end
 
   aggregates do
@@ -485,6 +490,11 @@ defmodule WatchClub.Accounts.User do
     # The Requests tab's count
     count :ready_unseen_request_count, :request_subscriptions do
       filter expr(ready_unseen?)
+    end
+
+    # The Playlists tab's count
+    count :shared_unseen_playlist_count, :playlist_accesses do
+      filter expr(shared_unseen?)
     end
   end
 

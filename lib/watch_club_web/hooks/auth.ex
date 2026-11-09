@@ -13,6 +13,7 @@ defmodule WatchClubWeb.Hooks.Auth do
     WatchClub.Accounts.UserSettings,
     WatchClub.Conversations.Message,
     WatchClub.Conversations.Participant,
+    WatchClub.Playlists.PlaylistAccess,
     WatchClub.Requests.RequestSubscriber
   ]
 

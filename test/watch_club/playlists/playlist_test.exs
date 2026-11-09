@@ -78,20 +78,20 @@ defmodule WatchClub.Playlists.PlaylistTest do
   end
 
   describe "share_playlist/*" do
-    test "gives each User their Playlist Access and takes it from the others", %{
-      owner: owner,
-      playlist: playlist
-    } do
+    test "gives each User their Playlist Access, shared unseen when new, and takes it from the others",
+         %{owner: owner, playlist: playlist} do
       [viewer, editor, unshared] = generate_many(user(), 3)
-      generate(playlist_access(playlist, editor, :view))
+      generate(playlist_access(playlist, editor, :view, shared_unseen?: false))
       generate(playlist_access(playlist, unshared, :edit))
 
       accesses = [%{user_id: viewer.id, level: :view}, %{user_id: editor.id, level: :edit}]
       playlist = share_playlist!(playlist, accesses, load: [:accesses], actor: owner)
 
-      assert Enum.sort([{viewer.id, :view}, {editor.id, :edit}]) ==
+      assert Enum.sort([{viewer.id, :view, true}, {editor.id, :edit, false}]) ==
                playlist.accesses
-               |> Enum.map(fn %PlaylistAccess{} = access -> {access.user_id, access.level} end)
+               |> Enum.map(fn %PlaylistAccess{} = access ->
+                 {access.user_id, access.level, access.shared_unseen?}
+               end)
                |> Enum.sort()
     end
 

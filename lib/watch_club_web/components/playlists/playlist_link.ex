@@ -17,6 +17,10 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
     default: false,
     doc: "the Playlist a split view shows beside the list, highlighted where it does"
 
+  attr :shared_unseen, :boolean,
+    default: false,
+    doc: "newly shared with the User, with a New badge"
+
   def playlist_link(assigns) do
     assigns = assign(assigns, :others, others(assigns.playlist, assigns.current_user))
 
@@ -29,6 +33,9 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
       class="flex min-h-touch-target items-center gap-related rounded-control p-related transition-colors hover:bg-surface-hover @split-view/main:aria-[current=true]:bg-surface-selected"
     >
       <.playlist_summary playlist={@playlist}>{content_counts(@playlist)}</.playlist_summary>
+      <.badge :if={@shared_unseen} variant="accent" size="sm" class="shrink-0">
+        {dgettext("playlists", "New")}
+      </.badge>
       <span :if={@others == []} class="shrink-0">
         <Lucideicons.lock class="size-icon-sm text-text-subtle" aria-hidden="true" />
         <span class="sr-only">{dgettext("playlists", "Private")}</span>

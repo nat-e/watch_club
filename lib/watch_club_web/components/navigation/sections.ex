@@ -29,8 +29,14 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :list,
         navigate: ~p"/playlists",
         pages: [],
-        badge: 0,
-        badge_label: nil
+        badge: user.shared_unseen_playlist_count,
+        badge_label:
+          dngettext(
+            "nav",
+            "%{count} playlist newly shared with you",
+            "%{count} playlists newly shared with you",
+            user.shared_unseen_playlist_count
+          )
       },
       %{
         id: "inbox",

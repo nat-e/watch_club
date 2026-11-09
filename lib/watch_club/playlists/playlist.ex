@@ -142,6 +142,12 @@ defmodule WatchClub.Playlists.Playlist do
       argument :user_id, :uuid_v7, allow_nil?: false
     end
 
+    calculate :shared_unseen_for_actor?,
+              :boolean,
+              expr(exists(accesses, user_id == ^actor(:id) and shared_unseen?)) do
+      description "Whether it was shared with the actor since they last opened their Playlists"
+    end
+
     calculate :holds_content?, :boolean, HoldsContent do
       argument :content_identity, ContentIdentity, allow_nil?: false
     end
