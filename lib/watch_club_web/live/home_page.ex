@@ -110,7 +110,7 @@ defmodule WatchClubWeb.HomePage do
 
         <div class={[
           "@container flex min-w-0 flex-col gap-section @4xl:w-80 @4xl:shrink-0",
-          @watching_now == [] && "not-has-[[data-feed-entry]]:hidden"
+          @watching_now == [] && "not-has-[[data-activity]]:hidden"
         ]}>
           <.watching_now :if={@watching_now != []} watchers={@watching_now} />
           <.activity_feed

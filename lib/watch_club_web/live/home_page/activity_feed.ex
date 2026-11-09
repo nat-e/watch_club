@@ -16,13 +16,13 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
   attr :more?, :boolean, required: true, doc: "whether Show more loads more entries"
   attr :locale, :atom, required: true
 
-  # Hidden while the stream is empty
+  # Hidden while it has neither entries nor more to show
   def activity_feed(assigns) do
     ~H"""
     <.page_section
       id="activity-feed-title"
       title={dgettext("home", "Activity")}
-      class="not-has-[[data-feed-entry]]:hidden"
+      class="not-has-[[data-activity]]:hidden"
     >
       <ol id="activity-feed" phx-update="stream" class="flex flex-col">
         <.feed_entry :for={{dom_id, entry} <- @stream} id={dom_id} entry={entry} locale={@locale} />
@@ -30,6 +30,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
       <.button
         :if={@more?}
         id="activity-feed-more"
+        data-activity
         variant="ghost"
         size="sm"
         phx-click="load_activity_feed_page"
@@ -58,7 +59,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
       )
 
     ~H"""
-    <li id={@id} data-feed-entry class="group/entry flex gap-related @xl:gap-group">
+    <li id={@id} data-activity class="group/entry flex gap-related @xl:gap-group">
       <time
         datetime={DateTime.to_iso8601(@entry.latest_at)}
         class="hidden w-24 shrink-0 pt-0.5 text-right text-xs text-text-subtle @xl:block"
