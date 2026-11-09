@@ -25,7 +25,7 @@ defmodule WatchClubWeb.Storybook.DownloadMenu do
     [
       %Variation{
         id: :one_video,
-        description: "A Movie with one Video",
+        description: "One Video: the trigger downloads it straight away",
         attributes: %{
           id: "download-one",
           videos: [video("Dune Part Two (2024) [Bluray-1080p].mkv", :hd_1080p)]
@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Storybook.DownloadMenu do
       },
       %Variation{
         id: :several_videos,
-        description: "Several Videos, with long file names that wrap",
+        description: "Several Videos: the trigger opens a menu, where long file names wrap",
         attributes: %{
           id: "download-several",
           videos: [
@@ -60,6 +60,6 @@ defmodule WatchClubWeb.Storybook.DownloadMenu do
   end
 
   defp trigger(id) do
-    ~s(<:trigger><.button id="#{id}" variant="secondary"><:icon><Lucideicons.download /></:icon>Download</.button></:trigger>)
+    ~s(<:trigger :let={download_link}><.button id="#{id}" variant="secondary" {download_link}><:icon><Lucideicons.download /></:icon>Download</.button></:trigger>)
   end
 end

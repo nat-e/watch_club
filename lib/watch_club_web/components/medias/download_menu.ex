@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Components.Medias.DownloadMenu do
   @moduledoc """
-  The menu to Download one of the Videos of a Movie or a TV Show Episode, each named by its
-  resolution and its file name.
+  Download for the Videos of a Movie or a TV Show Episode. Its trigger downloads the only Video
+  straight away, or opens a menu of the Videos, each named by its resolution and its file name.
   """
   use WatchClubWeb, :component
 
@@ -9,13 +9,23 @@ defmodule WatchClubWeb.Components.Medias.DownloadMenu do
 
   attr :id, :string, required: true
   attr :videos, :list, required: true, doc: "with their `media` and `default_video_track`"
-  attr :class, :any, default: nil
-  slot :trigger, required: true
+
+  slot :trigger,
+    required: true,
+    doc: "Gets the link attributes that download the only Video, or none when it opens the menu"
+
+  def download_menu(%{videos: [video]} = assigns) do
+    assigns = assign(assigns, :video, video)
+
+    ~H"""
+    {render_slot(@trigger, %{href: ~p"/media/#{@video.id}/download", download: true})}
+    """
+  end
 
   def download_menu(assigns) do
     ~H"""
-    <.dropdown_menu id={@id} class={@class}>
-      <:trigger>{render_slot(@trigger)}</:trigger>
+    <.dropdown_menu id={@id}>
+      <:trigger>{render_slot(@trigger, %{})}</:trigger>
       <.dropdown_menu_item
         :for={video <- @videos}
         id={"#{@id}-#{video.id}"}

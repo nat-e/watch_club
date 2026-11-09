@@ -290,8 +290,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <Lucideicons.circle_play />
         </.round_action>
         <.download_menu :if={@videos != []} id="download" videos={@videos}>
-          <:trigger>
-            <.round_action id="download-button" label={dgettext("contents", "Download")}>
+          <:trigger :let={download_link}>
+            <.round_action
+              id="download-button"
+              label={dgettext("contents", "Download")}
+              {download_link}
+            >
               <Lucideicons.download />
             </.round_action>
           </:trigger>
@@ -318,7 +322,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :id, :string, required: true
   attr :label, :string, required: true
   attr :class, :any, default: nil
-  attr :rest, :global, include: ~w(href target), doc: "a link with an href, else a button"
+
+  attr :rest, :global,
+    include: ~w(href target download),
+    doc: "a link with an href, else a button"
+
   slot :inner_block, required: true, doc: "its icon"
 
   # A quiet action beside Play: its icon in a circle, with a small label under it
