@@ -11,6 +11,8 @@ defmodule WatchClub.Markers.AudioFingerprint do
 
   import Bitwise
 
+  require OpenTelemetry.Tracer, as: Tracer
+
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
   # Chromaprint's default algorithm gives a point every 4096 / 3 samples at 11025 Hz
@@ -38,13 +40,15 @@ defmodule WatchClub.Markers.AudioFingerprint do
     key = {size, mtime, offset_seconds, seconds}
     cache = Path.join(dir(video_id), "#{part}.fingerprint")
 
-    binary =
+    {binary, cached?} =
       with {:ok, cached} <- File.read(cache),
            {^key, binary} <- :erlang.binary_to_term(cached, [:safe]) do
-        binary
+        {binary, true}
       else
-        _missing_or_stale -> compute!(path, key, cache)
+        _missing_or_stale -> {compute!(path, key, cache, part), false}
       end
+
+    :telemetry.execute([:watch_club, :audio_fingerprint, :fetch], %{count: 1}, %{cached: cached?})
 
     points = for <<point::little-32 <- binary>>, do: point
     %__MODULE__{offset_seconds: offset_seconds, points: List.to_tuple(points)}
@@ -131,9 +135,19 @@ defmodule WatchClub.Markers.AudioFingerprint do
     (value * 0x01010101 &&& 0xFFFFFFFF) >>> 24
   end
 
-  defp compute!(path, {_size, _mtime, offset_seconds, seconds} = key, cache) do
-    {:ok, points} = @ffprobe.audio_fingerprint(path, offset_seconds, seconds)
-    binary = for point <- points, into: <<>>, do: <<point::little-32>>
+  defp compute!(path, {_size, _mtime, offset_seconds, seconds} = key, cache, part) do
+    attributes = %{
+      "watch_club.audio_fingerprint.part": to_string(part),
+      "watch_club.audio_fingerprint.seconds": seconds
+    }
+
+    binary =
+      Tracer.with_span "fingerprint audio", %{attributes: attributes} do
+        :telemetry.span([:watch_club, :audio_fingerprint, :compute], %{part: part}, fn ->
+          {:ok, points} = @ffprobe.audio_fingerprint(path, offset_seconds, seconds)
+          {for(point <- points, into: <<>>, do: <<point::little-32>>), %{part: part}}
+        end)
+      end
 
     # Written to a tmp name then renamed, so a reader never sees a partial file
     File.mkdir_p!(Path.dirname(cache))

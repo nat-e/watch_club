@@ -13,9 +13,10 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
   import Ash.Expr
 
   require Ash.Query
+  require Logger
 
   alias WatchClub.Contents.TvShowEpisode
-  alias WatchClub.Markers.{AudioFingerprint, Marker}
+  alias WatchClub.Markers.{AudioFingerprint, Marker, MarkerKind}
   alias WatchClub.MediaCatalog.Video
 
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
@@ -41,8 +42,9 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
         scope: context
       )
 
-    {markers, markers_of_others} =
-      video |> chapter_markers!() |> add_audio_markers!(video, context)
+    chapter_markers = chapter_markers!(video)
+    {markers, markers_of_others} = add_audio_markers!(chapter_markers, video, context)
+    report(video, chapter_markers, markers)
 
     {:ok, _result} =
       Ash.transact(Marker, fn ->
@@ -61,6 +63,35 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
       end)
 
     :ok
+  end
+
+  # One count for each kind, by where it came from, and a log line with the same
+  defp report(video, chapter_markers, markers) do
+    sources =
+      for kind <- MarkerKind.values() do
+        source =
+          cond do
+            Enum.any?(chapter_markers, &(&1.kind == kind)) -> :chapter
+            Enum.any?(markers, &(&1.kind == kind)) -> :audio
+            true -> :none
+          end
+
+        :telemetry.execute([:watch_club, :marker_detection, :marker], %{count: 1}, %{
+          media_type: video.media.type,
+          kind: kind,
+          source: source
+        })
+
+        {kind, source}
+      end
+
+    found = for {kind, source} <- sources, source != :none, do: "#{kind} from #{source}"
+
+    Logger.info(
+      "Found the Markers of #{video.media.path}: #{if found == [], do: "none", else: Enum.join(found, ", ")}",
+      event: :markers_detected,
+      path: video.media.path
+    )
   end
 
   defp chapter_markers!(%Video{media: media}) do
