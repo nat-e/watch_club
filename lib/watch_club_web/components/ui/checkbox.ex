@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
 
   use Phoenix.Component
 
-  import WatchClubWeb.Components.UI.{Label, Layout}
+  import WatchClubWeb.Components.UI.Layout
 
   attr :id, :any,
     default: nil,
@@ -82,6 +82,8 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
   def checkbox_group(assigns) do
     ~H"""
     <.stack space="related">
+      <%!-- Submits an empty list when no option is checked --%>
+      <input type="hidden" name={@field.name <> "[]"} value="" />
       <.checkbox_group_item
         :for={option <- @options}
         field={@field}
@@ -96,11 +98,11 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
 
   defp checkbox_group_item(assigns) do
     ~H"""
-    <.label
+    <label
       for={"#{@field.id}-#{@value}"}
       class={[
-        "flex flex-row justify-between w-full items-center rounded-card border border-border-subtle bg-surface p-related h-control-lg",
-        @disabled? && "opacity-40 cursor-not-allowed"
+        "flex h-control-lg w-full items-center justify-between rounded-card border border-border-subtle bg-surface p-related text-sm text-text",
+        @disabled? && "cursor-not-allowed opacity-40"
       ]}
     >
       {render_slot(@label, @option)}
@@ -111,7 +113,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
         checked={@value in @field.value}
         disabled={@disabled?}
       />
-    </.label>
+    </label>
     """
   end
 end

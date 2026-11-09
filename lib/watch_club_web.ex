@@ -120,7 +120,7 @@ defmodule WatchClubWeb do
         Requests
       }
 
-      alias WatchClub.Accounts.{InvitationCode, User, UserLocale, UserSettings}
+      alias WatchClub.Accounts.{InvitationCode, TrackLanguage, User, UserLocale, UserSettings}
 
       alias WatchClub.Contents.{
         Book,
