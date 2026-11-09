@@ -39,6 +39,21 @@ defmodule WatchClub.Markers.MarkerTest do
              ]
     end
 
+    test "replaces the Markers the Video had", %{tmp_dir: tmp_dir} do
+      [episode] = episodes(1)
+      video = episode_video(episode, tmp_dir)
+      stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => [chapter(0, 30, "Intro")]}} end)
+      Markers.detect_markers!(video, actor: SystemActor.actor())
+
+      stub(ProbeMock, :probe, fn _path ->
+        {:ok, %{"chapters" => [chapter(1250, 1320, "Credits")]}}
+      end)
+
+      Markers.detect_markers!(video, actor: SystemActor.actor())
+
+      assert markers(video) == [credits: {1250.0, 1320.0}]
+    end
+
     test "finds the Intro and Credits that the nearest episode shares, and gives them to it",
          %{tmp_dir: tmp_dir} do
       [first_episode, second_episode, _third] = episodes(3)
