@@ -530,7 +530,8 @@ _Avoid_: Group, aggregate, card, item
 - Content created by a **Media Import** includes all available **Content Localizations**
 - A **Media Import** may create a missing **Movie** or **Book** before creating **Media** for it
 - When a **Media Import** identifies a video file as an episode of an unknown **TV Show**, it creates the **TV Show** and all known regular **TV Show Episodes** together before creating the **Video**
-- When a **Media Import** needs a missing **TV Show Episode** for an existing **TV Show**, it refreshes the **TV Show** as a whole
+- A **Media Import** refreshes each **Content** it touches at most once every 15 minutes
+- A file whose **TV Show Episode** is still missing after that fails ingestion; a later scan retries it because no **Media** was saved
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
 - When **Refresh Metadata** is off, an existing **Media** found again by a **Media Import** is skipped
@@ -554,8 +555,9 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show** has zero or more **TV Show Episodes**
 - A **TV Show Episode** belongs to exactly one **TV Show**
 - A **TV Show Episode** has at most one **TV Show Episode Localization** per **Locale**
-- Opening a **Content** page creates missing **Content** or refreshes metadata older than 24 hours; **Media Imports** use the same operation
-- **Content** pages display stored metadata, including retained **TV Show Episodes** no longer listed by the **Metadata Provider**
+- Opening a **Content** page creates missing **Content** in the background, showing a loading state until it exists
+- **Content** pages show stored metadata immediately and refresh it in the background when older than a day
+- **Content** pages include retained **TV Show Episodes** no longer listed by the **Metadata Provider**
 - Refreshing metadata updates existing **Content**, **Content Localizations** and **TV Show Episodes** in place, preserving **Watch Progress** and **Media** links
 - If the **Metadata Provider** is unavailable, existing **Content** remains usable with its last stored metadata
 - A **TV Show** cannot have two **TV Show Episodes** with the same season number and episode number
