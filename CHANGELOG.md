@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.3](https://github.com/nat-e/watch_club/compare/v0.1.2...v0.1.3) (2026-11-09)
+
+
+### Features
+
+* **contents:** download a Movie's or a TV Show Episode's original file ([#64](https://github.com/nat-e/watch_club/issues/64)) ([e88200c](https://github.com/nat-e/watch_club/commit/e88200c1f284b121d445dac93df25bcabcdda63c))
+* restore audio and subtitle preferences ([#63](https://github.com/nat-e/watch_club/issues/63)) ([06a20b0](https://github.com/nat-e/watch_club/commit/06a20b0c07354aac08c7cc21c9c9b132e255d0f8))
+
+
+### Bug Fixes
+
+* index foreign keys for library queries ([#68](https://github.com/nat-e/watch_club/issues/68)) ([2765496](https://github.com/nat-e/watch_club/commit/27654962f8b75d37ddbfe2d13e8d8a9e27715c45))
+* load the next page a screen before the end of infinite scroll lists ([#69](https://github.com/nat-e/watch_club/issues/69)) ([c514316](https://github.com/nat-e/watch_club/commit/c51431622f9e6d7e2f16f79b2a9605c3f8d4a023))
+* **observability:** drop long-poll traces and tag socket metric by transport ([#67](https://github.com/nat-e/watch_club/issues/67)) ([8f9e300](https://github.com/nat-e/watch_club/commit/8f9e3002c1412da38cd31c44ed3e27245c8d21b0))
+
 ## [0.1.2](https://github.com/nat-e/watch_club/compare/v0.1.1...v0.1.2) (2026-11-09)
 
 
