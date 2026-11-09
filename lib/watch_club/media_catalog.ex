@@ -23,5 +23,6 @@ defmodule WatchClub.MediaCatalog do
     resource WatchClub.MediaCatalog.VideoTrack
     resource WatchClub.MediaCatalog.AudioTrack
     resource WatchClub.MediaCatalog.TextTrack
+    resource WatchClub.MediaCatalog.Marker
   end
 end

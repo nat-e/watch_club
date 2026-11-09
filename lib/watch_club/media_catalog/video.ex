@@ -18,7 +18,7 @@ defmodule WatchClub.MediaCatalog.Video do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
-  alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
+  alias WatchClub.MediaCatalog.{AudioTrack, Marker, Media, TextTrack, VideoTrack}
 
   postgres do
     table "videos"
@@ -166,6 +166,10 @@ defmodule WatchClub.MediaCatalog.Video do
     end
 
     has_many :text_tracks, TextTrack do
+      public? true
+    end
+
+    has_many :markers, Marker do
       public? true
     end
   end
