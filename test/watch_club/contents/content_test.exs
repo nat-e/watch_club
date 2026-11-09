@@ -413,7 +413,8 @@ defmodule WatchClub.Contents.ContentTest do
         :telemetry_test.attach_event_handlers(self(), [
           [:watch_club, :contents, :metadata_fetch, :stop],
           [:watch_club, :contents, :metadata_fetch, :exception],
-          [:watch_club, :contents, :metadata_request]
+          [:watch_club, :contents, :metadata_request],
+          [:watch_club, :tmdb, :request, :stop]
         ])
 
       on_exit(fn -> :telemetry.detach(ref) end)
@@ -453,6 +454,13 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert_received {[:watch_club, :contents, :metadata_request], ^ref, %{count: 1},
                        %{served: :fetched}}
+
+      for _ <- 1..2 do
+        assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                         %{endpoint: "/movie/:id", status: "2xx"}}
+
+        assert duration > 0
+      end
     end
 
     test "refreshes stale metadata and updates localizations in place", %{
@@ -832,6 +840,11 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
                        %{type: :movie, result: :not_found}}
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                       %{endpoint: "/movie/:id", status: "404"}}
+
+      assert duration > 0
     end
 
     test "returns an error when Content is not stored and TMDB is unavailable", %{
@@ -849,6 +862,62 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
                        %{type: :movie, result: :unavailable}}
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
+                       %{endpoint: "/movie/:id", status: "5xx"}}
+
+      assert duration > 0
+    end
+
+    test "returns a metadata error when TMDB rate limits requests", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 429, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :rate_limited}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "429"}}
+    end
+
+    test "returns a metadata error when TMDB rejects the request", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 401, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :client_error}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "4xx"}}
+    end
+
+    test "returns a metadata error when the TMDB connection times out", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.transport_error(conn, :timeout)
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :unknown_error}, error)
+      end)
+
+      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
+                       %{endpoint: "/movie/:id", status: "error"}}
     end
   end
 
