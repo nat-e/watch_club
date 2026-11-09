@@ -21,7 +21,7 @@ defmodule WatchClub.Conversations.Message do
 
     references do
       reference :conversation, on_delete: :delete
-      reference :author, on_delete: :nilify
+      reference :author, on_delete: :nilify, index?: true
     end
 
     # A Conversation's Messages, in order, and the unread ones after a read position

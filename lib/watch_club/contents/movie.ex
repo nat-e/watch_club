@@ -101,10 +101,6 @@ defmodule WatchClub.Contents.Movie do
     count :videos_count, :videos
   end
 
-  identities do
-    identity :unique_content, [:id]
-  end
-
   defimpl String.Chars, for: __MODULE__ do
     def to_string(movie) do
       case movie.content do

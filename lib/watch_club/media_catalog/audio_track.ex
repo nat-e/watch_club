@@ -12,7 +12,7 @@ defmodule WatchClub.MediaCatalog.AudioTrack do
     repo WatchClub.Repo
 
     references do
-      reference :video, on_delete: :delete
+      reference :video, on_delete: :delete, index?: true
     end
   end
 

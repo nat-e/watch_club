@@ -20,7 +20,7 @@ defmodule WatchClub.Playlists.PlaylistAccess do
 
     references do
       reference :playlist, on_delete: :delete
-      reference :user, on_delete: :delete
+      reference :user, on_delete: :delete, index?: true
     end
   end
 

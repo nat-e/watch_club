@@ -24,7 +24,7 @@ defmodule WatchClub.Conversations.Conversation do
 
     references do
       reference :content, on_delete: :delete
-      reference :recommended_by, on_delete: :nilify
+      reference :recommended_by, on_delete: :nilify, index?: true
     end
 
     # The Conversations about a Content

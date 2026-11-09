@@ -23,8 +23,8 @@ defmodule WatchClub.Playlists.PlaylistItem do
 
     references do
       reference :playlist, on_delete: :delete
-      reference :content, on_delete: :delete
-      reference :added_by, on_delete: :nilify
+      reference :content, on_delete: :delete, index?: true
+      reference :added_by, on_delete: :nilify, index?: true
     end
   end
 

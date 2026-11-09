@@ -22,7 +22,7 @@ defmodule WatchClub.Conversations.Participant do
     references do
       reference :conversation, on_delete: :delete
       reference :user, on_delete: :nilify
-      reference :last_read_message, on_delete: :nilify
+      reference :last_read_message, on_delete: :nilify, index?: true
     end
 
     # A User's Conversations

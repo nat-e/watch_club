@@ -77,6 +77,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 
 - Only add policies and Ash authorizers to resources when it adds meaningful value. Policies like "any logged in user can do any action" does not bring value.
 - Do not use Ecto concepts directly, use Ash.
+- Index foreign-key columns by default with `index?: true`, unless an existing primary-key or non-partial B-tree index already starts with those columns. Document intentional omissions next to the reference. See `docs/data-model.md#foreign-key-indexes`.
 - Prefer built-in policy checks, such as `relates_to_actor_via(:owner)`, to custom check modules.
 - Prefer the `defaults` shorthand to an explicit action block when the action has no extra logic.
 - Name relationships by their role, such as `owner` rather than `user`.

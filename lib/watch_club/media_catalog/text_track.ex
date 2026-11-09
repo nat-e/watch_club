@@ -17,7 +17,7 @@ defmodule WatchClub.MediaCatalog.TextTrack do
     repo WatchClub.Repo
 
     references do
-      reference :video, on_delete: :delete
+      reference :video, on_delete: :delete, index?: true
     end
 
     check_constraints do

@@ -26,8 +26,8 @@ defmodule WatchClub.MediaCatalog.Video do
 
     references do
       reference :media, on_delete: :delete
-      reference :movie, on_delete: :restrict
-      reference :tv_show_episode, on_delete: :restrict
+      reference :movie, on_delete: :restrict, index?: true
+      reference :tv_show_episode, on_delete: :restrict, index?: true
     end
 
     check_constraints do

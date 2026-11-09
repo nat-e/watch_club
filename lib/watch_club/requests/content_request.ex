@@ -38,9 +38,9 @@ defmodule WatchClub.Requests.ContentRequest do
     repo WatchClub.Repo
 
     references do
-      reference :requested_by, on_delete: :nilify
+      reference :requested_by, on_delete: :nilify, index?: true
       reference :content, on_delete: :delete
-      reference :best_source_request, on_delete: :nilify
+      reference :best_source_request, on_delete: :nilify, index?: true
     end
   end
 

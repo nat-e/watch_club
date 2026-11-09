@@ -25,7 +25,7 @@ defmodule WatchClub.MediaCatalog.Audiobook do
 
     references do
       reference :media, on_delete: :delete
-      reference :book, on_delete: :restrict
+      reference :book, on_delete: :restrict, index?: true
     end
   end
 
