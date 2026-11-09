@@ -1,7 +1,7 @@
 defmodule WatchClub.Languages do
   @moduledoc """
-  Shared helpers for rendering language identifiers as human-readable names
-  via CLDR.
+  Shared helpers for comparing language identifiers and rendering them as
+  human-readable names via CLDR.
   """
 
   @doc """
@@ -29,6 +29,23 @@ defmodule WatchClub.Languages do
           {:error, _reason} ->
             String.upcase(language)
         end
+    end
+  end
+
+  @doc """
+  Returns the code of a language however its identifier is written, so that
+  identifiers from tracks and Metadata Providers compare: the ISO 639-1 code
+  when the language has one (`"fre"`, `"fra"` or `"fr-CA"` → `"fr"`).
+  Returns nil for an undetermined (`"und"`) or unknown language.
+  """
+  @spec to_code(String.t() | nil) :: String.t() | nil
+  def to_code(nil), do: nil
+
+  def to_code(language) when is_binary(language) do
+    case Cldr.Locale.canonical_language_tag(language, WatchClub.Cldr, add_likely_subtags: false) do
+      {:ok, %{language: "und"}} -> nil
+      {:ok, %{language: code}} -> code
+      {:error, _reason} -> nil
     end
   end
 
