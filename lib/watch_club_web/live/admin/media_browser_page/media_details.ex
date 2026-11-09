@@ -91,7 +91,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
         <ul class="flex flex-col gap-related text-sm">
           <li
             :for={track <- @media.video.audio_tracks}
-            class="flex items-center justify-between gap-related"
+            class="flex items-center gap-group"
           >
             <.language language={track.language} />
             <span class="flex shrink-0 items-center gap-tight">
@@ -116,7 +116,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
         <ul :if={@media.video.text_tracks != []} class="flex flex-col gap-related text-sm">
           <li
             :for={track <- @media.video.text_tracks}
-            class="flex items-center justify-between gap-related"
+            class="flex items-center gap-group"
           >
             <.language language={track.language} />
             <span class="flex shrink-0 items-center gap-tight">

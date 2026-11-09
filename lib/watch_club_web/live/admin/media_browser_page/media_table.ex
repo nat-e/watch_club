@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
   @moduledoc """
   One page of the Media Browser's list: what each Media is, its Media Type, its audio and
-  subtitle languages and when it was added, with the pages in its footer. Title and Added sort
+  subtitle languages and when it was added, with the pages below. Title and Added sort
   the list. The columns keep their widths from page to page, the narrowest screens hide them
   first, and phones show the date under the name.
   """
@@ -22,19 +22,19 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
 
   def media_table(assigns) do
     ~H"""
-    <.table id="media-table" class="@container/table">
+    <.table id="media-table" density="compact" class="@container/table">
       <.table_header>
         <.table_row>
           <.sort_head by={:title} list={@list} class="w-full max-w-0">
             {dgettext("admin_media", "Title")}
           </.sort_head>
-          <.table_head class="min-w-44 text-left! @max-xl/table:hidden">
+          <.table_head class="min-w-44 @max-xl/table:hidden">
             {dgettext("admin_media", "Media Type")}
           </.table_head>
-          <.table_head class="min-w-24 text-left! @max-3xl/table:hidden">
+          <.table_head class="min-w-24 @max-3xl/table:hidden">
             {dgettext("admin_media", "Audio")}
           </.table_head>
-          <.table_head class="min-w-32 text-left! @max-3xl/table:hidden">
+          <.table_head class="min-w-32 @max-3xl/table:hidden">
             {dgettext("admin_media", "Subtitles")}
           </.table_head>
           <.sort_head by={:added} list={@list} class="min-w-40 @max-sm/table:hidden">
@@ -50,13 +50,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
           locale={@locale}
         />
       </.table_body>
-      <.table_footer class="font-normal!">
-        <tr>
-          <td colspan="5" class="px-group py-related">
-            <.pagination media_page={@media_page} page={@list.page} locale={@locale} />
-          </td>
-        </tr>
-      </.table_footer>
+      <:footer>
+        <.pagination media_page={@media_page} page={@list.page} locale={@locale} />
+      </:footer>
     </.table>
     """
   end
@@ -73,7 +69,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
 
     ~H"""
     <.table_head
-      class={["text-left!", @class]}
+      class={@class}
       aria-sort={@order && if(@order == :asc, do: "ascending", else: "descending")}
     >
       <button
@@ -114,7 +110,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
       phx-value-id={@media.id}
       class="cursor-pointer has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-border-focus"
     >
-      <.media_cell class="w-full max-w-0">
+      <.table_cell class="w-full max-w-0">
         <div class="flex min-w-0 items-center gap-group">
           <.media_poster media={@media} size="sm" />
           <div class="flex min-w-0 flex-1 flex-col gap-tight">
@@ -158,33 +154,23 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
             </div>
           </div>
         </div>
-      </.media_cell>
-      <.media_cell class="text-text-muted @max-xl/table:hidden">
+      </.table_cell>
+      <.table_cell class="text-text-muted @max-xl/table:hidden">
         <span class="flex items-center gap-related">
           <.media_type_icon media_type={@media.type} class="size-icon-sm shrink-0" />
           {MediaType.translated_label(@media.type)}
         </span>
-      </.media_cell>
-      <.media_cell class="@max-3xl/table:hidden">
+      </.table_cell>
+      <.table_cell class="@max-3xl/table:hidden">
         <.audio_languages_flags video={@media.video} />
-      </.media_cell>
-      <.media_cell class="@max-3xl/table:hidden">
+      </.table_cell>
+      <.table_cell class="@max-3xl/table:hidden">
         <.subtitle_languages_flags video={@media.video} />
-      </.media_cell>
-      <.media_cell class="text-text-muted @max-sm/table:hidden">
+      </.table_cell>
+      <.table_cell class="text-text-muted @max-sm/table:hidden">
         <time class="whitespace-nowrap">{@added}</time>
-      </.media_cell>
+      </.table_cell>
     </.table_row>
-    """
-  end
-
-  attr :class, :any, default: nil
-  slot :inner_block, required: true
-
-  # Dense, and aligned to the start
-  defp media_cell(assigns) do
-    ~H"""
-    <.table_cell class={["py-related! text-left!", @class]}>{render_slot(@inner_block)}</.table_cell>
     """
   end
 

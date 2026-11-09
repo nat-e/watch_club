@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   @moduledoc """
   The Media Browser, where the Instance Administrator finds a Media, spots the Unmatched ones or
   sees what was just added, then plays or removes it from its details beside the list. The list
-  shows 50 Media a page. Its search, filters, sort and page, and the selected Media, live in the
+  shows 20 Media a page. Its search, filters, sort and page, and the selected Media, live in the
   URL, so Back after Play returns to the same place.
   """
   use WatchClubWeb, :live_view
@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
   alias WatchClub.Shared.SortOrder
 
-  @page_size 50
+  @page_size 20
   @sorts [:added, :title]
   @row_load [content: [:implementation], video: [:audio_tracks, :text_tracks, :tv_show_episode]]
   @details_load [
@@ -143,7 +143,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         class="flex min-w-0 items-start gap-cluster"
       >
         <div class={[
-          "flex min-w-0 flex-1 flex-col gap-group",
+          "flex min-w-0 flex-3 flex-col gap-group",
           @selected && "@max-split-view/main:hidden"
         ]}>
           <.filters list={@list} unmatched_count={@unmatched_count} locale={@locale} />
@@ -157,16 +157,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           />
         </div>
 
-        <%!-- Beside the list, under the app bar as the list scrolls --%>
+        <%!-- Beside the list, two fifths of the width, under the app bar as the list scrolls --%>
         <.card
           id="media-details"
           aria-label={dgettext("admin_media", "Media details")}
           padding="none"
           class={[
-            "w-96 shrink-0",
+            "max-w-panel min-w-0 flex-2 @split-view/main:min-w-96",
             "@split-view/main:sticky @split-view/main:top-[calc(var(--wc-app-bar-height)+var(--spacing-group))] @split-view/main:max-h-[calc(100svh-var(--wc-app-bar-height)-2*var(--spacing-group))] @split-view/main:overflow-y-auto",
-            !@selected && "@max-split-view/main:hidden",
-            @selected && "@max-split-view/main:w-full @max-split-view/main:max-w-panel"
+            !@selected && "@max-split-view/main:hidden"
           ]}
         >
           <.media_details :if={@selected} media={@selected} locale={@locale} />
