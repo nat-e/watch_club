@@ -62,7 +62,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             playlists={Enum.filter(@playlists, & &1.holds_content?)}
             current_user={@current_user}
           />
-          <.cast_section people={cast(@content)} />
+          <.cast_section people={localization(@content).cast} />
         </div>
       </article>
 
@@ -231,7 +231,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         tv_show?: tv_show?,
         episodes?: tv_show? and season_numbers(assigns.content) != [],
         finished?: finished?(assigns.content),
-        trailer_url: trailer_url(assigns.content)
+        trailer_url: localization(assigns.content).trailer_url
       )
 
     ~H"""
@@ -815,8 +815,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
     end
   end
 
-  defp cast(content), do: Map.get(localization(content), :cast, []) || []
-
   defp initials(name),
     do: name |> String.split(" ", trim: true) |> Enum.take(2) |> Enum.map_join(&String.first/1)
 
@@ -825,8 +823,6 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp tmdb_url(%ContentIdentity{type: :tv_show, external_id: id}),
     do: "https://www.themoviedb.org/tv/#{id}"
-
-  defp trailer_url(content), do: Map.get(localization(content), :trailer_url)
 
   defp watched_hint(true = _tv_show?, true = _finished?),
     do: dgettext("contents", "Mark all as not watched")
