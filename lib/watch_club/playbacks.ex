@@ -15,5 +15,12 @@ defmodule WatchClub.Playbacks do
     resource WatchClub.Playbacks.Playback do
       define :get_playback_by_id, action: :read, get_by: [:id]
     end
+
+    resource WatchClub.Playbacks.ProblemReport do
+      define :report_problem, action: :report
+      define :list_problem_reports, action: :list, args: [:archived?]
+      define :get_problem_report_by_id, action: :read, get_by: [:id]
+      define :archive_problem_report, action: :archive
+    end
   end
 end

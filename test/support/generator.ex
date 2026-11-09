@@ -6,7 +6,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
-  alias WatchClub.Playbacks.{Playback, Session}
+  alias WatchClub.Playbacks.{Playback, ProblemReport, Session}
   alias WatchClub.Playlists.{Playlist, PlaylistAccess, PlaylistItem}
   alias WatchClub.Requests.{ContentRequest, RequestSubscriber}
 
@@ -242,6 +242,13 @@ defmodule WatchClub.Generator do
         session_id: Ash.Seed.seed!(Session, %{started_by_id: started_by.id}).id,
         media_id: media.id
       },
+      overrides: opts
+    )
+  end
+
+  def problem_report(%Playback{} = playback, opts \\ []) do
+    seed_generator(
+      %ProblemReport{playback_id: playback.id, category: :subtitles, position_seconds: 42.0},
       overrides: opts
     )
   end

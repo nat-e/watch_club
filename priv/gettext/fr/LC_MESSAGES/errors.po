@@ -378,3 +378,15 @@ msgstr "C'est déjà dans la playlist"
 #, elixir-autogen, elixir-format
 msgid "Choose an option from the list"
 msgstr "Choisissez une option de la liste"
+
+# AI-translated (Claude)
+#: lib/watch_club/playbacks/problem_report.ex
+#, elixir-autogen, elixir-format
+msgid "Details cannot be longer than %{max} characters"
+msgstr "Les détails ne peuvent pas dépasser %{max} caractères"
+
+# AI-translated (Claude)
+#: lib/watch_club/playbacks/problem_report.ex
+#, elixir-autogen, elixir-format
+msgid "Pick what's wrong"
+msgstr "Choisissez ce qui ne va pas"
