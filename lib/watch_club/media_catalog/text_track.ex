@@ -119,6 +119,11 @@ defmodule WatchClub.MediaCatalog.TextTrack do
       public? true
     end
 
+    calculate :language_code, :string, WatchClub.MediaCatalog.Calculations.LanguageCode do
+      description "The track's language code."
+      public? true
+    end
+
     calculate :hls_supported?,
               :boolean,
               expr(not is_nil(codec) and codec in ^@hls_supported_codecs) do

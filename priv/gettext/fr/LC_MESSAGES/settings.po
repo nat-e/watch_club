@@ -94,3 +94,57 @@ msgstr "À propos"
 #, elixir-autogen, elixir-format
 msgid "This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB."
 msgstr "Ce produit utilise TMDB et les API TMDB, mais n'est ni cautionné, ni certifié, ni approuvé d'aucune autre manière par TMDB."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio"
+msgstr "Audio"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio and subtitles"
+msgstr "Audio et sous-titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Choose the audio and subtitles videos start with. You can still change them while watching."
+msgstr "Choisissez l'audio et les sous-titres avec lesquels les vidéos démarrent. Vous pouvez toujours les changer pendant la lecture."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr "Désactivés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language"
+msgstr "Langue originale"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Subtitles"
+msgstr "Sous-titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your audio and subtitle preferences are saved"
+msgstr "Vos préférences d'audio et de sous-titres sont enregistrées"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Languages without subtitles"
+msgstr "Langues sans sous-titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
+msgstr "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue."

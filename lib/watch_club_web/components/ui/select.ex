@@ -30,7 +30,14 @@ defmodule WatchClubWeb.Components.UI.Select do
 
   attr :disabled, :boolean, default: false
   attr :errors, :list, default: []
-  attr :field, Phoenix.HTML.FormField, doc: "form field — derives name, value, and errors"
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "form field — derives name, value, errors, and the trigger's id for the field's label"
+
+  attr :trigger_id, :string,
+    default: nil,
+    doc: "id of the trigger button, `{id}-trigger` by default"
+
   attr :side, :string, values: ~w(top right bottom left), default: "bottom"
   attr :align, :string, values: ~w(start center end), default: "start"
   attr :side_offset, :integer, default: 6
@@ -47,14 +54,17 @@ defmodule WatchClubWeb.Components.UI.Select do
       field: nil,
       name: field.name,
       value: input_value(field.value),
-      errors: errors
+      errors: errors,
+      trigger_id: field.id
     )
     |> select()
   end
 
   def select(assigns) do
     assigns =
-      assign(assigns, :placeholder, assigns.placeholder || dgettext("default", "Select..."))
+      assigns
+      |> assign(:placeholder, assigns.placeholder || dgettext("default", "Select..."))
+      |> assign(:trigger_id, assigns.trigger_id || "#{assigns.id}-trigger")
 
     ~H"""
     <%!--
@@ -91,7 +101,7 @@ defmodule WatchClubWeb.Components.UI.Select do
       />
 
       <button
-        id={"#{@id}-trigger"}
+        id={@trigger_id}
         type="button"
         data-slot="select-trigger"
         data-size={@size}

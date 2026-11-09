@@ -6,7 +6,7 @@ defmodule WatchClub.Accounts.UserSettings do
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.Accounts.{User, UserLocale}
+  alias WatchClub.Accounts.{TrackLanguage, User, UserLocale}
 
   postgres do
     table "user_settings"
@@ -18,7 +18,28 @@ defmodule WatchClub.Accounts.UserSettings do
   end
 
   actions do
-    defaults [:read, create: [:locale], update: [:locale]]
+    defaults [
+      :read,
+      update: [:locale, :audio_language, :subtitle_language, :languages_without_subtitles]
+    ]
+
+    create :create do
+      primary? true
+      accept [:locale]
+
+      # Subtitles in the language of the User's Locale, except when the audio is already in it
+      change before_action(fn changeset, _context ->
+               language =
+                 changeset
+                 |> Ash.Changeset.get_attribute(:locale)
+                 |> UserLocale.track_language()
+
+               Ash.Changeset.force_change_attributes(changeset,
+                 subtitle_language: language,
+                 languages_without_subtitles: [language]
+               )
+             end)
+    end
   end
 
   policies do
@@ -40,6 +61,28 @@ defmodule WatchClub.Accounts.UserSettings do
 
     attribute :locale, UserLocale do
       allow_nil? false
+      public? true
+    end
+
+    # The types own the valid values, the Settings form localizes their errors
+    attribute :audio_language, :atom do
+      description "The language the User wants to hear: the Content's original language or a Track Language."
+      allow_nil? false
+      default :original
+      public? true
+      constraints one_of: [:original | TrackLanguage.values()]
+    end
+
+    attribute :subtitle_language, TrackLanguage do
+      description "The language of the subtitles the User wants, or no subtitles when nil."
+      allow_nil? true
+      public? true
+    end
+
+    attribute :languages_without_subtitles, {:array, TrackLanguage} do
+      description "The audio languages the User watches without subtitles."
+      allow_nil? false
+      default []
       public? true
     end
 

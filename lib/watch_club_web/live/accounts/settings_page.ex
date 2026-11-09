@@ -59,6 +59,89 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       </.section>
 
       <.section
+        title={dgettext("settings", "Audio and subtitles")}
+        description={
+          dgettext(
+            "settings",
+            "Choose the audio and subtitles videos start with. You can still change them while watching."
+          )
+        }
+      >
+        <.form
+          for={@audio_and_subtitles_form}
+          id="audio-and-subtitles-form"
+          class="w-full sm:max-w-sm"
+          phx-change="validate_audio_and_subtitles"
+          phx-submit="submit_audio_and_subtitles"
+        >
+          <.field
+            field={@audio_and_subtitles_form[:audio_language]}
+            label={dgettext("settings", "Audio")}
+            class="w-full"
+          >
+            <:control>
+              <.select
+                id="user-settings-audio-language-select"
+                field={@audio_and_subtitles_form[:audio_language]}
+                class="w-full"
+              >
+                <.select_item value={:original}>
+                  {dgettext("settings", "Original language")}
+                </.select_item>
+                <.select_item :for={language <- TrackLanguage.values()} value={language}>
+                  {TrackLanguage.translated_label(language)}
+                </.select_item>
+              </.select>
+            </:control>
+          </.field>
+          <.field
+            field={@audio_and_subtitles_form[:subtitle_language]}
+            label={dgettext("settings", "Subtitles")}
+            class="w-full"
+          >
+            <:control>
+              <.select
+                id="user-settings-subtitle-language-select"
+                field={@audio_and_subtitles_form[:subtitle_language]}
+                class="w-full"
+              >
+                <.select_item value={nil}>{dgettext("settings", "Off")}</.select_item>
+                <.select_item :for={language <- TrackLanguage.values()} value={language}>
+                  {TrackLanguage.translated_label(language)}
+                </.select_item>
+              </.select>
+            </:control>
+          </.field>
+          <fieldset
+            class="flex flex-col gap-related"
+            aria-describedby="languages-without-subtitles-hint"
+          >
+            <legend class="mb-related text-xs font-semibold tracking-wider text-text uppercase">
+              {dgettext("settings", "Languages without subtitles")}
+            </legend>
+            <p id="languages-without-subtitles-hint" class="text-sm leading-6 text-text-muted">
+              {dgettext(
+                "settings",
+                "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
+              )}
+            </p>
+            <.checkbox_group
+              field={@audio_and_subtitles_form[:languages_without_subtitles]}
+              options={TrackLanguage.values()}
+              to_value={& &1}
+            >
+              <:label :let={language}>{TrackLanguage.translated_label(language)}</:label>
+            </.checkbox_group>
+          </fieldset>
+          <:action class="sm:justify-start">
+            <.button id="audio-and-subtitles-submit-button" type="submit">
+              {dgettext("default", "Save")}
+            </.button>
+          </:action>
+        </.form>
+      </.section>
+
+      <.section
         title={dgettext("settings", "Security")}
         description={
           dgettext(
@@ -134,6 +217,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
     {:ok,
      socket
      |> assign(:user_settings_form, to_form(settings_form))
+     |> assign(:audio_and_subtitles_form, audio_and_subtitles_form(user.settings, user))
      |> assign(:change_password_form, to_form(change_password_form))}
   end
 
@@ -152,6 +236,34 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       # Locale hook reloads connected LiveViews when the persisted locale changes.
       {:ok, _settings} -> {:noreply, socket}
       {:error, form} -> {:noreply, socket |> assign(:user_settings_form, form)}
+    end
+  end
+
+  def handle_event("validate_audio_and_subtitles", %{"form" => params}, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       :audio_and_subtitles_form,
+       AshPhoenix.Form.validate(socket.assigns.audio_and_subtitles_form, params)
+     )}
+  end
+
+  def handle_event("submit_audio_and_subtitles", %{"form" => params}, socket) do
+    case AshPhoenix.Form.submit(socket.assigns.audio_and_subtitles_form, params: params) do
+      {:ok, settings} ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :success,
+           dgettext("settings", "Your audio and subtitle preferences are saved")
+         )
+         |> assign(
+           :audio_and_subtitles_form,
+           audio_and_subtitles_form(settings, socket.assigns.current_user)
+         )}
+
+      {:error, form} ->
+        {:noreply, socket |> assign(:audio_and_subtitles_form, form)}
     end
   end
 
@@ -180,5 +292,22 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       {:error, form} ->
         {:noreply, socket |> assign(:change_password_form, form)}
     end
+  end
+
+  # The selects only offer valid languages, but a forged request could send others
+  defp audio_and_subtitles_form(settings, user) do
+    settings
+    |> Accounts.form_to_update_user_settings(
+      actor: user,
+      transform_errors: fn
+        _changeset, %Ash.Error.Changes.InvalidAttribute{field: field}
+        when field in [:audio_language, :subtitle_language] ->
+          [{field, dgettext_noop("errors", "Choose an option from the list"), []}]
+
+        _changeset, error ->
+          error
+      end
+    )
+    |> to_form()
   end
 end

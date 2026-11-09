@@ -8,8 +8,8 @@ defmodule WatchClub.Playbacks.Playback do
   the previous one, and the Session's `:end_inactive_playbacks` action ends the
   Playbacks whose Player is no longer active.
 
-  This resource is concerned only with persistence and lifecycle. HLS
-  rendering and its on-disk segment cache live in
+  This resource is concerned with persistence, lifecycle and the tracks the
+  Player starts with. HLS rendering and its on-disk segment cache live in
   `WatchClub.Playbacks.Playback.Hls` and
   `WatchClub.Playbacks.Playback.SegmentCache`; the cache is reclaimed by
   `WatchClub.Playbacks.Workers.PruneSegmentCache`.
@@ -22,6 +22,7 @@ defmodule WatchClub.Playbacks.Playback do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.MediaCatalog.Media
+  alias WatchClub.Playbacks.Playback.PreferredTrack
   alias WatchClub.Playbacks.Session
 
   postgres do
@@ -112,6 +113,18 @@ defmodule WatchClub.Playbacks.Playback do
 
     belongs_to :media, Media do
       allow_nil? false
+      public? true
+    end
+  end
+
+  calculations do
+    calculate :preferred_audio_track_id, :uuid, {PreferredTrack, track: :audio} do
+      description "The Audio Track the Player starts with, from the User Preferences."
+      public? true
+    end
+
+    calculate :preferred_text_track_id, :uuid, {PreferredTrack, track: :text} do
+      description "The Text Track the Player starts with, from the User Preferences. Nil for no subtitles."
       public? true
     end
   end

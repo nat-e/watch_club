@@ -59,4 +59,5 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("variation_picker"), do: [name: "Variation picker", icon: {:fa, "sliders"}, index: 33]
   def entry("download_menu"), do: [name: "Download menu", icon: {:fa, "download"}, index: 34]
+  def entry("checkbox_group"), do: [name: "Checkbox group", icon: {:fa, "list-check"}, index: 35]
 end

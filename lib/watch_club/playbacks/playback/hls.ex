@@ -26,11 +26,13 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     |> trunc()
   end
 
-  def master_playlist(%Video{} = video) do
+  def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback) do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
-      subtitle_tracks: video.text_tracks
+      subtitle_tracks: video.text_tracks,
+      default_audio_track_id: playback.preferred_audio_track_id,
+      default_subtitle_track_id: playback.preferred_text_track_id
     }
 
     {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities(video)))}

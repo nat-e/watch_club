@@ -42,34 +42,26 @@ const emptyStorageKeys = [
 	"AudioGain",
 	"PlaybackRate",
 	"VideoQuality",
+	"Lang",
+	"Captions",
 ];
-const emptyPlayerStorage = Object.fromEntries(
-	emptyStorageKeys.flatMap((key) => [
-		[`get${key}`, getNothing],
-		[`set${key}`, noop],
-	]),
-);
-
-const createPlayerStorage = () => {
-	let captions = false;
-	let language = null;
-
-	return {
-		...emptyPlayerStorage,
-		getCaptions: async () => captions,
-		setCaptions: async (enabled) => {
-			captions = enabled;
-		},
-		getLang: async () => language,
-		setLang: async (lang) => {
-			language = lang;
-		},
-	};
+// Vidstack would show subtitles on its own: the hook starts them itself, see startSubtitles
+const playerStorage = {
+	...Object.fromEntries(
+		emptyStorageKeys.flatMap((key) => [
+			[`get${key}`, getNothing],
+			[`set${key}`, noop],
+		]),
+	),
+	getCaptions: async () => false,
 };
 
 const Player = {
 	mounted() {
-		this.handleEvent("player:load_video", ({ src }) => this.loadVideo(src));
+		this.handleEvent("player:load_video", ({ src }) => {
+			this.carryTracksOver();
+			this.loadVideo(src);
+		});
 		this.vidstackScriptUrl =
 			this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
 		this.player = this.el.querySelector("[data-player-media]");
@@ -77,6 +69,9 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
+		// The subtitles to carry over to the next video, as hls.js's language and forced
+		// flag: null for none, undefined for the ones the master playlist marks as default
+		this.carriedSubtitles = undefined;
 
 		this.bindDomEvents();
 		this.boot();
@@ -110,11 +105,14 @@ const Player = {
 	},
 
 	// This is called on initial load and when the video changes in the player session
-	// Playback starts at the given position (the beginning by default) but keeps
-	// track selection intact. Vidstack queues the seek until the media can play.
+	// Playback starts at the given position (the beginning by default). Vidstack queues
+	// the seek until the media can play.
 	loadVideo(src, startPositionSeconds = 0) {
 		if (!this.player) return;
 		this.pendingAutoplay = true;
+		this.subtitlesToStart = true;
+		// Vidstack keeps the previous video's subtitles, under the ids of the new ones
+		this.player.textTracks.clear();
 		this.player.src = { src, type: "application/x-mpegurl" };
 		this.player.currentTime = startPositionSeconds;
 		this.player.startLoading?.();
@@ -150,7 +148,7 @@ const Player = {
 		this.player.preload = "metadata";
 		this.player.playsInline = true;
 		this.player.preferNativeHLS = false;
-		this.player.storage = createPlayerStorage();
+		this.player.storage = playerStorage;
 		this.player.keyTarget = "document";
 		this.player.keyShortcuts = {
 			togglePaused: "k Space",
@@ -291,6 +289,16 @@ const Player = {
 			{ signal },
 		);
 		this.player.addEventListener(
+			"hls-subtitle-tracks-updated",
+			(event) => {
+				if (!this.subtitlesToStart) return;
+				this.subtitlesToStart = false;
+				// After hls.js picks its own first subtitle track, which would replace this one
+				queueMicrotask(() => this.startSubtitles(event.detail.subtitleTracks));
+			},
+			{ signal },
+		);
+		this.player.addEventListener(
 			"volume-change",
 			() => {
 				this.storeLocalPreferences();
@@ -363,6 +371,41 @@ const Player = {
 		}
 
 		if (providerType === "hls") this.disableNativeTextTracks();
+	},
+
+	// The next video of the session starts with the audio language and the subtitles
+	// playing now, when it has them
+	carryTracksOver() {
+		const hls = this.player.provider.instance;
+		const audio = hls.audioTracks[hls.audioTrack];
+		if (audio) hls.config.audioPreference = { lang: audio.lang };
+
+		// Forced and full subtitles can share a language
+		const subtitles = hls.subtitleTracks[hls.subtitleTrack];
+		this.carriedSubtitles = subtitles
+			? { lang: subtitles.lang, forced: subtitles.forced }
+			: null;
+	},
+
+	// Starts the subtitles carried over from the previous video when this one has them,
+	// otherwise the ones the master playlist marks as default
+	startSubtitles(subtitleTracks) {
+		const carried = this.carriedSubtitles;
+		if (carried === null) {
+			this.player.provider.instance.subtitleTrack = -1;
+			return;
+		}
+
+		const carriedIndex = subtitleTracks.findIndex(
+			(track) =>
+				track.lang === carried?.lang && track.forced === carried?.forced,
+		);
+		const index =
+			carriedIndex === -1
+				? subtitleTracks.findIndex((track) => track.default)
+				: carriedIndex;
+		const track = this.player.textTracks.getById(`hls-subtitles-${index}`);
+		if (track) track.mode = "showing";
 	},
 
 	getVideoElement() {

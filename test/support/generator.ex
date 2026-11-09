@@ -38,8 +38,15 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # Takes overrides for the User and their User Preferences
   def user(opts \\ []) do
-    {locale, opts} = Keyword.pop(opts, :locale, :en_US)
+    {settings, opts} =
+      Keyword.split(opts, [
+        :locale,
+        :audio_language,
+        :subtitle_language,
+        :languages_without_subtitles
+      ])
 
     # Use seed generator to skip invitation
     seed_generator(
@@ -51,10 +58,10 @@ defmodule WatchClub.Generator do
       overrides: opts,
       after_action: fn user ->
         settings =
-          Ash.Seed.seed!(UserSettings, %{
-            user_id: user.id,
-            locale: locale
-          })
+          Ash.Seed.seed!(
+            UserSettings,
+            Enum.into(settings, %{user_id: user.id, locale: :en_US})
+          )
 
         %{user | settings: settings}
       end
@@ -228,9 +235,11 @@ defmodule WatchClub.Generator do
   end
 
   def playback(%Media{} = media, opts \\ []) do
+    {started_by, opts} = Keyword.pop_lazy(opts, :started_by, fn -> generate(user()) end)
+
     seed_generator(
       %Playback{
-        session_id: Ash.Seed.seed!(Session, %{started_by_id: generate(user()).id}).id,
+        session_id: Ash.Seed.seed!(Session, %{started_by_id: started_by.id}).id,
         media_id: media.id
       },
       overrides: opts
@@ -304,6 +313,23 @@ defmodule WatchClub.Generator do
         content_id: content.id,
         added_by_id: playlist.owner_id
       },
+      overrides: opts
+    )
+  end
+
+  # Media playing the Movie, with the tracks of `video_input/2` unless `video` overrides them
+  def video_media(%Content{type: :movie} = movie, opts \\ []) do
+    {video, opts} = Keyword.pop(opts, :video, %{})
+
+    changeset_generator(
+      Media,
+      :create_video,
+      defaults: [
+        path: sequence(:video_media_path, &"/movies/#{&1}/video.mkv"),
+        type: :movie,
+        video: Map.merge(video_input(:movie, movie.id), video)
+      ],
+      authorize?: false,
       overrides: opts
     )
   end

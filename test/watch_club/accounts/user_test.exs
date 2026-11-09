@@ -133,6 +133,26 @@ defmodule WatchClub.Accounts.UserTest do
       assert [%Playlist{name: "À voir", icon: "popcorn"}] = Playlists.list_playlists!(actor: user)
     end
 
+    test "a new user gets subtitles in their locale's language, except when the audio is in it",
+         %{admin: admin} do
+      invitation_code = generate(invitation_code(actor: admin))
+
+      assert %User{
+               settings: %{
+                 audio_language: :original,
+                 subtitle_language: :fr,
+                 languages_without_subtitles: [:fr]
+               }
+             } =
+               register_with_password!(%{
+                 username: "nate",
+                 password: "passw0rd",
+                 password_confirmation: "passw0rd",
+                 invitation_code: invitation_code.code,
+                 locale: :fr_FR
+               })
+    end
+
     test "users can't register without an invitation code" do
       assert register_with_password(%{
                username: "nate",

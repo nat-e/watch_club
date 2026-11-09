@@ -15,11 +15,11 @@ defmodule WatchClubWeb.PlayerController do
     media: [
       video: [
         :default_video_track,
-        audio_tracks: [:display_label],
+        audio_tracks: [:display_label, :language_code],
         text_tracks:
           TextTrack
           |> Ash.Query.filter(hls_supported? == true)
-          |> Ash.Query.load(:display_label)
+          |> Ash.Query.load([:display_label, :language_code])
       ]
     ]
   ]
@@ -27,7 +27,12 @@ defmodule WatchClubWeb.PlayerController do
   def master_playlist(conn, %{"playback_id" => playback_id}) do
     send_text_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.master_playlist(&1.media.video)),
+      with_active_playback(
+        playback_id,
+        conn,
+        &Hls.master_playlist/1,
+        [:preferred_audio_track_id, :preferred_text_track_id | @playback_fields]
+      ),
       @m3u8,
       "no-store"
     )
@@ -121,9 +126,9 @@ defmodule WatchClubWeb.PlayerController do
     )
   end
 
-  defp with_active_playback(playback_id, conn, fun) do
+  defp with_active_playback(playback_id, conn, fun, load \\ @playback_fields) do
     case Playbacks.get_playback_by_id(playback_id,
-           load: @playback_fields,
+           load: load,
            actor: conn.assigns.current_user
          ) do
       {:ok, playback} -> fun.(playback)
