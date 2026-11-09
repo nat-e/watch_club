@@ -43,6 +43,11 @@ defmodule WatchClubWeb.Storybook.Input do
         attributes: %{type: "file"}
       },
       %Variation{
+        id: :textarea,
+        description: "Multi-line text box",
+        attributes: %{type: "textarea", rows: 3, placeholder: "What happened?"}
+      },
+      %Variation{
         id: :custom_width,
         description: "Consumer classes can adjust layout",
         attributes: %{placeholder: "Playlist name", class: "sm:w-80"}

@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.Components.UI.Input do
   @moduledoc """
-  Token-driven Watch Club input primitive.
+  Token-driven Watch Club input primitive. `type="textarea"` renders a multi-line text box.
   """
 
   use Phoenix.Component
@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Components.UI.Input do
 
   attr :rest, :global,
     include:
-      ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required size step)
+      ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required rows size step)
 
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
@@ -42,6 +42,29 @@ defmodule WatchClubWeb.Components.UI.Input do
       """
     end
 
+    render_input(assigns)
+  end
+
+  defp render_input(%{type: "textarea"} = assigns) do
+    ~H"""
+    <textarea
+      id={@id}
+      name={@name}
+      aria-invalid={@errors != [] && "true"}
+      data-slot="input"
+      class={[
+        "min-h-control-lg w-full min-w-0 resize-y rounded-control border border-border-control bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
+        "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border-subtle disabled:text-text-disabled disabled:placeholder:text-text-disabled",
+        "aria-invalid:not-focus-visible:border-danger-border aria-invalid:not-focus-visible:ring-2 aria-invalid:not-focus-visible:ring-danger-ring",
+        @class
+      ]}
+      {@rest}
+    >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+    """
+  end
+
+  defp render_input(assigns) do
     ~H"""
     <input
       id={@id}

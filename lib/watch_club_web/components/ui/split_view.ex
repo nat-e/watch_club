@@ -17,9 +17,9 @@ defmodule WatchClubWeb.Components.UI.SplitView do
 
   def split_view(assigns) do
     ~H"""
-    <div class="flex md:h-[calc(100svh-var(--wc-app-bar-height))]">
+    <div class="flex min-w-0 md:h-[calc(100svh-var(--wc-app-bar-height))]">
       <div class={[
-        "w-full flex-col gap-group border-border-subtle pb-group md:overflow-y-auto md:pt-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @split-view/main:flex @split-view/main:w-72 @split-view/main:shrink-0 @split-view/main:border-r",
+        "w-full min-w-0 flex-col gap-group border-border-subtle pb-group md:overflow-y-auto md:pt-group [scrollbar-color:var(--color-surface-hover)_transparent] [scrollbar-width:thin] @split-view/main:flex @split-view/main:w-96 @split-view/main:shrink-0 @split-view/main:border-r",
         @fab != [] && "max-md:pb-[calc(var(--spacing-control-lg)+2*var(--spacing-group))]",
         @open && "hidden",
         !@open && "flex"
