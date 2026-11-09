@@ -11,6 +11,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
+  import WatchClubWeb.Components.Medias.DownloadMenu
   import WatchClubWeb.Components.Playlists.PlaylistLink
   import WatchClubWeb.Contents.ContentPage.AddToPlaylistModal
 
@@ -34,7 +35,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
   @content_load [
     :has_media?,
     :actor_progress_status,
-    implementation: %{load: [tv_show: [:actor_next_episode, :season_numbers, :season_count]]}
+    implementation: %{
+      load: [
+        movie: [videos: [:media, :default_video_track]],
+        tv_show: [:actor_next_episode, :season_numbers, :season_count]
+      ]
+    }
   ]
 
   @impl true
@@ -240,7 +246,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :current_user, User, required: true
 
   # Play, Resume or Request first, or how far the request got. Then round Episodes for a TV Show,
-  # Watch trailer and Watched, which stay quiet.
+  # Watch trailer, Download for a Movie in the Library and Watched, which stay quiet.
   defp actions(assigns) do
     tv_show? = assigns.content_identity.type == :tv_show
 
@@ -248,6 +254,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       assign(assigns,
         tv_show?: tv_show?,
         episodes?: tv_show? and season_numbers(assigns.content) != [],
+        videos: if(tv_show?, do: [], else: assigns.content.implementation.videos),
         finished?: finished?(assigns.content),
         trailer_url: localization(assigns.content).trailer_url
       )
@@ -282,6 +289,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
         >
           <Lucideicons.circle_play />
         </.round_action>
+        <.download_menu :if={@videos != []} id="download" videos={@videos}>
+          <:trigger>
+            <.round_action id="download-button" label={dgettext("contents", "Download")}>
+              <Lucideicons.download />
+            </.round_action>
+          </:trigger>
+        </.download_menu>
         <%!-- Its label changes with its state, so it has no aria-pressed --%>
         <.round_action
           id="watched-button"
