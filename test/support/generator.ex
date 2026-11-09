@@ -38,8 +38,15 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # Takes overrides for the User and their User Preferences
   def user(opts \\ []) do
-    {locale, opts} = Keyword.pop(opts, :locale, :en_US)
+    {settings, opts} =
+      Keyword.split(opts, [
+        :locale,
+        :audio_language,
+        :subtitle_language,
+        :languages_without_subtitles
+      ])
 
     # Use seed generator to skip invitation
     seed_generator(
@@ -51,10 +58,10 @@ defmodule WatchClub.Generator do
       overrides: opts,
       after_action: fn user ->
         settings =
-          Ash.Seed.seed!(UserSettings, %{
-            user_id: user.id,
-            locale: locale
-          })
+          Ash.Seed.seed!(
+            UserSettings,
+            Enum.into(settings, %{user_id: user.id, locale: :en_US})
+          )
 
         %{user | settings: settings}
       end
