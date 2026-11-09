@@ -242,6 +242,22 @@ _Avoid_: Default audio track, selected audio
 The **Text Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**, or none.
 _Avoid_: Default subtitles, selected subtitles
 
+**Marker**:
+A part of a **Video** that the **Player** lets a **User** skip: its **Intro**, its **Recap** or its **Credits**.
+_Avoid_: Segment, media segment, chapter, skip range
+
+**Intro**:
+The opening sequence, with the theme and the title, that the **TV Show Episodes** of a **TV Show** share.
+_Avoid_: Opening, title sequence, opening credits
+
+**Recap**:
+The summary of earlier **TV Show Episodes** at the start of a **TV Show Episode**.
+_Avoid_: Previously on, summary
+
+**Credits**:
+The list of names at the end of a **Video**.
+_Avoid_: Outro, ending, end credits, end titles
+
 **Media Browser**:
 The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
 _Avoid_: Media admin, media library page, file browser
@@ -487,6 +503,9 @@ _Avoid_: Group, aggregate, card, item
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
 - In the **Player**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
 - Each **Playback** after the first one in a **Playback Session** starts with the audio language and the subtitles, or no subtitles, of the previous one, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
+- During an **Intro** or a **Recap**, the **Player** offers to skip to its end
+- When the **Credits** of a **TV Show Episode** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **TV Show Episode** if it has **Media**
+- **Watch Progress** counts a **Video** up to the start of its **Credits**
 
 ### Media
 
@@ -510,6 +529,9 @@ _Avoid_: Group, aggregate, card, item
 - A **Text Track** may be embedded in the **Video** file or provided by a separate local file
 - A **Text Track** may identify its language, default selection, and forced selection
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
+- A **Video** has at most one **Marker** of each kind: **Intro**, **Recap** and **Credits**
+- A **Video**'s **Markers** come from its named chapters; a **TV Show Episode**'s missing **Intro** or **Credits** also comes from audio it shares with the nearest **TV Show Episodes** of its **TV Show**
+- WatchClub finds a **Video**'s **Markers** in the background each time the **Video** is imported
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
@@ -646,6 +668,8 @@ _Avoid_: Group, aggregate, card, item
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
 - Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type. Because no request-capable **Book** source exists, **Request Content** today serves only **Movies** and **TV Shows**; the **Book** fan-out is intended design, not current behaviour.
+- "Segment" means an HLS segment; resolved: the parts of a **Video** that the **Player** lets a **User** skip are **Markers**. Chapters are only where some **Markers** come from: WatchClub doesn't store them.
+- "Outro" is not canonical; resolved: use **Credits**.
 - "Play Media" and "Play Video" are not canonical user actions; resolved: use **Play** for the user action and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
