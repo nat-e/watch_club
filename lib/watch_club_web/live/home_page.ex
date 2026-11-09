@@ -16,6 +16,7 @@ defmodule WatchClubWeb.HomePage do
   alias WatchClub.Conversations.{Message, Participant}
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Helpers.KeysetStreamState
+  alias WatchClubWeb.HomePage.ForYou
 
   # The spotlight's Content, then Up next
   @in_progress_limit 6
@@ -28,21 +29,18 @@ defmodule WatchClubWeb.HomePage do
     actor_recommendations: [:recommended_by]
   ]
 
-  # What For You shows, as the navigation's badges count it
-  @for_you_resources [Message, Participant, RequestSubscriber, PlaylistAccess]
+  # What For You shows, as the navigation's badges count it, and its Playlists' names and Content
+  @for_you_resources [
+    Message,
+    Participant,
+    RequestSubscriber,
+    PlaylistAccess,
+    Playlist,
+    PlaylistItem
+  ]
 
   @impl true
   def render(assigns) do
-    %{in_progress: in_progress, for_you: for_you, new_in_library: new_in_library} = assigns
-
-    assigns =
-      assign(
-        assigns,
-        :empty?,
-        in_progress == [] and for_you == [] and new_in_library == [] and
-          assigns.watching_now == [] and assigns.feed_empty?
-      )
-
     ~H"""
     <Layouts.app
       flash={@flash}
@@ -61,26 +59,14 @@ defmodule WatchClubWeb.HomePage do
         />
       </:hero>
 
-      <.empty :if={@empty?} id="home-empty">
-        <:icon><Lucideicons.popcorn /></:icon>
-        <:title>{dgettext("home", "Nothing has happened yet")}</:title>
-        <:description>
-          {dgettext("home", "What people watch and what joins the library will show up here.")}
-        </:description>
-        <.button id="home-empty-browse" variant="secondary" navigate={~p"/browse"}>
-          <:icon><Lucideicons.clapperboard /></:icon>
-          {dgettext("nav", "Browse")}
-        </.button>
-      </.empty>
-
-      <div :if={!@empty?} class="flex min-w-0 flex-col gap-section @4xl:flex-row @4xl:items-start">
+      <div class="flex min-w-0 flex-col gap-section @4xl:flex-row @4xl:items-start">
         <div class="flex min-w-0 flex-1 flex-col gap-section">
           <.up_next
             :if={length(@in_progress) > 1}
             contents={tl(@in_progress)}
             locale={@current_user.settings.locale}
           />
-          <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
+          <.for_you stream={@streams.for_you} locale={@current_user.settings.locale} />
           <.page_section
             :if={@new_in_library != []}
             id="new-in-library-title"
@@ -106,15 +92,28 @@ defmodule WatchClubWeb.HomePage do
               </div>
             </.scroll_row>
           </.page_section>
+          <.empty :if={@new_in_library == []} id="library-empty">
+            <:icon><Lucideicons.popcorn /></:icon>
+            <:title>{dgettext("home", "Nothing in the library yet")}</:title>
+            <:description>
+              {dgettext(
+                "home",
+                "Search for a title in Browse and request it. New titles will show up here."
+              )}
+            </:description>
+            <.button id="library-empty-browse" variant="secondary" navigate={~p"/browse"}>
+              <:icon><Lucideicons.clapperboard /></:icon>
+              {dgettext("nav", "Browse")}
+            </.button>
+          </.empty>
         </div>
 
-        <div
-          :if={@watching_now != [] or !@feed_empty?}
-          class="@container flex min-w-0 flex-col gap-section @4xl:w-80 @4xl:shrink-0"
-        >
-          <.watching_now :if={@watching_now != []} sessions={@watching_now} />
+        <div class={[
+          "@container flex min-w-0 flex-col gap-section @4xl:w-80 @4xl:shrink-0",
+          @watching_now == [] && "not-has-[[data-feed-entry]]:hidden"
+        ]}>
+          <.watching_now :if={@watching_now != []} watchers={@watching_now} />
           <.activity_feed
-            :if={!@feed_empty?}
             stream={@streams.feed}
             more?={KeysetStreamState.can_load_more?(@feed_state)}
             locale={@current_user.settings.locale}
@@ -134,7 +133,8 @@ defmodule WatchClubWeb.HomePage do
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> WatchClub.PubSub.subscribe_if_connected("feed:global")
      # Intentionally small: one line per User
-     |> assign(:watching_now, Playbacks.list_watching_now!(load: session_load(), actor: user))
+     |> assign(:watching_now, Playbacks.list_watching_now!(actor: user))
+     |> stream_configure(:for_you, dom_id: &ForYou.dom_id/1)
      |> stream_configure(:feed, dom_id: &feed_entry_dom_id(&1.group_key))
      |> assign(:feed_state, KeysetStreamState.init(@feed_page_size))
      |> load_feed_page()
@@ -172,10 +172,7 @@ defmodule WatchClubWeb.HomePage do
         stream_delete_by_dom_id(socket, :feed, feed_entry_dom_id(key))
 
       {:create, entry} ->
-        socket
-        |> stream_delete(:feed, entry)
-        |> stream_insert(:feed, entry, at: 0)
-        |> assign(:feed_empty?, false)
+        socket |> stream_delete(:feed, entry) |> stream_insert(:feed, entry, at: 0)
 
       {:destroy, entry} ->
         stream_insert(socket, :feed, entry, update_only: true)
@@ -208,25 +205,23 @@ defmodule WatchClubWeb.HomePage do
     user = socket.assigns.current_user
 
     conversations =
-      Conversations.list_conversations!(%{unread?: true}, load: conversation_load(), actor: user)
+      Conversations.list_unread_conversations!(load: conversation_load(), actor: user)
 
     requests =
       Requests.list_current_user_ready_unseen_requests!(load: request_load(), actor: user)
 
     playlists =
-      Playlists.list_playlists!(
-        query: [filter: [shared_unseen_for_actor?: true]],
-        load: playlist_load(),
-        actor: user
-      )
+      Playlists.list_current_user_shared_unseen_playlists!(load: playlist_load(), actor: user)
 
-    # Intentionally small: what the navigation's badges count
-    assign(socket, :for_you, conversations ++ requests ++ playlists)
+    socket
+    |> stream(:for_you, conversations ++ requests ++ playlists, reset: true)
+    |> WatchClub.PubSub.subscribe_to_playlists(playlists)
   end
 
   defp load_new_in_library(socket) do
     new_in_library =
       Contents.get_contents_in_library!(
+        %{sort: :recently_added},
         load: @new_in_library_load,
         query: [limit: @new_in_library_limit],
         actor: socket.assigns.current_user
@@ -246,7 +241,6 @@ defmodule WatchClubWeb.HomePage do
 
     socket
     |> assign(:feed_state, new_state)
-    |> assign(:feed_empty?, state.status == :init and entries == [])
     |> stream(:feed, entries, reset: state.status == :init)
   end
 

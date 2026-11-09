@@ -20,6 +20,7 @@ defmodule WatchClub.Playbacks.Session do
   require Ash.Query
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Contents.{Content, TvShowEpisode}
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.SegmentCache
   alias WatchClub.Playbacks.Session.Changes
@@ -63,16 +64,55 @@ defmodule WatchClub.Playbacks.Session do
       change Changes.BumpCurrentPlayback
     end
 
-    read :watching_now do
-      description "The other Users Watching Now: for each, the Session they started last among those whose current Playback is watched now, the latest first."
+    action :watching_now, {:array, :map} do
+      description "The other Users Watching Now, the latest first: each one's User, and the Content and TV Show Episode their Player plays, but not their Playback Sessions."
 
-      filter expr(started_by_id != ^actor(:id) and exists(playbacks, watched_now?))
+      constraints items: [
+                    fields: [
+                      user: [type: :struct, allow_nil?: false, constraints: [instance_of: User]],
+                      content: [
+                        type: :struct,
+                        allow_nil?: false,
+                        constraints: [instance_of: Content]
+                      ],
+                      tv_show_episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
+                    ]
+                  ]
 
-      prepare build(
-                distinct: [:started_by_id],
-                distinct_sort: [inserted_at: :desc],
-                sort: [inserted_at: :desc]
-              )
+      run fn _input, context ->
+        # The Player heartbeats every 5 seconds, paused included. Unmatched Media has no Content.
+        __MODULE__
+        |> Ash.Query.filter(
+          started_by_id != ^context.actor.id and
+            exists(
+              playbacks,
+              is_nil(ended_at) and last_active_at > ago(30, :second) and
+                not is_nil(media.content_id)
+            )
+        )
+        # Once per User, with the Session they started last
+        |> Ash.Query.distinct(:started_by_id)
+        |> Ash.Query.distinct_sort(inserted_at: :desc)
+        |> Ash.Query.sort(inserted_at: :desc)
+        |> Ash.Query.load([
+          :started_by,
+          active_playback: [
+            media: [
+              content: [:implementation],
+              video: [tv_show_episode: [:formatted_episode_number]]
+            ]
+          ]
+        ])
+        |> Ash.read!(Ash.Context.to_opts(context, authorize?: false))
+        |> Enum.map(fn %{active_playback: %{media: media}} = session ->
+          %{
+            user: session.started_by,
+            content: media.content,
+            tv_show_episode: media.video && media.video.tv_show_episode
+          }
+        end)
+        |> then(&{:ok, &1})
+      end
     end
 
     action :end_inactive_playbacks do
@@ -90,11 +130,6 @@ defmodule WatchClub.Playbacks.Session do
   end
 
   policies do
-    bypass action(:watching_now) do
-      description "Every User sees who is Watching Now, but not their other Playback Sessions"
-      authorize_if actor_present()
-    end
-
     policy action(:start) do
       description "A User can start a Playback Session; access to its Media is checked when the first Playback is created."
       authorize_if actor_present()
@@ -104,6 +139,11 @@ defmodule WatchClub.Playbacks.Session do
       description "Only the starting User and Instance Administrator can access Playback Sessions"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via(:started_by)
+    end
+
+    policy action(:watching_now) do
+      description "Every User sees who is Watching Now and what they play"
+      authorize_if actor_present()
     end
 
     policy action(:end_inactive_playbacks) do

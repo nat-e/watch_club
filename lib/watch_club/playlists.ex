@@ -12,6 +12,10 @@ defmodule WatchClub.Playlists do
     resource Playlist do
       # Oldest first, so a new User's To Watch comes first
       define :list_playlists, action: :read, default_options: [query: [sort: [inserted_at: :asc]]]
+
+      define :list_current_user_shared_unseen_playlists,
+        action: :shared_unseen_for_current_user
+
       define :create_playlist, action: :create
       define :update_playlist, action: :update
       define :share_playlist, action: :share, args: [:accesses]

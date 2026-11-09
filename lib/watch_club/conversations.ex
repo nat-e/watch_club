@@ -13,6 +13,7 @@ defmodule WatchClub.Conversations do
     resource Conversation do
       define :recommend_content, action: :recommend, args: [:content_identity]
       define :list_conversations, action: :latest_first
+      define :list_unread_conversations, action: :unread_latest_first
       define :get_conversation, action: :read, get_by: [:id]
     end
 

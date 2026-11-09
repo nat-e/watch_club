@@ -82,8 +82,10 @@ defmodule WatchClub.Conversations.ConversationTest do
 
       assert ids(list_conversations!(%{content_id: movie.id}, actor: user)) == [about_movie.id]
     end
+  end
 
-    test "keeps the Conversations with Messages the actor hasn't read" do
+  describe "list_unread_conversations/*" do
+    test "lists the actor's Conversations with Messages they haven't read, the latest Message first" do
       [user, friend] = generate_many(user(), 2)
       [movie, other_movie, third_movie] = generate_many(movie(), 3)
       recommended_to_user = generate(conversation(friend, movie, [user]))
@@ -91,7 +93,7 @@ defmodule WatchClub.Conversations.ConversationTest do
       generate(message(replied_to, friend))
       generate(conversation(user, third_movie, [friend]))
 
-      assert ids(list_conversations!(%{unread?: true}, actor: user)) ==
+      assert ids(list_unread_conversations!(actor: user)) ==
                [replied_to.id, recommended_to_user.id]
     end
   end

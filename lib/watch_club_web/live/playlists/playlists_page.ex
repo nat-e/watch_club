@@ -279,6 +279,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   end
 
   # Your playlists, then the ones shared with you, the shared unseen ones first, oldest first.
+  # Then marks the shared unseen ones seen, so the badge goes but they keep their New badge here.
   # Intentionally small: a User has a handful of Playlists.
   defp load_playlists!(socket) do
     user = socket.assigns.current_user

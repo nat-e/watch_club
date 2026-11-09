@@ -17,22 +17,33 @@ defmodule WatchClubWeb.HomePage.ForYou do
   def request_load, do: [content: [:implementation, :added_to_library_at]]
   def playlist_load, do: [:owner, :movie_count, :tv_show_count]
 
-  attr :items, :list,
+  @doc "The DOM id of an item's card, for the stream"
+  def dom_id(%Conversation{id: id}), do: "for-you-conversation-#{id}"
+  def dom_id(%ContentRequest{id: id}), do: "for-you-request-#{id}"
+  def dom_id(%Playlist{id: id}), do: "for-you-playlist-#{id}"
+
+  attr :stream, :list,
     required: true,
     doc: "Conversations, Content Requests and Playlists, with what their `*_load/0` say loaded"
 
   attr :locale, :atom, required: true
 
+  # Hidden while the stream is empty
   def for_you(assigns) do
     ~H"""
-    <.page_section id="for-you-title" title={dgettext("home", "For you")}>
-      <.scroll_row id="for-you">
-        <.for_you_card :for={item <- @items} item={item} locale={@locale} />
+    <.page_section
+      id="for-you-title"
+      title={dgettext("home", "For you")}
+      class="not-has-[[data-for-you-item]]:hidden"
+    >
+      <.scroll_row id="for-you" stream>
+        <.for_you_card :for={{dom_id, item} <- @stream} id={dom_id} item={item} locale={@locale} />
       </.scroll_row>
     </.page_section>
     """
   end
 
+  attr :id, :string, required: true
   attr :item, :any, required: true
   attr :locale, :atom, required: true
 
@@ -41,7 +52,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
 
     ~H"""
     <.card_frame
-      id={"for-you-conversation-#{@item.id}"}
+      id={@id}
       navigate={~p"/inbox/#{@item.id}"}
       title={@item.content.implementation.best_localization.title}
     >
@@ -66,7 +77,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
   defp for_you_card(%{item: %ContentRequest{}} = assigns) do
     ~H"""
     <.card_frame
-      id={"for-you-request-#{@item.id}"}
+      id={@id}
       navigate={Url.content_details_link(@item.content)}
       title={@item.content.implementation.best_localization.title}
     >
@@ -77,7 +88,9 @@ defmodule WatchClubWeb.HomePage.ForYou do
         <Lucideicons.circle_check class="size-icon-sm shrink-0" />
         <span class="truncate">{dgettext("home", "Ready to watch")}</span>
       </:reason>
+      <%!-- Nil once its last Media is gone --%>
       <time
+        :if={@item.content.added_to_library_at}
         datetime={DateTime.to_iso8601(@item.content.added_to_library_at)}
         class="text-sm text-text-subtle"
       >
@@ -90,7 +103,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
   defp for_you_card(%{item: %Playlist{}} = assigns) do
     ~H"""
     <.card_frame
-      id={"for-you-playlist-#{@item.id}"}
+      id={@id}
       navigate={~p"/playlists/#{@item.id}"}
       title={@item.name}
     >
@@ -117,13 +130,16 @@ defmodule WatchClubWeb.HomePage.ForYou do
   slot :reason, required: true, doc: "why it's for the User, with an icon"
   slot :inner_block, required: true, doc: "what it says under its title"
 
-  # The whole card is the title link, stretched with ::after. Why it's for the User comes first
-  # visually, but after the title for screen readers.
+  # The whole card is the title link, stretched with ::after, which describes it with why it's
+  # for the User. That reason comes first visually, but after the title for screen readers.
   defp card_frame(assigns) do
     ~H"""
-    <article
+    <.card
+      as="article"
+      padding="related"
       id={@id}
-      class="relative flex w-72 min-w-0 shrink-0 snap-start gap-group rounded-card bg-surface p-related shadow-card has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
+      data-for-you-item
+      class="relative flex w-72 min-w-0 shrink-0 snap-start gap-group has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
     >
       <div aria-hidden="true" class="w-16 shrink-0 self-start @xl:w-20">
         {render_slot(@artwork)}
@@ -131,16 +147,20 @@ defmodule WatchClubWeb.HomePage.ForYou do
       <div class="flex min-w-0 flex-1 flex-col gap-related py-tight">
         <.link
           navigate={@navigate}
+          aria-describedby={"#{@id}-reason"}
           class="min-w-0 truncate font-semibold text-text outline-none after:absolute after:inset-0"
         >
           {@title}
         </.link>
-        <p class="-order-1 flex items-center gap-tight text-sm font-semibold text-accent">
+        <p
+          id={"#{@id}-reason"}
+          class="-order-1 flex items-center gap-tight text-sm font-semibold text-accent"
+        >
           {render_slot(@reason)}
         </p>
         {render_slot(@inner_block)}
       </div>
-    </article>
+    </.card>
     """
   end
 end

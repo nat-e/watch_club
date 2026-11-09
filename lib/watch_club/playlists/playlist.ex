@@ -37,6 +37,12 @@ defmodule WatchClub.Playlists.Playlist do
       change relate_actor(:owner)
     end
 
+    read :shared_unseen_for_current_user do
+      description "The Playlists shared with the actor since they last opened their Playlists, the latest shared first."
+      filter expr(shared_unseen_for_actor?)
+      prepare build(sort: [shared_with_actor_at: :desc])
+    end
+
     update :share do
       description "Gives each User in `accesses` their Playlist Access, and takes it from the others"
       require_atomic? false
@@ -147,6 +153,10 @@ defmodule WatchClub.Playlists.Playlist do
               expr(exists(accesses, user_id == ^actor(:id) and shared_unseen?)) do
       description "Whether it was shared with the actor since they last opened their Playlists"
     end
+
+    calculate :shared_with_actor_at,
+              :utc_datetime_usec,
+              expr(first(accesses, field: :inserted_at, query: [filter: user_id == ^actor(:id)]))
 
     calculate :holds_content?, :boolean, HoldsContent do
       argument :content_identity, ContentIdentity, allow_nil?: false

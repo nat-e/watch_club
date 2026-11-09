@@ -86,12 +86,6 @@ msgid "Not started"
 msgstr "Pas commencé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
-msgid "Nothing has happened yet"
-msgstr "Il ne s'est encore rien passé"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/for_you.ex
 #, elixir-autogen, elixir-format
 msgid "Ready to watch"
@@ -136,5 +130,11 @@ msgstr "En train de regarder"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
-msgid "What people watch and what joins the library will show up here."
-msgstr "Ce que les gens regardent et ce qui arrive dans la bibliothèque apparaîtra ici."
+msgid "Nothing in the library yet"
+msgstr "La bibliothèque est encore vide"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search for a title in Browse and request it. New titles will show up here."
+msgstr "Cherchez un titre dans Parcourir et demandez‑le. Les nouveaux titres apparaîtront ici."

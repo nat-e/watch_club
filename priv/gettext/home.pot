@@ -73,11 +73,6 @@ msgstr ""
 msgid "Not started"
 msgstr ""
 
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
-msgid "Nothing has happened yet"
-msgstr ""
-
 #: lib/watch_club_web/live/home_page/for_you.ex
 #, elixir-autogen, elixir-format
 msgid "Ready to watch"
@@ -115,5 +110,10 @@ msgstr ""
 
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
-msgid "What people watch and what joins the library will show up here."
+msgid "Nothing in the library yet"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search for a title in Browse and request it. New titles will show up here."
 msgstr ""

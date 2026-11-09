@@ -1,6 +1,7 @@
 defmodule WatchClub.Playbacks.SessionTest do
   use WatchClub.DataCase, async: false
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Markers.Marker
@@ -178,17 +179,22 @@ defmodule WatchClub.Playbacks.SessionTest do
 
   describe "list_watching_now/*" do
     @tag :tmp_dir
-    test "lists the other Users whose Player is active, once each, with the Session they started last",
+    test "lists the other Users whose Player is active, once each, with what the Player they opened last plays",
          %{tmp_dir: tmp_dir} do
       [user, watcher] = generate_many(user(), 2)
-      media = matched_media!(Path.join(tmp_dir, "watched.mkv"))
-      generate(playback(media, started_by: watcher))
-      %{session_id: last_session_id} = generate(playback(media, started_by: watcher))
+      watcher_id = watcher.id
+      generate(playback(matched_media!(Path.join(tmp_dir, "first.mkv")), started_by: watcher))
+      last = matched_media!(Path.join(tmp_dir, "last.mkv"))
+      last_content_id = last.content_id
+      generate(playback(last, started_by: watcher))
 
-      assert [%Session{id: ^last_session_id, active_playback: %Playback{media_id: media_id}}] =
-               Playbacks.list_watching_now!(load: :active_playback, actor: user)
-
-      assert media_id == media.id
+      assert [
+               %{
+                 user: %User{id: ^watcher_id},
+                 content: %Content{id: ^last_content_id},
+                 tv_show_episode: nil
+               }
+             ] = Playbacks.list_watching_now!(actor: user)
     end
 
     @tag :tmp_dir
