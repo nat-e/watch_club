@@ -133,9 +133,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
 
       <.details_section label={dgettext("admin_media", "File")}>
         <p class="font-mono text-xs break-all text-text-muted">{@media.path}</p>
-        <dl class="grid grid-cols-[6rem_minmax(0,1fr)] gap-related text-sm">
+        <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-group gap-y-related text-sm">
           <dt class="text-text-muted">{dgettext("admin_media", "Added")}</dt>
-          <dd>{Time.relative_or_date(@media.inserted_at, @locale)}</dd>
+          <dd>{Time.relative_or_date!(@media.inserted_at, @locale)}</dd>
         </dl>
       </.details_section>
     </div>
@@ -148,7 +148,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
     assigns = assign(assigns, :track, assigns.video.default_video_track)
 
     ~H"""
-    <dl class="grid grid-cols-[6rem_minmax(0,1fr)] items-center gap-related text-sm">
+    <dl class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-group gap-y-related text-sm">
       <dt class="text-text-muted">{dgettext("admin_media", "Resolution")}</dt>
       <dd><.video_resolution_badge video={@video} size="sm" /></dd>
       <dt :if={@track && @track.codec} class="text-text-muted">

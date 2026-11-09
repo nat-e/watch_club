@@ -1,7 +1,7 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
-  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
   alias WatchClub.Conversations.{Conversation, Message}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
@@ -96,7 +96,11 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # Takes the `titles` of its Content Localizations by language, such as `%{"fr" => "Titre"}`,
+  # which default to its original title
   def movie(opts \\ []) do
+    {titles, opts} = Keyword.pop(opts, :titles, %{})
+
     seed_generator(
       %Content{
         type: :movie,
@@ -116,7 +120,11 @@ defmodule WatchClub.Generator do
             backdrop_path: content.original_title,
             localizations:
               for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
-                %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
+                %{
+                  iso_639_1: iso_639_1,
+                  iso_3166_1: iso_3166_1,
+                  title: titles[iso_639_1] || content.original_title
+                }
               end
           })
 
@@ -317,17 +325,25 @@ defmodule WatchClub.Generator do
     )
   end
 
-  # Media playing the Movie, with the tracks of `video_input/2` unless `video` overrides them
-  def video_media(%Content{type: :movie} = movie, opts \\ []) do
+  # Media playing the Movie or the TV Show Episode, or Unmatched Media without either, with the
+  # tracks of `video_input/2` unless `video` overrides them
+  def video_media(movie_or_episode, opts \\ []) do
     {video, opts} = Keyword.pop(opts, :video, %{})
+
+    {type, id} =
+      case movie_or_episode do
+        %Content{type: :movie, id: id} -> {:movie, id}
+        %TvShowEpisode{id: id} -> {:tv_show_episode, id}
+        nil -> {:movie, nil}
+      end
 
     changeset_generator(
       Media,
       :create_video,
       defaults: [
         path: sequence(:video_media_path, &"/movies/#{&1}/video.mkv"),
-        type: :movie,
-        video: Map.merge(video_input(:movie, movie.id), video)
+        type: type,
+        video: Map.merge(video_input(type, id), video)
       ],
       authorize?: false,
       overrides: opts

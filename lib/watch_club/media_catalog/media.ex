@@ -84,7 +84,7 @@ defmodule WatchClub.MediaCatalog.Media do
         |> Ash.Query.for_read(
           :browse,
           Map.put(input.arguments, :unmatched?, true),
-          Ash.Context.to_opts(context)
+          Ash.Scope.to_opts(context)
         )
         |> Ash.count()
       end
@@ -197,8 +197,13 @@ defmodule WatchClub.MediaCatalog.Media do
       forbid_if always()
     end
 
-    policy action_type([:read, :action]) do
-      description "Any authenticated actor can read and count Media"
+    policy action_type(:read) do
+      description "Any authenticated actor can read Media"
+      authorize_if always()
+    end
+
+    policy action(:count_unmatched) do
+      description "Any authenticated actor can count the Unmatched Media"
       authorize_if always()
     end
 

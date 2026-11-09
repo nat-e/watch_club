@@ -130,11 +130,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "View and manage all medias on this instance."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "You don't have any media yet"
 msgstr ""
 
@@ -233,4 +228,9 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Title"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "View and manage all Media on this instance."
 msgstr ""

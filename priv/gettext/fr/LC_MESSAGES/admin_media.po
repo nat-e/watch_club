@@ -154,12 +154,6 @@ msgstr "Vidéo"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "View and manage all medias on this instance."
-msgstr "Consultez et gérez tous les médias de cette instance."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "You don't have any media yet"
 msgstr "Vous n'avez encore aucun média"
 
@@ -278,3 +272,9 @@ msgstr "Sélectionnez un fichier pour voir ses détails."
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Titre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "View and manage all Media on this instance."
+msgstr "Consultez et gérez tous les médias de cette instance."

@@ -446,19 +446,13 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   describe "change_media_path/*" do
     test "moves the Media and notifies the pages showing it" do
-      movie = seed_movie()
-
-      media =
-        create_or_update_video!(video_media_input("tmp/moved/before.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
+      movie = generate(movie())
+      media = generate(video_media(movie, path: "/moved/before.mkv"))
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
 
-      moved =
-        change_media_path!(media, %{path: "tmp/moved/after.mkv"}, actor: SystemActor.actor())
+      moved = change_media_path!(media, %{path: "/moved/after.mkv"}, actor: SystemActor.actor())
 
-      assert moved.path == Path.expand("tmp/moved/after.mkv")
+      assert moved.path == "/moved/after.mkv"
 
       assert_receive %Ash.Notifier.Notification{
         resource: Media,
@@ -472,13 +466,8 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   describe "browse_media/*" do
     test "returns one page of Media, with their total" do
-      movie = seed_movie()
-
-      for name <- ~w(a b c) do
-        create_or_update_video!(video_media_input("tmp/browse/#{name}.mkv", movie),
-          actor: SystemActor.actor()
-        )
-      end
+      movie = generate(movie())
+      generate_many(video_media(movie), 3)
 
       page = browse_media!(page: [limit: 2, offset: 2], actor: generate(user()))
 
@@ -492,33 +481,22 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
 
     test "keeps one Media Type" do
-      _video =
-        create_or_update_video!(video_media_input("tmp/browse/v.mkv", seed_movie()),
-          actor: SystemActor.actor()
-        )
-
-      ebook =
-        create_or_update_ebook!(%{path: "tmp/browse/e.epub", ebook: %{book_id: seed_book().id}},
-          actor: SystemActor.actor()
-        )
+      tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      _movie_media = generate(video_media(generate(movie())))
+      episode_media = generate(video_media(hd(tv_show.tv_show.episodes)))
 
       assert [row] =
-               browse_media!(%{media_type: :ebook}, page: [limit: 50], actor: generate(user())).results
+               browse_media!(%{media_type: :tv_show_episode},
+                 page: [limit: 50],
+                 actor: generate(user())
+               ).results
 
-      assert row.id == ebook.id
+      assert row.id == episode_media.id
     end
 
     test "keeps the Unmatched Media" do
-      _matched =
-        create_or_update_video!(video_media_input("tmp/browse/matched.mkv", seed_movie()),
-          actor: SystemActor.actor()
-        )
-
-      unmatched =
-        create_or_update_video!(
-          video_media_input("tmp/browse/unmatched.mkv", :movie, %{movie_id: nil}),
-          actor: SystemActor.actor()
-        )
+      _matched = generate(video_media(generate(movie())))
+      unmatched = generate(video_media(nil))
 
       assert [row] =
                browse_media!(%{unmatched?: true}, page: [limit: 50], actor: generate(user())).results
@@ -527,35 +505,19 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
 
     test "searches the path" do
-      movie = seed_movie()
-
-      _a =
-        create_or_update_video!(video_media_input("tmp/browse/needle.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      _b =
-        create_or_update_video!(video_media_input("tmp/browse/other.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      movie = generate(movie())
+      _needle = generate(video_media(movie, path: "/browse/needle.mkv"))
+      _other = generate(video_media(movie, path: "/browse/other.mkv"))
 
       assert [row] =
                browse_media!(%{search: "NEEDLE"}, page: [limit: 50], actor: generate(user())).results
 
-      assert row.path =~ "needle"
+      assert row.path == "/browse/needle.mkv"
     end
 
     test "searches the title in the actor's language" do
-      movie =
-        seed_movie(%{
-          "en" => {"US", "Children of Men"},
-          "fr" => {"FR", "Les Fils de l'homme"}
-        })
-
-      media =
-        create_or_update_video!(video_media_input("tmp/browse/children.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      movie = generate(movie(titles: %{"fr" => "Les Fils de l'homme"}))
+      media = generate(video_media(movie))
 
       assert [row] =
                browse_media!(%{search: "fils de l'homme"},
@@ -573,31 +535,16 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
 
     test "sorts by title, with TV Show Episodes in order and Unmatched Media last" do
-      show = seed_tv_show("A Show")
+      tv_show =
+        generate(tv_show(original_title: "A Show", num_seasons: 1, episodes_per_season: 2))
 
-      second =
-        create_or_update_video!(
-          video_media_input("tmp/browse/a-show-2.mkv", seed_tv_show_episode(show, 1, 2)),
-          actor: SystemActor.actor()
-        )
+      [first_episode, second_episode] =
+        Enum.sort_by(tv_show.tv_show.episodes, & &1.episode_number)
 
-      first =
-        create_or_update_video!(
-          video_media_input("tmp/browse/a-show-1.mkv", seed_tv_show_episode(show, 1, 1)),
-          actor: SystemActor.actor()
-        )
-
-      movie =
-        create_or_update_video!(
-          video_media_input("tmp/browse/b-movie.mkv", seed_movie(%{"en" => {"US", "B Movie"}})),
-          actor: SystemActor.actor()
-        )
-
-      unmatched =
-        create_or_update_video!(
-          video_media_input("tmp/browse/0-unmatched.mkv", :movie, %{movie_id: nil}),
-          actor: SystemActor.actor()
-        )
+      second = generate(video_media(second_episode))
+      first = generate(video_media(first_episode))
+      movie = generate(video_media(generate(movie(original_title: "B Movie"))))
+      unmatched = generate(video_media(nil, path: "/0-unmatched.mkv"))
 
       browse = fn order ->
         %{sort_by: :title, sort_order: order}
@@ -611,18 +558,15 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
 
     test "sorts by date added, the newest first" do
-      movie = seed_movie()
+      movie = generate(movie())
 
       older =
-        "tmp/browse/older.mkv"
-        |> video_media_input(movie)
-        |> create_or_update_video!(actor: SystemActor.actor())
+        movie
+        |> video_media()
+        |> generate()
         |> Ash.Seed.update!(%{inserted_at: ~U[2020-01-01 00:00:00.000000Z]})
 
-      newer =
-        create_or_update_video!(video_media_input("tmp/browse/newer.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      newer = generate(video_media(movie))
 
       assert [newer.id, older.id] ==
                browse_media!(page: [limit: 50], actor: generate(user())).results
@@ -632,21 +576,11 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   describe "count_unmatched_media/*" do
     test "counts the Unmatched Media with the search and Media Type" do
-      for {path, type} <- [
-            {"tmp/count/needle-a.mkv", :movie},
-            {"tmp/count/needle-b.mkv", :movie},
-            {"tmp/count/needle-c.mkv", :tv_show_episode},
-            {"tmp/count/other.mkv", :movie}
-          ] do
-        create_or_update_video!(video_media_input(path, type, %{movie_id: nil}),
-          actor: SystemActor.actor()
-        )
-      end
-
-      _matched =
-        create_or_update_video!(video_media_input("tmp/count/needle-d.mkv", seed_movie()),
-          actor: SystemActor.actor()
-        )
+      _needle_a = generate(video_media(nil, path: "/count/needle-a.mkv"))
+      _needle_b = generate(video_media(nil, path: "/count/needle-b.mkv"))
+      _episode = generate(video_media(nil, path: "/count/needle-c.mkv", type: :tv_show_episode))
+      _other = generate(video_media(nil, path: "/count/other.mkv"))
+      _matched = generate(video_media(generate(movie()), path: "/count/needle-d.mkv"))
 
       assert count_unmatched_media!(%{search: "needle", media_type: :movie},
                actor: generate(user())
@@ -680,8 +614,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     }
   end
 
-  # A Movie with a Content Localization for each language, such as `%{"fr" => {"FR", "Titre"}}`
-  defp seed_movie(localizations \\ %{}) do
+  defp seed_movie do
     unique = System.unique_integer([:positive])
 
     content =
@@ -694,13 +627,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         origin_country: "US"
       })
 
-    Ash.Seed.seed!(Movie, %{
-      id: content.id,
-      localizations:
-        for {iso_639_1, {iso_3166_1, title}} <- localizations do
-          %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: title}
-        end
-    })
+    Ash.Seed.seed!(Movie, %{id: content.id})
   end
 
   defp seed_book do
@@ -719,7 +646,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     Ash.Seed.seed!(Book, %{id: content.id, title: "Book #{unique}", hardcover_id: unique})
   end
 
-  defp seed_tv_show(title \\ "TV Show #{System.unique_integer([:positive])}") do
+  defp seed_tv_show_episode do
     unique = System.unique_integer([:positive])
 
     content =
@@ -727,24 +654,23 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         type: :tv_show,
         external_id_source: :tmdb,
         external_id: "tv-show-#{unique}",
-        original_title: title,
+        original_title: "TV Show #{unique}",
         original_language: "en",
         origin_country: "US"
       })
 
-    Ash.Seed.seed!(TvShow, %{
-      id: content.id,
-      original_name: title,
-      tmdb_id: unique,
-      tvdb_id: unique
-    })
-  end
+    tv_show =
+      Ash.Seed.seed!(TvShow, %{
+        id: content.id,
+        original_name: "TV Show #{unique}",
+        tmdb_id: unique,
+        tvdb_id: unique
+      })
 
-  defp seed_tv_show_episode(tv_show \\ seed_tv_show(), season_number \\ 1, episode_number \\ 1) do
     Ash.Seed.seed!(TvShowEpisode, %{
       tv_show_id: tv_show.id,
-      season_number: season_number,
-      episode_number: episode_number
+      season_number: 1,
+      episode_number: 1
     })
   end
 end

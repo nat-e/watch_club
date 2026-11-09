@@ -1,8 +1,8 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaPoster do
   @moduledoc """
   A Media's poster, and its Content's title, both from the Content's Preferred Content
-  Localization. Books have no Content Localization: they show their own title, and an icon for
-  their Media Type instead of a poster, as Unmatched Media show a question mark.
+  Localization. Without one, as for Books, the Content shows its original title, and an icon for
+  its Media Type instead of a poster, as Unmatched Media show a question mark.
   """
   use WatchClubWeb, :component
 
@@ -37,14 +37,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaPoster do
   end
 
   @doc "A Content's title in the User's language, with its `implementation` loaded."
-  def content_title(%Content{implementation: %Book{title: title}}), do: title
+  def content_title(%Content{implementation: %{best_localization: %{title: title}}}), do: title
+  def content_title(%Content{original_title: title}), do: title
 
-  def content_title(%Content{implementation: implementation}),
-    do: implementation.best_localization.title
+  defp poster_path(%Content{implementation: %{best_localization: %{poster_path: path}}}),
+    do: path
 
-  defp poster_path(nil), do: nil
-  defp poster_path(%Content{implementation: %Book{}}), do: nil
-
-  defp poster_path(%Content{implementation: implementation}),
-    do: implementation.best_localization.poster_path
+  defp poster_path(_content), do: nil
 end

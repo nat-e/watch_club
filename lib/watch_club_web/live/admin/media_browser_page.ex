@@ -27,7 +27,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_if_connected("content:global")
-     |> assign(list: nil, removing?: false)}
+     # The Media the Remove media dialog is about
+     |> assign(list: nil, removing: nil)}
   end
 
   @impl true
@@ -78,18 +79,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     do: {:noreply, push_patch(socket, to: media_browser_path(socket.assigns.list, nil))}
 
   def handle_event("open_remove_media_modal", _params, socket),
-    do: {:noreply, assign(socket, :removing?, true)}
+    do: {:noreply, assign(socket, :removing, socket.assigns.selected)}
 
   def handle_event("close_remove_media_modal", _params, socket),
-    do: {:noreply, assign(socket, :removing?, false)}
+    do: {:noreply, assign(socket, :removing, nil)}
 
   # The list reloads from the Media's notification
   def handle_event("delete_media", _params, socket) do
-    MediaCatalog.destroy_media!(socket.assigns.selected, actor: socket.assigns.current_user)
+    MediaCatalog.destroy_media!(socket.assigns.removing, actor: socket.assigns.current_user)
 
     {:noreply,
      socket
-     |> assign(:removing?, false)
+     |> assign(:removing, nil)
      |> put_flash(:info, dgettext("admin_media", "Media removed."))
      |> push_patch(to: media_browser_path(socket.assigns.list, nil))}
   end
@@ -130,7 +131,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       <%!-- Narrow screens show the selected Media's details instead of the list --%>
       <div class={@selected && "@max-split-view/main:hidden"}>
         <.page_description text={
-          dgettext("admin_media", "View and manage all medias on this instance.")
+          dgettext("admin_media", "View and manage all Media on this instance.")
         } />
       </div>
 
@@ -165,7 +166,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
             "w-96 shrink-0",
             "@split-view/main:sticky @split-view/main:top-[calc(var(--wc-app-bar-height)+var(--spacing-group))] @split-view/main:max-h-[calc(100svh-var(--wc-app-bar-height)-2*var(--spacing-group))] @split-view/main:overflow-y-auto",
             !@selected && "@max-split-view/main:hidden",
-            @selected && "@max-split-view/main:w-full"
+            @selected && "@max-split-view/main:w-full @max-split-view/main:max-w-panel"
           ]}
         >
           <.media_details :if={@selected} media={@selected} locale={@locale} />
@@ -179,7 +180,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         </.card>
       </div>
 
-      <.remove_media_modal :if={@removing?} instance_settings={@instance_settings} />
+      <.remove_media_modal :if={@removing} instance_settings={@instance_settings} />
     </Layouts.app>
     """
   end
@@ -190,9 +191,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
   # The search, then one chip per Media Type and one for the Unmatched Media, as on Browse
   defp filters(assigns) do
+    assigns = assign(assigns, :form, to_form(%{"search" => assigns.list.search}))
+
     ~H"""
     <div class="flex flex-col gap-group">
-      <form id="media-search" phx-change="search" phx-submit="search">
+      <.form
+        id="media-search"
+        for={@form}
+        layout="none"
+        role="search"
+        phx-change="search"
+        phx-submit="search"
+      >
         <div class="relative">
           <Lucideicons.search
             aria-hidden="true"
@@ -200,9 +210,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           />
           <.input
             id="media-search-input"
+            field={@form[:search]}
             type="search"
-            name="search"
-            value={@list.search}
             placeholder={dgettext("admin_media", "Search file name or title")}
             aria-label={dgettext("admin_media", "Search Media")}
             autocomplete="off"
@@ -210,7 +219,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
             class="pl-9!"
           />
         </div>
-      </form>
+      </.form>
       <.scroll_row id="media-filters" variant="chips">
         <div
           role="radiogroup"
@@ -229,7 +238,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
             {MediaType.translated_plural_label(type)}
           </.filter_chip>
         </div>
-        <span class="h-6 w-px shrink-0 bg-border" aria-hidden="true"></span>
+        <span class="h-6 w-px shrink-0 bg-border-subtle" aria-hidden="true"></span>
         <.filter_chip id="filter-unmatched" on={@list.unmatched?} phx-click="toggle_unmatched">
           <:icon><Lucideicons.file_question_mark /></:icon>
           {dgettext("admin_media", "Unmatched")}

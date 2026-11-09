@@ -102,7 +102,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
     assigns =
       assign(assigns,
         file_name: Path.basename(assigns.media.path),
-        added: Time.relative_or_date(assigns.media.inserted_at, assigns.locale),
+        added: Time.relative_or_date!(assigns.media.inserted_at, assigns.locale),
         episode: assigns.media.video && assigns.media.video.tv_show_episode
       )
 
@@ -112,16 +112,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
       selected={@selected}
       phx-click="select"
       phx-value-id={@media.id}
-      class="cursor-pointer"
+      class="cursor-pointer has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-border-focus"
     >
       <.media_cell class="w-full max-w-0">
         <div class="flex min-w-0 items-center gap-group">
           <.media_poster media={@media} size="sm" />
           <div class="flex min-w-0 flex-1 flex-col gap-tight">
-            <%!-- The whole row opens the Media's details; its name is the button keyboards reach --%>
+            <%!-- The whole row opens the Media's details; its name is the button keyboards reach,
+            and the row shows its focus --%>
             <button
               type="button"
-              class="block w-full min-w-0 text-left focus-visible:-outline-offset-2"
+              aria-current={@selected && "true"}
+              class="block w-full min-w-0 text-left focus-visible:outline-none"
             >
               <span :if={@media.content} class="flex min-w-0 items-center gap-related">
                 <span class="truncate font-semibold text-text">{content_title(@media.content)}</span>
@@ -237,13 +239,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
             :if={page != :gap}
             id={"page-#{page}"}
             variant="ghost"
-            size="icon-sm"
+            size="sm"
             phx-click="go_to_page"
             phx-value-page={page}
             aria-current={page == @page && "page"}
             aria-label={dgettext("admin_media", "Page %{page}", page: page)}
             class={[
-              "w-auto! min-w-(--spacing-control-sm) px-related! tabular-nums @max-md/pages:hidden",
+              "min-w-(--spacing-control-sm) justify-center tabular-nums @max-md/pages:hidden",
               page == @page && "bg-surface-selected! text-text!"
             ]}
           >
