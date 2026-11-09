@@ -9,13 +9,13 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
     <.table class="@container/table">
       <.table_header>
         <.table_row>
-          <.table_head class="w-full max-w-0 text-left">
+          <.table_head class="w-full max-w-0">
             {dgettext("admin_users", "User")}
           </.table_head>
-          <.table_head class="@max-2xl:hidden text-left">
+          <.table_head class="@max-2xl:hidden">
             {dgettext("admin_users", "Member since")}
           </.table_head>
-          <.table_head class="text-right">
+          <.table_head class="text-right!">
             <span class="sr-only">{dgettext("admin_users", "Actions")}</span>
           </.table_head>
         </.table_row>
@@ -37,7 +37,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
   defp user_row(assigns) do
     ~H"""
     <.table_row>
-      <.table_cell class="w-full text-left">
+      <.table_cell class="w-full">
         <.inline space="related">
           <.avatar id={@user.id} name={@user.username} />
           <.stack space="tight" class="min-w-0">
@@ -49,10 +49,10 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
           </.stack>
         </.inline>
       </.table_cell>
-      <.table_cell class="hidden @2xl:table-cell text-left">
+      <.table_cell class="hidden @2xl:table-cell">
         <span class="text-text-muted">{Time.relative_from_now(@user.inserted_at, @locale)}</span>
       </.table_cell>
-      <.table_cell class="text-right">
+      <.table_cell class="text-right!">
         <.user_actions user={@user} />
       </.table_cell>
     </.table_row>
