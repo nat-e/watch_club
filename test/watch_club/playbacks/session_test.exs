@@ -3,7 +3,8 @@ defmodule WatchClub.Playbacks.SessionTest do
 
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.History.WatchProgress
-  alias WatchClub.MediaCatalog.{Marker, Media, Video, VideoTrack}
+  alias WatchClub.Markers.Marker
+  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClub.Playbacks.Playback.SegmentCache

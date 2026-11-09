@@ -1,17 +1,18 @@
-defmodule WatchClub.MediaCatalog.Marker do
+defmodule WatchClub.Markers.Marker do
   @moduledoc """
   A part of a Video that the Player lets a User skip: its Intro, Recap or Credits.
-  `WatchClub.MediaCatalog.Video.Changes.DetectMarkers` finds them.
+  The `detect` action finds them, in the background after each import.
   """
 
   use Ash.Resource,
     otp_app: :watch_club,
-    domain: WatchClub.MediaCatalog,
+    domain: WatchClub.Markers,
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer],
     notifiers: [Ash.Notifier.PubSub]
 
-  alias WatchClub.MediaCatalog.{MarkerKind, Video}
+  alias WatchClub.Markers.MarkerKind
+  alias WatchClub.MediaCatalog.Video
 
   postgres do
     table "markers"
@@ -34,6 +35,13 @@ defmodule WatchClub.MediaCatalog.Marker do
       # The Video keeps the Marker it has
       upsert_fields []
     end
+
+    action :detect do
+      description "Finds the Video's Markers. Reads the file for a few seconds: run it in the background."
+      argument :video, :struct, allow_nil?: false, constraints: [instance_of: Video]
+
+      run WatchClub.Markers.Marker.Actions.Detect
+    end
   end
 
   policies do
@@ -48,8 +56,8 @@ defmodule WatchClub.MediaCatalog.Marker do
       authorize_if always()
     end
 
-    policy action_type([:create, :destroy]) do
-      description "Only the system actor can write Markers"
+    policy action_type([:create, :destroy, :action]) do
+      description "Only the system actor can write or detect Markers"
       authorize_if actor_attribute_equals(:system?, true)
     end
   end

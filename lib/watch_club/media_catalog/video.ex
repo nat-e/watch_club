@@ -18,7 +18,8 @@ defmodule WatchClub.MediaCatalog.Video do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Movie, TvShowEpisode}
-  alias WatchClub.MediaCatalog.{AudioTrack, Marker, Media, TextTrack, VideoTrack}
+  alias WatchClub.Markers.Marker
+  alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
 
   postgres do
     table "videos"
@@ -88,14 +89,6 @@ defmodule WatchClub.MediaCatalog.Video do
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
-    end
-
-    update :detect_markers do
-      description "Finds the Video's Markers. Reads the file for a few seconds: run it in the background."
-      require_atomic? false
-      accept []
-
-      change WatchClub.MediaCatalog.Video.Changes.DetectMarkers
     end
   end
 

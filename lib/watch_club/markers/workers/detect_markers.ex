@@ -1,7 +1,7 @@
-defmodule WatchClub.MediaCatalog.Workers.DetectMarkers do
+defmodule WatchClub.Markers.Workers.DetectMarkers do
   @moduledoc """
   Finds one Video's Markers. Enqueued after a Video is imported (see
-  `WatchClub.MediaCatalog.Changes.ScheduleVideoProcessing`).
+  `WatchClub.Markers.Changes.ScheduleDetection`).
 
   A Video deleted between enqueue and run is the one expected miss and completes
   the job; anything else crashes it so Oban retries.
@@ -19,7 +19,7 @@ defmodule WatchClub.MediaCatalog.Workers.DetectMarkers do
       period: :infinity
     ]
 
-  alias WatchClub.MediaCatalog
+  alias WatchClub.{Markers, MediaCatalog}
   alias WatchClub.SystemActor
 
   @doc "Builds a marker detection job for one Video."
@@ -35,7 +35,7 @@ defmodule WatchClub.MediaCatalog.Workers.DetectMarkers do
         :ok
 
       {:ok, %{video: video}} ->
-        MediaCatalog.detect_markers!(video, actor: actor)
+        Markers.detect_markers!(video, actor: actor)
         :ok
     end
   end

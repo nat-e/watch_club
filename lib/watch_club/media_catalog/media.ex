@@ -119,7 +119,8 @@ defmodule WatchClub.MediaCatalog.Media do
       end
 
       change UpdateContentRequest
-      change WatchClub.MediaCatalog.Changes.ScheduleVideoProcessing
+      change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
+      change WatchClub.Markers.Changes.ScheduleDetection
     end
 
     create :create_ebook do
@@ -187,7 +188,8 @@ defmodule WatchClub.MediaCatalog.Media do
       require_atomic? false
 
       change UpdateContentRequest
-      change WatchClub.MediaCatalog.Changes.DeleteVideoFiles
+      change WatchClub.MediaCatalog.Changes.DeleteTrickplay
+      change WatchClub.Markers.Changes.DeleteFingerprints
     end
   end
 

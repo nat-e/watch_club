@@ -1,4 +1,4 @@
-defmodule WatchClub.MediaCatalog.MarkerKind do
+defmodule WatchClub.Markers.MarkerKind do
   @moduledoc false
 
   use Ash.Type.Enum,

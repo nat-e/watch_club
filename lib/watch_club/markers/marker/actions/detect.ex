@@ -1,21 +1,22 @@
-defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
+defmodule WatchClub.Markers.Marker.Actions.Detect do
   @moduledoc """
   Finds the Video's Markers from its named chapters. A TV Show Episode missing
   its Intro or Credits also gets them from the audio it shares with the nearest
   episodes of its TV Show, which then get the Marker they lack too.
 
-  Runs ffprobe, ffmpeg and fpcalc before the transaction.
+  Runs ffprobe, ffmpeg and fpcalc before the transaction that replaces the
+  Video's Markers.
   """
 
-  use Ash.Resource.Change
+  use Ash.Resource.Actions.Implementation
 
   import Ash.Expr
 
   require Ash.Query
 
   alias WatchClub.Contents.TvShowEpisode
-  alias WatchClub.Ffmpeg.AudioFingerprint
-  alias WatchClub.MediaCatalog.{Marker, Video}
+  alias WatchClub.Markers.{AudioFingerprint, Marker}
+  alias WatchClub.MediaCatalog.Video
 
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
@@ -34,31 +35,32 @@ defmodule WatchClub.MediaCatalog.Video.Changes.DetectMarkers do
   @compared_episodes 3
 
   @impl true
-  def change(changeset, _opts, context) do
-    Ash.Changeset.before_transaction(changeset, fn changeset ->
-      video =
-        Ash.load!(changeset.data, [:media, :audio_tracks, tv_show_episode: [:rank]],
-          scope: context
-        )
-
-      {markers, markers_of_others} =
-        video |> chapter_markers!() |> add_audio_markers!(video, context)
-
-      changeset
-      |> Ash.Changeset.manage_relationship(:markers, markers,
-        on_no_match: :create,
-        on_missing: :destroy
+  def run(input, _opts, context) do
+    video =
+      Ash.load!(input.arguments.video, [:media, :audio_tracks, tv_show_episode: [:rank]],
+        scope: context
       )
-      |> Ash.Changeset.after_action(fn _changeset, video ->
-        %Ash.BulkResult{notifications: notifications} =
-          Ash.bulk_create!(markers_of_others, Marker, :add_if_missing,
-            scope: context,
-            return_notifications?: true
-          )
 
-        {:ok, video, notifications}
+    {markers, markers_of_others} =
+      video |> chapter_markers!() |> add_audio_markers!(video, context)
+
+    {:ok, _result} =
+      Ash.transact(Marker, fn ->
+        Marker
+        |> Ash.Query.filter(video_id == ^video.id)
+        |> Ash.bulk_destroy!(:destroy, %{}, scope: context, notify?: true)
+
+        markers
+        |> Enum.map(&Map.put(&1, :video_id, video.id))
+        |> Ash.bulk_create!(Marker, :create, scope: context, notify?: true)
+
+        Ash.bulk_create!(markers_of_others, Marker, :add_if_missing,
+          scope: context,
+          notify?: true
+        )
       end)
-    end)
+
+    :ok
   end
 
   defp chapter_markers!(%Video{media: media}) do

@@ -257,20 +257,6 @@ classDiagram
     boolean default?
     boolean forced?
   }
-  class Marker {
-    uuid id
-    uuid video_id
-    MarkerKind kind
-    float start_seconds
-    float end_seconds
-    «unique» video_id + kind
-  }
-  class MarkerKind {
-    <<enumeration>>
-    intro
-    recap
-    credits
-  }
   class Ebook {
     uuid id «same as Media»
     uuid book_id
@@ -292,9 +278,30 @@ classDiagram
   VideoTrack "1..*" --> "1" Video
   AudioTrack "*" --> "1" Video
   TextTrack "*" --> "1" Video
-  Marker "*" --> "1" Video
   Ebook "*" --> "1" Book
   Audiobook "*" --> "1" Book
+```
+
+## Markers
+
+```mermaid
+classDiagram
+  class Marker {
+    uuid id
+    uuid video_id
+    MarkerKind kind
+    float start_seconds
+    float end_seconds
+    «unique» video_id + kind
+  }
+  class MarkerKind {
+    <<enumeration>>
+    intro
+    recap
+    credits
+  }
+  class Video
+  Marker "*" --> "1" Video
 ```
 
 ## Media Sources

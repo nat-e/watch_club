@@ -113,6 +113,7 @@ defmodule WatchClubWeb do
         Contents,
         History,
         Instance,
+        Markers,
         MediaCatalog,
         MediaSources,
         Playbacks,
@@ -138,11 +139,12 @@ defmodule WatchClubWeb do
       alias WatchClub.Instance.InstanceSettings
       alias WatchClub.Playlists.{Playlist, PlaylistAccess, PlaylistAccessLevel, PlaylistItem}
 
+      alias WatchClub.Markers.Marker
+
       alias WatchClub.MediaCatalog.{
         Audiobook,
         AudioTrack,
         Ebook,
-        Marker,
         Media,
         MediaType,
         TextTrack,

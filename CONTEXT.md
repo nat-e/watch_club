@@ -242,22 +242,6 @@ _Avoid_: Default audio track, selected audio
 The **Text Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**, or none.
 _Avoid_: Default subtitles, selected subtitles
 
-**Marker**:
-A part of a **Video** that the **Player** lets a **User** skip: its **Intro**, its **Recap** or its **Credits**.
-_Avoid_: Segment, media segment, chapter, skip range
-
-**Intro**:
-The opening sequence, with the theme and the title, that the **TV Show Episodes** of a **TV Show** share.
-_Avoid_: Opening, title sequence, opening credits
-
-**Recap**:
-The summary of earlier **TV Show Episodes** at the start of a **TV Show Episode**.
-_Avoid_: Previously on, summary
-
-**Credits**:
-The list of names at the end of a **Video**.
-_Avoid_: Outro, ending, end credits, end titles
-
 **Media Browser**:
 The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
 _Avoid_: Media admin, media library page, file browser
@@ -285,6 +269,24 @@ _Avoid_: import summary, run result, scan result
 **Cancel Media Import**:
 End an in-progress **Media Import** before its scan phase finishes; in-flight per-file ingest jobs continue to completion.
 _Avoid_: Stop media import, abort scan, kill import
+
+### Markers
+
+**Marker**:
+A part of a **Video** that the **Player** lets a **User** skip: its **Intro**, its **Recap** or its **Credits**.
+_Avoid_: Segment, media segment, chapter, skip range
+
+**Intro**:
+The opening sequence, with the theme and the title, that the **TV Show Episodes** of a **TV Show** share.
+_Avoid_: Opening, title sequence, opening credits
+
+**Recap**:
+The summary of earlier **TV Show Episodes** at the start of a **TV Show Episode**.
+_Avoid_: Previously on, summary
+
+**Credits**:
+The list of names at the end of a **Video**.
+_Avoid_: Outro, ending, end credits, end titles
 
 ### Contents
 
@@ -529,13 +531,16 @@ _Avoid_: Group, aggregate, card, item
 - A **Text Track** may be embedded in the **Video** file or provided by a separate local file
 - A **Text Track** may identify its language, default selection, and forced selection
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
-- A **Video** has at most one **Marker** of each kind: **Intro**, **Recap** and **Credits**
-- A **Video**'s **Markers** come from its named chapters; a **TV Show Episode**'s missing **Intro** or **Credits** also comes from audio it shares with the nearest **TV Show Episodes** of its **TV Show**
-- WatchClub finds a **Video**'s **Markers** in the background each time the **Video** is imported
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
+
+### Markers
+
+- A **Video** has at most one **Marker** of each kind: **Intro**, **Recap** and **Credits**
+- A **Video**'s **Markers** come from its named chapters; a **TV Show Episode**'s missing **Intro** or **Credits** also comes from audio it shares with the nearest **TV Show Episodes** of its **TV Show**
+- WatchClub finds a **Video**'s **Markers** in the background each time the **Video** is imported
 
 ### Media Sources & Media Imports
 

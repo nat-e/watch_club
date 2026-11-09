@@ -1,4 +1,4 @@
-defmodule WatchClub.Ffmpeg.AudioFingerprint do
+defmodule WatchClub.Markers.AudioFingerprint do
   @moduledoc """
   Chromaprint fingerprints of the beginning and the end of a Video's audio, and
   the search for the audio two of them share, such as an Intro.

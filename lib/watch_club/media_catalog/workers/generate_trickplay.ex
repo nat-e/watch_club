@@ -2,7 +2,7 @@ defmodule WatchClub.MediaCatalog.Workers.GenerateTrickplay do
   @moduledoc """
   Builds the sprite-sheet JPEGs and generation metadata for one Video's
   scrubbing thumbnails. Enqueued after a Video is imported (see
-  `WatchClub.MediaCatalog.Changes.ScheduleVideoProcessing`). The WebVTT manifest the
+  `WatchClub.MediaCatalog.Changes.ScheduleTrickplay`). The WebVTT manifest the
   player loads is built at serve time from that metadata (see
   `WatchClub.Ffmpeg.Trickplay`).
 

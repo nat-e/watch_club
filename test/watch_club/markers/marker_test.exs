@@ -1,10 +1,10 @@
-defmodule WatchClub.MediaCatalog.VideoTest do
+defmodule WatchClub.Markers.MarkerTest do
   use WatchClub.DataCase, async: false
 
   import Mox
 
   alias WatchClub.Ffmpeg.ProbeMock
-  alias WatchClub.MediaCatalog
+  alias WatchClub.Markers
   alias WatchClub.SystemActor
 
   # Chromaprint gives a point every 4096 / 3 samples at 11025 Hz
@@ -30,7 +30,7 @@ defmodule WatchClub.MediaCatalog.VideoTest do
          }}
       end)
 
-      MediaCatalog.detect_markers!(video, actor: SystemActor.actor())
+      Markers.detect_markers!(video, actor: SystemActor.actor())
 
       assert markers(video) == [
                credits: {1250.0, 1320.0},
@@ -47,7 +47,7 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
       stub_fingerprints(%{first.media.path => 100, second.media.path => 500})
 
-      MediaCatalog.detect_markers!(second, actor: SystemActor.actor())
+      Markers.detect_markers!(second, actor: SystemActor.actor())
 
       assert_markers(second, intro: intro(500), credits: credits())
       assert_markers(first, intro: intro(100), credits: credits())
@@ -64,9 +64,9 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       end)
 
       stub_fingerprints(%{first.media.path => 100, second.media.path => 500})
-      MediaCatalog.detect_markers!(first, actor: SystemActor.actor())
+      Markers.detect_markers!(first, actor: SystemActor.actor())
 
-      MediaCatalog.detect_markers!(second, actor: SystemActor.actor())
+      Markers.detect_markers!(second, actor: SystemActor.actor())
 
       assert markers(first)[:intro] == {30.0, 60.0}
     end
@@ -76,7 +76,7 @@ defmodule WatchClub.MediaCatalog.VideoTest do
       video = episode_video(episode, tmp_dir)
       stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
 
-      MediaCatalog.detect_markers!(video, actor: SystemActor.actor())
+      Markers.detect_markers!(video, actor: SystemActor.actor())
 
       assert markers(video) == []
     end
@@ -86,7 +86,7 @@ defmodule WatchClub.MediaCatalog.VideoTest do
 
       episode
       |> episode_video(tmp_dir)
-      |> MediaCatalog.detect_markers(actor: generate(user()))
+      |> Markers.detect_markers(actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
