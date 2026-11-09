@@ -144,16 +144,15 @@ defmodule WatchClubWeb.PlayerPage do
     {:noreply, socket |> assign(:playback_error, true)}
   end
 
-  # The hook paused the video and sends what the Player shows: nothing when it never played
+  # The hook paused the video and sends what the Player shows: nothing when the video never loaded
   def handle_event("report_problem", shown, socket) do
-    details = %{
-      playback_id: socket.assigns.session.active_playback.id,
-      position_seconds: shown["position_seconds"],
-      audio: shown["audio"],
-      subtitles: shown["subtitles"],
-      quality: shown["quality"],
-      user_agent: socket.assigns.user_agent
-    }
+    details =
+      shown
+      |> Map.take(["position_seconds", "audio", "subtitles", "quality"])
+      |> Map.merge(%{
+        "playback_id" => socket.assigns.session.active_playback.id,
+        "user_agent" => socket.assigns.user_agent
+      })
 
     {:noreply, assign(socket, :problem_details, details)}
   end

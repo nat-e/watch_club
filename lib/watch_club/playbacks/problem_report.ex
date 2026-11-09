@@ -63,7 +63,7 @@ defmodule WatchClub.Playbacks.ProblemReport do
   policies do
     policy action(:report) do
       description "Users report Problems about their own Playbacks"
-      authorize_if expr(playback.session.started_by_id == ^actor(:id))
+      authorize_if relates_to_actor_via([:playback, :session, :started_by])
     end
 
     policy action_type([:read, :update]) do
@@ -97,7 +97,7 @@ defmodule WatchClub.Playbacks.ProblemReport do
     end
 
     attribute :position_seconds, :float do
-      description "Where the Video was, or nil when it never played."
+      description "Where the Video was, or nil when it never loaded."
       public? true
     end
 

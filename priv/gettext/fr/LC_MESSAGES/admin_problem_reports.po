@@ -50,12 +50,6 @@ msgstr "Appareil"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "Didn't play"
-msgstr "Pas lue"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "More"
 msgstr "Plus"
 
@@ -124,3 +118,21 @@ msgstr "Ce signalement n'existe pas."
 #, elixir-autogen, elixir-format
 msgid "Time in video"
 msgstr "Moment de la vidéo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Archived"
+msgstr "Archivé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Didn't load"
+msgstr "Pas chargée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "No archived reports"
+msgstr "Aucun signalement archivé"

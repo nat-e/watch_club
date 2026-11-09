@@ -72,8 +72,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       {@rest}
     >
       {render_slot(@icon)}
-      <span class="flex-1">{render_slot(@inner_block)}</span>
-      <span :if={@rest[:commandfor]} data-part="hint" class="text-white/60" />
+      <span class="flex-1 whitespace-nowrap">{render_slot(@inner_block)}</span>
+      <span :if={@rest[:commandfor]} data-part="hint" class="min-w-0 truncate text-white/60" />
       <Lucideicons.chevron_right :if={@rest[:commandfor]} />
     </media-menu-item>
     """

@@ -13,7 +13,8 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
 
   attr :details, :map,
     required: true,
-    doc: "`playback_id`, `user_agent` and what the Player showed, for the Problem Report"
+    doc:
+      "`playback_id`, `user_agent` and what the Player showed, string-keyed, for the Problem Report"
 
   attr :category, :atom, default: nil, doc: "the category picked when the form opens"
   attr :current_user, User, required: true
@@ -42,13 +43,14 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
             <.radio_group
               field={@form[:category]}
               aria-labelledby={"#{@id}-category-label"}
+              variant="card"
               class="grid-cols-2"
             >
               <:item
                 :for={category <- Category.values()}
                 value={category}
                 class={[
-                  "group/radio-card flex cursor-pointer items-center justify-center gap-related rounded-control border border-border-control bg-surface-inset text-center font-semibold transition-colors hover:bg-surface-hover has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only",
+                  "flex items-center justify-center gap-related text-center font-semibold",
                   category != :other && "flex-col p-group",
                   category == :other && "col-span-2 p-related"
                 ]}
@@ -98,10 +100,10 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
   end
 
   @impl true
-  def handle_event("validate", %{"form" => params}, socket),
+  def handle_event("validate", %{"report" => params}, socket),
     do: {:noreply, update(socket, :form, &AshPhoenix.Form.validate(&1, params))}
 
-  def handle_event("send", %{"form" => params}, socket) do
+  def handle_event("send", %{"report" => params}, socket) do
     case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
       {:ok, _report} ->
         send(self(), {__MODULE__, :reported})
@@ -115,11 +117,15 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
   defp assign_form(socket) do
     %{details: details, category: category, current_user: user} = socket.assigns
 
+    # The User only picks the category and writes the comment
     form =
       Playbacks.form_to_report_problem(
         actor: user,
+        as: "report",
         params: %{"category" => category},
-        prepare_source: &Ash.Changeset.change_attributes(&1, details)
+        transform_params: fn _form, params, _type ->
+          params |> Map.take(["category", "comment"]) |> Map.merge(details)
+        end
       )
 
     assign(socket, :form, to_form(form))

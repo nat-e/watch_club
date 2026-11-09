@@ -43,11 +43,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "Didn't play"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "More"
 msgstr ""
 
@@ -104,4 +99,19 @@ msgstr ""
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Time in video"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Archived"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Didn't load"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "No archived reports"
 msgstr ""

@@ -311,32 +311,32 @@ const Player = {
 		upNext.click();
 	},
 
-	// Pauses the video, then opens Report a Problem with what the Player shows. Before
-	// its metadata loads, the video has no time or tracks to show.
+	// Pauses the video, then opens Report a Problem with what the Player shows: the time,
+	// and the audio, subtitles and quality its menus show. Before its metadata loads, the
+	// video has no time or tracks to show.
 	reportProblem() {
+		// Unless Video.js failed to load
+		if (this.ready) this.media.pause();
 		if (!this.tracksStarted) {
 			this.pushEvent("report_problem", {});
 			return;
 		}
 
-		this.media.pause();
 		const store = this.el.querySelector("video-player").store;
-		const audio = store.audioTrackList.find((track) => track.enabled);
-		const subtitles = store.textTrackList.find(
-			(track) =>
-				track.mode === "showing" &&
-				(track.kind === "subtitles" || track.kind === "captions"),
-		);
-		const rendition = store.activeVideoRendition;
-		// Auto quality selects no rendition
-		const auto = !store.videoRenditionList.some((option) => option.selected);
+		const picked = (menuId) =>
+			this.el
+				.querySelector(
+					`#${menuId} media-menu-radio-item[aria-checked="true"] [data-part="label"]`,
+				)
+				?.textContent.trim();
 
 		this.pushEvent("report_problem", {
 			position_seconds: store.currentTime,
-			audio: audio?.label,
-			subtitles: subtitles?.label,
-			quality:
-				rendition?.height && `${auto ? "Auto, " : ""}${rendition.height}p`,
+			audio: picked("player-audio-menu"),
+			subtitles: store.subtitlesShowing
+				? picked("player-subtitles-menu")
+				: undefined,
+			quality: picked("player-quality-menu"),
 		});
 	},
 

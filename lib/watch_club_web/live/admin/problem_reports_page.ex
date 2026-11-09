@@ -70,18 +70,26 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
 
       <.split_view :if={@first_report || @archived?} open={@opened_id != nil}>
         <:list>
-          <div
-            :if={!@archived?}
-            class="flex items-center justify-between gap-related px-related max-md:pt-group"
-          >
-            <h2 class="px-related text-xs"><.text_label text={list_title(false)} /></h2>
-            <.dropdown_menu id="problem-reports-menu">
+          <div class="flex items-center gap-tight px-related max-md:pt-group">
+            <.button
+              :if={@archived?}
+              id="show-open-problem-reports"
+              variant="ghost"
+              size="icon-sm"
+              patch={list_path(false)}
+              aria-label={dgettext("admin_problem_reports", "Back to open reports")}
+            >
+              <Lucideicons.arrow_left />
+            </.button>
+            <h2 class={["flex-1 text-xs", !@archived? && "px-related"]}>
+              <.text_label text={list_title(@archived?)} />
+            </h2>
+            <.dropdown_menu :if={!@archived?} id="problem-reports-menu">
               <:trigger>
                 <.button
                   id="problem-reports-menu-button"
                   variant="ghost"
                   size="icon-sm"
-                  class="mr-related"
                   aria-label={dgettext("admin_problem_reports", "More")}
                 >
                   <Lucideicons.ellipsis />
@@ -91,19 +99,6 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
                 <Lucideicons.archive /> {list_title(true)}
               </.dropdown_menu_item>
             </.dropdown_menu>
-          </div>
-
-          <div :if={@archived?} class="flex items-center gap-tight px-related max-md:pt-group">
-            <.button
-              id="show-open-problem-reports"
-              variant="ghost"
-              size="icon-sm"
-              patch={list_path(false)}
-              aria-label={dgettext("admin_problem_reports", "Back to open reports")}
-            >
-              <Lucideicons.arrow_left />
-            </.button>
-            <h2 class="text-xs"><.text_label text={list_title(true)} /></h2>
           </div>
 
           <ul id="problem-reports" phx-update="stream" class="flex flex-col gap-px px-related">
@@ -116,6 +111,9 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
               />
             </li>
           </ul>
+          <p :if={!@first_report} class="px-group text-sm text-text-muted">
+            {dgettext("admin_problem_reports", "No archived reports")}
+          </p>
           <.infinite_scroll_trigger
             :if={KeysetStreamState.can_load_more?(@reports_state)}
             id="problem-reports-load-more"
@@ -170,7 +168,7 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
   attr :locale, :atom, required: true
 
   # The Video, Play at the reported time and Archive, then what's wrong and what the Player
-  # showed. A report without a time was sent before the Video played.
+  # showed. A report without a time was sent before the Video loaded.
   defp report_detail(assigns) do
     assigns = assign(assigns, about(assigns.report))
 
@@ -234,7 +232,7 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
           <dd class="tabular-nums">
             {if @report.position_seconds,
               do: Time.position(@report.position_seconds),
-              else: dgettext("admin_problem_reports", "Didn't play")}
+              else: dgettext("admin_problem_reports", "Didn't load")}
           </dd>
           <%= if @report.position_seconds do %>
             <dt class="text-text-muted">{dgettext("admin_problem_reports", "Audio")}</dt>
@@ -246,24 +244,30 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
           <% end %>
           <dt class="text-text-muted">{dgettext("admin_problem_reports", "Device")}</dt>
           <dd class="break-words">{@report.user_agent}</dd>
+          <%= if @report.archived_at do %>
+            <dt class="text-text-muted">{dgettext("admin_problem_reports", "Archived")}</dt>
+            <dd>{Time.relative_from_now(@report.archived_at, @locale)}</dd>
+          <% end %>
         </dl>
       </.card>
     </section>
     """
   end
 
-  # The title, the episode number and the poster of the Video, and the User who reported it
-  defp about(%ProblemReport{
-         playback: %{session: %{started_by: reporter}, media: %{video: video}}
-       }) do
+  # The title, the episode number and the poster of the Video, and the User who reported it.
+  # Refresh Metadata can leave the Video Unmatched Media, named by its file.
+  defp about(%ProblemReport{playback: %{session: %{started_by: reporter}, media: media}}) do
     {title, episode, poster_path} =
-      case video do
+      case media.video do
         %Video{movie: %Movie{best_localization: localization}} ->
           {localization.title, nil, localization.poster_path}
 
         %Video{tv_show_episode: %TvShowEpisode{tv_show: tv_show} = episode} ->
           {tv_show.best_localization.title, episode.formatted_episode_number,
            tv_show.best_localization.poster_path}
+
+        %Video{} ->
+          {Path.basename(media.path), nil, nil}
       end
 
     %{title: title, episode: episode, poster_path: poster_path, reporter: reporter}
@@ -279,23 +283,29 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
     opened_id = params["problem_report_id"]
 
     if socket.assigns[:archived?] == archived? do
-      # The rows of the reports closed and opened render again, to show which one is open
       previous = socket.assigns.shown
       socket = show_report(socket, opened_id)
 
-      {:noreply,
-       [previous, socket.assigns.shown]
-       |> Enum.reject(&is_nil/1)
-       |> Enum.reduce(socket, &stream_insert(&2, :reports, &1, update_only: true))}
+      # The rows of the reports closed and opened render again, to show which one is open
+      case {previous, socket.assigns.shown} do
+        {%{id: id}, %{id: id}} ->
+          {:noreply, socket}
+
+        {previous, shown} ->
+          {:noreply,
+           [previous, shown]
+           |> Enum.reject(&is_nil/1)
+           |> Enum.reduce(socket, &stream_insert(&2, :reports, &1, update_only: true))}
+      end
     else
-      {:noreply, socket |> list_reports(archived?) |> show_report(opened_id)}
+      {:noreply, socket |> list_reports!(archived?) |> show_report(opened_id)}
     end
   end
 
   @impl true
   def handle_event("load_more_reports", _params, socket) do
     if KeysetStreamState.can_load_more?(socket.assigns.reports_state),
-      do: {:noreply, load_reports_page(socket)},
+      do: {:noreply, load_reports_page!(socket)},
       else: {:noreply, socket}
   end
 
@@ -305,36 +315,28 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
     {:noreply,
      socket
      |> put_flash(:info, dgettext("admin_problem_reports", "Report archived."))
-     # The open reports load again without it
-     |> assign(archived?: nil, shown: nil)
+     |> list_reports!(false)
      |> push_patch(to: list_path(false))}
   end
 
-  # The first page of the open or the archived reports, and whether there are archived ones for
-  # the empty state
-  defp list_reports(socket, archived?) do
+  # The first page of the open or the archived reports, with the newest shown, and whether there
+  # are archived ones for the empty state
+  defp list_reports!(socket, archived?) do
     socket =
       socket
-      |> assign(
-        archived?: archived?,
-        reports_state: KeysetStreamState.init(@page_size),
-        shown: nil,
-        opened_id: nil
-      )
-      |> load_reports_page()
+      |> assign(archived?: archived?, reports_state: KeysetStreamState.init(@page_size))
+      |> load_reports_page!()
+
+    %{first_report: first_report, current_user: user} = socket.assigns
 
     any_archived? =
-      !archived? and !socket.assigns.first_report and
-        Playbacks.list_problem_reports!(true,
-          page: [limit: 1],
-          actor: socket.assigns.current_user
-        ).results !=
-          []
+      !archived? and !first_report and
+        Playbacks.list_problem_reports!(true, page: [limit: 1], actor: user).results != []
 
-    assign(socket, :any_archived?, any_archived?)
+    assign(socket, shown: first_report, opened_id: nil, any_archived?: any_archived?)
   end
 
-  defp load_reports_page(socket) do
+  defp load_reports_page!(socket) do
     %{reports_state: state, archived?: archived?, current_user: user} = socket.assigns
 
     {:ok, new_state, reports} =

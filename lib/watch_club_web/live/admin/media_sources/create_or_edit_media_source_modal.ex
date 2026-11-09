@@ -78,6 +78,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
         <.radio_group
           field={@form[:media_type]}
           value={@media_type_value}
+          variant="card"
           class="grid grid-cols-1 gap-related sm:grid-cols-2"
         >
           <:item
@@ -85,10 +86,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
             value={to_string(media_type)}
             disabled={@mode == :edit}
             tooltip={@mode == :edit && @locked_message}
-            class={[
-              "group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-related rounded-md border border-border-control bg-surface-inset p-group transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-40 *:data-[slot=radio-group-item]:sr-only",
-              @mode == :create && "hover:bg-surface-hover"
-            ]}
+            class="grid grid-cols-[auto_1fr_auto] items-center gap-related p-group"
           >
             <.media_type_badge media_type={media_type} />
             <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-checked/radio-card:opacity-100" />
