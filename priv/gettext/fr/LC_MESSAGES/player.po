@@ -12,6 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
@@ -42,6 +43,7 @@ msgid "Quality"
 msgstr "Qualité"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
@@ -88,3 +90,82 @@ msgstr "Passer l'intro"
 #, elixir-autogen, elixir-format
 msgid "Skip recap"
 msgstr "Passer le récapitulatif"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Details (optional)"
+msgstr "Détails (facultatif)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Let the administrator know there's a problem with this content."
+msgstr "Signalez à l'administrateur un problème avec ce contenu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr "Autre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Picture quality"
+msgstr "Qualité de l'image"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Player not working"
+msgstr "Le lecteur ne marche pas"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Report a problem"
+msgstr "Signaler un problème"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Send report"
+msgstr "Envoyer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Paramètres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Slow or buffering"
+msgstr "Lent ou saccadé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Thanks! Your report was sent."
+msgstr "Merci ! Votre signalement a été envoyé."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "What happened?"
+msgstr "Que s'est-il passé ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "What's wrong?"
+msgstr "Quel est le problème ?"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong video"
+msgstr "Mauvaise vidéo"

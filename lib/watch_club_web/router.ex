@@ -100,6 +100,8 @@ defmodule WatchClubWeb.Router do
       live "/admin/media", Admin.MediaBrowserPage
       live "/admin/media/sources", Admin.MediaSourcesPage
       live "/admin/media/sources/:id/history", Admin.MediaSourceHistoryPage
+      live "/admin/problem-reports", Admin.ProblemReportsPage
+      live "/admin/problem-reports/:problem_report_id", Admin.ProblemReportsPage
     end
 
     ash_authentication_live_session :authenticated_routes,

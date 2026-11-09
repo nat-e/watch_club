@@ -65,7 +65,14 @@ defmodule WatchClubWeb.Components.UI.Flash do
         export default {
           mounted() { this.show() },
           updated() { this.show() },
-          show() { try { this.el.showPopover() } catch (_) {} },
+          // Shown again on each update, so the toasts go over what opened in the top layer
+          // since, such as a dialog or a full-screen player
+          show() {
+            try {
+              if (this.el.matches(":popover-open")) this.el.hidePopover()
+              this.el.showPopover()
+            } catch (_) {}
+          },
         };
       </script>
     </div>

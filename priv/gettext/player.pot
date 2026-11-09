@@ -11,6 +11,7 @@
 msgid ""
 msgstr ""
 
+#: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
@@ -36,6 +37,7 @@ msgstr ""
 msgid "Quality"
 msgstr ""
 
+#: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
@@ -74,4 +76,70 @@ msgstr ""
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Skip recap"
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Details (optional)"
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Let the administrator know there's a problem with this content."
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Picture quality"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Player not working"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Report a problem"
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Send report"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Slow or buffering"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Thanks! Your report was sent."
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "What happened?"
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "What's wrong?"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/problem_category.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong video"
 msgstr ""

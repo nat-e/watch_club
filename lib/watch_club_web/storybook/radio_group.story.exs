@@ -165,36 +165,24 @@ defmodule WatchClubWeb.Storybook.RadioGroup do
           %Variation{
             id: :check_card,
             description:
-              "Check-card — clean selected-card pattern, less explicit as a radio group",
+              "Card variant — the whole card is the choice, its radio hidden; the item's class lays out its content",
             attributes: %{
               id: "wc-radio-group-check-card",
               name: "content_type_check_card",
               value: "movie",
-              class: "grid grid-cols-1 gap-3"
+              variant: "card",
+              class: "grid grid-cols-1 gap-related"
             },
-            slots: [
-              """
-              <:item value="movie" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
-                <.content_type_icon type={:movie} class="size-5 text-text-muted" />
-                <span>Movie</span>
-                <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-              </:item>
-              """,
-              """
-              <:item value="tv_show" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
-                <.content_type_icon type={:tv_show} class="size-5 text-text-muted" />
-                <span>TV show</span>
-                <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-              </:item>
-              """,
-              """
-              <:item value="book" class="group/radio-card grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-inset p-3 transition-colors hover:bg-surface-hover has-[:checked]:border-primary has-[:checked]:bg-surface-selected [&>[data-slot=radio-group-item]]:sr-only">
-                <.content_type_icon type={:book} class="size-5 text-text-muted" />
-                <span>Book</span>
-                <Lucideicons.check class="size-4 text-primary opacity-0 transition-opacity group-has-[:checked]/radio-card:opacity-100" />
-              </:item>
-              """
-            ]
+            slots:
+              for {value, label} <- [movie: "Movie", tv_show: "TV show", book: "Book"] do
+                """
+                <:item value="#{value}" class="grid grid-cols-[auto_1fr_auto] items-center gap-related p-group">
+                  <.content_type_icon type={:#{value}} class="size-icon text-text-muted" />
+                  <span>#{label}</span>
+                  <Lucideicons.check class="size-icon-sm text-accent opacity-0 transition-opacity group-has-checked/radio-card:opacity-100" />
+                </:item>
+                """
+              end
           }
         ]
       }

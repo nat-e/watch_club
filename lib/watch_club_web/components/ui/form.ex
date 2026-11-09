@@ -101,7 +101,7 @@ defmodule WatchClubWeb.Components.UI.Form do
 
   attr :rest, :global,
     include:
-      ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required size step)
+      ~w(accept autocomplete capture disabled form list max maxlength min minlength multiple pattern placeholder readonly required rows size step)
 
   slot :control,
     doc:

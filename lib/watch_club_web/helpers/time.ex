@@ -24,6 +24,19 @@ defmodule WatchClubWeb.Helpers.Time do
   end
 
   @doc """
+  Returns a position in a video, like "42:17", or "1:12:05" past an hour.
+  """
+  @spec position(number()) :: String.t()
+  def position(seconds) do
+    total = trunc(seconds)
+    {hours, minutes, seconds} = {div(total, 3600), total |> rem(3600) |> div(60), rem(total, 60)}
+
+    if hours > 0,
+      do: :io_lib.format(~c"~b:~2..0b:~2..0b", [hours, minutes, seconds]) |> to_string(),
+      else: :io_lib.format(~c"~b:~2..0b", [minutes, seconds]) |> to_string()
+  end
+
+  @doc """
   Returns the localized time of day in the time zone, like "14:32" or "2:32 PM".
   """
   @spec clock(DateTime.t(), String.t(), atom()) :: String.t()

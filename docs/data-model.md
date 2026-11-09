@@ -377,11 +377,24 @@ classDiagram
     datetime last_active_at
     datetime ended_at
   }
+  class ProblemReport {
+    uuid id
+    uuid playback_id
+    enum category
+    string comment
+    float position_seconds
+    string audio
+    string subtitles
+    string quality
+    string user_agent
+    datetime archived_at
+  }
   class User
   class Media
   PlaybackSession "*" --> "1" User : started_by
   Playback "*" --> "1" PlaybackSession : session
   Playback "*" --> "1" Media
+  ProblemReport "*" --> "1" Playback
 ```
 
 ## History

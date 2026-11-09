@@ -317,3 +317,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Choose an option from the list"
 msgstr ""
+
+#: lib/watch_club/playbacks/problem_report.ex
+#, elixir-autogen, elixir-format
+msgid "Details cannot be longer than %{max} characters"
+msgstr ""
+
+#: lib/watch_club/playbacks/problem_report.ex
+#, elixir-autogen, elixir-format
+msgid "Pick what's wrong"
+msgstr ""

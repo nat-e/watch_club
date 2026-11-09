@@ -74,6 +74,13 @@ const Player = {
 			);
 		});
 
+		// From the top bar, the Settings menu and the error screen
+		this.el.addEventListener(
+			"player:report-problem",
+			() => this.reportProblem(),
+			{ signal },
+		);
+
 		// Delegated: the skip buttons change with each episode
 		this.el.addEventListener(
 			"click",
@@ -302,6 +309,35 @@ const Player = {
 		if (this.playingNext) return;
 		this.playingNext = true;
 		upNext.click();
+	},
+
+	// Pauses the video, then opens Report a Problem with what the Player shows: the time,
+	// and the audio, subtitles and quality its menus show. Before its metadata loads, the
+	// video has no time or tracks to show.
+	reportProblem() {
+		// Unless Video.js failed to load
+		if (this.ready) this.media.pause();
+		if (!this.tracksStarted) {
+			this.pushEvent("report_problem", {});
+			return;
+		}
+
+		const store = this.el.querySelector("video-player").store;
+		const picked = (menuId) =>
+			this.el
+				.querySelector(
+					`#${menuId} media-menu-radio-item[aria-checked="true"] [data-part="label"]`,
+				)
+				?.textContent.trim();
+
+		this.pushEvent("report_problem", {
+			position_seconds: store.currentTime,
+			audio: picked("player-audio-menu"),
+			subtitles: store.subtitlesShowing
+				? picked("player-subtitles-menu")
+				: undefined,
+			quality: picked("player-quality-menu"),
+		});
 	},
 
 	// Keeps running while paused, so the Playback stays current as long as the

@@ -334,13 +334,14 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:control :let={describedby}>
         <.radio_group
           field={@form[:selected_quality_profile_id]}
+          variant="card"
           class="grid grid-cols-1 gap-related sm:grid-cols-2"
           aria-describedby={describedby}
         >
           <:item
             :for={profile <- @profiles}
             value={to_string(profile["id"])}
-            class="group/radio-card flex cursor-pointer items-center gap-tight rounded-control border border-border-control bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
+            class="flex items-center gap-tight px-related py-tight"
           >
             <Lucideicons.sparkles class="size-icon-sm text-text-muted" />
             <span class="text-sm">{profile["name"]}</span>
@@ -363,13 +364,14 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <:control :let={describedby}>
         <.radio_group
           field={@form[:selected_root_path]}
+          variant="card"
           class="grid-cols-1 gap-tight"
           aria-describedby={describedby}
         >
           <:item
             :for={path <- @root_folders}
             value={path}
-            class="group/radio-card flex cursor-pointer items-center gap-related rounded-control border border-border-control bg-surface-inset px-related py-tight transition-colors has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only"
+            class="flex items-center gap-related px-related py-tight"
           >
             <Lucideicons.folder class="size-icon-sm shrink-0 text-text-muted" />
             <span class="truncate font-mono text-sm text-text">{path}</span>

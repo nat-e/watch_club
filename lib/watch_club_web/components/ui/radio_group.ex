@@ -4,7 +4,9 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
 
   Renders native radio inputs so groups integrate with forms, LiveView change
   events, and `Phoenix.HTML.FormField`. Items can provide tooltip content,
-  which uses the whole item wrapper as the tooltip trigger.
+  which uses the whole item wrapper as the tooltip trigger. The `card` variant
+  makes each item a card, its radio hidden; the item's `class` lays out its
+  content.
   """
 
   use Phoenix.Component
@@ -16,6 +18,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
     doc: "required unless `field` is provided; must be stable across renders"
 
   attr :class, :any, default: nil
+  attr :variant, :string, values: ~w(default card), default: "default"
   attr :name, :any, default: nil
   attr :value, :any, default: nil
   attr :errors, :list, default: []
@@ -84,6 +87,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
               value={@value}
               errors={@errors}
               item={item}
+              variant={@variant}
               focusable={item[:disabled]}
             />
           </:trigger>
@@ -97,6 +101,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
           value={@value}
           errors={@errors}
           item={item}
+          variant={@variant}
         />
       <% end %>
     </div>
@@ -108,6 +113,7 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
   attr :value, :any, default: nil
   attr :errors, :list, required: true
   attr :item, :map, required: true
+  attr :variant, :string, required: true
   attr :focusable, :boolean, default: false
 
   defp radio_group_item(assigns) do
@@ -116,11 +122,10 @@ defmodule WatchClubWeb.Components.UI.RadioGroup do
       data-slot="radio-group-item-wrapper"
       tabindex={@focusable && "0"}
       class={[
-        if @item[:class] do
-          "cursor-pointer rounded-control text-sm text-text transition-colors select-none"
-        else
-          "inline-flex cursor-pointer items-center gap-related rounded-control text-sm text-text transition-colors select-none"
-        end,
+        "cursor-pointer rounded-control text-sm text-text transition-colors select-none",
+        @variant == "default" && !@item[:class] && "inline-flex items-center gap-related",
+        @variant == "card" &&
+          "group/radio-card border border-border-control bg-surface-inset not-has-disabled:hover:bg-surface-hover has-checked:border-accent has-checked:bg-surface-selected has-focus-visible:border-border-focus has-focus-visible:ring-2 has-focus-visible:ring-focus-ring *:data-[slot=radio-group-item]:sr-only",
         "has-disabled:cursor-not-allowed has-disabled:text-text-disabled has-disabled:opacity-40",
         @item[:class]
       ]}
