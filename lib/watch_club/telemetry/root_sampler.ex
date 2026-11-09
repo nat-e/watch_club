@@ -12,9 +12,14 @@ defmodule WatchClub.Telemetry.RootSampler do
   def should_sample(context, _trace_id, _links, _name, kind, attributes, _config) do
     decision =
       case {kind, attributes} do
-        {:server, %{:"url.path" => "/health"}} -> :drop
-        {:client, %{:"db.system" => _}} -> :drop
-        _ -> :record_and_sample
+        {:server, %{:"url.path" => path}} ->
+          if String.trim(path, "/") == "health", do: :drop, else: :record_and_sample
+
+        {:client, %{:"db.system" => _}} ->
+          :drop
+
+        _ ->
+          :record_and_sample
       end
 
     tracestate = context |> :otel_tracer.current_span_ctx() |> :otel_span.tracestate()
