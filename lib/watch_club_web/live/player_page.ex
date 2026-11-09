@@ -93,17 +93,17 @@ defmodule WatchClubWeb.PlayerPage do
       <.player_load_error_overlay :if={@playback_error} />
 
       <.player_loader :if={!@session} class="absolute inset-0" />
-
-      <.live_component
-        :if={@problem_details}
-        module={ReportProblemLive}
-        id="report-problem"
-        details={@problem_details}
-        category={if @playback_error, do: :player}
-        current_user={@current_user}
-        on_close={JS.push("close_problem_report")}
-      />
     </main>
+
+    <.live_component
+      :if={@problem_details}
+      module={ReportProblemLive}
+      id="report-problem"
+      details={@problem_details}
+      category={if @playback_error, do: :player}
+      current_user={@current_user}
+      on_close={JS.push("close_problem_report")}
+    />
 
     <.flash flash={@flash} />
     """
