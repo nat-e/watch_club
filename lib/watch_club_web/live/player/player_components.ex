@@ -3,20 +3,25 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   attr :id, :string, required: true
   attr :label, :string, required: true, doc: "Menu title and trigger aria-label."
+  attr :class, :any, default: nil, doc: "The trigger's classes, such as when it shows."
   slot :icon, required: true, doc: "Trigger icon."
-  slot :inner_block, required: true, doc: "The Video.js radio group for this menu."
+  slot :inner_block, required: true, doc: "The menu's items, such as a Video.js radio group."
+
+  slot :submenu, doc: "A view that an item opens with `commandfor` set to its `id`." do
+    attr :id, :string, required: true
+    attr :label, :string, required: true
+  end
 
   @doc """
-  A control-bar dropdown wrapping one of Video.js's radio groups. Video.js hides its trigger
-  when the radio group has nothing to choose from.
+  A control-bar dropdown holding Video.js menu items, such as a radio group, and the submenus they
+  open. Video.js gives the trigger `data-availability` once its radio group has options.
   """
   def player_menu(assigns) do
     ~H"""
-    <%!-- Hidden until Video.js knows whether there are options --%>
     <button
       type="button"
       commandfor={@id}
-      class={[media_menu_button_style(), "not-data-availability:hidden"]}
+      class={[media_menu_button_style(), @class]}
       aria-label={@label}
     >
       {render_slot(@icon)}
@@ -29,13 +34,48 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       boundary="container"
       class="m-0 w-max min-w-48 max-w-[min(--spacing(72),var(--media-menu-available-width))] max-h-(--media-menu-available-height) overflow-y-auto overscroll-contain rounded-control border border-white/10 bg-black/90 p-tight text-left text-sm text-white shadow-overlay backdrop-blur-sm [--media-popover-boundary-offset:--spacing(2)] [--media-popover-side-offset:--spacing(2)]"
     >
-      <media-menu-content class="block outline-none">
+      <media-menu-content class="block outline-none data-child-open:hidden">
         <p class="px-related py-tight text-xs font-semibold uppercase tracking-wider text-white/60">
           {@label}
         </p>
         {render_slot(@inner_block)}
       </media-menu-content>
+
+      <media-menu-content
+        :for={submenu <- @submenu}
+        id={submenu.id}
+        class="block outline-none not-data-open:hidden"
+      >
+        <%!-- Video.js goes back to the menu from a submenu's first item --%>
+        <.player_menu_item>
+          <:icon><Lucideicons.chevron_left /></:icon>
+          {submenu.label}
+        </.player_menu_item>
+        {render_slot(submenu)}
+      </media-menu-content>
     </media-menu>
+    """
+  end
+
+  attr :rest, :global, include: ~w(commandfor)
+  slot :icon, required: true
+  slot :inner_block, required: true
+
+  @doc """
+  An item of a `player_menu/1`. With `commandfor`, it opens a submenu and shows what's picked in
+  it; Video.js hides it when the submenu has no options.
+  """
+  def player_menu_item(assigns) do
+    ~H"""
+    <media-menu-item
+      class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20 data-[availability=unavailable]:hidden [&>svg]:size-icon-sm [&>svg]:shrink-0 [&>svg]:text-white/60"
+      {@rest}
+    >
+      {render_slot(@icon)}
+      <span class="flex-1">{render_slot(@inner_block)}</span>
+      <span :if={@rest[:commandfor]} data-part="hint" class="text-white/60" />
+      <Lucideicons.chevron_right :if={@rest[:commandfor]} />
+    </media-menu-item>
     """
   end
 
@@ -95,26 +135,33 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         </h1>
       </div>
 
+      <%!-- Phones fold Quality, Audio, Subtitles and Report a problem into Settings --%>
       <div id="player-settings" phx-update="ignore" class="flex shrink-0 items-center gap-tight">
-        <.player_menu id="player-quality-menu" label={dgettext("player", "Quality")}>
+        <.player_menu
+          id="player-quality-menu"
+          label={dgettext("player", "Quality")}
+          class="not-data-availability:hidden @max-xl/player:hidden"
+        >
           <:icon><Lucideicons.settings /></:icon>
-          <media-quality-radio-group>
-            <template><.player_radio /></template>
-          </media-quality-radio-group>
+          <.quality_options />
         </.player_menu>
 
-        <.player_menu id="player-audio-menu" label={dgettext("player", "Audio")}>
+        <.player_menu
+          id="player-audio-menu"
+          label={dgettext("player", "Audio")}
+          class="not-data-availability:hidden @max-xl/player:hidden"
+        >
           <:icon><Lucideicons.languages /></:icon>
-          <media-audio-track-radio-group>
-            <template><.player_radio /></template>
-          </media-audio-track-radio-group>
+          <.audio_options />
         </.player_menu>
 
-        <.player_menu id="player-subtitles-menu" label={dgettext("player", "Subtitles")}>
+        <.player_menu
+          id="player-subtitles-menu"
+          label={dgettext("player", "Subtitles")}
+          class="not-data-availability:hidden @max-xl/player:hidden"
+        >
           <:icon><Lucideicons.captions /></:icon>
-          <media-captions-radio-group label={dgettext("player", "Subtitles")}>
-            <template><.player_radio /></template>
-          </media-captions-radio-group>
+          <.subtitles_options />
         </.player_menu>
 
         <media-mute-button class={["group/mute", media_menu_button_style()]}>
@@ -126,8 +173,77 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           <Lucideicons.maximize class="group-data-fullscreen/fullscreen:hidden" />
           <Lucideicons.minimize class="hidden group-data-fullscreen/fullscreen:block" />
         </media-fullscreen-button>
+
+        <button
+          type="button"
+          phx-click={report_problem()}
+          class={[media_menu_button_style(), "@max-xl/player:hidden"]}
+          aria-label={dgettext("player", "Report a problem")}
+        >
+          <Lucideicons.flag />
+        </button>
+
+        <.player_menu
+          id="player-settings-menu"
+          label={dgettext("player", "Settings")}
+          class="@xl/player:hidden"
+        >
+          <:icon><Lucideicons.settings /></:icon>
+          <.player_menu_item commandfor="player-settings-quality">
+            <:icon><Lucideicons.settings /></:icon>
+            {dgettext("player", "Quality")}
+          </.player_menu_item>
+          <.player_menu_item commandfor="player-settings-audio">
+            <:icon><Lucideicons.languages /></:icon>
+            {dgettext("player", "Audio")}
+          </.player_menu_item>
+          <.player_menu_item commandfor="player-settings-subtitles">
+            <:icon><Lucideicons.captions /></:icon>
+            {dgettext("player", "Subtitles")}
+          </.player_menu_item>
+          <.player_menu_item phx-click={report_problem()}>
+            <:icon><Lucideicons.flag /></:icon>
+            {dgettext("player", "Report a problem")}
+          </.player_menu_item>
+
+          <:submenu id="player-settings-quality" label={dgettext("player", "Quality")}>
+            <.quality_options />
+          </:submenu>
+          <:submenu id="player-settings-audio" label={dgettext("player", "Audio")}>
+            <.audio_options />
+          </:submenu>
+          <:submenu id="player-settings-subtitles" label={dgettext("player", "Subtitles")}>
+            <.subtitles_options />
+          </:submenu>
+        </.player_menu>
       </div>
     </header>
+    """
+  end
+
+  # The Video.js radio groups of the top bar's menus, in their own menu and in Settings
+
+  defp quality_options(assigns) do
+    ~H"""
+    <media-quality-radio-group>
+      <template><.player_radio /></template>
+    </media-quality-radio-group>
+    """
+  end
+
+  defp audio_options(assigns) do
+    ~H"""
+    <media-audio-track-radio-group>
+      <template><.player_radio /></template>
+    </media-audio-track-radio-group>
+    """
+  end
+
+  defp subtitles_options(assigns) do
+    ~H"""
+    <media-captions-radio-group label={dgettext("player", "Subtitles")}>
+      <template><.player_radio /></template>
+    </media-captions-radio-group>
     """
   end
 
@@ -360,10 +476,17 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         <.button id="player-error-back-button" navigate={~p"/"}>
           {dgettext("player", "Back home")}
         </.button>
+        <.button id="player-error-report-button" variant="ghost" phx-click={report_problem()}>
+          <:icon><Lucideicons.flag /></:icon>
+          {dgettext("player", "Report a problem")}
+        </.button>
       </.empty>
     </div>
     """
   end
+
+  # Asks the Player hook to pause, then to open the form with what the Player shows
+  defp report_problem, do: JS.dispatch("player:report-problem", to: "#watch-club-player")
 
   defp media_menu_button_style,
     do:

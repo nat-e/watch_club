@@ -3,6 +3,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
+  alias WatchClubWeb.Live.Player.ReportProblemLive
+
   @playback_session_fields [
     active_playback: [
       media: [
@@ -43,7 +45,7 @@ defmodule WatchClubWeb.PlayerPage do
             <%!-- The browser draws the captions, raised by the footer's height while the controls show --%>
             <media-container
               phx-mounted={JS.ignore_attributes("*")}
-              class="group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)] has-[[data-show-from][data-active]]:[--media-caption-track-y:calc(--spacing(44)*-1)]!"
+              class="@container/player group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)] has-[[data-show-from][data-active]]:[--media-caption-track-y:calc(--spacing(44)*-1)]!"
             >
               <div id="watch-club-player-media" phx-update="ignore" class="contents">
                 <hlsjs-video preload="metadata" playsinline autoplay class="absolute inset-0 block">
@@ -91,12 +93,30 @@ defmodule WatchClubWeb.PlayerPage do
       <.player_load_error_overlay :if={@playback_error} />
 
       <.player_loader :if={!@session} class="absolute inset-0" />
+
+      <.live_component
+        :if={@problem_details}
+        module={ReportProblemLive}
+        id="report-problem"
+        details={@problem_details}
+        category={if @playback_error, do: :player}
+        current_user={@current_user}
+        on_close={JS.push("close_problem_report")}
+      />
     </main>
+
+    <.flash flash={@flash} />
     """
   end
 
   @impl true
-  def handle_params(%{"media_id" => media_id}, _uri, socket) do
+  def mount(_params, _session, socket) do
+    # The Problem Reports of this Player record its browser
+    {:ok, assign(socket, user_agent: get_connect_info(socket, :user_agent), problem_details: nil)}
+  end
+
+  @impl true
+  def handle_params(%{"media_id" => media_id} = params, _uri, socket) do
     cond do
       # Don't load the player on the initial server-side render
       !connected?(socket) ->
@@ -104,7 +124,7 @@ defmodule WatchClubWeb.PlayerPage do
 
       # Initial player load, create a session
       is_nil(socket.assigns[:session]) ->
-        {:noreply, socket |> start_player_session(media_id)}
+        {:noreply, socket |> start_player_session(media_id, params["t"])}
 
       # A session already exist but the video has changed, update the session
       media_id != socket.assigns.session.active_playback.media_id ->
@@ -123,6 +143,23 @@ defmodule WatchClubWeb.PlayerPage do
   def handle_event("player_failed", _params, socket) do
     {:noreply, socket |> assign(:playback_error, true)}
   end
+
+  # The hook paused the video and sends what the Player shows: nothing when it never played
+  def handle_event("report_problem", shown, socket) do
+    details = %{
+      playback_id: socket.assigns.session.active_playback.id,
+      position_seconds: shown["position_seconds"],
+      audio: shown["audio"],
+      subtitles: shown["subtitles"],
+      quality: shown["quality"],
+      user_agent: socket.assigns.user_agent
+    }
+
+    {:noreply, assign(socket, :problem_details, details)}
+  end
+
+  def handle_event("close_problem_report", _params, socket),
+    do: {:noreply, assign(socket, :problem_details, nil)}
 
   def handle_event("player_heartbeat", params, socket) do
     # Best effort, don't crash the process if heartbeat fails
@@ -169,6 +206,13 @@ defmodule WatchClubWeb.PlayerPage do
     end
   end
 
+  def handle_info({ReportProblemLive, :reported}, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, dgettext("player", "Thanks! Your report was sent."))
+     |> assign(:problem_details, nil)}
+  end
+
   def handle_info(_message, socket), do: {:noreply, socket}
 
   defp switch_episode(socket, nil), do: socket
@@ -176,7 +220,9 @@ defmodule WatchClubWeb.PlayerPage do
   defp switch_episode(socket, %TvShowEpisode{} = episode),
     do: socket |> push_patch(to: Url.player_link(episode.videos), replace: true)
 
-  defp start_player_session(socket, media_id) do
+  # `start_at`, in seconds, starts there instead of where the User stopped, for Play at on the
+  # Problem reports page
+  defp start_player_session(socket, media_id, start_at) do
     actor = socket.assigns.current_user
 
     case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
@@ -186,7 +232,7 @@ defmodule WatchClubWeb.PlayerPage do
         |> assign(:session, session)
         |> assign(
           :start_position_seconds,
-          resume_position_seconds(session.active_playback.media.video)
+          start_position_seconds(start_at, session.active_playback.media.video)
         )
         |> assign(:playback_error, false)
 
@@ -224,6 +270,13 @@ defmodule WatchClubWeb.PlayerPage do
         socket
         |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
         |> push_navigate(to: ~p"/")
+    end
+  end
+
+  defp start_position_seconds(start_at, video) do
+    case start_at && Float.parse(start_at) do
+      {seconds, ""} when seconds >= 0 -> seconds
+      _ -> resume_position_seconds(video)
     end
   end
 
