@@ -15,6 +15,22 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
                Identify.apply(candidate, source)
     end
 
+    test "takes the year from the parent directory when the filename has none" do
+      candidate = Candidate.new("/library/UFC 100 (2009)/UFC 100 - Lesnar vs Mir 2.mp4", :movie)
+      source = source_for(:movie, "/library")
+
+      assert %Candidate{identity: %MovieIdentity{title: "UFC 100 - Lesnar vs Mir 2", year: 2009}} =
+               Identify.apply(candidate, source)
+    end
+
+    test "prefers the filename's year to the parent directory's" do
+      candidate = Candidate.new("/library/300 (2007)/300 (2006).mkv", :movie)
+      source = source_for(:movie, "/library")
+
+      assert %Candidate{identity: %MovieIdentity{title: "300", year: 2006}} =
+               Identify.apply(candidate, source)
+    end
+
     test "extracts the tmdb id from a bracket in the filename" do
       candidate = Candidate.new("/library/Star Wars (1977) [tmdbid-11].mkv", :movie)
       source = source_for(:movie, "/library")
