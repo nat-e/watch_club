@@ -20,12 +20,6 @@ msgstr "Audio"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Auto"
-msgstr "Auto"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
 msgid "Back"
 msgstr "Retour"
 
@@ -44,50 +38,8 @@ msgstr "Erreur lors du chargement de la vidéo"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Fullscreen"
-msgstr "Plein écran"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Mute"
-msgstr "Couper le son"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Off"
-msgstr "Désactivés"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play or pause"
-msgstr "Lecture ou pause"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr "Qualité"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek"
-msgstr "Position de lecture"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek backward 10 seconds"
-msgstr "Reculer de 10 secondes"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek forward 10 seconds"
-msgstr "Avancer de 10 secondes"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
