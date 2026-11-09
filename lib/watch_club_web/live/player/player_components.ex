@@ -12,7 +12,13 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   """
   def player_menu(assigns) do
     ~H"""
-    <button type="button" commandfor={@id} class={media_menu_button_style()} aria-label={@label}>
+    <%!-- Hidden until Video.js knows whether there are options --%>
+    <button
+      type="button"
+      commandfor={@id}
+      class={[media_menu_button_style(), "not-data-availability:hidden"]}
+      aria-label={@label}
+    >
       {render_slot(@icon)}
     </button>
 
@@ -21,10 +27,10 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       side="bottom"
       align="end"
       boundary="container"
-      class="m-0 w-72 text-left max-h-(--media-menu-available-height) max-w-(--media-menu-available-width) overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/90 p-group text-sm text-white shadow-overlay backdrop-blur-sm [--media-popover-side-offset:--spacing(2)]"
+      class="m-0 w-max min-w-48 max-w-[min(--spacing(72),var(--media-menu-available-width))] max-h-(--media-menu-available-height) overflow-y-auto overscroll-contain rounded-control border border-white/10 bg-black/90 p-tight text-left text-sm text-white shadow-overlay backdrop-blur-sm [--media-popover-boundary-offset:--spacing(2)] [--media-popover-side-offset:--spacing(2)]"
     >
       <media-menu-content class="block outline-none">
-        <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wider text-white/60">
+        <p class="px-related py-tight text-xs font-semibold uppercase tracking-wider text-white/60">
           {@label}
         </p>
         {render_slot(@inner_block)}
@@ -36,7 +42,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   @doc "A single option rendered inside a radio group's <template>."
   def player_radio(assigns) do
     ~H"""
-    <media-menu-radio-item class="flex w-full cursor-pointer items-center gap-related rounded-md p-related text-left outline-none data-highlighted:bg-white/10 aria-checked:bg-white/20">
+    <media-menu-radio-item class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20">
       <media-menu-item-indicator force-mount class="opacity-0 in-aria-checked:opacity-100">
         <Lucideicons.check class="size-icon-sm" />
       </media-menu-item-indicator>
@@ -73,7 +79,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   def controls_header(assigns) do
     ~H"""
-    <header class="flex h-24 items-center gap-related px-related pointer-events-auto">
+    <header class="flex h-24 items-center gap-related px-related group-data-visible/controls:pointer-events-auto">
       <button
         type="button"
         data-player-command="back"
@@ -106,7 +112,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
         <.player_menu id="player-subtitles-menu" label={dgettext("player", "Subtitles")}>
           <:icon><Lucideicons.captions /></:icon>
-          <media-captions-radio-group>
+          <media-captions-radio-group label={dgettext("player", "Subtitles")}>
             <template><.player_radio /></template>
           </media-captions-radio-group>
         </.player_menu>
@@ -131,7 +137,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       <div
         id="player-playback-controls"
         phx-update="ignore"
-        class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity group-has-[media-buffering-indicator[data-visible]]/player:opacity-0"
+        class="flex items-center justify-center gap-related opacity-90 transition-opacity group-data-visible/controls:pointer-events-auto group-has-[media-buffering-indicator[data-visible]]/player:pointer-events-none! group-has-[media-buffering-indicator[data-visible]]/player:opacity-0"
       >
         <media-seek-button
           seconds="-10"
@@ -178,7 +184,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       )
 
     ~H"""
-    <footer class="pointer-events-auto flex flex-col gap-related h-24 px-group">
+    <footer class="flex h-24 flex-col gap-related px-group group-data-visible/controls:pointer-events-auto">
       <div id="player-seek-bar" phx-update="ignore">
         <.seek_bar />
       </div>
@@ -198,7 +204,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           id="player-time"
           phx-update="ignore"
           space="tight"
-          class="relative text-sm text-white/90 tabular-nums"
+          class="relative text-sm text-white/90 tabular-nums has-data-unavailable:invisible"
         >
           <media-time type="current" />
           <span class="text-white/60">/</span>

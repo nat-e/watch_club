@@ -38,10 +38,10 @@ defmodule WatchClubWeb.PlayerPage do
               the others sit in phx-update="ignore" containers --%>
         <media-i18n class="contents">
           <video-player class="contents">
-            <%!-- The browser draws the captions, raised above the controls while they show --%>
+            <%!-- The browser draws the captions, raised by the footer's height while the controls show --%>
             <media-container
               phx-mounted={JS.ignore_attributes("*")}
-              class="group/player relative block size-full overflow-hidden bg-black outline-none not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:-6rem]"
+              class="group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)]"
             >
               <div id="watch-club-player-media" phx-update="ignore" class="contents">
                 <hlsjs-video preload="metadata" playsinline autoplay class="absolute inset-0 block">
@@ -56,16 +56,16 @@ defmodule WatchClubWeb.PlayerPage do
                 <media-hotkey keys="ArrowLeft" action="seekStep" value="-10" target="document" />
                 <media-hotkey keys="ArrowRight" action="seekStep" value="10" target="document" />
 
-                <media-buffering-indicator class="pointer-events-none absolute inset-0 z-20 grid place-items-center opacity-0 transition-opacity data-visible:opacity-100">
-                  <.player_loader />
+                <media-buffering-indicator class="absolute inset-0 z-20 opacity-0 transition-opacity data-visible:opacity-100">
+                  <.player_loader class="size-full" />
                 </media-buffering-indicator>
 
-                <media-status-announcer />
+                <media-status-announcer class="sr-only" />
               </div>
 
               <media-controls
                 phx-mounted={JS.ignore_attributes("*")}
-                class="pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100 has-focus-visible:opacity-100"
+                class="group/controls pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100 has-focus-visible:opacity-100"
               >
                 <.controls_header video={@session.active_playback.media.video} />
                 <.controls_center_row />
@@ -178,11 +178,6 @@ defmodule WatchClubWeb.PlayerPage do
         |> assign(:session, session)
         |> assign(:start_position_seconds, 0.0)
         |> assign(:playback_error, false)
-        # LiveView leaves the media element alone, so the hook loads the new video into it
-        |> push_event("player:load_video", %{
-          src: hls_master_playlist_url(session.active_playback),
-          thumbnails_src: thumbnails_url(session.active_playback)
-        })
 
       {:error, error} ->
         Logger.error("Error starting new playback: #{inspect(error)}")

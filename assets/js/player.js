@@ -29,10 +29,6 @@ const hlsConfig = {
 
 const Player = {
 	mounted() {
-		this.handleEvent("player:load_video", ({ src, thumbnails_src }) => {
-			this.carryTracksOver();
-			this.loadVideo(src, thumbnails_src);
-		});
 		this.container = this.el.querySelector("media-container");
 		this.media = this.el.querySelector("hlsjs-video");
 		this.abortController = new AbortController();
@@ -46,6 +42,11 @@ const Player = {
 
 		this.bindDomEvents();
 		this.boot();
+	},
+
+	// The server renders the next video of the session in the data attributes
+	updated() {
+		if (this.ready && this.el.dataset.src !== this.src) this.loadVideo();
 	},
 
 	destroyed() {
@@ -91,20 +92,20 @@ const Player = {
 
 			this.bindMediaEvents();
 			this.restoreLocalPreferences();
-			this.loadVideo(
-				this.el.dataset.src,
-				this.el.dataset.thumbnailsSrc,
-				Number(this.el.dataset.startPosition) || 0,
-			);
+			this.ready = true;
+			this.loadVideo();
 		} catch (_error) {
 			this.reportFailure();
 		}
 	},
 
-	// Loads the session's first video, then each next one, which plays on its own.
-	// Playback starts at the given position, the beginning by default.
-	loadVideo(src, thumbnailsSrc, startPosition = 0) {
-		this.startPosition = startPosition;
+	// Loads the video in the data attributes, which plays on its own from their start
+	// position, with the audio and subtitles of the previous video when it has them
+	loadVideo() {
+		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
+		this.carryTracksOver();
+		this.src = src;
+		this.startPosition = Number(startPosition);
 		// A new audio preference makes Video.js build a new hls.js engine
 		this.media.source = {
 			src,
