@@ -23,11 +23,13 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
 
   defp extract_identity(:movie, candidate, _media_source) do
     {title, year} = FilenameParser.title_and_year(candidate.path)
+    # A "Movie (Year)/file" folder names the year when the file name leaves it out
+    {_folder_title, folder_year} = FilenameParser.title_and_year(Path.dirname(candidate.path))
     path_ids = ExternalIdExtractor.from_text(candidate.path)
 
     %MovieIdentity{
       title: title,
-      year: year,
+      year: year || folder_year,
       tmdb_id: path_ids.tmdb,
       imdb_id: path_ids.imdb
     }
