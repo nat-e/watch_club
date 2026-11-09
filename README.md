@@ -40,10 +40,12 @@ Metrics cover requests, database timings, jobs, VM memory and run queues. Metric
 - `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.callers` measures callers per fetch, including crashes, by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
 - `watch_club.tmdb.request.stop.count` and `.stop.duration`, labelled by `endpoint` (path templates) and `status` (`2xx`, `404`, `429`, `4xx`, `5xx`, `error`). These count each HTTP attempt, including retries, but not cache hits.
 - `watch_club.media_import.match.count`, labelled by `result` (`matched`, `not_matched`, `episode_not_listed`).
+- `watch_club.marker_detection.marker.count`, one per kind for each Video that detection runs on, labelled by `media_type` (`movie`, `tv_show_episode`), `kind` (`intro`, `recap`, `credits`) and `source` (`chapter`, `audio`, `none`).
+- `watch_club.audio_fingerprint.fetch.count`, labelled by `cached` (`true`, `false`), and `watch_club.audio_fingerprint.compute.stop.duration`, the time to decode and fingerprint audio, labelled by `part` (`beginning`, `end`).
 
 Durations and callers per fetch are exported as histograms. Suggested alerts: TMDB errors or rate limiting above a threshold, and Content metadata fetch failures above a threshold, including failed refreshes that kept stored Content.
 
-Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths.
+Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Marker detection traces have a span for each audio fingerprint they compute. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths, and Marker detection logs include local file paths.
 
 The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
 

@@ -3,7 +3,8 @@ defmodule WatchClub.Ffmpeg do
   ffmpeg CLI wrapper.
 
   Currently exposes a small set of HLS-shaped transcodes (mpegts segments
-  and webvtt subtitle files); the entry points encode the ffmpeg flag
+  and webvtt subtitle files), and the file inspections of
+  `WatchClub.Ffmpeg.Probe`; the entry points encode the ffmpeg flag
   choices so callers don't have to know them. Add new entry points here
   when new ffmpeg use cases appear.
 
@@ -19,8 +20,8 @@ defmodule WatchClub.Ffmpeg do
 
   @doc """
   Inspects a media file with `ffprobe` and returns the decoded JSON metadata
-  (streams + format). Returns `{:error, message}` if `ffprobe` is missing,
-  exits non-zero, or returns invalid JSON.
+  (format, streams and chapters). Returns `{:error, message}` if `ffprobe` is
+  missing, exits non-zero, or returns invalid JSON.
   """
   @impl true
   def probe(path) when is_binary(path) do
@@ -38,6 +39,7 @@ defmodule WatchClub.Ffmpeg do
       "json",
       "-show_format",
       "-show_streams",
+      "-show_chapters",
       path
     ]
 
@@ -70,6 +72,39 @@ defmodule WatchClub.Ffmpeg do
     case System.find_executable(name) do
       nil -> {:error, "#{name} executable was not found"}
       path -> {:ok, path}
+    end
+  end
+
+  @doc """
+  Chromaprint fingerprint of the first audio track, over `seconds` from
+  `from_seconds`. ffmpeg decodes the audio for Chromaprint's `fpcalc`, which
+  has no option to start further in.
+  """
+  @impl true
+  def audio_fingerprint(path, from_seconds, seconds) do
+    pipeline =
+      ~S(ffmpeg -nostdin -v error -ss "$2" -t "$3" -i "$1" -map 0:a:0 -ac 1 -ar 11025 -f s16le - ) <>
+        ~S(| fpcalc -raw -format s16le -rate 11025 -channels 1 -length "$3" -)
+
+    # pipefail: fpcalc would succeed on the audio ffmpeg decoded before failing
+    case System.cmd(
+           "bash",
+           [
+             "-c",
+             "set -o pipefail; " <> pipeline,
+             "bash",
+             path,
+             seconds(from_seconds),
+             seconds(seconds)
+           ],
+           stderr_to_stdout: true
+         ) do
+      {output, 0} ->
+        ["FINGERPRINT=" <> points] = Regex.run(~r/^FINGERPRINT=.*$/m, output)
+        {:ok, points |> String.split(",") |> Enum.map(&String.to_integer/1)}
+
+      {output, status} ->
+        {:error, "ffmpeg | fpcalc exited with #{status}: #{output}"}
     end
   end
 

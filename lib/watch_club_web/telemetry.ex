@@ -156,6 +156,15 @@ defmodule WatchClubWeb.Telemetry do
       ),
       counter("watch_club.media_import.match.count", tags: [:result]),
 
+      # Which Markers detection finds, and where from. Fingerprints: cache use and decoding time.
+      counter("watch_club.marker_detection.marker.count", tags: [:media_type, :kind, :source]),
+      counter("watch_club.audio_fingerprint.fetch.count", tags: [:cached]),
+      summary("watch_club.audio_fingerprint.compute.stop.duration",
+        tags: [:part],
+        unit: {:native, :second},
+        reporter_options: [buckets: @job_buckets]
+      ),
+
       # The dependency's default poller emits these VM measurements.
       last_value("vm.memory.total", unit: :byte),
       last_value("vm.total_run_queue_lengths.total"),

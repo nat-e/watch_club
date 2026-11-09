@@ -282,6 +282,28 @@ classDiagram
   Audiobook "*" --> "1" Book
 ```
 
+## Markers
+
+```mermaid
+classDiagram
+  class Marker {
+    uuid id
+    uuid video_id
+    MarkerKind kind
+    float start_seconds
+    float end_seconds
+    «unique» video_id + kind
+  }
+  class MarkerKind {
+    <<enumeration>>
+    intro
+    recap
+    credits
+  }
+  class Video
+  Marker "*" --> "1" Video
+```
+
 ## Media Sources
 
 ```mermaid
