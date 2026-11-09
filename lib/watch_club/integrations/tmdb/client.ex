@@ -87,8 +87,9 @@ defmodule WatchClub.Integrations.Tmdb.Client do
     {:error, :server_error}
   end
 
+  # Expected, like the other TMDB failures: a warning, which Sentry doesn't report as an error
   defp handle_response({:error, reason}, _opts) do
-    Logger.error("TMDB — Unknown error",
+    Logger.warning("TMDB — Unknown error",
       event: :tmdb_error,
       error: reason
     )

@@ -418,7 +418,18 @@ defmodule WatchClub.Contents.ContentTest do
           [:watch_club, :tmdb, :request, :stop]
         ])
 
-      on_exit(fn -> :telemetry.detach(ref) end)
+      on_exit(fn ->
+        :telemetry.detach(ref)
+
+        # A test that fails while its fetch is blocked must not leave it to the next tests
+        for task <- Task.Supervisor.children(WatchClub.Contents.MetadataFetcher.TaskSupervisor),
+            do:
+              Task.Supervisor.terminate_child(
+                WatchClub.Contents.MetadataFetcher.TaskSupervisor,
+                task
+              )
+      end)
+
       {:ok, telemetry_ref: ref}
     end
 
@@ -591,7 +602,7 @@ defmodule WatchClub.Contents.ContentTest do
         end
 
       assert_receive {:fetch_started, fetch}
-      await_metadata_callers(4)
+      await_metadata_callers(ContentIdentity.for_movie(11), 4)
       send(fetch, :finish_fetch)
       contents = Task.await_many(callers)
 
@@ -646,7 +657,7 @@ defmodule WatchClub.Contents.ContentTest do
             end
 
           assert_receive {:fetch_started, fetch}
-          await_metadata_callers(4)
+          await_metadata_callers(ContentIdentity.from_content(content), 4)
           send(fetch, :finish_fetch)
 
           for stored <- Task.await_many(callers) do
@@ -687,7 +698,7 @@ defmodule WatchClub.Contents.ContentTest do
           end
 
         assert_receive {:fetch_started, fetch}
-        await_metadata_callers(4)
+        await_metadata_callers(ContentIdentity.for_movie(11), 4)
         send(fetch, :finish_fetch)
 
         for reason <- Task.await_many(callers) do
@@ -734,7 +745,7 @@ defmodule WatchClub.Contents.ContentTest do
           end
 
         assert_receive {:fetch_started, fetch}
-        await_metadata_callers(4)
+        await_metadata_callers(ContentIdentity.for_movie(11), 4)
         Process.exit(fetch, :kill)
 
         assert Task.await_many(callers) == [:killed, :killed, :killed, :killed]
@@ -1200,23 +1211,20 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  # Keep the HTTP request blocked until every caller has joined the same fetch.
-  defp await_metadata_callers(count, attempts \\ 100)
+  # Keeps the HTTP request blocked until every caller joined the Content's fetch, for up to 5 seconds
+  defp await_metadata_callers(identity, count, attempts \\ 500)
 
-  defp await_metadata_callers(_count, 0), do: flunk("callers did not join the metadata fetch")
+  defp await_metadata_callers(_identity, _count, 0),
+    do: flunk("callers did not join the metadata fetch")
 
-  defp await_metadata_callers(count, attempts) do
-    callers =
-      WatchClub.Contents.MetadataFetcher
-      |> :sys.get_state()
-      |> Map.values()
-      |> Enum.flat_map(& &1.callers)
+  defp await_metadata_callers(identity, count, attempts) do
+    case :sys.get_state(WatchClub.Contents.MetadataFetcher) do
+      %{^identity => %{callers: callers}} when length(callers) == count ->
+        :ok
 
-    if length(callers) == count do
-      :ok
-    else
-      Process.sleep(10)
-      await_metadata_callers(count, attempts - 1)
+      _not_yet ->
+        Process.sleep(10)
+        await_metadata_callers(identity, count, attempts - 1)
     end
   end
 

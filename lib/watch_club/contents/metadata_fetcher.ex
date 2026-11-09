@@ -10,6 +10,20 @@ defmodule WatchClub.Contents.MetadataFetcher do
   require Logger
   require OpenTelemetry.Tracer, as: Tracer
 
+  # The coordinator and its fetch tasks restart together, so no fetch outlives the state tracking it.
+  def child_spec(_opts) do
+    children = [
+      {Task.Supervisor, name: __MODULE__.TaskSupervisor},
+      %{id: __MODULE__, start: {__MODULE__, :start_link, []}}
+    ]
+
+    %{
+      id: __MODULE__,
+      type: :supervisor,
+      start: {Supervisor, :start_link, [children, [strategy: :one_for_all]]}
+    }
+  end
+
   def start_link(opts \\ []),
     do: GenServer.start_link(__MODULE__, nil, Keyword.put(opts, :name, __MODULE__))
 
