@@ -23,7 +23,9 @@ defmodule WatchClub.Integrations.Tmdb.Client do
       retry: :transient,
       max_retries: 3,
       receive_timeout: 5_000,
-      compressed: true
+      compressed: true,
+      # Spans and metrics name requests after their path template, which Req keeps only with path_params
+      path_params: []
     ]
     |> Req.new(Application.get_env(:watch_club, :tmdb_req_options, []))
     |> OpentelemetryReq.attach(opt_in_attrs: [URLAttributes.url_template()])

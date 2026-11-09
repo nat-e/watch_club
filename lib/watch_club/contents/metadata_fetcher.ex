@@ -69,7 +69,7 @@ defmodule WatchClub.Contents.MetadataFetcher do
       %{type: identity.type, result: result}
     )
 
-    reply_to_callers(identity, fetch, result, reply)
+    complete_fetch(identity, fetch, result, reply)
     {:noreply, Map.delete(fetches, identity)}
   end
 
@@ -87,28 +87,18 @@ defmodule WatchClub.Contents.MetadataFetcher do
 
     Span.record_exception(fetch.span, exception, stacktrace)
 
-    Logger.warning(
-      "Content metadata fetch crashed for #{identity.type} TMDB #{identity.external_id}: " <>
-        Exception.message(exception),
-      [
-        event: :content_metadata_unavailable,
-        content_type: identity.type,
-        tmdb_id: identity.external_id,
-        reason: Exception.message(exception)
-      ] ++ Map.to_list(Span.hex_span_ctx(fetch.span))
-    )
-
     :telemetry.execute(
       [:watch_club, :contents, :metadata_fetch, :exception],
       %{duration: OpenTelemetry.timestamp() - fetch.started_at, callers: length(fetch.callers)},
       %{type: identity.type, kind: :exit, reason: reason, stacktrace: stacktrace}
     )
 
-    reply_to_callers(identity, fetch, :crashed, {:exit, reason})
+    complete_fetch(identity, fetch, :crashed, {:exit, reason})
     {:noreply, Map.delete(fetches, identity)}
   end
 
-  defp reply_to_callers(identity, fetch, result, reply) do
+  # Ends the fetch's span and the waiting callers' ones, then replies to every caller
+  defp complete_fetch(identity, fetch, result, reply) do
     callers = length(fetch.callers)
 
     :telemetry.execute(

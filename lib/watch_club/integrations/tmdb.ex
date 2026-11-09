@@ -56,7 +56,6 @@ defmodule WatchClub.Integrations.Tmdb do
 
     case request(
            url: "/search/multi",
-           path_params: [],
            params: [
              query: query,
              page: page,
@@ -80,7 +79,6 @@ defmodule WatchClub.Integrations.Tmdb do
   def search_movie(query, opts \\ []) do
     case request(
            url: "/search/movie",
-           path_params: [],
            params:
              [
                query: query,
@@ -106,7 +104,6 @@ defmodule WatchClub.Integrations.Tmdb do
   def search_tv(query, opts \\ []) do
     case request(
            url: "/search/tv",
-           path_params: [],
            params:
              [
                query: query,
