@@ -104,6 +104,7 @@ const Player = {
 	loadVideo() {
 		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
 		this.carryTracksOver();
+		this.tracksStarted = false;
 		this.src = src;
 		this.startPosition = Number(startPosition);
 		// A new audio preference makes Video.js build a new hls.js engine
@@ -137,6 +138,7 @@ const Player = {
 			if (this.startPosition) this.media.currentTime = this.startPosition;
 			// The browser has picked subtitles on its own by now
 			this.startSubtitles();
+			this.tracksStarted = true;
 		});
 		on("canplay", () => this.reportReady());
 		on("playing", () => {
@@ -201,7 +203,8 @@ const Player = {
 	// playing now, when it has them
 	carryTracksOver() {
 		const hls = this.media.engine;
-		if (!hls) return;
+		// Until this video starts its tracks, the previous video's still carry over
+		if (!hls || !this.tracksStarted) return;
 
 		this.carriedAudio = hls.audioTracks[hls.audioTrack]?.lang;
 		// Forced and full subtitles can share a language
