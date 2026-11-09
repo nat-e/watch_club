@@ -6,7 +6,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   We try to match with the following strategy
   - If we have the main provider ID, match with that
   - If not, try to match with other IDs (IMDB, TVDB, ...)
-  - If not, fuzzy match with title + year
+  - If not, fuzzy match with title, and year when known
 
   Missing Content or TV Show Episodes fail the Oban job so it can retry.
   """
@@ -98,9 +98,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     end)
   end
 
-  # 3. Match by title and year. We just fetch the TMDB ID and go back to step 1.
-  defp find_content!(%MovieIdentity{title: title, year: year})
-       when is_binary(title) and is_integer(year) do
+  # 3. Match by title, and year when known. We just fetch the TMDB ID and go back to step 1.
+  defp find_content!(%MovieIdentity{title: title, year: year}) when is_binary(title) do
     Tmdb.search_movie!(title, year: year).results
     |> List.first()
     |> then(fn

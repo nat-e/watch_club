@@ -149,6 +149,28 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert matched_id == movie.id
     end
 
+    test "matches by title alone when the year is unknown" do
+      movie = generate(movie(external_id: "976378"))
+
+      stub_tmdb(fn conn, _path ->
+        assert String.ends_with?(conn.request_path, "/search/movie")
+
+        refute Map.has_key?(
+                 Plug.Conn.fetch_query_params(conn).query_params,
+                 "primary_release_year"
+               )
+
+        %{"results" => [%{"id" => 976_378}]}
+      end)
+
+      candidate = candidate_with(%MovieIdentity{title: "UFC Fight Night - Holm vs Vieira"})
+
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(candidate)
+
+      assert matched_id == movie.id
+    end
+
     test "passes through with matched_id: nil when no movie strategy matches", %{
       telemetry_ref: ref
     } do
