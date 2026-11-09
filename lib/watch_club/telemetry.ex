@@ -37,6 +37,7 @@ defmodule WatchClub.Telemetry do
 
       # The dependency otherwise includes the database URL's credentials.
       case OpentelemetryEcto.setup([:watch_club, :repo],
+             db_statement: :enabled,
              additional_attributes: %{:"db.url" => ""}
            ) do
         :ok -> :ok

@@ -41,6 +41,11 @@ defmodule WatchClub.Telemetry.Metrics do
                 :otel_meter.create_counter(meter, name, options)
 
               %Summary{} ->
+                options =
+                  Map.put(options, :advisory_params, %{
+                    explicit_bucket_boundaries: Keyword.fetch!(metric.reporter_options, :buckets)
+                  })
+
                 :otel_meter.create_histogram(meter, name, options)
 
               %LastValue{} ->
@@ -112,7 +117,7 @@ defmodule WatchClub.Telemetry.Metrics do
     Enum.each(handlers, &:telemetry.detach/1)
   end
 
-  defp unit(:millisecond), do: "ms"
+  defp unit(:second), do: "s"
   defp unit(:byte), do: "By"
   defp unit(:unit), do: "1"
 end

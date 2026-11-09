@@ -2,6 +2,25 @@ defmodule WatchClubWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
 
+  @duration_buckets [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+  @database_buckets [
+    0.0001,
+    0.00025,
+    0.0005,
+    0.001,
+    0.0025,
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.1,
+    0.25,
+    0.5,
+    1,
+    2.5
+  ]
+  @job_buckets [0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30, 60, 300, 900, 3600]
+
   def start_link(arg) do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
@@ -23,52 +42,63 @@ defmodule WatchClubWeb.Telemetry do
       # Phoenix Metrics
       counter("phoenix.endpoint.stop.count"),
       summary("phoenix.endpoint.stop.duration",
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       counter("phoenix.router_dispatch.exception.count", tags: [:route]),
       summary("phoenix.router_dispatch.exception.duration",
         tags: [:route],
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       summary("phoenix.router_dispatch.stop.duration",
         tags: [:route, :status],
         tag_values: &request_tags/1,
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       counter("phoenix.router_dispatch.stop.count",
         tags: [:route, :status],
         tag_values: &request_tags/1
       ),
       summary("phoenix.socket_connected.duration",
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       sum("phoenix.socket_drain.count"),
       summary("phoenix.channel_joined.duration",
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
       summary("phoenix.channel_handled_in.duration",
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @duration_buckets]
       ),
 
       # Database Metrics
       summary("watch_club.repo.query.total_time",
-        unit: {:native, :millisecond},
+        unit: {:native, :second},
+        reporter_options: [buckets: @database_buckets],
         description: "The sum of the other measurements"
       ),
       summary("watch_club.repo.query.decode_time",
-        unit: {:native, :millisecond},
+        unit: {:native, :second},
+        reporter_options: [buckets: @database_buckets],
         description: "The time spent decoding the data received from the database"
       ),
       summary("watch_club.repo.query.query_time",
-        unit: {:native, :millisecond},
+        unit: {:native, :second},
+        reporter_options: [buckets: @database_buckets],
         description: "The time spent executing the query"
       ),
       summary("watch_club.repo.query.queue_time",
-        unit: {:native, :millisecond},
+        unit: {:native, :second},
+        reporter_options: [buckets: @database_buckets],
         description: "The time spent waiting for a database connection"
       ),
       summary("watch_club.repo.query.idle_time",
-        unit: {:native, :millisecond},
+        unit: {:native, :second},
+        reporter_options: [buckets: @database_buckets],
         description:
           "The time the connection spent waiting before being checked out for the query"
       ),
@@ -79,22 +109,26 @@ defmodule WatchClubWeb.Telemetry do
       summary("oban.job.stop.duration",
         tags: [:queue, :worker],
         tag_values: &job_tags/1,
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @job_buckets]
       ),
       summary("oban.job.exception.duration",
         tags: [:queue, :worker],
         tag_values: &job_tags/1,
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @job_buckets]
       ),
       summary("oban.job.stop.queue_time",
         tags: [:queue, :worker],
         tag_values: &job_tags/1,
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @job_buckets]
       ),
       summary("oban.job.exception.queue_time",
         tags: [:queue, :worker],
         tag_values: &job_tags/1,
-        unit: {:native, :millisecond}
+        unit: {:native, :second},
+        reporter_options: [buckets: @job_buckets]
       ),
 
       # Content metadata: only Content Type, result and serving path are labels.

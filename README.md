@@ -32,9 +32,9 @@ Each signal accepts `otlp` or `none`. `OTEL_SDK_DISABLED=true` disables all thre
 
 The shared endpoint is a base URL: HTTP export appends `/v1/traces`, `/v1/metrics` or `/v1/logs`. For separate destinations, use `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` with their full paths. Each signal also supports its own `_HEADERS` and `_PROTOCOL` variables. The SDK supports HTTP/protobuf and gRPC. See the [official exporter documentation](https://opentelemetry.io/docs/languages/erlang/exporters/).
 
-All signals share the service name, app version, environment and instance identity. Override resource attributes with `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_METRIC_EXPORT_INTERVAL` sets the metric export interval in milliseconds (default: 60000); VM measurements update every 5 seconds. Tracing uses the SDK's sampling settings, including `OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG`.
+All signals share the service name, app version, environment and instance identity. Override resource attributes with `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_METRIC_EXPORT_INTERVAL` sets the metric export interval in milliseconds (default: 60000); VM measurements update every 5 seconds. Tracing drops health-check and database-root traces by default, while preserving parent sampling decisions. Database spans inside request and job traces remain. `OTEL_TRACES_SAMPLER` replaces this default; `OTEL_TRACES_SAMPLER_ARG` configures the selected sampler.
 
-Metrics cover requests, database timings, jobs, VM memory and run queues. Metric labels use route patterns, response statuses, worker names and queue names. Metadata refreshes also expose:
+Metrics cover requests, database timings, jobs, VM memory and run queues. Metrics are cumulative, and duration histograms use seconds with separate buckets for database timings, jobs and other durations. Metric labels use route patterns, response statuses, worker names and queue names. Metadata refreshes also expose:
 
 - `watch_club.contents.metadata_request.count`, labelled by `served` (`stored`, `fetched`).
 - `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.callers` measures callers per fetch, including crashes, by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
@@ -45,7 +45,7 @@ Durations and callers per fetch are exported as histograms. Suggested alerts: TM
 
 Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths.
 
-The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database work outside a request or job creates separate traces. Only enable export to an endpoint you trust with this data.
+The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
 
 ## Contributing
 

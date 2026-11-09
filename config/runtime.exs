@@ -45,9 +45,12 @@ config :opentelemetry, :resource,
 config :ash, :tracer, if(otel_signals[:traces], do: [OpentelemetryAsh], else: [])
 
 # Spans aren't recorded unless trace export is on.
-unless otel_signals[:traces] do
-  config :opentelemetry, sampler: :always_off
-end
+config :opentelemetry,
+  sampler:
+    if(otel_signals[:traces],
+      do: {:parent_based, %{root: {WatchClub.Telemetry.RootSampler, %{}}}},
+      else: :always_off
+    )
 
 # The experimental SDK does not select a reader from OTEL_METRICS_EXPORTER.
 if otel_signals[:metrics] do
@@ -63,7 +66,12 @@ if otel_signals[:metrics] do
         module: :otel_metric_reader,
         config: %{
           exporter: {:otel_exporter_metrics_otlp, %{}},
-          export_interval_ms: export_interval_ms
+          export_interval_ms: export_interval_ms,
+          default_temporality_mapping: %{
+            counter: :temporality_cumulative,
+            updown_counter: :temporality_cumulative,
+            histogram: :temporality_cumulative
+          }
         }
       }
     ]
