@@ -46,19 +46,18 @@ defmodule WatchClub.MediaCatalog.Media do
 
     read :browse do
       description """
-      Admin Media browser action.
-
-      Returns Media filtered by media_type and a free-text search across path
-      and attached-content titles. Paginated with keyset.
+      The Media Browser's list: the Media matching a search, a Media Type and whether they're
+      Unmatched, sorted by date added or by title. Always one page at a time, with the total.
       """
 
-      argument :search, :string, allow_nil?: true, default: nil
-      argument :media_type, MediaType, allow_nil?: true, default: nil
+      argument :search, :string
+      argument :media_type, MediaType
+      argument :unmatched?, :boolean, allow_nil?: false, default: false
 
       argument :sort_by, :atom do
         allow_nil? false
-        default :imported_at
-        constraints one_of: [:imported_at, :path]
+        default :added
+        constraints one_of: [:added, :title]
       end
 
       argument :sort_order, SortOrder do
@@ -66,29 +65,29 @@ defmodule WatchClub.MediaCatalog.Media do
         default :desc
       end
 
-      pagination keyset?: true, default_limit: 50, required?: false
+      pagination offset?: true, countable: :by_default
 
-      prepare build(
-                load: [
-                  video: [
-                    :default_video_track,
-                    :audio_tracks,
-                    :text_tracks,
-                    movie: [:content],
-                    tv_show_episode: [tv_show: [:content]]
-                  ],
-                  ebook: [book: [:content]],
-                  audiobook: [book: [:content]]
-                ]
-              )
-
-      prepare FilterBrowseSearch
-
-      prepare build(filter: expr(type == ^arg(:media_type))) do
-        where present(:media_type)
-      end
-
+      prepare FilterBrowseSearch, where: present(:search)
+      prepare build(filter: expr(type == ^arg(:media_type))), where: present(:media_type)
+      prepare build(filter: expr(is_nil(content_id))), where: argument_equals(:unmatched?, true)
       prepare ApplyBrowseSort
+    end
+
+    action :count_unmatched, :integer do
+      description "How many Unmatched Media `browse` finds with this search and Media Type"
+
+      argument :search, :string
+      argument :media_type, MediaType
+
+      run fn input, context ->
+        __MODULE__
+        |> Ash.Query.for_read(
+          :browse,
+          Map.put(input.arguments, :unmatched?, true),
+          Ash.Scope.to_opts(context)
+        )
+        |> Ash.count()
+      end
     end
 
     create :create_video do
@@ -205,6 +204,11 @@ defmodule WatchClub.MediaCatalog.Media do
       authorize_if always()
     end
 
+    policy action(:count_unmatched) do
+      description "Any authenticated actor can count the Unmatched Media"
+      authorize_if always()
+    end
+
     policy action_type([:create, :update]) do
       description "Only the system actor can create or update Media"
       authorize_if WatchClub.Checks.IsSystemActor
@@ -227,6 +231,10 @@ defmodule WatchClub.MediaCatalog.Media do
     # The Content fields are listed because PubSub only selects the primary key
     # of related records otherwise.
     publish_all :create, ["content", "global"],
+      load: [content: [:type, :external_id_source, :external_id]],
+      transform: &add_content_identity_to_metadata/1
+
+    publish_all :update, ["content", "global"],
       load: [content: [:type, :external_id_source, :external_id]],
       transform: &add_content_identity_to_metadata/1
 

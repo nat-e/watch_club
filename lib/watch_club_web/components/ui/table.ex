@@ -4,31 +4,51 @@ defmodule WatchClubWeb.Components.UI.Table do
 
   Table elements (`table`, `thead`, `tbody`, `tr`, `th`, `td`, `caption`)
   must keep their literal HTML nesting, so each is exposed as a composable
-  component.
+  component. Text starts at the start of the line; pass `text-end!` for numbers.
+
+  `table_footer` adds rows at the end of the table, such as totals. The `table`'s `:footer` slot
+  goes below the rows, outside the table, such as its pages.
   """
 
   use Phoenix.Component
 
   attr :class, :any, default: nil
+
+  attr :density, :string,
+    values: ~w(default compact),
+    default: "default",
+    doc: "`compact` halves the cells' vertical padding, for long lists"
+
   attr :rest, :global
   slot :inner_block, required: true
+  slot :footer, doc: "below the rows, inside the table's border, such as its pages"
 
   def table(assigns) do
     ~H"""
     <div
       data-slot="table-container"
       class={[
-        "relative w-full overflow-x-auto rounded-card border border-border bg-surface shadow-card",
+        "relative w-full overflow-hidden rounded-card border border-border bg-surface shadow-card",
         @class
       ]}
     >
-      <table
-        data-slot="table"
-        class="w-full caption-bottom text-sm text-text"
-        {@rest}
+      <div class="overflow-x-auto">
+        <table
+          data-slot="table"
+          data-density={@density}
+          class="w-full caption-bottom text-sm text-text"
+          {@rest}
+        >
+          {render_slot(@inner_block)}
+        </table>
+      </div>
+      <div
+        :if={@footer != []}
+        data-slot="table-container-footer"
+        class="border-t border-border-subtle bg-surface-raised px-group py-related"
       >
-        {render_slot(@inner_block)}
-      </table>
+        {render_slot(@footer)}
+      </div>
     </div>
     """
   end
@@ -112,7 +132,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <th
       data-slot="table-head"
       class={[
-        "h-control-md px-group text-center align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wider has-[[role=checkbox]]:pr-0",
+        "h-control-md px-group text-start align-middle text-xs font-semibold whitespace-nowrap text-text-muted uppercase tracking-wider has-[[role=checkbox]]:pr-0",
         @class
       ]}
       {@rest}
@@ -131,7 +151,7 @@ defmodule WatchClubWeb.Components.UI.Table do
     <td
       data-slot="table-cell"
       class={[
-        "p-group text-center align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0",
+        "p-group text-start align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0 [[data-density=compact]_&]:py-related",
         @class
       ]}
       {@rest}

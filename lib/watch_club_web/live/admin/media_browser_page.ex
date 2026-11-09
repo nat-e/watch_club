@@ -1,214 +1,258 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage do
+  @moduledoc """
+  The Media Browser, where the Instance Administrator finds a Media, spots the Unmatched ones or
+  sees what was just added, then plays or removes it from its details beside the list. The list
+  shows 20 Media a page. Its search, filters, sort and page, and the selected Media, live in the
+  URL, so Back after Play returns to the same place.
+  """
   use WatchClubWeb, :live_view
 
+  import WatchClubWeb.Admin.MediaBrowserPage.MediaDetails
+  import WatchClubWeb.Admin.MediaBrowserPage.MediaTable
   import WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal
-  import WatchClubWeb.Components.UI.Empty
+  import WatchClubWeb.Components.Media.MediaTypeBadge
 
-  alias WatchClubWeb.Admin.MediaBrowserPage.{DetailDrawer, State, Table, Toolbar}
+  alias WatchClub.Shared.SortOrder
 
-  @page_size 50
+  @page_size 20
+  @sorts [:added, :title]
+  @row_load [content: [:implementation], video: [:audio_tracks, :text_tracks, :tv_show_episode]]
+  @details_load [
+    content: [:implementation],
+    video: [:default_video_track, :audio_tracks, :text_tracks, :tv_show_episode]
+  ]
 
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> stream_configure(:media_rows, dom_id: &"media-row-#{&1.id}")
-     |> stream_configure(:media_cards, dom_id: &"media-card-#{&1.id}")
-     |> assign(:state, State.new())
-     |> stream(:media_rows, [])
-     |> stream(:media_cards, [])}
+     |> WatchClub.PubSub.subscribe_if_connected("content:global")
+     # The Media the Remove media dialog is about
+     |> assign(list: nil, removing: nil)}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    parsed = State.from_params(params)
-    # Preserve drawer across patches — the drawer is transient and not in the URL.
-    previous_drawer = socket.assigns.state.drawer
-    rows = load_media_rows(parsed, socket.assigns.current_user)
+    socket =
+      assign(socket, :selected, selected_media(params["media"], socket.assigns.current_user))
 
-    state = %{
-      parsed
-      | drawer: previous_drawer,
-        stream: State.Stream.append(parsed.stream, rows)
-    }
+    list = list(params)
+
+    # Opening or closing a Media's details keeps the list as it is
+    if list == socket.assigns.list,
+      do: {:noreply, socket},
+      else: {:noreply, socket |> assign(:list, list) |> load_list!()}
+  end
+
+  @impl true
+  def handle_event("search", %{"search" => search}, socket),
+    do: {:noreply, patch_list(socket, search: String.trim(search))}
+
+  # One Media Type at a time: choosing the one that's on turns it off
+  def handle_event("filter_type", %{"type" => type}, socket) do
+    type = Url.parse_url_param(type, MediaType.values())
+    type = if type == socket.assigns.list.media_type, do: nil, else: type
+    {:noreply, patch_list(socket, media_type: type)}
+  end
+
+  def handle_event("toggle_unmatched", _params, socket),
+    do: {:noreply, patch_list(socket, unmatched?: not socket.assigns.list.unmatched?)}
+
+  def handle_event("clear_filters", _params, socket),
+    do: {:noreply, patch_list(socket, search: "", media_type: nil, unmatched?: false)}
+
+  # A column first sorts in its own order, then reverses it
+  def handle_event("sort", %{"by" => by}, socket) do
+    %{sort_by: sort_by, sort_order: sort_order} = socket.assigns.list
+    by = Url.parse_url_param(by, @sorts, sort_by)
+    order = if by == sort_by, do: SortOrder.switch(sort_order), else: first_order(by)
+    {:noreply, patch_list(socket, sort_by: by, sort_order: order)}
+  end
+
+  def handle_event("go_to_page", %{"page" => page}, socket),
+    do: {:noreply, patch_list(socket, page: String.to_integer(page))}
+
+  def handle_event("select", %{"id" => id}, socket),
+    do: {:noreply, push_patch(socket, to: media_browser_path(socket.assigns.list, id))}
+
+  def handle_event("close_details", _params, socket),
+    do: {:noreply, push_patch(socket, to: media_browser_path(socket.assigns.list, nil))}
+
+  def handle_event("open_remove_media_modal", _params, socket),
+    do: {:noreply, assign(socket, :removing, socket.assigns.selected)}
+
+  def handle_event("close_remove_media_modal", _params, socket),
+    do: {:noreply, assign(socket, :removing, nil)}
+
+  # The list reloads from the Media's notification
+  def handle_event("delete_media", _params, socket) do
+    MediaCatalog.destroy_media!(socket.assigns.removing, actor: socket.assigns.current_user)
 
     {:noreply,
      socket
-     |> assign(:state, state)
-     |> stream(:media_rows, rows, reset: true)
-     |> stream(:media_cards, rows, reset: true)}
+     |> assign(:removing, nil)
+     |> put_flash(:info, dgettext("admin_media", "Media removed."))
+     |> push_patch(to: media_browser_path(socket.assigns.list, nil))}
   end
 
+  # A Media was added, moved or removed, or a Content's titles or posters changed
   @impl true
-  def handle_event("apply_state", params, socket) do
-    # The toolbar form posts every filter + sort field on change. Decode them
-    # all through State.from_params so URL params and form params share one
-    # schema.
-    state = %{socket.assigns.state | filter: nil, sort: nil}
-    parsed = State.from_params(form_to_params(params))
-    next_state = %{state | filter: parsed.filter, sort: parsed.sort}
-    {:noreply, push_patch(socket, to: url_for(next_state))}
+  def handle_info(%Notification{resource: resource}, socket) when resource in [Media, Content] do
+    %{selected: selected, current_user: user} = socket.assigns
+
+    {:noreply,
+     socket
+     |> load_list!()
+     |> assign(:selected, selected && selected_media(selected.id, user))}
   end
 
-  def handle_event("filter_clear", _params, socket) do
-    state = %{socket.assigns.state | filter: State.Filter.clear(socket.assigns.state.filter)}
-    {:noreply, push_patch(socket, to: url_for(state))}
-  end
-
-  def handle_event("filter_remove", %{"field" => field}, socket)
-      when field in ~w(search media_type) do
-    filter =
-      case field do
-        "search" -> State.Filter.set(socket.assigns.state.filter, :search, "")
-        "media_type" -> State.Filter.set(socket.assigns.state.filter, :media_type, nil)
-      end
-
-    state = %{socket.assigns.state | filter: filter}
-    {:noreply, push_patch(socket, to: url_for(state))}
-  end
-
-  def handle_event("open_drawer", %{"id" => id}, socket) do
-    media =
-      MediaCatalog.get_media!(id,
-        actor: socket.assigns.current_user,
-        load: drawer_load_tree()
-      )
-
-    state = %{
-      socket.assigns.state
-      | drawer: State.Drawer.open(socket.assigns.state.drawer, media)
-    }
-
-    {:noreply, assign(socket, :state, state)}
-  end
-
-  def handle_event("close_drawer", _params, socket) do
-    state = %{socket.assigns.state | drawer: State.Drawer.close(socket.assigns.state.drawer)}
-    {:noreply, assign(socket, :state, state)}
-  end
-
-  def handle_event("open_remove_media_modal", _params, socket) do
-    drawer = State.Drawer.open_confirm_remove(socket.assigns.state.drawer)
-    {:noreply, assign(socket, :state, %{socket.assigns.state | drawer: drawer})}
-  end
-
-  def handle_event("close_remove_media_modal", _params, socket) do
-    drawer = State.Drawer.close_confirm_remove(socket.assigns.state.drawer)
-    {:noreply, assign(socket, :state, %{socket.assigns.state | drawer: drawer})}
-  end
-
-  def handle_event("delete_media", _params, socket) do
-    drawer = socket.assigns.state.drawer
-
-    case drawer.media do
-      nil ->
-        {:noreply, socket}
-
-      media ->
-        MediaCatalog.destroy_media!(media, actor: socket.assigns.current_user)
-
-        state = %{
-          socket.assigns.state
-          | drawer: State.Drawer.close(socket.assigns.state.drawer)
-        }
-
-        {:noreply,
-         socket
-         |> assign(:state, state)
-         |> stream_delete(:media_rows, media)
-         |> stream_delete(:media_cards, media)
-         |> put_flash(:info, dgettext("admin_media", "Media deleted."))}
-    end
-  end
-
-  def handle_event("load_more", _params, socket) do
-    # v1: load_more is a no-op placeholder. The :browse action returns up to
-    # @page_size rows in one shot; pagination wiring is queued.
-    {:noreply, socket}
-  end
+  def handle_info(%Notification{}, socket), do: {:noreply, socket}
 
   @impl true
   def render(assigns) do
+    assigns = assign(assigns, :locale, assigns.current_user.settings.locale)
+
     ~H"""
     <Layouts.app
       flash={@flash}
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
-      space="section"
       title={dgettext("admin_media", "Media Browser")}
     >
-      <.page_description text={
-        dgettext("admin_media", "View and manage all medias on this instance.")
-      } />
+      <:parent
+        :if={@selected}
+        navigate={media_browser_path(@list, nil)}
+        label={dgettext("admin_media", "Media Browser")}
+        patch
+        narrow_only
+      />
 
-      <Toolbar.toolbar state={@state} />
-
-      <.empty_state :if={State.Stream.empty?(@state.stream)} state={@state} />
-
-      <div
-        :if={!State.Stream.empty?(@state.stream)}
-        class={[
-          "grid gap-cluster items-start",
-          @state.drawer.open? &&
-            "lg:grid-cols-[minmax(0,1fr)_26rem] xl:grid-cols-[minmax(0,1fr)_32rem] 2xl:grid-cols-[minmax(0,1fr)_36rem]"
-        ]}
-      >
-        <Table.render
-          streams={@streams}
-          selected_id={selected_id(@state)}
-          drawer_open?={@state.drawer.open?}
-          locale={@current_user.settings.locale}
-        />
-
-        <%= if @state.drawer.open? do %>
-          <button
-            type="button"
-            phx-click="close_drawer"
-            aria-label={dgettext("admin_media", "Close detail panel")}
-            class="fixed inset-0 z-40 bg-scrim backdrop-blur-sm lg:hidden"
-          ></button>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={dgettext("admin_media", "Media detail")}
-            phx-window-keydown="close_drawer"
-            phx-key="escape"
-            class={[
-              "fixed inset-y-0 right-0 z-50 w-full max-w-[32rem] overflow-y-auto",
-              "lg:static lg:z-auto lg:max-w-none lg:overflow-visible"
-            ]}
-          >
-            <DetailDrawer.render
-              media={@state.drawer.media}
-              locale={@current_user.settings.locale}
-            />
-          </div>
-        <% end %>
+      <%!-- Narrow screens show the selected Media's details instead of the list --%>
+      <div class={@selected && "@max-split-view/main:hidden"}>
+        <.page_description text={
+          dgettext("admin_media", "View and manage all Media on this instance.")
+        } />
       </div>
 
-      <.remove_media_modal
-        :if={@state.drawer.confirm_remove_open?}
-        instance_settings={@instance_settings}
-      />
+      <.no_media :if={@media_page.count == 0 and not filtered?(@list)} />
+
+      <%!-- min-w-0, or the chips widen the page instead of scrolling --%>
+      <div
+        :if={@media_page.count > 0 or filtered?(@list)}
+        class="flex min-w-0 items-start gap-cluster"
+      >
+        <div class={[
+          "flex min-w-0 flex-3 flex-col gap-group",
+          @selected && "@max-split-view/main:hidden"
+        ]}>
+          <.filters list={@list} unmatched_count={@unmatched_count} locale={@locale} />
+          <.no_match :if={@media_page.count == 0} />
+          <.media_table
+            :if={@media_page.count > 0}
+            media_page={@media_page}
+            list={@list}
+            selected_id={@selected && @selected.id}
+            locale={@locale}
+          />
+        </div>
+
+        <%!-- Beside the list, two fifths of the width up to 40rem, under the app bar as the list scrolls --%>
+        <.card
+          id="media-details"
+          aria-label={dgettext("admin_media", "Media details")}
+          padding="none"
+          class={[
+            "min-w-0 flex-2 max-w-160 @split-view/main:min-w-96",
+            "@split-view/main:sticky @split-view/main:top-[calc(var(--wc-app-bar-height)+var(--spacing-group))] @split-view/main:max-h-[calc(100svh-var(--wc-app-bar-height)-2*var(--spacing-group))] @split-view/main:overflow-y-auto",
+            !@selected && "@max-split-view/main:hidden"
+          ]}
+        >
+          <.media_details :if={@selected} media={@selected} locale={@locale} />
+          <.empty :if={!@selected} id="no-media-selected" border={false} class="py-section!">
+            <:icon><Lucideicons.panel_right /></:icon>
+            <:title>{dgettext("admin_media", "No file selected")}</:title>
+            <:description>
+              {dgettext("admin_media", "Select a file to see its details.")}
+            </:description>
+          </.empty>
+        </.card>
+      </div>
+
+      <.remove_media_modal :if={@removing} instance_settings={@instance_settings} />
     </Layouts.app>
     """
   end
 
-  defp selected_id(%State{drawer: %State.Drawer{media: %{id: id}}}), do: id
-  defp selected_id(_), do: nil
+  attr :list, :map, required: true
+  attr :unmatched_count, :integer, required: true
+  attr :locale, :atom, required: true
 
-  attr :state, State, required: true
+  # The search, then one chip per Media Type and one for the Unmatched Media, as on Browse
+  defp filters(assigns) do
+    assigns = assign(assigns, :form, to_form(%{"search" => assigns.list.search}))
 
-  defp empty_state(%{state: %State{filter: f}} = assigns) do
-    if State.Filter.active?(f) do
-      filtered_empty_state(assigns)
-    else
-      no_media_empty_state(assigns)
-    end
+    ~H"""
+    <div class="flex flex-col gap-group">
+      <.form
+        id="media-search"
+        for={@form}
+        layout="none"
+        role="search"
+        phx-change="search"
+        phx-submit="search"
+      >
+        <div class="relative">
+          <Lucideicons.search
+            aria-hidden="true"
+            class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle"
+          />
+          <.input
+            id="media-search-input"
+            field={@form[:search]}
+            type="search"
+            placeholder={dgettext("admin_media", "Search file name or title")}
+            aria-label={dgettext("admin_media", "Search Media")}
+            autocomplete="off"
+            phx-debounce="300"
+            class="pl-9!"
+          />
+        </div>
+      </.form>
+      <.scroll_row id="media-filters" variant="chips">
+        <div
+          role="radiogroup"
+          aria-label={dgettext("admin_media", "Media Type")}
+          class="flex shrink-0 items-center gap-related"
+        >
+          <.filter_chip
+            :for={type <- MediaType.values()}
+            id={"filter-#{type}"}
+            on={@list.media_type == type}
+            radio
+            phx-click="filter_type"
+            phx-value-type={type}
+          >
+            <:icon><.media_type_icon media_type={type} /></:icon>
+            {MediaType.translated_plural_label(type)}
+          </.filter_chip>
+        </div>
+        <span class="h-6 w-px shrink-0 bg-border-subtle" aria-hidden="true"></span>
+        <.filter_chip id="filter-unmatched" on={@list.unmatched?} phx-click="toggle_unmatched">
+          <:icon><Lucideicons.file_question_mark /></:icon>
+          {dgettext("admin_media", "Unmatched")}
+          <span class="font-normal tabular-nums">
+            {WatchClub.Cldr.Number.to_string!(@unmatched_count,
+              locale: UserLocale.to_cldr_locale_name(@locale)
+            )}
+          </span>
+        </.filter_chip>
+      </.scroll_row>
+    </div>
+    """
   end
 
-  defp no_media_empty_state(assigns) do
+  defp no_media(assigns) do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search /></:icon>
@@ -227,7 +271,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     """
   end
 
-  defp filtered_empty_state(assigns) do
+  defp no_match(assigns) do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search_x /></:icon>
@@ -235,7 +279,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       <:description>
         {dgettext("admin_media", "Try clearing your filters or searching for something else")}
       </:description>
-      <.button id="empty-state-import-media" patch={~p"/admin/media"} variant="accent">
+      <.button id="empty-state-clear-filters" phx-click="clear_filters" variant="accent">
         <:icon><Lucideicons.x /></:icon>
         {dgettext("admin_media", "Clear filters")}
       </.button>
@@ -243,61 +287,101 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     """
   end
 
-  # --------------------------------------------------------------------------
-  # Helpers
-  # --------------------------------------------------------------------------
+  # The list's search, filters, sort and page in the URL. Unknown values are left out.
+  defp list(params) do
+    sort_by = Url.parse_url_param(params["sort"], @sorts, :added)
 
-  defp load_media_rows(%State{} = state, actor) do
-    MediaCatalog.browse_media!(State.browse_arguments(state), actor: actor)
-    |> Enum.take(@page_size)
+    %{
+      search: if(is_binary(params["search"]), do: params["search"], else: ""),
+      media_type: Url.parse_url_param(params["type"], MediaType.values()),
+      unmatched?: params["unmatched"] == "true",
+      sort_by: sort_by,
+      sort_order: Url.parse_url_param(params["order"], SortOrder.values(), first_order(sort_by)),
+      page: page_number(params["page"])
+    }
   end
 
-  defp drawer_load_tree do
-    [
-      video: [
-        :default_video_track,
-        :audio_tracks,
-        :text_tracks,
-        movie: [:best_localization, :content],
-        tv_show_episode: [
-          tv_show: [:best_localization, :content]
-        ]
-      ],
-      ebook: [book: [:content]],
-      audiobook: [book: [:content]]
-    ]
-  end
-
-  defp url_for(%State{} = state) do
-    case State.to_query_params(state) do
-      params when params == %{} -> ~p"/admin/media"
-      params -> ~p"/admin/media?#{params}"
+  defp page_number(page) when is_binary(page) do
+    case Integer.parse(page) do
+      {page, ""} when page > 0 -> page
+      _other -> 1
     end
   end
 
-  # Translate the toolbar form params into the URL param schema understood by
-  # State.from_params/1. The "sort" form field encodes "<field>:<order>" in one
-  # value; split it into sort_by + sort_order.
-  defp form_to_params(params) do
-    {sort_by, sort_order} = parse_sort(params["sort"])
+  defp page_number(_page), do: 1
 
-    %{}
-    |> put_if(params["search"], "search")
-    |> put_if(params["media_type"], "media_type")
-    |> put_if(sort_by, "sort_by")
-    |> put_if(sort_order, "sort_order")
+  defp first_order(:title), do: :asc
+  defp first_order(:added), do: :desc
+
+  defp filtered?(list), do: list.search != "" or list.media_type != nil or list.unmatched?
+
+  # The list's URL, without its default values
+  defp media_browser_path(list, media_id) do
+    params =
+      Enum.reject(
+        [
+          search: list.search,
+          type: list.media_type,
+          unmatched: list.unmatched?,
+          sort: list.sort_by != :added && list.sort_by,
+          order: list.sort_order != first_order(list.sort_by) && list.sort_order,
+          page: list.page != 1 && list.page,
+          media: media_id
+        ],
+        fn {_param, value} -> value in [nil, false, ""] end
+      )
+
+    ~p"/admin/media?#{params}"
   end
 
-  defp put_if(map, value, _key) when value in [nil, ""], do: map
-  defp put_if(map, value, key), do: Map.put(map, key, value)
+  # Changing the search, a filter or the sort goes back to the first page
+  defp patch_list(socket, changes) do
+    list = Map.merge(%{socket.assigns.list | page: 1}, Map.new(changes))
+    push_patch(socket, to: media_browser_path(list, selected_id(socket)))
+  end
 
-  defp parse_sort(nil), do: {nil, nil}
-  defp parse_sort(""), do: {nil, nil}
+  defp selected_id(%{assigns: %{selected: %Media{id: id}}}), do: id
+  defp selected_id(_socket), do: nil
 
-  defp parse_sort(value) when is_binary(value) do
-    case String.split(value, ":", parts: 2) do
-      [field, order] -> {field, order}
-      _ -> {nil, nil}
+  defp load_list!(socket) do
+    %{list: list, current_user: user} = socket.assigns
+
+    media_page =
+      MediaCatalog.browse_media!(Map.delete(list, :page),
+        page: [limit: @page_size, offset: (list.page - 1) * @page_size],
+        load: @row_load,
+        actor: user
+      )
+
+    last_page = max(AshPhoenix.LiveView.last_page(media_page), 1)
+
+    # A page past the last one, after removals or from an old link
+    if list.page > last_page do
+      socket
+      |> assign(:list, %{list | page: last_page})
+      |> load_list!()
+      |> push_patch(
+        to: media_browser_path(%{list | page: last_page}, selected_id(socket)),
+        replace: true
+      )
+    else
+      assign(socket,
+        media_page: media_page,
+        unmatched_count:
+          MediaCatalog.count_unmatched_media!(Map.take(list, [:search, :media_type]),
+            actor: user
+          )
+      )
+    end
+  end
+
+  # The Media of the URL, unless a hand-edited URL or a removal makes it unknown
+  defp selected_media(nil, _user), do: nil
+
+  defp selected_media(id, user) do
+    case MediaCatalog.get_media(id, load: @details_load, actor: user) do
+      {:ok, media} -> media
+      {:error, %Ash.Error.Invalid{}} -> nil
     end
   end
 end

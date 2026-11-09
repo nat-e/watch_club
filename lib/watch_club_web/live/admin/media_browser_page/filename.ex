@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
   @moduledoc """
   Renders a filename with a middle-ellipsis: the head truncates with an
   ellipsis while the tail (extension + a few preceding characters) stays
-  fully visible. Shared by the table row, mobile card, and drawer hero.
+  fully visible.
   """
   use Phoenix.Component
 
@@ -10,18 +10,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
 
   attr :file_name, :string, required: true
   attr :class, :any, default: nil
-
-  attr :wrap, :boolean,
-    default: false,
-    doc: "wrap onto multiple lines instead of middle-truncating"
-
-  def file_name(%{wrap: true} = assigns) do
-    ~H"""
-    <span class={["block break-all", @class]} title={@file_name}>
-      {@file_name}
-    </span>
-    """
-  end
 
   def file_name(assigns) do
     {head, tail} = split(assigns.file_name)
@@ -32,7 +20,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.Filename do
       class={["flex min-w-0 overflow-hidden", @class]}
       title={@file_name}
     >
-      <span class="truncate">{@head}</span>
+      <%!-- whitespace-pre keeps a space at the cut --%>
+      <span class="overflow-hidden text-ellipsis whitespace-pre">{@head}</span>
       <span :if={@tail != ""} class="shrink-0 whitespace-pre">{@tail}</span>
     </span>
     """

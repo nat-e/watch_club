@@ -19,11 +19,11 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
     <.table>
       <.table_header>
         <.table_row>
-          <.table_head class="text-left">{dgettext("admin_media_imports", "Status")}</.table_head>
-          <.table_head class="text-left">{dgettext("admin_media_imports", "Started")}</.table_head>
-          <.table_head class="text-left">{dgettext("admin_media_imports", "Duration")}</.table_head>
-          <.table_head class="text-left">{dgettext("admin_media_imports", "Trigger")}</.table_head>
-          <.table_head class="text-left">
+          <.table_head>{dgettext("admin_media_imports", "Status")}</.table_head>
+          <.table_head>{dgettext("admin_media_imports", "Started")}</.table_head>
+          <.table_head>{dgettext("admin_media_imports", "Duration")}</.table_head>
+          <.table_head>{dgettext("admin_media_imports", "Trigger")}</.table_head>
+          <.table_head>
             {dgettext("admin_media_imports", "Refresh metadata")}
           </.table_head>
           <.table_head class="w-0">
@@ -33,22 +33,22 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
       </.table_header>
       <.table_body>
         <.table_row :for={media_import <- @imports}>
-          <.table_cell class="text-left">
+          <.table_cell>
             <.run_status_badge status={media_import.status} />
           </.table_cell>
-          <.table_cell class="text-left text-text-muted">
+          <.table_cell class="text-text-muted">
             {Time.relative_from_now(media_import.inserted_at, @locale)}
           </.table_cell>
-          <.table_cell class="text-left text-text-muted">
+          <.table_cell class="text-text-muted">
             {duration(media_import)}
           </.table_cell>
-          <.table_cell class="text-left">
+          <.table_cell>
             <.trigger_badge triggered_manually?={media_import.triggered_manually?} />
           </.table_cell>
-          <.table_cell class="text-left">
+          <.table_cell>
             <.refresh_metadata_badge value={media_import.refresh_metadata?} />
           </.table_cell>
-          <.table_cell class="text-right">
+          <.table_cell class="text-end!">
             <.button
               :if={media_import.status == :processing}
               id={"cancel-media-import-#{media_import.id}"}

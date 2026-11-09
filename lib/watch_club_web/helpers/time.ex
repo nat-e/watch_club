@@ -9,6 +9,21 @@ defmodule WatchClubWeb.Helpers.Time do
   end
 
   @doc """
+  Returns how long ago a moment was in the past week, like "4 minutes ago", else its UTC date, like
+  "Sep 13, 2026".
+  """
+  @spec relative_or_date!(DateTime.t(), atom()) :: String.t()
+  def relative_or_date!(datetime, locale) do
+    if DateTime.diff(DateTime.utc_now(), datetime, :day) < 7,
+      do: relative_from_now(datetime, locale),
+      else:
+        WatchClub.Cldr.Date.to_string!(DateTime.to_date(datetime),
+          format: :medium,
+          locale: cldr_locale(locale)
+        )
+  end
+
+  @doc """
   Returns a position in a video, like "42:17", or "1:12:05" past an hour.
   """
   @spec position(number()) :: String.t()
