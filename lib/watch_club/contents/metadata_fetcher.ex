@@ -82,7 +82,7 @@ defmodule WatchClub.Contents.MetadataFetcher do
           {exception, stacktrace}
 
         reason ->
-          {Exception.normalize(:exit, reason), []}
+          {Exception.normalize(:error, reason), []}
       end
 
     Span.record_exception(fetch.span, exception, stacktrace)

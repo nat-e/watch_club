@@ -703,6 +703,37 @@ defmodule WatchClub.Contents.ContentTest do
       end)
     end
 
+    test "a killed fetch exits every waiting caller without crashing the fetcher", %{
+      member: actor,
+      telemetry_ref: ref
+    } do
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+      end)
+
+      capture_log(fn ->
+        callers =
+          for _ <- 1..4 do
+            Task.async(fn ->
+              catch_exit(get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor))
+            end)
+          end
+
+        assert_receive {:fetch_started, fetch}
+        await_metadata_callers(4)
+        Process.exit(fetch, :kill)
+
+        assert Task.await_many(callers) == [:killed, :killed, :killed, :killed]
+        assert Process.alive?(Process.whereis(WatchClub.Contents.MetadataFetcher))
+
+        assert_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref,
+                         %{callers: 4}, %{type: :movie, reason: :killed, stacktrace: []}}
+      end)
+    end
+
     test "respects a shorter max_age", %{member: actor} do
       refreshed_at = DateTime.add(DateTime.utc_now(), -16, :minute)
       content = generate(movie(metadata_refreshed_at: refreshed_at))
