@@ -44,7 +44,7 @@ defmodule WatchClub.Telemetry do
         {:error, :already_exists} -> :ok
       end
 
-      :ok = OpentelemetryOban.setup()
+      :ok = OpentelemetryOban.setup(plugin: :disabled)
     end
 
     if signals[:logs] do
