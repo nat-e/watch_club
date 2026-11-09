@@ -48,7 +48,25 @@ defmodule WatchClubWeb.Contents.ContentPage do
       title={title(@content)}
       content_page?
     >
-      <article aria-labelledby="content-title" class="@container">
+      <div :if={!@content} class="@container pt-(--wc-app-bar-height)">
+        <.page width="full">
+          <.stack
+            id="content-loading"
+            role="status"
+            class="items-center py-section text-center text-text-muted @lg:flex-row @lg:justify-center"
+          >
+            <Lucideicons.loader_circle
+              aria-hidden="true"
+              class="size-icon-lg shrink-0 motion-safe:animate-spin"
+            />
+            <h1 id="content-title" data-page-title class="font-heading text-xl font-semibold">
+              {dgettext("contents", "Loading content…")}
+            </h1>
+          </.stack>
+        </.page>
+      </div>
+
+      <article :if={@content} aria-labelledby="content-title" class="@container">
         <.content_header
           content={@content}
           content_identity={@content_identity}
@@ -67,7 +85,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       </article>
 
       <.live_component
-        :if={@episodes_open?}
+        :if={@content && @episodes_open?}
         id={EpisodesModalLive.dom_id()}
         module={EpisodesModalLive}
         content_identity={@content_identity}
@@ -80,7 +98,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       />
 
       <.live_component
-        :if={@recommend_open?}
+        :if={@content && @recommend_open?}
         id="recommend"
         module={RecommendModalLive}
         content_identity={@content_identity}
@@ -95,7 +113,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       />
 
       <.add_to_playlist_modal
-        :if={@new_playlist_form}
+        :if={@content && @new_playlist_form}
         title={title(@content)}
         playlists={Enum.filter(@playlists, & &1.editable_by?)}
         new_playlist_form={@new_playlist_form}
@@ -567,24 +585,20 @@ defmodule WatchClubWeb.Contents.ContentPage do
   def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     %{live_action: type, current_user: user} = socket.assigns
 
-    with {id, ""} <- Integer.parse(tmdb_id),
-         identity <- content_identity_for(type, id),
-         {:ok, content} <-
-           Contents.get_or_refresh_content(identity, actor: user, load: @content_load) do
-      {:noreply,
-       socket
-       |> assign(content: content, content_identity: identity)
-       |> load_watchers!()
-       |> load_conversations!()
-       |> load_playlists!()}
-    else
-      {:error, %{errors: errors}} ->
-        message =
-          if Enum.any?(errors, &match?(%MetadataUnavailable{reason: :not_found}, &1)),
-            do: dgettext("contents", "This movie or TV show doesn't exist"),
-            else: dgettext("contents", "Content details are unavailable. Please try again later.")
+    case Integer.parse(tmdb_id) do
+      {id, ""} ->
+        identity = content_identity_for(type, id)
 
-        {:noreply, socket |> put_flash(:error, message) |> push_navigate(to: ~p"/")}
+        {:noreply,
+         socket
+         |> assign(content_identity: identity)
+         |> load_content!()
+         |> load_watchers!()
+         |> load_conversations!()
+         |> load_playlists!()
+         |> start_async(:refresh_content, fn ->
+           Contents.get_or_refresh_content(identity, actor: user)
+         end)}
 
       _invalid_url ->
         {:noreply,
@@ -592,6 +606,18 @@ defmodule WatchClubWeb.Contents.ContentPage do
          |> put_flash(:error, dgettext("contents", "This movie or TV show doesn't exist"))
          |> push_navigate(to: ~p"/")}
     end
+  end
+
+  @impl true
+  def handle_async(:refresh_content, {:ok, {:ok, _content}}, socket), do: {:noreply, socket}
+
+  def handle_async(:refresh_content, {:ok, {:error, %{errors: errors}}}, socket) do
+    message =
+      if Enum.any?(errors, &match?(%MetadataUnavailable{reason: :not_found}, &1)),
+        do: dgettext("contents", "This movie or TV show doesn't exist"),
+        else: dgettext("contents", "Content details are unavailable. Please try again later.")
+
+    {:noreply, socket |> put_flash(:error, message) |> push_navigate(to: ~p"/")}
   end
 
   # The Content's identity from the URL
@@ -789,6 +815,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       }
   end
 
+  defp title(nil), do: dgettext("contents", "Loading content…")
   defp title(content), do: localization(content).title
 
   defp backdrop_path(%Content{implementation: implementation}),
