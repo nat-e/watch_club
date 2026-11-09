@@ -14,7 +14,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   alias WatchClub.Contents
   alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.Integrations.Tmdb
-  alias WatchClub.MediaSources.Import.Candidate
+  alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
 
   alias WatchClub.MediaSources.Import.Candidate.{
     BookIdentity,
@@ -30,7 +30,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   # A Media Import refreshes the Content it matches when its metadata is older than 15 minutes.
   @metadata_max_age 15 * 60
 
-  def apply(%Candidate{} = candidate) do
+  def apply!(%Candidate{} = candidate) do
     Logger.info("Matching content for #{candidate.path} -- #{inspect(candidate.identity)}",
       event: :matching_candidate_started,
       identity: candidate.identity
@@ -42,6 +42,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
           event: :no_match_found
         )
 
+        :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
+          result: :not_matched
+        })
+
         %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}
 
       match ->
@@ -51,8 +55,28 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
           name: to_string(match)
         )
 
+        :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{result: :matched})
         %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}
     end
+  rescue
+    error in TvShowEpisodeNotListedError ->
+      episode = TvShowEpisode.format_number(error.season_number, error.episode_number)
+
+      Logger.warning(
+        "TV Show Episode #{episode} for TMDB TV Show #{error.tmdb_id} is not listed for #{candidate.path}",
+        event: :tv_show_episode_not_listed,
+        path: candidate.path,
+        tmdb_id: error.tmdb_id,
+        episode: episode
+      )
+
+      :telemetry.execute(
+        [:watch_club, :media_import, :match],
+        %{count: 1},
+        %{result: :episode_not_listed}
+      )
+
+      reraise error, __STACKTRACE__
   end
 
   # 1. Match by TMDB ID
@@ -105,7 +129,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
       content.implementation.episodes,
       &(&1.season_number == season_number and &1.episode_number == episode_number)
     ) ||
-      raise "TV Show Episode #{TvShowEpisode.format_number(season_number, episode_number)} for TMDB TV Show #{tmdb_id} is still missing after fetching metadata"
+      raise TvShowEpisodeNotListedError,
+        tmdb_id: tmdb_id,
+        season_number: season_number,
+        episode_number: episode_number
   end
 
   # 2. Match by TVDB ID. We just fetch the TMDB ID and go back to step 1.

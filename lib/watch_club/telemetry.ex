@@ -12,6 +12,8 @@ defmodule WatchClub.Telemetry do
     :event,
     :content_type,
     :tmdb_id,
+    :path,
+    :episode,
     :reason,
     :status,
     :error,

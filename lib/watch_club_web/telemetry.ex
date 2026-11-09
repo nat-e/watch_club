@@ -113,6 +113,7 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:endpoint, :status],
         unit: {:native, :millisecond}
       ),
+      counter("watch_club.media_import.match.count", tags: [:result]),
 
       # The dependency's default poller emits these VM measurements.
       last_value("vm.memory.total", unit: :byte),
