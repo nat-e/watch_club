@@ -47,10 +47,10 @@ defmodule WatchClub.Conversations.Conversation do
       prepare build(sort: [last_message_at: :desc])
     end
 
-    read :unread_latest_first do
-      description "The actor's Conversations with Messages they haven't read, the one with the latest Message first"
-      filter expr(exists(participants, user_id == ^actor(:id) and unread_count > 0))
-      prepare build(sort: [last_message_at: :desc])
+    read :recommended_to_actor do
+      description "The Conversations another User started by recommending a Content to the actor, the latest first"
+      filter expr(is_distinct_from(recommended_by_id, ^actor(:id)))
+      prepare build(sort: [inserted_at: :desc])
     end
 
     create :recommend do

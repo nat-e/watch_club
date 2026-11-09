@@ -50,23 +50,26 @@ defmodule WatchClub.Playlists.PlaylistTest do
     end
   end
 
-  describe "list_current_user_shared_unseen_playlists/*" do
-    test "lists the Playlists shared with the User since they last opened their Playlists, the latest shared first",
-         %{playlist: earlier} do
+  describe "list_playlists_shared_with_current_user/*" do
+    test "lists the Playlists shared with the User, the latest shared first", %{playlist: earlier} do
       user = generate(user())
       later = generate(playlist(generate(user())))
-      seen = generate(playlist(generate(user())))
+      _own = generate(playlist(user))
+      _not_shared = generate(playlist(generate(user())))
 
       generate(
         playlist_access(earlier, user, :view, inserted_at: ~U[2026-01-01 00:00:00.000000Z])
       )
 
-      generate(playlist_access(later, user, :edit, inserted_at: ~U[2026-02-01 00:00:00.000000Z]))
-      generate(playlist_access(seen, user, :view, shared_unseen?: false))
-      generate(playlist_access(seen, generate(user()), :view))
+      generate(
+        playlist_access(later, user, :edit,
+          inserted_at: ~U[2026-02-01 00:00:00.000000Z],
+          shared_unseen?: false
+        )
+      )
 
       assert [later.id, earlier.id] ==
-               Enum.map(list_current_user_shared_unseen_playlists!(actor: user), & &1.id)
+               Enum.map(list_playlists_shared_with_current_user!(actor: user), & &1.id)
     end
   end
 

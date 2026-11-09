@@ -84,17 +84,16 @@ defmodule WatchClub.Conversations.ConversationTest do
     end
   end
 
-  describe "list_unread_conversations/*" do
-    test "lists the actor's Conversations with Messages they haven't read, the latest Message first" do
-      [user, friend] = generate_many(user(), 2)
+  describe "list_recommendations_to_current_user/*" do
+    test "lists the Conversations others started by recommending a Content to the actor, the latest first" do
+      [user, friend, other_friend] = generate_many(user(), 3)
       [movie, other_movie, third_movie] = generate_many(movie(), 3)
-      recommended_to_user = generate(conversation(friend, movie, [user]))
-      replied_to = generate(conversation(user, other_movie, [friend]))
-      generate(message(replied_to, friend))
+      earlier = generate(conversation(friend, movie, [user]))
+      later = generate(conversation(other_friend, other_movie, [user, friend]))
+      # Recommended by the actor
       generate(conversation(user, third_movie, [friend]))
 
-      assert ids(list_unread_conversations!(actor: user)) ==
-               [replied_to.id, recommended_to_user.id]
+      assert ids(list_recommendations_to_current_user!(actor: user)) == [later.id, earlier.id]
     end
   end
 

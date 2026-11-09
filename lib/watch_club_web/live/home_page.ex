@@ -13,7 +13,7 @@ defmodule WatchClubWeb.HomePage do
 
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Conversations
-  alias WatchClub.Conversations.{Message, Participant}
+  alias WatchClub.Conversations.Participant
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Helpers.KeysetStreamState
   alias WatchClubWeb.HomePage.ForYou
@@ -21,6 +21,7 @@ defmodule WatchClubWeb.HomePage do
   # The spotlight's Content, then Up next
   @in_progress_limit 6
   @new_in_library_limit 12
+  @for_you_limit 5
   @feed_page_size 8
 
   @new_in_library_load [
@@ -29,15 +30,9 @@ defmodule WatchClubWeb.HomePage do
     actor_recommendations: [:recommended_by]
   ]
 
-  # What For You shows, as the navigation's badges count it, and its Playlists' names and Content
-  @for_you_resources [
-    Message,
-    Participant,
-    RequestSubscriber,
-    PlaylistAccess,
-    Playlist,
-    PlaylistItem
-  ]
+  # A recommendation to the User, a Content Request becoming playable, a Playlist shared with them,
+  # and its name and Content
+  @for_you_resources [Participant, RequestSubscriber, PlaylistAccess, Playlist, PlaylistItem]
 
   @impl true
   def render(assigns) do
@@ -66,7 +61,7 @@ defmodule WatchClubWeb.HomePage do
             contents={tl(@in_progress)}
             locale={@current_user.settings.locale}
           />
-          <.for_you stream={@streams.for_you} locale={@current_user.settings.locale} />
+          <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
           <.page_section
             :if={@new_in_library != []}
             id="new-in-library-title"
@@ -134,7 +129,6 @@ defmodule WatchClubWeb.HomePage do
      |> WatchClub.PubSub.subscribe_if_connected("feed:global")
      # Intentionally small: one line per User
      |> assign(:watching_now, Playbacks.list_watching_now!(actor: user))
-     |> stream_configure(:for_you, dom_id: &ForYou.dom_id/1)
      |> stream_configure(:feed, dom_id: &feed_entry_dom_id(&1.group_key))
      |> assign(:feed_state, KeysetStreamState.init(@feed_page_size))
      |> load_feed_page()
@@ -201,20 +195,34 @@ defmodule WatchClubWeb.HomePage do
     assign(socket, :in_progress, in_progress)
   end
 
+  # The latest of each kind, so the latest of all is among them
   defp load_for_you(socket) do
     user = socket.assigns.current_user
 
     conversations =
-      Conversations.list_unread_conversations!(load: conversation_load(), actor: user)
+      Conversations.list_recommendations_to_current_user!(
+        load: conversation_load(),
+        query: [limit: @for_you_limit],
+        actor: user
+      )
 
     requests =
-      Requests.list_current_user_ready_unseen_requests!(load: request_load(), actor: user)
+      Requests.list_current_user_ready_requests!(
+        load: request_load(),
+        query: [limit: @for_you_limit],
+        actor: user
+      )
 
     playlists =
-      Playlists.list_current_user_shared_unseen_playlists!(load: playlist_load(), actor: user)
+      Playlists.list_playlists_shared_with_current_user!(
+        load: playlist_load(),
+        query: [limit: @for_you_limit],
+        actor: user
+      )
 
     socket
-    |> stream(:for_you, conversations ++ requests ++ playlists, reset: true)
+    # Intentionally small: @for_you_limit items
+    |> assign(:for_you, ForYou.latest(conversations ++ requests ++ playlists, @for_you_limit))
     |> WatchClub.PubSub.subscribe_to_playlists(playlists)
   end
 

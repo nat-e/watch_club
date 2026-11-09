@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ForYou do
   @moduledoc """
-  For You on Home: what the navigation's badges count, one card each. The unread Conversations,
-  then the Ready Unseen Content Requests, then the Shared Unseen Playlists.
+  For You on Home: the latest recommendations to the User, their Content Requests that became
+  playable and the Playlists shared with them, newest first, one card each, seen or not.
   """
   use WatchClubWeb, :component
 
@@ -13,46 +13,44 @@ defmodule WatchClubWeb.HomePage.ForYou do
   alias WatchClub.Conversations.Conversation
 
   @doc "What to load on the Conversations, Content Requests and Playlists"
-  def conversation_load, do: [last_message: [:author], content: [:implementation]]
+  def conversation_load, do: [:recommended_by, :recommendation, content: [:implementation]]
   def request_load, do: [content: [:implementation, :added_to_library_at]]
-  def playlist_load, do: [:owner, :movie_count, :tv_show_count]
+  def playlist_load, do: [:owner, :movie_count, :tv_show_count, :shared_with_actor_at]
 
-  @doc "The DOM id of an item's card, for the stream"
-  def dom_id(%Conversation{id: id}), do: "for-you-conversation-#{id}"
-  def dom_id(%ContentRequest{id: id}), do: "for-you-request-#{id}"
-  def dom_id(%Playlist{id: id}), do: "for-you-playlist-#{id}"
+  @doc """
+  The `count` latest items, newest first: by when each was recommended, became playable or was
+  shared
+  """
+  def latest(items, count),
+    do: items |> Enum.sort_by(&addressed_at/1, {:desc, DateTime}) |> Enum.take(count)
 
-  attr :stream, :list,
+  defp addressed_at(%Conversation{inserted_at: at}), do: at
+  defp addressed_at(%ContentRequest{content: content}), do: content.added_to_library_at
+  defp addressed_at(%Playlist{shared_with_actor_at: at}), do: at
+
+  attr :items, :list,
     required: true,
-    doc: "Conversations, Content Requests and Playlists, with what their `*_load/0` say loaded"
+    doc: "from `latest/2`, with what the `*_load/0` functions say loaded"
 
   attr :locale, :atom, required: true
 
-  # Hidden while the stream is empty
   def for_you(assigns) do
     ~H"""
-    <.page_section
-      id="for-you-title"
-      title={dgettext("home", "For you")}
-      class="not-has-[[data-for-you-item]]:hidden"
-    >
-      <.scroll_row id="for-you" stream>
-        <.for_you_card :for={{dom_id, item} <- @stream} id={dom_id} item={item} locale={@locale} />
+    <.page_section id="for-you-title" title={dgettext("home", "For you")}>
+      <.scroll_row id="for-you">
+        <.for_you_card :for={item <- @items} item={item} locale={@locale} />
       </.scroll_row>
     </.page_section>
     """
   end
 
-  attr :id, :string, required: true
   attr :item, :any, required: true
   attr :locale, :atom, required: true
 
-  defp for_you_card(%{item: %Conversation{} = conversation} = assigns) do
-    assigns = assign(assigns, :message, conversation.last_message)
-
+  defp for_you_card(%{item: %Conversation{}} = assigns) do
     ~H"""
     <.card_frame
-      id={@id}
+      id={"for-you-conversation-#{@item.id}"}
       navigate={~p"/inbox/#{@item.id}"}
       title={@item.content.implementation.best_localization.title}
     >
@@ -62,12 +60,12 @@ defmodule WatchClubWeb.HomePage.ForYou do
       <:reason>
         <Lucideicons.message_circle class="size-icon-sm shrink-0" />
         <span class="truncate">
-          {dgettext("home", "From %{user}", user: username(@message.author))}
+          {dgettext("home", "From %{user}", user: username(@item.recommended_by))}
         </span>
       </:reason>
       <.recommendation_text
-        :if={@message.body}
-        body={@message.body}
+        :if={@item.recommendation.body}
+        body={@item.recommendation.body}
         class="line-clamp-2 text-sm text-text-muted"
       />
     </.card_frame>
@@ -77,7 +75,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
   defp for_you_card(%{item: %ContentRequest{}} = assigns) do
     ~H"""
     <.card_frame
-      id={@id}
+      id={"for-you-request-#{@item.id}"}
       navigate={Url.content_details_link(@item.content)}
       title={@item.content.implementation.best_localization.title}
     >
@@ -88,9 +86,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
         <Lucideicons.circle_check class="size-icon-sm shrink-0" />
         <span class="truncate">{dgettext("home", "Ready to watch")}</span>
       </:reason>
-      <%!-- Nil once its last Media is gone --%>
       <time
-        :if={@item.content.added_to_library_at}
         datetime={DateTime.to_iso8601(@item.content.added_to_library_at)}
         class="text-sm text-text-subtle"
       >
@@ -103,7 +99,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
   defp for_you_card(%{item: %Playlist{}} = assigns) do
     ~H"""
     <.card_frame
-      id={@id}
+      id={"for-you-playlist-#{@item.id}"}
       navigate={~p"/playlists/#{@item.id}"}
       title={@item.name}
     >
@@ -138,7 +134,6 @@ defmodule WatchClubWeb.HomePage.ForYou do
       as="article"
       padding="related"
       id={@id}
-      data-for-you-item
       class="relative flex w-72 min-w-0 shrink-0 snap-start gap-group has-focus-visible:outline-2 has-focus-visible:outline-offset-2"
     >
       <div aria-hidden="true" class="w-16 shrink-0 self-start @xl:w-20">

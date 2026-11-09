@@ -377,7 +377,7 @@ The WatchClub interface that opens after signing in, where a **User** sees what'
 _Avoid_: Dashboard, landing page, feed
 
 **For You**:
-What is addressed to one **User** and waiting for them on **Home**: recommendations to them they haven't read, their **Ready Unseen** **Content Requests** and their **Shared Unseen** **Playlists**.
+What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that became playable and the **Playlists** shared with them.
 _Avoid_: Notifications, alerts, inbox
 
 ### Activity Feed
@@ -675,7 +675,7 @@ _Avoid_: Group, aggregate, card, item
 ### Home
 
 - **Home** shows the **User**'s **Content** in progress, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
-- An item leaves **For You** when its tab's badge stops counting it: when the **User** reads the **Conversation**, opens **My Requests**, or opens their Playlists
+- **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
 
 ### Activity Feed
