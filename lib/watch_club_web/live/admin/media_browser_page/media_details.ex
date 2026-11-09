@@ -25,7 +25,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
     ~H"""
     <div class="flex flex-col gap-cluster p-cluster">
       <div class="flex items-start justify-between gap-related">
-        <h2 class="font-heading text-lg leading-tight font-semibold wrap-break-word">
+        <h2 class="min-w-0 font-heading text-lg leading-tight font-semibold wrap-break-word">
           {if @media.content,
             do: content_title(@media.content),
             else: Path.basename(@media.path)}

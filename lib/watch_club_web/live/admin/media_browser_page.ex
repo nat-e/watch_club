@@ -157,13 +157,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
           />
         </div>
 
-        <%!-- Beside the list, two fifths of the width, under the app bar as the list scrolls --%>
+        <%!-- Beside the list, two fifths of the width up to 40rem, under the app bar as the list scrolls --%>
         <.card
           id="media-details"
           aria-label={dgettext("admin_media", "Media details")}
           padding="none"
           class={[
-            "max-w-panel min-w-0 flex-2 @split-view/main:min-w-96",
+            "min-w-0 flex-2 max-w-160 @split-view/main:min-w-96",
             "@split-view/main:sticky @split-view/main:top-[calc(var(--wc-app-bar-height)+var(--spacing-group))] @split-view/main:max-h-[calc(100svh-var(--wc-app-bar-height)-2*var(--spacing-group))] @split-view/main:overflow-y-auto",
             !@selected && "@max-split-view/main:hidden"
           ]}
