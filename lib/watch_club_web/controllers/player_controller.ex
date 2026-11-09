@@ -6,7 +6,7 @@ defmodule WatchClubWeb.PlayerController do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Ffmpeg.Trickplay
-  alias WatchClub.MediaCatalog.{AudioTrack, TextTrack}
+  alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Playback.Hls
 
@@ -16,15 +16,11 @@ defmodule WatchClubWeb.PlayerController do
     media: [
       video: [
         :default_video_track,
-        audio_tracks:
-          AudioTrack |> Ash.Query.sort(:stream_index) |> Ash.Query.load(:display_label),
-        # Full Text Tracks first: when the Player looks for a language in the
-        # next video, it picks the first Text Track in that language
+        audio_tracks: [:display_label, :language_code],
         text_tracks:
           TextTrack
           |> Ash.Query.filter(hls_supported? == true)
-          |> Ash.Query.sort([:forced?, :stream_index])
-          |> Ash.Query.load(:display_label)
+          |> Ash.Query.load([:display_label, :language_code])
       ]
     ]
   ]

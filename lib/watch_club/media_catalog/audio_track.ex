@@ -98,5 +98,12 @@ defmodule WatchClub.MediaCatalog.AudioTrack do
               {WatchClub.MediaCatalog.Calculations.TrackDisplayLabel, fallback_prefix: "Audio"} do
       public? true
     end
+
+    calculate :language_code,
+              :string,
+              {WatchClub.MediaCatalog.Calculations.LanguageCode, untagged_is_original?: true} do
+      description "The track's language code; audio without a language is taken to be in the Content's original language."
+      public? true
+    end
   end
 end

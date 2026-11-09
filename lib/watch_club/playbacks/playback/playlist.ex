@@ -12,8 +12,17 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   alias ExM3U8.MultivariantPlaylist
   alias ExM3U8.Tags.{Discontinuity, Media, Segment, Stream}
 
-  alias WatchClub.Languages
   alias WatchClub.Playbacks.Playback.QualityLadder.Quality
+
+  defmodule ForcedMedia do
+    @moduledoc "A subtitles media tag with `FORCED=YES`, which ExM3U8's media tag can't serialize."
+
+    defstruct [:media]
+
+    defimpl ExM3U8.Serializer do
+      def serialize(%{media: media}), do: [ExM3U8.Serializer.serialize(media), ",FORCED=YES"]
+    end
+  end
 
   @hls_video_codec "avc1.4d401f"
   @hls_audio_codec "mp4a.40.2"
@@ -116,7 +125,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
 
   defp master_subtitle_tags(subtitle_tracks, default_track_id) do
     Enum.map(subtitle_tracks, fn track ->
-      %Media{
+      media = %Media{
         type: :subtitles,
         group_id: "subs",
         name: escape(track.display_label),
@@ -125,12 +134,14 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         auto_select?: true,
         uri: "subtitles/#{track.id}/index.m3u8"
       }
+
+      if track.forced?, do: %ForcedMedia{media: media}, else: media
     end)
   end
 
   # The same code for a language in every playlist, so the Player can find the
-  # previous video's languages in the next video's tracks
-  defp language(track), do: escape(Languages.to_code(track.language) || "und")
+  # previous video's tracks in the next video's
+  defp language(track), do: escape(track.language_code || "und")
 
   defp segment_duration_at(duration, index, segment_duration) do
     remaining = duration - index * segment_duration

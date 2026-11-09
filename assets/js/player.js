@@ -69,10 +69,9 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
-		// The subtitles to carry over to the next video: a language, null for none, or
-		// undefined for the ones the master playlist marks as default
-		this.subtitleLanguage = undefined;
-		this.defaultSubtitles = null;
+		// The subtitles to carry over to the next video, as hls.js's language and forced
+		// flag: null for none, undefined for the ones the master playlist marks as default
+		this.carriedSubtitles = undefined;
 
 		this.bindDomEvents();
 		this.boot();
@@ -112,7 +111,6 @@ const Player = {
 		if (!this.player) return;
 		this.pendingAutoplay = true;
 		this.subtitlesToStart = true;
-		this.defaultSubtitles = null;
 		// Vidstack keeps the previous video's subtitles, under the ids of the new ones
 		this.player.textTracks.clear();
 		this.player.src = { src, type: "application/x-mpegurl" };
@@ -378,41 +376,35 @@ const Player = {
 	// The next video of the session starts with the audio language and the subtitles
 	// playing now, when it has them
 	carryTracksOver() {
-		const audio = this.player.audioTracks.selected;
-		if (audio) {
-			this.player.provider.instance.config.audioPreference = {
-				lang: audio.language,
-			};
-		}
+		const hls = this.player.provider.instance;
+		const audio = hls.audioTracks[hls.audioTrack];
+		if (audio) hls.config.audioPreference = { lang: audio.lang };
 
-		// The next video's default subtitles replace this one's: a language alone doesn't
-		// tell forced subtitles apart from full ones
-		const subtitles = this.player.textTracks.selected;
-		this.subtitleLanguage =
-			subtitles === this.defaultSubtitles
-				? undefined
-				: (subtitles?.language ?? null);
+		// Forced and full subtitles can share a language
+		const subtitles = hls.subtitleTracks[hls.subtitleTrack];
+		this.carriedSubtitles = subtitles
+			? { lang: subtitles.lang, forced: subtitles.forced }
+			: null;
 	},
 
 	// Starts the subtitles carried over from the previous video when this one has them,
 	// otherwise the ones the master playlist marks as default
 	startSubtitles(subtitleTracks) {
-		const defaultIndex = subtitleTracks.findIndex((track) => track.default);
-		this.defaultSubtitles =
-			this.player.textTracks.getById(`hls-subtitles-${defaultIndex}`) ?? null;
-
-		if (this.subtitleLanguage === null) {
+		const carried = this.carriedSubtitles;
+		if (carried === null) {
 			this.player.provider.instance.subtitleTrack = -1;
 			return;
 		}
 
-		const carried = subtitleTracks.findIndex(
-			(track) => track.lang === this.subtitleLanguage,
+		const carriedIndex = subtitleTracks.findIndex(
+			(track) =>
+				track.lang === carried?.lang && track.forced === carried?.forced,
 		);
-		const track =
-			carried === -1
-				? this.defaultSubtitles
-				: this.player.textTracks.getById(`hls-subtitles-${carried}`);
+		const index =
+			carriedIndex === -1
+				? subtitleTracks.findIndex((track) => track.default)
+				: carriedIndex;
+		const track = this.player.textTracks.getById(`hls-subtitles-${index}`);
 		if (track) track.mode = "showing";
 	},
 
