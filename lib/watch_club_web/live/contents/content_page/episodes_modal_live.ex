@@ -48,7 +48,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         <:title>{@title}</:title>
         <:description>
           {if @in_library?,
-            do: dgettext("contents", "Play any episode, or mark what you've watched."),
+            do: dgettext("contents", "Play or download any episode, and mark what you've watched."),
             else:
               dgettext("contents", "It isn't in the library yet. Mark what you've watched elsewhere.")}
         </:description>

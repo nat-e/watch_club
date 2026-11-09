@@ -159,12 +159,6 @@ msgstr "Sort le %{date}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "Play any episode, or mark what you've watched."
-msgstr "Lancez n'importe quel épisode, ou marquez ce que vous avez vu."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Play episode %{number}"
 msgstr "Lire l'épisode %{number}"
 
@@ -360,3 +354,9 @@ msgstr "Télécharger"
 #, elixir-autogen, elixir-format
 msgid "Download episode %{number}"
 msgstr "Télécharger l'épisode %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play or download any episode, and mark what you've watched."
+msgstr "Lancez ou téléchargez n'importe quel épisode, et marquez ce que vous avez vu."

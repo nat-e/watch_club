@@ -10,7 +10,7 @@ defmodule WatchClubWeb.DownloadController do
   def download(conn, %{"media_id" => media_id}) do
     case MediaCatalog.get_media(media_id, actor: conn.assigns.current_user) do
       {:ok, media} ->
-        send_media_file(conn, media.path)
+        send_media_file!(conn, media.path)
 
       {:error, _not_found} ->
         conn
@@ -19,7 +19,7 @@ defmodule WatchClubWeb.DownloadController do
     end
   end
 
-  defp send_media_file(conn, path) do
+  defp send_media_file!(conn, path) do
     %File.Stat{size: size, mtime: mtime} = File.stat!(path, time: :posix)
     # Changes when the file is replaced, so a resumed download never joins two different files
     etag = ~s("#{size}-#{mtime}")
