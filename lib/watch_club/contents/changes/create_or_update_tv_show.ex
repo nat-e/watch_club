@@ -24,9 +24,15 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
         tmdb_id: tmdb_id
       )
 
-      with {:ok, show} <- Tmdb.get_tv_details(tmdb_id, cache: false),
-           {:ok, localizations} <- fetch_localizations(show),
+      with {:ok, details_by_locale} <- fetch_details_by_locale(tmdb_id),
+           # TMDB's en-US response, the default Locale's, holds every translation and image
+           show = Map.fetch!(details_by_locale, UserLocale.default()),
            {:ok, episodes} <- fetch_episodes(show) do
+        localizations =
+          Enum.map(details_by_locale, fn {locale, details} ->
+            build_localization(show, locale, details)
+          end)
+
         changeset
         |> set_base_content(show)
         |> Ash.Changeset.manage_relationship(
@@ -63,14 +69,12 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
     |> Ash.Changeset.force_change_attribute(:rating, Rating.from_tmdb(tv_show))
   end
 
-  defp fetch_localizations(show) do
-    Enum.reduce_while(UserLocale.values(), {:ok, []}, fn locale, {:ok, localizations} ->
-      case Tmdb.get_tv_details(show.id, locale: locale, cache: false) do
-        {:ok, details} ->
-          {:cont, {:ok, [build_localization(show, locale, details) | localizations]}}
-
-        {:error, reason} ->
-          {:halt, {:error, reason}}
+  # One response per Locale, for its cast and trailer
+  defp fetch_details_by_locale(tmdb_id) do
+    Enum.reduce_while(UserLocale.values(), {:ok, %{}}, fn locale, {:ok, details_by_locale} ->
+      case Tmdb.get_tv_details(tmdb_id, locale: locale, cache: false) do
+        {:ok, details} -> {:cont, {:ok, Map.put(details_by_locale, locale, details)}}
+        {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
   end

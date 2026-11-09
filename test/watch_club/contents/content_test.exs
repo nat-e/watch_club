@@ -522,7 +522,7 @@ defmodule WatchClub.Contents.ContentTest do
       parent = self()
 
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        if URI.decode_query(conn.query_string)["language"] in [nil, ""],
+        if URI.decode_query(conn.query_string)["language"] == "en-US",
           do: send(parent, :fetched_movie_metadata)
 
         Req.Test.json(conn, tmdb_fixture("movie_details_11"))

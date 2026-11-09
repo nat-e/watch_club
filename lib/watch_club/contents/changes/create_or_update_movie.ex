@@ -23,13 +23,21 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
         tmdb_id: tmdb_id
       )
 
-      with {:ok, movie} <- Tmdb.get_movie_details(tmdb_id, cache: false),
-           {:ok, localizations} <- fetch_localizations(movie) do
-        changeset
-        |> set_base_content(movie)
-        |> set_movie(movie, localizations)
-        |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
-      else
+      case fetch_details_by_locale(tmdb_id) do
+        {:ok, details_by_locale} ->
+          # TMDB's en-US response, the default Locale's, holds every translation and image
+          movie = Map.fetch!(details_by_locale, UserLocale.default())
+
+          localizations =
+            Enum.map(details_by_locale, fn {locale, details} ->
+              build_localization(movie, locale, details)
+            end)
+
+          changeset
+          |> set_base_content(movie)
+          |> set_movie(movie, localizations)
+          |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
+
         {:error, reason} ->
           Ash.Changeset.add_error(changeset, MetadataUnavailable.exception(reason: reason))
       end
@@ -65,14 +73,12 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
     |> Ash.Changeset.force_change_attribute(:rating, Rating.from_tmdb(movie))
   end
 
-  defp fetch_localizations(movie) do
-    Enum.reduce_while(UserLocale.values(), {:ok, []}, fn locale, {:ok, localizations} ->
-      case Tmdb.get_movie_details(movie.id, locale: locale, cache: false) do
-        {:ok, details} ->
-          {:cont, {:ok, [build_localization(movie, locale, details) | localizations]}}
-
-        {:error, reason} ->
-          {:halt, {:error, reason}}
+  # One response per Locale, for its cast and trailer
+  defp fetch_details_by_locale(tmdb_id) do
+    Enum.reduce_while(UserLocale.values(), {:ok, %{}}, fn locale, {:ok, details_by_locale} ->
+      case Tmdb.get_movie_details(tmdb_id, locale: locale, cache: false) do
+        {:ok, details} -> {:cont, {:ok, Map.put(details_by_locale, locale, details)}}
+        {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
   end
