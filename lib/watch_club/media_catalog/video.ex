@@ -89,6 +89,14 @@ defmodule WatchClub.MediaCatalog.Video do
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
     end
+
+    update :detect_markers do
+      description "Finds the Video's Markers. Reads the file for a few seconds: run it in the background."
+      require_atomic? false
+      accept []
+
+      change WatchClub.MediaCatalog.Video.Changes.DetectMarkers
+    end
   end
 
   policies do

@@ -17,7 +17,10 @@ defmodule WatchClub.MediaCatalog do
       define :destroy_media, action: :destroy
     end
 
-    resource WatchClub.MediaCatalog.Video
+    resource WatchClub.MediaCatalog.Video do
+      define :detect_markers, action: :detect_markers
+    end
+
     resource WatchClub.MediaCatalog.Ebook
     resource WatchClub.MediaCatalog.Audiobook
     resource WatchClub.MediaCatalog.VideoTrack

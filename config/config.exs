@@ -97,7 +97,9 @@ config :watch_club, Oban,
     media_source_requests: 2,
     # Single worker so trickplay's full-decode ffmpeg pass never crowds out
     # imports.
-    trickplay_generation: 1
+    trickplay_generation: 1,
+    # Single worker: two detections at once could give an episode the same Marker
+    marker_detection: 1
   ]
 
 # Configure the endpoint
