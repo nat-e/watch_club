@@ -372,3 +372,9 @@ msgstr "La playlist est déjà partagée avec cet utilisateur"
 #, elixir-autogen, elixir-format
 msgid "This is already in the playlist"
 msgstr "C'est déjà dans la playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Choose an option from the list"
+msgstr "Choisissez une option de la liste"

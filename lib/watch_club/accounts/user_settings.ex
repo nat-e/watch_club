@@ -64,7 +64,7 @@ defmodule WatchClub.Accounts.UserSettings do
       public? true
     end
 
-    # The Settings page only offers valid choices for the following attributes
+    # The types own the valid values, the Settings form localizes their errors
     attribute :audio_language, :atom do
       description "The language the User wants to hear: the Content's original language or a Track Language."
       allow_nil? false

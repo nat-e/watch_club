@@ -54,7 +54,10 @@ defmodule WatchClub.Playbacks.PlaybackTest do
 
       media =
         media_with_tracks("fr",
-          audio: [%{language: nil, title: "Untagged"}],
+          audio: [
+            %{language: "eng", title: "English", default?: true},
+            %{language: nil, title: "Untagged"}
+          ],
           text: [%{language: "fre", title: "French"}]
         )
 

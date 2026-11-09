@@ -38,24 +38,31 @@ defmodule WatchClub.Playbacks.Playback.PreferredTrack do
       video = playback.media.video
       content = playback.media.content
       original_language = Languages.to_code(content && content.original_language)
-      audio_track = preferred_audio_track(video.audio_tracks, original_language, settings)
 
-      track =
+      # Audio without a language is most likely in the original language
+      audio_tracks =
+        for track <- sort_default_first(video.audio_tracks),
+            do: {track, Languages.to_code(track.language) || original_language}
+
+      text_tracks =
+        for track <- sort_default_first(video.text_tracks),
+            track.hls_supported?,
+            do: {track, Languages.to_code(track.language)}
+
+      audio = preferred_audio_track(audio_tracks, original_language, settings)
+
+      preferred =
         case Keyword.fetch!(opts, :track) do
-          :audio ->
-            audio_track
-
-          :text ->
-            preferred_text_track(video.text_tracks, audio_track, original_language, settings)
+          :audio -> audio
+          :text -> preferred_text_track(text_tracks, audio, settings)
         end
 
-      track && track.id
+      with {track, _language} <- preferred, do: track.id
     end)
   end
 
+  # Tracks are `{track, language}` pairs, the file's default tracks first
   defp preferred_audio_track(tracks, original_language, settings) do
-    tracks = sort_default_first(tracks)
-
     preferred_language =
       case settings.audio_language do
         :original -> original_language
@@ -67,15 +74,11 @@ defmodule WatchClub.Playbacks.Playback.PreferredTrack do
       List.first(tracks)
   end
 
-  defp preferred_text_track(tracks, audio_track, original_language, settings) do
+  defp preferred_text_track(tracks, audio, settings) do
     {forced_tracks, full_tracks} =
-      tracks
-      |> Enum.filter(& &1.hls_supported?)
-      |> sort_default_first()
-      |> Enum.split_with(& &1.forced?)
+      Enum.split_with(tracks, fn {track, _language} -> track.forced? end)
 
-    # Audio without a language is most likely in the original language
-    audio_language = Languages.to_code(audio_track && audio_track.language) || original_language
+    audio_language = with {_track, language} <- audio, do: language
 
     languages_without_subtitles =
       Enum.map(settings.languages_without_subtitles, &Atom.to_string/1)
@@ -91,7 +94,5 @@ defmodule WatchClub.Playbacks.Playback.PreferredTrack do
   defp sort_default_first(tracks), do: Enum.sort_by(tracks, &{not &1.default?, &1.stream_index})
 
   defp find_in_language(_tracks, nil), do: nil
-
-  defp find_in_language(tracks, language),
-    do: Enum.find(tracks, &(Languages.to_code(&1.language) == language))
+  defp find_in_language(tracks, language), do: Enum.find(tracks, &match?({_track, ^language}, &1))
 end

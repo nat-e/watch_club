@@ -120,7 +120,10 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
               {dgettext("settings", "Languages without subtitles")}
             </legend>
             <p id="languages-without-subtitles-hint" class="text-sm leading-6 text-text-muted">
-              {dgettext("settings", "Subtitles stay off when the audio is in one of these languages.")}
+              {dgettext(
+                "settings",
+                "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
+              )}
             </p>
             <.checkbox_group
               field={@audio_and_subtitles_form[:languages_without_subtitles]}
@@ -208,16 +211,13 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
     user = socket.assigns.current_user
     settings_form = Accounts.form_to_update_user_settings(user.settings, actor: user)
 
-    audio_and_subtitles_form =
-      Accounts.form_to_update_user_settings(user.settings, actor: user)
-
     change_password_form =
       Accounts.form_to_change_password(user, actor: user, context: %{token_type: :sign_in})
 
     {:ok,
      socket
      |> assign(:user_settings_form, to_form(settings_form))
-     |> assign(:audio_and_subtitles_form, to_form(audio_and_subtitles_form))
+     |> assign(:audio_and_subtitles_form, audio_and_subtitles_form(user.settings, user))
      |> assign(:change_password_form, to_form(change_password_form))}
   end
 
@@ -259,9 +259,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
          )
          |> assign(
            :audio_and_subtitles_form,
-           to_form(
-             Accounts.form_to_update_user_settings(settings, actor: socket.assigns.current_user)
-           )
+           audio_and_subtitles_form(settings, socket.assigns.current_user)
          )}
 
       {:error, form} ->
@@ -294,5 +292,22 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       {:error, form} ->
         {:noreply, socket |> assign(:change_password_form, form)}
     end
+  end
+
+  # The selects only offer valid languages, but a forged request could send others
+  defp audio_and_subtitles_form(settings, user) do
+    settings
+    |> Accounts.form_to_update_user_settings(
+      actor: user,
+      transform_errors: fn
+        _changeset, %Ash.Error.Changes.InvalidAttribute{field: field}
+        when field in [:audio_language, :subtitle_language] ->
+          [{field, dgettext_noop("errors", "Choose an option from the list"), []}]
+
+        _changeset, error ->
+          error
+      end
+    )
+    |> to_form()
   end
 end

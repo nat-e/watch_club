@@ -146,5 +146,5 @@ msgstr "Langues sans sous-titres"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
-msgid "Subtitles stay off when the audio is in one of these languages."
-msgstr "Les sous-titres restent désactivés quand l'audio est dans l'une de ces langues."
+msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
+msgstr "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue."

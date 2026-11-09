@@ -123,5 +123,5 @@ msgstr ""
 
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
-msgid "Subtitles stay off when the audio is in one of these languages."
+msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
 msgstr ""
