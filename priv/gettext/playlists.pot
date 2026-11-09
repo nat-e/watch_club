@@ -107,6 +107,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+#: lib/watch_club_web/components/playlists/playlist_link.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "New"

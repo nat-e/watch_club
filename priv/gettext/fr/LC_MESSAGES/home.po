@@ -1,0 +1,140 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} more"
+msgid_plural "%{count} more"
+msgstr[0] "%{count} autre"
+msgstr[1] "%{count} autres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "%{time} left"
+msgstr "Il reste %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "%{title}, not available"
+msgstr "%{title}, indisponible"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} is watching %{contents}"
+msgstr "%{user} regarde %{contents}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} is watching %{watching}, and watched %{watched}"
+msgstr "%{user} regarde %{watching} et a regardé %{watched}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} watched %{contents}"
+msgstr "%{user} a regardé %{contents}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Activity"
+msgstr "Activité"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Continue watching"
+msgstr "Continuer à regarder"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "For you"
+msgstr "Pour vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "From %{user}"
+msgstr "De %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New in the library"
+msgstr "Nouveau dans la bibliothèque"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Not started"
+msgstr "Pas commencé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing has happened yet"
+msgstr "Il ne s'est encore rien passé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Ready to watch"
+msgstr "Prêt à regarder"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr "Reprendre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{title}"
+msgstr "Reprendre %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Shared by %{user}"
+msgstr "Partagée par %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Show more"
+msgstr "Voir plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
+msgstr "À suivre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/watching_now.ex
+#, elixir-autogen, elixir-format
+msgid "Watching now"
+msgstr "En train de regarder"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "What people watch and what joins the library will show up here."
+msgstr "Ce que les gens regardent et ce qui arrive dans la bibliothèque apparaîtra ici."
