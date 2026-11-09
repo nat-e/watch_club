@@ -31,6 +31,9 @@ defmodule WatchClub.MediaCatalog.Media do
   actions do
     defaults [:read]
 
+    # A Media whose file the actor can save to their device
+    read :download
+
     # Move a Media to a new path (e.g. a Radarr/Sonarr rename). Content and
     # tracks are unchanged — only the file location moves.
     update :change_path do
@@ -203,6 +206,12 @@ defmodule WatchClub.MediaCatalog.Media do
       authorize_if always()
     end
 
+    policy action(:download) do
+      description "Like starting a Playback: the Instance Administrator can download any Media; other Users can download Media with Content"
+      authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if expr(not is_nil(content_id))
+    end
+
     policy action_type([:create, :update]) do
       description "Only the system actor can create or update Media"
       authorize_if WatchClub.Checks.IsSystemActor
@@ -281,6 +290,20 @@ defmodule WatchClub.MediaCatalog.Media do
     # The Content of the Movie, TV Show Episode or Book this Media is attached to.
     # nil for an unmatched Media.
     belongs_to :content, Content
+  end
+
+  calculations do
+    # The name a Download saves its file as
+    calculate :file_name, :string, fn medias, _context ->
+      Enum.map(medias, &Path.basename(&1.path))
+    end do
+      load [:path]
+      public? true
+    end
+
+    calculate :file_size, :integer, WatchClub.MediaCatalog.Calculations.FileSize do
+      public? true
+    end
   end
 
   identities do

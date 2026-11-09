@@ -55,6 +55,61 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
+  describe "get_media_to_download/*" do
+    @tag :tmp_dir
+    test "gives a User the file of a Media with Content", %{tmp_dir: tmp_dir} do
+      path = Path.join(tmp_dir, "Movie (2024) Bluray-1080p.mkv")
+      File.write!(path, "12345")
+
+      media =
+        create_or_update_video!(video_media_input(path, seed_movie()),
+          actor: SystemActor.actor()
+        )
+
+      assert %Media{path: ^path, file_name: "Movie (2024) Bluray-1080p.mkv", file_size: 5} =
+               get_media_to_download!(media.id,
+                 load: [:file_name, :file_size],
+                 actor: generate(user())
+               )
+    end
+
+    @tag :tmp_dir
+    test "has no size once its file is gone", %{tmp_dir: tmp_dir} do
+      media =
+        create_or_update_video!(video_media_input(Path.join(tmp_dir, "gone.mkv"), seed_movie()),
+          actor: SystemActor.actor()
+        )
+
+      assert %Media{file_size: nil} =
+               get_media_to_download!(media.id, load: [:file_size], actor: generate(user()))
+    end
+
+    test "hides Unmatched Media from Users" do
+      media =
+        create_or_update_video!(
+          video_media_input("tmp/unmatched-download.mkv", :movie, %{movie_id: nil}),
+          actor: SystemActor.actor()
+        )
+
+      get_media_to_download(media.id, actor: generate(user()))
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Query.NotFound{} -> true
+        _ -> false
+      end)
+    end
+
+    test "gives the Instance Administrator Unmatched Media" do
+      %{id: media_id} =
+        create_or_update_video!(
+          video_media_input("tmp/unmatched-admin-download.mkv", :movie, %{movie_id: nil}),
+          actor: SystemActor.actor()
+        )
+
+      assert %Media{id: ^media_id} =
+               get_media_to_download!(media_id, actor: generate(administrator()))
+    end
+  end
+
   describe "create_or_update_video/*" do
     test "creates video for a movie" do
       movie = seed_movie()
