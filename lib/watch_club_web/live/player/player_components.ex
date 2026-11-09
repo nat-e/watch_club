@@ -1,27 +1,40 @@
 defmodule WatchClubWeb.Live.Player.PlayerComponents do
   use WatchClubWeb, :component
 
+  attr :id, :string, required: true
   attr :label, :string, required: true, doc: "Menu title and trigger aria-label."
   slot :icon, required: true, doc: "Trigger icon."
-  slot :inner_block, required: true, doc: "The Vidstack radio group for this menu."
+  slot :inner_block, required: true, doc: "The Video.js radio group for this menu."
 
-  @doc "A control-bar dropdown wrapping one of Vidstack's radio groups."
+  @doc """
+  A control-bar dropdown wrapping one of Video.js's radio groups. Video.js hides its trigger
+  when the radio group has nothing to choose from.
+  """
   def player_menu(assigns) do
     ~H"""
-    <media-menu class="contents">
-      <media-menu-button
-        class={media_menu_button_style()}
-        aria-label={@label}
-      >
-        {render_slot(@icon)}
-      </media-menu-button>
+    <%!-- Hidden until Video.js knows whether there are options --%>
+    <button
+      type="button"
+      commandfor={@id}
+      class={[media_menu_button_style(), "not-data-availability:hidden"]}
+      aria-label={@label}
+    >
+      {render_slot(@icon)}
+    </button>
 
-      <media-menu-items class="fixed inset-x-4 bottom-4 z-50 block max-h-[70dvh] overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-black/90 p-group text-sm text-white shadow-overlay backdrop-blur-sm outline-none sm:absolute sm:inset-auto sm:top-20 sm:right-16 sm:w-72">
-        <p class="px-related pb-tight text-xs font-semibold uppercase tracking-wider text-white/60">
+    <media-menu
+      id={@id}
+      side="bottom"
+      align="end"
+      boundary="container"
+      class="m-0 w-max min-w-48 max-w-[min(--spacing(72),var(--media-menu-available-width))] max-h-(--media-menu-available-height) overflow-y-auto overscroll-contain rounded-control border border-white/10 bg-black/90 p-tight text-left text-sm text-white shadow-overlay backdrop-blur-sm [--media-popover-boundary-offset:--spacing(2)] [--media-popover-side-offset:--spacing(2)]"
+    >
+      <media-menu-content class="block outline-none">
+        <p class="px-related py-tight text-xs font-semibold uppercase tracking-wider text-white/60">
           {@label}
         </p>
         {render_slot(@inner_block)}
-      </media-menu-items>
+      </media-menu-content>
     </media-menu>
     """
   end
@@ -29,53 +42,35 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   @doc "A single option rendered inside a radio group's <template>."
   def player_radio(assigns) do
     ~H"""
-    <media-radio class="group/radio flex w-full items-center gap-related rounded-md p-related text-left outline-none hover:bg-white/10 data-checked:bg-white/20 data-focus:ring-2 data-focus:ring-white/80">
-      <Lucideicons.check class="size-icon-sm opacity-0 group-data-checked/radio:opacity-100" />
+    <media-menu-radio-item class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20">
+      <media-menu-item-indicator force-mount class="opacity-0 in-aria-checked:opacity-100">
+        <Lucideicons.check class="size-icon-sm" />
+      </media-menu-item-indicator>
       <span data-part="label"></span>
-    </media-radio>
+    </media-menu-radio-item>
     """
   end
-
-  attr :thumbnails, :string, required: true, doc: "URL of the trickplay WebVTT manifest."
 
   def seek_bar(assigns) do
     ~H"""
     <media-time-slider
-      key-step="10"
-      shift-key-multiplier="1"
-      aria-label={dgettext("player", "Seek")}
-      class="group/timeline relative block h-10 w-full cursor-pointer touch-none outline-none"
+      step="10"
+      class="group/timeline relative flex h-10 w-full cursor-pointer touch-none items-center outline-none"
     >
-      <media-slider-preview class="pointer-events-none absolute bottom-full mb-3 flex flex-col items-center gap-tight opacity-0 transition-opacity duration-200 data-visible:opacity-100">
-        <%!-- width/height come from Vidstack's per-cue --thumbnail-* vars; contain + overflow
-              clip the sprite sheet to a single tile, min/max scale it to a preview size. --%>
-        <media-slider-thumbnail
-          src={@thumbnails}
-          class="block overflow-hidden rounded-md border border-white/10 bg-black shadow-overlay data-hidden:hidden"
-          style="width: var(--thumbnail-width); height: var(--thumbnail-height); contain: strict; min-width: 120px; min-height: 80px; max-width: 220px; max-height: 160px;"
-        >
-        </media-slider-thumbnail>
-        <media-slider-value class="rounded-md bg-black/80 px-related py-tight text-xs text-white tabular-nums">
-        </media-slider-value>
-      </media-slider-preview>
+      <media-slider-track class="relative block h-[5px] w-full rounded-full bg-white/20">
+        <media-slider-buffer class="absolute inset-y-0 left-0 block w-(--media-slider-buffer) rounded-full bg-white/40" />
+        <media-slider-fill class="absolute inset-y-0 left-0 block w-(--media-slider-fill) rounded-full bg-primary" />
+      </media-slider-track>
+      <media-slider-thumb class="absolute left-(--media-slider-fill) block size-4 -translate-x-1/2 rounded-full bg-white opacity-90 shadow-overlay outline-none ring-white/40 transition-transform group-hover/timeline:scale-125 data-dragging:scale-125 data-dragging:ring-4 focus-visible:ring-2 focus-visible:ring-white/80" />
 
-      <div class="absolute top-1/2 h-[5px] w-full -translate-y-1/2 rounded-full bg-white/20 group-data-focus/timeline:ring-2 group-data-focus/timeline:ring-white/80">
-        <div
-          class="absolute h-full rounded-full bg-white/40"
-          style="width: var(--slider-progress, 0%);"
-        >
-        </div>
-        <div
-          class="absolute h-full rounded-full bg-primary"
-          style="width: var(--slider-fill, 0%);"
-        >
-        </div>
-      </div>
-      <div
-        class="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white opacity-90 shadow-overlay ring-white/40 transition-transform group-hover/timeline:scale-125 group-data-active/timeline:scale-125 group-data-dragging/timeline:ring-4"
-        style="left: var(--slider-fill, 0%);"
-      >
-      </div>
+      <media-slider-preview class="pointer-events-none absolute bottom-full mb-3 flex flex-col items-center gap-tight opacity-0 transition-opacity duration-200 data-pointing:opacity-100 data-dragging:opacity-100">
+        <%!-- Video.js scales the sprite tile to fit these min and max sizes --%>
+        <media-slider-thumbnail class="block min-h-20 min-w-30 max-h-40 max-w-55 overflow-hidden rounded-md border border-white/10 bg-black shadow-overlay data-hidden:hidden" />
+        <media-slider-value
+          type="pointer"
+          class="rounded-md bg-black/80 px-related py-tight text-xs text-white tabular-nums"
+        />
+      </media-slider-preview>
     </media-time-slider>
     """
   end
@@ -84,7 +79,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   def controls_header(assigns) do
     ~H"""
-    <header class="flex h-24 items-center gap-related px-related pointer-events-auto">
+    <header class="flex h-24 items-center gap-related px-related group-data-visible/controls:pointer-events-auto">
       <button
         type="button"
         data-player-command="back"
@@ -100,43 +95,36 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         </h1>
       </div>
 
-      <div class="flex shrink-0 items-center gap-tight">
-        <.player_menu label={dgettext("player", "Quality")}>
+      <div id="player-settings" phx-update="ignore" class="flex shrink-0 items-center gap-tight">
+        <.player_menu id="player-quality-menu" label={dgettext("player", "Quality")}>
           <:icon><Lucideicons.settings /></:icon>
-          <media-quality-radio-group auto-label={dgettext("player", "Auto")} hide-bitrate>
+          <media-quality-radio-group>
             <template><.player_radio /></template>
           </media-quality-radio-group>
         </.player_menu>
 
-        <.player_menu label={dgettext("player", "Audio")}>
+        <.player_menu id="player-audio-menu" label={dgettext("player", "Audio")}>
           <:icon><Lucideicons.languages /></:icon>
-          <media-audio-radio-group>
+          <media-audio-track-radio-group>
             <template><.player_radio /></template>
-          </media-audio-radio-group>
+          </media-audio-track-radio-group>
         </.player_menu>
 
-        <.player_menu label={dgettext("player", "Subtitles")}>
+        <.player_menu id="player-subtitles-menu" label={dgettext("player", "Subtitles")}>
           <:icon><Lucideicons.captions /></:icon>
-          <media-captions-radio-group off-label={dgettext("player", "Off")}>
+          <media-captions-radio-group label={dgettext("player", "Subtitles")}>
             <template><.player_radio /></template>
           </media-captions-radio-group>
         </.player_menu>
 
-        <media-mute-button
-          class={["group/mute", media_menu_button_style()]}
-          aria-label={dgettext("player", "Mute")}
-        >
+        <media-mute-button class={["group/mute", media_menu_button_style()]}>
           <Lucideicons.volume_2 class="group-data-muted/mute:hidden" />
           <Lucideicons.volume_x class="hidden group-data-muted/mute:block" />
         </media-mute-button>
 
-        <media-fullscreen-button
-          target="media"
-          class={["group/fullscreen", media_menu_button_style()]}
-          aria-label={dgettext("player", "Fullscreen")}
-        >
-          <Lucideicons.maximize class="group-data-active/fullscreen:hidden" />
-          <Lucideicons.minimize class="hidden group-data-active/fullscreen:block" />
+        <media-fullscreen-button class={["group/fullscreen", media_menu_button_style()]}>
+          <Lucideicons.maximize class="group-data-fullscreen/fullscreen:hidden" />
+          <Lucideicons.minimize class="hidden group-data-fullscreen/fullscreen:block" />
         </media-fullscreen-button>
       </div>
     </header>
@@ -146,20 +134,23 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   def controls_center_row(assigns) do
     ~H"""
     <div class="pointer-events-none flex items-center justify-center">
-      <div class="pointer-events-auto flex items-center justify-center gap-related opacity-90 transition-opacity group-data-buffering/player:opacity-0">
+      <div
+        id="player-playback-controls"
+        phx-update="ignore"
+        class="flex items-center justify-center gap-related opacity-90 transition-opacity group-data-visible/controls:pointer-events-auto group-has-[media-buffering-indicator[data-visible]]/player:pointer-events-none! group-has-[media-buffering-indicator[data-visible]]/player:opacity-0"
+      >
         <media-seek-button
           seconds="-10"
           class={[media_menu_button_style(), "relative size-20! sm:size-24!"]}
-          aria-label={dgettext("player", "Seek backward 10 seconds")}
         >
           <Lucideicons.rotate_ccw class="size-12! sm:size-16!" />
           <span class="absolute mt-1 text-xs font-semibold">10</span>
         </media-seek-button>
 
-        <media-play-button
-          class={[media_menu_button_style(), "group/play relative size-24! sm:size-28!"]}
-          aria-label={dgettext("player", "Play or pause")}
-        >
+        <media-play-button class={[
+          media_menu_button_style(),
+          "group/play relative size-24! sm:size-28!"
+        ]}>
           <Lucideicons.play class="hidden group-data-paused/play:block size-20! sm:size-24!" />
           <Lucideicons.pause class="group-data-paused/play:hidden size-20! sm:size-24!" />
         </media-play-button>
@@ -167,7 +158,6 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         <media-seek-button
           seconds="10"
           class={[media_menu_button_style(), "relative size-20! sm:size-24!"]}
-          aria-label={dgettext("player", "Seek forward 10 seconds")}
         >
           <Lucideicons.rotate_cw class="size-12! sm:size-16!" />
           <span class="absolute mt-1 text-xs font-semibold">10</span>
@@ -177,7 +167,6 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
-  attr :playback_id, :string, required: true
   attr :video, Video, required: true
 
   @doc """
@@ -195,8 +184,10 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       )
 
     ~H"""
-    <footer class="pointer-events-auto flex flex-col gap-related h-24 px-group">
-      <.seek_bar thumbnails={~p"/player/thumbnails/#{@playback_id}/thumbnails.vtt"} />
+    <footer class="flex h-24 flex-col gap-related px-group group-data-visible/controls:pointer-events-auto">
+      <div id="player-seek-bar" phx-update="ignore">
+        <.seek_bar />
+      </div>
       <div class="flex items-center justify-center">
         <.button
           :if={@previous_episode && @previous_episode.has_media?}
@@ -210,14 +201,14 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           {@previous_episode.formatted_episode_number}
         </.button>
         <.inline
+          id="player-time"
+          phx-update="ignore"
           space="tight"
-          class="relative text-sm text-white/90 tabular-nums"
+          class="relative text-sm text-white/90 tabular-nums has-data-unavailable:invisible"
         >
-          <media-time type="current">0:00</media-time>
+          <media-time type="current" />
           <span class="text-white/60">/</span>
-          <media-time type="duration">
-            {format_duration(@video.duration_seconds)}
-          </media-time>
+          <media-time type="duration" />
         </.inline>
         <.button
           :if={@next_episode && @next_episode.has_media?}
@@ -240,7 +231,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   @doc """
   Auto-advancing "Up next" overlay button revealed during the final seconds of an episode.
 
-  The JS player hook flips `data-near-end` on the player root element once the playback reaches the last
+  The JS player hook flips `data-near-end` on the player container once the playback reaches the last
   5 seconds; the CSS below fades the overlay in and runs the fill animation
   """
   def up_next_button(assigns) do
@@ -267,7 +258,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   @doc """
   Centered spinner shown whenever the player has no frame to display — the
-  initial session load and mid-playback buffering both render it.
+  initial session load and buffering both render it.
   """
   attr :class, :string, default: nil, doc: "Positioning and visibility of the overlay."
 
@@ -309,21 +300,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   defp media_menu_button_style,
     do:
-      "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none hover:bg-white/20 aria-disabled:pointer-events-none aria-disabled:opacity-40 data-focus:ring-2 data-focus:ring-white/80"
-
-  defp format_duration(duration) do
-    total = duration |> trunc() |> max(0)
-    hours = div(total, 3600)
-    minutes = total |> rem(3600) |> div(60)
-    seconds = rem(total, 60)
-
-    if hours > 0 do
-      :io_lib.format(~c"~b:~2..0b:~2..0b", [hours, minutes, seconds])
-    else
-      :io_lib.format(~c"~b:~2..0b", [minutes, seconds])
-    end
-    |> to_string()
-  end
+      "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
 
   defp header_title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
 

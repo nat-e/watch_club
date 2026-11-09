@@ -18,11 +18,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Auto"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
 msgid "Back"
 msgstr ""
 
@@ -38,42 +33,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Fullscreen"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Mute"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Off"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play or pause"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
 msgid "Quality"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek backward 10 seconds"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Seek forward 10 seconds"
 msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex

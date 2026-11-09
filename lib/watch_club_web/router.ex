@@ -40,8 +40,8 @@ defmodule WatchClubWeb.Router do
   end
 
   # Media bytes for a signed-in User: the Player's HLS requests and Downloads.
-  # Like :browser but without CSRF protection — HLS segment GETs from
-  # <media-player> don't carry a CSRF token. No HTML rendering either,
+  # Like :browser but without CSRF protection — the Player's HLS segment GETs
+  # don't carry a CSRF token. No HTML rendering either,
   # so :accepts, layouts, and flash are intentionally absent.
   pipeline :playback do
     plug :fetch_session

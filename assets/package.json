@@ -1,7 +1,7 @@
 {
 	"dependencies": {
-		"hls.js": "^1.7.3",
-		"sortablejs": "^1.15.7",
-		"vidstack": "^1.15.7"
+		"@videojs/hlsjs-video": "^10.3.0",
+		"@videojs/html": "^10.3.0",
+		"sortablejs": "^1.15.7"
 	}
 }

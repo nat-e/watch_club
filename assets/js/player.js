@@ -1,80 +1,52 @@
-const defaultVidstackScriptUrl = "/assets/js/player_vidstack.js";
-let vidstackLoadPromise;
+let videojsLoadPromise;
 
-const loadVidstack = (src = defaultVidstackScriptUrl) => {
-	if (window.WatchClubVidstack?.Hls)
-		return Promise.resolve(window.WatchClubVidstack);
-	if (vidstackLoadPromise) return vidstackLoadPromise;
-
-	vidstackLoadPromise = new Promise((resolve, reject) => {
+// Loads the Video.js elements, which register themselves
+const loadVideojs = (src) => {
+	videojsLoadPromise ??= new Promise((resolve, reject) => {
 		const script = document.createElement("script");
 		script.async = true;
 		script.src = src;
-		script.onload = () => {
-			if (window.WatchClubVidstack?.Hls) {
-				resolve(window.WatchClubVidstack);
-			} else {
-				vidstackLoadPromise = undefined;
-				reject(
-					new Error(
-						"Vidstack loaded without exposing window.WatchClubVidstack",
-					),
-				);
-			}
-		};
+		script.onload = resolve;
 		script.onerror = () => {
-			vidstackLoadPromise = undefined;
-			reject(new Error("Could not load Vidstack"));
+			videojsLoadPromise = undefined;
+			script.remove();
+			reject(new Error("Could not load Video.js"));
 		};
 		document.head.append(script);
 	});
 
-	return vidstackLoadPromise;
+	return videojsLoadPromise;
 };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const getNothing = async () => null;
-const noop = async () => {};
-const emptyStorageKeys = [
-	"Volume",
-	"Muted",
-	"Time",
-	"AudioGain",
-	"PlaybackRate",
-	"VideoQuality",
-	"Lang",
-	"Captions",
-];
-// Vidstack would show subtitles on its own: the hook starts them itself, see startSubtitles
-const playerStorage = {
-	...Object.fromEntries(
-		emptyStorageKeys.flatMap((key) => [
-			[`get${key}`, getNothing],
-			[`set${key}`, noop],
-		]),
-	),
-	getCaptions: async () => false,
+
+// Limits how far ahead hls.js buffers, because the server transcodes segments on demand
+const hlsConfig = {
+	backBufferLength: 120,
+	maxBufferLength: 36,
+	maxMaxBufferLength: 90,
 };
 
 const Player = {
 	mounted() {
-		this.handleEvent("player:load_video", ({ src }) => {
-			this.carryTracksOver();
-			this.loadVideo(src);
-		});
-		this.vidstackScriptUrl =
-			this.el.dataset.vidstackSrc || defaultVidstackScriptUrl;
-		this.player = this.el.querySelector("[data-player-media]");
-		this.captionsEl = this.el.querySelector("media-captions");
+		this.container = this.el.querySelector("media-container");
+		this.media = this.el.querySelector("hlsjs-video");
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
+		// The audio language to carry over to the next video
+		this.carriedAudio = undefined;
 		// The subtitles to carry over to the next video, as hls.js's language and forced
 		// flag: null for none, undefined for the ones the master playlist marks as default
 		this.carriedSubtitles = undefined;
 
 		this.bindDomEvents();
 		this.boot();
+	},
+
+	// The server renders the next video of the session in the data attributes
+	updated() {
+		if (this.ready && this.el.dataset.src !== this.src) this.loadVideo();
 	},
 
 	destroyed() {
@@ -104,20 +76,6 @@ const Player = {
 		});
 	},
 
-	// This is called on initial load and when the video changes in the player session
-	// Playback starts at the given position (the beginning by default). Vidstack queues
-	// the seek until the media can play.
-	loadVideo(src, startPositionSeconds = 0) {
-		if (!this.player) return;
-		this.pendingAutoplay = true;
-		this.subtitlesToStart = true;
-		// Vidstack keeps the previous video's subtitles, under the ids of the new ones
-		this.player.textTracks.clear();
-		this.player.src = { src, type: "application/x-mpegurl" };
-		this.player.currentTime = startPositionSeconds;
-		this.player.startLoading?.();
-	},
-
 	handleCommand(command) {
 		switch (command) {
 			case "back":
@@ -129,207 +87,90 @@ const Player = {
 
 	async boot() {
 		try {
-			const vidstack = await loadVidstack(this.vidstackScriptUrl);
+			await loadVideojs(this.el.dataset.videojsSrc);
 			if (this.disposed) return;
 
-			this.configurePlayer(vidstack);
-			this.loadVideo(
-				this.player.dataset.src,
-				Number(this.player.dataset.startPosition) || 0,
-			);
+			this.bindMediaEvents();
+			this.restoreLocalPreferences();
+			this.ready = true;
+			this.loadVideo();
 		} catch (_error) {
 			this.reportFailure();
 		}
 	},
 
-	configurePlayer({ Hls }) {
-		const signal = this.abortController.signal;
-
-		this.player.preload = "metadata";
-		this.player.playsInline = true;
-		this.player.preferNativeHLS = false;
-		this.player.storage = playerStorage;
-		this.player.keyTarget = "document";
-		this.player.keyShortcuts = {
-			togglePaused: "k Space",
-			toggleMuted: "m",
-			toggleFullscreen: "f",
-			seekBackward: {
-				keys: "ArrowLeft",
-				onKeyDown: ({ event, player, remote }) => {
-					event.preventDefault();
-					this.reportHeartbeat();
-					remote.seek(
-						clamp(player.currentTime - 10, 0, player.duration),
-						event,
-					);
-				},
-			},
-			seekForward: {
-				keys: "ArrowRight",
-				onKeyDown: ({ event, player, remote }) => {
-					event.preventDefault();
-					this.reportHeartbeat();
-					remote.seek(
-						clamp(player.currentTime + 10, 0, player.duration),
-						event,
-					);
+	// Loads the video in the data attributes, which plays on its own from their start
+	// position, with the audio and subtitles of the previous video when it has them
+	loadVideo() {
+		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
+		this.carryTracksOver();
+		this.tracksStarted = false;
+		this.src = src;
+		this.startPosition = Number(startPosition);
+		// A new audio preference makes Video.js build a new hls.js engine
+		this.media.source = {
+			src,
+			engine: {
+				hlsJs: {
+					...hlsConfig,
+					audioPreference: this.carriedAudio && { lang: this.carriedAudio },
 				},
 			},
 		};
 
-		if (this.player.qualities) this.player.qualities.switch = "current";
+		const thumbnails = document.createElement("track");
+		thumbnails.kind = "metadata";
+		thumbnails.label = "thumbnails";
+		thumbnails.default = true;
+		thumbnails.src = thumbnailsSrc;
+		this.media.querySelector("track")?.remove();
+		this.media.append(thumbnails);
+	},
 
-		this.restoreLocalPreferences();
+	bindMediaEvents() {
+		const signal = this.abortController.signal;
+		const on = (type, listener) =>
+			this.media.addEventListener(type, listener, { signal });
 
-		this.player.addEventListener(
-			"provider-change",
-			(event) => {
-				const provider = event.detail;
-				this.syncCaptionLayer(undefined, provider);
-
-				if (provider?.type !== "hls") return;
-
-				provider.library = Hls;
-				provider.config = {
-					enableWorker: true,
-					lowLatencyMode: false,
-					renderTextTracksNatively: false,
-					backBufferLength: 120,
-					maxBufferLength: 36,
-					maxMaxBufferLength: 90,
-				};
-			},
-			{ signal },
-		);
-
-		this.player.addEventListener(
-			"can-play",
-			() => {
-				this.reportReady();
-
-				if (this.pendingAutoplay) {
-					this.pendingAutoplay = false;
-					// Rejected when the browser blocks autoplay; the user can press play.
-					this.player.play().catch(() => {});
-				}
-			},
-			{ signal },
-		);
-		this.player.addEventListener(
-			"playing",
-			() => {
-				this.reportReady();
-				this.reportHeartbeat();
-				this.restartHeartbeatTimer();
-			},
-			{ signal },
-		);
-		this.player.addEventListener("play", () => this.reportHeartbeat(), {
-			signal,
+		on("loadedmetadata", () => {
+			// Seeking now, rather than starting hls.js at the position, loads the first
+			// segment, which hls.js needs to place the subtitles
+			if (this.startPosition) this.media.currentTime = this.startPosition;
+			// The browser has picked subtitles on its own by now
+			this.startSubtitles();
+			this.tracksStarted = true;
 		});
-		this.player.addEventListener("pause", () => this.reportHeartbeat(), {
-			signal,
+		on("canplay", () => this.reportReady());
+		on("playing", () => {
+			this.reportReady();
+			this.reportHeartbeat();
+			this.restartHeartbeatTimer();
 		});
-		this.player.addEventListener(
-			"ended",
-			() => {
-				this.reportHeartbeat();
-				// Auto-advance once the episode ends. The server no-ops when there is no
-				// next episode
-				this.pushEvent("play_next_episode", {});
-			},
-			{ signal },
-		);
+		on("play", () => this.reportHeartbeat());
+		on("pause", () => this.reportHeartbeat());
+		on("seeked", () => this.reportHeartbeat());
+		on("ended", () => {
+			this.reportHeartbeat();
+			// Auto-advance once the episode ends. The server no-ops when there is no
+			// next episode
+			this.pushEvent("play_next_episode", {});
+		});
 		// Reveal the auto-advance "up next" overlay during the last 5 seconds. CSS keys
-		// off [data-near-end] on the player root to fade it in and run the fill animation.
-		this.player.addEventListener(
-			"time-update",
-			() => {
-				const { currentTime, duration } = this.player;
-				const nearEnd =
-					Number.isFinite(duration) &&
-					duration > 0 &&
-					duration - currentTime <= 5;
-				this.player.toggleAttribute("data-near-end", nearEnd);
-			},
-			{ signal },
-		);
-		this.player.addEventListener("seeked", () => this.reportHeartbeat(), {
-			signal,
+		// off [data-near-end] on the player container to fade it in and run the fill animation.
+		on("timeupdate", () => {
+			const { currentTime, duration } = this.media;
+			const nearEnd =
+				Number.isFinite(duration) &&
+				duration > 0 &&
+				duration - currentTime <= 5;
+			this.container.toggleAttribute("data-near-end", nearEnd);
 		});
-		this.player.addEventListener("play-fail", () => this.reportFailure(), {
-			signal,
+		// Includes fatal hls.js errors
+		on("error", () => this.reportFailure());
+		on("volumechange", () => {
+			this.storeLocalPreferences();
+			this.reportHeartbeat();
 		});
-		this.player.addEventListener(
-			"hls-unsupported",
-			() => this.reportFailure(),
-			{ signal },
-		);
-		this.player.addEventListener(
-			"hls-error",
-			(event) => {
-				if (event.detail?.fatal) this.reportFailure();
-			},
-			{ signal },
-		);
-		this.player.addEventListener("error", () => this.reportFailure(), {
-			signal,
-		});
-		this.player.addEventListener(
-			"text-track-change",
-			(event) => this.syncCaptionLayer(event.detail),
-			{
-				signal,
-			},
-		);
-		this.player.addEventListener(
-			"hls-cues-parsed",
-			() => this.syncCaptionLayer(),
-			{ signal },
-		);
-		this.player.addEventListener(
-			"hls-subtitle-tracks-updated",
-			(event) => {
-				if (!this.subtitlesToStart) return;
-				this.subtitlesToStart = false;
-				// After hls.js picks its own first subtitle track, which would replace this one
-				queueMicrotask(() => this.startSubtitles(event.detail.subtitleTracks));
-			},
-			{ signal },
-		);
-		this.player.addEventListener(
-			"volume-change",
-			() => {
-				this.storeLocalPreferences();
-				this.reportHeartbeat();
-			},
-			{ signal },
-		);
-
-		this.el
-			.querySelectorAll(
-				"media-quality-radio-group, media-audio-radio-group, media-captions-radio-group",
-			)
-			.forEach((group) => {
-				group.addEventListener(
-					"change",
-					(event) => {
-						if (
-							event.currentTarget.localName === "media-captions-radio-group"
-						) {
-							this.syncCaptionLayer(event.detail);
-						}
-
-						// Return focus to the trigger before closing, otherwise the menu is
-						// hidden (aria-hidden) while the just-clicked radio still holds focus.
-						const menu = event.currentTarget.closest("media-menu");
-						menu?.querySelector("media-menu-button")?.focus();
-						menu?.close?.(event);
-					},
-					{ signal },
-				);
-			});
 	},
 
 	restoreLocalPreferences() {
@@ -341,47 +182,33 @@ const Player = {
 		if (storedVolume !== null && storedVolume !== "0") {
 			const volume = Number(storedVolume);
 			if (Number.isFinite(volume) && volume > 0)
-				this.player.volume = clamp(volume, 0, 1);
+				this.media.volume = clamp(volume, 0, 1);
 		}
 
-		this.player.muted = storedMuted === "true";
+		this.media.muted = storedMuted === "true";
 	},
 
 	storeLocalPreferences() {
 		window.localStorage.setItem(
 			"watch-club:player-volume",
-			String(this.player.volume),
+			String(this.media.volume),
 		);
 		window.localStorage.setItem(
 			"watch-club:player-muted",
-			String(this.player.muted),
+			String(this.media.muted),
 		);
-	},
-
-	syncCaptionLayer(
-		selectedTrack = this.player.textTracks?.selected ?? null,
-		provider = this.player.provider,
-	) {
-		const providerType = provider?.type;
-		const usingNativeHls = providerType === "video" && this.isHlsSource();
-
-		if (this.captionsEl) {
-			this.captionsEl.hidden = usingNativeHls || !selectedTrack;
-			if (!selectedTrack) this.captionsEl.replaceChildren();
-		}
-
-		if (providerType === "hls") this.disableNativeTextTracks();
 	},
 
 	// The next video of the session starts with the audio language and the subtitles
 	// playing now, when it has them
 	carryTracksOver() {
-		const hls = this.player.provider.instance;
-		const audio = hls.audioTracks[hls.audioTrack];
-		if (audio) hls.config.audioPreference = { lang: audio.lang };
+		const hls = this.media.engine;
+		// Until this video starts its tracks, the previous video's still carry over
+		if (!hls || !this.tracksStarted) return;
 
+		this.carriedAudio = hls.audioTracks[hls.audioTrack]?.lang;
 		// Forced and full subtitles can share a language
-		const subtitles = hls.subtitleTracks[hls.subtitleTrack];
+		const subtitles = this.showingSubtitles(hls.subtitleTracks);
 		this.carriedSubtitles = subtitles
 			? { lang: subtitles.lang, forced: subtitles.forced }
 			: null;
@@ -389,43 +216,50 @@ const Player = {
 
 	// Starts the subtitles carried over from the previous video when this one has them,
 	// otherwise the ones the master playlist marks as default
-	startSubtitles(subtitleTracks) {
+	startSubtitles() {
+		const hls = this.media.engine;
+		if (!hls) return;
+
 		const carried = this.carriedSubtitles;
-		if (carried === null) {
-			this.player.provider.instance.subtitleTrack = -1;
-			return;
+		const subtitles =
+			carried === null
+				? undefined
+				: (hls.subtitleTracks.find(
+						(track) =>
+							track.lang === carried?.lang && track.forced === carried?.forced,
+					) ?? hls.subtitleTracks.find((track) => track.default));
+
+		for (const textTrack of this.subtitleTextTracks()) {
+			textTrack.mode = this.isTextTrackOf(textTrack, subtitles)
+				? "showing"
+				: "disabled";
 		}
+	},
 
-		const carriedIndex = subtitleTracks.findIndex(
-			(track) =>
-				track.lang === carried?.lang && track.forced === carried?.forced,
+	// hls.js keeps its subtitle track when they're turned off, so the showing text track
+	// tells which ones play
+	showingSubtitles(subtitleTracks) {
+		const showing = this.subtitleTextTracks().find(
+			(textTrack) => textTrack.mode === "showing",
 		);
-		const index =
-			carriedIndex === -1
-				? subtitleTracks.findIndex((track) => track.default)
-				: carriedIndex;
-		const track = this.player.textTracks.getById(`hls-subtitles-${index}`);
-		if (track) track.mode = "showing";
+		return subtitleTracks.find((track) => this.isTextTrackOf(showing, track));
 	},
 
-	getVideoElement() {
-		return this.player.provider?.video || this.player.querySelector("video");
+	subtitleTextTracks() {
+		return Array.from(this.media.textTracks).filter(
+			(textTrack) =>
+				textTrack.kind === "subtitles" || textTrack.kind === "captions",
+		);
 	},
 
-	isHlsSource() {
-		const source = this.player.src;
-		if (typeof source === "string") return source.includes(".m3u8");
-		if (Array.isArray(source))
-			return source.some((item) => item?.type?.includes("mpegurl"));
+	// Video.js gives each hls.js subtitle track a text track with its name and language
+	isTextTrackOf(textTrack, subtitles) {
 		return (
-			source?.type?.includes("mpegurl") || source?.src?.includes?.(".m3u8")
+			textTrack !== undefined &&
+			subtitles !== undefined &&
+			textTrack.label === subtitles.name &&
+			textTrack.language === subtitles.lang
 		);
-	},
-
-	disableNativeTextTracks(video = this.getVideoElement()) {
-		Array.from(video?.textTracks || []).forEach((track) => {
-			track.mode = "disabled";
-		});
 	},
 
 	// Keeps running while paused, so the Playback stays current as long as the
@@ -444,7 +278,7 @@ const Player = {
 	},
 
 	reportHeartbeat() {
-		const position = this.player?.currentTime;
+		const position = this.media.currentTime;
 		this.pushEvent(
 			"player_heartbeat",
 			{ position_seconds: Number.isFinite(position) ? position : null },
