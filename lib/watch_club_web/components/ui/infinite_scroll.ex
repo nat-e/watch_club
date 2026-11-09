@@ -2,9 +2,10 @@ defmodule WatchClubWeb.Components.UI.InfiniteScroll do
   @moduledoc """
   Infinite scrolling trigger primitive.
 
-  Renders a small loading sentinel that pushes an event when it enters the viewport.
-  The hook re-checks after each successful push so pages keep loading until the
-  sentinel leaves the viewport or the parent stops rendering it.
+  Renders a small loading sentinel that pushes an event when it comes within one screen
+  height below the viewport, so the next page is usually there before the user reaches the
+  end of the list. The hook re-checks after each successful push so pages keep loading until
+  the sentinel is further away or the parent stops rendering it.
   """
 
   use Phoenix.Component
@@ -32,9 +33,12 @@ defmodule WatchClubWeb.Components.UI.InfiniteScroll do
         export default {
           mounted() {
             this.loading = false
-            this.observer = new IntersectionObserver((entries) => {
-              if (entries.some((entry) => entry.isIntersecting)) this.loadMore()
-            })
+            this.observer = new IntersectionObserver(
+              (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) this.loadMore()
+              },
+              { rootMargin: "0px 0px 100% 0px" }
+            )
             this.observer.observe(this.el)
             this.check()
           },
@@ -46,7 +50,8 @@ defmodule WatchClubWeb.Components.UI.InfiniteScroll do
 
               const rect = this.el.getBoundingClientRect()
               const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-              if (rect.top <= viewportHeight && rect.bottom >= 0) this.loadMore()
+              // The observer's rootMargin: the viewport plus one screen height below it
+              if (rect.top <= 2 * viewportHeight && rect.bottom >= 0) this.loadMore()
             })
           },
           loadMore() {
