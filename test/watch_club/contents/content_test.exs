@@ -1,5 +1,5 @@
 defmodule WatchClub.Contents.ContentTest do
-  use WatchClub.DataCase
+  use WatchClub.DataCase, async: false
 
   import ExUnit.CaptureLog
   import WatchClub.Contents
@@ -407,7 +407,9 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "get_or_refresh_content/*" do
-    test "creates missing content and loads its implementation", %{member: actor} do
+    test "creates missing content and loads its implementation with the caller's actor" do
+      actor = generate(user(locale: :fr_FR))
+
       details =
         tmdb_fixture("movie_details_11")
         |> Map.put("id", 871)
@@ -420,7 +422,9 @@ defmodule WatchClub.Contents.ContentTest do
                external_id: "871",
                original_title: "Freshly imported",
                metadata_refreshed_at: %DateTime{},
-               implementation: %Movie{}
+               implementation: %Movie{
+                 best_localization: %MovieLocalization{title: "La Guerre des étoiles"}
+               }
              } =
                get_or_refresh_content!(ContentIdentity.for_movie("871"),
                  actor: actor,
@@ -518,26 +522,142 @@ defmodule WatchClub.Contents.ContentTest do
                tv_show.id
     end
 
-    test "concurrent callers share one metadata refresh", %{member: actor} do
+    test "concurrent creators share one fetch and load with each caller's actor", %{member: actor} do
       parent = self()
+      french_user = generate(user(locale: :fr_FR))
 
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        if URI.decode_query(conn.query_string)["language"] == "en-US",
-          do: send(parent, :fetched_movie_metadata)
+        send(parent, {:fetched_movie_metadata, URI.decode_query(conn.query_string)["language"]})
+
+        if URI.decode_query(conn.query_string)["language"] == "en-US" do
+          send(parent, {:fetch_started, self()})
+          receive do: (:finish_fetch -> :ok)
+        end
 
         Req.Test.json(conn, tmdb_fixture("movie_details_11"))
       end)
 
-      content_ids =
-        1..4
-        |> Task.async_stream(fn _caller ->
-          get_or_refresh_content!(ContentIdentity.for_movie(11), actor: actor).id
-        end)
-        |> Enum.map(fn {:ok, content_id} -> content_id end)
+      callers =
+        for user <- [actor, french_user, actor, french_user] do
+          Task.async(fn ->
+            get_or_refresh_content!(ContentIdentity.for_movie(11),
+              actor: user,
+              load: [:implementation]
+            )
+          end)
+        end
 
-      assert length(Enum.uniq(content_ids)) == 1
-      assert_receive :fetched_movie_metadata
-      refute_receive :fetched_movie_metadata, 0
+      assert_receive {:fetch_started, fetch}
+      await_metadata_callers(4)
+      send(fetch, :finish_fetch)
+      contents = Task.await_many(callers)
+
+      assert length(Enum.uniq_by(contents, & &1.id)) == 1
+
+      assert Enum.map(contents, & &1.implementation.best_localization.title) ==
+               ["Star Wars", "La Guerre des étoiles", "Star Wars", "La Guerre des étoiles"]
+
+      assert_receive {:fetched_movie_metadata, "en-US"}
+      assert_receive {:fetched_movie_metadata, "fr-FR"}
+      refute_receive {:fetched_movie_metadata, _}, 0
+    end
+
+    test "concurrent callers share one failed refresh and all receive stored Content", %{
+      member: actor
+    } do
+      content =
+        generate(movie(metadata_refreshed_at: DateTime.add(DateTime.utc_now(), -2, :day)))
+
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      callers =
+        for _ <- 1..4 do
+          Task.async(fn ->
+            get_or_refresh_content!(ContentIdentity.from_content(content), actor: actor)
+          end)
+        end
+
+      assert_receive {:fetch_started, fetch}
+      await_metadata_callers(4)
+      send(fetch, :finish_fetch)
+
+      for stored <- Task.await_many(callers) do
+        assert stored.id == content.id
+        assert stored.metadata_refreshed_at == content.metadata_refreshed_at
+        assert stored.updated_at == content.updated_at
+      end
+
+      refute_receive {:fetch_started, _}, 0
+    end
+
+    test "unexpected fetch crashes exit every waiting caller", %{member: actor} do
+      parent = self()
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        send(parent, {:fetch_started, self()})
+        receive do: (:finish_fetch -> :ok)
+        raise "broken metadata"
+      end)
+
+      capture_log(fn ->
+        callers =
+          for _ <- 1..4 do
+            Task.async(fn ->
+              catch_exit(get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor))
+            end)
+          end
+
+        assert_receive {:fetch_started, fetch}
+        await_metadata_callers(4)
+        send(fetch, :finish_fetch)
+
+        for reason <- Task.await_many(callers) do
+          assert {%Ash.Error.Unknown{} = error, stacktrace} = reason
+          assert Exception.message(error) =~ "broken metadata"
+          assert stacktrace != []
+        end
+
+        refute_receive {:fetch_started, _}, 0
+      end)
+    end
+
+    test "respects a shorter max_age", %{member: actor} do
+      refreshed_at = DateTime.add(DateTime.utc_now(), -16, :minute)
+      content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+      assert %Content{id: id, metadata_refreshed_at: new_refreshed_at} =
+               get_or_refresh_content!(ContentIdentity.from_content(content),
+                 max_age: 15 * 60,
+                 actor: actor
+               )
+
+      assert id == content.id
+      assert DateTime.compare(new_refreshed_at, refreshed_at) == :gt
+    end
+
+    test "max_age: :infinity never refreshes stored Content", %{member: actor} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("any-age metadata must not make a TMDB request")
+      end)
+
+      for refreshed_at <- [DateTime.add(DateTime.utc_now(), -2, :day), nil] do
+        content = generate(movie(metadata_refreshed_at: refreshed_at))
+
+        assert %Content{id: id, metadata_refreshed_at: ^refreshed_at, updated_at: updated_at} =
+                 get_or_refresh_content!(ContentIdentity.from_content(content),
+                   max_age: :infinity,
+                   actor: actor
+                 )
+
+        assert id == content.id
+        assert updated_at == content.updated_at
+      end
     end
 
     test "returns fresh content without HTTP requests or writes", %{member: actor} do
@@ -629,6 +749,17 @@ defmodule WatchClub.Contents.ContentTest do
       get_or_refresh_content(ContentIdentity.for_movie("404"), actor: actor)
       |> assert_has_error(Ash.Error.Unknown, fn error ->
         match?(%MetadataUnavailable{reason: :not_found}, error)
+      end)
+    end
+
+    test "returns an error when Content is not stored and TMDB is unavailable", %{member: actor} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Plug.Conn.send_resp(conn, 503, "")
+      end)
+
+      get_or_refresh_content(ContentIdentity.for_movie(11), actor: actor)
+      |> assert_has_error(Ash.Error.Unknown, fn error ->
+        match?(%MetadataUnavailable{reason: :server_error}, error)
       end)
     end
   end
@@ -867,6 +998,26 @@ defmodule WatchClub.Contents.ContentTest do
                decades: [2010, 1990],
                original_languages: ["fr", "en", "ja"]
              }
+    end
+  end
+
+  # Keep the HTTP request blocked until every caller has joined the same fetch.
+  defp await_metadata_callers(count, attempts \\ 100)
+
+  defp await_metadata_callers(_count, 0), do: flunk("callers did not join the metadata fetch")
+
+  defp await_metadata_callers(count, attempts) do
+    callers =
+      WatchClub.Contents.MetadataFetcher
+      |> :sys.get_state()
+      |> Map.values()
+      |> Enum.flat_map(& &1.callers)
+
+    if length(callers) == count do
+      :ok
+    else
+      Process.sleep(10)
+      await_metadata_callers(count, attempts - 1)
     end
   end
 

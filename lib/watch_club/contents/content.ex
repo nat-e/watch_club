@@ -181,9 +181,24 @@ defmodule WatchClub.Contents.Content do
     end
 
     action :get_or_refresh, :struct do
-      description "Returns stored Content, creating it or refreshing metadata older than 24 hours"
+      description "Returns stored Content, creating it when missing and refreshing metadata older than max_age when the Metadata Provider answers"
       constraints instance_of: __MODULE__
       argument :content_identity, ContentIdentity, allow_nil?: false
+
+      argument :max_age, :term do
+        allow_nil? false
+        default 24 * 60 * 60
+
+        description "Maximum metadata age in seconds from this call; :infinity never refreshes stored Content"
+      end
+
+      validate fn input, _context ->
+        case input.arguments.max_age do
+          :infinity -> :ok
+          seconds when is_integer(seconds) and seconds >= 0 -> :ok
+          _ -> {:error, field: :max_age, message: "must be non-negative seconds or :infinity"}
+        end
+      end
 
       run WatchClub.Contents.Actions.GetOrRefreshContent
     end
