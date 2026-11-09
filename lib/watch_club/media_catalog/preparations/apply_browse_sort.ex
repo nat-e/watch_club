@@ -1,17 +1,30 @@
 defmodule WatchClub.MediaCatalog.Preparations.ApplyBrowseSort do
   @moduledoc """
-  Applies the `:sort_by` / `:sort_order` arguments to the browse query,
-  appending `id` as a stable tiebreaker for keyset pagination.
+  Sorts the Media Browser's list by date added, or by title: the title the actor sees, each
+  Content's Media together with its TV Show Episodes in order, and the Unmatched Media last in
+  both orders, by path.
   """
   use Ash.Resource.Preparation
 
+  require Ash.Sort
+
+  alias WatchClub.Shared.SortOrder
+
   @impl true
   def prepare(query, _opts, _context) do
-    dir = Ash.Query.get_argument(query, :sort_order)
+    order = Ash.Query.get_argument(query, :sort_order)
 
     case Ash.Query.get_argument(query, :sort_by) do
-      :imported_at -> Ash.Query.sort(query, inserted_at: dir, id: dir)
-      :path -> Ash.Query.sort(query, path: dir, id: dir)
+      :added ->
+        Ash.Query.sort(query, inserted_at: order)
+
+      :title ->
+        Ash.Query.sort(query, [
+          {Ash.Sort.expr_sort(content.localized_title_key, :string), SortOrder.nils_last(order)},
+          {:content_id, order},
+          {Ash.Sort.expr_sort(video.tv_show_episode.rank, :integer), order},
+          {:path, order}
+        ])
     end
   end
 end

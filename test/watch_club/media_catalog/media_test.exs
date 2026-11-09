@@ -444,112 +444,152 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
+  describe "change_media_path/*" do
+    test "moves the Media and notifies the pages showing it" do
+      movie = generate(movie())
+      media = generate(video_media(movie, path: "/moved/before.mkv"))
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
+
+      moved = change_media_path!(media, %{path: "/moved/after.mkv"}, actor: SystemActor.actor())
+
+      assert moved.path == "/moved/after.mkv"
+
+      assert_receive %Ash.Notifier.Notification{
+        resource: Media,
+        action: %{type: :update},
+        metadata: %{content_id: content_id}
+      }
+
+      assert content_id == movie.id
+    end
+  end
+
   describe "browse_media/*" do
-    test "returns Media for any authenticated actor" do
-      admin = generate(administrator())
-      movie = seed_movie()
+    test "returns one page of Media, with their total" do
+      movie = generate(movie())
+      generate_many(video_media(movie), 3)
 
-      m1 =
-        create_or_update_video!(video_media_input("tmp/browse/a.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      page = browse_media!(page: [limit: 2, offset: 2], actor: generate(user()))
 
-      m2 =
-        create_or_update_video!(video_media_input("tmp/browse/b.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      rows = browse_media!(actor: admin)
-      ids = Enum.map(rows, & &1.id)
-      assert m1.id in ids
-      assert m2.id in ids
+      assert [%Media{}] = page.results
+      assert page.count == 3
     end
 
     test "rejects reads without an actor" do
-      browse_media(actor: nil)
+      browse_media(page: [limit: 50], actor: nil)
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
 
-    test "filters by media_type" do
-      admin = generate(administrator())
-      movie = seed_movie()
-      book = seed_book()
+    test "keeps one Media Type" do
+      tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      _movie_media = generate(video_media(generate(movie())))
+      episode_media = generate(video_media(hd(tv_show.tv_show.episodes)))
 
-      _video =
-        create_or_update_video!(video_media_input("tmp/browse/v.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      assert [row] =
+               browse_media!(%{media_type: :tv_show_episode},
+                 page: [limit: 50],
+                 actor: generate(user())
+               ).results
 
-      ebook =
-        create_or_update_ebook!(%{path: "tmp/browse/e.epub", ebook: %{book_id: book.id}},
-          actor: SystemActor.actor()
-        )
-
-      assert [row] = browse_media!(%{media_type: :ebook}, actor: admin)
-      assert row.id == ebook.id
+      assert row.id == episode_media.id
     end
 
-    test "search matches the path" do
-      admin = generate(administrator())
-      movie = seed_movie()
+    test "keeps the Unmatched Media" do
+      _matched = generate(video_media(generate(movie())))
+      unmatched = generate(video_media(nil))
 
-      _a =
-        create_or_update_video!(video_media_input("tmp/browse/needle.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      assert [row] =
+               browse_media!(%{unmatched?: true}, page: [limit: 50], actor: generate(user())).results
 
-      _b =
-        create_or_update_video!(video_media_input("tmp/browse/other.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      assert [row] = browse_media!(%{search: "needle"}, actor: admin)
-      assert row.path =~ "needle"
+      assert row.id == unmatched.id
     end
 
-    test "search matches the attached Content original_title" do
-      admin = generate(administrator())
+    test "searches the path" do
+      movie = generate(movie())
+      _needle = generate(video_media(movie, path: "/browse/needle.mkv"))
+      _other = generate(video_media(movie, path: "/browse/other.mkv"))
 
-      content =
-        Ash.Seed.seed!(Content, %{
-          type: :movie,
-          external_id_source: :tmdb,
-          external_id: "movie-search-#{System.unique_integer([:positive])}",
-          original_title: "Findable Title",
-          original_language: "en",
-          origin_country: "US"
-        })
+      assert [row] =
+               browse_media!(%{search: "NEEDLE"}, page: [limit: 50], actor: generate(user())).results
 
-      movie = Ash.Seed.seed!(Movie, %{id: content.id})
-
-      _ =
-        create_or_update_video!(video_media_input("tmp/browse/unrelated.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      assert [row] = browse_media!(%{search: "Findable"}, actor: admin)
-      assert row.path =~ "unrelated"
+      assert row.path == "/browse/needle.mkv"
     end
 
-    test "sorts by path asc" do
-      admin = generate(administrator())
-      movie = seed_movie()
+    test "searches the title in the actor's language" do
+      movie = generate(movie(titles: %{"fr" => "Les Fils de l'homme"}))
+      media = generate(video_media(movie))
 
-      _a =
-        create_or_update_video!(video_media_input("tmp/browse/aaa.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      assert [row] =
+               browse_media!(%{search: "fils de l'homme"},
+                 page: [limit: 50],
+                 actor: generate(user(locale: :fr_FR))
+               ).results
 
-      _b =
-        create_or_update_video!(video_media_input("tmp/browse/bbb.mkv", movie),
-          actor: SystemActor.actor()
-        )
+      assert row.id == media.id
 
-      assert [first, second] =
-               browse_media!(%{sort_by: :path, sort_order: :asc}, actor: admin)
+      assert [] =
+               browse_media!(%{search: "fils de l'homme"},
+                 page: [limit: 50],
+                 actor: generate(user(locale: :en_US))
+               ).results
+    end
 
-      assert first.path =~ "aaa.mkv"
-      assert second.path =~ "bbb.mkv"
+    test "sorts by title, with TV Show Episodes in order and Unmatched Media last" do
+      tv_show =
+        generate(tv_show(original_title: "A Show", num_seasons: 1, episodes_per_season: 2))
+
+      [first_episode, second_episode] =
+        Enum.sort_by(tv_show.tv_show.episodes, & &1.episode_number)
+
+      second = generate(video_media(second_episode))
+      first = generate(video_media(first_episode))
+      movie = generate(video_media(generate(movie(original_title: "B Movie"))))
+      unmatched = generate(video_media(nil, path: "/0-unmatched.mkv"))
+
+      browse = fn order ->
+        %{sort_by: :title, sort_order: order}
+        |> browse_media!(page: [limit: 50], actor: generate(user()))
+        |> Map.fetch!(:results)
+        |> Enum.map(& &1.id)
+      end
+
+      assert browse.(:asc) == [first.id, second.id, movie.id, unmatched.id]
+      assert browse.(:desc) == [movie.id, second.id, first.id, unmatched.id]
+    end
+
+    test "sorts by date added, the newest first" do
+      movie = generate(movie())
+
+      older =
+        movie
+        |> video_media()
+        |> generate()
+        |> Ash.Seed.update!(%{inserted_at: ~U[2020-01-01 00:00:00.000000Z]})
+
+      newer = generate(video_media(movie))
+
+      assert [newer.id, older.id] ==
+               browse_media!(page: [limit: 50], actor: generate(user())).results
+               |> Enum.map(& &1.id)
+    end
+  end
+
+  describe "count_unmatched_media/*" do
+    test "counts the Unmatched Media with the search and Media Type" do
+      _needle_a = generate(video_media(nil, path: "/count/needle-a.mkv"))
+      _needle_b = generate(video_media(nil, path: "/count/needle-b.mkv"))
+      _episode = generate(video_media(nil, path: "/count/needle-c.mkv", type: :tv_show_episode))
+      _other = generate(video_media(nil, path: "/count/other.mkv"))
+      _matched = generate(video_media(generate(movie()), path: "/count/needle-d.mkv"))
+
+      assert count_unmatched_media!(%{search: "needle", media_type: :movie},
+               actor: generate(user())
+             ) == 2
+    end
+
+    test "rejects counts without an actor" do
+      count_unmatched_media(actor: nil)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 

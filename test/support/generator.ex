@@ -96,7 +96,11 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # Takes the `titles` of its Content Localizations by language, such as `%{"fr" => "Titre"}`,
+  # which default to its original title
   def movie(opts \\ []) do
+    {titles, opts} = Keyword.pop(opts, :titles, %{})
+
     seed_generator(
       %Content{
         type: :movie,
@@ -116,7 +120,11 @@ defmodule WatchClub.Generator do
             backdrop_path: content.original_title,
             localizations:
               for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
-                %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
+                %{
+                  iso_639_1: iso_639_1,
+                  iso_3166_1: iso_3166_1,
+                  title: titles[iso_639_1] || content.original_title
+                }
               end
           })
 
@@ -317,15 +325,16 @@ defmodule WatchClub.Generator do
     )
   end
 
-  # Media playing the Movie or the TV Show Episode, with the tracks of `video_input/2` unless
-  # `video` overrides them
+  # Media playing the Movie or the TV Show Episode, or Unmatched Media without either, with the
+  # tracks of `video_input/2` unless `video` overrides them
   def video_media(movie_or_episode, opts \\ []) do
     {video, opts} = Keyword.pop(opts, :video, %{})
 
-    {type, folder} =
+    {type, folder, id} =
       case movie_or_episode do
-        %Content{type: :movie} -> {:movie, "movies"}
-        %TvShowEpisode{} -> {:tv_show_episode, "episodes"}
+        %Content{type: :movie, id: id} -> {:movie, "movies", id}
+        %TvShowEpisode{id: id} -> {:tv_show_episode, "episodes", id}
+        nil -> {:movie, "unmatched", nil}
       end
 
     changeset_generator(
@@ -334,7 +343,7 @@ defmodule WatchClub.Generator do
       defaults: [
         path: sequence(:video_media_path, &"/#{folder}/#{&1}/video.mkv"),
         type: type,
-        video: Map.merge(video_input(type, movie_or_episode.id), video)
+        video: Map.merge(video_input(type, id), video)
       ],
       authorize?: false,
       overrides: opts

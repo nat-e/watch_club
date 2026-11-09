@@ -1,32 +1,20 @@
 defmodule WatchClub.MediaCatalog.Preparations.FilterBrowseSearch do
   @moduledoc """
-  Filters Media by a free-text term across the media path and the titles
-  of any attached content (movie, TV show, ebook, audiobook).
+  Keeps the Media whose path, or title as the actor sees it, contains the `search` argument,
+  ignoring case and accents.
   """
   use Ash.Resource.Preparation
 
-  import Ash.Expr
   require Ash.Query
 
   @impl true
   def prepare(query, _opts, _context) do
-    case Ash.Query.get_argument(query, :search) do
-      term when is_binary(term) and term != "" ->
-        pattern = "%" <> term <> "%"
+    text = Ash.Query.get_argument(query, :search)
 
-        Ash.Query.filter(
-          query,
-          expr(
-            ilike(path, ^pattern) or
-              ilike(video.movie.content.original_title, ^pattern) or
-              ilike(video.tv_show_episode.tv_show.content.original_title, ^pattern) or
-              ilike(ebook.book.title, ^pattern) or
-              ilike(audiobook.book.title, ^pattern)
-          )
-        )
-
-      _ ->
-        query
-    end
+    Ash.Query.filter(
+      query,
+      fragment("strpos(unaccent(lower(?)), unaccent(lower(?))) > 0", path, ^text) or
+        fragment("strpos(?, unaccent(lower(?))) > 0", content.localized_title_key, ^text)
+    )
   end
 end

@@ -21,27 +21,30 @@ defmodule WatchClubWeb.Components.Media.MediaTypeBadge do
     """
   end
 
-  defp media_type_icon(%{media_type: :movie} = assigns) do
+  attr :media_type, :atom, required: true
+  attr :class, :any, default: nil
+
+  def media_type_icon(%{media_type: :movie} = assigns) do
     ~H"""
-    <Lucideicons.clapperboard />
+    <Lucideicons.clapperboard class={@class} />
     """
   end
 
-  defp media_type_icon(%{media_type: :tv_show_episode} = assigns) do
+  def media_type_icon(%{media_type: :tv_show_episode} = assigns) do
     ~H"""
-    <Lucideicons.tv />
+    <Lucideicons.tv class={@class} />
     """
   end
 
-  defp media_type_icon(%{media_type: :ebook} = assigns) do
+  def media_type_icon(%{media_type: :ebook} = assigns) do
     ~H"""
-    <Lucideicons.book_open />
+    <Lucideicons.book_open class={@class} />
     """
   end
 
-  defp media_type_icon(%{media_type: :audiobook} = assigns) do
+  def media_type_icon(%{media_type: :audiobook} = assigns) do
     ~H"""
-    <Lucideicons.headphones />
+    <Lucideicons.headphones class={@class} />
     """
   end
 end
