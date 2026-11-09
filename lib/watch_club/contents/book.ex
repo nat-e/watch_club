@@ -79,7 +79,6 @@ defmodule WatchClub.Contents.Book do
   end
 
   identities do
-    identity :unique_content, [:id]
     identity :unique_hardcover_id, [:hardcover_id]
   end
 

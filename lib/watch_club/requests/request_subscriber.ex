@@ -25,7 +25,7 @@ defmodule WatchClub.Requests.RequestSubscriber do
 
     references do
       reference :content_request, on_delete: :delete
-      reference :user, on_delete: :delete
+      reference :user, on_delete: :delete, index?: true
     end
   end
 

@@ -23,7 +23,7 @@ defmodule WatchClub.Playlists.Playlist do
     repo WatchClub.Repo
 
     references do
-      reference :owner, on_delete: :delete
+      reference :owner, on_delete: :delete, index?: true
     end
   end
 

@@ -22,7 +22,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
 
     references do
       reference :content, on_delete: :delete
-      reference :media_source, on_delete: :delete
+      reference :media_source, on_delete: :delete, index?: true
     end
   end
 

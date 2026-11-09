@@ -30,8 +30,8 @@ defmodule WatchClub.Playbacks.Playback do
     repo WatchClub.Repo
 
     references do
-      reference :session, on_delete: :delete
-      reference :media, on_delete: :delete
+      reference :session, on_delete: :delete, index?: true
+      reference :media, on_delete: :delete, index?: true
     end
   end
 

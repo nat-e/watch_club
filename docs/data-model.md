@@ -2,6 +2,23 @@
 
 The database, one class diagram per domain. Standard `inserted_at` and `updated_at` columns are left out. A class from another domain shows with its name only.
 
+## Foreign-key indexes
+
+Index foreign-key columns by default. Relationship counts and from-many lookups can scan a child table once per parent; referenced-row deletes and updates also look up the child rows. Supporting indexes keep this work bounded as the Library grows.
+
+- Use `index?: true` on the Ash Postgres reference for a simple index:
+
+  ```elixir
+  reference :video, on_delete: :delete, index?: true
+  ```
+
+- Reuse an existing primary-key or B-tree index whose leading columns are the foreign-key columns. For example, `(playlist_id, content_id)` covers `playlist_id`, not `content_id` alone. Shared primary-key relationships need no extra index.
+- A partial index only covers rows matching its predicate. An index for processing Media Imports does not cover completed imports or general foreign-key lookups.
+- Keep composite indexes that serve additional filters or ordering. Each extra index costs storage and write work, so avoid duplicates, including identities that repeat a primary key.
+- Document any intentional omission next to the reference.
+
+Generate the migration and resource snapshots after changing indexes. Verify query plans on representative data; low scan counts alone do not justify dropping an index that enforces uniqueness.
+
 ## Accounts
 
 ```mermaid

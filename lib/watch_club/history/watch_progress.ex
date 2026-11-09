@@ -34,11 +34,12 @@ defmodule WatchClub.History.WatchProgress do
 
     references do
       reference :user, on_delete: :delete
-      reference :movie, on_delete: :delete
-      reference :tv_show_episode, on_delete: :delete
+      reference :book, index?: true
+      reference :movie, on_delete: :delete, index?: true
+      reference :tv_show_episode, on_delete: :delete, index?: true
 
       # When the media this refers is deleted, set to nil
-      reference :last_media, on_delete: :nilify
+      reference :last_media, on_delete: :nilify, index?: true
     end
 
     # The unique_content_per_user index only serves lookups by user and book (its first columns).

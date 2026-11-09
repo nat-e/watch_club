@@ -15,7 +15,7 @@ defmodule WatchClub.MediaSources.Import do
     repo WatchClub.Repo
 
     references do
-      reference :media_source, on_delete: :delete
+      reference :media_source, on_delete: :delete, index?: true
     end
 
     custom_indexes do

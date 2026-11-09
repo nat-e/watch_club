@@ -33,7 +33,7 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
 
     references do
       reference :actor, on_delete: :delete
-      reference :content, on_delete: :delete
+      reference :content, on_delete: :delete, index?: true
     end
   end
 

@@ -177,7 +177,6 @@ defmodule WatchClub.Contents.TvShow do
   end
 
   identities do
-    identity :unique_content, [:id]
     identity :unique_tmdb_id, [:tmdb_id]
     identity :unique_tvdb_id, [:tvdb_id]
   end

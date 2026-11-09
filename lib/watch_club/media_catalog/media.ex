@@ -24,7 +24,7 @@ defmodule WatchClub.MediaCatalog.Media do
     repo WatchClub.Repo
 
     references do
-      reference :content, on_delete: :restrict
+      reference :content, on_delete: :restrict, index?: true
     end
   end
 
