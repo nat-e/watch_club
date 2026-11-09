@@ -42,29 +42,18 @@ const emptyStorageKeys = [
 	"AudioGain",
 	"PlaybackRate",
 	"VideoQuality",
+	"Lang",
+	"Captions",
 ];
-const emptyPlayerStorage = Object.fromEntries(
-	emptyStorageKeys.flatMap((key) => [
-		[`get${key}`, getNothing],
-		[`set${key}`, noop],
-	]),
-);
-
-const createPlayerStorage = () => {
-	let captions = false;
-	let language = null;
-
-	return {
-		...emptyPlayerStorage,
-		getCaptions: async () => captions,
-		setCaptions: async (enabled) => {
-			captions = enabled;
-		},
-		getLang: async () => language,
-		setLang: async (lang) => {
-			language = lang;
-		},
-	};
+// Vidstack would show subtitles on its own: the hook starts them itself, see startSubtitles
+const playerStorage = {
+	...Object.fromEntries(
+		emptyStorageKeys.flatMap((key) => [
+			[`get${key}`, getNothing],
+			[`set${key}`, noop],
+		]),
+	),
+	getCaptions: async () => false,
 };
 
 const Player = {
@@ -77,6 +66,9 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
+		// The subtitle language the User picked, for the next videos of the session: null
+		// when they turned subtitles off
+		this.subtitleLanguage = undefined;
 
 		this.bindDomEvents();
 		this.boot();
@@ -110,11 +102,14 @@ const Player = {
 	},
 
 	// This is called on initial load and when the video changes in the player session
-	// Playback starts at the given position (the beginning by default) but keeps
-	// track selection intact. Vidstack queues the seek until the media can play.
+	// Playback starts at the given position (the beginning by default). Vidstack queues
+	// the seek until the media can play.
 	loadVideo(src, startPositionSeconds = 0) {
 		if (!this.player) return;
 		this.pendingAutoplay = true;
+		this.subtitlesToStart = true;
+		// Vidstack keeps the previous video's subtitles, under the ids of the new ones
+		this.player.textTracks.clear();
 		this.player.src = { src, type: "application/x-mpegurl" };
 		this.player.currentTime = startPositionSeconds;
 		this.player.startLoading?.();
@@ -150,7 +145,7 @@ const Player = {
 		this.player.preload = "metadata";
 		this.player.playsInline = true;
 		this.player.preferNativeHLS = false;
-		this.player.storage = createPlayerStorage();
+		this.player.storage = playerStorage;
 		this.player.keyTarget = "document";
 		this.player.keyShortcuts = {
 			togglePaused: "k Space",
@@ -291,6 +286,16 @@ const Player = {
 			{ signal },
 		);
 		this.player.addEventListener(
+			"hls-subtitle-tracks-updated",
+			(event) => {
+				if (!this.subtitlesToStart) return;
+				this.subtitlesToStart = false;
+				// After hls.js picks its own first subtitle track, which would replace this one
+				queueMicrotask(() => this.startSubtitles(event.detail.subtitleTracks));
+			},
+			{ signal },
+		);
+		this.player.addEventListener(
 			"volume-change",
 			() => {
 				this.storeLocalPreferences();
@@ -307,10 +312,24 @@ const Player = {
 				group.addEventListener(
 					"change",
 					(event) => {
-						if (
-							event.currentTarget.localName === "media-captions-radio-group"
-						) {
-							this.syncCaptionLayer(event.detail);
+						// The tracks the User picks carry over to the next videos of the session.
+						// The groups also fire when the player changes tracks itself.
+						const picked = event.isOriginTrusted;
+
+						switch (event.currentTarget.localName) {
+							case "media-captions-radio-group":
+								this.syncCaptionLayer(event.detail);
+								if (picked) {
+									this.subtitleLanguage = event.detail?.language ?? null;
+								}
+								break;
+							case "media-audio-radio-group":
+								if (picked) {
+									this.player.provider.instance.config.audioPreference = {
+										lang: event.detail.language,
+									};
+								}
+								break;
 						}
 
 						// Return focus to the trigger before closing, otherwise the menu is
@@ -363,6 +382,25 @@ const Player = {
 		}
 
 		if (providerType === "hls") this.disableNativeTextTracks();
+	},
+
+	// Starts the subtitles the User picked earlier in the session when the video has
+	// them, otherwise the ones the master playlist marks as default
+	startSubtitles(subtitleTracks) {
+		if (this.subtitleLanguage === null) {
+			this.player.provider.instance.subtitleTrack = -1;
+			return;
+		}
+
+		const picked = subtitleTracks.findIndex(
+			(track) => track.lang === this.subtitleLanguage,
+		);
+		const index =
+			picked === -1
+				? subtitleTracks.findIndex((track) => track.default)
+				: picked;
+		const track = this.player.textTracks.getById(`hls-subtitles-${index}`);
+		if (track) track.mode = "showing";
 	},
 
 	getVideoElement() {
