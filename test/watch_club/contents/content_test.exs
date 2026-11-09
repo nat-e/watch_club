@@ -413,6 +413,7 @@ defmodule WatchClub.Contents.ContentTest do
         :telemetry_test.attach_event_handlers(self(), [
           [:watch_club, :contents, :metadata_fetch, :stop],
           [:watch_club, :contents, :metadata_fetch, :exception],
+          [:watch_club, :contents, :metadata_fetch],
           [:watch_club, :contents, :metadata_request],
           [:watch_club, :tmdb, :request, :stop]
         ])
@@ -609,6 +610,11 @@ defmodule WatchClub.Contents.ContentTest do
       assert duration > 0
       refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
 
+      assert_received {[:watch_club, :contents, :metadata_fetch], ^ref, %{callers: 4},
+                       %{type: :movie}}
+
+      refute_received {[:watch_club, :contents, :metadata_fetch], ^ref, _, _}
+
       for _ <- 1..4 do
         assert_received {[:watch_club, :contents, :metadata_request], ^ref, _,
                          %{served: :fetched}}
@@ -698,6 +704,11 @@ defmodule WatchClub.Contents.ContentTest do
 
         assert duration > 0
         assert stacktrace != []
+
+        assert_received {[:watch_club, :contents, :metadata_fetch], ^ref, %{callers: 4},
+                         %{type: :movie}}
+
+        refute_received {[:watch_club, :contents, :metadata_fetch], ^ref, _, _}
         refute_received {[:watch_club, :contents, :metadata_fetch, :exception], ^ref, _, _}
         refute_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, _, _}
       end)

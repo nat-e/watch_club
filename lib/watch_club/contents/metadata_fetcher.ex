@@ -109,11 +109,19 @@ defmodule WatchClub.Contents.MetadataFetcher do
   end
 
   defp reply_to_callers(identity, fetch, result, reply) do
+    callers = length(fetch.callers)
+
+    :telemetry.execute(
+      [:watch_club, :contents, :metadata_fetch],
+      %{callers: callers},
+      %{type: identity.type}
+    )
+
     attributes = %{
       "watch_club.content.type" => to_string(identity.type),
       "watch_club.content.tmdb_id" => identity.external_id,
       "watch_club.metadata_fetch.result" => to_string(result),
-      "watch_club.metadata_fetch.callers" => length(fetch.callers)
+      "watch_club.metadata_fetch.callers" => callers
     }
 
     status =

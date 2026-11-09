@@ -103,7 +103,7 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:type, :result],
         unit: {:native, :millisecond}
       ),
-      summary("watch_club.contents.metadata_fetch.stop.callers", tags: [:type]),
+      summary("watch_club.contents.metadata_fetch.callers", tags: [:type]),
       counter("watch_club.contents.metadata_fetch.exception.count", tags: [:type]),
       counter("watch_club.contents.metadata_request.count", tags: [:served]),
 

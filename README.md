@@ -37,7 +37,7 @@ All signals share the service name, app version, environment and instance identi
 Metrics cover requests, database timings, jobs, VM memory and run queues. Metric labels use route patterns, response statuses, worker names and queue names. Metadata refreshes also expose:
 
 - `watch_club.contents.metadata_request.count`, labelled by `served` (`stored`, `fetched`).
-- `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.stop.callers` measures callers per completed fetch by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
+- `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.callers` measures callers per fetch, including crashes, by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
 - `watch_club.tmdb.request.stop.count` and `.stop.duration`, labelled by `endpoint` (path templates) and `status` (`2xx`, `404`, `429`, `4xx`, `5xx`, `error`). These count each HTTP attempt, including retries, but not cache hits.
 - `watch_club.media_import.match.count`, labelled by `result` (`matched`, `not_matched`, `episode_not_listed`).
 
