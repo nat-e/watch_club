@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.4](https://github.com/nat-e/watch_club/compare/v0.1.3...v0.1.4) (2026-11-09)
+
+
+### Features
+
+* **home:** restore Home with Up next, For You, Watching Now and the Activity Feed ([#76](https://github.com/nat-e/watch_club/issues/76)) ([8f36110](https://github.com/nat-e/watch_club/commit/8f361102fd8fbe1c2da0dd02eee0478c13c72fad))
+* **media:** page through every Media in the Media Browser ([#74](https://github.com/nat-e/watch_club/issues/74)) ([2b0a536](https://github.com/nat-e/watch_club/commit/2b0a536347b9afddd6ad2498f35c0dc8599b6ddc))
+* **player:** report a problem from the Player ([#75](https://github.com/nat-e/watch_club/issues/75)) ([12ae51c](https://github.com/nat-e/watch_club/commit/12ae51c68de01127b72f197b527d7c59e74ddea9))
+* **player:** skip intros and play the next episode when the credits start ([#70](https://github.com/nat-e/watch_club/issues/70)) ([709a5d4](https://github.com/nat-e/watch_club/commit/709a5d4328bb3ccac5fa14f2e21724f028027c9e))
+
+
+### Bug Fixes
+
+* match filesystem movies that have no year in their file name ([#71](https://github.com/nat-e/watch_club/issues/71)) ([7e57dfd](https://github.com/nat-e/watch_club/commit/7e57dfd207efcb52cb92e25045e06b9100a136df))
+
 ## [0.1.3](https://github.com/nat-e/watch_club/compare/v0.1.2...v0.1.3) (2026-11-09)
 
 
