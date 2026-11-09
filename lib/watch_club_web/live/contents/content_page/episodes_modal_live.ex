@@ -2,11 +2,12 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   @moduledoc """
   Every persisted TV Show Episode of a TV Show, one season at a time, in a big modal, full screen on
   phones. Each aired episode has a check that marks it as watched or not, and Play once it's in the
-  Library. The season has a check too.
+  Library, with Download. The season has a check too.
   """
   use WatchClubWeb, :live_component
 
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Medias.VideoDownload
 
   @doc """
   The DOM id of the modal, which shows at most once on a page.
@@ -129,7 +130,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   attr :myself, :any, required: true
 
   # Its still, with Play once it's in the Library, its number and name, its length and a word on
-  # where it is, its story, and a check to mark it as watched or not once it aired. The still is
+  # where it is, its story, Download once it's in the Library, and a check to mark it as watched or
+  # not once it aired. The still is
   # grey while it isn't out, and when a TV Show in the Library misses it.
   defp episode_row(assigns) do
     episode = assigns.episode
@@ -216,6 +218,30 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
           {@localization.overview}
         </span>
       </div>
+      <.video_download
+        :if={@playable?}
+        id={"episode-#{@episode.episode_number}-download"}
+        videos={@episode.videos}
+        locale={@locale}
+      >
+        <:trigger :let={attrs}>
+          <.button
+            id={"episode-#{@episode.episode_number}-download-button"}
+            variant="ghost"
+            size="icon"
+            aria-label={
+              dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+            }
+            title={
+              dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+            }
+            class="shrink-0"
+            {attrs}
+          >
+            <Lucideicons.hard_drive_download />
+          </.button>
+        </:trigger>
+      </.video_download>
       <.button
         :if={@aired?}
         id={"episode-#{@episode.episode_number}-watched"}
@@ -316,9 +342,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :best_localization,
         :aired?,
         :has_media?,
-        :videos,
         :actor_progress_status,
-        :actor_progress
+        :actor_progress,
+        videos: [:default_video_track, media: [:file_name, :file_size]]
       ],
       actor: assigns.current_user
     )

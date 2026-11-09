@@ -348,3 +348,15 @@ msgstr "Les détails de ce contenu sont indisponibles. Veuillez réessayer plus 
 #, elixir-autogen, elixir-format
 msgid "Loading content…"
 msgstr "Chargement du contenu…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Download"
+msgstr "Télécharger"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Download episode %{number}"
+msgstr "Télécharger l'épisode %{number}"
