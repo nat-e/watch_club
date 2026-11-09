@@ -251,7 +251,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert show_id == show.id
     end
 
-    test "files from the same new season share one fetch and later files use stored metadata" do
+    test "the first file of a new season refreshes the TV Show and later files reuse it" do
       generate(
         tv_show(
           external_id: "1668",
@@ -264,51 +264,25 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       parent = self()
 
       stub_tv_metadata(%{1 => [1], 2 => [1, 2, 3]}, fn conn ->
-        language = URI.decode_query(conn.query_string)["language"]
-        send(parent, {:fetched_metadata, conn.request_path, language})
-
-        if String.ends_with?(conn.request_path, "/tv/1668") and language == "en-US" do
-          send(parent, {:fetch_started, self()})
-          receive do: (:finish_fetch -> :ok)
-        end
+        send(parent, {:fetched_metadata, conn.request_path})
       end)
 
-      callers =
-        for number <- 1..3 do
-          Task.async(fn ->
-            MatchContent.apply(
-              candidate_with(%EpisodeIdentity{
-                tmdb_id: 1668,
-                season_number: 2,
-                episode_number: number
-              })
-            )
-          end)
-        end
+      for number <- 1..3 do
+        assert %Candidate{match_result: %MatchResult{result: :success, matched_id: id}} =
+                 MatchContent.apply(
+                   candidate_with(%EpisodeIdentity{
+                     tmdb_id: 1668,
+                     season_number: 2,
+                     episode_number: number
+                   })
+                 )
 
-      assert_receive {:fetch_started, fetch}
-      await_metadata_callers(3)
-      send(fetch, :finish_fetch)
-
-      for candidate <- Task.await_many(callers) do
-        assert %MatchResult{result: :success, matched_id: id} = candidate.match_result
         assert is_binary(id)
       end
 
-      # Two Locales, each with the TV Show's details and its two seasons.
-      for _ <- 1..6, do: assert_receive({:fetched_metadata, _, _})
-      refute_receive {:fetched_metadata, _, _}, 0
-
-      assert %Candidate{match_result: %MatchResult{result: :success}} =
-               MatchContent.apply(
-                 candidate_with(%EpisodeIdentity{
-                   tmdb_id: 1668,
-                   season_number: 2,
-                   episode_number: 1
-                 })
-               )
-
-      refute_receive {:fetched_metadata, _, _}, 0
+      # Only the first file fetches: two Locales, each with the TV Show's details and two seasons
+      for _ <- 1..6, do: assert_receive({:fetched_metadata, _})
+      refute_receive {:fetched_metadata, _}, 0
     end
 
     test "matches a stored TV Show Episode when TMDB is unavailable during a refresh" do
@@ -422,25 +396,5 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           )
       end
     end)
-  end
-
-  # Keep the HTTP request blocked until every file has joined the same fetch.
-  defp await_metadata_callers(count, attempts \\ 100)
-
-  defp await_metadata_callers(_count, 0), do: flunk("files did not join the metadata fetch")
-
-  defp await_metadata_callers(count, attempts) do
-    callers =
-      WatchClub.Contents.MetadataFetcher
-      |> :sys.get_state()
-      |> Map.values()
-      |> Enum.flat_map(& &1.callers)
-
-    if length(callers) == count do
-      :ok
-    else
-      Process.sleep(10)
-      await_metadata_callers(count, attempts - 1)
-    end
   end
 end

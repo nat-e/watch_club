@@ -25,7 +25,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
       )
 
       with {:ok, details_by_locale} <- fetch_details_by_locale(tmdb_id),
-           # TMDB's en-US response, the default Locale's, holds every translation and image
+           # Each Locale's response has every translation and image; the default one is the base
            show = Map.fetch!(details_by_locale, UserLocale.default()),
            {:ok, episodes} <- fetch_episodes(show) do
         localizations =

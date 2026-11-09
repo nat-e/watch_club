@@ -1,6 +1,8 @@
 defmodule WatchClub.Integrations.Tmdb do
   import WatchClub.Integrations.Tmdb.Client
 
+  alias WatchClub.Accounts.UserLocale
+
   alias WatchClub.Integrations.Tmdb.{
     FindByExternalIdResponse,
     MovieDetailsResponse,
@@ -147,7 +149,8 @@ defmodule WatchClub.Integrations.Tmdb do
            url: "/movie/#{tmdb_id}",
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images,credits,videos"
+             append_to_response: "translations,images,credits,videos",
+             include_image_language: image_languages()
            ],
            cache: Keyword.get(opts, :cache, true)
          ) do
@@ -170,7 +173,8 @@ defmodule WatchClub.Integrations.Tmdb do
            url: "/tv/#{tmdb_id}",
            params: [
              language: format_language(opts[:locale]),
-             append_to_response: "translations,images,external_ids,credits,videos"
+             append_to_response: "translations,images,external_ids,credits,videos",
+             include_image_language: image_languages()
            ],
            cache: Keyword.get(opts, :cache, true)
          ) do
@@ -207,6 +211,15 @@ defmodule WatchClub.Integrations.Tmdb do
   def get_tv_season_details!(tmdb_id, season_number, opts \\ []) do
     {:ok, details} = get_tv_season_details(tmdb_id, season_number, opts)
     details
+  end
+
+  # TMDB otherwise filters images by `language`: ask for every Locale's, and those without text
+  defp image_languages do
+    UserLocale.values()
+    |> Enum.map(&(&1 |> UserLocale.split() |> List.first()))
+    |> Enum.concat(["null"])
+    |> Enum.uniq()
+    |> Enum.join(",")
   end
 
   defp format_language(nil), do: nil

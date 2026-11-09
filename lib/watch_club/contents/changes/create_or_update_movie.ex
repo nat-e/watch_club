@@ -25,7 +25,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
 
       case fetch_details_by_locale(tmdb_id) do
         {:ok, details_by_locale} ->
-          # TMDB's en-US response, the default Locale's, holds every translation and image
+          # Each Locale's response has every translation and image; the default one is the base
           movie = Map.fetch!(details_by_locale, UserLocale.default())
 
           localizations =

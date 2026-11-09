@@ -197,7 +197,8 @@ defmodule WatchClub.Contents.ContentTest do
                  best_localization: %TvShowLocalization{
                    iso_639_1: "fr",
                    iso_3166_1: "FR",
-                   title: "The Expanse FR"
+                   title: "The Expanse FR",
+                   poster_path: "/poster-fr.jpg"
                  }
                }
              } = content = create_content!(ContentIdentity.for_tv_show("42"), actor: actor)
@@ -632,8 +633,7 @@ defmodule WatchClub.Contents.ContentTest do
       content = generate(movie(metadata_refreshed_at: refreshed_at))
 
       assert %Content{id: id, metadata_refreshed_at: new_refreshed_at} =
-               get_or_refresh_content!(ContentIdentity.from_content(content),
-                 max_age: 15 * 60,
+               get_or_refresh_content!(ContentIdentity.from_content(content), %{max_age: 15 * 60},
                  actor: actor
                )
 
@@ -650,8 +650,9 @@ defmodule WatchClub.Contents.ContentTest do
         content = generate(movie(metadata_refreshed_at: refreshed_at))
 
         assert %Content{id: id, metadata_refreshed_at: ^refreshed_at, updated_at: updated_at} =
-                 get_or_refresh_content!(ContentIdentity.from_content(content),
-                   max_age: :infinity,
+                 get_or_refresh_content!(
+                   ContentIdentity.from_content(content),
+                   %{max_age: :infinity},
                    actor: actor
                  )
 
@@ -1045,10 +1046,30 @@ defmodule WatchClub.Contents.ContentTest do
 
         nil ->
           [_, tmdb_id] = Regex.run(~r{/tv/(\d+)$}, conn.request_path)
-          Req.Test.json(conn, Map.put(details, "id", String.to_integer(tmdb_id)))
+
+          Req.Test.json(
+            conn,
+            details |> Map.put("id", String.to_integer(tmdb_id)) |> filter_tmdb_posters(conn)
+          )
       end
     end)
   end
+
+  # Like TMDB: the posters in `include_image_language`, else only those in the request's language
+  defp filter_tmdb_posters(%{"images" => %{"posters" => posters}} = details, conn) do
+    query = URI.decode_query(conn.query_string)
+
+    languages =
+      String.split(query["include_image_language"] || String.slice(query["language"], 0, 2), ",")
+
+    put_in(
+      details,
+      ["images", "posters"],
+      Enum.filter(posters, &((&1["iso_639_1"] || "null") in languages))
+    )
+  end
+
+  defp filter_tmdb_posters(details, _conn), do: details
 
   defp tv_season_details_fixture(season_number, episode_numbers) do
     fixture = tv_season_details_fixture(season_number)

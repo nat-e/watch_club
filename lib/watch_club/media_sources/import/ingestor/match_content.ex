@@ -27,7 +27,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   require Logger
 
-  # A Media Import refreshes each Content it touches at most once every 15 minutes.
+  # A Media Import refreshes the Content it matches when its metadata is older than 15 minutes.
   @metadata_max_age 15 * 60
 
   def apply(%Candidate{} = candidate) do
@@ -57,8 +57,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   # 1. Match by TMDB ID
   defp find_content!(%MovieIdentity{tmdb_id: tmdb_id}) when is_integer(tmdb_id) do
-    Contents.get_or_refresh_content!(ContentIdentity.for_movie(tmdb_id),
-      max_age: @metadata_max_age,
+    Contents.get_or_refresh_content!(
+      ContentIdentity.for_movie(tmdb_id),
+      %{max_age: @metadata_max_age},
       actor: SystemActor.actor()
     )
   end
@@ -93,8 +94,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
        })
        when is_integer(tmdb_id) do
     content =
-      Contents.get_or_refresh_content!(ContentIdentity.for_tv_show(tmdb_id),
-        max_age: @metadata_max_age,
+      Contents.get_or_refresh_content!(
+        ContentIdentity.for_tv_show(tmdb_id),
+        %{max_age: @metadata_max_age},
         actor: SystemActor.actor(),
         load: [implementation: %{load: [tv_show: [:episodes]]}]
       )

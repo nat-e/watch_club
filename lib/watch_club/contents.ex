@@ -6,7 +6,6 @@ defmodule WatchClub.Contents do
   alias WatchClub.Contents.{
     Book,
     Content,
-    ContentIdentity,
     Movie,
     MovieLocalization,
     TvShow,
@@ -35,10 +34,7 @@ defmodule WatchClub.Contents do
       define :create_content, action: :create, args: [:content_identity]
       define :refresh_metadata
 
-      define :get_or_refresh_content,
-        action: :get_or_refresh,
-        args: [:content_identity],
-        functions: [:subject]
+      define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
 
       define :get_user_recently_watched, action: :user_recently_watched
     end
@@ -57,35 +53,5 @@ defmodule WatchClub.Contents do
 
     resource TvShowLocalization
     resource TvShowEpisodeLocalization
-  end
-
-  @doc """
-  Returns the stored Content for an identity, creating it from its Metadata Provider when missing.
-
-  Metadata older than `:max_age` is refreshed when the Metadata Provider answers. `:max_age`
-  is non-negative seconds from this call, defaults to one day, and accepts `:infinity` to
-  never refresh stored Content. Concurrent calls for the same Content share one fetch.
-
-  A Metadata Provider failure returns stored Content unchanged, or an error when none is
-  stored. Unexpected failures exit the caller. `:load` applies with the caller's actor.
-  """
-  @spec get_or_refresh_content(ContentIdentity.t(), keyword()) ::
-          {:ok, Content.t()} | {:error, Ash.Error.t()}
-  def get_or_refresh_content(identity, opts \\ []) do
-    {arguments, opts} = Keyword.split(opts, [:max_age])
-
-    identity
-    |> input_to_get_or_refresh_content(Map.new(arguments), opts)
-    |> Ash.run_action(opts)
-  end
-
-  @doc "The raising version of `get_or_refresh_content/2`."
-  @spec get_or_refresh_content!(ContentIdentity.t(), keyword()) :: Content.t()
-  def get_or_refresh_content!(identity, opts \\ []) do
-    {arguments, opts} = Keyword.split(opts, [:max_age])
-
-    identity
-    |> input_to_get_or_refresh_content(Map.new(arguments), opts)
-    |> Ash.run_action!(opts)
   end
 end

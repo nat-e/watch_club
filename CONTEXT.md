@@ -530,7 +530,7 @@ _Avoid_: Group, aggregate, card, item
 - Content created by a **Media Import** includes all available **Content Localizations**
 - A **Media Import** may create a missing **Movie** or **Book** before creating **Media** for it
 - When a **Media Import** identifies a video file as an episode of an unknown **TV Show**, it creates the **TV Show** and all known regular **TV Show Episodes** together before creating the **Video**
-- A **Media Import** refreshes each **Content** it touches at most once every 15 minutes
+- A **Media Import** refreshes the **Content** of each file it matches when its metadata is older than 15 minutes
 - A file whose **TV Show Episode** is still missing after that fails ingestion; a later scan retries it because no **Media** was saved
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own

@@ -181,7 +181,12 @@ defmodule WatchClub.Contents.Content do
     end
 
     action :get_or_refresh, :struct do
-      description "Returns stored Content, creating it when missing and refreshing metadata older than max_age when the Metadata Provider answers"
+      description """
+      Returns stored Content, creating it when missing and refreshing metadata older than max_age
+      when the Metadata Provider answers. Concurrent calls for the same Content share one fetch.
+      A Metadata Provider failure returns the stored Content, or an error when none is stored.
+      """
+
       constraints instance_of: __MODULE__
       argument :content_identity, ContentIdentity, allow_nil?: false
 

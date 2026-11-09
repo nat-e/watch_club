@@ -20,8 +20,9 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
     actor = context.actor
 
     with {:ok, content} <-
-           Contents.get_or_refresh_content(input.arguments.content_identity,
-             max_age: :infinity,
+           Contents.get_or_refresh_content(
+             input.arguments.content_identity,
+             %{max_age: :infinity},
              scope: context
            ) do
       %Ash.BulkResult{notifications: notifications} =
