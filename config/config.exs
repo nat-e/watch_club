@@ -65,6 +65,7 @@ config :watch_club,
     WatchClub.Conversations,
     WatchClub.History,
     WatchClub.Instance,
+    WatchClub.Markers,
     WatchClub.MediaCatalog,
     WatchClub.MediaSources,
     WatchClub.Playbacks,
@@ -97,7 +98,9 @@ config :watch_club, Oban,
     media_source_requests: 2,
     # Single worker so trickplay's full-decode ffmpeg pass never crowds out
     # imports.
-    trickplay_generation: 1
+    trickplay_generation: 1,
+    # Single worker so marker detection's audio decoding stays in the background
+    marker_detection: 1
   ]
 
 # Configure the endpoint

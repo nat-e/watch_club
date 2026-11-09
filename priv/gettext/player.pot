@@ -65,3 +65,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "We couldn't find the media you were looking for."
 msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Skip intro"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Skip recap"
+msgstr ""

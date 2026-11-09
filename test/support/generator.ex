@@ -1,7 +1,7 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
-  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
   alias WatchClub.Conversations.{Conversation, Message}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
@@ -324,17 +324,24 @@ defmodule WatchClub.Generator do
     )
   end
 
-  # Media playing the Movie, with the tracks of `video_input/2` unless `video` overrides them
-  def video_media(%Content{type: :movie} = movie, opts \\ []) do
+  # Media playing the Movie or the TV Show Episode, with the tracks of `video_input/2` unless
+  # `video` overrides them
+  def video_media(movie_or_episode, opts \\ []) do
     {video, opts} = Keyword.pop(opts, :video, %{})
+
+    {type, folder} =
+      case movie_or_episode do
+        %Content{type: :movie} -> {:movie, "movies"}
+        %TvShowEpisode{} -> {:tv_show_episode, "episodes"}
+      end
 
     changeset_generator(
       Media,
       :create_video,
       defaults: [
-        path: sequence(:video_media_path, &"/movies/#{&1}/video.mkv"),
-        type: :movie,
-        video: Map.merge(video_input(:movie, movie.id), video)
+        path: sequence(:video_media_path, &"/#{folder}/#{&1}/video.mkv"),
+        type: type,
+        video: Map.merge(video_input(type, movie_or_episode.id), video)
       ],
       authorize?: false,
       overrides: opts

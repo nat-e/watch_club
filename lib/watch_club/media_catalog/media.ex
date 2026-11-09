@@ -120,6 +120,7 @@ defmodule WatchClub.MediaCatalog.Media do
 
       change UpdateContentRequest
       change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
+      change WatchClub.Markers.Changes.ScheduleDetection
     end
 
     create :create_ebook do
@@ -188,6 +189,7 @@ defmodule WatchClub.MediaCatalog.Media do
 
       change UpdateContentRequest
       change WatchClub.MediaCatalog.Changes.DeleteTrickplay
+      change WatchClub.Markers.Changes.DeleteFingerprints
     end
   end
 
