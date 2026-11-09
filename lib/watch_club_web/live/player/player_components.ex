@@ -167,6 +167,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
+  attr :playback_id, :string, required: true
   attr :video, Video, required: true
 
   @doc """
@@ -216,6 +217,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute right-group"
           phx-click="play_next_episode"
+          phx-value-playback_id={@playback_id}
           aria-label={dgettext("player", "Play next episode")}
         >
           <:icon><Lucideicons.skip_forward /></:icon>
@@ -226,32 +228,97 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
+  attr :playback_id, :string, required: true
   attr :video, Video, required: true
 
   @doc """
-  Auto-advancing "Up next" overlay button revealed during the final seconds of an episode.
-
-  The JS player hook flips `data-near-end` on the player container once the playback reaches the last
-  5 seconds; the CSS below fades the overlay in and runs the fill animation
+  "Up next" prompt revealed from the start of the episode's Credits, or during its final 5 seconds
+  when it has none. It plays the next episode after 5 seconds of playback, or when the episode ends.
   """
   def up_next_button(assigns) do
-    current_episode = assigns.video.tv_show_episode
-    assigns = assign(assigns, :next_episode, current_episode && current_episode.next_episode)
+    %Video{tv_show_episode: current_episode, duration_seconds: duration} = assigns.video
+
+    assigns =
+      assign(assigns,
+        next_episode: current_episode && current_episode.next_episode,
+        from: assigns.video.credits_start_seconds || (duration && duration - 5)
+      )
 
     ~H"""
-    <.button
+    <.player_prompt
       :if={@next_episode && @next_episode.has_media?}
       id="player-up-next-button"
-      variant="secondary"
+      from={@from}
+      data-countdown
       phx-click="play_next_episode"
-      class="pointer-events-none absolute bottom-28 right-group z-40 isolate overflow-hidden opacity-0 group-data-near-end/player:pointer-events-auto group-data-near-end/player:opacity-100 sm:bottom-32"
+      phx-value-playback_id={@playback_id}
+      class="isolate overflow-hidden"
     >
       <:icon><Lucideicons.skip_forward /></:icon>
+      <%!-- The JS player hook sets --countdown from 0 to 1 --%>
       <span
         aria-hidden="true"
-        class="absolute inset-0 -z-10 w-0 bg-primary/40 group-data-near-end/player:w-full motion-safe:[transition:width_5s_linear]"
+        class="absolute inset-y-0 left-0 -z-10 w-[calc(var(--countdown,0)*100%)] bg-primary/40 motion-safe:transition-[width] motion-safe:duration-300 motion-safe:ease-linear"
       />
       {dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)}
+    </.player_prompt>
+    """
+  end
+
+  attr :video, Video, required: true
+
+  @doc """
+  "Skip intro" and "Skip recap" prompts, revealed during their Marker. They jump to its end.
+  """
+  def skip_marker_buttons(assigns) do
+    ~H"""
+    <.player_prompt
+      :for={marker <- @video.markers}
+      :if={marker.kind in [:intro, :recap]}
+      id={"player-skip-#{marker.kind}-button"}
+      from={marker.start_seconds}
+      until={marker.end_seconds}
+      data-skip-to={marker.end_seconds}
+    >
+      <:icon><Lucideicons.skip_forward /></:icon>
+      {if marker.kind == :intro,
+        do: dgettext("player", "Skip intro"),
+        else: dgettext("player", "Skip recap")}
+    </.player_prompt>
+    """
+  end
+
+  attr :from, :float,
+    required: true,
+    doc: "When it shows, in seconds of the video. Never when nil."
+
+  attr :until, :float, default: nil, doc: "When it hides again. At the end of the video when nil."
+  attr :class, :string, default: nil
+  attr :rest, :global
+  slot :icon, required: true
+  slot :inner_block, required: true
+
+  # A button over the video, bottom right, that the JS player hook reveals from `from` until
+  # `until` by setting `data-active`
+  defp player_prompt(assigns) do
+    ~H"""
+    <.button
+      variant="secondary"
+      data-show-from={@from}
+      data-show-until={@until}
+      phx-mounted={JS.ignore_attributes(["data-active", "style"])}
+      class={
+        [
+          "invisible absolute bottom-28 right-group z-40 opacity-0 data-active:visible data-active:opacity-100 sm:bottom-32",
+          # Out of the way of the seek bar's thumbnail
+          "group-has-[media-slider-preview[data-pointing]]/player:invisible group-has-[media-slider-preview[data-dragging]]/player:invisible",
+          @class
+        ]
+      }
+      {@rest}
+    >
+      <:icon>{render_slot(@icon)}</:icon>
+      {render_slot(@inner_block)}
     </.button>
     """
   end

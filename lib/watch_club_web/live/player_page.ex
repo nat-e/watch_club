@@ -7,6 +7,8 @@ defmodule WatchClubWeb.PlayerPage do
     active_playback: [
       media: [
         video: [
+          :markers,
+          :credits_start_seconds,
           movie: [:best_localization, :actor_progress],
           tv_show_episode: [
             :actor_progress,
@@ -41,7 +43,7 @@ defmodule WatchClubWeb.PlayerPage do
             <%!-- The browser draws the captions, raised by the footer's height while the controls show --%>
             <media-container
               phx-mounted={JS.ignore_attributes("*")}
-              class="group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)]"
+              class="group/player relative block size-full overflow-hidden bg-black focus-visible:-outline-offset-2 not-data-controls-visible:cursor-none [--media-caption-track-duration:150ms] data-controls-visible:[--media-caption-track-y:calc(--spacing(24)*-1)] has-[[data-show-from][data-active]]:[--media-caption-track-y:calc(--spacing(44)*-1)]!"
             >
               <div id="watch-club-player-media" phx-update="ignore" class="contents">
                 <hlsjs-video preload="metadata" playsinline autoplay class="absolute inset-0 block">
@@ -63,16 +65,24 @@ defmodule WatchClubWeb.PlayerPage do
                 <media-status-announcer class="sr-only" />
               </div>
 
+              <%!-- Before the controls, so a prompt is the first Tab stop --%>
+              <.skip_marker_buttons video={@session.active_playback.media.video} />
+              <.up_next_button
+                playback_id={@session.active_playback.id}
+                video={@session.active_playback.media.video}
+              />
+
               <media-controls
                 phx-mounted={JS.ignore_attributes("*")}
                 class="group/controls pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100 has-focus-visible:opacity-100"
               >
                 <.controls_header video={@session.active_playback.media.video} />
                 <.controls_center_row />
-                <.controls_footer video={@session.active_playback.media.video} />
+                <.controls_footer
+                  playback_id={@session.active_playback.id}
+                  video={@session.active_playback.media.video}
+                />
               </media-controls>
-
-              <.up_next_button video={@session.active_playback.media.video} />
             </media-container>
           </video-player>
         </media-i18n>
@@ -125,11 +135,14 @@ defmodule WatchClubWeb.PlayerPage do
     {:noreply, socket}
   end
 
-  def handle_event("play_next_episode", _params, socket) do
-    video = socket.assigns.session.active_playback.media.video
+  # A click or the countdown that arrives once the next episode started must not skip another one
+  def handle_event("play_next_episode", %{"playback_id" => playback_id}, socket) do
+    %Playback{id: active_id, media: %{video: video}} = socket.assigns.session.active_playback
     next_episode = video.tv_show_episode && video.tv_show_episode.next_episode
 
-    {:noreply, socket |> switch_episode(next_episode)}
+    if playback_id == active_id,
+      do: {:noreply, socket |> switch_episode(next_episode)},
+      else: {:noreply, socket}
   end
 
   def handle_event("play_previous_episode", _params, socket) do
@@ -138,6 +151,25 @@ defmodule WatchClubWeb.PlayerPage do
 
     {:noreply, socket |> switch_episode(previous_episode)}
   end
+
+  # The Markers of the Video playing are found in the background after its import
+  @impl true
+  def handle_info(%Notification{resource: Marker, data: %Marker{video_id: video_id}}, socket) do
+    %{session: session, current_user: user} = socket.assigns
+
+    if session.active_playback.media_id == video_id do
+      video =
+        Ash.load!(session.active_playback.media.video, [:markers, :credits_start_seconds],
+          actor: user
+        )
+
+      {:noreply, assign(socket, :session, put_in(session.active_playback.media.video, video))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   defp switch_episode(socket, nil), do: socket
 
@@ -150,6 +182,7 @@ defmodule WatchClubWeb.PlayerPage do
     case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
       {:ok, session} ->
         socket
+        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
         |> assign(:session, session)
         |> assign(
           :start_position_seconds,
@@ -174,7 +207,13 @@ defmodule WatchClubWeb.PlayerPage do
            actor: actor
          ) do
       {:ok, session} ->
+        Phoenix.PubSub.unsubscribe(
+          WatchClub.PubSub,
+          "video:#{socket.assigns.session.active_playback.media_id}"
+        )
+
         socket
+        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
         |> assign(:session, session)
         |> assign(:start_position_seconds, 0.0)
         |> assign(:playback_error, false)

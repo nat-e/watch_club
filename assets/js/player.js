@@ -29,7 +29,6 @@ const hlsConfig = {
 
 const Player = {
 	mounted() {
-		this.container = this.el.querySelector("media-container");
 		this.media = this.el.querySelector("hlsjs-video");
 		this.abortController = new AbortController();
 		this.disposed = false;
@@ -74,6 +73,17 @@ const Player = {
 				{ signal },
 			);
 		});
+
+		// Delegated: the skip buttons change with each episode
+		this.el.addEventListener(
+			"click",
+			(event) => {
+				const skipButton = event.target.closest("[data-skip-to]");
+				if (skipButton)
+					this.media.currentTime = Number(skipButton.dataset.skipTo);
+			},
+			{ signal },
+		);
 	},
 
 	handleCommand(command) {
@@ -105,6 +115,9 @@ const Player = {
 		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
 		this.carryTracksOver();
 		this.tracksStarted = false;
+		// Where the countdown of the "up next" prompt started, in seconds of the video
+		this.countdownStart = undefined;
+		this.playingNext = false;
 		this.src = src;
 		this.startPosition = Number(startPosition);
 		// A new audio preference makes Video.js build a new hls.js engine
@@ -148,23 +161,17 @@ const Player = {
 		});
 		on("play", () => this.reportHeartbeat());
 		on("pause", () => this.reportHeartbeat());
+		// The countdown counts playback: a seek starts it again
+		on("seeking", () => {
+			this.countdownStart = undefined;
+		});
 		on("seeked", () => this.reportHeartbeat());
 		on("ended", () => {
 			this.reportHeartbeat();
-			// Auto-advance once the episode ends. The server no-ops when there is no
-			// next episode
-			this.pushEvent("play_next_episode", {});
+			const upNext = this.el.querySelector("[data-countdown]");
+			if (upNext) this.playNext(upNext);
 		});
-		// Reveal the auto-advance "up next" overlay during the last 5 seconds. CSS keys
-		// off [data-near-end] on the player container to fade it in and run the fill animation.
-		on("timeupdate", () => {
-			const { currentTime, duration } = this.media;
-			const nearEnd =
-				Number.isFinite(duration) &&
-				duration > 0 &&
-				duration - currentTime <= 5;
-			this.container.toggleAttribute("data-near-end", nearEnd);
-		});
+		on("timeupdate", () => this.syncPrompts());
 		// Includes fatal hls.js errors
 		on("error", () => this.reportFailure());
 		on("volumechange", () => {
@@ -260,6 +267,41 @@ const Player = {
 			textTrack.label === subtitles.name &&
 			textTrack.language === subtitles.lang
 		);
+	},
+
+	// Reveals each prompt, such as "Skip intro", from its data-show-from until its
+	// data-show-until, in seconds of the video. The one with data-countdown fills up over
+	// 5 seconds of playback, so pausing pauses it, then plays the next episode.
+	syncPrompts() {
+		const { currentTime } = this.media;
+
+		this.el.querySelectorAll("[data-show-from]").forEach((prompt) => {
+			// A seek lands within a few microseconds of its target, such as the end
+			// of an Intro
+			const active =
+				currentTime > 0 &&
+				currentTime >= Number(prompt.dataset.showFrom) &&
+				!(currentTime >= Number(prompt.dataset.showUntil) - 0.01);
+			prompt.toggleAttribute("data-active", active);
+
+			if (!("countdown" in prompt.dataset)) return;
+			if (!active) {
+				this.countdownStart = undefined;
+				prompt.style.removeProperty("--countdown");
+				return;
+			}
+			this.countdownStart ??= currentTime;
+			const progress = Math.min((currentTime - this.countdownStart) / 5, 1);
+			prompt.style.setProperty("--countdown", String(progress));
+			if (progress === 1) this.playNext(prompt);
+		});
+	},
+
+	// Clicks the "up next" prompt once: the next episode replaces it
+	playNext(upNext) {
+		if (this.playingNext) return;
+		this.playingNext = true;
+		upNext.click();
 	},
 
 	// Keeps running while paused, so the Playback stays current as long as the
