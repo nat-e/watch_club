@@ -88,7 +88,8 @@ defmodule WatchClub.Contents.MetadataFetcher do
     Span.record_exception(fetch.span, exception, stacktrace)
 
     Logger.warning(
-      "Content metadata fetch crashed for #{identity.type} TMDB #{identity.external_id}: #{Exception.message(exception)}",
+      "Content metadata fetch crashed for #{identity.type} TMDB #{identity.external_id}: " <>
+        Exception.message(exception),
       [
         event: :content_metadata_unavailable,
         content_type: identity.type,
