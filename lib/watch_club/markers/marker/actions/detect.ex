@@ -44,7 +44,6 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
 
     chapter_markers = chapter_markers!(video)
     {markers, markers_of_others} = add_audio_markers!(chapter_markers, video, context)
-    report(video, chapter_markers, markers)
 
     {:ok, _result} =
       Ash.transact(Marker, fn ->
@@ -62,6 +61,7 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
         )
       end)
 
+    report(video, chapter_markers, markers)
     :ok
   end
 

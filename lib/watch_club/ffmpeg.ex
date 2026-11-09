@@ -86,7 +86,17 @@ defmodule WatchClub.Ffmpeg do
       ~S(ffmpeg -nostdin -v error -ss "$2" -t "$3" -i "$1" -map 0:a:0 -ac 1 -ar 11025 -f s16le - ) <>
         ~S(| fpcalc -raw -format s16le -rate 11025 -channels 1 -length "$3" -)
 
-    case System.cmd("sh", ["-c", pipeline, "sh", path, seconds(from_seconds), seconds(seconds)],
+    # pipefail: fpcalc would succeed on the audio ffmpeg decoded before failing
+    case System.cmd(
+           "bash",
+           [
+             "-c",
+             "set -o pipefail; " <> pipeline,
+             "bash",
+             path,
+             seconds(from_seconds),
+             seconds(seconds)
+           ],
            stderr_to_stdout: true
          ) do
       {output, 0} ->
@@ -94,7 +104,7 @@ defmodule WatchClub.Ffmpeg do
         {:ok, points |> String.split(",") |> Enum.map(&String.to_integer/1)}
 
       {output, status} ->
-        {:error, "fpcalc exited with #{status}: #{output}"}
+        {:error, "ffmpeg | fpcalc exited with #{status}: #{output}"}
     end
   end
 

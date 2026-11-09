@@ -81,7 +81,7 @@ defmodule WatchClub.Markers.AudioFingerprint do
     |> Enum.filter(fn {first, last, _shift} ->
       # Any number is smaller than the atom :infinity
       seconds = (last - first + 1) * @seconds_per_point
-      seconds >= min_seconds and seconds <= max_seconds
+      seconds >= min_seconds and seconds <= max_seconds and sound?(a.points, first, last)
     end)
     |> Enum.max_by(fn {first, last, _shift} -> last - first end, fn -> nil end)
     |> case do
@@ -120,6 +120,12 @@ defmodule WatchClub.Markers.AudioFingerprint do
       end
     )
     |> Enum.map(fn run -> {List.last(run), hd(run), shift} end)
+  end
+
+  # Silence repeats a single point, while the points of a theme are nearly all different
+  defp sound?(points, first, last) do
+    distinct = for(position <- first..last, uniq: true, do: elem(points, position)) |> length()
+    distinct * 2 >= last - first + 1
   end
 
   defp range(fingerprint, first, last) do

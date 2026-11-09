@@ -174,4 +174,12 @@ defmodule WatchClub.MediaCatalog.Video do
       public? true
     end
   end
+
+  aggregates do
+    # Where the Player offers the next episode and Watch Progress stops counting
+    first :credits_start_seconds, :markers, :start_seconds do
+      public? true
+      filter expr(kind == :credits)
+    end
+  end
 end

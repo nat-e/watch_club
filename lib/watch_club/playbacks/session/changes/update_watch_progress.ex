@@ -21,7 +21,7 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
       position ->
         Ash.Changeset.after_action(changeset, fn _changeset, playback ->
           %Media{id: media_id, video: video} =
-            Ash.load!(playback, [media: [video: :markers]], scope: context).media
+            Ash.load!(playback, [media: [video: :credits_start_seconds]], scope: context).media
 
           record_progress(video, media_id, position, context)
           {:ok, playback}
@@ -52,10 +52,7 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
 
   # Progress counts up to the Credits, so playing the next episode from there completes it
   defp progress(video, media_id, position) do
-    duration =
-      Enum.find_value(video.markers, video.duration_seconds, fn marker ->
-        marker.kind == :credits && marker.start_seconds
-      end)
+    duration = video.credits_start_seconds || video.duration_seconds
 
     %{
       last_media_id: media_id,
