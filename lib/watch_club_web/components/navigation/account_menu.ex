@@ -192,6 +192,12 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
         label: dgettext("nav", "Media Sources"),
         navigate: ~p"/admin/media/sources",
         icon: "folder-input"
+      },
+      %{
+        id: "problem-reports",
+        label: dgettext("nav", "Problem reports"),
+        navigate: ~p"/admin/problem-reports",
+        icon: "flag"
       }
     ]
   end
