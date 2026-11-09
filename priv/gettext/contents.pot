@@ -135,11 +135,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "Play any episode, or mark what you've watched."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Play episode %{number}"
 msgstr ""
 
@@ -292,4 +287,19 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Loading content…"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Download"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Download episode %{number}"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play or download any episode, and mark what you've watched."
 msgstr ""

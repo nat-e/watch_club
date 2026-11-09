@@ -11,6 +11,8 @@ defmodule WatchClubWeb.Router do
   import AshAuthentication.Plug.Helpers
   import PhoenixStorybook.Router
 
+  alias WatchClub.Accounts.User
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -37,6 +39,7 @@ defmodule WatchClubWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Media bytes for a signed-in User: the Player's HLS requests and Downloads.
   # Like :browser but without CSRF protection — HLS segment GETs from
   # <media-player> don't carry a CSRF token. No HTML rendering either,
   # so :accepts, layouts, and flash are intentionally absent.
@@ -45,6 +48,7 @@ defmodule WatchClubWeb.Router do
     plug :put_secure_browser_headers
     plug :load_from_session
     plug :ensure_administrator_setup
+    plug :require_current_user
   end
 
   # For the Docker healthcheck and uptime monitoring. No pipeline, so it
@@ -71,6 +75,12 @@ defmodule WatchClubWeb.Router do
     get "/hls/:playback_id/audio/:track_id/:segment", PlayerController, :audio_segment
     get "/hls/:playback_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
     get "/thumbnails/:playback_id/:file", PlayerController, :thumbnails_file
+  end
+
+  scope "/media", WatchClubWeb do
+    pipe_through :playback
+
+    get "/:media_id/download", DownloadController, :download
   end
 
   scope "/", WatchClubWeb do
@@ -196,5 +206,14 @@ defmodule WatchClubWeb.Router do
     else
       conn |> redirect(to: ~p"/setup") |> halt()
     end
+  end
+
+  defp require_current_user(%{assigns: %{current_user: %User{}}} = conn, _opts), do: conn
+
+  defp require_current_user(conn, _opts) do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(401, "Unauthorized")
+    |> halt()
   end
 end

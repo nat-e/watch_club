@@ -1,12 +1,13 @@
 defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   @moduledoc """
   Every persisted TV Show Episode of a TV Show, one season at a time, in a big modal, full screen on
-  phones. Each aired episode has a check that marks it as watched or not, and Play once it's in the
-  Library. The season has a check too.
+  phones. Each aired episode has a check that marks it as watched or not, and Play and Download once
+  it's in the Library. The season has a check too.
   """
   use WatchClubWeb, :live_component
 
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Medias.DownloadMenu
 
   @doc """
   The DOM id of the modal, which shows at most once on a page.
@@ -47,7 +48,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         <:title>{@title}</:title>
         <:description>
           {if @in_library?,
-            do: dgettext("contents", "Play any episode, or mark what you've watched."),
+            do: dgettext("contents", "Play or download any episode, and mark what you've watched."),
             else:
               dgettext("contents", "It isn't in the library yet. Mark what you've watched elsewhere.")}
         </:description>
@@ -129,8 +130,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   attr :myself, :any, required: true
 
   # Its still, with Play once it's in the Library, its number and name, its length and a word on
-  # where it is, its story, and a check to mark it as watched or not once it aired. The still is
-  # grey while it isn't out, and when a TV Show in the Library misses it.
+  # where it is, its story, and a check to mark it as watched or not once it aired, with Download
+  # under it once it's in the Library. The still is grey while it isn't out, and when a TV Show in
+  # the Library misses it.
   defp episode_row(assigns) do
     episode = assigns.episode
     localization = episode.best_localization || %{title: nil, overview: nil}
@@ -216,29 +218,52 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
           {@localization.overview}
         </span>
       </div>
-      <.button
-        :if={@aired?}
-        id={"episode-#{@episode.episode_number}-watched"}
-        variant="ghost"
-        size="icon"
-        phx-click="toggle_episode"
-        phx-value-episode={@episode.episode_number}
-        phx-target={@myself}
-        aria-pressed={to_string(@watched?)}
-        aria-label={
-          dgettext("contents", "Watched episode %{number}", number: @episode.episode_number)
-        }
-        title={
-          if @watched?,
-            do: dgettext("contents", "Mark as not watched"),
-            else: dgettext("contents", "Mark as watched")
-        }
-        class="shrink-0"
-      >
-        <Lucideicons.circle_check :if={@watched?} class="text-success" />
-        <Lucideicons.circle :if={!@watched?} />
-      </.button>
-      <span :if={!@aired?} class="size-control-md shrink-0"></span>
+      <div class="flex shrink-0 flex-col">
+        <.button
+          :if={@aired?}
+          id={"episode-#{@episode.episode_number}-watched"}
+          variant="ghost"
+          size="icon"
+          phx-click="toggle_episode"
+          phx-value-episode={@episode.episode_number}
+          phx-target={@myself}
+          aria-pressed={to_string(@watched?)}
+          aria-label={
+            dgettext("contents", "Watched episode %{number}", number: @episode.episode_number)
+          }
+          title={
+            if @watched?,
+              do: dgettext("contents", "Mark as not watched"),
+              else: dgettext("contents", "Mark as watched")
+          }
+        >
+          <Lucideicons.circle_check :if={@watched?} class="text-success" />
+          <Lucideicons.circle :if={!@watched?} />
+        </.button>
+        <span :if={!@aired?} class="size-control-md"></span>
+        <.download_menu
+          :if={@playable?}
+          id={"episode-#{@episode.episode_number}-download"}
+          videos={@episode.videos}
+        >
+          <:trigger :let={download_link}>
+            <.button
+              id={"episode-#{@episode.episode_number}-download-button"}
+              variant="ghost"
+              size="icon"
+              aria-label={
+                dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+              }
+              title={
+                dgettext("contents", "Download episode %{number}", number: @episode.episode_number)
+              }
+              {download_link}
+            >
+              <Lucideicons.download />
+            </.button>
+          </:trigger>
+        </.download_menu>
+      </div>
     </li>
     """
   end
@@ -316,9 +341,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :best_localization,
         :aired?,
         :has_media?,
-        :videos,
         :actor_progress_status,
-        :actor_progress
+        :actor_progress,
+        videos: [:media, :default_video_track]
       ],
       actor: assigns.current_user
     )
