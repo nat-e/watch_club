@@ -76,3 +76,15 @@ msgstr "La vidéo que vous cherchiez n'existe pas"
 #, elixir-autogen, elixir-format
 msgid "We couldn't find the media you were looking for."
 msgstr "Nous n'avons pas trouvé le média que vous cherchiez."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Skip intro"
+msgstr "Passer l'intro"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Skip recap"
+msgstr "Passer le récapitulatif"

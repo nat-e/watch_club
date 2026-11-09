@@ -2,7 +2,8 @@ defmodule WatchClub.Playbacks.SessionTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Contents.{Content, Movie}
-  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
+  alias WatchClub.History.WatchProgress
+  alias WatchClub.MediaCatalog.{Marker, Media, Video, VideoTrack}
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClub.Playbacks.Playback.SegmentCache
@@ -111,6 +112,26 @@ defmodule WatchClub.Playbacks.SessionTest do
       beated = after_beat.active_playback
 
       assert DateTime.after?(beated.last_active_at, original.last_active_at)
+    end
+
+    @tag :tmp_dir
+    test "counts the Watch Progress up to the Credits", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+      media = matched_media!(Path.join(tmp_dir, "credits.mkv"))
+
+      Ash.Seed.seed!(Marker, %{
+        video_id: media.id,
+        kind: :credits,
+        start_seconds: 50.0,
+        end_seconds: 60.0
+      })
+
+      {:ok, session} = Playbacks.start_session(media.id, actor: user)
+
+      Playbacks.heartbeat_session!(session, %{position_seconds: 52.0}, actor: user)
+
+      assert %WatchProgress{position_seconds: 50.0, duration_seconds: 50.0, completed: true} =
+               Ash.read_one!(WatchProgress, load: :completed, actor: user)
     end
 
     @tag :tmp_dir
