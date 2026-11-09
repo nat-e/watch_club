@@ -50,6 +50,29 @@ defmodule WatchClub.Playlists.PlaylistTest do
     end
   end
 
+  describe "list_playlists_shared_with_current_user/*" do
+    test "lists the Playlists shared with the User, the latest shared first", %{playlist: earlier} do
+      user = generate(user())
+      later = generate(playlist(generate(user())))
+      _own = generate(playlist(user))
+      _not_shared = generate(playlist(generate(user())))
+
+      generate(
+        playlist_access(earlier, user, :view, inserted_at: ~U[2026-01-01 00:00:00.000000Z])
+      )
+
+      generate(
+        playlist_access(later, user, :edit,
+          inserted_at: ~U[2026-02-01 00:00:00.000000Z],
+          shared_unseen?: false
+        )
+      )
+
+      assert [later.id, earlier.id] ==
+               Enum.map(list_playlists_shared_with_current_user!(actor: user), & &1.id)
+    end
+  end
+
   describe "create_playlist/*" do
     test "creates a private Playlist owned by the actor", %{owner: owner} do
       owner_id = owner.id
@@ -78,20 +101,20 @@ defmodule WatchClub.Playlists.PlaylistTest do
   end
 
   describe "share_playlist/*" do
-    test "gives each User their Playlist Access and takes it from the others", %{
-      owner: owner,
-      playlist: playlist
-    } do
+    test "gives each User their Playlist Access, shared unseen when new, and takes it from the others",
+         %{owner: owner, playlist: playlist} do
       [viewer, editor, unshared] = generate_many(user(), 3)
-      generate(playlist_access(playlist, editor, :view))
+      generate(playlist_access(playlist, editor, :view, shared_unseen?: false))
       generate(playlist_access(playlist, unshared, :edit))
 
       accesses = [%{user_id: viewer.id, level: :view}, %{user_id: editor.id, level: :edit}]
       playlist = share_playlist!(playlist, accesses, load: [:accesses], actor: owner)
 
-      assert Enum.sort([{viewer.id, :view}, {editor.id, :edit}]) ==
+      assert Enum.sort([{viewer.id, :view, true}, {editor.id, :edit, false}]) ==
                playlist.accesses
-               |> Enum.map(fn %PlaylistAccess{} = access -> {access.user_id, access.level} end)
+               |> Enum.map(fn %PlaylistAccess{} = access ->
+                 {access.user_id, access.level, access.shared_unseen?}
+               end)
                |> Enum.sort()
     end
 

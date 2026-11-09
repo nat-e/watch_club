@@ -10,18 +10,30 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
 
   @doc """
   Each section's id, name, icon, page, the other pages it holds besides the ones under its page,
-  how many things the User hasn't seen in it, and what that count is for screen readers.
+  how many things the User hasn't seen in it, what that count is for screen readers, and whether
+  it has a phone tab. The phone tabs leave the others to the You page.
   """
   def sections(%User{} = user) do
     [
       %{
+        id: "home",
+        label: dgettext("nav", "Home"),
+        icon: :house,
+        navigate: ~p"/",
+        pages: [],
+        badge: 0,
+        badge_label: nil,
+        phone?: true
+      },
+      %{
         id: "browse",
         label: dgettext("nav", "Browse"),
         icon: :clapperboard,
-        navigate: ~p"/",
+        navigate: ~p"/browse",
         pages: [~p"/search"],
         badge: 0,
-        badge_label: nil
+        badge_label: nil,
+        phone?: true
       },
       %{
         id: "playlists",
@@ -29,8 +41,15 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
         icon: :list,
         navigate: ~p"/playlists",
         pages: [],
-        badge: 0,
-        badge_label: nil
+        badge: user.shared_unseen_playlist_count,
+        badge_label:
+          dngettext(
+            "nav",
+            "%{count} playlist newly shared with you",
+            "%{count} playlists newly shared with you",
+            user.shared_unseen_playlist_count
+          ),
+        phone?: true
       },
       %{
         id: "inbox",
@@ -45,7 +64,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
             "%{count} unread conversation",
             "%{count} unread conversations",
             user.unread_conversation_count
-          )
+          ),
+        phone?: true
       },
       %{
         id: "requests",
@@ -60,7 +80,8 @@ defmodule WatchClubWeb.Components.Navigation.Sections do
             "%{count} new request ready to watch",
             "%{count} new requests ready to watch",
             user.ready_unseen_request_count
-          )
+          ),
+        phone?: false
       }
     ]
   end

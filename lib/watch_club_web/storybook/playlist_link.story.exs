@@ -52,6 +52,16 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
         }
       },
       %Variation{
+        id: :shared_unseen,
+        description: "Shared with you since you last opened your Playlists",
+        attributes: %{
+          playlist: playlist("Climbing films", "mountain", @vinz, [@viewer], 0, 3),
+          current_user: @viewer,
+          patch: "#",
+          shared_unseen: true
+        }
+      },
+      %Variation{
         id: :empty,
         description: "Empty",
         attributes: %{

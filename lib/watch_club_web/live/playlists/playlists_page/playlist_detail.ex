@@ -131,7 +131,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             <:description>
               {dgettext("playlists", "Add movies and TV shows from their page.")}
             </:description>
-            <.button id="empty-browse" variant="secondary" navigate={~p"/"}>
+            <.button id="empty-browse" variant="secondary" navigate={~p"/browse"}>
               <:icon><Lucideicons.clapperboard /></:icon>
               {dgettext("nav", "Browse")}
             </.button>

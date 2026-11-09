@@ -4,7 +4,8 @@ defmodule WatchClub.Playbacks.Session do
 
   All public lifecycle actions live here: starting a Playback Session,
   switching to a new Playback inside it, heartbeating the current Playback and
-  ending the Playbacks whose Player is no longer active.
+  ending the Playbacks whose Player is no longer active. `:watching_now` lists
+  who is Watching Now.
   Callers load `:active_playback` with the fields they need.
   """
 
@@ -19,6 +20,7 @@ defmodule WatchClub.Playbacks.Session do
   require Ash.Query
 
   alias WatchClub.Accounts.User
+  alias WatchClub.Contents.{Content, TvShowEpisode}
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.SegmentCache
   alias WatchClub.Playbacks.Session.Changes
@@ -62,6 +64,57 @@ defmodule WatchClub.Playbacks.Session do
       change Changes.BumpCurrentPlayback
     end
 
+    action :watching_now, {:array, :map} do
+      description "The other Users Watching Now, the latest first: each one's User, and the Content and TV Show Episode their Player plays, but not their Playback Sessions."
+
+      constraints items: [
+                    fields: [
+                      user: [type: :struct, allow_nil?: false, constraints: [instance_of: User]],
+                      content: [
+                        type: :struct,
+                        allow_nil?: false,
+                        constraints: [instance_of: Content]
+                      ],
+                      tv_show_episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
+                    ]
+                  ]
+
+      run fn _input, context ->
+        # The Player heartbeats every 5 seconds, paused included. Unmatched Media has no Content.
+        __MODULE__
+        |> Ash.Query.filter(
+          started_by_id != ^context.actor.id and
+            exists(
+              playbacks,
+              is_nil(ended_at) and last_active_at > ago(30, :second) and
+                not is_nil(media.content_id)
+            )
+        )
+        # Once per User, with the Session they started last
+        |> Ash.Query.distinct(:started_by_id)
+        |> Ash.Query.distinct_sort(inserted_at: :desc)
+        |> Ash.Query.sort(inserted_at: :desc)
+        |> Ash.Query.load([
+          :started_by,
+          active_playback: [
+            media: [
+              content: [:implementation],
+              video: [tv_show_episode: [:formatted_episode_number]]
+            ]
+          ]
+        ])
+        |> Ash.read!(Ash.Context.to_opts(context, authorize?: false))
+        |> Enum.map(fn %{active_playback: %{media: media}} = session ->
+          %{
+            user: session.started_by,
+            content: media.content,
+            tv_show_episode: media.video && media.video.tv_show_episode
+          }
+        end)
+        |> then(&{:ok, &1})
+      end
+    end
+
     action :end_inactive_playbacks do
       description "End every current Playback whose Player has sent no heartbeat for six hours, then remove the segment cache of every ended Playback."
 
@@ -86,6 +139,11 @@ defmodule WatchClub.Playbacks.Session do
       description "Only the starting User and Instance Administrator can access Playback Sessions"
       authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if relates_to_actor_via(:started_by)
+    end
+
+    policy action(:watching_now) do
+      description "Every User sees who is Watching Now and what they play"
+      authorize_if actor_present()
     end
 
     policy action(:end_inactive_playbacks) do

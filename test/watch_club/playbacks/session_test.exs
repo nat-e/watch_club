@@ -1,6 +1,7 @@
 defmodule WatchClub.Playbacks.SessionTest do
   use WatchClub.DataCase, async: false
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.History.WatchProgress
   alias WatchClub.Markers.Marker
@@ -173,6 +174,40 @@ defmodule WatchClub.Playbacks.SessionTest do
     test "forbids Users" do
       Playbacks.end_inactive_playbacks(actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "list_watching_now/*" do
+    @tag :tmp_dir
+    test "lists the other Users whose Player is active, once each, with what the Player they opened last plays",
+         %{tmp_dir: tmp_dir} do
+      [user, watcher] = generate_many(user(), 2)
+      watcher_id = watcher.id
+      generate(playback(matched_media!(Path.join(tmp_dir, "first.mkv")), started_by: watcher))
+      last = matched_media!(Path.join(tmp_dir, "last.mkv"))
+      last_content_id = last.content_id
+      generate(playback(last, started_by: watcher))
+
+      assert [
+               %{
+                 user: %User{id: ^watcher_id},
+                 content: %Content{id: ^last_content_id},
+                 tv_show_episode: nil
+               }
+             ] = Playbacks.list_watching_now!(actor: user)
+    end
+
+    @tag :tmp_dir
+    test "leaves out the actor, the inactive Players, the ended Playbacks and the Unmatched Media",
+         %{tmp_dir: tmp_dir} do
+      user = generate(user())
+      media = matched_media!(Path.join(tmp_dir, "watched.mkv"))
+      generate(playback(media, started_by: user))
+      generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -1, :minute)))
+      generate(playback(media, ended_at: DateTime.utc_now()))
+      generate(playback(unmatched_media!(Path.join(tmp_dir, "unmatched.mkv"))))
+
+      assert [] = Playbacks.list_watching_now!(actor: user)
     end
   end
 

@@ -92,6 +92,10 @@ _Avoid_: Invite to playlist, collaborate
 What a **User** can do with a **Playlist** shared with them: View it, or Edit it to also add and remove **Content**.
 _Avoid_: Permission, role, viewer, editor, collaborator
 
+**Shared Unseen**:
+A **Playlist** shared with a **User** since they last opened their Playlists. The Playlists tab's badge counts them, and their Playlists show them first, with a New badge, until the **User** leaves them.
+_Avoid_: Unread, notification, new playlist
+
 ### Conversations
 
 **Recommend Content**:
@@ -193,6 +197,10 @@ _Avoid_: Save offline, download media server item
 **Playback Session**:
 One continuous use of the **Player** by a user. A **Playback Session** does not itself reference a selected media file; that belongs to each **Playback** inside it.
 _Avoid_: Player Session, HLS Session, stream session, watch session, watch history
+
+**Watching Now**:
+A **User** whose **Player** is active, with the **Movie** or **TV Show Episode** it plays.
+_Avoid_: Live, online, now playing, streaming
 
 **Playback**:
 One **Media** being played by a user inside a **Playback Session**.
@@ -362,6 +370,16 @@ _Avoid_: Catalog, available content, server content
 The WatchClub interface where a **User** looks through the **Library**.
 _Avoid_: Discover
 
+### Home
+
+**Home**:
+The WatchClub interface that opens after signing in, where a **User** sees what's up next for them and what is happening in WatchClub.
+_Avoid_: Dashboard, landing page, feed
+
+**For You**:
+What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that became playable and the **Playlists** shared with them.
+_Avoid_: Notifications, alerts, inbox
+
 ### Activity Feed
 
 **Activity Feed**:
@@ -369,7 +387,7 @@ What a **User** can see of what **Users** do in WatchClub, newest first.
 _Avoid_: Timeline, news feed, event log
 
 **Feed Event**:
-One thing a **User** did that shows in an activity feed: watching or having watched **Content**, requesting **Content**, or sharing a **Playlist**.
+One thing a **User** did that shows in an activity feed: watching or having watched **Content**.
 _Avoid_: Activity, notification, action
 
 **Feed Entry**:
@@ -419,6 +437,7 @@ _Avoid_: Group, aggregate, card, item
 - **Add to Playlist** may create the **Content** from a **Metadata Provider** when it doesn't exist in WatchClub yet
 - **Remove from Playlist** does not delete the **Content**
 - Deleting a **User** deletes the **Playlists** they own, also for the **Users** they were shared with
+- **Share Playlist** makes the **Playlist** **Shared Unseen** for each **User** it gives **Playlist Access** to, until they open their Playlists. Changing a **User**'s **Playlist Access** doesn't make it **Shared Unseen** again
 
 ### Conversations
 
@@ -493,6 +512,9 @@ _Avoid_: Group, aggregate, card, item
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
 - A **Playback** is current while it has not ended; it ends when another **Playback** starts on the same **Playback Session**, or once its **Player** has sent no heartbeat for six hours
 - A **Playback Session** has at most one current **Playback** at any time
+- A **User** is **Watching Now** while the **Player** of one of their current **Playbacks** is active, paused included. With several active **Players**, they are **Watching Now** once, with the one they started last
+- Every **User** sees which other **Users** are **Watching Now** and what they play, but not their **Playback Sessions**
+- Playing **Unmatched Media** doesn't make the **Instance Administrator** **Watching Now**
 - A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
 - A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit
 - A later **Play** from outside the **Player** for the same **Media** creates a separate **Playback Session** with its own first **Playback**
@@ -650,14 +672,19 @@ _Avoid_: Group, aggregate, card, item
 - A **User** gets missing **Content** into the **Library** with **Request Content**
 - Every **User** sees the whole **Library** in **Browse**
 
+### Home
+
+- **Home** shows the **User**'s **Content** in progress, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
+- **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
+- A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
+
 ### Activity Feed
 
 - A **Feed Entry** holds the **Feed Events** of one **User** doing the same thing
 - A **Feed Event** joins the latest **Feed Entry** of the same **User** doing the same thing when that entry's first **Feed Event** is less than 12 hours old; otherwise it starts a new **Feed Entry**
 - A **Feed Entry** is placed at the time of its latest **Feed Event**
 - When a **User**'s **Watch Progress** on a **Content** changes, their watching **Feed Event** for it moves to that time, and to a new **Feed Entry** if the old one's 12 hours are over. While they play, this happens at most once a minute
-- Every **User** sees the watching and requesting **Feed Events** of every **User**, their own included
-- A **Feed Event** for sharing a **Playlist** shows only to the **Users** who can see that **Playlist**
+- Every **User** sees the **Feed Events** of every **User**, their own included
 - A **User** cannot hide what they watch from the **Activity Feed**
 
 ## Example dialogue
@@ -700,4 +727,5 @@ _Avoid_: Group, aggregate, card, item
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
+- "Is watching" in the **Activity Feed** means the **User** has unfinished **Watch Progress**, possibly from days ago; resolved: **Watching Now** means their **Player** is active right now.
 - Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.

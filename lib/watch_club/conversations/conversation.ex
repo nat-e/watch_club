@@ -47,6 +47,12 @@ defmodule WatchClub.Conversations.Conversation do
       prepare build(sort: [last_message_at: :desc])
     end
 
+    read :recommended_to_actor do
+      description "The Conversations another User started by recommending a Content to the actor, the latest first"
+      filter expr(is_distinct_from(recommended_by_id, ^actor(:id)))
+      prepare build(sort: [inserted_at: :desc])
+    end
+
     create :recommend do
       description "Starts a Conversation between the actor and the Users they recommend the Content to, with the recommendation as its first Message"
 

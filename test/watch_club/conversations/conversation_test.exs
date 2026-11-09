@@ -84,6 +84,19 @@ defmodule WatchClub.Conversations.ConversationTest do
     end
   end
 
+  describe "list_recommendations_to_current_user/*" do
+    test "lists the Conversations others started by recommending a Content to the actor, the latest first" do
+      [user, friend, other_friend] = generate_many(user(), 3)
+      [movie, other_movie, third_movie] = generate_many(movie(), 3)
+      earlier = generate(conversation(friend, movie, [user]))
+      later = generate(conversation(other_friend, other_movie, [user, friend]))
+      # Recommended by the actor
+      generate(conversation(user, third_movie, [friend]))
+
+      assert ids(list_recommendations_to_current_user!(actor: user)) == [later.id, earlier.id]
+    end
+  end
+
   describe "get_conversation/*" do
     test "is only for its Participants" do
       [user, friend, stranger] = generate_many(user(), 3)

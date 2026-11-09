@@ -114,7 +114,8 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.TimeZone,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
-      live "/", BrowsePage
+      live "/", HomePage
+      live "/browse", BrowsePage
 
       if Application.compile_env(:watch_club, :dev_routes) do
         live "/dev", Dev.IndexPage, :home

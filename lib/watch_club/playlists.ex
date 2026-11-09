@@ -12,6 +12,9 @@ defmodule WatchClub.Playlists do
     resource Playlist do
       # Oldest first, so a new User's To Watch comes first
       define :list_playlists, action: :read, default_options: [query: [sort: [inserted_at: :asc]]]
+
+      define :list_playlists_shared_with_current_user, action: :shared_with_current_user
+
       define :create_playlist, action: :create
       define :update_playlist, action: :update
       define :share_playlist, action: :share, args: [:accesses]
@@ -25,6 +28,8 @@ defmodule WatchClub.Playlists do
       define :remove_from_playlist, action: :destroy, get_by: [:playlist_id, :content_id]
     end
 
-    resource PlaylistAccess
+    resource PlaylistAccess do
+      define :mark_current_user_playlists_seen, action: :mark_all_shared_seen
+    end
   end
 end

@@ -316,8 +316,10 @@ defmodule WatchClub.Generator do
     )
   end
 
-  def playlist_access(%Playlist{} = playlist, %User{} = user, level) do
-    seed_generator(%PlaylistAccess{playlist_id: playlist.id, user_id: user.id, level: level})
+  def playlist_access(%Playlist{} = playlist, %User{} = user, level, opts \\ []) do
+    seed_generator(%PlaylistAccess{playlist_id: playlist.id, user_id: user.id, level: level},
+      overrides: opts
+    )
   end
 
   # Added by the Playlist's owner unless `added_by_id` says otherwise

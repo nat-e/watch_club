@@ -99,6 +99,7 @@ msgstr "Demandes"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sections.ex
 #: lib/watch_club_web/live/browse_page.ex
+#: lib/watch_club_web/live/home_page.ex
 #: lib/watch_club_web/live/my_requests_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
@@ -147,3 +148,18 @@ msgstr[1] "%{count} nouvelles demandes prêtes à regarder"
 #, elixir-autogen, elixir-format
 msgid "Problem reports"
 msgstr "Signalements"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} playlist newly shared with you"
+msgid_plural "%{count} playlists newly shared with you"
+msgstr[0] "%{count} playlist nouvellement partagée avec vous"
+msgstr[1] "%{count} playlists nouvellement partagées avec vous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr "Accueil"

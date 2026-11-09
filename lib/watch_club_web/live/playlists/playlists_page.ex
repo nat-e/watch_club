@@ -3,6 +3,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   The Playlists tab: the User's Playlists and the ones shared with them, beside the open one,
   whose Playlist Items show newest added first. Narrow screens show one at a time: the Playlists,
   then the one opened. Without one opened, wide screens show the first.
+
+  The shared unseen ones lead the shared ones, with a New badge, until the User leaves the page,
+  since opening it marks them seen.
   """
   use WatchClubWeb, :live_view
 
@@ -76,6 +79,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
               title={dgettext("playlists", "Shared with you")}
               playlists={@shared}
               shown={@shown}
+              shared_unseen_ids={@shared_unseen_ids}
               current_user={@current_user}
             />
           </nav>
@@ -132,6 +136,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   attr :title, :string, required: true
   attr :playlists, :list, required: true
   attr :shown, Playlist, default: nil, doc: "the Playlist beside the list"
+  attr :shared_unseen_ids, MapSet, default: MapSet.new()
   attr :current_user, User, required: true
   slot :action, doc: "a small button on the right of the title"
 
@@ -150,6 +155,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
             current_user={@current_user}
             patch={~p"/playlists/#{playlist.id}"}
             selected={@shown != nil and playlist.id == @shown.id}
+            shared_unseen={playlist.id in @shared_unseen_ids}
           />
         </li>
       </ul>
@@ -163,7 +169,11 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
      socket
      |> WatchClub.PubSub.subscribe_to_current_user_content_topics()
      |> stream_configure(:items, dom_id: &"playlist-item-#{&1.content_id}")
-     |> assign(shown: nil, items_state: KeysetStreamState.init(@items_page_size))}
+     |> assign(
+       shown: nil,
+       shared_unseen_ids: MapSet.new(),
+       items_state: KeysetStreamState.init(@items_page_size)
+     )}
   end
 
   # The Playlists load on each patch too: a Playlist just created here opens before its
@@ -268,8 +278,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
     end
   end
 
-  # Your playlists, then the ones shared with you, oldest first. Intentionally small: a User has a
-  # handful of Playlists.
+  # Your playlists, then the ones shared with you, the shared unseen ones first, oldest first.
+  # Then marks the shared unseen ones seen, so the badge goes but they keep their New badge here.
+  # Intentionally small: a User has a handful of Playlists.
   defp load_playlists!(socket) do
     user = socket.assigns.current_user
 
@@ -279,15 +290,28 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
           :movie_count,
           :tv_show_count,
           :owner,
+          :shared_unseen_for_actor?,
           accesses: [:user],
           editable_by?: %{user_id: user.id}
         ],
         actor: user
       )
-      |> Enum.sort_by(&(&1.owner_id != user.id))
+
+    new_unseen_ids =
+      for %{shared_unseen_for_actor?: true} = p <- playlists, into: MapSet.new(), do: p.id
+
+    shared_unseen_ids = MapSet.union(socket.assigns.shared_unseen_ids, new_unseen_ids)
+
+    # Only once the list says which to badge
+    if connected?(socket) and MapSet.size(new_unseen_ids) > 0,
+      do: Playlists.mark_current_user_playlists_seen!(actor: user)
 
     socket
-    |> assign(:playlists, playlists)
+    |> assign(:shared_unseen_ids, shared_unseen_ids)
+    |> assign(
+      :playlists,
+      Enum.sort_by(playlists, &{&1.owner_id != user.id, &1.id not in shared_unseen_ids})
+    )
     |> WatchClub.PubSub.subscribe_to_playlists(playlists)
   end
 

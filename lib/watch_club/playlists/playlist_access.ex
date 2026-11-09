@@ -2,6 +2,9 @@ defmodule WatchClub.Playlists.PlaylistAccess do
   @moduledoc """
   What a `User` can do with a `Playlist` shared with them: View it, or Edit it to also add and
   remove its Content. Read and written only through its Playlist, whose policies cover it.
+
+  It's shared unseen from when Share Playlist gives it until the User opens their Playlists, and
+  the Playlists tab's badge counts it meanwhile.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -10,6 +13,8 @@ defmodule WatchClub.Playlists.PlaylistAccess do
     notifiers: [Ash.Notifier.PubSub]
 
   use Gettext, backend: WatchClubWeb.Gettext
+
+  require Ash.Query
 
   alias WatchClub.Accounts.User
   alias WatchClub.Playlists.{Playlist, PlaylistAccessLevel}
@@ -26,6 +31,23 @@ defmodule WatchClub.Playlists.PlaylistAccess do
 
   actions do
     defaults [:read, :destroy, create: [:user_id, :level], update: [:level]]
+
+    update :mark_shared_seen do
+      accept []
+      change set_attribute(:shared_unseen?, false)
+    end
+
+    action :mark_all_shared_seen do
+      description "The actor opened their Playlists: none shared with them is shared unseen anymore."
+
+      run fn _input, context ->
+        __MODULE__
+        |> Ash.Query.filter(user_id == ^context.actor.id and shared_unseen?)
+        |> Ash.bulk_update!(:mark_shared_seen, %{}, Ash.Context.to_opts(context, notify?: true))
+
+        :ok
+      end
+    end
   end
 
   pub_sub do
@@ -36,6 +58,8 @@ defmodule WatchClub.Playlists.PlaylistAccess do
     # it isn't. A change of level reaches the Playlist's topic through Share Playlist.
     publish_all :create, ["user", :user_id]
     publish_all :destroy, ["user", :user_id]
+    # So that every page updates the Playlists tab's badge
+    publish :mark_shared_seen, ["user", :user_id]
   end
 
   attributes do
@@ -44,6 +68,12 @@ defmodule WatchClub.Playlists.PlaylistAccess do
     attribute :level, PlaylistAccessLevel do
       public? true
       allow_nil? false
+    end
+
+    attribute :shared_unseen?, :boolean do
+      allow_nil? false
+      default true
+      source :is_shared_unseen
     end
 
     timestamps()
