@@ -39,12 +39,14 @@ defmodule WatchClubWeb.Router do
 
   # Like :browser but without CSRF protection — HLS segment GETs from
   # <media-player> don't carry a CSRF token. No HTML rendering either,
-  # so :accepts, layouts, and flash are intentionally absent.
+  # so :accepts, layouts, and flash are intentionally absent. Downloads
+  # follow the same sign-in.
   pipeline :playback do
     plug :fetch_session
     plug :put_secure_browser_headers
     plug :load_from_session
     plug :ensure_administrator_setup
+    plug :require_current_user
   end
 
   # For the Docker healthcheck and uptime monitoring. No pipeline, so it
@@ -71,6 +73,12 @@ defmodule WatchClubWeb.Router do
     get "/hls/:playback_id/audio/:track_id/:segment", PlayerController, :audio_segment
     get "/hls/:playback_id/subtitles/:track_id/:file", PlayerController, :subtitle_file
     get "/thumbnails/:playback_id/:file", PlayerController, :thumbnails_file
+  end
+
+  scope "/", WatchClubWeb do
+    pipe_through :playback
+
+    get "/download/:media_id", DownloadController, :show
   end
 
   scope "/", WatchClubWeb do
@@ -196,5 +204,18 @@ defmodule WatchClubWeb.Router do
     else
       conn |> redirect(to: ~p"/setup") |> halt()
     end
+  end
+
+  defp require_current_user(
+         %{assigns: %{current_user: %WatchClub.Accounts.User{}}} = conn,
+         _opts
+       ),
+       do: conn
+
+  defp require_current_user(conn, _opts) do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> send_resp(401, "Unauthorized")
+    |> halt()
   end
 end
