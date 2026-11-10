@@ -54,6 +54,41 @@ defmodule WatchClubWeb.Telemetry do
         reporter_options: [buckets: @duration_buckets]
       ),
 
+      # Mount and handle_params run for the HTTP render, then again when the socket connects.
+      summary("phoenix.live_view.mount.duration",
+        event_name: [:phoenix, :live_view, :mount, :stop],
+        unit: {:native, :second},
+        tags: [:"phoenix.live_view.module", :"phoenix.live_view.connected", :"error.type"],
+        tag_values: &live_view_tags/1,
+        reporter_options: [buckets: @duration_buckets]
+      ),
+      summary("phoenix.live_view.handle_params.duration",
+        event_name: [:phoenix, :live_view, :handle_params, :stop],
+        unit: {:native, :second},
+        tags: [:"phoenix.live_view.module", :"phoenix.live_view.connected", :"error.type"],
+        tag_values: &live_view_tags/1,
+        reporter_options: [buckets: @duration_buckets]
+      ),
+      summary("phoenix.live_view.handle_event.duration",
+        event_name: [:phoenix, :live_view, :handle_event, :stop],
+        unit: {:native, :second},
+        tags: [:"phoenix.live_view.module", :"phoenix.live_view.event", :"error.type"],
+        tag_values: &live_view_tags/1,
+        reporter_options: [buckets: @duration_buckets]
+      ),
+      summary("phoenix.live_component.handle_event.duration",
+        event_name: [:phoenix, :live_component, :handle_event, :stop],
+        unit: {:native, :second},
+        tags: [:"phoenix.live_component.module", :"phoenix.live_component.event", :"error.type"],
+        tag_values:
+          &%{
+            "phoenix.live_component.module": inspect(&1.component),
+            "phoenix.live_component.event": event_name(&1),
+            "error.type": error_type(&1)
+          },
+        reporter_options: [buckets: @duration_buckets]
+      ),
+
       # Keeps long-poll fallbacks visible without tracing every poll.
       summary("phoenix.socket.connect.duration",
         event_name: [:phoenix, :socket_connected],
@@ -235,6 +270,19 @@ defmodule WatchClubWeb.Telemetry do
       "error.type": if(status in 500..599, do: error_type(failure) || Integer.to_string(status))
     }
   end
+
+  defp live_view_tags(%{socket: socket} = metadata) do
+    %{
+      "phoenix.live_view.module": inspect(socket.view),
+      "phoenix.live_view.connected": Phoenix.LiveView.connected?(socket),
+      "phoenix.live_view.event": event_name(metadata),
+      "error.type": error_type(metadata)
+    }
+  end
+
+  # A failed event may have any name a client sent, which would make a label per name
+  defp event_name(%{kind: _kind}), do: "_OTHER"
+  defp event_name(metadata), do: metadata[:event]
 
   defp database_tags(%{source: source, result: result}) do
     %{
