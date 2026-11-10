@@ -47,7 +47,7 @@ Durations and callers per fetch are exported as histograms. Suggested alerts: TM
 
 Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Marker detection traces have a span for each audio fingerprint they compute. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths, and Marker detection logs include local file paths.
 
-The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
+The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include paths, query strings and client IPs. Secrets in query strings, such as password-reset tokens and Invitations, show as `REDACTED`. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
 
 ## Contributing
 
