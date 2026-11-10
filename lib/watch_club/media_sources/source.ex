@@ -184,10 +184,10 @@ defmodule WatchClub.MediaSources.Source do
     end
 
     # Whether or not the Media Source is capable or Requesting content
-    # Only Automation Services like Radarr and Sonarr are capable
+    # Only Automation Services like Radarr, Sonarr and Sportarr are capable
     calculate :can_request?,
               :boolean,
-              expr(source_type in [:radarr, :sonarr]) do
+              expr(source_type in [:radarr, :sonarr, :sportarr]) do
       public? true
     end
   end

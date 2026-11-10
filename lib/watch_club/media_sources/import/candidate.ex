@@ -11,6 +11,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
           identity:
             __MODULE__.MovieIdentity.t()
             | __MODULE__.EpisodeIdentity.t()
+            | __MODULE__.SportsEventIdentity.t()
             | __MODULE__.BookIdentity.t()
             | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
@@ -73,6 +74,21 @@ defmodule WatchClub.MediaSources.Import.Candidate do
               title: nil,
               season_number: nil,
               episode_number: nil
+  end
+
+  defmodule SportsEventIdentity do
+    @moduledoc """
+    A Sports Event by its Sportarr ID, or else by its title and year as found in a
+    file name. The title may end with words that aren't in the event's title, such
+    as "Prelims".
+    """
+    @type t :: %__MODULE__{
+            sportarr_id: String.t() | nil,
+            title: String.t() | nil,
+            year: integer() | nil
+          }
+
+    defstruct sportarr_id: nil, title: nil, year: nil
   end
 
   defmodule BookIdentity do
@@ -179,6 +195,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       case media_type do
         :movie -> __MODULE__.MovieIdentity
         :tv_show_episode -> __MODULE__.EpisodeIdentity
+        :sports_event -> __MODULE__.SportsEventIdentity
         type when type in [:ebook, :audiobook] -> __MODULE__.BookIdentity
       end
 

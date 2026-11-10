@@ -53,3 +53,16 @@ msgstr "Séries TV"
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "Tous"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex
+#: lib/watch_club/contents/search_content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports"
+msgstr "Sport"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports Event"
+msgstr "Événement sportif"

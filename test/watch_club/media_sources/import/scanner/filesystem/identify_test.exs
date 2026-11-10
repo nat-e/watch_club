@@ -3,8 +3,51 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
 
   alias WatchClub.MediaSources.{Filesystem, Source}
   alias WatchClub.MediaSources.Import.Candidate
-  alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MovieIdentity}
+
+  alias WatchClub.MediaSources.Import.Candidate.{
+    EpisodeIdentity,
+    MovieIdentity,
+    SportsEventIdentity
+  }
+
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify
+
+  describe "apply/2 — Sports Events" do
+    test "builds a SportsEventIdentity with the title, and the year of the parent directory" do
+      candidate =
+        Candidate.new(
+          "/sports/UFC 294 (2023)/UFC 294 - Makhachev vs Volkanovski 2.mp4",
+          :sports_event
+        )
+
+      assert %Candidate{
+               identity: %SportsEventIdentity{
+                 title: "UFC 294 - Makhachev vs Volkanovski 2",
+                 year: 2023,
+                 sportarr_id: nil
+               }
+             } = Identify.apply(candidate, source_for(:sports_event, "/sports"))
+    end
+
+    test "keeps the words after the event's title, without the release details" do
+      candidate =
+        Candidate.new("/sports/UFC.328.Prelims.1080p.WEB-DL.H264-GROUP.mp4", :sports_event)
+
+      assert %Candidate{identity: %SportsEventIdentity{title: "UFC 328 Prelims", year: nil}} =
+               Identify.apply(candidate, source_for(:sports_event, "/sports"))
+    end
+
+    test "extracts the Sportarr ID from Sportarr's file naming" do
+      candidate =
+        Candidate.new(
+          "/sports/UFC/Season 2025/UFC - s2025e002 - UFC 311 - 1080p - sportarr-ev-028133.mkv",
+          :sports_event
+        )
+
+      assert %Candidate{identity: %SportsEventIdentity{sportarr_id: "ev-028133"}} =
+               Identify.apply(candidate, source_for(:sports_event, "/sports"))
+    end
+  end
 
   describe "apply/2 — movies" do
     test "builds a MovieIdentity with title and year from the filename" do

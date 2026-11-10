@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
   The Content in progress on Home that is Ready to Play: the latest one in the spotlight, the
-  others in Up next. Resume plays the Movie, or the TV Show's next TV Show Episode.
+  others in Up next. Resume plays the Movie or the Sports Event, or the TV Show's next TV Show
+  Episode.
   """
   use WatchClubWeb, :component
 
@@ -11,9 +12,12 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   def content_load do
     [
       :actor_next_medias_to_play,
+      :title,
+      :backdrop_path,
       implementation: %{
         load: [
           movie: [:actor_progress],
+          sports_event: [:actor_progress],
           tv_show: [actor_next_episode: [:actor_progress, :formatted_episode_number]]
         ]
       }
@@ -32,8 +36,8 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     <section aria-labelledby="spotlight-label spotlight-title" class="@container">
       <div class="relative isolate flex min-h-[28rem] items-end overflow-hidden @xl:h-[min(70svh,44rem)]">
         <.tmdb_backdrop
-          :if={image(@playable)}
-          path={image(@playable)}
+          :if={image(@content, @playable)}
+          path={image(@content, @playable)}
           size="w1280"
           aria-hidden="true"
           class="absolute inset-0 -z-10 h-full w-full object-cover object-top"
@@ -123,7 +127,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     <article class="group/card relative flex w-64 shrink-0 snap-start flex-col gap-related rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-4 @xl:w-72">
       <div class="relative overflow-hidden rounded-card">
         <.tmdb_still
-          path={image(@playable)}
+          path={image(@content, @playable)}
           size="w300"
           class="w-full"
         />
@@ -156,19 +160,23 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     """
   end
 
-  # What Resume plays: the Movie, or the TV Show's next TV Show Episode
-  defp playable(%Content{type: :movie, implementation: movie}), do: movie
+  # What Resume plays: the Movie or the Sports Event, or the TV Show's next TV Show Episode
+  defp playable(%Content{type: type, implementation: playable})
+       when type in [:movie, :sports_event],
+       do: playable
+
   defp playable(%Content{type: :tv_show, implementation: tv_show}), do: tv_show.actor_next_episode
 
   defp play_href(%Content{actor_next_medias_to_play: medias}), do: Url.player_link(medias)
 
-  defp image(%TvShowEpisode{still_path: still_path}), do: still_path
-  defp image(movie), do: movie.backdrop_path
+  # A TV Show Episode's still, else the Content's backdrop
+  defp image(_content, %TvShowEpisode{still_path: still_path}), do: still_path
+  defp image(content, _playable), do: content.backdrop_path
 
   defp episode_number(%TvShowEpisode{formatted_episode_number: number}), do: number
   defp episode_number(_movie), do: nil
 
-  defp title(content), do: content.implementation.best_localization.title
+  defp title(content), do: content.title
 
   defp status(%{actor_progress: %WatchProgress{seconds_left: seconds_left}}, locale)
        when is_float(seconds_left),

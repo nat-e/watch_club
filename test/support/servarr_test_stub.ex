@@ -1,6 +1,6 @@
 defmodule WatchClub.Integrations.Servarr.TestStub do
   @moduledoc """
-  Test-only Plug that fakes the Servarr (Radarr / Sonarr) v3 API so the whole
+  Test-only Plug that fakes the Servarr (Radarr / Sonarr / Sportarr) API so the whole
   request lifecycle — adding a Source, submitting a request, and refreshing it —
   runs without a live server.
 
@@ -67,6 +67,16 @@ defmodule WatchClub.Integrations.Servarr.TestStub do
         _opts
       ),
       do: ok(conn, %{})
+
+  # Sportarr keeps WatchClub's webhook in its own notifications API
+  def call(%Plug.Conn{request_path: "/api/notification", method: "POST"} = conn, _opts),
+    do: ok(conn, %{"id" => :erlang.unique_integer([:positive])})
+
+  def call(%Plug.Conn{request_path: "/api/notification/test", method: "POST"} = conn, _opts),
+    do: ok(conn, %{"success" => true})
+
+  def call(%Plug.Conn{path_info: ["api", "notification", _id], method: "DELETE"} = conn, _opts),
+    do: ok(conn, %{})
 
   # ── Request + download flow (Radarr) ──────────────────────────────
   # Empty library → adopt finds nothing, so the caller adds the movie; the added

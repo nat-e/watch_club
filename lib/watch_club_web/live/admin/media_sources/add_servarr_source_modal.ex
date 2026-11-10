@@ -1,8 +1,8 @@
 defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   @moduledoc """
-  Stateful modal for creating or editing a Servarr (Radarr / Sonarr)
-  `Media Source`. The `:flavor` assign (`:radarr` | `:sonarr`) drives the
-  product name, logo, and copy; the flow is identical for both.
+  Stateful modal for creating or editing a Servarr (Radarr / Sonarr / Sportarr)
+  `Media Source`. The `:flavor` assign (`:radarr` | `:sonarr` | `:sportarr`) drives the
+  product name, logo, and copy; the flow is identical for all.
 
   In create mode the modal drives a three-step wizard backed by the
   in-memory `Servarr.Wizard` resource:
@@ -24,6 +24,8 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   `MediaSources.update_servarr_media_source/3`.
   """
   use WatchClubWeb, :live_component
+
+  import WatchClubWeb.Components.Media.SourceTypeIcon
 
   alias AshPhoenix.Form
   alias WatchClub.MediaSources.Servarr.{Flavor, Wizard}
@@ -73,11 +75,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <.modal id="add-servarr-source-modal" size="lg" on_close={JS.push("close", target: @myself)}>
         <:title>
           <span class="inline-flex items-center gap-related">
-            <img
-              src={"/images/source_types/#{@flavor}.svg"}
-              alt={"#{app_name(@flavor)} logo"}
-              class="size-icon"
-            />
+            <.source_type_icon type={@flavor} size="title" />
             {title(assigns)}
           </span>
         </:title>
@@ -517,6 +515,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
 
   defp connection_url_placeholder(:radarr), do: "http://radarr:7878"
   defp connection_url_placeholder(:sonarr), do: "http://sonarr:8989"
+  defp connection_url_placeholder(:sportarr), do: "http://sportarr:1867"
 
   defp selected_profile_name(%Wizard{
          quality_profiles: profiles,

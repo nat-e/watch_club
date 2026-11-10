@@ -47,7 +47,7 @@ defmodule WatchClubWeb.HomePage.WatchingNow do
           aria-describedby={"watching-now-#{@user.id}-who"}
           class="truncate font-semibold text-text after:absolute after:inset-0"
         >
-          {@content.implementation.best_localization.title}
+          {@content.title}
         </.link>
         <p id={"watching-now-#{@user.id}-who"} class="truncate text-sm text-text-muted">
           {[@user.username, @tv_show_episode && @tv_show_episode.formatted_episode_number]
@@ -56,7 +56,7 @@ defmodule WatchClubWeb.HomePage.WatchingNow do
         </p>
       </div>
       <.tmdb_poster
-        path={@content.implementation.best_localization.poster_path}
+        path={@content.poster_path}
         size="w92"
         class="w-10 shrink-0"
       />

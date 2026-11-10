@@ -16,7 +16,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
   attr :content, Content,
     required: true,
     doc:
-      "with its `implementation`, `actor_progress_status`, `incomplete?` and `actor_recommendations` loaded"
+      "with its `title`, `poster_path`, `actor_progress_status`, `incomplete?` and `actor_recommendations` loaded"
 
   attr :locale, :atom, required: true, doc: "the User's locale"
 
@@ -29,7 +29,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
   def poster_card(assigns) do
     assigns =
       assigns
-      |> assign(:title, assigns.content.implementation.best_localization.title)
+      |> assign(:title, assigns.content.title)
       |> assign(:badge_id, "poster-badge-#{assigns.content.id}")
       |> assign(:incomplete_id, "poster-incomplete-#{assigns.content.id}")
       |> assign(:recommenders_id, "recommenders-#{assigns.content.id}")
@@ -41,7 +41,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
     ~H"""
     <div class="group relative">
       <.tmdb_poster
-        path={@content.implementation.best_localization.poster_path}
+        path={@content.poster_path}
         size="w342"
         class={[
           "w-full shadow-card",

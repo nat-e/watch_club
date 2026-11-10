@@ -33,18 +33,6 @@ msgstr "Nous n'avons trouvé aucun contenu pour %{query}"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
-msgid "Search movies and TV shows"
-msgstr "Rechercher des films et des séries"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/search/search_status.ex
-#, elixir-autogen, elixir-format
-msgid "Search movies and TV shows by title."
-msgstr "Recherchez des films et des séries par titre."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/search_field_live.ex
-#, elixir-autogen, elixir-format
 msgid "Search results"
 msgstr "Résultats de recherche"
 
@@ -73,12 +61,6 @@ msgid "Try again"
 msgstr "Réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "soon"
-msgstr "bientôt"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} result"
@@ -98,3 +80,15 @@ msgstr "Dans la bibliothèque"
 #, elixir-autogen, elixir-format
 msgid "Close search"
 msgstr "Fermer la recherche"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "Search in"
+msgstr "Rechercher dans"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Search by title."
+msgstr "Recherchez par titre."

@@ -467,3 +467,18 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Verifying…"
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Connect a Sportarr server to import sports events and fulfill sports event requests."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Import sports events from a Sportarr server."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr"
+msgstr ""

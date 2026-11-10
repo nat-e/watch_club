@@ -2,6 +2,9 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
   use WatchClubWeb.ConnCase, async: false
   use Oban.Testing, repo: WatchClub.Repo
 
+  import WatchClub.Generator
+
+  alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
@@ -191,6 +194,75 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
       assert json_response(conn, 200) == %{"ok" => true}
       refute_enqueued(worker: CandidateIngestor)
     end
+  end
+
+  describe "Sportarr Rename" do
+    setup do
+      previous = Application.get_env(:watch_club, :servarr_req_options)
+      Application.put_env(:watch_club, :servarr_req_options, plug: {Req.Test, Client})
+      on_exit(fn -> Application.put_env(:watch_club, :servarr_req_options, previous) end)
+    end
+
+    test "imports the event's files again and drops its Media whose files are gone", %{
+      conn: conn
+    } do
+      source = seed_sportarr_source()
+      event = generate(sports_event(external_id: "ev-028133"))
+
+      Ash.Seed.seed!(Media, %{
+        path: "/data/sports/UFC/old.mkv",
+        type: :sports_event,
+        content_id: event.id
+      })
+
+      Req.Test.stub(Client, fn conn ->
+        assert conn.request_path == "/api/events/60"
+
+        Req.Test.json(conn, %{
+          "id" => 60,
+          "externalId" => "ev-028133",
+          "files" => [%{"filePath" => "/sports/UFC/UFC 311.mkv", "exists" => true}]
+        })
+      end)
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/sportarr/#{source.id}", %{
+          "eventType" => "Rename",
+          "series" => %{"id" => 60, "externalId" => "ev-028133"},
+          "renamedCount" => 1
+        })
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      assert_enqueued(worker: CandidateIngestor, args: %{path: "/data/sports/UFC/UFC 311.mkv"})
+      refute media_exists?("/data/sports/UFC/old.mkv")
+    end
+  end
+
+  defp seed_sportarr_source do
+    source =
+      Ash.Seed.seed!(Source, %{
+        name: "Sportarr",
+        source_type: :sportarr,
+        media_type: :sports_event
+      })
+
+    Ash.Seed.seed!(Servarr, %{
+      id: source.id,
+      flavor: :sportarr,
+      base_url: "http://sportarr.test",
+      api_key: "key",
+      quality_profile_id: 1,
+      quality_profile_name: "WEB-1080p",
+      root_folder_path: "/sports",
+      local_root_folder_path: "/data/sports",
+      webhook_callback_base_url: "http://wc.test",
+      webhook_secret: @token,
+      notification_id: 1
+    })
+
+    source
   end
 
   defp seed_radarr_source(opts \\ []) do

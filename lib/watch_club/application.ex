@@ -12,6 +12,7 @@ defmodule WatchClub.Application do
 
     children = [
       {Cachex, [:tmdb_api_cache]},
+      Supervisor.child_spec({Cachex, [:sportarr_hub_cache]}, id: :sportarr_hub_cache),
       WatchClub.Repo,
       # After the Repo, which its job queue poller queries.
       WatchClubWeb.Telemetry,

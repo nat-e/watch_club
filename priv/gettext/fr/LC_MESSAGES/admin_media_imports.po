@@ -566,3 +566,21 @@ msgstr "Connexion…"
 #, elixir-autogen, elixir-format
 msgid "Verifying…"
 msgstr "Vérification…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Connect a Sportarr server to import sports events and fulfill sports event requests."
+msgstr "Connectez un serveur Sportarr pour importer des événements sportifs et traiter les demandes d'événements sportifs."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Import sports events from a Sportarr server."
+msgstr "Importez des événements sportifs depuis un serveur Sportarr."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources_page.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr"
+msgstr "Sportarr"

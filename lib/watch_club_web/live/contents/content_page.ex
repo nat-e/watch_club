@@ -35,11 +35,16 @@ defmodule WatchClubWeb.Contents.ContentPage do
   # The Content and its implementation data shown on the page.
   @content_load [
     :has_media?,
+    :title,
+    :overview,
+    :poster_path,
+    :backdrop_path,
     :actor_progress_status,
     :incomplete?,
     implementation: %{
       load: [
         movie: [videos: [:media, :default_video_track]],
+        sports_event: [videos: [:media, :default_video_track]],
         tv_show: [:actor_next_episode, :season_numbers, :season_count]
       ]
     }
@@ -145,16 +150,16 @@ defmodule WatchClubWeb.Contents.ContentPage do
     <%!-- The app bar sits over the header --%>
     <header class="relative isolate pt-(--wc-app-bar-height)">
       <div
-        :if={backdrop_path(@content)}
+        :if={@content.backdrop_path}
         aria-hidden="true"
         class="absolute inset-0 -z-10 overflow-hidden"
       >
-        <.tmdb_backdrop path={backdrop_path(@content)} size="w1280" class="size-full object-cover" />
+        <.tmdb_backdrop path={@content.backdrop_path} size="w1280" class="size-full object-cover" />
         <span class="absolute inset-0 bg-canvas/80"></span>
       </div>
       <div class="flex flex-col items-center gap-group px-page py-cluster text-center @3xl:flex-row @3xl:items-start @3xl:gap-cluster @3xl:py-section @3xl:text-left">
         <.tmdb_poster
-          path={localization(@content).poster_path}
+          path={@content.poster_path}
           size="w342"
           class="w-28 shrink-0 shadow-card @3xl:w-44"
         >
@@ -187,12 +192,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
               <.badge variant="secondary" size="sm">{Genre.translated_label(genre)}</.badge>
             </li>
           </ul>
-          <p
-            :if={localization(@content).overview not in [nil, ""]}
-            class="max-w-readable text-text-muted @max-3xl:line-clamp-3"
-          >
-            {localization(@content).overview}
-          </p>
+          <.overview
+            :if={@content.overview not in [nil, ""]}
+            text={@content.overview}
+            lang={if @content.type == :sports_event, do: "en"}
+          />
           <.actions
             content={@content}
             content_identity={@content_identity}
@@ -205,17 +209,48 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
+  attr :text, :string, required: true
+  attr :lang, :string, default: nil, doc: "set when it isn't in the User's language"
+
+  # Clamped to a few lines, with More to read a long one whole, such as a Sports Event's
+  defp overview(assigns) do
+    ~H"""
+    <div class="flex max-w-readable flex-col items-center gap-tight @3xl:items-start">
+      <p id="content-overview" lang={@lang} class="text-text-muted line-clamp-3 @3xl:line-clamp-5">
+        {@text}
+      </p>
+      <.button
+        :if={String.length(@text) > 300}
+        id="content-overview-toggle"
+        variant="ghost"
+        size="sm"
+        aria-controls="content-overview"
+        aria-expanded="false"
+        phx-click={
+          JS.toggle_class("line-clamp-3 @3xl:line-clamp-5", to: "#content-overview")
+          |> JS.toggle(to: "#content-overview-toggle [data-label]", display: "inline")
+          |> JS.toggle_attribute({"aria-expanded", "true", "false"})
+        }
+      >
+        <span data-label>{dgettext("contents", "More")}</span>
+        <span data-label class="hidden">{dgettext("contents", "Less")}</span>
+      </.button>
+    </div>
+    """
+  end
+
   attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :locale, :atom, required: true
 
   # "🇺🇸 2022 · Movie · 3 hr 9 min · ★ 7.3": the original language's flag next to the year, as on
-  # Browse's posters, and the persisted Rating, which opens the Content on TMDB.
+  # Browse's posters, and the persisted Rating, which opens the Content on TMDB. A Sports Event
+  # shows its league instead of a length: "2025 · Sports Event · UFC".
   defp facts(assigns) do
     assigns =
       assign(assigns,
         language: Languages.to_name(assigns.content.original_language),
-        length: length_label(assigns.content, assigns.locale),
+        length: detail_label(assigns.content, assigns.locale),
         rating: assigns.content.rating
       )
 
@@ -231,7 +266,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         >
           {Languages.to_flag(@content.original_language)}
         </span>
-        {Time.maybe_year(@content.release_date)}
+        {release_label(@content, @locale)}
       </span>
       <span aria-hidden="true">·</span>
       <span>{ContentType.translated_label(@content_identity.type)}</span>
@@ -618,25 +653,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
   end
 
   @impl true
-  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
-    %{live_action: type, current_user: user} = socket.assigns
+  def handle_params(%{"sportarr_id" => sportarr_id}, _uri, socket),
+    do: {:noreply, show_content(socket, ContentIdentity.for_sports_event(sportarr_id))}
 
+  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     case Integer.parse(tmdb_id) do
       {id, ""} ->
-        identity = content_identity_for(type, id)
-        otel_context = OpenTelemetry.Ctx.get_current()
-
-        {:noreply,
-         socket
-         |> assign(content_identity: identity)
-         |> load_content!()
-         |> load_watchers!()
-         |> load_conversations!()
-         |> load_playlists!()
-         |> start_async(:refresh_content, fn ->
-           OpenTelemetry.Ctx.attach(otel_context)
-           Contents.get_or_refresh_content(identity, actor: user)
-         end)}
+        {:noreply, show_content(socket, content_identity_for(socket.assigns.live_action, id))}
 
       _invalid_url ->
         {:noreply,
@@ -644,6 +667,22 @@ defmodule WatchClubWeb.Contents.ContentPage do
          |> put_flash(:error, dgettext("contents", "This movie or TV show doesn't exist"))
          |> push_navigate(to: ~p"/")}
     end
+  end
+
+  defp show_content(socket, identity) do
+    user = socket.assigns.current_user
+    otel_context = OpenTelemetry.Ctx.get_current()
+
+    socket
+    |> assign(content_identity: identity)
+    |> load_content!()
+    |> load_watchers!()
+    |> load_conversations!()
+    |> load_playlists!()
+    |> start_async(:refresh_content, fn ->
+      OpenTelemetry.Ctx.attach(otel_context)
+      Contents.get_or_refresh_content(identity, actor: user)
+    end)
   end
 
   @impl true
@@ -818,6 +857,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         load: [
           :movie_count,
           :tv_show_count,
+          :sports_event_count,
           :owner,
           accesses: [:user],
           editable_by?: %{user_id: user.id},
@@ -841,23 +881,14 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp finished?(content), do: content != nil and content.actor_progress_status == :completed
 
-  defp localization(%Content{implementation: implementation} = content) do
-    implementation.best_localization ||
-      %{
-        title: content.original_title,
-        overview: nil,
-        poster_path: nil,
-        runtime: nil,
-        cast: [],
-        trailer_url: nil
-      }
-  end
+  # A Movie's or a TV Show's cast, trailer and runtime. A Sports Event has none.
+  defp localization(%Content{implementation: %{best_localization: %{} = localization}}),
+    do: localization
+
+  defp localization(_content), do: %{runtime: nil, cast: [], trailer_url: nil}
 
   defp title(nil), do: dgettext("contents", "Loading content…")
-  defp title(content), do: localization(content).title
-
-  defp backdrop_path(%Content{implementation: implementation}),
-    do: implementation.backdrop_path
+  defp title(content), do: content.title
 
   # The season of the episode Play plays, else the first one
   defp current_season_number(%Content{
@@ -870,10 +901,20 @@ defmodule WatchClubWeb.Contents.ContentPage do
   defp season_numbers(%Content{type: :tv_show, implementation: show}), do: show.season_numbers
   defp season_numbers(%Content{}), do: []
 
-  defp length_label(%Content{type: :movie} = content, locale),
+  # When it came out: the year, or the day of a Sports Event
+  defp release_label(%Content{type: :sports_event, release_date: %Date{} = date}, locale),
+    do: Time.long_date(date, locale)
+
+  defp release_label(content, _locale), do: Time.maybe_year(content.release_date)
+
+  # The length of a Movie, the seasons of a TV Show, or the league of a Sports Event
+  defp detail_label(%Content{type: :movie} = content, locale),
     do: Time.minutes(localization(content).runtime, locale)
 
-  defp length_label(%Content{type: :tv_show, implementation: show}, _locale) do
+  defp detail_label(%Content{type: :sports_event, implementation: event}, _locale),
+    do: event.league_name
+
+  defp detail_label(%Content{type: :tv_show, implementation: show}, _locale) do
     case show.season_count do
       0 -> nil
       count -> dngettext("contents", "%{count} season", "%{count} seasons", count)

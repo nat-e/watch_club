@@ -327,3 +327,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Resume on TV"
 msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Less"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr ""

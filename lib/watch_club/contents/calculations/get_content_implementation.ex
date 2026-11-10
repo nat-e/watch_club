@@ -1,6 +1,6 @@
 defmodule WatchClub.Contents.Calculations.GetContentImplementation do
   @moduledoc """
-  Resolves a Content's polymorphic implementation (its Book, Movie or TvShow payload).
+  Resolves a Content's polymorphic implementation (its Book, Movie, TvShow or SportsEvent payload).
 
   By default this calculation loads the implementation record and its best localization.
   It is possible to add extra loading relations or calculations by passing a `load` argument
@@ -14,7 +14,8 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
     [
       book: merge_load(context, :book),
       movie: merge_load(context, :movie, [:best_localization]),
-      tv_show: merge_load(context, :tv_show, [:best_localization])
+      tv_show: merge_load(context, :tv_show, [:best_localization]),
+      sports_event: merge_load(context, :sports_event)
     ]
   end
 
@@ -31,6 +32,6 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
 
   @impl true
   def calculate(records, _, _) do
-    Enum.map(records, &(&1.book || &1.movie || &1.tv_show))
+    Enum.map(records, &(&1.book || &1.movie || &1.tv_show || &1.sports_event))
   end
 end

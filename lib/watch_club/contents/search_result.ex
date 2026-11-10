@@ -1,6 +1,7 @@
 defmodule WatchClub.Contents.SearchResult do
   @moduledoc """
-  A Movie or TV Show found by a search, and whether it's in the Library.
+  A Movie, TV Show or Sports Event found by a search, and whether it's in the Library.
+  `poster_path` is a TMDB path, or an image URL for a Sports Event.
   """
   alias WatchClub.Contents.ContentIdentity
 

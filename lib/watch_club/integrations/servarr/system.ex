@@ -12,7 +12,8 @@ defmodule WatchClub.Integrations.Servarr.System do
   @spec from_api(map()) :: t()
   def from_api(data) do
     %__MODULE__{
-      app_name: data["appName"],
+      # Sportarr's Sonarr-compatible API says it's Sonarr, and adds its own version
+      app_name: if(data["sportarrVersion"], do: "Sportarr", else: data["appName"]),
       instance_name: data["instanceName"],
       version: data["version"]
     }

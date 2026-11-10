@@ -175,6 +175,32 @@ defmodule WatchClub.MediaSources.SourceTest do
     end
   end
 
+  describe "create_servarr_media_source/* (sportarr)" do
+    test "creates a sportarr Media Source that imports and requests Sports Events" do
+      assert %Source{
+               source_type: :sportarr,
+               media_type: :sports_event,
+               name: "Sportarr · /sports",
+               can_request?: true,
+               implementation: %Servarr{flavor: :sportarr, notification_id: notification_id}
+             } =
+               create_servarr_media_source!(
+                 %{
+                   flavor: :sportarr,
+                   base_url: "http://sportarr:1867",
+                   api_key: "abc123",
+                   quality_profile_id: 1,
+                   quality_profile_name: "WEB-1080p",
+                   root_folder_path: "/sports",
+                   webhook_callback_base_url: "http://watch-club.test"
+                 },
+                 actor: generate(administrator())
+               )
+
+      assert is_integer(notification_id)
+    end
+  end
+
   describe "update_filesystem_media_source/*" do
     test "updates the filesystem path and re-normalizes it" do
       admin = generate(administrator())

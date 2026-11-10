@@ -7,8 +7,7 @@ defmodule WatchClub.MediaSources.Import.Scanner do
   picks the scanner for the Media Source's `source_type` via `for_source_type/1`,
   calls `scan/1`, and fans out one `CandidateIngestor` job per candidate.
 
-  Test overrides go through `:watch_club, :import_scanner_filesystem` /
-  `:import_scanner_radarr` / `:import_scanner_sonarr`.
+  Tests override the filesystem scanner through `:watch_club, :import_scanner_filesystem`.
   """
 
   alias WatchClub.MediaSources.Import
@@ -20,22 +19,9 @@ defmodule WatchClub.MediaSources.Import.Scanner do
                         WatchClub.MediaSources.Import.Scanner.Filesystem
                       )
 
-  @radarr_scanner Application.compile_env(
-                    :watch_club,
-                    :import_scanner_radarr,
-                    WatchClub.MediaSources.Import.Scanner.Radarr
-                  )
-
-  @sonarr_scanner Application.compile_env(
-                    :watch_club,
-                    :import_scanner_sonarr,
-                    WatchClub.MediaSources.Import.Scanner.Sonarr
-                  )
-
   @callback scan(Import.t()) :: Enumerable.t(Candidate.t())
 
   @doc "Returns the scanner module for a given Media Source type."
   def for_source_type(:filesystem), do: @filesystem_scanner
-  def for_source_type(:radarr), do: @radarr_scanner
-  def for_source_type(:sonarr), do: @sonarr_scanner
+  def for_source_type(_servarr_flavor), do: WatchClub.MediaSources.Import.Scanner.Servarr
 end

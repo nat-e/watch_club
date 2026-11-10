@@ -23,7 +23,15 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
     EndCurrentPlayback.end_current_playback!(changeset.data, context)
 
     case Ash.create(Playback, %{session_id: changeset.data.id, media_id: media_id},
-           load: [media: [video: [movie: :actor_progress, tv_show_episode: :actor_progress]]],
+           load: [
+             media: [
+               video: [
+                 movie: :actor_progress,
+                 tv_show_episode: :actor_progress,
+                 sports_event: :actor_progress
+               ]
+             ]
+           ],
            scope: context
          ) do
       {:ok, playback} ->
@@ -43,8 +51,8 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
     end
   end
 
-  defp resume_position(%Video{movie: movie, tv_show_episode: episode}) do
-    progress = (movie || episode || %{actor_progress: nil}).actor_progress
+  defp resume_position(%Video{movie: movie, tv_show_episode: episode, sports_event: event}) do
+    progress = (movie || episode || event || %{actor_progress: nil}).actor_progress
     if progress && !progress.completed, do: progress.position_seconds, else: 0.0
   end
 end

@@ -1,7 +1,7 @@
 defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
   use Ash.Resource.Calculation
 
-  alias WatchClub.Contents.{Book, Movie, TvShow}
+  alias WatchClub.Contents.{Book, Movie, SportsEvent, TvShow}
 
   @impl true
   def load(_, _, _) do
@@ -10,6 +10,7 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
         load: [
           book: [:audiobooks, :ebooks],
           movie: [:videos],
+          sports_event: [:videos],
           tv_show: [actor_next_episode: [:videos]]
         ]
       }
@@ -30,6 +31,9 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
 
         %Movie{} = movie ->
           movie.videos
+
+        %SportsEvent{} = event ->
+          event.videos
 
         %TvShow{} = tv_show ->
           episode = tv_show.actor_next_episode

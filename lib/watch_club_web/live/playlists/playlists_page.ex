@@ -22,8 +22,16 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
   @item_load [
     :added_by,
     content: [
+      :title,
+      :poster_path,
       :actor_progress_status,
-      implementation: %{load: [movie: [:actor_progress], tv_show: [:actor_percent_watched]]}
+      implementation: %{
+        load: [
+          movie: [:actor_progress],
+          sports_event: [:actor_progress],
+          tv_show: [:actor_percent_watched]
+        ]
+      }
     ]
   ]
 
@@ -203,7 +211,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
     %PlaylistItem{content: content} =
       Playlists.remove_from_playlist!(playlist.id, content_id,
         return_destroyed?: true,
-        load: [content: [:implementation]],
+        load: [content: [:title]],
         actor: user
       )
 
@@ -212,7 +220,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
        socket,
        :success,
        dgettext("playlists", "Removed %{content} from %{playlist}.",
-         content: content.implementation.best_localization.title,
+         content: content.title,
          playlist: playlist.name
        )
      )}
@@ -290,6 +298,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         load: [
           :movie_count,
           :tv_show_count,
+          :sports_event_count,
           :owner,
           :shared_unseen_for_actor?,
           accesses: [:user],

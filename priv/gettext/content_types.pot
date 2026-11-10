@@ -50,3 +50,14 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr ""
+
+#: lib/watch_club/contents/content_type.ex
+#: lib/watch_club/contents/search_content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports"
+msgstr ""
+
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports Event"
+msgstr ""

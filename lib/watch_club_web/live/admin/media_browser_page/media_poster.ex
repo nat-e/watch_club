@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaPoster do
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Media.MediaTypeBadge
 
-  attr :media, Media, required: true, doc: "with its `content`'s `implementation` loaded"
+  attr :media, Media, required: true, doc: "with its `content`'s `title` and `poster_path` loaded"
   attr :size, :string, values: ~w(sm lg), required: true
 
   def media_poster(assigns) do
@@ -36,12 +36,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaPoster do
     """
   end
 
-  @doc "A Content's title in the User's language, with its `implementation` loaded."
-  def content_title(%Content{implementation: %{best_localization: %{title: title}}}), do: title
-  def content_title(%Content{original_title: title}), do: title
+  @doc "A Content's title in the User's language, with its `title` loaded."
+  def content_title(%Content{title: title}), do: title
 
-  defp poster_path(%Content{implementation: %{best_localization: %{poster_path: path}}}),
-    do: path
-
-  defp poster_path(_content), do: nil
+  defp poster_path(%Content{poster_path: path}), do: path
+  defp poster_path(_unmatched), do: nil
 end

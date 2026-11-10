@@ -82,7 +82,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
                 {Usernames.join(@shared_with, @current_user)}
               </.tooltip>
             </span>
-            <span :if={@playlist.movie_count + @playlist.tv_show_count > 0}>
+            <span :if={
+              @playlist.movie_count + @playlist.tv_show_count + @playlist.sports_event_count > 0
+            }>
               {content_counts(@playlist)}
             </span>
           </div>
@@ -169,7 +171,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
       assign(assigns,
         content: content,
         identity: ContentIdentity.from_content(content),
-        title: content.implementation.best_localization.title,
+        title: content.title,
         progress: progress_percent(content)
       )
 
@@ -177,7 +179,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
     <li id={@id} class="flex items-start gap-group py-group">
       <.link navigate={Url.content_details_link(@identity)} class="shrink-0" tabindex="-1">
         <.tmdb_poster
-          path={@content.implementation.best_localization.poster_path}
+          path={@content.poster_path}
           size="w154"
           class="w-20"
         >
@@ -265,8 +267,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   end
 
   # How much of it the User watched, while they're watching it
-  defp progress_percent(%Content{actor_progress_status: :in_progress, type: :movie} = content),
-    do: content.implementation.actor_progress.percent_watched
+  defp progress_percent(%Content{actor_progress_status: :in_progress, type: type} = content)
+       when type in [:movie, :sports_event],
+       do: content.implementation.actor_progress.percent_watched
 
   defp progress_percent(%Content{actor_progress_status: :in_progress, type: :tv_show} = content),
     do: content.implementation.actor_percent_watched

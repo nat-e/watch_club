@@ -48,6 +48,9 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkNotWatched do
   defp viewer_progress_query(%{type: :movie, id: id}, _season, _episode, actor),
     do: Ash.Query.filter(WatchProgress, movie_id == ^id and user_id == ^actor.id)
 
+  defp viewer_progress_query(%{type: :sports_event, id: id}, _season, _episode, actor),
+    do: Ash.Query.filter(WatchProgress, sports_event_id == ^id and user_id == ^actor.id)
+
   defp viewer_progress_query(%{type: :book, id: id}, _season, _episode, actor),
     do: Ash.Query.filter(WatchProgress, book_id == ^id and user_id == ^actor.id)
 

@@ -35,7 +35,7 @@ defmodule WatchClub.MediaSources.Source.Changes.ComputeName do
           _ -> nil
         end
 
-      type when type in [:radarr, :sonarr] ->
+      type when type in [:radarr, :sonarr, :sportarr] ->
         case Ash.Changeset.get_argument(changeset, :root_folder_path) do
           root when is_binary(root) and root != "" ->
             "#{WatchClub.MediaSources.Servarr.Flavor.label(type)} · #{root}"

@@ -42,14 +42,14 @@ defmodule WatchClub.MediaSources.Servarr.Changes.UpdateWebhook do
       token: record.webhook_secret
     }
 
-    event_flags = Flavor.webhook_event_flags(flavor)
+    app = Flavor.app(flavor)
 
     case Client.update_notification(
            new_base_url,
            new_api_key,
-           event_flags,
+           app.notifications_path(),
            record.notification_id,
-           config
+           app.webhook_notification(config)
          ) do
       {:ok, _} ->
         changeset

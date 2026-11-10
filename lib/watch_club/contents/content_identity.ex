@@ -10,11 +10,11 @@ defmodule WatchClub.Contents.ContentIdentity do
   typed_struct do
     field :type, ContentType,
       allow_nil?: false,
-      description: "The content type (movie, tv_show, book)"
+      description: "The content type (movie, tv_show, book, sports_event)"
 
     field :external_id_source, ExternalIdSource,
       allow_nil?: false,
-      description: "The source of the external ID (TMDB, Hardcover, ...)"
+      description: "The source of the external ID (TMDB, Hardcover, Sportarr)"
 
     field :external_id, :string,
       allow_nil?: false,
@@ -40,6 +40,11 @@ defmodule WatchClub.Contents.ContentIdentity do
   @spec for_book(integer() | binary()) :: t()
   def for_book(hardcover_id) do
     %__MODULE__{type: :book, external_id_source: :hardcover, external_id: to_string(hardcover_id)}
+  end
+
+  @spec for_sports_event(String.t()) :: t()
+  def for_sports_event(sportarr_id) do
+    %__MODULE__{type: :sports_event, external_id_source: :sportarr, external_id: sportarr_id}
   end
 
   @spec from_content(Content.t()) :: t()

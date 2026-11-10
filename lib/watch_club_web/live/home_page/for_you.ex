@@ -13,9 +13,11 @@ defmodule WatchClubWeb.HomePage.ForYou do
   alias WatchClub.Conversations.Conversation
 
   @doc "What to load on the Conversations, Content Requests and Playlists"
-  def conversation_load, do: [:recommended_by, :recommendation, content: [:implementation]]
-  def request_load, do: [content: [:implementation, :added_to_library_at]]
-  def playlist_load, do: [:owner, :movie_count, :tv_show_count, :shared_with_actor_at]
+  def conversation_load, do: [:recommended_by, :recommendation, content: [:title, :poster_path]]
+  def request_load, do: [content: [:title, :poster_path, :added_to_library_at]]
+
+  def playlist_load,
+    do: [:owner, :movie_count, :tv_show_count, :sports_event_count, :shared_with_actor_at]
 
   @doc """
   The `count` latest items, newest first: by when each was recommended, added to the Library or
@@ -52,10 +54,10 @@ defmodule WatchClubWeb.HomePage.ForYou do
     <.card_frame
       id={"for-you-conversation-#{@item.id}"}
       navigate={~p"/inbox/#{@item.id}"}
-      title={@item.content.implementation.best_localization.title}
+      title={@item.content.title}
     >
       <:artwork>
-        <.tmdb_poster path={@item.content.implementation.best_localization.poster_path} size="w185" />
+        <.tmdb_poster path={@item.content.poster_path} size="w185" />
       </:artwork>
       <:reason>
         <Lucideicons.message_circle class="size-icon-sm shrink-0" />
@@ -77,10 +79,10 @@ defmodule WatchClubWeb.HomePage.ForYou do
     <.card_frame
       id={"for-you-request-#{@item.id}"}
       navigate={Url.content_details_link(@item.content)}
-      title={@item.content.implementation.best_localization.title}
+      title={@item.content.title}
     >
       <:artwork>
-        <.tmdb_poster path={@item.content.implementation.best_localization.poster_path} size="w185" />
+        <.tmdb_poster path={@item.content.poster_path} size="w185" />
       </:artwork>
       <:reason>
         <Lucideicons.circle_check class="size-icon-sm shrink-0" />

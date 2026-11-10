@@ -12,7 +12,13 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
 
   alias WatchClub.MediaSources.Filesystem
   alias WatchClub.MediaSources.Import.Candidate
-  alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MovieIdentity}
+
+  alias WatchClub.MediaSources.Import.Candidate.{
+    EpisodeIdentity,
+    MovieIdentity,
+    SportsEventIdentity
+  }
+
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdExtractor
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenameParser
 
@@ -55,6 +61,17 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
       tmdb_id: path_ids.tmdb,
       tvdb_id: path_ids.tvdb,
       imdb_id: path_ids.imdb
+    }
+  end
+
+  defp extract_identity(:sports_event, candidate, _media_source) do
+    {title, year} = FilenameParser.title_and_year(candidate.path)
+    {_folder_title, folder_year} = FilenameParser.title_and_year(Path.dirname(candidate.path))
+
+    %SportsEventIdentity{
+      title: title,
+      year: year || folder_year,
+      sportarr_id: ExternalIdExtractor.find_sportarr(candidate.path)
     }
   end
 

@@ -29,16 +29,6 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
-msgid "Search movies and TV shows"
-msgstr ""
-
-#: lib/watch_club_web/components/search/search_status.ex
-#, elixir-autogen, elixir-format
-msgid "Search movies and TV shows by title."
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/search_field_live.ex
-#, elixir-autogen, elixir-format
 msgid "Search results"
 msgstr ""
 
@@ -62,11 +52,6 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "soon"
-msgstr ""
-
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} result"
@@ -83,4 +68,14 @@ msgstr ""
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "Close search"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "Search in"
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_status.ex
+#, elixir-autogen, elixir-format
+msgid "Search by title."
 msgstr ""

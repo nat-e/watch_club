@@ -1,13 +1,13 @@
-defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
+defmodule WatchClub.MediaSources.Servarr.SonarrTest do
   use ExUnit.Case, async: false
 
   import ExUnit.CaptureLog
 
   alias WatchClub.Integrations.Servarr.Client
-  alias WatchClub.MediaSources.{Import, Servarr, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity
-  alias WatchClub.MediaSources.Import.Scanner.Sonarr
+  alias WatchClub.MediaSources.Servarr
+  alias WatchClub.MediaSources.Servarr.Sonarr
 
   setup do
     previous = Application.get_env(:watch_club, :servarr_req_options)
@@ -18,22 +18,19 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
     :ok
   end
 
-  defp media_import(config_overrides \\ %{}) do
-    config =
-      struct(
-        %Servarr{
-          flavor: :sonarr,
-          base_url: "http://sonarr.test",
-          api_key: "key",
-          quality_profile_id: 6,
-          quality_profile_name: "HD-1080p",
-          root_folder_path: "/tv",
-          local_root_folder_path: "/data/tv"
-        },
-        config_overrides
-      )
-
-    %Import{media_source: %Source{source_type: :sonarr, implementation: config}}
+  defp servarr(config_overrides \\ %{}) do
+    struct(
+      %Servarr{
+        flavor: :sonarr,
+        base_url: "http://sonarr.test",
+        api_key: "key",
+        quality_profile_id: 6,
+        quality_profile_name: "HD-1080p",
+        root_folder_path: "/tv",
+        local_root_folder_path: "/data/tv"
+      },
+      config_overrides
+    )
   end
 
   # Routes the two-call scan: `/series` then `/episode?seriesId=…`.
@@ -85,11 +82,11 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
     )
   end
 
-  describe "scan/1" do
+  describe "scan!/1" do
     test "emits one candidate per downloaded episode with series identity and locally-mapped path" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [candidate] = Sonarr.scan(media_import())
+      assert [candidate] = Sonarr.scan!(servarr())
 
       assert %Candidate{
                path: "/data/tv/Breaking Bad/S01E01.mkv",
@@ -107,7 +104,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
     test "uses the Sonarr path verbatim when there is no local mapping" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [candidate] = Sonarr.scan(media_import(%{local_root_folder_path: nil}))
+      assert [candidate] = Sonarr.scan!(servarr(%{local_root_folder_path: nil}))
 
       assert candidate.path == "/tv/Breaking Bad/S01E01.mkv"
     end
@@ -115,31 +112,31 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
     test "skips episodes without a downloaded file" do
       stub([series(%{})], %{"1" => [episode(%{"hasFile" => false, "episodeFile" => nil})]})
 
-      assert [] = Sonarr.scan(media_import())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "skips series from a different quality profile" do
       stub([series(%{"qualityProfileId" => 8})], %{"1" => [episode(%{})]})
 
-      assert [] = Sonarr.scan(media_import())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "skips series from a different root folder" do
       stub([series(%{"rootFolderPath" => "/tv-4k"})], %{"1" => [episode(%{})]})
 
-      assert [] = Sonarr.scan(media_import())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "tolerates a trailing slash on the configured root folder" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [_candidate] = Sonarr.scan(media_import(%{root_folder_path: "/tv/"}))
+      assert [_candidate] = Sonarr.scan!(servarr(%{root_folder_path: "/tv/"}))
     end
 
     test "raises when the series API fails" do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
-      assert_raise MatchError, fn -> Sonarr.scan(media_import()) end
+      assert_raise MatchError, fn -> Sonarr.scan!(servarr()) end
     end
 
     test "logs a failed episode list and continues with the other series" do
@@ -151,7 +148,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
       log =
         capture_log(fn ->
           assert [%Candidate{identity: %EpisodeIdentity{title: "Breaking Bad"}}] =
-                   Sonarr.scan(media_import())
+                   Sonarr.scan!(servarr())
         end)
 
       assert log =~ "Error listing episodes for: Broken"
@@ -166,7 +163,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.SonarrTest do
       log =
         capture_log(fn ->
           assert [%Candidate{identity: %EpisodeIdentity{title: "Breaking Bad"}}] =
-                   Sonarr.scan(media_import())
+                   Sonarr.scan!(servarr())
         end)
 
       assert log =~ "Error listing episodes for: Broken"

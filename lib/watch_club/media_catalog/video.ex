@@ -17,7 +17,7 @@ defmodule WatchClub.MediaCatalog.Video do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
 
@@ -29,13 +29,14 @@ defmodule WatchClub.MediaCatalog.Video do
       reference :media, on_delete: :delete
       reference :movie, on_delete: :restrict, index?: true
       reference :tv_show_episode, on_delete: :restrict, index?: true
+      reference :sports_event, on_delete: :restrict, index?: true
     end
 
     check_constraints do
-      check_constraint [:movie_id, :tv_show_episode_id],
+      check_constraint [:movie_id, :tv_show_episode_id, :sports_event_id],
         name: "videos_at_most_one_content_attachment_check",
-        check: "num_nonnulls(movie_id, tv_show_episode_id) <= 1",
-        message: "Video may be attached to at most one Movie or TV Show Episode"
+        check: "num_nonnulls(movie_id, tv_show_episode_id, sports_event_id) <= 1",
+        message: "Video may be attached to at most one Movie, TV Show Episode or Sports Event"
     end
   end
 
@@ -44,7 +45,15 @@ defmodule WatchClub.MediaCatalog.Video do
 
     create :create do
       primary? true
-      accept [:movie_id, :tv_show_episode_id, :duration_seconds, :container, :bit_rate]
+
+      accept [
+        :movie_id,
+        :tv_show_episode_id,
+        :sports_event_id,
+        :duration_seconds,
+        :container,
+        :bit_rate
+      ]
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -148,6 +157,11 @@ defmodule WatchClub.MediaCatalog.Video do
     end
 
     belongs_to :tv_show_episode, TvShowEpisode do
+      allow_nil? true
+      public? true
+    end
+
+    belongs_to :sports_event, SportsEvent do
       allow_nil? true
       public? true
     end

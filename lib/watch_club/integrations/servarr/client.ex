@@ -18,7 +18,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
   """
   require Logger
 
-  alias WatchClub.Integrations.Servarr.{QualityProfile, RootFolder, System, Webhook}
+  alias WatchClub.Integrations.Servarr.{QualityProfile, RootFolder, System}
 
   @timeout 5_000
 
@@ -91,12 +91,12 @@ defmodule WatchClub.Integrations.Servarr.Client do
   itself answered the previous wizard step moments before. These are user
   mistakes, so they are only logged as warnings.
   """
-  @spec test_notification(String.t(), String.t(), Webhook.config()) ::
+  @spec test_notification(String.t(), String.t(), String.t(), map()) ::
           {:ok, :verified} | {:error, error() | :webhook_unreachable}
-  def test_notification(base_url, api_key, config) do
+  def test_notification(base_url, api_key, notifications_path, body) do
     base_url
     |> new_request(api_key)
-    |> Req.post(url: "/api/v3/notification/test", json: Webhook.body([], config))
+    |> Req.post(url: "#{notifications_path}/test", json: body)
     |> case do
       {:ok, %Req.Response{status: status}} when status in 200..299 ->
         {:ok, :verified}
@@ -120,32 +120,31 @@ defmodule WatchClub.Integrations.Servarr.Client do
   end
 
   @doc """
-  Creates a persistent notification subscribed to `event_flags` (the caller
-  supplies the flavor's flags). The server runs its own `Test` step before
-  persisting, so a successful response means the callback URL was reachable
-  at registration time.
+  Creates a persistent notification from the app's `body`. Radarr and Sonarr
+  run their own `Test` step before persisting, so a successful response means
+  the callback URL was reachable at registration time.
   """
-  @spec create_notification(String.t(), String.t(), [atom()], Webhook.config()) ::
+  @spec create_notification(String.t(), String.t(), String.t(), map()) ::
           {:ok, %{id: integer()}} | {:error, error()}
-  def create_notification(base_url, api_key, event_flags, config) do
-    case post(base_url, api_key, "/api/v3/notification", Webhook.body(event_flags, config)) do
+  def create_notification(base_url, api_key, notifications_path, body) do
+    case post(base_url, api_key, notifications_path, body) do
       {:ok, %{"id" => id}} when is_integer(id) -> {:ok, %{id: id}}
       {:error, _} = error -> error
     end
   end
 
   @doc """
-  Updates an existing notification in place via PUT, subscribed to
-  `event_flags`. The server re-runs its `Test` step before persisting, so a
+  Updates an existing notification in place via PUT, from the app's `body`.
+  Radarr and Sonarr re-run their `Test` step before persisting, so a
   successful response means the new URL was reachable.
   """
-  @spec update_notification(String.t(), String.t(), [atom()], integer(), Webhook.config()) ::
+  @spec update_notification(String.t(), String.t(), String.t(), integer(), map()) ::
           {:ok, %{id: integer()}} | {:error, error()}
-  def update_notification(base_url, api_key, event_flags, notification_id, config)
+  def update_notification(base_url, api_key, notifications_path, notification_id, body)
       when is_integer(notification_id) do
-    body = Map.put(Webhook.body(event_flags, config), :id, notification_id)
+    body = Map.put(body, :id, notification_id)
 
-    case put(base_url, api_key, "/api/v3/notification/#{notification_id}", body) do
+    case put(base_url, api_key, "#{notifications_path}/#{notification_id}", body) do
       {:ok, %{"id" => id}} when is_integer(id) -> {:ok, %{id: id}}
       {:error, _} = error -> error
     end
@@ -155,11 +154,11 @@ defmodule WatchClub.Integrations.Servarr.Client do
   Deletes a notification by its server id. A 404 is treated as success so
   the operation stays idempotent.
   """
-  @spec delete_notification(String.t(), String.t(), integer()) ::
+  @spec delete_notification(String.t(), String.t(), String.t(), integer()) ::
           {:ok, :deleted} | {:error, error()}
-  def delete_notification(base_url, api_key, notification_id)
+  def delete_notification(base_url, api_key, notifications_path, notification_id)
       when is_integer(notification_id) do
-    case delete(base_url, api_key, "/api/v3/notification/#{notification_id}") do
+    case delete(base_url, api_key, "#{notifications_path}/#{notification_id}") do
       {:ok, _body} -> {:ok, :deleted}
       {:error, :not_found} -> {:ok, :deleted}
       {:error, _} = error -> error

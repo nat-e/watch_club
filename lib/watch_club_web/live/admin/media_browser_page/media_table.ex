@@ -14,7 +14,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
 
   attr :media_page, Ash.Page.Offset,
     required: true,
-    doc: "with each Media's `content`'s `implementation`, and its `video`'s tracks and episode"
+    doc:
+      "with each Media's `content`'s `title` and `poster_path`, and its `video`'s tracks and episode"
 
   attr :list, :map, required: true, doc: "the page's sort and page number"
   attr :selected_id, :string, default: nil

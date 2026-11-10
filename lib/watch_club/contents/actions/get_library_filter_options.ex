@@ -19,7 +19,8 @@ defmodule WatchClub.Contents.Actions.GetLibraryFilterOptions do
        %{
          genres: genres |> Enum.concat() |> most_common_first(),
          decades: Enum.sort(decades, :desc),
-         original_languages: most_common_first(languages)
+         # Sports Events have no original language
+         original_languages: languages |> Enum.reject(&is_nil/1) |> most_common_first()
        }}
     end
   end

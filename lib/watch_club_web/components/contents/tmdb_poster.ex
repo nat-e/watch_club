@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Components.Contents.TmdbPoster do
   @moduledoc """
-  TMDB poster image component for content surfaces.
+  TMDB poster image component for content surfaces. A `path` is a TMDB image path,
+  or an image URL for a Sports Event.
   """
   use WatchClubWeb, :component
 
@@ -49,7 +50,7 @@ defmodule WatchClubWeb.Components.Contents.TmdbPoster do
     ]}>
       <img
         :if={@path}
-        src={"https://image.tmdb.org/t/p/#{@size}/#{@path}"}
+        src={Url.content_image(@path, @size)}
         alt={@alt}
         class="absolute inset-0 h-full w-full object-cover"
       />

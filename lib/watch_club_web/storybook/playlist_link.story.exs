@@ -62,6 +62,15 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
         }
       },
       %Variation{
+        id: :sports_events,
+        description: "Holding Sports Events",
+        attributes: %{
+          playlist: playlist("Fight nights", "trophy", @viewer, [], 1, 0, 2),
+          current_user: @viewer,
+          patch: "#"
+        }
+      },
+      %Variation{
         id: :empty,
         description: "Empty",
         attributes: %{
@@ -83,7 +92,7 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
     ]
   end
 
-  defp playlist(name, icon, owner, users, movie_count, tv_show_count) do
+  defp playlist(name, icon, owner, users, movie_count, tv_show_count, sports_event_count \\ 0) do
     %Playlist{
       id: name |> String.downcase() |> String.replace(" ", "-"),
       name: name,
@@ -92,7 +101,8 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
       owner: owner,
       accesses: Enum.map(users, &%PlaylistAccess{user_id: &1.id, user: &1, level: :view}),
       movie_count: movie_count,
-      tv_show_count: tv_show_count
+      tv_show_count: tv_show_count,
+      sports_event_count: sports_event_count
     }
   end
 end

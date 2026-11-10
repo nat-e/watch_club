@@ -556,6 +556,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
 
   defp header_title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
+  defp header_title(%Video{sports_event: %SportsEvent{} = event}), do: event.title
 
   defp header_title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
     do: "#{episode.tv_show.best_localization.title} - #{episode.formatted_episode_number}"

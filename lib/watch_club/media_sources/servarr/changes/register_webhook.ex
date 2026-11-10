@@ -21,13 +21,18 @@ defmodule WatchClub.MediaSources.Servarr.Changes.RegisterWebhook do
   def change(changeset, _opts, _context) do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       flavor = Ash.Changeset.get_attribute(changeset, :flavor)
-      event_flags = Flavor.webhook_event_flags(flavor)
+      app = Flavor.app(flavor)
 
       with {:ok, config} <- build_config(changeset, flavor),
            base_url = Ash.Changeset.get_attribute(changeset, :base_url),
            api_key = Ash.Changeset.get_attribute(changeset, :api_key),
            {:ok, %{id: notification_id}} <-
-             Client.create_notification(base_url, api_key, event_flags, config) do
+             Client.create_notification(
+               base_url,
+               api_key,
+               app.notifications_path(),
+               app.webhook_notification(config)
+             ) do
         Ash.Changeset.force_change_attribute(changeset, :notification_id, notification_id)
       else
         :error ->

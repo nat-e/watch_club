@@ -300,3 +300,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}"
 msgstr ""
+
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} sports event"
+msgid_plural "%{count} sports events"
+msgstr[0] ""
+msgstr[1] ""

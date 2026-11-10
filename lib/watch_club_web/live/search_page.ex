@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.SearchPage do
   @moduledoc """
   Every result of a search. Browse's search field opens it, and stays in the bar to search again.
-  `library=1` keeps only the Library.
+  `library=1` keeps only the Library, and `scope=sports` searches Sports Events.
   """
   use WatchClubWeb, :live_view
 
@@ -27,6 +27,8 @@ defmodule WatchClubWeb.SearchPage do
     >
       <.search_scopes
         id="search-page-scopes"
+        scope={@scope}
+        on_scope="change_scope"
         has_media={@has_media?}
         on_toggle="toggle_has_media"
       />
@@ -74,8 +76,14 @@ defmodule WatchClubWeb.SearchPage do
 
   @impl true
   def handle_event("toggle_has_media", _params, socket) do
+    %{query: query, has_media?: has_media?, scope: scope} = socket.assigns
+    {:noreply, push_patch(socket, to: Url.search_link(query, !has_media?, scope), replace: true)}
+  end
+
+  def handle_event("change_scope", %{"scope" => scope}, socket) do
     %{query: query, has_media?: has_media?} = socket.assigns
-    {:noreply, push_patch(socket, to: Url.search_link(query, !has_media?), replace: true)}
+    {:ok, scope} = SearchContentType.match(scope)
+    {:noreply, push_patch(socket, to: Url.search_link(query, has_media?, scope), replace: true)}
   end
 
   def handle_event("retry", _params, socket) do
@@ -88,9 +96,11 @@ defmodule WatchClubWeb.SearchPage do
       do: {:noreply, socket}
 
   def handle_event("load_more", _params, socket) do
-    %{query: query, has_media?: has_media?, page: page, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, scope: scope, page: page, current_user: user} =
+      socket.assigns
 
-    case Contents.search_content(%{query: query, has_media?: has_media?, page: page + 1},
+    case Contents.search_content(
+           %{query: query, content_type: scope, has_media?: has_media?, page: page + 1},
            actor: user
          ) do
       {:ok, %SearchResultsPage{} = results_page} ->
@@ -111,7 +121,7 @@ defmodule WatchClubWeb.SearchPage do
       |> assign(page: 0, total_pages: 0, result_count: 0)
       |> stream(:search_results, [], reset: true)
 
-    %{query: query, has_media?: has_media?, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, scope: scope, current_user: user} = socket.assigns
 
     case query do
       "" ->
@@ -124,7 +134,11 @@ defmodule WatchClubWeb.SearchPage do
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
           OpenTelemetry.Ctx.attach(otel_context)
-          Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
+
+          Contents.search_content!(
+            %{query: query, content_type: scope, has_media?: has_media?},
+            actor: user
+          )
         end)
     end
   end

@@ -213,13 +213,16 @@ defmodule WatchClub.Requests.ContentRequest do
 
   calculations do
     # The percentage of sub-contents for which medias exist and are ready to play on Watch Club
-    # For movies and books, this can only be 0 or 100
+    # For movies, Sports Events and books, this can only be 0 or 100
     # For TV show, this is equal to the number of aired episodes with Media / number of aired episodes
     calculate :percent_imported,
               :float,
               expr(
                 cond do
                   content.type == :movie and count(content.movie.videos) > 0 ->
+                    100.0
+
+                  content.type == :sports_event and count(content.sports_event.videos) > 0 ->
                     100.0
 
                   content.type == :book and

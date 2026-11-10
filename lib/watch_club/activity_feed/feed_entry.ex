@@ -24,7 +24,7 @@ defmodule WatchClub.ActivityFeed.FeedEntry do
 
       prepare build(
                 sort: [latest_at: :desc, group_key: :asc],
-                load: [events: [:actor, content: [:implementation]]]
+                load: [events: [:actor, content: [:title, :poster_path]]]
               )
     end
   end

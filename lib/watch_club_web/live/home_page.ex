@@ -25,7 +25,8 @@ defmodule WatchClubWeb.HomePage do
   @feed_page_size 8
 
   @new_in_library_load [
-    :implementation,
+    :title,
+    :poster_path,
     :actor_progress_status,
     :incomplete?,
     actor_recommendations: [:recommended_by]

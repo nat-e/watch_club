@@ -48,6 +48,14 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
     )
   end
 
+  defp record_progress(%Video{sports_event_id: event_id} = video, media_id, position, context)
+       when not is_nil(event_id) do
+    History.record_watch_progress!(
+      Map.put(progress(video, media_id, position), :sports_event_id, event_id),
+      scope: context
+    )
+  end
+
   defp record_progress(_unmatched_video, _media_id, _position, _context), do: :ok
 
   # Progress counts up to the Credits, so playing the next episode from there completes it

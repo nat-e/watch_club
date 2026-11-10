@@ -1,14 +1,15 @@
 defmodule WatchClub.Contents.ContentType do
   use Gettext, backend: WatchClubWeb.Gettext
 
-  @library_display_order [:movie, :tv_show]
+  @library_display_order [:movie, :tv_show, :sports_event]
 
   use Ash.Type.Enum,
     values: [
       book: [description: "A book", label: "Books"],
       movie: [description: "A movie", label: "Movies"],
       # podcast: [description: "A podcast", label: "Podcasts"],
-      tv_show: [description: "A TV show or anime", label: "TV Shows"]
+      tv_show: [description: "A TV show or anime", label: "TV Shows"],
+      sports_event: [description: "A sports event, such as a fight or a race", label: "Sports"]
     ]
 
   def library_display_order, do: @library_display_order
@@ -17,11 +18,13 @@ defmodule WatchClub.Contents.ContentType do
   def translated_label(:book), do: dgettext("content_types", "Book")
   def translated_label(:movie), do: dgettext("content_types", "Movie")
   def translated_label(:tv_show), do: dgettext("content_types", "TV Show")
+  def translated_label(:sports_event), do: dgettext("content_types", "Sports Event")
 
   def translated_plural_label(nil), do: dgettext("content_types", "All")
   def translated_plural_label(:book), do: dgettext("content_types", "Books")
   def translated_plural_label(:movie), do: dgettext("content_types", "Movies")
   def translated_plural_label(:tv_show), do: dgettext("content_types", "TV Shows")
+  def translated_plural_label(:sports_event), do: dgettext("content_types", "Sports")
 
   @doc """
   The `MediaCatalog.MediaType`s that can serve this Content Type — the media
@@ -32,4 +35,5 @@ defmodule WatchClub.Contents.ContentType do
   def media_types(:movie), do: [:movie]
   def media_types(:tv_show), do: [:tv_show_episode]
   def media_types(:book), do: [:ebook, :audiobook]
+  def media_types(:sports_event), do: [:sports_event]
 end
