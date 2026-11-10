@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.7](https://github.com/nat-e/watch_club/compare/v0.1.6...v0.1.7) (2026-11-10)
+
+
+### Features
+
+* **markers:** find a season's Markers together ([#86](https://github.com/nat-e/watch_club/issues/86)) ([65236a8](https://github.com/nat-e/watch_club/commit/65236a84e1ae8999e85c1f4ab6842ac11324154e))
+* **observability:** add gauges of each job queue's backlog ([#81](https://github.com/nat-e/watch_club/issues/81)) ([f609702](https://github.com/nat-e/watch_club/commit/f609702be29bed7b51c9ba6a1153fc5f05ba0efd))
+* sports events from Sportarr ([#87](https://github.com/nat-e/watch_club/issues/87)) ([d5188d7](https://github.com/nat-e/watch_club/commit/d5188d7b94679d925be17df2db7f38561bfdb397))
+* **telemetry:** follow OpenTelemetry conventions and add LiveView metrics ([#82](https://github.com/nat-e/watch_club/issues/82)) ([7051876](https://github.com/nat-e/watch_club/commit/7051876681d2685ed52414c4a50f66cbdb3874e0))
+
+
+### Bug Fixes
+
+* **requests:** keep a TV Show On the way until every aired episode is in the Library ([#85](https://github.com/nat-e/watch_club/issues/85)) ([8607113](https://github.com/nat-e/watch_club/commit/86071134e3f22d4e9eb3a2a8b6eaae0179695d81))
+
 ## [0.1.6](https://github.com/nat-e/watch_club/compare/v0.1.5...v0.1.6) (2026-11-10)
 
 
