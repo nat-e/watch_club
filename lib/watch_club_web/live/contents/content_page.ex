@@ -9,6 +9,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
+  import WatchClubWeb.Components.Contents.IncompleteBadge
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
   import WatchClubWeb.Components.Medias.DownloadMenu
@@ -35,6 +36,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   @content_load [
     :has_media?,
     :actor_progress_status,
+    :incomplete?,
     implementation: %{
       load: [
         movie: [videos: [:media, :default_video_track]],
@@ -155,7 +157,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
           path={localization(@content).poster_path}
           size="w342"
           class="w-28 shrink-0 shadow-card @3xl:w-44"
-        />
+        >
+          <.incomplete_badge
+            :if={@content.incomplete?}
+            id="content-incomplete"
+            class="absolute top-related right-related"
+          />
+        </.tmdb_poster>
         <div class="flex w-full min-w-0 flex-1 flex-col gap-group">
           <div class="flex flex-col gap-tight">
             <h1

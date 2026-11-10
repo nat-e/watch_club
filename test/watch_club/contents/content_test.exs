@@ -1256,6 +1256,44 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
+  describe "get_user_recently_watched/*" do
+    test "returns the actor's Content in progress that is Ready to Play, the most recently watched first",
+         %{member: member} do
+      [older, newer, someone_elses] = generate_many(movie(), 3)
+      ready_show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+      unready_show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+
+      start_movie!(older, member)
+      # Its next TV Show Episode has Media
+      add_episode_video!(ready_show, 1, 2)
+      finish_episode!(ready_show, member)
+      start_movie!(newer, member)
+      # Watched last, but its next TV Show Episode has no Media
+      finish_episode!(unready_show, member)
+      start_movie!(someone_elses, generate(user()))
+
+      assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
+               [newer.id, ready_show.id, older.id]
+    end
+  end
+
+  describe "get_new_in_library/*" do
+    test "returns the Content with Media, most recently added first, a requested one once its Content Request is Completed",
+         %{member: member} do
+      older = generate(movie())
+      completed = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      on_the_way = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+
+      add_video!(older.id)
+      generate(content_request(member, completed, completed?: true))
+      add_episode_video!(completed, 1)
+      generate(content_request(member, on_the_way))
+      add_episode_video!(on_the_way, 1)
+
+      assert get_new_in_library!(actor: member) |> Enum.map(& &1.id) == [completed.id, older.id]
+    end
+  end
+
   describe "get_library_filter_options/*" do
     test "returns the Library's genres and original languages, most common first, and decades, newest first",
          %{member: member} do
@@ -1380,15 +1418,40 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   defp add_episode_video!(tv_show, season_number, episode_number \\ 1) do
-    episode =
-      Ash.get!(
-        TvShowEpisode,
-        %{tv_show_id: tv_show.id, season_number: season_number, episode_number: episode_number},
-        authorize?: false
-      )
-
-    MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
+    MediaCatalog.create_or_update_video!(
+      media_episode_input(episode!(tv_show, season_number, episode_number).id),
       actor: SystemActor.actor()
+    )
+  end
+
+  defp start_movie!(movie, user) do
+    add_video!(movie.id)
+
+    History.record_watch_progress!(
+      %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+      actor: user
+    )
+  end
+
+  # S01E01, with Media
+  defp finish_episode!(tv_show, user) do
+    add_episode_video!(tv_show, 1)
+
+    History.record_watch_progress!(
+      %{
+        tv_show_episode_id: episode!(tv_show, 1).id,
+        position_seconds: 95 * 60,
+        duration_seconds: 100 * 60
+      },
+      actor: user
+    )
+  end
+
+  defp episode!(tv_show, season_number, episode_number \\ 1) do
+    Ash.get!(
+      TvShowEpisode,
+      %{tv_show_id: tv_show.id, season_number: season_number, episode_number: episode_number},
+      authorize?: false
     )
   end
 

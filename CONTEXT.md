@@ -125,15 +125,19 @@ A user’s request for WatchClub to make a piece of content available on the med
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
 **Content Request Status**:
-The status of a **Content Request** as shown on **My Requests**, derived at read time (never stored) from the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
+The status of a **Content Request** as shown on **My Requests**, derived when read from whether it is a **Completed Content Request**, the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. It says how far the **Content Request** got, not whether its **Content** is **Ready to Play**. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
+
+**Completed Content Request**:
+A **Content Request** whose **Content** has had **Media** for every aired part: the **Movie** or **Book**, or every aired **TV Show Episode**. It stays Completed, even when new **TV Show Episodes** air or its **Media** is deleted.
+_Avoid_: Fulfilled, fully downloaded, available, ready, playable
 
 **Media Source Request**:
 WatchClub's record of asking one **Media Source** to make one **Content** available. Singleton per (**Content**, **Media Source**) pair. Only **Media Sources** whose **Media Source Type** supports requests can be the **Media Source** of a **Media Source Request**. In practice, referred to by the **Media Source Type**, e.g. "Radarr Request", "Sonarr Request".
 _Avoid_: Request Attempt, Profile Request, Sourcing
 
 **Media Source Request State**:
-The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and _reconciled from the **Media Source**'s current state_ (not driven by individual events). One of: Submitted, Not Released, Downloading, Partially Downloaded, Downloaded, Needs Attention.
+The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and _reconciled from the **Media Source**'s current state_ (not driven by individual events). One of: Submitted, Not Released, Downloading, Downloaded, Needs Attention.
 _Avoid_: Request Attempt State, *arr status, Grabbed, Searching, Cancelled, Created
 
 **Request Content**:
@@ -149,11 +153,11 @@ A **Request Subscriber** stops being one, so the **Content Request** leaves thei
 _Avoid_: Unsubscribe, unfollow, mute
 
 **Request Subscriber**:
-A **User** who is told when a **Content Request** becomes playable: the **User** who made it, and everyone who chose to **Get Notified** on it, until they **Stop Getting Notified**.
+A **User** who is told when a **Content Request** is Completed: the **User** who made it, and everyone who chose to **Get Notified** on it, until they **Stop Getting Notified**.
 _Avoid_: Follower
 
 **Ready Unseen**:
-A **Content Request** that became playable since its **Request Subscriber** last opened **My Requests**. The Requests tab's badge counts them, and **My Requests** shows them first, with a New badge, until the **Request Subscriber** leaves it.
+A **Content Request** Completed since its **Request Subscriber** last opened **My Requests**. The Requests tab's badge counts them, and **My Requests** shows them first, with a New badge, until the **Request Subscriber** leaves it.
 _Avoid_: Unread, notification
 
 **Delete Content Request**:
@@ -161,7 +165,7 @@ The **Instance Administrator** removes a **Content Request**, for example a stuc
 _Avoid_: Cancel request, unrequest
 
 **My Requests**:
-The WatchClub interface where a **User** views the **Content Requests** they are a **Request Subscriber** of.
+The WatchClub interface where a **User** views the **Content Requests** they are a **Request Subscriber** of: the Completed ones ready to watch, and the others on the way.
 _Avoid_: My downloads, watchlist, request inbox
 
 ### Media
@@ -189,6 +193,10 @@ _Avoid_: Video player page, stream page
 **Play**:
 Play available **Media** through WatchClub.
 _Avoid_: Stream, watch media, play media server item
+
+**Ready to Play**:
+A **Content** a **User** can **Play** now: a **Movie** with **Media**, or a **TV Show** whose **TV Show Episode** they're up to has **Media**, the first one if they haven't started it.
+_Avoid_: Playable, available, ready
 
 **Download**:
 Save a **Video**, **Ebook**, or **Audiobook** to the **User**'s device through WatchClub.
@@ -386,6 +394,10 @@ _Avoid_: Score, vote average, grade
 All the **Content** that is available on the **Instance** and has **Media**.
 _Avoid_: Catalog, available content, server content
 
+**Incomplete TV Show**:
+A **TV Show** in the **Library** with an aired **TV Show Episode** that has no **Media**.
+_Avoid_: Partially available, still downloading, partial
+
 **Browse**:
 The WatchClub interface where a **User** looks through the **Library**.
 _Avoid_: Discover
@@ -397,7 +409,7 @@ The WatchClub interface that opens after signing in, where a **User** sees what'
 _Avoid_: Dashboard, landing page, feed
 
 **For You**:
-What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that became playable and the **Playlists** shared with them.
+What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that were Completed and the **Playlists** shared with them.
 _Avoid_: Notifications, alerts, inbox
 
 ### Activity Feed
@@ -481,17 +493,19 @@ _Avoid_: Group, aggregate, card, item
 - A **Content** has at most one **Content Request**, made by the first **User** who requests it
 - **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media** for an aired part: the **Movie**, or an aired **TV Show Episode**
 - Request does **Request Content** while the **Content** has no **Content Request**, and **Get Notified** once it has one
-- Outside **My Requests**, playable **Content** shows Play; unplayable **Content** shows Request to a **User** who is not a **Request Subscriber**, or its **Content Request Status** to one who is
-- Outside **My Requests**, a **User** who is not a **Request Subscriber** sees unplayable **Content** the same way whether or not somebody else already made its **Content Request**
-- Any **User** who isn't a **Request Subscriber** can **Get Notified** on a **Content Request** while it is not yet playable
+- Outside **My Requests**, **Content** in the **Library** shows Play, disabled until it is **Ready to Play**; **Content** not in the **Library** shows Request to a **User** who is not a **Request Subscriber**, or its **Content Request Status** to one who is
+- In **My Requests**, a **Content Request** that is not Completed shows Play only once its **Content** is **Ready to Play**
+- Outside **My Requests**, a **User** who is not a **Request Subscriber** sees **Content** not in the **Library** the same way whether or not somebody else already made its **Content Request**
+- Any **User** who isn't a **Request Subscriber** can **Get Notified** on a **Content Request** while its **Content** is not in the **Library**
 - The **User** who made a **Content Request** becomes one of its **Request Subscribers**
 - Any **Request Subscriber**, the **User** who made the **Content Request** included, can **Stop Getting Notified**
-- Only **Request Subscribers** are told when a **Content Request** becomes playable: having made it doesn't count
-- When a **Content Request** becomes playable, it is **Ready Unseen** for each of its **Request Subscribers** until they open **My Requests**. More episodes of a playable **TV Show** don't make it **Ready Unseen** again
+- Only **Request Subscribers** are told when a **Content Request** is Completed: having made it doesn't count
+- When a **Content Request** is Completed, it is **Ready Unseen** for each of its **Request Subscribers** until they open **My Requests**. A **Content Request** is Completed once: new **TV Show Episodes** airing later don't make it **Ready Unseen** again
 - Other **Users** see who made a **Content Request**, but not its other **Request Subscribers**
 - Nobody can cancel a **Content Request**; only the **Instance Administrator** can **Delete Content Request**
-- A **Content Request** has no stored status; what a **User** sees in **My Requests** is computed at read time from the **Media Source Requests** for the **Content** and from the **Content**'s **Media**
-- Whether a **Content Request** is _playable_ (_ready_ in code) is a read-time flag separate from its displayed status: true once its **Content** is in the **Library**. A **Content Request** can be playable while still showing an in-progress status (a **TV Show** with some episodes present while more are downloading), so playability drives the Play action independently of status
+- What a **User** sees in **My Requests** is computed when read from the **Media Source Requests** for the **Content**, the **Content**'s **Media**, and whether the **Content Request** is Completed
+- Whether a **Content Request** is Completed is separate from whether its **Content** is in the **Library** or **Ready to Play**: a **TV Show** can be both while its **Content Request** is still Downloading. **My Requests** keeps it on the way until it is Completed
+- A **Completed Content Request** stays Completed when its **TV Show** becomes an **Incomplete TV Show** again because a new **TV Show Episode** aired
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
@@ -502,7 +516,7 @@ _Avoid_: Group, aggregate, card, item
 - A **TV Show Episode** records its air date, sourced from the **Metadata Provider**
 - The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
 - A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created _only_ when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **Instance Administrator** uses **Delete Content Request** so the **Content** can be requested again
-- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** reads as complete regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
+- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** is Completed regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
 - A **Media Source Request** carries one **Media Source Request State**, recomputed from the **Media Source**'s current state (its movie/series record plus download queue) whenever a webhook or poll arrives; the event triggers a refresh, it does not itself set the state
 - A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created _or adopted_ — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
 - A **Media Source Request** persists after **Delete Content Request** (the upstream resource still exists)
@@ -520,6 +534,7 @@ _Avoid_: Group, aggregate, card, item
 ### Playback
 
 - A **User** can **Play** or **Download** the **Media** of any **Content** in the **Library**
+- **Play** on a **TV Show** starts the **TV Show Episode** the **User** is up to; any other **TV Show Episode** with **Media** plays from the **TV Show**'s episodes
 - **Play** opens the **Player** after exactly one **Media** file has been selected
 - **Play** starts a new **Playback** in the **User**'s active **Playback Session**, or creates the **Playback Session** when there is none, before playback succeeds
 - Advancing to another **Media**, such as the next **TV Show Episode**, creates a new **Playback** in the same **Playback Session**
@@ -702,12 +717,14 @@ _Avoid_: Group, aggregate, card, item
 - A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while any of its **TV Show Episodes** has **Media**
 - A **User** gets missing **Content** into the **Library** with **Request Content**
 - Every **User** sees the whole **Library** in **Browse**
+- Every **User** sees which **TV Shows** are **Incomplete TV Shows**, whether or not they have a **Content Request**. A **TV Show** is incomplete, for example, while its **Content Request** brings its **TV Show Episodes**, after a new one airs until it has **Media**, or when it was imported with gaps
 
 ### Home
 
-- **Home** shows the **User**'s **Content** in progress, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
+- **Home** shows the **User**'s **Content** in progress that is **Ready to Play**, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
 - **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
+- **Home** shows a **Content** with a **Content Request** among the newest in the **Library** only once that **Content Request** is Completed
 
 ### Activity Feed
 
@@ -722,7 +739,7 @@ _Avoid_: Group, aggregate, card, item
 
 > **Dev:** "Does adding a movie to a **Playlist** recommend it to anyone?"
 > **Domain expert:** "No. A **Playlist** stays private until its owner shares it. To send a movie to people, you **Recommend Content**, which starts a **Conversation** with them."
-> **Dev:** "Where do playable files come from?"
+> **Dev:** "Where do the files we play come from?"
 > **Domain expert:** "An **Instance Administrator** defines a **Media Source**, and each **Media Import** discovers instance-wide **Media**. Its **Content** joins the **Library**, which every **User** sees in **Browse**."
 
 ## Flagged ambiguities
@@ -739,7 +756,8 @@ _Avoid_: Group, aggregate, card, item
 - "Media Server Library" is not canonical; resolved: use **Media Source** for where **Media** comes from, and **Library** for all the **Content** that has **Media**.
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
 - "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
-- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: a **Content Request** has no stored status and is not subtyped by status. The displayed **Content Request Status** _is_ canonical, but as a _derived read-model value_ computed at read time from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute.
+- **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: the displayed **Content Request Status** _is_ canonical, but as a _derived read-model value_ computed when read from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute. Only **Completed Content Request** is a canonical subtype, because a **Content Request** stays Completed once it is.
+- "Playable" meant **Content** with any **Media**, so a **TV Show** looked ready, and Play could start whichever **TV Show Episode** downloaded first; resolved: **Library** for **Content** with any **Media**, **Ready to Play** for what **Play** can start for a **User**, and **Completed Content Request** for a **Content Request** whose every aired part has **Media**.
 - The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
 - "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Playlists**: **Add to Playlist** does not create a **Content Request**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.

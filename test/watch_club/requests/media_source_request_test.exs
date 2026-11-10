@@ -55,8 +55,22 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
       assert create_and_refresh(ctx.source, ctx.content).status == :downloaded
     end
 
+    test "a series with every aired regular episode present is :downloaded, whatever its specials and unaired episodes",
+         ctx do
+      stub_sonarr(
+        [
+          episode(%{"hasFile" => true}),
+          episode(%{"seasonNumber" => 0}),
+          episode(%{"airDateUtc" => "2999-01-01T00:00:00Z"})
+        ],
+        []
+      )
+
+      assert create_and_refresh(ctx.source, ctx.content).status == :downloaded
+    end
+
     test "a series with an active download queue is :downloading", ctx do
-      stub_sonarr([episode(%{"hasFile" => false})], [queue_item()])
+      stub_sonarr([episode(%{"id" => 1, "hasFile" => false})], [queue_item()])
       assert create_and_refresh(ctx.source, ctx.content).status == :downloading
     end
   end

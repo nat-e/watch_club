@@ -94,3 +94,11 @@ msgstr "Erreur de téléchargement"
 #, elixir-autogen, elixir-format
 msgid "Not found, still looking"
 msgstr "Introuvable, on continue à chercher"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{ready} of %{count} episode ready"
+msgid_plural "%{ready} of %{count} episodes ready"
+msgstr[0] "%{ready} sur %{count} épisode prêt"
+msgstr[1] "%{ready} sur %{count} épisodes prêts"

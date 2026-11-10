@@ -319,8 +319,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     """
   end
 
-  # For a TV Show, Play's caret, or Episodes when there's nothing to play, opens its page, which has
-  # every TV Show Episode
+  # For a TV Show, Play's caret opens its page, which has every TV Show Episode
   defp episodes_on_content_page(%ContentIdentity{type: :tv_show} = identity),
     do: JS.navigate(Url.content_details_link(identity))
 

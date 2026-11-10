@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
-  The Content in progress on Home: the latest one in the spotlight, the others in Up next. Resume
-  plays the Movie, or the TV Show's next TV Show Episode.
+  The Content in progress on Home that is Ready to Play: the latest one in the spotlight, the
+  others in Up next. Resume plays the Movie, or the TV Show's next TV Show Episode.
   """
   use WatchClubWeb, :component
 
@@ -84,7 +84,6 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
               variant="primary"
               size="lg"
               navigate={play_href(@content)}
-              disabled={!play_href(@content)}
               aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
               class="min-w-40"
             >
@@ -115,10 +114,10 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   attr :locale, :atom, required: true
 
   # The whole card is the title link, stretched with ::after, so it has one name and one focus
-  # outline, drawn on the card. An unavailable Content links to its page instead of the player.
+  # outline, drawn on the card.
   defp up_next_card(assigns) do
     assigns =
-      assign(assigns, playable: playable(assigns.content), play_href: play_href(assigns.content))
+      assign(assigns, :playable, playable(assigns.content))
 
     ~H"""
     <article class="group/card relative flex w-64 shrink-0 snap-start flex-col gap-related rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-4 @xl:w-72">
@@ -126,12 +125,9 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
         <.tmdb_still
           path={image(@playable)}
           size="w300"
-          class={["w-full", !@play_href && "opacity-40 grayscale"]}
+          class="w-full"
         />
-        <div
-          :if={@play_href}
-          class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/card:opacity-100 group-has-focus-visible/card:opacity-100 [@media(hover:none)]:opacity-100"
-        >
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/card:opacity-100 group-has-focus-visible/card:opacity-100 [@media(hover:none)]:opacity-100">
           <span class="flex size-control-lg items-center justify-center rounded-full bg-black/60 text-white">
             <Lucideicons.play class="size-icon-lg" />
           </span>
@@ -144,12 +140,8 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       </div>
       <div class="min-w-0">
         <.link
-          navigate={@play_href || Url.content_details_link(@content)}
-          aria-label={
-            if @play_href,
-              do: dgettext("home", "Resume %{title}", title: title(@content)),
-              else: dgettext("home", "%{title}, not available", title: title(@content))
-          }
+          navigate={play_href(@content)}
+          aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
           class="block truncate font-semibold text-text outline-none after:absolute after:inset-0"
         >
           {title(@content)}
@@ -168,7 +160,6 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   defp playable(%Content{type: :movie, implementation: movie}), do: movie
   defp playable(%Content{type: :tv_show, implementation: tv_show}), do: tv_show.actor_next_episode
 
-  defp play_href(%Content{actor_next_medias_to_play: []}), do: nil
   defp play_href(%Content{actor_next_medias_to_play: medias}), do: Url.player_link(medias)
 
   defp image(%TvShowEpisode{still_path: still_path}), do: still_path

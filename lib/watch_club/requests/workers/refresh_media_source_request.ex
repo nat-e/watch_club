@@ -143,19 +143,14 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
   @spec series_status(list(Sonarr.Episode.t()), list(Sonarr.QueueResource.t())) ::
           MediaSourceRequestStatus.t()
   defp series_status(episodes, queue) do
-    episode_count = length(episodes)
-    now = DateTime.utc_now()
-
-    not_released =
-      episodes != [] &&
-        episodes |> Enum.all?(&(&1.air_date_utc && DateTime.after?(&1.air_date_utc, now)))
-
-    downloaded_count = episodes |> Enum.filter(& &1.has_file?) |> length()
+    aired_episodes = aired_regular_episodes(episodes)
+    aired_episode_ids = MapSet.new(aired_episodes, & &1.id)
+    queue = Enum.filter(queue, &MapSet.member?(aired_episode_ids, &1.episode_id))
 
     cond do
-      # All episodes have been downloaded in Sonarr, but are not all
+      # All aired episodes have been downloaded in Sonarr, but are not all
       # available in watch club yet
-      episode_count > 0 and downloaded_count >= episode_count ->
+      aired_episodes != [] and Enum.all?(aired_episodes, & &1.has_file?) ->
         :downloaded
 
       Enum.any?(queue, &Sonarr.QueueResource.blocked?/1) ->
@@ -166,7 +161,7 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
       # :not_released is moved further down since it can happen to find a Series that is not released
       # and it should still show up as downloaded
-      not_released ->
+      episodes != [] and aired_episodes == [] ->
         :not_released
 
       true ->
@@ -183,24 +178,27 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
   @spec series_progress(list(Sonarr.Episode.t()), list(Sonarr.QueueResource.t())) :: float()
   defp series_progress(episodes, queue) do
-    now = DateTime.utc_now()
-
-    aired_episodes_count =
-      episodes
-      |> Enum.filter(&(&1.air_date_utc && DateTime.before?(&1.air_date_utc, now)))
-      |> length()
-
-    case aired_episodes_count do
-      0 ->
+    case aired_regular_episodes(episodes) do
+      [] ->
         0.0
 
-      aired_episodes_count ->
-        episodes
+      aired_episodes ->
+        aired_episodes
         |> Enum.map(&episode_progress(&1, queue))
         |> Enum.sum()
-        |> Kernel./(aired_episodes_count)
-        |> min(100.0)
+        |> Kernel./(length(aired_episodes))
     end
+  end
+
+  # The episodes a Content Request waits for: aired, and not specials (season 0)
+  defp aired_regular_episodes(episodes) do
+    now = DateTime.utc_now()
+
+    Enum.filter(
+      episodes,
+      &(&1.season_number > 0 and &1.air_date_utc != nil and
+          DateTime.before?(&1.air_date_utc, now))
+    )
   end
 
   @spec episode_progress(Sonarr.Episode.t(), list(Sonarr.QueueResource.t())) :: float()

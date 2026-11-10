@@ -68,4 +68,7 @@ defmodule WatchClubWeb.Storybook.Root do
   def entry("tv_bar"), do: [name: "TV bar", icon: {:fa, "tv"}, index: 38]
   def entry("tv_controls"), do: [name: "TV controls", icon: {:fa, "tv"}, index: 39]
   def entry("pill"), do: [name: "Pill", icon: {:fa, "capsules"}, index: 40]
+
+  def entry("incomplete_badge"),
+    do: [name: "Incomplete badge", icon: {:fa, "download"}, index: 41]
 end

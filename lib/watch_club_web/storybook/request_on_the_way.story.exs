@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Storybook.RequestOnTheWay do
   use PhoenixStorybook.Story, :component
 
+  alias WatchClub.Accounts.{User, UserSettings}
   alias WatchClub.Contents.{Content, Movie, MovieLocalization}
   alias WatchClub.Requests.ContentRequest
   alias WatchClubWeb.MyRequestsPage.RequestOnTheWay
@@ -20,6 +21,15 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
       variation(:importing, "Downloaded, being imported", :importing),
       variation(:downloading, "Downloading, with how far it got", :downloading,
         download_progress: 64.0
+      ),
+      variation(
+        :episodes_ready,
+        "Downloading, with TV Show Episodes in the Library, but not the next one: no Play",
+        :downloading,
+        download_progress: 47.0,
+        aired_episodes_count: 10,
+        aired_episodes_with_media_count: 4,
+        title: "Silo"
       ),
       variation(
         :searching,
@@ -47,8 +57,11 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
           id: "request-#{id}",
           status: status,
           download_progress: opts[:download_progress],
+          aired_episodes_count: opts[:aired_episodes_count],
+          aired_episodes_with_media_count: opts[:aired_episodes_with_media_count],
           content: %Content{
             type: :movie,
+            actor_next_medias_to_play: [],
             external_id_source: :tmdb,
             external_id: "438631",
             release_date: opts[:release_date] || ~D[2021-09-15],
@@ -61,7 +74,7 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
           }
         },
         focus_after_removal: "requests-on-the-way-heading",
-        locale: :en_US
+        current_user: %User{settings: %UserSettings{locale: :en_US}}
       }
     }
   end

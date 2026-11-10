@@ -26,12 +26,6 @@ msgid "%{time} left"
 msgstr "Il reste %{time}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home_page/continue_watching.ex
-#, elixir-autogen, elixir-format
-msgid "%{title}, not available"
-msgstr "%{title}, indisponible"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} is watching %{contents}"
