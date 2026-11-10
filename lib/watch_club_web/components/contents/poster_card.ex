@@ -7,6 +7,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Contents.IncompleteBadge
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
 
@@ -182,29 +183,6 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
     >
       <Lucideicons.check :if={@status == :completed} class="size-icon-sm text-success" />
       <Lucideicons.contrast :if={@status == :in_progress} class="size-icon-sm text-primary" />
-    </span>
-    """
-  end
-
-  attr :id, :string, required: true
-  attr :class, :any, default: nil
-  attr :rest, :global
-
-  @doc """
-  The badge of an Incomplete TV Show, in a poster's corner: a TV Show in the Library with an
-  aired TV Show Episode without Media.
-  """
-  def incomplete_badge(assigns) do
-    ~H"""
-    <span
-      id={@id}
-      role="img"
-      aria-label={dgettext("contents", "Some episodes missing")}
-      title={dgettext("contents", "Some episodes missing")}
-      class={["grid size-7 place-items-center rounded-full bg-black/80", @class]}
-      {@rest}
-    >
-      <Lucideicons.download class="size-icon-sm text-accent" aria-hidden="true" />
     </span>
     """
   end

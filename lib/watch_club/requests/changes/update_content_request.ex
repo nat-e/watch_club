@@ -44,7 +44,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
       |> Enum.uniq()
       |> Enum.each(&update_content_request(&1, %{}))
 
-      if content_id, do: complete_content_request(content_id)
+      if content_id, do: complete_content_request!(content_id)
 
       {:ok, updated_media}
     end)
@@ -120,7 +120,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   end
 
   # Only a new Media can complete it
-  defp complete_content_request(content_id) do
+  defp complete_content_request!(content_id) do
     ContentRequest
     |> Ash.Query.filter(content_id == ^content_id)
     |> Ash.bulk_update!(:complete, %{},

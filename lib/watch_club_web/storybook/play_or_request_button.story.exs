@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       %VariationGroup{
         id: :play,
         description:
-          "Play, Resume, disabled while the next TV Show Episode has no Media, and with every episode, also when there's nothing to play",
+          "Play, Resume, disabled while the next TV Show Episode has no Media, and with every episode, also disabled",
         template: group_template(),
         variations: [
           %Variation{

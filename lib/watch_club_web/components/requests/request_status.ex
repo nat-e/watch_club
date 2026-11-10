@@ -77,6 +77,26 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   defp when_watchable(%ContentRequest{status: :failed}, _release_date, _locale),
     do: dgettext("requests", "There was a problem, the instance administrator was told")
 
+  # Once some of its TV Show Episodes have Media, how many. Nil for a Movie.
+  defp when_watchable(
+         %ContentRequest{
+           status: status,
+           aired_episodes_with_media_count: ready,
+           aired_episodes_count: aired
+         },
+         _release_date,
+         _locale
+       )
+       when status in [:downloading, :importing] and is_integer(ready) and ready > 0,
+       do:
+         dngettext(
+           "requests",
+           "%{ready} of %{count} episode ready",
+           "%{ready} of %{count} episodes ready",
+           aired,
+           ready: ready
+         )
+
   defp when_watchable(request, release_date, locale),
     do: status_words(request, release_date, locale)
 
@@ -84,29 +104,10 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   When a requested Content can be watched, in words that fit on one line. The release date is
   the Content's, for when it's not released yet.
   """
+  # Completed, its Content can only be out of the Library once its Media was deleted
   def status_words(%ContentRequest{status: status}, _release_date, _locale)
-      when status in [:importing, :searching],
+      when status in [:importing, :searching, :completed],
       do: ContentRequestStatus.translated_label(status)
-
-  # Once some of its TV Show Episodes have Media, how many, rather than how much is downloaded
-  def status_words(
-        %ContentRequest{
-          status: :downloading,
-          aired_episodes_with_media_count: ready,
-          aired_episodes_count: aired
-        },
-        _release_date,
-        _locale
-      )
-      when is_integer(ready) and ready > 0,
-      do:
-        dngettext(
-          "requests",
-          "%{ready} of %{count} episode ready",
-          "%{ready} of %{count} episodes ready",
-          aired,
-          ready: ready
-        )
 
   def status_words(%ContentRequest{status: :downloading} = request, _release_date, _locale),
     do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))

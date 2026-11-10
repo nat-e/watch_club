@@ -35,7 +35,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   attr :on_episodes, :any,
     default: nil,
     doc:
-      "the JS commands opening every TV Show Episode, from a caret joined to Play, or from Episodes when there's nothing to play"
+      "the JS commands opening every TV Show Episode, from a caret joined to Play while it's enabled"
 
   attr :size, :string,
     values: ~w(sm md lg),
@@ -56,7 +56,10 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   def play_or_request_button(%{variant: variant, has_media?: true} = assigns)
       when variant in ~w(round poster) do
     ~H"""
-    <span class={["flex rounded-full bg-canvas", @variant == "poster" && "shadow-overlay"]}>
+    <span class={[
+      "flex rounded-full has-disabled:bg-canvas",
+      @variant == "poster" && "shadow-overlay"
+    ]}>
       <.button
         id={"#{@id}-play-button"}
         variant="primary"
@@ -122,27 +125,9 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
-  # Nothing to play yet, such as an episode missing from the Library: every episode instead
-  def play_or_request_button(%{play_href: nil, on_episodes: on_episodes} = assigns)
-      when on_episodes != nil do
-    ~H"""
-    <.button
-      id={"#{@id}-episodes-button"}
-      size={@size}
-      variant="primary"
-      emphasis
-      phx-click={@on_episodes}
-      aria-haspopup="dialog"
-      class="w-full phx-click-loading:cursor-progress phx-click-loading:opacity-60"
-    >
-      <:icon><Lucideicons.list_video /></:icon>
-      {dgettext("contents", "Episodes")}
-    </.button>
-    """
-  end
-
   # Play with a caret opening every episode, under one glow so they read as one button
-  def play_or_request_button(%{on_episodes: on_episodes} = assigns) when on_episodes != nil do
+  def play_or_request_button(%{play_href: play_href, on_episodes: on_episodes} = assigns)
+      when play_href != nil and on_episodes != nil do
     ~H"""
     <.joined_buttons class="rounded-control shadow-glow">
       <.button
@@ -175,7 +160,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   # disabled
   def play_or_request_button(assigns) do
     ~H"""
-    <span class="flex w-full rounded-control bg-canvas">
+    <span class="flex w-full rounded-control has-disabled:bg-canvas">
       <.button
         id={"#{@id}-play-button"}
         size={@size}

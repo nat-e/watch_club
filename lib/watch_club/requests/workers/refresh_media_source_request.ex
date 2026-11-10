@@ -144,6 +144,8 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
           MediaSourceRequestStatus.t()
   defp series_status(episodes, queue) do
     aired_episodes = aired_regular_episodes(episodes)
+    aired_episode_ids = MapSet.new(aired_episodes, & &1.id)
+    queue = Enum.filter(queue, &MapSet.member?(aired_episode_ids, &1.episode_id))
 
     cond do
       # All aired episodes have been downloaded in Sonarr, but are not all

@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Storybook.PosterCard do
   use PhoenixStorybook.Story, :component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, Movie, MovieLocalization}
+  alias WatchClub.Contents.{Content, Movie, MovieLocalization, TvShow, TvShowLocalization}
   alias WatchClub.Conversations.Conversation
   alias WatchClubWeb.Components.Contents.{PlayOrRequestButton, PosterCard}
 
@@ -31,55 +31,49 @@ defmodule WatchClubWeb.Storybook.PosterCard do
         true,
         []
       ),
-      variation(
-        :incomplete,
-        "An Incomplete TV Show in progress: an aired TV Show Episode has no Media",
-        :in_progress,
-        false,
-        [],
-        true
-      )
+      %Variation{
+        id: :incomplete,
+        description: "An Incomplete TV Show in progress: an aired TV Show Episode has no Media",
+        attributes: %{content: incomplete_tv_show(), locale: :en_US},
+        slots: [play_slot(:incomplete)]
+      }
     ]
   end
 
-  defp variation(
-         id,
-         description,
-         progress_status,
-         ready_unseen,
-         recommenders,
-         incomplete? \\ false
-       ) do
+  defp variation(id, description, progress_status, ready_unseen, recommenders) do
     %Variation{
       id: id,
       description: description,
       attributes: %{
-        content: content(progress_status, recommenders, incomplete?),
+        content: content(id, progress_status, recommenders),
         locale: :en_US,
         ready_unseen: ready_unseen
       },
-      slots: [
-        """
-        <:action>
-          <.play_or_request_button
-            id="play-#{id}"
-            variant="poster"
-            has_media?={true}
-            play_href="#"
-            play_label="Play"
-            title="Dune"
-          />
-        </:action>
-        """
-      ]
+      slots: [play_slot(id)]
     }
   end
 
-  defp content(progress_status, recommenders, incomplete?) do
+  defp play_slot(id) do
+    """
+    <:action>
+      <.play_or_request_button
+        id="play-#{id}"
+        variant="poster"
+        has_media?={true}
+        play_href="#"
+        play_label="Play"
+        title="Dune"
+      />
+    </:action>
+    """
+  end
+
+  # Each its own id, so the badges' ids don't repeat on the page
+  defp content(id, progress_status, recommenders) do
     %Content{
-      id: "dune",
+      id: "dune-#{id}",
       type: :movie,
-      incomplete?: incomplete?,
+      incomplete?: false,
       external_id_source: :tmdb,
       external_id: "438631",
       rating: 7.8,
@@ -94,6 +88,27 @@ defmodule WatchClubWeb.Storybook.PosterCard do
         best_localization: %MovieLocalization{
           title: "Dune",
           poster_path: "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
+        }
+      }
+    }
+  end
+
+  defp incomplete_tv_show do
+    %Content{
+      id: "silo",
+      type: :tv_show,
+      incomplete?: true,
+      external_id_source: :tmdb,
+      external_id: "125988",
+      rating: 8.1,
+      original_language: "en",
+      release_date: ~D[2023-05-04],
+      actor_progress_status: :in_progress,
+      actor_recommendations: [],
+      implementation: %TvShow{
+        best_localization: %TvShowLocalization{
+          title: "Silo",
+          poster_path: "/r2QXomqKjkKHVtYGGtkf2l2Y7go.jpg"
         }
       }
     }

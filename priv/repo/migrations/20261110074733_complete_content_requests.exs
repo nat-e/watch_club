@@ -13,11 +13,19 @@ defmodule WatchClub.Repo.Migrations.CompleteContentRequests do
     end
 
     # Completes the Content Requests whose Content has Media for every aired part: the Movie, or
-    # every aired TV Show Episode
+    # every aired TV Show Episode of a TV Show that has aired
     execute("""
     UPDATE content_requests AS request
     SET is_completed = true
     WHERE EXISTS (SELECT 1 FROM media WHERE media.content_id = request.content_id)
+      AND (
+        NOT EXISTS (SELECT 1 FROM tv_shows WHERE tv_shows.id = request.content_id)
+        OR EXISTS (
+          SELECT 1
+          FROM tv_show_episodes AS episode
+          WHERE episode.tv_show_id = request.content_id AND episode.air_date <= current_date
+        )
+      )
       AND NOT EXISTS (
         SELECT 1
         FROM tv_show_episodes AS episode

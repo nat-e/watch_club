@@ -209,7 +209,7 @@ defmodule WatchClubWeb.HomePage do
       )
 
     requests =
-      Requests.list_current_user_completed_requests!(
+      Requests.list_current_user_completed_requests_in_library!(
         load: request_load(),
         query: [limit: @for_you_limit],
         actor: user

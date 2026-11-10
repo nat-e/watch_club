@@ -151,7 +151,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
     test "a TV Show is Completed only once every aired TV Show Episode has Media" do
       user = generate(user())
       show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
-      [episode1, episode2] = episodes(show)
+      [episode1, episode2] = episodes!(show)
       request = Requests.request_content!(ContentIdentity.from_content(show), actor: user)
 
       MediaCatalog.create_or_update_video!(media_episode_input(episode1.id),
@@ -172,7 +172,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
     test "a TV Show stays Completed, and seen, when a new TV Show Episode airs" do
       user = generate(user())
       show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
-      [episode] = episodes(show)
+      [episode] = episodes!(show)
       request = Requests.request_content!(ContentIdentity.from_content(show), actor: user)
 
       MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
@@ -253,7 +253,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       user = generate(user())
       show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
 
-      [episode1, episode2] = episodes(show)
+      [episode1, episode2] = episodes!(show)
 
       # Request the show
       %ContentRequest{
@@ -372,7 +372,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
     end
   end
 
-  defp episodes(show) do
+  defp episodes!(show) do
     Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false).implementation.episodes
   end
 end

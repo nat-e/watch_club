@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   import WatchClubWeb.Components.Contents.TmdbBackdrop
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
-  import WatchClubWeb.Components.Contents.PosterCard, only: [incomplete_badge: 1]
+  import WatchClubWeb.Components.Contents.IncompleteBadge
   import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Conversations.{Recipients, RecommendationText}
   import WatchClubWeb.Components.Medias.DownloadMenu

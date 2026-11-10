@@ -97,6 +97,18 @@ defmodule WatchClub.Requests.ContentRequest do
       end
     end
 
+    read :completed_in_library_for_current_user do
+      description "The actor's Completed Content Requests whose Content is in the Library, the latest added first."
+      filter expr(actor_subscriber? and completed? and content.has_media?)
+
+      prepare fn query, _context ->
+        Ash.Query.sort(query, [
+          {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
+          {:id, :desc}
+        ])
+      end
+    end
+
     read :on_the_way_for_current_user do
       description "The actor's Content Requests that aren't Completed yet, the most recently changed first."
       filter expr(actor_subscriber? and not completed?)

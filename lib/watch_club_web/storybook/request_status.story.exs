@@ -18,7 +18,8 @@ defmodule WatchClubWeb.Storybook.RequestStatus do
     [
       %VariationGroup{
         id: :statuses,
-        description: "Every Content Request Status before the Content can be watched",
+        description:
+          "Every Content Request Status, the TV Show Episodes with Media while it downloads or imports, and Completed once its Media was deleted",
         variations: [
           variation(:searching, %ContentRequest{status: :searching}),
           variation(:downloading, %ContentRequest{status: :downloading, download_progress: 40.0}),
@@ -32,7 +33,8 @@ defmodule WatchClubWeb.Storybook.RequestStatus do
           variation(:out_on, %ContentRequest{status: :not_released}, ~D[2099-03-12]),
           variation(:not_released, %ContentRequest{status: :not_released}),
           variation(:not_found, %ContentRequest{status: :not_found}),
-          variation(:failed, %ContentRequest{status: :failed})
+          variation(:failed, %ContentRequest{status: :failed}),
+          variation(:completed, %ContentRequest{status: :completed})
         ]
       }
     ]
