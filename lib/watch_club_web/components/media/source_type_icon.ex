@@ -43,7 +43,7 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   end
 
   # Sportarr's logo is a bitmap: its SVG is a 200 KB trace
-  defp logo_path(:sportarr), do: "/images/source_types/sportarr.png"
+  defp logo_path(:sportarr), do: "/images/source_types/sportarr.webp"
   defp logo_path(type), do: "/images/source_types/#{type}.svg"
 
   defp box_classes("header"), do: "size-control-md"
