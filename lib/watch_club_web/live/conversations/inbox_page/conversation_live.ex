@@ -415,23 +415,23 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     [
       Time.maybe_year(content.release_date),
       ContentType.translated_label(content.type),
-      length_label(content, locale)
+      detail_label(content, locale)
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.join(" · ")
   end
 
-  defp length_label(%Content{type: :movie, implementation: movie}, locale),
+  # The length of a Movie, the seasons of a TV Show, or the league of a Sports Event
+  defp detail_label(%Content{type: :movie, implementation: movie}, locale),
     do: Time.minutes(movie.best_localization.runtime, locale)
 
-  # Like a length, the league of a Sports Event
-  defp length_label(%Content{type: :sports_event, implementation: event}, _locale),
+  defp detail_label(%Content{type: :sports_event, implementation: event}, _locale),
     do: event.league_name
 
-  defp length_label(%Content{type: :tv_show, implementation: %{season_count: 0}}, _locale),
+  defp detail_label(%Content{type: :tv_show, implementation: %{season_count: 0}}, _locale),
     do: nil
 
-  defp length_label(%Content{type: :tv_show, implementation: tv_show}, _locale),
+  defp detail_label(%Content{type: :tv_show, implementation: tv_show}, _locale),
     do:
       dngettext("contents", "%{count} season", "%{count} seasons", tv_show.season_count,
         count: tv_show.season_count

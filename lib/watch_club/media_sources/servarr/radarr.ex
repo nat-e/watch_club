@@ -11,7 +11,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrMovieFileDeleteWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrRenameWebhookEvent
-  alias WatchClub.Integrations.Servarr.Webhook
+  alias WatchClub.Integrations.Servarr.{Client, Webhook}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
   alias WatchClub.MediaSources.Servarr
@@ -50,7 +50,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   # root folder and quality profile. Ingestion still probes the files: Radarr's
   # `mediaInfo` lacks the per-stream detail the Player needs.
   @impl true
-  def scan(%Servarr{} = servarr) do
+  def scan!(%Servarr{} = servarr) do
     Logger.info("Fetch movies from Radarr", event: :radarr_fetch_started)
 
     movies = RadarrApi.list_movies!(servarr.base_url, servarr.api_key)
@@ -79,7 +79,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   end
 
   @impl true
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "Download"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "Download"} = params) do
     event = RadarrDownloadWebhookEvent.from_api(params)
 
     ingest =
@@ -98,7 +98,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
     ingest ++ refresh_request(params)
   end
 
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "MovieFileDelete"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "MovieFileDelete"} = params) do
     event = RadarrMovieFileDeleteWebhookEvent.from_api(params)
 
     remove =
@@ -110,16 +110,16 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
     remove ++ refresh_request(params)
   end
 
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "Rename"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "Rename"} = params) do
     event = RadarrRenameWebhookEvent.from_api(params)
     App.relocations(servarr, event.folder_path, event.renamed_files)
   end
 
-  def interpret_webhook(_servarr, %{"eventType" => "MovieDelete", "movie" => %{"id" => id}}),
+  def interpret_webhook!(_servarr, %{"eventType" => "MovieDelete", "movie" => %{"id" => id}}),
     do: [{:forget_request, id}]
 
   # Any other event about a movie (Grab, ManualInteractionRequired…) refreshes its request.
-  def interpret_webhook(_servarr, params), do: refresh_request(params)
+  def interpret_webhook!(_servarr, params), do: refresh_request(params)
 
   defp refresh_request(%{"movie" => %{"id" => id}}), do: [{:refresh_request, id}]
   defp refresh_request(_params), do: []
@@ -133,7 +133,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   end
 
   @impl true
-  def submit_request(%Servarr{} = servarr, %Content{external_id: external_id} = content) do
+  def submit_request!(%Servarr{} = servarr, %Content{external_id: external_id} = content) do
     tmdb_id = String.to_integer(external_id)
 
     case RadarrApi.get_movie(servarr.base_url, servarr.api_key, tmdb_id) do
@@ -156,10 +156,19 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   end
 
   @impl true
-  def request_state(%Servarr{} = servarr, movie_id) do
+  def request_state!(%Servarr{} = servarr, movie_id) do
     movie = RadarrApi.get_movie_by_id!(servarr.base_url, servarr.api_key, movie_id)
     queue = RadarrApi.queue_details!(servarr.base_url, servarr.api_key, movie_id)
-    {status(movie, queue), progress(movie, queue)}
+    status = status(movie, queue)
+
+    # The app only pulls progress from the download client every minute or so, so
+    # nudge it while downloading for the next poll to be current. Best-effort: the
+    # command is async, coalesced by the server, and never raises.
+    if status == :downloading do
+      Client.refresh_monitored_downloads(servarr.base_url, servarr.api_key)
+    end
+
+    {status, progress(movie, queue)}
   end
 
   defp status(%Movie{} = movie, queue) do

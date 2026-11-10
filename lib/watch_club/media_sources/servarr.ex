@@ -82,6 +82,15 @@ defmodule WatchClub.MediaSources.Servarr do
 
       change ScheduleWebhookDeletion
     end
+
+    action :handle_webhook do
+      description "Carries out a webhook from the Servarr app: imports, removes or moves Media, and refreshes or forgets Media Source Requests"
+
+      argument :servarr, :struct, allow_nil?: false, constraints: [instance_of: __MODULE__]
+      argument :payload, :map, allow_nil?: false
+
+      run WatchClub.MediaSources.Servarr.Actions.HandleWebhook
+    end
   end
 
   policies do
@@ -100,6 +109,11 @@ defmodule WatchClub.MediaSources.Servarr do
     policy action([:create, :update, :destroy]) do
       description "Only the Instance Administrator can write Servarr directly"
       authorize_if actor_attribute_equals(:administrator?, true)
+    end
+
+    policy action(:handle_webhook) do
+      description "Only the system actor carries out the webhooks the server checked"
+      authorize_if WatchClub.Checks.IsSystemActor
     end
   end
 

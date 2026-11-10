@@ -129,6 +129,15 @@ defmodule WatchClubWeb.Helpers.Url do
   end
 
   @doc """
+  The URL of a Content's image at a TMDB size: a TMDB image path, or the image URL of
+  a Sports Event, which has a single size.
+  """
+  def content_image("http" <> _ = url, _size), do: url
+
+  def content_image(path, size),
+    do: "https://image.tmdb.org/t/p/#{size}/#{String.trim_leading(path, "/")}"
+
+  @doc """
   The Content page of a Movie or a TV Show, from its `Content` or its `ContentIdentity`.
   """
   def content_details_link(%{type: :movie, external_id: id}), do: ~p"/movies/#{id}"

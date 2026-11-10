@@ -147,7 +147,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         <div class="flex items-center gap-related max-md:group-data-open/combo:h-(--wc-app-bar-height) max-md:group-data-open/combo:shrink-0 max-md:group-data-open/combo:px-page">
           <div class="relative max-md:min-w-0 max-md:flex-1">
             <label for={"#{@id}-input"} class="sr-only">
-              {dgettext("search", "Search movies and TV shows")}
+              {dgettext("search", "Search")}
             </label>
             <Lucideicons.search class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle max-md:group-data-open/combo:hidden" />
             <span class="absolute top-1/2 left-1 z-10 hidden -translate-y-1/2 max-md:group-data-open/combo:block">

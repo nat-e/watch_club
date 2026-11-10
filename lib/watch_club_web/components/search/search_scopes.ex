@@ -20,7 +20,11 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
   def search_scopes(assigns) do
     ~H"""
     <div id={@id} class={["flex flex-wrap items-center gap-related", @class]}>
-      <div role="radiogroup" aria-label={dgettext("search", "Search in")} class="contents">
+      <div
+        role="radiogroup"
+        aria-label={dgettext("search", "Search in")}
+        class="flex flex-wrap items-center gap-related"
+      >
         <.filter_chip
           :for={scope <- SearchContentType.values()}
           id={"#{@id}-#{scope}"}

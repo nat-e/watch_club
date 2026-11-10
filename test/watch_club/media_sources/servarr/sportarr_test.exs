@@ -54,7 +54,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
 
   defp file(path), do: %{"filePath" => path, "exists" => true}
 
-  describe "scan/1" do
+  describe "scan!/1" do
     test "emits one Candidate per file under the root folder, with the event's Sportarr ID" do
       stub_sportarr(%{
         {"GET", "/api/leagues"} => [%{"id" => 1, "externalId" => "lg-000079"}],
@@ -81,11 +81,11 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
                  identity: %SportsEventIdentity{sportarr_id: "ev-028133"}
                },
                %Candidate{path: "/data/sports/UFC/Season 2025/UFC 311 Main Card.mkv"}
-             ] = Sportarr.scan(@servarr)
+             ] = Sportarr.scan!(@servarr)
     end
   end
 
-  describe "interpret_webhook/2" do
+  describe "interpret_webhook!/2" do
     test "imports a downloaded file and refreshes its request" do
       assert [
                {:ingest,
@@ -97,7 +97,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
                 ]},
                {:refresh_request, 60}
              ] =
-               Sportarr.interpret_webhook(@servarr, %{
+               Sportarr.interpret_webhook!(@servarr, %{
                  "eventType" => "Download",
                  "series" => %{"id" => 60, "externalId" => "ev-028133", "tsdbId" => "2179600"},
                  "episodeFile" => %{"path" => "/sports/UFC/UFC 311.mkv"}
@@ -106,7 +106,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
 
     test "removes the deleted files' Media" do
       assert [{:remove_media, "/data/sports/UFC/UFC 311.mkv"}, {:refresh_request, 60}] =
-               Sportarr.interpret_webhook(@servarr, %{
+               Sportarr.interpret_webhook!(@servarr, %{
                  "eventType" => "EpisodeFileDelete",
                  "series" => %{"id" => 60, "externalId" => "ev-028133"},
                  "deletedFiles" => [%{"path" => "/sports/UFC/UFC 311.mkv"}]
@@ -122,7 +122,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
                {:ingest, [%Candidate{path: "/data/sports/UFC/UFC 311 (2025).mkv"}]},
                {:remove_missing_media, identity}
              ] =
-               Sportarr.interpret_webhook(@servarr, %{
+               Sportarr.interpret_webhook!(@servarr, %{
                  "eventType" => "Rename",
                  "series" => %{"id" => 60, "externalId" => "ev-028133"}
                })
@@ -132,14 +132,14 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
 
     test "forgets the request of a deleted event" do
       assert [{:forget_request, 60}] =
-               Sportarr.interpret_webhook(@servarr, %{
+               Sportarr.interpret_webhook!(@servarr, %{
                  "eventType" => "SeriesDelete",
                  "series" => %{"id" => 60}
                })
     end
   end
 
-  describe "submit_request/2" do
+  describe "submit_request!/2" do
     setup do
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
         Req.Test.json(conn, %{
@@ -189,7 +189,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         end
       })
 
-      assert {:ok, 60} = Sportarr.submit_request(@servarr, content)
+      assert {:ok, 60} = Sportarr.submit_request!(@servarr, content)
     end
 
     test "follows and searches the event Sportarr already has", %{content: content} do
@@ -208,13 +208,13 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         end
       })
 
-      assert {:ok, 60} = Sportarr.submit_request(@servarr, content)
+      assert {:ok, 60} = Sportarr.submit_request!(@servarr, content)
       assert_received {:updated, %{"monitored" => true}}
       assert_received :searched
     end
   end
 
-  describe "request_state/2" do
+  describe "request_state!/2" do
     test "is downloading with the progress of the event's download" do
       stub_sportarr(%{
         {"GET", "/api/events/60"} => event(%{}),
@@ -224,7 +224,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         ]
       })
 
-      assert {:downloading, 42.5} = Sportarr.request_state(@servarr, 60)
+      assert {:downloading, 42.5} = Sportarr.request_state!(@servarr, 60)
     end
 
     test "is downloaded once Sportarr has the event's files" do
@@ -233,7 +233,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         {"GET", "/api/queue"} => []
       })
 
-      assert {:downloaded, 100.0} = Sportarr.request_state(@servarr, 60)
+      assert {:downloaded, 100.0} = Sportarr.request_state!(@servarr, 60)
     end
 
     test "is not released before the event" do
@@ -242,7 +242,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         {"GET", "/api/queue"} => []
       })
 
-      assert {:not_released, +0.0} = Sportarr.request_state(@servarr, 60)
+      assert {:not_released, +0.0} = Sportarr.request_state!(@servarr, 60)
     end
 
     test "needs attention when its download failed" do
@@ -251,7 +251,7 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         {"GET", "/api/queue"} => [%{"eventId" => 60, "status" => 4, "progress" => 10}]
       })
 
-      assert {:needs_attention, 10.0} = Sportarr.request_state(@servarr, 60)
+      assert {:needs_attention, 10.0} = Sportarr.request_state!(@servarr, 60)
     end
   end
 end

@@ -58,7 +58,7 @@ defmodule WatchClub.Contents.ContentTest do
                external_id_source: :sportarr,
                external_id: "ev-1",
                original_title: "UFC 1 Silva vs Jones",
-               original_language: "en",
+               original_language: nil,
                origin_country: "US",
                release_date: ~D[2025-01-19],
                genres: [],

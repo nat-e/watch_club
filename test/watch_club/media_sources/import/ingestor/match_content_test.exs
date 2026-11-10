@@ -503,6 +503,32 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert matched_id == event.id
     end
 
+    test "doesn't match a Sports Event when the title matches several events of its year" do
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+        Req.Test.json(conn, %{
+          "data" => %{
+            "search" => [
+              %{
+                "idEvent" => "ev-1",
+                "strEvent" => "70th Anniversary - Race",
+                "dateEvent" => "2020-08-09"
+              },
+              %{
+                "idEvent" => "ev-2",
+                "strEvent" => "70th Anniversary - Qualifying",
+                "dateEvent" => "2020-08-08"
+              }
+            ]
+          }
+        })
+      end)
+
+      assert %Candidate{match_result: %MatchResult{result: :not_matched}} =
+               MatchContent.apply!(
+                 candidate_with(%SportsEventIdentity{title: "Formula 1", year: 2020})
+               )
+    end
+
     test "doesn't match a Sports Event by a single word of its title" do
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
         assert URI.decode(conn.request_path) == "/api/v2/json/search/event/UFC Prelims"

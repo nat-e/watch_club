@@ -38,19 +38,19 @@ defmodule WatchClub.MediaSources.Servarr.App do
   @callback webhook_notification(Webhook.config()) :: map()
 
   @doc "Every downloaded file of the source, as Candidates with local paths."
-  @callback scan(Servarr.t()) :: [Candidate.t()]
+  @callback scan!(Servarr.t()) :: [Candidate.t()]
 
   @doc "Translates a webhook payload into the actions WatchClub takes."
-  @callback interpret_webhook(Servarr.t(), payload :: map()) :: [webhook_action()]
+  @callback interpret_webhook!(Servarr.t(), payload :: map()) :: [webhook_action()]
 
   @doc """
   Asks the app to download a Content, adding it when missing. Returns the app's
   id of the resource, or `:unavailable` when the app can't manage this Content.
   """
-  @callback submit_request(Servarr.t(), Content.t()) :: {:ok, integer()} | :unavailable
+  @callback submit_request!(Servarr.t(), Content.t()) :: {:ok, integer()} | :unavailable
 
   @doc "The status and download progress, from 0 to 100, of a requested resource."
-  @callback request_state(Servarr.t(), resource_id :: integer()) ::
+  @callback request_state!(Servarr.t(), resource_id :: integer()) ::
               {MediaSourceRequestStatus.t(), float()}
 
   @doc """

@@ -7,7 +7,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
 
   alias WatchClub.Contents.Content
   alias WatchClub.Contents.TvShow
-  alias WatchClub.Integrations.Servarr.Webhook
+  alias WatchClub.Integrations.Servarr.{Client, Webhook}
   alias WatchClub.Integrations.Sonarr, as: SonarrApi
   alias WatchClub.Integrations.Sonarr.{Episode, QueueResource, Series}
   alias WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent
@@ -50,7 +50,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   # Lists the series under this source's root folder and quality profile, then
   # their downloaded episodes.
   @impl true
-  def scan(%Servarr{} = servarr) do
+  def scan!(%Servarr{} = servarr) do
     Logger.info("Fetch series from Sonarr", event: :sonarr_fetch_started)
 
     series = SonarrApi.list_series!(servarr.base_url, servarr.api_key)
@@ -102,7 +102,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   end
 
   @impl true
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "Download"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "Download"} = params) do
     event = SonarrDownloadWebhookEvent.from_api(params)
 
     ingest =
@@ -125,7 +125,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
     ingest ++ refresh_request(params)
   end
 
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "EpisodeFileDelete"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "EpisodeFileDelete"} = params) do
     event = SonarrEpisodeFileDeleteWebhookEvent.from_api(params)
 
     remove =
@@ -137,16 +137,16 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
     remove ++ refresh_request(params)
   end
 
-  def interpret_webhook(%Servarr{} = servarr, %{"eventType" => "Rename"} = params) do
+  def interpret_webhook!(%Servarr{} = servarr, %{"eventType" => "Rename"} = params) do
     event = SonarrRenameWebhookEvent.from_api(params)
     App.relocations(servarr, event.series_path, event.renamed_files)
   end
 
-  def interpret_webhook(_servarr, %{"eventType" => "SeriesDelete", "series" => %{"id" => id}}),
+  def interpret_webhook!(_servarr, %{"eventType" => "SeriesDelete", "series" => %{"id" => id}}),
     do: [{:forget_request, id}]
 
   # Any other event about a series (Grab, ManualInteractionRequired…) refreshes its request.
-  def interpret_webhook(_servarr, params), do: refresh_request(params)
+  def interpret_webhook!(_servarr, params), do: refresh_request(params)
 
   defp refresh_request(%{"series" => %{"id" => id}}), do: [{:refresh_request, id}]
   defp refresh_request(_params), do: []
@@ -168,7 +168,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   end
 
   @impl true
-  def submit_request(%Servarr{} = servarr, %Content{
+  def submit_request!(%Servarr{} = servarr, %Content{
         original_title: original_title,
         implementation: %TvShow{tvdb_id: tvdb_id}
       }) do
@@ -214,10 +214,19 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   defp resolve_tvdb_id(_servarr, tvdb_id, _title), do: {:ok, tvdb_id}
 
   @impl true
-  def request_state(%Servarr{} = servarr, series_id) do
+  def request_state!(%Servarr{} = servarr, series_id) do
     episodes = SonarrApi.list_episodes!(servarr.base_url, servarr.api_key, series_id)
     queue = SonarrApi.queue_details!(servarr.base_url, servarr.api_key, series_id)
-    {status(episodes, queue), progress(episodes, queue)}
+    status = status(episodes, queue)
+
+    # The app only pulls progress from the download client every minute or so, so
+    # nudge it while downloading for the next poll to be current. Best-effort: the
+    # command is async, coalesced by the server, and never raises.
+    if status == :downloading do
+      Client.refresh_monitored_downloads(servarr.base_url, servarr.api_key)
+    end
+
+    {status, progress(episodes, queue)}
   end
 
   defp status(episodes, queue) do

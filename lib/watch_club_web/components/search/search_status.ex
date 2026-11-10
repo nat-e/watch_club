@@ -36,7 +36,7 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
   defp status_body(%{status: :idle} = assigns) do
     ~H"""
     <p id={@id} class={["p-group text-center text-sm text-text-muted", @class]}>
-      {dgettext("search", "Search movies and TV shows by title.")}
+      {dgettext("search", "Search by title.")}
     </p>
     """
   end

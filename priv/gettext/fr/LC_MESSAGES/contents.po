@@ -388,3 +388,15 @@ msgstr "Reprendre %{episode} sur la TV"
 #, elixir-autogen, elixir-format
 msgid "Resume on TV"
 msgstr "Reprendre sur la TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Less"
+msgstr "Moins"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr "Plus"

@@ -19,6 +19,7 @@ defmodule WatchClub.MediaSources do
 
     resource WatchClub.MediaSources.Servarr do
       define :update_servarr_media_source, action: :update
+      define :handle_servarr_webhook, action: :handle_webhook, args: [:servarr, :payload]
     end
 
     resource WatchClub.MediaSources.Import do

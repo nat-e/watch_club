@@ -199,7 +199,7 @@ defmodule WatchClub.Generator do
         external_id_source: :sportarr,
         external_id: sequence(:sportarr_event_id, &"ev-#{&1}"),
         original_title: sequence(:sports_event_title, &"UFC #{&1}"),
-        original_language: "en",
+        original_language: nil,
         origin_country: "US",
         release_date: opts[:release_date] || ~D[2025-01-18],
         metadata_refreshed_at: DateTime.utc_now()

@@ -188,12 +188,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
               <.badge variant="secondary" size="sm">{Genre.translated_label(genre)}</.badge>
             </li>
           </ul>
-          <p
+          <.overview
             :if={localization(@content).overview not in [nil, ""]}
-            class="max-w-readable text-text-muted @max-3xl:line-clamp-3"
-          >
-            {localization(@content).overview}
-          </p>
+            text={localization(@content).overview}
+            lang={if @content.type == :sports_event, do: "en"}
+          />
           <.actions
             content={@content}
             content_identity={@content_identity}
@@ -203,6 +202,36 @@ defmodule WatchClubWeb.Contents.ContentPage do
         </div>
       </div>
     </header>
+    """
+  end
+
+  attr :text, :string, required: true
+  attr :lang, :string, default: nil, doc: "set when it isn't in the User's language"
+
+  # Clamped to a few lines, with More to read a long one whole, such as a Sports Event's
+  defp overview(assigns) do
+    ~H"""
+    <div class="flex max-w-readable flex-col items-center gap-tight @3xl:items-start">
+      <p id="content-overview" lang={@lang} class="text-text-muted line-clamp-3 @3xl:line-clamp-5">
+        {@text}
+      </p>
+      <.button
+        :if={String.length(@text) > 300}
+        id="content-overview-toggle"
+        variant="ghost"
+        size="sm"
+        aria-controls="content-overview"
+        aria-expanded="false"
+        phx-click={
+          JS.toggle_class("line-clamp-3 @3xl:line-clamp-5", to: "#content-overview")
+          |> JS.toggle(to: "#content-overview-toggle [data-label]", display: "inline")
+          |> JS.toggle_attribute({"aria-expanded", "true", "false"})
+        }
+      >
+        <span data-label>{dgettext("contents", "More")}</span>
+        <span data-label class="hidden">{dgettext("contents", "Less")}</span>
+      </.button>
+    </div>
     """
   end
 
@@ -233,7 +262,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         >
           {Languages.to_flag(@content.original_language)}
         </span>
-        {Time.maybe_year(@content.release_date)}
+        {release_label(@content, @locale)}
       </span>
       <span aria-hidden="true">·</span>
       <span>{ContentType.translated_label(@content_identity.type)}</span>
@@ -876,6 +905,12 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp season_numbers(%Content{type: :tv_show, implementation: show}), do: show.season_numbers
   defp season_numbers(%Content{}), do: []
+
+  # When it came out: the year, or the day of a Sports Event
+  defp release_label(%Content{type: :sports_event, release_date: %Date{} = date}, locale),
+    do: Time.long_date(date, locale)
+
+  defp release_label(content, _locale), do: Time.maybe_year(content.release_date)
 
   # The length of a Movie, the seasons of a TV Show, or the league of a Sports Event
   defp detail_label(%Content{type: :movie} = content, locale),

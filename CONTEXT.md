@@ -531,7 +531,7 @@ _Avoid_: Group, aggregate, card, item
 - Every **User** sees every **Content Request**, who made it, and its **Content Request Status**
 - **Request Content** may create the **Content** entity from a **Metadata Provider** when no matching **Content** exists in WatchClub yet, before creating the **Content Request**, the same way **Add to Playlist** may create missing **Content**
 - A **Content** can exist in WatchClub with no **Media**, referenced only by **Content Requests** or **Playlists**
-- **Request Content** currently creates a **Content Request** only for **Movies** and **TV Shows**; **Book** requests are not yet supported (no request-capable **Book** **Media Source** exists — that is the planned `chaptarr` — and the action rejects **Book** content). The **Book**-to-**Ebook**+**Audiobook** fan-out describes the intended design for when `chaptarr` lands, not current behaviour
+- **Request Content** currently creates a **Content Request** only for **Movies**, **TV Shows** and **Sports Events**; **Book** requests are not yet supported (no request-capable **Book** **Media Source** exists — that is the planned `chaptarr` — and the action rejects **Book** content). The **Book**-to-**Ebook**+**Audiobook** fan-out describes the intended design for when `chaptarr` lands, not current behaviour
 - Deleting a **User** keeps their **Content Requests**, shown as from a deleted **User**
 - Adding or removing a request-capable **Media Source** does not create or remove **Content Requests**, and does not backfill **Media Source Requests** for existing **Content Requests**
 

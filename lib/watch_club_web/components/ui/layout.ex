@@ -121,18 +121,21 @@ defmodule WatchClubWeb.Components.UI.Layout do
     ~H"""
     <div
       data-slot="page"
-      class={[
-        "mx-auto grid w-full px-page py-page-y",
-        @width == "readable" && "max-w-readable",
-        @width == "panel" && "max-w-panel",
-        @width == "page" && "max-w-layout-page",
-        @space == "tight" && "gap-tight",
-        @space == "related" && "gap-related",
-        @space == "group" && "gap-group",
-        @space == "cluster" && "gap-cluster",
-        @space == "section" && "gap-section",
-        @class
-      ]}
+      class={
+        [
+          # One column, so a long line of text can't widen the page past the screen
+          "mx-auto grid w-full grid-cols-1 px-page py-page-y",
+          @width == "readable" && "max-w-readable",
+          @width == "panel" && "max-w-panel",
+          @width == "page" && "max-w-layout-page",
+          @space == "tight" && "gap-tight",
+          @space == "related" && "gap-related",
+          @space == "group" && "gap-group",
+          @space == "cluster" && "gap-cluster",
+          @space == "section" && "gap-section",
+          @class
+        ]
+      }
       {@rest}
     >
       {render_slot(@inner_block)}

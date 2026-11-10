@@ -25,6 +25,8 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
   """
   use WatchClubWeb, :live_component
 
+  import WatchClubWeb.Components.Media.SourceTypeIcon
+
   alias AshPhoenix.Form
   alias WatchClub.MediaSources.Servarr.{Flavor, Wizard}
   alias WatchClubWeb.Endpoint
@@ -73,11 +75,7 @@ defmodule WatchClubWeb.Admin.MediaSources.AddServarrSourceModal do
       <.modal id="add-servarr-source-modal" size="lg" on_close={JS.push("close", target: @myself)}>
         <:title>
           <span class="inline-flex items-center gap-related">
-            <img
-              src={"/images/source_types/#{@flavor}.svg"}
-              alt={"#{app_name(@flavor)} logo"}
-              class="size-icon"
-            />
+            <.source_type_icon type={@flavor} size="title" />
             {title(assigns)}
           </span>
         </:title>

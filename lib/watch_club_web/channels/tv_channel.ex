@@ -16,7 +16,7 @@ defmodule WatchClubWeb.TvChannel do
   alias Ash.Notifier.Notification
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
-  alias WatchClubWeb.Helpers.{NowPlaying, PlaybackPaths}
+  alias WatchClubWeb.Helpers.{NowPlaying, PlaybackPaths, Url}
 
   @impl true
   def join("tv", _params, socket) do
@@ -173,7 +173,5 @@ defmodule WatchClubWeb.TvChannel do
   end
 
   defp image_url(nil), do: nil
-  # A Sports Event's image is already a URL
-  defp image_url("http" <> _ = url), do: url
-  defp image_url(path), do: "https://image.tmdb.org/t/p/w1280#{path}"
+  defp image_url(path), do: Url.content_image(path, "w1280")
 end

@@ -191,16 +191,18 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   defp find_content!(_identity), do: nil
 
   # sportarr.net only finds a title's exact words, but file names add words such as
-  # "Prelims". Drops the last word until an event matches, keeping two words at least
-  # so "UFC" alone doesn't match any UFC event.
+  # "Prelims". Drops the last word until events match, and keeps the match only when
+  # it is a single event of that year: shorter titles, such as "Formula 1", match
+  # other events. Two words at least, so "UFC" alone doesn't match any UFC event.
   defp search_sports_event!(words, _year) when length(words) < 2, do: nil
 
   defp search_sports_event!(words, year) do
     {:ok, events} = SportarrHub.search_events(Enum.join(words, " "))
 
     case Enum.filter(events, &(is_nil(year) or (&1.date && &1.date.year == year))) do
-      [event | _] -> event
+      [event] -> event
       [] -> search_sports_event!(Enum.drop(words, -1), year)
+      _ambiguous -> nil
     end
   end
 

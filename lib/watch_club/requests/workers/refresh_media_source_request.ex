@@ -1,7 +1,7 @@
 defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
   @moduledoc """
   Asks the source's app for the status of a Media Source Request, see
-  `WatchClub.MediaSources.Servarr.App.request_state/2`.
+  `WatchClub.MediaSources.Servarr.App.request_state!/2`.
 
   This will recompute the status and progress of the MSR, and update it.
 
@@ -22,7 +22,6 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
       period: :infinity
     ]
 
-  alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Servarr.Flavor
   alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.SystemActor
@@ -49,7 +48,7 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
     servarr = request.media_source.implementation
 
     {status, progress} =
-      Flavor.app(servarr.flavor).request_state(servarr, request.external_resource_id)
+      Flavor.app(servarr.flavor).request_state!(servarr, request.external_resource_id)
 
     status_changed? = status != request.status
     progress_changed? = round(progress) != round(request.download_progress)
@@ -87,14 +86,6 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
       # If the request is "active", re-schedule a refresh in 5 seconds
       status in [:searching, :downloading] ->
-        # Radarr/Sonarr only pull progress from the download client on their own
-        # ~1 min schedule, so a 10s poll just re-reads stale bytes. While
-        # downloading, nudge the *arr to refresh now so the next poll is current.
-        # Best-effort: the command is async, server-coalesced, and never raises.
-        if status == :downloading do
-          Client.refresh_monitored_downloads(servarr.base_url, servarr.api_key)
-        end
-
         {:snooze, 10}
 
       # Downloaded — stop refreshing.

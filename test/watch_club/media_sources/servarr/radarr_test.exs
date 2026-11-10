@@ -54,11 +54,11 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
     )
   end
 
-  describe "scan/1" do
+  describe "scan!/1" do
     test "emits a candidate with Radarr identity and a locally-mapped path" do
       stub_movies([movie(%{})])
 
-      assert [candidate] = Radarr.scan(servarr())
+      assert [candidate] = Radarr.scan!(servarr())
 
       assert %Candidate{
                path: "/data/movies/Star Wars (1977)/movie.mkv",
@@ -74,7 +74,7 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
     test "uses the Radarr path verbatim when there is no local mapping" do
       stub_movies([movie(%{})])
 
-      assert [candidate] = Radarr.scan(servarr(%{local_root_folder_path: nil}))
+      assert [candidate] = Radarr.scan!(servarr(%{local_root_folder_path: nil}))
 
       assert candidate.path == "/movies/Star Wars (1977)/movie.mkv"
     end
@@ -82,31 +82,31 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
     test "skips movies without a downloaded file" do
       stub_movies([movie(%{"hasFile" => false, "movieFile" => nil})])
 
-      assert [] = Radarr.scan(servarr())
+      assert [] = Radarr.scan!(servarr())
     end
 
     test "skips movies from a different quality profile" do
       stub_movies([movie(%{"qualityProfileId" => 8})])
 
-      assert [] = Radarr.scan(servarr())
+      assert [] = Radarr.scan!(servarr())
     end
 
     test "skips movies from a different root folder" do
       stub_movies([movie(%{"rootFolderPath" => "/movies-4k"})])
 
-      assert [] = Radarr.scan(servarr())
+      assert [] = Radarr.scan!(servarr())
     end
 
     test "tolerates a trailing slash on the configured root folder" do
       stub_movies([movie(%{})])
 
-      assert [_candidate] = Radarr.scan(servarr(%{root_folder_path: "/movies/"}))
+      assert [_candidate] = Radarr.scan!(servarr(%{root_folder_path: "/movies/"}))
     end
 
     test "raises when the Radarr API fails" do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
-      assert_raise MatchError, fn -> Radarr.scan(servarr()) end
+      assert_raise MatchError, fn -> Radarr.scan!(servarr()) end
     end
   end
 end

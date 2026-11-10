@@ -296,8 +296,8 @@ defmodule WatchClub.Contents.Content do
     end
 
     attribute :original_language, :string do
-      allow_nil? false
       public? true
+      description "Nil when the Metadata Provider doesn't say, as for Sports Events"
     end
 
     attribute :origin_country, :string do
@@ -358,7 +358,7 @@ defmodule WatchClub.Contents.Content do
       sort inserted_at: :desc
     end
 
-    # Of its Movie, its TV Show Episodes, its Book or its Sports Event's Parts
+    # Of its Movie, its TV Show Episodes, its Book or its Sports Event
     has_many :medias, Media
   end
 

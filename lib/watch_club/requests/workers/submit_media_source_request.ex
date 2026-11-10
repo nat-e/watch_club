@@ -4,7 +4,7 @@ defmodule WatchClub.Requests.Workers.SubmitMediaSourceRequest do
   This is only called on MediaSources that support requests from the matching content type.
 
   The source's app adds the content when it doesn't have it yet, see
-  `WatchClub.MediaSources.Servarr.App.submit_request/2`.
+  `WatchClub.MediaSources.Servarr.App.submit_request!/2`.
   """
   use Oban.Worker,
     queue: :media_source_requests,
@@ -33,7 +33,7 @@ defmodule WatchClub.Requests.Workers.SubmitMediaSourceRequest do
     content = Contents.get_content_by_id!(content_id, load: [:implementation], actor: actor)
     servarr = source.implementation
 
-    case Flavor.app(servarr.flavor).submit_request(servarr, content) do
+    case Flavor.app(servarr.flavor).submit_request!(servarr, content) do
       {:ok, external_resource_id} ->
         Requests.create_media_source_request!(
           %{

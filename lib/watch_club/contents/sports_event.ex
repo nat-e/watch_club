@@ -131,19 +131,22 @@ defmodule WatchClub.Contents.SportsEvent do
     # What pages read from a Movie, so they show a Sports Event the same way: its
     # English title and overview in every locale, and its images by URL, which
     # the image components take as well as TMDB paths.
-    calculate :best_localization, :map, fn events, _context ->
-      Enum.map(
-        events,
-        &%{
-          title: &1.title,
-          overview: &1.overview,
-          poster_path: &1.poster_url,
-          runtime: nil,
-          cast: [],
-          trailer_url: nil
-        }
-      )
-    end
+    calculate :best_localization,
+              :map,
+              fn events, _context ->
+                Enum.map(
+                  events,
+                  &%{
+                    title: &1.title,
+                    overview: &1.overview,
+                    poster_path: &1.poster_url,
+                    runtime: nil,
+                    cast: [],
+                    trailer_url: nil
+                  }
+                )
+              end,
+              load: [:title, :overview, :poster_url]
 
     calculate :backdrop_path, :string, expr(backdrop_url)
   end

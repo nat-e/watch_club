@@ -82,11 +82,11 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
     )
   end
 
-  describe "scan/1" do
+  describe "scan!/1" do
     test "emits one candidate per downloaded episode with series identity and locally-mapped path" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [candidate] = Sonarr.scan(servarr())
+      assert [candidate] = Sonarr.scan!(servarr())
 
       assert %Candidate{
                path: "/data/tv/Breaking Bad/S01E01.mkv",
@@ -104,7 +104,7 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
     test "uses the Sonarr path verbatim when there is no local mapping" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [candidate] = Sonarr.scan(servarr(%{local_root_folder_path: nil}))
+      assert [candidate] = Sonarr.scan!(servarr(%{local_root_folder_path: nil}))
 
       assert candidate.path == "/tv/Breaking Bad/S01E01.mkv"
     end
@@ -112,31 +112,31 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
     test "skips episodes without a downloaded file" do
       stub([series(%{})], %{"1" => [episode(%{"hasFile" => false, "episodeFile" => nil})]})
 
-      assert [] = Sonarr.scan(servarr())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "skips series from a different quality profile" do
       stub([series(%{"qualityProfileId" => 8})], %{"1" => [episode(%{})]})
 
-      assert [] = Sonarr.scan(servarr())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "skips series from a different root folder" do
       stub([series(%{"rootFolderPath" => "/tv-4k"})], %{"1" => [episode(%{})]})
 
-      assert [] = Sonarr.scan(servarr())
+      assert [] = Sonarr.scan!(servarr())
     end
 
     test "tolerates a trailing slash on the configured root folder" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
-      assert [_candidate] = Sonarr.scan(servarr(%{root_folder_path: "/tv/"}))
+      assert [_candidate] = Sonarr.scan!(servarr(%{root_folder_path: "/tv/"}))
     end
 
     test "raises when the series API fails" do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
-      assert_raise MatchError, fn -> Sonarr.scan(servarr()) end
+      assert_raise MatchError, fn -> Sonarr.scan!(servarr()) end
     end
 
     test "logs a failed episode list and continues with the other series" do
@@ -148,7 +148,7 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
       log =
         capture_log(fn ->
           assert [%Candidate{identity: %EpisodeIdentity{title: "Breaking Bad"}}] =
-                   Sonarr.scan(servarr())
+                   Sonarr.scan!(servarr())
         end)
 
       assert log =~ "Error listing episodes for: Broken"
@@ -163,7 +163,7 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
       log =
         capture_log(fn ->
           assert [%Candidate{identity: %EpisodeIdentity{title: "Breaking Bad"}}] =
-                   Sonarr.scan(servarr())
+                   Sonarr.scan!(servarr())
         end)
 
       assert log =~ "Error listing episodes for: Broken"

@@ -54,7 +54,7 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
 
   # Lists the files of every league's events under this source's root folder.
   @impl true
-  def scan(%Servarr{} = servarr) do
+  def scan!(%Servarr{} = servarr) do
     Logger.info("Fetch events from Sportarr", event: :sportarr_fetch_started)
 
     {:ok, leagues} = SportarrApi.list_leagues(servarr.base_url, servarr.api_key)
@@ -94,7 +94,7 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
 
   # Sportarr's webhooks look like Sonarr's: its event is the `series`.
   @impl true
-  def interpret_webhook(%Servarr{} = servarr, %{
+  def interpret_webhook!(%Servarr{} = servarr, %{
         "eventType" => "Download",
         "series" => %{"id" => id, "externalId" => sportarr_id},
         "episodeFile" => %{"path" => server_path}
@@ -112,7 +112,7 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
     ingest ++ [{:refresh_request, id}]
   end
 
-  def interpret_webhook(%Servarr{} = servarr, %{
+  def interpret_webhook!(%Servarr{} = servarr, %{
         "eventType" => "EpisodeFileDelete",
         "series" => %{"id" => id},
         "deletedFiles" => files
@@ -128,7 +128,7 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
 
   # A Rename only counts the renamed files, so import the event's files again and
   # drop the Media whose old paths are gone.
-  def interpret_webhook(%Servarr{} = servarr, %{
+  def interpret_webhook!(%Servarr{} = servarr, %{
         "eventType" => "Rename",
         "series" => %{"id" => id, "externalId" => sportarr_id}
       }) do
@@ -140,19 +140,19 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
     ]
   end
 
-  def interpret_webhook(_servarr, %{"eventType" => "SeriesDelete", "series" => %{"id" => id}}),
+  def interpret_webhook!(_servarr, %{"eventType" => "SeriesDelete", "series" => %{"id" => id}}),
     do: [{:forget_request, id}]
 
   # Any other event about an event (Grab, ManualInteractionRequired…) refreshes its request.
-  def interpret_webhook(_servarr, %{"series" => %{"id" => id}}) when is_integer(id),
+  def interpret_webhook!(_servarr, %{"series" => %{"id" => id}}) when is_integer(id),
     do: [{:refresh_request, id}]
 
-  def interpret_webhook(_servarr, _params), do: []
+  def interpret_webhook!(_servarr, _params), do: []
 
   # Sportarr files events under their league, so add the league first when it's
   # missing, without downloading its other events.
   @impl true
-  def submit_request(%Servarr{} = servarr, %Content{implementation: %SportsEvent{}} = content) do
+  def submit_request!(%Servarr{} = servarr, %Content{implementation: %SportsEvent{}} = content) do
     {:ok, event} = SportarrHub.get_event(content.external_id)
 
     {:ok, event_id} =
@@ -197,7 +197,7 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
   end
 
   @impl true
-  def request_state(%Servarr{} = servarr, event_id) do
+  def request_state!(%Servarr{} = servarr, event_id) do
     event = SportarrApi.get_event!(servarr.base_url, servarr.api_key, event_id)
 
     queue =

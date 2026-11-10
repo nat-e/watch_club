@@ -6,13 +6,14 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
 
     * `"header"` / `"card"` — fits `size-control-md` (40px).
     * `"empty"` — fits the icon slot of `<.empty>` (large).
+    * `"title"` — fits a line of title text, such as a modal's.
   """
   use WatchClubWeb, :component
 
   attr :type, :atom, required: true, values: [:filesystem, :radarr, :sonarr, :sportarr]
 
   attr :size, :string,
-    values: ~w(header card empty),
+    values: ~w(header card empty title),
     default: "card"
 
   attr :class, :any, default: nil
@@ -45,10 +46,13 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   defp box_classes("header"), do: "size-control-md"
   defp box_classes("card"), do: "size-control-md"
   defp box_classes("empty"), do: "size-icon-xl"
+  defp box_classes("title"), do: "size-icon"
 
   defp icon_classes("empty"), do: "size-icon-lg"
+  defp icon_classes("title"), do: "size-icon-sm"
   defp icon_classes(_), do: "size-icon"
 
   defp image_classes("empty"), do: "size-icon-xl"
+  defp image_classes("title"), do: "size-icon"
   defp image_classes(_), do: "size-control-md"
 end

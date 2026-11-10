@@ -1,7 +1,7 @@
 defmodule WatchClub.Contents.Changes.CreateOrUpdateSportsEvent do
   @moduledoc """
   Fetches a Sports Event from sportarr.net and writes its Content and SportsEvent.
-  sportarr.net is English only, so the event's original language is English.
+  sportarr.net doesn't say in which language an event is, so it has no original language.
   """
   use Ash.Resource.Change
 
@@ -30,7 +30,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateSportsEvent do
             external_id_source: :sportarr,
             external_id: event.id,
             original_title: event.title,
-            original_language: "en",
+            original_language: nil,
             origin_country: event.country,
             release_date: event.date,
             genres: [],
