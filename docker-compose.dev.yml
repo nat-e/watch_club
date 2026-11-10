@@ -43,6 +43,20 @@ services:
       - ./media:/media
     restart: unless-stopped
 
+  sportarr:
+    image: sportarr/sportarr:4.1.12.1122
+    container_name: wc-sportarr
+    networks:
+      - watch_club
+    environment:
+      - TZ=Etc/UTC
+    ports:
+      - 1867:1867
+    volumes:
+      - wc-sportarr-config:/config
+      - ./media:/media
+    restart: unless-stopped
+
 networks:
   watch_club:
     name: watch_club
@@ -51,3 +65,4 @@ volumes:
   pgdata:
   wc-radarr-config:
   wc-sonarr-config:
+  wc-sportarr-config:
