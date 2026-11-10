@@ -142,6 +142,77 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
     end
   end
 
+  describe "MovieDelete" do
+    @tag :tmp_dir
+    test "removes the Movie's Media before Radarr deletes its files", %{
+      conn: conn,
+      tmp_dir: tmp_dir
+    } do
+      source = seed_radarr_source()
+      movie = generate(movie())
+      path = Path.join(tmp_dir, "movie.mkv")
+      File.write!(path, "stub")
+      generate(video_media(movie, media_source_id: source.id, path: path))
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_delete(movie, true))
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      refute media_exists?(source, path)
+    end
+
+    test "keeps the Movie's Media when Radarr keeps its files", %{conn: conn} do
+      source = seed_radarr_source()
+      movie = generate(movie())
+      media = generate(video_media(movie, media_source_id: source.id))
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_delete(movie, false))
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      assert media_exists?(source, media.path)
+    end
+
+    test "keeps the Movie's Media of another Media Source", %{conn: conn} do
+      source = seed_radarr_source()
+      movie = generate(movie())
+      other_media = generate(video_media(movie))
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_delete(movie, true))
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      assert MediaCatalog.get_media!(other_media.id, actor: SystemActor.actor())
+    end
+  end
+
+  describe "SeriesDelete" do
+    test "removes the TV Show's Media when Sonarr deletes its files", %{conn: conn} do
+      source = seed_sonarr_source()
+      tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      [episode] = tv_show.tv_show.episodes
+      media = generate(video_media(episode, media_source_id: source.id))
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/sonarr/#{source.id}", %{
+          "eventType" => "SeriesDelete",
+          "deletedFiles" => true,
+          "series" => %{"id" => 1, "tmdbId" => String.to_integer(tv_show.external_id)}
+        })
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      refute media_exists?(source, media.path)
+    end
+  end
+
   describe "Rename" do
     test "relocates the Media from the previous path to the new path", %{conn: conn} do
       source = seed_radarr_source()
@@ -364,6 +435,14 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         "relativePath" => "Season 01/friends.mkv",
         "path" => "/tv/Friends/Season 01/friends.mkv"
       }
+    }
+  end
+
+  defp movie_delete(movie, deleted_files?) do
+    %{
+      "eventType" => "MovieDelete",
+      "deletedFiles" => deleted_files?,
+      "movie" => %{"id" => 1, "tmdbId" => String.to_integer(movie.external_id)}
     }
   end
 

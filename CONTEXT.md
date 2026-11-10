@@ -678,6 +678,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then an ingest phase that runs once per candidate to create or refresh **Media**
 - The ingest phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
 - Webhook-triggered ingest always processes its file, as All files would
+- When a `radarr` or `sonarr` **Media Source**'s upstream system deletes a movie or series with its files, WatchClub deletes that **Media Source**'s **Media** of its **Content** at once, without waiting for the files to be gone
 - Scan phases differ by **Media Source Type**: a filesystem scan walks the configured location; an `radarr` or `sonarr` scan calls the **Media Source**'s API to enumerate its catalog
 - A **Failed** **Media Import** is one that cannot finish processing its source
 - A **Cancelled** **Media Import** is one that the **Instance Administrator** ended before it finished, or that was left **Processing** by a previous run of WatchClub

@@ -5,7 +5,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   """
   @behaviour WatchClub.MediaSources.Servarr.App
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Integrations.Radarr, as: RadarrApi
   alias WatchClub.Integrations.Radarr.{Movie, QueueResource}
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
@@ -114,6 +114,14 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
     event = RadarrRenameWebhookEvent.from_api(params)
     App.relocations(servarr, event.folder_path, event.renamed_files)
   end
+
+  # Radarr deletes the movie folder only after this webhook returns.
+  def interpret_webhook!(_servarr, %{
+        "eventType" => "MovieDelete",
+        "deletedFiles" => true,
+        "movie" => %{"id" => id, "tmdbId" => tmdb_id}
+      }),
+      do: [{:remove_content_media, ContentIdentity.for_movie(tmdb_id)}, {:forget_request, id}]
 
   def interpret_webhook!(_servarr, %{"eventType" => "MovieDelete", "movie" => %{"id" => id}}),
     do: [{:forget_request, id}]

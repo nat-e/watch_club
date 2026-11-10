@@ -5,7 +5,8 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
   file, removing or moving a Media, and refreshing or forgetting a Media Source
   Request.
 
-  The disk is the authority: a Media is only removed when its file is gone.
+  A Media is removed once its file is gone, except when the app deletes a whole movie or series
+  with its files: it deletes them only after the webhook returns, so their Media go at once.
   """
   use Ash.Resource.Actions.Implementation
 
@@ -41,20 +42,20 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
   defp run_action(servarr, {:relocate_media, from, to}, opts),
     do: relocate_media(servarr, from, to, opts)
 
-  # Only the Content's Media of this source: other sources keep theirs.
   defp run_action(servarr, {:remove_missing_media, content_identity}, opts) do
-    case Contents.get_content_by_identity!(
-           content_identity,
-           Keyword.merge(opts, load: [:medias], not_found_error?: false)
-         ) do
-      nil ->
-        :ok
+    for media <- content_medias(servarr, content_identity, opts),
+        not File.exists?(media.path),
+        do: remove_media(servarr, media.path, opts)
+  end
 
-      content ->
-        for media <- content.medias,
-            media.media_source_id == servarr.id,
-            not File.exists?(media.path),
-            do: remove_media(servarr, media.path, opts)
+  defp run_action(servarr, {:remove_content_media, content_identity}, opts) do
+    for media <- content_medias(servarr, content_identity, opts) do
+      MediaCatalog.destroy_media!(media, opts)
+
+      Logger.info("Media deleted: #{media.path}",
+        event: :servarr_webhook_media_deleted,
+        path: media.path
+      )
     end
   end
 
@@ -73,6 +74,17 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
   defp run_action(servarr, {:forget_request, external_id}, opts) do
     if request = find_request(servarr, external_id, opts) do
       Requests.destroy_media_source_request(request, opts)
+    end
+  end
+
+  # Only the Content's Media of this source: other sources keep theirs.
+  defp content_medias(%Servarr{id: media_source_id}, content_identity, opts) do
+    case Contents.get_content_by_identity!(
+           content_identity,
+           Keyword.merge(opts, load: [:medias], not_found_error?: false)
+         ) do
+      nil -> []
+      content -> Enum.filter(content.medias, &(&1.media_source_id == media_source_id))
     end
   end
 

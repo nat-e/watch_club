@@ -19,12 +19,15 @@ defmodule WatchClub.MediaSources.Servarr.App do
   @typedoc """
   What a webhook asks WatchClub to do. Paths are local to WatchClub, and ids are
   the app's id of the requested resource, as stored on the Media Source Request.
+  `:remove_content_media` removes the Content's Media even while their files are
+  still on disk.
   """
   @type webhook_action ::
           {:ingest, [Candidate.t()]}
           | {:remove_media, String.t()}
           | {:relocate_media, from :: String.t(), to :: String.t()}
           | {:remove_missing_media, ContentIdentity.t()}
+          | {:remove_content_media, ContentIdentity.t()}
           | {:refresh_request, integer()}
           | {:forget_request, integer()}
 

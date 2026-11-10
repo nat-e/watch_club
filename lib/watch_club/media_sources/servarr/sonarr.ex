@@ -5,7 +5,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   """
   @behaviour WatchClub.MediaSources.Servarr.App
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
   alias WatchClub.Contents.TvShow
   alias WatchClub.Integrations.Servarr.{Client, Webhook}
   alias WatchClub.Integrations.Sonarr, as: SonarrApi
@@ -141,6 +141,14 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
     event = SonarrRenameWebhookEvent.from_api(params)
     App.relocations(servarr, event.series_path, event.renamed_files)
   end
+
+  # Sonarr deletes the series folder only after this webhook returns.
+  def interpret_webhook!(_servarr, %{
+        "eventType" => "SeriesDelete",
+        "deletedFiles" => true,
+        "series" => %{"id" => id, "tmdbId" => tmdb_id}
+      }),
+      do: [{:remove_content_media, ContentIdentity.for_tv_show(tmdb_id)}, {:forget_request, id}]
 
   def interpret_webhook!(_servarr, %{"eventType" => "SeriesDelete", "series" => %{"id" => id}}),
     do: [{:forget_request, id}]
