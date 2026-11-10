@@ -16,7 +16,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
             | __MODULE__.BookIdentity.t()
             | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
-          match_result: __MODULE__.MatchResult.t() | nil
+          match_result: __MODULE__.MatchResult.t() | nil,
+          regenerate_thumbnails_and_markers?: boolean()
         }
 
   defstruct [
@@ -27,7 +28,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     :relative_path,
     :identity,
     :media_structure,
-    :match_result
+    :match_result,
+    # The Media Import's choice to rebuild them even when the file hasn't changed
+    regenerate_thumbnails_and_markers?: false
   ]
 
   defmodule MatchResult do
@@ -162,9 +165,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, and
-  `identity`) into a plain map for an Oban job's args. `identity` is
-  flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
+  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`,
+  `identity` and `regenerate_thumbnails_and_markers?`) into a plain map for an Oban job's args.
+  `identity` is flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -172,7 +175,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       media_source_id: candidate.media_source_id,
       path: candidate.path,
       media_type: candidate.media_type,
-      identity: candidate.identity && Map.from_struct(candidate.identity)
+      identity: candidate.identity && Map.from_struct(candidate.identity),
+      regenerate_thumbnails_and_markers?: candidate.regenerate_thumbnails_and_markers?
     }
   end
 
@@ -186,7 +190,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         "media_source_id" => media_source_id,
         "path" => path,
         "media_type" => media_type,
-        "identity" => identity_fields
+        "identity" => identity_fields,
+        "regenerate_thumbnails_and_markers?" => regenerate_thumbnails_and_markers?
       }) do
     media_type = to_media_type(media_type)
 
@@ -194,7 +199,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       media_source_id: media_source_id,
       path: path,
       media_type: media_type,
-      identity: build_identity(identity_fields, media_type)
+      identity: build_identity(identity_fields, media_type),
+      regenerate_thumbnails_and_markers?: regenerate_thumbnails_and_markers?
     }
   end
 

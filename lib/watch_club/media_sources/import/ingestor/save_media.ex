@@ -20,8 +20,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
           type: media_type,
           video: build_video_input(media_type, candidate)
         },
-        actor: SystemActor.actor()
+        actor: SystemActor.actor(),
+        load: :video
       )
+
+    if candidate.regenerate_thumbnails_and_markers? do
+      MediaCatalog.regenerate_thumbnails_and_markers!(media.video, actor: SystemActor.actor())
+    end
 
     Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
     media

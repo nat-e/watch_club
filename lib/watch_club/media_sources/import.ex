@@ -43,7 +43,7 @@ defmodule WatchClub.MediaSources.Import do
 
     create :start do
       primary? true
-      accept [:media_source_id, :files_to_process]
+      accept [:media_source_id, :files_to_process, :regenerate_thumbnails_and_markers?]
 
       change set_attribute(:triggered_manually?, true)
       change Changes.Schedule
@@ -117,6 +117,15 @@ defmodule WatchClub.MediaSources.Import do
       allow_nil? false
       default :new
       public? true
+    end
+
+    # New files get theirs anyway, so it only matters with New and unmatched files or All files
+    attribute :regenerate_thumbnails_and_markers?, :boolean do
+      description "Rebuilds the Scrubbing Thumbnails and Markers of every Video it processes"
+      allow_nil? false
+      default false
+      public? true
+      source :regenerate_thumbnails_and_markers
     end
 
     attribute :triggered_manually?, :boolean do
