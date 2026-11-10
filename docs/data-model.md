@@ -91,6 +91,7 @@ classDiagram
     movie
     tv_show
     book
+    sports_event
   }
   class Genre {
     <<enumeration>>
@@ -124,6 +125,7 @@ classDiagram
     <<enumeration>>
     tmdb
     hardcover
+    sportarr
   }
   class Movie {
     uuid id «same as Content»
@@ -191,9 +193,22 @@ classDiagram
     string title
     integer hardcover_id «unique»
   }
+  class SportsEvent {
+    uuid id «same as Content»
+    string title
+    string overview
+    string league_id
+    string league_name
+    string season
+    string venue
+    datetime starts_at
+    string poster_url
+    string backdrop_url
+  }
   Movie "0..1" --> "1" Content
   TvShow "0..1" --> "1" Content
   Book "0..1" --> "1" Content
+  SportsEvent "0..1" --> "1" Content
   MovieLocalization "*" --> "1" Movie
   TvShowLocalization "*" --> "1" TvShow
   TvShowEpisode "*" --> "1" TvShow
@@ -214,6 +229,7 @@ classDiagram
     <<enumeration>>
     movie
     tv_show_episode
+    sports_event
     ebook
     audiobook
   }
@@ -221,6 +237,7 @@ classDiagram
     uuid id «same as Media»
     uuid movie_id
     uuid tv_show_episode_id
+    uuid sports_event_id
     float duration_seconds
     string container
     integer bit_rate
@@ -268,6 +285,7 @@ classDiagram
   class Content
   class Movie
   class TvShowEpisode
+  class SportsEvent
   class Book
   Media "*" --> "0..1" Content
   Video "0..1" --> "1" Media
@@ -275,6 +293,7 @@ classDiagram
   Audiobook "0..1" --> "1" Media
   Video "*" --> "0..1" Movie
   Video "*" --> "0..1" TvShowEpisode
+  Video "*" --> "0..1" SportsEvent
   VideoTrack "1..*" --> "1" Video
   AudioTrack "*" --> "1" Video
   TextTrack "*" --> "1" Video
@@ -319,6 +338,7 @@ classDiagram
     filesystem
     radarr
     sonarr
+    sportarr
   }
   class FilesystemMediaSource {
     uuid id «same as MediaSource»
@@ -341,6 +361,7 @@ classDiagram
     <<enumeration>>
     radarr
     sonarr
+    sportarr
   }
   class MediaImport {
     uuid id
@@ -421,20 +442,23 @@ classDiagram
     uuid user_id
     uuid movie_id
     uuid tv_show_episode_id
+    uuid sports_event_id
     uuid book_id
     uuid last_media_id
     float position_seconds
     float duration_seconds
-    «unique» user_id + movie_id + tv_show_episode_id + book_id
+    «unique» user_id + movie_id + tv_show_episode_id + sports_event_id + book_id
   }
   class User
   class Movie
   class TvShowEpisode
+  class SportsEvent
   class Book
   class Media
   WatchProgress "*" --> "1" User
   WatchProgress "*" --> "0..1" Movie
   WatchProgress "*" --> "0..1" TvShowEpisode
+  WatchProgress "*" --> "0..1" SportsEvent
   WatchProgress "*" --> "0..1" Book
   WatchProgress "*" --> "0..1" Media : last_media
 ```

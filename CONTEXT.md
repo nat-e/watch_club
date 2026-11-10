@@ -179,11 +179,11 @@ Media whose concrete video, ebook, or audiobook has no attached **Content** beca
 _Avoid_: Orphan media, unattached media, unidentified media
 
 **Media Type**:
-The kind of media, one of **Movie**, **TV Show Episode**, **Ebook**, or **Audiobook**. A Media Type determines both the concrete media kind (video, ebook, audiobook) and the **Content Type** the media is expected to attach to.
+The kind of media, one of **Movie**, **TV Show Episode**, **Sports Event**, **Ebook**, or **Audiobook**. A Media Type determines both the concrete media kind (video, ebook, audiobook) and the **Content Type** the media is expected to attach to.
 _Avoid_: Content Type, file type
 
 **Video**:
-Media that can be played and is attached to a movie or TV show episode.
+Media that can be played and is attached to a movie, a TV show episode or a sports event.
 _Avoid_: Media Version, video version
 
 **Player**:
@@ -299,7 +299,7 @@ A reusable, instance-wide configuration of where WatchClub brings **Media** from
 _Avoid_: Media Import Configuration, Media Library, Media Provider, Automation Service, Request Profile, playback source, streaming source, sync source
 
 **Media Source Type**:
-The kind of upstream system a **Media Source** represents. One of `filesystem`, `radarr`, or `sonarr` (with `chaptarr` planned but not yet implemented). A **Media Source Type** determines whether the **Media Source** accepts **Media Source Requests**: `filesystem` does not; `radarr` and `sonarr` do, as will `chaptarr`.
+The kind of upstream system a **Media Source** represents. One of `filesystem`, `radarr`, `sonarr` or `sportarr` (with `chaptarr` planned but not yet implemented). A **Media Source Type** determines whether the **Media Source** accepts **Media Source Requests**: `filesystem` does not; `radarr`, `sonarr` and `sportarr` do, as will `chaptarr`.
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
@@ -339,11 +339,11 @@ _Avoid_: Outro, ending, end credits, end titles
 ### Contents
 
 **Content**:
-A creative work, such as a movie, TV show, or book.
+A creative work or an event, such as a movie, TV show, sports event, or book.
 _Avoid_: Media, title, item, recommendation
 
 **Content Type**:
-The kind of content, such as movie, TV show, or book.
+The kind of content, such as movie, TV show, sports event, or book.
 _Avoid_: Media type, category
 
 **Movie**:
@@ -362,12 +362,16 @@ _Avoid_: Episode, TV media, show item
 A TV Show Episode's title and overview adapted for a Locale.
 _Avoid_: Episode translation, localized episode
 
+**Sports Event**:
+Content whose content type is sports event, such as a UFC event or a Formula 1 race. Like a **Movie**, it can have several **Videos**, such as its prelims and its main card, and one watch progress. Its metadata comes from sportarr.net, in English only.
+_Avoid_: Sport, match, fight, game
+
 **Book**:
 Content whose content type is book.
 _Avoid_: Volume
 
 **Metadata Provider**:
-A catalog where content metadata comes from, such as TMDB or Hardcover.
+A catalog where content metadata comes from, such as TMDB, sportarr.net (for **Sports Events**) or Hardcover.
 _Avoid_: External source, provider, integration, source
 
 **External ID**:
@@ -767,7 +771,8 @@ _Avoid_: Group, aggregate, card, item
 - "Episode" is ambiguous across content types; resolved: use **TV Show Episode** for numbered parts of **TV Show** content.
 - External provider episode IDs are not the canonical identity for **TV Show Episodes**; resolved: a **TV Show Episode** is identified within a **TV Show** by season number and episode number.
 - Specials are not modeled as **TV Show Episodes**; resolved: a **TV Show Episode** season number starts at 1.
-- Radarr and Sonarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type. Because no request-capable **Book** source exists, **Request Content** today serves only **Movies** and **TV Shows**; the **Book** fan-out is intended design, not current behaviour.
+- Radarr, Sonarr and Sportarr are **Media Source Types** that both accept **Media Source Requests** (WatchClub asks them to make content available) and serve as import sources (WatchClub imports the resulting **Media**). One **Media Source** of these types covers both directions of the integration. `chaptarr` is a planned third request-capable type (for **Book** content) and is not yet implemented; the glossary keeps it to document the intended direction, not a live type. Because no request-capable **Book** source exists, **Request Content** today serves only **Movies**, **TV Shows** and **Sports Events**; the **Book** fan-out is intended design, not current behaviour.
+- "Sportarr" names both the sportarr.net **Metadata Provider** and the `sportarr` **Media Source Type**; resolved: sportarr.net is the shared metadata service, and a `sportarr` **Media Source** is someone's own Sportarr server. Both use the same **External IDs**, such as `ev-028133`.
 - "Segment" means an HLS segment; resolved: the parts of a **Video** that the **Player** lets a **User** skip are **Markers**. Chapters are only where some **Markers** come from: WatchClub doesn't store them.
 - "Outro" is not canonical; resolved: use **Credits**.
 - "Play Media" and "Play Video" are not canonical user actions; resolved: use **Play** for the user action and reserve **Media** and **Video** for what is selected to play.
