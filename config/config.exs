@@ -7,9 +7,21 @@
 # General application configuration
 import Config
 
+# Request parameters whose values are secrets. URLs carry secrets only in query parameters
+# with these exact names, which traces redact. Phoenix logs and Sentry also hide any
+# parameter whose name contains one of them.
+secret_params = ["password", "token", "_csrf_token", "code"]
+
+config :phoenix, :filter_parameters, secret_params
+config :sentry, scrubber: [param_keys: secret_params]
+
 # Export is enabled per signal through runtime OTEL_* settings.
 config :opentelemetry,
   traces_exporter: :none,
+  processors: [
+    {WatchClub.Telemetry.SecretRedactor, %{secret_params: secret_params}},
+    {:otel_batch_processor, %{}}
+  ],
   # Operator resource attributes override the application's defaults.
   resource_detectors: [:otel_resource_app_env, :otel_resource_env_var]
 

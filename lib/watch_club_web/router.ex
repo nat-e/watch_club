@@ -145,7 +145,8 @@ defmodule WatchClubWeb.Router do
       ] do
       live "/setup", Accounts.SetupPage
       live "/sign-in", Accounts.SignInPage
-      live "/join/:code", Invitations.InvitationPage
+      # The code is a query parameter, not a path segment, so telemetry redacts it
+      live "/join", Invitations.InvitationPage
     end
 
     ash_authentication_live_session :optional_user_routes,
