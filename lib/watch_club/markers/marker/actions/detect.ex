@@ -1,7 +1,7 @@
 defmodule WatchClub.Markers.Marker.Actions.Detect do
   @moduledoc """
-  Finds the Markers of the TV Show Episodes of a season together, or those of a single other
-  Video. Each Video gets the Markers of its named chapters. A TV Show Episode missing its
+  Finds the Markers of the TV Show Episodes of a season together, or those of a Movie's
+  Videos. Each Video gets the Markers of its named chapters. A TV Show Episode missing its
   Intro or Credits gets the longest audio it shares with another episode, searched as
   Jellyfin's Intro Skipper does: each episode is compared with the next ones until one
   shares audio with it.
@@ -15,7 +15,6 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
   require Ash.Query
   require Logger
 
-  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Markers.{AudioFingerprint, Marker, MarkerKind}
   alias WatchClub.MediaCatalog.Video
 
@@ -34,13 +33,11 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
   # The part of the Video to compare, and how long the shared audio can be
   @audio_kinds [intro: {:beginning, 10, 120}, credits: {:end, 15, :infinity}]
 
-  @loads [:media, :audio_tracks, :tv_show_episode]
-
   @impl true
   def run(input, _opts, context) do
     found =
       input.arguments
-      |> videos_found_together!(context)
+      |> videos!(context)
       |> Enum.flat_map(&read_chapter_markers/1)
       |> add_audio_markers()
 
@@ -64,27 +61,22 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
     :ok
   end
 
-  # A TV Show Episode's Markers are found with those of the other episodes of its season
-  defp videos_found_together!(%{video: video}, context) do
-    case Ash.load!(video, @loads, scope: context) do
-      %Video{tv_show_episode: %TvShowEpisode{} = episode} ->
-        season_videos!(episode.tv_show_id, episode.season_number, context)
+  defp videos!(arguments, context) do
+    query =
+      case arguments do
+        %{tv_show_id: tv_show_id, season_number: season_number} ->
+          Ash.Query.filter(
+            Video,
+            tv_show_episode.tv_show_id == ^tv_show_id and
+              tv_show_episode.season_number == ^season_number
+          )
 
-      video ->
-        [video]
-    end
-  end
+        %{movie_id: movie_id} ->
+          Ash.Query.filter(Video, movie_id == ^movie_id)
+      end
 
-  defp videos_found_together!(%{tv_show_id: tv_show_id, season_number: season_number}, context),
-    do: season_videos!(tv_show_id, season_number, context)
-
-  defp season_videos!(tv_show_id, season_number, context) do
-    Video
-    |> Ash.Query.filter(
-      tv_show_episode.tv_show_id == ^tv_show_id and
-        tv_show_episode.season_number == ^season_number
-    )
-    |> Ash.Query.load(@loads)
+    query
+    |> Ash.Query.load([:media, :audio_tracks, :tv_show_episode])
     |> Ash.read!(scope: context)
   end
 
