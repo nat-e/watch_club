@@ -39,6 +39,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       |> assign(:filesystem_sources, Map.get(groups, :filesystem, []))
       |> assign(:radarr_sources, Map.get(groups, :radarr, []))
       |> assign(:sonarr_sources, Map.get(groups, :sonarr, []))
+      |> assign(:sportarr_sources, Map.get(groups, :sportarr, []))
 
     ~H"""
     <Layouts.app
@@ -105,6 +106,23 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
             dgettext(
               "admin_media_imports",
               "Connect a Sonarr server to import TV shows and fulfill TV show requests."
+            )
+          }
+          locale={@current_user.settings.locale}
+        />
+
+        <.source_type_section
+          type={:sportarr}
+          title={dgettext("admin_media_imports", "Sportarr")}
+          description={
+            dgettext("admin_media_imports", "Import sports events from a Sportarr server.")
+          }
+          add_event="open_add_sportarr_source_modal"
+          sources={@sportarr_sources}
+          empty_copy={
+            dgettext(
+              "admin_media_imports",
+              "Connect a Sportarr server to import sports events and fulfill sports event requests."
             )
           }
           locale={@current_user.settings.locale}
@@ -226,7 +244,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
          |> assign(:configure_media_source, media_source)}
 
       %Source{source_type: source_type} = media_source
-      when source_type in [:radarr, :sonarr] ->
+      when source_type in [:radarr, :sonarr, :sportarr] ->
         {:noreply,
          socket
          |> reset_modals()
@@ -260,7 +278,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   end
 
   # ---------------------------------------------------------------------------
-  # Servarr (Radarr / Sonarr) source modal
+  # Servarr (Radarr / Sonarr / Sportarr) source modal
   # ---------------------------------------------------------------------------
 
   def handle_event("open_add_radarr_source_modal", _params, socket) do
@@ -269,6 +287,10 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
 
   def handle_event("open_add_sonarr_source_modal", _params, socket) do
     {:noreply, open_servarr_create_modal(socket, :sonarr)}
+  end
+
+  def handle_event("open_add_sportarr_source_modal", _params, socket) do
+    {:noreply, open_servarr_create_modal(socket, :sportarr)}
   end
 
   # ---------------------------------------------------------------------------

@@ -25,3 +25,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
 msgstr ""
+
+#: lib/watch_club/media_sources/source/type.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr"
+msgstr ""

@@ -11,6 +11,7 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   alias WatchClub.Integrations.Radarr.RadarrDownloadWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrMovieFileDeleteWebhookEvent
   alias WatchClub.Integrations.Radarr.RadarrRenameWebhookEvent
+  alias WatchClub.Integrations.Servarr.Webhook
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
   alias WatchClub.MediaSources.Servarr
@@ -34,9 +35,15 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
   def media_type, do: :movie
 
   @impl true
-  def webhook_event_flags do
-    @shared_event_flags ++
-      [:onMovieAdded, :onMovieDelete, :onMovieFileDelete, :onMovieFileDeleteForUpgrade]
+  def notifications_path, do: "/api/v3/notification"
+
+  @impl true
+  def webhook_notification(config) do
+    Webhook.body(
+      @shared_event_flags ++
+        [:onMovieAdded, :onMovieDelete, :onMovieFileDelete, :onMovieFileDeleteForUpgrade],
+      config
+    )
   end
 
   # Lists the Radarr catalog and keeps the movies with a file under this source's

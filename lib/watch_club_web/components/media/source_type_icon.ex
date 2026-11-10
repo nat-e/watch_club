@@ -1,6 +1,6 @@
 defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   @moduledoc """
-  Visual icon for a `Source.Type`. Filesystem uses a Lucide icon in a
+  Visual icon for a `Source.Type`. Filesystem and Sportarr use a Lucide icon in a
   bordered chip; `radarr` / `sonarr` use the product's official SVG.
   Sizing options:
 
@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   """
   use WatchClubWeb, :component
 
-  attr :type, :atom, required: true, values: [:filesystem, :radarr, :sonarr]
+  attr :type, :atom, required: true, values: [:filesystem, :radarr, :sonarr, :sportarr]
 
   attr :size, :string,
     values: ~w(header card empty),
@@ -17,14 +17,15 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
 
   attr :class, :any, default: nil
 
-  def source_type_icon(%{type: :filesystem} = assigns) do
+  def source_type_icon(%{type: type} = assigns) when type in [:filesystem, :sportarr] do
     ~H"""
     <span class={[
       "grid shrink-0 place-items-center rounded-md border border-border bg-surface text-text-muted",
       box_classes(@size),
       @class
     ]}>
-      <Lucideicons.hard_drive class={icon_classes(@size)} />
+      <Lucideicons.hard_drive :if={@type == :filesystem} class={icon_classes(@size)} />
+      <Lucideicons.trophy :if={@type == :sportarr} class={icon_classes(@size)} />
     </span>
     """
   end

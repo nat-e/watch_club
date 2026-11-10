@@ -29,7 +29,14 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
       token: "watchclub-test"
     }
 
-    case Client.test_notification(base_url, api_key, config) do
+    app = Flavor.app(flavor)
+
+    case Client.test_notification(
+           base_url,
+           api_key,
+           app.notifications_path(),
+           app.webhook_notification(config)
+         ) do
       {:ok, :verified} ->
         :ok
 

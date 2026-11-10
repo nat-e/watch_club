@@ -65,6 +65,7 @@ defmodule WatchClubWeb.Router do
 
     post "/radarr/:media_source_id", ServarrController, :handle
     post "/sonarr/:media_source_id", ServarrController, :handle
+    post "/sportarr/:media_source_id", ServarrController, :handle
   end
 
   # The files of a Playback, for the Player and the TV. The token in their `token` query parameter

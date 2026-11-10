@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
   end
 
   def source_identifier(%{media_source: %Source{source_type: type}} = assigns)
-      when type in [:radarr, :sonarr] do
+      when type in [:radarr, :sonarr, :sportarr] do
     ~H"""
     <.badge variant="muted" class="rounded-sm">
       <:icon><.lucide_icon name="link" /></:icon>

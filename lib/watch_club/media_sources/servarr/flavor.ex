@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaSources.Servarr.Flavor do
   @moduledoc """
-  The Servarr product a Media Source talks to (Radarr / Sonarr), as an
+  The Servarr product a Media Source talks to (Radarr / Sonarr / Sportarr), as an
   `Ash.Type.Enum`.
 
   The product `label/1` is also the `appName` the server reports on
@@ -11,7 +11,8 @@ defmodule WatchClub.MediaSources.Servarr.Flavor do
   use Ash.Type.Enum,
     values: [
       radarr: [label: "Radarr", description: "A Radarr server (movies)"],
-      sonarr: [label: "Sonarr", description: "A Sonarr server (TV shows)"]
+      sonarr: [label: "Sonarr", description: "A Sonarr server (TV shows)"],
+      sportarr: [label: "Sportarr", description: "A Sportarr server (sports events)"]
     ]
 
   alias WatchClub.MediaSources.Servarr
@@ -20,4 +21,5 @@ defmodule WatchClub.MediaSources.Servarr.Flavor do
   @spec app(t()) :: module()
   def app(:radarr), do: Servarr.Radarr
   def app(:sonarr), do: Servarr.Sonarr
+  def app(:sportarr), do: Servarr.Sportarr
 end

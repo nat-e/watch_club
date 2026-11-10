@@ -12,6 +12,7 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   require Logger
   require Ash.Query
 
+  alias WatchClub.Contents
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
@@ -96,6 +97,22 @@ defmodule WatchClubWeb.Webhooks.ServarrController do
   defp run_action(_source, {:ingest, candidates}), do: enqueue_ingest(candidates)
   defp run_action(_source, {:remove_media, path}), do: remove_media(path)
   defp run_action(_source, {:relocate_media, from, to}), do: relocate_media(from, to)
+
+  defp run_action(_source, {:remove_missing_media, content_identity}) do
+    content_identity
+    |> Contents.get_content_by_identity!(
+      load: [:medias],
+      not_found_error?: false,
+      actor: SystemActor.actor()
+    )
+    |> case do
+      nil ->
+        :ok
+
+      content ->
+        content.medias |> Enum.reject(&File.exists?(&1.path)) |> Enum.each(&remove_media(&1.path))
+    end
+  end
 
   defp run_action(source, {:refresh_request, external_id}) do
     if request = find_request(source, external_id) do

@@ -28,3 +28,9 @@ msgstr "Radarr"
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
 msgstr "Sonarr"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_sources/source/type.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr"
+msgstr "Sportarr"

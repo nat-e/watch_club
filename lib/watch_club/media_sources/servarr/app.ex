@@ -7,7 +7,8 @@ defmodule WatchClub.MediaSources.Servarr.App do
   The import, webhook and request flows stay the same for every app.
   """
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
+  alias WatchClub.Integrations.Servarr.Webhook
   alias WatchClub.Integrations.Servarr.Webhook.{MediaFile, RenamedFile}
   alias WatchClub.MediaCatalog.MediaType
   alias WatchClub.MediaSources.Import.Candidate
@@ -23,14 +24,18 @@ defmodule WatchClub.MediaSources.Servarr.App do
           {:ingest, [Candidate.t()]}
           | {:remove_media, String.t()}
           | {:relocate_media, from :: String.t(), to :: String.t()}
+          | {:remove_missing_media, ContentIdentity.t()}
           | {:refresh_request, integer()}
           | {:forget_request, integer()}
 
   @doc "The Media Type this app imports."
   @callback media_type() :: MediaType.t()
 
-  @doc "The notification events WatchClub subscribes to when it registers its webhook."
-  @callback webhook_event_flags() :: [atom()]
+  @doc "The path of the app's notifications API, where WatchClub registers its webhook."
+  @callback notifications_path() :: String.t()
+
+  @doc "The notification that makes the app call WatchClub's webhook, as the app's API expects it."
+  @callback webhook_notification(Webhook.config()) :: map()
 
   @doc "Every downloaded file of the source, as Candidates with local paths."
   @callback scan(Servarr.t()) :: [Candidate.t()]

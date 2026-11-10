@@ -7,6 +7,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
 
   alias WatchClub.Contents.Content
   alias WatchClub.Contents.TvShow
+  alias WatchClub.Integrations.Servarr.Webhook
   alias WatchClub.Integrations.Sonarr, as: SonarrApi
   alias WatchClub.Integrations.Sonarr.{Episode, QueueResource, Series}
   alias WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent
@@ -35,9 +36,15 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   def media_type, do: :tv_show_episode
 
   @impl true
-  def webhook_event_flags do
-    @shared_event_flags ++
-      [:onSeriesAdd, :onSeriesDelete, :onEpisodeFileDelete, :onEpisodeFileDeleteForUpgrade]
+  def notifications_path, do: "/api/v3/notification"
+
+  @impl true
+  def webhook_notification(config) do
+    Webhook.body(
+      @shared_event_flags ++
+        [:onSeriesAdd, :onSeriesDelete, :onEpisodeFileDelete, :onEpisodeFileDeleteForUpgrade],
+      config
+    )
   end
 
   # Lists the series under this source's root folder and quality profile, then
