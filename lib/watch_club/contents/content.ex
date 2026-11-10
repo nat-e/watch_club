@@ -130,13 +130,29 @@ defmodule WatchClub.Contents.Content do
       pagination keyset?: true, offset?: true, countable: true, required?: false
     end
 
+    read :new_in_library do
+      description "The Content in the Library, the latest added first. A requested one waits until its Content Request is Completed."
+      filter expr(has_media? and not exists(request, not completed?))
+      prepare build(sort: [added_to_library_at: :desc, id: :desc])
+    end
+
     read :user_recently_watched do
-      description "Returns the Contents recently watched by the actor. Most recently watched content first"
+      description "The actor's Content in progress that is Ready to Play, the most recently watched first. Not limited: there are few."
 
       prepare build(
                 filter: [actor_progress_status: :in_progress],
                 sort: [actor_last_watched_at: :desc]
               )
+
+      # Ready to Play is computed in Elixir, after the query: a limit would apply before it
+      prepare fn query, context ->
+        Ash.Query.after_action(query, fn _query, contents ->
+          {:ok,
+           contents
+           |> Ash.load!(:actor_next_medias_to_play, Ash.Context.to_opts(context))
+           |> Enum.reject(&(&1.actor_next_medias_to_play == []))}
+        end)
+      end
     end
 
     create :create do
@@ -367,6 +383,14 @@ defmodule WatchClub.Contents.Content do
                   type == :tv_show -> tv_show.has_media?
                   type == :sports_event -> sports_event.has_media?
                 end
+              )
+
+    # An Incomplete TV Show: in the Library, with an aired TV Show Episode without Media
+    calculate :incomplete?,
+              :boolean,
+              expr(
+                type == :tv_show and tv_show.has_media? and
+                  tv_show.aired_episodes_with_media_count < tv_show.aired_episodes_count
               )
 
     # The progress status of the content for the current user

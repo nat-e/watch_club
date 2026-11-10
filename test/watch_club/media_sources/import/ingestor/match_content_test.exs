@@ -97,7 +97,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
     test "matches files with different IMDB ids to their own Movies, asking TMDB once per id" do
       first = generate(movie(external_id: "11"))
       second = generate(movie(external_id: "12"))
-      ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :tmdb, :request, :stop]])
+      ref = :telemetry_test.attach_event_handlers(self(), [[:req, :request, :adapter, :stop]])
       on_exit(fn -> :telemetry.detach(ref) end)
 
       stub_tmdb(fn _conn, path ->
@@ -117,11 +117,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       # The third file is answered from the cache
       for _ <- 1..2 do
-        assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: _},
-                         %{endpoint: "/find/:external_id", status: "2xx"}}
+        assert_received {[:req, :request, :adapter, :stop], ^ref, %{duration: _},
+                         %{url: %URI{path: "/3/find/:external_id"}, status: 200}}
       end
 
-      refute_received {[:watch_club, :tmdb, :request, :stop], ^ref, _, _}
+      refute_received {[:req, :request, :adapter, :stop], ^ref, _, _}
     end
 
     test "matches by IMDB id" do

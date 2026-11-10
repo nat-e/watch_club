@@ -224,6 +224,7 @@ defmodule WatchClub.Integrations.Servarr.Client do
     ]
     |> Req.new(Application.get_env(:watch_club, :servarr_req_options, []))
     |> OpentelemetryReq.attach()
+    |> ReqTele.attach(pipeline: false)
   end
 
   defp handle_response({:ok, %Req.Response{status: status, body: body}})

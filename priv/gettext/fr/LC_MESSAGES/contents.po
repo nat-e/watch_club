@@ -33,7 +33,6 @@ msgstr[0] "%{count} saison"
 msgstr[1] "%{count} saisons"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button.ex
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Episodes"
@@ -362,6 +361,11 @@ msgid "Play or download any episode, and mark what you've watched."
 msgstr "Lancez ou téléchargez n'importe quel épisode, et marquez ce que vous avez vu."
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/contents/incomplete_badge.ex
+#, elixir-autogen, elixir-format
+msgid "Some episodes missing"
+msgstr "Il manque des épisodes"
+
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{episode} on TV"

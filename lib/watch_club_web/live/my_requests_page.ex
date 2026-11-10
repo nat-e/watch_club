@@ -1,10 +1,10 @@
 defmodule WatchClubWeb.MyRequestsPage do
   @moduledoc """
-  My Requests: the Content Requests the User is a Request Subscriber of. The playable ones come
-  first, as a row of Browse's posters, the most recently playable first. The ready unseen ones
-  lead the row, ringed, with a New badge, until the User leaves the page, since opening it marks
-  them seen. The others follow as a list, the most recently changed first when the page opens,
-  each saying when it can be watched.
+  My Requests: the Content Requests the User is a Request Subscriber of. The Completed ones come
+  first, as a row of Browse's posters. The ready unseen ones lead the row, ringed, with a New
+  badge, until the User leaves the page, since opening it marks them seen. The others follow as a
+  list, the most recently changed first when the page opens, each saying when it can be watched,
+  with Play once it's Ready to Play.
   """
   use WatchClubWeb, :live_view
 
@@ -15,11 +15,19 @@ defmodule WatchClubWeb.MyRequestsPage do
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
 
   @request_fields_to_load [
-    :ready?,
+    :completed?,
     :ready_unseen_for_actor?,
     :status,
     :download_progress,
-    content: [:implementation, :actor_progress_status, actor_recommendations: [:recommended_by]]
+    :aired_episodes_count,
+    :aired_episodes_with_media_count,
+    content: [
+      :implementation,
+      :actor_progress_status,
+      :actor_next_medias_to_play,
+      :incomplete?,
+      actor_recommendations: [:recommended_by]
+    ]
   ]
 
   @impl true
@@ -78,7 +86,7 @@ defmodule WatchClubWeb.MyRequestsPage do
             :for={{request, index} <- Enum.with_index(@requests_on_the_way)}
             request={request}
             focus_after_removal={focus_after_removal(@requests_on_the_way, index)}
-            locale={@current_user.settings.locale}
+            current_user={@current_user}
           />
         </.stack>
       </.page_section>
@@ -119,7 +127,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     socket = WatchClub.PubSub.subscribe_to_current_user_content_topics(socket)
 
     ready_requests =
-      Requests.list_current_user_ready_requests!(load: @request_fields_to_load, actor: user)
+      Requests.list_current_user_completed_requests!(load: @request_fields_to_load, actor: user)
 
     # Intentionally small: the ones that just became playable
     ready_unseen_ids =
@@ -181,10 +189,10 @@ defmodule WatchClubWeb.MyRequestsPage do
            load: @request_fields_to_load,
            actor: socket.assigns.current_user
          ) do
-      {:ok, %ContentRequest{ready?: true} = request} ->
+      {:ok, %ContentRequest{completed?: true} = request} ->
         socket |> remove_request_on_the_way(content_id) |> show_ready_request(request)
 
-      {:ok, %ContentRequest{ready?: false} = request} ->
+      {:ok, %ContentRequest{completed?: false} = request} ->
         socket |> stream_delete(:ready_requests, request) |> show_request_on_the_way(request)
 
       # Deleted, or the User stopped getting notified, or a Content without a Content Request
@@ -195,7 +203,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     end
   end
 
-  # One that became playable while the User is on the page is seen at once, and leads the row.
+  # One Completed while the User is on the page is seen at once, and leads the row.
   # The others update in place.
   defp show_ready_request(socket, %ContentRequest{ready_unseen_for_actor?: true} = request) do
     Requests.mark_current_user_requests_seen!(actor: socket.assigns.current_user)

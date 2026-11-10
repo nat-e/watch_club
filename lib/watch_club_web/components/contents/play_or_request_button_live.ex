@@ -61,7 +61,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   attr :on_episodes, :any,
     default: nil,
     doc:
-      "the JS commands opening every TV Show Episode, from a caret joined to Play, or from Episodes when there's nothing to play"
+      "the JS commands opening every TV Show Episode, from a caret joined to Play while it's enabled"
 
   attr :size, :string,
     values: ~w(sm md lg),

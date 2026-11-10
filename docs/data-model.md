@@ -448,12 +448,13 @@ classDiagram
     uuid content_id «unique»
     uuid requested_by_id
     uuid best_source_request_id
+    boolean completed?
   }
   class RequestSubscriber {
     uuid id
     uuid content_request_id
     uuid user_id
-    datetime seen_at
+    boolean ready_unseen?
     «unique» content_request_id + user_id
   }
   class MediaSourceRequest {

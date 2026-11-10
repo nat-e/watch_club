@@ -221,39 +221,44 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   end
 
   defp status(episodes, queue) do
-    now = DateTime.utc_now()
-
-    not_released? =
-      episodes != [] and
-        Enum.all?(episodes, &(&1.air_date_utc && DateTime.after?(&1.air_date_utc, now)))
+    aired_episodes = aired_regular_episodes(episodes)
+    aired_episode_ids = MapSet.new(aired_episodes, & &1.id)
+    queue = Enum.filter(queue, &MapSet.member?(aired_episode_ids, &1.episode_id))
 
     cond do
-      # Sonarr has every episode, even if WatchClub hasn't imported them all yet.
-      episodes != [] and Enum.all?(episodes, & &1.has_file?) -> :downloaded
+      # Sonarr has every aired episode, even if WatchClub hasn't imported them all yet.
+      aired_episodes != [] and Enum.all?(aired_episodes, & &1.has_file?) -> :downloaded
       Enum.any?(queue, &QueueResource.blocked?/1) -> :needs_attention
       queue != [] -> :downloading
       # After the other states: a series can be found before it starts airing.
-      not_released? -> :not_released
+      episodes != [] and aired_episodes == [] -> :not_released
       true -> :searching
     end
   end
 
   # The average progress of the aired episodes.
   defp progress(episodes, queue) do
+    case aired_regular_episodes(episodes) do
+      [] ->
+        0.0
+
+      aired_episodes ->
+        aired_episodes
+        |> Enum.map(&episode_progress(&1, queue))
+        |> Enum.sum()
+        |> Kernel./(length(aired_episodes))
+    end
+  end
+
+  # The episodes a Content Request waits for: aired, and not specials (season 0)
+  defp aired_regular_episodes(episodes) do
     now = DateTime.utc_now()
 
-    aired_count =
-      Enum.count(episodes, &(&1.air_date_utc && DateTime.before?(&1.air_date_utc, now)))
-
-    if aired_count == 0 do
-      0.0
-    else
-      episodes
-      |> Enum.map(&episode_progress(&1, queue))
-      |> Enum.sum()
-      |> Kernel./(aired_count)
-      |> min(100.0)
-    end
+    Enum.filter(
+      episodes,
+      &(&1.season_number > 0 and &1.air_date_utc != nil and
+          DateTime.before?(&1.air_date_utc, now))
+    )
   end
 
   defp episode_progress(%Episode{has_file?: true}, _queue), do: 100.0

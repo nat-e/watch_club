@@ -78,10 +78,15 @@ defmodule WatchClub.Ffmpeg do
   @doc """
   Chromaprint fingerprint of the first audio track, over `seconds` from
   `from_seconds`. ffmpeg decodes the audio for Chromaprint's `fpcalc`, which
-  has no option to start further in.
+  has no option to start further in. Returns `{:error, message}` when the
+  file's audio can't be decoded, and raises when ffmpeg or fpcalc is missing.
   """
   @impl true
   def audio_fingerprint(path, from_seconds, seconds) do
+    for tool <- ["ffmpeg", "fpcalc"], is_nil(System.find_executable(tool)) do
+      raise "#{tool} executable was not found"
+    end
+
     pipeline =
       ~S(ffmpeg -nostdin -v error -ss "$2" -t "$3" -i "$1" -map 0:a:0 -ac 1 -ar 11025 -f s16le - ) <>
         ~S(| fpcalc -raw -format s16le -rate 11025 -channels 1 -length "$3" -)

@@ -2,9 +2,9 @@ defmodule WatchClubWeb.HomePage do
   @moduledoc """
   Home: what's up next for the User, and what's happening in WatchClub. Signing in opens it.
 
-  The latest Content in progress fills the spotlight. Below, Up next, For You and New in the
-  library sit beside Watching Now and the Activity Feed, or above them in a narrow page. Watching
-  Now loads with the page.
+  The latest Content in progress that is Ready to Play fills the spotlight. Below, Up next, For
+  You and New in the library sit beside Watching Now and the Activity Feed, or above them in a
+  narrow page. Watching Now loads with the page.
   """
   use WatchClubWeb, :live_view
 
@@ -27,10 +27,11 @@ defmodule WatchClubWeb.HomePage do
   @new_in_library_load [
     :implementation,
     :actor_progress_status,
+    :incomplete?,
     actor_recommendations: [:recommended_by]
   ]
 
-  # A recommendation to the User, a Content Request becoming playable, a Playlist shared with them,
+  # A recommendation to the User, a Content Request being Completed, a Playlist shared with them,
   # and its name and Content
   @for_you_resources [Participant, RequestSubscriber, PlaylistAccess, Playlist, PlaylistItem]
 
@@ -188,9 +189,9 @@ defmodule WatchClubWeb.HomePage do
     in_progress =
       Contents.get_user_recently_watched!(
         load: content_load(),
-        query: [limit: @in_progress_limit],
         actor: socket.assigns.current_user
       )
+      |> Enum.take(@in_progress_limit)
 
     # Intentionally small: @in_progress_limit Contents
     assign(socket, :in_progress, in_progress)
@@ -208,7 +209,7 @@ defmodule WatchClubWeb.HomePage do
       )
 
     requests =
-      Requests.list_current_user_ready_requests!(
+      Requests.list_current_user_completed_requests_in_library!(
         load: request_load(),
         query: [limit: @for_you_limit],
         actor: user
@@ -229,8 +230,7 @@ defmodule WatchClubWeb.HomePage do
 
   defp load_new_in_library(socket) do
     new_in_library =
-      Contents.get_contents_in_library!(
-        %{sort: :recently_added},
+      Contents.get_new_in_library!(
         load: @new_in_library_load,
         query: [limit: @new_in_library_limit],
         actor: socket.assigns.current_user
