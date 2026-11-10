@@ -2,7 +2,16 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   use Ash.Resource.Change
 
   alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.{CastMember, Genre, MetadataUnavailable, Rating}
+
+  alias WatchClub.Contents.{
+    CastMember,
+    Genre,
+    MetadataUnavailable,
+    Movie,
+    MovieLocalization,
+    Rating
+  }
+
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.MovieDetailsResponse
   alias WatchClub.Integrations.Tmdb.Types.{Images, Videos}
@@ -10,7 +19,7 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
   require Logger
 
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, _opts, context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -35,23 +44,26 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
 
           changeset
           |> set_base_content(movie)
-          |> set_movie(movie, localizations)
           |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
+          |> Ash.Changeset.after_action(fn _changeset, content ->
+            Ash.bulk_create!(
+              [%{id: content.id, backdrop_path: Images.best_backdrop_path(movie.images)}],
+              Movie,
+              :create,
+              scope: context
+            )
+
+            localizations
+            |> Enum.map(&Map.put(&1, :movie_id, content.id))
+            |> Ash.bulk_create!(MovieLocalization, :create, scope: context)
+
+            {:ok, content}
+          end)
 
         {:error, reason} ->
           Ash.Changeset.add_error(changeset, MetadataUnavailable.exception(reason: reason))
       end
     end)
-  end
-
-  defp set_movie(%Ash.Changeset{} = changeset, %MovieDetailsResponse{} = movie, localizations) do
-    changeset
-    |> Ash.Changeset.manage_relationship(
-      :movie,
-      %{localizations: localizations, backdrop_path: Images.best_backdrop_path(movie.images)},
-      type: :direct_control,
-      authorize?: false
-    )
   end
 
   defp set_base_content(%Ash.Changeset{} = changeset, %MovieDetailsResponse{} = movie) do

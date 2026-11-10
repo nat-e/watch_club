@@ -7,6 +7,7 @@ defmodule WatchClub.Contents.Movie do
   alias WatchClub.Contents.{Content, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "movies"
@@ -17,32 +18,18 @@ defmodule WatchClub.Contents.Movie do
     end
   end
 
+  # The metadata a refresh overwrites
+  @refreshed_fields [:backdrop_path]
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
-      accept [:backdrop_path]
       primary? true
-      argument :localizations, {:array, :map}, allow_nil?: false
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_movie],
-               on_missing: :ignore
-             )
-    end
-
-    update :update do
-      primary? true
-      require_atomic? false
-      accept [:backdrop_path]
-      argument :localizations, {:array, :map}
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_movie],
-               on_missing: :ignore
-             )
+      accept [:id | @refreshed_fields]
+      upsert? true
+      upsert_fields @refreshed_fields
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
     end
   end
 

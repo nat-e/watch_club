@@ -7,6 +7,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
   alias WatchClub.Contents.{TvShow, TvShowEpisodeLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "tv_show_episodes"
@@ -17,32 +18,19 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
   end
 
+  # The metadata a refresh overwrites
+  @refreshed_fields [:air_date, :still_path, :runtime]
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
-      accept [:season_number, :episode_number, :air_date, :still_path, :runtime]
-      argument :localizations, {:array, :map}, allow_nil?: false, default: []
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show_episode],
-               on_missing: :ignore
-             )
-    end
-
-    update :update do
-      primary? true
-      require_atomic? false
-      accept [:season_number, :episode_number, :air_date, :still_path, :runtime]
-      argument :localizations, {:array, :map}
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show_episode],
-               on_missing: :ignore
-             )
+      accept [:tv_show_id, :season_number, :episode_number | @refreshed_fields]
+      upsert? true
+      upsert_identity :unique_position_per_tv_show
+      upsert_fields @refreshed_fields
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
     end
 
     read :for_show do

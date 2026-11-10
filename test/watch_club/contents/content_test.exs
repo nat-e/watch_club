@@ -394,6 +394,72 @@ defmodule WatchClub.Contents.ContentTest do
                original_s2e2_localizations
     end
 
+    test "writes only the Content Localizations and TV Show Episode Localizations that changed" do
+      stub_tv_metadata()
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: SystemActor.actor())
+
+      updated_at_by_id = fn ->
+        for resource <- [TvShowLocalization, TvShowEpisodeLocalization],
+            localization <- Ash.read!(resource, authorize?: false),
+            into: %{},
+            do: {localization.id, localization.updated_at}
+      end
+
+      stored = updated_at_by_id.()
+
+      renamed_season =
+        tv_season_details_fixture(1)
+        |> Map.update!("episodes", fn [first | rest] ->
+          [Map.put(first, "name", "Dulcinea, Updated") | rest]
+        end)
+
+      stub_tv_metadata(tv_details_fixture(), %{{1, "en-US"} => renamed_season})
+      refresh_metadata!(content, %{}, actor: SystemActor.actor())
+
+      renamed =
+        Ash.read_one!(
+          Ash.Query.filter(TvShowEpisodeLocalization, title == "Dulcinea, Updated"),
+          authorize?: false
+        )
+
+      assert [renamed.id] ==
+               for({id, updated_at} <- updated_at_by_id.(), updated_at != stored[id], do: id)
+    end
+
+    test "runs as many queries for a TV Show with many TV Show Episodes as for one with one" do
+      count_queries = fn refresh ->
+        ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :repo, :query]])
+        refresh.()
+        :telemetry.detach(ref)
+        {:messages, messages} = Process.info(self(), :messages)
+        Enum.count(messages, &match?({[:watch_club, :repo, :query], ^ref, _, _}, &1))
+      end
+
+      stub_tv_metadata_with_episodes = fn episode_numbers ->
+        details =
+          Map.put(tv_details_fixture(), "seasons", [
+            %{"season_number" => 1, "episode_count" => length(episode_numbers)}
+          ])
+
+        stub_tv_metadata(details, %{1 => tv_season_details_fixture(1, episode_numbers)})
+      end
+
+      stub_tv_metadata_with_episodes.([1])
+      content = create_content!(ContentIdentity.for_tv_show("42"), actor: SystemActor.actor())
+
+      queries_for_one =
+        count_queries.(fn -> refresh_metadata!(content, %{}, actor: SystemActor.actor()) end)
+
+      stub_tv_metadata_with_episodes.(Enum.to_list(1..200))
+      refresh_metadata!(content, %{}, actor: SystemActor.actor())
+
+      queries_for_many =
+        count_queries.(fn -> refresh_metadata!(content, %{}, actor: SystemActor.actor()) end)
+
+      assert queries_for_one > 0
+      assert queries_for_many == queries_for_one
+    end
+
     test "stores the genres and rating of a TV Show created without them" do
       tv_show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
       tmdb_id = String.to_integer(tv_show.external_id)
