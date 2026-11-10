@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.5](https://github.com/nat-e/watch_club/compare/v0.1.4...v0.1.5) (2026-11-10)
+
+
+### Bug Fixes
+
+* **telemetry:** keep reset tokens and Invitations out of telemetry ([#79](https://github.com/nat-e/watch_club/issues/79)) ([52b3a7b](https://github.com/nat-e/watch_club/commit/52b3a7bd69df066bd7bb7cc99ae0544cd4aa331a))
+
+
+### Performance Improvements
+
+* **contents:** refresh metadata by writing only what changed ([#78](https://github.com/nat-e/watch_club/issues/78)) ([6e8f0ed](https://github.com/nat-e/watch_club/commit/6e8f0ed422adb1f392bee48f12e32c95599935ba))
+
 ## [0.1.4](https://github.com/nat-e/watch_club/compare/v0.1.3...v0.1.4) (2026-11-09)
 
 
