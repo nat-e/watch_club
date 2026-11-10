@@ -14,7 +14,7 @@ defmodule WatchClub.Markers.MarkerTest do
     @describetag :tmp_dir
 
     test "finds the Markers in the named chapters", %{tmp_dir: tmp_dir} do
-      [video] = episode_videos(1, tmp_dir)
+      video = video(generate(movie()), tmp_dir)
 
       stub_chapters(%{
         video.media.path => [
@@ -26,7 +26,7 @@ defmodule WatchClub.Markers.MarkerTest do
         ]
       })
 
-      Markers.detect_markers!([video], actor: SystemActor.actor())
+      Markers.detect_markers!(video, actor: SystemActor.actor())
 
       assert markers(video) == [
                credits: {1250.0, 1320.0},
@@ -35,8 +35,43 @@ defmodule WatchClub.Markers.MarkerTest do
              ]
     end
 
+    test "finds the Markers of the other episodes of its season", %{tmp_dir: tmp_dir} do
+      show = generate(tv_show(num_seasons: 2, episodes_per_season: 2))
+
+      [first, second, next_season] =
+        show.tv_show.episodes
+        |> Enum.sort_by(&{&1.season_number, &1.episode_number})
+        |> Enum.take(3)
+        |> Enum.map(&video(&1, tmp_dir))
+
+      stub_chapters(%{})
+
+      stub_fingerprints(%{
+        first.media.path => [{:first, 100}, {:theme, 320}],
+        second.media.path => [{:second, 500}, {:theme, 320}],
+        next_season.media.path => [{:next_season, 300}, {:theme, 320}]
+      })
+
+      Markers.detect_markers!(second, actor: SystemActor.actor())
+
+      assert_markers(first, intro: range(100, 320), credits: credits())
+      assert_markers(second, intro: range(500, 320), credits: credits())
+      assert markers(next_season) == []
+    end
+
+    test "forbids Users", %{tmp_dir: tmp_dir} do
+      generate(movie())
+      |> video(tmp_dir)
+      |> Markers.detect_markers(actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "detect_season_markers/*" do
+    @describetag :tmp_dir
+
     test "gives the episodes the Intro and Credits they share", %{tmp_dir: tmp_dir} do
-      [first, second, third] = episode_videos(3, tmp_dir)
+      {show_id, [first, second, third]} = season_videos(3, tmp_dir)
       stub_chapters(%{})
 
       stub_fingerprints(%{
@@ -45,7 +80,7 @@ defmodule WatchClub.Markers.MarkerTest do
         third.media.path => [{:third, 300}, {:theme, 320}]
       })
 
-      Markers.detect_markers!([first, second, third], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       assert_markers(first, intro: range(100, 320), credits: credits())
       assert_markers(second, intro: range(500, 320), credits: credits())
@@ -53,7 +88,7 @@ defmodule WatchClub.Markers.MarkerTest do
     end
 
     test "gives an episode the longest audio it shares with another", %{tmp_dir: tmp_dir} do
-      [first, second, third] = episode_videos(3, tmp_dir)
+      {show_id, [first, second, third]} = season_videos(3, tmp_dir)
       stub_chapters(%{})
 
       stub_fingerprints(%{
@@ -62,7 +97,7 @@ defmodule WatchClub.Markers.MarkerTest do
         third.media.path => [{:third, 300}, {:theme, 320}]
       })
 
-      Markers.detect_markers!([first, second, third], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       assert_markers(first, intro: range(100, 160))
       assert_markers(second, intro: range(260, 320))
@@ -70,7 +105,7 @@ defmodule WatchClub.Markers.MarkerTest do
     end
 
     test "keeps the Markers of the named chapters", %{tmp_dir: tmp_dir} do
-      [first, second] = episode_videos(2, tmp_dir)
+      {show_id, [first, second]} = season_videos(2, tmp_dir)
       stub_chapters(%{first.media.path => [chapter(30, 60, "Intro")]})
 
       stub_fingerprints(%{
@@ -78,16 +113,17 @@ defmodule WatchClub.Markers.MarkerTest do
         second.media.path => [{:second, 500}, {:theme, 320}]
       })
 
-      Markers.detect_markers!([first, second], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       assert_markers(first, intro: {30.0, 60.0}, credits: credits())
       assert_markers(second, intro: range(500, 320), credits: credits())
     end
 
     test "doesn't compare the Videos of one episode", %{tmp_dir: tmp_dir} do
-      [episode] = episodes(1)
-      first = episode_video(episode, tmp_dir)
-      second = episode_video(episode, tmp_dir)
+      show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      [episode] = show.tv_show.episodes
+      first = video(episode, tmp_dir)
+      second = video(episode, tmp_dir)
       stub_chapters(%{})
 
       stub_fingerprints(%{
@@ -95,62 +131,68 @@ defmodule WatchClub.Markers.MarkerTest do
         second.media.path => [{:theme, 320}]
       })
 
-      Markers.detect_markers!([first, second], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show.id, 1, actor: SystemActor.actor())
 
       assert markers(first) == []
       assert markers(second) == []
     end
 
     test "keeps the Markers of a Video whose file can't be read", %{tmp_dir: tmp_dir} do
-      [unreadable, readable] = episode_videos(2, tmp_dir)
+      {show_id, [unreadable, readable]} = season_videos(2, tmp_dir)
 
       chapters = [chapter(30, 60, "Intro"), chapter(1250, 1320, "Credits")]
       stub_chapters(%{unreadable.media.path => chapters, readable.media.path => chapters})
-
-      Markers.detect_markers!([unreadable, readable], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       stub(ProbeMock, :probe, fn
         path when path == unreadable.media.path -> {:error, "Invalid data found"}
         _path -> {:ok, %{"chapters" => []}}
       end)
 
-      Markers.detect_markers!([unreadable, readable], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       assert markers(unreadable) == [credits: {1250.0, 1320.0}, intro: {30.0, 60.0}]
       assert markers(readable) == []
     end
 
-    test "finds no Markers without chapters or other episodes", %{tmp_dir: tmp_dir} do
-      [video] = episode_videos(1, tmp_dir)
+    test "finds no Markers for an episode alone in its season, without chapters",
+         %{tmp_dir: tmp_dir} do
+      {show_id, [video]} = season_videos(1, tmp_dir)
       stub_chapters(%{})
 
-      Markers.detect_markers!([video], actor: SystemActor.actor())
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
 
       assert markers(video) == []
     end
 
     test "forbids Users", %{tmp_dir: tmp_dir} do
-      1
-      |> episode_videos(tmp_dir)
-      |> Markers.detect_markers(actor: generate(user()))
+      {show_id, _videos} = season_videos(1, tmp_dir)
+
+      show_id
+      |> Markers.detect_season_markers(1, actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
-  defp episodes(count) do
-    generate(tv_show(num_seasons: 1, episodes_per_season: count)).tv_show.episodes
-    |> Enum.sort_by(& &1.episode_number)
-  end
+  # The Videos of the episodes of the first season of a new TV Show
+  defp season_videos(count, tmp_dir) do
+    show = generate(tv_show(num_seasons: 1, episodes_per_season: count))
 
-  defp episode_videos(count, tmp_dir), do: Enum.map(episodes(count), &episode_video(&1, tmp_dir))
+    videos =
+      show.tv_show.episodes
+      |> Enum.sort_by(& &1.episode_number)
+      |> Enum.map(&video(&1, tmp_dir))
+
+    {show.id, videos}
+  end
 
   # Their fingerprints of the end start 990 seconds in: they cover a quarter of the Video. The
   # cache of fingerprints needs the file.
-  defp episode_video(episode, tmp_dir) do
+  defp video(movie_or_episode, tmp_dir) do
     path = Path.join(tmp_dir, "#{System.unique_integer([:positive])}.mkv")
     File.write!(path, "")
 
-    generate(video_media(episode, path: path, video: %{duration_seconds: 1320.0}))
+    generate(video_media(movie_or_episode, path: path, video: %{duration_seconds: 1320.0}))
     |> Ash.load!([video: :media], authorize?: false)
     |> Map.fetch!(:video)
   end

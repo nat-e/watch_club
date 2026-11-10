@@ -46,7 +46,7 @@ defmodule WatchClub.Markers.AudioFingerprint do
              {^key, binary} <- :erlang.binary_to_term(cached, [:safe]) do
           {{:ok, binary}, true}
         else
-          _missing_or_stale -> {compute(path, key, cache, part), false}
+          _missing_or_stale -> {compute!(path, key, cache, part), false}
         end
 
       :telemetry.execute([:watch_club, :audio_fingerprint, :fetch], %{count: 1}, %{
@@ -147,7 +147,7 @@ defmodule WatchClub.Markers.AudioFingerprint do
     (value * 0x01010101 &&& 0xFFFFFFFF) >>> 24
   end
 
-  defp compute(path, {_size, _mtime, offset_seconds, seconds} = key, cache, part) do
+  defp compute!(path, {_size, _mtime, offset_seconds, seconds} = key, cache, part) do
     attributes = %{
       "watch_club.audio_fingerprint.part": to_string(part),
       "watch_club.audio_fingerprint.seconds": seconds

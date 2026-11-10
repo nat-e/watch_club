@@ -19,8 +19,6 @@ defmodule WatchClub.Markers.Workers.DetectMarkers do
       period: :infinity
     ]
 
-  require Ash.Query
-
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.{Markers, MediaCatalog}
   alias WatchClub.MediaCatalog.Video
@@ -45,41 +43,21 @@ defmodule WatchClub.Markers.Workers.DetectMarkers do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"tv_show_id" => tv_show_id, "season_number" => season_number}}) do
-    detect_season_markers!(tv_show_id, season_number)
+    Markers.detect_season_markers!(tv_show_id, season_number, actor: SystemActor.actor())
+    :ok
   end
 
   def perform(%Oban.Job{args: %{"video_id" => video_id}}) do
     actor = SystemActor.actor()
 
-    case MediaCatalog.get_media(video_id,
-           not_found_error?: false,
-           load: [video: :tv_show_episode],
-           actor: actor
-         ) do
+    case MediaCatalog.get_media(video_id, not_found_error?: false, load: [:video], actor: actor) do
       # Deleted between enqueue and run — expected race, nothing to do.
       {:ok, nil} ->
         :ok
 
-      {:ok, %{video: %Video{tv_show_episode: %TvShowEpisode{} = episode}}} ->
-        detect_season_markers!(episode.tv_show_id, episode.season_number)
-
       {:ok, %{video: video}} ->
-        Markers.detect_markers!([video], actor: actor)
+        Markers.detect_markers!(video, actor: actor)
         :ok
     end
-  end
-
-  defp detect_season_markers!(tv_show_id, season_number) do
-    actor = SystemActor.actor()
-
-    Video
-    |> Ash.Query.filter(
-      tv_show_episode.tv_show_id == ^tv_show_id and
-        tv_show_episode.season_number == ^season_number
-    )
-    |> Ash.read!(actor: actor)
-    |> Markers.detect_markers!(actor: actor)
-
-    :ok
   end
 end

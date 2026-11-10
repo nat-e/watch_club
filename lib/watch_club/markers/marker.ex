@@ -30,13 +30,23 @@ defmodule WatchClub.Markers.Marker do
 
     action :detect do
       description """
-      Finds the Markers of the TV Show Episodes of one season, or of a single other Video.
-      Reads each file for a few seconds: run it in the background.
+      Finds the Video's Markers, with those of the other episodes of its season when it is a
+      TV Show Episode. Reads each file for a few seconds: run it in the background.
       """
 
-      argument :videos, {:array, :struct},
-        allow_nil?: false,
-        constraints: [items: [instance_of: Video]]
+      argument :video, :struct, allow_nil?: false, constraints: [instance_of: Video]
+
+      run WatchClub.Markers.Marker.Actions.Detect
+    end
+
+    action :detect_season do
+      description """
+      Finds the Markers of the TV Show Episodes of a season. Reads each file for a few
+      seconds: run it in the background.
+      """
+
+      argument :tv_show_id, :uuid, allow_nil?: false
+      argument :season_number, :integer, allow_nil?: false
 
       run WatchClub.Markers.Marker.Actions.Detect
     end
