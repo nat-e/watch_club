@@ -49,6 +49,19 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
     notifications
   end
 
+  defp mark_watched!(%{type: :sports_event, id: id}, _season, _episode, context) do
+    {_progress, notifications} =
+      WatchProgress
+      |> Ash.create!(
+        %{sports_event_id: id},
+        action: :mark_watched,
+        scope: context,
+        return_notifications?: true
+      )
+
+    notifications
+  end
+
   defp mark_watched!(%{type: :book, id: id}, _season, _episode, context) do
     {_progress, notifications} =
       WatchProgress

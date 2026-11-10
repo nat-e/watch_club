@@ -5,7 +5,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
   alias WatchClub.Contents.Content
   alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
-  alias WatchClub.MediaSources.Import.Candidate.{EpisodeIdentity, MatchResult, MovieIdentity}
+
+  alias WatchClub.MediaSources.Import.Candidate.{
+    EpisodeIdentity,
+    MatchResult,
+    MovieIdentity,
+    SportsEventIdentity
+  }
+
   alias WatchClub.MediaSources.Import.Ingestor.MatchContent
 
   setup do
@@ -454,6 +461,56 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{match_result: %MatchResult{result: :not_matched, matched_id: nil}} =
                MatchContent.apply!(candidate)
+    end
+
+    test "matches a Sports Event refreshed under 15 minutes ago by its Sportarr ID" do
+      event = generate(sports_event(external_id: "ev-028133"))
+
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn _conn ->
+        flunk("a recently refreshed Sports Event must not make a sportarr.net request")
+      end)
+
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(candidate_with(%SportsEventIdentity{sportarr_id: "ev-028133"}))
+
+      assert matched_id == event.id
+    end
+
+    test "matches a Sports Event by title, dropping the words its title doesn't have" do
+      event = generate(sports_event(external_id: "ev-570615"))
+
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+        events =
+          case URI.decode(conn.request_path) do
+            "/api/v2/json/search/event/UFC 328" ->
+              [
+                %{"idEvent" => "ev-1", "strEvent" => "UFC 328", "dateEvent" => "2001-05-04"},
+                %{"idEvent" => "ev-570615", "strEvent" => "UFC 328", "dateEvent" => "2026-05-09"}
+              ]
+
+            "/api/v2/json/search/event/UFC 328 Prelims" ->
+              nil
+          end
+
+        Req.Test.json(conn, %{"data" => %{"search" => events}})
+      end)
+
+      candidate = candidate_with(%SportsEventIdentity{title: "UFC 328 - Prelims", year: 2026})
+
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(candidate)
+
+      assert matched_id == event.id
+    end
+
+    test "doesn't match a Sports Event by a single word of its title" do
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+        assert URI.decode(conn.request_path) == "/api/v2/json/search/event/UFC Prelims"
+        Req.Test.json(conn, %{"data" => %{"search" => nil}})
+      end)
+
+      assert %Candidate{match_result: %MatchResult{result: :not_matched}} =
+               MatchContent.apply!(candidate_with(%SportsEventIdentity{title: "UFC Prelims"}))
     end
   end
 

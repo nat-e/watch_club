@@ -58,3 +58,15 @@ msgstr "Épisode de série TV"
 #, elixir-autogen, elixir-format
 msgid "TV Shows"
 msgstr "Séries TV"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports"
+msgstr "Sport"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "Sports Event"
+msgstr "Événement sportif"

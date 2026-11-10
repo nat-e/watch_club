@@ -36,6 +36,7 @@ defmodule WatchClub.DataCase do
     WatchClub.DataCase.setup_sandbox(tags)
     # The TMDB cache is global, so a stubbed response would otherwise leak into later tests
     Cachex.clear!(:tmdb_api_cache)
+    Cachex.clear!(:sportarr_hub_cache)
     :ok
   end
 

@@ -8,6 +8,7 @@ defmodule WatchClub.Contents do
     Content,
     Movie,
     MovieLocalization,
+    SportsEvent,
     TvShow,
     TvShowEpisode,
     TvShowEpisodeLocalization,
@@ -42,6 +43,8 @@ defmodule WatchClub.Contents do
     resource Movie
 
     resource Book
+
+    resource SportsEvent
 
     resource MovieLocalization
 

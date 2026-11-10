@@ -16,6 +16,7 @@ defmodule WatchClub.Contents.ContentTest do
     MovieLocalization,
     SearchResult,
     SearchResultsPage,
+    SportsEvent,
     TvShow,
     TvShowEpisode,
     TvShowEpisodeLocalization,
@@ -49,6 +50,43 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "create_content/*" do
+    test "creates a Sports Event from sportarr.net" do
+      stub_sportarr_event(%{"idEvent" => "ev-1", "strEvent" => "UFC 1 Silva vs Jones"})
+
+      assert %Content{
+               type: :sports_event,
+               external_id_source: :sportarr,
+               external_id: "ev-1",
+               original_title: "UFC 1 Silva vs Jones",
+               original_language: "en",
+               origin_country: "US",
+               release_date: ~D[2025-01-19],
+               genres: [],
+               rating: nil,
+               implementation: %SportsEvent{
+                 title: "UFC 1 Silva vs Jones",
+                 overview: "A mixed martial arts event.",
+                 league_id: "lg-000079",
+                 league_name: "UFC",
+                 season: "2025",
+                 venue: "Intuit Dome",
+                 starts_at: ~U[2025-01-19 01:00:00Z],
+                 poster_url: "https://sportarr.net/poster.jpg",
+                 backdrop_url: "https://sportarr.net/fanart.jpg"
+               }
+             } =
+               create_content!(ContentIdentity.for_sports_event("ev-1"), actor: generate(user()))
+    end
+
+    test "returns an error when sportarr.net doesn't know the Sports Event" do
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, &Req.Test.json(&1, %{"data" => []}))
+
+      assert {:error, %Ash.Error.Unknown{} = error} =
+               create_content(ContentIdentity.for_sports_event("ev-404"), actor: generate(user()))
+
+      assert Enum.any?(error.errors, &match?(%MetadataUnavailable{reason: :not_found}, &1))
+    end
+
     test "creates a movie" do
       actor = generate(user(locale: :fr_FR))
 
@@ -1041,6 +1079,56 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "search_content/*" do
+    test "returns Sports Events from sportarr.net, and whether they're in the Library", %{
+      member: member
+    } do
+      in_library = generate(sports_event())
+      add_sports_event_video!(in_library.id)
+
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+        assert conn.request_path == "/api/v2/json/search/event/UFC%2011"
+
+        Req.Test.json(conn, %{
+          "data" => %{
+            "search" => [
+              sportarr_event(%{"idEvent" => in_library.external_id, "strEvent" => "UFC 11"}),
+              sportarr_event(%{"idEvent" => "ev-112", "strEvent" => "UFC 112", "strPoster" => ""})
+            ]
+          }
+        })
+      end)
+
+      assert %SearchResultsPage{
+               page: 1,
+               total_pages: 1,
+               results: [
+                 %SearchResult{title: "UFC 11", year: 2025, has_media?: true},
+                 %SearchResult{
+                   identity: %ContentIdentity{type: :sports_event, external_id: "ev-112"},
+                   title: "UFC 112",
+                   overview: "A mixed martial arts event.",
+                   poster_path: nil,
+                   has_media?: false
+                 }
+               ]
+             } = search_content!(%{query: "UFC 11", content_type: :sports_events}, actor: member)
+    end
+
+    test "searches the Library's Sports Events with has_media?", %{member: member} do
+      event = generate(sports_event(original_title: "UFC 311"))
+      add_sports_event_video!(event.id)
+      movie = generate(movie(original_title: "UFC Story"))
+      add_video!(movie.id)
+
+      assert %SearchResultsPage{results: [%SearchResult{title: "UFC 311"} = result]} =
+               search_content!(
+                 %{query: "ufc", content_type: :sports_events, has_media?: true},
+                 actor: member
+               )
+
+      assert result.identity == ContentIdentity.from_content(event)
+    end
+
     test "returns Movies and TV Shows, and whether they're in the Library", %{member: member} do
       movie = generate(movie())
       add_video!(movie.id)
@@ -1365,6 +1453,39 @@ defmodule WatchClub.Contents.ContentTest do
 
   defp add_video!(movie_id) do
     MediaCatalog.create_or_update_video!(media_movie_input(movie_id), actor: SystemActor.actor())
+  end
+
+  defp add_sports_event_video!(sports_event_id) do
+    MediaCatalog.create_or_update_video!(media_sports_event_input(sports_event_id),
+      actor: SystemActor.actor()
+    )
+  end
+
+  defp stub_sportarr_event(attrs) do
+    Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+      assert conn.request_path == "/api/v2/json/lookup/event/#{attrs["idEvent"]}"
+      Req.Test.json(conn, %{"data" => [sportarr_event(attrs)]})
+    end)
+  end
+
+  # A sportarr.net event, in its TheSportsDB-like JSON
+  defp sportarr_event(attrs) do
+    Map.merge(
+      %{
+        "strTimestamp" => "2025-01-19T01:00:00+00:00",
+        "dateEvent" => "2025-01-19",
+        "idLeague" => "lg-000079",
+        "strLeague" => "UFC",
+        "strSeason" => "2025",
+        "strVenue" => "Intuit Dome",
+        "strCountry" => "US",
+        "strDescriptionEN" => "A mixed martial arts event.",
+        "strResult" => "Silva def. Jones",
+        "strPoster" => "https://sportarr.net/poster.jpg",
+        "strFanart" => "https://sportarr.net/fanart.jpg"
+      },
+      attrs
+    )
   end
 
   # Gives every localization of the Content the title

@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdExtractor do
   @moduledoc """
-  Recognizes IMDB / TMDB / TVDB identifiers in arbitrary text.
+  Recognizes IMDB / TMDB / TVDB / Sportarr identifiers in arbitrary text.
 
   Port of Jellyfin's `MediaBrowser.Common.Providers.ProviderIdParsers` and the
   `[imdbid-tt…]` / `{tmdb-…}` bracket-attribute convention from
@@ -25,10 +25,11 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
     @type t :: %__MODULE__{
             tmdb: integer() | nil,
             imdb: String.t() | nil,
-            tvdb: integer() | nil
+            tvdb: integer() | nil,
+            sportarr: String.t() | nil
           }
 
-    defstruct [:tmdb, :imdb, :tvdb]
+    defstruct [:tmdb, :imdb, :tvdb, :sportarr]
   end
 
   @bracket_regex ~r/[\[\(\{]\s*(tmdbid|tmdb|imdbid|imdb|tvdbid|tvdb)\s*[=\-\s]\s*([^\]\)\}]+?)\s*[\]\)\}]/i
@@ -40,6 +41,8 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
   @url_tvdb_regex ~r{thetvdb\.com/(?:[^"\s]*?[?&]id=|series/)(\d+)}i
   @url_imdb_regex ~r/imdb\.com\/title\/(tt\d{7,8})/i
   @imdb_bare_regex ~r/tt\d{7,8}/
+  # Sportarr's `{Sportarr Id}` naming token, such as `sportarr-ev-2338110`
+  @sportarr_regex ~r/\bsportarr[-_ ]?(ev-\d+)\b/i
 
   @doc """
   Runs every recognition strategy and returns an `%ExternalIds{}` with whatever
@@ -50,7 +53,8 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
     %ExternalIds{
       imdb: find_imdb(text),
       tmdb: to_int(find_tmdb(text)),
-      tvdb: to_int(find_tvdb(text))
+      tvdb: to_int(find_tvdb(text)),
+      sportarr: find_sportarr(text)
     }
   end
 
@@ -101,6 +105,15 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdEx
          nil <- single_capture(text, @tag_tvdb_regex) do
       single_capture(text, @url_tvdb_regex)
     end
+  end
+
+  @doc """
+  Finds the Sportarr ID of a Sports Event in `text`, such as `ev-2338110`, or `nil`.
+  """
+  @spec find_sportarr(String.t()) :: String.t() | nil
+  def find_sportarr(text) when is_binary(text) do
+    with value when is_binary(value) <- single_capture(text, @sportarr_regex),
+         do: String.downcase(value)
   end
 
   defp bracket_value(text, providers) do

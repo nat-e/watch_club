@@ -90,6 +90,51 @@ defmodule WatchClub.History.WatchProgressTest do
     end
   end
 
+  describe "Sports Events" do
+    test "is in progress when partially watched, and completed once marked watched" do
+      user = generate(user())
+      event = generate(sports_event())
+
+      History.record_watch_progress!(
+        %{sports_event_id: event.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+        actor: user
+      )
+
+      assert %{sports_event: %{actor_progress_status: :in_progress}} =
+               Ash.load!(event, [sports_event: [:actor_progress_status]], actor: user)
+
+      History.mark_content_watched!(ContentIdentity.from_content(event), actor: user)
+
+      assert %{sports_event: %{actor_progress_status: :completed}} =
+               Ash.load!(event, [sports_event: [:actor_progress_status]], actor: user)
+    end
+
+    test "marks a watched Sports Event as not watched" do
+      user = generate(user())
+      event = generate(sports_event())
+      identity = ContentIdentity.from_content(event)
+      History.mark_content_watched!(identity, actor: user)
+
+      History.mark_content_not_watched!(identity, actor: user)
+
+      assert %{sports_event: %{actor_progress_status: :not_started}} =
+               Ash.load!(event, [sports_event: [:actor_progress_status]], actor: user)
+    end
+
+    test "lists who else watched a Sports Event" do
+      watcher = generate(user())
+      event = generate(sports_event())
+      History.mark_content_watched!(ContentIdentity.from_content(event), actor: watcher)
+
+      assert [%Watcher{status: :completed} = found] =
+               History.list_watchers!(ContentIdentity.from_content(event),
+                 actor: generate(user())
+               )
+
+      assert found.user.id == watcher.id
+    end
+  end
+
   describe "TV shows" do
     test "starts at S01E01 when the user has not watched anything" do
       user = generate(user())

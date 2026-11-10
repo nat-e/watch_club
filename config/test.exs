@@ -37,6 +37,10 @@ config :watch_club,
   ],
   servarr_req_options: [
     plug: {WatchClub.Integrations.Servarr.TestStub, []}
+  ],
+  sportarr_hub_req_options: [
+    plug: {Req.Test, WatchClub.Integrations.SportarrHub},
+    retry: false
   ]
 
 config :watch_club, import_scanner_filesystem: WatchClub.MediaSources.Import.ScannerMock

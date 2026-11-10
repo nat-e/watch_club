@@ -1,6 +1,6 @@
 defmodule WatchClub.History.WatchProgress do
   @moduledoc """
-  A resource that records whether a User has watched a given Movie or TV Show Episode.
+  A resource that records whether a User has watched a given Movie, TV Show Episode or Sports Event.
   We only create WatchProgress objects for contents that a user has started watching.
   We record the time watched and the time left, and consider that the content is completed when they have watched
   at least 90% of the content.
@@ -16,7 +16,7 @@ defmodule WatchClub.History.WatchProgress do
 
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Changes.ScheduleContentWatchedEventSync
-  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.History.Watcher
   alias WatchClub.History.WatchProgress.Actions.{ListWatchers, MarkNotWatched, MarkWatched}
   alias WatchClub.MediaCatalog.Media
@@ -37,6 +37,7 @@ defmodule WatchClub.History.WatchProgress do
       reference :book, index?: true
       reference :movie, on_delete: :delete, index?: true
       reference :tv_show_episode, on_delete: :delete, index?: true
+      reference :sports_event, on_delete: :delete, index?: true
 
       # When the media this refers is deleted, set to nil
       reference :last_media, on_delete: :nilify, index?: true
@@ -47,6 +48,7 @@ defmodule WatchClub.History.WatchProgress do
     custom_indexes do
       index [:user_id, :movie_id]
       index [:user_id, :tv_show_episode_id]
+      index [:user_id, :sports_event_id]
     end
   end
 
@@ -59,13 +61,13 @@ defmodule WatchClub.History.WatchProgress do
     # episodes watched fast.
     # Side effects are triggered once per batch on the generic actions
     create :mark_watched do
-      description "Marks a single movie, book or episode as watched"
+      description "Marks a single movie, book, episode or Sports Event as watched"
       primary? true
 
       upsert? true
       upsert_identity :unique_content_per_user
       upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
-      accept [:movie_id, :book_id, :tv_show_episode_id]
+      accept [:movie_id, :book_id, :tv_show_episode_id, :sports_event_id]
 
       change set_attribute(:position_seconds, nil)
       change set_attribute(:duration_seconds, nil)
@@ -82,6 +84,7 @@ defmodule WatchClub.History.WatchProgress do
         :book_id,
         :movie_id,
         :tv_show_episode_id,
+        :sports_event_id,
         :last_media_id,
         :position_seconds,
         :duration_seconds
@@ -224,6 +227,11 @@ defmodule WatchClub.History.WatchProgress do
       public? true
     end
 
+    belongs_to :sports_event, SportsEvent do
+      allow_nil? true
+      public? true
+    end
+
     belongs_to :last_media, Media do
       allow_nil? true
       public? true
@@ -282,7 +290,8 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   identities do
-    identity :unique_content_per_user, [:user_id, :book_id, :movie_id, :tv_show_episode_id] do
+    identity :unique_content_per_user,
+             [:user_id, :book_id, :movie_id, :tv_show_episode_id, :sports_event_id] do
       nils_distinct? false
     end
   end

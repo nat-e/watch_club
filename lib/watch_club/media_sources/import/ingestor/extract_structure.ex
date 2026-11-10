@@ -33,7 +33,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
     end
   end
 
-  defp probe(media_type, candidate) when media_type in [:movie, :tv_show_episode] do
+  defp probe(media_type, candidate)
+       when media_type in [:movie, :tv_show_episode, :sports_event] do
     with {:ok, metadata} <- @ffprobe.probe(candidate.path),
          {:ok, structure} <- Tracks.for_video(metadata) do
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}

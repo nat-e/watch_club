@@ -1,15 +1,18 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
   @moduledoc """
-  Searches Movies and TV Shows on TMDB, or only the Library's titles with `has_media?`.
-  Returns a `SearchResultsPage` of `SearchResult`s, each saying whether it's in the Library, and
-  the pagination metadata.
+  Searches one scope on its Metadata Provider: Movies and TV Shows on TMDB, Sports
+  Events on sportarr.net. With `has_media?`, searches only the Library's titles in
+  that scope. Returns a `SearchResultsPage` of `SearchResult`s, each saying whether
+  it's in the Library, and the pagination metadata.
   """
   use Ash.Resource.Actions.Implementation
 
   require Logger
 
   alias WatchClub.Contents
-  alias WatchClub.Contents.{ContentIdentity, SearchResult, SearchResultsPage}
+  alias WatchClub.Contents.{ContentIdentity, SearchContentType, SearchResult, SearchResultsPage}
+  alias WatchClub.Contents.SportsEvent
+  alias WatchClub.Integrations.SportarrHub
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
 
@@ -19,12 +22,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   @impl true
   def run(
         %Ash.ActionInput{
-          arguments: %{
-            query: query,
-            content_type: :movies_and_shows,
-            page: page,
-            has_media?: true
-          }
+          arguments: %{query: query, content_type: scope, page: page, has_media?: true}
         },
         _opts,
         context
@@ -33,6 +31,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       Contents.get_contents_in_library!(
         %{query: query},
         Ash.Context.to_opts(context,
+          query: [filter: [type: [in: SearchContentType.content_types(scope)]]],
           page: [limit: @library_page_size, offset: (page - 1) * @library_page_size, count: true],
           load: [:implementation]
         )
@@ -83,6 +82,36 @@ defmodule WatchClub.Contents.Actions.SearchContent do
      }}
   end
 
+  # sportarr.net returns every match at once, so there is a single page.
+  def run(
+        %Ash.ActionInput{
+          arguments: %{query: query, content_type: :sports_events, has_media?: false}
+        },
+        _opts,
+        context
+      ) do
+    Logger.info("Searching \"#{query}\" on sportarr.net",
+      event: :search_sports_events,
+      query: query
+    )
+
+    with {:ok, events} <- SportarrHub.search_events(query) do
+      results =
+        Enum.map(events, fn event ->
+          %SearchResult{
+            identity: ContentIdentity.for_sports_event(event.id),
+            title: event.title,
+            year: event.date && event.date.year,
+            overview: event.overview,
+            poster_path: event.poster_url
+          }
+        end)
+
+      {:ok,
+       %SearchResultsPage{results: put_has_media!(results, context), page: 1, total_pages: 1}}
+    end
+  end
+
   defp search_result(%MovieSearchResult{} = movie) do
     [
       %SearchResult{
@@ -120,6 +149,17 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       |> MapSet.new(&ContentIdentity.from_content/1)
 
     Enum.map(results, &%{&1 | has_media?: MapSet.member?(with_media, &1.identity)})
+  end
+
+  defp library_search_result(%{implementation: %SportsEvent{} = event} = content) do
+    %SearchResult{
+      identity: ContentIdentity.from_content(content),
+      title: event.title,
+      year: content.release_date && content.release_date.year,
+      overview: event.overview,
+      poster_path: event.poster_url,
+      has_media?: true
+    }
   end
 
   defp library_search_result(content) do

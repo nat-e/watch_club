@@ -26,7 +26,8 @@ defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
     WatchProgress
     |> Ash.Query.filter(
       user_id != ^context.actor.id and
-        (movie_id == ^content.id or tv_show_episode.tv_show_id == ^content.id)
+        (movie_id == ^content.id or sports_event_id == ^content.id or
+           tv_show_episode.tv_show_id == ^content.id)
     )
     |> Ash.Query.load([:user, tv_show_episode: [:aired?]])
     |> Ash.read!(Ash.Context.to_opts(context))
@@ -41,9 +42,14 @@ defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
     |> Enum.sort_by(& &1.last_watched_at, {:desc, DateTime})
   end
 
-  # The rules of Movie.actor_progress_status and TvShow.actor_progress_status, for another User
-  defp status(%{type: :movie}, [%WatchProgress{completed: true}]), do: :completed
-  defp status(%{type: :movie}, _progresses), do: :in_progress
+  # The rules of Movie.actor_progress_status and TvShow.actor_progress_status, for another User.
+  # A Sports Event has one progress, like a Movie.
+  defp status(%{type: type}, [%WatchProgress{completed: true}])
+       when type in [:movie, :sports_event],
+       do: :completed
+
+  defp status(%{type: type}, _progresses) when type in [:movie, :sports_event],
+    do: :in_progress
 
   defp status(%{type: :tv_show, tv_show: tv_show}, progresses) do
     finished = Enum.count(progresses, &(&1.completed and &1.tv_show_episode.aired?))

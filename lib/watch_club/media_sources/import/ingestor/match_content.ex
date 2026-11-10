@@ -1,7 +1,7 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   @moduledoc """
   Try to match a Candidate to a Content, using the main metadata provider
-  (TMDB for movies/shows, Hardcover for books).
+  (TMDB for movies/shows, sportarr.net for Sports Events, Hardcover for books).
 
   We try to match with the following strategy
   - If we have the main provider ID, match with that
@@ -13,6 +13,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   alias WatchClub.Contents
   alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
+  alias WatchClub.Integrations.SportarrHub
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
 
@@ -20,7 +21,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     BookIdentity,
     EpisodeIdentity,
     MatchResult,
-    MovieIdentity
+    MovieIdentity,
+    SportsEventIdentity
   }
 
   alias WatchClub.SystemActor
@@ -157,12 +159,50 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     end)
   end
 
+  # Sports Events
+  # 1. Match by Sportarr ID
+  defp find_content!(%SportsEventIdentity{sportarr_id: sportarr_id})
+       when is_binary(sportarr_id) do
+    Contents.get_or_refresh_content!(
+      ContentIdentity.for_sports_event(sportarr_id),
+      %{max_age: @metadata_max_age},
+      actor: SystemActor.actor()
+    )
+  end
+
+  # 2. Match by title, and year when known. We just fetch the Sportarr ID and go back to step 1.
+  defp find_content!(%SportsEventIdentity{title: title, year: year}) when is_binary(title) do
+    title
+    |> String.split()
+    # Drops separators such as "-", which sportarr.net's search doesn't skip
+    |> Enum.filter(&String.match?(&1, ~r/[[:alnum:]]/u))
+    |> search_sports_event!(year)
+    |> then(fn
+      nil -> nil
+      event -> find_content!(%SportsEventIdentity{sportarr_id: event.id})
+    end)
+  end
+
   # Books
   defp find_content!(%BookIdentity{}) do
     raise "Not implemented"
   end
 
   defp find_content!(_identity), do: nil
+
+  # sportarr.net only finds a title's exact words, but file names add words such as
+  # "Prelims". Drops the last word until an event matches, keeping two words at least
+  # so "UFC" alone doesn't match any UFC event.
+  defp search_sports_event!(words, _year) when length(words) < 2, do: nil
+
+  defp search_sports_event!(words, year) do
+    {:ok, events} = SportarrHub.search_events(Enum.join(words, " "))
+
+    case Enum.filter(events, &(is_nil(year) or (&1.date && &1.date.year == year))) do
+      [event | _] -> event
+      [] -> search_sports_event!(Enum.drop(words, -1), year)
+    end
+  end
 
   defp find_show_by_external_id!(source, external_id, %EpisodeIdentity{} = identity) do
     Tmdb.find_by_external_id!(external_id, source).tv_results

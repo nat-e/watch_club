@@ -1,7 +1,17 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
   alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
-  alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
+
+  alias WatchClub.Contents.{
+    Book,
+    Content,
+    ContentIdentity,
+    Movie,
+    SportsEvent,
+    TvShow,
+    TvShowEpisode
+  }
+
   alias WatchClub.Conversations.{Conversation, Message}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
@@ -178,6 +188,34 @@ defmodule WatchClub.Generator do
           })
 
         %{content | tv_show: tv_show}
+      end
+    )
+  end
+
+  def sports_event(opts \\ []) do
+    seed_generator(
+      %Content{
+        type: :sports_event,
+        external_id_source: :sportarr,
+        external_id: sequence(:sportarr_event_id, &"ev-#{&1}"),
+        original_title: sequence(:sports_event_title, &"UFC #{&1}"),
+        original_language: "en",
+        origin_country: "US",
+        release_date: opts[:release_date] || ~D[2025-01-18],
+        metadata_refreshed_at: DateTime.utc_now()
+      },
+      overrides: opts,
+      after_action: fn content ->
+        sports_event =
+          Ash.Seed.seed!(SportsEvent, %{
+            id: content.id,
+            title: content.original_title,
+            league_id: "lg-000079",
+            league_name: "UFC",
+            season: "2025"
+          })
+
+        %{content | sports_event: sports_event}
       end
     )
   end
@@ -389,6 +427,14 @@ defmodule WatchClub.Generator do
     }
   end
 
+  def media_sports_event_input(sports_event_id) do
+    %{
+      path: "/sports/#{sports_event_id}/video.mkv",
+      type: :sports_event,
+      video: video_input(:sports_event, sports_event_id)
+    }
+  end
+
   def media_episode_input(episode_id) do
     %{
       path: "/episodes/#{episode_id}/video.mkv",
@@ -402,6 +448,7 @@ defmodule WatchClub.Generator do
       case media_type do
         :movie -> :movie_id
         :tv_show_episode -> :tv_show_episode_id
+        :sports_event -> :sports_event_id
       end
 
     %{

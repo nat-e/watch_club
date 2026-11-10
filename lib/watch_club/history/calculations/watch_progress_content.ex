@@ -6,7 +6,12 @@ defmodule WatchClub.History.Calculations.WatchProgressContent do
 
   @impl true
   def load(_query, _opts, _context) do
-    [movie: :content, book: :content, tv_show_episode: [tv_show: :content]]
+    [
+      movie: :content,
+      book: :content,
+      tv_show_episode: [tv_show: :content],
+      sports_event: :content
+    ]
   end
 
   @impl true
@@ -19,6 +24,7 @@ defmodule WatchClub.History.Calculations.WatchProgressContent do
         wp.movie -> wp.movie.content
         wp.book -> wp.book.content
         wp.tv_show_episode -> wp.tv_show_episode.tv_show.content
+        wp.sports_event -> wp.sports_event.content
       end
     end)
   end

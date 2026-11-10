@@ -15,6 +15,7 @@ defmodule WatchClub.Contents.Content do
     Movie,
     SearchContentType,
     SearchResultsPage,
+    SportsEvent,
     TvShow
   }
 
@@ -164,6 +165,10 @@ defmodule WatchClub.Contents.Content do
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
 
+      change WatchClub.Contents.Changes.CreateOrUpdateSportsEvent,
+        only_when_valid?: true,
+        where: attribute_equals(:type, :sports_event)
+
       change load([:implementation])
     end
 
@@ -178,6 +183,10 @@ defmodule WatchClub.Contents.Content do
       change WatchClub.Contents.Changes.CreateOrUpdateTvShow,
         only_when_valid?: true,
         where: attribute_equals(:type, :tv_show)
+
+      change WatchClub.Contents.Changes.CreateOrUpdateSportsEvent,
+        only_when_valid?: true,
+        where: attribute_equals(:type, :sports_event)
     end
 
     action :get_or_refresh, :struct do
@@ -213,17 +222,14 @@ defmodule WatchClub.Contents.Content do
 
       argument :query, :string, allow_nil?: false
 
-      argument :content_type, SearchContentType,
-        allow_nil?: false,
-        default: :movies_and_shows,
-        description: "The only scope until books can be searched"
+      argument :content_type, SearchContentType, allow_nil?: false, default: :movies_and_shows
 
       argument :page, :integer, allow_nil?: false, default: 1
 
       argument :has_media?, :boolean,
         allow_nil?: false,
         default: false,
-        description: "Searches the Library's titles instead of TMDB"
+        description: "Searches the Library's titles instead of the Metadata Provider"
 
       run WatchClub.Contents.Actions.SearchContent
     end
@@ -279,8 +285,8 @@ defmodule WatchClub.Contents.Content do
     end
 
     attribute :origin_country, :string do
-      allow_nil? false
       public? true
+      description "Nil when the Metadata Provider doesn't say, as for some Sports Events"
     end
 
     attribute :release_date, :date do
@@ -319,6 +325,10 @@ defmodule WatchClub.Contents.Content do
       destination_attribute :id
     end
 
+    has_one :sports_event, SportsEvent do
+      destination_attribute :id
+    end
+
     has_one :request, ContentRequest
 
     # The Conversations in which another User recommended it to the actor, the latest first. A
@@ -332,12 +342,12 @@ defmodule WatchClub.Contents.Content do
       sort inserted_at: :desc
     end
 
-    # Of its Movie, its TV Show Episodes or its Book
+    # Of its Movie, its TV Show Episodes, its Book or its Sports Event's Parts
     has_many :medias, Media
   end
 
   calculations do
-    # Typed as a plain :struct (one of Book | Movie | TvShow), not :union:
+    # Typed as a plain :struct (one of Book | Movie | TvShow | SportsEvent), not :union:
     # union calculation values get wrapped in %Ash.Union{} on load, and
     # callers want the implementation struct directly.
     calculate :implementation, :struct, GetContentImplementation do
@@ -355,6 +365,7 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.has_media?
                   type == :movie -> movie.has_media?
                   type == :tv_show -> tv_show.has_media?
+                  type == :sports_event -> sports_event.has_media?
                 end
               )
 
@@ -366,6 +377,7 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.actor_progress_status
                   type == :movie -> movie.actor_progress_status
                   type == :tv_show -> tv_show.actor_progress_status
+                  type == :sports_event -> sports_event.actor_progress_status
                 end
               )
 
@@ -377,6 +389,7 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.actor_last_watched_at
                   type == :movie -> movie.actor_last_watched_at
                   type == :tv_show -> tv_show.actor_last_watched_at
+                  type == :sports_event -> sports_event.actor_last_watched_at
                 end
               )
 

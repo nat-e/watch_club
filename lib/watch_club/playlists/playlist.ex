@@ -173,5 +173,9 @@ defmodule WatchClub.Playlists.Playlist do
     count :tv_show_count, [:items, :content] do
       filter expr(type == :tv_show)
     end
+
+    count :sports_event_count, [:items, :content] do
+      filter expr(type == :sports_event)
+    end
   end
 end

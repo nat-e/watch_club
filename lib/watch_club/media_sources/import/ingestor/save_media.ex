@@ -11,7 +11,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
   require Logger
 
   def apply(%Candidate{media_type: media_type} = candidate)
-      when media_type in [:movie, :tv_show_episode] do
+      when media_type in [:movie, :tv_show_episode, :sports_event] do
     media =
       MediaCatalog.create_or_update_video!(
         %{
@@ -57,6 +57,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       case media_type do
         :movie -> %{movie_id: matched_id}
         :tv_show_episode -> %{tv_show_episode_id: matched_id}
+        :sports_event -> %{sports_event_id: matched_id}
       end
 
     Map.merge(foreign_key, %{
