@@ -1083,14 +1083,15 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "search_content/*" do
-    test "returns Sports Events from sportarr.net, and whether they're in the Library", %{
-      member: member
-    } do
+    test "returns the Sports Events from sportarr.net with the query's words, and whether they're in the Library",
+         %{
+           member: member
+         } do
       in_library = generate(sports_event())
       add_sports_event_video!(in_library.id)
 
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
-        assert conn.request_path == "/api/v2/json/search/event/UFC%2011"
+        assert conn.request_path == "/api/v2/json/search/event/UFC%2511"
 
         Req.Test.json(conn, %{
           "data" => %{
@@ -1115,7 +1116,7 @@ defmodule WatchClub.Contents.ContentTest do
                    has_media?: false
                  }
                ]
-             } = search_content!(%{query: "UFC 11", content_type: :sports_events}, actor: member)
+             } = search_content!(%{query: "UFC: 11", content_type: :sports_events}, actor: member)
     end
 
     test "searches the Library's Sports Events with has_media?", %{member: member} do

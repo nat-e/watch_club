@@ -88,10 +88,16 @@ defmodule WatchClub.Integrations.SportarrHub do
     defp presence(_value), do: nil
   end
 
-  @doc "The Sports Events whose title matches the query."
+  @doc """
+  The Sports Events whose title contains the query's words in order, ignoring case and
+  punctuation: `moicano nolan` finds "UFC Fight Night 292 Moicano vs Nolan".
+  """
   @spec search_events(String.t()) :: {:ok, [Event.t()]} | {:error, term()}
   def search_events(query) do
-    case request(url: "/api/v2/json/search/event/:query", path_params: [query: query]) do
+    # sportarr.net finds the titles that contain the query, where `%` stands for any text
+    pattern = String.replace(query, ~r/[^[:alnum:]]+/u, "%")
+
+    case request(url: "/api/v2/json/search/event/:query", path_params: [query: pattern]) do
       {:ok, %{"data" => %{"search" => events}}} when is_list(events) ->
         {:ok, Enum.map(events, &Event.from_api/1)}
 
