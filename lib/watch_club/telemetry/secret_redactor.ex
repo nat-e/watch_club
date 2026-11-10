@@ -46,15 +46,26 @@ defmodule WatchClub.Telemetry.SecretRedactor do
     end
   end
 
-  # Names are compared as sent, without decoding, so a malformed query can't raise.
+  # Keeps the rest of the query exactly as sent.
   defp redact_query(query, secret_params) do
     query
     |> String.split("&")
     |> Enum.map_join("&", fn pair ->
       case String.split(pair, "=", parts: 2) do
-        [name, _value] -> if name in secret_params, do: name <> "=REDACTED", else: pair
-        [_name] -> pair
+        [name, _value] ->
+          if decode_param_name(name) in secret_params, do: name <> "=REDACTED", else: pair
+
+        [_name] ->
+          pair
       end
     end)
+  end
+
+  # Decoded as Plug reads it, so `%74oken` matches `token`. A processor must not raise,
+  # so a malformed name is compared as sent.
+  defp decode_param_name(name) do
+    URI.decode_www_form(name)
+  rescue
+    ArgumentError -> name
   end
 end

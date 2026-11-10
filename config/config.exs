@@ -7,9 +7,9 @@
 # General application configuration
 import Config
 
-# Request parameters whose values are secrets. URLs carry secrets only in these query
-# parameters. Phoenix logs and Sentry hide parameters whose names contain one of them;
-# traces redact query parameters with exactly these names.
+# Request parameters whose values are secrets. URLs carry secrets only in query parameters
+# with these exact names, which traces redact. Phoenix logs and Sentry also hide any
+# parameter whose name contains one of them.
 secret_params = ["password", "token", "_csrf_token", "code"]
 
 config :phoenix, :filter_parameters, secret_params
