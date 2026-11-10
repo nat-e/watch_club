@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/nat-e/watch_club/compare/v0.1.5...v0.1.6) (2026-11-10)
+
+
+### Features
+
+* **player:** cast to a TV ([#77](https://github.com/nat-e/watch_club/issues/77)) ([71e7d89](https://github.com/nat-e/watch_club/commit/71e7d89fec82081642c3461b18ef7e76ff9b251f))
+
 ## [0.1.5](https://github.com/nat-e/watch_club/compare/v0.1.4...v0.1.5) (2026-11-10)
 
 
