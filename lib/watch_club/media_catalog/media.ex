@@ -90,7 +90,13 @@ defmodule WatchClub.MediaCatalog.Media do
       Unmatched, sorted by date added or by title. Always one page at a time, with the total.
       """
 
-      argument :search, :string
+      argument :search, :string do
+        description """
+        Keeps the Media where each of its words is in the path or the title, in any order. Words
+        such as `s1`, `e01` or `s01e02` match the TV Show Episode's season and episode numbers.
+        """
+      end
+
       argument :media_type, MediaType
       argument :unmatched?, :boolean, allow_nil?: false, default: false
 

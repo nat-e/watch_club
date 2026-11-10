@@ -645,15 +645,39 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert row.id == unmatched.id
     end
 
-    test "searches the path" do
-      movie = generate(movie())
-      _needle = generate(video_media(movie, path: "/browse/needle.mkv"))
+    test "searches each word in the path or the title, in any order" do
+      movie = generate(movie(original_title: "Dune"))
+      _needle = generate(video_media(movie, path: "/browse/needle-2160p.mkv"))
       _other = generate(video_media(movie, path: "/browse/other.mkv"))
 
       assert [row] =
-               browse_media!(%{search: "NEEDLE"}, page: [limit: 50], actor: generate(user())).results
+               browse_media!(%{search: "2160P dune NEEDLE"},
+                 page: [limit: 50],
+                 actor: generate(user())
+               ).results
 
-      assert row.path == "/browse/needle.mkv"
+      assert row.path == "/browse/needle-2160p.mkv"
+    end
+
+    test "searches TV Show Episodes by season and episode number" do
+      tv_show =
+        generate(tv_show(original_title: "A Show", num_seasons: 2, episodes_per_season: 2))
+
+      medias =
+        Map.new(tv_show.tv_show.episodes, fn episode ->
+          {{episode.season_number, episode.episode_number}, generate(video_media(episode)).id}
+        end)
+
+      browse = fn search ->
+        %{search: search}
+        |> browse_media!(page: [limit: 50], actor: generate(user()))
+        |> Map.fetch!(:results)
+        |> MapSet.new(& &1.id)
+      end
+
+      assert browse.("show S01E02") == MapSet.new([medias[{1, 2}]])
+      assert browse.("e1 s2") == MapSet.new([medias[{2, 1}]])
+      assert browse.("s02") == MapSet.new([medias[{2, 1}], medias[{2, 2}]])
     end
 
     test "searches the title in the actor's language" do
