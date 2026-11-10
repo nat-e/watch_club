@@ -48,12 +48,6 @@ msgid "Add Source"
 msgstr "Ajouter la source"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
-#, elixir-autogen, elixir-format
-msgid "All media previously imported will not be removed from the instance."
-msgstr "Les médias déjà importés ne seront pas retirés de l'instance."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
@@ -624,3 +618,9 @@ msgstr "Importez des événements sportifs depuis un serveur Sportarr."
 #, elixir-autogen, elixir-format
 msgid "Sportarr"
 msgstr "Sportarr"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Its media will be removed from the instance too. Their files stay on disk."
+msgstr "Ses médias seront aussi retirés de l'instance. Leurs fichiers restent sur le disque."

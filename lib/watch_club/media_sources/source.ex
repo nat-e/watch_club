@@ -19,6 +19,7 @@ defmodule WatchClub.MediaSources.Source do
   alias WatchClub.MediaSources.Source.Calculations.GetImplementation
 
   alias WatchClub.MediaSources.Source.Changes.{
+    CancelMediaImport,
     ComputeName,
     ManageServarrImplementation,
     SetServarrTypes
@@ -90,7 +91,13 @@ defmodule WatchClub.MediaSources.Source do
     end
 
     destroy :destroy do
+      description "Deletes the Media Source and its Media. Their files stay on disk."
       primary? true
+      require_atomic? false
+
+      change CancelMediaImport
+      # Through Media's destroy, which removes their files on disk
+      change cascade_destroy(:medias, after_action?: false)
     end
   end
 
