@@ -7,6 +7,7 @@ defmodule WatchClub.Contents.TvShowEpisodeLocalization do
   alias WatchClub.Contents.Calculations.LocalizationRank
   alias WatchClub.Contents.Preparations.SortLocalizationsByRank
   alias WatchClub.Contents.TvShowEpisode
+  alias WatchClub.Shared.UpsertCondition
 
   postgres do
     table "tv_show_episode_localizations"
@@ -20,8 +21,20 @@ defmodule WatchClub.Contents.TvShowEpisodeLocalization do
     end
   end
 
+  # The metadata a refresh overwrites
+  @refreshed_fields [:title, :overview]
+
   actions do
-    defaults [:read, :destroy, create: :*, update: :*]
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:tv_show_episode_id, :iso_639_1, :iso_3166_1 | @refreshed_fields]
+      upsert? true
+      upsert_identity :unique_locale_per_tv_show_episode
+      upsert_fields @refreshed_fields
+      upsert_condition UpsertCondition.any_changed(@refreshed_fields)
+    end
   end
 
   preparations do

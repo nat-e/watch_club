@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.TvShow do
 
   alias WatchClub.Contents.{Content, TvShowEpisode, TvShowLocalization}
   alias WatchClub.History.WatchStatus
+  alias WatchClub.Shared.UpsertCondition
 
   postgres do
     table "tv_shows"
@@ -16,48 +17,18 @@ defmodule WatchClub.Contents.TvShow do
     end
   end
 
+  # The metadata a refresh overwrites
+  @refreshed_fields [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
+
   actions do
     defaults [:read, :destroy]
 
     create :create do
       primary? true
-      accept [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
-
-      argument :localizations, {:array, :map}, allow_nil?: false, default: []
-      argument :episodes, {:array, :map}, allow_nil?: false, default: []
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show],
-               on_missing: :ignore
-             )
-
-      change manage_relationship(:episodes,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_position_per_tv_show],
-               on_missing: :ignore
-             )
-    end
-
-    update :update do
-      primary? true
-      require_atomic? false
-      accept [:original_name, :backdrop_path, :tmdb_id, :tvdb_id]
-
-      argument :localizations, {:array, :map}
-      argument :episodes, {:array, :map}
-
-      change manage_relationship(:localizations,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_locale_per_tv_show],
-               on_missing: :ignore
-             )
-
-      change manage_relationship(:episodes,
-               type: :direct_control,
-               use_identities: [:_primary_key, :unique_position_per_tv_show],
-               on_missing: :ignore
-             )
+      accept [:id | @refreshed_fields]
+      upsert? true
+      upsert_fields @refreshed_fields
+      upsert_condition UpsertCondition.any_changed(@refreshed_fields)
     end
   end
 

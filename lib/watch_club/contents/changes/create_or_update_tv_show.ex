@@ -3,15 +3,29 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
   alias OpentelemetryProcessPropagator.Task
   alias WatchClub.Accounts.UserLocale
-  alias WatchClub.Contents.{CastMember, Genre, MetadataUnavailable, Rating, TvShowEpisode}
+
+  alias WatchClub.Contents.{
+    CastMember,
+    Genre,
+    MetadataUnavailable,
+    Rating,
+    TvShow,
+    TvShowEpisode,
+    TvShowEpisodeLocalization,
+    TvShowLocalization
+  }
+
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.TvDetailsResponse
   alias WatchClub.Integrations.Tmdb.Types.{Images, Videos}
 
   require Logger
 
+  # Rows per bulk statement, well under Postgres's limit of 65,535 parameters
+  @batch_size 1_000
+
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, _opts, context) do
     tmdb_id =
       String.to_integer(
         Ash.Changeset.get_attribute(changeset, :external_id) ||
@@ -35,25 +49,61 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
 
         changeset
         |> set_base_content(show)
-        |> Ash.Changeset.manage_relationship(
-          :tv_show,
-          %{
-            original_name: show.original_name,
-            backdrop_path: Images.best_backdrop_path(show.images),
-            tmdb_id: show.id,
-            tvdb_id: show.external_ids.tvdb_id,
-            localizations: localizations,
-            episodes: episodes
-          },
-          type: :direct_control,
-          authorize?: false
-        )
         |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
+        |> Ash.Changeset.after_action(fn _changeset, content ->
+          # Returns the stored TV Show, instead of an error, when nothing changed
+          Ash.create!(
+            TvShow,
+            %{
+              id: content.id,
+              original_name: show.original_name,
+              backdrop_path: Images.best_backdrop_path(show.images),
+              tmdb_id: show.id,
+              tvdb_id: show.external_ids.tvdb_id
+            },
+            return_skipped_upsert?: true,
+            scope: context
+          )
+
+          localizations
+          |> Enum.map(&Map.put(&1, :tv_show_id, content.id))
+          |> Ash.bulk_create!(TvShowLocalization, :create, scope: context)
+
+          save_episodes!(content.id, episodes, context)
+          {:ok, content}
+        end)
       else
         {:error, reason} ->
           Ash.Changeset.add_error(changeset, MetadataUnavailable.exception(reason: reason))
       end
     end)
+  end
+
+  defp save_episodes!(tv_show_id, episodes, context) do
+    # Includes the unchanged TV Show Episodes, whose localizations need their ids too
+    episode_ids =
+      episodes
+      |> Enum.map(&(&1 |> Map.delete(:localizations) |> Map.put(:tv_show_id, tv_show_id)))
+      |> Ash.bulk_create!(TvShowEpisode, :create,
+        return_records?: true,
+        return_skipped_upsert?: true,
+        batch_size: @batch_size,
+        scope: context
+      )
+      |> Map.fetch!(:records)
+      |> Map.new(&{{&1.season_number, &1.episode_number}, &1.id})
+
+    for episode <- episodes, localization <- episode.localizations do
+      Map.put(
+        localization,
+        :tv_show_episode_id,
+        Map.fetch!(episode_ids, {episode.season_number, episode.episode_number})
+      )
+    end
+    |> Ash.bulk_create!(TvShowEpisodeLocalization, :create,
+      batch_size: @batch_size,
+      scope: context
+    )
   end
 
   defp set_base_content(%Ash.Changeset{} = changeset, %TvDetailsResponse{} = tv_show) do
