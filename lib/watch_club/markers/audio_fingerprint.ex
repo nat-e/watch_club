@@ -156,7 +156,7 @@ defmodule WatchClub.Markers.AudioFingerprint do
     result =
       Tracer.with_span "fingerprint audio", %{attributes: attributes} do
         :telemetry.span([:watch_club, :audio_fingerprint, :compute], %{part: part}, fn ->
-          {@ffprobe.audio_fingerprint(path, offset_seconds, seconds), %{part: part}}
+          {@ffprobe.audio_fingerprint!(path, offset_seconds, seconds), %{part: part}}
         end)
       end
 

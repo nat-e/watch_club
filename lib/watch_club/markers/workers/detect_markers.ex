@@ -3,7 +3,8 @@ defmodule WatchClub.Markers.Workers.DetectMarkers do
   Finds the Markers of the TV Show Episodes of one season, or of a single other Video.
   Enqueued after a Video is imported (see `WatchClub.Markers.Changes.ScheduleDetection`).
 
-  A season's job waits for a minute without imports of its episodes, so an import finds
+  Each import of one of a season's episodes pushes its waiting job back to a minute later,
+  until the job is due. The job reads the season when it starts, so an import usually finds
   the Markers of each season once, with all its episodes.
 
   Runs on a single-worker queue, so detections never take more than one core.

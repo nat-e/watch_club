@@ -155,6 +155,27 @@ defmodule WatchClub.Markers.MarkerTest do
       assert markers(readable) == []
     end
 
+    test "keeps the Markers of a Video whose audio can't be read", %{tmp_dir: tmp_dir} do
+      {show_id, [unreadable, first, second]} = season_videos(3, tmp_dir)
+
+      chapters = [chapter(30, 60, "Intro"), chapter(1250, 1320, "Credits")]
+      stub_chapters(Map.new([unreadable, first, second], &{&1.media.path, chapters}))
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
+
+      stub_chapters(%{})
+
+      stub_fingerprints(%{
+        first.media.path => [{:first, 100}, {:theme, 320}],
+        second.media.path => [{:second, 500}, {:theme, 320}]
+      })
+
+      Markers.detect_season_markers!(show_id, 1, actor: SystemActor.actor())
+
+      assert markers(unreadable) == [credits: {1250.0, 1320.0}, intro: {30.0, 60.0}]
+      assert_markers(first, intro: range(100, 320), credits: credits())
+      assert_markers(second, intro: range(500, 320), credits: credits())
+    end
+
     test "finds no Markers for an episode alone in its season, without chapters",
          %{tmp_dir: tmp_dir} do
       {show_id, [video]} = season_videos(1, tmp_dir)
@@ -210,12 +231,15 @@ defmodule WatchClub.Markers.MarkerTest do
   end
 
   # The fingerprint of each Video's beginning is made of the given sounds, as names and numbers
-  # of points. Its fingerprint of the end has 400 points of credits music after 2000 points.
+  # of points. Its fingerprint of the end has 400 points of credits music after 2000 points. The
+  # audio of the other Videos can't be read.
   defp stub_fingerprints(beginnings) do
-    stub(ProbeMock, :audio_fingerprint, fn path, from_seconds, _seconds ->
-      if from_seconds == 0,
-        do: {:ok, Enum.flat_map(beginnings[path], fn {name, points} -> sound(name, points) end)},
-        else: {:ok, sound({path, :end}, 2000) ++ sound(:credits, 400)}
+    stub(ProbeMock, :audio_fingerprint!, fn path, from_seconds, _seconds ->
+      cond do
+        not Map.has_key?(beginnings, path) -> {:error, "Invalid data found"}
+        from_seconds == 0 -> {:ok, Enum.flat_map(beginnings[path], fn {n, p} -> sound(n, p) end)}
+        true -> {:ok, sound({path, :end}, 2000) ++ sound(:credits, 400)}
+      end
     end)
   end
 

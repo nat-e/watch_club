@@ -624,7 +624,7 @@ _Avoid_: Group, aggregate, card, item
 
 - A **Video** has at most one **Marker** of each kind: **Intro**, **Recap** and **Credits**
 - A **Video**'s **Markers** come from its named chapters; a **TV Show Episode**'s missing **Intro** or **Credits** also comes from the longest audio it shares with another **TV Show Episode** of its season
-- WatchClub finds the **Markers** of a season's **TV Show Episodes** together, in the background, a minute after the last of them is imported; it finds the **Markers** of any other **Video** each time the **Video** is imported
+- WatchClub finds the **Markers** of a season's **TV Show Episodes** together, in the background, about a minute after the last of them is imported; it finds the **Markers** of any other **Video** each time the **Video** is imported
 - A **TV Show Episode** alone in its season only gets the **Markers** of its named chapters
 - A **Video** whose file can't be read keeps the **Markers** it has
 
