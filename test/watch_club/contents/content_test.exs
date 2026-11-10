@@ -1230,6 +1230,14 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert identity == ContentIdentity.for_tv_show(95_396)
     end
+
+    test "rejects a type outside the scope", %{member: member} do
+      search_content(%{query: "ufc", content_type: :sports_events, type: :movie}, actor: member)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %Ash.Error.Action.InvalidArgument{field: :type} -> true
+        _ -> false
+      end)
+    end
   end
 
   describe "look_up_content/*" do
