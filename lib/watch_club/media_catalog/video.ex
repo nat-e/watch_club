@@ -112,6 +112,7 @@ defmodule WatchClub.MediaCatalog.Video do
       accept [
         :movie_id,
         :tv_show_episode_id,
+        :sports_event_id,
         :file_fingerprint,
         :duration_seconds,
         :container,

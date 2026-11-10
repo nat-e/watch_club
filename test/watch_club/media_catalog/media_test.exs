@@ -289,6 +289,20 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       end
     end
 
+    test "attaches a Sports Event file matched to another Sports Event to it" do
+      new_sports_event = generate(sports_event())
+      input = media_sports_event_input(generate(sports_event()).id)
+      create_or_update_video!(input, actor: SystemActor.actor())
+
+      rematched =
+        input
+        |> put_in([:video, :sports_event_id], new_sports_event.id)
+        |> create_or_update_video!(actor: SystemActor.actor(), load: :video)
+
+      assert rematched.content_id == new_sports_event.id
+      assert rematched.video.sports_event_id == new_sports_event.id
+    end
+
     test "rejects writes from a non-system actor" do
       user = generate(user())
       movie = seed_movie()
