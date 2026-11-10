@@ -1,5 +1,10 @@
 defmodule WatchClub.Telemetry.Metrics do
-  @moduledoc false
+  @moduledoc """
+  Exports `Telemetry.Metrics` definitions as OpenTelemetry instruments.
+
+  Definitions with the same name share one instrument, such as a span's `:stop` and `:exception`
+  events recording into one histogram. Tags whose value is nil are left out.
+  """
 
   use GenServer
 
@@ -23,44 +28,37 @@ defmodule WatchClub.Telemetry.Metrics do
 
     meter = :otel_meter_provider.get_meter(scope)
 
+    # Names come only from the application's fixed metric definitions.
+    instruments =
+      for metric <- metrics, do: {metric, metric.name |> Enum.join(".") |> String.to_atom()}
+
+    for {metric, name} <- Enum.uniq_by(instruments, fn {_metric, name} -> name end) do
+      options = %{description: metric.description || "", unit: unit(metric.unit)}
+
+      case metric do
+        %Counter{} ->
+          :otel_meter.create_counter(meter, name, options)
+
+        %Sum{} ->
+          :otel_meter.create_counter(meter, name, options)
+
+        %Summary{} ->
+          options =
+            Map.put(options, :advisory_params, %{
+              explicit_bucket_boundaries: Keyword.fetch!(metric.reporter_options, :buckets)
+            })
+
+          :otel_meter.create_histogram(meter, name, options)
+
+        %LastValue{} ->
+          :otel_meter.create_observable_gauge(meter, name, &__MODULE__.observe/1, name, options)
+      end
+    end
+
     handlers =
-      metrics
-      |> Enum.group_by(& &1.event_name)
-      |> Enum.map(fn {event, metrics} ->
-        instruments =
-          Enum.map(metrics, fn metric ->
-            # Names come only from the application's fixed metric definitions.
-            name = metric.name |> Enum.join(".") |> String.to_atom()
-            options = %{description: metric.description || "", unit: unit(metric.unit)}
-
-            case metric do
-              %Counter{} ->
-                :otel_meter.create_counter(meter, name, options)
-
-              %Sum{} ->
-                :otel_meter.create_counter(meter, name, options)
-
-              %Summary{} ->
-                options =
-                  Map.put(options, :advisory_params, %{
-                    explicit_bucket_boundaries: Keyword.fetch!(metric.reporter_options, :buckets)
-                  })
-
-                :otel_meter.create_histogram(meter, name, options)
-
-              %LastValue{} ->
-                :otel_meter.create_observable_gauge(
-                  meter,
-                  name,
-                  &__MODULE__.observe/1,
-                  name,
-                  options
-                )
-            end
-
-            {metric, name}
-          end)
-
+      instruments
+      |> Enum.group_by(fn {metric, _name} -> metric.event_name end)
+      |> Enum.map(fn {event, instruments} ->
         id = {__MODULE__, event}
         :telemetry.detach(id)
         :ok = :telemetry.attach(id, event, &__MODULE__.handle_event/4, {meter, instruments})
@@ -88,7 +86,11 @@ defmodule WatchClub.Telemetry.Metrics do
         end
 
       if is_number(value) do
-        attributes = metadata |> metric.tag_values.() |> Map.take(metric.tags)
+        attributes =
+          metadata
+          |> metric.tag_values.()
+          |> Map.take(metric.tags)
+          |> Map.reject(fn {_tag, value} -> is_nil(value) end)
 
         case metric do
           %LastValue{} ->
@@ -119,5 +121,10 @@ defmodule WatchClub.Telemetry.Metrics do
 
   defp unit(:second), do: "s"
   defp unit(:byte), do: "By"
-  defp unit(:unit), do: "1"
+
+  # Counts name what they count, such as {request}.
+  defp unit(unit) do
+    "{" <> _ = annotation = Atom.to_string(unit)
+    annotation
+  end
 end
