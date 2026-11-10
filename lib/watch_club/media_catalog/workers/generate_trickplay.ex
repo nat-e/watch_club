@@ -1,13 +1,12 @@
 defmodule WatchClub.MediaCatalog.Workers.GenerateTrickplay do
   @moduledoc """
   Builds the sprite-sheet JPEGs and generation metadata for one Video's
-  scrubbing thumbnails. Enqueued after a Video is imported (see
+  scrubbing thumbnails. Enqueued when a Video's file is new or changed (see
   `WatchClub.MediaCatalog.Changes.ScheduleTrickplay`). The WebVTT manifest the
   player loads is built at serve time from that metadata (see
   `WatchClub.Ffmpeg.Trickplay`).
 
-  Each run wipes and rebuilds the Video's trickplay directory, so a re-imported
-  Video always reflects its current file.
+  Each run wipes and rebuilds the Video's trickplay directory.
 
   A Video deleted between enqueue and run is the one expected miss and completes
   the job; anything else crashes it so Oban retries.

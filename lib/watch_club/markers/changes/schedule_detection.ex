@@ -1,7 +1,10 @@
 defmodule WatchClub.Markers.Changes.ScheduleDetection do
   @moduledoc """
-  After a Video upsert commits, enqueues the `DetectMarkers` job of its TV Show Episode's
-  season, or of its Movie. Unmatched Media gets no Markers.
+  Enqueues the `DetectMarkers` job of the Video's TV Show Episode's season, or of its Movie, when
+  its file is new, its File Fingerprint changed or its match changed. With `always?: true`, every
+  time. Unmatched Media gets no Markers.
+
+  The job is inserted in the action's transaction, so it runs once the Video is saved.
   """
 
   use Ash.Resource.Change
@@ -11,10 +14,14 @@ defmodule WatchClub.Markers.Changes.ScheduleDetection do
   alias WatchClub.MediaCatalog.Video
 
   @impl true
-  def change(changeset, _opts, context) do
-    Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
-      with {:ok, media} <- result do
-        case Ash.load!(media, [video: :tv_show_episode], scope: context).video do
+  def change(changeset, opts, context) do
+    Ash.Changeset.after_action(changeset, fn changeset, video ->
+      if Keyword.get(opts, :always?, false) or
+           Enum.any?(
+             [:file_fingerprint, :movie_id, :tv_show_episode_id],
+             &Ash.Changeset.changing_attribute?(changeset, &1)
+           ) do
+        case Ash.load!(video, :tv_show_episode, scope: context) do
           %Video{tv_show_episode: %TvShowEpisode{} = episode} ->
             OpentelemetryOban.insert!(
               DetectMarkers.new_season_job(episode.tv_show_id, episode.season_number)
@@ -26,9 +33,9 @@ defmodule WatchClub.Markers.Changes.ScheduleDetection do
           %Video{} ->
             :unmatched
         end
-
-        {:ok, media}
       end
+
+      {:ok, video}
     end)
   end
 end

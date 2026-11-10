@@ -6,6 +6,10 @@ defmodule WatchClub.MediaCatalog.Video do
   `Video.id` is the same value as its parent `Media.id` (shared primary key,
   no separate `media_id` column).
 
+  Saving a Video builds its Scrubbing Thumbnails when its file is new or changed,
+  as its File Fingerprint tells, or when they're missing. It finds its Markers
+  when its file or its match changes.
+
   Direct creation is reserved for Instance Administrator access; the production
   path goes through `WatchClub.MediaCatalog.create_video/2`, which uses relationship
   management to create the Video alongside its parent Media and tracks.
@@ -18,8 +22,10 @@ defmodule WatchClub.MediaCatalog.Video do
     authorizers: [Ash.Policy.Authorizer]
 
   alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
+  alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
+  alias WatchClub.MediaCatalog.Changes.ScheduleTrickplay
 
   postgres do
     table "videos"
@@ -74,11 +80,29 @@ defmodule WatchClub.MediaCatalog.Video do
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
+      change ScheduleTrickplay
+      change ScheduleDetection
     end
 
     # The Movie, TV Show Episode or Sports Event of a Manual Match
     update :attach do
+      require_atomic? false
       accept [:movie_id, :tv_show_episode_id, :sports_event_id]
+
+      change ScheduleDetection
+    end
+
+    update :regenerate_thumbnails_and_markers do
+      description """
+      Builds the Video's Scrubbing Thumbnails and finds its Markers again, even when its file
+      hasn't changed
+      """
+
+      require_atomic? false
+      accept []
+
+      change {ScheduleTrickplay, always?: true}
+      change {ScheduleDetection, always?: true}
     end
 
     update :update do
@@ -112,6 +136,8 @@ defmodule WatchClub.MediaCatalog.Video do
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
+      change ScheduleTrickplay
+      change ScheduleDetection
     end
   end
 
@@ -127,8 +153,14 @@ defmodule WatchClub.MediaCatalog.Video do
       authorize_if always()
     end
 
-    policy action_type([:create, :update, :destroy]) do
+    policy action([:create, :attach, :update, :destroy]) do
       description "Only the system actor can write Videos"
+      authorize_if actor_attribute_equals(:system?, true)
+    end
+
+    policy action(:regenerate_thumbnails_and_markers) do
+      description "The Instance Administrator and system actor regenerate Scrubbing Thumbnails and Markers"
+      authorize_if actor_attribute_equals(:administrator?, true)
       authorize_if actor_attribute_equals(:system?, true)
     end
   end

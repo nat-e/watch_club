@@ -29,6 +29,12 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   def dir(video_id), do: Path.join(trickplay_root(), video_id)
 
   @doc """
+  Whether the Video's sprite sheets are built: `meta.json` is missing until a generation
+  succeeds.
+  """
+  def generated?(video_id), do: File.exists?(Path.join(dir(video_id), @metadata_file))
+
+  @doc """
   Resolves a sprite-sheet file path for serving. `file_name` comes from the URL,
   so it's restricted to a numeric sheet name (`0.jpg`, `1.jpg`, …) — the guard
   that stops a request escaping the trickplay tree or reaching `meta.json`.
