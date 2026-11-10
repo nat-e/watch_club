@@ -13,7 +13,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
 
   attr :request, ContentRequest,
     required: true,
-    doc: "with what `request_status/1` needs, and its Content's `actor_ready_to_play?`"
+    doc: "with what `request_status/1` needs, and its Content's `actor_next_medias_to_play`"
 
   attr :focus_after_removal, :string,
     required: true,
@@ -43,7 +43,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
           />
         </.link>
         <div
-          :if={@request.content.actor_ready_to_play?}
+          :if={@request.content.actor_next_medias_to_play != []}
           class="absolute inset-0 grid place-items-center"
         >
           <.live_component

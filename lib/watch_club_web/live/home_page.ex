@@ -189,9 +189,9 @@ defmodule WatchClubWeb.HomePage do
     in_progress =
       Contents.get_user_recently_watched!(
         load: content_load(),
-        query: [limit: @in_progress_limit],
         actor: socket.assigns.current_user
       )
+      |> Enum.take(@in_progress_limit)
 
     # Intentionally small: @in_progress_limit Contents
     assign(socket, :in_progress, in_progress)

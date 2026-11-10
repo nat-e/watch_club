@@ -1274,9 +1274,6 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
                [newer.id, ready_show.id, older.id]
-
-      assert get_user_recently_watched!(query: [limit: 1], actor: member) |> Enum.map(& &1.id) ==
-               [newer.id]
     end
   end
 

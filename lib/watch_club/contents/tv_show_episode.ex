@@ -154,9 +154,6 @@ defmodule WatchClub.Contents.TvShowEpisode do
     # numbers stay under 100,000.
     calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
-    # The one Play starts for the actor, in its TV Show
-    calculate :actor_next?, :boolean, expr(rank == tv_show.actor_next_episode_rank)
-
     calculate :has_media?, :boolean, expr(videos_count > 0)
 
     # Once its air date has passed. Only aired episodes can be marked as watched, and they decide
