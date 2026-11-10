@@ -1,7 +1,7 @@
 defmodule WatchClub.Markers.Marker do
   @moduledoc """
   A part of a Video that the Player lets a User skip: its Intro, Recap or Credits.
-  The `detect` action finds them, in the background after each import.
+  The `detect_season` and `detect_movie` actions find them in the background.
   """
 
   use Ash.Resource,
@@ -27,18 +27,25 @@ defmodule WatchClub.Markers.Marker do
   actions do
     defaults [:read, :destroy, create: [:video_id, :kind, :start_seconds, :end_seconds]]
 
-    create :add_if_missing do
-      description "Gives the Video this Marker, unless it already has one of its kind."
-      accept [:video_id, :kind, :start_seconds, :end_seconds]
-      upsert? true
-      upsert_identity :unique_kind_per_video
-      # The Video keeps the Marker it has
-      upsert_fields []
+    action :detect_season do
+      description """
+      Finds the Markers of the TV Show Episodes of a season, together. Reads each file for a
+      few seconds: run it in the background.
+      """
+
+      argument :tv_show_id, :uuid, allow_nil?: false
+      argument :season_number, :integer, allow_nil?: false
+
+      run WatchClub.Markers.Marker.Actions.Detect
     end
 
-    action :detect do
-      description "Finds the Video's Markers. Reads the file for a few seconds: run it in the background."
-      argument :video, :struct, allow_nil?: false, constraints: [instance_of: Video]
+    action :detect_movie do
+      description """
+      Finds the Markers of the Movie's Videos. Reads each file for a few seconds: run it in
+      the background.
+      """
+
+      argument :movie_id, :uuid, allow_nil?: false
 
       run WatchClub.Markers.Marker.Actions.Detect
     end

@@ -30,28 +30,34 @@ defmodule WatchClub.Markers.AudioFingerprint do
 
   @doc """
   Fingerprint of the `:beginning` or the `:end` of the Video's audio, from the
-  cache or computed with ffmpeg and fpcalc.
+  cache or computed with ffmpeg and fpcalc. An error when the file can't be read.
   """
-  def fetch!(video_id, path, duration_seconds, part) when part in [:beginning, :end] do
+  def fetch(video_id, path, duration_seconds, part) when part in [:beginning, :end] do
     seconds = min(@max_window_seconds, duration_seconds / 4)
     offset_seconds = if part == :beginning, do: 0.0, else: duration_seconds - seconds
-    %File.Stat{size: size, mtime: mtime} = File.stat!(path, time: :posix)
-    # A cached fingerprint is only good for the same file and the same part of it
-    key = {size, mtime, offset_seconds, seconds}
     cache = Path.join(dir(video_id), "#{part}.fingerprint")
 
-    {binary, cached?} =
-      with {:ok, cached} <- File.read(cache),
-           {^key, binary} <- :erlang.binary_to_term(cached, [:safe]) do
-        {binary, true}
-      else
-        _missing_or_stale -> {compute!(path, key, cache, part), false}
+    with {:ok, %File.Stat{size: size, mtime: mtime}} <- File.stat(path, time: :posix) do
+      # A cached fingerprint is only good for the same file and the same part of it
+      key = {size, mtime, offset_seconds, seconds}
+
+      {result, cached?} =
+        with {:ok, cached} <- File.read(cache),
+             {^key, binary} <- :erlang.binary_to_term(cached, [:safe]) do
+          {{:ok, binary}, true}
+        else
+          _missing_or_stale -> {compute(path, key, cache, part), false}
+        end
+
+      :telemetry.execute([:watch_club, :audio_fingerprint, :fetch], %{count: 1}, %{
+        cached: cached?
+      })
+
+      with {:ok, binary} <- result do
+        points = for <<point::little-32 <- binary>>, do: point
+        {:ok, %__MODULE__{offset_seconds: offset_seconds, points: List.to_tuple(points)}}
       end
-
-    :telemetry.execute([:watch_club, :audio_fingerprint, :fetch], %{count: 1}, %{cached: cached?})
-
-    points = for <<point::little-32 <- binary>>, do: point
-    %__MODULE__{offset_seconds: offset_seconds, points: List.to_tuple(points)}
+    end
   end
 
   @doc "Deletes the Video's cached fingerprints."
@@ -141,25 +147,27 @@ defmodule WatchClub.Markers.AudioFingerprint do
     (value * 0x01010101 &&& 0xFFFFFFFF) >>> 24
   end
 
-  defp compute!(path, {_size, _mtime, offset_seconds, seconds} = key, cache, part) do
+  defp compute(path, {_size, _mtime, offset_seconds, seconds} = key, cache, part) do
     attributes = %{
       "watch_club.audio_fingerprint.part": to_string(part),
       "watch_club.audio_fingerprint.seconds": seconds
     }
 
-    binary =
+    result =
       Tracer.with_span "fingerprint audio", %{attributes: attributes} do
         :telemetry.span([:watch_club, :audio_fingerprint, :compute], %{part: part}, fn ->
-          {:ok, points} = @ffprobe.audio_fingerprint(path, offset_seconds, seconds)
-          {for(point <- points, into: <<>>, do: <<point::little-32>>), %{part: part}}
+          {@ffprobe.audio_fingerprint(path, offset_seconds, seconds), %{part: part}}
         end)
       end
 
-    # Written to a tmp name then renamed, so a reader never sees a partial file
-    File.mkdir_p!(Path.dirname(cache))
-    File.write!("#{cache}.tmp", :erlang.term_to_binary({key, binary}))
-    File.rename!("#{cache}.tmp", cache)
-    binary
+    with {:ok, points} <- result do
+      binary = for point <- points, into: <<>>, do: <<point::little-32>>
+      # Written to a tmp name then renamed, so a reader never sees a partial file
+      File.mkdir_p!(Path.dirname(cache))
+      File.write!("#{cache}.tmp", :erlang.term_to_binary({key, binary}))
+      File.rename!("#{cache}.tmp", cache)
+      {:ok, binary}
+    end
   end
 
   defp dir(video_id),

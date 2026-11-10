@@ -1,4 +1,5 @@
 This is a web application written using the following tech stack:
+
 - Elixir
 - Phoenix Web framework
 - Ash for modeling the domain
@@ -6,6 +7,7 @@ This is a web application written using the following tech stack:
 - Tailwind CSS for styling
 
 Rules:
+
 - Always read source code and docs before answering. Use `mix usage_rules.docs` and `mix usage_rules.search_docs` for searching docs
 - When asked about a bug or issue, always debug and verify your hypothesis, do not guess
 - `CONTEXT.md` is the domain glossary. Use its terms in code, UI text and docs, and avoid the synonyms it lists
@@ -38,6 +40,7 @@ Rules:
 ## Tidewave
 
 The `tidewave-mcp` server gives access to the running dev server. Prefer its tools to the shell:
+
 - `project_eval` runs Elixir code in the running app, instead of `mix run` or a new `iex`
 - `execute_sql_query` queries the dev database, instead of `psql`
 - `get_logs` reads the server logs
@@ -91,7 +94,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 - Focus on readability and maintainability of the code and clear separation of concerns.
 - Ash resources are the main module boundary. Business logic belongs in their actions, behind code interfaces, not in LiveViews or components.
 - Don't code defensively, follow Elixir's mantra and "let it crash". Only handle "expected" errors explicitely
-- Name every function that raises on failure with a trailing `!`, even when it has no non-raising version. Fix old functions that don't, rather than copying them.
+- Name every function that raises instead of returning `:ok`/`:error` on failure with a trailing `!`, even when it has no non-raising version. Fix old functions that don't, rather than copying them.
 - Refrain from extracting small helper functions, this creates a lot of indirections which makes the code harder to read and reason about. Only extract code to helper functions when it will be reused, or when it is substantial enough that it makes the code easier to reason about.
 - Helper names should describe what they do in the project's vocabulary, not generic mechanics. `unwrap_async_result` or `normalize_value` are shape descriptions, not meaning descriptions — prefer a name like `set_outcome_for_timeout` (or inline the code if short enough).
 
@@ -110,7 +113,6 @@ We write tests for all the functions exposed in our Ash domains and only for tho
 - Use generators to seed test data and only call the function being tested. Only override the generator parameters that are relevant to the test case to value brievity and readability.
 - To check a LiveView end to end, write a throwaway test outside the repo, run it with `mix test /absolute/path.exs`, and don't commit it. Use `WatchClubWeb.ConnCase, async: false` and `import WatchClub.Generator`. Seed an administrator first with `generate(administrator())`, or every request redirects to `/setup`. To log in a seeded user, give it a token with `{:ok, token, _claims} = AshAuthentication.Jwt.token_for_user(user)` and `Ash.Resource.put_metadata(user, :token, token)`, then `conn |> Plug.Test.init_test_session(%{}) |> AshAuthentication.Plug.Helpers.store_in_session(user)`.
 
-
 ## Documentation
 
 - Comments and docs should be concise and only document the current state of the code. Conversation details or changes compared to past implementations should not be reflected in documentation.
@@ -123,13 +125,15 @@ We write tests for all the functions exposed in our Ash domains and only for tho
 
 <!-- usage-rules-start -->
 <!-- usage_rules-start -->
+
 ## usage_rules usage
+
 _A config-driven dev tool for Elixir projects to manage AGENTS.md files and agent skills from dependencies_
 
 ## Using Usage Rules
 
-Many packages have usage rules, which you should *thoroughly* consult before taking any
-action. These usage rules contain guidelines and rules *directly from the package authors*.
+Many packages have usage rules, which you should _thoroughly_ consult before taking any
+action. These usage rules contain guidelines and rules _directly from the package authors_.
 They are your best source of knowledge for making decisions.
 
 ## Modules & functions in the current app and dependencies
@@ -148,10 +152,9 @@ mix usage_rules.docs Enum.zip
 mix usage_rules.docs Enum.zip/1
 ```
 
-
 ## Searching Documentation
 
-You should also consult the documentation of any tools you are using, early and often. The best 
+You should also consult the documentation of any tools you are using, early and often. The best
 way to accomplish this is to use the `usage_rules.search_docs` mix task. Once you have
 found what you are looking for, use the links in the search results to get more detail. For example:
 
@@ -169,23 +172,27 @@ mix usage_rules.search_docs "making requests" -p req
 mix usage_rules.search_docs "Enum.zip" --query-by title
 ```
 
-
 <!-- usage_rules-end -->
 <!-- usage_rules:elixir-start -->
+
 ## usage_rules:elixir usage
+
 # Elixir Core Usage Rules
 
 ## Pattern Matching
+
 - Use pattern matching over conditional logic when possible
 - Prefer to match on function heads instead of using `if`/`else` or `case` in function bodies
 - `%{}` matches ANY map, not just empty maps. Use `map_size(map) == 0` guard to check for truly empty maps
 
 ## Error Handling
+
 - Use `{:ok, result}` and `{:error, reason}` tuples for operations that can fail
 - Avoid raising exceptions for control flow
 - Use `with` for chaining operations that return `{:ok, _}` or `{:error, _}`
 
 ## Common Mistakes to Avoid
+
 - Elixir has no `return` statement, nor early returns. The last expression in a block is always returned.
 - Don't use `Enum` functions on large collections when `Stream` is more appropriate
 - Avoid nested `case` statements - refactor to a single `case`, `with` or separate functions
@@ -198,6 +205,7 @@ mix usage_rules.search_docs "Enum.zip" --query-by title
 - There are many useful standard library functions, prefer to use them where possible
 
 ## Function Design
+
 - Use guard clauses: `when is_binary(name) and byte_size(name) > 0`
 - Prefer multiple function clauses over complex conditional logic
 - Name functions descriptively: `calculate_total_price/2` not `calc/2`
@@ -205,6 +213,7 @@ mix usage_rules.search_docs "Enum.zip" --query-by title
 - Names like `is_thing` should be reserved for guards
 
 ## Data Structures
+
 - Use structs over maps when the shape is known: `defstruct [:name, :age]`
 - Prefer keyword lists for options: `[timeout: 5000, retries: 3]`
 - Use maps for dynamic key-value data
@@ -217,6 +226,7 @@ mix usage_rules.search_docs "Enum.zip" --query-by title
 - Read the docs and options fully before using tasks
 
 ## Testing
+
 - Run tests in a specific file with `mix test test/my_test.exs` and a specific test with the line number `mix test path/to/test.exs:123`
 - Limit the number of failed tests with `mix test --max-failures n`
 - Use `@tag` to tag specific tests, and `mix test --only tag` to run only those tests
@@ -229,26 +239,32 @@ mix usage_rules.search_docs "Enum.zip" --query-by title
 
 <!-- usage_rules:elixir-end -->
 <!-- usage_rules:otp-start -->
+
 ## usage_rules:otp usage
+
 # OTP Usage Rules
 
 ## GenServer Best Practices
+
 - Keep state simple and serializable
 - Handle all expected messages explicitly
 - Use `handle_continue/2` for post-init work
 - Implement proper cleanup in `terminate/2` when necessary
 
 ## Process Communication
+
 - Use `GenServer.call/3` for synchronous requests expecting replies
 - Use `GenServer.cast/2` for fire-and-forget messages.
 - When in doubt, use `call` over `cast`, to ensure back-pressure
 - Set appropriate timeouts for `call/3` operations
 
 ## Fault Tolerance
+
 - Set up processes such that they can handle crashing and being restarted by supervisors
 - Use `:max_restarts` and `:max_seconds` to prevent restart loops
 
 ## Task and Async
+
 - Use `Task.Supervisor` for better fault tolerance
 - Handle task failures with `Task.yield/2` or `Task.shutdown/2`
 - Set appropriate task timeouts
