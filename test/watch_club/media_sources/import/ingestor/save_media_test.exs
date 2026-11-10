@@ -14,6 +14,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       movie = seed_movie()
 
       candidate = %Candidate{
+        media_source_id: default_media_source_id(),
         path: "tmp/star-wars.mkv",
         media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},
@@ -45,6 +46,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       episode = seed_tv_show_episode()
 
       candidate = %Candidate{
+        media_source_id: default_media_source_id(),
         path: "tmp/friends-s01e01.mkv",
         media_type: :tv_show_episode,
         match_result: %MatchResult{result: :success, matched_id: episode.id},
@@ -68,6 +70,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   describe "apply/1 —unmatched" do
     test "persists Media + unattached Video on a movie run when matched_id is nil" do
       candidate = %Candidate{
+        media_source_id: default_media_source_id(),
         path: "tmp/unmatched-movie.mkv",
         media_type: :movie,
         match_result: %MatchResult{result: :not_matched, matched_id: nil},
@@ -91,6 +94,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
     test "persists Media + unattached Video on a tv_show_episode run when matched_id is nil" do
       candidate = %Candidate{
+        media_source_id: default_media_source_id(),
         path: "tmp/unmatched-episode.mkv",
         media_type: :tv_show_episode,
         match_result: %MatchResult{result: :not_matched, matched_id: nil},
@@ -112,6 +116,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       path = "tmp/refresh-save.mkv"
 
       candidate_original = %Candidate{
+        media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},
@@ -123,6 +128,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       original_track_id = hd(original.video.video_tracks).id
 
       candidate_refresh = %Candidate{
+        media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
         match_result: %MatchResult{result: :success, matched_id: movie.id},

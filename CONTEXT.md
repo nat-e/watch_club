@@ -604,7 +604,9 @@ _Avoid_: Group, aggregate, card, item
 ### Media
 
 - **Media** is instance-wide
-- **Media** has exactly one normalized local filesystem path, and that path is globally unique
+- **Media** has exactly one normalized local filesystem path
+- **Media** belongs to the one **Media Source** that imported it
+- **Media Sources** that cover the same file each have their own **Media** of it
 - **Media** has exactly one **Media Type**
 - **Media** has exactly one concrete **Video**, **Ebook**, or **Audiobook**
 - Technical details belong to **Videos**, **Ebooks**, or **Audiobooks**, not to generic **Media**
@@ -659,7 +661,7 @@ _Avoid_: Group, aggregate, card, item
 - Two request-capable **Media Sources** may point at the same external system (same base URL and same API key) when covering different root folders or different sets of **Media Source**-side settings
 - A filesystem **Media Source** has exactly one filesystem location
 - A request-capable **Media Source** covers exactly one **Media Source**-side root folder; covering multiple root folders requires multiple **Media Sources**
-- Deleting a **Media Source** deletes its **Media Source Requests**, but does not delete **Media**, past **Media Imports**, **Content Requests**, or any resource in the external system
+- Deleting a **Media Source** deletes its **Media Source Requests** and its **Media**, but does not delete their files, past **Media Imports**, **Content Requests**, or any resource in the external system
 - Filesystem locations may overlap across **Media Sources**
 - Multiple **Media Sources** can have the same filesystem location and **Media Type**
 - **Book** content can be imported through separate **Media Sources** for **Ebook** and **Audiobook** media types

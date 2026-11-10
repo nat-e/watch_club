@@ -12,7 +12,7 @@ defmodule WatchClub.MediaSources.Source do
 
   alias WatchClub.MediaSources.Servarr.Flavor
 
-  alias WatchClub.MediaCatalog.MediaType
+  alias WatchClub.MediaCatalog.{Media, MediaType}
   alias WatchClub.MediaSources.{Filesystem, Import, Servarr}
   alias WatchClub.MediaSources.Source.Type
 
@@ -20,6 +20,7 @@ defmodule WatchClub.MediaSources.Source do
 
   alias WatchClub.MediaSources.Source.Changes.{
     ComputeName,
+    DeleteMedia,
     ManageServarrImplementation,
     SetServarrTypes
   }
@@ -90,7 +91,13 @@ defmodule WatchClub.MediaSources.Source do
     end
 
     destroy :destroy do
+      description "Deletes the Media Source and its Media. Their files stay on disk."
       primary? true
+      require_atomic? false
+      # So that each Media's destroy commits on its own, see DeleteMedia
+      transaction? false
+
+      change DeleteMedia
     end
   end
 
@@ -163,6 +170,10 @@ defmodule WatchClub.MediaSources.Source do
       destination_attribute :media_source_id
       public? true
       sort inserted_at: :desc
+    end
+
+    has_many :medias, Media do
+      destination_attribute :media_source_id
     end
 
     has_one :latest_import, Import do

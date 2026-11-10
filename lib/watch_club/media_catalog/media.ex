@@ -16,6 +16,7 @@ defmodule WatchClub.MediaCatalog.Media do
 
   alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.MediaCatalog.Changes.{AttachVideo, SetContent}
+  alias WatchClub.MediaSources.Source
   alias WatchClub.Requests.Changes.UpdateContentRequest
   alias WatchClub.Shared.Changes.NormalizePath
   alias WatchClub.Shared.SortOrder
@@ -26,6 +27,11 @@ defmodule WatchClub.MediaCatalog.Media do
 
     references do
       reference :content, on_delete: :restrict, index?: true
+
+      # Media are only deleted through `destroy`, which removes their trickplay and audio
+      # fingerprints, so a Media Source deletes its Media first. The
+      # `unique_path_per_media_source` index starts with this column.
+      reference :media_source, on_delete: :restrict
     end
   end
 
@@ -76,12 +82,6 @@ defmodule WatchClub.MediaCatalog.Media do
       change set_attribute(:content_id, nil)
       change AttachVideo
       change UpdateContentRequest
-    end
-
-    read :under_path_prefix do
-      argument :prefix, :string, allow_nil?: false
-
-      prepare build(filter: expr(string_starts_with(path, ^arg(:prefix))))
     end
 
     read :browse do
@@ -138,9 +138,9 @@ defmodule WatchClub.MediaCatalog.Media do
 
     create :create_video do
       primary? true
-      accept [:path, :type]
+      accept [:media_source_id, :path, :type]
       upsert? true
-      upsert_identity :unique_path
+      upsert_identity :unique_path_per_media_source
       upsert_fields [:content_id]
 
       argument :video, :map do
@@ -169,9 +169,9 @@ defmodule WatchClub.MediaCatalog.Media do
     end
 
     create :create_ebook do
-      accept [:path]
+      accept [:media_source_id, :path]
       upsert? true
-      upsert_identity :unique_path
+      upsert_identity :unique_path_per_media_source
       upsert_fields [:content_id]
 
       argument :ebook, :map do
@@ -199,9 +199,9 @@ defmodule WatchClub.MediaCatalog.Media do
     end
 
     create :create_audiobook do
-      accept [:path]
+      accept [:media_source_id, :path]
       upsert? true
-      upsert_identity :unique_path
+      upsert_identity :unique_path_per_media_source
       upsert_fields [:content_id]
 
       argument :audiobook, :map do
@@ -350,9 +350,15 @@ defmodule WatchClub.MediaCatalog.Media do
     # The Content of the Movie, TV Show Episode or Book this Media is attached to.
     # nil for an unmatched Media.
     belongs_to :content, Content
+
+    belongs_to :media_source, Source do
+      allow_nil? false
+      public? true
+    end
   end
 
   identities do
-    identity :unique_path, [:path]
+    # Media Sources that cover the same file each have their own Media
+    identity :unique_path_per_media_source, [:media_source_id, :path]
   end
 end

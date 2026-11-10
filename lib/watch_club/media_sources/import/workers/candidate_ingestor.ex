@@ -1,18 +1,18 @@
 defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
   @moduledoc """
-  Ingests a single `Candidate` into a `Media` row via `ExtractStructure →
+  Ingests a single `Candidate` into a `Media` row of its Media Source via `ExtractStructure →
   MatchContent → SaveMedia`. Two entry points share this worker and queue:
 
-    * `new_job/2` — scan candidates, tagged `media_import:<id>`, default
+    * `new_job(%Import{}, candidate)` — scan candidates, tagged `media_import:<id>`, default
       priority.
-    * `new_job/1` — a single file from a Radarr/Sonarr `Download` webhook
+    * `new_job(%Servarr{}, candidate)` — a single file from a Radarr/Sonarr `Download` webhook
       (no Media Import), higher priority so live events preempt a running
       scan.
 
   `:ok` on success and when `ExtractStructure` skips the file (no retry); an
-  exception makes Oban retry with backoff. Unique on `(media_import_id, path)`
+  exception makes Oban retry with backoff. Unique on `(media_source_id, media_import_id, path)`
   over active states; webhook jobs have no `media_import_id` and dedupe by
-  `path`.
+  Media Source and `path`.
   """
 
   use Oban.Worker,
@@ -20,26 +20,29 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
     max_attempts: 3,
     unique: [
       fields: [:worker, :args],
-      keys: [:media_import_id, :path],
+      keys: [:media_source_id, :media_import_id, :path],
       states: :incomplete,
       period: :infinity
     ]
 
-  alias WatchClub.MediaSources.Import
+  alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
 
-  @doc "Builds an ingest job for a scan `Candidate`, tagged with the import at default priority."
-  def new_job(%Import{id: id}, %Candidate{} = candidate) do
-    candidate
+  @doc """
+  Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
+  A scan `Candidate` is tagged with its Media Import, at default priority. A webhook `Candidate`
+  has no Media Import, and a higher priority than scan jobs.
+  """
+  def new_job(%Import{id: id, media_source_id: media_source_id}, %Candidate{} = candidate) do
+    %{candidate | media_source_id: media_source_id}
     |> Candidate.to_map()
     |> Map.put(:media_import_id, id)
     |> new(tags: ["media_import:#{id}"], priority: 1)
   end
 
-  @doc "Builds an ingest job for a webhook `Candidate` (no Media Import), at higher priority than scan jobs."
-  def new_job(%Candidate{} = candidate) do
-    candidate
+  def new_job(%Servarr{id: media_source_id}, %Candidate{} = candidate) do
+    %{candidate | media_source_id: media_source_id}
     |> Candidate.to_map()
     |> new(priority: 0)
   end

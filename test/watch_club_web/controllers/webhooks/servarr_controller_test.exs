@@ -68,7 +68,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
     test "removes the Media when the file is gone from disk", %{conn: conn} do
       source = seed_radarr_source()
       path = Path.expand("/data/movies/EO (2022)/eo.mkv")
-      seed_media(path)
+      seed_media(source, path)
 
       conn =
         conn
@@ -76,7 +76,22 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/radarr/#{source.id}", movie_file_delete())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      refute media_exists?(path)
+      refute media_exists?(source, path)
+    end
+
+    test "keeps the Media of another Media Source with the same file", %{conn: conn} do
+      source = seed_radarr_source()
+      other_source = seed_radarr_source()
+      path = Path.expand("/data/movies/EO (2022)/eo.mkv")
+      seed_media(other_source, path)
+
+      conn =
+        conn
+        |> put_req_header("x-watchclub-token", @token)
+        |> post(~p"/webhooks/radarr/#{source.id}", movie_file_delete())
+
+      assert json_response(conn, 200) == %{"ok" => true}
+      assert media_exists?(other_source, path)
     end
 
     test "keeps the Media when the file is still present (same-path upgrade)", %{conn: conn} do
@@ -88,7 +103,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
 
       source = seed_radarr_source(local_root_folder_path: local_root)
       path = Path.expand(file)
-      seed_media(path)
+      seed_media(source, path)
 
       conn =
         conn
@@ -96,7 +111,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/radarr/#{source.id}", movie_file_delete())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      assert media_exists?(path)
+      assert media_exists?(source, path)
     end
 
     test "is a no-op when no Media exists at the path", %{conn: conn} do
@@ -115,7 +130,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
     test "removes the Media when the episode file is gone from disk", %{conn: conn} do
       source = seed_sonarr_source()
       path = Path.expand("/data/tv/Friends/Season 01/friends.mkv")
-      seed_media(path)
+      seed_media(source, path)
 
       conn =
         conn
@@ -123,7 +138,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/sonarr/#{source.id}", episode_file_delete())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      refute media_exists?(path)
+      refute media_exists?(source, path)
     end
   end
 
@@ -132,7 +147,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
       source = seed_radarr_source()
       old = Path.expand("/data/movies/EO (2022)/old.mkv")
       new = Path.expand("/data/movies/EO (2022)/EO (2022).mkv")
-      seed_media(old)
+      seed_media(source, old)
 
       conn =
         conn
@@ -140,8 +155,8 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/radarr/#{source.id}", movie_rename())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      refute media_exists?(old)
-      assert media_exists?(new)
+      refute media_exists?(source, old)
+      assert media_exists?(source, new)
     end
 
     test "is a no-op when no Media exists at the previous path", %{conn: conn} do
@@ -153,14 +168,14 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/radarr/#{source.id}", movie_rename())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      refute media_exists?(Path.expand("/data/movies/EO (2022)/EO (2022).mkv"))
+      refute media_exists?(source, Path.expand("/data/movies/EO (2022)/EO (2022).mkv"))
     end
 
     test "relocates a Sonarr episode file", %{conn: conn} do
       source = seed_sonarr_source()
       old = Path.expand("/data/tv/Friends/Season 01/old.mkv")
       new = Path.expand("/data/tv/Friends/Season 01/friends-s01e01.mkv")
-      seed_media(old)
+      seed_media(source, old)
 
       conn =
         conn
@@ -168,8 +183,8 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
         |> post(~p"/webhooks/sonarr/#{source.id}", episode_rename())
 
       assert json_response(conn, 200) == %{"ok" => true}
-      refute media_exists?(old)
-      assert media_exists?(new)
+      refute media_exists?(source, old)
+      assert media_exists?(source, new)
     end
   end
 
@@ -210,6 +225,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
       event = generate(sports_event(external_id: "ev-028133"))
 
       Ash.Seed.seed!(Media, %{
+        media_source_id: source.id,
         path: "/data/sports/UFC/old.mkv",
         type: :sports_event,
         content_id: event.id
@@ -236,7 +252,7 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
 
       assert json_response(conn, 200) == %{"ok" => true}
       assert_enqueued(worker: CandidateIngestor, args: %{path: "/data/sports/UFC/UFC 311.mkv"})
-      refute media_exists?("/data/sports/UFC/old.mkv")
+      refute media_exists?(source, "/data/sports/UFC/old.mkv")
     end
   end
 
@@ -306,10 +322,11 @@ defmodule WatchClubWeb.Webhooks.ServarrControllerTest do
     source
   end
 
-  defp seed_media(path), do: Ash.Seed.seed!(Media, %{path: path, type: :movie})
+  defp seed_media(source, path),
+    do: Ash.Seed.seed!(Media, %{media_source_id: source.id, path: path, type: :movie})
 
-  defp media_exists?(path) do
-    match?({:ok, _}, MediaCatalog.get_media_by_path(path, actor: SystemActor.actor()))
+  defp media_exists?(source, path) do
+    match?({:ok, _}, MediaCatalog.get_media_by_path(source.id, path, actor: SystemActor.actor()))
   end
 
   defp radarr_download do

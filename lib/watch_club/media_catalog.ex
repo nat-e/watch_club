@@ -6,11 +6,10 @@ defmodule WatchClub.MediaCatalog do
   resources do
     resource WatchClub.MediaCatalog.Media do
       define :list_media, action: :read
-      define :list_media_under_path_prefix, action: :under_path_prefix, args: [:prefix]
       define :browse_media, action: :browse
       define :count_unmatched_media, action: :count_unmatched
       define :get_media, action: :read, get_by: [:id]
-      define :get_media_by_path, action: :read, get_by: [:path]
+      define :get_media_by_path, action: :read, get_by: [:media_source_id, :path]
       define :change_media_path, action: :change_path
       define :match_media, action: :match, args: [:content_identity]
       define :unmatch_media, action: :unmatch

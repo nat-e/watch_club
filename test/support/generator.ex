@@ -410,6 +410,7 @@ defmodule WatchClub.Generator do
       Media,
       :create_video,
       defaults: [
+        media_source_id: default_media_source_id(),
         path: sequence(:video_media_path, &"/#{folder}/#{&1}/video.mkv"),
         type: type,
         video: Map.merge(video_input(type, id), video)
@@ -419,8 +420,17 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # The Media Source of the Media these generators create, unless they're given another one.
+  # Created once per test.
+  def default_media_source_id do
+    :default_media_source_id
+    |> once(fn -> generate(filesystem_media_source()).id end)
+    |> Enum.at(0)
+  end
+
   def media_movie_input(movie_id) do
     %{
+      media_source_id: default_media_source_id(),
       path: "/movies/#{movie_id}/video.mkv",
       type: :movie,
       video: video_input(:movie, movie_id)
@@ -429,6 +439,7 @@ defmodule WatchClub.Generator do
 
   def media_sports_event_input(sports_event_id) do
     %{
+      media_source_id: default_media_source_id(),
       path: "/sports/#{sports_event_id}/video.mkv",
       type: :sports_event,
       video: video_input(:sports_event, sports_event_id)
@@ -437,6 +448,7 @@ defmodule WatchClub.Generator do
 
   def media_episode_input(episode_id) do
     %{
+      media_source_id: default_media_source_id(),
       path: "/episodes/#{episode_id}/video.mkv",
       type: :movie,
       video: video_input(:tv_show_episode, episode_id)

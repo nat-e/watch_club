@@ -494,6 +494,7 @@ defmodule WatchClub.Playbacks.SessionTest do
   defp unmatched_media do
     media =
       Ash.Seed.seed!(Media, %{
+        media_source_id: default_media_source_id(),
         path: "/library/#{System.unique_integer([:positive])}.mkv",
         type: :movie
       })

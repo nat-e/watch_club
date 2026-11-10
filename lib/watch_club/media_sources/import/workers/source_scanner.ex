@@ -4,8 +4,8 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   It will create a list of import Candidates for the source and enqueue
   one CandiateIngestor job per eligible candidate.
 
-  The Import's `files_to_process` decides which Candidates with paths already imported are
-  skipped: all of them (`:new`, the default), the matched ones (`:new_and_unmatched`) or none
+  The Import's `files_to_process` decides which Candidates that already have Media in the source
+  are skipped: all of them (`:new`, the default), the matched ones (`:new_and_unmatched`) or none
   (`:all`).
 
   The actual Candidate discovery logic depends on the type of source (Filesystem, Servarr...).
@@ -14,9 +14,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
 
   use Oban.Worker, queue: :media_source_scans, max_attempts: 1
 
-  alias WatchClub.MediaCatalog, as: MediaDomain
-
-  alias WatchClub.MediaSources.{Filesystem, Import, Servarr, Source}
+  alias WatchClub.MediaSources.{Import, Source}
 
   alias WatchClub.MediaSources.Import.Scanner
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
@@ -75,22 +73,11 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
 
   defp paths_to_skip(%Import{files_to_process: files_to_process, media_source: source}) do
     source
-    |> root_path()
-    |> MediaDomain.list_media_under_path_prefix!(actor: SystemActor.actor())
+    |> Ash.load!(:medias, actor: SystemActor.actor())
+    |> Map.fetch!(:medias)
     |> Enum.reject(&(files_to_process == :new_and_unmatched and is_nil(&1.content_id)))
     |> MapSet.new(& &1.path)
   end
-
-  defp root_path(%Source{implementation: %Filesystem{filesystem_path: path}}), do: path
-
-  # Candidate paths are mapped onto WatchClub's disk; dedup against the local root.
-  defp root_path(%Source{
-         implementation: %Servarr{
-           root_folder_path: root_folder_path,
-           local_root_folder_path: local_root_folder_path
-         }
-       }),
-       do: local_root_folder_path || root_folder_path
 
   defp enqueue_candidates(candidates, %Import{} = media_import) do
     candidates

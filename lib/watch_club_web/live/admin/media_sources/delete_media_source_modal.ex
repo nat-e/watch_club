@@ -1,7 +1,6 @@
 defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
   @moduledoc """
-  Confirm modal for destroying a `Media Source`. Past `Media Imports` and any
-  `Media` previously imported by this `Media Source` remain on the instance.
+  Confirm modal for destroying a `Media Source` and its `Media`. Their files stay on disk.
   """
   use WatchClubWeb, :component
 
@@ -25,7 +24,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
         <p class="text-sm text-text-muted">
           {dgettext(
             "admin_media_imports",
-            "All media previously imported will not be removed from the instance."
+            "Its media will be removed from the instance too. Their files stay on disk."
           )}
         </p>
       </.stack>

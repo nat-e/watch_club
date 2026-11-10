@@ -3,7 +3,11 @@ defmodule WatchClub.MediaSources.SourceTest do
 
   import WatchClub.MediaSources
 
+  alias WatchClub.Ffmpeg.Trickplay
+  alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Filesystem, Import, Servarr, Source}
+  alias WatchClub.MediaSources.Import.Candidate
+  alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
 
   require Ash.Query
 
@@ -268,6 +272,37 @@ defmodule WatchClub.MediaSources.SourceTest do
       refute Import
              |> Ash.Query.filter(id == ^media_import.id)
              |> Ash.exists?(authorize?: false)
+    end
+
+    test "deletes its Media with their trickplay and notifies it, and keeps the Media of other Media Sources" do
+      admin = generate(administrator())
+      media_source = generate(filesystem_media_source(actor: admin))
+      media = generate(video_media(generate(movie()), media_source_id: media_source.id))
+      other_media = generate(video_media(generate(movie())))
+      trickplay_dir = Trickplay.dir(media.id)
+      File.mkdir_p!(trickplay_dir)
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, "content:global")
+
+      assert :ok = destroy_media_source!(media_source, actor: admin)
+
+      media_id = media.id
+      assert_receive %Ash.Notifier.Notification{resource: Media, data: %Media{id: ^media_id}}
+      refute Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+      assert Media |> Ash.Query.filter(id == ^other_media.id) |> Ash.exists?(authorize?: false)
+      refute File.exists?(trickplay_dir)
+    end
+
+    test "cancels the jobs of its Processing Media Import" do
+      admin = generate(administrator())
+      media_source = generate(filesystem_media_source(actor: admin))
+      media_import = generate(media_import(media_source))
+
+      {:ok, job} =
+        Oban.insert(CandidateIngestor.new_job(media_import, Candidate.new("/x.mkv", :movie)))
+
+      assert :ok = destroy_media_source!(media_source, actor: admin)
+
+      assert %Oban.Job{state: "cancelled"} = WatchClub.Repo.reload!(job)
     end
 
     test "destroys the filesystem implementation row" do
