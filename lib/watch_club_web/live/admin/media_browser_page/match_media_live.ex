@@ -85,7 +85,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
                 type="search"
                 placeholder={search_placeholder(@media.type)}
                 aria-label={search_label(@media.type)}
-                phx-mounted={JS.focus()}
+                autofocus
                 phx-debounce="300"
                 class="pl-9!"
               />
