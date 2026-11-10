@@ -6,7 +6,7 @@ defmodule WatchClub.Contents.MovieLocalization do
 
   alias WatchClub.Contents.{Calculations.LocalizationRank, Movie}
   alias WatchClub.Contents.Preparations.SortLocalizationsByRank
-  alias WatchClub.Shared.UpsertCondition
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "movie_localizations"
@@ -29,7 +29,7 @@ defmodule WatchClub.Contents.MovieLocalization do
       upsert? true
       upsert_identity :unique_locale_per_movie
       upsert_fields @refreshed_fields
-      upsert_condition UpsertCondition.any_changed(@refreshed_fields)
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
     end
   end
 

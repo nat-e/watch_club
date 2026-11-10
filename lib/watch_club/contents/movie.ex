@@ -7,7 +7,7 @@ defmodule WatchClub.Contents.Movie do
   alias WatchClub.Contents.{Content, MovieLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
-  alias WatchClub.Shared.UpsertCondition
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "movies"
@@ -29,7 +29,7 @@ defmodule WatchClub.Contents.Movie do
       accept [:id | @refreshed_fields]
       upsert? true
       upsert_fields @refreshed_fields
-      upsert_condition UpsertCondition.any_changed(@refreshed_fields)
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
     end
   end
 

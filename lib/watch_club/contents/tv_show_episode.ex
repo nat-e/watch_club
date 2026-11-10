@@ -7,7 +7,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
   alias WatchClub.Contents.{TvShow, TvShowEpisodeLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.Video
-  alias WatchClub.Shared.UpsertCondition
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "tv_show_episodes"
@@ -30,7 +30,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
       upsert? true
       upsert_identity :unique_position_per_tv_show
       upsert_fields @refreshed_fields
-      upsert_condition UpsertCondition.any_changed(@refreshed_fields)
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
     end
 
     read :for_show do
