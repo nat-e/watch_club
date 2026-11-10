@@ -4,6 +4,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   (TMDB for movies/shows, sportarr.net for Sports Events, Hardcover for books).
 
   We try to match with the following strategy
+  - If the file's Media has a Manual Match, keep it
   - If we have the main provider ID, match with that
   - If not, try to match with other IDs (IMDB, TVDB, ...)
   - If not, fuzzy match with title, and year when known
@@ -15,6 +16,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.Integrations.SportarrHub
   alias WatchClub.Integrations.Tmdb
+  alias WatchClub.MediaCatalog
+  alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
 
   alias WatchClub.MediaSources.Import.Candidate.{
@@ -33,6 +36,31 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   @metadata_max_age 15 * 60
 
   def apply!(%Candidate{} = candidate) do
+    case manual_match(candidate.path) do
+      nil ->
+        match_automatically!(candidate)
+
+      matched_id ->
+        Logger.info("#{candidate.path} keeps its Manual Match", event: :manual_match_kept)
+        %{candidate | match_result: %MatchResult{result: :success, matched_id: matched_id}}
+    end
+  end
+
+  # The Movie or TV Show Episode of the Video's Manual Match
+  defp manual_match(path) do
+    case MediaCatalog.get_media_by_path(path, load: :video, actor: SystemActor.actor()) do
+      {:ok, %Media{manually_matched?: true, video: video}} ->
+        video.movie_id || video.tv_show_episode_id
+
+      {:ok, %Media{}} ->
+        nil
+
+      {:error, %Ash.Error.Invalid{}} ->
+        nil
+    end
+  end
+
+  defp match_automatically!(candidate) do
     Logger.info("Matching content for #{candidate.path} -- #{inspect(candidate.identity)}",
       event: :matching_candidate_started,
       identity: candidate.identity

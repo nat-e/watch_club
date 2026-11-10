@@ -75,6 +75,11 @@ defmodule WatchClub.MediaCatalog.Video do
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
     end
 
+    # The Movie or TV Show Episode of a Manual Match
+    update :attach do
+      accept [:movie_id, :tv_show_episode_id]
+    end
+
     update :update do
       primary? true
       require_atomic? false

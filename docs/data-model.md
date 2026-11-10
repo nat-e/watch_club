@@ -224,6 +224,7 @@ classDiagram
     string path «unique»
     MediaType type
     uuid content_id
+    boolean manually_matched?
   }
   class MediaType {
     <<enumeration>>

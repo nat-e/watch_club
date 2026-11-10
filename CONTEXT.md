@@ -178,6 +178,10 @@ _Avoid_: Content, Media Version, media item
 Media whose concrete video, ebook, or audiobook has no attached **Content** because the **Media Import** could not identify it.
 _Avoid_: Orphan media, unattached media, unidentified media
 
+**Manual Match**:
+The **Content** the **Instance Administrator** attached a **Video** to by hand, which **Media Imports** and webhooks keep.
+_Avoid_: Fix match, identify, locked match
+
 **Media Type**:
 The kind of media, one of **Movie**, **TV Show Episode**, **Sports Event**, **Ebook**, or **Audiobook**. A Media Type determines both the concrete media kind (video, ebook, audiobook) and the **Content Type** the media is expected to attach to.
 _Avoid_: Content Type, file type
@@ -291,7 +295,7 @@ The **Text Track** a **Playback** of new **Content** starts with, chosen from it
 _Avoid_: Default subtitles, selected subtitles
 
 **Media Browser**:
-The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
+The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**, and gives a **Video** a **Manual Match**.
 _Avoid_: Media admin, media library page, file browser
 
 **Media Source**:
@@ -623,6 +627,10 @@ _Avoid_: Group, aggregate, card, item
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
+- A **Manual Match** attaches a **Movie** file to a **Movie**, and a **TV Show Episode** file to a **TV Show Episode**
+- A **Manual Match** may create the missing **Content**, as **Request Content** does
+- **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
+- Removing a **Manual Match** keeps the **Video**'s **Content** until a **Media Import** or a webhook matches the file again
 
 ### Markers
 
@@ -690,7 +698,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** does not create a single **TV Show Episode** on its own
 - With New files only, a **Media Import** skips the files that already have **Media**, even when the same path would now match different **Content** or **Media Type**
 - With New and unmatched files, a **Media Import** also processes the **Unmatched Media**
-- With All files, a **Media Import** processes every file: it reads the technical details of existing **Media** again and matches it again
+- With All files, a **Media Import** processes every file: it reads the technical details of existing **Media** again and matches it again, unless it has a **Manual Match**
 - A filesystem **Media Import** deletes **Media** whose path is no longer present under the configuration’s filesystem location
 - Moving a file deletes the old **Media** and creates new **Media** at the new path
 - Overlapping filesystem imports can run at the same time

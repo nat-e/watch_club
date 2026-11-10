@@ -14,7 +14,8 @@ defmodule WatchClub.MediaCatalog.Media do
     FilterBrowseSearch
   }
 
-  alias WatchClub.MediaCatalog.Changes.SetContent
+  alias WatchClub.Contents.Changes.EnsureContentExists
+  alias WatchClub.MediaCatalog.Changes.{AttachVideo, SetContent}
   alias WatchClub.Requests.Changes.UpdateContentRequest
   alias WatchClub.Shared.Changes.NormalizePath
   alias WatchClub.Shared.SortOrder
@@ -36,6 +37,35 @@ defmodule WatchClub.MediaCatalog.Media do
     update :change_path do
       accept [:path]
       change NormalizePath
+    end
+
+    update :match do
+      description """
+      The Instance Administrator's Manual Match of a Video: a Movie file to a Movie, or a TV Show
+      Episode file to an episode of a TV Show. Creates the Content when WatchClub doesn't have it.
+      """
+
+      require_atomic? false
+
+      argument :content_identity, ContentIdentity do
+        allow_nil? false
+        description "A Movie for a Movie file, a TV Show for a TV Show Episode file"
+      end
+
+      argument :season_number, :integer, description: "For a TV Show Episode file"
+      argument :episode_number, :integer, description: "For a TV Show Episode file"
+
+      change set_attribute(:manually_matched?, true)
+      change EnsureContentExists
+      change AttachVideo
+      change UpdateContentRequest
+      change WatchClub.Markers.Changes.ScheduleDetection
+    end
+
+    update :remove_manual_match do
+      description "Media Imports and webhooks match the file again, starting with the next one"
+      accept []
+      change set_attribute(:manually_matched?, false)
     end
 
     read :under_path_prefix do
@@ -209,9 +239,14 @@ defmodule WatchClub.MediaCatalog.Media do
       authorize_if always()
     end
 
-    policy action_type([:create, :update]) do
-      description "Only the system actor can create or update Media"
+    policy action([:create_video, :create_ebook, :create_audiobook, :change_path]) do
+      description "Only the system actor can create Media or move it"
       authorize_if WatchClub.Checks.IsSystemActor
+    end
+
+    policy action([:match, :remove_manual_match]) do
+      description "Only the Instance Administrator matches Media by hand"
+      authorize_if actor_attribute_equals(:administrator?, true)
     end
 
     policy action_type(:destroy) do
@@ -270,6 +305,14 @@ defmodule WatchClub.MediaCatalog.Media do
     attribute :type, MediaType do
       allow_nil? false
       public? true
+    end
+
+    # Media Imports and webhooks keep a Manual Match
+    attribute :manually_matched?, :boolean do
+      allow_nil? false
+      default false
+      public? true
+      source :is_manually_matched
     end
 
     timestamps()

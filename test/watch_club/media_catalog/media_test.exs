@@ -464,6 +464,112 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
+  describe "match_media/*" do
+    test "matches a Movie file to a Movie by hand" do
+      movie = generate(movie())
+      media = generate(video_media(nil))
+
+      matched =
+        match_media!(media, ContentIdentity.from_content(movie),
+          actor: generate(administrator()),
+          load: :video
+        )
+
+      assert %Media{manually_matched?: true, video: %Video{movie_id: movie_id}} = matched
+      assert matched.content_id == movie.id
+      assert movie_id == movie.id
+    end
+
+    test "matches a TV Show Episode file to an episode of a TV Show by hand" do
+      tv_show = generate(tv_show())
+      media = generate(video_media(hd(generate(tv_show()).tv_show.episodes)))
+
+      matched =
+        match_media!(
+          media,
+          ContentIdentity.from_content(tv_show),
+          %{season_number: 2, episode_number: 3},
+          actor: generate(administrator()),
+          load: [video: :tv_show_episode]
+        )
+
+      assert matched.content_id == tv_show.id
+
+      assert %TvShowEpisode{tv_show_id: tv_show_id, season_number: 2, episode_number: 3} =
+               matched.video.tv_show_episode
+
+      assert tv_show_id == tv_show.id
+    end
+
+    test "creates the Movie when WatchClub doesn't have it" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", 438_631))
+      end)
+
+      media = generate(video_media(nil))
+
+      matched =
+        match_media!(media, ContentIdentity.for_movie(438_631),
+          actor: generate(administrator()),
+          load: :content
+        )
+
+      assert ContentIdentity.from_content(matched.content) == ContentIdentity.for_movie(438_631)
+    end
+
+    test "updates the requests of the previous and new Content" do
+      previous_content = generate(movie())
+      new_content = generate(movie())
+      media = generate(video_media(previous_content))
+
+      user = generate(user())
+      updated_at = ~U[2020-01-01 00:00:00.000000Z]
+      previous_request = generate(content_request(user, previous_content, updated_at: updated_at))
+      new_request = generate(content_request(user, new_content, updated_at: updated_at))
+
+      match_media!(media, ContentIdentity.from_content(new_content),
+        actor: generate(administrator())
+      )
+
+      assert %ContentRequest{completed?: false} =
+               Ash.get!(ContentRequest, previous_request.id, authorize?: false)
+
+      assert %ContentRequest{completed?: true} =
+               Ash.get!(ContentRequest, new_request.id, authorize?: false)
+    end
+
+    test "rejects actors other than the Instance Administrator" do
+      media = generate(video_media(nil))
+
+      match_media(media, ContentIdentity.from_content(generate(movie())), actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "remove_manual_match/*" do
+    test "keeps the match, for Media Imports and webhooks to match the file again" do
+      movie = generate(movie())
+      admin = generate(administrator())
+
+      media =
+        video_media(nil)
+        |> generate()
+        |> match_media!(ContentIdentity.from_content(movie), actor: admin)
+
+      assert %Media{manually_matched?: false, content_id: content_id} =
+               remove_manual_match!(media, actor: admin)
+
+      assert content_id == movie.id
+    end
+
+    test "rejects actors other than the Instance Administrator" do
+      media = generate(video_media(nil))
+
+      remove_manual_match(media, actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "browse_media/*" do
     test "returns one page of Media, with their total" do
       movie = generate(movie())

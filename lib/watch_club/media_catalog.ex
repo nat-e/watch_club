@@ -12,6 +12,8 @@ defmodule WatchClub.MediaCatalog do
       define :get_media, action: :read, get_by: [:id]
       define :get_media_by_path, action: :read, get_by: [:path]
       define :change_media_path, action: :change_path
+      define :match_media, action: :match, args: [:content_identity]
+      define :remove_manual_match, action: :remove_manual_match
       define :create_or_update_video, action: :create_video
       define :create_or_update_ebook, action: :create_ebook
       define :create_or_update_audiobook, action: :create_audiobook

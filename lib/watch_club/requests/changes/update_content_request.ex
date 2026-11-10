@@ -4,7 +4,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   completes it once every aired part of its Content has Media.
   This is called when:
   - A MediaSourceRequest has been created/updated/destroyed for this Content
-  - A Media has been created/destroyed for this Content
+  - A Media has been created/matched/destroyed for this Content
 
   This will trigger Pubsub notifications to be sent.
   We try to not spam by only detecting if the ContentRequest derived status will be impacted.
@@ -21,23 +21,15 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
   alias WatchClub.SystemActor
 
   @impl true
-  # When a media has been created, update the content request.
-  # Re-importing a file can match it to another Content than before, so the request of the
-  # previous Content is updated too. Unmatched Media have no Content.
-  def change(%Ash.Changeset{resource: Media, action_type: :create} = changeset, _opts, _context) do
+  # When a Media has been created or matched, update the content request.
+  # Re-importing or matching a file can attach it to another Content than before, so the request
+  # of the previous Content is updated too. Unmatched Media have no Content.
+  def change(%Ash.Changeset{resource: Media, action_type: type} = changeset, _opts, _context)
+      when type in [:create, :update] do
     changeset
-    |> Ash.Changeset.before_action(fn changeset ->
-      path = Ash.Changeset.get_attribute(changeset, :path)
-
-      previous_media =
-        Media |> Ash.Query.filter(path == ^path) |> Ash.read_one!(authorize?: false)
-
-      Ash.Changeset.put_context(
-        changeset,
-        :previous_content_id,
-        previous_media && previous_media.content_id
-      )
-    end)
+    |> Ash.Changeset.before_action(
+      &Ash.Changeset.put_context(&1, :previous_content_id, previous_content_id(&1))
+    )
     |> Ash.Changeset.after_action(fn changeset, %Media{content_id: content_id} = updated_media ->
       [changeset.context.previous_content_id, content_id]
       |> Enum.reject(&is_nil/1)
@@ -107,6 +99,16 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
     end)
   end
 
+  # The Content the Media had before: on a create, the one of the Media the upsert updates
+  defp previous_content_id(%Ash.Changeset{action_type: :create} = changeset) do
+    path = Ash.Changeset.get_attribute(changeset, :path)
+    previous_media = Media |> Ash.Query.filter(path == ^path) |> Ash.read_one!(authorize?: false)
+    previous_media && previous_media.content_id
+  end
+
+  defp previous_content_id(%Ash.Changeset{action_type: :update, data: media}),
+    do: media.content_id
+
   def update_content_request(content_id, input) do
     ContentRequest
     |> Ash.Query.filter(content_id == ^content_id)
@@ -119,7 +121,7 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
     )
   end
 
-  # Only a new Media can complete it
+  # Only a new or matched Media can complete it
   defp complete_content_request!(content_id) do
     ContentRequest
     |> Ash.Query.filter(content_id == ^content_id)
