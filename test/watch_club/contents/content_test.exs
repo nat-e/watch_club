@@ -1305,7 +1305,9 @@ defmodule WatchClub.Contents.ContentTest do
       assert first_movie_id == first_movie.id
     end
 
-    test "keeps the Content with a title that contains the query", %{member: member} do
+    test "keeps the Content with a title that contains each word of the query", %{
+      member: member
+    } do
       amelie = generate(movie(original_title: "Le Fabuleux Destin d'Amélie Poulain"))
       spirited_away = generate(movie(original_title: "千と千尋の神隠し"))
 
@@ -1321,9 +1323,9 @@ defmodule WatchClub.Contents.ContentTest do
       add_episode_video!(money_heist, 1)
       add_video!(generate(movie()).id)
 
-      # Ignoring case and accents
+      # In any order, ignoring case, accents and punctuation
       assert [%Content{id: amelie_id}] =
-               get_contents_in_library!(%{query: "AMELIE"}, actor: member)
+               get_contents_in_library!(%{query: "POULAIN, amelie"}, actor: member)
 
       # In localized titles
       assert [%Content{id: spirited_away_id}] =
