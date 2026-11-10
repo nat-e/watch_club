@@ -28,9 +28,9 @@ defmodule WatchClub.MediaCatalog.Media do
     references do
       reference :content, on_delete: :restrict, index?: true
 
-      # Media are only deleted through `destroy`, which removes their files on disk, so a Media
-      # Source deletes its Media first. The `unique_path_per_media_source` index starts with this
-      # column.
+      # Media are only deleted through `destroy`, which removes their trickplay and audio
+      # fingerprints, so a Media Source deletes its Media first. The
+      # `unique_path_per_media_source` index starts with this column.
       reference :media_source, on_delete: :restrict
     end
   end

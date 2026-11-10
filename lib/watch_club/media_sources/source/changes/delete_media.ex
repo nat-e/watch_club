@@ -1,10 +1,12 @@
 defmodule WatchClub.MediaSources.Source.Changes.DeleteMedia do
   @moduledoc """
   Before a Media Source is deleted, cancels its Processing Media Import, so its jobs stop adding
-  Media, then deletes its Media through their `destroy`, which removes their files on disk.
+  Media, then deletes its Media through their `destroy`, which removes their trickplay and audio
+  fingerprints.
 
-  Run outside a transaction, each Media's destroy commits and notifies on its own: a failure leaves
-  the Media Source with the Media it still has.
+  Run outside a transaction, each Media's destroy commits on its own, and the deleted Media are
+  notified even when a later step fails. A failure leaves the Media Source with the Media it
+  still has.
   """
   use Ash.Resource.Change
 
