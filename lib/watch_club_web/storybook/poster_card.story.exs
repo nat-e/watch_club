@@ -30,16 +30,31 @@ defmodule WatchClubWeb.Storybook.PosterCard do
         :in_progress,
         true,
         []
+      ),
+      variation(
+        :incomplete,
+        "An Incomplete TV Show in progress: an aired TV Show Episode has no Media",
+        :in_progress,
+        false,
+        [],
+        true
       )
     ]
   end
 
-  defp variation(id, description, progress_status, ready_unseen, recommenders) do
+  defp variation(
+         id,
+         description,
+         progress_status,
+         ready_unseen,
+         recommenders,
+         incomplete? \\ false
+       ) do
     %Variation{
       id: id,
       description: description,
       attributes: %{
-        content: content(progress_status, recommenders),
+        content: content(progress_status, recommenders, incomplete?),
         locale: :en_US,
         ready_unseen: ready_unseen
       },
@@ -60,10 +75,11 @@ defmodule WatchClubWeb.Storybook.PosterCard do
     }
   end
 
-  defp content(progress_status, recommenders) do
+  defp content(progress_status, recommenders, incomplete?) do
     %Content{
       id: "dune",
       type: :movie,
+      incomplete?: incomplete?,
       external_id_source: :tmdb,
       external_id: "438631",
       rating: 7.8,

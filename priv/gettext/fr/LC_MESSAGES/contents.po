@@ -360,3 +360,9 @@ msgstr "Télécharger l'épisode %{number}"
 #, elixir-autogen, elixir-format
 msgid "Play or download any episode, and mark what you've watched."
 msgstr "Lancez ou téléchargez n'importe quel épisode, et marquez ce que vous avez vu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "Some episodes missing"
+msgstr "Il manque des épisodes"

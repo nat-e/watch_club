@@ -21,6 +21,7 @@ defmodule WatchClubWeb.BrowsePage do
   @content_fields [
     :implementation,
     :actor_progress_status,
+    :incomplete?,
     actor_recommendations: [:recommended_by]
   ]
   @no_filters %{

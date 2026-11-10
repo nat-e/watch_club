@@ -1,8 +1,8 @@
 defmodule WatchClubWeb.Components.Contents.PosterCard do
   @moduledoc """
   A Content's poster that opens its page, as on Browse: the avatars of who recommended it to the
-  User, a badge once watched or while in progress, and on hover its name, rating, original
-  language and year, with its Play button. Screens that can't hover show them on a first tap, and
+  User, a badge once watched or while in progress, another on an Incomplete TV Show, and on hover
+  its name, rating, original language and year, with its Play button. Screens that can't hover show them on a first tap, and
   the next one opens the Content or plays it.
   """
   use WatchClubWeb, :component
@@ -14,7 +14,8 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
 
   attr :content, Content,
     required: true,
-    doc: "with its `implementation`, `actor_progress_status` and `actor_recommendations` loaded"
+    doc:
+      "with its `implementation`, `actor_progress_status`, `incomplete?` and `actor_recommendations` loaded"
 
   attr :locale, :atom, required: true, doc: "the User's locale"
 
@@ -29,6 +30,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       assigns
       |> assign(:title, assigns.content.implementation.best_localization.title)
       |> assign(:badge_id, "poster-badge-#{assigns.content.id}")
+      |> assign(:incomplete_id, "poster-incomplete-#{assigns.content.id}")
       |> assign(:recommenders_id, "recommenders-#{assigns.content.id}")
       |> assign(
         :recommenders,
@@ -47,21 +49,17 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       >
         <.recommenders id={@recommenders_id} users={@recommenders} locale={@locale} />
         <%!-- The link reads its badges --%>
-        <.badge
-          :if={@ready_unseen}
-          id={@badge_id}
-          aria-hidden="true"
-          variant="accent"
-          size="sm"
-          class="absolute top-related right-related"
-        >
-          {dgettext("contents", "New")}
-        </.badge>
-        <.progress_badge
-          :if={!@ready_unseen}
-          id={@badge_id}
-          status={@content.actor_progress_status}
-        />
+        <span class="absolute top-related right-related flex flex-col items-end gap-tight">
+          <.badge :if={@ready_unseen} id={@badge_id} aria-hidden="true" variant="accent" size="sm">
+            {dgettext("contents", "New")}
+          </.badge>
+          <.progress_badge
+            :if={!@ready_unseen}
+            id={@badge_id}
+            status={@content.actor_progress_status}
+          />
+          <.incomplete_badge :if={@content.incomplete?} id={@incomplete_id} aria-hidden="true" />
+        </span>
         <span
           aria-hidden="true"
           class="absolute inset-0 flex flex-col justify-end gap-related bg-linear-to-t from-black/90 via-black/60 to-transparent p-related opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100 group-data-revealed:opacity-100"
@@ -96,7 +94,8 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
           [
             @recommenders != [] && @recommenders_id,
             (@ready_unseen or @content.actor_progress_status in [:completed, :in_progress]) &&
-              @badge_id
+              @badge_id,
+            @content.incomplete? && @incomplete_id
           ]
           |> Enum.filter(& &1)
           |> Enum.join(" ")
@@ -179,10 +178,33 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       role="img"
       aria-label={WatchStatus.translated_label(@status)}
       title={WatchStatus.translated_label(@status)}
-      class="absolute top-related right-related grid size-7 place-items-center rounded-full bg-black/80"
+      class="grid size-7 place-items-center rounded-full bg-black/80"
     >
       <Lucideicons.check :if={@status == :completed} class="size-icon-sm text-success" />
       <Lucideicons.contrast :if={@status == :in_progress} class="size-icon-sm text-primary" />
+    </span>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :class, :any, default: nil
+  attr :rest, :global
+
+  @doc """
+  The badge of an Incomplete TV Show, in a poster's corner: a TV Show in the Library with an
+  aired TV Show Episode without Media.
+  """
+  def incomplete_badge(assigns) do
+    ~H"""
+    <span
+      id={@id}
+      role="img"
+      aria-label={dgettext("contents", "Some episodes missing")}
+      title={dgettext("contents", "Some episodes missing")}
+      class={["grid size-7 place-items-center rounded-full bg-black/80", @class]}
+      {@rest}
+    >
+      <Lucideicons.download class="size-icon-sm text-accent" aria-hidden="true" />
     </span>
     """
   end

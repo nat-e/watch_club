@@ -303,3 +303,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Play or download any episode, and mark what you've watched."
 msgstr ""
+
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "Some episodes missing"
+msgstr ""
