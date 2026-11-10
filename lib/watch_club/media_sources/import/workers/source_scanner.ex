@@ -4,8 +4,9 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   It will create a list of import Candidates for the source and enqueue
   one CandiateIngestor job per eligible candidate.
 
-  If refresh_metadata? is off for the Import (the default), Candidate with paths that are
-  already imported will be skipped.
+  The Import's `files_to_process` decides which Candidates with paths already imported are
+  skipped: all of them (`:new`, the default), the matched ones (`:new_and_unmatched`) or none
+  (`:all`).
 
   The actual Candidate discovery logic depends on the type of source (Filesystem, Servarr...).
   See the `WatchClub.MediaSources.Import.Scanner` module for details.
@@ -46,7 +47,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
       |> Ash.get!(id, load: [media_source: [:implementation]], actor: SystemActor.actor())
 
     Logger.metadata(
-      refresh_metadata?: import_job.refresh_metadata?,
+      files_to_process: import_job.files_to_process,
       source_type: import_job.media_source.source_type,
       source_id: import_job.media_source.id
     )
@@ -64,39 +65,32 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
       end)
       |> enqueue_candidates(import_job)
 
-    Logger.info("Media Import scan finished: #{candidates_enqueued} new files",
+    Logger.info("Media Import scan finished: #{candidates_enqueued} files to process",
       event: :import_scan_success,
       enqueued_candidates: candidates_enqueued
     )
   end
 
-  defp paths_to_skip(%Import{refresh_metadata?: true}), do: MapSet.new()
+  defp paths_to_skip(%Import{files_to_process: :all}), do: MapSet.new()
 
-  defp paths_to_skip(%Import{
-         media_source: %Source{
-           implementation: %Filesystem{filesystem_path: path}
-         }
-       }) do
-    skip_paths_under(path)
-  end
-
-  defp paths_to_skip(%Import{
-         media_source: %Source{
-           implementation: %Servarr{
-             root_folder_path: root_folder_path,
-             local_root_folder_path: local_root_folder_path
-           }
-         }
-       }) do
-    # Candidate paths are mapped onto WatchClub's disk; dedup against the local root.
-    skip_paths_under(local_root_folder_path || root_folder_path)
-  end
-
-  defp skip_paths_under(root_path) do
-    root_path
+  defp paths_to_skip(%Import{files_to_process: files_to_process, media_source: source}) do
+    source
+    |> root_path()
     |> MediaDomain.list_media_under_path_prefix!(actor: SystemActor.actor())
+    |> Enum.reject(&(files_to_process == :new_and_unmatched and is_nil(&1.content_id)))
     |> MapSet.new(& &1.path)
   end
+
+  defp root_path(%Source{implementation: %Filesystem{filesystem_path: path}}), do: path
+
+  # Candidate paths are mapped onto WatchClub's disk; dedup against the local root.
+  defp root_path(%Source{
+         implementation: %Servarr{
+           root_folder_path: root_folder_path,
+           local_root_folder_path: local_root_folder_path
+         }
+       }),
+       do: local_root_folder_path || root_folder_path
 
   defp enqueue_candidates(candidates, %Import{} = media_import) do
     candidates

@@ -273,7 +273,7 @@ defmodule WatchClub.Generator do
       %Import{
         media_source_id: media_source.id,
         status: status,
-        refresh_metadata?: false,
+        files_to_process: :new,
         triggered_manually?: true
       },
       overrides: opts

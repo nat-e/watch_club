@@ -113,10 +113,9 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   end
 
   def handle_event("confirm_run_import", %{"run_import" => params}, socket) do
-    %{"media_source_id" => id} = params
-    refresh_metadata? = params["refresh_metadata"] == "true"
+    %{"media_source_id" => id, "files_to_process" => files_to_process} = params
 
-    MediaSources.start_media_import!(id, %{refresh_metadata?: refresh_metadata?},
+    MediaSources.start_media_import!(id, %{files_to_process: files_to_process},
       actor: socket.assigns.current_user
     )
 

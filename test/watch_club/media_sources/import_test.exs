@@ -5,7 +5,8 @@ defmodule WatchClub.MediaSources.ImportTest do
   import WatchClub.MediaSources
 
   alias WatchClub.MediaSources.Import
-  alias WatchClub.MediaSources.Import.ScannerMock
+  alias WatchClub.MediaSources.Import.{Candidate, ScannerMock}
+  alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -41,6 +42,33 @@ defmodule WatchClub.MediaSources.ImportTest do
                get_media_import_by_id!(media_import.id, actor: admin)
     end
 
+    test "processes only the files without Media by default" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == [paths.new]
+    end
+
+    test "processes the files without Media and the Unmatched Media with :new_and_unmatched" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+
+      start_media_import!(media_source.id, %{files_to_process: :new_and_unmatched}, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == Enum.sort([paths.new, paths.unmatched])
+    end
+
+    test "processes every file with :all" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+
+      start_media_import!(media_source.id, %{files_to_process: :all}, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == Enum.sort(Map.values(paths))
+    end
+
     test "rejects a new Media Import while one is already processing for the same Media Source" do
       admin = generate(administrator())
       media_source = generate(filesystem_media_source(actor: admin))
@@ -72,6 +100,35 @@ defmodule WatchClub.MediaSources.ImportTest do
         _ -> false
       end)
     end
+  end
+
+  # A Media Source whose scan finds a new file, a matched Media and an Unmatched Media
+  defp scanned_files do
+    admin = generate(administrator())
+    media_source = generate(filesystem_media_source(actor: admin))
+    root = media_source.implementation.filesystem_path
+
+    paths = %{
+      new: "#{root}/new.mkv",
+      matched: "#{root}/matched.mkv",
+      unmatched: "#{root}/unmatched.mkv"
+    }
+
+    generate(video_media(generate(movie()), path: paths.matched))
+    generate(video_media(nil, path: paths.unmatched))
+
+    stub(ScannerMock, :scan, fn _media_import ->
+      Enum.map(Map.values(paths), &Candidate.new(&1, :movie))
+    end)
+
+    %{admin: admin, media_source: media_source, paths: paths}
+  end
+
+  defp ingested_paths do
+    [worker: CandidateIngestor]
+    |> all_enqueued()
+    |> Enum.map(& &1.args["path"])
+    |> Enum.sort()
   end
 
   describe "list_media_imports/*" do

@@ -2,13 +2,12 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   @moduledoc """
   History table of `Media Imports` for one `Media Source`.
 
-  Columns: Status, Started, Duration, Trigger, Refresh metadata.
+  Columns: Status, Started, Duration, Trigger, and the Files it processed.
   Duration is rendered as `—` for in-progress Media Imports because there is
   no finished timestamp yet.
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Admin.MediaSources.RefreshMetadataBadge
   import WatchClubWeb.Admin.MediaSources.RunStatusBadge
 
   attr :imports, :list, required: true
@@ -23,9 +22,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
           <.table_head>{dgettext("admin_media_imports", "Started")}</.table_head>
           <.table_head>{dgettext("admin_media_imports", "Duration")}</.table_head>
           <.table_head>{dgettext("admin_media_imports", "Trigger")}</.table_head>
-          <.table_head>
-            {dgettext("admin_media_imports", "Refresh metadata")}
-          </.table_head>
+          <.table_head>{dgettext("admin_media_imports", "Files")}</.table_head>
           <.table_head class="w-0">
             <span class="sr-only">{dgettext("admin_media_imports", "Actions")}</span>
           </.table_head>
@@ -46,7 +43,9 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             <.trigger_badge triggered_manually?={media_import.triggered_manually?} />
           </.table_cell>
           <.table_cell>
-            <.refresh_metadata_badge value={media_import.refresh_metadata?} />
+            <.badge variant="muted" size="sm">
+              {files_to_process_label(media_import.files_to_process)}
+            </.badge>
           </.table_cell>
           <.table_cell class="text-end!">
             <.button
@@ -87,6 +86,13 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
     </.badge>
     """
   end
+
+  defp files_to_process_label(:new), do: dgettext("admin_media_imports", "New")
+
+  defp files_to_process_label(:new_and_unmatched),
+    do: dgettext("admin_media_imports", "New and unmatched")
+
+  defp files_to_process_label(:all), do: dgettext("admin_media_imports", "All")
 
   defp duration(%Import{finished_at: nil}), do: "—"
 
