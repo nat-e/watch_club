@@ -39,142 +39,248 @@ defmodule WatchClubWeb.Telemetry do
 
   def metrics do
     [
-      # Phoenix Metrics
-      counter("phoenix.endpoint.stop.count"),
-      summary("phoenix.endpoint.stop.duration",
+      # HTTP requests the router handles
+      summary("http.server.request.duration",
+        event_name: [:phoenix, :router_dispatch, :stop],
         unit: {:native, :second},
+        tags: [
+          :"http.request.method",
+          :"url.scheme",
+          :"http.route",
+          :"http.response.status_code",
+          :"error.type"
+        ],
+        tag_values: &http_server_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
-      counter("phoenix.router_dispatch.exception.count", tags: [:route]),
-      summary("phoenix.router_dispatch.exception.duration",
-        tags: [:route],
-        unit: {:native, :second},
-        reporter_options: [buckets: @duration_buckets]
-      ),
-      summary("phoenix.router_dispatch.stop.duration",
-        tags: [:route, :status],
-        tag_values: &request_tags/1,
-        unit: {:native, :second},
-        reporter_options: [buckets: @duration_buckets]
-      ),
-      counter("phoenix.router_dispatch.stop.count",
-        tags: [:route, :status],
-        tag_values: &request_tags/1
-      ),
+
       # Keeps long-poll fallbacks visible without tracing every poll.
-      summary("phoenix.socket_connected.duration",
-        tags: [:transport],
+      summary("phoenix.socket.connect.duration",
+        event_name: [:phoenix, :socket_connected],
         unit: {:native, :second},
+        tags: [:"phoenix.socket.transport"],
+        tag_values: &%{"phoenix.socket.transport": &1.transport},
         reporter_options: [buckets: @duration_buckets]
       ),
-      sum("phoenix.socket_drain.count"),
-      summary("phoenix.channel_joined.duration",
-        unit: {:native, :second},
-        reporter_options: [buckets: @duration_buckets]
-      ),
-      summary("phoenix.channel_handled_in.duration",
-        unit: {:native, :second},
-        reporter_options: [buckets: @duration_buckets]
+      sum("phoenix.socket.drained_connections",
+        event_name: [:phoenix, :socket_drain],
+        measurement: :count,
+        unit: :"{connection}"
       ),
 
-      # Database Metrics
-      summary("watch_club.repo.query.total_time",
+      # Database
+      summary("db.client.operation.duration",
+        event_name: [:watch_club, :repo, :query],
+        measurement: :total_time,
         unit: {:native, :second},
-        reporter_options: [buckets: @database_buckets],
-        description: "The sum of the other measurements"
+        tags: [:"db.system.name", :"db.collection.name", :"error.type"],
+        tag_values: &database_tags/1,
+        reporter_options: [buckets: @database_buckets]
       ),
-      summary("watch_club.repo.query.decode_time",
+      summary("db.client.connection.wait_time",
+        event_name: [:watch_club, :repo, :query],
+        measurement: :queue_time,
         unit: {:native, :second},
-        reporter_options: [buckets: @database_buckets],
-        description: "The time spent decoding the data received from the database"
-      ),
-      summary("watch_club.repo.query.query_time",
-        unit: {:native, :second},
-        reporter_options: [buckets: @database_buckets],
-        description: "The time spent executing the query"
-      ),
-      summary("watch_club.repo.query.queue_time",
-        unit: {:native, :second},
-        reporter_options: [buckets: @database_buckets],
-        description: "The time spent waiting for a database connection"
-      ),
-      summary("watch_club.repo.query.idle_time",
-        unit: {:native, :second},
-        reporter_options: [buckets: @database_buckets],
-        description:
-          "The time the connection spent waiting before being checked out for the query"
+        tags: [:"db.client.connection.pool.name"],
+        tag_values: &%{"db.client.connection.pool.name": inspect(&1.repo)},
+        reporter_options: [buckets: @database_buckets]
       ),
 
-      # Oban Metrics
-      counter("oban.job.stop.count", tags: [:queue, :worker], tag_values: &job_tags/1),
-      counter("oban.job.exception.count", tags: [:queue, :worker], tag_values: &job_tags/1),
-      summary("oban.job.stop.duration",
-        tags: [:queue, :worker],
-        tag_values: &job_tags/1,
+      # Oban jobs, with the attributes of their trace spans
+      summary("messaging.process.duration",
+        event_name: [:oban, :job, :stop],
         unit: {:native, :second},
+        tags: [
+          :"messaging.system",
+          :"messaging.operation.name",
+          :"messaging.destination.name",
+          :"oban.job.worker",
+          :"error.type"
+        ],
+        tag_values: &job_tags/1,
         reporter_options: [buckets: @job_buckets]
       ),
-      summary("oban.job.exception.duration",
-        tags: [:queue, :worker],
-        tag_values: &job_tags/1,
+      summary("oban.job.queue_time",
+        event_name: [:oban, :job, :stop],
         unit: {:native, :second},
+        tags: [:"messaging.destination.name", :"oban.job.worker"],
+        tag_values: &job_tags/1,
         reporter_options: [buckets: @job_buckets]
       ),
-      summary("oban.job.stop.queue_time",
-        tags: [:queue, :worker],
-        tag_values: &job_tags/1,
+
+      # TMDB HTTP attempts, with endpoint templates instead of individual IDs.
+      summary("http.client.request.duration",
+        event_name: [:watch_club, :tmdb, :request, :stop],
         unit: {:native, :second},
-        reporter_options: [buckets: @job_buckets]
-      ),
-      summary("oban.job.exception.queue_time",
-        tags: [:queue, :worker],
-        tag_values: &job_tags/1,
-        unit: {:native, :second},
-        reporter_options: [buckets: @job_buckets]
+        tags: [
+          :"http.request.method",
+          :"server.address",
+          :"server.port",
+          :"url.template",
+          :"http.response.status_code",
+          :"error.type"
+        ],
+        tag_values: &http_client_tags/1,
+        reporter_options: [buckets: @duration_buckets]
       ),
 
       # Content metadata: only Content Type, result and serving path are labels.
-      counter("watch_club.contents.metadata_fetch.stop.count", tags: [:type, :result]),
-      summary("watch_club.contents.metadata_fetch.stop.duration",
-        tags: [:type, :result],
+      summary("watch_club.metadata_fetch.duration",
+        event_name: [:watch_club, :contents, :metadata_fetch, :stop],
         unit: {:native, :second},
+        tags: [:"watch_club.content.type", :"watch_club.metadata_fetch.result", :"error.type"],
+        tag_values:
+          &%{
+            "watch_club.content.type": &1.type,
+            "watch_club.metadata_fetch.result": &1[:result],
+            "error.type": error_type(&1)
+          },
         reporter_options: [buckets: @duration_buckets]
       ),
-      summary("watch_club.contents.metadata_fetch.callers",
-        tags: [:type],
+      summary("watch_club.metadata_fetch.callers",
+        event_name: [:watch_club, :contents, :metadata_fetch],
+        unit: :"{caller}",
+        tags: [:"watch_club.content.type"],
+        tag_values: &%{"watch_club.content.type": &1.type},
         reporter_options: [buckets: [1, 2, 3, 5, 10, 20, 50, 100]]
       ),
-      counter("watch_club.contents.metadata_fetch.exception.count", tags: [:type]),
-      counter("watch_club.contents.metadata_request.count", tags: [:served]),
-
-      # TMDB HTTP attempts, with endpoint templates instead of individual IDs.
-      counter("watch_club.tmdb.request.stop.count", tags: [:endpoint, :status]),
-      summary("watch_club.tmdb.request.stop.duration",
-        tags: [:endpoint, :status],
-        unit: {:native, :second},
-        reporter_options: [buckets: @duration_buckets]
+      counter("watch_club.metadata_requests",
+        event_name: [:watch_club, :contents, :metadata_request],
+        unit: :"{request}",
+        tags: [:"watch_club.metadata_request.served"],
+        tag_values: &%{"watch_club.metadata_request.served": &1.served}
       ),
-      counter("watch_club.media_import.match.count", tags: [:result]),
+      counter("watch_club.media_import.matches",
+        event_name: [:watch_club, :media_import, :match],
+        unit: :"{match}",
+        tags: [:"watch_club.media_import.match.result"],
+        tag_values: &%{"watch_club.media_import.match.result": &1.result}
+      ),
 
       # Which Markers detection finds, and where from. Fingerprints: cache use and decoding time.
-      counter("watch_club.marker_detection.marker.count", tags: [:media_type, :kind, :source]),
-      counter("watch_club.audio_fingerprint.fetch.count", tags: [:cached]),
-      summary("watch_club.audio_fingerprint.compute.stop.duration",
-        tags: [:part],
+      counter("watch_club.marker_detection.markers",
+        event_name: [:watch_club, :marker_detection, :marker],
+        unit: :"{marker}",
+        tags: [:"watch_club.media.type", :"watch_club.marker.kind", :"watch_club.marker.source"],
+        tag_values:
+          &%{
+            "watch_club.media.type": &1.media_type,
+            "watch_club.marker.kind": &1.kind,
+            "watch_club.marker.source": &1.source
+          }
+      ),
+      counter("watch_club.audio_fingerprint.fetches",
+        event_name: [:watch_club, :audio_fingerprint, :fetch],
+        unit: :"{fetch}",
+        tags: [:"watch_club.audio_fingerprint.cached"],
+        tag_values: &%{"watch_club.audio_fingerprint.cached": &1.cached}
+      ),
+      summary("watch_club.audio_fingerprint.compute.duration",
+        event_name: [:watch_club, :audio_fingerprint, :compute, :stop],
         unit: {:native, :second},
+        tags: [:"watch_club.audio_fingerprint.part", :"error.type"],
+        tag_values:
+          &%{"watch_club.audio_fingerprint.part": &1.part, "error.type": error_type(&1)},
         reporter_options: [buckets: @job_buckets]
       ),
 
-      # The dependency's default poller emits these VM measurements.
-      last_value("vm.memory.total", unit: :byte),
-      last_value("vm.total_run_queue_lengths.total"),
-      last_value("vm.total_run_queue_lengths.cpu"),
-      last_value("vm.total_run_queue_lengths.io")
+      # The dependency's default poller emits these VM measurements. No OpenTelemetry
+      # convention covers the Erlang VM; the names follow its abandoned proposal.
+      last_value("beam.memory.allocated",
+        event_name: [:vm, :memory],
+        measurement: :total,
+        unit: :byte
+      ),
+      last_value("beam.run_queue.length",
+        event_name: [:vm, :total_run_queue_lengths],
+        measurement: :cpu,
+        unit: :"{process}",
+        tags: [:"beam.run_queue.type"],
+        tag_values: fn _metadata -> %{"beam.run_queue.type": "cpu"} end
+      ),
+      last_value("beam.run_queue.length",
+        event_name: [:vm, :total_run_queue_lengths],
+        measurement: :io,
+        unit: :"{process}",
+        tags: [:"beam.run_queue.type"],
+        tag_values: fn _metadata -> %{"beam.run_queue.type": "io"} end
+      )
     ]
   end
 
-  defp job_tags(%{job: job}), do: Map.take(job, [:queue, :worker])
+  defp http_server_tags(%{conn: conn, route: route} = metadata) do
+    # Controllers wrap what they raise with their conn
+    failure =
+      case metadata do
+        %{reason: %Plug.Conn.WrapperError{kind: kind, reason: reason}} ->
+          %{kind: kind, reason: reason}
 
-  defp request_tags(%{conn: conn} = metadata),
-    do: %{route: metadata[:route], status: conn.status}
+        _ ->
+          metadata
+      end
+
+    # Plug turns some exceptions, such as a missing record, into a 4xx response
+    status =
+      case failure do
+        %{kind: :error, reason: reason} -> Plug.Exception.status(reason)
+        %{kind: _kind} -> 500
+        _ -> conn.status
+      end
+
+    %{
+      "http.request.method": conn.method,
+      "url.scheme": Atom.to_string(conn.scheme),
+      "http.route": route,
+      "http.response.status_code": status,
+      "error.type": if(status in 500..599, do: error_type(failure) || Integer.to_string(status))
+    }
+  end
+
+  defp database_tags(%{source: source, result: result}) do
+    %{
+      "db.system.name": "postgresql",
+      "db.collection.name": source,
+      "error.type":
+        case result do
+          {:ok, _result} -> nil
+          {:error, error} -> error_type(%{kind: :error, reason: error})
+        end
+    }
+  end
+
+  defp job_tags(%{job: job} = metadata) do
+    %{
+      "messaging.system": "oban",
+      "messaging.operation.name": "process",
+      "messaging.destination.name": job.queue,
+      "oban.job.worker": job.worker,
+      "error.type": error_type(metadata)
+    }
+  end
+
+  # Matches the attributes OpentelemetryReq puts on the request's span
+  defp http_client_tags(%{request: request, response: response}) do
+    {status, error_type} =
+      case response do
+        %Req.Response{status: status} when status >= 400 -> {status, Integer.to_string(status)}
+        %Req.Response{status: status} -> {status, nil}
+        exception -> {nil, inspect(exception.__struct__)}
+      end
+
+    %{
+      "http.request.method": request.method |> Atom.to_string() |> String.upcase(),
+      "server.address": request.url.host,
+      "server.port": request.url.port,
+      "url.template": Req.Request.get_private(request, :path_params_template),
+      "http.response.status_code": status,
+      "error.type": error_type
+    }
+  end
+
+  # Names what a span raised, or nil when it succeeded
+  defp error_type(%{kind: :error, reason: reason}),
+    do: inspect(Exception.normalize(:error, reason).__struct__)
+
+  defp error_type(%{kind: kind}), do: Atom.to_string(kind)
+  defp error_type(_metadata), do: nil
 end

@@ -111,7 +111,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       # The third file is answered from the cache
       for _ <- 1..2 do
         assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: _},
-                         %{endpoint: "/find/:external_id", status: "2xx"}}
+                         %{
+                           request: %Req.Request{
+                             private: %{path_params_template: "/3/find/:external_id"}
+                           },
+                           response: %Req.Response{status: 200}
+                         }}
       end
 
       refute_received {[:watch_club, :tmdb, :request, :stop], ^ref, _, _}
