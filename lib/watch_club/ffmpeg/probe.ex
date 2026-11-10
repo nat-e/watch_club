@@ -9,6 +9,6 @@ defmodule WatchClub.Ffmpeg.Probe do
 
   @callback probe(path :: String.t()) :: {:ok, map()} | {:error, term()}
 
-  @callback audio_fingerprint!(path :: String.t(), from_seconds :: number(), seconds :: number()) ::
+  @callback audio_fingerprint(path :: String.t(), from_seconds :: number(), seconds :: number()) ::
               {:ok, [non_neg_integer()]} | {:error, term()}
 end

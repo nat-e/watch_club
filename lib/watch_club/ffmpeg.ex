@@ -82,7 +82,7 @@ defmodule WatchClub.Ffmpeg do
   file's audio can't be decoded, and raises when ffmpeg or fpcalc is missing.
   """
   @impl true
-  def audio_fingerprint!(path, from_seconds, seconds) do
+  def audio_fingerprint(path, from_seconds, seconds) do
     for tool <- ["ffmpeg", "fpcalc"], is_nil(System.find_executable(tool)) do
       raise "#{tool} executable was not found"
     end
