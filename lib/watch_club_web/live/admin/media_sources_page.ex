@@ -13,13 +13,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   import WatchClubWeb.Admin.MediaSources.{
     CreateOrEditMediaSourceModal,
     DeleteMediaSourceModal,
-    MediaSourceCard,
-    RunImportModal
+    MediaSourceCard
   }
 
   import WatchClubWeb.Components.Media.SourceTypeIcon
 
-  alias WatchClubWeb.Admin.MediaSources.AddServarrSourceModal
+  alias WatchClubWeb.Admin.MediaSources.{AddServarrSourceModal, RunImportModalLive}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -149,9 +148,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         :if={@delete_media_source}
         media_source={@delete_media_source}
       />
-      <.run_import_modal
+      <.live_component
         :if={@run_import_media_source}
+        module={RunImportModalLive}
+        id="run-import"
         media_source={@run_import_media_source}
+        current_user={@current_user}
       />
     </Layouts.app>
     """
@@ -332,19 +334,6 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     end
   end
 
-  def handle_event("confirm_run_import", %{"run_import" => params}, socket) do
-    %{"media_source_id" => id, "files_to_process" => files_to_process} = params
-
-    MediaSources.start_media_import!(id, %{files_to_process: files_to_process},
-      actor: socket.assigns.current_user
-    )
-
-    {:noreply,
-     socket
-     |> reset_modals()
-     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
-  end
-
   def handle_event("close_modals", _params, socket) do
     {:noreply, reset_modals(socket)}
   end
@@ -354,6 +343,13 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_info(:media_import_started, socket) do
+    {:noreply,
+     socket
+     |> reset_modals()
+     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
+  end
+
   def handle_info(:close_servarr_source_modal, socket) do
     {:noreply, assign(socket, :servarr_modal, nil)}
   end

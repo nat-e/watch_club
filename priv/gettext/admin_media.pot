@@ -371,3 +371,13 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "This file isn't matched to a title."
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Regenerate thumbnails and markers"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Thumbnails and markers will be regenerated in the background."
+msgstr ""

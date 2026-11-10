@@ -296,12 +296,12 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Run import"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Run media import"
 msgstr ""
@@ -337,7 +337,7 @@ msgstr ""
 msgid "Sonarr"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Start a new import of %{name} from:"
 msgstr ""
@@ -447,12 +447,12 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "All files"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Also retries files that couldn't be matched."
 msgstr ""
@@ -472,27 +472,27 @@ msgstr ""
 msgid "New and unmatched"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "New and unmatched files"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "New files only"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Only files not imported yet."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Process"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Reads every file again and matches it again. Manual matches are kept."
 msgstr ""
@@ -510,6 +510,16 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sportarr"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Regenerate thumbnails and markers"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Even for files that haven't changed."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex

@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
   @moduledoc """
   The selected Media beside the Media Browser's list: what it is, Play, and a menu to Match or
-  Rematch a Video and to Remove media, then its video, audio and subtitle tracks and its file.
+  Rematch a Video, regenerate its thumbnails and markers, and Remove media, then its video, audio
+  and subtitle tracks and its file.
   """
   use WatchClubWeb, :component
 
@@ -89,6 +90,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
               {if @media.content,
                 do: dgettext("admin_media", "Rematch"),
                 else: dgettext("admin_media", "Match")}
+            </.dropdown_menu_item>
+            <.dropdown_menu_item
+              :if={@video?}
+              id="regenerate-thumbnails-and-markers"
+              phx-click="regenerate_thumbnails_and_markers"
+            >
+              <Lucideicons.refresh_cw />
+              {dgettext("admin_media", "Regenerate thumbnails and markers")}
             </.dropdown_menu_item>
             <.dropdown_menu_separator :if={@video?} />
             <.dropdown_menu_item
