@@ -4,15 +4,13 @@ defmodule WatchClub.Playbacks.Playback do
 
   Persisted in Postgres. A Playback Session has zero or more Playbacks over its
   lifetime; at any moment, a Playback Session has at most one current Playback —
-  the one whose `ended_at` is `nil`. Starting a new Playback on a Session ends
-  the previous one, and the Session's `:end_inactive_playbacks` action ends the
-  Playbacks whose Player is no longer active.
+  the one whose `ended_at` is `nil`. Starting a new Playback in a Playback Session
+  ends the previous one, and so does ending the Playback Session.
 
-  This resource is concerned with persistence, lifecycle and the tracks the
-  Player starts with. HLS rendering and its on-disk segment cache live in
-  `WatchClub.Playbacks.Playback.Hls` and
-  `WatchClub.Playbacks.Playback.SegmentCache`; the cache is reclaimed by
-  `WatchClub.Playbacks.Workers.PruneSegmentCache`.
+  It records the Audio Track and the Text Track it plays, which every Screen starts
+  with. HLS rendering and its on-disk segment cache live in
+  `WatchClub.Playbacks.Playback.Hls` and `WatchClub.Playbacks.Playback.SegmentCache`;
+  the cache is reclaimed by `WatchClub.Playbacks.Workers.EndAbandonedSessions`.
   """
 
   use Ash.Resource,
@@ -21,17 +19,23 @@ defmodule WatchClub.Playbacks.Playback do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.MediaCatalog.Media
-  alias WatchClub.Playbacks.Playback.PreferredTrack
+  use Gettext, backend: WatchClubWeb.Gettext
+
+  alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack}
+  alias WatchClub.Playbacks.Playback.Changes.ChooseStartTracks
   alias WatchClub.Playbacks.Session
 
   postgres do
     table "playbacks"
     repo WatchClub.Repo
 
+    identity_wheres_to_sql one_current_per_session: "ended_at IS NULL"
+
     references do
       reference :session, on_delete: :delete, index?: true
       reference :media, on_delete: :delete, index?: true
+      reference :audio_track, on_delete: :nilify, index?: true
+      reference :text_track, on_delete: :nilify, index?: true
     end
   end
 
@@ -41,26 +45,16 @@ defmodule WatchClub.Playbacks.Playback do
     create :create do
       primary? true
       accept [:session_id, :media_id]
-      argument :position_seconds, :float, allow_nil?: true
 
-      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
-    end
-
-    update :update do
-      primary? true
-      require_atomic? false
-      accept [:last_active_at]
-      argument :position_seconds, :float, allow_nil?: true
-
-      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
+      change ChooseStartTracks
     end
 
     update :end do
-      require_atomic? false
-      argument :position_seconds, :float, allow_nil?: true
-
       change set_attribute(:ended_at, &DateTime.utc_now/0)
-      change WatchClub.Playbacks.Session.Changes.UpdateWatchProgress
+    end
+
+    update :pick_tracks do
+      accept [:audio_track_id, :text_track_id]
     end
   end
 
@@ -76,10 +70,16 @@ defmodule WatchClub.Playbacks.Playback do
       authorize_if expr(not is_nil(media.content_id))
     end
 
-    policy action_type([:read, :update]) do
-      description "Only the starting User (via the parent Session), the Instance Administrator, and the system actor can access Playbacks"
+    policy action_type(:read) do
+      description "Only the User who started the Playback Session, the Instance Administrator, and the system actor can see Playbacks"
       authorize_if WatchClub.Checks.IsSystemActor
       authorize_if actor_attribute_equals(:administrator?, true)
+      authorize_if relates_to_actor_via([:session, :started_by])
+    end
+
+    policy action_type(:update) do
+      description "Only the User who started the Playback Session and the system actor change its Playbacks"
+      authorize_if WatchClub.Checks.IsSystemActor
       authorize_if relates_to_actor_via([:session, :started_by])
     end
   end
@@ -90,12 +90,6 @@ defmodule WatchClub.Playbacks.Playback do
 
   attributes do
     uuid_v7_primary_key :id
-
-    attribute :last_active_at, :utc_datetime_usec do
-      allow_nil? false
-      default &DateTime.utc_now/0
-      public? true
-    end
 
     attribute :ended_at, :utc_datetime_usec do
       allow_nil? true
@@ -115,17 +109,21 @@ defmodule WatchClub.Playbacks.Playback do
       allow_nil? false
       public? true
     end
-  end
 
-  calculations do
-    calculate :preferred_audio_track_id, :uuid, {PreferredTrack, track: :audio} do
-      description "The Audio Track the Player starts with, from the User Preferences."
+    belongs_to :audio_track, AudioTrack do
       public? true
     end
 
-    calculate :preferred_text_track_id, :uuid, {PreferredTrack, track: :text} do
-      description "The Text Track the Player starts with, from the User Preferences. Nil for no subtitles."
+    belongs_to :text_track, TextTrack do
+      description "Nil for no subtitles."
       public? true
+    end
+  end
+
+  identities do
+    identity :one_current_per_session, [:session_id] do
+      where expr(is_nil(ended_at))
+      message dgettext_noop("errors", "Something else started playing at the same time")
     end
   end
 end

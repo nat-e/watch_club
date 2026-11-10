@@ -366,3 +366,26 @@ msgstr "Lancez ou téléchargez n'importe quel épisode, et marquez ce que vous 
 #, elixir-autogen, elixir-format
 msgid "Some episodes missing"
 msgstr "Il manque des épisodes"
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play %{episode} on TV"
+msgstr "Lire %{episode} sur la TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play on TV"
+msgstr "Lire sur la TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{episode} on TV"
+msgstr "Reprendre %{episode} sur la TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume on TV"
+msgstr "Reprendre sur la TV"

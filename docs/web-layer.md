@@ -1,9 +1,13 @@
 # Web layer organization
 
-How LiveViews and components are named, where they live, and when to use a LiveComponent. These rules override the Phoenix usage rules on LiveView names and on LiveComponents.
+How LiveViews and components are named, where they live, when to use a LiveComponent, and where URLs carry secrets. These rules override the Phoenix usage rules on LiveView names and on LiveComponents.
 
 - Use LiveComponents when a component owns dedicated events, loading, streams, async work, or lifecycle/state boundaries. Do **not** create LiveComponents solely to split markup.
 - Routed LiveViews should be named with a `Page` suffix and stored in files ending in `_page.ex`, for example `AppWeb.WeatherPage` in `weather_page.ex`.
+
+## Secrets in URLs
+
+- Put a secret, such as a token or an Invitation's code, in a query parameter, never in the path. Telemetry only redacts query parameters whose exact name is in `secret_params` in `config/config.exs`, so add new names there.
 
 ## Component organization
 

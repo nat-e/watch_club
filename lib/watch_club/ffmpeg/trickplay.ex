@@ -119,10 +119,10 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   Builds the WebVTT thumbnails manifest for a Video from its generation-time
   `meta.json`, so cue geometry and sheet count always match the sprites on
   disk. `base` is the origin-absolute URL prefix the player resolves sprite
-  refs against. Returns `{:error, :not_found}` while no metadata exists
+  refs against, and `query`, such as `?token=…`, follows each of them. Returns `{:error, :not_found}` while no metadata exists
   (never generated, or a regeneration in flight has wiped the directory).
   """
-  def manifest(video_id, base) do
+  def manifest(video_id, base, query) do
     with {:ok, json} <- File.read(Path.join(dir(video_id), @metadata_file)),
          {:ok, meta} <- Jason.decode(json) do
       %{
@@ -154,7 +154,7 @@ defmodule WatchClub.Ffmpeg.Trickplay do
           end_time = min((i + 1) * interval, duration)
 
           "#{timestamp(start_time)} --> #{timestamp(end_time)}\n" <>
-            "#{base}/#{sheet}.jpg#xywh=#{x},#{y},#{tile_width},#{tile_height}"
+            "#{base}/#{sheet}.jpg#{query}#xywh=#{x},#{y},#{tile_width},#{tile_height}"
         end)
 
       {:ok, "WEBVTT\n\n" <> Enum.join(cues, "\n\n") <> "\n"}

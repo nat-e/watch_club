@@ -202,17 +202,37 @@ _Avoid_: Playable, available, ready
 Save a **Video**, **Ebook**, or **Audiobook** to the **User**'s device through WatchClub.
 _Avoid_: Save offline, download media server item
 
+**TV**:
+A screen with Google Cast, such as a Chromecast or a Google TV, that plays **Videos** from WatchClub for a **User**.
+_Avoid_: Chromecast, receiver, cast device
+
+**Cast**:
+Move a **Playback Session** from the **Player** to a **TV**, which goes on playing it there.
+_Avoid_: Stream to TV, mirror, beam, Chromecast (as a verb)
+
+**Remote**:
+The WatchClub interface where a **User** controls the **Playback Session** playing on their **TV**.
+_Avoid_: Controller, companion, expanded controller, mini controller
+
+**Stop Casting**:
+End the **Playback Session** playing on a **TV**.
+_Avoid_: Disconnect, stop on TV, end cast
+
 **Playback Session**:
-One continuous use of the **Player** by a user. A **Playback Session** does not itself reference a selected media file; that belongs to each **Playback** inside it.
-_Avoid_: Player Session, HLS Session, stream session, watch session, watch history
+What a **User** is watching right now, on whichever **Screen** it plays: its current **Playback**, where it's at, and the audio and subtitles picked. It belongs to the **User**, not to a device.
+_Avoid_: Player Session, HLS Session, stream session, watch session, watch history, cast session
 
 **Watching Now**:
-A **User** whose **Player** is active, with the **Movie** or **TV Show Episode** it plays.
+A **User** whose **Playback Session** plays on a **Screen** right now, with the **Movie** or **TV Show Episode** it plays.
 _Avoid_: Live, online, now playing, streaming
 
 **Playback**:
 One **Media** being played by a user inside a **Playback Session**.
 _Avoid_: Stream, HLS Stream, play, playthrough
+
+**Screen**:
+Where a **Playback Session** plays right now: a **Player** or a **TV**.
+_Avoid_: Device, output, display, receiver
 
 **Watch Progress**:
 How far a **User** has got through one **Movie** or one **TV Show Episode**, and whether they have finished it. Tied to the watchable work, not to a specific **Media**, so the several **Videos** that back one **Movie** or **Episode** share a single Watch Progress. Covers video only for now; reading a **Book** or listening to an **Audiobook** would be sibling concepts, not the same record.
@@ -263,11 +283,11 @@ A **Text Track** that only translates what the audio's language doesn't cover, s
 _Avoid_: Forced subtitles, foreign parts subtitles
 
 **Preferred Audio Track**:
-The **Audio Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**.
+The **Audio Track** a **Playback** of new **Content** starts with, chosen from its **User**'s **User Preferences**.
 _Avoid_: Default audio track, selected audio
 
 **Preferred Text Track**:
-The **Text Track** the **Player** starts a **Playback** with, chosen from its **User**'s **User Preferences**, or none.
+The **Text Track** a **Playback** of new **Content** starts with, chosen from its **User**'s **User Preferences**, or none.
 _Avoid_: Default subtitles, selected subtitles
 
 **Media Browser**:
@@ -516,44 +536,44 @@ _Avoid_: Group, aggregate, card, item
 - A **User** can **Play** or **Download** the **Media** of any **Content** in the **Library**
 - **Play** on a **TV Show** starts the **TV Show Episode** the **User** is up to; any other **TV Show Episode** with **Media** plays from the **TV Show**'s episodes
 - **Play** opens the **Player** after exactly one **Media** file has been selected
-- **Play** from outside the **Player** creates a **Playback Session** and its first **Playback** for the selected **Media** when the **Player** opens, before playback succeeds
-- While the **Player** is open, advancing to another **Media** (for example the next **TV Show Episode**) creates a new **Playback** on the same **Playback Session**
+- **Play** starts a new **Playback** in the **User**'s active **Playback Session**, or creates the **Playback Session** when there is none, before playback succeeds
+- Advancing to another **Media**, such as the next **TV Show Episode**, creates a new **Playback** in the same **Playback Session**
 - Initially, **Playbacks** are created only for **Video** **Media**
 - A **Playback Session** is started by exactly one **User**
+- A **User** has at most one active **Playback Session**
 - A **Playback Session** has zero or more **Playbacks** over its lifetime
 - A **Playback** belongs to exactly one **Playback Session** and references exactly one **Media**
-- Only the starting **User** and the **Instance Administrator** can access a **Playback Session** or any of its **Playbacks**
+- Only the **User** who started a **Playback Session** controls it; the **Instance Administrator** can also see it and its **Playbacks**
 - Any **User** can start a **Playback** for any **Media** that has **Content**; WatchClub has no other access rule on playback
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
-- A **Playback** is current while it has not ended; it ends when another **Playback** starts on the same **Playback Session**, or once its **Player** has sent no heartbeat for six hours
 - A **Playback Session** has at most one current **Playback** at any time
-- A **User** is **Watching Now** while the **Player** of one of their current **Playbacks** is active, paused included. With several active **Players**, they are **Watching Now** once, with the one they started last
+- A **Playback** is current while it has not ended; it ends when another **Playback** starts in the same **Playback Session**, or when the **Playback Session** ends
+- When a **Playback** finishes, its **Playback Session** plays the next available **TV Show Episode** on the same **Screen**; with nothing next, the **Playback Session** ends
+- A **Playback Session** is active until it ends: on **Stop Casting**, when nothing is left to play, or after about two minutes without a **Screen**
+- A **User** is **Watching Now** while their active **Playback Session** has a **Screen**, paused included
 - Every **User** sees which other **Users** are **Watching Now** and what they play, but not their **Playback Sessions**
 - Playing **Unmatched Media** doesn't make the **Instance Administrator** **Watching Now**
-- A **Playback Session** is active while it has a current **Playback**; it is dormant otherwise
-- A **User** may have multiple active **Playback Sessions** at once (for example, two open **Player** tabs); each is its own visit
-- A later **Play** from outside the **Player** for the same **Media** creates a separate **Playback Session** with its own first **Playback**
 - A **Playback Session** can exist even when its **Playbacks** later fail
-- A **Playback Session** records only when it was created; its activity is derived from its **Playbacks**
-- A **Playback** records its selected **Media**, when it was created, when it was last active, and when it ended
-- The **Player** is active from the first time it plays until it closes, including while paused
-- Only **Player** heartbeats update the current **Playback**'s last active time
-- While the **Player** is active, it sends a heartbeat about every five seconds
-- The **Player** also sends a heartbeat when the **User** interacts with playback controls
-- HLS playlist and segment requests do not update a **Playback**'s last active time
-- A **Playback** has an explicit ended time; a **Playback Session** has no explicit ended state and is considered active or dormant based on whether it has a current **Playback**
+- A **Playback Session** and a **Playback** each record when they were created and when they ended
+- A **Playback Session** plays on one **Screen** at a time
+- **Play** in a **Player** makes it the **Screen** of the **User**'s **Playback Session**, unless that **Playback Session** plays on a **TV**
+- A **Player** that is no longer the **Screen** stops, and tells the **User** that the **Playback Session** plays somewhere else
+- The **Screen** in the **User**'s hands acts at once on play, pause and seek; the **Playback Session** then passes the change on
+- Only the **Screen** reports the position of its **Playback Session**, which keeps the **User**'s **Watch Progress** up to date
+- The **Screen** reports its position about every five seconds, paused or not, and whenever the **User** plays, pauses or seeks
+- HLS playlist and segment requests are not position reports
 - A **User** can inspect their own **Playback Sessions** and **Playbacks**
-- The **Instance Administrator** can inspect **Playback Sessions** by **User** and creation time, and inspect **Playbacks** by **Media**, creation time, and last active time
+- The **Instance Administrator** can inspect **Playback Sessions** by **User** and creation time, and inspect **Playbacks** by **Media** and creation time
 - If exactly one **Video** is available for **Play**, playback can start without a selection step
 - When multiple **Videos** are available for **Play**, the **User** chooses one before the **Player** opens, using visible **Video Track**, **Audio Track**, and **Text Track** details
 - For a **TV Show**, **Play** is offered on individual **TV Show Episodes**, not as a single show-level choice
 - When multiple **Media** files are available for **Play** or **Download**, the **User** chooses one
-- The **Player** starts each **Playback** with its **Preferred Audio Track** and **Preferred Text Track**
+- A **Playback** of new **Content** starts with its **Preferred Audio Track** and **Preferred Text Track**
 - The **Preferred Audio Track** is in the **Preferred Audio Language**, otherwise in the original language of the **Content**, otherwise the **Video**'s default **Audio Track**
 - The **Preferred Text Track** is a full **Text Track** in the **Preferred Subtitle Language**, unless the audio is in one of the **Languages Without Subtitles**; otherwise, or when the **Video** has none, it is a **Forced Text Track** in the audio's language, if any
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
-- In the **Player**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
-- Each **Playback** after the first one in a **Playback Session** starts with the audio language and the subtitles, or no subtitles, of the previous one, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
+- In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
+- A **Playback Session** keeps the audio language and the subtitles, or no subtitles, of its **Content**: each next **Playback** of the same **Content**, on any **Screen**, starts with them, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
 - When the **Credits** of a **TV Show Episode** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **TV Show Episode** if it has **Media**
 - **Watch Progress** counts a **Video** up to the start of its **Credits**
@@ -561,6 +581,17 @@ _Avoid_: Group, aggregate, card, item
 - A **Problem Report** belongs to the **Playback** it was sent from, which gives its **User**, **Video** and **Content**
 - Only the **Instance Administrator** can read and **Archive a Problem Report**; an archived **Problem Report** stays archived
 - Deleting a **Video** or a **User** deletes their **Problem Reports**
+
+### Casting
+
+- A **User** can **Cast** only from the **Player**, and only in Chrome on a computer or an Android phone
+- **Cast** makes the **TV** the **Screen** of the **Playback Session**, with the same current **Playback**; the **Player** then shows the **Remote**
+- While the **Playback Session** plays on a **TV**, **Play** starts its new **Playback** on that **TV**
+- Any device of the **User** can open the **Remote**, including devices that can't **Cast**
+- The **Remote** never reports a position: the **TV** does
+- Leaving the **Remote** leaves the **TV** playing
+- Every page shows the **Playback Session** playing on a **TV**, with a way to the **Remote**, only while that **TV** is connected
+- Another **User** casting to the same **TV** takes it: the first **Playback Session** loses its **Screen**
 
 ### Media
 
@@ -739,11 +770,12 @@ _Avoid_: Group, aggregate, card, item
 - "Play Media" and "Play Video" are not canonical user actions; resolved: use **Play** for the user action and reserve **Media** and **Video** for what is selected to play.
 - "Video data" is not canonical; resolved: when choosing among **Videos**, describe the visible **Video Track**, **Audio Track**, and **Text Track** details.
 - "Player Session" and "HLS Session" are technical names for parts of playback, but the domain concept is **Playback Session**.
-- **Playback Session** is distinct from **Watch Progress**; resolved: a Playback Session records one Player visit, while Watch Progress records how far a **User** has got through a **Movie** or **TV Show Episode** overall and whether they finished it.
-- **Playback Session** is scoped to the **User** for one **Player** visit; the selected **Media** lives on each **Playback** inside it.
+- **Playback Session** is distinct from **Watch Progress**; resolved: a Playback Session is what a **User** is watching right now, while Watch Progress records how far a **User** has got through a **Movie** or **TV Show Episode** overall and whether they finished it.
+- **Playback Session** is scoped to the **User**, not to one **Player** visit or one device: it moves between **Screens**; the selected **Media** lives on each **Playback** inside it.
+- A separate "Cast Session" was considered; resolved: casting moves the **Playback Session** to a **TV**, and the **TV** is only its **Screen**.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
-- "Is watching" in the **Activity Feed** means the **User** has unfinished **Watch Progress**, possibly from days ago; resolved: **Watching Now** means their **Player** is active right now.
+- "Is watching" in the **Activity Feed** means the **User** has unfinished **Watch Progress**, possibly from days ago; resolved: **Watching Now** means their **Playback Session** plays on a **Screen** right now.
 - Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.

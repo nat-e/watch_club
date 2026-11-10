@@ -6,6 +6,7 @@ defmodule WatchClub.Contents.MovieLocalization do
 
   alias WatchClub.Contents.{Calculations.LocalizationRank, Movie}
   alias WatchClub.Contents.Preparations.SortLocalizationsByRank
+  alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
     table "movie_localizations"
@@ -16,8 +17,20 @@ defmodule WatchClub.Contents.MovieLocalization do
     end
   end
 
+  # The metadata a refresh overwrites
+  @refreshed_fields [:title, :overview, :poster_path, :runtime, :cast, :trailer_url]
+
   actions do
-    defaults [:read, :destroy, create: :*, update: :*]
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:movie_id, :iso_639_1, :iso_3166_1 | @refreshed_fields]
+      upsert? true
+      upsert_identity :unique_locale_per_movie
+      upsert_fields @refreshed_fields
+      upsert_condition AnyFieldChanged.expr(@refreshed_fields)
+    end
   end
 
   preparations do

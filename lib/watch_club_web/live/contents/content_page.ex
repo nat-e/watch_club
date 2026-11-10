@@ -53,6 +53,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       title={title(@content)}
       content_page?
     >
@@ -79,6 +80,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           content={@content}
           content_identity={@content_identity}
           current_user={@current_user}
+          on_tv?={@on_tv?}
         />
 
         <div class="flex flex-col gap-section px-page pt-cluster pb-page-y">
@@ -134,6 +136,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
+  attr :on_tv?, :boolean, required: true, doc: "whether Play plays on the User's TV"
 
   # The poster, the name, its facts, its genres and the overview, on the dimmed backdrop, then the
   # actions. Centered on phones, beside the poster on wide screens.
@@ -194,6 +197,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             content={@content}
             content_identity={@content_identity}
             current_user={@current_user}
+            on_tv?={@on_tv?}
           />
         </div>
       </div>
@@ -252,6 +256,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :content, Content, required: true
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
+  attr :on_tv?, :boolean, required: true, doc: "whether Play plays on the User's TV"
 
   # Play, Resume or Request first, or how far the request got. Then round Episodes for a TV Show,
   # Watch trailer, Download for a Movie in the Library and Watched, which stay quiet.
@@ -274,6 +279,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         module={PlayOrRequestButtonLive}
         content_identity={@content_identity}
         current_user={@current_user}
+        on_tv?={@on_tv?}
         size="lg"
         class="w-full @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto @3xl:min-w-64"
       />

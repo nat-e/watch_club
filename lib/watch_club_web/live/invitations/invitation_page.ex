@@ -69,14 +69,14 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
   end
 
   @impl true
-  def mount(%{"code" => code}, session, socket) do
-    case Accounts.view_invitation(code, actor: socket.assigns.current_user) do
+  def mount(params, session, socket) do
+    case Accounts.view_invitation(params["code"], actor: socket.assigns.current_user) do
       {:ok, invitation} ->
         locale = WatchClubWeb.Plugs.BrowserLocale.get(session)
 
         form =
           Accounts.form_to_register_with_password(
-            params: %{"invitation_code" => code},
+            params: %{"invitation_code" => invitation.code},
             prepare_params: fn params, _ -> Map.put(params, :locale, locale) end,
             context: %{token_type: :sign_in}
           )

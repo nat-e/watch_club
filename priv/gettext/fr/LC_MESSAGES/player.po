@@ -14,6 +14,7 @@ msgstr ""
 # AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
 msgstr "Audio"
@@ -45,6 +46,7 @@ msgstr "Qualité"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
 msgstr "Sous-titres"
@@ -169,3 +171,189 @@ msgstr "Quel est le problème ?"
 #, elixir-autogen, elixir-format
 msgid "Wrong video"
 msgstr "Mauvaise vidéo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio & subtitles"
+msgstr "Audio et sous-titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Back 10 seconds"
+msgstr "Reculer de 10 secondes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse"
+msgstr "Parcourir"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Annuler"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Close the Remote"
+msgstr "Fermer la télécommande"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Connecting to %{tv}…"
+msgstr "Connexion à %{tv}…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. It needs to reach WatchClub at an HTTPS address with a trusted certificate."
+msgstr "Impossible de lire sur la TV. Elle doit accéder à WatchClub par une adresse HTTPS avec un certificat de confiance."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Forward 10 seconds"
+msgstr "Avancer de 10 secondes"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr "Plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing is playing on a TV"
+msgstr "Rien ne passe sur une TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Now playing"
+msgstr "En cours de lecture"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr "Désactivés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Pause"
+msgstr "Pause"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Paused on"
+msgstr "En pause sur"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Paused on %{tv}"
+msgstr "En pause sur %{tv}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play"
+msgstr "Lire"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Play on a TV"
+msgstr "Lire sur une TV"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Playing on"
+msgstr "Lecture sur"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Playing somewhere else"
+msgstr "Lecture ailleurs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remote"
+msgstr "Télécommande"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Seek"
+msgstr "Position"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Start a video in Chrome on a computer or an Android phone, then pick a TV with the cast icon in the Player."
+msgstr "Lancez une vidéo dans Chrome sur un ordinateur ou un téléphone Android, puis choisissez une TV avec l'icône de diffusion du lecteur."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stop casting"
+msgstr "Arrêter la diffusion"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stop casting to %{tv}"
+msgstr "Arrêter la diffusion sur %{tv}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
+msgstr "À suivre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/helpers/now_playing.ex
+#, elixir-autogen, elixir-format
+msgid "Video"
+msgstr "Vidéo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "You started watching on another screen."
+msgstr "Vous regardez maintenant sur un autre écran."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/tv_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Open the Remote"
+msgstr "Ouvrir la télécommande"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "This video has no other audio or subtitles."
+msgstr "Cette vidéo n'a pas d'autre audio ni de sous-titres."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remote sections"
+msgstr "Sections de la télécommande"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stopped casting to %{tv}."
+msgstr "Diffusion arrêtée sur %{tv}."

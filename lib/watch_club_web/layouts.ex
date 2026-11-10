@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Layouts do
   import WatchClubWeb.Components.Navigation.AppBar
   import WatchClubWeb.Components.Navigation.Sidebar
   import WatchClubWeb.Components.Navigation.TabBar
+  import WatchClubWeb.Components.Playbacks.TvBar
 
   alias WatchClub.Accounts.User
   alias WatchClub.Instance.InstanceSettings
@@ -51,6 +52,16 @@ defmodule WatchClubWeb.Layouts do
     default: false,
     doc: "on phones, hides the bar and the tabs, as an open Conversation does"
 
+  attr :app_bar?, :boolean,
+    default: true,
+    doc: "shows the bar at the top. Without it, the page draws its own header and padding"
+
+  attr :playback_session, :any,
+    required: true,
+    doc: "the User's Playback Session while it plays on a TV, which the TV bar shows, or nil"
+
+  attr :tv_bar?, :boolean, default: true, doc: "shows the TV bar, unless the page is the Remote"
+
   slot :inner_block, required: true
 
   slot :hero,
@@ -66,10 +77,21 @@ defmodule WatchClubWeb.Layouts do
   end
 
   def app(assigns) do
+    assigns = assign(assigns, :tv_bar_session, assigns.tv_bar? && assigns.playback_session)
+
     ~H"""
     <div
       id="app-shell"
-      class="min-h-svh bg-canvas text-text [--wc-app-bar-height:var(--wc-size-row-lg)] [--wc-sidebar-width:16rem] [--wc-tab-bar-height:var(--wc-size-row-lg)]"
+      class={
+        [
+          "min-h-svh bg-canvas text-text [--wc-app-bar-height:var(--wc-size-row-lg)] [--wc-sidebar-width:16rem] [--wc-tab-bar-height:var(--wc-size-row-lg)]",
+          # On desktop, as tall as the sidebar's account menu beside it: its avatar and its two
+          # lines, and their padding
+          @tv_bar_session &&
+            "[--wc-tv-bar-height:var(--wc-size-row-lg)] md:[--wc-tv-bar-height:calc(4*var(--wc-space-related)+2.25rem)]",
+          !@tv_bar_session && "[--wc-tv-bar-height:0px]"
+        ]
+      }
     >
       <.sidebar
         current_path={@current_url.path}
@@ -79,10 +101,12 @@ defmodule WatchClubWeb.Layouts do
 
       <%!-- Pages lay out by the main column's width, which leaves out the sidebar --%>
       <div class={[
-        "@container/main md:pb-0 md:pl-(--wc-sidebar-width)",
-        !@full_screen? && "pb-(--wc-tab-bar-height)"
+        "@container/main md:pl-(--wc-sidebar-width)",
+        !@full_screen? && "pb-[calc(var(--wc-tab-bar-height)+var(--wc-tv-bar-height))]",
+        "md:pb-(--wc-tv-bar-height)"
       ]}>
         <.app_bar
+          :if={@app_bar?}
           title={@title}
           content_page?={@content_page?}
           parent={@parent}
@@ -93,11 +117,18 @@ defmodule WatchClubWeb.Layouts do
         />
 
         <main class={["relative", @content_page? && "-mt-(--wc-app-bar-height)"]}>
-          <h1 :if={!@content_page?} class="sr-only">{@title}</h1>
+          <h1 :if={!@content_page? and @app_bar?} class="sr-only">{@title}</h1>
           {render_slot(@hero)}
           <%!-- A Content page lays out its own full-bleed hero --%>
-          <div :if={@content_page?} class="relative z-1">{render_slot(@inner_block)}</div>
-          <.page :if={!@content_page?} width="full" space={@space} class={["relative z-1", @class]}>
+          <div :if={@content_page? or !@app_bar?} class="relative z-1">
+            {render_slot(@inner_block)}
+          </div>
+          <.page
+            :if={!@content_page? and @app_bar?}
+            width="full"
+            space={@space}
+            class={["relative z-1", @class]}
+          >
             {render_slot(@inner_block)}
           </.page>
         </main>
@@ -105,6 +136,13 @@ defmodule WatchClubWeb.Layouts do
 
       <.tab_bar
         current_path={@current_url.path}
+        current_user={@current_user}
+        class={@full_screen? && "max-md:hidden"}
+      />
+
+      <.tv_bar
+        :if={@tv_bar_session}
+        session={@tv_bar_session}
         current_user={@current_user}
         class={@full_screen? && "max-md:hidden"}
       />

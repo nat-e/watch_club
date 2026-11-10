@@ -13,6 +13,10 @@ A self-hosted media server for small private groups.
 
 To upgrade, run `docker compose pull && docker compose up -d`. Database migrations run on start.
 
+## Casting to a TV
+
+The Player casts to a Chromecast or a TV with Google Cast, from Chrome on a computer or an Android phone. The TV loads WatchClub from the address the Player was opened at, so open WatchClub at an HTTPS address the TV can reach, with a trusted certificate: behind a reverse proxy with a certificate from Let's Encrypt, for example. The Player only offers casting over HTTPS.
+
 ## OpenTelemetry
 
 WatchClub can push traces, metrics and logs directly to your OTLP endpoint. Export is off by default. Enable the signals you want in `.env`, then restart the app:
@@ -34,20 +38,20 @@ The shared endpoint is a base URL: HTTP export appends `/v1/traces`, `/v1/metric
 
 All signals share the service name, app version, environment and instance identity. Override resource attributes with `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_METRIC_EXPORT_INTERVAL` sets the metric export interval in milliseconds (default: 60000); VM measurements update every 5 seconds. Tracing drops health-check, LiveView long-poll and database-root traces by default, while preserving parent sampling decisions. Database spans inside request and job traces remain. Oban scheduler and maintenance plugins are not instrumented; job tracing stays enabled. `OTEL_TRACES_SAMPLER` replaces the default sampler; `OTEL_TRACES_SAMPLER_ARG` configures the selected sampler.
 
-Metrics cover requests, database timings, jobs, VM memory and run queues. Metrics are cumulative, and duration histograms use seconds with separate buckets for database timings, jobs and other durations. Metric labels use route patterns, response statuses, worker names and queue names. Metadata refreshes also expose:
+Metrics follow OpenTelemetry's semantic conventions where one exists: `http.server.request.duration` for requests the router handles, `http.client.request.duration` for each HTTP attempt to TMDB, Radarr and Sonarr, retries included, labelled by server and, for TMDB, by path template, `db.client.operation.duration` and `db.client.connection.wait_time` for the database, and `messaging.process.duration` for Oban jobs, along with `oban.job.queue_time`. LiveViews have `phoenix.live_view.mount.duration`, `phoenix.live_view.handle_params.duration` and `phoenix.live_view.handle_event.duration`, and LiveComponents `phoenix.live_component.handle_event.duration`, labelled by module and event name; a failed event is labelled `_OTHER`. Mount and handle_params run for the HTTP render, then again when the socket connects, which `phoenix.live_view.connected` tells apart. The VM exposes `beam.memory.allocated` and `beam.run_queue.length`. Metrics are cumulative, and duration histograms use seconds with separate buckets for database timings, jobs and other durations. Failures share each duration histogram, labelled by `error.type`. Prometheus-compatible backends replace dots with underscores and add unit suffixes, such as `http_server_request_duration_seconds`. The app also exposes:
 
-- `watch_club.contents.metadata_request.count`, labelled by `served` (`stored`, `fetched`).
-- `watch_club.contents.metadata_fetch.stop.count` and `.stop.duration`, labelled by `type` (`movie`, `tv_show`) and `result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). `.callers` measures callers per fetch, including crashes, by `type`; `.exception.count` counts crashes by `type`. `kept_stored` means TMDB failed but stored Content remained usable.
-- `watch_club.tmdb.request.stop.count` and `.stop.duration`, labelled by `endpoint` (path templates) and `status` (`2xx`, `404`, `429`, `4xx`, `5xx`, `error`). These count each HTTP attempt, including retries, but not cache hits.
-- `watch_club.media_import.match.count`, labelled by `result` (`matched`, `not_matched`, `episode_not_listed`).
-- `watch_club.marker_detection.marker.count`, one per kind for each Video that detection runs on, labelled by `media_type` (`movie`, `tv_show_episode`), `kind` (`intro`, `recap`, `credits`) and `source` (`chapter`, `audio`, `none`).
-- `watch_club.audio_fingerprint.fetch.count`, labelled by `cached` (`true`, `false`), and `watch_club.audio_fingerprint.compute.stop.duration`, the time to decode and fingerprint audio, labelled by `part` (`beginning`, `end`).
+- `watch_club.metadata_requests`, labelled by `watch_club.metadata_request.served` (`stored`, `fetched`).
+- `watch_club.metadata_fetch.duration`, labelled by `watch_club.content.type` (`movie`, `tv_show`) and `watch_club.metadata_fetch.result` (`created`, `refreshed`, `kept_stored`, `not_found`, `unavailable`). Other results than `created` and `refreshed`, and crashes, also set `error.type`. `watch_club.metadata_fetch.callers` measures callers per fetch, including crashes, by Content type. `kept_stored` means TMDB failed but stored Content remained usable.
+- `watch_club.media_import.matches`, labelled by `watch_club.media_import.match.result` (`matched`, `not_matched`, `episode_not_listed`).
+- `watch_club.marker_detection.markers`, one per kind for each Video that detection runs on, labelled by `watch_club.media.type` (`movie`, `tv_show_episode`), `watch_club.marker.kind` (`intro`, `recap`, `credits`) and `watch_club.marker.source` (`chapter`, `audio`, `none`).
+- `watch_club.audio_fingerprint.fetches`, labelled by `watch_club.audio_fingerprint.cached` (`true`, `false`), and `watch_club.audio_fingerprint.compute.duration`, the time to decode and fingerprint audio, labelled by `watch_club.audio_fingerprint.part` (`beginning`, `end`).
+- `oban.queue.available_job.count`, the jobs ready to run, and `oban.queue.oldest_available_job.age`, how long the oldest of them has waited in seconds, for each configured queue, labelled by `messaging.destination.name`. Both update every 5 seconds and read 0 for an empty queue.
 
-Durations and callers per fetch are exported as histograms. Suggested alerts: TMDB errors or rate limiting above a threshold, and Content metadata fetch failures above a threshold, including failed refreshes that kept stored Content.
+Durations and callers per fetch are exported as histograms. Suggested alerts: TMDB errors or rate limiting above a threshold; Content metadata fetch failures above a threshold, including failed refreshes that kept stored Content; and a queue's `oban.queue.oldest_available_job.age` above the wait its jobs can tolerate.
 
 Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Marker detection traces have a span for each audio fingerprint they compute. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths, and Marker detection logs include local file paths.
 
-The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include raw paths, query strings and client IPs, including password-reset tokens and Invitations. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
+The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include paths, query strings and client IPs. Secrets in query strings, such as password-reset tokens, Invitations and the tokens of video files, show as `REDACTED`. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
 
 ## Contributing
 

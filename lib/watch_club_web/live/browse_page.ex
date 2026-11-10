@@ -46,6 +46,7 @@ defmodule WatchClubWeb.BrowsePage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       title={dgettext("nav", "Browse")}
       search
       class="@container pt-group!"
