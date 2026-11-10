@@ -32,11 +32,8 @@ defmodule WatchClubWeb.Telemetry do
       if Application.fetch_env!(:watch_club, :opentelemetry)[:metrics] do
         [
           {WatchClub.Telemetry.Metrics, metrics()},
-          # The delay lets the Repo, which starts after this supervisor, come up first.
           {:telemetry_poller,
-           measurements: [{__MODULE__, :measure_job_queues, []}],
-           period: :timer.seconds(5),
-           init_delay: :timer.seconds(5)}
+           measurements: [{__MODULE__, :measure_job_queues, []}], period: :timer.seconds(5)}
         ]
       else
         []
@@ -191,28 +188,32 @@ defmodule WatchClubWeb.Telemetry do
 
   @doc false
   def measure_job_queues do
-    # An empty queue reports 0, rather than keeping its last values.
-    empty_queues =
-      for {queue, _limit} <- Application.fetch_env!(:watch_club, Oban)[:queues],
-          into: %{},
-          do: {to_string(queue), %{available_jobs: 0, oldest_available_job_age: 0}}
-
-    now = DateTime.utc_now()
-
-    # Waits start at `scheduled_at`, as in Oban's `queue_time`.
-    waiting_queues =
+    waiting =
       from(job in Oban.Job,
         where: job.state == "available",
         group_by: job.queue,
-        select: {job.queue, count(), min(job.scheduled_at)}
+        select: {job.queue, {count(), min(job.scheduled_at)}}
       )
       |> WatchClub.Repo.all()
-      |> Map.new(fn {queue, count, oldest} ->
-        age = DateTime.diff(now, oldest, :millisecond) / 1000
-        {queue, %{available_jobs: count, oldest_available_job_age: age}}
-      end)
+      |> Map.new()
 
-    for {queue, measurements} <- Map.merge(empty_queues, waiting_queues) do
+    now = DateTime.utc_now()
+
+    # Every configured queue reports, 0 when empty, so no gauge keeps old values.
+    for {queue, _limit} <- Application.fetch_env!(:watch_club, Oban)[:queues] do
+      queue = to_string(queue)
+
+      measurements =
+        case waiting do
+          %{^queue => {count, oldest}} ->
+            # Waits start at `scheduled_at` and never go below 0, as in Oban's `queue_time`.
+            age = max(DateTime.diff(now, oldest, :millisecond), 0) / 1000
+            %{available_jobs: count, oldest_available_job_age: age}
+
+          %{} ->
+            %{available_jobs: 0, oldest_available_job_age: 0}
+        end
+
       :telemetry.execute([:watch_club, :oban, :queue], measurements, %{queue: queue})
     end
   rescue

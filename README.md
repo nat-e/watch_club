@@ -46,7 +46,7 @@ Metrics cover requests, database timings, jobs, job queues, VM memory and run qu
 - `watch_club.media_import.match.count`, labelled by `result` (`matched`, `not_matched`, `episode_not_listed`).
 - `watch_club.marker_detection.marker.count`, one per kind for each Video that detection runs on, labelled by `media_type` (`movie`, `tv_show_episode`), `kind` (`intro`, `recap`, `credits`) and `source` (`chapter`, `audio`, `none`).
 - `watch_club.audio_fingerprint.fetch.count`, labelled by `cached` (`true`, `false`), and `watch_club.audio_fingerprint.compute.stop.duration`, the time to decode and fingerprint audio, labelled by `part` (`beginning`, `end`).
-- `watch_club.oban.queue.available_jobs`, the jobs ready to run, and `watch_club.oban.queue.oldest_available_job_age`, how long the oldest of them has waited in seconds, labelled by `queue`. Both update every 5 seconds and read 0 for an empty queue.
+- `watch_club.oban.queue.available_jobs`, the jobs ready to run, and `watch_club.oban.queue.oldest_available_job_age`, how long the oldest of them has waited in seconds, for each configured queue, labelled by `queue`. Both update every 5 seconds and read 0 for an empty queue.
 
 Durations and callers per fetch are exported as histograms. Suggested alerts: TMDB errors or rate limiting above a threshold; Content metadata fetch failures above a threshold, including failed refreshes that kept stored Content; and a queue's `oldest_available_job_age` above the wait its jobs can tolerate.
 
