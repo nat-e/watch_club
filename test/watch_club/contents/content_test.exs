@@ -1259,32 +1259,24 @@ defmodule WatchClub.Contents.ContentTest do
   describe "get_user_recently_watched/*" do
     test "returns the actor's Content in progress that is Ready to Play, the most recently watched first",
          %{member: member} do
-      [older, newer] = movies = generate_many(movie(), 2)
-      show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+      [older, newer, someone_elses] = generate_many(movie(), 3)
+      ready_show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+      unready_show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
 
-      for movie <- movies do
-        add_video!(movie.id)
-
-        History.record_watch_progress!(
-          %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
-          actor: member
-        )
-      end
-
+      start_movie!(older, member)
+      # Its next TV Show Episode has Media
+      add_episode_video!(ready_show, 1, 2)
+      finish_episode!(ready_show, member)
+      start_movie!(newer, member)
       # Watched last, but its next TV Show Episode has no Media
-      add_episode_video!(show, 1)
-
-      History.record_watch_progress!(
-        %{
-          tv_show_episode_id: episode!(show, 1).id,
-          position_seconds: 95 * 60,
-          duration_seconds: 100 * 60
-        },
-        actor: member
-      )
+      finish_episode!(unready_show, member)
+      start_movie!(someone_elses, generate(user()))
 
       assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
-               [newer.id, older.id]
+               [newer.id, ready_show.id, older.id]
+
+      assert get_user_recently_watched!(query: [limit: 1], actor: member) |> Enum.map(& &1.id) ==
+               [newer.id]
     end
   end
 
@@ -1432,6 +1424,29 @@ defmodule WatchClub.Contents.ContentTest do
     MediaCatalog.create_or_update_video!(
       media_episode_input(episode!(tv_show, season_number, episode_number).id),
       actor: SystemActor.actor()
+    )
+  end
+
+  defp start_movie!(movie, user) do
+    add_video!(movie.id)
+
+    History.record_watch_progress!(
+      %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+      actor: user
+    )
+  end
+
+  # S01E01, with Media
+  defp finish_episode!(tv_show, user) do
+    add_episode_video!(tv_show, 1)
+
+    History.record_watch_progress!(
+      %{
+        tv_show_episode_id: episode!(tv_show, 1).id,
+        position_seconds: 95 * 60,
+        duration_seconds: 100 * 60
+      },
+      actor: user
     )
   end
 

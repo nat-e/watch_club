@@ -150,8 +150,9 @@ defmodule WatchClub.Contents.TvShowEpisode do
       public? true
     end
 
-    # A rank to sort episodes on to make sure they are in the right season/episode order
-    calculate :rank, :integer, expr(season_number * 1000 + episode_number)
+    # Its place in its TV Show, in season then episode order. Unique in the TV Show while episode
+    # numbers stay under 100,000.
+    calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
     # The one Play starts for the actor, in its TV Show
     calculate :actor_next?, :boolean, expr(rank == tv_show.actor_next_episode_rank)
