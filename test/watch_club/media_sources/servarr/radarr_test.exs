@@ -1,11 +1,11 @@
-defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
+defmodule WatchClub.MediaSources.Servarr.RadarrTest do
   use ExUnit.Case, async: false
 
   alias WatchClub.Integrations.Servarr.Client
-  alias WatchClub.MediaSources.{Import, Servarr, Source}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
-  alias WatchClub.MediaSources.Import.Scanner.Radarr
+  alias WatchClub.MediaSources.Servarr
+  alias WatchClub.MediaSources.Servarr.Radarr
 
   setup do
     previous = Application.get_env(:watch_club, :servarr_req_options)
@@ -16,22 +16,19 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     :ok
   end
 
-  defp media_import(config_overrides \\ %{}) do
-    config =
-      struct(
-        %Servarr{
-          flavor: :radarr,
-          base_url: "http://radarr.test",
-          api_key: "key",
-          quality_profile_id: 6,
-          quality_profile_name: "HD-1080p",
-          root_folder_path: "/movies",
-          local_root_folder_path: "/data/movies"
-        },
-        config_overrides
-      )
-
-    %Import{media_source: %Source{source_type: :radarr, implementation: config}}
+  defp servarr(config_overrides \\ %{}) do
+    struct(
+      %Servarr{
+        flavor: :radarr,
+        base_url: "http://radarr.test",
+        api_key: "key",
+        quality_profile_id: 6,
+        quality_profile_name: "HD-1080p",
+        root_folder_path: "/movies",
+        local_root_folder_path: "/data/movies"
+      },
+      config_overrides
+    )
   end
 
   defp stub_movies(movies) do
@@ -61,7 +58,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "emits a candidate with Radarr identity and a locally-mapped path" do
       stub_movies([movie(%{})])
 
-      assert [candidate] = Radarr.scan(media_import())
+      assert [candidate] = Radarr.scan(servarr())
 
       assert %Candidate{
                path: "/data/movies/Star Wars (1977)/movie.mkv",
@@ -77,7 +74,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "uses the Radarr path verbatim when there is no local mapping" do
       stub_movies([movie(%{})])
 
-      assert [candidate] = Radarr.scan(media_import(%{local_root_folder_path: nil}))
+      assert [candidate] = Radarr.scan(servarr(%{local_root_folder_path: nil}))
 
       assert candidate.path == "/movies/Star Wars (1977)/movie.mkv"
     end
@@ -85,31 +82,31 @@ defmodule WatchClub.MediaSources.Import.Scanner.RadarrTest do
     test "skips movies without a downloaded file" do
       stub_movies([movie(%{"hasFile" => false, "movieFile" => nil})])
 
-      assert [] = Radarr.scan(media_import())
+      assert [] = Radarr.scan(servarr())
     end
 
     test "skips movies from a different quality profile" do
       stub_movies([movie(%{"qualityProfileId" => 8})])
 
-      assert [] = Radarr.scan(media_import())
+      assert [] = Radarr.scan(servarr())
     end
 
     test "skips movies from a different root folder" do
       stub_movies([movie(%{"rootFolderPath" => "/movies-4k"})])
 
-      assert [] = Radarr.scan(media_import())
+      assert [] = Radarr.scan(servarr())
     end
 
     test "tolerates a trailing slash on the configured root folder" do
       stub_movies([movie(%{})])
 
-      assert [_candidate] = Radarr.scan(media_import(%{root_folder_path: "/movies/"}))
+      assert [_candidate] = Radarr.scan(servarr(%{root_folder_path: "/movies/"}))
     end
 
     test "raises when the Radarr API fails" do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
-      assert_raise MatchError, fn -> Radarr.scan(media_import()) end
+      assert_raise MatchError, fn -> Radarr.scan(servarr()) end
     end
   end
 end

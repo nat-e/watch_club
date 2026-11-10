@@ -21,7 +21,7 @@ defmodule WatchClub.MediaSources.Servarr.Changes.RegisterWebhook do
   def change(changeset, _opts, _context) do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       flavor = Ash.Changeset.get_attribute(changeset, :flavor)
-      event_flags = Flavor.webhook_event_flags(flavor)
+      event_flags = Flavor.app(flavor).webhook_event_flags()
 
       with {:ok, config} <- build_config(changeset, flavor),
            base_url = Ash.Changeset.get_attribute(changeset, :base_url),

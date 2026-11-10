@@ -1,6 +1,7 @@
 defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
   @moduledoc """
-  Calls Radarr/Sonarr API to refresh the status of a Media Source Request.
+  Asks the source's app for the status of a Media Source Request, see
+  `WatchClub.MediaSources.Servarr.App.request_state/2`.
 
   This will recompute the status and progress of the MSR, and update it.
 
@@ -21,9 +22,8 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
       period: :infinity
     ]
 
-  alias WatchClub.Integrations.{Radarr, Sonarr}
   alias WatchClub.Integrations.Servarr.Client
-  alias WatchClub.MediaSources.Servarr
+  alias WatchClub.MediaSources.Servarr.Flavor
   alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.SystemActor
 
@@ -46,11 +46,10 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
       |> Ash.Query.load(media_source: [:implementation])
       |> Ash.read_one!(actor: actor)
 
+    servarr = request.media_source.implementation
+
     {status, progress} =
-      compute_status_and_progress(
-        request.media_source.implementation,
-        request.external_resource_id
-      )
+      Flavor.app(servarr.flavor).request_state(servarr, request.external_resource_id)
 
     status_changed? = status != request.status
     progress_changed? = round(progress) != round(request.download_progress)
@@ -93,7 +92,6 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
         # downloading, nudge the *arr to refresh now so the next poll is current.
         # Best-effort: the command is async, server-coalesced, and never raises.
         if status == :downloading do
-          servarr = request.media_source.implementation
           Client.refresh_monitored_downloads(servarr.base_url, servarr.api_key)
         end
 
@@ -103,113 +101,5 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
       true ->
         :ok
     end
-  end
-
-  defp compute_status_and_progress(%Servarr{flavor: :radarr} = servarr, movie_id) do
-    movie = Radarr.get_movie_by_id!(servarr.base_url, servarr.api_key, movie_id)
-    queue = Radarr.queue_details!(servarr.base_url, servarr.api_key, movie_id)
-    {movie_status(movie, queue), movie_progress(movie, queue)}
-  end
-
-  defp compute_status_and_progress(%Servarr{flavor: :sonarr} = servarr, series_id) do
-    episodes = Sonarr.list_episodes!(servarr.base_url, servarr.api_key, series_id)
-    queue = Sonarr.queue_details!(servarr.base_url, servarr.api_key, series_id)
-    {series_status(episodes, queue), series_progress(episodes, queue)}
-  end
-
-  @spec movie_status(Radarr.Movie.t(), list(Radarr.QueueResource.t())) ::
-          MediaSourceRequestStatus.t()
-  defp movie_status(%Radarr.Movie{} = movie, queue) do
-    cond do
-      movie.has_file? ->
-        :downloaded
-
-      Enum.any?(queue, &Radarr.QueueResource.blocked?/1) ->
-        :needs_attention
-
-      queue != [] ->
-        :downloading
-
-      # :not_released is moved further down since it can happen to find a movie that is not released
-      # and it should still show up as downloaded
-      not movie.available? ->
-        :not_released
-
-      true ->
-        :searching
-    end
-  end
-
-  @spec series_status(list(Sonarr.Episode.t()), list(Sonarr.QueueResource.t())) ::
-          MediaSourceRequestStatus.t()
-  defp series_status(episodes, queue) do
-    episode_count = length(episodes)
-    now = DateTime.utc_now()
-
-    not_released =
-      episodes != [] &&
-        episodes |> Enum.all?(&(&1.air_date_utc && DateTime.after?(&1.air_date_utc, now)))
-
-    downloaded_count = episodes |> Enum.filter(& &1.has_file?) |> length()
-
-    cond do
-      # All episodes have been downloaded in Sonarr, but are not all
-      # available in watch club yet
-      episode_count > 0 and downloaded_count >= episode_count ->
-        :downloaded
-
-      Enum.any?(queue, &Sonarr.QueueResource.blocked?/1) ->
-        :needs_attention
-
-      queue != [] ->
-        :downloading
-
-      # :not_released is moved further down since it can happen to find a Series that is not released
-      # and it should still show up as downloaded
-      not_released ->
-        :not_released
-
-      true ->
-        :searching
-    end
-  end
-
-  @spec movie_progress(Radarr.Movie.t(), list(Radarr.QueueResource.t())) :: float()
-  defp movie_progress(%Radarr.Movie{has_file?: true}, _queue), do: 100.0
-
-  defp movie_progress(_movie, queue) do
-    queue |> Enum.map(&Radarr.QueueResource.download_progress/1) |> List.first(0.0)
-  end
-
-  @spec series_progress(list(Sonarr.Episode.t()), list(Sonarr.QueueResource.t())) :: float()
-  defp series_progress(episodes, queue) do
-    now = DateTime.utc_now()
-
-    aired_episodes_count =
-      episodes
-      |> Enum.filter(&(&1.air_date_utc && DateTime.before?(&1.air_date_utc, now)))
-      |> length()
-
-    case aired_episodes_count do
-      0 ->
-        0.0
-
-      aired_episodes_count ->
-        episodes
-        |> Enum.map(&episode_progress(&1, queue))
-        |> Enum.sum()
-        |> Kernel./(aired_episodes_count)
-        |> min(100.0)
-    end
-  end
-
-  @spec episode_progress(Sonarr.Episode.t(), list(Sonarr.QueueResource.t())) :: float()
-  defp episode_progress(%Sonarr.Episode{has_file?: true}, _queue), do: 100.0
-
-  defp episode_progress(%Sonarr.Episode{} = episode, queue) do
-    queue
-    |> Enum.filter(&(&1.episode_id == episode.id))
-    |> Enum.map(&Sonarr.QueueResource.download_progress/1)
-    |> List.first(0.0)
   end
 end
