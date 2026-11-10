@@ -14,6 +14,7 @@ defmodule WatchClub.Contents.Content do
     LibrarySort,
     Movie,
     SearchContentType,
+    SearchResult,
     SearchResultsPage,
     SportsEvent,
     TvShow
@@ -240,6 +241,10 @@ defmodule WatchClub.Contents.Content do
 
       argument :content_type, SearchContentType, allow_nil?: false, default: :movies_and_shows
 
+      argument :type, ContentType,
+        description:
+          "Keeps only this Content Type of the scope, such as the Movies among Movies and TV Shows"
+
       argument :page, :integer, allow_nil?: false, default: 1
 
       argument :has_media?, :boolean,
@@ -247,7 +252,25 @@ defmodule WatchClub.Contents.Content do
         default: false,
         description: "Searches the Library's titles instead of the Metadata Provider"
 
+      validate fn input, _context ->
+        type = input.arguments[:type]
+
+        if is_nil(type) or type in SearchContentType.content_types(input.arguments.content_type),
+          do: :ok,
+          else: {:error, field: :type, message: "must be a Content Type of the search's scope"}
+      end
+
       run WatchClub.Contents.Actions.SearchContent
+    end
+
+    action :look_up, :struct do
+      description "The Movie, TV Show or Sports Event with this ID, as a search result, without saving it. nil when its Metadata Provider has none."
+      constraints instance_of: SearchResult
+      allow_nil? true
+
+      argument :content_identity, ContentIdentity, allow_nil?: false
+
+      run WatchClub.Contents.Actions.LookUpContent
     end
 
     action :library_filter_options, :map do

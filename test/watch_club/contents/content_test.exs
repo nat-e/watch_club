@@ -1193,6 +1193,66 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert result.identity == ContentIdentity.from_content(dune)
     end
+
+    test "searches only Movies with content_type :movies", %{member: member} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn %{request_path: "/3/search/movie"} =
+                                                             conn ->
+        Req.Test.json(conn, %{
+          "page" => 1,
+          "total_pages" => 1,
+          "total_results" => 1,
+          "results" => [%{"id" => 438_631, "title" => "Dune", "release_date" => "2021-09-15"}]
+        })
+      end)
+
+      assert %SearchResultsPage{
+               results: [%SearchResult{identity: identity, title: "Dune", year: 2021}]
+             } = search_content!(%{query: "dune", content_type: :movies}, actor: member)
+
+      assert identity == ContentIdentity.for_movie(438_631)
+    end
+
+    test "searches only TV Shows with content_type :tv_shows", %{member: member} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn %{request_path: "/3/search/tv"} = conn ->
+        Req.Test.json(conn, %{
+          "page" => 1,
+          "total_pages" => 1,
+          "total_results" => 1,
+          "results" => [
+            %{"id" => 95_396, "name" => "Severance", "first_air_date" => "2022-02-17"}
+          ]
+        })
+      end)
+
+      assert %SearchResultsPage{
+               results: [%SearchResult{identity: identity, title: "Severance", year: 2022}]
+             } = search_content!(%{query: "severance", content_type: :tv_shows}, actor: member)
+
+      assert identity == ContentIdentity.for_tv_show(95_396)
+    end
+  end
+
+  describe "look_up_content/*" do
+    test "finds the Movie with a TMDB ID, and whether it's in the Library", %{member: member} do
+      movie = generate(movie())
+      add_video!(movie.id)
+      identity = ContentIdentity.from_content(movie)
+
+      assert %SearchResult{identity: ^identity, title: "Star Wars", year: 1977, has_media?: true} =
+               look_up_content!(identity, actor: member)
+    end
+
+    test "finds nothing when TMDB has no Movie with this TMDB ID", %{member: member} do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        conn
+        |> Plug.Conn.put_status(404)
+        |> Req.Test.json(%{"status_message" => "Not found"})
+      end)
+
+      capture_log(fn ->
+        assert look_up_content!(ContentIdentity.for_movie("404"), actor: member) == nil
+      end)
+    end
   end
 
   describe "get_contents_in_library/*" do

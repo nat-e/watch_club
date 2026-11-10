@@ -1,9 +1,10 @@
 defmodule WatchClub.Contents.Actions.SearchContent do
   @moduledoc """
   Searches one scope on its Metadata Provider: Movies and TV Shows on TMDB, Sports
-  Events on sportarr.net. With `has_media?`, searches only the Library's titles in
-  that scope. Returns a `SearchResultsPage` of `SearchResult`s, each saying whether
-  it's in the Library, and the pagination metadata.
+  Events on sportarr.net, or only one Content Type of the scope with `type`. With
+  `has_media?`, searches only the Library's titles in that scope. Returns a
+  `SearchResultsPage` of `SearchResult`s, each saying whether it's in the Library, and the
+  pagination metadata.
   """
   use Ash.Resource.Actions.Implementation
 
@@ -21,7 +22,8 @@ defmodule WatchClub.Contents.Actions.SearchContent do
   @impl true
   def run(
         %Ash.ActionInput{
-          arguments: %{query: query, content_type: scope, page: page, has_media?: true}
+          arguments:
+            %{query: query, content_type: scope, page: page, has_media?: true} = arguments
         },
         _opts,
         context
@@ -30,7 +32,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
       Contents.get_contents_in_library!(
         %{query: query},
         Ash.Context.to_opts(context,
-          query: [filter: [type: [in: SearchContentType.content_types(scope)]]],
+          query: [filter: [type: [in: types(scope, arguments[:type])]]],
           page: [limit: @library_page_size, offset: (page - 1) * @library_page_size, count: true],
           load: [:title, :overview, :poster_path]
         )
@@ -46,23 +48,27 @@ defmodule WatchClub.Contents.Actions.SearchContent do
 
   def run(
         %Ash.ActionInput{
-          arguments: %{
-            query: query,
-            content_type: :movies_and_shows,
-            page: page,
-            has_media?: false
-          }
+          arguments:
+            %{
+              query: query,
+              content_type: :movies_and_shows,
+              page: page,
+              has_media?: false
+            } = arguments
         },
         _opts,
         context
       ) do
+    type = arguments[:type]
+
     Logger.info("Searching \"#{query}\" on TMDB (page #{page})",
       event: :search_movies_and_shows,
       query: query,
+      type: type,
       page: page
     )
 
-    response = Tmdb.search_multi!(query, page: page, locale: context.actor.settings.locale)
+    response = search_tmdb!(type, query, page: page, locale: context.actor.settings.locale)
     results = Enum.flat_map(response.results, &search_result/1)
 
     Logger.info("Found #{length(results)} results for \"#{query}\"",
@@ -110,6 +116,14 @@ defmodule WatchClub.Contents.Actions.SearchContent do
        %SearchResultsPage{results: put_has_media!(results, context), page: 1, total_pages: 1}}
     end
   end
+
+  # The scope's Content Types, or only the one asked for
+  defp types(scope, nil), do: SearchContentType.content_types(scope)
+  defp types(_scope, type), do: [type]
+
+  defp search_tmdb!(nil, query, opts), do: Tmdb.search_multi!(query, opts)
+  defp search_tmdb!(:movie, query, opts), do: Tmdb.search_movie!(query, opts)
+  defp search_tmdb!(:tv_show, query, opts), do: Tmdb.search_tv!(query, opts)
 
   defp search_result(%MovieSearchResult{} = movie) do
     [
