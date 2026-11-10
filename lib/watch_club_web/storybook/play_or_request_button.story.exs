@@ -19,7 +19,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       %VariationGroup{
         id: :play,
         description:
-          "Play, Resume, nothing to play yet, and with every episode, also when there's nothing to play",
+          "Play, Resume, disabled while the next TV Show Episode has no Media, and with every episode, also when there's nothing to play",
         template: group_template(),
         variations: [
           %Variation{
@@ -76,7 +76,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       },
       %VariationGroup{
         id: :round,
-        description: "Round: Play, Request, then how far it got",
+        description: "Round: Play, disabled Play, Request, then how far it got",
         template: row_template(),
         variations: [
           %Variation{
@@ -87,6 +87,16 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
               has_media?: true,
               play_href: "#",
               play_label: "Resume",
+              title: "Dune"
+            }
+          },
+          %Variation{
+            id: :nothing_to_play,
+            attributes: %{
+              id: "round-nothing-to-play",
+              variant: "round",
+              has_media?: true,
+              play_label: "Play S01E01",
               title: "Dune"
             }
           },
@@ -105,7 +115,7 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
       },
       %VariationGroup{
         id: :poster,
-        description: "Over a poster: Play, Request, then how far it got",
+        description: "Over a poster: Play, disabled Play, then how far it got",
         template: row_template(),
         variations: [
           %Variation{
@@ -116,6 +126,16 @@ defmodule WatchClubWeb.Storybook.PlayOrRequestButton do
               has_media?: true,
               play_href: "#",
               play_label: "Resume",
+              title: "Dune"
+            }
+          },
+          %Variation{
+            id: :nothing_to_play,
+            attributes: %{
+              id: "poster-nothing-to-play",
+              variant: "poster",
+              has_media?: true,
+              play_label: "Play S01E01",
               title: "Dune"
             }
           },

@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
   @moduledoc """
-  Play for a Content with Media. Otherwise Request, or, for one of its Content Request's Request
+  Play for a Content in the Library, disabled until it's Ready to Play: the User's next TV Show
+  Episode has no Media yet. Otherwise Request, or, for one of its Content Request's Request
   Subscribers, how far the request got, in Play's spot.
   `PlayOrRequestButtonLive` loads what it shows and does Request.
   """
@@ -10,7 +11,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
 
   attr :id, :string, required: true
   attr :has_media?, :boolean, required: true
-  attr :play_href, :string, default: nil, doc: "the Player, nil when there's nothing to play"
+
+  attr :play_href, :string,
+    default: nil,
+    doc: "the Player, nil when the User's next TV Show Episode has no Media"
+
   attr :play_label, :string, required: true, doc: "such as Play, or Resume S01E03"
 
   attr :title, :string,
@@ -47,22 +52,24 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     default: false,
     doc: "true moves the focus to the request's status when it shows up, after Request"
 
-  # Only Play, when there's something to play
+  # Only Play. On a solid circle, so a poster doesn't show through it when it's disabled.
   def play_or_request_button(%{variant: variant, has_media?: true} = assigns)
       when variant in ~w(round poster) do
     ~H"""
-    <.button
-      :if={@play_href}
-      id={"#{@id}-play-button"}
-      variant="primary"
-      size={if @variant == "poster", do: "icon-lg", else: "icon"}
-      href={@play_href}
-      aria-label={dgettext("contents", "%{action} %{title}", action: @play_label, title: @title)}
-      title={@play_label}
-      class={["rounded-full!", @variant == "poster" && "shadow-overlay"]}
-    >
-      <Lucideicons.play />
-    </.button>
+    <span class={["flex rounded-full bg-canvas", @variant == "poster" && "shadow-overlay"]}>
+      <.button
+        id={"#{@id}-play-button"}
+        variant="primary"
+        size={if @variant == "poster", do: "icon-lg", else: "icon"}
+        href={@play_href}
+        disabled={!@play_href}
+        aria-label={dgettext("contents", "%{action} %{title}", action: @play_label, title: @title)}
+        title={@play_label}
+        class="rounded-full!"
+      >
+        <Lucideicons.play />
+      </.button>
+    </span>
     """
   end
 
@@ -164,20 +171,24 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButton do
     """
   end
 
+  # On a solid background, so the Content page's backdrop doesn't show through it when it's
+  # disabled
   def play_or_request_button(assigns) do
     ~H"""
-    <.button
-      id={"#{@id}-play-button"}
-      size={@size}
-      variant="primary"
-      emphasis
-      href={@play_href}
-      disabled={!@play_href}
-      class="w-full"
-    >
-      <:icon><Lucideicons.play /></:icon>
-      {@play_label}
-    </.button>
+    <span class="flex w-full rounded-control bg-canvas">
+      <.button
+        id={"#{@id}-play-button"}
+        size={@size}
+        variant="primary"
+        emphasis
+        href={@play_href}
+        disabled={!@play_href}
+        class="w-full"
+      >
+        <:icon><Lucideicons.play /></:icon>
+        {@play_label}
+      </.button>
+    </span>
     """
   end
 
