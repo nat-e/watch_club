@@ -307,6 +307,7 @@ msgstr ""
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Some episodes missing"
+msgstr ""
 
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
