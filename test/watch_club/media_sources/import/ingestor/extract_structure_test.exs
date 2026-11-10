@@ -18,10 +18,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
   setup :verify_on_exit!
 
   describe "apply/1 —movie" do
-    test "probes the file and populates the structure with video, audio, and subtitle tracks" do
+    @tag :tmp_dir
+    test "probes the file and populates the structure with video, audio, and subtitle tracks",
+         %{tmp_dir: tmp_dir} do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
-      candidate = Candidate.new("/library/Friends - S01E01.mkv", :movie)
+      candidate = Candidate.new(video_file!(tmp_dir), :movie)
 
       assert {:ok,
               %Candidate{
@@ -38,13 +40,41 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                 }
               }} = ExtractStructure.apply(candidate)
     end
+
+    @tag :tmp_dir
+    test "gives the file a File Fingerprint that changes with either end of the file",
+         %{tmp_dir: tmp_dir} do
+      stub_ffprobe(load_fixture("video_friends_s01e01"))
+      path = video_file!(tmp_dir)
+
+      fingerprint = fn ->
+        {:ok, candidate} = ExtractStructure.apply(Candidate.new(path, :movie))
+        candidate.media_structure.file_fingerprint
+      end
+
+      original = fingerprint.()
+      assert fingerprint.() == original
+
+      # Same size, last byte replaced
+      File.open!(path, [:read, :write, :binary], &:file.pwrite(&1, {:eof, -1}, "x"))
+      refute fingerprint.() == original
+    end
+
+    test "skips the file when it can't be read" do
+      stub_ffprobe(load_fixture("video_friends_s01e01"))
+
+      candidate = Candidate.new("/library/missing.mkv", :movie)
+
+      assert ExtractStructure.apply(candidate) == :skip
+    end
   end
 
   describe "apply/1 —tv_show_episode" do
-    test "uses the same video probing as movies" do
+    @tag :tmp_dir
+    test "uses the same video probing as movies", %{tmp_dir: tmp_dir} do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
-      candidate = Candidate.new("/library/Friends - S01E01.mkv", :tv_show_episode)
+      candidate = Candidate.new(video_file!(tmp_dir), :tv_show_episode)
 
       assert {:ok,
               %Candidate{
@@ -101,6 +131,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
       assert ExtractStructure.apply(candidate) == :skip
     end
+  end
+
+  # Bigger than both ends the File Fingerprint reads
+  defp video_file!(dir) do
+    path = Path.join(dir, "Friends - S01E01.mkv")
+    File.write!(path, :crypto.strong_rand_bytes(200 * 1024))
+    path
   end
 
   defp stub_ffprobe(metadata) do

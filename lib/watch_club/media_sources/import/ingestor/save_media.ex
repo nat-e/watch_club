@@ -64,6 +64,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       end
 
     Map.merge(foreign_key, %{
+      file_fingerprint: structure.file_fingerprint,
       duration_seconds: structure.duration_seconds,
       container: structure.container,
       bit_rate: structure.bit_rate,

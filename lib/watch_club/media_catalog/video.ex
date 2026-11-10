@@ -50,6 +50,7 @@ defmodule WatchClub.MediaCatalog.Video do
         :movie_id,
         :tv_show_episode_id,
         :sports_event_id,
+        :file_fingerprint,
         :duration_seconds,
         :container,
         :bit_rate
@@ -83,7 +84,15 @@ defmodule WatchClub.MediaCatalog.Video do
     update :update do
       primary? true
       require_atomic? false
-      accept [:movie_id, :tv_show_episode_id, :duration_seconds, :container, :bit_rate]
+
+      accept [
+        :movie_id,
+        :tv_show_episode_id,
+        :file_fingerprint,
+        :duration_seconds,
+        :container,
+        :bit_rate
+      ]
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -127,6 +136,12 @@ defmodule WatchClub.MediaCatalog.Video do
   attributes do
     attribute :id, :uuid_v7 do
       primary_key? true
+      allow_nil? false
+      public? true
+    end
+
+    attribute :file_fingerprint, :string do
+      description "Tells a changed file apart: a hash of its size and its first and last 64 KB"
       allow_nil? false
       public? true
     end
