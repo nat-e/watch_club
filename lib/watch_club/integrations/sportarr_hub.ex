@@ -7,6 +7,8 @@ defmodule WatchClub.Integrations.SportarrHub do
   Results are never read, so no score or winner is stored.
   """
 
+  alias OpenTelemetry.SemConv.Incubating.URLAttributes
+
   require Logger
 
   # 1 day
@@ -134,6 +136,9 @@ defmodule WatchClub.Integrations.SportarrHub do
   defp send_request(opts) do
     [base_url: "https://sportarr.net", retry: :transient, max_retries: 3, receive_timeout: 10_000]
     |> Req.new(Application.get_env(:watch_club, :sportarr_hub_req_options, []))
+    # Traces and HTTP client metrics name each request after its path template
+    |> OpentelemetryReq.attach(opt_in_attrs: [URLAttributes.url_template()])
+    |> ReqTele.attach(pipeline: false)
     |> Req.request(opts)
     |> case do
       {:ok, %Req.Response{status: 200, body: body}} ->
