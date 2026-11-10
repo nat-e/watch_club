@@ -14,23 +14,19 @@ defmodule WatchClub.Markers.MarkerTest do
     @describetag :tmp_dir
 
     test "finds the Markers in the named chapters", %{tmp_dir: tmp_dir} do
-      [episode] = episodes(1)
-      video = episode_video(episode, tmp_dir)
+      [video] = episode_videos(1, tmp_dir)
 
-      stub(ProbeMock, :probe, fn _path ->
-        {:ok,
-         %{
-           "chapters" => [
-             chapter(0, 45, "Recap"),
-             chapter(45, 70, "2. Title Sequence & Opening Credits"),
-             chapter(70, 80, "Opening Credits"),
-             chapter(80, 1250, "Scene 3"),
-             chapter(1250, 1320, "End Credits")
-           ]
-         }}
-      end)
+      stub_chapters(%{
+        video.media.path => [
+          chapter(0, 45, "Recap"),
+          chapter(45, 70, "2. Title Sequence & Opening Credits"),
+          chapter(70, 80, "Opening Credits"),
+          chapter(80, 1250, "Scene 3"),
+          chapter(1250, 1320, "End Credits")
+        ]
+      })
 
-      Markers.detect_markers!(video, actor: SystemActor.actor())
+      Markers.detect_markers!([video], actor: SystemActor.actor())
 
       assert markers(video) == [
                credits: {1250.0, 1320.0},
@@ -39,68 +35,103 @@ defmodule WatchClub.Markers.MarkerTest do
              ]
     end
 
-    test "replaces the Markers the Video had", %{tmp_dir: tmp_dir} do
+    test "gives the episodes the Intro and Credits they share", %{tmp_dir: tmp_dir} do
+      [first, second, third] = episode_videos(3, tmp_dir)
+      stub_chapters(%{})
+
+      stub_fingerprints(%{
+        first.media.path => [{:first, 100}, {:theme, 320}],
+        second.media.path => [{:second, 500}, {:theme, 320}],
+        third.media.path => [{:third, 300}, {:theme, 320}]
+      })
+
+      Markers.detect_markers!([first, second, third], actor: SystemActor.actor())
+
+      assert_markers(first, intro: range(100, 320), credits: credits())
+      assert_markers(second, intro: range(500, 320), credits: credits())
+      assert_markers(third, intro: range(300, 320), credits: credits())
+    end
+
+    test "gives an episode the longest audio it shares with another", %{tmp_dir: tmp_dir} do
+      [first, second, third] = episode_videos(3, tmp_dir)
+      stub_chapters(%{})
+
+      stub_fingerprints(%{
+        first.media.path => [{:first, 100}, {:jingle, 160}],
+        second.media.path => [{:jingle, 160}, {:second, 100}, {:theme, 320}],
+        third.media.path => [{:third, 300}, {:theme, 320}]
+      })
+
+      Markers.detect_markers!([first, second, third], actor: SystemActor.actor())
+
+      assert_markers(first, intro: range(100, 160))
+      assert_markers(second, intro: range(260, 320))
+      assert_markers(third, intro: range(300, 320))
+    end
+
+    test "keeps the Markers of the named chapters", %{tmp_dir: tmp_dir} do
+      [first, second] = episode_videos(2, tmp_dir)
+      stub_chapters(%{first.media.path => [chapter(30, 60, "Intro")]})
+
+      stub_fingerprints(%{
+        first.media.path => [{:first, 100}, {:theme, 320}],
+        second.media.path => [{:second, 500}, {:theme, 320}]
+      })
+
+      Markers.detect_markers!([first, second], actor: SystemActor.actor())
+
+      assert_markers(first, intro: {30.0, 60.0}, credits: credits())
+      assert_markers(second, intro: range(500, 320), credits: credits())
+    end
+
+    test "doesn't compare the Videos of one episode", %{tmp_dir: tmp_dir} do
       [episode] = episodes(1)
-      video = episode_video(episode, tmp_dir)
-      stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => [chapter(0, 30, "Intro")]}} end)
-      Markers.detect_markers!(video, actor: SystemActor.actor())
+      first = episode_video(episode, tmp_dir)
+      second = episode_video(episode, tmp_dir)
+      stub_chapters(%{})
 
-      stub(ProbeMock, :probe, fn _path ->
-        {:ok, %{"chapters" => [chapter(1250, 1320, "Credits")]}}
-      end)
+      stub_fingerprints(%{
+        first.media.path => [{:theme, 320}],
+        second.media.path => [{:theme, 320}]
+      })
 
-      Markers.detect_markers!(video, actor: SystemActor.actor())
+      Markers.detect_markers!([first, second], actor: SystemActor.actor())
 
-      assert markers(video) == [credits: {1250.0, 1320.0}]
+      assert markers(first) == []
+      assert markers(second) == []
     end
 
-    test "finds the Intro and Credits that the nearest episode shares, and gives them to it",
-         %{tmp_dir: tmp_dir} do
-      [first_episode, second_episode, _third] = episodes(3)
-      first = episode_video(first_episode, tmp_dir)
-      second = episode_video(second_episode, tmp_dir)
-      stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
-      stub_fingerprints(%{first.media.path => 100, second.media.path => 500})
+    test "keeps the Markers of a Video whose file can't be read", %{tmp_dir: tmp_dir} do
+      [unreadable, readable] = episode_videos(2, tmp_dir)
 
-      Markers.detect_markers!(second, actor: SystemActor.actor())
+      chapters = [chapter(30, 60, "Intro"), chapter(1250, 1320, "Credits")]
+      stub_chapters(%{unreadable.media.path => chapters, readable.media.path => chapters})
 
-      assert_markers(second, intro: intro(500), credits: credits())
-      assert_markers(first, intro: intro(100), credits: credits())
-    end
+      Markers.detect_markers!([unreadable, readable], actor: SystemActor.actor())
 
-    test "keeps the Markers that the nearest episode already has", %{tmp_dir: tmp_dir} do
-      [first_episode, second_episode] = episodes(2)
-      first = episode_video(first_episode, tmp_dir)
-      second = episode_video(second_episode, tmp_dir)
-
-      stub(ProbeMock, :probe, fn path ->
-        chapters = if path == first.media.path, do: [chapter(30, 60, "Intro")], else: []
-        {:ok, %{"chapters" => chapters}}
+      stub(ProbeMock, :probe, fn
+        path when path == unreadable.media.path -> {:error, "Invalid data found"}
+        _path -> {:ok, %{"chapters" => []}}
       end)
 
-      stub_fingerprints(%{first.media.path => 100, second.media.path => 500})
-      Markers.detect_markers!(first, actor: SystemActor.actor())
+      Markers.detect_markers!([unreadable, readable], actor: SystemActor.actor())
 
-      Markers.detect_markers!(second, actor: SystemActor.actor())
-
-      assert markers(first)[:intro] == {30.0, 60.0}
+      assert markers(unreadable) == [credits: {1250.0, 1320.0}, intro: {30.0, 60.0}]
+      assert markers(readable) == []
     end
 
     test "finds no Markers without chapters or other episodes", %{tmp_dir: tmp_dir} do
-      [episode] = episodes(1)
-      video = episode_video(episode, tmp_dir)
-      stub(ProbeMock, :probe, fn _path -> {:ok, %{"chapters" => []}} end)
+      [video] = episode_videos(1, tmp_dir)
+      stub_chapters(%{})
 
-      Markers.detect_markers!(video, actor: SystemActor.actor())
+      Markers.detect_markers!([video], actor: SystemActor.actor())
 
       assert markers(video) == []
     end
 
     test "forbids Users", %{tmp_dir: tmp_dir} do
-      [episode] = episodes(1)
-
-      episode
-      |> episode_video(tmp_dir)
+      1
+      |> episode_videos(tmp_dir)
       |> Markers.detect_markers(actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
@@ -111,15 +142,21 @@ defmodule WatchClub.Markers.MarkerTest do
     |> Enum.sort_by(& &1.episode_number)
   end
 
+  defp episode_videos(count, tmp_dir), do: Enum.map(episodes(count), &episode_video(&1, tmp_dir))
+
   # Their fingerprints of the end start 990 seconds in: they cover a quarter of the Video. The
   # cache of fingerprints needs the file.
   defp episode_video(episode, tmp_dir) do
-    path = Path.join(tmp_dir, "#{episode.episode_number}.mkv")
+    path = Path.join(tmp_dir, "#{System.unique_integer([:positive])}.mkv")
     File.write!(path, "")
 
     generate(video_media(episode, path: path, video: %{duration_seconds: 1320.0}))
     |> Ash.load!([video: :media], authorize?: false)
     |> Map.fetch!(:video)
+  end
+
+  defp stub_chapters(chapters) do
+    stub(ProbeMock, :probe, fn path -> {:ok, %{"chapters" => Map.get(chapters, path, [])}} end)
   end
 
   defp chapter(start_seconds, end_seconds, title) do
@@ -130,23 +167,20 @@ defmodule WatchClub.Markers.MarkerTest do
     }
   end
 
-  # Each Video has a 320-point theme after the given number of points, and its fingerprint of
-  # the end has 400 points of credits music after 2000 points
-  defp stub_fingerprints(theme_starts) do
+  # The fingerprint of each Video's beginning is made of the given sounds, as names and numbers
+  # of points. Its fingerprint of the end has 400 points of credits music after 2000 points.
+  defp stub_fingerprints(beginnings) do
     stub(ProbeMock, :audio_fingerprint, fn path, from_seconds, _seconds ->
       if from_seconds == 0,
-        do:
-          {:ok,
-           sound({path, :before}, theme_starts[path]) ++
-             sound(:theme, 320) ++ sound({path, :after}, 1000)},
+        do: {:ok, Enum.flat_map(beginnings[path], fn {name, points} -> sound(name, points) end)},
         else: {:ok, sound({path, :end}, 2000) ++ sound(:credits, 400)}
     end)
   end
 
   defp sound(name, points), do: Enum.map(1..points, &:erlang.phash2({name, &1}, 4_294_967_296))
 
-  defp intro(theme_start),
-    do: {theme_start * @seconds_per_point, (theme_start + 320) * @seconds_per_point}
+  defp range(start, points),
+    do: {start * @seconds_per_point, (start + points) * @seconds_per_point}
 
   defp credits, do: {990 + 2000 * @seconds_per_point, 990 + 2400 * @seconds_per_point}
 

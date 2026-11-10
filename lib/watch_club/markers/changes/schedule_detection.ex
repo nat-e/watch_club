@@ -1,8 +1,7 @@
 defmodule WatchClub.Markers.Changes.ScheduleDetection do
   @moduledoc """
-  After a Video upsert commits, enqueues a `DetectMarkers` job to find its
-  Markers. The worker's `unique` config coalesces the burst of jobs a library
-  re-scan produces.
+  After a Video upsert commits, enqueues the `DetectMarkers` job that finds its Markers,
+  with the other episodes of its season when it is a TV Show Episode.
   """
 
   use Ash.Resource.Change
@@ -10,10 +9,11 @@ defmodule WatchClub.Markers.Changes.ScheduleDetection do
   alias WatchClub.Markers.Workers.DetectMarkers
 
   @impl true
-  def change(changeset, _opts, _context) do
+  def change(changeset, _opts, context) do
     Ash.Changeset.after_transaction(changeset, fn _changeset, result ->
       with {:ok, media} <- result do
-        OpentelemetryOban.insert!(DetectMarkers.new_job(media.id))
+        %{video: video} = Ash.load!(media, [video: :tv_show_episode], scope: context)
+        OpentelemetryOban.insert!(DetectMarkers.new_job(video))
         {:ok, media}
       end
     end)

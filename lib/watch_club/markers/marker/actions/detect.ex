@@ -1,21 +1,20 @@
 defmodule WatchClub.Markers.Marker.Actions.Detect do
   @moduledoc """
-  Finds the Video's Markers from its named chapters. A TV Show Episode missing
-  its Intro or Credits also gets them from the audio it shares with the nearest
-  episodes of its TV Show, which then get the Marker they lack too.
+  Finds the Markers of Videos found together: the TV Show Episodes of one season, or a
+  single other Video. Each Video gets the Markers of its named chapters. A TV Show Episode
+  missing its Intro or Credits gets the longest audio it shares with another episode,
+  searched as Jellyfin's Intro Skipper does: each episode is compared with the next ones
+  until one shares audio with it.
 
-  Runs ffprobe, ffmpeg and fpcalc before the transaction that replaces the
-  Video's Markers.
+  A Video whose file can't be read keeps its Markers. Runs ffprobe, ffmpeg and fpcalc
+  before the transaction that replaces the Markers of the other Videos.
   """
 
   use Ash.Resource.Actions.Implementation
 
-  import Ash.Expr
-
   require Ash.Query
   require Logger
 
-  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Markers.{AudioFingerprint, Marker, MarkerKind}
   alias WatchClub.MediaCatalog.Video
 
@@ -33,72 +32,69 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
 
   # The part of the Video to compare, and how long the shared audio can be
   @audio_kinds [intro: {:beginning, 10, 120}, credits: {:end, 15, :infinity}]
-  @compared_episodes 3
 
   @impl true
   def run(input, _opts, context) do
-    video =
-      Ash.load!(input.arguments.video, [:media, :audio_tracks, tv_show_episode: [:rank]],
-        scope: context
-      )
-
-    chapter_markers = chapter_markers!(video)
-    {markers, markers_of_others} = add_audio_markers!(chapter_markers, video, context)
+    found =
+      input.arguments.videos
+      |> Ash.load!([:media, :audio_tracks, :tv_show_episode], scope: context)
+      |> read()
+      |> add_audio_markers()
 
     {:ok, _result} =
       Ash.transact(Marker, fn ->
         Marker
-        |> Ash.Query.filter(video_id == ^video.id)
+        |> Ash.Query.filter(video_id in ^Enum.map(found, & &1.video.id))
         |> Ash.bulk_destroy!(:destroy, %{}, scope: context, notify?: true)
 
-        markers
-        |> Enum.map(&Map.put(&1, :video_id, video.id))
+        found
+        |> Enum.flat_map(fn %{video: video} = reading ->
+          Enum.map(
+            reading.chapter_markers ++ reading.audio_markers,
+            &Map.put(&1, :video_id, video.id)
+          )
+        end)
         |> Ash.bulk_create!(Marker, :create, scope: context, notify?: true)
-
-        Ash.bulk_create!(markers_of_others, Marker, :add_if_missing,
-          scope: context,
-          notify?: true
-        )
       end)
 
-    report(video, chapter_markers, markers)
+    Enum.each(found, &report/1)
     :ok
   end
 
-  # One count for each kind, by where it came from, and a log line with the same
-  defp report(video, chapter_markers, markers) do
-    sources =
-      for kind <- MarkerKind.values() do
-        source =
-          cond do
-            Enum.any?(chapter_markers, &(&1.kind == kind)) -> :chapter
-            Enum.any?(markers, &(&1.kind == kind)) -> :audio
-            true -> :none
-          end
-
-        :telemetry.execute([:watch_club, :marker_detection, :marker], %{count: 1}, %{
-          media_type: video.media.type,
-          kind: kind,
-          source: source
-        })
-
-        {kind, source}
+  # The Videos whose file can be read, with the Markers of their named chapters and, for
+  # episodes, the fingerprints of the parts where one of them misses its Marker
+  defp read(videos) do
+    readings =
+      for video <- videos, {:ok, chapter_markers} <- [chapter_markers(video)] do
+        %{video: video, chapter_markers: chapter_markers, audio_markers: [], fingerprints: %{}}
       end
 
-    found = for {kind, source} <- sources, source != :none, do: "#{kind} from #{source}"
+    comparable = Enum.filter(readings, &comparable?(&1.video))
 
-    Logger.info(
-      "Found the Markers of #{video.media.path}: #{if found == [], do: "none", else: Enum.join(found, ", ")}",
-      event: :markers_detected,
-      path: video.media.path
-    )
+    # Comparing needs two episodes, one of them missing the Marker
+    parts =
+      for {kind, {part, _min_seconds, _max_seconds}} <- @audio_kinds,
+          match?([_, _ | _], Enum.uniq_by(comparable, & &1.video.tv_show_episode_id)),
+          Enum.any?(comparable, &(not has_marker?(&1, kind))),
+          do: part
+
+    for %{video: video} = reading <- readings,
+        {:ok, fingerprints} <- [fingerprints(video, parts)],
+        do: %{reading | fingerprints: fingerprints}
   end
 
-  defp chapter_markers!(%Video{media: media}) do
-    {:ok, metadata} = @ffprobe.probe(media.path)
+  defp chapter_markers(%Video{media: media}) do
+    case @ffprobe.probe(media.path) do
+      {:ok, metadata} ->
+        {:ok, metadata |> Map.get("chapters", []) |> markers_of_chapters()}
 
-    metadata
-    |> Map.get("chapters", [])
+      {:error, reason} ->
+        log_unreadable(media, reason)
+    end
+  end
+
+  defp markers_of_chapters(chapters) do
+    chapters
     |> Enum.map(&{chapter_kind(&1), &1})
     # Following chapters of one kind make one Marker, and only the first one counts
     |> Enum.chunk_by(fn {kind, _chapter} -> kind end)
@@ -126,77 +122,117 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
     end)
   end
 
-  # Only the audio of a TV Show Episode can be compared with other episodes
-  defp add_audio_markers!(markers, %Video{} = video, _context)
-       when is_nil(video.tv_show_episode) or is_nil(video.duration_seconds) or
-              video.audio_tracks == [],
-       do: {markers, []}
-
-  defp add_audio_markers!(markers, video, context) do
-    missing =
-      Enum.reject(@audio_kinds, fn {kind, _} -> Enum.any?(markers, &(&1.kind == kind)) end)
-
-    others = if missing == [], do: [], else: nearest_episode_videos!(video, context)
-
-    for {kind, {part, min_seconds, max_seconds}} <- missing,
-        others != [],
-        reduce: {markers, []} do
-      {markers, markers_of_others} ->
-        own = fingerprint!(video, part)
-
-        Enum.find_value(others, fn other ->
-          theirs = fingerprint!(other, part)
-
-          with {range, other_range} <-
-                 AudioFingerprint.shared_range(own, theirs, min_seconds, max_seconds) do
-            {other, range, other_range}
-          end
-        end)
-        |> case do
-          nil ->
-            {markers, markers_of_others}
-
-          {other, {start_seconds, end_seconds}, {other_start_seconds, other_end_seconds}} ->
-            {[%{kind: kind, start_seconds: start_seconds, end_seconds: end_seconds} | markers],
-             [
-               %{
-                 video_id: other.id,
-                 kind: kind,
-                 start_seconds: other_start_seconds,
-                 end_seconds: other_end_seconds
-               }
-               | markers_of_others
-             ]}
+  defp fingerprints(%Video{media: media} = video, parts) do
+    if comparable?(video) do
+      Enum.reduce_while(parts, {:ok, %{}}, fn part, {:ok, fingerprints} ->
+        case AudioFingerprint.fetch(video.id, media.path, video.duration_seconds, part) do
+          {:ok, fingerprint} -> {:cont, {:ok, Map.put(fingerprints, part, fingerprint)}}
+          {:error, reason} -> {:halt, log_unreadable(media, reason)}
         end
+      end)
+    else
+      {:ok, %{}}
     end
   end
 
-  # A Video of each of the nearest other episodes of the TV Show, the same season first
-  defp nearest_episode_videos!(%Video{tv_show_episode: episode}, context) do
-    distance =
-      calc(
-        if(rank > ^episode.rank, do: rank - ^episode.rank, else: ^episode.rank - rank),
-        type: :integer
-      )
-
-    with_audio =
-      Video
-      |> Ash.Query.filter(not is_nil(duration_seconds) and exists(audio_tracks, true))
-      |> Ash.Query.sort(:id)
-      |> Ash.Query.load(:media)
-
-    TvShowEpisode
-    |> Ash.Query.filter(
-      tv_show_id == ^episode.tv_show_id and id != ^episode.id and
-        exists(videos, not is_nil(duration_seconds) and exists(audio_tracks, true))
+  defp log_unreadable(media, reason) do
+    Logger.warning("Can't read #{media.path} to find its Markers: #{inspect(reason)}",
+      event: :markers_file_unreadable,
+      path: media.path
     )
-    |> Ash.Query.sort([{distance, :asc}, rank: :asc])
-    |> Ash.Query.limit(@compared_episodes)
-    |> Ash.Query.load(videos: with_audio)
-    |> Ash.read!(scope: context)
-    |> Enum.map(&hd(&1.videos))
+
+    {:error, reason}
   end
 
-  defp fingerprint!(video, part),
-    do: AudioFingerprint.fetch!(video.id, video.media.path, video.duration_seconds, part)
+  # Only the audio of TV Show Episodes can be compared
+  defp comparable?(%Video{} = video),
+    do:
+      video.tv_show_episode != nil and video.duration_seconds != nil and video.audio_tracks != []
+
+  defp has_marker?(reading, kind), do: Enum.any?(reading.chapter_markers, &(&1.kind == kind))
+
+  defp add_audio_markers(readings) do
+    episodes =
+      readings
+      |> Enum.filter(&comparable?(&1.video))
+      |> Enum.sort_by(& &1.video.tv_show_episode.episode_number)
+
+    Enum.reduce(@audio_kinds, readings, fn {kind, {part, min_seconds, max_seconds}}, readings ->
+      if Enum.all?(episodes, &has_marker?(&1, kind)) do
+        readings
+      else
+        ranges = longest_shared_ranges(episodes, part, min_seconds, max_seconds)
+
+        Enum.map(readings, fn reading ->
+          case {has_marker?(reading, kind), ranges[reading.video.id]} do
+            {false, {start_seconds, end_seconds}} ->
+              marker = %{kind: kind, start_seconds: start_seconds, end_seconds: end_seconds}
+              %{reading | audio_markers: [marker | reading.audio_markers]}
+
+            _has_marker_or_none_shared ->
+              reading
+          end
+        end)
+      end
+    end)
+  end
+
+  # Intro Skipper's search: each episode is compared with the next ones until one shares
+  # audio with it, and keeps the longest audio it shares with any of them. Two Videos of one
+  # episode share all their audio, so they aren't compared.
+  defp longest_shared_ranges(episodes, part, min_seconds, max_seconds) do
+    episodes
+    |> Enum.with_index(1)
+    |> Enum.reduce(%{}, fn {%{video: video} = episode, next}, longest ->
+      episodes
+      |> Enum.drop(next)
+      |> Enum.reject(&(&1.video.tv_show_episode_id == video.tv_show_episode_id))
+      |> Enum.find_value(longest, fn %{video: other} = other_episode ->
+        with {range, other_range} <-
+               AudioFingerprint.shared_range(
+                 episode.fingerprints[part],
+                 other_episode.fingerprints[part],
+                 min_seconds,
+                 max_seconds
+               ) do
+          longest |> keep_longer(video.id, range) |> keep_longer(other.id, other_range)
+        end
+      end)
+    end)
+  end
+
+  defp keep_longer(longest, video_id, {start_seconds, end_seconds} = range) do
+    Map.update(longest, video_id, range, fn {kept_start, kept_end} = kept ->
+      if end_seconds - start_seconds > kept_end - kept_start, do: range, else: kept
+    end)
+  end
+
+  # One count for each kind, by where it came from, and a log line with the same
+  defp report(%{video: video} = reading) do
+    sources =
+      for kind <- MarkerKind.values() do
+        source =
+          cond do
+            Enum.any?(reading.chapter_markers, &(&1.kind == kind)) -> :chapter
+            Enum.any?(reading.audio_markers, &(&1.kind == kind)) -> :audio
+            true -> :none
+          end
+
+        :telemetry.execute([:watch_club, :marker_detection, :marker], %{count: 1}, %{
+          media_type: video.media.type,
+          kind: kind,
+          source: source
+        })
+
+        {kind, source}
+      end
+
+    found = for {kind, source} <- sources, source != :none, do: "#{kind} from #{source}"
+
+    Logger.info(
+      "Found the Markers of #{video.media.path}: #{if found == [], do: "none", else: Enum.join(found, ", ")}",
+      event: :markers_detected,
+      path: video.media.path
+    )
+  end
 end

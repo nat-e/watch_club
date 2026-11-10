@@ -8,7 +8,7 @@ defmodule WatchClub.Markers do
 
   resources do
     resource WatchClub.Markers.Marker do
-      define :detect_markers, action: :detect, args: [:video]
+      define :detect_markers, action: :detect, args: [:videos]
     end
   end
 end
