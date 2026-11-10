@@ -122,6 +122,7 @@ defmodule WatchClub.MixProject do
       {:picosat_elixir, "~> 0.2"},
       {:postgrex, ">= 0.0.0"},
       {:req, "~> 0.5"},
+      {:req_tele, "~> 0.3"},
       {:sentry, "~> 14.0"},
       {:sourceror, "~> 1.8", only: [:dev, :test]},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},

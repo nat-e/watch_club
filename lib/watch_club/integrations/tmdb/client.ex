@@ -29,10 +29,7 @@ defmodule WatchClub.Integrations.Tmdb.Client do
     ]
     |> Req.new(Application.get_env(:watch_club, :tmdb_req_options, []))
     |> OpentelemetryReq.attach(opt_in_attrs: [URLAttributes.url_template()])
-    |> Req.Request.append_request_steps(tmdb_request_started: &start_request/1)
-    # Record each HTTP attempt before Req retries it, rather than counting Cachex hits.
-    |> Req.Request.prepend_response_steps(tmdb_request_finished: &record_request/1)
-    |> Req.Request.prepend_error_steps(tmdb_request_finished: &record_request/1)
+    |> ReqTele.attach(pipeline: false)
     # :cache and :cache_ttl are this client's options, not Req's
     |> Req.request(Keyword.drop(opts, [:cache, :cache_ttl]))
     |> handle_response(opts)
@@ -94,36 +91,6 @@ defmodule WatchClub.Integrations.Tmdb.Client do
     )
 
     {:error, :unknown_error}
-  end
-
-  defp start_request(request) do
-    Req.Request.put_private(request, :tmdb_started_at, System.monotonic_time())
-  end
-
-  # Metadata holds the OpenTelemetry attributes OpentelemetryReq puts on the attempt's span
-  defp record_request({request, response} = result) do
-    # The response is an exception when the request failed without one
-    {status, error_type} =
-      case response do
-        %Req.Response{status: status} when status >= 400 -> {status, Integer.to_string(status)}
-        %Req.Response{status: status} -> {status, nil}
-        exception -> {nil, inspect(exception.__struct__)}
-      end
-
-    :telemetry.execute(
-      [:watch_club, :tmdb, :request, :stop],
-      %{duration: System.monotonic_time() - Req.Request.get_private(request, :tmdb_started_at)},
-      %{
-        "http.request.method": request.method |> Atom.to_string() |> String.upcase(),
-        "server.address": request.url.host,
-        "server.port": request.url.port,
-        "url.template": Req.Request.get_private(request, :path_params_template),
-        "http.response.status_code": status,
-        "error.type": error_type
-      }
-    )
-
-    result
   end
 
   # Templates need their path params as well as order-independent query params to identify a response.

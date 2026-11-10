@@ -144,20 +144,23 @@ defmodule WatchClubWeb.Telemetry do
         reporter_options: [buckets: @job_buckets]
       ),
 
-      # TMDB HTTP attempts, with endpoint templates instead of individual IDs.
-      summary("http.client.request.duration",
-        event_name: [:watch_club, :tmdb, :request, :stop],
-        unit: {:native, :second},
-        tags: [
-          :"http.request.method",
-          :"server.address",
-          :"server.port",
-          :"url.template",
-          :"http.response.status_code",
-          :"error.type"
-        ],
-        reporter_options: [buckets: @duration_buckets]
-      ),
+      # Each attempt of the Req clients that attach ReqTele, retries included
+      for event <- [:stop, :error] do
+        summary("http.client.request.duration",
+          event_name: [:req, :request, :adapter, event],
+          unit: {:native, :second},
+          tags: [
+            :"http.request.method",
+            :"server.address",
+            :"server.port",
+            :"url.template",
+            :"http.response.status_code",
+            :"error.type"
+          ],
+          tag_values: &http_client_tags/1,
+          reporter_options: [buckets: @duration_buckets]
+        )
+      end,
 
       # Content metadata: only Content Type, result and serving path are labels.
       span_summary(
@@ -343,6 +346,26 @@ defmodule WatchClubWeb.Telemetry do
       "messaging.destination.name": job.queue,
       "oban.job.worker": job.worker,
       "error.type": exception_type(metadata)
+    }
+  end
+
+  # Matches the attributes OpentelemetryReq puts on each attempt's span
+  defp http_client_tags(%{request: request} = metadata) do
+    {status, error_type} =
+      case metadata do
+        %{status: status} when status >= 400 -> {status, Integer.to_string(status)}
+        %{status: status} -> {status, nil}
+        %{error: exception} -> {nil, inspect(exception.__struct__)}
+      end
+
+    %{
+      "http.request.method": request.method |> Atom.to_string() |> String.upcase(),
+      "server.address": request.url.host,
+      "server.port": request.url.port,
+      # Only requests with path_params have a template, which keeps IDs out of the labels
+      "url.template": Req.Request.get_private(request, :path_params_template),
+      "http.response.status_code": status,
+      "error.type": error_type
     }
   end
 

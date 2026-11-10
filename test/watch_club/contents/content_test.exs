@@ -481,7 +481,8 @@ defmodule WatchClub.Contents.ContentTest do
           [:watch_club, :contents, :metadata_fetch, :exception],
           [:watch_club, :contents, :metadata_fetch],
           [:watch_club, :contents, :metadata_request],
-          [:watch_club, :tmdb, :request, :stop]
+          [:req, :request, :adapter, :stop],
+          [:req, :request, :adapter, :error]
         ])
 
       on_exit(fn ->
@@ -534,8 +535,8 @@ defmodule WatchClub.Contents.ContentTest do
                        %{served: :fetched}}
 
       for _ <- 1..2 do
-        assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                         %{"url.template": "/3/movie/:id", "http.response.status_code": 200}}
+        assert_received {[:req, :request, :adapter, :stop], ^ref, %{duration: duration},
+                         %{url: %URI{path: "/3/movie/:id"}, status: 200}}
 
         assert duration > 0
       end
@@ -960,8 +961,8 @@ defmodule WatchClub.Contents.ContentTest do
       assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
                        %{type: :movie, result: :not_found}}
 
-      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                       %{"url.template": "/3/movie/:id", "http.response.status_code": 404}}
+      assert_received {[:req, :request, :adapter, :stop], ^ref, %{duration: duration},
+                       %{url: %URI{path: "/3/movie/:id"}, status: 404}}
 
       assert duration > 0
     end
@@ -982,8 +983,8 @@ defmodule WatchClub.Contents.ContentTest do
       assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref, %{callers: 1},
                        %{type: :movie, result: :unavailable}}
 
-      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                       %{"url.template": "/3/movie/:id", "http.response.status_code": 503}}
+      assert_received {[:req, :request, :adapter, :stop], ^ref, %{duration: duration},
+                       %{url: %URI{path: "/3/movie/:id"}, status: 503}}
 
       assert duration > 0
     end
@@ -1001,8 +1002,8 @@ defmodule WatchClub.Contents.ContentTest do
         match?(%MetadataUnavailable{reason: :rate_limited}, error)
       end)
 
-      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{"url.template": "/3/movie/:id", "http.response.status_code": 429}}
+      assert_received {[:req, :request, :adapter, :stop], ^ref, _,
+                       %{url: %URI{path: "/3/movie/:id"}, status: 429}}
     end
 
     test "returns a metadata error when TMDB rejects the request", %{
@@ -1018,8 +1019,8 @@ defmodule WatchClub.Contents.ContentTest do
         match?(%MetadataUnavailable{reason: :client_error}, error)
       end)
 
-      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{"url.template": "/3/movie/:id", "http.response.status_code": 401}}
+      assert_received {[:req, :request, :adapter, :stop], ^ref, _,
+                       %{url: %URI{path: "/3/movie/:id"}, status: 401}}
     end
 
     test "returns a metadata error when the TMDB connection times out", %{
@@ -1035,8 +1036,11 @@ defmodule WatchClub.Contents.ContentTest do
         match?(%MetadataUnavailable{reason: :unknown_error}, error)
       end)
 
-      assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{"url.template": "/3/movie/:id", "error.type": "Req.TransportError"}}
+      assert_received {[:req, :request, :adapter, :error], ^ref, _,
+                       %{
+                         url: %URI{path: "/3/movie/:id"},
+                         error: %Req.TransportError{reason: :timeout}
+                       }}
     end
   end
 
