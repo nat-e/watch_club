@@ -21,7 +21,7 @@ defmodule WatchClub.Shared.ObanLogger do
   # string, so match against the inspected module names.
   @ignored_workers [
     "WatchClub.MediaSources.Import.Workers.ImportMonitor",
-    "WatchClub.Playbacks.Workers.PruneSegmentCache",
+    "WatchClub.Playbacks.Workers.EndAbandonedSessions",
     "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
   ]
 

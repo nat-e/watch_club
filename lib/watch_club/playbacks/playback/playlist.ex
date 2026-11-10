@@ -27,13 +27,15 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   @hls_video_codec "avc1.4d401f"
   @hls_audio_codec "mp4a.40.2"
 
-  # The default tracks are the ones the Player starts with
+  # The default tracks are the ones every Screen starts with. `query`, such as `?token=…`, follows
+  # every URI, because a player resolves them without the playlist's own query.
   @type metadata :: %{
           video: %{frame_rate: float()},
           audio_tracks: [map()],
           subtitle_tracks: [map()],
           default_audio_track_id: String.t() | nil,
-          default_subtitle_track_id: String.t() | nil
+          default_subtitle_track_id: String.t() | nil,
+          query: String.t()
         }
 
   @spec master(metadata(), [Quality.t()]) :: iodata()
@@ -44,8 +46,8 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
       version: 6,
       independent_segments: true,
       items:
-        master_audio_tags(metadata.audio_tracks, metadata.default_audio_track_id) ++
-          master_subtitle_tags(metadata.subtitle_tracks, metadata.default_subtitle_track_id) ++
+        master_audio_tags(metadata) ++
+          master_subtitle_tags(metadata) ++
           Enum.map(qualities, fn quality ->
             %Stream{
               bandwidth: quality.bandwidth,
@@ -55,15 +57,15 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
               frame_rate: metadata.video.frame_rate,
               audio: "audio",
               subtitles: subtitle_group,
-              uri: "video/#{quality.id}/index.m3u8"
+              uri: "video/#{quality.id}/index.m3u8#{metadata.query}"
             }
           end)
     }
     |> ExM3U8.serialize()
   end
 
-  @spec segments(float(), integer(), float()) :: iodata()
-  def segments(duration, segment_count, segment_duration) do
+  @spec segments(float(), integer(), float(), String.t()) :: iodata()
+  def segments(duration, segment_count, segment_duration, query) do
     target_duration = segment_duration |> Float.ceil() |> trunc()
 
     %MediaPlaylist{
@@ -79,7 +81,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         Enum.flat_map(0..(segment_count - 1), fn index ->
           segment = %Segment{
             duration: segment_duration_at(duration, index, segment_duration),
-            uri: "seg_#{pad_segment(index)}.ts"
+            uri: "seg_#{pad_segment(index)}.ts#{query}"
           }
 
           if index == 0, do: [segment], else: [%Discontinuity{}, segment]
@@ -88,8 +90,8 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
     |> ExM3U8.serialize()
   end
 
-  @spec subtitle(map(), float()) :: iodata()
-  def subtitle(track, duration) do
+  @spec subtitle(map(), float(), String.t()) :: iodata()
+  def subtitle(track, duration, query) do
     target_duration = duration |> Float.ceil() |> trunc()
 
     %MediaPlaylist{
@@ -100,7 +102,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         playlist_type: :vod,
         end_list?: true
       },
-      timeline: [%Segment{duration: duration, uri: "#{track.id}.vtt"}]
+      timeline: [%Segment{duration: duration, uri: "#{track.id}.vtt#{query}"}]
     }
     |> ExM3U8.serialize()
   end
@@ -108,31 +110,31 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   @spec pad_segment(integer()) :: String.t()
   def pad_segment(index), do: index |> Integer.to_string() |> String.pad_leading(5, "0")
 
-  defp master_audio_tags(audio_tracks, default_track_id) do
-    Enum.map(audio_tracks, fn track ->
+  defp master_audio_tags(metadata) do
+    Enum.map(metadata.audio_tracks, fn track ->
       %Media{
         type: :audio,
         group_id: "audio",
         name: escape(track.display_label),
         language: language(track),
-        default?: track.id == default_track_id,
+        default?: track.id == metadata.default_audio_track_id,
         auto_select?: true,
         channels: "2",
-        uri: "audio/#{track.id}/index.m3u8"
+        uri: "audio/#{track.id}/index.m3u8#{metadata.query}"
       }
     end)
   end
 
-  defp master_subtitle_tags(subtitle_tracks, default_track_id) do
-    Enum.map(subtitle_tracks, fn track ->
+  defp master_subtitle_tags(metadata) do
+    Enum.map(metadata.subtitle_tracks, fn track ->
       media = %Media{
         type: :subtitles,
         group_id: "subs",
         name: escape(track.display_label),
         language: language(track),
-        default?: track.id == default_track_id,
+        default?: track.id == metadata.default_subtitle_track_id,
         auto_select?: true,
-        uri: "subtitles/#{track.id}/index.m3u8"
+        uri: "subtitles/#{track.id}/index.m3u8#{metadata.query}"
       }
 
       if track.forced?, do: %ForcedMedia{media: media}, else: media

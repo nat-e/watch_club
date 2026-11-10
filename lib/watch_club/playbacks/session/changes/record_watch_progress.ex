@@ -1,11 +1,11 @@
-defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
+defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   @moduledoc """
-  Records the actor's Watch Progress for this Playback from the heartbeat's
+  Records the actor's Watch Progress for the current Playback from the heartbeat's
   reported position.
 
   Resolves the Playback's Media to its Movie or TV Show Episode and upserts the
   per-unit progress, marking it completed once playback passes 90% of the
-  Video up to its Credits. No-op when the heartbeat carried no position.
+  Video up to its Credits. No-op for Media without Content.
   """
   use Ash.Resource.Change
 
@@ -14,19 +14,17 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
 
   @impl true
   def change(changeset, _opts, context) do
-    case Ash.Changeset.get_argument(changeset, :position_seconds) do
-      nil ->
-        changeset
+    position = Ash.Changeset.get_argument(changeset, :position_seconds)
 
-      position ->
-        Ash.Changeset.after_action(changeset, fn _changeset, playback ->
-          %Media{id: media_id, video: video} =
-            Ash.load!(playback, [media: [video: :credits_start_seconds]], scope: context).media
+    Ash.Changeset.after_action(changeset, fn _changeset, session ->
+      %Media{id: media_id, video: video} =
+        Ash.load!(session, [current_playback: [media: [video: :credits_start_seconds]]],
+          scope: context
+        ).current_playback.media
 
-          record_progress(video, media_id, position, context)
-          {:ok, playback}
-        end)
-    end
+      record_progress(video, media_id, position, context)
+      {:ok, session}
+    end)
   end
 
   defp record_progress(%Video{movie_id: movie_id} = video, media_id, position, context)
@@ -49,6 +47,8 @@ defmodule WatchClub.Playbacks.Session.Changes.UpdateWatchProgress do
       scope: context
     )
   end
+
+  defp record_progress(_unmatched_video, _media_id, _position, _context), do: :ok
 
   # Progress counts up to the Credits, so playing the next episode from there completes it
   defp progress(video, media_id, position) do

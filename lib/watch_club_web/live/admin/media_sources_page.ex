@@ -46,6 +46,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       space="cluster"
       class="max-w-panel"
       title={dgettext("admin_media_imports", "Media Sources")}

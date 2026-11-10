@@ -1,19 +1,26 @@
 defmodule WatchClubWeb.PlayerPage do
+  @moduledoc """
+  The Player: a Screen of the User's Playback Session. Its LiveView id names it as the Screen,
+  so it stays the same Screen when it reconnects.
+
+  It plays until another Screen takes the Playback Session. A TV that takes it opens the Remote
+  here; another Player stops this one.
+  """
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
   alias WatchClubWeb.Live.Player.ReportProblemLive
+  alias WatchClubWeb.TvSocket
 
   @playback_session_fields [
-    active_playback: [
+    current_playback: [
       media: [
         video: [
           :markers,
           :credits_start_seconds,
-          movie: [:best_localization, :actor_progress],
+          movie: [:best_localization],
           tv_show_episode: [
-            :actor_progress,
             tv_show: [:best_localization],
             next_episode: [:has_media?, :videos],
             previous_episode: [:has_media?, :videos]
@@ -28,13 +35,16 @@ defmodule WatchClubWeb.PlayerPage do
     ~H"""
     <main class="relative grid h-dvh place-items-center overflow-hidden bg-black text-white">
       <div
-        :if={@session}
+        :if={@session && !@playing_elsewhere?}
         id="watch-club-player"
         phx-hook="Player"
         data-videojs-src={~p"/assets/js/player_videojs.js"}
-        data-src={hls_master_playlist_url(@session.active_playback)}
-        data-thumbnails-src={thumbnails_url(@session.active_playback)}
-        data-start-position={@start_position_seconds}
+        data-playback-id={@session.current_playback.id}
+        data-src={PlaybackPaths.master_playlist(@session.current_playback)}
+        data-thumbnails-src={PlaybackPaths.thumbnails(@session.current_playback)}
+        data-start-position={@start_at || @session.position_seconds}
+        data-cast-app-id={Application.fetch_env!(:watch_club, :cast_app_id)}
+        data-cast-emulator={cast_emulator()}
         class="size-full"
       >
         <%!-- Video.js sets the attributes and fills the children of its elements, which
@@ -68,29 +78,33 @@ defmodule WatchClubWeb.PlayerPage do
               </div>
 
               <%!-- Before the controls, so a prompt is the first Tab stop --%>
-              <.skip_marker_buttons video={@session.active_playback.media.video} />
+              <.skip_marker_buttons video={@session.current_playback.media.video} />
               <.up_next_button
-                playback_id={@session.active_playback.id}
-                video={@session.active_playback.media.video}
+                playback_id={@session.current_playback.id}
+                video={@session.current_playback.media.video}
               />
 
               <media-controls
                 phx-mounted={JS.ignore_attributes("*")}
                 class="group/controls pointer-events-none absolute inset-0 z-30 flex flex-col justify-between bg-linear-to-t from-black/80 via-transparent to-black/80 opacity-0 transition-opacity data-visible:opacity-100 has-focus-visible:opacity-100"
               >
-                <.controls_header video={@session.active_playback.media.video} />
+                <.controls_header video={@session.current_playback.media.video} />
                 <.controls_center_row />
                 <.controls_footer
-                  playback_id={@session.active_playback.id}
-                  video={@session.active_playback.media.video}
+                  playback_id={@session.current_playback.id}
+                  video={@session.current_playback.media.video}
                 />
               </media-controls>
             </media-container>
           </video-player>
         </media-i18n>
+
+        <.cast_connecting_overlay :if={@casting_to} tv_name={@casting_to} />
       </div>
 
       <.player_load_error_overlay :if={@playback_error} />
+
+      <.playing_elsewhere_overlay :if={@playing_elsewhere?} />
 
       <.player_loader :if={!@session} class="absolute inset-0" />
     </main>
@@ -109,29 +123,38 @@ defmodule WatchClubWeb.PlayerPage do
     """
   end
 
+  # `WatchClubWeb.Hooks.PlaybackSession` subscribes it to the changes of the Playback Session.
+  # The Problem Reports of this Player record its browser.
   @impl true
   def mount(_params, _session, socket) do
-    # The Problem Reports of this Player record its browser
-    {:ok, assign(socket, user_agent: get_connect_info(socket, :user_agent), problem_details: nil)}
+    {:ok,
+     assign(socket,
+       session: nil,
+       playback_error: false,
+       playing_elsewhere?: false,
+       casting_to: nil,
+       reconnected?: connected?(socket) and get_connect_params(socket)["_mounts"] > 0,
+       user_agent: get_connect_info(socket, :user_agent),
+       problem_details: nil
+     )}
   end
 
+  # The Player plays once connected: its first render only shows the loader. Reconnecting isn't
+  # playing again. `t`, in seconds, starts there instead of where the User stopped, for Play at on
+  # the Problem reports page.
   @impl true
   def handle_params(%{"media_id" => media_id} = params, _uri, socket) do
+    socket = assign(socket, :start_at, start_at(params["t"]))
+
     cond do
-      # Don't load the player on the initial server-side render
       !connected?(socket) ->
-        {:noreply, socket |> assign(:session, nil) |> assign(:playback_error, false)}
+        {:noreply, socket}
 
-      # Initial player load, create a session
-      is_nil(socket.assigns[:session]) ->
-        {:noreply, socket |> start_player_session(media_id, params["t"])}
-
-      # A session already exist but the video has changed, update the session
-      media_id != socket.assigns.session.active_playback.media_id ->
-        {:noreply, socket |> start_new_playback_for_session(media_id)}
+      socket.assigns.reconnected? and !socket.assigns.session ->
+        {:noreply, rejoin!(socket, media_id)}
 
       true ->
-        {:noreply, socket}
+        {:noreply, play(socket, media_id)}
     end
   end
 
@@ -150,7 +173,7 @@ defmodule WatchClubWeb.PlayerPage do
       shown
       |> Map.take(["position_seconds", "audio", "subtitles", "quality"])
       |> Map.merge(%{
-        "playback_id" => socket.assigns.session.active_playback.id,
+        "playback_id" => socket.assigns.session.current_playback.id,
         "user_agent" => socket.assigns.user_agent
       })
 
@@ -160,46 +183,127 @@ defmodule WatchClubWeb.PlayerPage do
   def handle_event("close_problem_report", _params, socket),
     do: {:noreply, assign(socket, :problem_details, nil)}
 
-  def handle_event("player_heartbeat", params, socket) do
-    # Best effort, don't crash the process if heartbeat fails
-    Playbacks.heartbeat_session(
-      socket.assigns.session,
-      %{position_seconds: params["position_seconds"]},
-      actor: socket.assigns.current_user
-    )
+  # Reports about a Playback that's no longer current, or from a Player that's no longer the
+  # Screen, fail. Its notification tells the second.
+  def handle_event(
+        "player_heartbeat",
+        %{"playback_id" => playback_id, "position_seconds" => position, "paused" => paused?},
+        socket
+      ) do
+    case Playbacks.heartbeat(socket.assigns.session, socket.id, playback_id, position, paused?,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _session} ->
+        {:noreply, socket}
 
-    {:noreply, socket}
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} ->
+        {:noreply, socket}
+    end
   end
 
-  # A click or the countdown that arrives once the next episode started must not skip another one
-  def handle_event("play_next_episode", %{"playback_id" => playback_id}, socket) do
-    %Playback{id: active_id, media: %{video: video}} = socket.assigns.session.active_playback
-    next_episode = video.tv_show_episode && video.tv_show_episode.next_episode
+  def handle_event(
+        "tracks_picked",
+        %{
+          "playback_id" => playback_id,
+          "audio_track_id" => audio_track_id,
+          "text_track_id" => text_track_id
+        },
+        socket
+      ) do
+    case Playbacks.pick_tracks(socket.assigns.session, playback_id, audio_track_id, text_track_id,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, _session} ->
+        {:noreply, socket}
 
-    if playback_id == active_id,
-      do: {:noreply, socket |> switch_episode(next_episode)},
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} ->
+        {:noreply, socket}
+    end
+  end
+
+  # From the "up next" prompt, or the end of the video
+  def handle_event(event, %{"playback_id" => playback_id}, socket)
+      when event in ["play_next_episode", "ended"],
+      do: {:noreply, play_next(socket, playback_id)}
+
+  def handle_event("play_previous_episode", _params, socket) do
+    video = socket.assigns.session.current_playback.media.video
+    previous_episode = video.tv_show_episode && video.tv_show_episode.previous_episode
+
+    if previous_episode && previous_episode.has_media?,
+      do: {:noreply, push_patch(socket, to: Url.player_link(previous_episode), replace: true)},
       else: {:noreply, socket}
   end
 
-  def handle_event("play_previous_episode", _params, socket) do
-    video = socket.assigns.session.active_playback.media.video
-    previous_episode = video.tv_show_episode && video.tv_show_episode.previous_episode
+  # Chrome connected to the TV: the TV takes the Playback Session with this token
+  def handle_event("cast", %{"tv_name" => tv_name}, socket) do
+    token = TvSocket.token(socket.assigns.session, tv_name, socket.id)
+    :telemetry.execute([:watch_club, :cast], %{count: 1}, %{result: :started})
+    {:reply, %{token: token}, assign(socket, :casting_to, tv_name)}
+  end
 
-    {:noreply, socket |> switch_episode(previous_episode)}
+  # Once per cast: the timeout and Cancel can cross
+  def handle_event("cast_failed", _params, %{assigns: %{casting_to: nil}} = socket),
+    do: {:noreply, socket}
+
+  # The TV never took the Playback Session, often because it can't reach WatchClub
+  def handle_event("cast_failed", %{"reason" => "timeout"}, socket) do
+    :telemetry.execute([:watch_club, :cast], %{count: 1}, %{result: :failed})
+    Logger.warning("Cast — The TV never joined", event: :cast_failed)
+
+    {:noreply,
+     socket
+     |> assign(:casting_to, nil)
+     |> put_flash(
+       :error,
+       dgettext(
+         "player",
+         "Couldn't play on the TV. It needs to reach WatchClub at an HTTPS address with a trusted certificate."
+       )
+     )}
+  end
+
+  def handle_event("cast_failed", %{"reason" => "cancelled"}, socket) do
+    :telemetry.execute([:watch_club, :cast], %{count: 1}, %{result: :cancelled})
+    {:noreply, assign(socket, :casting_to, nil)}
+  end
+
+  @impl true
+  def handle_info(
+        %Notification{resource: Session, action: %{name: action}, data: %Session{} = session},
+        socket
+      )
+      when action not in [:start, :heartbeat] do
+    cond do
+      session.id != socket.assigns.session.id or socket.assigns.playing_elsewhere? ->
+        {:noreply, socket}
+
+      # Nothing followed
+      session.ended_at ->
+        {:noreply, push_event(socket, "player:back", %{})}
+
+      session.screen_id == socket.id ->
+        {:noreply, socket}
+
+      session.tv_name ->
+        {:noreply, push_navigate(socket, to: ~p"/remote", replace: true)}
+
+      true ->
+        {:noreply, assign(socket, :playing_elsewhere?, true)}
+    end
   end
 
   # The Markers of the Video playing are found in the background after its import
-  @impl true
   def handle_info(%Notification{resource: Marker, data: %Marker{video_id: video_id}}, socket) do
     %{session: session, current_user: user} = socket.assigns
 
-    if session.active_playback.media_id == video_id do
+    if session.current_playback.media_id == video_id do
       video =
-        Ash.load!(session.active_playback.media.video, [:markers, :credits_start_seconds],
+        Ash.load!(session.current_playback.media.video, [:markers, :credits_start_seconds],
           actor: user
         )
 
-      {:noreply, assign(socket, :session, put_in(session.active_playback.media.video, video))}
+      {:noreply, assign(socket, :session, put_in(session.current_playback.media.video, video))}
     else
       {:noreply, socket}
     end
@@ -214,86 +318,93 @@ defmodule WatchClubWeb.PlayerPage do
 
   def handle_info(_message, socket), do: {:noreply, socket}
 
-  defp switch_episode(socket, nil), do: socket
-
-  defp switch_episode(socket, %TvShowEpisode{} = episode),
-    do: socket |> push_patch(to: Url.player_link(episode.videos), replace: true)
-
-  # `start_at`, in seconds, starts there instead of where the User stopped, for Play at on the
-  # Problem reports page
-  defp start_player_session(socket, media_id, start_at) do
-    actor = socket.assigns.current_user
-
-    case Playbacks.start_session(media_id, load: @playback_session_fields, actor: actor) do
-      {:ok, session} ->
-        socket
-        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
-        |> assign(:session, session)
-        |> assign(
-          :start_position_seconds,
-          start_position_seconds(start_at, session.active_playback.media.video)
-        )
-        |> assign(:playback_error, false)
-
-      {:error, error} ->
-        Logger.error("Error starting new session: #{inspect(error)}")
-
-        socket
-        |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
-        |> push_navigate(to: ~p"/")
-    end
-  end
-
-  defp start_new_playback_for_session(socket, media_id) do
-    actor = socket.assigns.current_user
-
-    case Playbacks.start_new_playback(socket.assigns.session, media_id,
-           load: @playback_session_fields,
-           actor: actor
-         ) do
-      {:ok, session} ->
-        Phoenix.PubSub.unsubscribe(
-          WatchClub.PubSub,
-          "video:#{socket.assigns.session.active_playback.media_id}"
-        )
-
-        socket
-        |> WatchClub.PubSub.subscribe_if_connected("video:#{media_id}")
-        |> assign(:session, session)
-        |> assign(:start_position_seconds, 0.0)
-        |> assign(:playback_error, false)
-
-      {:error, error} ->
-        Logger.error("Error starting new playback: #{inspect(error)}")
-
-        socket
-        |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
-        |> push_navigate(to: ~p"/")
-    end
-  end
-
-  defp start_position_seconds(start_at, video) do
-    case start_at && Float.parse(start_at) do
+  defp start_at(t) do
+    case t && Float.parse(t) do
       {seconds, ""} when seconds >= 0 -> seconds
-      _ -> resume_position_seconds(video)
+      _none_or_invalid -> nil
     end
   end
 
-  # Only the Session's first Playback resumes where the user stopped; completed
-  # or unwatched content restarts from the beginning.
-  defp resume_position_seconds(%Video{} = video) do
-    progress =
-      case video do
-        %Video{movie: %Movie{} = movie} -> movie.actor_progress
-        %Video{tv_show_episode: %TvShowEpisode{} = episode} -> episode.actor_progress
-      end
+  # While the Playback Session plays on a TV, it plays there and this page is its Remote
+  defp play(socket, media_id) do
+    case Playbacks.play(media_id, socket.id, actor: socket.assigns.current_user) do
+      {:ok, %Session{tv_name: tv_name}} when tv_name != nil ->
+        push_navigate(socket, to: ~p"/remote", replace: true)
 
-    if progress && !progress.completed, do: progress.position_seconds, else: 0.0
+      {:ok, session} ->
+        show!(socket, session)
+
+      {:error, error} ->
+        Logger.error("Error playing Media: #{inspect(error)}")
+
+        socket
+        |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
+        |> push_navigate(to: ~p"/")
+    end
   end
 
-  defp hls_master_playlist_url(%Playback{id: playback_id}),
-    do: ~p"/player/hls/#{playback_id}/master.m3u8"
+  # Back in the Player after the connection dropped: it goes on as the Screen, or shows where the
+  # Playback Session plays now. With none left, it plays again.
+  defp rejoin!(socket, media_id) do
+    case Playbacks.get_active_session!(actor: socket.assigns.current_user) do
+      nil ->
+        play(socket, media_id)
 
-  defp thumbnails_url(%Playback{id: playback_id}),
-    do: ~p"/player/thumbnails/#{playback_id}/thumbnails.vtt"
+      %Session{screen_id: screen_id} = session when screen_id == socket.id ->
+        show!(socket, session)
+
+      %Session{tv_name: nil} = session ->
+        assign(socket, session: session, playing_elsewhere?: true)
+
+      %Session{} ->
+        push_navigate(socket, to: ~p"/remote", replace: true)
+    end
+  end
+
+  # When nothing follows, the Playback Session ends, which closes the Player. It fails once the
+  # Playback isn't current: the click came late.
+  defp play_next(socket, playback_id) do
+    case Playbacks.play_next(socket.assigns.session, socket.id, playback_id,
+           actor: socket.assigns.current_user
+         ) do
+      {:ok, %Session{ended_at: nil} = session} ->
+        socket = show!(socket, session)
+        media_id = socket.assigns.session.current_playback.media_id
+        push_patch(socket, to: ~p"/play/#{media_id}", replace: true)
+
+      {:ok, %Session{}} ->
+        socket
+
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} ->
+        socket
+    end
+  end
+
+  defp show!(socket, session) do
+    session = Ash.load!(session, @playback_session_fields, actor: socket.assigns.current_user)
+    previous = socket.assigns.session && socket.assigns.session.current_playback.media_id
+
+    if previous && previous != session.current_playback.media_id do
+      Phoenix.PubSub.unsubscribe(WatchClub.PubSub, "video:#{previous}")
+    end
+
+    socket
+    |> WatchClub.PubSub.subscribe_if_connected("video:#{session.current_playback.media_id}")
+    |> assign(session: session, playback_error: false)
+  end
+
+  # In development, Chrome casts to a TV that the Cast emulator opens in a window
+  if Application.compile_env(:watch_club, :dev_routes) do
+    defp cast_emulator do
+      Jason.encode!(%{
+        scripts: [
+          ~p"/dev/cast/emulator/presentation-polyfill.js",
+          ~p"/dev/cast/emulator/cast-sender-emulator.js"
+        ],
+        receiver_url: ~p"/dev/cast/receiver"
+      })
+    end
+  else
+    defp cast_emulator, do: nil
+  end
 end

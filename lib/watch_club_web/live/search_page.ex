@@ -19,6 +19,7 @@ defmodule WatchClubWeb.SearchPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       class="max-w-6xl @container pt-0! md:pt-group!"
       space="group"
       title={dgettext("search", "Search")}

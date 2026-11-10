@@ -254,6 +254,28 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # A Playback Session playing the Media in a Player. Takes overrides for the Playback Session,
+  # such as `screen_id` and `tv_name` to play on a TV, and `playback:` overrides for its current
+  # Playback.
+  def playback_session(%Media{} = media, opts \\ []) do
+    {started_by, opts} = Keyword.pop_lazy(opts, :started_by, fn -> generate(user()) end)
+    {playback, opts} = Keyword.pop(opts, :playback, [])
+
+    seed_generator(
+      %Session{started_by_id: started_by.id, screen_id: "player"},
+      overrides: opts,
+      after_action: fn session ->
+        current =
+          Ash.Seed.seed!(
+            Playback,
+            Enum.into(playback, %{session_id: session.id, media_id: media.id})
+          )
+
+        %{session | current_playback: current}
+      end
+    )
+  end
+
   def problem_report(%Playback{} = playback, opts \\ []) do
     seed_generator(
       %ProblemReport{playback_id: playback.id, category: :subtitles, position_seconds: 42.0},
