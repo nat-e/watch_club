@@ -1,0 +1,35 @@
+defmodule WatchClub.MediaSources.Source.Changes.DeleteMedia do
+  @moduledoc """
+  Before a Media Source is deleted, cancels its Processing Media Import, so its jobs stop adding
+  Media, then deletes its Media through their `destroy`, which removes their files on disk.
+
+  Run outside a transaction, each Media's destroy commits and notifies on its own: a failure leaves
+  the Media Source with the Media it still has.
+  """
+  use Ash.Resource.Change
+
+  require Ash.Query
+
+  alias WatchClub.MediaCatalog
+  alias WatchClub.MediaCatalog.Media
+  alias WatchClub.MediaSources
+  alias WatchClub.MediaSources.Import
+
+  @impl true
+  def change(changeset, _opts, context) do
+    Ash.Changeset.before_action(changeset, fn changeset ->
+      media_source_id = changeset.data.id
+      opts = Ash.Context.to_opts(context)
+
+      Import
+      |> Ash.Query.filter(media_source_id == ^media_source_id and status == :processing)
+      |> MediaSources.cancel_media_import!(opts)
+
+      Media
+      |> Ash.Query.filter(media_source_id == ^media_source_id)
+      |> MediaCatalog.destroy_media!(Keyword.put(opts, :bulk_options, notify?: true))
+
+      changeset
+    end)
+  end
+end

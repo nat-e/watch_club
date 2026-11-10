@@ -19,8 +19,8 @@ defmodule WatchClub.MediaSources.Source do
   alias WatchClub.MediaSources.Source.Calculations.GetImplementation
 
   alias WatchClub.MediaSources.Source.Changes.{
-    CancelMediaImport,
     ComputeName,
+    DeleteMedia,
     ManageServarrImplementation,
     SetServarrTypes
   }
@@ -94,12 +94,10 @@ defmodule WatchClub.MediaSources.Source do
       description "Deletes the Media Source and its Media. Their files stay on disk."
       primary? true
       require_atomic? false
-      # Each Media's destroy commits on its own, so it removes its files on disk only once its row
-      # is gone. A failure leaves the Media Source with the Media it still has.
+      # So that each Media's destroy commits on its own, see DeleteMedia
       transaction? false
 
-      change CancelMediaImport
-      change cascade_destroy(:medias, after_action?: false, return_notifications?: true)
+      change DeleteMedia
     end
   end
 
