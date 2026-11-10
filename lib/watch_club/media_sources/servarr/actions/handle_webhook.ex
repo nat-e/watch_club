@@ -43,13 +43,13 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
     do: relocate_media(servarr, from, to, opts)
 
   defp run_action(servarr, {:remove_missing_media, content_identity}, opts) do
-    for media <- content_medias(servarr, content_identity, opts),
+    for media <- content_medias!(servarr, content_identity, opts),
         not File.exists?(media.path),
         do: remove_media(servarr, media.path, opts)
   end
 
   defp run_action(servarr, {:remove_content_media, content_identity}, opts) do
-    for media <- content_medias(servarr, content_identity, opts) do
+    for media <- content_medias!(servarr, content_identity, opts) do
       MediaCatalog.destroy_media!(media, opts)
 
       Logger.info("Media deleted: #{media.path}",
@@ -78,7 +78,7 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
   end
 
   # Only the Content's Media of this source: other sources keep theirs.
-  defp content_medias(%Servarr{id: media_source_id}, content_identity, opts) do
+  defp content_medias!(%Servarr{id: media_source_id}, content_identity, opts) do
     case Contents.get_content_by_identity!(
            content_identity,
            Keyword.merge(opts, load: [:medias], not_found_error?: false)
