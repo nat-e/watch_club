@@ -94,10 +94,12 @@ defmodule WatchClub.MediaSources.Source do
       description "Deletes the Media Source and its Media. Their files stay on disk."
       primary? true
       require_atomic? false
+      # Each Media's destroy commits on its own, so it removes its files on disk only once its row
+      # is gone. A failure leaves the Media Source with the Media it still has.
+      transaction? false
 
       change CancelMediaImport
-      # Through Media's destroy, which removes their files on disk
-      change cascade_destroy(:medias, after_action?: false)
+      change cascade_destroy(:medias, after_action?: false, return_notifications?: true)
     end
   end
 

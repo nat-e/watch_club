@@ -17,7 +17,7 @@ defmodule WatchClub.Repo.Migrations.MediaBelongsToMediaSource do
             name: "media_media_source_id_fkey",
             type: :uuid,
             prefix: "public",
-            on_delete: :delete_all
+            on_delete: :restrict
           )
     end
 

@@ -127,7 +127,7 @@
           "strategy": null
         },
         "name": "media_media_source_id_fkey",
-        "on_delete": "delete",
+        "on_delete": "restrict",
         "on_update": null,
         "primary_key?": true,
         "schema": "public",

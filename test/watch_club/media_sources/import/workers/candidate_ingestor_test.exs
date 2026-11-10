@@ -15,8 +15,8 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
   setup :verify_on_exit!
 
-  describe "new_job/2 — webhook candidate" do
-    test "enqueues at high priority with no media_import_id" do
+  describe "new_job/2" do
+    test "enqueues a webhook candidate at high priority with no media_import_id" do
       media_source = generate(radarr_media_source())
 
       candidate = %Candidate{
@@ -33,10 +33,8 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
         args: %{media_source_id: media_source.id, path: "/data/movies/x.mkv"}
       )
     end
-  end
 
-  describe "new_job/2 — scan candidate" do
-    test "enqueues at lower priority, tagged with the import" do
+    test "enqueues a scan candidate at lower priority, tagged with the import" do
       import_id = Ash.UUIDv7.generate()
 
       candidate = %Candidate{
