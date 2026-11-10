@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
   @moduledoc """
-  Visual icon for a `Source.Type`. Filesystem and Sportarr use a Lucide icon in a
-  bordered chip; `radarr` / `sonarr` use the product's official SVG.
+  Visual icon for a `Source.Type`. Filesystem uses a Lucide icon in a bordered
+  chip; `radarr` / `sonarr` / `sportarr` use the product's logo.
   Sizing options:
 
     * `"header"` / `"card"` — fits `size-control-md` (40px).
@@ -18,30 +18,33 @@ defmodule WatchClubWeb.Components.Media.SourceTypeIcon do
 
   attr :class, :any, default: nil
 
-  def source_type_icon(%{type: type} = assigns) when type in [:filesystem, :sportarr] do
+  def source_type_icon(%{type: :filesystem} = assigns) do
     ~H"""
     <span class={[
       "grid shrink-0 place-items-center rounded-md border border-border bg-surface text-text-muted",
       box_classes(@size),
       @class
     ]}>
-      <Lucideicons.hard_drive :if={@type == :filesystem} class={icon_classes(@size)} />
-      <Lucideicons.trophy :if={@type == :sportarr} class={icon_classes(@size)} />
+      <Lucideicons.hard_drive class={icon_classes(@size)} />
     </span>
     """
   end
 
-  def source_type_icon(%{type: type} = assigns) when type in [:radarr, :sonarr] do
+  def source_type_icon(%{type: type} = assigns) when type in [:radarr, :sonarr, :sportarr] do
     ~H"""
     <span class={["inline-grid shrink-0 place-items-center", box_classes(@size), @class]}>
       <img
-        src={"/images/source_types/#{@type}.svg"}
+        src={logo_path(@type)}
         alt={"#{@type} logo"}
         class={image_classes(@size)}
       />
     </span>
     """
   end
+
+  # Sportarr's logo is a bitmap: its SVG is a 200 KB trace
+  defp logo_path(:sportarr), do: "/images/source_types/sportarr.png"
+  defp logo_path(type), do: "/images/source_types/#{type}.svg"
 
   defp box_classes("header"), do: "size-control-md"
   defp box_classes("card"), do: "size-control-md"

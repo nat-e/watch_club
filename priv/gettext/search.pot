@@ -52,11 +52,6 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "soon"
-msgstr ""
-
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} result"

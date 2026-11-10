@@ -61,12 +61,6 @@ msgid "Try again"
 msgstr "Réessayer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "soon"
-msgstr "bientôt"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} result"
