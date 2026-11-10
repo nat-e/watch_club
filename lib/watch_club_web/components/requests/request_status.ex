@@ -6,7 +6,11 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   """
   use WatchClubWeb, :component
 
-  attr :request, ContentRequest, required: true, doc: "with its `status` and `download_progress`"
+  attr :request, ContentRequest,
+    required: true,
+    doc:
+      "with its `status`, `download_progress`, `aired_episodes_count` and `aired_episodes_with_media_count`"
+
   attr :release_date, Date, default: nil, doc: "the Content's, for when it's not released yet"
   attr :locale, :atom, required: true, doc: "a `UserLocale`"
   attr :rest, :global
@@ -83,6 +87,26 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   def status_words(%ContentRequest{status: status}, _release_date, _locale)
       when status in [:importing, :searching],
       do: ContentRequestStatus.translated_label(status)
+
+  # Once some of its TV Show Episodes have Media, how many, rather than how much is downloaded
+  def status_words(
+        %ContentRequest{
+          status: :downloading,
+          aired_episodes_with_media_count: ready,
+          aired_episodes_count: aired
+        },
+        _release_date,
+        _locale
+      )
+      when is_integer(ready) and ready > 0,
+      do:
+        dngettext(
+          "requests",
+          "%{ready} of %{count} episode ready",
+          "%{ready} of %{count} episodes ready",
+          aired,
+          ready: ready
+        )
 
   def status_words(%ContentRequest{status: :downloading} = request, _release_date, _locale),
     do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))

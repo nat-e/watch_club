@@ -14,7 +14,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
   import WatchClub.Generator
 
   alias WatchClub.Accounts
-  alias WatchClub.Contents.ContentIdentity
+  alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
   alias WatchClub.MediaCatalog
   alias WatchClub.Requests
   alias WatchClub.Requests.{ContentRequest, MediaSourceRequest, RequestSubscriber}
@@ -48,38 +48,33 @@ defmodule WatchClub.Requests.ContentRequestTest do
     end
   end
 
-  describe "list_current_user_ready_requests/*" do
-    test "lists the User's playable Content Requests, the most recently playable first" do
+  describe "list_current_user_completed_requests/*" do
+    test "lists the User's Completed Content Requests, the ready unseen ones first, then the latest added to the Library" do
       user = generate(user())
-      [older, newer] = movies = generate_many(movie(), 2)
+      [unseen, older, newer] = movies = generate_many(movie(), 3)
 
       for movie <- movies do
         MediaCatalog.create_or_update_video!(media_movie_input(movie.id),
           actor: SystemActor.actor()
         )
 
-        generate(request_subscriber(user, generate(content_request(generate(user()), movie))))
+        request = generate(content_request(generate(user()), movie, completed?: true))
+        generate(request_subscriber(user, request, ready_unseen?: movie == unseen))
       end
 
-      # Not playable yet
+      # Not Completed
       generate(request_subscriber(user, generate(content_request(user, generate(movie())))))
 
-      # Playable, but the User isn't one of its Request Subscribers
-      playable = generate(movie())
+      # Completed, but the User isn't one of its Request Subscribers
+      generate(content_request(user, generate(movie()), completed?: true))
 
-      MediaCatalog.create_or_update_video!(media_movie_input(playable.id),
-        actor: SystemActor.actor()
-      )
-
-      generate(content_request(user, playable))
-
-      assert Requests.list_current_user_ready_requests!(actor: user)
-             |> Enum.map(& &1.content_id) == [newer.id, older.id]
+      assert Requests.list_current_user_completed_requests!(actor: user)
+             |> Enum.map(& &1.content_id) == [unseen.id, newer.id, older.id]
     end
   end
 
   describe "list_current_user_requests_on_the_way/*" do
-    test "lists the User's Content Requests that aren't playable yet, the most recently changed first" do
+    test "lists the User's Content Requests that aren't Completed, the most recently changed first" do
       user = generate(user())
 
       [older, newer] =
@@ -91,14 +86,12 @@ defmodule WatchClub.Requests.ContentRequestTest do
           request
         end
 
-      # Playable
-      playable = generate(movie())
-
-      MediaCatalog.create_or_update_video!(media_movie_input(playable.id),
-        actor: SystemActor.actor()
+      generate(
+        request_subscriber(
+          user,
+          generate(content_request(user, generate(movie()), completed?: true))
+        )
       )
-
-      generate(request_subscriber(user, generate(content_request(user, playable))))
 
       assert Requests.list_current_user_requests_on_the_way!(actor: user) |> Enum.map(& &1.id) ==
                [newer.id, older.id]
@@ -132,7 +125,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
   end
 
   describe "with no requestable media source" do
-    test "the first Media makes its Request Subscribers ready unseen, on their user topic" do
+    test "completing it makes its Request Subscribers ready unseen, on their user topic" do
       user = generate(user())
       user_id = user.id
       movie = generate(movie())
@@ -149,33 +142,62 @@ defmodule WatchClub.Requests.ContentRequestTest do
         data: %RequestSubscriber{user_id: ^user_id, ready_unseen?: true}
       }
 
-      assert %{ready_unseen_for_actor?: true} =
-               Ash.load!(request, :ready_unseen_for_actor?, actor: user)
+      assert %{completed?: true, ready_unseen_for_actor?: true} =
+               Ash.reload!(request, load: :ready_unseen_for_actor?, actor: user)
 
       assert %{ready_unseen_request_count: 1} = Accounts.get_current_user!(actor: user)
     end
 
-    test "a show's next episodes keep it seen" do
+    test "a TV Show is Completed only once every aired TV Show Episode has Media" do
       user = generate(user())
       show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
-
-      %{implementation: %{episodes: [episode1, episode2]}} =
-        Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false)
-
+      [episode1, episode2] = episodes(show)
       request = Requests.request_content!(ContentIdentity.from_content(show), actor: user)
 
       MediaCatalog.create_or_update_video!(media_episode_input(episode1.id),
         actor: SystemActor.actor()
       )
 
-      Requests.mark_current_user_requests_seen!(actor: user)
+      assert %{completed?: false, ready_unseen_for_actor?: false} =
+               Ash.reload!(request, load: :ready_unseen_for_actor?, actor: user)
 
       MediaCatalog.create_or_update_video!(media_episode_input(episode2.id),
         actor: SystemActor.actor()
       )
 
+      assert %{completed?: true, ready_unseen_for_actor?: true} =
+               Ash.reload!(request, load: :ready_unseen_for_actor?, actor: user)
+    end
+
+    test "a TV Show stays Completed, and seen, when a new TV Show Episode airs" do
+      user = generate(user())
+      show = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      [episode] = episodes(show)
+      request = Requests.request_content!(ContentIdentity.from_content(show), actor: user)
+
+      MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
+        actor: SystemActor.actor()
+      )
+
+      Requests.mark_current_user_requests_seen!(actor: user)
+
+      new_episode =
+        Ash.Seed.seed!(TvShowEpisode, %{
+          tv_show_id: show.id,
+          season_number: 2,
+          episode_number: 1,
+          air_date: Date.add(Date.utc_today(), -1)
+        })
+
+      assert %{completed?: true, status: :completed, percent_imported: 50.0} =
+               Ash.reload!(request, load: [:status, :percent_imported], actor: user)
+
+      MediaCatalog.create_or_update_video!(media_episode_input(new_episode.id),
+        actor: SystemActor.actor()
+      )
+
       assert %{ready_unseen_for_actor?: false} =
-               Ash.load!(request, :ready_unseen_for_actor?, actor: user)
+               Ash.reload!(request, load: :ready_unseen_for_actor?, actor: user)
     end
 
     test "updates movie when media is imported" do
@@ -231,8 +253,7 @@ defmodule WatchClub.Requests.ContentRequestTest do
       user = generate(user())
       show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
 
-      %{implementation: %{episodes: [episode1, episode2]}} =
-        Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false)
+      [episode1, episode2] = episodes(show)
 
       # Request the show
       %ContentRequest{
@@ -349,5 +370,9 @@ defmodule WatchClub.Requests.ContentRequestTest do
         status: :completed
       } = Ash.reload!(request, load: [:percent_imported, :status], actor: user)
     end
+  end
+
+  defp episodes(show) do
+    Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false).implementation.episodes
   end
 end

@@ -129,6 +129,12 @@ defmodule WatchClub.Contents.Content do
       pagination keyset?: true, offset?: true, countable: true, required?: false
     end
 
+    read :new_in_library do
+      description "The Content in the Library, the latest added first. A requested one waits until its Content Request is Completed."
+      filter expr(has_media? and not exists(request, not completed?))
+      prepare build(sort: [added_to_library_at: :desc, id: :desc])
+    end
+
     read :user_recently_watched do
       description "Returns the Contents recently watched by the actor. Most recently watched content first"
 
@@ -356,6 +362,14 @@ defmodule WatchClub.Contents.Content do
                   type == :movie -> movie.has_media?
                   type == :tv_show -> tv_show.has_media?
                 end
+              )
+
+    # An Incomplete TV Show: in the Library, with an aired TV Show Episode without Media
+    calculate :incomplete?,
+              :boolean,
+              expr(
+                type == :tv_show and tv_show.has_media? and
+                  tv_show.aired_episodes_with_media_count < tv_show.aired_episodes_count
               )
 
     # The progress status of the content for the current user

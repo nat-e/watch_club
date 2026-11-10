@@ -22,6 +22,12 @@ defmodule WatchClubWeb.Storybook.RequestStatus do
         variations: [
           variation(:searching, %ContentRequest{status: :searching}),
           variation(:downloading, %ContentRequest{status: :downloading, download_progress: 40.0}),
+          variation(:episodes_ready, %ContentRequest{
+            status: :downloading,
+            download_progress: 47.0,
+            aired_episodes_count: 10,
+            aired_episodes_with_media_count: 4
+          }),
           variation(:importing, %ContentRequest{status: :importing, download_progress: 100.0}),
           variation(:out_on, %ContentRequest{status: :not_released}, ~D[2099-03-12]),
           variation(:not_released, %ContentRequest{status: :not_released}),

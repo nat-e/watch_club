@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ForYou do
   @moduledoc """
-  For You on Home: the latest recommendations to the User, their Content Requests that became
-  playable and the Playlists shared with them, newest first, one card each, seen or not.
+  For You on Home: the latest recommendations to the User, their Completed Content Requests and
+  the Playlists shared with them, newest first, one card each, seen or not.
   """
   use WatchClubWeb, :component
 
@@ -18,8 +18,8 @@ defmodule WatchClubWeb.HomePage.ForYou do
   def playlist_load, do: [:owner, :movie_count, :tv_show_count, :shared_with_actor_at]
 
   @doc """
-  The `count` latest items, newest first: by when each was recommended, became playable or was
-  shared
+  The `count` latest items, newest first: by when each was recommended, added to the Library or
+  was shared
   """
   def latest(items, count),
     do: items |> Enum.sort_by(&addressed_at/1, {:desc, DateTime}) |> Enum.take(count)

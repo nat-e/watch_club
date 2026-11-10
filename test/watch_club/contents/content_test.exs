@@ -1186,6 +1186,23 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
+  describe "get_new_in_library/*" do
+    test "returns the Content with Media, most recently added first, a requested one once its Content Request is Completed",
+         %{member: member} do
+      older = generate(movie())
+      completed = generate(tv_show(num_seasons: 1, episodes_per_season: 1))
+      on_the_way = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+
+      add_video!(older.id)
+      generate(content_request(member, completed, completed?: true))
+      add_episode_video!(completed, 1)
+      generate(content_request(member, on_the_way))
+      add_episode_video!(on_the_way, 1)
+
+      assert get_new_in_library!(actor: member) |> Enum.map(& &1.id) == [completed.id, older.id]
+    end
+  end
+
   describe "get_library_filter_options/*" do
     test "returns the Library's genres and original languages, most common first, and decades, newest first",
          %{member: member} do

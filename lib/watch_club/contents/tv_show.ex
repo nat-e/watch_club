@@ -155,6 +155,10 @@ defmodule WatchClub.Contents.TvShow do
       filter expr(aired?)
     end
 
+    count :aired_episodes_with_media_count, :episodes do
+      filter expr(aired? and has_media?)
+    end
+
     # Number of aired episodes that the current user has completed.
     # Only used for internal calculation
     count :actor_aired_episodes_completed_count, :episodes do

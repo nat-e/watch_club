@@ -80,3 +80,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Not found, still looking"
 msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{ready} of %{count} episode ready"
+msgid_plural "%{ready} of %{count} episodes ready"
+msgstr[0] ""
+msgstr[1] ""

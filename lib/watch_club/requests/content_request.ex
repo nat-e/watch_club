@@ -3,7 +3,8 @@ defmodule WatchClub.Requests.ContentRequest do
   A request to make a piece of `Content` available on the Watch Club instance, for everybody.
 
   A Content has at most one, made by the first User who asks. That User becomes its first
-  `RequestSubscriber`, and only its Request Subscribers are told when it becomes playable.
+  `RequestSubscriber`, and only its Request Subscribers are told when it's Completed: every aired
+  part of its Content has Media. It stays Completed, even when new TV Show Episodes air.
 
   If the instance has some requestable Media Sources configured (Radarr, Sonarr...)
   creating a Request will automatically create one `Media Source Request` per source (if it did not
@@ -29,7 +30,7 @@ defmodule WatchClub.Requests.ContentRequest do
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
-  alias WatchClub.Requests.Changes.CreateMediaSourceRequests
+  alias WatchClub.Requests.Changes.{CreateMediaSourceRequests, MarkSubscribersReadyUnseen}
 
   alias WatchClub.Requests.{ContentRequestStatus, MediaSourceRequest, RequestSubscriber}
 
@@ -69,17 +70,27 @@ defmodule WatchClub.Requests.ContentRequest do
       change atomic_update(:updated_at, expr(now()))
     end
 
+    update :complete do
+      description "Completes it once every aired part of its Content has Media, and makes its Request Subscribers ready unseen. Does nothing otherwise."
+
+      # In the UPDATE's WHERE, so concurrent imports complete it once
+      change filter(expr(not completed? and percent_imported == 100.0))
+      change set_attribute(:completed?, true)
+      change MarkSubscribersReadyUnseen
+    end
+
     read :for_current_user do
       description "The Content Requests the actor is a Request Subscriber of."
       filter expr(actor_subscriber?)
     end
 
-    read :ready_for_current_user do
-      description "The actor's playable Content Requests, the most recently playable first, so the ready unseen ones lead."
-      filter expr(actor_subscriber? and ready?)
+    read :completed_for_current_user do
+      description "The actor's Completed Content Requests: the ready unseen ones first, then the latest added to the Library."
+      filter expr(actor_subscriber? and completed?)
 
       prepare fn query, _context ->
         Ash.Query.sort(query, [
+          {Ash.Sort.expr_sort(ready_unseen_for_actor?, :boolean), :desc},
           {Ash.Sort.expr_sort(content.added_to_library_at, :utc_datetime_usec), :desc},
           {:id, :desc}
         ])
@@ -87,8 +98,8 @@ defmodule WatchClub.Requests.ContentRequest do
     end
 
     read :on_the_way_for_current_user do
-      description "The actor's Content Requests that aren't playable yet, the most recently changed first."
-      filter expr(actor_subscriber? and not ready?)
+      description "The actor's Content Requests that aren't Completed yet, the most recently changed first."
+      filter expr(actor_subscriber? and not completed?)
       prepare build(sort: [updated_at: :desc, id: :desc])
     end
   end
@@ -155,6 +166,15 @@ defmodule WatchClub.Requests.ContentRequest do
 
   attributes do
     uuid_v7_primary_key :id
+
+    # Set once by :complete, so new TV Show Episodes airing later don't undo it
+    attribute :completed?, :boolean do
+      allow_nil? false
+      default false
+      public? true
+      source :is_completed
+    end
+
     timestamps()
   end
 
@@ -182,7 +202,7 @@ defmodule WatchClub.Requests.ContentRequest do
   calculations do
     # The percentage of sub-contents for which medias exist and are ready to play on Watch Club
     # For movies and books, this can only be 0 or 100
-    # For TV show, this is equal to the number of playable aired episodes / number of aired episodes
+    # For TV show, this is equal to the number of aired episodes with Media / number of aired episodes
     calculate :percent_imported,
               :float,
               expr(
@@ -195,17 +215,11 @@ defmodule WatchClub.Requests.ContentRequest do
                     100.0
 
                   # Guard the 0 denominator before any episode has aired
-                  content.type == :tv_show and not exists(content.tv_show.episodes, aired?) ->
+                  content.type == :tv_show and aired_episodes_count == 0 ->
                     0.0
 
                   content.type == :tv_show ->
-                    type(
-                      count(content.tv_show.episodes,
-                        query: [filter: expr(has_media? and aired?)]
-                      ),
-                      :float
-                    ) * 100.0 /
-                      count(content.tv_show.episodes, query: [filter: expr(aired?)])
+                    type(aired_episodes_with_media_count, :float) * 100.0 / aired_episodes_count
 
                   # Movie and books without content
                   true ->
@@ -213,11 +227,18 @@ defmodule WatchClub.Requests.ContentRequest do
                 end
               )
 
+    # Its TV Show's, for "4 of 10 episodes ready". Nil for other Content.
+    calculate :aired_episodes_count, :integer, expr(content.tv_show.aired_episodes_count)
+
+    calculate :aired_episodes_with_media_count,
+              :integer,
+              expr(content.tv_show.aired_episodes_with_media_count)
+
     calculate :status,
               ContentRequestStatus,
               expr(
                 cond do
-                  percent_imported == 100.0 ->
+                  completed? ->
                     :completed
 
                   is_nil(best_source_request) ->
@@ -259,9 +280,6 @@ defmodule WatchClub.Requests.ContentRequest do
               )
 
     calculate :actor_subscriber?, :boolean, expr(exists(subscribers, user_id == ^actor(:id)))
-
-    # Playable: its Content has Media
-    calculate :ready?, :boolean, expr(content.has_media?)
 
     calculate :ready_unseen_for_actor?,
               :boolean,
