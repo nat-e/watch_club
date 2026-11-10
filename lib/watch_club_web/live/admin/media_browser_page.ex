@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage do
   @moduledoc """
   The Media Browser, where the Instance Administrator finds a Media, spots the Unmatched ones or
-  sees what was just added, then plays or removes it from its details beside the list. The list
+  sees what was just added, then plays, matches or removes it from its details beside the list. The list
   shows 20 Media a page. Its search, filters, sort and page, and the selected Media, live in the
   URL, so Back after Play returns to the same place.
   """
@@ -13,6 +13,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   import WatchClubWeb.Components.Media.MediaTypeBadge
 
   alias WatchClub.Shared.SortOrder
+  alias WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive
 
   @page_size 20
   @sorts [:added, :title]
@@ -30,8 +31,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     {:ok,
      socket
      |> WatchClub.PubSub.subscribe_if_connected("content:global")
-     # The Media the Remove media dialog is about
-     |> assign(list: nil, removing: nil)}
+     # The Media the Match and Remove media dialogs are about
+     |> assign(list: nil, matching: nil, removing: nil)}
   end
 
   @impl true
@@ -81,6 +82,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   def handle_event("close_details", _params, socket),
     do: {:noreply, push_patch(socket, to: media_browser_path(socket.assigns.list, nil))}
 
+  def handle_event("open_match_media_modal", _params, socket),
+    do: {:noreply, assign(socket, :matching, socket.assigns.selected)}
+
   def handle_event("open_remove_media_modal", _params, socket),
     do: {:noreply, assign(socket, :removing, socket.assigns.selected)}
 
@@ -110,6 +114,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   end
 
   def handle_info(%Notification{}, socket), do: {:noreply, socket}
+
+  def handle_info(:close_match_media_modal, socket),
+    do: {:noreply, assign(socket, :matching, nil)}
 
   @impl true
   def render(assigns) do
@@ -183,6 +190,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         </.card>
       </div>
 
+      <.live_component
+        :if={@matching}
+        id="match-media-modal"
+        module={MatchMediaLive}
+        media={@matching}
+        current_user={@current_user}
+        on_close={fn -> send(self(), :close_match_media_modal) end}
+      />
       <.remove_media_modal :if={@removing} instance_settings={@instance_settings} />
     </Layouts.app>
     """

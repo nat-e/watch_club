@@ -175,8 +175,12 @@ An instance-wide local file available in WatchClub as a video, ebook, or audiobo
 _Avoid_: Content, Media Version, media item
 
 **Unmatched Media**:
-Media whose concrete video, ebook, or audiobook has no attached **Content** because the **Media Import** could not identify it.
+Media whose concrete video, ebook, or audiobook has no attached **Content**, because the **Media Import** could not identify it or the **Instance Administrator** removed its **Manual Match**.
 _Avoid_: Orphan media, unattached media, unidentified media
+
+**Manual Match**:
+The **Content** the **Instance Administrator** attached a **Video** to by hand, which **Media Imports** and webhooks keep.
+_Avoid_: Fix match, identify, locked match
 
 **Media Type**:
 The kind of media, one of **Movie**, **TV Show Episode**, **Sports Event**, **Ebook**, or **Audiobook**. A Media Type determines both the concrete media kind (video, ebook, audiobook) and the **Content Type** the media is expected to attach to.
@@ -291,7 +295,7 @@ The **Text Track** a **Playback** of new **Content** starts with, chosen from it
 _Avoid_: Default subtitles, selected subtitles
 
 **Media Browser**:
-The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**.
+The WatchClub interface where the **Instance Administrator** inspects instance-wide **Media**, including **Unmatched Media**, and gives a **Video** a **Manual Match**.
 _Avoid_: Media admin, media library page, file browser
 
 **Media Source**:
@@ -306,9 +310,9 @@ _Avoid_: Media Import Source Type, source kind, provider type
 One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, what it discovered) and is the umbrella for the per-file ingest work it enqueues. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
-**Refresh Metadata**:
-A **Media Import** option that re-evaluates existing **Media** instead of skipping it. A webhook-triggered single-file ingest always behaves as if **Refresh Metadata** were on.
-_Avoid_: Force refresh, rescan existing media
+**Files to Process**:
+Which files a **Media Import** processes: New files only, New and unmatched files, or All files. Processing a file reads its technical details and matches it again. A webhook-triggered single-file ingest always processes its file.
+_Avoid_: Refresh metadata, force refresh, rescan existing media
 
 **Media Import Status**:
 The overall progress or outcome of a **Media Import**.
@@ -623,6 +627,10 @@ _Avoid_: Group, aggregate, card, item
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
+- A **Manual Match** attaches a **Movie** file to a **Movie**, a **TV Show Episode** file to a **TV Show Episode**, and a **Sports Event** file to a **Sports Event**
+- A **Manual Match** may create the missing **Content**, as **Request Content** does
+- **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
+- Removing a **Manual Match** makes the **Video** **Unmatched Media**, until a **Media Import** or a webhook matches it again
 
 ### Markers
 
@@ -661,13 +669,13 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** records whether it was triggered manually or by a schedule, but not which **Instance Administrator** triggered it
 - A past **Media Import** remains after its **Media Source** is deleted
 - A **Media Import** keeps a snapshot of the **Media Source** that ran
-- A **Media Import** has **Refresh Metadata** off by default
+- A **Media Import** processes New files only by default
 - A **Media Import** has one **Media Import Status**: Processing, Completed, Failed, or Cancelled
 - A **Media Source** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
 - A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then an ingest phase that runs once per candidate to create or refresh **Media**
 - The ingest phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
-- Webhook-triggered ingest always behaves as if **Refresh Metadata** were on
+- Webhook-triggered ingest always processes its file, as All files would
 - Scan phases differ by **Media Source Type**: a filesystem scan walks the configured location; an `radarr` or `sonarr` scan calls the **Media Source**'s API to enumerate its catalog
 - A **Failed** **Media Import** is one that cannot finish processing its source
 - A **Cancelled** **Media Import** is one that the **Instance Administrator** ended before it finished, or that was left **Processing** by a previous run of WatchClub
@@ -688,9 +696,9 @@ _Avoid_: Group, aggregate, card, item
 - A file whose **TV Show Episode** is still missing after that fails ingestion; a later scan retries it because no **Media** was saved
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
-- When **Refresh Metadata** is off, an existing **Media** found again by a **Media Import** is skipped
-- When **Refresh Metadata** is on, a **Media Import** rematches existing **Media** and recreates its concrete media details
-- When **Refresh Metadata** is off, a **Media Import** skips existing **Media** even when the same path would now match different **Content** or **Media Type**
+- With New files only, a **Media Import** skips the files that already have **Media**, even when the same path would now match different **Content** or **Media Type**
+- With New and unmatched files, a **Media Import** also processes the **Unmatched Media**
+- With All files, a **Media Import** processes every file: it reads the technical details of existing **Media** again and matches it again, unless it has a **Manual Match**
 - A filesystem **Media Import** deletes **Media** whose path is no longer present under the configuration’s filesystem location
 - Moving a file deletes the old **Media** and creates new **Media** at the new path
 - Overlapping filesystem imports can run at the same time
@@ -782,7 +790,7 @@ _Avoid_: Group, aggregate, card, item
 - **Playback Session** is scoped to the **User**, not to one **Player** visit or one device: it moves between **Screens**; the selected **Media** lives on each **Playback** inside it.
 - A separate "Cast Session" was considered; resolved: casting moves the **Playback Session** to a **TV**, and the **TV** is only its **Screen**.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
-- "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only by re-running a **Media Import** with **Refresh Metadata** on.
+- "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only when a **Media Import** or a webhook processes the file again.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
 - "Is watching" in the **Activity Feed** means the **User** has unfinished **Watch Progress**, possibly from days ago; resolved: **Watching Now** means their **Playback Session** plays on a **Screen** right now.

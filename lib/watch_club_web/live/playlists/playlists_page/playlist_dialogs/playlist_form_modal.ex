@@ -57,7 +57,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.PlaylistFormModal
                 autocomplete="off"
                 phx-debounce="blur"
                 placeholder={dgettext("playlists", "My playlist")}
-                phx-mounted={JS.focus()}
+                autofocus
                 aria-describedby={describedby}
               />
             </div>

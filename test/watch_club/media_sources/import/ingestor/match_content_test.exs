@@ -3,7 +3,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
   import ExUnit.CaptureLog
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, ContentIdentity}
+  alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
 
   alias WatchClub.MediaSources.Import.Candidate.{
@@ -22,6 +23,26 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   end
 
   describe "apply!/1" do
+    test "keeps the Manual Match of the file's Media without HTTP requests" do
+      manual_match = generate(movie())
+      media = generate(video_media(generate(movie()), path: "/library/file.mkv"))
+
+      MediaCatalog.match_media!(media, ContentIdentity.from_content(manual_match),
+        actor: generate(administrator())
+      )
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn _conn ->
+        flunk("a Manual Match must not make a TMDB request")
+      end)
+
+      candidate = candidate_with(%MovieIdentity{tmdb_id: 11})
+
+      assert %Candidate{match_result: %MatchResult{result: :success, matched_id: matched_id}} =
+               MatchContent.apply!(candidate)
+
+      assert matched_id == manual_match.id
+    end
+
     test "matches a Movie refreshed under 15 minutes ago without HTTP requests", %{
       telemetry_ref: ref
     } do

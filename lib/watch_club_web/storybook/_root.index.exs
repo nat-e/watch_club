@@ -71,4 +71,7 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("incomplete_badge"),
     do: [name: "Incomplete badge", icon: {:fa, "download"}, index: 41]
+
+  def entry("search_result_summary"),
+    do: [name: "Search result summary", icon: {:fa, "magnifying-glass"}, index: 42]
 end

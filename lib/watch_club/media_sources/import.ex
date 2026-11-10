@@ -43,7 +43,7 @@ defmodule WatchClub.MediaSources.Import do
 
     create :start do
       primary? true
-      accept [:media_source_id, :refresh_metadata?]
+      accept [:media_source_id, :files_to_process]
 
       change set_attribute(:triggered_manually?, true)
       change Changes.Schedule
@@ -113,11 +113,10 @@ defmodule WatchClub.MediaSources.Import do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :refresh_metadata?, :boolean do
+    attribute :files_to_process, WatchClub.MediaSources.FilesToProcess do
       allow_nil? false
-      default false
+      default :new
       public? true
-      source :refresh_metadata
     end
 
     attribute :triggered_manually?, :boolean do

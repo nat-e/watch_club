@@ -1,6 +1,7 @@
 defmodule WatchClub.MediaCatalog.MediaTest do
   use WatchClub.DataCase
 
+  import ExUnit.CaptureLog
   import WatchClub.MediaCatalog
 
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
@@ -461,6 +462,146 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       }
 
       assert content_id == movie.id
+    end
+  end
+
+  describe "match_media/*" do
+    test "matches a Movie file to a Movie by hand" do
+      movie = generate(movie())
+      media = generate(video_media(nil))
+
+      matched =
+        match_media!(media, ContentIdentity.from_content(movie),
+          actor: generate(administrator()),
+          load: :video
+        )
+
+      assert %Media{manually_matched?: true, video: %Video{movie_id: movie_id}} = matched
+      assert matched.content_id == movie.id
+      assert movie_id == movie.id
+    end
+
+    test "matches a TV Show Episode file to an episode of a TV Show by hand" do
+      tv_show = generate(tv_show())
+      media = generate(video_media(hd(generate(tv_show()).tv_show.episodes)))
+
+      matched =
+        match_media!(
+          media,
+          ContentIdentity.from_content(tv_show),
+          %{season_number: 2, episode_number: 3},
+          actor: generate(administrator()),
+          load: [video: :tv_show_episode]
+        )
+
+      assert matched.content_id == tv_show.id
+
+      assert %TvShowEpisode{tv_show_id: tv_show_id, season_number: 2, episode_number: 3} =
+               matched.video.tv_show_episode
+
+      assert tv_show_id == tv_show.id
+    end
+
+    test "matches a Sports Event file to a Sports Event by hand" do
+      sports_event = generate(sports_event())
+      media = generate(video_media(nil, type: :sports_event))
+
+      matched =
+        match_media!(media, ContentIdentity.from_content(sports_event),
+          actor: generate(administrator()),
+          load: :video
+        )
+
+      assert matched.content_id == sports_event.id
+      assert matched.video.sports_event_id == sports_event.id
+    end
+
+    test "creates the Movie when WatchClub doesn't have it" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", 438_631))
+      end)
+
+      media = generate(video_media(nil))
+
+      matched =
+        match_media!(media, ContentIdentity.for_movie(438_631),
+          actor: generate(administrator()),
+          load: :content
+        )
+
+      assert ContentIdentity.from_content(matched.content) == ContentIdentity.for_movie(438_631)
+    end
+
+    test "returns an error when TMDB can't give the missing Movie" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, &Plug.Conn.send_resp(&1, 503, ""))
+      media = generate(video_media(nil))
+
+      capture_log(fn ->
+        match_media(media, ContentIdentity.for_movie(438_631), actor: generate(administrator()))
+        |> assert_has_error(fn
+          %WatchClub.Contents.MetadataUnavailable{} -> true
+          _ -> false
+        end)
+      end)
+
+      assert %Media{content_id: nil, manually_matched?: false} =
+               Ash.get!(Media, media.id, authorize?: false)
+    end
+
+    test "updates the requests of the previous and new Content" do
+      previous_content = generate(movie())
+      new_content = generate(movie())
+      media = generate(video_media(previous_content))
+
+      user = generate(user())
+      updated_at = ~U[2020-01-01 00:00:00.000000Z]
+      previous_request = generate(content_request(user, previous_content, updated_at: updated_at))
+      new_request = generate(content_request(user, new_content, updated_at: updated_at))
+
+      match_media!(media, ContentIdentity.from_content(new_content),
+        actor: generate(administrator())
+      )
+
+      assert %ContentRequest{completed?: false} =
+               Ash.get!(ContentRequest, previous_request.id, authorize?: false)
+
+      assert %ContentRequest{completed?: true} =
+               Ash.get!(ContentRequest, new_request.id, authorize?: false)
+    end
+
+    test "rejects actors other than the Instance Administrator" do
+      media = generate(video_media(nil))
+
+      match_media(media, ContentIdentity.from_content(generate(movie())), actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "unmatch_media/*" do
+    test "makes a manually matched Video Unmatched Media, and updates its Content Request" do
+      movie = generate(movie())
+      admin = generate(administrator())
+
+      media =
+        video_media(nil)
+        |> generate()
+        |> match_media!(ContentIdentity.from_content(movie), actor: admin)
+
+      updated_at = ~U[2020-01-01 00:00:00.000000Z]
+      request = generate(content_request(generate(user()), movie, updated_at: updated_at))
+
+      assert %Media{manually_matched?: false, content_id: nil, video: %Video{movie_id: nil}} =
+               unmatch_media!(media, actor: admin, load: :video)
+
+      reloaded_request = Ash.get!(ContentRequest, request.id, authorize?: false)
+      assert DateTime.after?(reloaded_request.updated_at, updated_at)
+    end
+
+    test "rejects actors other than the Instance Administrator" do
+      media = generate(video_media(nil))
+
+      unmatch_media(media, actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 

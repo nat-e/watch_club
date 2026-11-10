@@ -12,6 +12,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex

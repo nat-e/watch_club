@@ -1,6 +1,10 @@
 defmodule WatchClubWeb.Components.UI.Input do
   @moduledoc """
   Token-driven Watch Club input primitive. `type="textarea"` renders a multi-line text box.
+
+  `autofocus` focuses the field when it appears, with its text selected so that typing replaces
+  it, as Microsoft's text box guidelines advise. Touch screens leave it unfocused, so their
+  keyboard doesn't cover the page until the field is tapped.
   """
 
   use Phoenix.Component
@@ -15,6 +19,10 @@ defmodule WatchClubWeb.Components.UI.Input do
   attr :value, :any, default: nil
   attr :errors, :list, default: []
   attr :field, Phoenix.HTML.FormField, doc: "form field — derives id, name, value, errors"
+
+  attr :autofocus, :boolean,
+    default: false,
+    doc: "focuses it when it appears, with its text selected, except on touch screens"
 
   attr :rest, :global,
     include:
@@ -52,6 +60,7 @@ defmodule WatchClubWeb.Components.UI.Input do
       name={@name}
       aria-invalid={@errors != [] && "true"}
       data-slot="input"
+      phx-hook={@autofocus && autofocus_hook_name()}
       class={[
         "min-h-control-lg w-full min-w-0 resize-y rounded-control border border-border-control bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
         "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
@@ -61,6 +70,7 @@ defmodule WatchClubWeb.Components.UI.Input do
       ]}
       {@rest}
     >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+    <.autofocus_hook />
     """
   end
 
@@ -73,6 +83,7 @@ defmodule WatchClubWeb.Components.UI.Input do
       value={Phoenix.HTML.Form.normalize_value(@type, @value)}
       aria-invalid={@errors != [] && "true"}
       data-slot="input"
+      phx-hook={@autofocus && autofocus_hook_name()}
       class={[
         "h-control-md w-full min-w-0 rounded-control border border-border-control bg-surface-inset px-group py-related text-base text-text transition-[border-color,box-shadow,color] outline-none placeholder:text-text-subtle md:text-sm",
         "focus-visible:border-border-focus focus-visible:ring-2 focus-visible:ring-focus-ring",
@@ -83,6 +94,31 @@ defmodule WatchClubWeb.Components.UI.Input do
       ]}
       {@rest}
     />
+    <.autofocus_hook />
+    """
+  end
+
+  # The hook's full name: `phx-hook` expands ".Autofocus" only when written literally
+  defp autofocus_hook_name, do: "#{inspect(__MODULE__)}.Autofocus"
+
+  # Once, when the field appears: later renders, clicks and focus keep the user's selection
+  defp autofocus_hook(assigns) do
+    ~H"""
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".Autofocus">
+      export default {
+        mounted() {
+          // After a dialog that opens with the field has focused its first control
+          requestAnimationFrame(() => {
+            if (window.matchMedia("(pointer: fine)").matches) {
+              this.el.focus();
+              this.el.select();
+            } else if (document.activeElement === this.el) {
+              this.el.blur();
+            }
+          });
+        },
+      };
+    </script>
     """
   end
 end

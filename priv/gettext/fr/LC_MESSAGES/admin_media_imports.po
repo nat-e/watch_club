@@ -327,18 +327,6 @@ msgid "No Media Imports yet"
 msgstr "Aucun import pour le moment"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
-#, elixir-autogen, elixir-format
-msgid "Off"
-msgstr "Désactivé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
-#, elixir-autogen, elixir-format
-msgid "On"
-msgstr "Activé"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Path mapping (Optional)"
@@ -361,13 +349,6 @@ msgstr "Profil de qualité"
 #, elixir-autogen, elixir-format
 msgid "Radarr"
 msgstr "Radarr"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Refresh metadata"
-msgstr "Actualiser les métadonnées"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -499,12 +480,6 @@ msgid "View history"
 msgstr "Voir l'historique"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
-#, elixir-autogen, elixir-format
-msgid "When enabled, the media will be re-computed and potentially re-matched to another content."
-msgstr "Si activé, les médias seront recalculés et pourront être associés à un autre contenu."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. You can find it in %{name}'s settings > General."
@@ -568,6 +543,71 @@ msgid "Verifying…"
 msgstr "Vérification…"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr "Tous"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "All files"
+msgstr "Tous les fichiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Also retries files that couldn't be matched."
+msgstr "Réessaie aussi les fichiers qui n'ont pas pu être associés."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "Files"
+msgstr "Fichiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr "Nouveaux"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New and unmatched"
+msgstr "Nouveaux et non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New and unmatched files"
+msgstr "Nouveaux fichiers et fichiers non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New files only"
+msgstr "Nouveaux fichiers uniquement"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Only files not imported yet."
+msgstr "Seulement les fichiers pas encore importés."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Process"
+msgstr "Traiter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Reads every file again and matches it again. Manual matches are kept."
+msgstr "Relit chaque fichier et l'associe à nouveau. Les associations manuelles sont conservées."
+
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Connect a Sportarr server to import sports events and fulfill sports event requests."

@@ -171,12 +171,6 @@ msgstr "%{range} sur %{count}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
-#, elixir-autogen, elixir-format
-msgid "A Media Import couldn't identify this file."
-msgstr "L'import de médias n'a pas pu identifier ce fichier."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Added"
@@ -278,3 +272,173 @@ msgstr "Titre"
 #, elixir-autogen, elixir-format
 msgid "View and manage all Media on this instance."
 msgstr "Consultez et gérez tous les médias de cette instance."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr "Retour"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Current match"
+msgstr "Association actuelle"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Match"
+msgstr "Associer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Matched manually"
+msgstr "Associé manuellement"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Matched to %{title}."
+msgstr "Associé à %{title}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "More actions"
+msgstr "Plus d'actions"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Movie title or TMDB ID"
+msgstr "Titre du film ou ID TMDB"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "No TV show has this TMDB ID."
+msgstr "Aucune série n'a cet ID TMDB."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "No movie has this TMDB ID."
+msgstr "Aucun film n'a cet ID TMDB."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Rematch"
+msgstr "Réassocier"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Remove manual match"
+msgstr "Retirer l'association manuelle"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search TMDB"
+msgstr "Rechercher sur TMDB"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search TMDB by title or TMDB ID."
+msgstr "Recherchez sur TMDB par titre ou par ID TMDB."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Season %{number}"
+msgstr "Saison %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "TMDB ID %{id}"
+msgstr "ID TMDB %{id}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "TMDB has no episodes for this TV show yet."
+msgstr "TMDB n'a pas encore d'épisodes pour cette série."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "TV show title or TMDB ID"
+msgstr "Titre de la série ou ID TMDB"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Titles"
+msgstr "Titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't load the episodes."
+msgstr "Impossible de charger les épisodes."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't match the file. Try again."
+msgstr "Impossible d'associer le fichier. Réessayez."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr "Réessayer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Event title or Sportarr ID"
+msgstr "Titre de l'événement ou ID Sportarr"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "No event has this Sportarr ID."
+msgstr "Aucun événement n'a cet ID Sportarr."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net"
+msgstr "Rechercher sur sportarr.net"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net by title or Sportarr ID."
+msgstr "Recherchez sur sportarr.net par titre ou par ID Sportarr."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr ID %{id}"
+msgstr "ID Sportarr %{id}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Manual match removed. The file is unmatched until an import matches it."
+msgstr "Association manuelle retirée. Le fichier n'est plus associé jusqu'à ce qu'un import l'associe."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "This file isn't matched to a title."
+msgstr "Ce fichier n'est associé à aucun titre."

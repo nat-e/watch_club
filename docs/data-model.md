@@ -224,6 +224,7 @@ classDiagram
     string path «unique»
     MediaType type
     uuid content_id
+    boolean manually_matched?
   }
   class MediaType {
     <<enumeration>>
@@ -367,7 +368,7 @@ classDiagram
     uuid id
     uuid media_source_id
     MediaImportStatus status
-    boolean refresh_metadata?
+    FilesToProcess files_to_process
     boolean triggered_manually?
     datetime finished_at
   }
@@ -377,6 +378,12 @@ classDiagram
     completed
     failed
     cancelled
+  }
+  class FilesToProcess {
+    <<enumeration>>
+    new
+    new_and_unmatched
+    all
   }
   FilesystemMediaSource "0..1" --> "1" MediaSource
   ServarrMediaSource "0..1" --> "1" MediaSource

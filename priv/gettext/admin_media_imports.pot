@@ -274,16 +274,6 @@ msgstr ""
 msgid "No Media Imports yet"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
-#, elixir-autogen, elixir-format
-msgid "Off"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/refresh_metadata_badge.ex
-#, elixir-autogen, elixir-format
-msgid "On"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Path mapping (Optional)"
@@ -302,12 +292,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Radarr"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Refresh metadata"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -418,11 +402,6 @@ msgstr ""
 msgid "View history"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
-#, elixir-autogen, elixir-format
-msgid "When enabled, the media will be re-computed and potentially re-matched to another content."
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. You can find it in %{name}'s settings > General."
@@ -466,6 +445,61 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Verifying…"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "All"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "All files"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Also retries files that couldn't be matched."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "Files"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New and unmatched"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New and unmatched files"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New files only"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Only files not imported yet."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Process"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Reads every file again and matches it again. Manual matches are kept."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources_page.ex
