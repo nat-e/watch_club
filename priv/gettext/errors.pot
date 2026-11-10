@@ -333,3 +333,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Something else started playing at the same time"
 msgstr ""
+
+#: lib/watch_club/media_sources/import.ex
+#, elixir-autogen, elixir-format
+msgid "An import of this media source is already running."
+msgstr ""

@@ -7,6 +7,8 @@ defmodule WatchClub.MediaSources.Import do
     notifiers: [Ash.Notifier.PubSub],
     extensions: [AshStateMachine]
 
+  use Gettext, backend: WatchClubWeb.Gettext
+
   alias WatchClub.MediaSources.Import.Changes
   alias WatchClub.MediaSources.Source
 
@@ -22,7 +24,8 @@ defmodule WatchClub.MediaSources.Import do
       index [:media_source_id],
         unique: true,
         name: "media_imports_one_processing_per_media_source_index",
-        where: "status = 'processing'"
+        where: "status = 'processing'",
+        message: dgettext_noop("errors", "An import of this media source is already running.")
     end
   end
 

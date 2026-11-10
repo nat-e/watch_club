@@ -11,8 +11,15 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
   alias WatchClubWeb.Hooks.Flash
 
   @impl true
-  def mount(socket) do
-    {:ok, assign(socket, :form, to_form(%{"files_to_process" => "new"}, as: :run_import))}
+  def update(assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign_new(:form, fn ->
+       to_form(
+         MediaSources.form_to_start_media_import(actor: assigns.current_user, as: "run_import")
+       )
+     end)}
   end
 
   attr :id, :string, required: true
@@ -42,6 +49,8 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
           phx-submit="start"
           phx-target={@myself}
         >
+          <input type="hidden" name={@form[:media_source_id].name} value={@media_source.id} />
+
           <div class="flex flex-col gap-related">
             <.label id="run-import-files-label">
               {dgettext("admin_media_imports", "Process")}
@@ -72,7 +81,7 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
             <.checkbox
               id="run-import-regenerate"
               field={@form[:regenerate_thumbnails_and_markers?]}
-              disabled={@form[:files_to_process].value == "new"}
+              disabled={@form[:files_to_process].value == :new}
               class="mt-0.5"
             />
             <.stack space="tight" class="min-w-0 group-has-disabled/regenerate:opacity-40">
@@ -87,6 +96,8 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
               </span>
             </.stack>
           </label>
+
+          <.field_errors field={@form[:media_source_id]} show_untouched />
 
           <:action>
             <.button
@@ -110,18 +121,26 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
 
   @impl true
   def handle_event("change", %{"run_import" => params}, socket) do
-    {:noreply, assign(socket, :form, to_form(params, as: :run_import))}
+    # New files always get them, so the box turns off with its choice
+    params =
+      if params["files_to_process"] == "new",
+        do: Map.delete(params, "regenerate_thumbnails_and_markers?"),
+        else: params
+
+    {:noreply, assign(socket, :form, AshPhoenix.Form.validate(socket.assigns.form, params))}
   end
 
-  # The Run import button is disabled while a Media Import is processing
   def handle_event("start", %{"run_import" => params}, socket) do
-    MediaSources.start_media_import!(socket.assigns.media_source.id, params,
-      actor: socket.assigns.current_user
-    )
+    case AshPhoenix.Form.submit(socket.assigns.form, params: params) do
+      {:ok, _media_import} ->
+        Flash.send_flash(:info, dgettext("admin_media_imports", "Import started"))
+        socket.assigns.on_close.()
+        {:noreply, socket}
 
-    Flash.send_flash(:info, dgettext("admin_media_imports", "Import started"))
-    socket.assigns.on_close.()
-    {:noreply, socket}
+      # Such as another import of the Media Source, started while the dialog was open
+      {:error, form} ->
+        {:noreply, assign(socket, :form, form)}
+    end
   end
 
   def handle_event("close", _params, socket) do
