@@ -369,13 +369,22 @@ classDiagram
   class PlaybackSession {
     uuid id
     uuid started_by_id
+    string screen_id
+    string tv_name
+    float position_seconds
+    bool paused?
+    datetime last_heartbeat_at
+    datetime ended_at
+    «unique» started_by_id where ended_at is null
   }
   class Playback {
     uuid id
     uuid session_id
     uuid media_id
-    datetime last_active_at
+    uuid audio_track_id
+    uuid text_track_id
     datetime ended_at
+    «unique» session_id where ended_at is null
   }
   class ProblemReport {
     uuid id
@@ -391,11 +400,17 @@ classDiagram
   }
   class User
   class Media
+  class AudioTrack
+  class TextTrack
   PlaybackSession "*" --> "1" User : started_by
   Playback "*" --> "1" PlaybackSession : session
   Playback "*" --> "1" Media
+  Playback "*" --> "0..1" AudioTrack
+  Playback "*" --> "0..1" TextTrack
   ProblemReport "*" --> "1" Playback
 ```
+
+A Screen, the Player or the TV a Playback Session plays on, is a live connection and isn't stored: `screen_id` only names the one holding the Playback Session.
 
 ## History
 

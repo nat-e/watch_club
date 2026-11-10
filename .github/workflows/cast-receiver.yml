@@ -1,0 +1,53 @@
+name: Cast receiver
+
+# Publishes WatchClub's receiver pages on GitHub Pages (see docs/chromecast.md):
+# - chromecast_receiver/, for the release Cast app, from the latest release
+# - chromecast_receiver_edge/, for the edge Cast app, from main
+# Pages hosts a single site, so every run publishes both.
+on:
+  push:
+    branches: [main]
+    # Path filters don't apply to tags: every release publishes
+    tags: ["v*"]
+    paths: [cast_receiver/**]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # main, with every release tag, whatever triggered the run
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build the pages
+        run: |
+          mkdir _site
+          cp -r cast_receiver _site/chromecast_receiver_edge
+          release=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          if git cat-file -e "$release:cast_receiver" 2>/dev/null; then
+            git archive "$release" cast_receiver |
+              tar -x -C _site --transform 's|^cast_receiver|chromecast_receiver|'
+          fi
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

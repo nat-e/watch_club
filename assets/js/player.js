@@ -1,3 +1,5 @@
+import { castContext, startCasting } from "./cast_sender";
+
 let videojsLoadPromise;
 
 // Loads the Video.js elements, which register themselves
@@ -33,14 +35,13 @@ const Player = {
 		this.abortController = new AbortController();
 		this.disposed = false;
 		this.heartbeatTimer = undefined;
-		// The audio language to carry over to the next video
-		this.carriedAudio = undefined;
-		// The subtitles to carry over to the next video, as hls.js's language and forced
-		// flag: null for none, undefined for the ones the master playlist marks as default
-		this.carriedSubtitles = undefined;
+		// The tracks the server knows this video plays, as `tracks_picked` sends them
+		this.reportedTracks = undefined;
 
+		this.handleEvent("player:back", () => this.handleCommand("back"));
 		this.bindDomEvents();
 		this.boot();
+		this.offerCasting();
 	},
 
 	// The server renders the next video of the session in the data attributes
@@ -57,39 +58,34 @@ const Player = {
 		this.disposed = true;
 		this.abortController.abort();
 		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
+		this.casting?.dispose();
 	},
 
 	bindDomEvents() {
-		const signal = this.abortController.signal;
-
-		this.el.querySelectorAll("[data-player-command]").forEach((button) => {
-			button.addEventListener(
-				"click",
-				(event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					this.handleCommand(button.dataset.playerCommand);
-				},
-				{ signal },
-			);
-		});
-
 		// From the top bar, the Settings menu and the error screen
 		this.el.addEventListener(
 			"player:report-problem",
 			() => this.reportProblem(),
-			{ signal },
+			{ signal: this.abortController.signal },
 		);
 
-		// Delegated: the skip buttons change with each episode
+		// Delegated: the skip buttons change with each episode, and the server renders the
+		// casting overlay
 		this.el.addEventListener(
 			"click",
 			(event) => {
 				const skipButton = event.target.closest("[data-skip-to]");
 				if (skipButton)
 					this.media.currentTime = Number(skipButton.dataset.skipTo);
+
+				const commandButton = event.target.closest("[data-player-command]");
+				if (commandButton) {
+					event.preventDefault();
+					event.stopPropagation();
+					this.handleCommand(commandButton.dataset.playerCommand);
+				}
 			},
-			{ signal },
+			{ signal: this.abortController.signal },
 		);
 	},
 
@@ -99,7 +95,64 @@ const Player = {
 				if (window.history.length > 1) window.history.back();
 				else window.location.assign("/");
 				break;
+			case "cast":
+				this.cast();
+				break;
+			case "cancel-cast":
+				this.casting?.cancel();
+				this.stopHandingOver("cancelled");
+				break;
 		}
+	},
+
+	// Shows the cast button while Chrome finds a TV
+	async offerCasting() {
+		const button = this.el.querySelector("#player-cast-button");
+		const { castAppId, castEmulator } = this.el.dataset;
+		const context = await castContext(castAppId, castEmulator);
+		if (!context || this.disposed) return;
+
+		const { CastContextEventType, CastState } = cast.framework;
+		const sync = () => {
+			button.hidden = context.getCastState() === CastState.NO_DEVICES_AVAILABLE;
+		};
+		context.addEventListener(CastContextEventType.CAST_STATE_CHANGED, sync);
+		this.abortController.signal.addEventListener("abort", () =>
+			context.removeEventListener(
+				CastContextEventType.CAST_STATE_CHANGED,
+				sync,
+			),
+		);
+		sync();
+	},
+
+	// Once Chrome connected to the TV, the TV takes the Playback Session from where this
+	// Player paused it, and the server opens the Remote
+	async cast() {
+		const { castAppId, castEmulator } = this.el.dataset;
+		this.casting = await startCasting(castAppId, castEmulator, {
+			// The TV goes on playing, or stays paused, from here
+			beforeLaunch: () => {
+				this.reportHeartbeat();
+				this.handingOver = true;
+				this.media.pause();
+			},
+			token: (tvName) =>
+				new Promise((resolve) =>
+					this.pushEvent("cast", { tv_name: tvName }, ({ token }) =>
+						resolve(token),
+					),
+				),
+			onFailure: () => this.stopHandingOver("timeout"),
+		});
+	},
+
+	// `timeout` when the TV never took over, `cancelled` when the User gave up, whichever comes
+	// first
+	stopHandingOver(reason) {
+		if (!this.handingOver) return;
+		this.handingOver = false;
+		this.pushEvent("cast_failed", { reason });
 	},
 
 	async boot() {
@@ -111,32 +164,27 @@ const Player = {
 			this.restoreLocalPreferences();
 			this.ready = true;
 			this.loadVideo();
+			// The Player is a Screen of the Playback Session as long as it's open
+			this.heartbeatTimer = window.setInterval(
+				() => this.reportHeartbeat(),
+				5000,
+			);
 		} catch (_error) {
 			this.reportFailure();
 		}
 	},
 
 	// Loads the video in the data attributes, which plays on its own from their start
-	// position, with the audio and subtitles of the previous video when it has them
+	// position, with the tracks the master playlist marks as default
 	loadVideo() {
 		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
-		this.carryTracksOver();
-		this.tracksStarted = false;
+		this.reportedTracks = undefined;
 		// Where the countdown of the "up next" prompt started, in seconds of the video
 		this.countdownStart = undefined;
 		this.playingNext = false;
 		this.src = src;
 		this.startPosition = Number(startPosition);
-		// A new audio preference makes Video.js build a new hls.js engine
-		this.media.source = {
-			src,
-			engine: {
-				hlsJs: {
-					...hlsConfig,
-					audioPreference: this.carriedAudio && { lang: this.carriedAudio },
-				},
-			},
-		};
+		this.media.source = { src, engine: { hlsJs: hlsConfig } };
 
 		const thumbnails = document.createElement("track");
 		thumbnails.kind = "metadata";
@@ -158,13 +206,11 @@ const Player = {
 			if (this.startPosition) this.media.currentTime = this.startPosition;
 			// The browser has picked subtitles on its own by now
 			this.startSubtitles();
-			this.tracksStarted = true;
 		});
 		on("canplay", () => this.reportReady());
 		on("playing", () => {
 			this.reportReady();
 			this.reportHeartbeat();
-			this.restartHeartbeatTimer();
 		});
 		on("play", () => this.reportHeartbeat());
 		on("pause", () => this.reportHeartbeat());
@@ -177,6 +223,7 @@ const Player = {
 			this.reportHeartbeat();
 			const upNext = this.el.querySelector("[data-countdown]");
 			if (upNext) this.playNext(upNext);
+			else this.pushEvent("ended", { playback_id: this.el.dataset.playbackId });
 		});
 		on("timeupdate", () => this.syncPrompts());
 		// Includes fatal hls.js errors
@@ -213,41 +260,30 @@ const Player = {
 		);
 	},
 
-	// The next video of the session starts with the audio language and the subtitles
-	// playing now, when it has them
-	carryTracksOver() {
-		const hls = this.media.engine;
-		// Until this video starts its tracks, the previous video's still carry over
-		if (!hls || !this.tracksStarted) return;
-
-		this.carriedAudio = hls.audioTracks[hls.audioTrack]?.lang;
-		// Forced and full subtitles can share a language
-		const subtitles = this.showingSubtitles(hls.subtitleTracks);
-		this.carriedSubtitles = subtitles
-			? { lang: subtitles.lang, forced: subtitles.forced }
-			: null;
-	},
-
-	// Starts the subtitles carried over from the previous video when this one has them,
-	// otherwise the ones the master playlist marks as default
+	// Starts the subtitles the master playlist marks as default, if any
 	startSubtitles() {
 		const hls = this.media.engine;
 		if (!hls) return;
 
-		const carried = this.carriedSubtitles;
-		const subtitles =
-			carried === null
-				? undefined
-				: (hls.subtitleTracks.find(
-						(track) =>
-							track.lang === carried?.lang && track.forced === carried?.forced,
-					) ?? hls.subtitleTracks.find((track) => track.default));
-
+		const subtitles = hls.subtitleTracks.find((track) => track.default);
 		for (const textTrack of this.subtitleTextTracks()) {
 			textTrack.mode = this.isTextTrackOf(textTrack, subtitles)
 				? "showing"
 				: "disabled";
 		}
+	},
+
+	// The ids of the tracks playing, from their playlists' paths
+	playingTracks() {
+		const hls = this.media.engine;
+		const audio = hls.audioTracks[hls.audioTrack];
+		const subtitles = this.showingSubtitles(hls.subtitleTracks);
+
+		return {
+			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
+			text_track_id:
+				subtitles?.url.match(/\/subtitles\/([^/]+)\//)?.[1] ?? null,
+		};
 	},
 
 	// hls.js keeps its subtitle track when they're turned off, so the showing text track
@@ -317,7 +353,7 @@ const Player = {
 	reportProblem() {
 		// Unless Video.js failed to load
 		if (this.ready) this.media.pause();
-		if (!this.tracksStarted) {
+		if (!this.ready || this.media.readyState === 0) {
 			this.pushEvent("report_problem", {});
 			return;
 		}
@@ -340,28 +376,40 @@ const Player = {
 		});
 	},
 
-	// Keeps running while paused, so the Playback stays current as long as the
-	// Player is open.
-	restartHeartbeatTimer() {
-		if (this.heartbeatTimer) window.clearInterval(this.heartbeatTimer);
-
-		this.heartbeatTimer = window.setInterval(
-			() => this.reportHeartbeat(),
-			5000,
-		);
-	},
-
 	reportReady() {
 		this.pushEvent("player_ready", {}, () => {});
 	},
 
+	// Also tells the server the tracks the User picked, once they're playing. Stops while the
+	// TV takes over.
 	reportHeartbeat() {
+		if (this.handingOver) return;
+
 		const position = this.media.currentTime;
+		const playbackId = this.el.dataset.playbackId;
 		this.pushEvent(
 			"player_heartbeat",
-			{ position_seconds: Number.isFinite(position) ? position : null },
+			{
+				playback_id: playbackId,
+				position_seconds: Number.isFinite(position) ? position : 0,
+				paused: this.media.paused,
+			},
 			() => {},
 		);
+
+		if (!this.media.engine || this.media.readyState === 0) return;
+		const tracks = this.playingTracks();
+		const reported = JSON.stringify(tracks);
+		if (this.reportedTracks === undefined) {
+			this.reportedTracks = reported;
+		} else if (reported !== this.reportedTracks) {
+			this.reportedTracks = reported;
+			this.pushEvent(
+				"tracks_picked",
+				{ playback_id: playbackId, ...tracks },
+				() => {},
+			);
+		}
 	},
 
 	reportFailure() {

@@ -165,6 +165,11 @@ defmodule WatchClubWeb.Telemetry do
         reporter_options: [buckets: @job_buckets]
       ),
 
+      # Casting: from the Player handing the TV its token to the TV leaving, and why Playback
+      # Sessions end. See docs/chromecast.md.
+      counter("watch_club.cast.count", tags: [:result]),
+      counter("watch_club.playback_session.end.count", tags: [:reason]),
+
       # The dependency's default poller emits these VM measurements.
       last_value("vm.memory.total", unit: :byte),
       last_value("vm.total_run_queue_lengths.total"),

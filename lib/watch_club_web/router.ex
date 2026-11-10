@@ -39,16 +39,19 @@ defmodule WatchClubWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Media bytes for a signed-in User: the Player's HLS requests and Downloads.
-  # Like :browser but without CSRF protection — the Player's HLS segment GETs
-  # don't carry a CSRF token. No HTML rendering either,
-  # so :accepts, layouts, and flash are intentionally absent.
+  # Media bytes for a signed-in User: Downloads. Like :browser but without CSRF
+  # protection and HTML rendering, so :accepts, layouts, and flash are
+  # intentionally absent.
   pipeline :playback do
     plug :fetch_session
     plug :put_secure_browser_headers
     plug :load_from_session
     plug :ensure_administrator_setup
     plug :require_current_user
+  end
+
+  pipeline :playback_files do
+    plug :allow_any_origin
   end
 
   # For the Docker healthcheck and uptime monitoring. No pipeline, so it
@@ -64,8 +67,11 @@ defmodule WatchClubWeb.Router do
     post "/sonarr/:media_source_id", ServarrController, :handle
   end
 
+  # The files of a Playback, for the Player and the TV. The token in their `token` query parameter
+  # opens them rather than a login, because a TV has none, and any origin can read them, because
+  # the TV's page comes from elsewhere.
   scope "/player", WatchClubWeb do
-    pipe_through :playback
+    pipe_through :playback_files
 
     get "/hls/:playback_id/master.m3u8", PlayerController, :master_playlist
     get "/hls/:playback_id/video/:variant/index.m3u8", PlayerController, :video_playlist
@@ -92,6 +98,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_administrator_required},
         WatchClubWeb.Hooks.Conversations,
+        WatchClubWeb.Hooks.PlaybackSession,
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.InstanceSettings
       ] do
@@ -110,6 +117,7 @@ defmodule WatchClubWeb.Router do
         WatchClubWeb.Hooks.Flash,
         {WatchClubWeb.Hooks.Auth, :live_user_required},
         WatchClubWeb.Hooks.Conversations,
+        WatchClubWeb.Hooks.PlaybackSession,
         WatchClubWeb.Hooks.Locale,
         WatchClubWeb.Hooks.TimeZone,
         WatchClubWeb.Hooks.InstanceSettings
@@ -124,6 +132,7 @@ defmodule WatchClubWeb.Router do
       end
 
       live "/play/:media_id", PlayerPage
+      live "/remote", RemotePage
       live "/search", SearchPage
       live "/settings", Accounts.SettingsPage
       live "/my-requests", MyRequestsPage
@@ -194,6 +203,11 @@ defmodule WatchClubWeb.Router do
     end
 
     live_storybook("/dev/storybook", backend_module: WatchClubWeb.Storybook)
+
+    scope "/dev/cast", WatchClubWeb.Dev do
+      get "/receiver", CastEmulatorController, :receiver
+      get "/emulator/:file", CastEmulatorController, :script
+    end
   end
 
   defp ensure_administrator_setup(%Plug.Conn{request_path: "/setup"} = conn, _opts) do
@@ -211,6 +225,9 @@ defmodule WatchClubWeb.Router do
       conn |> redirect(to: ~p"/setup") |> halt()
     end
   end
+
+  defp allow_any_origin(conn, _opts),
+    do: put_resp_header(conn, "access-control-allow-origin", "*")
 
   defp require_current_user(%{assigns: %{current_user: %User{}}} = conn, _opts), do: conn
 

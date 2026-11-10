@@ -164,10 +164,24 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           <.subtitles_options />
         </.player_menu>
 
-        <media-mute-button class={["group/mute", media_menu_button_style()]}>
+        <%!-- Phones have volume buttons: casting takes its room --%>
+        <media-mute-button class={["group/mute pointer-coarse:hidden", media_menu_button_style()]}>
           <Lucideicons.volume_2 class="group-data-muted/mute:hidden" />
           <Lucideicons.volume_x class="hidden group-data-muted/mute:block" />
         </media-mute-button>
+
+        <%!-- Shown by the JS player hook when Chrome finds a TV --%>
+        <button
+          id="player-cast-button"
+          type="button"
+          hidden
+          data-player-command="cast"
+          class={media_menu_button_style()}
+          aria-label={dgettext("player", "Play on a TV")}
+          title={dgettext("player", "Play on a TV")}
+        >
+          <Lucideicons.cast />
+        </button>
 
         <media-fullscreen-button class={["group/fullscreen", media_menu_button_style()]}>
           <Lucideicons.maximize class="group-data-fullscreen/fullscreen:hidden" />
@@ -461,25 +475,74 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   """
   def player_load_error_overlay(assigns) do
     ~H"""
+    <.player_overlay id="watch-club-player-error" role="alert" aria-live="assertive">
+      <:icon><Lucideicons.triangle_alert /></:icon>
+      <:title>{dgettext("player", "Error loading video")}</:title>
+      <:description>
+        {dgettext("player", "We couldn't find the media you were looking for.")}
+      </:description>
+      <.button id="player-error-back-button" navigate={~p"/"}>
+        {dgettext("player", "Back home")}
+      </.button>
+      <.button id="player-error-report-button" variant="ghost" phx-click={report_problem()}>
+        <:icon><Lucideicons.flag /></:icon>
+        {dgettext("player", "Report a problem")}
+      </.button>
+    </.player_overlay>
+    """
+  end
+
+  attr :tv_name, :string, required: true
+
+  @doc "Shown over the paused video while the TV connects, until it plays there."
+  def cast_connecting_overlay(assigns) do
+    ~H"""
+    <.player_overlay id="player-cast-connecting" role="status">
+      <:icon><Lucideicons.loader_circle class="motion-safe:animate-spin" /></:icon>
+      <:title>{dgettext("player", "Connecting to %{tv}…", tv: @tv_name)}</:title>
+      <.button id="player-cast-cancel-button" variant="secondary" data-player-command="cancel-cast">
+        {dgettext("player", "Cancel")}
+      </.button>
+    </.player_overlay>
+    """
+  end
+
+  @doc "Shown instead of the video once another Player plays the Playback Session."
+  def playing_elsewhere_overlay(assigns) do
+    ~H"""
+    <.player_overlay id="player-playing-elsewhere" role="alert">
+      <:icon><Lucideicons.monitor_play /></:icon>
+      <:title>{dgettext("player", "Playing somewhere else")}</:title>
+      <:description>
+        {dgettext("player", "You started watching on another screen.")}
+      </:description>
+      <.button id="player-playing-elsewhere-back-button" navigate={~p"/"}>
+        {dgettext("player", "Back home")}
+      </.button>
+    </.player_overlay>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :rest, :global, include: ~w(role)
+  slot :icon, required: true
+  slot :title, required: true
+  slot :description
+  slot :inner_block, required: true, doc: "its actions"
+
+  # Covers the Player with a message and its actions
+  defp player_overlay(assigns) do
+    ~H"""
     <div
-      id="watch-club-player-error"
+      id={@id}
       class="absolute inset-0 z-50 grid place-items-center bg-scrim px-page text-center"
-      role="alert"
-      aria-live="assertive"
+      {@rest}
     >
-      <.empty>
-        <:icon><Lucideicons.triangle_alert /></:icon>
-        <:title>{dgettext("player", "Error loading video")}</:title>
-        <:description>
-          {dgettext("player", "We couldn't find the media you were looking for.")}
-        </:description>
-        <.button id="player-error-back-button" navigate={~p"/"}>
-          {dgettext("player", "Back home")}
-        </.button>
-        <.button id="player-error-report-button" variant="ghost" phx-click={report_problem()}>
-          <:icon><Lucideicons.flag /></:icon>
-          {dgettext("player", "Report a problem")}
-        </.button>
+      <.empty class="max-w-panel">
+        <:icon>{render_slot(@icon)}</:icon>
+        <:title>{render_slot(@title)}</:title>
+        <:description :if={@description != []}>{render_slot(@description)}</:description>
+        {render_slot(@inner_block)}
       </.empty>
     </div>
     """

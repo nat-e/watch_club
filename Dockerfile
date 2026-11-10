@@ -76,6 +76,8 @@ RUN mix assets.deploy
 COPY config/runtime.exs config/
 
 COPY rel rel
+# `release` for the release images, `edge` otherwise: it picks the Cast app (see docs/chromecast.md)
+ARG CAST_RECEIVER=edge
 RUN mix release
 
 # start a new build stage so that the final image will only contain

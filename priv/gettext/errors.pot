@@ -327,3 +327,9 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Pick what's wrong"
 msgstr ""
+
+#: lib/watch_club/playbacks/playback.ex
+#: lib/watch_club/playbacks/session.ex
+#, elixir-autogen, elixir-format
+msgid "Something else started playing at the same time"
+msgstr ""
