@@ -136,12 +136,22 @@ defmodule WatchClub.Contents.Content do
     end
 
     read :user_recently_watched do
-      description "Returns the Contents recently watched by the actor. Most recently watched content first"
+      description "The actor's Content in progress that is Ready to Play, the most recently watched first. Not limited: there are few."
 
       prepare build(
                 filter: [actor_progress_status: :in_progress],
                 sort: [actor_last_watched_at: :desc]
               )
+
+      # Ready to Play is computed in Elixir, after the query: a limit would apply before it
+      prepare fn query, context ->
+        Ash.Query.after_action(query, fn _query, contents ->
+          {:ok,
+           contents
+           |> Ash.load!(:actor_next_medias_to_play, Ash.Context.to_opts(context))
+           |> Enum.reject(&(&1.actor_next_medias_to_play == []))}
+        end)
+      end
     end
 
     create :create do

@@ -1256,6 +1256,38 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
+  describe "get_user_recently_watched/*" do
+    test "returns the actor's Content in progress that is Ready to Play, the most recently watched first",
+         %{member: member} do
+      [older, newer] = movies = generate_many(movie(), 2)
+      show = generate(tv_show(num_seasons: 1, episodes_per_season: 2))
+
+      for movie <- movies do
+        add_video!(movie.id)
+
+        History.record_watch_progress!(
+          %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
+          actor: member
+        )
+      end
+
+      # Watched last, but its next TV Show Episode has no Media
+      add_episode_video!(show, 1)
+
+      History.record_watch_progress!(
+        %{
+          tv_show_episode_id: episode!(show, 1).id,
+          position_seconds: 95 * 60,
+          duration_seconds: 100 * 60
+        },
+        actor: member
+      )
+
+      assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
+               [newer.id, older.id]
+    end
+  end
+
   describe "get_new_in_library/*" do
     test "returns the Content with Media, most recently added first, a requested one once its Content Request is Completed",
          %{member: member} do
@@ -1397,15 +1429,17 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   defp add_episode_video!(tv_show, season_number, episode_number \\ 1) do
-    episode =
-      Ash.get!(
-        TvShowEpisode,
-        %{tv_show_id: tv_show.id, season_number: season_number, episode_number: episode_number},
-        authorize?: false
-      )
-
-    MediaCatalog.create_or_update_video!(media_episode_input(episode.id),
+    MediaCatalog.create_or_update_video!(
+      media_episode_input(episode!(tv_show, season_number, episode_number).id),
       actor: SystemActor.actor()
+    )
+  end
+
+  defp episode!(tv_show, season_number, episode_number \\ 1) do
+    Ash.get!(
+      TvShowEpisode,
+      %{tv_show_id: tv_show.id, season_number: season_number, episode_number: episode_number},
+      authorize?: false
     )
   end
 

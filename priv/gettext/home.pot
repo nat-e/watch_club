@@ -23,11 +23,6 @@ msgstr[1] ""
 msgid "%{time} left"
 msgstr ""
 
-#: lib/watch_club_web/live/home_page/continue_watching.ex
-#, elixir-autogen, elixir-format
-msgid "%{title}, not available"
-msgstr ""
-
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} is watching %{contents}"

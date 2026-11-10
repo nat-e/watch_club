@@ -2,9 +2,9 @@ defmodule WatchClubWeb.HomePage do
   @moduledoc """
   Home: what's up next for the User, and what's happening in WatchClub. Signing in opens it.
 
-  The latest Content in progress fills the spotlight. Below, Up next, For You and New in the
-  library sit beside Watching Now and the Activity Feed, or above them in a narrow page. Watching
-  Now loads with the page.
+  The latest Content in progress that is Ready to Play fills the spotlight. Below, Up next, For
+  You and New in the library sit beside Watching Now and the Activity Feed, or above them in a
+  narrow page. Watching Now loads with the page.
   """
   use WatchClubWeb, :live_view
 
@@ -189,9 +189,9 @@ defmodule WatchClubWeb.HomePage do
     in_progress =
       Contents.get_user_recently_watched!(
         load: content_load(),
-        query: [limit: @in_progress_limit],
         actor: socket.assigns.current_user
       )
+      |> Enum.take(@in_progress_limit)
 
     # Intentionally small: @in_progress_limit Contents
     assign(socket, :in_progress, in_progress)

@@ -721,7 +721,7 @@ _Avoid_: Group, aggregate, card, item
 
 ### Home
 
-- **Home** shows the **User**'s **Content** in progress, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
+- **Home** shows the **User**'s **Content** in progress that is **Ready to Play**, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
 - **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
 - **Home** shows a **Content** with a **Content Request** among the newest in the **Library** only once that **Content Request** is Completed
