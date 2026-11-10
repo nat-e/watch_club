@@ -131,6 +131,7 @@ defmodule WatchClubWeb do
         ExternalIdSource,
         Movie,
         SearchContentType,
+        SportsEvent,
         TvShow,
         TvShowEpisode
       }

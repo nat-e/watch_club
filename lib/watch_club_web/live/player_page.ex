@@ -20,6 +20,7 @@ defmodule WatchClubWeb.PlayerPage do
           :markers,
           :credits_start_seconds,
           movie: [:best_localization],
+          sports_event: [],
           tv_show_episode: [
             tv_show: [:best_localization],
             next_episode: [:has_media?, :videos],

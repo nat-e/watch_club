@@ -92,7 +92,8 @@ defmodule WatchClubWeb.Storybook.PlaylistLink do
       owner: owner,
       accesses: Enum.map(users, &%PlaylistAccess{user_id: &1.id, user: &1, level: :view}),
       movie_count: movie_count,
-      tv_show_count: tv_show_count
+      tv_show_count: tv_show_count,
+      sports_event_count: 0
     }
   end
 end

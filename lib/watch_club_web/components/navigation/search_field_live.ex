@@ -192,6 +192,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
           <div class="border-b border-border-subtle p-related max-md:px-page">
             <.search_scopes
               id={"#{@id}-scopes"}
+              scope={@scope}
+              on_scope={JS.push("change_scope", target: @myself)}
               has_media={@has_media?}
               on_toggle={JS.push("toggle_has_media", target: @myself)}
             />
@@ -255,18 +257,24 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
     {:noreply, socket |> update(:has_media?, &(!&1)) |> search()}
   end
 
+  def handle_event("change_scope", %{"scope" => scope}, socket) do
+    {:ok, scope} = SearchContentType.match(scope)
+    {:noreply, socket |> assign(:scope, scope) |> search()}
+  end
+
   def handle_event("open_search_page", %{"query" => query}, socket) do
     case String.trim(query) do
       "" ->
         {:noreply, socket}
 
       query ->
-        {:noreply, push_navigate(socket, to: Url.search_link(query, socket.assigns.has_media?))}
+        %{has_media?: has_media?, scope: scope} = socket.assigns
+        {:noreply, push_navigate(socket, to: Url.search_link(query, has_media?, scope))}
     end
   end
 
   defp search(socket) do
-    %{query: query, has_media?: has_media?, current_user: user} = socket.assigns
+    %{query: query, has_media?: has_media?, scope: scope, current_user: user} = socket.assigns
     otel_context = OpenTelemetry.Ctx.get_current()
 
     case String.trim(query) do
@@ -278,7 +286,11 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
         |> assign(:status, :loading)
         |> start_async(:search, fn ->
           OpenTelemetry.Ctx.attach(otel_context)
-          Contents.search_content!(%{query: query, has_media?: has_media?}, actor: user)
+
+          Contents.search_content!(
+            %{query: query, content_type: scope, has_media?: has_media?},
+            actor: user
+          )
         end)
     end
   end

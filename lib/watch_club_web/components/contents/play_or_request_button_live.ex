@@ -172,14 +172,20 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     )
   end
 
-  defp play_label(:movie, %Content{actor_progress_status: :in_progress}, false),
-    do: dgettext("contents", "Resume")
+  # A Movie or a Sports Event
+  defp play_label(type, %Content{actor_progress_status: :in_progress}, false)
+       when type in [:movie, :sports_event],
+       do: dgettext("contents", "Resume")
 
-  defp play_label(:movie, %Content{actor_progress_status: :in_progress}, true),
-    do: dgettext("contents", "Resume on TV")
+  defp play_label(type, %Content{actor_progress_status: :in_progress}, true)
+       when type in [:movie, :sports_event],
+       do: dgettext("contents", "Resume on TV")
 
-  defp play_label(:movie, _content, false), do: dgettext("contents", "Play")
-  defp play_label(:movie, _content, true), do: dgettext("contents", "Play on TV")
+  defp play_label(type, _content, false) when type in [:movie, :sports_event],
+    do: dgettext("contents", "Play")
+
+  defp play_label(type, _content, true) when type in [:movie, :sports_event],
+    do: dgettext("contents", "Play on TV")
 
   defp play_label(:tv_show, nil, on_tv?), do: play_episode_label("S01E01", on_tv?)
 

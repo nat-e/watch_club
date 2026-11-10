@@ -355,3 +355,11 @@ msgstr "Vos playlists, et les playlists partagées que vous pouvez modifier."
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}"
 msgstr "Ajouté par %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/playlists/playlist_link.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} sports event"
+msgid_plural "%{count} sports events"
+msgstr[0] "%{count} événement sportif"
+msgstr[1] "%{count} événements sportifs"

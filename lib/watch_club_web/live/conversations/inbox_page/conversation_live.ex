@@ -425,6 +425,10 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   defp length_label(%Content{type: :movie, implementation: movie}, locale),
     do: Time.minutes(movie.best_localization.runtime, locale)
 
+  # Like a length, the league of a Sports Event
+  defp length_label(%Content{type: :sports_event, implementation: event}, _locale),
+    do: event.league_name
+
   defp length_label(%Content{type: :tv_show, implementation: %{season_count: 0}}, _locale),
     do: nil
 

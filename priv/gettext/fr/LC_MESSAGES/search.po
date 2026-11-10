@@ -98,3 +98,9 @@ msgstr "Dans la bibliothèque"
 #, elixir-autogen, elixir-format
 msgid "Close search"
 msgstr "Fermer la recherche"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "Search in"
+msgstr "Rechercher dans"

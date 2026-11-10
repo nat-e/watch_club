@@ -173,5 +173,7 @@ defmodule WatchClubWeb.TvChannel do
   end
 
   defp image_url(nil), do: nil
+  # A Sports Event's image is already a URL
+  defp image_url("http" <> _ = url), do: url
   defp image_url(path), do: "https://image.tmdb.org/t/p/w1280#{path}"
 end

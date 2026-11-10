@@ -127,6 +127,25 @@ defmodule WatchClub.Contents.SportsEvent do
 
     # The date at which the current user has most recently watched this event
     calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
+
+    # What pages read from a Movie, so they show a Sports Event the same way: its
+    # English title and overview in every locale, and its images by URL, which
+    # the image components take as well as TMDB paths.
+    calculate :best_localization, :map, fn events, _context ->
+      Enum.map(
+        events,
+        &%{
+          title: &1.title,
+          overview: &1.overview,
+          poster_path: &1.poster_url,
+          runtime: nil,
+          cast: [],
+          trailer_url: nil
+        }
+      )
+    end
+
+    calculate :backdrop_path, :string, expr(backdrop_url)
   end
 
   aggregates do

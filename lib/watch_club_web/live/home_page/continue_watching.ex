@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
   The Content in progress on Home: the latest one in the spotlight, the others in Up next. Resume
-  plays the Movie, or the TV Show's next TV Show Episode.
+  plays the Movie or the Sports Event, or the TV Show's next TV Show Episode.
   """
   use WatchClubWeb, :component
 
@@ -14,6 +14,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       implementation: %{
         load: [
           movie: [:actor_progress],
+          sports_event: [:actor_progress, :backdrop_path],
           tv_show: [actor_next_episode: [:actor_progress, :formatted_episode_number]]
         ]
       }
@@ -164,8 +165,11 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     """
   end
 
-  # What Resume plays: the Movie, or the TV Show's next TV Show Episode
-  defp playable(%Content{type: :movie, implementation: movie}), do: movie
+  # What Resume plays: the Movie or the Sports Event, or the TV Show's next TV Show Episode
+  defp playable(%Content{type: type, implementation: playable})
+       when type in [:movie, :sports_event],
+       do: playable
+
   defp playable(%Content{type: :tv_show, implementation: tv_show}), do: tv_show.actor_next_episode
 
   defp play_href(%Content{actor_next_medias_to_play: []}), do: nil

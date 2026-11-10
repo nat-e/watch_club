@@ -82,7 +82,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
                 {Usernames.join(@shared_with, @current_user)}
               </.tooltip>
             </span>
-            <span :if={@playlist.movie_count + @playlist.tv_show_count > 0}>
+            <span :if={
+              @playlist.movie_count + @playlist.tv_show_count + @playlist.sports_event_count > 0
+            }>
               {content_counts(@playlist)}
             </span>
           </div>
@@ -265,8 +267,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   end
 
   # How much of it the User watched, while they're watching it
-  defp progress_percent(%Content{actor_progress_status: :in_progress, type: :movie} = content),
-    do: content.implementation.actor_progress.percent_watched
+  defp progress_percent(%Content{actor_progress_status: :in_progress, type: type} = content)
+       when type in [:movie, :sports_event],
+       do: content.implementation.actor_progress.percent_watched
 
   defp progress_percent(%Content{actor_progress_status: :in_progress, type: :tv_show} = content),
     do: content.implementation.actor_percent_watched

@@ -36,6 +36,12 @@ defmodule WatchClubWeb.Components.Media.MediaTypeBadge do
     """
   end
 
+  def media_type_icon(%{media_type: :sports_event} = assigns) do
+    ~H"""
+    <Lucideicons.trophy class={@class} />
+    """
+  end
+
   def media_type_icon(%{media_type: :ebook} = assigns) do
     ~H"""
     <Lucideicons.book_open class={@class} />

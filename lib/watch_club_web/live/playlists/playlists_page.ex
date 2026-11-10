@@ -23,7 +23,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
     :added_by,
     content: [
       :actor_progress_status,
-      implementation: %{load: [movie: [:actor_progress], tv_show: [:actor_percent_watched]]}
+      implementation: %{
+        load: [
+          movie: [:actor_progress],
+          sports_event: [:actor_progress],
+          tv_show: [:actor_percent_watched]
+        ]
+      }
     ]
   ]
 
@@ -290,6 +296,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         load: [
           :movie_count,
           :tv_show_count,
+          :sports_event_count,
           :owner,
           :shared_unseen_for_actor?,
           accesses: [:user],

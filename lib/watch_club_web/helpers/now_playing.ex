@@ -4,7 +4,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
+  alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.MediaCatalog.Video
   alias WatchClub.Playbacks.Session
 
@@ -18,6 +18,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
             audio_tracks: [:display_label],
             text_tracks: [:display_label, :language_code, :hls_supported?],
             movie: [:best_localization, :backdrop_path],
+            sports_event: [:best_localization, :backdrop_path],
             tv_show_episode: [
               :formatted_episode_number,
               :still_path,
@@ -30,8 +31,9 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     ]
   end
 
-  @doc "The Movie's title, or the TV Show Episode's."
+  @doc "The Movie's title, the Sports Event's, or the TV Show Episode's."
   def title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
+  def title(%Video{sports_event: %SportsEvent{} = event}), do: event.title
 
   def title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
     do:
@@ -46,8 +48,9 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
 
   def subtitle(%Video{}), do: nil
 
-  @doc "The TMDB path of a 16:9 picture of it."
+  @doc "The TMDB path of a 16:9 picture of it, or the image URL of a Sports Event's."
   def still_path(%Video{movie: %Movie{} = movie}), do: movie.backdrop_path
+  def still_path(%Video{sports_event: %SportsEvent{} = event}), do: event.backdrop_url
 
   def still_path(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
     do: episode.still_path || episode.tv_show.backdrop_path

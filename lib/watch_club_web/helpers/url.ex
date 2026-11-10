@@ -108,20 +108,32 @@ defmodule WatchClubWeb.Helpers.Url do
   @doc """
   The search page for `query`, in the Library only when `has_media?`.
   """
-  def search_link(query, true), do: ~p"/search?#{[query: query, library: "1"]}"
-  def search_link(query, false), do: ~p"/search?#{[query: query]}"
+  def search_link(query, has_media?, scope \\ :movies_and_shows) do
+    params =
+      [query: query] ++
+        if(has_media?, do: [library: "1"], else: []) ++
+        if(scope == :sports_events, do: [scope: "sports"], else: [])
+
+    ~p"/search?#{params}"
+  end
 
   @doc """
-  The query and filter of the search page's URL parameters, as `search_link/2` writes them.
+  The query, filter and scope of the search page's URL parameters, as `search_link/3` writes them.
   """
-  def search_params(params),
-    do: %{query: String.trim(params["query"] || ""), has_media?: params["library"] == "1"}
+  def search_params(params) do
+    %{
+      query: String.trim(params["query"] || ""),
+      has_media?: params["library"] == "1",
+      scope: if(params["scope"] == "sports", do: :sports_events, else: :movies_and_shows)
+    }
+  end
 
   @doc """
   The Content page of a Movie or a TV Show, from its `Content` or its `ContentIdentity`.
   """
   def content_details_link(%{type: :movie, external_id: id}), do: ~p"/movies/#{id}"
   def content_details_link(%{type: :tv_show, external_id: id}), do: ~p"/shows/#{id}"
+  def content_details_link(%{type: :sports_event, external_id: id}), do: ~p"/sports/#{id}"
 
   def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
   def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"

@@ -143,6 +143,7 @@ defmodule WatchClubWeb.Router do
       live "/playlists/:playlist_id", Playlists.PlaylistsPage
       live "/movies/:tmdb_id", Contents.ContentPage, :movie
       live "/shows/:tmdb_id", Contents.ContentPage, :tv_show
+      live "/sports/:sportarr_id", Contents.ContentPage, :sports_event
     end
 
     ash_authentication_live_session :unauthenticated_routes,

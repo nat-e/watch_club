@@ -84,3 +84,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Close search"
 msgstr ""
+
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "Search in"
+msgstr ""

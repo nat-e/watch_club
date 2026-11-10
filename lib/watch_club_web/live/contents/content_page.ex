@@ -38,6 +38,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     implementation: %{
       load: [
         movie: [videos: [:media, :default_video_track]],
+        sports_event: [:backdrop_path, videos: [:media, :default_video_track]],
         tv_show: [:actor_next_episode, :season_numbers, :season_count]
       ]
     }
@@ -202,12 +203,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
   attr :locale, :atom, required: true
 
   # "🇺🇸 2022 · Movie · 3 hr 9 min · ★ 7.3": the original language's flag next to the year, as on
-  # Browse's posters, and the persisted Rating, which opens the Content on TMDB.
+  # Browse's posters, and the persisted Rating, which opens the Content on TMDB. A Sports Event
+  # shows its league instead of a length: "2025 · Sports Event · UFC".
   defp facts(assigns) do
     assigns =
       assign(assigns,
         language: Languages.to_name(assigns.content.original_language),
-        length: length_label(assigns.content, assigns.locale),
+        length: detail_label(assigns.content, assigns.locale),
         rating: assigns.content.rating
       )
 
@@ -610,25 +612,13 @@ defmodule WatchClubWeb.Contents.ContentPage do
   end
 
   @impl true
-  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
-    %{live_action: type, current_user: user} = socket.assigns
+  def handle_params(%{"sportarr_id" => sportarr_id}, _uri, socket),
+    do: {:noreply, show_content(socket, ContentIdentity.for_sports_event(sportarr_id))}
 
+  def handle_params(%{"tmdb_id" => tmdb_id}, _uri, socket) do
     case Integer.parse(tmdb_id) do
       {id, ""} ->
-        identity = content_identity_for(type, id)
-        otel_context = OpenTelemetry.Ctx.get_current()
-
-        {:noreply,
-         socket
-         |> assign(content_identity: identity)
-         |> load_content!()
-         |> load_watchers!()
-         |> load_conversations!()
-         |> load_playlists!()
-         |> start_async(:refresh_content, fn ->
-           OpenTelemetry.Ctx.attach(otel_context)
-           Contents.get_or_refresh_content(identity, actor: user)
-         end)}
+        {:noreply, show_content(socket, content_identity_for(socket.assigns.live_action, id))}
 
       _invalid_url ->
         {:noreply,
@@ -636,6 +626,22 @@ defmodule WatchClubWeb.Contents.ContentPage do
          |> put_flash(:error, dgettext("contents", "This movie or TV show doesn't exist"))
          |> push_navigate(to: ~p"/")}
     end
+  end
+
+  defp show_content(socket, identity) do
+    user = socket.assigns.current_user
+    otel_context = OpenTelemetry.Ctx.get_current()
+
+    socket
+    |> assign(content_identity: identity)
+    |> load_content!()
+    |> load_watchers!()
+    |> load_conversations!()
+    |> load_playlists!()
+    |> start_async(:refresh_content, fn ->
+      OpenTelemetry.Ctx.attach(otel_context)
+      Contents.get_or_refresh_content(identity, actor: user)
+    end)
   end
 
   @impl true
@@ -810,6 +816,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         load: [
           :movie_count,
           :tv_show_count,
+          :sports_event_count,
           :owner,
           accesses: [:user],
           editable_by?: %{user_id: user.id},
@@ -862,10 +869,14 @@ defmodule WatchClubWeb.Contents.ContentPage do
   defp season_numbers(%Content{type: :tv_show, implementation: show}), do: show.season_numbers
   defp season_numbers(%Content{}), do: []
 
-  defp length_label(%Content{type: :movie} = content, locale),
+  # The length of a Movie, the seasons of a TV Show, or the league of a Sports Event
+  defp detail_label(%Content{type: :movie} = content, locale),
     do: Time.minutes(localization(content).runtime, locale)
 
-  defp length_label(%Content{type: :tv_show, implementation: show}, _locale) do
+  defp detail_label(%Content{type: :sports_event, implementation: event}, _locale),
+    do: event.league_name
+
+  defp detail_label(%Content{type: :tv_show, implementation: show}, _locale) do
     case show.season_count do
       0 -> nil
       count -> dngettext("contents", "%{count} season", "%{count} seasons", count)

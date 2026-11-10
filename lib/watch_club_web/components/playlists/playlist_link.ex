@@ -78,10 +78,10 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
   end
 
   @doc """
-  How many Movies and TV Shows a Playlist with its counts holds: "2 movies · 1 TV show", or
-  "Empty".
+  How many Movies, TV Shows and Sports Events a Playlist with its counts holds:
+  "2 movies · 1 TV show", or "Empty".
   """
-  def content_counts(%Playlist{movie_count: 0, tv_show_count: 0}),
+  def content_counts(%Playlist{movie_count: 0, tv_show_count: 0, sports_event_count: 0}),
     do: dgettext("playlists", "Empty")
 
   def content_counts(%Playlist{} = playlist) do
@@ -89,7 +89,14 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
       playlist.movie_count > 0 &&
         dngettext("playlists", "%{count} movie", "%{count} movies", playlist.movie_count),
       playlist.tv_show_count > 0 &&
-        dngettext("playlists", "%{count} TV show", "%{count} TV shows", playlist.tv_show_count)
+        dngettext("playlists", "%{count} TV show", "%{count} TV shows", playlist.tv_show_count),
+      playlist.sports_event_count > 0 &&
+        dngettext(
+          "playlists",
+          "%{count} sports event",
+          "%{count} sports events",
+          playlist.sports_event_count
+        )
     ]
     |> Enum.filter(& &1)
     |> Enum.join(" · ")

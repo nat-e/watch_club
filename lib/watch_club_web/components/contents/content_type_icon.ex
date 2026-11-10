@@ -19,6 +19,12 @@ defmodule WatchClubWeb.Components.Contents.ContentTypeIcon do
     """
   end
 
+  def content_type_icon(%{type: :sports_event} = assigns) do
+    ~H"""
+    <Lucideicons.trophy class={@class} />
+    """
+  end
+
   def content_type_icon(%{type: :book} = assigns) do
     ~H"""
     <Lucideicons.book_open class={@class} />
