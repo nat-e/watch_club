@@ -15,17 +15,23 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
   setup :verify_on_exit!
 
-  describe "new_job/1 — webhook candidate" do
+  describe "new_job/2 — webhook candidate" do
     test "enqueues at high priority with no media_import_id" do
+      media_source = generate(radarr_media_source())
+
       candidate = %Candidate{
         path: "/data/movies/x.mkv",
         media_type: :movie,
         identity: %MovieIdentity{tmdb_id: 11}
       }
 
-      assert {:ok, _job} = Oban.insert(CandidateIngestor.new_job(candidate))
+      assert {:ok, _job} = Oban.insert(CandidateIngestor.new_job(media_source.servarr, candidate))
 
-      assert_enqueued(worker: CandidateIngestor, priority: 0, args: %{path: "/data/movies/x.mkv"})
+      assert_enqueued(
+        worker: CandidateIngestor,
+        priority: 0,
+        args: %{media_source_id: media_source.id, path: "/data/movies/x.mkv"}
+      )
     end
   end
 
@@ -39,10 +45,21 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
         identity: %MovieIdentity{tmdb_id: 11}
       }
 
-      assert {:ok, _job} =
-               Oban.insert(CandidateIngestor.new_job(%Import{id: import_id}, candidate))
+      media_source_id = Ash.UUIDv7.generate()
 
-      assert_enqueued(worker: CandidateIngestor, priority: 1, args: %{media_import_id: import_id})
+      assert {:ok, _job} =
+               Oban.insert(
+                 CandidateIngestor.new_job(
+                   %Import{id: import_id, media_source_id: media_source_id},
+                   candidate
+                 )
+               )
+
+      assert_enqueued(
+        worker: CandidateIngestor,
+        priority: 1,
+        args: %{media_import_id: import_id, media_source_id: media_source_id}
+      )
     end
   end
 
@@ -56,6 +73,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       on_exit(fn -> File.rm(path) end)
 
       candidate = %Candidate{
+        media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
         identity: %MovieIdentity{tmdb_id: 11}

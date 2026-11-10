@@ -101,8 +101,14 @@ defmodule WatchClub.Requests.Changes.UpdateContentRequest do
 
   # The Content the Media had before: on a create, the one of the Media the upsert updates
   defp previous_content_id(%Ash.Changeset{action_type: :create} = changeset) do
+    media_source_id = Ash.Changeset.get_attribute(changeset, :media_source_id)
     path = Ash.Changeset.get_attribute(changeset, :path)
-    previous_media = Media |> Ash.Query.filter(path == ^path) |> Ash.read_one!(authorize?: false)
+
+    previous_media =
+      Media
+      |> Ash.Query.filter(media_source_id == ^media_source_id and path == ^path)
+      |> Ash.read_one!(authorize?: false)
+
     previous_media && previous_media.content_id
   end
 

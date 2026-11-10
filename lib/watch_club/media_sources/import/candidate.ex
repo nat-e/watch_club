@@ -6,6 +6,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   """
 
   @type t :: %__MODULE__{
+          media_source_id: Ash.UUIDv7.t() | nil,
           path: String.t() | nil,
           media_type: atom() | nil,
           identity:
@@ -19,6 +20,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         }
 
   defstruct [
+    # The Media Source its Media belongs to, set when the file's ingest job is built
+    :media_source_id,
     :path,
     :media_type,
     :relative_path,
@@ -158,13 +161,18 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`path`, `media_type`, and
+  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, and
   `identity`) into a plain map for an Oban job's args. `identity` is
   flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
   """
   @spec to_map(t()) :: map()
-  def to_map(%__MODULE__{path: path, media_type: media_type, identity: identity}) do
-    %{path: path, media_type: media_type, identity: identity && Map.from_struct(identity)}
+  def to_map(%__MODULE__{} = candidate) do
+    %{
+      media_source_id: candidate.media_source_id,
+      path: candidate.path,
+      media_type: candidate.media_type,
+      identity: candidate.identity && Map.from_struct(candidate.identity)
+    }
   end
 
   @doc """
@@ -173,10 +181,16 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   `to_map/1`.
   """
   @spec from_map(map()) :: t()
-  def from_map(%{"path" => path, "media_type" => media_type, "identity" => identity_fields}) do
+  def from_map(%{
+        "media_source_id" => media_source_id,
+        "path" => path,
+        "media_type" => media_type,
+        "identity" => identity_fields
+      }) do
     media_type = to_media_type(media_type)
 
     %__MODULE__{
+      media_source_id: media_source_id,
       path: path,
       media_type: media_type,
       identity: build_identity(identity_fields, media_type)

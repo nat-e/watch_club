@@ -604,7 +604,9 @@ _Avoid_: Group, aggregate, card, item
 ### Media
 
 - **Media** is instance-wide
-- **Media** has exactly one normalized local filesystem path, and that path is globally unique
+- **Media** has exactly one normalized local filesystem path
+- **Media** belongs to the one **Media Source** that imported it
+- **Media Sources** that cover the same file each have their own **Media** of it
 - **Media** has exactly one **Media Type**
 - **Media** has exactly one concrete **Video**, **Ebook**, or **Audiobook**
 - Technical details belong to **Videos**, **Ebooks**, or **Audiobooks**, not to generic **Media**

@@ -15,6 +15,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
     media =
       MediaCatalog.create_or_update_video!(
         %{
+          media_source_id: candidate.media_source_id,
           path: candidate.path,
           type: media_type,
           video: build_video_input(media_type, candidate)
@@ -28,7 +29,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
 
   def apply(%Candidate{media_type: :audiobook} = candidate) do
     media =
-      MediaCatalog.create_or_update_audiobook!(%{path: candidate.path, audiobook: %{}},
+      MediaCatalog.create_or_update_audiobook!(
+        %{media_source_id: candidate.media_source_id, path: candidate.path, audiobook: %{}},
         actor: SystemActor.actor()
       )
 
@@ -38,7 +40,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
 
   def apply(%Candidate{media_type: :ebook} = candidate) do
     media =
-      MediaCatalog.create_or_update_ebook!(%{path: candidate.path, ebook: %{}},
+      MediaCatalog.create_or_update_ebook!(
+        %{media_source_id: candidate.media_source_id, path: candidate.path, ebook: %{}},
         actor: SystemActor.actor()
       )
 

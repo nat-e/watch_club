@@ -114,8 +114,11 @@ defmodule WatchClub.MediaSources.ImportTest do
       unmatched: "#{root}/unmatched.mkv"
     }
 
-    generate(video_media(generate(movie()), path: paths.matched))
-    generate(video_media(nil, path: paths.unmatched))
+    generate(
+      video_media(generate(movie()), media_source_id: media_source.id, path: paths.matched)
+    )
+
+    generate(video_media(nil, media_source_id: media_source.id, path: paths.unmatched))
 
     stub(ScannerMock, :scan, fn _media_import ->
       Enum.map(Map.values(paths), &Candidate.new(&1, :movie))

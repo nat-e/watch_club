@@ -221,10 +221,12 @@ classDiagram
 classDiagram
   class Media {
     uuid id
-    string path «unique»
+    uuid media_source_id
+    string path
     MediaType type
     uuid content_id
     boolean manually_matched?
+    «unique» media_source_id + path
   }
   class MediaType {
     <<enumeration>>
@@ -288,7 +290,9 @@ classDiagram
   class TvShowEpisode
   class SportsEvent
   class Book
+  class MediaSource
   Media "*" --> "0..1" Content
+  Media "*" --> "1" MediaSource
   Video "0..1" --> "1" Media
   Ebook "0..1" --> "1" Media
   Audiobook "0..1" --> "1" Media

@@ -562,7 +562,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   end
 
   defp candidate_with(identity) do
-    %Candidate{path: "/library/file.mkv", identity: identity}
+    %Candidate{
+      media_source_id: default_media_source_id(),
+      path: "/library/file.mkv",
+      identity: identity
+    }
   end
 
   defp stub_tmdb(response_fun) do

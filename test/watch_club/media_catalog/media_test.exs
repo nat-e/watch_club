@@ -33,29 +33,6 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
-  describe "list_media_under_path_prefix/*" do
-    test "returns only media under the given path prefix" do
-      movie = seed_movie()
-
-      under =
-        create_or_update_video!(video_media_input("tmp/library-a/under.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      _outside =
-        create_or_update_video!(video_media_input("tmp/library-b/outside.mkv", movie),
-          actor: SystemActor.actor()
-        )
-
-      assert [%Media{id: id}] =
-               list_media_under_path_prefix!(Path.expand("tmp/library-a"),
-                 actor: SystemActor.actor()
-               )
-
-      assert id == under.id
-    end
-  end
-
   describe "create_or_update_video/*" do
     test "creates video for a movie" do
       movie = seed_movie()
@@ -82,6 +59,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
              } =
                create_or_update_video!(
                  %{
+                   media_source_id: default_media_source_id(),
                    path: path,
                    type: :movie,
                    video: %{
@@ -228,6 +206,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       refreshed =
         create_or_update_video!(
           %{
+            media_source_id: default_media_source_id(),
             path: path,
             type: :movie,
             video: %{
@@ -263,6 +242,22 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                |> Ash.Query.filter(id == ^old_id)
                |> Ash.exists?(authorize?: false)
       end
+    end
+
+    test "gives each Media Source that covers the file its own Media" do
+      movie = seed_movie()
+      input = video_media_input("tmp/shared.mkv", movie)
+      other_media_source = generate(filesystem_media_source())
+
+      media = create_or_update_video!(input, actor: SystemActor.actor())
+
+      other_media =
+        create_or_update_video!(%{input | media_source_id: other_media_source.id},
+          actor: SystemActor.actor()
+        )
+
+      assert other_media.id != media.id
+      assert other_media.media_source_id == other_media_source.id
     end
 
     test "updates the requests of the previous and new Content when a file is re-matched" do
@@ -310,7 +305,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                content_id: content_id,
                ebook: %Ebook{id: ebook_id, book_id: book_id}
              } =
-               create_or_update_ebook!(%{path: path, ebook: %{book_id: book.id}},
+               create_or_update_ebook!(
+                 %{
+                   media_source_id: default_media_source_id(),
+                   path: path,
+                   ebook: %{book_id: book.id}
+                 },
                  actor: SystemActor.actor(),
                  load: [:ebook]
                )
@@ -327,13 +327,23 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       path = "tmp/refresh-ebook.epub"
 
       original =
-        create_or_update_ebook!(%{path: path, ebook: %{book_id: original_book.id}},
+        create_or_update_ebook!(
+          %{
+            media_source_id: default_media_source_id(),
+            path: path,
+            ebook: %{book_id: original_book.id}
+          },
           actor: SystemActor.actor(),
           load: [:ebook]
         )
 
       refreshed =
-        create_or_update_ebook!(%{path: path, ebook: %{book_id: new_book.id}},
+        create_or_update_ebook!(
+          %{
+            media_source_id: default_media_source_id(),
+            path: path,
+            ebook: %{book_id: new_book.id}
+          },
           actor: SystemActor.actor(),
           load: [:ebook]
         )
@@ -357,7 +367,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                content_id: content_id,
                audiobook: %Audiobook{id: audiobook_id, book_id: book_id}
              } =
-               create_or_update_audiobook!(%{path: path, audiobook: %{book_id: book.id}},
+               create_or_update_audiobook!(
+                 %{
+                   media_source_id: default_media_source_id(),
+                   path: path,
+                   audiobook: %{book_id: book.id}
+                 },
                  actor: SystemActor.actor(),
                  load: [:audiobook]
                )
@@ -374,13 +389,23 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       path = "tmp/refresh-audiobook.m4b"
 
       original =
-        create_or_update_audiobook!(%{path: path, audiobook: %{book_id: original_book.id}},
+        create_or_update_audiobook!(
+          %{
+            media_source_id: default_media_source_id(),
+            path: path,
+            audiobook: %{book_id: original_book.id}
+          },
           actor: SystemActor.actor(),
           load: [:audiobook]
         )
 
       refreshed =
-        create_or_update_audiobook!(%{path: path, audiobook: %{book_id: new_book.id}},
+        create_or_update_audiobook!(
+          %{
+            media_source_id: default_media_source_id(),
+            path: path,
+            audiobook: %{book_id: new_book.id}
+          },
           actor: SystemActor.actor(),
           load: [:audiobook]
         )
@@ -768,6 +793,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
   defp video_media_input(path, type, attachment) do
     %{
+      media_source_id: default_media_source_id(),
       path: path,
       type: type,
       video:

@@ -12,7 +12,7 @@ defmodule WatchClub.MediaSources.Source do
 
   alias WatchClub.MediaSources.Servarr.Flavor
 
-  alias WatchClub.MediaCatalog.MediaType
+  alias WatchClub.MediaCatalog.{Media, MediaType}
   alias WatchClub.MediaSources.{Filesystem, Import, Servarr}
   alias WatchClub.MediaSources.Source.Type
 
@@ -163,6 +163,10 @@ defmodule WatchClub.MediaSources.Source do
       destination_attribute :media_source_id
       public? true
       sort inserted_at: :desc
+    end
+
+    has_many :medias, Media do
+      destination_attribute :media_source_id
     end
 
     has_one :latest_import, Import do

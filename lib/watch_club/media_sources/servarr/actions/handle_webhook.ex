@@ -20,7 +20,6 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
   alias WatchClub.Requests
   alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
-  alias WatchClub.Shared.Path, as: Paths
 
   @impl true
   def run(%Ash.ActionInput{arguments: %{servarr: servarr, payload: payload}}, _opts, context) do
@@ -31,19 +30,19 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
     |> Enum.each(&run_action(servarr, &1, opts))
   end
 
-  defp run_action(_servarr, {:ingest, candidates}, _opts) do
+  defp run_action(servarr, {:ingest, candidates}, _opts) do
     candidates
-    |> Enum.map(&CandidateIngestor.new_job/1)
+    |> Enum.map(&CandidateIngestor.new_job(servarr, &1))
     |> OpentelemetryOban.insert_all()
   end
 
-  defp run_action(_servarr, {:remove_media, path}, opts), do: remove_media(path, opts)
-  defp run_action(_servarr, {:relocate_media, from, to}, opts), do: relocate_media(from, to, opts)
+  defp run_action(servarr, {:remove_media, path}, opts), do: remove_media(servarr, path, opts)
 
-  # Only the Content's Media under this source's root folder: other sources keep theirs.
+  defp run_action(servarr, {:relocate_media, from, to}, opts),
+    do: relocate_media(servarr, from, to, opts)
+
+  # Only the Content's Media of this source: other sources keep theirs.
   defp run_action(servarr, {:remove_missing_media, content_identity}, opts) do
-    root = Paths.normalize(servarr.local_root_folder_path || servarr.root_folder_path) <> "/"
-
     case Contents.get_content_by_identity!(
            content_identity,
            Keyword.merge(opts, load: [:medias], not_found_error?: false)
@@ -53,9 +52,9 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
 
       content ->
         for media <- content.medias,
-            String.starts_with?(media.path, root),
+            media.media_source_id == servarr.id,
             not File.exists?(media.path),
-            do: remove_media(media.path, opts)
+            do: remove_media(servarr, media.path, opts)
     end
   end
 
@@ -98,9 +97,9 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
 
   # A same-path upgrade leaves the new file in place, so its delete event is a
   # no-op and the refreshed Media survives.
-  defp remove_media(path, opts) do
+  defp remove_media(%Servarr{id: media_source_id}, path, opts) do
     with false <- File.exists?(path),
-         {:ok, media} <- MediaCatalog.get_media_by_path(path, opts) do
+         {:ok, media} <- MediaCatalog.get_media_by_path(media_source_id, path, opts) do
       MediaCatalog.destroy_media!(media, opts)
       Logger.info("Media deleted: #{path}", event: :servarr_webhook_media_deleted, path: path)
     else
@@ -115,8 +114,8 @@ defmodule WatchClub.MediaSources.Servarr.Actions.HandleWebhook do
 
   # A rename moves bytes in place, so relocate the existing Media old → new
   # rather than re-ingesting. The disk move already happened on the app's side.
-  defp relocate_media(old, new, opts) do
-    with {:ok, media} <- MediaCatalog.get_media_by_path(old, opts),
+  defp relocate_media(%Servarr{id: media_source_id}, old, new, opts) do
+    with {:ok, media} <- MediaCatalog.get_media_by_path(media_source_id, old, opts),
          {:ok, _} <- MediaCatalog.change_media_path(media, %{path: new}, opts) do
       Logger.info("Media path renamed: #{new}",
         event: :servarr_webhook_media_renamed,
