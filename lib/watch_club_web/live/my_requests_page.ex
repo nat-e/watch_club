@@ -24,7 +24,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     content: [
       :implementation,
       :actor_progress_status,
-      :actor_next_medias_to_play,
+      :actor_ready_to_play?,
       :incomplete?,
       actor_recommendations: [:recommended_by]
     ]

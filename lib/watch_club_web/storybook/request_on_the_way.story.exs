@@ -61,7 +61,7 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
           aired_episodes_with_media_count: opts[:aired_episodes_with_media_count],
           content: %Content{
             type: :movie,
-            actor_next_medias_to_play: [],
+            actor_ready_to_play?: false,
             external_id_source: :tmdb,
             external_id: "438631",
             release_date: opts[:release_date] || ~D[2021-09-15],

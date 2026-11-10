@@ -153,6 +153,9 @@ defmodule WatchClub.Contents.TvShowEpisode do
     # A rank to sort episodes on to make sure they are in the right season/episode order
     calculate :rank, :integer, expr(season_number * 1000 + episode_number)
 
+    # The one Play starts for the actor, in its TV Show
+    calculate :actor_next?, :boolean, expr(rank == tv_show.actor_next_episode_rank)
+
     calculate :has_media?, :boolean, expr(videos_count > 0)
 
     # Once its air date has passed. Only aired episodes can be marked as watched, and they decide

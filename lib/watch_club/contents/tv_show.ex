@@ -71,10 +71,9 @@ defmodule WatchClub.Contents.TvShow do
     has_many :localizations, TvShowLocalization
     has_many :episodes, TvShowEpisode
 
-    # The next aired episode that the current user has not watched to completion.
-    # If all aired episodes have been watched, this returns the first one.
+    # The aired TV Show Episode Play starts for the actor. See `actor_next_episode_rank`.
     has_one :actor_next_episode, TvShowEpisode do
-      manual WatchClub.Contents.TvShow.ActorNextEpisode
+      filter expr(actor_next?)
     end
 
     # The best localization based on the current user locale
@@ -93,6 +92,29 @@ defmodule WatchClub.Contents.TvShow do
                   actor_episodes_started_count == 0 -> :not_started
                   actor_aired_episodes_completed_count == aired_episodes_count -> :completed
                   true -> :in_progress
+                end
+              )
+
+    # The aired episode Play starts for the actor, by its rank: the one they watched last while
+    # they're in it, else the next aired one, else the first aired one
+    calculate :actor_next_episode_rank,
+              :integer,
+              expr(
+                cond do
+                  is_nil(actor_last_watched_rank) ->
+                    first_aired_rank
+
+                  actor_last_watched_status != :completed ->
+                    actor_last_watched_rank
+
+                  true ->
+                    first(episodes,
+                      field: :rank,
+                      query: [
+                        filter: expr(aired? and rank > parent(actor_last_watched_rank)),
+                        sort: [rank: :asc]
+                      ]
+                    ) || first_aired_rank
                 end
               )
 
@@ -141,6 +163,25 @@ defmodule WatchClub.Contents.TvShow do
     # Only used for internal calculation
     count :actor_episodes_started_count, :episodes do
       filter expr(actor_progress_status != :not_started)
+      public? false
+    end
+
+    first :first_aired_rank, :episodes, :rank do
+      filter expr(aired?)
+      sort rank: :asc
+      public? false
+    end
+
+    # The aired episode the actor watched last, the latest aired one on a tie
+    first :actor_last_watched_rank, :episodes, :rank do
+      filter expr(aired? and not is_nil(actor_last_watched_at))
+      sort actor_last_watched_at: :desc, rank: :desc
+      public? false
+    end
+
+    first :actor_last_watched_status, :episodes, :actor_progress_status do
+      filter expr(aired? and not is_nil(actor_last_watched_at))
+      sort actor_last_watched_at: :desc, rank: :desc
       public? false
     end
 

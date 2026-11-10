@@ -136,22 +136,10 @@ defmodule WatchClub.Contents.Content do
     end
 
     read :user_recently_watched do
-      description "The actor's Content in progress that is Ready to Play, the most recently watched first. Not limited: there are few."
+      description "The actor's Content in progress that is Ready to Play, the most recently watched first"
 
-      prepare build(
-                filter: [actor_progress_status: :in_progress],
-                sort: [actor_last_watched_at: :desc]
-              )
-
-      # Ready to Play is computed in Elixir, after the query: a limit would apply before it
-      prepare fn query, context ->
-        Ash.Query.after_action(query, fn _query, contents ->
-          {:ok,
-           contents
-           |> Ash.load!(:actor_next_medias_to_play, Ash.Context.to_opts(context))
-           |> Enum.reject(&(&1.actor_next_medias_to_play == []))}
-        end)
-      end
+      filter expr(actor_progress_status == :in_progress and actor_ready_to_play?)
+      prepare build(sort: [actor_last_watched_at: :desc])
     end
 
     create :create do
@@ -371,6 +359,17 @@ defmodule WatchClub.Contents.Content do
                   type == :book -> book.has_media?
                   type == :movie -> movie.has_media?
                   type == :tv_show -> tv_show.has_media?
+                end
+              )
+
+    # Ready to Play: its Movie, or the TV Show Episode Play starts for the actor, has Media
+    calculate :actor_ready_to_play?,
+              :boolean,
+              expr(
+                if type == :tv_show do
+                  exists(tv_show.episodes, actor_next? and has_media?)
+                else
+                  has_media?
                 end
               )
 
