@@ -1194,7 +1194,7 @@ defmodule WatchClub.Contents.ContentTest do
       assert result.identity == ContentIdentity.from_content(dune)
     end
 
-    test "searches only Movies with content_type :movies", %{member: member} do
+    test "searches only Movies with type :movie", %{member: member} do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn %{request_path: "/3/search/movie"} =
                                                              conn ->
         Req.Test.json(conn, %{
@@ -1207,12 +1207,12 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert %SearchResultsPage{
                results: [%SearchResult{identity: identity, title: "Dune", year: 2021}]
-             } = search_content!(%{query: "dune", content_type: :movies}, actor: member)
+             } = search_content!(%{query: "dune", type: :movie}, actor: member)
 
       assert identity == ContentIdentity.for_movie(438_631)
     end
 
-    test "searches only TV Shows with content_type :tv_shows", %{member: member} do
+    test "searches only TV Shows with type :tv_show", %{member: member} do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn %{request_path: "/3/search/tv"} = conn ->
         Req.Test.json(conn, %{
           "page" => 1,
@@ -1226,7 +1226,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert %SearchResultsPage{
                results: [%SearchResult{identity: identity, title: "Severance", year: 2022}]
-             } = search_content!(%{query: "severance", content_type: :tv_shows}, actor: member)
+             } = search_content!(%{query: "severance", type: :tv_show}, actor: member)
 
       assert identity == ContentIdentity.for_tv_show(95_396)
     end
