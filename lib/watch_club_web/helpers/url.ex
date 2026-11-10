@@ -73,8 +73,8 @@ defmodule WatchClubWeb.Helpers.Url do
     %__MODULE__{
       scheme: url.scheme,
       authority: url.authority,
-      path: ~p"/join/#{invitation.code}",
-      query: %{}
+      path: ~p"/join",
+      query: %{"code" => invitation.code}
     }
   end
 
