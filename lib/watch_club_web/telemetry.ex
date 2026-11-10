@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
+  import Ecto.Query, only: [from: 2]
 
   @duration_buckets [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
   @database_buckets [
@@ -29,7 +30,14 @@ defmodule WatchClubWeb.Telemetry do
   def init(_arg) do
     children =
       if Application.fetch_env!(:watch_club, :opentelemetry)[:metrics] do
-        [{WatchClub.Telemetry.Metrics, metrics()}]
+        [
+          {WatchClub.Telemetry.Metrics, metrics()},
+          # The delay lets the Repo, which starts after this supervisor, come up first.
+          {:telemetry_poller,
+           measurements: [{__MODULE__, :measure_job_queues, []}],
+           period: :timer.seconds(5),
+           init_delay: :timer.seconds(5)}
+        ]
       else
         []
       end
@@ -132,6 +140,9 @@ defmodule WatchClubWeb.Telemetry do
         unit: {:native, :second},
         reporter_options: [buckets: @job_buckets]
       ),
+      # The backlog: jobs ready to run, and how long the oldest has waited.
+      last_value("watch_club.oban.queue.available_jobs", tags: [:queue]),
+      last_value("watch_club.oban.queue.oldest_available_job_age", tags: [:queue], unit: :second),
 
       # Content metadata: only Content Type, result and serving path are labels.
       counter("watch_club.contents.metadata_fetch.stop.count", tags: [:type, :result]),
@@ -176,6 +187,37 @@ defmodule WatchClubWeb.Telemetry do
       last_value("vm.total_run_queue_lengths.cpu"),
       last_value("vm.total_run_queue_lengths.io")
     ]
+  end
+
+  @doc false
+  def measure_job_queues do
+    # An empty queue reports 0, rather than keeping its last values.
+    empty_queues =
+      for {queue, _limit} <- Application.fetch_env!(:watch_club, Oban)[:queues],
+          into: %{},
+          do: {to_string(queue), %{available_jobs: 0, oldest_available_job_age: 0}}
+
+    now = DateTime.utc_now()
+
+    # Waits start at `scheduled_at`, as in Oban's `queue_time`.
+    waiting_queues =
+      from(job in Oban.Job,
+        where: job.state == "available",
+        group_by: job.queue,
+        select: {job.queue, count(), min(job.scheduled_at)}
+      )
+      |> WatchClub.Repo.all()
+      |> Map.new(fn {queue, count, oldest} ->
+        age = DateTime.diff(now, oldest, :millisecond) / 1000
+        {queue, %{available_jobs: count, oldest_available_job_age: age}}
+      end)
+
+    for {queue, measurements} <- Map.merge(empty_queues, waiting_queues) do
+      :telemetry.execute([:watch_club, :oban, :queue], measurements, %{queue: queue})
+    end
+  rescue
+    # The poller drops a measurement that raises, which would freeze these gauges.
+    DBConnection.ConnectionError -> :ok
   end
 
   defp job_tags(%{job: job}), do: Map.take(job, [:queue, :worker])
