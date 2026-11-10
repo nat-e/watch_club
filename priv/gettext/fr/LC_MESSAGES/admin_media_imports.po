@@ -222,8 +222,7 @@ msgid "Import movies from a Radarr server."
 msgstr "Importez des films depuis un serveur Radarr."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_source_history_page.ex
-#: lib/watch_club_web/live/admin/media_sources_page.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Import started"
 msgstr "Import lancé"
@@ -626,13 +625,13 @@ msgid "Regenerate thumbnails and markers"
 msgstr "Régénérer les miniatures et les marqueurs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Even for files that haven't changed."
-msgstr "Même pour les fichiers qui n'ont pas changé."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Its media will be removed from the instance too. Their files stay on disk."
 msgstr "Ses médias seront aussi retirés de l'instance. Leurs fichiers restent sur le disque."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Even for files that haven't changed. New files always get them."
+msgstr "Même pour les fichiers qui n'ont pas changé. Les nouveaux fichiers les obtiennent toujours."

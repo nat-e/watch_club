@@ -92,6 +92,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
         id="run-import"
         media_source={@media_source}
         current_user={@current_user}
+        on_close={fn -> send(self(), :close_run_import_modal) end}
       />
     </Layouts.app>
     """
@@ -120,10 +121,6 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     {:noreply, assign(socket, :run_modal_open?, true)}
   end
 
-  def handle_event("close_modals", _params, socket) do
-    {:noreply, assign(socket, :run_modal_open?, false)}
-  end
-
   def handle_event("cancel_media_import", %{"id" => media_import_id}, socket) do
     actor = socket.assigns.current_user
 
@@ -138,12 +135,8 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(:media_import_started, socket) do
-    {:noreply,
-     socket
-     |> assign(:run_modal_open?, false)
-     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
-  end
+  def handle_info(:close_run_import_modal, socket),
+    do: {:noreply, assign(socket, :run_modal_open?, false)}
 
   # The source was deleted, navigate back to the list page
   def handle_info(%Notification{data: %Source{id: source_id}, action: %{name: :destroy}}, socket)

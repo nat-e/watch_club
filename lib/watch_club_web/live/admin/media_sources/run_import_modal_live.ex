@@ -2,26 +2,29 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
   @moduledoc """
   Confirm modal for triggering a `Media Import`, where the Instance Administrator chooses which
   files it processes and, for Videos, whether it regenerates their Scrubbing Thumbnails and
-  Markers. Sends `:media_import_started` to its LiveView once the Media Import has started.
+  Markers.
   """
   use WatchClubWeb, :live_component
 
   import WatchClubWeb.Components.Media.SourceIdentifier
 
-  attr :id, :string, required: true
-  attr :media_source, Source, required: true
-  attr :current_user, User, required: true
+  alias WatchClubWeb.Hooks.Flash
 
   @impl true
   def mount(socket) do
     {:ok, assign(socket, :form, to_form(%{"files_to_process" => "new"}, as: :run_import))}
   end
 
+  attr :id, :string, required: true
+  attr :media_source, Source, required: true
+  attr :current_user, User, required: true
+  attr :on_close, :any, required: true, doc: "a function the dialog calls once it closes"
+
   @impl true
   def render(assigns) do
     ~H"""
     <div id={@id}>
-      <.modal id="run-import-modal" size="sm" on_close={JS.push("close_modals")}>
+      <.modal id="run-import-modal" size="sm" on_close={JS.push("close", target: @myself)}>
         <:title>{dgettext("admin_media_imports", "Run media import")}</:title>
         <:description>
           {raw(
@@ -62,10 +65,8 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
             </.radio_group>
           </div>
 
-          <%!-- New files get them anyway --%>
           <label
             :if={@media_source.media_type in [:movie, :tv_show_episode, :sports_event]}
-            for="run-import-regenerate"
             class="group/regenerate flex items-start gap-related has-disabled:cursor-not-allowed"
           >
             <.checkbox
@@ -79,7 +80,10 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
                 {dgettext("admin_media_imports", "Regenerate thumbnails and markers")}
               </span>
               <span class="text-xs text-text-muted">
-                {dgettext("admin_media_imports", "Even for files that haven't changed.")}
+                {dgettext(
+                  "admin_media_imports",
+                  "Even for files that haven't changed. New files always get them."
+                )}
               </span>
             </.stack>
           </label>
@@ -115,7 +119,13 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
       actor: socket.assigns.current_user
     )
 
-    send(self(), :media_import_started)
+    Flash.send_flash(:info, dgettext("admin_media_imports", "Import started"))
+    socket.assigns.on_close.()
+    {:noreply, socket}
+  end
+
+  def handle_event("close", _params, socket) do
+    socket.assigns.on_close.()
     {:noreply, socket}
   end
 

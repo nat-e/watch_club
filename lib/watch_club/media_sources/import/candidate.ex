@@ -186,13 +186,14 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   `to_map/1`.
   """
   @spec from_map(map()) :: t()
-  def from_map(%{
-        "media_source_id" => media_source_id,
-        "path" => path,
-        "media_type" => media_type,
-        "identity" => identity_fields,
-        "regenerate_thumbnails_and_markers?" => regenerate_thumbnails_and_markers?
-      }) do
+  def from_map(
+        %{
+          "media_source_id" => media_source_id,
+          "path" => path,
+          "media_type" => media_type,
+          "identity" => identity_fields
+        } = args
+      ) do
     media_type = to_media_type(media_type)
 
     %__MODULE__{
@@ -200,7 +201,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       path: path,
       media_type: media_type,
       identity: build_identity(identity_fields, media_type),
-      regenerate_thumbnails_and_markers?: regenerate_thumbnails_and_markers?
+      # Missing from the jobs enqueued before the option existed
+      regenerate_thumbnails_and_markers?:
+        Map.get(args, "regenerate_thumbnails_and_markers?", false)
     }
   end
 

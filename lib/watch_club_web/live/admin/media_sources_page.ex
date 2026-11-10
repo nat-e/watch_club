@@ -154,6 +154,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         id="run-import"
         media_source={@run_import_media_source}
         current_user={@current_user}
+        on_close={fn -> send(self(), :close_run_import_modal) end}
       />
     </Layouts.app>
     """
@@ -343,12 +344,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(:media_import_started, socket) do
-    {:noreply,
-     socket
-     |> reset_modals()
-     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
-  end
+  def handle_info(:close_run_import_modal, socket), do: {:noreply, reset_modals(socket)}
 
   def handle_info(:close_servarr_source_modal, socket) do
     {:noreply, assign(socket, :servarr_modal, nil)}
