@@ -1083,14 +1083,15 @@ defmodule WatchClub.Contents.ContentTest do
   end
 
   describe "search_content/*" do
-    test "returns Sports Events from sportarr.net, and whether they're in the Library", %{
-      member: member
-    } do
+    test "returns the Sports Events from sportarr.net with the query's words, and whether they're in the Library",
+         %{
+           member: member
+         } do
       in_library = generate(sports_event())
       add_sports_event_video!(in_library.id)
 
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
-        assert conn.request_path == "/api/v2/json/search/event/UFC%2011"
+        assert conn.request_path == "/api/v2/json/search/event/UFC%2511"
 
         Req.Test.json(conn, %{
           "data" => %{
@@ -1115,7 +1116,7 @@ defmodule WatchClub.Contents.ContentTest do
                    has_media?: false
                  }
                ]
-             } = search_content!(%{query: "UFC 11", content_type: :sports_events}, actor: member)
+             } = search_content!(%{query: "UFC: 11", content_type: :sports_events}, actor: member)
     end
 
     test "searches the Library's Sports Events with has_media?", %{member: member} do
@@ -1304,7 +1305,9 @@ defmodule WatchClub.Contents.ContentTest do
       assert first_movie_id == first_movie.id
     end
 
-    test "keeps the Content with a title that contains the query", %{member: member} do
+    test "keeps the Content with a title that contains each word of the query", %{
+      member: member
+    } do
       amelie = generate(movie(original_title: "Le Fabuleux Destin d'Amélie Poulain"))
       spirited_away = generate(movie(original_title: "千と千尋の神隠し"))
 
@@ -1318,18 +1321,22 @@ defmodule WatchClub.Contents.ContentTest do
       add_video!(amelie.id)
       add_video!(spirited_away.id)
       add_episode_video!(money_heist, 1)
-      add_video!(generate(movie()).id)
+      # Has only one of the words
+      add_video!(generate(movie(original_title: "Amélie")).id)
 
-      # Ignoring case and accents
+      # In any order, ignoring case, accents and punctuation
       assert [%Content{id: amelie_id}] =
-               get_contents_in_library!(%{query: "AMELIE"}, actor: member)
+               get_contents_in_library!(%{query: "POULAIN, amelie"}, actor: member)
 
       # In localized titles
       assert [%Content{id: spirited_away_id}] =
-               get_contents_in_library!(%{query: "spirited"}, actor: member)
+               get_contents_in_library!(%{query: "away spirited"}, actor: member)
 
       assert [%Content{id: money_heist_id}] =
-               get_contents_in_library!(%{query: "heist"}, actor: member)
+               get_contents_in_library!(%{query: "heist money"}, actor: member)
+
+      # All in the same title
+      assert [] = get_contents_in_library!(%{query: "heist papel"}, actor: member)
 
       assert {amelie_id, spirited_away_id, money_heist_id} ==
                {amelie.id, spirited_away.id, money_heist.id}

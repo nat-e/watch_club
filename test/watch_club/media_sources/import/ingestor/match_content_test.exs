@@ -503,13 +503,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
         events =
           case URI.decode(conn.request_path) do
-            "/api/v2/json/search/event/UFC 328" ->
+            "/api/v2/json/search/event/UFC%328" ->
               [
                 %{"idEvent" => "ev-1", "strEvent" => "UFC 328", "dateEvent" => "2001-05-04"},
                 %{"idEvent" => "ev-570615", "strEvent" => "UFC 328", "dateEvent" => "2026-05-09"}
               ]
 
-            "/api/v2/json/search/event/UFC 328 Prelims" ->
+            "/api/v2/json/search/event/UFC%328%Prelims" ->
               nil
           end
 
@@ -552,7 +552,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
     test "doesn't match a Sports Event by a single word of its title" do
       Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
-        assert URI.decode(conn.request_path) == "/api/v2/json/search/event/UFC Prelims"
+        assert URI.decode(conn.request_path) == "/api/v2/json/search/event/UFC%Prelims"
         Req.Test.json(conn, %{"data" => %{"search" => nil}})
       end)
 

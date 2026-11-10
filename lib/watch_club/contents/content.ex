@@ -56,7 +56,7 @@ defmodule WatchClub.Contents.Content do
       description "The Content in the Library that matches every filter given, in the chosen order"
 
       argument :query, :string do
-        description "Keeps the Content with a title that contains it, ignoring case and accents"
+        description "Keeps the Content with a title that contains each of its words, in any order, ignoring case and accents"
       end
 
       argument :type, ContentType
