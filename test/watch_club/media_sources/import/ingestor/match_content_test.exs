@@ -112,10 +112,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       for _ <- 1..2 do
         assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: _},
                          %{
-                           request: %Req.Request{
-                             private: %{path_params_template: "/3/find/:external_id"}
-                           },
-                           response: %Req.Response{status: 200}
+                           "url.template": "/3/find/:external_id",
+                           "http.response.status_code": 200
                          }}
       end
 

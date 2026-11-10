@@ -100,12 +100,27 @@ defmodule WatchClub.Integrations.Tmdb.Client do
     Req.Request.put_private(request, :tmdb_started_at, System.monotonic_time())
   end
 
-  # The response is an exception when the request failed without one
+  # Metadata holds the OpenTelemetry attributes OpentelemetryReq puts on the attempt's span
   defp record_request({request, response} = result) do
+    # The response is an exception when the request failed without one
+    {status, error_type} =
+      case response do
+        %Req.Response{status: status} when status >= 400 -> {status, Integer.to_string(status)}
+        %Req.Response{status: status} -> {status, nil}
+        exception -> {nil, inspect(exception.__struct__)}
+      end
+
     :telemetry.execute(
       [:watch_club, :tmdb, :request, :stop],
       %{duration: System.monotonic_time() - Req.Request.get_private(request, :tmdb_started_at)},
-      %{request: request, response: response}
+      %{
+        "http.request.method": request.method |> Atom.to_string() |> String.upcase(),
+        "server.address": request.url.host,
+        "server.port": request.url.port,
+        "url.template": Req.Request.get_private(request, :path_params_template),
+        "http.response.status_code": status,
+        "error.type": error_type
+      }
     )
 
     result

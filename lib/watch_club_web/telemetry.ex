@@ -38,11 +38,11 @@ defmodule WatchClubWeb.Telemetry do
   end
 
   def metrics do
-    [
+    database = WatchClub.Repo.config()[:database]
+
+    List.flatten([
       # HTTP requests the router handles
-      summary("http.server.request.duration",
-        event_name: [:phoenix, :router_dispatch, :stop],
-        unit: {:native, :second},
+      span_summary("http.server.request.duration", [:phoenix, :router_dispatch],
         tags: [
           :"http.request.method",
           :"url.scheme",
@@ -55,36 +55,34 @@ defmodule WatchClubWeb.Telemetry do
       ),
 
       # Mount and handle_params run for the HTTP render, then again when the socket connects.
-      summary("phoenix.live_view.mount.duration",
-        event_name: [:phoenix, :live_view, :mount, :stop],
-        unit: {:native, :second},
+      span_summary("phoenix.live_view.mount.duration", [:phoenix, :live_view, :mount],
         tags: [:"phoenix.live_view.module", :"phoenix.live_view.connected", :"error.type"],
         tag_values: &live_view_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
-      summary("phoenix.live_view.handle_params.duration",
-        event_name: [:phoenix, :live_view, :handle_params, :stop],
-        unit: {:native, :second},
+      span_summary(
+        "phoenix.live_view.handle_params.duration",
+        [:phoenix, :live_view, :handle_params],
         tags: [:"phoenix.live_view.module", :"phoenix.live_view.connected", :"error.type"],
         tag_values: &live_view_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
-      summary("phoenix.live_view.handle_event.duration",
-        event_name: [:phoenix, :live_view, :handle_event, :stop],
-        unit: {:native, :second},
+      span_summary(
+        "phoenix.live_view.handle_event.duration",
+        [:phoenix, :live_view, :handle_event],
         tags: [:"phoenix.live_view.module", :"phoenix.live_view.event", :"error.type"],
         tag_values: &live_view_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
-      summary("phoenix.live_component.handle_event.duration",
-        event_name: [:phoenix, :live_component, :handle_event, :stop],
-        unit: {:native, :second},
+      span_summary(
+        "phoenix.live_component.handle_event.duration",
+        [:phoenix, :live_component, :handle_event],
         tags: [:"phoenix.live_component.module", :"phoenix.live_component.event", :"error.type"],
         tag_values:
           &%{
             "phoenix.live_component.module": inspect(&1.component),
             "phoenix.live_component.event": event_name(&1),
-            "error.type": error_type(&1)
+            "error.type": exception_type(&1)
           },
         reporter_options: [buckets: @duration_buckets]
       ),
@@ -108,8 +106,15 @@ defmodule WatchClubWeb.Telemetry do
         event_name: [:watch_club, :repo, :query],
         measurement: :total_time,
         unit: {:native, :second},
-        tags: [:"db.system.name", :"db.collection.name", :"error.type"],
-        tag_values: &database_tags/1,
+        tags: [
+          :"db.system.name",
+          :"db.namespace",
+          :"db.collection.name",
+          :"db.operation.name",
+          :"db.response.status_code",
+          :"error.type"
+        ],
+        tag_values: &database_tags(&1, database),
         reporter_options: [buckets: @database_buckets]
       ),
       summary("db.client.connection.wait_time",
@@ -122,9 +127,7 @@ defmodule WatchClubWeb.Telemetry do
       ),
 
       # Oban jobs, with the attributes of their trace spans
-      summary("messaging.process.duration",
-        event_name: [:oban, :job, :stop],
-        unit: {:native, :second},
+      span_summary("messaging.process.duration", [:oban, :job],
         tags: [
           :"messaging.system",
           :"messaging.operation.name",
@@ -135,9 +138,7 @@ defmodule WatchClubWeb.Telemetry do
         tag_values: &job_tags/1,
         reporter_options: [buckets: @job_buckets]
       ),
-      summary("oban.job.queue_time",
-        event_name: [:oban, :job, :stop],
-        unit: {:native, :second},
+      span_summary("oban.job.queue_time", [:oban, :job],
         tags: [:"messaging.destination.name", :"oban.job.worker"],
         tag_values: &job_tags/1,
         reporter_options: [buckets: @job_buckets]
@@ -155,21 +156,15 @@ defmodule WatchClubWeb.Telemetry do
           :"http.response.status_code",
           :"error.type"
         ],
-        tag_values: &http_client_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
 
       # Content metadata: only Content Type, result and serving path are labels.
-      summary("watch_club.metadata_fetch.duration",
-        event_name: [:watch_club, :contents, :metadata_fetch, :stop],
-        unit: {:native, :second},
+      span_summary(
+        "watch_club.metadata_fetch.duration",
+        [:watch_club, :contents, :metadata_fetch],
         tags: [:"watch_club.content.type", :"watch_club.metadata_fetch.result", :"error.type"],
-        tag_values:
-          &%{
-            "watch_club.content.type": &1.type,
-            "watch_club.metadata_fetch.result": &1[:result],
-            "error.type": error_type(&1)
-          },
+        tag_values: &metadata_fetch_tags/1,
         reporter_options: [buckets: @duration_buckets]
       ),
       summary("watch_club.metadata_fetch.callers",
@@ -181,12 +176,14 @@ defmodule WatchClubWeb.Telemetry do
       ),
       counter("watch_club.metadata_requests",
         event_name: [:watch_club, :contents, :metadata_request],
+        measurement: :count,
         unit: :"{request}",
         tags: [:"watch_club.metadata_request.served"],
         tag_values: &%{"watch_club.metadata_request.served": &1.served}
       ),
       counter("watch_club.media_import.matches",
         event_name: [:watch_club, :media_import, :match],
+        measurement: :count,
         unit: :"{match}",
         tags: [:"watch_club.media_import.match.result"],
         tag_values: &%{"watch_club.media_import.match.result": &1.result}
@@ -195,6 +192,7 @@ defmodule WatchClubWeb.Telemetry do
       # Which Markers detection finds, and where from. Fingerprints: cache use and decoding time.
       counter("watch_club.marker_detection.markers",
         event_name: [:watch_club, :marker_detection, :marker],
+        measurement: :count,
         unit: :"{marker}",
         tags: [:"watch_club.media.type", :"watch_club.marker.kind", :"watch_club.marker.source"],
         tag_values:
@@ -206,16 +204,17 @@ defmodule WatchClubWeb.Telemetry do
       ),
       counter("watch_club.audio_fingerprint.fetches",
         event_name: [:watch_club, :audio_fingerprint, :fetch],
+        measurement: :count,
         unit: :"{fetch}",
         tags: [:"watch_club.audio_fingerprint.cached"],
         tag_values: &%{"watch_club.audio_fingerprint.cached": &1.cached}
       ),
-      summary("watch_club.audio_fingerprint.compute.duration",
-        event_name: [:watch_club, :audio_fingerprint, :compute, :stop],
-        unit: {:native, :second},
+      span_summary(
+        "watch_club.audio_fingerprint.compute.duration",
+        [:watch_club, :audio_fingerprint, :compute],
         tags: [:"watch_club.audio_fingerprint.part", :"error.type"],
         tag_values:
-          &%{"watch_club.audio_fingerprint.part": &1.part, "error.type": error_type(&1)},
+          &%{"watch_club.audio_fingerprint.part": &1.part, "error.type": exception_type(&1)},
         reporter_options: [buckets: @job_buckets]
       ),
 
@@ -240,7 +239,14 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:"beam.run_queue.type"],
         tag_values: fn _metadata -> %{"beam.run_queue.type": "io"} end
       )
-    ]
+    ])
+  end
+
+  # Records a span's :stop and :exception events in one histogram, in seconds
+  defp span_summary(name, event_prefix, options) do
+    for event <- [:stop, :exception] do
+      summary(name, [event_name: event_prefix ++ [event], unit: {:native, :second}] ++ options)
+    end
   end
 
   defp http_server_tags(%{conn: conn, route: route} = metadata) do
@@ -267,7 +273,8 @@ defmodule WatchClubWeb.Telemetry do
       "url.scheme": Atom.to_string(conn.scheme),
       "http.route": route,
       "http.response.status_code": status,
-      "error.type": if(status in 500..599, do: error_type(failure) || Integer.to_string(status))
+      "error.type":
+        if(status in 500..599, do: exception_type(failure) || Integer.to_string(status))
     }
   end
 
@@ -276,7 +283,7 @@ defmodule WatchClubWeb.Telemetry do
       "phoenix.live_view.module": inspect(socket.view),
       "phoenix.live_view.connected": Phoenix.LiveView.connected?(socket),
       "phoenix.live_view.event": event_name(metadata),
-      "error.type": error_type(metadata)
+      "error.type": exception_type(metadata)
     }
   end
 
@@ -284,15 +291,30 @@ defmodule WatchClubWeb.Telemetry do
   defp event_name(%{kind: _kind}), do: "_OTHER"
   defp event_name(metadata), do: metadata[:event]
 
-  defp database_tags(%{source: source, result: result}) do
+  # Postgres reports a failed query with its SQLSTATE code
+  defp database_tags(%{source: source, result: result}, database) do
+    {operation, status_code, error_type} =
+      case result do
+        {:ok, %Postgrex.Result{command: command}} ->
+          {command |> Atom.to_string() |> String.upcase(), nil, nil}
+
+        {:ok, _result} ->
+          {nil, nil, nil}
+
+        {:error, %Postgrex.Error{postgres: %{pg_code: code}}} ->
+          {nil, code, code}
+
+        {:error, error} ->
+          {nil, nil, exception_type(%{kind: :error, reason: error})}
+      end
+
     %{
       "db.system.name": "postgresql",
+      "db.namespace": database,
       "db.collection.name": source,
-      "error.type":
-        case result do
-          {:ok, _result} -> nil
-          {:error, error} -> error_type(%{kind: :error, reason: error})
-        end
+      "db.operation.name": operation,
+      "db.response.status_code": status_code,
+      "error.type": error_type
     }
   end
 
@@ -302,33 +324,28 @@ defmodule WatchClubWeb.Telemetry do
       "messaging.operation.name": "process",
       "messaging.destination.name": job.queue,
       "oban.job.worker": job.worker,
-      "error.type": error_type(metadata)
+      "error.type": exception_type(metadata)
     }
   end
 
-  # Matches the attributes OpentelemetryReq puts on the request's span
-  defp http_client_tags(%{request: request, response: response}) do
-    {status, error_type} =
-      case response do
-        %Req.Response{status: status} when status >= 400 -> {status, Integer.to_string(status)}
-        %Req.Response{status: status} -> {status, nil}
-        exception -> {nil, inspect(exception.__struct__)}
-      end
-
+  # Like the fetch's span, results other than created or refreshed are errors
+  defp metadata_fetch_tags(metadata) do
     %{
-      "http.request.method": request.method |> Atom.to_string() |> String.upcase(),
-      "server.address": request.url.host,
-      "server.port": request.url.port,
-      "url.template": Req.Request.get_private(request, :path_params_template),
-      "http.response.status_code": status,
-      "error.type": error_type
+      "watch_club.content.type": metadata.type,
+      "watch_club.metadata_fetch.result": metadata[:result],
+      "error.type":
+        case metadata do
+          %{result: result} when result in [:created, :refreshed] -> nil
+          %{result: result} -> Atom.to_string(result)
+          _crashed -> exception_type(metadata)
+        end
     }
   end
 
-  # Names what a span raised, or nil when it succeeded
-  defp error_type(%{kind: :error, reason: reason}),
+  # Names what a span raised, or nil when it raised nothing
+  defp exception_type(%{kind: :error, reason: reason}),
     do: inspect(Exception.normalize(:error, reason).__struct__)
 
-  defp error_type(%{kind: kind}), do: Atom.to_string(kind)
-  defp error_type(_metadata), do: nil
+  defp exception_type(%{kind: kind}), do: Atom.to_string(kind)
+  defp exception_type(_metadata), do: nil
 end

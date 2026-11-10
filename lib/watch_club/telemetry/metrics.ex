@@ -2,9 +2,8 @@ defmodule WatchClub.Telemetry.Metrics do
   @moduledoc """
   Exports `Telemetry.Metrics` definitions as OpenTelemetry instruments.
 
-  A summary on a `:stop` event also records the matching `:exception` event, so failures share
-  its histogram. Definitions with the same name share one instrument. Tags whose value is nil
-  are left out.
+  Definitions with the same name share one instrument, such as a span's `:stop` and `:exception`
+  events recording into one histogram. Tags whose value is nil are left out.
   """
 
   use GenServer
@@ -58,12 +57,7 @@ defmodule WatchClub.Telemetry.Metrics do
 
     handlers =
       instruments
-      |> Enum.flat_map(fn {metric, _name} = instrument ->
-        for event <- events(metric), do: {event, instrument}
-      end)
-      |> Enum.group_by(fn {event, _instrument} -> event end, fn {_event, instrument} ->
-        instrument
-      end)
+      |> Enum.group_by(fn {metric, _name} -> metric.event_name end)
       |> Enum.map(fn {event, instruments} ->
         id = {__MODULE__, event}
         :telemetry.detach(id)
@@ -124,15 +118,6 @@ defmodule WatchClub.Telemetry.Metrics do
   def terminate(_reason, handlers) do
     Enum.each(handlers, &:telemetry.detach/1)
   end
-
-  defp events(%Summary{event_name: event_name}) do
-    case List.last(event_name) do
-      :stop -> [event_name, List.replace_at(event_name, -1, :exception)]
-      _ -> [event_name]
-    end
-  end
-
-  defp events(metric), do: [metric.event_name]
 
   defp unit(:second), do: "s"
   defp unit(:byte), do: "By"

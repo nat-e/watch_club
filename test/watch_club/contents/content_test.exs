@@ -535,10 +535,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       for _ <- 1..2 do
         assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                         %{
-                           request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                           response: %Req.Response{status: 200}
-                         }}
+                         %{"url.template": "/3/movie/:id", "http.response.status_code": 200}}
 
         assert duration > 0
       end
@@ -964,10 +961,7 @@ defmodule WatchClub.Contents.ContentTest do
                        %{type: :movie, result: :not_found}}
 
       assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                       %{
-                         request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                         response: %Req.Response{status: 404}
-                       }}
+                       %{"url.template": "/3/movie/:id", "http.response.status_code": 404}}
 
       assert duration > 0
     end
@@ -989,10 +983,7 @@ defmodule WatchClub.Contents.ContentTest do
                        %{type: :movie, result: :unavailable}}
 
       assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, %{duration: duration},
-                       %{
-                         request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                         response: %Req.Response{status: 503}
-                       }}
+                       %{"url.template": "/3/movie/:id", "http.response.status_code": 503}}
 
       assert duration > 0
     end
@@ -1011,10 +1002,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{
-                         request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                         response: %Req.Response{status: 429}
-                       }}
+                       %{"url.template": "/3/movie/:id", "http.response.status_code": 429}}
     end
 
     test "returns a metadata error when TMDB rejects the request", %{
@@ -1031,10 +1019,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{
-                         request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                         response: %Req.Response{status: 401}
-                       }}
+                       %{"url.template": "/3/movie/:id", "http.response.status_code": 401}}
     end
 
     test "returns a metadata error when the TMDB connection times out", %{
@@ -1051,10 +1036,7 @@ defmodule WatchClub.Contents.ContentTest do
       end)
 
       assert_received {[:watch_club, :tmdb, :request, :stop], ^ref, _,
-                       %{
-                         request: %Req.Request{private: %{path_params_template: "/3/movie/:id"}},
-                         response: %Req.TransportError{reason: :timeout}
-                       }}
+                       %{"url.template": "/3/movie/:id", "error.type": "Req.TransportError"}}
     end
   end
 
