@@ -502,6 +502,20 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert tv_show_id == tv_show.id
     end
 
+    test "matches a Sports Event file to a Sports Event by hand" do
+      sports_event = generate(sports_event())
+      media = generate(video_media(nil, type: :sports_event))
+
+      matched =
+        match_media!(media, ContentIdentity.from_content(sports_event),
+          actor: generate(administrator()),
+          load: :video
+        )
+
+      assert matched.content_id == sports_event.id
+      assert matched.video.sports_event_id == sports_event.id
+    end
+
     test "creates the Movie when WatchClub doesn't have it" do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         Req.Test.json(conn, Map.put(tmdb_fixture("movie_details_11"), "id", 438_631))

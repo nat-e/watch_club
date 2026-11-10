@@ -1,8 +1,8 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   @moduledoc """
-  Match or Rematch a Video by hand. The Instance Administrator searches TMDB by title or by TMDB
-  ID, picks a Movie for a Movie file, or a TV Show then its season and episode for a TV Show
-  Episode file. Back keeps the search. A Rematch starts with the Current match, which offers to
+  Match or Rematch a Video by hand. The Instance Administrator searches the Metadata Provider of
+  the file's Media Type by title or by ID: TMDB for a Movie, or for a TV Show then its season and
+  episode; sportarr.net for a Sports Event. Back keeps the search. A Rematch starts with the Current match, which offers to
   remove a Manual Match.
   """
   use WatchClubWeb, :live_component
@@ -20,7 +20,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   attr :media, Media,
     required: true,
-    doc: "a Video, with its `content`'s `implementation` and its `video`'s episode"
+    doc: "a Video, with its `content`'s `title` and `poster_path`, and its `video`'s episode"
 
   attr :current_user, User, required: true
   attr :on_close, :any, required: true, doc: "a function the dialog calls once it closes"
@@ -84,7 +84,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
                 value={@query}
                 type="search"
                 placeholder={search_placeholder(@media.type)}
-                aria-label={dgettext("admin_media", "Search TMDB")}
+                aria-label={search_label(@media.type)}
                 phx-mounted={JS.focus()}
                 phx-debounce="300"
                 class="pl-9!"
@@ -118,7 +118,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
             {dgettext("default", "Cancel")}
           </.button>
           <.button
-            :if={@media.type == :movie or @tv_show}
+            :if={@media.type != :tv_show_episode or @tv_show}
             id={"#{@id}-confirm"}
             disabled={if @tv_show, do: !@episode, else: !@picked}
             phx-click="match"
@@ -139,9 +139,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   # The Content the file has, with its year or episode, and the removal of a Manual Match. The
   # button goes under the title when they don't fit side by side.
   defp current_match(assigns) do
+    content = assigns.media.content
+
     assigns =
       assign(assigns,
-        result: SearchResult.from_content(assigns.media.content),
+        result: %SearchResult{
+          identity: ContentIdentity.from_content(content),
+          title: content.title,
+          year: content.release_date && content.release_date.year,
+          poster_path: content.poster_path
+        },
         episode: assigns.media.video.tv_show_episode
       )
 
@@ -209,41 +216,39 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
         status={@status}
         query={@query}
         result_count={
-          if @found, do: length(@found.titles) + if(@found.tmdb_id, do: 1, else: 0), else: 0
+          if @found, do: length(@found.titles) + if(@found.typed_id, do: 1, else: 0), else: 0
         }
         on_retry={JS.push("search", value: %{query: @query}, target: @myself)}
-        hint={dgettext("admin_media", "Search TMDB by title or TMDB ID.")}
+        hint={search_hint(@media.type)}
       />
       <section
-        :if={@status == :ok and @found.tmdb_id}
-        id={"#{@id}-tmdb-id"}
+        :if={@status == :ok and @found.typed_id}
+        id={"#{@id}-typed-id"}
         class="flex flex-col gap-tight"
       >
         <.text_label
-          text={dgettext("admin_media", "TMDB ID %{id}", id: @found.tmdb_id)}
+          text={typed_id_label(@found.typed_id)}
           class="px-related"
         />
         <.result_row
           :if={@found.id_result}
-          id={"#{@id}-tmdb-id-result"}
+          id={"#{@id}-typed-id-result"}
           result={@found.id_result}
           picked={@picked}
           myself={@myself}
         />
         <p
           :if={!@found.id_result}
-          id={"#{@id}-tmdb-id-not-found"}
+          id={"#{@id}-typed-id-not-found"}
           class="flex items-center gap-related p-related text-sm text-text-muted"
         >
           <Lucideicons.search_x class="size-icon-sm shrink-0 text-text-subtle" />
-          {if @media.type == :movie,
-            do: dgettext("admin_media", "No movie has this TMDB ID."),
-            else: dgettext("admin_media", "No TV show has this TMDB ID.")}
+          {typed_id_not_found(@media.type)}
         </p>
       </section>
       <section :if={@status == :ok and @found.titles != []} class="flex flex-col gap-tight">
         <.text_label
-          :if={@found.tmdb_id}
+          :if={@found.typed_id}
           text={dgettext("admin_media", "Titles")}
           class="px-related"
         />
@@ -272,7 +277,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
     ~H"""
     <.option_row
       id={@id}
-      selected={if @result.identity.type == :movie, do: @result == @picked}
+      selected={if @result.identity.type != :tv_show, do: @result == @picked}
       phx-click="pick"
       phx-value-id={@result.identity.external_id}
       phx-target={@myself}
@@ -416,16 +421,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   def handle_event("search", %{"query" => query}, socket),
     do: {:noreply, socket |> assign(query: query, picked: nil) |> search()}
 
-  # A Movie is picked; a TV Show opens its seasons
+  # A Movie or a Sports Event is picked; a TV Show opens its seasons
   def handle_event("pick", %{"id" => external_id}, socket) do
     %{titles: titles, id_result: id_result} = socket.assigns.search.result
     picked = Enum.find([id_result | titles], &(&1 && &1.identity.external_id == external_id))
     socket = assign(socket, :picked, picked)
 
-    case picked.identity.type do
-      :movie -> {:noreply, socket}
-      :tv_show -> {:noreply, load_tv_show(socket)}
-    end
+    if picked.identity.type == :tv_show,
+      do: {:noreply, load_tv_show(socket)},
+      else: {:noreply, socket}
   end
 
   def handle_event("retry_tv_show", _params, socket), do: {:noreply, load_tv_show(socket)}
@@ -537,8 +541,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
         socket |> cancel_async(:search) |> assign(:search, nil)
 
       query ->
-        content_type = if media.type == :movie, do: :movies, else: :tv_shows
-        tmdb_id = tmdb_id(query)
+        typed_id = typed_id(media.type, query)
         otel_context = OpenTelemetry.Ctx.get_current()
 
         socket
@@ -547,11 +550,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           OpenTelemetry.Ctx.attach(otel_context)
 
           %{
-            tmdb_id: tmdb_id,
-            id_result:
-              tmdb_id && Contents.look_up_content!(identity(media, tmdb_id), actor: user),
-            titles:
-              Contents.search_content!(%{query: query, content_type: content_type}, actor: user).results
+            typed_id: typed_id,
+            id_result: typed_id && Contents.look_up_content!(typed_id, actor: user),
+            titles: Contents.search_content!(search_input(media.type, query), actor: user).results
           }
         end)
     end
@@ -602,22 +603,55 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   defp status(%AsyncResult{failed: failed}) when failed != nil, do: :error
   defp status(%AsyncResult{ok?: true}), do: :ok
 
-  defp tmdb_id(query) do
-    case Integer.parse(query) do
-      {id, ""} when id > 0 -> id
+  # The titles a file of this Media Type can match
+  defp search_input(:movie, query), do: %{query: query, type: :movie}
+  defp search_input(:tv_show_episode, query), do: %{query: query, type: :tv_show}
+  defp search_input(:sports_event, query), do: %{query: query, content_type: :sports_events}
+
+  # The Content of a typed TMDB ID, or of a Sportarr ID such as ev-028133
+  defp typed_id(:sports_event, query) do
+    if Regex.match?(~r/^ev-\d+$/i, query),
+      do: ContentIdentity.for_sports_event(String.downcase(query))
+  end
+
+  defp typed_id(media_type, query) do
+    case {media_type, Integer.parse(query)} do
+      {:movie, {id, ""}} when id > 0 -> ContentIdentity.for_movie(id)
+      {:tv_show_episode, {id, ""}} when id > 0 -> ContentIdentity.for_tv_show(id)
       _other -> nil
     end
   end
 
-  defp identity(%Media{type: :movie}, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
+  defp typed_id_label(%ContentIdentity{external_id_source: :tmdb, external_id: id}),
+    do: dgettext("admin_media", "TMDB ID %{id}", id: id)
 
-  defp identity(%Media{type: :tv_show_episode}, tmdb_id),
-    do: ContentIdentity.for_tv_show(tmdb_id)
+  defp typed_id_label(%ContentIdentity{external_id_source: :sportarr, external_id: id}),
+    do: dgettext("admin_media", "Sportarr ID %{id}", id: id)
+
+  defp typed_id_not_found(:movie), do: dgettext("admin_media", "No movie has this TMDB ID.")
+
+  defp typed_id_not_found(:tv_show_episode),
+    do: dgettext("admin_media", "No TV show has this TMDB ID.")
+
+  defp typed_id_not_found(:sports_event),
+    do: dgettext("admin_media", "No event has this Sportarr ID.")
 
   defp search_placeholder(:movie), do: dgettext("admin_media", "Movie title or TMDB ID")
 
   defp search_placeholder(:tv_show_episode),
     do: dgettext("admin_media", "TV show title or TMDB ID")
+
+  defp search_placeholder(:sports_event),
+    do: dgettext("admin_media", "Event title or Sportarr ID")
+
+  defp search_label(:sports_event), do: dgettext("admin_media", "Search sportarr.net")
+  defp search_label(_tmdb_media_type), do: dgettext("admin_media", "Search TMDB")
+
+  defp search_hint(:sports_event),
+    do: dgettext("admin_media", "Search sportarr.net by title or Sportarr ID.")
+
+  defp search_hint(_tmdb_media_type),
+    do: dgettext("admin_media", "Search TMDB by title or TMDB ID.")
 
   # The current title, or the one in the file name
   defp first_query(%Media{content: %Content{} = content}), do: content_title(content)

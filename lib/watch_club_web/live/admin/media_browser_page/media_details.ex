@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
   def media_details(assigns) do
     assigns =
       assign(assigns,
-        video?: assigns.media.type in [:movie, :tv_show_episode],
+        video?: assigns.media.type in [:movie, :tv_show_episode, :sports_event],
         episode: assigns.media.video && assigns.media.video.tv_show_episode
       )
 

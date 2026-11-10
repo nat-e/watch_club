@@ -1,8 +1,9 @@
 defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   @moduledoc """
-  Attaches the Video of a Media to its new Content: a Movie file to the Movie, a TV Show Episode
-  file to the episode of the TV Show at the action's `season_number` and `episode_number`. Movies
-  and TV Shows share the id of their Content.
+  Attaches the Video of a Media to its new Content: a Movie file to the Movie, a Sports Event file
+  to the Sports Event, a TV Show Episode file to the episode of the TV Show at the action's
+  `season_number` and `episode_number`. Movies, Sports Events and TV Shows share the id of their
+  Content.
   """
   use Ash.Resource.Change
 
@@ -21,7 +22,10 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   end
 
   defp attachment(%Media{type: :movie, content_id: movie_id}, _arguments),
-    do: %{movie_id: movie_id, tv_show_episode_id: nil}
+    do: %{movie_id: movie_id, tv_show_episode_id: nil, sports_event_id: nil}
+
+  defp attachment(%Media{type: :sports_event, content_id: sports_event_id}, _arguments),
+    do: %{movie_id: nil, tv_show_episode_id: nil, sports_event_id: sports_event_id}
 
   defp attachment(%Media{type: :tv_show_episode, content_id: tv_show_id}, arguments) do
     episode =
@@ -35,6 +39,6 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
         authorize?: false
       )
 
-    %{movie_id: nil, tv_show_episode_id: episode.id}
+    %{movie_id: nil, tv_show_episode_id: episode.id, sports_event_id: nil}
   end
 end

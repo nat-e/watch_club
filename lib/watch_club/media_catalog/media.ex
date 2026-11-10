@@ -41,15 +41,17 @@ defmodule WatchClub.MediaCatalog.Media do
 
     update :match do
       description """
-      The Instance Administrator's Manual Match of a Video: a Movie file to a Movie, or a TV Show
-      Episode file to an episode of a TV Show. Creates the Content when WatchClub doesn't have it.
+      The Instance Administrator's Manual Match of a Video: a Movie file to a Movie, a TV Show
+      Episode file to an episode of a TV Show, a Sports Event file to a Sports Event. Creates the
+      Content when WatchClub doesn't have it.
       """
 
       require_atomic? false
 
       argument :content_identity, ContentIdentity do
         allow_nil? false
-        description "A Movie for a Movie file, a TV Show for a TV Show Episode file"
+
+        description "The Content of the file's Media Type, or the TV Show of a TV Show Episode file"
       end
 
       argument :season_number, :integer, description: "For a TV Show Episode file"

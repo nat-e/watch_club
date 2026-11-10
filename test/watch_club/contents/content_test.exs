@@ -1250,6 +1250,21 @@ defmodule WatchClub.Contents.ContentTest do
                look_up_content!(identity, actor: member)
     end
 
+    test "finds the Sports Event with a Sportarr ID", %{member: member} do
+      Req.Test.stub(WatchClub.Integrations.SportarrHub, fn conn ->
+        Req.Test.json(conn, %{
+          "data" => [
+            %{"idEvent" => "ev-028133", "strEvent" => "UFC 300", "dateEvent" => "2024-04-13"}
+          ]
+        })
+      end)
+
+      identity = ContentIdentity.for_sports_event("ev-028133")
+
+      assert %SearchResult{identity: ^identity, title: "UFC 300", year: 2024, has_media?: false} =
+               look_up_content!(identity, actor: member)
+    end
+
     test "finds nothing when TMDB has no Movie with this TMDB ID", %{member: member} do
       Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
         conn

@@ -1,13 +1,14 @@
 defmodule WatchClub.Contents.Actions.LookUpContent do
   @moduledoc """
-  Finds the Movie or TV Show with a TMDB ID, as a `SearchResult` saying whether it's in the
-  Library, without saving it. Returns nil when TMDB has none.
+  Finds the Movie or TV Show with a TMDB ID, or the Sports Event with a Sportarr ID, as a
+  `SearchResult` saying whether it's in the Library, without saving it. Returns nil when the
+  Metadata Provider has none.
   """
   use Ash.Resource.Actions.Implementation
 
   alias WatchClub.Contents
   alias WatchClub.Contents.{ContentIdentity, SearchResult}
-  alias WatchClub.Integrations.Tmdb
+  alias WatchClub.Integrations.{SportarrHub, Tmdb}
 
   @impl true
   def run(%Ash.ActionInput{arguments: %{content_identity: identity}}, _opts, context) do
@@ -40,6 +41,19 @@ defmodule WatchClub.Contents.Actions.LookUpContent do
          year: tv_show.first_air_date && tv_show.first_air_date.year,
          overview: tv_show.overview,
          poster_path: tv_show.poster_path
+       }}
+    end
+  end
+
+  defp fetch(%ContentIdentity{type: :sports_event, external_id: id} = identity, _locale) do
+    with {:ok, event} <- SportarrHub.get_event(id) do
+      {:ok,
+       %SearchResult{
+         identity: identity,
+         title: event.title,
+         year: event.date && event.date.year,
+         overview: event.overview,
+         poster_path: event.poster_url
        }}
     end
   end

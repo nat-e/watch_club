@@ -412,3 +412,33 @@ msgstr "Impossible d'associer le fichier. Réessayez."
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr "Réessayer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Event title or Sportarr ID"
+msgstr "Titre de l'événement ou ID Sportarr"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "No event has this Sportarr ID."
+msgstr "Aucun événement n'a cet ID Sportarr."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net"
+msgstr "Rechercher sur sportarr.net"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net by title or Sportarr ID."
+msgstr "Recherchez sur sportarr.net par titre ou par ID Sportarr."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr ID %{id}"
+msgstr "ID Sportarr %{id}"

@@ -346,3 +346,28 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Try again"
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Event title or Sportarr ID"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "No event has this Sportarr ID."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search sportarr.net by title or Sportarr ID."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Sportarr ID %{id}"
+msgstr ""

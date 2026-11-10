@@ -627,7 +627,7 @@ _Avoid_: Group, aggregate, card, item
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
 - A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
-- A **Manual Match** attaches a **Movie** file to a **Movie**, and a **TV Show Episode** file to a **TV Show Episode**
+- A **Manual Match** attaches a **Movie** file to a **Movie**, a **TV Show Episode** file to a **TV Show Episode**, and a **Sports Event** file to a **Sports Event**
 - A **Manual Match** may create the missing **Content**, as **Request Content** does
 - **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
 - Removing a **Manual Match** keeps the **Video**'s **Content** until a **Media Import** or a webhook matches the file again

@@ -46,11 +46,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     end
   end
 
-  # The Movie or TV Show Episode of the Video's Manual Match
+  # The Movie, TV Show Episode or Sports Event of the Video's Manual Match
   defp manual_match(path) do
     case MediaCatalog.get_media_by_path(path, load: :video, actor: SystemActor.actor()) do
       {:ok, %Media{manually_matched?: true, video: video}} ->
-        video.movie_id || video.tv_show_episode_id
+        video.movie_id || video.tv_show_episode_id || video.sports_event_id
 
       {:ok, %Media{}} ->
         nil
