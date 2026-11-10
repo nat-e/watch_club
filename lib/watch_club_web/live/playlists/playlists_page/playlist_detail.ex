@@ -171,7 +171,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
       assign(assigns,
         content: content,
         identity: ContentIdentity.from_content(content),
-        title: content.implementation.best_localization.title,
+        title: content.title,
         progress: progress_percent(content)
       )
 
@@ -179,7 +179,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
     <li id={@id} class="flex items-start gap-group py-group">
       <.link navigate={Url.content_details_link(@identity)} class="shrink-0" tabindex="-1">
         <.tmdb_poster
-          path={@content.implementation.best_localization.poster_path}
+          path={@content.poster_path}
           size="w154"
           class="w-20"
         >

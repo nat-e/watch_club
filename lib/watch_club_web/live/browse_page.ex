@@ -19,7 +19,8 @@ defmodule WatchClubWeb.BrowsePage do
   @page_size 40
   # Pages leave out `added_to_library_at`: with the Title sort, it empties the next page (WC-51)
   @content_fields [
-    :implementation,
+    :title,
+    :poster_path,
     :actor_progress_status,
     :incomplete?,
     actor_recommendations: [:recommended_by]

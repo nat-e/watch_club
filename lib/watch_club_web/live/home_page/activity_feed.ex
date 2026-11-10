@@ -90,7 +90,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
           >
             <.tmdb_poster
               size="w185"
-              path={content.implementation.best_localization.poster_path}
+              path={content.poster_path}
               class="w-full"
             />
           </.link>
@@ -162,7 +162,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
       navigate={Url.content_details_link(@content)}
       class="font-semibold text-text hover:underline"
     >
-      {@content.implementation.best_localization.title}
+      {@content.title}
     </.link>
     """
   end

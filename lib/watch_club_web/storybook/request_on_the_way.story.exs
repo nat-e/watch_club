@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
   use PhoenixStorybook.Story, :component
 
   alias WatchClub.Accounts.{User, UserSettings}
-  alias WatchClub.Contents.{Content, Movie, MovieLocalization}
+  alias WatchClub.Contents.Content
   alias WatchClub.Requests.ContentRequest
   alias WatchClubWeb.MyRequestsPage.RequestOnTheWay
 
@@ -65,12 +65,8 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
             external_id_source: :tmdb,
             external_id: "438631",
             release_date: opts[:release_date] || ~D[2021-09-15],
-            implementation: %Movie{
-              best_localization: %MovieLocalization{
-                title: opts[:title] || "Dune",
-                poster_path: "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
-              }
-            }
+            title: opts[:title] || "Dune",
+            poster_path: "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
           }
         },
         focus_after_removal: "requests-on-the-way-heading",

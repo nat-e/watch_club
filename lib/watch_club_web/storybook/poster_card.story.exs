@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Storybook.PosterCard do
   use PhoenixStorybook.Story, :component
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, Movie, MovieLocalization, TvShow, TvShowLocalization}
+  alias WatchClub.Contents.Content
   alias WatchClub.Conversations.Conversation
   alias WatchClubWeb.Components.Contents.{PlayOrRequestButton, PosterCard}
 
@@ -84,12 +84,8 @@ defmodule WatchClubWeb.Storybook.PosterCard do
         for username <- recommenders do
           %Conversation{recommended_by: %User{id: username, username: username}}
         end,
-      implementation: %Movie{
-        best_localization: %MovieLocalization{
-          title: "Dune",
-          poster_path: "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
-        }
-      }
+      title: "Dune",
+      poster_path: "/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
     }
   end
 
@@ -105,12 +101,8 @@ defmodule WatchClubWeb.Storybook.PosterCard do
       release_date: ~D[2023-05-04],
       actor_progress_status: :in_progress,
       actor_recommendations: [],
-      implementation: %TvShow{
-        best_localization: %TvShowLocalization{
-          title: "Silo",
-          poster_path: "/r2QXomqKjkKHVtYGGtkf2l2Y7go.jpg"
-        }
-      }
+      title: "Silo",
+      poster_path: "/r2QXomqKjkKHVtYGGtkf2l2Y7go.jpg"
     }
   end
 end

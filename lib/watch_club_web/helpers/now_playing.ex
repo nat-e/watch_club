@@ -18,7 +18,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
             audio_tracks: [:display_label],
             text_tracks: [:display_label, :language_code, :hls_supported?],
             movie: [:best_localization, :backdrop_path],
-            sports_event: [:best_localization, :backdrop_path],
+            sports_event: [],
             tv_show_episode: [
               :formatted_episode_number,
               :still_path,

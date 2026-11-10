@@ -11,7 +11,6 @@ defmodule WatchClub.Contents.Actions.SearchContent do
 
   alias WatchClub.Contents
   alias WatchClub.Contents.{ContentIdentity, SearchContentType, SearchResult, SearchResultsPage}
-  alias WatchClub.Contents.SportsEvent
   alias WatchClub.Integrations.SportarrHub
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
@@ -33,7 +32,7 @@ defmodule WatchClub.Contents.Actions.SearchContent do
         Ash.Context.to_opts(context,
           query: [filter: [type: [in: SearchContentType.content_types(scope)]]],
           page: [limit: @library_page_size, offset: (page - 1) * @library_page_size, count: true],
-          load: [:implementation]
+          load: [:title, :overview, :poster_path]
         )
       )
 
@@ -151,26 +150,13 @@ defmodule WatchClub.Contents.Actions.SearchContent do
     Enum.map(results, &%{&1 | has_media?: MapSet.member?(with_media, &1.identity)})
   end
 
-  defp library_search_result(%{implementation: %SportsEvent{} = event} = content) do
-    %SearchResult{
-      identity: ContentIdentity.from_content(content),
-      title: event.title,
-      year: content.release_date && content.release_date.year,
-      overview: event.overview,
-      poster_path: event.poster_url,
-      has_media?: true
-    }
-  end
-
   defp library_search_result(content) do
-    localization = content.implementation.best_localization
-
     %SearchResult{
       identity: ContentIdentity.from_content(content),
-      title: localization.title,
+      title: content.title,
       year: content.release_date && content.release_date.year,
-      overview: localization.overview,
-      poster_path: localization.poster_path,
+      overview: content.overview,
+      poster_path: content.poster_path,
       has_media?: true
     }
   end

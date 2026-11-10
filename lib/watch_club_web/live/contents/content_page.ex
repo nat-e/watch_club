@@ -35,12 +35,16 @@ defmodule WatchClubWeb.Contents.ContentPage do
   # The Content and its implementation data shown on the page.
   @content_load [
     :has_media?,
+    :title,
+    :overview,
+    :poster_path,
+    :backdrop_path,
     :actor_progress_status,
     :incomplete?,
     implementation: %{
       load: [
         movie: [videos: [:media, :default_video_track]],
-        sports_event: [:backdrop_path, videos: [:media, :default_video_track]],
+        sports_event: [videos: [:media, :default_video_track]],
         tv_show: [:actor_next_episode, :season_numbers, :season_count]
       ]
     }
@@ -146,16 +150,16 @@ defmodule WatchClubWeb.Contents.ContentPage do
     <%!-- The app bar sits over the header --%>
     <header class="relative isolate pt-(--wc-app-bar-height)">
       <div
-        :if={backdrop_path(@content)}
+        :if={@content.backdrop_path}
         aria-hidden="true"
         class="absolute inset-0 -z-10 overflow-hidden"
       >
-        <.tmdb_backdrop path={backdrop_path(@content)} size="w1280" class="size-full object-cover" />
+        <.tmdb_backdrop path={@content.backdrop_path} size="w1280" class="size-full object-cover" />
         <span class="absolute inset-0 bg-canvas/80"></span>
       </div>
       <div class="flex flex-col items-center gap-group px-page py-cluster text-center @3xl:flex-row @3xl:items-start @3xl:gap-cluster @3xl:py-section @3xl:text-left">
         <.tmdb_poster
-          path={localization(@content).poster_path}
+          path={@content.poster_path}
           size="w342"
           class="w-28 shrink-0 shadow-card @3xl:w-44"
         >
@@ -189,8 +193,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
             </li>
           </ul>
           <.overview
-            :if={localization(@content).overview not in [nil, ""]}
-            text={localization(@content).overview}
+            :if={@content.overview not in [nil, ""]}
+            text={@content.overview}
             lang={if @content.type == :sports_event, do: "en"}
           />
           <.actions
@@ -877,23 +881,14 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp finished?(content), do: content != nil and content.actor_progress_status == :completed
 
-  defp localization(%Content{implementation: implementation} = content) do
-    implementation.best_localization ||
-      %{
-        title: content.original_title,
-        overview: nil,
-        poster_path: nil,
-        runtime: nil,
-        cast: [],
-        trailer_url: nil
-      }
-  end
+  # A Movie's or a TV Show's cast, trailer and runtime. A Sports Event has none.
+  defp localization(%Content{implementation: %{best_localization: %{} = localization}}),
+    do: localization
+
+  defp localization(_content), do: %{runtime: nil, cast: [], trailer_url: nil}
 
   defp title(nil), do: dgettext("contents", "Loading content…")
-  defp title(content), do: localization(content).title
-
-  defp backdrop_path(%Content{implementation: implementation}),
-    do: implementation.backdrop_path
+  defp title(content), do: content.title
 
   # The season of the episode Play plays, else the first one
   defp current_season_number(%Content{

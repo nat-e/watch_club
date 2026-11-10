@@ -15,7 +15,7 @@ defmodule WatchClub.Contents.Calculations.GetContentImplementation do
       book: merge_load(context, :book),
       movie: merge_load(context, :movie, [:best_localization]),
       tv_show: merge_load(context, :tv_show, [:best_localization]),
-      sports_event: merge_load(context, :sports_event, [:best_localization, :backdrop_path])
+      sports_event: merge_load(context, :sports_event)
     ]
   end
 

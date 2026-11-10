@@ -16,9 +16,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
 
   @page_size 20
   @sorts [:added, :title]
-  @row_load [content: [:implementation], video: [:audio_tracks, :text_tracks, :tv_show_episode]]
+  @row_load [
+    content: [:title, :poster_path],
+    video: [:audio_tracks, :text_tracks, :tv_show_episode]
+  ]
   @details_load [
-    content: [:implementation],
+    content: [:title, :poster_path],
     video: [:default_video_track, :audio_tracks, :text_tracks, :tv_show_episode]
   ]
 

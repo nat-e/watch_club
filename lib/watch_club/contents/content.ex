@@ -426,28 +426,67 @@ defmodule WatchClub.Contents.Content do
               :integer,
               expr(fragment("(date_part('decade', ?) * 10)::integer", release_date))
 
-    calculate :localized_title_key,
+    # What pages show of a Content: a Movie's or a TV Show's from its localization in the
+    # actor's Locale, a Sports Event's from its own English metadata. Images are TMDB paths, or
+    # image URLs for a Sports Event.
+    calculate :title,
               :string,
               expr(
                 cond do
                   type == :movie ->
-                    fragment(
-                      "trim(unaccent(lower(coalesce(?, ?))))",
-                      movie.best_localization.title,
-                      original_title
-                    )
+                    fragment("coalesce(?, ?)", movie.best_localization.title, original_title)
 
                   type == :tv_show ->
-                    fragment(
-                      "trim(unaccent(lower(coalesce(?, ?))))",
-                      tv_show.best_localization.title,
-                      original_title
-                    )
+                    fragment("coalesce(?, ?)", tv_show.best_localization.title, original_title)
+
+                  type == :sports_event ->
+                    sports_event.title
 
                   true ->
-                    fragment("trim(unaccent(lower(?)))", original_title)
+                    original_title
                 end
               ) do
+      public? true
+      allow_nil? false
+    end
+
+    calculate :overview,
+              :string,
+              expr(
+                cond do
+                  type == :movie -> movie.best_localization.overview
+                  type == :tv_show -> tv_show.best_localization.overview
+                  type == :sports_event -> sports_event.overview
+                end
+              ) do
+      public? true
+    end
+
+    calculate :poster_path,
+              :string,
+              expr(
+                cond do
+                  type == :movie -> movie.best_localization.poster_path
+                  type == :tv_show -> tv_show.best_localization.poster_path
+                  type == :sports_event -> sports_event.poster_url
+                end
+              ) do
+      public? true
+    end
+
+    calculate :backdrop_path,
+              :string,
+              expr(
+                cond do
+                  type == :movie -> movie.backdrop_path
+                  type == :tv_show -> tv_show.backdrop_path
+                  type == :sports_event -> sports_event.backdrop_url
+                end
+              ) do
+      public? true
+    end
+
+    calculate :localized_title_key, :string, expr(fragment("trim(unaccent(lower(?)))", title)) do
       public? true
       allow_nil? false
     end

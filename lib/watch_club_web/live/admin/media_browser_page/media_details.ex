@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
 
   attr :media, Media,
     required: true,
-    doc: "with its `content`'s `implementation`, and its `video`'s tracks and episode"
+    doc: "with its `content`'s `title` and `poster_path`, and its `video`'s tracks and episode"
 
   attr :locale, :atom, required: true
 

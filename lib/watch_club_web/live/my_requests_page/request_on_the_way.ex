@@ -24,7 +24,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
   def request_on_the_way(assigns) do
     assigns =
       assigns
-      |> assign(:title, assigns.request.content.implementation.best_localization.title)
+      |> assign(:title, assigns.request.content.title)
       |> assign(:content_identity, ContentIdentity.from_content(assigns.request.content))
       |> assign(
         :path,
@@ -37,7 +37,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
         <%!-- Screen readers and keyboards reach the name's link --%>
         <.link navigate={@path} tabindex="-1" aria-hidden="true" class="block">
           <.tmdb_poster
-            path={@request.content.implementation.best_localization.poster_path}
+            path={@request.content.poster_path}
             size="w154"
             class="w-20"
           />

@@ -29,7 +29,12 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       :recommended_by,
       :actor_participant,
       recipients: [:user],
-      content: [implementation: %{load: [tv_show: [:season_count]]}]
+      content: [
+        :title,
+        :poster_path,
+        :backdrop_path,
+        implementation: %{load: [tv_show: [:season_count]]}
+      ]
     ]
   end
 
@@ -200,8 +205,8 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       class="relative isolate -mx-page -mt-related overflow-hidden @4xl:-mx-cluster"
     >
       <.tmdb_backdrop
-        :if={@conversation.content.implementation.backdrop_path}
-        path={@conversation.content.implementation.backdrop_path}
+        :if={@conversation.content.backdrop_path}
+        path={@conversation.content.backdrop_path}
         size="w1280"
         class="absolute inset-0 -z-10 size-full object-cover"
       />
@@ -260,7 +265,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
     <div class="absolute inset-x-0 top-0 z-20 hidden items-center gap-group border-b border-border-subtle bg-canvas px-page py-related group-data-collapsed/conversation:flex @4xl:px-cluster">
       <.back_to_inbox id="compact-back" />
       <.tmdb_poster
-        path={@conversation.content.implementation.best_localization.poster_path}
+        path={@conversation.content.poster_path}
         size="w154"
         class="w-10 shrink-0"
       />
@@ -408,7 +413,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       )
 
   defp content_title(conversation),
-    do: conversation.content.implementation.best_localization.title
+    do: conversation.content.title
 
   # "2022 · Movie · 2 hr 9 min"
   defp facts(content, locale) do

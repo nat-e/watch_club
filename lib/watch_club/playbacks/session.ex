@@ -233,7 +233,7 @@ defmodule WatchClub.Playbacks.Session do
           :started_by,
           current_playback: [
             media: [
-              content: [:implementation],
+              content: [:title, :poster_path],
               video: [tv_show_episode: [:formatted_episode_number]]
             ]
           ]

@@ -22,7 +22,8 @@ defmodule WatchClubWeb.MyRequestsPage do
     :aired_episodes_count,
     :aired_episodes_with_media_count,
     content: [
-      :implementation,
+      :title,
+      :poster_path,
       :actor_progress_status,
       :actor_next_medias_to_play,
       :incomplete?,

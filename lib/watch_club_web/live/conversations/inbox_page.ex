@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
     recipients: [:user],
     last_message: [:author],
     actor_participant: [:unread_count],
-    content: [:implementation]
+    content: [:title, :poster_path]
   ]
 
   @impl true
@@ -125,7 +125,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
 
     assigns =
       assign(assigns,
-        title: conversation.content.implementation.best_localization.title,
+        title: conversation.content.title,
         unread_count: conversation.actor_participant.unread_count,
         other: other,
         others_count: others_count,
@@ -141,7 +141,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
     >
       <div class="relative shrink-0">
         <.tmdb_poster
-          path={@conversation.content.implementation.best_localization.poster_path}
+          path={@conversation.content.poster_path}
           size="w154"
           class="w-12"
         />

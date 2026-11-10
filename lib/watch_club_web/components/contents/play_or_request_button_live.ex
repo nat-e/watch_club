@@ -110,6 +110,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
       Contents.get_contents_by_identities!(identities,
         load: [
           :has_media?,
+          :title,
           :actor_next_medias_to_play,
           :actor_progress_status,
           implementation: %{load: [tv_show: [actor_next_episode: [:actor_progress_status]]]},
@@ -131,7 +132,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         play_href: play_href((content && content.actor_next_medias_to_play) || []),
         play_label:
           play_label(assigns.content_identity.type, content, socket.assigns[:on_tv?] || false),
-        title: content && content.implementation.best_localization.title,
+        title: content && content.title,
         request: content && content.request,
         release_date: content && content.release_date
       )
@@ -143,11 +144,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     case Requests.request_content(
            socket.assigns.content_identity,
            # For its title: the Content may not exist before its request
-           load: [content: [:implementation]],
+           load: [content: [:title]],
            actor: socket.assigns.current_user
          ) do
       {:ok, request} ->
-        send_told_when_ready(request.content.implementation.best_localization.title)
+        send_told_when_ready(request.content.title)
         {:noreply, assign(socket, :focus_status, true)}
 
       {:error, _error} ->
