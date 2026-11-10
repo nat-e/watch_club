@@ -1321,7 +1321,8 @@ defmodule WatchClub.Contents.ContentTest do
       add_video!(amelie.id)
       add_video!(spirited_away.id)
       add_episode_video!(money_heist, 1)
-      add_video!(generate(movie()).id)
+      # Has only one of the words
+      add_video!(generate(movie(original_title: "Amélie")).id)
 
       # In any order, ignoring case, accents and punctuation
       assert [%Content{id: amelie_id}] =
@@ -1329,10 +1330,13 @@ defmodule WatchClub.Contents.ContentTest do
 
       # In localized titles
       assert [%Content{id: spirited_away_id}] =
-               get_contents_in_library!(%{query: "spirited"}, actor: member)
+               get_contents_in_library!(%{query: "away spirited"}, actor: member)
 
       assert [%Content{id: money_heist_id}] =
-               get_contents_in_library!(%{query: "heist"}, actor: member)
+               get_contents_in_library!(%{query: "heist money"}, actor: member)
+
+      # All in the same title
+      assert [] = get_contents_in_library!(%{query: "heist papel"}, actor: member)
 
       assert {amelie_id, spirited_away_id, money_heist_id} ==
                {amelie.id, spirited_away.id, money_heist.id}

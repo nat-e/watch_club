@@ -201,7 +201,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   # 2. Match by title, and year when known. We just fetch the Sportarr ID and go back to step 1.
   defp find_content!(%SportsEventIdentity{title: title, year: year}) when is_binary(title) do
     title
-    |> String.split(~r/[^[:alnum:]]+/u, trim: true)
+    |> String.split()
+    # Drops separators such as "-", so they don't count as words
+    |> Enum.filter(&String.match?(&1, ~r/[[:alnum:]]/u))
     |> search_sports_event!(year)
     |> then(fn
       nil -> nil

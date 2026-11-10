@@ -678,6 +678,8 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert browse.("show S01E02") == MapSet.new([medias[{1, 2}]])
       assert browse.("e1 s2") == MapSet.new([medias[{2, 1}]])
       assert browse.("s02") == MapSet.new([medias[{2, 1}], medias[{2, 2}]])
+      # Too large to be an episode number
+      assert browse.("e99999999999999999999") == MapSet.new()
     end
 
     test "searches the title in the actor's language" do

@@ -6,16 +6,21 @@ defmodule WatchClub.MediaCatalog.Preparations.FilterBrowseSearch do
   """
   use Ash.Resource.Preparation
 
+  import Ash.Expr
+
   require Ash.Query
 
-  @episode_number ~r/^(?:s(?<season_number>\d+))?(?:e(?<episode_number>\d+))?$/i
+  alias WatchClub.Shared.WordSearch
+
+  # Up to 4 digits, so a number always fits the database's integers
+  @episode_number ~r/^(?:s(?<season_number>\d{1,4}))?(?:e(?<episode_number>\d{1,4}))?$/i
 
   @impl true
   def prepare(query, _opts, _context) do
     {episode_numbers, words} =
       query
       |> Ash.Query.get_argument(:search)
-      |> String.split(~r/[^[:alnum:]]+/u, trim: true)
+      |> WordSearch.words()
       |> Enum.split_with(&Regex.match?(@episode_number, &1))
 
     # Such as [season_number: 1, episode_number: 2] for `s01e02`
@@ -25,16 +30,8 @@ defmodule WatchClub.MediaCatalog.Preparations.FilterBrowseSearch do
           number != "",
           do: {String.to_existing_atom(field), String.to_integer(number)}
 
-    query =
-      Ash.Query.filter(
-        query,
-        fragment(
-          "NOT EXISTS (SELECT FROM unnest(?::text[]) AS word WHERE strpos(unaccent(lower(concat_ws(' ', ?, ?))), unaccent(lower(word))) = 0)",
-          ^words,
-          path,
-          content.localized_title_key
-        )
-      )
+    path_and_title = expr(fragment("concat_ws(' ', ?, ?)", path, content.localized_title_key))
+    query = Ash.Query.filter(query, ^WordSearch.contains_every_word(path_and_title, words))
 
     if episode == [] do
       query
