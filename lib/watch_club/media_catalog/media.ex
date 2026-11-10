@@ -67,7 +67,6 @@ defmodule WatchClub.MediaCatalog.Media do
       change EnsureContentExists
       change AttachVideo
       change UpdateContentRequest
-      change WatchClub.Markers.Changes.ScheduleDetection
     end
 
     update :unmatch do
@@ -164,8 +163,6 @@ defmodule WatchClub.MediaCatalog.Media do
       end
 
       change UpdateContentRequest
-      change WatchClub.MediaCatalog.Changes.ScheduleTrickplay
-      change WatchClub.Markers.Changes.ScheduleDetection
     end
 
     create :create_ebook do

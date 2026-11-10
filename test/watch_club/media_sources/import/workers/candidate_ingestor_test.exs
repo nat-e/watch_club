@@ -4,8 +4,10 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   import Mox
 
   alias WatchClub.Contents.{Content, Movie}
-  alias WatchClub.Ffmpeg.ProbeMock
+  alias WatchClub.Ffmpeg.{ProbeMock, Trickplay}
+  alias WatchClub.Markers.Workers.DetectMarkers
   alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
@@ -81,6 +83,54 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
       assert %Media{type: :movie, video: %Video{movie_id: movie_id}} = load_media!(path)
       assert movie_id == movie.id
+    end
+  end
+
+  describe "perform/1 — file already imported" do
+    setup do
+      seed_movie(tmdb_id: 11)
+      stub(ProbeMock, :probe, fn _path -> {:ok, fixture("video_friends_s01e01")} end)
+
+      path = Path.join(System.tmp_dir!(), "candidate-#{unique()}.mkv")
+      File.write!(path, "stub")
+      on_exit(fn -> File.rm(path) end)
+
+      candidate = %Candidate{
+        media_source_id: default_media_source_id(),
+        path: path,
+        media_type: :movie,
+        identity: %MovieIdentity{tmdb_id: 11}
+      }
+
+      :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+      %Media{id: id} = load_media!(path)
+
+      # As GenerateTrickplay leaves them
+      dir = Trickplay.dir(id)
+      File.mkdir_p!(dir)
+      File.write!(Path.join(dir, "meta.json"), "{}")
+      on_exit(fn -> File.rm_rf!(dir) end)
+
+      Oban.cancel_all_jobs(Oban.Job)
+      %{candidate: candidate, media_id: id}
+    end
+
+    test "keeps the Scrubbing Thumbnails and Markers of an unchanged file",
+         %{candidate: candidate} do
+      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+
+      refute_enqueued(worker: GenerateTrickplay)
+      refute_enqueued(worker: DetectMarkers)
+    end
+
+    test "regenerates the Scrubbing Thumbnails and Markers of an unchanged file when asked",
+         %{candidate: candidate, media_id: media_id} do
+      candidate = %{candidate | regenerate_thumbnails_and_markers?: true}
+
+      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+
+      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media_id})
+      assert_enqueued(worker: DetectMarkers)
     end
   end
 

@@ -5,8 +5,11 @@ defmodule WatchClub.MediaCatalog.MediaTest do
   import WatchClub.MediaCatalog
 
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
+  alias WatchClub.Ffmpeg.Trickplay
+  alias WatchClub.Markers.Workers.DetectMarkers
 
   alias WatchClub.MediaCatalog.{Audiobook, AudioTrack, Ebook, Media, TextTrack, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
 
   alias WatchClub.Requests.ContentRequest
   alias WatchClub.SystemActor
@@ -64,6 +67,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                    type: :movie,
                    video: %{
                      movie_id: movie.id,
+                     file_fingerprint: "fingerprint",
                      duration_seconds: 7245.5,
                      container: "matroska",
                      bit_rate: 8_000_000,
@@ -211,6 +215,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
             type: :movie,
             video: %{
               movie_id: movie.id,
+              file_fingerprint: "replaced fingerprint",
               container: "matroska",
               video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
               audio_tracks: [
@@ -284,11 +289,107 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       end
     end
 
+    test "attaches a Sports Event file matched to another Sports Event to it" do
+      new_sports_event = generate(sports_event())
+      input = media_sports_event_input(generate(sports_event()).id)
+      create_or_update_video!(input, actor: SystemActor.actor())
+
+      rematched =
+        input
+        |> put_in([:video, :sports_event_id], new_sports_event.id)
+        |> create_or_update_video!(actor: SystemActor.actor(), load: :video)
+
+      assert rematched.content_id == new_sports_event.id
+      assert rematched.video.sports_event_id == new_sports_event.id
+    end
+
     test "rejects writes from a non-system actor" do
       user = generate(user())
       movie = seed_movie()
 
       create_or_update_video(video_media_input("tmp/forbidden.mkv", movie), actor: user)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+
+    test "builds the Scrubbing Thumbnails of a new file and finds the Markers of its season" do
+      episode = seed_tv_show_episode()
+
+      media =
+        create_or_update_video!(video_media_input("tmp/new.mkv", episode),
+          actor: SystemActor.actor()
+        )
+
+      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media.id})
+
+      assert_enqueued(
+        worker: DetectMarkers,
+        args: %{tv_show_id: episode.tv_show_id, season_number: episode.season_number}
+      )
+    end
+
+    test "keeps the Scrubbing Thumbnails and Markers of an unchanged file" do
+      input = video_media_input("tmp/unchanged.mkv", seed_movie())
+      saved_with_thumbnails!(input)
+
+      create_or_update_video!(input, actor: SystemActor.actor())
+
+      refute_enqueued(worker: GenerateTrickplay)
+      refute_enqueued(worker: DetectMarkers)
+    end
+
+    test "rebuilds the Scrubbing Thumbnails and Markers of a changed file" do
+      movie = seed_movie()
+      input = video_media_input("tmp/changed.mkv", movie)
+      media = saved_with_thumbnails!(input)
+
+      create_or_update_video!(put_in(input, [:video, :file_fingerprint], "changed"),
+        actor: SystemActor.actor()
+      )
+
+      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media.id})
+      assert_enqueued(worker: DetectMarkers, args: %{movie_id: movie.id})
+    end
+
+    test "builds the missing Scrubbing Thumbnails of an unchanged file" do
+      input = video_media_input("tmp/missing-thumbnails.mkv", seed_movie())
+      media = saved_with_thumbnails!(input)
+      File.rm_rf!(Trickplay.dir(media.id))
+
+      create_or_update_video!(input, actor: SystemActor.actor())
+
+      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media.id})
+      refute_enqueued(worker: DetectMarkers)
+    end
+
+    test "finds the Markers of an unchanged file matched to another Movie" do
+      new_movie = seed_movie()
+      saved_with_thumbnails!(video_media_input("tmp/rematched.mkv", seed_movie()))
+
+      create_or_update_video!(video_media_input("tmp/rematched.mkv", new_movie),
+        actor: SystemActor.actor()
+      )
+
+      refute_enqueued(worker: GenerateTrickplay)
+      assert_enqueued(worker: DetectMarkers, args: %{movie_id: new_movie.id})
+    end
+  end
+
+  describe "regenerate_thumbnails_and_markers/*" do
+    test "rebuilds the Scrubbing Thumbnails and Markers of an unchanged file" do
+      movie = seed_movie()
+      media = saved_with_thumbnails!(video_media_input("tmp/regenerate.mkv", movie))
+
+      regenerate_thumbnails_and_markers!(media.video, actor: generate(administrator()))
+
+      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media.id})
+      assert_enqueued(worker: DetectMarkers, args: %{movie_id: movie.id})
+    end
+
+    test "rejects actors other than the Instance Administrator" do
+      media = generate(video_media(nil))
+
+      Ash.load!(media, :video, authorize?: false).video
+      |> regenerate_thumbnails_and_markers(actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
@@ -539,6 +640,15 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       assert matched.content_id == sports_event.id
       assert matched.video.sports_event_id == sports_event.id
+    end
+
+    test "finds the Markers of the matched Movie" do
+      movie = generate(movie())
+      media = generate(video_media(nil))
+
+      match_media!(media, ContentIdentity.from_content(movie), actor: generate(administrator()))
+
+      assert_enqueued(worker: DetectMarkers, args: %{movie_id: movie.id})
     end
 
     test "creates the Movie when WatchClub doesn't have it" do
@@ -798,6 +908,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       type: type,
       video:
         Map.merge(attachment, %{
+          file_fingerprint: "fingerprint",
           video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
           audio_tracks: [
             %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
@@ -805,6 +916,19 @@ defmodule WatchClub.MediaCatalog.MediaTest do
           text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
         })
     }
+  end
+
+  # A saved Video whose Scrubbing Thumbnails are built, with no job left to run
+  defp saved_with_thumbnails!(input) do
+    media = create_or_update_video!(input, actor: SystemActor.actor(), load: :video)
+
+    dir = Trickplay.dir(media.id)
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, "meta.json"), "{}")
+    on_exit(fn -> File.rm_rf!(dir) end)
+
+    Oban.cancel_all_jobs(Oban.Job)
+    media
   end
 
   defp seed_movie do

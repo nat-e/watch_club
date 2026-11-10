@@ -16,7 +16,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
             | __MODULE__.BookIdentity.t()
             | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
-          match_result: __MODULE__.MatchResult.t() | nil
+          match_result: __MODULE__.MatchResult.t() | nil,
+          regenerate_thumbnails_and_markers?: boolean()
         }
 
   defstruct [
@@ -27,7 +28,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     :relative_path,
     :identity,
     :media_structure,
-    :match_result
+    :match_result,
+    # The Media Import's choice to rebuild them even when the file hasn't changed
+    regenerate_thumbnails_and_markers?: false
   ]
 
   defmodule MatchResult do
@@ -112,12 +115,13 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     @moduledoc """
     The technical shape of the file — container, duration, and the list of
     streams. Extracted by probing the file bytes (and discovering sidecar
-    text-track files for videos).
+    text-track files for videos). A video also gets its File Fingerprint.
     """
 
     @type t :: %__MODULE__{}
 
     defstruct [
+      :file_fingerprint,
       :container,
       :duration_seconds,
       :bit_rate,
@@ -161,9 +165,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, and
-  `identity`) into a plain map for an Oban job's args. `identity` is
-  flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
+  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`,
+  `identity` and `regenerate_thumbnails_and_markers?`) into a plain map for an Oban job's args.
+  `identity` is flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -171,7 +175,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       media_source_id: candidate.media_source_id,
       path: candidate.path,
       media_type: candidate.media_type,
-      identity: candidate.identity && Map.from_struct(candidate.identity)
+      identity: candidate.identity && Map.from_struct(candidate.identity),
+      regenerate_thumbnails_and_markers?: candidate.regenerate_thumbnails_and_markers?
     }
   end
 
@@ -181,19 +186,24 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   `to_map/1`.
   """
   @spec from_map(map()) :: t()
-  def from_map(%{
-        "media_source_id" => media_source_id,
-        "path" => path,
-        "media_type" => media_type,
-        "identity" => identity_fields
-      }) do
+  def from_map(
+        %{
+          "media_source_id" => media_source_id,
+          "path" => path,
+          "media_type" => media_type,
+          "identity" => identity_fields
+        } = args
+      ) do
     media_type = to_media_type(media_type)
 
     %__MODULE__{
       media_source_id: media_source_id,
       path: path,
       media_type: media_type,
-      identity: build_identity(identity_fields, media_type)
+      identity: build_identity(identity_fields, media_type),
+      # Missing from the jobs enqueued before the option existed
+      regenerate_thumbnails_and_markers?:
+        Map.get(args, "regenerate_thumbnails_and_markers?", false)
     }
   end
 

@@ -397,3 +397,9 @@ msgstr "Choisissez ce qui ne va pas"
 #, elixir-autogen, elixir-format
 msgid "Something else started playing at the same time"
 msgstr "Une autre lecture a commencé au même moment"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_sources/import.ex
+#, elixir-autogen, elixir-format
+msgid "An import of this media source is already running."
+msgstr "Un import de cette source de médias est déjà en cours."

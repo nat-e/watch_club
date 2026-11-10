@@ -222,8 +222,7 @@ msgid "Import movies from a Radarr server."
 msgstr "Importez des films depuis un serveur Radarr."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_source_history_page.ex
-#: lib/watch_club_web/live/admin/media_sources_page.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Import started"
 msgstr "Import lancé"
@@ -353,13 +352,13 @@ msgstr "Dossier racine"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #: lib/watch_club_web/live/admin/media_sources/history_header.ex
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Run import"
 msgstr "Lancer l'import"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Run media import"
 msgstr "Lancer un import de médias"
@@ -402,7 +401,7 @@ msgid "Sonarr"
 msgstr "Sonarr"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Start a new import of %{name} from:"
 msgstr "Lancer un nouvel import de %{name} depuis :"
@@ -543,13 +542,13 @@ msgid "All"
 msgstr "Tous"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "All files"
 msgstr "Tous les fichiers"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Also retries files that couldn't be matched."
 msgstr "Réessaie aussi les fichiers qui n'ont pas pu être associés."
@@ -573,31 +572,31 @@ msgid "New and unmatched"
 msgstr "Nouveaux et non associés"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "New and unmatched files"
 msgstr "Nouveaux fichiers et fichiers non associés"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "New files only"
 msgstr "Nouveaux fichiers uniquement"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Only files not imported yet."
 msgstr "Seulement les fichiers pas encore importés."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Process"
 msgstr "Traiter"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Reads every file again and matches it again. Manual matches are kept."
 msgstr "Relit chaque fichier et l'associe à nouveau. Les associations manuelles sont conservées."
@@ -620,7 +619,19 @@ msgid "Sportarr"
 msgstr "Sportarr"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Regenerate thumbnails and markers"
+msgstr "Régénérer les miniatures et les marqueurs"
+
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Its media will be removed from the instance too. Their files stay on disk."
 msgstr "Ses médias seront aussi retirés de l'instance. Leurs fichiers restent sur le disque."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Even for files that haven't changed. New files always get them."
+msgstr "Même pour les fichiers qui n'ont pas changé. Les nouveaux fichiers les obtiennent toujours."

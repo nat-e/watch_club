@@ -190,6 +190,14 @@ _Avoid_: Content Type, file type
 Media that can be played and is attached to a movie, a TV show episode or a sports event.
 _Avoid_: Media Version, video version
 
+**File Fingerprint**:
+A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file changed.
+_Avoid_: File hash, checksum, audio fingerprint
+
+**Scrubbing Thumbnails**:
+The small pictures of a **Video** that the **Player** shows over its progress bar while the **User** seeks.
+_Avoid_: Preview thumbnails, seek previews, sprites, BIF
+
 **Player**:
 The WatchClub interface where a **User** watches a selected video.
 _Avoid_: Video player page, stream page
@@ -311,7 +319,7 @@ One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** 
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Files to Process**:
-Which files a **Media Import** processes: New files only, New and unmatched files, or All files. Processing a file reads its technical details and matches it again. A webhook-triggered single-file ingest always processes its file.
+Which files a **Media Import** processes: New files only, New and unmatched files, or All files. Processing a file reads its technical details and its **File Fingerprint**, and matches it again. A webhook-triggered single-file ingest always processes its file.
 _Avoid_: Refresh metadata, force refresh, rescan existing media
 
 **Media Import Status**:
@@ -633,12 +641,15 @@ _Avoid_: Group, aggregate, card, item
 - A **Manual Match** may create the missing **Content**, as **Request Content** does
 - **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
 - Removing a **Manual Match** makes the **Video** **Unmatched Media**, until a **Media Import** or a webhook matches it again
+- WatchClub builds a **Video**'s **Scrubbing Thumbnails** when its file is new, its **File Fingerprint** changed or they're missing, or when the **Instance Administrator** regenerates them
+- The **Instance Administrator** regenerates the **Scrubbing Thumbnails** and **Markers** of one **Video** from the Media Browser, or of every **Video** a **Media Import** processes, with New and unmatched files or All files
 
 ### Markers
 
 - A **Video** has at most one **Marker** of each kind: **Intro**, **Recap** and **Credits**
 - A **Video**'s **Markers** come from its named chapters; a **TV Show Episode**'s missing **Intro** or **Credits** also comes from the longest audio it shares with another **TV Show Episode** of its season
 - WatchClub finds the **Markers** of a season's **TV Show Episodes** together, in the background, about a minute after the last of them is imported; it finds the **Markers** of a **Movie**'s **Videos** each time one of them is imported
+- WatchClub finds a **Video**'s **Markers** again only when its file is new, its **File Fingerprint** or its match changed, or the **Instance Administrator** regenerates them
 - WatchClub doesn't find the **Markers** of **Unmatched Media**
 - A **TV Show Episode** alone in its season only gets the **Markers** of its named chapters
 - A **Video** whose file can't be read keeps the **Markers** it has

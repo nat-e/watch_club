@@ -10,7 +10,9 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   # The fields that need to be loaded on the Source object to display the page
   @media_source_fields [:imports]
 
-  import WatchClubWeb.Admin.MediaSources.{HistoryHeader, MediaImportHistoryTable, RunImportModal}
+  import WatchClubWeb.Admin.MediaSources.{HistoryHeader, MediaImportHistoryTable}
+
+  alias WatchClubWeb.Admin.MediaSources.RunImportModalLive
 
   @impl true
   def mount(_params, _session, socket) do
@@ -84,7 +86,14 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
         />
       </.section>
 
-      <.run_import_modal :if={@run_modal_open?} media_source={@media_source} />
+      <.live_component
+        :if={@run_modal_open?}
+        module={RunImportModalLive}
+        id="run-import"
+        media_source={@media_source}
+        current_user={@current_user}
+        on_close={fn -> send(self(), :close_run_import_modal) end}
+      />
     </Layouts.app>
     """
   end
@@ -112,23 +121,6 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     {:noreply, assign(socket, :run_modal_open?, true)}
   end
 
-  def handle_event("confirm_run_import", %{"run_import" => params}, socket) do
-    %{"media_source_id" => id, "files_to_process" => files_to_process} = params
-
-    MediaSources.start_media_import!(id, %{files_to_process: files_to_process},
-      actor: socket.assigns.current_user
-    )
-
-    {:noreply,
-     socket
-     |> assign(:run_modal_open?, false)
-     |> put_flash(:info, dgettext("admin_media_imports", "Import started"))}
-  end
-
-  def handle_event("close_modals", _params, socket) do
-    {:noreply, assign(socket, :run_modal_open?, false)}
-  end
-
   def handle_event("cancel_media_import", %{"id" => media_import_id}, socket) do
     actor = socket.assigns.current_user
 
@@ -143,6 +135,9 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   # ---------------------------------------------------------------------------
 
   @impl true
+  def handle_info(:close_run_import_modal, socket),
+    do: {:noreply, assign(socket, :run_modal_open?, false)}
+
   # The source was deleted, navigate back to the list page
   def handle_info(%Notification{data: %Source{id: source_id}, action: %{name: :destroy}}, socket)
       when source_id == socket.assigns.media_source.id do

@@ -442,3 +442,15 @@ msgstr "Association manuelle retirée. Le fichier n'est plus associé jusqu'à c
 #, elixir-autogen, elixir-format
 msgid "This file isn't matched to a title."
 msgstr "Ce fichier n'est associé à aucun titre."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "Regenerate thumbnails and markers"
+msgstr "Régénérer les miniatures et les marqueurs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Thumbnails and markers will be regenerated in the background."
+msgstr "Les miniatures et les marqueurs seront régénérés en arrière-plan."

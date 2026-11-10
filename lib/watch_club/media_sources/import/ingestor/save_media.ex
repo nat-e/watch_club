@@ -20,8 +20,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
           type: media_type,
           video: build_video_input(media_type, candidate)
         },
-        actor: SystemActor.actor()
+        actor: SystemActor.actor(),
+        load: :video
       )
+
+    if candidate.regenerate_thumbnails_and_markers? do
+      MediaCatalog.regenerate_thumbnails_and_markers!(media.video, actor: SystemActor.actor())
+    end
 
     Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
     media
@@ -64,6 +69,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       end
 
     Map.merge(foreign_key, %{
+      file_fingerprint: structure.file_fingerprint,
       duration_seconds: structure.duration_seconds,
       container: structure.container,
       bit_rate: structure.bit_rate,

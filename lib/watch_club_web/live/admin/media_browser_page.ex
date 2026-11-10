@@ -85,6 +85,19 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   def handle_event("open_match_media_modal", _params, socket),
     do: {:noreply, assign(socket, :matching, socket.assigns.selected)}
 
+  def handle_event("regenerate_thumbnails_and_markers", _params, socket) do
+    MediaCatalog.regenerate_thumbnails_and_markers!(socket.assigns.selected.video,
+      actor: socket.assigns.current_user
+    )
+
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       dgettext("admin_media", "Thumbnails and markers will be regenerated in the background.")
+     )}
+  end
+
   def handle_event("open_remove_media_modal", _params, socket),
     do: {:noreply, assign(socket, :removing, socket.assigns.selected)}
 

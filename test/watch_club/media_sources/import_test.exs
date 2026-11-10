@@ -69,6 +69,25 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert ingested_paths() == Enum.sort(Map.values(paths))
     end
 
+    test "has each file it processes regenerate its Scrubbing Thumbnails and Markers when asked" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+
+      start_media_import!(
+        media_source.id,
+        %{files_to_process: :all, regenerate_thumbnails_and_markers?: true},
+        actor: admin
+      )
+
+      Oban.drain_queue(queue: :media_source_scans)
+
+      for path <- Map.values(paths) do
+        assert_enqueued(
+          worker: CandidateIngestor,
+          args: %{path: path, regenerate_thumbnails_and_markers?: true}
+        )
+      end
+    end
+
     test "rejects a new Media Import while one is already processing for the same Media Source" do
       admin = generate(administrator())
       media_source = generate(filesystem_media_source(actor: admin))

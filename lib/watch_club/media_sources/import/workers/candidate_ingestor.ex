@@ -31,11 +31,16 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @doc """
   Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
-  A scan `Candidate` is tagged with its Media Import, at default priority. A webhook `Candidate`
-  has no Media Import, and a higher priority than scan jobs.
+  A scan `Candidate` is tagged with its Media Import, at default priority, and carries its choice
+  to regenerate Scrubbing Thumbnails and Markers. A webhook `Candidate` has no Media Import, and a
+  higher priority than scan jobs.
   """
-  def new_job(%Import{id: id, media_source_id: media_source_id}, %Candidate{} = candidate) do
-    %{candidate | media_source_id: media_source_id}
+  def new_job(%Import{id: id} = media_import, %Candidate{} = candidate) do
+    %{
+      candidate
+      | media_source_id: media_import.media_source_id,
+        regenerate_thumbnails_and_markers?: media_import.regenerate_thumbnails_and_markers?
+    }
     |> Candidate.to_map()
     |> Map.put(:media_import_id, id)
     |> new(tags: ["media_import:#{id}"], priority: 1)
