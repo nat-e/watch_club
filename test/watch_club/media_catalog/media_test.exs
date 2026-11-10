@@ -1,6 +1,7 @@
 defmodule WatchClub.MediaCatalog.MediaTest do
   use WatchClub.DataCase
 
+  import ExUnit.CaptureLog
   import WatchClub.MediaCatalog
 
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, TvShow, TvShowEpisode}
@@ -515,6 +516,22 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         )
 
       assert ContentIdentity.from_content(matched.content) == ContentIdentity.for_movie(438_631)
+    end
+
+    test "returns an error when TMDB can't give the missing Movie" do
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, &Plug.Conn.send_resp(&1, 503, ""))
+      media = generate(video_media(nil))
+
+      capture_log(fn ->
+        match_media(media, ContentIdentity.for_movie(438_631), actor: generate(administrator()))
+        |> assert_has_error(fn
+          %WatchClub.Contents.MetadataUnavailable{} -> true
+          _ -> false
+        end)
+      end)
+
+      assert %Media{content_id: nil, manually_matched?: false} =
+               Ash.get!(Media, media.id, authorize?: false)
     end
 
     test "updates the requests of the previous and new Content" do

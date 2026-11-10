@@ -27,11 +27,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   @impl true
   def render(assigns) do
-    assigns =
-      assign(assigns,
-        episode_step?: assigns.picked != nil and assigns.picked.identity.type == :tv_show,
-        locale: assigns.current_user.settings.locale
-      )
+    assigns = assign(assigns, :locale, assigns.current_user.settings.locale)
 
     ~H"""
     <div>
@@ -51,14 +47,15 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           <span class="break-all">{Path.basename(@media.path)}</span>
         </:description>
 
-        <%= if @episode_step? do %>
-          <div id={"#{@id}-tv-show"} class="flex items-center gap-group">
+        <%= if @tv_show do %>
+          <div id={"#{@id}-tv-show"} class="flex items-center gap-group p-related text-base">
             <.search_result_summary result={@picked} type={false} />
           </div>
           <.episode_picker
             id={@id}
-            episodes={@episodes}
+            tv_show={@tv_show}
             season={@season}
+            episodes={@episodes}
             episode={@episode}
             locale={@locale}
             myself={@myself}
@@ -88,7 +85,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
                 type="search"
                 placeholder={search_placeholder(@media.type)}
                 aria-label={dgettext("admin_media", "Search TMDB")}
-                autofocus
+                phx-mounted={JS.focus()}
                 phx-debounce="300"
                 class="pl-9!"
               />
@@ -106,12 +103,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
         <:footer class="mt-auto">
           <.button
-            :if={@episode_step?}
+            :if={@tv_show}
             id={"#{@id}-back"}
             variant="secondary"
             phx-click="back"
             phx-target={@myself}
-            autofocus={!@episode}
+            phx-mounted={JS.focus()}
             class="sm:mr-auto"
           >
             <:icon><Lucideicons.arrow_left /></:icon>
@@ -121,10 +118,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
             {dgettext("default", "Cancel")}
           </.button>
           <.button
-            :if={@media.type == :movie or @episode_step?}
+            :if={@media.type == :movie or @tv_show}
             id={"#{@id}-confirm"}
-            disabled={if @episode_step?, do: !@episode, else: !@picked}
-            autofocus={@episode_step? and @episode != nil}
+            disabled={if @tv_show, do: !@episode, else: !@picked}
             phx-click="match"
             phx-target={@myself}
           >
@@ -140,17 +136,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   attr :media, Media, required: true
   attr :myself, :any, required: true
 
-  # The Content the file has, as a search result, with its episode, and the removal of a Manual
-  # Match. The button goes under the title when they don't fit side by side.
+  # The Content the file has, with its year or episode, and the removal of a Manual Match. The
+  # button goes under the title when they don't fit side by side.
   defp current_match(assigns) do
-    episode = assigns.media.video.tv_show_episode
-    result = SearchResult.from_content(assigns.media.content)
-
-    # Its facts: the year or the episode, and whether it's matched manually
     assigns =
       assign(assigns,
-        result: %{result | year: if(!episode, do: result.year), has_media?: false},
-        episode: episode
+        result: SearchResult.from_content(assigns.media.content),
+        episode: assigns.media.video.tv_show_episode
       )
 
     ~H"""
@@ -165,15 +157,18 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
         class="px-related"
       />
       <div class="flex flex-wrap items-center gap-x-group gap-y-related p-related">
-        <div class="flex min-w-48 flex-1 items-center gap-group text-base">
-          <.search_result_summary result={@result} type={false}>
-            <.badge :if={@episode} variant="secondary" size="sm" class="tabular-nums">
-              {@episode.formatted_episode_number}
-            </.badge>
-            <.badge :if={@media.manually_matched?} id={"#{@id}-manual"} variant="muted" size="sm">
-              <:icon><Lucideicons.pin /></:icon>
-              {dgettext("admin_media", "Matched manually")}
-            </.badge>
+        <div class="flex min-w-60 flex-1 items-center gap-group text-base">
+          <.search_result_summary result={@result}>
+            <:facts>
+              <span :if={!@episode}>{@result.year}</span>
+              <.badge :if={@episode} variant="secondary" size="sm" class="tabular-nums">
+                {@episode.formatted_episode_number}
+              </.badge>
+              <.badge :if={@media.manually_matched?} id={"#{@id}-manual"} variant="muted" size="sm">
+                <:icon><Lucideicons.pin /></:icon>
+                {dgettext("admin_media", "Matched manually")}
+              </.badge>
+            </:facts>
           </.search_result_summary>
         </div>
         <.button
@@ -252,15 +247,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           text={dgettext("admin_media", "Titles")}
           class="px-related"
         />
-        <div class="flex flex-col gap-px">
-          <.result_row
-            :for={result <- @found.titles}
-            id={"#{@id}-result-#{result.identity.external_id}"}
-            result={result}
-            picked={@picked}
-            myself={@myself}
-          />
-        </div>
+        <ul class="flex flex-col gap-px">
+          <li :for={result <- @found.titles}>
+            <.result_row
+              id={"#{@id}-result-#{result.identity.external_id}"}
+              result={result}
+              picked={@picked}
+              myself={@myself}
+            />
+          </li>
+        </ul>
       </section>
     </div>
     """
@@ -273,35 +269,24 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   # A Movie is picked, then matched. A TV Show opens its seasons.
   defp result_row(assigns) do
-    assigns = assign(assigns, :selected?, assigns.picked == assigns.result)
-
     ~H"""
-    <button
+    <.option_row
       id={@id}
-      type="button"
+      selected={if @result.identity.type == :movie, do: @result == @picked}
       phx-click="pick"
       phx-value-id={@result.identity.external_id}
       phx-target={@myself}
-      aria-pressed={@result.identity.type == :movie && to_string(@selected?)}
-      class={[
-        "flex w-full items-center gap-group rounded-control p-related text-left text-base transition-colors focus-visible:-outline-offset-2",
-        @selected? && "bg-surface-selected",
-        !@selected? && "hover:bg-surface-hover"
-      ]}
+      class="text-base"
     >
       <.search_result_summary result={@result} type={false} />
-      <Lucideicons.check :if={@selected?} class="size-icon shrink-0 text-text" />
-      <Lucideicons.chevron_right
-        :if={@result.identity.type == :tv_show}
-        class="size-icon shrink-0 text-text-subtle"
-      />
-    </button>
+    </.option_row>
     """
   end
 
   attr :id, :string, required: true
-  attr :episodes, AsyncResult, required: true, doc: "the TV Show's episodes, by season"
+  attr :tv_show, AsyncResult, required: true, doc: "the TV Show's Content and season numbers"
   attr :season, :integer
+  attr :episodes, :list, required: true, doc: "the season's"
   attr :episode, TvShowEpisode
   attr :locale, :atom, required: true
   attr :myself, :any, required: true
@@ -310,22 +295,34 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   defp episode_picker(assigns) do
     assigns =
       assign(assigns,
-        seasons: if(assigns.episodes.ok?, do: assigns.episodes.result, else: [])
+        season_numbers:
+          if(assigns.tv_show.ok?, do: assigns.tv_show.result.season_numbers, else: [])
       )
 
     ~H"""
     <div class="flex flex-col gap-group">
-      <.search_status
-        :if={!@episodes.ok?}
-        id={"#{@id}-episodes-status"}
-        status={if @episodes.loading, do: :loading, else: :error}
-        query=""
-        result_count={0}
-        on_retry={JS.push("retry_episodes", target: @myself)}
-      />
-      <.scroll_row :if={length(@seasons) > 1} id={"#{@id}-seasons"} variant="chips">
+      <div :if={@tv_show.loading} class="flex flex-col" aria-hidden="true">
+        <div :for={_row <- 1..5} class="flex animate-pulse flex-col gap-related p-related">
+          <span class="h-3 w-1/2 rounded-full bg-surface-hover"></span>
+          <span class="h-3 w-1/4 rounded-full bg-surface-hover"></span>
+        </div>
+      </div>
+      <.empty :if={@tv_show.failed} id={"#{@id}-episodes-error"} border={false} size="sm">
+        <:icon><Lucideicons.triangle_alert /></:icon>
+        <:description>{dgettext("admin_media", "Couldn't load the episodes.")}</:description>
+        <.button
+          id={"#{@id}-episodes-retry"}
+          variant="secondary"
+          size="sm"
+          phx-click="retry_tv_show"
+          phx-target={@myself}
+        >
+          {dgettext("admin_media", "Try again")}
+        </.button>
+      </.empty>
+      <.scroll_row :if={length(@season_numbers) > 1} id={"#{@id}-seasons"} variant="chips">
         <.pill
-          :for={{number, _episodes} <- @seasons}
+          :for={number <- @season_numbers}
           id={"#{@id}-season-#{number}"}
           current={number == @season}
           phx-click="season"
@@ -335,26 +332,25 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           {dgettext("admin_media", "Season %{number}", number: number)}
         </.pill>
       </.scroll_row>
-      <span :if={length(@seasons) == 1} class="text-sm font-semibold">
+      <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
         {dgettext("admin_media", "Season %{number}", number: @season)}
       </span>
-      <p :if={@episodes.ok? and @seasons == []} class="p-group text-center text-sm text-text-muted">
+      <p
+        :if={@tv_show.ok? and @season_numbers == []}
+        class="p-group text-center text-sm text-text-muted"
+      >
         {dgettext("admin_media", "TMDB has no episodes for this TV show yet.")}
       </p>
-      <ol :if={@season} id={"#{@id}-episodes"} class="flex flex-col gap-px">
-        <li :for={episode <- season_episodes(@seasons, @season)}>
-          <button
+      <ol :if={@episodes != []} id={"#{@id}-episodes"} class="flex flex-col gap-px">
+        <li :for={episode <- @episodes}>
+          <.option_row
             id={"#{@id}-episode-#{episode.episode_number}"}
-            type="button"
+            selected={episode == @episode}
             phx-click="episode"
             phx-value-id={episode.id}
             phx-target={@myself}
-            aria-pressed={to_string(episode == @episode)}
-            class={[
-              "flex min-h-touch-target w-full items-center gap-group rounded-control p-related text-left transition-colors focus-visible:-outline-offset-2",
-              episode == @episode && "bg-surface-selected",
-              episode != @episode && "hover:bg-surface-hover"
-            ]}
+            phx-mounted={episode == @episode && JS.focus()}
+            class="min-h-touch-target"
           >
             <span class="flex min-w-0 flex-1 flex-col gap-tight">
               <span class="truncate text-base text-text">
@@ -365,11 +361,38 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
                 {Time.long_date(episode.air_date, @locale)}
               </span>
             </span>
-            <Lucideicons.check :if={episode == @episode} class="size-icon shrink-0 text-text" />
-          </button>
+          </.option_row>
         </li>
       </ol>
     </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :selected, :boolean, doc: "whether it's picked; nil for a row that opens the next step"
+  attr :class, :any, default: nil
+  attr :rest, :global
+  slot :inner_block, required: true
+
+  # A row to pick, with a check once picked, or a row that opens the next step, with an arrow
+  defp option_row(assigns) do
+    ~H"""
+    <button
+      id={@id}
+      type="button"
+      aria-pressed={@selected != nil && to_string(@selected)}
+      class={[
+        "flex w-full items-center gap-group rounded-control p-related text-left transition-colors focus-visible:-outline-offset-2",
+        @selected && "bg-surface-selected",
+        !@selected && "hover:bg-surface-hover",
+        @class
+      ]}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+      <Lucideicons.check :if={@selected} class="size-icon shrink-0 text-text" />
+      <Lucideicons.chevron_right :if={@selected == nil} class="size-icon shrink-0 text-text-subtle" />
+    </button>
     """
   end
 
@@ -383,66 +406,75 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
     else
       {:ok,
        socket
-       |> assign(
-         query: first_query(assigns.media),
-         search: nil,
-         picked: nil,
-         episodes: nil,
-         season: nil,
-         episode: nil
-       )
+       |> assign(query: first_query(assigns.media), search: nil, picked: nil)
+       |> assign(tv_show: nil, season: nil, episodes: [], episode: nil)
        |> search()}
     end
   end
 
   @impl true
   def handle_event("search", %{"query" => query}, socket),
-    do: {:noreply, socket |> assign(:query, query) |> search()}
+    do: {:noreply, socket |> assign(query: query, picked: nil) |> search()}
 
   # A Movie is picked; a TV Show opens its seasons
   def handle_event("pick", %{"id" => external_id}, socket) do
     %{titles: titles, id_result: id_result} = socket.assigns.search.result
     picked = Enum.find([id_result | titles], &(&1 && &1.identity.external_id == external_id))
+    socket = assign(socket, :picked, picked)
 
     case picked.identity.type do
-      :movie -> {:noreply, assign(socket, :picked, picked)}
-      :tv_show -> {:noreply, socket |> assign(picked: picked, episode: nil) |> load_episodes()}
+      :movie -> {:noreply, socket}
+      :tv_show -> {:noreply, load_tv_show(socket)}
     end
   end
 
-  def handle_event("retry_episodes", _params, socket), do: {:noreply, load_episodes(socket)}
+  def handle_event("retry_tv_show", _params, socket), do: {:noreply, load_tv_show(socket)}
 
-  def handle_event("back", _params, socket),
-    do: {:noreply, assign(socket, picked: nil, episodes: nil, season: nil, episode: nil)}
-
-  def handle_event("season", %{"season" => season}, socket),
-    do: {:noreply, assign(socket, :season, String.to_integer(season))}
-
-  def handle_event("episode", %{"id" => id}, socket) do
-    episode =
-      socket.assigns.episodes.result
-      |> Enum.flat_map(fn {_season, episodes} -> episodes end)
-      |> Enum.find(&(&1.id == id))
-
-    {:noreply, assign(socket, :episode, episode)}
+  def handle_event("back", _params, socket) do
+    {:noreply,
+     socket
+     |> cancel_async(:tv_show)
+     |> assign(picked: nil, tv_show: nil, season: nil, episodes: [], episode: nil)}
   end
+
+  def handle_event("season", %{"season" => season}, socket) do
+    %{tv_show: %{result: %{content: content}}, current_user: user} = socket.assigns
+    season = String.to_integer(season)
+
+    {:noreply,
+     assign(socket,
+       season: season,
+       episodes: season_episodes!(content, season, user),
+       episode: nil
+     )}
+  end
+
+  def handle_event("episode", %{"id" => id}, socket),
+    do: {:noreply, assign(socket, :episode, Enum.find(socket.assigns.episodes, &(&1.id == id)))}
 
   def handle_event("match", _params, socket) do
     %{media: media, picked: picked, episode: episode, current_user: user} = socket.assigns
 
-    MediaCatalog.match_media!(
-      media,
-      picked.identity,
-      %{
-        season_number: episode && episode.season_number,
-        episode_number: episode && episode.episode_number
-      },
-      actor: user
-    )
+    episode_numbers = %{
+      season_number: episode && episode.season_number,
+      episode_number: episode && episode.episode_number
+    }
 
-    Flash.send_flash(:info, dgettext("admin_media", "Matched to %{title}.", title: picked.title))
-    socket.assigns.on_close.()
-    {:noreply, socket}
+    case MediaCatalog.match_media(media, picked.identity, episode_numbers, actor: user) do
+      {:ok, _media} ->
+        Flash.send_flash(
+          :info,
+          dgettext("admin_media", "Matched to %{title}.", title: picked.title)
+        )
+
+        socket.assigns.on_close.()
+        {:noreply, socket}
+
+      # TMDB can fail to give a missing Movie
+      {:error, _error} ->
+        Flash.send_flash(:error, dgettext("admin_media", "Couldn't match the file. Try again."))
+        {:noreply, socket}
+    end
   end
 
   def handle_event("remove_manual_match", _params, socket) do
@@ -474,19 +506,27 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   def handle_async(:search, {:exit, reason}, socket),
     do: {:noreply, update(socket, :search, &AsyncResult.failed(&1, {:exit, reason}))}
 
-  def handle_async(:episodes, {:ok, seasons}, socket) do
-    {season, episode} = first_episode(seasons, socket.assigns.media)
+  def handle_async(:tv_show, {:ok, tv_show}, socket) do
+    %{content: content, season_numbers: season_numbers, season: season, episodes: episodes} =
+      tv_show
 
     {:noreply,
-     socket
-     |> update(:episodes, &AsyncResult.ok(&1, seasons))
-     |> assign(season: season, episode: episode)}
+     assign(socket,
+       tv_show:
+         AsyncResult.ok(socket.assigns.tv_show, %{
+           content: content,
+           season_numbers: season_numbers
+         }),
+       season: season,
+       episodes: episodes,
+       episode: Enum.find(episodes, &(&1.episode_number == tv_show.episode_number))
+     )}
   end
 
-  def handle_async(:episodes, {:exit, {:shutdown, :cancel}}, socket), do: {:noreply, socket}
+  def handle_async(:tv_show, {:exit, {:shutdown, :cancel}}, socket), do: {:noreply, socket}
 
-  def handle_async(:episodes, {:exit, reason}, socket),
-    do: {:noreply, update(socket, :episodes, &AsyncResult.failed(&1, {:exit, reason}))}
+  def handle_async(:tv_show, {:exit, reason}, socket),
+    do: {:noreply, update(socket, :tv_show, &AsyncResult.failed(&1, {:exit, reason}))}
 
   # Searches TMDB for the titles of the file's Content Type, and a number as a TMDB ID too
   defp search(socket) do
@@ -517,23 +557,44 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
     end
   end
 
-  # Saves the TV Show, as its seasons come from WatchClub
-  defp load_episodes(socket) do
-    %{picked: picked, current_user: user} = socket.assigns
+  # Saves the TV Show, whose seasons come from WatchClub, and opens the file's season
+  defp load_tv_show(socket) do
+    %{picked: picked, media: media, current_user: user} = socket.assigns
     otel_context = OpenTelemetry.Ctx.get_current()
 
     socket
-    |> assign(:episodes, AsyncResult.loading())
-    |> start_async(:episodes, fn ->
+    |> assign(tv_show: AsyncResult.loading(), season: nil, episodes: [], episode: nil)
+    |> start_async(:tv_show, fn ->
       OpenTelemetry.Ctx.attach(otel_context)
-      Contents.get_or_refresh_content!(picked.identity, actor: user)
 
-      picked.identity.external_id
-      |> String.to_integer()
-      |> Contents.get_episodes_for_show!(load: [:best_localization], actor: user)
-      |> Enum.chunk_by(& &1.season_number)
-      |> Enum.map(&{hd(&1).season_number, &1})
+      content =
+        Contents.get_or_refresh_content!(picked.identity,
+          load: [implementation: %{load: [tv_show: :season_numbers]}],
+          actor: user
+        )
+
+      season_numbers = content.implementation.season_numbers
+      {season, episode_number} = first_episode(season_numbers, content, media)
+
+      %{
+        content: content,
+        season_numbers: season_numbers,
+        season: season,
+        # Intentionally small: one season
+        episodes: if(season, do: season_episodes!(content, season, user), else: []),
+        episode_number: episode_number
+      }
     end)
+  end
+
+  defp season_episodes!(content, season, user) do
+    content.external_id
+    |> String.to_integer()
+    |> Contents.get_episodes_for_show!(
+      query: [filter: [season_number: season]],
+      load: [:best_localization],
+      actor: user
+    )
   end
 
   defp status(nil), do: :idle
@@ -549,7 +610,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   end
 
   defp identity(%Media{type: :movie}, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
-  defp identity(%Media{type: :tv_show_episode}, tmdb_id), do: ContentIdentity.for_tv_show(tmdb_id)
+
+  defp identity(%Media{type: :tv_show_episode}, tmdb_id),
+    do: ContentIdentity.for_tv_show(tmdb_id)
 
   defp search_placeholder(:movie), do: dgettext("admin_media", "Movie title or TMDB ID")
 
@@ -568,24 +631,25 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   # The current episode when rematching within its TV Show, else the file name's, in a season the
   # TV Show has. Else its first season, with no episode.
-  defp first_episode([], _media), do: {nil, nil}
+  defp first_episode([], _content, _media), do: {nil, nil}
 
-  defp first_episode([{first_season, _episodes} | _seasons] = seasons, media) do
-    all_episodes = Enum.flat_map(seasons, fn {_season, episodes} -> episodes end)
-    current = media.video.tv_show_episode
-    file = FilenameParser.parse_episode(media.path)
+  defp first_episode([first_season | _seasons] = season_numbers, content, media) do
+    position =
+      case {media.content, media.video.tv_show_episode} do
+        {%Content{id: id}, %TvShowEpisode{} = episode} when id == content.id ->
+          {episode.season_number, episode.episode_number}
 
-    episode =
-      Enum.find(all_episodes, &(current && &1.id == current.id)) ||
-        Enum.find(
-          all_episodes,
-          &(&1.season_number == file[:season_number] and
-              &1.episode_number == file[:episode_number])
-        )
+        _other ->
+          file = FilenameParser.parse_episode(media.path)
+          {file[:season_number], file[:episode_number]}
+      end
 
-    if episode, do: {episode.season_number, episode}, else: {first_season, nil}
+    case position do
+      {season, episode} when is_integer(season) ->
+        if season in season_numbers, do: {season, episode}, else: {first_season, nil}
+
+      _none ->
+        {first_season, nil}
+    end
   end
-
-  defp season_episodes(seasons, season),
-    do: seasons |> List.keyfind(season, 0, {season, []}) |> elem(1)
 end

@@ -7,7 +7,7 @@ defmodule WatchClub.Contents.Changes.EnsureContentExists do
 
   Runs `before_transaction` so the nested `Content.create` (which fetches from the Metadata
   Provider in its own `before_transaction` hook) happens before this action's transaction opens,
-  keeping the HTTP fetch out of the transaction.
+  keeping the HTTP fetch out of the transaction. A failed fetch fails the action.
   """
   use Ash.Resource.Change
 
@@ -18,10 +18,13 @@ defmodule WatchClub.Contents.Changes.EnsureContentExists do
     Ash.Changeset.before_transaction(changeset, fn changeset ->
       content_identity = Ash.Changeset.get_argument(changeset, :content_identity)
 
-      content =
-        Contents.get_or_refresh_content!(content_identity, %{max_age: :infinity}, scope: context)
-
-      Ash.Changeset.force_change_attribute(changeset, :content_id, content.id)
+      case Contents.get_or_refresh_content(content_identity, %{max_age: :infinity},
+             scope: context
+           ) do
+        {:ok, content} -> Ash.Changeset.force_change_attribute(changeset, :content_id, content.id)
+        # The Metadata Provider is unavailable, or has no such Content
+        {:error, error} -> Ash.Changeset.add_error(changeset, error)
+      end
     end)
   end
 end

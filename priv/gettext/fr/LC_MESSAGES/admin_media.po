@@ -394,3 +394,21 @@ msgstr "Titre de la série ou ID TMDB"
 #, elixir-autogen, elixir-format
 msgid "Titles"
 msgstr "Titres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't load the episodes."
+msgstr "Impossible de charger les épisodes."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't match the file. Try again."
+msgstr "Impossible d'associer le fichier. Réessayez."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr "Réessayer"

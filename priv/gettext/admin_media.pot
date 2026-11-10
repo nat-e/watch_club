@@ -331,3 +331,18 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Titles"
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't load the episodes."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't match the file. Try again."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr ""
