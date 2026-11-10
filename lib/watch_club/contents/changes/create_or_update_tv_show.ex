@@ -51,17 +51,18 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateTvShow do
         |> set_base_content(show)
         |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
         |> Ash.Changeset.after_action(fn _changeset, content ->
-          # Returns the stored TV Show, instead of an error, when nothing changed
-          Ash.create!(
+          Ash.bulk_create!(
+            [
+              %{
+                id: content.id,
+                original_name: show.original_name,
+                backdrop_path: Images.best_backdrop_path(show.images),
+                tmdb_id: show.id,
+                tvdb_id: show.external_ids.tvdb_id
+              }
+            ],
             TvShow,
-            %{
-              id: content.id,
-              original_name: show.original_name,
-              backdrop_path: Images.best_backdrop_path(show.images),
-              tmdb_id: show.id,
-              tvdb_id: show.external_ids.tvdb_id
-            },
-            return_skipped_upsert?: true,
+            :create,
             scope: context
           )
 

@@ -450,12 +450,13 @@ defmodule WatchClub.Contents.ContentTest do
       queries_for_one =
         count_queries.(fn -> refresh_metadata!(content, %{}, actor: SystemActor.actor()) end)
 
-      stub_tv_metadata_with_episodes.(Enum.to_list(1..50))
+      stub_tv_metadata_with_episodes.(Enum.to_list(1..200))
       refresh_metadata!(content, %{}, actor: SystemActor.actor())
 
       queries_for_many =
         count_queries.(fn -> refresh_metadata!(content, %{}, actor: SystemActor.actor()) end)
 
+      assert queries_for_one > 0
       assert queries_for_many == queries_for_one
     end
 

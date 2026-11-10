@@ -46,11 +46,10 @@ defmodule WatchClub.Contents.Changes.CreateOrUpdateMovie do
           |> set_base_content(movie)
           |> Ash.Changeset.force_change_attribute(:metadata_refreshed_at, DateTime.utc_now())
           |> Ash.Changeset.after_action(fn _changeset, content ->
-            # Returns the stored Movie, instead of an error, when nothing changed
-            Ash.create!(
+            Ash.bulk_create!(
+              [%{id: content.id, backdrop_path: Images.best_backdrop_path(movie.images)}],
               Movie,
-              %{id: content.id, backdrop_path: Images.best_backdrop_path(movie.images)},
-              return_skipped_upsert?: true,
+              :create,
               scope: context
             )
 
