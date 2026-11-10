@@ -12,8 +12,9 @@ defmodule WatchClub.Application do
 
     children = [
       {Cachex, [:tmdb_api_cache]},
-      WatchClubWeb.Telemetry,
       WatchClub.Repo,
+      # After the Repo, which its job queue poller queries.
+      WatchClubWeb.Telemetry,
       {Task.Supervisor, name: WatchClub.Shared.Fs.TaskSupervisor},
       WatchClub.Contents.MetadataFetcher,
       {Oban, Application.fetch_env!(:watch_club, Oban)},

@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
+  import Ecto.Query, only: [from: 2]
 
   @duration_buckets [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
   @database_buckets [
@@ -29,7 +30,11 @@ defmodule WatchClubWeb.Telemetry do
   def init(_arg) do
     children =
       if Application.fetch_env!(:watch_club, :opentelemetry)[:metrics] do
-        [{WatchClub.Telemetry.Metrics, metrics()}]
+        [
+          {WatchClub.Telemetry.Metrics, metrics()},
+          {:telemetry_poller,
+           measurements: [{__MODULE__, :measure_job_queues, []}], period: :timer.seconds(5)}
+        ]
       else
         []
       end
@@ -142,6 +147,21 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:"messaging.destination.name", :"oban.job.worker"],
         tag_values: &job_tags/1,
         reporter_options: [buckets: @job_buckets]
+      ),
+      # The backlog: jobs ready to run, and how long the oldest has waited.
+      last_value("oban.queue.available_job.count",
+        event_name: [:watch_club, :oban, :queue],
+        measurement: :available_jobs,
+        unit: :"{job}",
+        tags: [:"messaging.destination.name"],
+        tag_values: &%{"messaging.destination.name": &1.queue}
+      ),
+      last_value("oban.queue.oldest_available_job.age",
+        event_name: [:watch_club, :oban, :queue],
+        measurement: :oldest_available_job_age,
+        unit: :second,
+        tags: [:"messaging.destination.name"],
+        tag_values: &%{"messaging.destination.name": &1.queue}
       ),
 
       # Each attempt of the Req clients that attach ReqTele, retries included
@@ -267,6 +287,41 @@ defmodule WatchClubWeb.Telemetry do
     for event <- [:stop, :exception] do
       summary(name, [event_name: event_prefix ++ [event], unit: {:native, :second}] ++ options)
     end
+  end
+
+  @doc false
+  def measure_job_queues do
+    waiting =
+      from(job in Oban.Job,
+        where: job.state == "available",
+        group_by: job.queue,
+        select: {job.queue, {count(), min(job.scheduled_at)}}
+      )
+      |> WatchClub.Repo.all()
+      |> Map.new()
+
+    now = DateTime.utc_now()
+
+    # Every configured queue reports, 0 when empty, so no gauge keeps old values.
+    for {queue, _limit} <- Application.fetch_env!(:watch_club, Oban)[:queues] do
+      queue = to_string(queue)
+
+      measurements =
+        case waiting do
+          %{^queue => {count, oldest}} ->
+            # Waits start at `scheduled_at` and never go below 0, as in Oban's `queue_time`.
+            age = max(DateTime.diff(now, oldest, :millisecond), 0) / 1000
+            %{available_jobs: count, oldest_available_job_age: age}
+
+          %{} ->
+            %{available_jobs: 0, oldest_available_job_age: 0}
+        end
+
+      :telemetry.execute([:watch_club, :oban, :queue], measurements, %{queue: queue})
+    end
+  rescue
+    # The poller drops a measurement that raises, which would freeze these gauges.
+    DBConnection.ConnectionError -> :ok
   end
 
   defp http_server_tags(%{conn: conn, route: route} = metadata) do
