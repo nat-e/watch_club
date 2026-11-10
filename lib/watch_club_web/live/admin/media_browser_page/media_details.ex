@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
   @moduledoc """
-  The selected Media beside the Media Browser's list: what it is, Play and Remove media, then its
-  video, audio and subtitle tracks and its file.
+  The selected Media beside the Media Browser's list: what it is, Play, and a menu to Match or
+  Rematch a Video and to Remove media, then its video, audio and subtitle tracks and its file.
   """
   use WatchClubWeb, :component
 
@@ -73,10 +73,32 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
             <:icon><Lucideicons.play /></:icon>
             {dgettext("admin_media", "Play")}
           </.button>
-          <.button id="remove-media" variant="secondary" phx-click="open_remove_media_modal">
-            <:icon><Lucideicons.trash_2 /></:icon>
-            {dgettext("admin_media", "Remove media")}
-          </.button>
+          <.dropdown_menu id="media-actions">
+            <:trigger>
+              <.button
+                id="media-actions-button"
+                variant="secondary"
+                size="icon"
+                aria-label={dgettext("admin_media", "More actions")}
+              >
+                <Lucideicons.ellipsis />
+              </.button>
+            </:trigger>
+            <.dropdown_menu_item :if={@video?} id="match-media" phx-click="open_match_media_modal">
+              <Lucideicons.file_search />
+              {if @media.content,
+                do: dgettext("admin_media", "Rematch"),
+                else: dgettext("admin_media", "Match")}
+            </.dropdown_menu_item>
+            <.dropdown_menu_separator :if={@video?} />
+            <.dropdown_menu_item
+              id="remove-media"
+              variant="destructive"
+              phx-click="open_remove_media_modal"
+            >
+              <Lucideicons.trash_2 /> {dgettext("admin_media", "Remove media")}
+            </.dropdown_menu_item>
+          </.dropdown_menu>
         </div>
       </div>
 
