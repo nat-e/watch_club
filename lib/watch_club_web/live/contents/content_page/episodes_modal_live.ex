@@ -61,24 +61,17 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               id="episodes-modal-seasons"
               variant="chips"
             >
-              <button
+              <.pill
                 :for={number <- @season_numbers}
                 id={"episodes-modal-season-#{number}"}
-                type="button"
+                current={number == @season}
                 phx-click="select_season"
                 phx-value-season={number}
                 phx-target={@myself}
-                aria-current={to_string(number == @season)}
                 autofocus={number == @season}
-                class={[
-                  "flex h-control-sm shrink-0 snap-start items-center rounded-full px-group text-sm font-semibold whitespace-nowrap transition-colors phx-click-loading:cursor-progress phx-click-loading:opacity-60",
-                  number == @season && "bg-surface-selected text-text",
-                  number != @season &&
-                    "text-text-muted hover:bg-surface-hover hover:text-text"
-                ]}
               >
                 {dgettext("contents", "Season %{number}", number: number)}
-              </button>
+              </.pill>
             </.scroll_row>
             <span :if={length(@season_numbers) == 1} class="text-sm font-semibold">
               {dgettext("contents", "Season %{number}", number: @season)}

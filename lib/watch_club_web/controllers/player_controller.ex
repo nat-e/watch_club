@@ -7,7 +7,10 @@ defmodule WatchClubWeb.PlayerController do
   alias WatchClub.Ffmpeg.Trickplay
   alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks
+  alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.Hls
+  alias WatchClub.SystemActor
+  alias WatchClubWeb.Helpers.PlaybackPaths
 
   @m3u8 "application/vnd.apple.mpegurl"
 
@@ -24,115 +27,114 @@ defmodule WatchClubWeb.PlayerController do
     ]
   ]
 
-  def master_playlist(conn, %{"playback_id" => playback_id}) do
+  def master_playlist(conn, params) do
+    query = PlaybackPaths.query(params["token"])
+
     send_text_result(
       conn,
-      with_active_playback(
-        playback_id,
-        conn,
-        &Hls.master_playlist/1,
-        [:preferred_audio_track_id, :preferred_text_track_id | @playback_fields]
-      ),
+      with_current_playback(params, &Hls.master_playlist(&1, query)),
       @m3u8,
       "no-store"
     )
   end
 
-  def video_playlist(conn, %{"playback_id" => playback_id, "variant" => variant}) do
+  def video_playlist(conn, %{"variant" => variant} = params) do
+    query = PlaybackPaths.query(params["token"])
+
     send_text_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.video_playlist(&1.media.video, variant)),
+      with_current_playback(params, &Hls.video_playlist(&1.media.video, variant, query)),
       @m3u8,
       "no-store"
     )
   end
 
-  def audio_playlist(conn, %{"playback_id" => playback_id, "track_id" => track_id}) do
+  def audio_playlist(conn, %{"track_id" => track_id} = params) do
+    query = PlaybackPaths.query(params["token"])
+
     send_text_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.audio_playlist(&1.media.video, track_id)),
+      with_current_playback(params, &Hls.audio_playlist(&1.media.video, track_id, query)),
       @m3u8,
       "no-store"
     )
   end
 
-  def subtitle_playlist(conn, %{"playback_id" => playback_id, "track_id" => track_id}) do
+  def subtitle_playlist(conn, %{"track_id" => track_id} = params) do
+    query = PlaybackPaths.query(params["token"])
+
     send_text_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.subtitle_playlist(&1.media.video, track_id)),
+      with_current_playback(params, &Hls.subtitle_playlist(&1.media.video, track_id, query)),
       @m3u8,
       "no-store"
     )
   end
 
-  def video_segment(conn, %{
-        "playback_id" => playback_id,
-        "variant" => variant,
-        "segment" => segment
-      }) do
+  def video_segment(conn, %{"variant" => variant, "segment" => segment} = params) do
     send_file_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.video_segment(&1, variant, segment)),
+      with_current_playback(params, &Hls.video_segment(&1, variant, segment)),
       "video/mp2t",
       "public, max-age=3600"
     )
   end
 
-  def audio_segment(conn, %{
-        "playback_id" => playback_id,
-        "track_id" => track_id,
-        "segment" => segment
-      }) do
+  def audio_segment(conn, %{"track_id" => track_id, "segment" => segment} = params) do
     send_file_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.audio_segment(&1, track_id, segment)),
+      with_current_playback(params, &Hls.audio_segment(&1, track_id, segment)),
       "video/mp2t",
       "public, max-age=3600"
     )
   end
 
-  def subtitle_file(conn, %{
-        "playback_id" => playback_id,
-        "track_id" => track_id,
-        "file" => file
-      }) do
+  def subtitle_file(conn, %{"track_id" => track_id, "file" => file} = params) do
     send_file_result(
       conn,
-      with_active_playback(playback_id, conn, &Hls.subtitle_file(&1, track_id, file)),
+      with_current_playback(params, &Hls.subtitle_file(&1, track_id, file)),
       "text/vtt",
       "public, max-age=3600"
     )
   end
 
-  def thumbnails_file(conn, %{"playback_id" => playback_id, "file" => "thumbnails.vtt"}) do
-    # Cue sprite refs must be origin-absolute and session-scoped, which only the
+  def thumbnails_file(
+        conn,
+        %{"playback_id" => playback_id, "file" => "thumbnails.vtt"} = params
+      ) do
+    # Cue sprite refs must be origin-absolute and Playback-scoped, which only the
     # web layer knows — so the manifest is stamped with this base at serve time.
     base = Path.dirname(~p"/player/thumbnails/#{playback_id}/thumbnails.vtt")
+    query = PlaybackPaths.query(params["token"])
 
     send_text_result(
       conn,
-      with_active_playback(playback_id, conn, &Trickplay.manifest(&1.media.id, base)),
+      with_current_playback(params, &Trickplay.manifest(&1.media.id, base, query)),
       "text/vtt",
       "public, max-age=3600"
     )
   end
 
-  def thumbnails_file(conn, %{"playback_id" => playback_id, "file" => file}) do
+  def thumbnails_file(conn, %{"file" => file} = params) do
     send_file_result(
       conn,
-      with_active_playback(playback_id, conn, &Trickplay.sprite_path(&1.media.id, file)),
+      with_current_playback(params, &Trickplay.sprite_path(&1.media.id, file)),
       "image/jpeg",
       "public, max-age=3600"
     )
   end
 
-  defp with_active_playback(playback_id, conn, fun, load \\ @playback_fields) do
-    case Playbacks.get_playback_by_id(playback_id,
-           load: load,
-           actor: conn.assigns.current_user
-         ) do
-      {:ok, playback} -> fun.(playback)
-      {:error, _reason} -> {:error, :not_found}
+  # The token in the query opens the files of the Playback in the path, while it's current
+  defp with_current_playback(%{"playback_id" => playback_id} = params, fun) do
+    with true <- PlaybackPaths.opens?(params["token"], playback_id),
+         {:ok, %Playback{ended_at: nil} = playback} <-
+           Playbacks.get_playback_by_id(playback_id,
+             load: @playback_fields,
+             actor: SystemActor.actor()
+           ) do
+      fun.(playback)
+    else
+      _invalid_token_or_ended_playback -> {:error, :not_found}
     end
   end
 

@@ -45,6 +45,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       space="section"
       class="max-w-panel"
       title={@media_source.name}
@@ -95,6 +96,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       title={dgettext("admin_media_imports", "Media Sources")}
     >
     </Layouts.app>

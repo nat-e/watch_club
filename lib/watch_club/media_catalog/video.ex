@@ -162,12 +162,16 @@ defmodule WatchClub.MediaCatalog.Video do
       default_sort default?: :desc, stream_index: :asc
     end
 
+    # In the file's order, which is the order of the HLS playlists: a TV finds its tracks by it.
+    # Sidecar Text Tracks have no stream index.
     has_many :audio_tracks, AudioTrack do
       public? true
+      sort stream_index: :asc, id: :asc
     end
 
     has_many :text_tracks, TextTrack do
       public? true
+      sort stream_index: :asc, id: :asc
     end
 
     has_many :markers, Marker do

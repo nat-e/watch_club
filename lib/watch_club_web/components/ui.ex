@@ -27,6 +27,7 @@ defmodule WatchClubWeb.Components.UI do
       import WatchClubWeb.Components.UI.Layout
       import WatchClubWeb.Components.UI.LucideIcon
       import WatchClubWeb.Components.UI.Modal
+      import WatchClubWeb.Components.UI.Pill
       import WatchClubWeb.Components.UI.ProgressBar
       import WatchClubWeb.Components.UI.RadioGroup
       import WatchClubWeb.Components.UI.ReorderableList

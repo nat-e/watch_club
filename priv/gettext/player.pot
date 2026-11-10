@@ -13,6 +13,7 @@ msgstr ""
 
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
 msgstr ""
@@ -39,6 +40,7 @@ msgstr ""
 
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
 msgstr ""
@@ -142,4 +144,159 @@ msgstr ""
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong video"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio & subtitles"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Back 10 seconds"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Close the Remote"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Connecting to %{tv}…"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. It needs to reach WatchClub at an HTTPS address with a trusted certificate."
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Forward 10 seconds"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing is playing on a TV"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Now playing"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Pause"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Paused on"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Paused on %{tv}"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Play on a TV"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Playing on"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Playing somewhere else"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remote"
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_controls_live.ex
+#, elixir-autogen, elixir-format
+msgid "Seek"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Start a video in Chrome on a computer or an Android phone, then pick a TV with the cast icon in the Player."
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stop casting"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stop casting to %{tv}"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
+msgstr ""
+
+#: lib/watch_club_web/helpers/now_playing.ex
+#, elixir-autogen, elixir-format
+msgid "Video"
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "You started watching on another screen."
+msgstr ""
+
+#: lib/watch_club_web/components/playbacks/tv_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Open the Remote"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "This video has no other audio or subtitles."
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Remote sections"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Stopped casting to %{tv}."
 msgstr ""

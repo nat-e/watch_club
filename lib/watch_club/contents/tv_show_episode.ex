@@ -120,6 +120,13 @@ defmodule WatchClub.Contents.TvShowEpisode do
       from_many? true
     end
 
+    has_many :playable_episodes_after, __MODULE__ do
+      description "The following episodes with Media, in airing order within the same show."
+      sort rank: :asc
+      filter expr(tv_show_id == parent(tv_show_id) and rank > parent(rank) and has_media?)
+      no_attributes? true
+    end
+
     # This is simply the previous episode in the show, does not depend on the actor
     has_one :previous_episode, __MODULE__ do
       description "Previous episode in airing order within the same show; nil for the pilot."

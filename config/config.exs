@@ -90,10 +90,19 @@ config :watch_club,
 # (~640ms compile vs ~2ms execution) on our modest row counts, so disable it.
 config :watch_club, WatchClub.Repo, parameters: [jit: "off"]
 
+# The Google Cast app the Player casts with, which opens the receiver page of the same channel:
+# release images use the release app, every other build the edge one. See docs/chromecast.md.
+config :watch_club,
+       :cast_app_id,
+       Map.fetch!(
+         %{"release" => "C95418C7", "edge" => "8DEDC147"},
+         System.get_env("CAST_RECEIVER", "edge")
+       )
+
 config :watch_club, Oban,
   engine: Oban.Engines.Basic,
   repo: WatchClub.Repo,
-  cron: [crontab: [{"*/15 * * * *", WatchClub.Playbacks.Workers.PruneSegmentCache}]],
+  cron: [crontab: [{"* * * * *", WatchClub.Playbacks.Workers.EndAbandonedSessions}]],
   # Deletes jobs older than a week to avoid Oban table from growing indefinitely
   pruner: [max_age: {7, :days}],
   # Retries jobs left in `executing` by a crash or a deploy
@@ -132,7 +141,7 @@ config :esbuild,
   version: "0.28.2",
   watch_club: [
     args:
-      ~w(js/app.js js/storybook.js js/player_videojs.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
+      ~w(js/app.js js/storybook.js js/player_videojs.js js/tv.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]

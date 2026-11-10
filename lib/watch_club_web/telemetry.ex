@@ -218,6 +218,23 @@ defmodule WatchClubWeb.Telemetry do
         reporter_options: [buckets: @job_buckets]
       ),
 
+      # Casting: from the Player handing the TV its token to the TV leaving, and why Playback
+      # Sessions end. See docs/chromecast.md.
+      counter("watch_club.cast.steps",
+        event_name: [:watch_club, :cast],
+        measurement: :count,
+        unit: :"{step}",
+        tags: [:"watch_club.cast.result"],
+        tag_values: &%{"watch_club.cast.result": &1.result}
+      ),
+      counter("watch_club.playback_session.endings",
+        event_name: [:watch_club, :playback_session, :end],
+        measurement: :count,
+        unit: :"{session}",
+        tags: [:"watch_club.playback_session.end_reason"],
+        tag_values: &%{"watch_club.playback_session.end_reason": &1.reason}
+      ),
+
       # The dependency's default poller emits these VM measurements. No OpenTelemetry
       # convention covers the Erlang VM; the names follow its abandoned proposal.
       last_value("beam.memory.allocated",

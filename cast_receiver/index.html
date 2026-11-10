@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>WatchClub</title>
+		<!--
+			The page a TV opens when someone casts from WatchClub. Google Cast launches it at this
+			fixed address for every WatchClub instance, so it holds nothing of an instance: the
+			Player that casts sends the address of its instance and a token, and this page runs the
+			TV code of that instance, which plays through Google's receiver framework and connects
+			to the instance itself. It stores nothing.
+
+			An instance's TV code, at /assets/js/tv.js, defines WatchClubTv.start(context, message)
+			and WatchClubTv.stop(). Keep these and the message, { origin, token }, as they are:
+			every instance relies on them.
+
+			In development, the dev server serves this page with the Cast emulator's scripts in
+			place of the comment below.
+		-->
+		<!-- cast emulator -->
+		<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+		<style>
+			body {
+				margin: 0;
+				background: #000;
+			}
+		</style>
+	</head>
+	<body>
+		<cast-media-player></cast-media-player>
+		<script>
+			const namespace = "urn:x-cast:club.watch";
+			const context = cast.framework.CastReceiverContext.getInstance();
+			let origin;
+
+			// A Player casts, or another one casts to this TV while it plays
+			context.addCustomMessageListener(namespace, ({ data }) => {
+				window.WatchClubTv?.stop();
+
+				if (data.origin === origin) {
+					window.WatchClubTv.start(context, data);
+					return;
+				}
+
+				origin = data.origin;
+				const script = document.createElement("script");
+				script.src = `${data.origin}/assets/js/tv.js`;
+				script.onload = () => window.WatchClubTv.start(context, data);
+				document.head.append(script);
+			});
+
+			context.start({
+				customNamespaces: {
+					[namespace]: cast.framework.system.MessageType.JSON,
+				},
+			});
+		</script>
+	</body>
+</html>

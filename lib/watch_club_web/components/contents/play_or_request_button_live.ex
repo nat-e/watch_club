@@ -55,6 +55,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
 
   attr :content_identity, ContentIdentity, required: true
   attr :current_user, User, required: true
+  attr :on_tv?, :boolean, default: false, doc: "whether Play plays on the User's TV"
   attr :class, :any, default: nil
 
   attr :on_episodes, :any,
@@ -122,12 +123,14 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     |> Enum.map(fn {assigns, socket} ->
       content = Map.get(contents_by_identity, assigns.content_identity)
 
+      socket = assign(socket, assigns)
+
       socket
-      |> assign(assigns)
       |> assign(
         has_media?: (content && content.has_media?) || false,
         play_href: play_href((content && content.actor_next_medias_to_play) || []),
-        play_label: play_label(assigns.content_identity.type, content),
+        play_label:
+          play_label(assigns.content_identity.type, content, socket.assigns[:on_tv?] || false),
         title: content && content.implementation.best_localization.title,
         request: content && content.request,
         release_date: content && content.release_date
@@ -169,26 +172,54 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
     )
   end
 
-  defp play_label(:movie, %Content{actor_progress_status: :in_progress}),
+  defp play_label(:movie, %Content{actor_progress_status: :in_progress}, false),
     do: dgettext("contents", "Resume")
 
-  defp play_label(:movie, _content), do: dgettext("contents", "Play")
-  defp play_label(:tv_show, nil), do: dgettext("contents", "Play %{episode}", episode: "S01E01")
+  defp play_label(:movie, %Content{actor_progress_status: :in_progress}, true),
+    do: dgettext("contents", "Resume on TV")
+
+  defp play_label(:movie, _content, false), do: dgettext("contents", "Play")
+  defp play_label(:movie, _content, true), do: dgettext("contents", "Play on TV")
+
+  defp play_label(:tv_show, nil, on_tv?), do: play_episode_label("S01E01", on_tv?)
 
   # No episode has aired yet
-  defp play_label(:tv_show, %{implementation: %{actor_next_episode: nil}}),
+  defp play_label(:tv_show, %{implementation: %{actor_next_episode: nil}}, _on_tv?),
     do: dgettext("contents", "Play")
 
-  defp play_label(:tv_show, %{
-         implementation: %{
-           actor_next_episode: %TvShowEpisode{actor_progress_status: :in_progress} = episode
-         }
-       }),
-       do:
-         dgettext("contents", "Resume %{episode}", episode: "#{episode.formatted_episode_number}")
+  defp play_label(
+         :tv_show,
+         %{
+           implementation: %{
+             actor_next_episode: %TvShowEpisode{actor_progress_status: :in_progress} = episode
+           }
+         },
+         false
+       ),
+       do: dgettext("contents", "Resume %{episode}", episode: episode.formatted_episode_number)
 
-  defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}),
-    do: dgettext("contents", "Play %{episode}", episode: "#{episode.formatted_episode_number}")
+  defp play_label(
+         :tv_show,
+         %{
+           implementation: %{
+             actor_next_episode: %TvShowEpisode{actor_progress_status: :in_progress} = episode
+           }
+         },
+         true
+       ),
+       do:
+         dgettext("contents", "Resume %{episode} on TV",
+           episode: episode.formatted_episode_number
+         )
+
+  defp play_label(:tv_show, %{implementation: %{actor_next_episode: episode}}, on_tv?),
+    do: play_episode_label(episode.formatted_episode_number, on_tv?)
+
+  defp play_episode_label(episode, false),
+    do: dgettext("contents", "Play %{episode}", episode: episode)
+
+  defp play_episode_label(episode, true),
+    do: dgettext("contents", "Play %{episode} on TV", episode: episode)
 
   defp play_href([]), do: nil
   defp play_href(medias), do: Url.player_link(medias)

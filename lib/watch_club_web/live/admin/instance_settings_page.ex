@@ -22,6 +22,7 @@ defmodule WatchClubWeb.Admin.InstanceSettingsPage do
       current_url={@current_url}
       current_user={@current_user}
       instance_settings={@instance_settings}
+      playback_session={@playback_session}
       space="section"
       class="max-w-panel"
       title={dgettext("admin_instance_settings", "Instance settings")}

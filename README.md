@@ -13,6 +13,10 @@ A self-hosted media server for small private groups.
 
 To upgrade, run `docker compose pull && docker compose up -d`. Database migrations run on start.
 
+## Casting to a TV
+
+The Player casts to a Chromecast or a TV with Google Cast, from Chrome on a computer or an Android phone. The TV loads WatchClub from the address the Player was opened at, so open WatchClub at an HTTPS address the TV can reach, with a trusted certificate: behind a reverse proxy with a certificate from Let's Encrypt, for example. The Player only offers casting over HTTPS.
+
 ## OpenTelemetry
 
 WatchClub can push traces, metrics and logs directly to your OTLP endpoint. Export is off by default. Enable the signals you want in `.env`, then restart the app:
@@ -47,7 +51,7 @@ Durations and callers per fetch are exported as histograms. Suggested alerts: TM
 
 Content pages and imported files carry their trace into metadata fetches. A caller joining another caller's fetch gets a wait span linked to that fetch. Marker detection traces have a span for each audio fingerprint they compute. Logs export only selected request, job, Content and trace metadata; metadata warnings include TMDB IDs and, for missing TV Show Episodes, local file paths, and Marker detection logs include local file paths.
 
-The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include paths, query strings and client IPs. Secrets in query strings, such as password-reset tokens and Invitations, show as `REDACTED`. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
+The official metrics and logging SDKs are experimental. Slow log export can accumulate logs in memory, and shutdown can lose buffered logs. Request traces include paths, query strings and client IPs. Secrets in query strings, such as password-reset tokens, Invitations and the tokens of video files, show as `REDACTED`. Database spans include SQL text without bound parameter values; literal values written directly in SQL remain. Only enable export to an endpoint you trust with this data.
 
 ## Contributing
 

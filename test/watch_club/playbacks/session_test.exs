@@ -2,124 +2,253 @@ defmodule WatchClub.Playbacks.SessionTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Accounts.User
-  alias WatchClub.Contents.{Content, Movie}
+  alias WatchClub.Contents.Content
+  alias WatchClub.History
   alias WatchClub.History.WatchProgress
   alias WatchClub.Markers.Marker
-  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Media, Video}
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClub.Playbacks.Playback.SegmentCache
   alias WatchClub.SystemActor
 
-  describe "start_session/*" do
-    @tag :tmp_dir
-    test "creates a Playback Session and its first Playback for accessible Media",
-         %{tmp_dir: tmp_dir} do
+  describe "play/*" do
+    test "starts a Playback Session in the Player, from where the Watch Progress left it" do
       user = generate(user())
-      media = matched_media!(Path.join(tmp_dir, "start.mkv"))
+      media = movie_media()
 
-      assert {:ok,
-              %Session{id: session_id, started_by_id: started_by_id, active_playback: playback}} =
-               Playbacks.start_session(media.id, load: :active_playback, actor: user)
+      History.record_watch_progress!(
+        %{
+          movie_id: media.content_id,
+          last_media_id: media.id,
+          position_seconds: 30.0,
+          duration_seconds: 60.0
+        },
+        actor: user
+      )
 
-      assert is_binary(session_id)
-      assert started_by_id == user.id
-      assert playback.session_id == session_id
-      assert playback.media_id == media.id
-      assert is_nil(playback.ended_at)
+      session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
+
+      assert %Session{screen_id: "player", tv_name: nil, position_seconds: 30.0} = session
+      assert session.started_by_id == user.id
+      assert session.current_playback.media_id == media.id
     end
 
-    @tag :tmp_dir
-    test "forbids a User from playing Unmatched Media",
-         %{tmp_dir: tmp_dir} do
+    test "plays in the active Playback Session, in the Player that plays it" do
       user = generate(user())
-      orphan = unmatched_media!(Path.join(tmp_dir, "orphan.mkv"))
+      active = generate(playback_session(movie_media(), started_by: user))
+      media = movie_media()
 
-      Playbacks.start_session(orphan.id, actor: user)
+      session = Playbacks.play!(media.id, "other-player", load: :current_playback, actor: user)
+
+      assert session.id == active.id
+      assert session.screen_id == "other-player"
+      assert session.current_playback.media_id == media.id
+      assert ended?(active.current_playback)
+    end
+
+    test "plays on the TV while the Playback Session plays on a TV" do
+      user = generate(user())
+      generate(playback_session(movie_media(), started_by: user, screen_id: "tv", tv_name: "TV"))
+      media = movie_media()
+
+      session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
+
+      assert %Session{screen_id: "tv", tv_name: "TV"} = session
+      assert session.current_playback.media_id == media.id
+    end
+
+    test "goes on with the current Playback when it already plays the Media there" do
+      user = generate(user())
+      media = movie_media()
+      active = generate(playback_session(media, started_by: user))
+
+      session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
+
+      assert session.current_playback.id == active.current_playback.id
+    end
+
+    test "forbids a User from playing Unmatched Media" do
+      Playbacks.play(unmatched_media().id, "player", actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
 
-    @tag :tmp_dir
-    test "allows the Instance Administrator to start a Playback Session for any Media",
-         %{tmp_dir: tmp_dir} do
-      admin = generate(administrator())
-      orphan = unmatched_media!(Path.join(tmp_dir, "admin.mkv"))
+    test "lets the Instance Administrator play Unmatched Media" do
+      media = unmatched_media()
 
-      assert {:ok, %Session{active_playback: %Playback{}}} =
-               Playbacks.start_session(orphan.id, load: :active_playback, actor: admin)
+      session =
+        Playbacks.play!(media.id, "player",
+          load: :current_playback,
+          actor: generate(administrator())
+        )
+
+      assert session.current_playback.media_id == media.id
+    end
+
+    test "fails for Media that doesn't exist" do
+      Playbacks.play(Ash.UUIDv7.generate(), "player", actor: generate(administrator()))
+      |> assert_has_error(Ash.Error.Invalid, fn _ -> true end)
+    end
+
+    test "starts with the audio and subtitles in the preferred languages" do
+      user = generate(user(audio_language: :fr, subtitle_language: :en))
+
+      media =
+        movie_media("en",
+          audio: [
+            %{language: "eng", title: "English", default?: true},
+            %{language: "fre", title: "French"}
+          ],
+          text: [%{language: "fre", title: "French"}, %{language: "eng", title: "English"}]
+        )
+
+      assert start_track_titles(media, user) == {"French", "English"}
+    end
+
+    test "starts with the audio in the original language" do
+      user = generate(user(audio_language: :original))
+
+      media =
+        movie_media("ja",
+          audio: [
+            %{language: "fre", title: "French", default?: true},
+            %{language: "jpn", title: "Japanese"}
+          ],
+          text: []
+        )
+
+      assert start_track_titles(media, user) == {"Japanese", nil}
+    end
+
+    test "starts with forced subtitles only when the audio is in a language without subtitles" do
+      user = generate(user(subtitle_language: :en, languages_without_subtitles: [:en]))
+
+      media =
+        movie_media("en",
+          audio: [%{language: "eng", title: "English"}],
+          text: [
+            %{language: "eng", title: "English"},
+            %{language: "eng", title: "English forced", forced?: true}
+          ]
+        )
+
+      assert start_track_titles(media, user) == {"English", "English forced"}
+    end
+
+    test "assumes audio without a language is in the original language" do
+      user = generate(user(subtitle_language: :fr, languages_without_subtitles: [:fr]))
+
+      media =
+        movie_media("fr",
+          audio: [
+            %{language: "eng", title: "English", default?: true},
+            %{language: nil, title: "Untagged"}
+          ],
+          text: [%{language: "fre", title: "French"}]
+        )
+
+      assert start_track_titles(media, user) == {"Untagged", nil}
+    end
+
+    test "keeps the audio language and the subtitles of the same Content" do
+      user = generate(user(audio_language: :en, subtitle_language: :fr))
+      tracks = [audio: [%{language: "eng"}, %{language: "fre"}], text: [%{language: "fre"}]]
+      [first, second] = episode_media(tracks)
+
+      generate(
+        playback_session(first,
+          started_by: user,
+          playback: [audio_track_id: audio_track_id(first, "fre"), text_track_id: nil]
+        )
+      )
+
+      %{current_playback: playback} =
+        Playbacks.play!(second.id, "player", load: :current_playback, actor: user)
+
+      assert playback.audio_track_id == audio_track_id(second, "fre")
+      assert playback.text_track_id == nil
     end
   end
 
-  describe "start_new_playback/*" do
-    @tag :tmp_dir
-    test "ends the current Playback and starts a new one on the same Session",
-         %{tmp_dir: tmp_dir} do
+  describe "play_next/*" do
+    test "plays the next TV Show Episode on the same Screen" do
       user = generate(user())
-      first_media = matched_media!(Path.join(tmp_dir, "first.mkv"))
-      second_media = matched_media!(Path.join(tmp_dir, "second.mkv"))
+      [first, second] = episode_media()
 
-      {:ok, session} =
-        Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
+      session =
+        generate(playback_session(first, started_by: user, screen_id: "tv", tv_name: "TV"))
 
-      first_playback = session.active_playback
-
-      {:ok, switched} =
-        Playbacks.start_new_playback(session, second_media.id,
-          load: :active_playback,
+      session =
+        Playbacks.play_next!(session, "tv", session.current_playback.id,
+          load: :current_playback,
           actor: user
         )
 
-      assert switched.id == session.id
-      assert switched.active_playback.media_id == second_media.id
-      refute switched.active_playback.id == first_playback.id
-
-      reloaded_first = Ash.get!(Playback, first_playback.id, actor: SystemActor.actor())
-      refute is_nil(reloaded_first.ended_at)
+      assert session.screen_id == "tv"
+      assert session.current_playback.media_id == second.id
     end
 
-    @tag :tmp_dir
-    test "fails for a User who does not own the Session", %{tmp_dir: tmp_dir} do
+    test "ends the Playback Session when nothing follows" do
       user = generate(user())
-      other_user = generate(user())
-      first_media = matched_media!(Path.join(tmp_dir, "owned.mkv"))
-      other_media = matched_media!(Path.join(tmp_dir, "other.mkv"))
+      session = generate(playback_session(movie_media(), started_by: user))
 
-      {:ok, session} =
-        Playbacks.start_session(first_media.id, load: :active_playback, actor: user)
+      ended = Playbacks.play_next!(session, "player", session.current_playback.id, actor: user)
 
-      first_playback = session.active_playback
+      refute is_nil(ended.ended_at)
+      assert ended?(session.current_playback)
+    end
 
-      assert {:error, _} =
-               Playbacks.start_new_playback(session, other_media.id, actor: other_user)
+    test "fails for a Playback that's no longer current" do
+      user = generate(user())
+      [first, _second] = episode_media()
+      session = generate(playback_session(first, started_by: user))
 
-      reloaded = Ash.get!(Playback, first_playback.id, actor: SystemActor.actor())
-      assert is_nil(reloaded.ended_at)
+      ended =
+        Ash.Seed.seed!(Playback, %{
+          session_id: session.id,
+          media_id: first.id,
+          ended_at: DateTime.utc_now()
+        })
+
+      Playbacks.play_next(session, "player", ended.id, actor: user)
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
+    end
+
+    test "fails once the Playback Session ended" do
+      user = generate(user())
+      now = DateTime.utc_now()
+
+      session =
+        generate(
+          playback_session(movie_media(),
+            started_by: user,
+            ended_at: now,
+            playback: [ended_at: now]
+          )
+        )
+
+      Playbacks.play_next(session, "player", session.current_playback.id, actor: user)
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
     end
   end
 
-  describe "heartbeat_session/*" do
-    @tag :tmp_dir
-    test "updates the current Playback's last active time", %{tmp_dir: tmp_dir} do
+  describe "heartbeat/*" do
+    test "records where the Screen is at, and the Watch Progress" do
       user = generate(user())
-      media = matched_media!(Path.join(tmp_dir, "heartbeat.mkv"))
+      session = generate(playback_session(movie_media(), started_by: user))
 
-      {:ok, session} = Playbacks.start_session(media.id, load: :active_playback, actor: user)
-      original = session.active_playback
+      session =
+        Playbacks.heartbeat!(session, "player", session.current_playback.id, 42.0, true,
+          actor: user
+        )
 
-      Process.sleep(2)
-
-      {:ok, after_beat} =
-        Playbacks.heartbeat_session(session, load: :active_playback, actor: user)
-
-      beated = after_beat.active_playback
-
-      assert DateTime.after?(beated.last_active_at, original.last_active_at)
+      assert %Session{position_seconds: 42.0, paused?: true} = session
+      assert %WatchProgress{position_seconds: 42.0} = Ash.read_one!(WatchProgress, actor: user)
     end
 
-    @tag :tmp_dir
-    test "counts the Watch Progress up to the Credits", %{tmp_dir: tmp_dir} do
+    test "counts the Watch Progress up to the Credits" do
       user = generate(user())
-      media = matched_media!(Path.join(tmp_dir, "credits.mkv"))
+      media = movie_media()
 
       Ash.Seed.seed!(Marker, %{
         video_id: media.id,
@@ -128,121 +257,275 @@ defmodule WatchClub.Playbacks.SessionTest do
         end_seconds: 60.0
       })
 
-      {:ok, session} = Playbacks.start_session(media.id, actor: user)
+      session = generate(playback_session(media, started_by: user))
 
-      Playbacks.heartbeat_session!(session, %{position_seconds: 52.0}, actor: user)
+      Playbacks.heartbeat!(session, "player", session.current_playback.id, 52.0, false,
+        actor: user
+      )
 
       assert %WatchProgress{position_seconds: 50.0, duration_seconds: 50.0, completed: true} =
                Ash.read_one!(WatchProgress, load: :completed, actor: user)
     end
 
-    @tag :tmp_dir
-    test "forbids other Users", %{tmp_dir: tmp_dir} do
+    test "fails for a Screen that no longer holds the Playback Session" do
       user = generate(user())
-      other_user = generate(user())
-      media = matched_media!(Path.join(tmp_dir, "other-user.mkv"))
+      session = generate(playback_session(movie_media(), started_by: user, screen_id: "other"))
 
-      {:ok, session} = Playbacks.start_session(media.id, actor: user)
-
-      assert {:error, _} = Playbacks.heartbeat_session(session, actor: other_user)
-    end
-  end
-
-  describe "end_inactive_playbacks/*" do
-    @tag :tmp_dir
-    test "ends the Playbacks without a heartbeat for six hours and removes their segment cache",
-         %{tmp_dir: tmp_dir} do
-      media = unmatched_media!(Path.join(tmp_dir, "inactive.mkv"))
-
-      inactive =
-        generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -7, :hour)))
-
-      active =
-        generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -5, :hour)))
-
-      File.mkdir_p!(SegmentCache.playback_dir(inactive.id))
-      File.mkdir_p!(SegmentCache.playback_dir(active.id))
-
-      Playbacks.end_inactive_playbacks!(actor: SystemActor.actor())
-
-      refute is_nil(Ash.get!(Playback, inactive.id, actor: SystemActor.actor()).ended_at)
-      assert is_nil(Ash.get!(Playback, active.id, actor: SystemActor.actor()).ended_at)
-      refute File.exists?(SegmentCache.playback_dir(inactive.id))
-      assert File.exists?(SegmentCache.playback_dir(active.id))
+      Playbacks.heartbeat(session, "player", session.current_playback.id, 42.0, false,
+        actor: user
+      )
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
     end
 
-    test "forbids Users" do
-      Playbacks.end_inactive_playbacks(actor: generate(user()))
+    test "fails for a Playback that's no longer current" do
+      user = generate(user())
+      media = movie_media()
+      session = generate(playback_session(media, started_by: user))
+
+      ended =
+        Ash.Seed.seed!(Playback, %{
+          session_id: session.id,
+          media_id: media.id,
+          ended_at: DateTime.utc_now()
+        })
+
+      Playbacks.heartbeat(session, "player", ended.id, 42.0, false, actor: user)
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
+    end
+
+    test "forbids other Users" do
+      session = generate(playback_session(movie_media()))
+
+      Playbacks.heartbeat(session, "player", session.current_playback.id, 42.0, false,
+        actor: generate(user())
+      )
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 
+  describe "pick_tracks/*" do
+    test "switches the current Playback to the tracks" do
+      user = generate(user())
+
+      [media | _] =
+        episode_media(audio: [%{language: "eng"}, %{language: "fre"}], text: [%{language: "fre"}])
+
+      session = generate(playback_session(media, started_by: user))
+
+      %{current_playback: playback} =
+        Playbacks.pick_tracks!(
+          session,
+          session.current_playback.id,
+          audio_track_id(media, "fre"),
+          text_track_id(media, "fre"),
+          load: :current_playback,
+          actor: user
+        )
+
+      assert playback.audio_track_id == audio_track_id(media, "fre")
+      assert playback.text_track_id == text_track_id(media, "fre")
+    end
+  end
+
+  describe "cast/*" do
+    test "makes the TV the Screen" do
+      user = generate(user())
+      session = generate(playback_session(movie_media(), started_by: user))
+
+      session = Playbacks.cast!(session, "tv", "Living Room TV", "player", actor: user)
+
+      assert %Session{screen_id: "tv", tv_name: "Living Room TV"} = session
+    end
+
+    test "fails once another Screen took the Playback Session" do
+      user = generate(user())
+      session = generate(playback_session(movie_media(), started_by: user, screen_id: "other"))
+
+      Playbacks.cast(session, "tv", "Living Room TV", "player", actor: user)
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
+    end
+  end
+
+  describe "leave_screen/*" do
+    test "leaves the Playback Session without a Screen" do
+      user = generate(user())
+
+      session =
+        generate(
+          playback_session(movie_media(), started_by: user, screen_id: "tv", tv_name: "TV")
+        )
+
+      session = Playbacks.leave_screen!(session, "tv", actor: user)
+
+      assert %Session{screen_id: nil, tv_name: nil, ended_at: nil} = session
+    end
+  end
+
+  describe "control_tv/*" do
+    test "sends the command to the TV" do
+      user = generate(user())
+
+      session =
+        generate(
+          playback_session(movie_media(), started_by: user, screen_id: "tv", tv_name: "TV")
+        )
+
+      Phoenix.PubSub.subscribe(WatchClub.PubSub, "tv:#{session.id}")
+
+      Playbacks.control_tv!(session, :seek, %{position_seconds: 120.0}, actor: user)
+
+      assert_receive {:tv_command, :seek, 120.0}
+    end
+
+    test "forbids the Instance Administrator" do
+      session = generate(playback_session(movie_media(), screen_id: "tv", tv_name: "TV"))
+
+      Playbacks.control_tv(session, :pause, actor: generate(administrator()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "stop_casting/*" do
+    test "ends the Playback Session and its Playback" do
+      user = generate(user())
+
+      session =
+        generate(
+          playback_session(movie_media(), started_by: user, screen_id: "tv", tv_name: "TV")
+        )
+
+      ended = Playbacks.stop_casting!(session, actor: user)
+
+      refute is_nil(ended.ended_at)
+      assert ended?(session.current_playback)
+    end
+  end
+
   describe "list_watching_now/*" do
-    @tag :tmp_dir
-    test "lists the other Users whose Player is active, once each, with what the Player they opened last plays",
-         %{tmp_dir: tmp_dir} do
+    test "lists the other Users whose Playback Session plays on a Screen, with what it plays" do
       [user, watcher] = generate_many(user(), 2)
       watcher_id = watcher.id
-      generate(playback(matched_media!(Path.join(tmp_dir, "first.mkv")), started_by: watcher))
-      last = matched_media!(Path.join(tmp_dir, "last.mkv"))
-      last_content_id = last.content_id
-      generate(playback(last, started_by: watcher))
+      media = movie_media()
+      content_id = media.content_id
+      generate(playback_session(media, started_by: watcher))
 
       assert [
                %{
                  user: %User{id: ^watcher_id},
-                 content: %Content{id: ^last_content_id},
+                 content: %Content{id: ^content_id},
                  tv_show_episode: nil
                }
              ] = Playbacks.list_watching_now!(actor: user)
     end
 
-    @tag :tmp_dir
-    test "leaves out the actor, the inactive Players, the ended Playbacks and the Unmatched Media",
-         %{tmp_dir: tmp_dir} do
+    test "leaves out the actor, the Playback Sessions without a Screen, the ended ones and the Unmatched Media" do
       user = generate(user())
-      media = matched_media!(Path.join(tmp_dir, "watched.mkv"))
-      generate(playback(media, started_by: user))
-      generate(playback(media, last_active_at: DateTime.add(DateTime.utc_now(), -1, :minute)))
-      generate(playback(media, ended_at: DateTime.utc_now()))
-      generate(playback(unmatched_media!(Path.join(tmp_dir, "unmatched.mkv"))))
+      generate(playback_session(movie_media(), started_by: user))
+
+      generate(
+        playback_session(movie_media(),
+          last_heartbeat_at: DateTime.add(DateTime.utc_now(), -1, :minute)
+        )
+      )
+
+      generate(playback_session(movie_media(), ended_at: DateTime.utc_now()))
+      generate(playback_session(unmatched_media()))
 
       assert [] = Playbacks.list_watching_now!(actor: user)
     end
   end
 
-  defp unmatched_media!(path) do
-    File.mkdir_p!(Path.dirname(path))
-    File.write!(path, "")
-    Ash.Seed.seed!(Media, %{path: Path.expand(path), type: :movie})
+  describe "end_abandoned_sessions/*" do
+    test "ends the Playback Sessions without a Screen for two minutes and removes their segment cache" do
+      abandoned =
+        generate(
+          playback_session(movie_media(),
+            last_heartbeat_at: DateTime.add(DateTime.utc_now(), -3, :minute)
+          )
+        )
+
+      active =
+        generate(
+          playback_session(movie_media(),
+            last_heartbeat_at: DateTime.add(DateTime.utc_now(), -1, :minute)
+          )
+        )
+
+      File.mkdir_p!(SegmentCache.playback_dir(abandoned.current_playback.id))
+      File.mkdir_p!(SegmentCache.playback_dir(active.current_playback.id))
+
+      Playbacks.end_abandoned_sessions!(actor: SystemActor.actor())
+
+      refute is_nil(Ash.get!(Session, abandoned.id, actor: SystemActor.actor()).ended_at)
+      assert is_nil(Ash.get!(Session, active.id, actor: SystemActor.actor()).ended_at)
+      refute File.exists?(SegmentCache.playback_dir(abandoned.current_playback.id))
+      assert File.exists?(SegmentCache.playback_dir(active.current_playback.id))
+    end
+
+    test "forbids Users" do
+      Playbacks.end_abandoned_sessions(actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
   end
 
-  defp matched_media!(path) do
-    media = unmatched_media!(path)
+  # Media for a Movie in the original language, whose Video has the given tracks
+  defp movie_media(original_language \\ "en", tracks \\ [audio: [%{language: "eng"}], text: []]) do
+    generate(movie(original_language: original_language))
+    |> video_media(video: video_tracks(tracks))
+    |> generate()
+  end
 
-    content =
-      Ash.Seed.seed!(Content, %{
-        type: :movie,
-        external_id_source: :tmdb,
-        external_id: "tmdb-#{System.unique_integer([:positive])}",
-        original_title: "Test Movie",
-        original_language: "en",
-        origin_country: "US"
+  # Media for two TV Show Episodes in a row, whose Videos have the given tracks
+  defp episode_media(tracks \\ [audio: [%{language: "eng"}], text: []]) do
+    generate(tv_show(num_seasons: 1, episodes_per_season: 2)).tv_show.episodes
+    |> Enum.sort_by(& &1.episode_number)
+    |> Enum.map(&generate(video_media(&1, video: video_tracks(tracks))))
+  end
+
+  defp video_tracks(audio: audio_tracks, text: text_tracks) do
+    %{
+      audio_tracks:
+        Enum.with_index(audio_tracks, &Map.merge(%{stream_index: &2 + 1, codec: "aac"}, &1)),
+      text_tracks:
+        Enum.with_index(text_tracks, &Map.merge(%{stream_index: &2 + 10, codec: "subrip"}, &1))
+    }
+  end
+
+  defp unmatched_media do
+    media =
+      Ash.Seed.seed!(Media, %{
+        path: "/library/#{System.unique_integer([:positive])}.mkv",
+        type: :movie
       })
 
-    Ash.Seed.seed!(Movie, %{id: content.id})
-    Ash.Seed.seed!(Video, %{id: media.id, movie_id: content.id, duration_seconds: 60.0})
-
-    Ash.Seed.seed!(VideoTrack, %{
-      video_id: media.id,
-      stream_index: 0,
-      codec: "h264",
-      width: 1920,
-      height: 1080,
-      frame_rate: 23.976,
-      bit_rate: 5_000_000
-    })
-
-    Ash.Seed.update!(media, %{content_id: content.id})
+    Ash.Seed.seed!(Video, %{id: media.id, duration_seconds: 60.0})
+    media
   end
+
+  # The titles of the Audio Track and Text Track the User's Playback of the Media starts with
+  defp start_track_titles(media, user) do
+    %{current_playback: playback} =
+      Playbacks.play!(media.id, "player",
+        load: [current_playback: [:audio_track, :text_track]],
+        actor: user
+      )
+
+    {playback.audio_track && playback.audio_track.title,
+     playback.text_track && playback.text_track.title}
+  end
+
+  defp audio_track_id(media, language) do
+    Ash.load!(media, [video: :audio_tracks], authorize?: false).video.audio_tracks
+    |> Enum.find(&(&1.language == language))
+    |> Map.fetch!(:id)
+  end
+
+  defp text_track_id(media, language) do
+    Ash.load!(media, [video: :text_tracks], authorize?: false).video.text_tracks
+    |> Enum.find(&(&1.language == language))
+    |> Map.fetch!(:id)
+  end
+
+  defp ended?(%Playback{id: id}),
+    do: not is_nil(Ash.get!(Playback, id, actor: SystemActor.actor()).ended_at)
 end
