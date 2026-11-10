@@ -175,7 +175,7 @@ An instance-wide local file available in WatchClub as a video, ebook, or audiobo
 _Avoid_: Content, Media Version, media item
 
 **Unmatched Media**:
-Media whose concrete video, ebook, or audiobook has no attached **Content** because the **Media Import** could not identify it.
+Media whose concrete video, ebook, or audiobook has no attached **Content**, because the **Media Import** could not identify it or the **Instance Administrator** removed its **Manual Match**.
 _Avoid_: Orphan media, unattached media, unidentified media
 
 **Manual Match**:
@@ -630,7 +630,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Manual Match** attaches a **Movie** file to a **Movie**, a **TV Show Episode** file to a **TV Show Episode**, and a **Sports Event** file to a **Sports Event**
 - A **Manual Match** may create the missing **Content**, as **Request Content** does
 - **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
-- Removing a **Manual Match** keeps the **Video**'s **Content** until a **Media Import** or a webhook matches the file again
+- Removing a **Manual Match** makes the **Video** **Unmatched Media**, until a **Media Import** or a webhook matches it again
 
 ### Markers
 

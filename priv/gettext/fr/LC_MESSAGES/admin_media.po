@@ -171,12 +171,6 @@ msgstr "%{range} sur %{count}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
-#, elixir-autogen, elixir-format
-msgid "A Media Import couldn't identify this file."
-msgstr "L'import de médias n'a pas pu identifier ce fichier."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Added"
@@ -290,12 +284,6 @@ msgstr "Retour"
 #, elixir-autogen, elixir-format
 msgid "Current match"
 msgstr "Association actuelle"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
-#, elixir-autogen, elixir-format
-msgid "Manual match removed. The next import with All files will match this file again."
-msgstr "Association manuelle retirée. Le prochain import de tous les fichiers associera à nouveau ce fichier."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -442,3 +430,15 @@ msgstr "Recherchez sur sportarr.net par titre ou par ID Sportarr."
 #, elixir-autogen, elixir-format
 msgid "Sportarr ID %{id}"
 msgstr "ID Sportarr %{id}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Manual match removed. The file is unmatched until an import matches it."
+msgstr "Association manuelle retirée. Le fichier n'est plus associé jusqu'à ce qu'un import l'associe."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "This file isn't matched to a title."
+msgstr "Ce fichier n'est associé à aucun titre."

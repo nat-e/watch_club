@@ -577,8 +577,8 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
-  describe "remove_manual_match/*" do
-    test "keeps the match, for Media Imports and webhooks to match the file again" do
+  describe "unmatch_media/*" do
+    test "makes a manually matched Video Unmatched Media, and updates its Content Request" do
       movie = generate(movie())
       admin = generate(administrator())
 
@@ -587,16 +587,20 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         |> generate()
         |> match_media!(ContentIdentity.from_content(movie), actor: admin)
 
-      assert %Media{manually_matched?: false, content_id: content_id} =
-               remove_manual_match!(media, actor: admin)
+      updated_at = ~U[2020-01-01 00:00:00.000000Z]
+      request = generate(content_request(generate(user()), movie, updated_at: updated_at))
 
-      assert content_id == movie.id
+      assert %Media{manually_matched?: false, content_id: nil, video: %Video{movie_id: nil}} =
+               unmatch_media!(media, actor: admin, load: :video)
+
+      reloaded_request = Ash.get!(ContentRequest, request.id, authorize?: false)
+      assert DateTime.after?(reloaded_request.updated_at, updated_at)
     end
 
     test "rejects actors other than the Instance Administrator" do
       media = generate(video_media(nil))
 
-      remove_manual_match(media, actor: generate(user()))
+      unmatch_media(media, actor: generate(user()))
       |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end

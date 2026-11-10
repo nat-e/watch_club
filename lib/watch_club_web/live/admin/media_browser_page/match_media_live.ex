@@ -482,13 +482,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   end
 
   def handle_event("remove_manual_match", _params, socket) do
-    MediaCatalog.remove_manual_match!(socket.assigns.media, actor: socket.assigns.current_user)
+    MediaCatalog.unmatch_media!(socket.assigns.media, actor: socket.assigns.current_user)
 
     Flash.send_flash(
       :info,
       dgettext(
         "admin_media",
-        "Manual match removed. The next import with All files will match this file again."
+        "Manual match removed. The file is unmatched until an import matches it."
       )
     )
 

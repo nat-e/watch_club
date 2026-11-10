@@ -64,10 +64,18 @@ defmodule WatchClub.MediaCatalog.Media do
       change WatchClub.Markers.Changes.ScheduleDetection
     end
 
-    update :remove_manual_match do
-      description "Media Imports and webhooks match the file again, starting with the next one"
-      accept []
+    update :unmatch do
+      description """
+      Makes a Video Unmatched Media, removing its Manual Match. Media Imports of unmatched files
+      and webhooks match it again.
+      """
+
+      require_atomic? false
+
       change set_attribute(:manually_matched?, false)
+      change set_attribute(:content_id, nil)
+      change AttachVideo
+      change UpdateContentRequest
     end
 
     read :under_path_prefix do
@@ -246,7 +254,7 @@ defmodule WatchClub.MediaCatalog.Media do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:match, :remove_manual_match]) do
+    policy action([:match, :unmatch]) do
       description "Only the Instance Administrator matches Media by hand"
       authorize_if actor_attribute_equals(:administrator?, true)
     end

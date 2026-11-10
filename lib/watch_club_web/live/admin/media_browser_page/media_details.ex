@@ -60,7 +60,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
               </span>
             </p>
             <p :if={!@media.content} class="text-sm text-text-muted">
-              {dgettext("admin_media", "A Media Import couldn't identify this file.")}
+              {dgettext("admin_media", "This file isn't matched to a title.")}
             </p>
             <.badge variant="muted" size="sm">
               <:icon><.media_type_icon media_type={@media.type} /></:icon>

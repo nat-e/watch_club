@@ -144,11 +144,6 @@ msgid "%{range} of %{count}"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
-#, elixir-autogen, elixir-format
-msgid "A Media Import couldn't identify this file."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Added"
@@ -243,11 +238,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Current match"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
-#, elixir-autogen, elixir-format
-msgid "Manual match removed. The next import with All files will match this file again."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -370,4 +360,14 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Sportarr ID %{id}"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "Manual match removed. The file is unmatched until an import matches it."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "This file isn't matched to a title."
 msgstr ""
