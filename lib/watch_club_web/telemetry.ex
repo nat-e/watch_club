@@ -312,9 +312,10 @@ defmodule WatchClubWeb.Telemetry do
   defp database_tags(%{source: source, result: result}, database) do
     {operation, status_code, error_type} =
       case result do
-        {:ok, %Postgrex.Result{command: command}} ->
+        {:ok, %Postgrex.Result{command: command}} when is_atom(command) and command != nil ->
           {command |> Atom.to_string() |> String.upcase(), nil, nil}
 
+        # Several commands, such as a rollback to a savepoint, have no single operation name
         {:ok, _result} ->
           {nil, nil, nil}
 
