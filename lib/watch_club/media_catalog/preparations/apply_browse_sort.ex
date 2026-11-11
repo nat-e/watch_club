@@ -22,7 +22,7 @@ defmodule WatchClub.MediaCatalog.Preparations.ApplyBrowseSort do
         Ash.Query.sort(query, [
           {Ash.Sort.expr_sort(content.localized_title_key, :string), SortOrder.nils_last(order)},
           {:content_id, order},
-          {Ash.Sort.expr_sort(video.tv_show_episode.rank, :integer), order},
+          {Ash.Sort.expr_sort(video.episode_rank, :integer), order},
           {:path, order}
         ])
     end

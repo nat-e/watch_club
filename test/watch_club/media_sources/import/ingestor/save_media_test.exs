@@ -2,7 +2,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
-  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Media, Part, Video, VideoTrack}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{MatchResult, MediaStructure}
   alias WatchClub.MediaSources.Import.Ingestor.SaveMedia
@@ -27,8 +27,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
                type: :movie,
                path: normalized_path,
                video: %Video{
-                 movie_id: movie_id,
-                 tv_show_episode_id: nil,
+                 parts: [%Part{movie_id: movie_id, number: 1}],
                  container: "matroska",
                  video_tracks: [%{codec: "h264"}],
                  audio_tracks: [_],
@@ -57,10 +56,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
       assert %Media{
                type: :tv_show_episode,
-               video: %Video{
-                 movie_id: nil,
-                 tv_show_episode_id: tv_show_episode_id
-               }
+               video: %Video{parts: [%Part{tv_show_episode_id: tv_show_episode_id}]}
              } = load_media!(candidate.path)
 
       assert tv_show_episode_id == episode.id
@@ -82,8 +78,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       assert %Media{
                type: :movie,
                video: %Video{
-                 movie_id: nil,
-                 tv_show_episode_id: nil,
+                 parts: [],
                  container: "matroska",
                  video_tracks: [%{codec: "h264"}],
                  audio_tracks: [_],
@@ -105,7 +100,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
       assert %Media{
                type: :tv_show_episode,
-               video: %Video{movie_id: nil, tv_show_episode_id: nil}
+               video: %Video{parts: []}
              } = load_media!(candidate.path)
     end
   end
@@ -171,7 +166,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   defp load_media!(path) do
     Media
     |> Ash.Query.filter(path == ^Path.expand(path))
-    |> Ash.Query.load(video: [:video_tracks, :audio_tracks, :text_tracks])
+    |> Ash.Query.load(video: [:parts, :video_tracks, :audio_tracks, :text_tracks])
     |> Ash.read_one!(authorize?: false)
   end
 

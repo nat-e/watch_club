@@ -6,7 +6,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   """
   use Ash.Resource.Change
 
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Session.Changes.EndCurrentPlayback
 
@@ -26,9 +26,11 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
            load: [
              media: [
                video: [
-                 movie: :actor_progress,
-                 tv_show_episode: :actor_progress,
-                 sports_event: :actor_progress
+                 parts: [
+                   movie: :actor_progress,
+                   tv_show_episode: :actor_progress,
+                   sports_event: :actor_progress
+                 ]
                ]
              ]
            ],
@@ -51,8 +53,10 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
     end
   end
 
-  defp resume_position(%Video{movie: movie, tv_show_episode: episode, sports_event: event}) do
-    progress = (movie || episode || event || %{actor_progress: nil}).actor_progress
+  defp resume_position(%Video{parts: [part | _]}) do
+    progress = Part.work(part).actor_progress
     if progress && !progress.completed, do: progress.position_seconds, else: 0.0
   end
+
+  defp resume_position(%Video{parts: []}), do: 0.0
 end

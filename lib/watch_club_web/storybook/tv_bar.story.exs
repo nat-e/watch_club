@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Storybook.TvBar do
 
   alias WatchClub.Accounts.{User, UserSettings}
   alias WatchClub.Contents.{TvShow, TvShowEpisode, TvShowEpisodeLocalization, TvShowLocalization}
-  alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.{Media, Part, Video}
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClubWeb.Components.Playbacks.TvBar
 
@@ -47,16 +47,20 @@ defmodule WatchClubWeb.Storybook.TvBar do
         media: %Media{
           video: %Video{
             duration_seconds: 2940.0,
-            movie: nil,
-            tv_show_episode: %TvShowEpisode{
-              formatted_episode_number: "S02E03",
-              still_path: "/j4AUAq1XJOBmfXsLphZzsCz6pZs.jpg",
-              best_localization: %TvShowEpisodeLocalization{title: "Who Is Alive?"},
-              tv_show: %TvShow{
-                best_localization: %TvShowLocalization{title: "Severance"},
-                backdrop_path: "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg"
+            parts: [
+              %Part{
+                number: 1,
+                tv_show_episode: %TvShowEpisode{
+                  formatted_episode_number: "S02E03",
+                  still_path: "/j4AUAq1XJOBmfXsLphZzsCz6pZs.jpg",
+                  best_localization: %TvShowEpisodeLocalization{title: "Who Is Alive?"},
+                  tv_show: %TvShow{
+                    best_localization: %TvShowLocalization{title: "Severance"},
+                    backdrop_path: "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg"
+                  }
+                }
               }
-            }
+            ]
           }
         }
       }

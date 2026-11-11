@@ -3,16 +3,16 @@ defmodule WatchClub.Contents.SportsEvent do
   A Sports Event, such as a UFC event or a Formula 1 race, from sportarr.net.
 
   Its metadata is in English only, so it has no localizations. Like a Movie, it can
-  have several Videos, such as its Prelims and its Main Card.
+  have several Parts, such as its Prelims and its Main Card.
   """
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Calculations.VideosToPlay, Content}
   alias WatchClub.History.{WatchProgress, WatchStatus}
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
@@ -103,7 +103,13 @@ defmodule WatchClub.Contents.SportsEvent do
       source_attribute :id
     end
 
-    has_many :videos, Video
+    # The Parts it has files for, in watching order
+    has_many :parts, Part do
+      public? true
+      filter expr(exists(videos, true))
+      sort number: :asc
+    end
+
     has_many :watch_progresses, WatchProgress
 
     has_one :actor_progress, WatchProgress do
@@ -113,7 +119,12 @@ defmodule WatchClub.Contents.SportsEvent do
   end
 
   calculations do
-    calculate :has_media?, :boolean, expr(videos_count > 0)
+    calculate :has_media?, :boolean, expr(exists(parts, true))
+
+    calculate :videos_to_play, {:array, :struct}, VideosToPlay do
+      constraints items: [instance_of: Video]
+      public? true
+    end
 
     calculate :actor_progress_status,
               WatchStatus,
@@ -127,10 +138,6 @@ defmodule WatchClub.Contents.SportsEvent do
 
     # The date at which the current user has most recently watched this event
     calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
-  end
-
-  aggregates do
-    count :videos_count, :videos
   end
 
   defimpl String.Chars, for: __MODULE__ do

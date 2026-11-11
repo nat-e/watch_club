@@ -165,7 +165,7 @@ defmodule WatchClubWeb.RemotePage do
                     id={"remote-play-#{episode.id}"}
                     type="button"
                     phx-click="play_episode"
-                    phx-value-media_id={List.first(episode.videos).id}
+                    phx-value-media_id={List.first(episode.videos_to_play).id}
                     class="flex w-full items-center gap-group rounded-control p-related text-left transition-colors hover:bg-surface-hover"
                   >
                     <.tmdb_still
@@ -298,16 +298,16 @@ defmodule WatchClubWeb.RemotePage do
     video = session.current_playback.media.video
 
     up_next =
-      if video.tv_show_episode,
-        do:
+      case Video.work(video) do
+        %TvShowEpisode{} = episode ->
           Ash.load!(
-            video.tv_show_episode,
+            episode,
             [
               playable_episodes_after:
                 TvShowEpisode
                 |> Ash.Query.limit(10)
                 |> Ash.Query.load([
-                  :videos,
+                  :videos_to_play,
                   :still_path,
                   :runtime,
                   :formatted_episode_number,
@@ -315,8 +315,11 @@ defmodule WatchClubWeb.RemotePage do
                 ])
             ],
             actor: socket.assigns.current_user
-          ).playable_episodes_after,
-        else: []
+          ).playable_episodes_after
+
+        _movie_or_sports_event ->
+          []
+      end
 
     assign(socket, video: video, up_next: up_next)
   end

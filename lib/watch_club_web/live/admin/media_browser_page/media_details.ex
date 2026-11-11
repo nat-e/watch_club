@@ -20,7 +20,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
     assigns =
       assign(assigns,
         video?: assigns.media.type in [:movie, :tv_show_episode, :sports_event],
-        episode: assigns.media.video && assigns.media.video.tv_show_episode
+        episode:
+          assigns.media.video && Enum.find_value(assigns.media.video.parts, & &1.tv_show_episode)
       )
 
     ~H"""

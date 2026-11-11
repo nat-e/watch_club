@@ -6,7 +6,6 @@ defmodule WatchClubWeb.Helpers.Url do
     router: WatchClubWeb.Router,
     statics: WatchClubWeb.static_paths()
 
-  alias WatchClub.Contents.{Movie, TvShowEpisode}
   alias WatchClub.MediaCatalog.Video
 
   @type t :: %__MODULE__{
@@ -144,7 +143,10 @@ defmodule WatchClubWeb.Helpers.Url do
   def content_details_link(%{type: :tv_show, external_id: id}), do: ~p"/shows/#{id}"
   def content_details_link(%{type: :sports_event, external_id: id}), do: ~p"/sports/#{id}"
 
-  def player_link(%Movie{} = movie), do: ~p"/play/#{List.first(movie.videos).id}"
-  def player_link(%TvShowEpisode{} = episode), do: ~p"/play/#{List.first(episode.videos).id}"
+  @doc """
+  The Player of a Movie, TV Show Episode or Sports Event, from the first of its `videos_to_play`,
+  or of the first Video of a list.
+  """
+  def player_link(%{videos_to_play: videos}), do: player_link(videos)
   def player_link([%Video{} = video | _]), do: ~p"/play/#{video.id}"
 end

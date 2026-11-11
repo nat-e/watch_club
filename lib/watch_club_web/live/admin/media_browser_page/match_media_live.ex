@@ -149,7 +149,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           year: content.release_date && content.release_date.year,
           poster_path: content.poster_path
         },
-        episode: assigns.media.video.tv_show_episode
+        episode: Enum.find_value(assigns.media.video.parts, & &1.tv_show_episode)
       )
 
     ~H"""
@@ -669,7 +669,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   defp first_episode([first_season | _seasons] = season_numbers, content, media) do
     position =
-      case {media.content, media.video.tv_show_episode} do
+      case {media.content, Enum.find_value(media.video.parts, & &1.tv_show_episode)} do
         {%Content{id: id}, %TvShowEpisode{} = episode} when id == content.id ->
           {episode.season_number, episode.episode_number}
 

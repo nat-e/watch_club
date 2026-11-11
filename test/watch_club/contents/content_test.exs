@@ -345,7 +345,7 @@ defmodule WatchClub.Contents.ContentTest do
       original_s2e2_with_relations =
         TvShowEpisode
         |> Ash.Query.filter(id == ^original_s2e2.id)
-        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.Query.load([:videos_to_play, :watch_progresses])
         |> Ash.read_one!(authorize?: false)
 
       original_s2e2_localizations =
@@ -412,15 +412,15 @@ defmodule WatchClub.Contents.ContentTest do
       refreshed_s2e2 =
         TvShowEpisode
         |> Ash.Query.filter(id == ^original_s2e2.id)
-        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.Query.load([:videos_to_play, :watch_progresses])
         |> Ash.read_one!(authorize?: false)
 
       assert refreshed_s2e2.air_date == original_s2e2.air_date
       assert refreshed_s2e2.runtime == original_s2e2.runtime
       assert refreshed_s2e2.still_path == original_s2e2.still_path
 
-      assert Enum.map(refreshed_s2e2.videos, & &1.id) ==
-               Enum.map(original_s2e2_with_relations.videos, & &1.id)
+      assert Enum.map(refreshed_s2e2.videos_to_play, & &1.id) ==
+               Enum.map(original_s2e2_with_relations.videos_to_play, & &1.id)
 
       assert Enum.map(refreshed_s2e2.watch_progresses, & &1.id) ==
                Enum.map(original_s2e2_with_relations.watch_progresses, & &1.id)

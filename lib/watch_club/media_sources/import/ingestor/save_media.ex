@@ -61,14 +61,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
            match_result: %MatchResult{matched_id: matched_id}
          }
        ) do
-    foreign_key =
+    work =
       case media_type do
         :movie -> %{movie_id: matched_id}
         :tv_show_episode -> %{tv_show_episode_id: matched_id}
         :sports_event -> %{sports_event_id: matched_id}
       end
 
-    Map.merge(foreign_key, %{
+    %{
+      parts: if(matched_id, do: [Map.put(work, :number, 1)], else: []),
       file_fingerprint: structure.file_fingerprint,
       duration_seconds: structure.duration_seconds,
       container: structure.container,
@@ -76,6 +77,6 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       video_tracks: structure.video_tracks,
       audio_tracks: structure.audio_tracks,
       text_tracks: structure.text_tracks
-    })
+    }
   end
 end

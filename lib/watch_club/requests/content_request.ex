@@ -219,10 +219,10 @@ defmodule WatchClub.Requests.ContentRequest do
               :float,
               expr(
                 cond do
-                  content.type == :movie and count(content.movie.videos) > 0 ->
+                  content.type == :movie and content.movie.has_media? ->
                     100.0
 
-                  content.type == :sports_event and count(content.sports_event.videos) > 0 ->
+                  content.type == :sports_event and content.sports_event.has_media? ->
                     100.0
 
                   content.type == :book and

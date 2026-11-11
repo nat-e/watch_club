@@ -332,3 +332,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "More"
 msgstr ""
+
+#: lib/watch_club_web/components/medias/part_name.ex
+#, elixir-autogen, elixir-format
+msgid "Part %{number}"
+msgstr ""

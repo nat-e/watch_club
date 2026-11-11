@@ -455,8 +455,10 @@ defmodule WatchClub.Generator do
     }
   end
 
+  # The video of the Movie, TV Show Episode or Sports Event `id`, as its only Part, or Unmatched
+  # Media without a Part when `id` is nil
   def video_input(media_type, id) do
-    id_field =
+    work_field =
       case media_type do
         :movie -> :movie_id
         :tv_show_episode -> :tv_show_episode_id
@@ -464,6 +466,7 @@ defmodule WatchClub.Generator do
       end
 
     %{
+      parts: if(id, do: [%{work_field => id, number: 1}], else: []),
       file_fingerprint: Ash.UUIDv7.generate(),
       video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
       audio_tracks: [
@@ -471,6 +474,5 @@ defmodule WatchClub.Generator do
       ],
       text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
     }
-    |> Map.put(id_field, id)
   end
 end

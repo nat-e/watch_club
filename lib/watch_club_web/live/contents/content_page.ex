@@ -43,8 +43,8 @@ defmodule WatchClubWeb.Contents.ContentPage do
     :incomplete?,
     implementation: %{
       load: [
-        movie: [videos: [:media, :default_video_track]],
-        sports_event: [videos: [:media, :default_video_track]],
+        movie: [parts: [videos: [:media, :default_video_track]]],
+        sports_event: [parts: [videos: [:media, :default_video_track]]],
         tv_show: [:actor_next_episode, :season_numbers, :season_count]
       ]
     }
@@ -302,7 +302,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       assign(assigns,
         tv_show?: tv_show?,
         episodes?: tv_show? and season_numbers(assigns.content) != [],
-        videos: if(tv_show?, do: [], else: assigns.content.implementation.videos),
+        parts: if(tv_show?, do: [], else: assigns.content.implementation.parts),
         finished?: finished?(assigns.content),
         trailer_url: localization(assigns.content).trailer_url
       )
@@ -338,7 +338,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         >
           <Lucideicons.circle_play />
         </.round_action>
-        <.download_menu :if={@videos != []} id="download" videos={@videos}>
+        <.download_menu :if={@parts != []} id="download" parts={@parts}>
           <:trigger :let={download_link}>
             <.round_action
               id="download-button"

@@ -305,7 +305,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   and the duration timer.
   """
   def controls_footer(assigns) do
-    current_episode = assigns.video.tv_show_episode
+    current_episode = episode(assigns.video)
 
     assigns =
       assigns
@@ -366,7 +366,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   when it has none. It plays the next episode after 5 seconds of playback, or when the episode ends.
   """
   def up_next_button(assigns) do
-    %Video{tv_show_episode: current_episode, duration_seconds: duration} = assigns.video
+    %Video{duration_seconds: duration} = assigns.video
+    current_episode = episode(assigns.video)
 
     assigns =
       assign(assigns,
@@ -555,9 +556,27 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     do:
       "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
 
-  defp header_title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
-  defp header_title(%Video{sports_event: %SportsEvent{} = event}), do: event.title
+  defp header_title(%Video{} = video) do
+    case Video.work(video) do
+      %Movie{} = movie ->
+        movie.best_localization.title
 
-  defp header_title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
-    do: "#{episode.tv_show.best_localization.title} - #{episode.formatted_episode_number}"
+      %SportsEvent{} = event ->
+        event.title
+
+      %TvShowEpisode{} = episode ->
+        "#{episode.tv_show.best_localization.title} - #{episode.formatted_episode_number}"
+
+      nil ->
+        dgettext("player", "Video")
+    end
+  end
+
+  # The TV Show Episode the Video holds, nil for a Movie or a Sports Event
+  defp episode(%Video{} = video) do
+    case Video.work(video) do
+      %TvShowEpisode{} = episode -> episode
+      _movie_or_sports_event -> nil
+    end
+  end
 end

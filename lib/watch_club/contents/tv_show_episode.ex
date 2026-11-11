@@ -4,9 +4,9 @@ defmodule WatchClub.Contents.TvShowEpisode do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{TvShow, TvShowEpisodeLocalization}
+  alias WatchClub.Contents.{Calculations.VideosToPlay, TvShow, TvShowEpisodeLocalization}
   alias WatchClub.History.{WatchProgress, WatchStatus}
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
@@ -98,7 +98,13 @@ defmodule WatchClub.Contents.TvShowEpisode do
       from_many? true
     end
 
-    has_many :videos, Video
+    # The Parts it has files for, in watching order
+    has_many :parts, Part do
+      public? true
+      filter expr(exists(videos, true))
+      sort number: :asc
+    end
+
     has_many :watch_progresses, WatchProgress
 
     has_one :actor_progress, WatchProgress do
@@ -154,7 +160,12 @@ defmodule WatchClub.Contents.TvShowEpisode do
     # numbers stay under 100,000.
     calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
-    calculate :has_media?, :boolean, expr(videos_count > 0)
+    calculate :has_media?, :boolean, expr(exists(parts, true))
+
+    calculate :videos_to_play, {:array, :struct}, VideosToPlay do
+      constraints items: [instance_of: Video]
+      public? true
+    end
 
     # Once its air date has passed. Only aired episodes can be marked as watched, and they decide
     # whether a TV Show is finished and how complete its Content Request is.
@@ -172,10 +183,6 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
     # The date at which the current user has most recently watched this episode, or nil
     calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
-  end
-
-  aggregates do
-    count :videos_count, :videos
   end
 
   identities do

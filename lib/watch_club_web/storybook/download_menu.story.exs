@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Storybook.DownloadMenu do
   use PhoenixStorybook.Story, :component
 
-  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Media, Part, Video, VideoTrack}
   alias WatchClubWeb.Components.Medias.DownloadMenu
 
   def function, do: &DownloadMenu.download_menu/1
@@ -25,36 +25,56 @@ defmodule WatchClubWeb.Storybook.DownloadMenu do
     [
       %Variation{
         id: :one_video,
-        description: "One Video: the trigger downloads it straight away",
+        description: "One file: the trigger downloads it straight away",
         attributes: %{
           id: "download-one",
-          videos: [video("Dune Part Two (2024) [Bluray-1080p].mkv", :hd_1080p)]
+          parts: [part(1, [video("Dune Part Two (2024) [Bluray-1080p].mkv", :hd_1080p)])]
         },
         slots: [trigger("download-one-trigger")]
       },
       %Variation{
         id: :several_videos,
-        description: "Several Videos: the trigger opens a menu, where long file names wrap",
+        description: "Copies: the trigger opens a menu, where long file names wrap",
         attributes: %{
           id: "download-several",
-          videos: [
-            video(
-              "Dune.Part.Two.2024.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.TrueHD.Atmos.7.1-GROUP.mkv",
-              :uhd_4k
-            ),
-            video("Dune Part Two (2024) [Bluray-1080p].mkv", :hd_1080p),
-            video("Dune Part Two (2024).mp4", nil)
+          parts: [
+            part(1, [
+              video(
+                "Dune.Part.Two.2024.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.TrueHD.Atmos.7.1-GROUP.mkv",
+                :uhd_4k
+              ),
+              video("Dune Part Two (2024) [Bluray-1080p].mkv", :hd_1080p),
+              video("Dune Part Two (2024).mp4", nil)
+            ])
           ]
         },
         slots: [trigger("download-several-trigger")]
+      },
+      %Variation{
+        id: :parts,
+        description: "Parts: each file is named by the Part it holds",
+        attributes: %{
+          id: "download-parts",
+          parts: [
+            part(1, [
+              video("The Office (US) - S04E01 - Fun Run (1) [WEBDL-1080p].mkv", :hd_1080p)
+            ]),
+            part(2, [
+              video("The Office (US) - S04E02 - Fun Run (2) [WEBDL-1080p].mkv", :hd_1080p)
+            ])
+          ]
+        },
+        slots: [trigger("download-parts-trigger")]
       }
     ]
   end
 
+  defp part(number, videos), do: %Part{id: Ash.UUIDv7.generate(), number: number, videos: videos}
+
   defp video(file_name, resolution) do
     %Video{
       id: Ash.UUIDv7.generate(),
-      media: %Media{path: "/media/movies/Dune Part Two (2024)/#{file_name}"},
+      media: %Media{path: "/media/#{file_name}"},
       default_video_track: resolution && %VideoTrack{resolution: resolution}
     }
   end

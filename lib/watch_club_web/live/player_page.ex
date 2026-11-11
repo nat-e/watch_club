@@ -10,6 +10,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
+  alias WatchClub.Contents.TvShowEpisode
+  alias WatchClub.MediaCatalog.Video
   alias WatchClubWeb.Live.Player.ReportProblemLive
   alias WatchClubWeb.TvSocket
 
@@ -19,12 +21,14 @@ defmodule WatchClubWeb.PlayerPage do
         video: [
           :markers,
           :credits_start_seconds,
-          movie: [:best_localization],
-          sports_event: [],
-          tv_show_episode: [
-            tv_show: [:best_localization],
-            next_episode: [:has_media?, :videos],
-            previous_episode: [:has_media?, :videos]
+          parts: [
+            movie: [:best_localization],
+            sports_event: [],
+            tv_show_episode: [
+              tv_show: [:best_localization],
+              next_episode: [:has_media?, :videos_to_play],
+              previous_episode: [:has_media?, :videos_to_play]
+            ]
           ]
         ]
       ]
@@ -229,7 +233,8 @@ defmodule WatchClubWeb.PlayerPage do
 
   def handle_event("play_previous_episode", _params, socket) do
     video = socket.assigns.session.current_playback.media.video
-    previous_episode = video.tv_show_episode && video.tv_show_episode.previous_episode
+    episode = Video.work(video)
+    previous_episode = match?(%TvShowEpisode{}, episode) && episode.previous_episode
 
     if previous_episode && previous_episode.has_media?,
       do: {:noreply, push_patch(socket, to: Url.player_link(previous_episode), replace: true)},

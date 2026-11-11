@@ -74,4 +74,6 @@ defmodule WatchClubWeb.Storybook.Root do
 
   def entry("search_result_summary"),
     do: [name: "Search result summary", icon: {:fa, "magnifying-glass"}, index: 42]
+
+  def entry("part_name"), do: [name: "Part name", icon: {:fa, "film"}, index: 43]
 end

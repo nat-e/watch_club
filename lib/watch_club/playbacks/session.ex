@@ -234,7 +234,7 @@ defmodule WatchClub.Playbacks.Session do
           current_playback: [
             media: [
               content: [:title, :poster_path],
-              video: [tv_show_episode: [:formatted_episode_number]]
+              video: [parts: [tv_show_episode: [:formatted_episode_number]]]
             ]
           ]
         ])
@@ -243,7 +243,8 @@ defmodule WatchClub.Playbacks.Session do
           %{
             user: session.started_by,
             content: media.content,
-            tv_show_episode: media.video && media.video.tv_show_episode
+            tv_show_episode:
+              media.video && Enum.find_value(media.video.parts, & &1.tv_show_episode)
           }
         end)
         |> then(&{:ok, &1})

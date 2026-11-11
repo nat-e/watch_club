@@ -17,13 +17,15 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
             :duration_seconds,
             audio_tracks: [:display_label],
             text_tracks: [:display_label, :language_code, :hls_supported?],
-            movie: [:best_localization, :backdrop_path],
-            sports_event: [],
-            tv_show_episode: [
-              :formatted_episode_number,
-              :still_path,
-              :best_localization,
-              tv_show: [:best_localization, :backdrop_path]
+            parts: [
+              movie: [:best_localization, :backdrop_path],
+              sports_event: [],
+              tv_show_episode: [
+                :formatted_episode_number,
+                :still_path,
+                :best_localization,
+                tv_show: [:best_localization, :backdrop_path]
+              ]
             ]
           ]
         ]
@@ -32,30 +34,43 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   end
 
   @doc "The Movie's title, the Sports Event's, or the TV Show Episode's."
-  def title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
-  def title(%Video{sports_event: %SportsEvent{} = event}), do: event.title
+  def title(%Video{} = video) do
+    case Video.work(video) do
+      %Movie{} = movie ->
+        movie.best_localization.title
 
-  def title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
-    do:
-      (episode.best_localization && episode.best_localization.title) ||
-        episode.formatted_episode_number
+      %SportsEvent{} = event ->
+        event.title
 
-  def title(%Video{}), do: dgettext("player", "Video")
+      %TvShowEpisode{} = episode ->
+        (episode.best_localization && episode.best_localization.title) ||
+          episode.formatted_episode_number
+
+      nil ->
+        dgettext("player", "Video")
+    end
+  end
 
   @doc "The TV Show and the episode's number, for a TV Show Episode."
-  def subtitle(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
-    do: "#{episode.tv_show.best_localization.title} · #{episode.formatted_episode_number}"
+  def subtitle(%Video{} = video) do
+    case Video.work(video) do
+      %TvShowEpisode{} = episode ->
+        "#{episode.tv_show.best_localization.title} · #{episode.formatted_episode_number}"
 
-  def subtitle(%Video{}), do: nil
+      _movie_sports_event_or_unmatched ->
+        nil
+    end
+  end
 
   @doc "The TMDB path of a 16:9 picture of it, or the image URL of a Sports Event's."
-  def still_path(%Video{movie: %Movie{} = movie}), do: movie.backdrop_path
-  def still_path(%Video{sports_event: %SportsEvent{} = event}), do: event.backdrop_url
-
-  def still_path(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
-    do: episode.still_path || episode.tv_show.backdrop_path
-
-  def still_path(%Video{}), do: nil
+  def still_path(%Video{} = video) do
+    case Video.work(video) do
+      %Movie{} = movie -> movie.backdrop_path
+      %SportsEvent{} = event -> event.backdrop_url
+      %TvShowEpisode{} = episode -> episode.still_path || episode.tv_show.backdrop_path
+      nil -> nil
+    end
+  end
 
   @doc "Where the Screen is at now: its last report, plus the time since while it plays."
   def position_now(%Session{paused?: true} = session), do: session.position_seconds

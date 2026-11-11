@@ -1,14 +1,15 @@
 defmodule WatchClub.MediaCatalog.Video do
   @moduledoc """
-  Concrete Media for a playable video file. Attached to exactly one `Movie` or
-  `TvShowEpisode`. Owns its video, audio, and text tracks.
+  Concrete Media for a playable video file. Holds the Parts of the Movie, TV Show Episode or
+  Sports Event it plays: usually the one Part of one of them; none for Unmatched Media. Owns its
+  video, audio, and text tracks.
 
   `Video.id` is the same value as its parent `Media.id` (shared primary key,
   no separate `media_id` column).
 
   Saving a Video builds its Scrubbing Thumbnails when its file is new or changed,
   as its File Fingerprint tells, or when they're missing. It finds its Markers
-  when its file or its match changes.
+  when its file or its Parts change.
 
   Direct creation is reserved for Instance Administrator access; the production
   path goes through `WatchClub.MediaCatalog.create_video/2`, which uses relationship
@@ -21,11 +22,10 @@ defmodule WatchClub.MediaCatalog.Video do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
-  alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
-  alias WatchClub.MediaCatalog.Changes.ScheduleTrickplay
+  alias WatchClub.MediaCatalog.{AudioTrack, Media, Part, TextTrack, VideoPart, VideoTrack}
+  alias WatchClub.MediaCatalog.Changes.{RelateParts, ScheduleTrickplay}
 
   postgres do
     table "videos"
@@ -33,16 +33,6 @@ defmodule WatchClub.MediaCatalog.Video do
 
     references do
       reference :media, on_delete: :delete
-      reference :movie, on_delete: :restrict, index?: true
-      reference :tv_show_episode, on_delete: :restrict, index?: true
-      reference :sports_event, on_delete: :restrict, index?: true
-    end
-
-    check_constraints do
-      check_constraint [:movie_id, :tv_show_episode_id, :sports_event_id],
-        name: "videos_at_most_one_content_attachment_check",
-        check: "num_nonnulls(movie_id, tv_show_episode_id, sports_event_id) <= 1",
-        message: "Video may be attached to at most one Movie, TV Show Episode or Sports Event"
     end
   end
 
@@ -52,15 +42,13 @@ defmodule WatchClub.MediaCatalog.Video do
     create :create do
       primary? true
 
-      accept [
-        :movie_id,
-        :tv_show_episode_id,
-        :sports_event_id,
-        :file_fingerprint,
-        :duration_seconds,
-        :container,
-        :bit_rate
-      ]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+
+      argument :parts, {:array, :map} do
+        description "Each Part it holds: a movie_id, tv_show_episode_id or sports_event_id, a number and an optional name"
+        allow_nil? false
+        default []
+      end
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -77,6 +65,7 @@ defmodule WatchClub.MediaCatalog.Video do
         default []
       end
 
+      change RelateParts
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
@@ -84,11 +73,16 @@ defmodule WatchClub.MediaCatalog.Video do
       change ScheduleDetection
     end
 
-    # The Movie, TV Show Episode or Sports Event of a Manual Match
+    # The Parts of a Manual Match
     update :attach do
       require_atomic? false
-      accept [:movie_id, :tv_show_episode_id, :sports_event_id]
 
+      argument :parts, {:array, :map} do
+        description "Each Part it holds, as in create"
+        allow_nil? false
+      end
+
+      change RelateParts
       change ScheduleDetection
     end
 
@@ -109,15 +103,13 @@ defmodule WatchClub.MediaCatalog.Video do
       primary? true
       require_atomic? false
 
-      accept [
-        :movie_id,
-        :tv_show_episode_id,
-        :sports_event_id,
-        :file_fingerprint,
-        :duration_seconds,
-        :container,
-        :bit_rate
-      ]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+
+      argument :parts, {:array, :map} do
+        description "Each Part it holds, as in create"
+        allow_nil? false
+        default []
+      end
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -134,6 +126,7 @@ defmodule WatchClub.MediaCatalog.Video do
         default []
       end
 
+      change RelateParts
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
@@ -204,19 +197,13 @@ defmodule WatchClub.MediaCatalog.Video do
       source_attribute :id
     end
 
-    belongs_to :movie, Movie do
-      allow_nil? true
+    # In order: the Parts of one TV Show Episode when it holds several
+    many_to_many :parts, Part do
       public? true
-    end
-
-    belongs_to :tv_show_episode, TvShowEpisode do
-      allow_nil? true
-      public? true
-    end
-
-    belongs_to :sports_event, SportsEvent do
-      allow_nil? true
-      public? true
+      through VideoPart
+      source_attribute_on_join_resource :video_id
+      destination_attribute_on_join_resource :part_id
+      sort number: :asc, id: :asc
     end
 
     has_many :video_tracks, VideoTrack do
@@ -247,10 +234,20 @@ defmodule WatchClub.MediaCatalog.Video do
   end
 
   aggregates do
+    # Its place in its TV Show: the first TV Show Episode it holds a Part of
+    min :episode_rank, [:parts, :tv_show_episode], :rank
+
     # Where the Player offers the next episode and Watch Progress stops counting
     first :credits_start_seconds, :markers, :start_seconds do
       public? true
       filter expr(kind == :credits)
     end
   end
+
+  @doc """
+  The Movie, TV Show Episode or Sports Event of its first Part, with `parts` and their works
+  loaded, or nil for Unmatched Media.
+  """
+  def work(%__MODULE__{parts: [part | _]}), do: Part.work(part)
+  def work(%__MODULE__{parts: []}), do: nil
 end

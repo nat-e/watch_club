@@ -7,6 +7,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
   use Ash.Resource.Change
 
   alias WatchClub.Contents.TvShowEpisode
+  alias WatchClub.MediaCatalog.Video
   alias WatchClub.Playbacks.Session
   alias WatchClub.Playbacks.Session.Changes.{EndCurrentPlayback, PlayMedia}
 
@@ -16,7 +17,11 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
       %{current_playback: playback} =
         Ash.load!(
           changeset.data,
-          [current_playback: [media: [video: [tv_show_episode: [next_episode: :videos]]]]],
+          [
+            current_playback: [
+              media: [video: [parts: [tv_show_episode: [next_episode: :videos_to_play]]]]
+            ]
+          ],
           scope: context
         )
 
@@ -31,7 +36,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
             )
           )
 
-        next_video = next_video(playback.media.video.tv_show_episode) ->
+        next_video = next_video(playback.media.video) ->
           PlayMedia.play!(changeset, next_video.id, context)
 
         true ->
@@ -50,6 +55,11 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
     end)
   end
 
-  defp next_video(%TvShowEpisode{next_episode: %TvShowEpisode{videos: [video | _]}}), do: video
-  defp next_video(_movie_or_last_episode), do: nil
+  # The first Video of the TV Show Episode after the last one the Video holds a Part of
+  defp next_video(%Video{parts: parts}) do
+    case parts |> Enum.map(& &1.tv_show_episode) |> Enum.reject(&is_nil/1) |> List.last() do
+      %TvShowEpisode{next_episode: %TvShowEpisode{videos_to_play: [video | _]}} -> video
+      _movie_or_last_episode -> nil
+    end
+  end
 end

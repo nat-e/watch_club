@@ -3,14 +3,14 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   Records the actor's Watch Progress for the current Playback from the heartbeat's
   reported position.
 
-  Resolves the Playback's Media to its Movie or TV Show Episode and upserts the
-  per-unit progress, marking it completed once playback passes 90% of the
-  Video up to its Credits. No-op for Media without Content.
+  Upserts the progress of each Movie, TV Show Episode or Sports Event the Playback's Video holds a
+  Part of, marking it completed once playback passes 90% of the Video up to its Credits. No-op for
+  Media without Content.
   """
   use Ash.Resource.Change
 
   alias WatchClub.History
-  alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.Media
 
   @impl true
   def change(changeset, _opts, context) do
@@ -18,54 +18,26 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
 
     Ash.Changeset.after_action(changeset, fn _changeset, session ->
       %Media{id: media_id, video: video} =
-        Ash.load!(session, [current_playback: [media: [video: :credits_start_seconds]]],
+        Ash.load!(session, [current_playback: [media: [video: [:credits_start_seconds, :parts]]]],
           scope: context
         ).current_playback.media
 
-      record_progress(video, media_id, position, context)
+      # Progress counts up to the Credits, so playing the next episode from there completes it
+      duration = video.credits_start_seconds || video.duration_seconds
+
+      progress = %{
+        last_media_id: media_id,
+        position_seconds: if(duration, do: min(position, duration), else: position),
+        duration_seconds: duration
+      }
+
+      for part <- video.parts do
+        progress
+        |> Map.merge(Map.take(part, [:movie_id, :tv_show_episode_id, :sports_event_id]))
+        |> History.record_watch_progress!(scope: context)
+      end
+
       {:ok, session}
     end)
-  end
-
-  defp record_progress(%Video{movie_id: movie_id} = video, media_id, position, context)
-       when not is_nil(movie_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :movie_id, movie_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(
-         %Video{tv_show_episode_id: episode_id} = video,
-         media_id,
-         position,
-         context
-       )
-       when not is_nil(episode_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :tv_show_episode_id, episode_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(%Video{sports_event_id: event_id} = video, media_id, position, context)
-       when not is_nil(event_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :sports_event_id, event_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(_unmatched_video, _media_id, _position, _context), do: :ok
-
-  # Progress counts up to the Credits, so playing the next episode from there completes it
-  defp progress(video, media_id, position) do
-    duration = video.credits_start_seconds || video.duration_seconds
-
-    %{
-      last_media_id: media_id,
-      position_seconds: if(duration, do: min(position, duration), else: position),
-      duration_seconds: duration
-    }
   end
 end

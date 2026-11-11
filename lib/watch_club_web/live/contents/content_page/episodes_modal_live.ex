@@ -234,7 +234,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         <.download_menu
           :if={@playable?}
           id={"episode-#{@episode.episode_number}-download"}
-          videos={@episode.videos}
+          parts={@episode.parts}
         >
           <:trigger :let={download_link}>
             <.button
@@ -333,7 +333,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :has_media?,
         :actor_progress_status,
         :actor_progress,
-        videos: [:media, :default_video_track]
+        :videos_to_play,
+        parts: [videos: [:media, :default_video_track]]
       ],
       actor: assigns.current_user
     )

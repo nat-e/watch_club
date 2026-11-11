@@ -8,7 +8,17 @@ defmodule WatchClub.MediaCatalog.MediaTest do
   alias WatchClub.Ffmpeg.Trickplay
   alias WatchClub.Markers.Workers.DetectMarkers
 
-  alias WatchClub.MediaCatalog.{Audiobook, AudioTrack, Ebook, Media, TextTrack, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{
+    Audiobook,
+    AudioTrack,
+    Ebook,
+    Media,
+    Part,
+    TextTrack,
+    Video,
+    VideoTrack
+  }
+
   alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
 
   alias WatchClub.Requests.ContentRequest
@@ -49,7 +59,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                content_id: content_id,
                video: %Video{
                  id: video_id,
-                 movie_id: movie_id,
+                 parts: [%Part{movie_id: movie_id, number: 1}],
                  duration_seconds: 7245.5,
                  container: "matroska",
                  video_tracks: [%VideoTrack{codec: "h264"}],
@@ -66,7 +76,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                    path: path,
                    type: :movie,
                    video: %{
-                     movie_id: movie.id,
+                     parts: [%{movie_id: movie.id, number: 1}],
                      file_fingerprint: "fingerprint",
                      duration_seconds: 7245.5,
                      container: "matroska",
@@ -88,7 +98,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                    }
                  },
                  actor: SystemActor.actor(),
-                 load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
+                 load: [video: [:parts, :video_tracks, :audio_tracks, :text_tracks]]
                )
 
       assert media_id == video_id
@@ -104,11 +114,11 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert %Media{
                type: :tv_show_episode,
                content_id: content_id,
-               video: %Video{movie_id: nil, tv_show_episode_id: episode_id}
+               video: %Video{parts: [%Part{tv_show_episode_id: episode_id}]}
              } =
                create_or_update_video!(video_media_input("tmp/tv-show.mkv", episode),
                  actor: SystemActor.actor(),
-                 load: [:video]
+                 load: [video: :parts]
                )
 
       assert episode_id == episode.id
@@ -116,17 +126,72 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
 
     test "creates an unmatched video" do
-      assert %Media{content_id: nil, video: %Video{movie_id: nil, tv_show_episode_id: nil}} =
-               create_or_update_video!(
-                 video_media_input("tmp/unmatched.mkv", :movie, %{movie_id: nil}),
+      assert %Media{content_id: nil, video: %Video{parts: []}} =
+               create_or_update_video!(video_media_input("tmp/unmatched.mkv", :movie, []),
                  actor: SystemActor.actor(),
-                 load: [:video]
+                 load: [video: :parts]
                )
+    end
+
+    test "shares a Part between its copies" do
+      movie = seed_movie()
+
+      copies =
+        for path <- ["tmp/copies/1080p.mkv", "tmp/copies/2160p.mkv"] do
+          create_or_update_video!(video_media_input(path, movie),
+            actor: SystemActor.actor(),
+            load: [video: :parts]
+          )
+        end
+
+      assert [[%Part{id: part_id}], [%Part{id: part_id}]] = Enum.map(copies, & &1.video.parts)
+    end
+
+    test "creates the Parts of a TV Show Episode in several files, and a file holding two" do
+      episode = seed_tv_show_episode()
+      next_episode = seed_tv_show_episode(episode.tv_show_id, 2)
+
+      for {path, number} <- [{"tmp/fun-run-1.mkv", 1}, {"tmp/fun-run-2.mkv", 2}] do
+        create_or_update_video!(
+          video_media_input(path, :tv_show_episode, [
+            %{tv_show_episode_id: episode.id, number: number}
+          ]),
+          actor: SystemActor.actor()
+        )
+      end
+
+      both =
+        create_or_update_video!(
+          video_media_input("tmp/the-pilot.mkv", :tv_show_episode, [
+            %{tv_show_episode_id: episode.id, number: 1},
+            %{tv_show_episode_id: next_episode.id, number: 1}
+          ]),
+          actor: SystemActor.actor(),
+          load: [video: :parts]
+        )
+
+      assert both.content_id == episode.tv_show_id
+      assert [%Part{number: 1}, %Part{number: 1}] = both.video.parts
+
+      assert [%Part{number: 1, videos: [_, _]}, %Part{number: 2, videos: [_]}] =
+               Ash.load!(episode, [parts: :videos], authorize?: false).parts
+    end
+
+    test "keeps the Part a re-imported file no longer holds out of its work's Parts" do
+      movie = seed_movie()
+      other_movie = seed_movie()
+      path = "tmp/rematched.mkv"
+
+      create_or_update_video!(video_media_input(path, movie), actor: SystemActor.actor())
+      create_or_update_video!(video_media_input(path, other_movie), actor: SystemActor.actor())
+
+      assert [] = Ash.load!(movie, :parts, authorize?: false).parts
+      assert [%Part{number: 1}] = Ash.load!(other_movie, :parts, authorize?: false).parts
     end
 
     test "preserves subtitles with missing codecs without offering them for playback" do
       input =
-        video_media_input("tmp/unknown-subtitle-codec.mkv", :movie, %{movie_id: nil})
+        video_media_input("tmp/unknown-subtitle-codec.mkv", :movie, [])
         |> put_in([:video, :text_tracks], [
           %{stream_index: 2, codec: nil, language: "eng", title: "Commentary", forced?: true},
           %{stream_index: 3, language: "fra"},
@@ -165,7 +230,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
     test "offers supported external subtitles for playback" do
       input =
-        video_media_input("tmp/external-subtitles.mkv", :movie, %{movie_id: nil})
+        video_media_input("tmp/external-subtitles.mkv", :movie, [])
         |> put_in([:video, :text_tracks], [
           %{sidecar_path: "tmp/external-subtitles.srt", codec: "subrip"},
           %{sidecar_path: "tmp/external-subtitles.vtt", codec: "webvtt"},
@@ -214,7 +279,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
             path: path,
             type: :movie,
             video: %{
-              movie_id: movie.id,
+              parts: [%{movie_id: movie.id, number: 1}],
               file_fingerprint: "replaced fingerprint",
               container: "matroska",
               video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
@@ -296,11 +361,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       rematched =
         input
-        |> put_in([:video, :sports_event_id], new_sports_event.id)
-        |> create_or_update_video!(actor: SystemActor.actor(), load: :video)
+        |> put_in([:video, :parts], [%{sports_event_id: new_sports_event.id, number: 1}])
+        |> create_or_update_video!(actor: SystemActor.actor(), load: [video: :parts])
 
       assert rematched.content_id == new_sports_event.id
-      assert rematched.video.sports_event_id == new_sports_event.id
+      assert [%Part{sports_event_id: sports_event_id}] = rematched.video.parts
+      assert sports_event_id == new_sports_event.id
     end
 
     test "rejects writes from a non-system actor" do
@@ -599,10 +665,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       matched =
         match_media!(media, ContentIdentity.from_content(movie),
           actor: generate(administrator()),
-          load: :video
+          load: [video: :parts]
         )
 
-      assert %Media{manually_matched?: true, video: %Video{movie_id: movie_id}} = matched
+      assert %Media{manually_matched?: true, video: %Video{parts: [%Part{movie_id: movie_id}]}} =
+               matched
+
       assert matched.content_id == movie.id
       assert movie_id == movie.id
     end
@@ -617,13 +685,20 @@ defmodule WatchClub.MediaCatalog.MediaTest do
           ContentIdentity.from_content(tv_show),
           %{season_number: 2, episode_number: 3},
           actor: generate(administrator()),
-          load: [video: :tv_show_episode]
+          load: [video: [parts: :tv_show_episode]]
         )
 
       assert matched.content_id == tv_show.id
 
-      assert %TvShowEpisode{tv_show_id: tv_show_id, season_number: 2, episode_number: 3} =
-               matched.video.tv_show_episode
+      assert [
+               %Part{
+                 tv_show_episode: %TvShowEpisode{
+                   tv_show_id: tv_show_id,
+                   season_number: 2,
+                   episode_number: 3
+                 }
+               }
+             ] = matched.video.parts
 
       assert tv_show_id == tv_show.id
     end
@@ -635,11 +710,12 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       matched =
         match_media!(media, ContentIdentity.from_content(sports_event),
           actor: generate(administrator()),
-          load: :video
+          load: [video: :parts]
         )
 
       assert matched.content_id == sports_event.id
-      assert matched.video.sports_event_id == sports_event.id
+      assert [%Part{sports_event_id: sports_event_id}] = matched.video.parts
+      assert sports_event_id == sports_event.id
     end
 
     test "finds the Markers of the matched Movie" do
@@ -725,8 +801,8 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       updated_at = ~U[2020-01-01 00:00:00.000000Z]
       request = generate(content_request(generate(user()), movie, updated_at: updated_at))
 
-      assert %Media{manually_matched?: false, content_id: nil, video: %Video{movie_id: nil}} =
-               unmatch_media!(media, actor: admin, load: :video)
+      assert %Media{manually_matched?: false, content_id: nil, video: %Video{parts: []}} =
+               unmatch_media!(media, actor: admin, load: [video: :parts])
 
       reloaded_request = Ash.get!(ContentRequest, request.id, authorize?: false)
       assert DateTime.after?(reloaded_request.updated_at, updated_at)
@@ -896,25 +972,25 @@ defmodule WatchClub.MediaCatalog.MediaTest do
   end
 
   defp video_media_input(path, %Movie{} = movie),
-    do: video_media_input(path, :movie, %{movie_id: movie.id})
+    do: video_media_input(path, :movie, [%{movie_id: movie.id, number: 1}])
 
   defp video_media_input(path, %TvShowEpisode{} = episode),
-    do: video_media_input(path, :tv_show_episode, %{tv_show_episode_id: episode.id})
+    do: video_media_input(path, :tv_show_episode, [%{tv_show_episode_id: episode.id, number: 1}])
 
-  defp video_media_input(path, type, attachment) do
+  defp video_media_input(path, type, parts) do
     %{
       media_source_id: default_media_source_id(),
       path: path,
       type: type,
-      video:
-        Map.merge(attachment, %{
-          file_fingerprint: "fingerprint",
-          video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
-          audio_tracks: [
-            %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
-          ],
-          text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
-        })
+      video: %{
+        parts: parts,
+        file_fingerprint: "fingerprint",
+        video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
+        audio_tracks: [
+          %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
+        ],
+        text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
+      }
     }
   end
 
@@ -984,10 +1060,14 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         tvdb_id: unique
       })
 
+    seed_tv_show_episode(tv_show.id, 1)
+  end
+
+  defp seed_tv_show_episode(tv_show_id, episode_number) do
     Ash.Seed.seed!(TvShowEpisode, %{
-      tv_show_id: tv_show.id,
+      tv_show_id: tv_show_id,
       season_number: 1,
-      episode_number: 1
+      episode_number: episode_number
     })
   end
 end

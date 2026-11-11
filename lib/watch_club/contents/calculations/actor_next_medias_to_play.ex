@@ -9,9 +9,9 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
       implementation: %{
         load: [
           book: [:audiobooks, :ebooks],
-          movie: [:videos],
-          sports_event: [:videos],
-          tv_show: [actor_next_episode: [:videos]]
+          movie: [:videos_to_play],
+          sports_event: [:videos_to_play],
+          tv_show: [actor_next_episode: [:videos_to_play]]
         ]
       }
     ]
@@ -30,14 +30,14 @@ defmodule WatchClub.Contents.Calculations.ActorNextMediasToPlay do
           book.audiobooks ++ book.ebooks
 
         %Movie{} = movie ->
-          movie.videos
+          movie.videos_to_play
 
         %SportsEvent{} = event ->
-          event.videos
+          event.videos_to_play
 
         %TvShow{} = tv_show ->
           episode = tv_show.actor_next_episode
-          (episode && episode.videos) || []
+          (episode && episode.videos_to_play) || []
       end
     end)
   end

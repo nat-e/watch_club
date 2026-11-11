@@ -67,16 +67,19 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
         %{tv_show_id: tv_show_id, season_number: season_number} ->
           Ash.Query.filter(
             Video,
-            tv_show_episode.tv_show_id == ^tv_show_id and
-              tv_show_episode.season_number == ^season_number
+            exists(
+              parts,
+              tv_show_episode.tv_show_id == ^tv_show_id and
+                tv_show_episode.season_number == ^season_number
+            )
           )
 
         %{movie_id: movie_id} ->
-          Ash.Query.filter(Video, movie_id == ^movie_id)
+          Ash.Query.filter(Video, exists(parts, movie_id == ^movie_id))
       end
 
     query
-    |> Ash.Query.load([:media, :audio_tracks, :tv_show_episode])
+    |> Ash.Query.load([:media, :audio_tracks, parts: [:tv_show_episode]])
     |> Ash.read!(scope: context)
   end
 
@@ -131,8 +134,10 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
 
   # Only the audio of TV Show Episodes can be compared
   defp comparable?(%Video{} = video),
-    do:
-      video.tv_show_episode != nil and video.duration_seconds != nil and video.audio_tracks != []
+    do: episode(video) != nil and video.duration_seconds != nil and video.audio_tracks != []
+
+  # The first TV Show Episode a Video holds a Part of, in order: the Video's place in its season
+  defp episode(%Video{parts: parts}), do: Enum.find_value(parts, & &1.tv_show_episode)
 
   defp has_marker?(reading, kind), do: Enum.any?(reading.chapter_markers, &(&1.kind == kind))
 
@@ -142,12 +147,12 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
     episodes =
       readings
       |> Enum.filter(&comparable?(&1.video))
-      |> Enum.sort_by(& &1.video.tv_show_episode.episode_number)
+      |> Enum.sort_by(&{episode(&1.video).episode_number, hd(&1.video.parts).number})
 
     # Comparing needs two episodes, one of them missing the Marker
     audio_kinds =
       for {kind, _part_and_seconds} = audio_kind <- @audio_kinds,
-          match?([_, _ | _], Enum.uniq_by(episodes, & &1.video.tv_show_episode_id)),
+          match?([_, _ | _], Enum.uniq_by(episodes, &episode(&1.video).id)),
           Enum.any?(episodes, &(not has_marker?(&1, kind))),
           do: audio_kind
 
@@ -192,14 +197,14 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
 
   # Intro Skipper's search: each episode is compared with the next ones until one shares
   # audio with it, and keeps the longest audio it shares with any of them. Two Videos of one
-  # episode share all their audio, so they aren't compared.
+  # episode, its copies or its Parts, aren't compared: copies share all their audio.
   defp longest_shared_ranges(episodes, fingerprints, min_seconds, max_seconds) do
     episodes
     |> Enum.with_index(1)
     |> Enum.reduce(%{}, fn {%{video: video}, next}, longest ->
       episodes
       |> Enum.drop(next)
-      |> Enum.reject(&(&1.video.tv_show_episode_id == video.tv_show_episode_id))
+      |> Enum.reject(&(episode(&1.video).id == episode(video).id))
       |> Enum.find_value(longest, fn %{video: other} ->
         with {range, other_range} <-
                AudioFingerprint.shared_range(
