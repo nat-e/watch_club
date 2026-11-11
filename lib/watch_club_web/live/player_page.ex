@@ -24,7 +24,7 @@ defmodule WatchClubWeb.PlayerPage do
           parts: [
             movie: [:best_localization],
             sports_event: [],
-            tv_show_episode: [:rank, tv_show: [:best_localization]]
+            tv_show_episode: [:formatted_episode_number, tv_show: [:best_localization]]
           ]
         ]
       ]

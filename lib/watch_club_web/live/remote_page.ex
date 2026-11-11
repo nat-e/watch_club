@@ -293,13 +293,13 @@ defmodule WatchClubWeb.RemotePage do
     end
   end
 
-  # What plays, and the TV Show Episodes after it, intentionally few
+  # What plays, and the TV Show Episodes after the last one it holds, intentionally few
   defp assign_up_next!(%{assigns: %{playback_session: %Session{} = session}} = socket) do
     video = session.current_playback.media.video
 
     up_next =
-      case Video.work(video) do
-        %TvShowEpisode{} = episode ->
+      case List.last(video.parts) do
+        %Part{tv_show_episode: %TvShowEpisode{} = episode} ->
           Ash.load!(
             episode,
             [
@@ -317,7 +317,7 @@ defmodule WatchClubWeb.RemotePage do
             actor: socket.assigns.current_user
           ).playable_episodes_after
 
-        _movie_or_sports_event ->
+        _movie_sports_event_or_unmatched ->
           []
       end
 

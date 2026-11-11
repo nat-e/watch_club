@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.Live.Player.PlayerComponents do
   use WatchClubWeb, :component
 
+  alias WatchClub.MediaCatalog.Calculations.ToPlay
+
   attr :id, :string, required: true
   attr :label, :string, required: true, doc: "Menu title and trigger aria-label."
   attr :class, :any, default: nil, doc: "The trigger's classes, such as when it shows."
@@ -323,11 +325,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           variant="secondary"
           class="absolute left-group"
           phx-click="play_previous_episode"
-          aria-label={
-            if @previous.part,
-              do: dgettext("player", "Play %{part}", part: Parts.name(@previous.part)),
-              else: dgettext("player", "Play previous episode")
-          }
+          aria-label={dgettext("player", "Play %{name}", name: to_play_name(@previous))}
         >
           <:icon><Lucideicons.skip_back /></:icon>
           {to_play_name(@previous)}
@@ -349,11 +347,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           class="absolute right-group"
           phx-click="play_next_episode"
           phx-value-playback_id={@playback_id}
-          aria-label={
-            if @next.part,
-              do: dgettext("player", "Play %{part}", part: Parts.name(@next.part)),
-              else: dgettext("player", "Play next episode")
-          }
+          aria-label={dgettext("player", "Play %{name}", name: to_play_name(@next))}
         >
           <:icon><Lucideicons.skip_forward /></:icon>
           {to_play_name(@next)}
@@ -396,9 +390,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         aria-hidden="true"
         class="absolute inset-y-0 left-0 -z-10 w-[calc(var(--countdown,0)*100%)] bg-primary/40 motion-safe:transition-[width] motion-safe:duration-300 motion-safe:ease-linear"
       />
-      {if @next.part,
-        do: dgettext("player", "Play %{part}", part: Parts.name(@next.part)),
-        else: dgettext("player", "Play %{episode}", episode: @next.episode.formatted_episode_number)}
+      {dgettext("player", "Play %{name}", name: to_play_name(@next))}
     </.player_prompt>
     """
   end
@@ -572,32 +564,14 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         event.title
 
       %TvShowEpisode{} = episode ->
-        "#{episode.tv_show.best_localization.title} - #{episode_numbers(video)}"
+        "#{episode.tv_show.best_localization.title} - #{NowPlaying.episode_numbers(video)}"
 
       nil ->
         dgettext("player", "Video")
     end
   end
 
-  # S04E23, or S04E23–E24 for a file holding two TV Show Episodes
-  defp episode_numbers(%Video{parts: parts}) do
-    episodes = parts |> Enum.map(& &1.tv_show_episode) |> Enum.uniq_by(& &1.id)
-    first = Enum.min_by(episodes, & &1.rank)
-    last = Enum.max_by(episodes, & &1.rank)
-
-    cond do
-      first.id == last.id ->
-        first.formatted_episode_number
-
-      first.season_number == last.season_number ->
-        "#{first.formatted_episode_number}–E#{String.pad_leading("#{last.episode_number}", 2, "0")}"
-
-      true ->
-        "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
-    end
-  end
-
   # What the previous or next button plays: another Part of the work, or a TV Show Episode
-  defp to_play_name(%{part: %Part{} = part}), do: Parts.name(part)
-  defp to_play_name(%{episode: episode}), do: episode.formatted_episode_number
+  defp to_play_name(%ToPlay{part: %Part{} = part}), do: Parts.name(part)
+  defp to_play_name(%ToPlay{episode: episode}), do: episode.formatted_episode_number
 end

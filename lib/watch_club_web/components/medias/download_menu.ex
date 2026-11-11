@@ -22,45 +22,29 @@ defmodule WatchClubWeb.Components.Medias.DownloadMenu do
     assigns = assign(assigns, files: files(assigns.parts), named?: length(assigns.parts) > 1)
 
     ~H"""
-    <.download_files id={@id} files={@files} named?={@named?}>
-      <:trigger :let={download_link}>{render_slot(@trigger, download_link)}</:trigger>
-    </.download_files>
-    """
-  end
-
-  attr :id, :string, required: true
-  attr :files, :list, required: true
-  attr :named?, :boolean, required: true
-  slot :trigger, required: true
-
-  defp download_files(%{files: [{video, _parts}]} = assigns) do
-    assigns = assign(assigns, :video, video)
-
-    ~H"""
-    {render_slot(@trigger, %{href: ~p"/media/#{@video.id}/download", download: true})}
-    """
-  end
-
-  defp download_files(assigns) do
-    ~H"""
-    <.dropdown_menu id={@id}>
-      <:trigger>{render_slot(@trigger, %{})}</:trigger>
-      <.dropdown_menu_item
-        :for={{video, parts} <- @files}
-        id={"#{@id}-#{video.id}"}
-        href={~p"/media/#{video.id}/download"}
-        download
-        class="max-w-80"
-      >
-        <.video_resolution_badge video={video} size="sm" class="shrink-0" />
-        <span class="flex min-w-0 flex-col">
-          <span :if={@named?}>{Enum.map_join(parts, ", ", &Parts.name/1)}</span>
-          <span class={["[overflow-wrap:anywhere]", @named? && "text-xs text-text-muted"]}>
-            {Path.basename(video.media.path)}
-          </span>
-        </span>
-      </.dropdown_menu_item>
-    </.dropdown_menu>
+    <%= case @files do %>
+      <% [{video, _parts}] -> %>
+        {render_slot(@trigger, %{href: ~p"/media/#{video.id}/download", download: true})}
+      <% files -> %>
+        <.dropdown_menu id={@id}>
+          <:trigger>{render_slot(@trigger, %{})}</:trigger>
+          <.dropdown_menu_item
+            :for={{video, parts} <- files}
+            id={"#{@id}-#{video.id}"}
+            href={~p"/media/#{video.id}/download"}
+            download
+            class="max-w-80"
+          >
+            <.video_resolution_badge video={video} size="sm" class="shrink-0 self-start" />
+            <span class="flex min-w-0 flex-col">
+              <span :if={@named?}>{Enum.map_join(parts, ", ", &Parts.name/1)}</span>
+              <span class={["[overflow-wrap:anywhere]", @named? && "text-xs text-text-muted"]}>
+                {Path.basename(video.media.path)}
+              </span>
+            </span>
+          </.dropdown_menu_item>
+        </.dropdown_menu>
+    <% end %>
     """
   end
 

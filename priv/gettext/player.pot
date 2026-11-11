@@ -45,21 +45,6 @@ msgstr ""
 msgid "Subtitles"
 msgstr ""
 
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play %{episode}"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play next episode"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play previous episode"
-msgstr ""
-
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "The video you were looking for does not exist"
@@ -304,5 +289,5 @@ msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Play %{part}"
+msgid "Play %{name}"
 msgstr ""

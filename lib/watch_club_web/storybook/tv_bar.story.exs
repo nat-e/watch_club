@@ -50,6 +50,8 @@ defmodule WatchClubWeb.Storybook.TvBar do
             parts: [
               %Part{
                 number: 1,
+                movie: nil,
+                sports_event: nil,
                 tv_show_episode: %TvShowEpisode{
                   formatted_episode_number: "S02E03",
                   still_path: "/j4AUAq1XJOBmfXsLphZzsCz6pZs.jpg",

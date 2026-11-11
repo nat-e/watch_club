@@ -55,10 +55,30 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   def subtitle(%Video{} = video) do
     case Video.work(video) do
       %TvShowEpisode{} = episode ->
-        "#{episode.tv_show.best_localization.title} · #{episode.formatted_episode_number}"
+        "#{episode.tv_show.best_localization.title} · #{episode_numbers(video)}"
 
       _movie_sports_event_or_unmatched ->
         nil
+    end
+  end
+
+  @doc """
+  The number of the TV Show Episode a Video holds, such as S04E23, or of the first and the last
+  for a file holding several: S04E23–E24.
+  """
+  def episode_numbers(%Video{parts: parts}) do
+    first = List.first(parts).tv_show_episode
+    last = List.last(parts).tv_show_episode
+
+    cond do
+      first.id == last.id ->
+        first.formatted_episode_number
+
+      first.season_number == last.season_number ->
+        "#{first.formatted_episode_number}–E#{String.pad_leading("#{last.episode_number}", 2, "0")}"
+
+      true ->
+        "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
     end
   end
 
