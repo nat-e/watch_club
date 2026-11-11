@@ -1,13 +1,12 @@
 defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
   @moduledoc """
-  Plays the TV Show Episode after the current one when it has Media, on the same Screen.
-  Otherwise, nothing follows: the Playback Session ends. Expects the Playback Session locked.
+  Plays what follows the current Video on the same Screen: the next Part of its Movie, TV Show
+  Episode or Sports Event, else the TV Show Episode after it when it has Media. Otherwise,
+  nothing follows: the Playback Session ends. Expects the Playback Session locked.
   Fails when the `playback_id` argument is no longer the current Playback: it finished late.
   """
   use Ash.Resource.Change
 
-  alias WatchClub.Contents.TvShowEpisode
-  alias WatchClub.MediaCatalog.Video
   alias WatchClub.Playbacks.Session
   alias WatchClub.Playbacks.Session.Changes.{EndCurrentPlayback, PlayMedia}
 
@@ -17,11 +16,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
       %{current_playback: playback} =
         Ash.load!(
           changeset.data,
-          [
-            current_playback: [
-              media: [video: [parts: [tv_show_episode: [next_episode: :videos_to_play]]]]
-            ]
-          ],
+          [current_playback: [media: [video: :next_to_play]]],
           scope: context
         )
 
@@ -36,8 +31,8 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
             )
           )
 
-        next_video = next_video(playback.media.video) ->
-          PlayMedia.play!(changeset, next_video.id, context)
+        next = playback.media.video.next_to_play ->
+          PlayMedia.play!(changeset, next.video.id, context)
 
         true ->
           EndCurrentPlayback.end_current_playback!(changeset.data, context)
@@ -53,13 +48,5 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
           end)
       end
     end)
-  end
-
-  # The first Video of the TV Show Episode after the last one the Video holds a Part of
-  defp next_video(%Video{parts: parts}) do
-    case parts |> Enum.map(& &1.tv_show_episode) |> Enum.reject(&is_nil/1) |> List.last() do
-      %TvShowEpisode{next_episode: %TvShowEpisode{videos_to_play: [video | _]}} -> video
-      _movie_or_last_episode -> nil
-    end
   end
 end

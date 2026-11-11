@@ -174,7 +174,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
             id={"episode-#{@episode.episode_number}-play"}
             variant="primary"
             size="icon"
-            href={Url.player_link(@episode)}
+            href={Url.player_link(@episode.actor_video_to_play)}
             aria-label={
               dgettext("contents", "Play episode %{number}", number: @episode.episode_number)
             }
@@ -333,7 +333,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :has_media?,
         :actor_progress_status,
         :actor_progress,
-        :videos_to_play,
+        :actor_video_to_play,
         parts: [videos: [:media, :default_video_track]]
       ],
       actor: assigns.current_user

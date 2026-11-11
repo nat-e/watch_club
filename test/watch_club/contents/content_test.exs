@@ -1453,6 +1453,35 @@ defmodule WatchClub.Contents.ContentTest do
       assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
                [newer.id, ready_show.id, older.id]
     end
+
+    test "plays the Part the actor stopped in", %{member: member} do
+      movie = generate(movie())
+
+      [_first_part, second_part] =
+        for number <- [1, 2] do
+          generate(
+            video_media(movie,
+              video: %{duration_seconds: 60.0, parts: [%{movie_id: movie.id, number: number}]}
+            )
+          )
+        end
+
+      History.record_watch_progress!(
+        %{
+          movie_id: movie.id,
+          position_seconds: 90.0,
+          duration_seconds: 120.0,
+          part_number: 2,
+          part_position_seconds: 30.0
+        },
+        actor: member
+      )
+
+      assert [%Content{actor_next_medias_to_play: [video]}] =
+               get_user_recently_watched!(actor: member)
+
+      assert video.id == second_part.id
+    end
   end
 
   describe "get_new_in_library/*" do

@@ -10,8 +10,6 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
-  alias WatchClub.Contents.TvShowEpisode
-  alias WatchClub.MediaCatalog.Video
   alias WatchClubWeb.Live.Player.ReportProblemLive
   alias WatchClubWeb.TvSocket
 
@@ -21,14 +19,12 @@ defmodule WatchClubWeb.PlayerPage do
         video: [
           :markers,
           :credits_start_seconds,
+          :next_to_play,
+          :previous_to_play,
           parts: [
             movie: [:best_localization],
             sports_event: [],
-            tv_show_episode: [
-              tv_show: [:best_localization],
-              next_episode: [:has_media?, :videos_to_play],
-              previous_episode: [:has_media?, :videos_to_play]
-            ]
+            tv_show_episode: [:rank, tv_show: [:best_localization]]
           ]
         ]
       ]
@@ -232,13 +228,10 @@ defmodule WatchClubWeb.PlayerPage do
       do: {:noreply, play_next(socket, playback_id)}
 
   def handle_event("play_previous_episode", _params, socket) do
-    video = socket.assigns.session.current_playback.media.video
-    episode = Video.work(video)
-    previous_episode = match?(%TvShowEpisode{}, episode) && episode.previous_episode
-
-    if previous_episode && previous_episode.has_media?,
-      do: {:noreply, push_patch(socket, to: Url.player_link(previous_episode), replace: true)},
-      else: {:noreply, socket}
+    case socket.assigns.session.current_playback.media.video.previous_to_play do
+      %{video: video} -> {:noreply, push_patch(socket, to: Url.player_link(video), replace: true)}
+      nil -> {:noreply, socket}
+    end
   end
 
   # Chrome connected to the TV: the TV takes the Playback Session with this token

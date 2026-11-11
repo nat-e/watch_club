@@ -4,7 +4,13 @@ defmodule WatchClub.Contents.Movie do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{Calculations.VideosToPlay, Content, MovieLocalization}
+  alias WatchClub.Contents.{
+    Calculations.ActorVideoToPlay,
+    Calculations.VideosToPlay,
+    Content,
+    MovieLocalization
+  }
+
   alias WatchClub.History.{WatchProgress, WatchStatus}
   alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Shared.AnyFieldChanged
@@ -78,6 +84,11 @@ defmodule WatchClub.Contents.Movie do
 
     calculate :videos_to_play, {:array, :struct}, VideosToPlay do
       constraints items: [instance_of: Video]
+      public? true
+    end
+
+    calculate :actor_video_to_play, :struct, ActorVideoToPlay do
+      constraints instance_of: Video
       public? true
     end
 

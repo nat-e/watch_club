@@ -22,9 +22,11 @@ defmodule WatchClub.MediaCatalog.Video do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
+  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, Part, TextTrack, VideoPart, VideoTrack}
+  alias WatchClub.MediaCatalog.Calculations.ToPlay
   alias WatchClub.MediaCatalog.Changes.{RelateParts, ScheduleTrickplay}
 
   postgres do
@@ -229,6 +231,38 @@ defmodule WatchClub.MediaCatalog.Video do
     end
 
     has_many :markers, Marker do
+      public? true
+    end
+  end
+
+  calculations do
+    # What the Player's next button and Up next play, and when the Video ends
+    calculate :next_to_play, :map, {ToPlay, which: :next} do
+      constraints fields: [
+                    video: [
+                      type: :struct,
+                      allow_nil?: false,
+                      constraints: [instance_of: __MODULE__]
+                    ],
+                    part: [type: :struct, constraints: [instance_of: Part]],
+                    episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
+                  ]
+
+      public? true
+    end
+
+    # What the Player's previous button plays
+    calculate :previous_to_play, :map, {ToPlay, which: :previous} do
+      constraints fields: [
+                    video: [
+                      type: :struct,
+                      allow_nil?: false,
+                      constraints: [instance_of: __MODULE__]
+                    ],
+                    part: [type: :struct, constraints: [instance_of: Part]],
+                    episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
+                  ]
+
       public? true
     end
   end

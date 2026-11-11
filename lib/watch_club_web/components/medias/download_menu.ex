@@ -6,7 +6,6 @@ defmodule WatchClubWeb.Components.Medias.DownloadMenu do
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Medias.PartName
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
 
   attr :id, :string, required: true
@@ -55,11 +54,7 @@ defmodule WatchClubWeb.Components.Medias.DownloadMenu do
       >
         <.video_resolution_badge video={video} size="sm" class="shrink-0" />
         <span class="flex min-w-0 flex-col">
-          <span :if={@named?}>
-            <%= for {part, index} <- Enum.with_index(parts) do %>
-              {if index > 0, do: ", "}<.part_name part={part} />
-            <% end %>
-          </span>
+          <span :if={@named?}>{Enum.map_join(parts, ", ", &Parts.name/1)}</span>
           <span class={["[overflow-wrap:anywhere]", @named? && "text-xs text-text-muted"]}>
             {Path.basename(video.media.path)}
           </span>

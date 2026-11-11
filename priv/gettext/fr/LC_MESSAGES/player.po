@@ -358,3 +358,9 @@ msgstr "Sections de la télécommande"
 #, elixir-autogen, elixir-format
 msgid "Stopped casting to %{tv}."
 msgstr "Diffusion arrêtée sur %{tv}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Play %{part}"
+msgstr "Lire %{part}"

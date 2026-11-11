@@ -557,6 +557,7 @@ _Avoid_: Group, aggregate, card, item
 - **Play** on a **TV Show** starts the **TV Show Episode** the **User** is up to; any other **TV Show Episode** with **Media** plays from the **TV Show**'s episodes
 - **Play** opens the **Player** after exactly one **Media** file has been selected
 - **Play** starts a new **Playback** in the **User**'s active **Playback Session**, or creates the **Playback Session** when there is none, before playback succeeds
+- **Play** resumes in the **Part** where the **User** stopped, at the position they reached in it
 - Advancing to another **Media**, such as the next **TV Show Episode**, creates a new **Playback** in the same **Playback Session**
 - Initially, **Playbacks** are created only for **Video** **Media**
 - A **Playback Session** is started by exactly one **User**
@@ -568,7 +569,7 @@ _Avoid_: Group, aggregate, card, item
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
 - A **Playback Session** has at most one current **Playback** at any time
 - A **Playback** is current while it has not ended; it ends when another **Playback** starts in the same **Playback Session**, or when the **Playback Session** ends
-- When a **Playback** finishes, its **Playback Session** plays the next available **TV Show Episode** on the same **Screen**; with nothing next, the **Playback Session** ends
+- When a **Playback** finishes, its **Playback Session** plays the next **Part** on the same **Screen**, else the next available **TV Show Episode**; with nothing next, the **Playback Session** ends
 - A **Playback Session** is active until it ends: on **Stop Casting**, when nothing is left to play, or after about two minutes without a **Screen**
 - A **User** is **Watching Now** while their active **Playback Session** has a **Screen**, paused included
 - Every **User** sees which other **Users** are **Watching Now** and what they play, but not their **Playback Sessions**
@@ -595,8 +596,10 @@ _Avoid_: Group, aggregate, card, item
 - In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
 - A **Playback Session** keeps the audio language and the subtitles, or no subtitles, of its **Content**: each next **Playback** of the same **Content**, on any **Screen**, starts with them, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
-- When the **Credits** of a **TV Show Episode** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **TV Show Episode** if it has **Media**
-- **Watch Progress** counts a **Video** up to the start of its **Credits**
+- When the **Credits** of a **Video** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **Part**, else the next **TV Show Episode** if it has **Media**
+- The **Player**'s previous and next buttons go to the previous and next **Part**, else to the previous and next **TV Show Episode**
+- **Watch Progress** counts each **Video** up to the start of its **Credits**, and the **Parts** of a **Movie**, **TV Show Episode** or **Sports Event** one after another
+- Playing a **Video** that holds two **TV Show Episodes** moves the **Watch Progress** of both
 - A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
 - A **Problem Report** belongs to the **Playback** it was sent from, which gives its **User**, **Video** and **Content**
 - Only the **Instance Administrator** can read and **Archive a Problem Report**; an archived **Problem Report** stays archived

@@ -111,4 +111,8 @@ defmodule WatchClub.MediaCatalog.Part do
 
   @doc "The Movie, TV Show Episode or Sports Event of a Part, loaded."
   def work(%__MODULE__{} = part), do: part.movie || part.tv_show_episode || part.sports_event
+
+  @doc "The id of the Movie, TV Show Episode or Sports Event of a Part."
+  def work_id(%__MODULE__{} = part),
+    do: part.movie_id || part.tv_show_episode_id || part.sports_event_id
 end

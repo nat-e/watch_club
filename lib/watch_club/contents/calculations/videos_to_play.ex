@@ -2,12 +2,12 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   @moduledoc """
   The files Play plays for a Movie, TV Show Episode or Sports Event, one after another: the oldest
   copy of each Part, in order, skipping the Parts a file before already holds. Each Video comes
-  with its `credits_start_seconds`.
+  with its `credits_start_seconds` and its `parts`.
   """
   use Ash.Resource.Calculation
 
   @impl true
-  def load(_query, _opts, _context), do: [parts: [videos: [:credits_start_seconds]]]
+  def load(_query, _opts, _context), do: [parts: [videos: [:credits_start_seconds, :parts]]]
 
   @impl true
   def strict_loads?, do: false

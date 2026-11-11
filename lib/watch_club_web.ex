@@ -148,6 +148,7 @@ defmodule WatchClubWeb do
         Ebook,
         Media,
         MediaType,
+        Part,
         TextTrack,
         Video,
         VideoResolution,
@@ -165,7 +166,7 @@ defmodule WatchClubWeb do
         RequestSubscriber
       }
 
-      alias WatchClubWeb.Helpers.{NowPlaying, PlaybackPaths, Time, Url, Usernames}
+      alias WatchClubWeb.Helpers.{NowPlaying, Parts, PlaybackPaths, Time, Url, Usernames}
 
       # Allow Logger calls
       require Logger

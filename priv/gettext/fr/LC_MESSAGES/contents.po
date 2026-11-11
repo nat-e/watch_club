@@ -396,7 +396,7 @@ msgid "More"
 msgstr "Plus"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/medias/part_name.ex
+#: lib/watch_club_web/helpers/parts.ex
 #, elixir-autogen, elixir-format
 msgid "Part %{number}"
 msgstr "Partie %{number}"
