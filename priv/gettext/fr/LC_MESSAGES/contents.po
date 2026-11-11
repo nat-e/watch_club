@@ -400,3 +400,17 @@ msgstr "Plus"
 #, elixir-autogen, elixir-format
 msgid "Part %{number}"
 msgstr "Partie %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} part"
+msgid_plural "%{count} parts"
+msgstr[0] "%{count} partie"
+msgstr[1] "%{count} parties"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Same file as %{episodes}"
+msgstr "Même fichier que %{episodes}"

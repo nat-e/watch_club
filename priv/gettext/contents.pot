@@ -337,3 +337,15 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Part %{number}"
 msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} part"
+msgid_plural "%{count} parts"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Same file as %{episodes}"
+msgstr ""
