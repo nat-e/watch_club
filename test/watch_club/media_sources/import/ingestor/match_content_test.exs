@@ -712,6 +712,22 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert part == %{tv_show_episode_id: meeting.id, number: 1}
     end
 
+    test "raises when TMDB doesn't list one of the TV Show Episodes a file holds" do
+      generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 1))
+
+      candidate =
+        candidate_with(%EpisodeIdentity{
+          tmdb_id: 1668,
+          episodes: [
+            %Episode{season_number: 1, episode_number: 1},
+            %Episode{season_number: 1, episode_number: 2}
+          ]
+        })
+
+      assert %TvShowEpisodeNotListedError{season_number: 1, episode_number: 2} =
+               assert_raise(TvShowEpisodeNotListedError, fn -> MatchContent.apply!(candidate) end)
+    end
+
     test "matches a Sports Event refreshed under 15 minutes ago by its Sportarr ID" do
       event = generate(sports_event(external_id: "ev-028133"))
 

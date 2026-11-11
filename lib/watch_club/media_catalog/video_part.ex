@@ -15,7 +15,8 @@ defmodule WatchClub.MediaCatalog.VideoPart do
     references do
       # The primary key starts with video_id
       reference :video, on_delete: :delete
-      reference :part, on_delete: :delete, index?: true
+      # A Part's Movie, TV Show Episode or Sports Event can't be deleted while a Video contains it
+      reference :part, on_delete: :restrict, index?: true
     end
   end
 

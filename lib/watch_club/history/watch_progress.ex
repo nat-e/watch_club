@@ -277,13 +277,15 @@ defmodule WatchClub.History.WatchProgress do
       public? false
     end
 
-    # A content is considered watch when a user has watched 90% of more of it
-    # position_seconds and duration_seconds will be nil when the content is marked as watched.
+    # A content is considered watch when a user has watched 90% of more of it, or marked it as
+    # watched, which leaves position_seconds nil. duration_seconds is nil too then, and while the
+    # length of one of its files is unknown, which playing it never completes.
     calculate :completed,
               :boolean,
               expr(
-                is_nil(position_seconds) or is_nil(duration_seconds) or
-                  position_seconds / duration_seconds >= @complete_after_ratio
+                is_nil(position_seconds) or
+                  (not is_nil(duration_seconds) and
+                     position_seconds / duration_seconds >= @complete_after_ratio)
               )
 
     # The number of seconds left, through the Parts still to watch
@@ -298,14 +300,17 @@ defmodule WatchClub.History.WatchProgress do
               )
 
     # The percentage of the media that has been watched
-    # Returns 100% for media that have been marked watched
+    # Returns 100% for media that have been marked watched, and 0% while its length is unknown
     # When more than 90% have been watched, we return 100
     calculate :percent_watched,
               :float,
               expr(
                 cond do
-                  is_nil(position_seconds) or is_nil(duration_seconds) or duration_seconds == 0 ->
+                  is_nil(position_seconds) or duration_seconds == 0 ->
                     100.0
+
+                  is_nil(duration_seconds) ->
+                    0.0
 
                   position_seconds / duration_seconds >= @complete_after_ratio ->
                     100.0

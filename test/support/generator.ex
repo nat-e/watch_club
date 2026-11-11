@@ -13,6 +13,7 @@ defmodule WatchClub.Generator do
   }
 
   alias WatchClub.Conversations.{Conversation, Message}
+  alias WatchClub.History.WatchProgress
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
@@ -312,6 +313,12 @@ defmodule WatchClub.Generator do
         %{session | current_playback: current}
       end
     )
+  end
+
+  # A User's Watch Progress: pass the `movie_id`, `tv_show_episode_id` or `sports_event_id` of its
+  # work, and where the User is in it
+  def watch_progress(%User{} = user, opts) do
+    seed_generator(%WatchProgress{user_id: user.id}, overrides: opts)
   end
 
   def problem_report(%Playback{} = playback, opts \\ []) do

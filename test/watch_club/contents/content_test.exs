@@ -1466,15 +1466,14 @@ defmodule WatchClub.Contents.ContentTest do
           )
         end
 
-      History.record_watch_progress!(
-        %{
+      generate(
+        watch_progress(member,
           movie_id: movie.id,
           position_seconds: 90.0,
           duration_seconds: 120.0,
           part_number: 2,
           part_position_seconds: 30.0
-        },
-        actor: member
+        )
       )
 
       assert [%Content{actor_next_medias_to_play: [video]}] =

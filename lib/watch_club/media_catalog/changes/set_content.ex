@@ -16,7 +16,7 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
     Ash.Changeset.before_action(changeset, fn changeset ->
       content_id =
         case Ash.Changeset.get_argument(changeset, opts[:attachment]) do
-          %{parts: [part | _]} -> content_id(part)
+          %{parts: [part | _]} -> content_id!(part)
           %{book_id: book_id} -> book_id
           _unmatched_video -> nil
         end
@@ -25,9 +25,9 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
     end)
   end
 
-  defp content_id(%{movie_id: movie_id}) when is_binary(movie_id), do: movie_id
-  defp content_id(%{sports_event_id: event_id}) when is_binary(event_id), do: event_id
+  defp content_id!(%{movie_id: movie_id}) when is_binary(movie_id), do: movie_id
+  defp content_id!(%{sports_event_id: event_id}) when is_binary(event_id), do: event_id
 
-  defp content_id(%{tv_show_episode_id: episode_id}) when is_binary(episode_id),
+  defp content_id!(%{tv_show_episode_id: episode_id}) when is_binary(episode_id),
     do: Ash.get!(TvShowEpisode, episode_id, authorize?: false).tv_show_id
 end

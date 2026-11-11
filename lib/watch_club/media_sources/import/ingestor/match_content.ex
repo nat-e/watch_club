@@ -218,20 +218,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   defp parts!(content, %MovieIdentity{}), do: [%{movie_id: content.id, number: 1}]
   defp parts!(content, %SportsEventIdentity{}), do: [%{sports_event_id: content.id, number: 1}]
 
-  defp parts!(content, %EpisodeIdentity{episodes: [first | _] = episodes}) do
-    tv_show = content.implementation
-
-    case EpisodeParts.find!(tv_show.episodes, tv_show.tmdb_id, episodes) do
-      [] ->
-        raise TvShowEpisodeNotListedError,
-          tmdb_id: tv_show.tmdb_id,
-          season_number: first.season_number,
-          episode_number: first.episode_number
-
-      parts ->
-        parts
-    end
-  end
+  defp parts!(%{implementation: tv_show}, %EpisodeIdentity{episodes: episodes}),
+    do: EpisodeParts.find!(tv_show.episodes, tv_show.tmdb_id, episodes)
 
   # sportarr.net only finds titles with every word, but file names add words such as
   # "Prelims". Drops the last word until events match, and keeps the match only when

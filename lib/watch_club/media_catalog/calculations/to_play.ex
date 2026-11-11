@@ -7,8 +7,13 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
   """
   use Ash.Resource.Calculation
 
+  alias WatchClub.Contents.Calculations.VideosToPlay
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.MediaCatalog.{Part, Video}
+
+  @type t :: %__MODULE__{video: Video.t(), part: Part.t() | nil, episode: TvShowEpisode.t() | nil}
+
+  defstruct [:video, :part, :episode]
 
   @impl true
   def load(_query, _opts, _context) do
@@ -17,7 +22,6 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
         movie: :videos_to_play,
         sports_event: :videos_to_play,
         tv_show_episode: [
-          :rank,
           :videos_to_play,
           next_episode: [:formatted_episode_number, :videos_to_play],
           previous_episode: [:formatted_episode_number, :videos_to_play]
@@ -36,32 +40,21 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
 
   # After the last of the TV Show Episodes a file holds, before the first
   defp to_play(%Video{parts: parts} = video, which) do
-    in_order = Enum.sort_by(parts, &{episode_rank(&1), &1.number})
-    part = if which == :next, do: List.last(in_order), else: List.first(in_order)
+    part = if which == :next, do: List.last(parts), else: List.first(parts)
     work = Part.work(part)
-    videos = work.videos_to_play
 
     adjacent =
-      case Enum.find_index(videos, &holds?(&1, video, part)) do
-        index when which == :next and is_integer(index) ->
-          Enum.at(videos, index + 1)
-
-        index when which == :previous and is_integer(index) and index > 0 ->
-          Enum.at(videos, index - 1)
-
-        _first_or_none ->
-          nil
+      case {which, VideosToPlay.split_at(work.videos_to_play, video, part)} do
+        {:next, {_before, [_playing, next | _after]}} -> next
+        {:previous, {[_ | _] = before, [_playing | _after]}} -> List.last(before)
+        _first_last_or_none -> nil
       end
 
     case adjacent do
       %Video{} = other ->
-        %{
-          video: other,
-          part: Enum.find(other.parts, &(Part.work_id(&1) == work.id)),
-          episode: nil
-        }
+        %__MODULE__{video: other, part: Enum.find(other.parts, &(Part.work_id(&1) == work.id))}
 
-      _none ->
+      nil ->
         to_play_in_episode(work, which)
     end
   end
@@ -69,7 +62,7 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
   defp to_play_in_episode(%TvShowEpisode{} = episode, which) do
     case if(which == :next, do: episode.next_episode, else: episode.previous_episode) do
       %TvShowEpisode{videos_to_play: [video | _]} = other ->
-        %{video: video, part: nil, episode: other}
+        %__MODULE__{video: video, episode: other}
 
       _none ->
         nil
@@ -77,11 +70,4 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
   end
 
   defp to_play_in_episode(_movie_or_sports_event, _which), do: nil
-
-  defp episode_rank(%Part{tv_show_episode: %TvShowEpisode{rank: rank}}), do: rank
-  defp episode_rank(%Part{}), do: 0
-
-  # The Video itself, or the file Play plays for its Part when the Video is another copy
-  defp holds?(%Video{id: id}, %Video{id: id}, _part), do: true
-  defp holds?(%Video{parts: parts}, _video, part), do: Enum.any?(parts, &(&1.id == part.id))
 end

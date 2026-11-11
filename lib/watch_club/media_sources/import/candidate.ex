@@ -245,8 +245,13 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       end
 
     case {module, atom_keys(fields)} do
+      {__MODULE__.EpisodeIdentity, %{episodes: episodes} = fields} ->
+        struct(module, %{fields | episodes: Enum.map(episodes, &episode/1)})
+
+      # Enqueued before a file held a list of episodes
       {__MODULE__.EpisodeIdentity, fields} ->
-        struct(module, %{fields | episodes: Enum.map(fields.episodes, &episode/1)})
+        episode = struct(__MODULE__.EpisodeIdentity.Episode, fields)
+        struct(module, Map.put(fields, :episodes, [episode]))
 
       {module, fields} ->
         struct(module, fields)

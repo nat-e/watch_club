@@ -6,6 +6,8 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   """
   use Ash.Resource.Calculation
 
+  alias WatchClub.MediaCatalog.Video
+
   @impl true
   def load(_query, _opts, _context), do: [parts: [videos: [:credits_start_seconds, :parts]]]
 
@@ -33,4 +35,15 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
 
     Enum.reverse(videos)
   end
+
+  @doc """
+  Splits the `videos_to_play` of a Movie, TV Show Episode or Sports Event at the playing `video`,
+  which holds its `part`: the files before it, and the rest from it. When the `video` is a copy
+  Play doesn't play, the file Play plays for its `part` stands for it.
+  """
+  def split_at(videos_to_play, video, part),
+    do: Enum.split_while(videos_to_play, &(not holds?(&1, video, part)))
+
+  defp holds?(%Video{id: id}, %Video{id: id}, _part), do: true
+  defp holds?(%Video{parts: parts}, _video, part), do: Enum.any?(parts, &(&1.id == part.id))
 end

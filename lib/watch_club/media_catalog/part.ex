@@ -6,6 +6,7 @@ defmodule WatchClub.MediaCatalog.Part do
 
   WatchClub only knows the Parts it has files for: a Part no Video contains anymore is left out
   of its Movie's, TV Show Episode's or Sports Event's `parts`, and comes back with its next file.
+  Deleting a Movie, TV Show Episode or Sports Event deletes its Parts, unless a Video contains one.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -22,9 +23,9 @@ defmodule WatchClub.MediaCatalog.Part do
 
     references do
       # The unique_number_per_work index starts with movie_id
-      reference :movie, on_delete: :restrict
-      reference :tv_show_episode, on_delete: :restrict, index?: true
-      reference :sports_event, on_delete: :restrict, index?: true
+      reference :movie, on_delete: :delete
+      reference :tv_show_episode, on_delete: :delete, index?: true
+      reference :sports_event, on_delete: :delete, index?: true
     end
 
     check_constraints do
@@ -101,6 +102,11 @@ defmodule WatchClub.MediaCatalog.Part do
       # The oldest copy first
       sort id: :asc
     end
+  end
+
+  calculations do
+    # Where its TV Show Episode is in its TV Show, which orders the Parts of a file holding several
+    calculate :episode_rank, :integer, expr(tv_show_episode.rank)
   end
 
   identities do

@@ -15,7 +15,7 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
     Ash.Changeset.after_action(changeset, fn changeset, media ->
       Video
       |> Ash.get!(media.id, authorize?: false)
-      |> Ash.update!(%{parts: parts(media, changeset.arguments)},
+      |> Ash.update!(%{parts: parts!(media, changeset.arguments)},
         action: :attach,
         authorize?: false
       )
@@ -24,15 +24,15 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
     end)
   end
 
-  defp parts(%Media{content_id: nil}, _arguments), do: []
+  defp parts!(%Media{content_id: nil}, _arguments), do: []
 
-  defp parts(%Media{type: :movie, content_id: movie_id}, _arguments),
+  defp parts!(%Media{type: :movie, content_id: movie_id}, _arguments),
     do: [%{movie_id: movie_id, number: 1}]
 
-  defp parts(%Media{type: :sports_event, content_id: sports_event_id}, _arguments),
+  defp parts!(%Media{type: :sports_event, content_id: sports_event_id}, _arguments),
     do: [%{sports_event_id: sports_event_id, number: 1}]
 
-  defp parts(%Media{type: :tv_show_episode, content_id: tv_show_id}, arguments) do
+  defp parts!(%Media{type: :tv_show_episode, content_id: tv_show_id}, arguments) do
     episode =
       Ash.get!(
         TvShowEpisode,

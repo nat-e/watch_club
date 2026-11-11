@@ -22,7 +22,6 @@ defmodule WatchClub.MediaCatalog.Video do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, Part, TextTrack, VideoPart, VideoTrack}
@@ -199,13 +198,13 @@ defmodule WatchClub.MediaCatalog.Video do
       source_attribute :id
     end
 
-    # In order: the Parts of one TV Show Episode when it holds several
+    # In watching order: by TV Show Episode, then by number
     many_to_many :parts, Part do
       public? true
       through VideoPart
       source_attribute_on_join_resource :video_id
       destination_attribute_on_join_resource :part_id
-      sort number: :asc, id: :asc
+      sort episode_rank: :asc, number: :asc, id: :asc
     end
 
     has_many :video_tracks, VideoTrack do
@@ -237,32 +236,14 @@ defmodule WatchClub.MediaCatalog.Video do
 
   calculations do
     # What the Player's next button and Up next play, and when the Video ends
-    calculate :next_to_play, :map, {ToPlay, which: :next} do
-      constraints fields: [
-                    video: [
-                      type: :struct,
-                      allow_nil?: false,
-                      constraints: [instance_of: __MODULE__]
-                    ],
-                    part: [type: :struct, constraints: [instance_of: Part]],
-                    episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
-                  ]
-
+    calculate :next_to_play, :struct, {ToPlay, which: :next} do
+      constraints instance_of: ToPlay
       public? true
     end
 
     # What the Player's previous button plays
-    calculate :previous_to_play, :map, {ToPlay, which: :previous} do
-      constraints fields: [
-                    video: [
-                      type: :struct,
-                      allow_nil?: false,
-                      constraints: [instance_of: __MODULE__]
-                    ],
-                    part: [type: :struct, constraints: [instance_of: Part]],
-                    episode: [type: :struct, constraints: [instance_of: TvShowEpisode]]
-                  ]
-
+    calculate :previous_to_play, :struct, {ToPlay, which: :previous} do
+      constraints instance_of: ToPlay
       public? true
     end
   end

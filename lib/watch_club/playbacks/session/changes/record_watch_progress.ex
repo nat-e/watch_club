@@ -10,6 +10,7 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   """
   use Ash.Resource.Change
 
+  alias WatchClub.Contents.Calculations.VideosToPlay
   alias WatchClub.History
   alias WatchClub.MediaCatalog.{Media, Part, Video}
 
@@ -47,7 +48,7 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
       # Its first Part of each Movie, TV Show Episode or Sports Event
       for part <- Enum.uniq_by(video.parts, &Part.work_id/1) do
         videos = Part.work(part).videos_to_play
-        before = Enum.take_while(videos, &(not holds?(&1, video, part)))
+        {before, _from_it} = VideosToPlay.split_at(videos, video, part)
         lengths = Enum.map(videos, &counted_seconds/1)
 
         progress = %{
@@ -67,10 +68,6 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
       {:ok, session}
     end)
   end
-
-  # The playing Video, or the file Play plays for its Part when the Video is another copy
-  defp holds?(%Video{id: id}, %Video{id: id}, _part), do: true
-  defp holds?(%Video{parts: parts}, _video, part), do: Enum.any?(parts, &(&1.id == part.id))
 
   # How long a file counts for: up to its Credits
   defp counted_seconds(%Video{} = video),

@@ -20,19 +20,26 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity.Episode
+  alias WatchClub.MediaSources.Import.TvShowEpisodeNotListedError
 
   @part_marker ~r/\s*(?:[\(\[]\s*(?:part\s*)?(\d+)\s*[\)\]]|[,:\-–]?\s*part\s+(\d+))\s*$/iu
 
   @doc """
   The Parts the file holds, as `%{tv_show_episode_id: id, number: number}`, among the
   `episodes` of the TV Show `tmdb_id`, loaded with their `localizations`. `source_episodes` are
-  in their source's order. Leaves out the source episodes that match none.
+  in their source's order. Raises `TvShowEpisodeNotListedError` when one of them matches none,
+  so the file isn't saved and a later scan retries it.
   """
   @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()]
   def find!(episodes, tmdb_id, source_episodes) do
     source_episodes
-    |> Enum.map(&match!(&1, episodes, tmdb_id))
-    |> Enum.reject(&is_nil/1)
+    |> Enum.map(fn source ->
+      match!(source, episodes, tmdb_id) ||
+        raise TvShowEpisodeNotListedError,
+          tmdb_id: tmdb_id,
+          season_number: source.season_number,
+          episode_number: source.episode_number
+    end)
     |> Enum.uniq_by(fn {episode, _number} -> episode.id end)
     |> Enum.map(fn {episode, number} -> %{tv_show_episode_id: episode.id, number: number} end)
   end
