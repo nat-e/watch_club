@@ -36,18 +36,19 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   defmodule MatchResult do
     @moduledoc """
     Outcome of the `MatchContent` stage. `:success` means the candidate's
-    identity was resolved to a Content row (its id is in `matched_id`);
-    `:not_matched` means the stage ran but no Content could be resolved.
-    A `nil` `match_result` on the parent `Candidate` means the stage has
-    not yet run.
+    identity was resolved to the Parts the file holds, each a `movie_id`,
+    `tv_show_episode_id` or `sports_event_id` with a `number` and maybe a `name`;
+    `:not_matched` means the stage ran but no Content could be resolved, and
+    `parts` is empty. A `nil` `match_result` on the parent `Candidate` means the
+    stage has not yet run.
     """
 
     @type t :: %__MODULE__{
             result: :success | :not_matched,
-            matched_id: Ash.UUIDv7.t() | nil
+            parts: [map()]
           }
 
-    defstruct [:result, :matched_id]
+    defstruct [:result, parts: []]
   end
 
   defmodule MovieIdentity do
@@ -65,21 +66,41 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   defmodule EpisodeIdentity do
+    @moduledoc """
+    A TV Show by its ids, or else its `title`, and the `episodes` a file holds as its source
+    numbers them: Sonarr like TVDB, a file name like its release. Sonarr also gives each one's
+    title, air date and TVDB id, which find the Metadata Provider's episode when its numbers
+    differ, such as for a two-part episode it lists as one.
+    """
+
+    defmodule Episode do
+      @moduledoc false
+      @derive Jason.Encoder
+
+      @type t :: %__MODULE__{
+              season_number: integer() | nil,
+              episode_number: integer() | nil,
+              title: String.t() | nil,
+              air_date: Date.t() | nil,
+              tvdb_id: integer() | nil
+            }
+
+      defstruct [:season_number, :episode_number, :title, :air_date, :tvdb_id]
+    end
+
     @type t :: %__MODULE__{
             tmdb_id: integer() | nil,
             tvdb_id: integer() | nil,
             imdb_id: String.t() | nil,
             title: String.t() | nil,
-            season_number: integer() | nil,
-            episode_number: integer() | nil
+            episodes: [Episode.t()]
           }
 
     defstruct tmdb_id: nil,
               tvdb_id: nil,
               imdb_id: nil,
               title: nil,
-              season_number: nil,
-              episode_number: nil
+              episodes: []
   end
 
   defmodule SportsEventIdentity do
@@ -167,7 +188,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   @doc """
   Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`,
   `identity` and `regenerate_thumbnails_and_markers?`) into a plain map for an Oban job's args.
-  `identity` is flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
+  `identity` is flattened with `Map.from_struct/1`; the episodes in it encode to JSON themselves.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -223,11 +244,27 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         type when type in [:ebook, :audiobook] -> __MODULE__.BookIdentity
       end
 
-    # to_existing_atom: identity keys are struct fields, so the atoms exist.
-    fields = Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
+    case {module, atom_keys(fields)} do
+      {__MODULE__.EpisodeIdentity, fields} ->
+        struct(module, %{fields | episodes: Enum.map(fields.episodes, &episode/1)})
 
-    struct(module, fields)
+      {module, fields} ->
+        struct(module, fields)
+    end
   end
+
+  defp episode(fields) do
+    fields = atom_keys(fields)
+
+    struct(__MODULE__.EpisodeIdentity.Episode, %{
+      fields
+      | air_date: WatchClub.Helpers.maybe_date!(fields.air_date)
+    })
+  end
+
+  # to_existing_atom: identity keys are struct fields, so the atoms exist.
+  defp atom_keys(fields),
+    do: Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
 
   defimpl String.Chars, for: __MODULE__ do
     def to_string(%{path: path}), do: path

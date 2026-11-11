@@ -99,8 +99,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
       assert %Candidate{
                identity: %EpisodeIdentity{
                  title: "American Gods",
-                 season_number: 1,
-                 episode_number: 3
+                 episodes: [%EpisodeIdentity.Episode{season_number: 1, episode_number: 3}]
                }
              } = Identify.apply(candidate, source)
     end

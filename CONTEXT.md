@@ -632,6 +632,8 @@ _Avoid_: Group, aggregate, card, item
 - A **Video** that holds no **Part** is **Unmatched Media**
 - A **Part** belongs to exactly one **Movie**, **TV Show Episode** or **Sports Event**, which plays its **Parts** in order
 - **Videos** holding the same **Part** are copies of it
+- Sonarr numbers episodes like TVDB, which splits some episodes that the **Metadata Provider** lists whole. A **Media Import** links each episode of a Sonarr file to the **TV Show Episode** with its number when their titles match, else with its title when they aired within a day, else to the one TMDB links to its TVDB id, else to the one with its number
+- A Sonarr episode titled "Fun Run (2)" or "Fun Run, Part 2" is **Part** 2 of the **TV Show Episode** "Fun Run". A file holding every half of a **TV Show Episode** holds its **Part** 1
 - A **Video** has one or more **Video Tracks**
 - A **Video** has exactly one **Default Video Track**
 - A **Video** may have zero or more **Audio Tracks**

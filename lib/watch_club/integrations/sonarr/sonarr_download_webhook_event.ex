@@ -8,20 +8,26 @@ defmodule WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent do
   alias WatchClub.Integrations.Servarr.Webhook.MediaFile
 
   defmodule Episode do
-    @moduledoc "Season/episode numbers for one episode in a `Download` payload."
+    @moduledoc "One episode in a `Download` payload: its numbers, title, air date and TVDB id."
 
     @type t :: %__MODULE__{
             season_number: integer() | nil,
-            episode_number: integer() | nil
+            episode_number: integer() | nil,
+            title: String.t() | nil,
+            air_date: Date.t() | nil,
+            tvdb_id: integer() | nil
           }
 
-    defstruct [:season_number, :episode_number]
+    defstruct [:season_number, :episode_number, :title, :air_date, :tvdb_id]
 
     @spec from_api(map()) :: t()
     def from_api(data) when is_map(data) do
       %__MODULE__{
         season_number: data["seasonNumber"],
-        episode_number: data["episodeNumber"]
+        episode_number: data["episodeNumber"],
+        title: data["title"],
+        air_date: WatchClub.Helpers.maybe_date!(data["airDate"]),
+        tvdb_id: data["tvdbId"]
       }
     end
   end

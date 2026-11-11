@@ -17,7 +17,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: "tmp/star-wars.mkv",
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: sample_video_structure()
       }
 
@@ -48,7 +48,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: "tmp/friends-s01e01.mkv",
         media_type: :tv_show_episode,
-        match_result: %MatchResult{result: :success, matched_id: episode.id},
+        match_result: %MatchResult{
+          result: :success,
+          parts: [%{tv_show_episode_id: episode.id, number: 1}]
+        },
         media_structure: sample_video_structure()
       }
 
@@ -64,12 +67,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   end
 
   describe "apply/1 —unmatched" do
-    test "persists Media + unattached Video on a movie run when matched_id is nil" do
+    test "persists Media + unattached Video on a movie run when nothing matched" do
       candidate = %Candidate{
         media_source_id: default_media_source_id(),
         path: "tmp/unmatched-movie.mkv",
         media_type: :movie,
-        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        match_result: %MatchResult{result: :not_matched},
         media_structure: sample_video_structure()
       }
 
@@ -87,12 +90,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
              } = load_media!(candidate.path)
     end
 
-    test "persists Media + unattached Video on a tv_show_episode run when matched_id is nil" do
+    test "persists Media + unattached Video on a tv_show_episode run when nothing matched" do
       candidate = %Candidate{
         media_source_id: default_media_source_id(),
         path: "tmp/unmatched-episode.mkv",
         media_type: :tv_show_episode,
-        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        match_result: %MatchResult{result: :not_matched},
         media_structure: sample_video_structure()
       }
 
@@ -114,7 +117,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: sample_video_structure()
       }
 
@@ -126,7 +129,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: %{
           sample_video_structure()
           | video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
