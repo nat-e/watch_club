@@ -169,7 +169,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
           <.button
             id={"#{@id}-send"}
             type="submit"
-            variant="accent"
+            variant="primary"
             size="icon-lg"
             aria-label={dgettext("conversations", "Send")}
             title={dgettext("conversations", "Send")}
@@ -336,14 +336,16 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
   attr :current_user, User, required: true
   attr :time_zone, :string, required: true
 
-  # A bubble with the time inside. In a group, the first of a run has the avatar and the name.
+  # A bubble with the time inside, on the right when it's the User's. A gap on the other side keeps
+  # long ones apart on phones. In a group, the first of a run has the avatar and the name.
   defp message(assigns) do
     assigns = assign(assigns, :mine?, assigns.message.author_id == assigns.current_user.id)
 
     ~H"""
     <div class={[
       "flex items-start gap-related",
-      @mine? && "justify-end",
+      @mine? && "justify-end pl-section",
+      !@mine? && "pr-section",
       @first? && "mt-group",
       !@first? && "mt-tight"
     ]}>
@@ -352,7 +354,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       </div>
       <div class={[
         "relative max-w-readable min-w-0 rounded-control px-related py-tight text-sm text-text",
-        @mine? && "bg-accent-bg",
+        @mine? && "bg-surface-selected",
         !@mine? && "bg-surface-raised"
       ]}>
         <span
