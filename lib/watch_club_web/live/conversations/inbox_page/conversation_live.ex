@@ -169,7 +169,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
           <.button
             id={"#{@id}-send"}
             type="submit"
-            variant="accent"
+            variant="primary"
             size="icon-lg"
             aria-label={dgettext("conversations", "Send")}
             title={dgettext("conversations", "Send")}
@@ -352,7 +352,7 @@ defmodule WatchClubWeb.Conversations.InboxPage.ConversationLive do
       </div>
       <div class={[
         "relative max-w-readable min-w-0 rounded-control px-related py-tight text-sm text-text",
-        @mine? && "bg-accent-bg",
+        @mine? && "bg-surface-selected",
         !@mine? && "bg-surface-raised"
       ]}>
         <span
