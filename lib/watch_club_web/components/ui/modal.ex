@@ -6,7 +6,8 @@ defmodule WatchClubWeb.Components.UI.Modal do
   component. The modal is meant to be rendered only while it is open, and
   `on_close` keeps LiveView state in sync when the user dismisses it with
   Escape, a backdrop click, the close button, or any descendant marked with
-  `data-modal-close`.
+  `data-modal-close`. However it closes, focus returns to the element that had
+  it when the modal opened, such as the dropdown menu's trigger.
 
   Don't mark a submit button with `data-modal-close`: the modal cancels its
   click, so the form never submits. To submit and close, push both events from
@@ -184,6 +185,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
 
       export default {
         mounted() {
+          this.opener = document.activeElement;
           this.closed = false;
           setup.call(this);
 
@@ -199,6 +201,11 @@ defmodule WatchClubWeb.Components.UI.Modal do
         },
         destroyed() {
           teardown.call(this);
+
+          // close() returns focus, but removing the open dialog drops it on the body
+          if (document.activeElement === document.body && this.opener.isConnected) {
+            this.opener.focus();
+          }
         },
         onClick(event) {
           if (event.target.closest("[data-modal-close]")) {

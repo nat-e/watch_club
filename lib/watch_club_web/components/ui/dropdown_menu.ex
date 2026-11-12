@@ -3,7 +3,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   Token-driven Watch Club dropdown menu primitive.
 
   Uses the native Popover API for top-layer rendering and dismissal. A small
-  colocated hook only positions the popover next to its trigger.
+  colocated hook positions the popover next to its trigger, and returns focus
+  to the trigger when an item is chosen, so a modal the item opens returns
+  focus there too.
   """
 
   use Phoenix.Component
@@ -110,9 +112,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           if (isOpen(this.content)) {
             this.content.hidePopover();
           } else {
-            // Keyboard activation (Enter/Space) fires a click with detail 0. We
-            // only restore focus to the trigger on close for keyboard opens.
-            this.openedViaKeyboard = event.detail === 0;
+            // Keyboard activation (Enter/Space) fires a click with detail 0. A
+            // keyboard-opened menu keeps focus on the trigger when dismissed.
+            this.keepTriggerFocus = event.detail === 0;
             this.content.style.visibility = "hidden";
             this.content.showPopover();
             this.position();
@@ -129,7 +131,10 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             return;
           }
 
+          // Whatever opened the menu, even when the click didn't focus the trigger
+          this.keepTriggerFocus = true;
           this.content.hidePopover();
+          this.triggerControl.focus();
         },
         onKeydown(event) {
           // Escape closes only the open menu (the browser does it), not what
@@ -147,9 +152,8 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             this.removePositionListeners();
 
             // A pointer-opened menu leaves the trigger focused on dismissal, which
-            // would keep a hover-reveal overlay (e.g. the content card) open. Drop
-            // that focus; keyboard opens keep it so focus returns to the trigger.
-            if (!this.openedViaKeyboard) this.triggerControl.blur();
+            // would keep a hover-reveal overlay (e.g. the content card) open.
+            if (!this.keepTriggerFocus) this.triggerControl.blur();
           }
         },
         addPositionListeners() {
