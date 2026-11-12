@@ -13,28 +13,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   alias WatchClub.MediaSources.Import.Candidate.MediaStructure
   alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure.{Sidecars, Tracks}
 
-  require Logger
-
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
   # The File Fingerprint reads this many bytes at each end of the file
   @fingerprint_sample_bytes 64 * 1024
 
-  def apply(%Candidate{media_type: media_type} = candidate) do
-    case probe(media_type, candidate) do
-      {:ok, candidate} ->
-        {:ok, candidate}
-
-      {:error, reason} ->
-        Logger.warning("Error extracting structure for #{candidate.path}",
-          event: :ingestor_extract_structure_error,
-          error: reason,
-          path: candidate.path
-        )
-
-        :skip
-    end
-  end
+  @doc "Returns the Candidate with its `media_structure`, or `{:error, reason}` when the file can't be read."
+  def apply(%Candidate{media_type: media_type} = candidate), do: probe(media_type, candidate)
 
   defp probe(media_type, candidate)
        when media_type in [:movie, :tv_show_episode, :sports_event] do

@@ -60,12 +60,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       refute fingerprint.() == original
     end
 
-    test "skips the file when it can't be read" do
+    test "returns an error when the file can't be read" do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
       candidate = Candidate.new("/library/missing.mkv", :movie)
 
-      assert ExtractStructure.apply(candidate) == :skip
+      assert {:error, _reason} = ExtractStructure.apply(candidate)
     end
   end
 
@@ -124,12 +124,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
   end
 
   describe "apply/1 —failure" do
-    test "skips the file when ffprobe returns an error" do
+    test "returns an error when ffprobe returns an error" do
       stub(ProbeMock, :probe, fn _path -> {:error, "ffprobe exited with 1"} end)
 
       candidate = Candidate.new("/library/broken.mkv", :movie)
 
-      assert ExtractStructure.apply(candidate) == :skip
+      assert {:error, _reason} = ExtractStructure.apply(candidate)
     end
   end
 

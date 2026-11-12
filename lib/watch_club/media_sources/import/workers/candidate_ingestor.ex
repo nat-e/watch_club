@@ -9,10 +9,13 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       (no Media Import), higher priority so live events preempt a running
       scan.
 
-  `:ok` on success and when `ExtractStructure` skips the file (no retry); an
-  exception makes Oban retry with backoff. Unique on `(media_source_id, media_import_id, path)`
-  over active states; webhook jobs have no `media_import_id` and dedupe by
-  Media Source and `path`.
+  Each run ends with the file's outcome: `matched`, `unmatched`, or `unreadable` when ffprobe
+  can't read it, which saves no Media. It reports the outcome, with a reason, in one log line,
+  in its trace span and in a `[:watch_club, :media_ingest]` telemetry span. An exception makes
+  Oban retry with backoff.
+
+  Unique on `(media_source_id, media_import_id, path)` over active states; webhook jobs have no
+  `media_import_id` and dedupe by Media Source and `path`.
   """
 
   use Oban.Worker,
@@ -25,9 +28,13 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       period: :infinity
     ]
 
+  alias OpenTelemetry.Tracer
   alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
+  alias WatchClub.MediaSources.Import.Candidate.MatchResult
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
+
+  require Logger
 
   @doc """
   Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
@@ -54,21 +61,75 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    Logger.metadata(path: args["path"], media_type: args["media_type"])
+    candidate = Candidate.from_map(args)
+    media_import_id = args["media_import_id"]
 
-    args
-    |> Candidate.from_map()
-    |> ingest()
+    Logger.metadata(
+      path: candidate.path,
+      media_type: candidate.media_type,
+      media_import_id: media_import_id
+    )
+
+    start_metadata = %{
+      media_type: candidate.media_type,
+      trigger: if(media_import_id, do: :media_import, else: :webhook)
+    }
+
+    :telemetry.span([:watch_club, :media_ingest], start_metadata, fn ->
+      {outcome, reason} = ingest(candidate)
+
+      Tracer.set_attributes(%{
+        "file.path" => candidate.path,
+        "watch_club.media.type" => to_string(candidate.media_type),
+        "watch_club.media_ingest.outcome" => to_string(outcome),
+        "watch_club.media_ingest.reason" => to_string(reason)
+      })
+
+      {:ok, Map.merge(start_metadata, %{outcome: outcome, reason: reason})}
+    end)
   end
 
-  defp ingest(%Candidate{} = candidate) do
-    with {:ok, candidate} <- ExtractStructure.apply(candidate),
-         candidate <- MatchContent.apply!(candidate),
-         _candidate <- SaveMedia.apply(candidate) do
-      :ok
-    else
-      :skip ->
-        :ok
+  # Ingests the file and logs its outcome, returned as `{outcome, reason}`
+  defp ingest(%Candidate{path: path} = candidate) do
+    case ExtractStructure.apply(candidate) do
+      {:ok, candidate} ->
+        %Candidate{match_result: %MatchResult{result: result, reason: reason}} =
+          candidate = MatchContent.apply!(candidate)
+
+        SaveMedia.apply(candidate)
+
+        {level, message} =
+          case {result, reason} do
+            {:matched, :manual_match} ->
+              {:info, "#{path} keeps its Manual Match"}
+
+            {:matched, nil} ->
+              {:info, "Matched #{path}"}
+
+            {:unmatched, :content_not_found} ->
+              {:warning, "No Content matches #{path}"}
+
+            {:unmatched, :episode_not_listed} ->
+              {:warning, "TMDB doesn't list the TV Show Episode of #{path}"}
+          end
+
+        Logger.log(level, message,
+          event: :media_ingested,
+          outcome: result,
+          reason: reason,
+          tmdb_id: get_in(candidate.identity, [Access.key(:tmdb_id)])
+        )
+
+        {result, reason}
+
+      {:error, error} ->
+        Logger.warning("Couldn't read #{path}: #{inspect(error)}",
+          event: :media_ingested,
+          outcome: :unreadable,
+          error: error
+        )
+
+        {:unreadable, nil}
     end
   end
 end

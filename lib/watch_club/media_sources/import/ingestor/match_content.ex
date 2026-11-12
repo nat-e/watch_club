@@ -32,20 +32,17 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   alias WatchClub.SystemActor
 
-  require Logger
-
   # A Media Import refreshes the Content it matches when its metadata is older than 15 minutes.
   @metadata_max_age 15 * 60
 
   def apply!(%Candidate{} = candidate) do
-    case manual_match(candidate) do
-      [] ->
-        match_automatically!(candidate)
+    match_result =
+      case manual_match(candidate) do
+        [] -> match_automatically!(candidate.identity)
+        parts -> %MatchResult{result: :matched, reason: :manual_match, parts: parts}
+      end
 
-      parts ->
-        Logger.info("#{candidate.path} keeps its Manual Match", event: :manual_match_kept)
-        %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
-    end
+    %{candidate | match_result: match_result}
   end
 
   # The Parts the file's Video holds when it has a Manual Match, else []
@@ -68,53 +65,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     end
   end
 
-  defp match_automatically!(candidate) do
-    Logger.info("Matching content for #{candidate.path} -- #{inspect(candidate.identity)}",
-      event: :matching_candidate_started,
-      identity: candidate.identity
-    )
+  defp match_automatically!(identity) do
+    content = find_content!(identity)
+    parts = content && parts!(content, identity)
 
-    case find_content!(candidate.identity) do
-      nil ->
-        Logger.warning("No match found for #{candidate.path}",
-          event: :no_match_found
-        )
-
-        :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
-          result: :not_matched
-        })
-
-        %{candidate | match_result: %MatchResult{result: :not_matched}}
-
-      content ->
-        case parts!(content, candidate.identity) do
-          nil ->
-            Logger.warning("TMDB doesn't list a TV Show Episode of #{candidate.path}",
-              event: :tv_show_episode_not_listed,
-              path: candidate.path,
-              tmdb_id: candidate.identity.tmdb_id
-            )
-
-            :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
-              result: :episode_not_listed
-            })
-
-            %{candidate | match_result: %MatchResult{result: :not_matched}}
-
-          parts ->
-            Logger.info("#{candidate.path} matched to: #{to_string(content)}",
-              event: :match_found,
-              external_id: content.id,
-              name: to_string(content),
-              parts: parts
-            )
-
-            :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
-              result: :matched
-            })
-
-            %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
-        end
+    cond do
+      is_nil(content) -> %MatchResult{result: :unmatched, reason: :content_not_found}
+      is_nil(parts) -> %MatchResult{result: :unmatched, reason: :episode_not_listed}
+      true -> %MatchResult{result: :matched, parts: parts}
     end
   end
 

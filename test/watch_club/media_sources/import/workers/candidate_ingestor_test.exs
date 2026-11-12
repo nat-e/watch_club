@@ -64,7 +64,15 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   end
 
   describe "perform/1 — no Media Import" do
-    test "ingests a present file into a Media attached to the matched movie" do
+    setup do
+      ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :media_ingest, :stop]])
+      on_exit(fn -> :telemetry.detach(ref) end)
+      %{telemetry_ref: ref}
+    end
+
+    test "ingests a present file into a Media attached to the matched movie", %{
+      telemetry_ref: ref
+    } do
       movie = seed_movie(tmdb_id: 11)
       stub(ProbeMock, :probe, fn _path -> {:ok, fixture("video_friends_s01e01")} end)
 
@@ -85,6 +93,47 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
                load_media!(path)
 
       assert movie_id == movie.id
+
+      assert_received {[:watch_club, :media_ingest, :stop], ^ref, %{duration: _},
+                       %{media_type: :movie, trigger: :webhook, outcome: :matched, reason: nil}}
+    end
+
+    test "saves a file no Content matches as Unmatched Media", %{telemetry_ref: ref} do
+      stub(ProbeMock, :probe, fn _path -> {:ok, fixture("video_friends_s01e01")} end)
+      path = tmp_file!()
+
+      candidate = %Candidate{
+        media_source_id: default_media_source_id(),
+        path: path,
+        media_type: :movie,
+        identity: %MovieIdentity{}
+      }
+
+      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+
+      assert %Media{content_id: nil, video: %Video{parts: []}} = load_media!(path)
+
+      assert_received {[:watch_club, :media_ingest, :stop], ^ref, _measurements,
+                       %{outcome: :unmatched, reason: :content_not_found}}
+    end
+
+    test "saves no Media for a file ffprobe can't read", %{telemetry_ref: ref} do
+      stub(ProbeMock, :probe, fn _path -> {:error, "ffprobe exited with 1"} end)
+      path = tmp_file!()
+
+      candidate = %Candidate{
+        media_source_id: default_media_source_id(),
+        path: path,
+        media_type: :movie,
+        identity: %MovieIdentity{tmdb_id: 11}
+      }
+
+      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+
+      assert load_media!(path) == nil
+
+      assert_received {[:watch_club, :media_ingest, :stop], ^ref, _measurements,
+                       %{outcome: :unreadable, reason: nil}}
     end
   end
 
@@ -137,6 +186,13 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   end
 
   defp unique, do: System.unique_integer([:positive])
+
+  defp tmp_file! do
+    path = Path.join(System.tmp_dir!(), "candidate-#{unique()}.mkv")
+    File.write!(path, "stub")
+    on_exit(fn -> File.rm(path) end)
+    path
+  end
 
   defp fixture(name) do
     [__DIR__, "../../../../support/fixtures/ffprobe", "#{name}.json"]

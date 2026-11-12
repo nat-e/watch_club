@@ -35,17 +35,21 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defmodule MatchResult do
     @moduledoc """
-    The result of matching a file to its Content. With `result: :success`, `parts` lists the
+    The result of matching a file to its Content. With `result: :matched`, `parts` lists the
     Parts the file holds, each a map with a `movie_id`, `tv_show_episode_id` or `sports_event_id`
-    and a `number`. With `:not_matched`, `parts` is empty. Nil until the file is matched.
+    and a `number`, and `reason` is `:manual_match` when they come from its Manual Match. With
+    `:unmatched`, `parts` is empty and `reason` says why: no Content matches the file
+    (`:content_not_found`), or its TV Show doesn't list one of its TV Show Episodes
+    (`:episode_not_listed`). Nil until the file is matched.
     """
 
     @type t :: %__MODULE__{
-            result: :success | :not_matched,
+            result: :matched | :unmatched,
+            reason: :manual_match | :content_not_found | :episode_not_listed | nil,
             parts: [map()]
           }
 
-    defstruct [:result, parts: []]
+    defstruct [:result, :reason, parts: []]
   end
 
   defmodule MovieIdentity do

@@ -17,9 +17,10 @@ defmodule WatchClub.Shared.ObanLogger do
     [:oban, :job, :exception]
   ]
 
-  # Ignore start/stop for some very verbose jobs. Oban stores `worker` as a
-  # string, so match against the inspected module names.
+  # Ignore start/stop for some very verbose jobs, and for those that log their own outcome. Oban
+  # stores `worker` as a string, so match against the inspected module names.
   @ignored_workers [
+    "WatchClub.MediaSources.Import.Workers.CandidateIngestor",
     "WatchClub.MediaSources.Import.Workers.ImportMonitor",
     "WatchClub.Playbacks.Workers.EndAbandonedSessions",
     "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
@@ -30,15 +31,13 @@ defmodule WatchClub.Shared.ObanLogger do
     :telemetry.attach_many("watch-club-oban-logger", @job_events, &__MODULE__.handle_event/4, nil)
   end
 
-  def handle_event([:oban, :job, :start], _measure, meta, _config)
-      when meta.worker not in @ignored_workers do
+  # Every job's logs get its metadata, including the ignored workers' own logs
+  def handle_event([:oban, :job, :start], _measure, meta, _config) do
     Logger.metadata(metadata(meta))
 
-    Logger.log(
-      :info,
-      "#{meta.worker} job started",
-      args: meta.args
-    )
+    if meta.worker not in @ignored_workers do
+      Logger.log(:info, "#{meta.worker} job started", args: meta.args)
+    end
   end
 
   def handle_event([:oban, :job, :stop], measure, meta, _config)
