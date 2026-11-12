@@ -22,7 +22,7 @@ defmodule WatchClub.Contents.Content do
     TvShow
   }
 
-  alias WatchClub.History.WatchStatus
+  alias WatchClub.History.{HiddenFromContinueWatching, WatchStatus}
   alias WatchClub.MediaCatalog.Media
 
   alias WatchClub.Requests.ContentRequest
@@ -151,11 +151,15 @@ defmodule WatchClub.Contents.Content do
       prepare build(sort: [added_to_library_at: :desc, id: :desc])
     end
 
-    read :user_recently_watched do
-      description "The actor's Content in progress that is Ready to Play, the most recently watched first. Not limited: there are few."
+    read :actor_continue_watching do
+      description "The actor's Continue Watching: their Content in progress that is Ready to Play and that they didn't hide, the most recently watched first. Not limited: there are few."
 
       prepare build(
-                filter: [actor_progress_status: :in_progress],
+                filter:
+                  expr(
+                    actor_progress_status == :in_progress and
+                      not exists(hidden_from_continue_watching, user_id == ^actor(:id))
+                  ),
                 sort: [actor_last_watched_at: :desc]
               )
 
@@ -397,6 +401,9 @@ defmodule WatchClub.Contents.Content do
 
     # Of its Movie, its TV Show Episodes, its Book or its Sports Event
     has_many :medias, Media
+
+    # The Users who hid it from their Continue Watching
+    has_many :hidden_from_continue_watching, HiddenFromContinueWatching
   end
 
   calculations do

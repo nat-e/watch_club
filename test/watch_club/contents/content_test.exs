@@ -1434,7 +1434,7 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
-  describe "get_user_recently_watched/*" do
+  describe "get_actor_continue_watching/*" do
     test "returns the actor's Content in progress that is Ready to Play, the most recently watched first",
          %{member: member} do
       [older, newer, someone_elses] = generate_many(movie(), 3)
@@ -1450,8 +1450,18 @@ defmodule WatchClub.Contents.ContentTest do
       finish_episode!(unready_show, member)
       start_movie!(someone_elses, generate(user()))
 
-      assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
+      assert get_actor_continue_watching!(actor: member) |> Enum.map(& &1.id) ==
                [newer.id, ready_show.id, older.id]
+    end
+
+    test "leaves out the Content the actor hid", %{member: member} do
+      [hidden, shown] = generate_many(movie(), 2)
+      start_movie!(hidden, member)
+      start_movie!(shown, member)
+      generate(hidden_from_continue_watching(member, hidden.id))
+      generate(hidden_from_continue_watching(generate(user()), shown.id))
+
+      assert get_actor_continue_watching!(actor: member) |> Enum.map(& &1.id) == [shown.id]
     end
 
     test "plays the Part the actor stopped in", %{member: member} do
@@ -1477,7 +1487,7 @@ defmodule WatchClub.Contents.ContentTest do
       )
 
       assert [%Content{actor_next_medias_to_play: [video]}] =
-               get_user_recently_watched!(actor: member)
+               get_actor_continue_watching!(actor: member)
 
       assert video.id == second_part.id
     end

@@ -114,3 +114,18 @@ msgid "%{show} (%{count} episode)"
 msgid_plural "%{show} (%{count} episodes)"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{title} is hidden until you play it again."
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide %{title}"
+msgstr ""

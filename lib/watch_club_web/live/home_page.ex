@@ -2,10 +2,10 @@ defmodule WatchClubWeb.HomePage do
   @moduledoc """
   Home: what's up next for the User, and what's happening in WatchClub. Signing in opens it.
 
-  The latest Content in progress that is Ready to Play fills the spotlight. Below, Up next, For
-  You, New in the library and New sports events sit beside Watching Now and the Activity Feed, or
-  above them in a narrow page. Sports Events have their own row, as they arrive far more often
-  than Movies and TV Shows. Watching Now loads with the page.
+  The latest of the User's Continue Watching fills the spotlight. Below, Up next with the rest of
+  it, For You, New in the library and New sports events sit beside Watching Now and the Activity
+  Feed, or above them in a narrow page. Sports Events have their own row, as they arrive far more
+  often than Movies and TV Shows. Watching Now loads with the page.
   """
   use WatchClubWeb, :live_view
 
@@ -15,6 +15,7 @@ defmodule WatchClubWeb.HomePage do
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Conversations
   alias WatchClub.Conversations.Participant
+  alias WatchClub.History.HiddenFromContinueWatching
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Helpers.KeysetStreamState
   alias WatchClubWeb.HomePage.ForYou
@@ -162,6 +163,24 @@ defmodule WatchClubWeb.HomePage do
   end
 
   @impl true
+  def handle_event("hide_from_continue_watching", %{"content_id" => content_id}, socket) do
+    hidden =
+      History.hide_from_continue_watching!(content_id,
+        load: [content: :title],
+        actor: socket.assigns.current_user
+      )
+
+    # The notification of the hiding reloads Continue Watching
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       dgettext("home", "%{title} is hidden until you play it again.",
+         title: hidden.content.title
+       )
+     )}
+  end
+
   def handle_event("load_activity_feed_page", _params, socket) do
     if KeysetStreamState.can_load_more?(socket.assigns.feed_state),
       do: {:noreply, load_feed_page(socket)},
@@ -186,6 +205,9 @@ defmodule WatchClubWeb.HomePage do
        when resource in [Media, WatchProgress],
        do: socket |> load_in_progress() |> load_new_in_library()
 
+  defp reload_after(socket, %Notification{resource: HiddenFromContinueWatching}),
+    do: load_in_progress(socket)
+
   defp reload_after(socket, %Notification{resource: resource})
        when resource in @for_you_resources,
        do: load_for_you(socket)
@@ -194,7 +216,7 @@ defmodule WatchClubWeb.HomePage do
 
   defp load_in_progress(socket) do
     in_progress =
-      Contents.get_user_recently_watched!(
+      Contents.get_actor_continue_watching!(
         load: content_load(),
         actor: socket.assigns.current_user
       )

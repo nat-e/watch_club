@@ -13,7 +13,7 @@ defmodule WatchClub.Generator do
   }
 
   alias WatchClub.Conversations.{Conversation, Message}
-  alias WatchClub.History.WatchProgress
+  alias WatchClub.History.{HiddenFromContinueWatching, WatchProgress}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
@@ -319,6 +319,11 @@ defmodule WatchClub.Generator do
   # `sports_event_id`, and the positions
   def watch_progress(%User{} = user, opts) do
     seed_generator(%WatchProgress{user_id: user.id}, overrides: opts)
+  end
+
+  # A Content the User hid from their Continue Watching
+  def hidden_from_continue_watching(%User{} = user, content_id) do
+    seed_generator(%HiddenFromContinueWatching{user_id: user.id, content_id: content_id})
   end
 
   def problem_report(%Playback{} = playback, opts \\ []) do

@@ -477,7 +477,14 @@ classDiagram
     float duration_seconds
     «unique» user_id + movie_id + tv_show_episode_id + sports_event_id + book_id
   }
+  class HiddenFromContinueWatching {
+    uuid id
+    uuid user_id
+    uuid content_id
+    «unique» user_id + content_id
+  }
   class User
+  class Content
   class Movie
   class TvShowEpisode
   class SportsEvent
@@ -489,7 +496,11 @@ classDiagram
   WatchProgress "*" --> "0..1" SportsEvent
   WatchProgress "*" --> "0..1" Book
   WatchProgress "*" --> "0..1" Media : last_media
+  HiddenFromContinueWatching "*" --> "1" User
+  HiddenFromContinueWatching "*" --> "1" Content
 ```
+
+A HiddenFromContinueWatching keeps a Content out of its User's Continue Watching until a new Playback of it starts. It doesn't change their Watch Progress.
 
 ## Requests
 

@@ -3,7 +3,7 @@ defmodule WatchClub.Playbacks.SessionTest do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Content
-  alias WatchClub.History.WatchProgress
+  alias WatchClub.History.{HiddenFromContinueWatching, WatchProgress}
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{Media, Video}
   alias WatchClub.Playbacks
@@ -54,6 +54,20 @@ defmodule WatchClub.Playbacks.SessionTest do
                Playbacks.play!(first_part.id, "player", actor: user)
     end
 
+    test "brings the Content back in the actor's Continue Watching with a new Playback" do
+      [user, other] = generate_many(user(), 2)
+      media = movie_media()
+      generate(hidden_from_continue_watching(user, media.content_id))
+      generate(hidden_from_continue_watching(other, media.content_id))
+
+      Playbacks.play!(media.id, "player", actor: user)
+
+      assert [%HiddenFromContinueWatching{user_id: other_id}] =
+               Ash.read!(HiddenFromContinueWatching, authorize?: false)
+
+      assert other_id == other.id
+    end
+
     test "plays in the active Playback Session, in the Player that plays it" do
       user = generate(user())
       active = generate(playback_session(movie_media(), started_by: user))
@@ -78,14 +92,18 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert session.current_playback.media_id == media.id
     end
 
-    test "goes on with the current Playback when it already plays the Media there" do
+    test "goes on with the current Playback when it already plays the Media there, and keeps its Content hidden from Continue Watching" do
       user = generate(user())
       media = movie_media()
       active = generate(playback_session(media, started_by: user))
+      generate(hidden_from_continue_watching(user, media.content_id))
 
       session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
 
       assert session.current_playback.id == active.current_playback.id
+
+      assert [%HiddenFromContinueWatching{}] =
+               Ash.read!(HiddenFromContinueWatching, authorize?: false)
     end
 
     test "forbids a User from playing Unmatched Media" do
