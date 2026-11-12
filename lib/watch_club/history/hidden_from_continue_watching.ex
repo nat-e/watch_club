@@ -1,9 +1,9 @@
-defmodule WatchClub.History.HiddenFromHome do
+defmodule WatchClub.History.HiddenFromContinueWatching do
   @moduledoc """
-  A Content a User hid from Home: it leaves their Content in progress until a new Playback of it
-  starts. A Playback that goes on, such as on a TV, doesn't count. It stands for the whole Content,
-  so a TV Show hides whichever TV Show Episode comes next, and their Watch Progress doesn't
-  change. Each User sees only their own.
+  A Content a User hid from their Continue Watching, until a new Playback of it starts. A Playback
+  that goes on, such as on a TV, doesn't count. It stands for the whole Content, so a TV Show hides
+  whichever TV Show Episode comes next, and their Watch Progress doesn't change. Each User sees
+  only their own.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -16,7 +16,7 @@ defmodule WatchClub.History.HiddenFromHome do
   alias WatchClub.Contents.Content
 
   postgres do
-    table "hidden_from_home"
+    table "hidden_from_continue_watching"
     repo WatchClub.Repo
 
     references do
@@ -30,7 +30,7 @@ defmodule WatchClub.History.HiddenFromHome do
     defaults [:read]
 
     create :hide do
-      description "Hide from Home: the actor hides the Content. Doing it again changes nothing."
+      description "Hide from Continue Watching: the actor hides the Content. Doing it again changes nothing."
       upsert? true
       upsert_identity :unique_content_per_user
       upsert_fields []
@@ -40,8 +40,8 @@ defmodule WatchClub.History.HiddenFromHome do
       change relate_actor(:user)
     end
 
-    destroy :show do
-      description "A new Playback of the Content started: the actor's Home may show it again, if they hid it."
+    destroy :unhide do
+      description "A new Playback of the Content started: it's back in the actor's Continue Watching, if they hid it."
       argument :content_id, :uuid_v7, allow_nil?: false
 
       # Only the actor's own: the read policy would forbid other Users' rows, not skip them
@@ -51,7 +51,7 @@ defmodule WatchClub.History.HiddenFromHome do
 
   policies do
     policy actor_absent() do
-      description "Hidden from Home actions require an authenticated actor"
+      description "Hidden from Continue Watching actions require an authenticated actor"
       access_type :strict
       forbid_if always()
     end
@@ -61,7 +61,7 @@ defmodule WatchClub.History.HiddenFromHome do
     end
 
     policy action_type([:read, :destroy]) do
-      description "Each User sees, and shows again, only their own"
+      description "Each User sees, and unhides, only their own"
       authorize_if relates_to_actor_via(:user)
     end
   end
@@ -70,7 +70,7 @@ defmodule WatchClub.History.HiddenFromHome do
     module Phoenix.PubSub
     name WatchClub.PubSub
 
-    # Every Home of the User reloads its Content in progress
+    # Every Home of the User reloads its Continue Watching
     publish_all :create, ["content", "user", :user_id]
     publish_all :destroy, ["content", "user", :user_id]
   end

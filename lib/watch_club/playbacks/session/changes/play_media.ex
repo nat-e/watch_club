@@ -4,7 +4,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   Screen, or on the TV when the Playback Session plays there. Expects the Playback Session locked.
 
   It resumes where the actor stopped in this Video, unless they finished it. Otherwise it starts
-  from the beginning. Its Content comes back on the actor's Home if they hid it.
+  from the beginning. Its Content comes back in the actor's Continue Watching if they hid it.
   """
   use Ash.Resource.Change
 
@@ -40,7 +40,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
            scope: context
          ) do
       {:ok, playback} ->
-        show_on_home!(playback.media, context)
+        unhide_from_continue_watching!(playback.media, context)
 
         Ash.Changeset.force_change_attributes(changeset, %{
           screen_id:
@@ -59,10 +59,10 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   end
 
   # Unmatched Media has no Content
-  defp show_on_home!(%Media{content_id: nil}, _context), do: :ok
+  defp unhide_from_continue_watching!(%Media{content_id: nil}, _context), do: :ok
 
-  defp show_on_home!(%Media{content_id: id}, context),
-    do: History.show_on_home!(id, scope: context)
+  defp unhide_from_continue_watching!(%Media{content_id: id}, context),
+    do: History.unhide_from_continue_watching!(id, scope: context)
 
   # The position in this Video's Part, if the actor stopped there and hasn't finished
   defp resume_position(%Video{parts: [part | _]}) do

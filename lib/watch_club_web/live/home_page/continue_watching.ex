@@ -1,9 +1,8 @@
 defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
-  The Content in progress on Home that is Ready to Play: the latest one in the spotlight, the
-  others in Up next. Resume plays the Movie or the Sports Event, or the TV Show's next TV Show
-  Episode, and the title opens the Content's page. Hide sends `hide_from_home` with its
-  `content_id`.
+  The User's Continue Watching on Home: the latest one in the spotlight, the others in Up next.
+  Resume plays the Movie or the Sports Event, or the TV Show's next TV Show Episode, and the title
+  opens the Content's page. Hide sends `hide_from_continue_watching` with its `content_id`.
   """
   use WatchClubWeb, :component
 
@@ -100,7 +99,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
                 id="spotlight-hide"
                 variant="overlay"
                 size="lg"
-                phx-click="hide_from_home"
+                phx-click="hide_from_continue_watching"
                 phx-value-content_id={@content.id}
                 aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
               >
@@ -188,7 +187,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
           variant="secondary"
           size="icon"
           phx-click={
-            JS.push("hide_from_home", value: %{content_id: @content.id})
+            JS.push("hide_from_continue_watching", value: %{content_id: @content.id})
             |> JS.focus(to: @focus_after_hide)
           }
           aria-label={dgettext("home", "Hide %{title}", title: title(@content))}

@@ -13,7 +13,7 @@ defmodule WatchClub.Generator do
   }
 
   alias WatchClub.Conversations.{Conversation, Message}
-  alias WatchClub.History.{HiddenFromHome, WatchProgress}
+  alias WatchClub.History.{HiddenFromContinueWatching, WatchProgress}
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
@@ -321,9 +321,9 @@ defmodule WatchClub.Generator do
     seed_generator(%WatchProgress{user_id: user.id}, overrides: opts)
   end
 
-  # A Content the User hid from Home
-  def hidden_from_home(%User{} = user, content_id) do
-    seed_generator(%HiddenFromHome{user_id: user.id, content_id: content_id})
+  # A Content the User hid from their Continue Watching
+  def hidden_from_continue_watching(%User{} = user, content_id) do
+    seed_generator(%HiddenFromContinueWatching{user_id: user.id, content_id: content_id})
   end
 
   def problem_report(%Playback{} = playback, opts \\ []) do

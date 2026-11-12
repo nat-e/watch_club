@@ -33,7 +33,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "hidden_from_home_user_id_fkey",
+        "name": "hidden_from_continue_watching_user_id_fkey",
         "on_delete": "delete",
         "on_update": null,
         "primary_key?": true,
@@ -66,7 +66,7 @@
           "global": null,
           "strategy": null
         },
-        "name": "hidden_from_home_content_id_fkey",
+        "name": "hidden_from_continue_watching_content_id_fkey",
         "on_delete": "delete",
         "on_update": null,
         "primary_key?": true,
@@ -85,12 +85,12 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "D79FC1F4675AE82E5C8DEBF4A3255F066D6C91085BE2DA4390BC959898EFAB43",
+  "hash": "5BED5202C63CE4C818CA1489E1112D11E893173DE3590793F18C0D4FC81EB6DD",
   "identities": [
     {
       "all_tenants?": false,
       "base_filter": null,
-      "index_name": "hidden_from_home_unique_content_per_user_index",
+      "index_name": "hidden_from_continue_watching_unique_content_per_user_index",
       "keys": [
         {
           "type": "atom",
@@ -113,6 +113,6 @@
   },
   "repo": "Elixir.WatchClub.Repo",
   "schema": null,
-  "table": "hidden_from_home",
+  "table": "hidden_from_continue_watching",
   "temporal": null
 }

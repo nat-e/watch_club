@@ -39,7 +39,7 @@ defmodule WatchClub.Contents do
 
       define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
 
-      define :get_in_progress_on_home, action: :in_progress_on_home
+      define :get_actor_continue_watching, action: :actor_continue_watching
     end
 
     resource Movie

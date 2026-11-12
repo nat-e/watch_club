@@ -3,7 +3,7 @@ defmodule WatchClub.History do
     otp_app: :watch_club,
     extensions: [AshPhoenix]
 
-  alias WatchClub.History.{HiddenFromHome, WatchProgress}
+  alias WatchClub.History.{HiddenFromContinueWatching, WatchProgress}
 
   resources do
     resource WatchProgress do
@@ -14,11 +14,11 @@ defmodule WatchClub.History do
       define :list_watchers, action: :watchers, args: [:content_identity]
     end
 
-    resource HiddenFromHome do
-      define :hide_from_home, action: :hide, args: [:content_id]
+    resource HiddenFromContinueWatching do
+      define :hide_from_continue_watching, action: :hide, args: [:content_id]
 
-      define :show_on_home,
-        action: :show,
+      define :unhide_from_continue_watching,
+        action: :unhide,
         args: [:content_id],
         require_reference?: false,
         default_options: [bulk_options: [notify?: true]]

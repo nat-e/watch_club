@@ -477,7 +477,7 @@ classDiagram
     float duration_seconds
     «unique» user_id + movie_id + tv_show_episode_id + sports_event_id + book_id
   }
-  class HiddenFromHome {
+  class HiddenFromContinueWatching {
     uuid id
     uuid user_id
     uuid content_id
@@ -496,11 +496,11 @@ classDiagram
   WatchProgress "*" --> "0..1" SportsEvent
   WatchProgress "*" --> "0..1" Book
   WatchProgress "*" --> "0..1" Media : last_media
-  HiddenFromHome "*" --> "1" User
-  HiddenFromHome "*" --> "1" Content
+  HiddenFromContinueWatching "*" --> "1" User
+  HiddenFromContinueWatching "*" --> "1" Content
 ```
 
-A HiddenFromHome keeps a Content off its User's Home until a new Playback of it starts. It doesn't change their Watch Progress.
+A HiddenFromContinueWatching keeps a Content out of its User's Continue Watching until a new Playback of it starts. It doesn't change their Watch Progress.
 
 ## Requests
 

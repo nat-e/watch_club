@@ -258,6 +258,14 @@ _Avoid_: watch history, watch session, resume point, playhead, watched flag
 A **User** with **Watch Progress** on a **Movie** or a **TV Show**: they watched it or are watching it.
 _Avoid_: Viewer, audience
 
+**Continue Watching**:
+A **User**'s **Content** in progress that is **Ready to Play** and that they didn't **Hide from Continue Watching**, the most recently watched first.
+_Avoid_: Up next, recently watched, in progress list
+
+**Hide from Continue Watching**:
+A **User** takes a **Content** out of their **Continue Watching** until they **Play** it again, keeping its **Watch Progress**.
+_Avoid_: Hide from Home, remove, dismiss, mark as watched
+
 **Problem Report**:
 What a **User** reports from the **Player** about the **Video** they're playing: what's wrong, an optional comment, and what the **Player** showed at that moment.
 _Avoid_: Feedback, issue, bug report, ticket
@@ -432,10 +440,6 @@ _Avoid_: Dashboard, landing page, feed
 What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that were Completed and the **Playlists** shared with them.
 _Avoid_: Notifications, alerts, inbox
 
-**Hide from Home**:
-A **User** takes one of their **Content** in progress off **Home** until they **Play** it again, keeping its **Watch Progress**.
-_Avoid_: Remove, dismiss, remove from Continue Watching, mark as watched
-
 ### Activity Feed
 
 **Activity Feed**:
@@ -605,6 +609,8 @@ _Avoid_: Group, aggregate, card, item
 - The **Player**, the **TV** and the **Remote** name the **Part** that plays when its **Movie**, **TV Show Episode** or **Sports Event** has several: Friends · S06E15 · Part 2
 - **Watch Progress** counts each **Video** up to the start of its **Credits**, and the **Parts** of a **Movie**, **TV Show Episode** or **Sports Event** one after another
 - Playing a **Video** that holds two **TV Show Episodes** moves the **Watch Progress** of both
+- **Hide from Continue Watching** takes a whole **TV Show** out, whichever **TV Show Episode** comes next
+- A **Content** comes back in **Continue Watching** when the **User** who hid it starts to **Play** it again. A new **TV Show Episode**, marking it as watched or not watched, and a **Screen** reporting its position don't bring it back
 - A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
 - A **Problem Report** belongs to the **Playback** it was sent from, which gives its **User**, **Video** and **Content**
 - Only the **Instance Administrator** can read and **Archive a Problem Report**; an archived **Problem Report** stays archived
@@ -770,13 +776,12 @@ _Avoid_: Group, aggregate, card, item
 
 ### Home
 
-- **Home** shows the **User**'s **Content** in progress that is **Ready to Play** and that they didn't **Hide from Home**, their **For You**, the **Movies** and **TV Shows** most recently added to the **Library**, the **Sports Events** most recently added, who is **Watching Now**, and the **Activity Feed**
+- **Home** shows the **User**'s **Continue Watching**, their **For You**, the **Movies** and **TV Shows** most recently added to the **Library**, the **Sports Events** most recently added, who is **Watching Now**, and the **Activity Feed**
 - **Home** keeps the newest **Sports Events** apart from the newest **Movies** and **TV Shows**, because they arrive far more often
 - **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
 - **Home** shows a **Content** with a **Content Request** among the newest in the **Library** only once that **Content Request** is Completed
-- **Hide from Home** takes a whole **TV Show** off **Home**, whichever **TV Show Episode** comes next
-- A **Content** comes back on **Home** when the **User** who hid it starts to **Play** it again. A new **TV Show Episode**, marking it as watched or not watched, and a **Screen** reporting its position don't bring it back
+- **Home** shows the latest of **Continue Watching** in its spotlight, and the rest in its Up next row
 
 ### Activity Feed
 
@@ -831,5 +836,6 @@ _Avoid_: Group, aggregate, card, item
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only when a **Media Import** or a webhook processes the file again.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
-- Home's Up next row and the **Remote**'s Up next share a label; resolved: Up next in this glossary is the **Remote**'s, and Home's row shows the **User**'s **Content** in progress. **Hide from Home** names neither row.
+- Home's Up next row and the **Remote**'s Up next share a label; resolved: Up next in this glossary is the **Remote**'s, and Home's row shows the **User**'s **Continue Watching**.
+- Hiding was first named after **Home**, where it shows; resolved: **Hide from Continue Watching**, because the data model doesn't depend on where it's displayed.
 - Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.
