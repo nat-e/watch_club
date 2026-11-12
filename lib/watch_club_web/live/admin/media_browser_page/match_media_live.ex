@@ -8,6 +8,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   use WatchClubWeb, :live_component
 
   import WatchClubWeb.Admin.MediaBrowserPage.MediaPoster, only: [content_title: 1]
+  import WatchClubWeb.Components.Search.SearchForm
   import WatchClubWeb.Components.Search.SearchResultRow, only: [search_result_summary: 1]
   import WatchClubWeb.Components.Search.SearchStatus
 
@@ -62,35 +63,14 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           />
         <% else %>
           <.current_match :if={@media.content} id={@id} media={@media} myself={@myself} />
-          <.form
+          <.search_form
             id={"#{@id}-search"}
-            for={to_form(%{})}
-            layout="none"
-            role="search"
-            autocomplete="off"
-            phx-change="search"
-            phx-submit="search"
-            phx-target={@myself}
+            query={@query}
+            label={search_label(@media.type)}
+            placeholder={search_placeholder(@media.type)}
+            on_search={JS.push("search", target: @myself)}
             class="sticky top-0 z-10 bg-surface-overlay"
-          >
-            <div class="relative">
-              <Lucideicons.search
-                aria-hidden="true"
-                class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle"
-              />
-              <.input
-                id={"#{@id}-query"}
-                name="query"
-                value={@query}
-                type="search"
-                placeholder={search_placeholder(@media.type)}
-                aria-label={search_label(@media.type)}
-                autofocus
-                phx-debounce="300"
-                class="pl-9!"
-              />
-            </div>
-          </.form>
+          />
           <.search_results
             id={@id}
             search={@search}

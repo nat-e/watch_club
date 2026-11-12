@@ -5,6 +5,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
   """
   use WatchClubWeb, :live_component
 
+  import WatchClubWeb.Components.Search.SearchForm
   import WatchClubWeb.Components.Search.SearchResultRow, only: [search_result_summary: 1]
   import WatchClubWeb.Components.Search.SearchScopes
   import WatchClubWeb.Components.Search.SearchStatus
@@ -32,34 +33,12 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
 
         <%!-- As wide as the results, which bleed into the padding, so they scroll under it --%>
         <div class="sticky top-0 z-10 -mx-related flex flex-col gap-group bg-surface-overlay px-related pb-related">
-          <.form
+          <.search_form
             id={"#{@id}-search"}
-            for={to_form(%{})}
-            layout="none"
-            role="search"
-            autocomplete="off"
-            phx-change="search"
-            phx-submit="search"
-            phx-target={@myself}
-          >
-            <div class="relative">
-              <Lucideicons.search
-                aria-hidden="true"
-                class="pointer-events-none absolute top-1/2 left-3 size-icon-sm -translate-y-1/2 text-text-subtle"
-              />
-              <.input
-                id={"#{@id}-query"}
-                name="query"
-                value={@query}
-                type="search"
-                placeholder={dgettext("search", "Search")}
-                aria-label={dgettext("search", "Search")}
-                autofocus
-                phx-debounce="300"
-                class="pl-9!"
-              />
-            </div>
-          </.form>
+            query={@query}
+            label={dgettext("search", "Search")}
+            on_search={JS.push("search", target: @myself)}
+          />
           <.search_scopes
             id={"#{@id}-scopes"}
             scope={@scope}
