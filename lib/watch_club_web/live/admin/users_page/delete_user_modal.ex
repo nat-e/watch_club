@@ -2,7 +2,6 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.DeleteUserModal do
   use WatchClubWeb, :component
 
   attr :user, User, required: true
-  attr :instance_settings, InstanceSettings, required: true
 
   def delete_user_modal(assigns) do
     ~H"""
@@ -12,9 +11,8 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.DeleteUserModal do
         {raw(
           dgettext(
             "admin_users",
-            "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased.",
-            username: gtbold(@user.username),
-            name: @instance_settings.name
+            "Delete %{username}? They can't sign in anymore, and their watch history and playlists are deleted. Their messages and requests stay, shown as from a deleted user. You can't undo this.",
+            username: gtbold(@user.username)
           )
         )}
       </p>

@@ -26,7 +26,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
           <.page_description text={
             dgettext(
               "admin_users",
-              "Manage access to %{name}.",
+              "Invite friends to %{name} and manage who has access.",
               name: @instance_settings.name
             )
           } />
@@ -47,18 +47,14 @@ defmodule WatchClubWeb.Admin.UsersPage do
                 class="w-fit"
               >
                 <:icon><Lucideicons.plus /></:icon>
-                {dgettext("admin_invitations", "Invite users")}
+                {dgettext("admin_invitations", "Invite friends")}
               </.button>
             </div>
             <.users_table users={@users} current_user={@current_user} />
           </.stack>
         </.stack>
 
-        <.delete_user_modal
-          :if={@user_to_delete}
-          user={@user_to_delete}
-          instance_settings={@instance_settings}
-        />
+        <.delete_user_modal :if={@user_to_delete} user={@user_to_delete} />
 
         <.create_invitation_code_modal
           :if={@invitation_form}
@@ -102,6 +98,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
 
   def handle_event("generate_password_reset_link", %{"id" => user_id}, socket) do
     token = Accounts.generate_password_reset_token!(user_id, actor: socket.assigns.current_user)
+    user = Enum.find(socket.assigns.users, &(&1.id == user_id))
 
     link =
       Url.reset_password_url(socket.assigns.current_url, token)
@@ -110,7 +107,12 @@ defmodule WatchClubWeb.Admin.UsersPage do
     {:noreply,
      socket
      |> push_event("wc:copy_to_clipboard", %{text: link})
-     |> put_flash(:info, dgettext("admin_users", "Password reset link copied to clipboard"))}
+     |> put_flash(
+       :info,
+       dgettext("admin_users", "Reset link copied. Send it to %{username}: it works for 3 days.",
+         username: user.username
+       )
+     )}
   end
 
   def handle_event("open_create_invitation_code_modal", _params, socket) do
@@ -196,7 +198,10 @@ defmodule WatchClubWeb.Admin.UsersPage do
   def handle_event("invitation_link_copied", _params, socket) do
     {:noreply,
      socket
-     |> put_flash(:info, dgettext("admin_invitations", "Invitation link copied to clipboard"))}
+     |> put_flash(
+       :info,
+       dgettext("admin_invitations", "Invitation link copied. Send it to your friends.")
+     )}
   end
 
   def handle_event("confirm_delete_invitation_code", _params, socket) do
@@ -211,7 +216,7 @@ defmodule WatchClubWeb.Admin.UsersPage do
     {:noreply,
      socket
      |> assign(:invitation_code_to_delete, nil)
-     |> put_flash(:success, dgettext("admin_invitations", "Invitation code deleted"))}
+     |> put_flash(:success, dgettext("admin_invitations", "Invitation deleted"))}
   end
 
   defp close_modals(socket) do

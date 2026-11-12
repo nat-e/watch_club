@@ -34,12 +34,6 @@ msgstr "Créer un compte"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Do not share the credentials of this account, you will be able to invite other users later."
-msgstr "Ne partagez pas les identifiants de ce compte, vous pourrez inviter d'autres utilisateurs plus tard."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
@@ -51,12 +45,6 @@ msgstr "Mot de passe"
 #, elixir-autogen, elixir-format
 msgid "Sign in"
 msgstr "Se connecter"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "To configure your instance, you need to setup a unique administrator account."
-msgstr "Pour configurer votre instance, vous devez créer un compte administrateur unique."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex
@@ -139,3 +127,15 @@ msgstr "Les liens de réinitialisation expirent au bout de 3 jours. Demande un n
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
 msgstr "Bienvenue sur Watch Club !"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Create the administrator account. You'll use it to manage Watch Club and invite your friends."
+msgstr "Crée le compte administrateur. Il te servira à gérer Watch Club et à inviter tes amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Keep it to yourself: your friends get their own accounts through invitations."
+msgstr "Garde-le pour toi : tes amis auront leur propre compte grâce aux invitations."

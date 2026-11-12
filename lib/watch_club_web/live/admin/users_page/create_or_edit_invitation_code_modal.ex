@@ -11,8 +11,8 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
       |> assign(
         edit?: edit?,
         title:
-          (edit? && dgettext("admin_invitations", "Edit invitation code")) ||
-            dgettext("admin_invitations", "Create invitation code"),
+          (edit? && dgettext("admin_invitations", "Edit invitation")) ||
+            dgettext("admin_invitations", "New invitation"),
         submit_label:
           (edit? && dgettext("admin_invitations", "Save")) ||
             dgettext("admin_invitations", "Create")
@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
       <:description>
         {dgettext(
           "admin_invitations",
-          "Create an invitation link and share it with your friends. The link will expire after 7 days"
+          "Share the link with friends so they can create their account. It works for 7 days."
         )}
       </:description>
       <.form
@@ -46,7 +46,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.CreateOrEditInvitationCodeModal do
 
         <.field
           field={@form[:max_uses]}
-          label={dgettext("admin_invitations", "Usage limit")}
+          label={dgettext("admin_invitations", "Maximum uses")}
           type="number"
           min="1"
           placeholder={dgettext("admin_invitations", "Unlimited")}

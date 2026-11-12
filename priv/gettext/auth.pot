@@ -30,11 +30,6 @@ msgid "Create account"
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Do not share the credentials of this account, you will be able to invite other users later."
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/setup_page.ex
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
@@ -44,11 +39,6 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sign in"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "To configure your instance, you need to setup a unique administrator account."
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/setup_page.ex
@@ -118,4 +108,14 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/setup_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Create the administrator account. You'll use it to manage Watch Club and invite your friends."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Keep it to yourself: your friends get their own accounts through invitations."
 msgstr ""

@@ -49,25 +49,25 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
-msgid "Instance Admin"
+msgid "Reset password"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Manage access to %{name}."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Password reset link copied to clipboard"
+msgid "Delete %{username}? They can't sign in anymore, and their watch history and playlists are deleted. Their messages and requests stay, shown as from a deleted user. You can't undo this."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
-msgid "Reset password"
+msgid "Instance administrator"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends to %{name} and manage who has access."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reset link copied. Send it to %{username}: it works for 3 days."
 msgstr ""

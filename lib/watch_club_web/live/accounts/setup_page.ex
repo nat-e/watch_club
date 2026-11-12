@@ -9,13 +9,13 @@ defmodule WatchClubWeb.Accounts.SetupPage do
         <p>
           {dgettext(
             "auth",
-            "To configure your instance, you need to setup a unique administrator account."
+            "Create the administrator account. You'll use it to manage Watch Club and invite your friends."
           )}
         </p>
         <p>
           {dgettext(
             "auth",
-            "Do not share the credentials of this account, you will be able to invite other users later."
+            "Keep it to yourself: your friends get their own accounts through invitations."
           )}
         </p>
       </.stack>

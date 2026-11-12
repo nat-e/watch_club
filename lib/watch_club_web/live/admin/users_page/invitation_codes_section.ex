@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
     ~H"""
     <.empty size="sm">
       <:icon><Lucideicons.mail /></:icon>
-      <:title>{dgettext("admin_invitations", "You don't have any active invite links")}</:title>
+      <:title>{dgettext("admin_invitations", "No active invitations")}</:title>
     </.empty>
     """
   end
@@ -21,7 +21,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.InvitationCodesSection do
     <.section
       space="related"
       padding="group"
-      title={dgettext("admin_invitations", "Active Invitations")}
+      title={dgettext("admin_invitations", "Active invitations")}
       icon={:mail}
     >
       <.cluster>

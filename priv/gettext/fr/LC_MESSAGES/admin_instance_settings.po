@@ -21,7 +21,7 @@ msgstr "Paramètres de l'instance"
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Configure how your instance presents itself."
-msgstr "Configurez la façon dont votre instance se présente."
+msgstr "Configure la façon dont ton instance se présente."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
