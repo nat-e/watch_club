@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   @moduledoc """
-  The open Playlist: its name, who has it and what it holds, Add for the Users who can edit it and
-  its owner's actions, then its Playlist Items, each with Play, Resume or Request.
+  The open Playlist: its name, who has it and what it holds, Add for its owner and the Users with
+  Edit access, its owner's actions, then its Playlist Items, each with Play, Resume or Request.
   """
   use WatchClubWeb, :component
 
@@ -90,7 +90,11 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           </div>
         </div>
         <div :if={@playlist.editable_by?} class="flex shrink-0 gap-related">
-          <.button id="add-to-playlist" phx-click={PlaylistDialogsLive.open(:add)}>
+          <.button
+            id="add-to-playlist"
+            variant="secondary"
+            phx-click={PlaylistDialogsLive.open(:add)}
+          >
             <:icon><Lucideicons.plus /></:icon>
             {dgettext("playlists", "Add")}
           </.button>
@@ -136,7 +140,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             <:icon><Lucideicons.clapperboard /></:icon>
             <:title>{dgettext("playlists", "Nothing here yet")}</:title>
             <:description :if={@playlist.editable_by?}>
-              {dgettext("playlists", "Search for movies and TV shows to add.")}
+              {dgettext("playlists", "Search for movies, TV shows and sports events to add.")}
             </:description>
             <.button
               :if={@playlist.editable_by?}

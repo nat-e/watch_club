@@ -71,6 +71,16 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
   @impl true
   def mount(socket), do: {:ok, close(socket)}
 
+  # The dialogs of the Playlist shown close when another one, or none, shows instead
+  @impl true
+  def update(%{playlist: playlist} = assigns, socket) do
+    shown = socket.assigns[:playlist]
+    other_playlist? = (playlist && playlist.id) != (shown && shown.id)
+
+    socket = if other_playlist? and socket.assigns.dialog != :new, do: close(socket), else: socket
+    {:ok, assign(socket, assigns)}
+  end
+
   @impl true
   def handle_event("open", %{"dialog" => "new"}, socket) do
     form =

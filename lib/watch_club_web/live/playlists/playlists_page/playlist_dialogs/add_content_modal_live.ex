@@ -9,7 +9,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
   import WatchClubWeb.Components.Search.SearchScopes
   import WatchClubWeb.Components.Search.SearchStatus
 
-  alias WatchClub.Contents.SearchResultsPage
+  alias WatchClub.Contents.{SearchResult, SearchResultsPage}
   alias WatchClubWeb.Hooks.Flash
 
   attr :id, :string, required: true
@@ -26,11 +26,12 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
         size="md"
         phone="full_screen"
         on_close={@on_close}
-        class="w-full sm:h-[min(44rem,85svh)]"
+        class="w-full md:h-[min(44rem,85svh)]"
       >
         <:title>{dgettext("playlists", "Add to %{playlist}", playlist: @playlist.name)}</:title>
 
-        <div class="sticky top-0 z-10 flex flex-col gap-group bg-surface-overlay">
+        <%!-- As wide as the results, which bleed into the padding, so they scroll under it --%>
+        <div class="sticky top-0 z-10 -mx-related flex flex-col gap-group bg-surface-overlay px-related pb-related">
           <.form
             id={"#{@id}-search"}
             for={to_form(%{})}
@@ -74,6 +75,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
           query={@query}
           result_count={length(@results)}
           on_retry={JS.push("retry", target: @myself)}
+          hint={dgettext("playlists", "Search by title, then pick what to add.")}
         />
         <ul
           :if={@status == :ok and @results != []}
@@ -108,20 +110,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
     """
   end
 
-  # No need to support update_many for a modal. The search stays when the Playlist changes.
   @impl true
-  def update(assigns, socket) do
-    socket = assign(socket, assigns)
-
-    if Map.has_key?(socket.assigns, :query) do
-      {:ok, socket}
-    else
-      {:ok,
-       socket
-       |> assign(Url.search_params(%{}))
-       # Intentionally small: a search's first page
-       |> assign(status: :idle, results: [], held_content_ids: %{})}
-    end
+  def mount(socket) do
+    {:ok,
+     socket
+     |> assign(Url.search_params(%{}))
+     # Intentionally small: a search's first page
+     |> assign(status: :idle, results: [], held_content_ids: %{})}
   end
 
   @impl true
@@ -139,27 +134,29 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
   def handle_event("retry", _params, socket), do: {:noreply, search(socket)}
 
   def handle_event("toggle", %{"type" => type, "external_id" => external_id}, socket) do
-    %{results: results, held_content_ids: held, playlist: playlist, current_user: user} =
-      socket.assigns
-
-    %{identity: identity} =
-      result =
+    result =
       Enum.find(
-        results,
+        socket.assigns.results,
         &(to_string(&1.identity.type) == type and &1.identity.external_id == external_id)
       )
+
+    {:noreply, toggle(socket, result)}
+  end
+
+  # Takes the result out of the Playlist when it holds it, else adds it
+  defp toggle(socket, %SearchResult{identity: identity} = result) do
+    %{held_content_ids: held, playlist: playlist, current_user: user} = socket.assigns
 
     case held do
       %{^identity => content_id} ->
         Playlists.remove_from_playlist!(playlist.id, content_id, actor: user)
-        {:noreply, assign(socket, :held_content_ids, Map.delete(held, identity))}
+        assign(socket, :held_content_ids, Map.delete(held, identity))
 
       # Adding fetches the Content from its Metadata Provider when WatchClub doesn't have it yet
       %{} ->
         case Playlists.add_to_playlist(playlist.id, identity, actor: user) do
           {:ok, item} ->
-            {:noreply,
-             assign(socket, :held_content_ids, Map.put(held, identity, item.content_id))}
+            assign(socket, :held_content_ids, Map.put(held, identity, item.content_id))
 
           {:error, _error} ->
             Flash.send_flash(
@@ -167,10 +164,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
               dgettext("playlists", "Couldn't add %{content}. Try again.", content: result.title)
             )
 
-            {:noreply, socket}
+            socket
         end
     end
   end
+
+  # A new search replaced the results before the click arrived
+  defp toggle(socket, nil), do: socket
 
   @impl true
   def handle_async(:search, {:ok, {results, held_content_ids}}, socket),

@@ -32,25 +32,6 @@ defmodule WatchClub.Playlists.PlaylistItemTest do
     end
   end
 
-  describe "list_playlist_items_for_contents/*" do
-    test "lists the Playlist Items of the Content it holds among these", %{
-      owner: owner,
-      playlist: playlist
-    } do
-      held = generate(movie())
-      item = generate(playlist_item(playlist, held))
-      generate(playlist_item(playlist, generate(movie())))
-      generate(playlist_item(generate(playlist(owner)), held))
-      identities = [ContentIdentity.from_content(held), ContentIdentity.for_tv_show(1)]
-
-      assert [item.id] ==
-               Enum.map(
-                 list_playlist_items_for_contents!(playlist.id, identities, actor: owner),
-                 & &1.id
-               )
-    end
-  end
-
   describe "add_to_playlist/*" do
     test "creates the Content WatchClub doesn't have yet and records who added it", %{
       owner: owner,

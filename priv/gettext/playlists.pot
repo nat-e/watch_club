@@ -319,7 +319,12 @@ msgstr ""
 msgid "Couldn't add %{content}. Try again."
 msgstr ""
 
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search by title, then pick what to add."
+msgstr ""
+
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
-msgid "Search for movies and TV shows to add."
+msgid "Search for movies, TV shows and sports events to add."
 msgstr ""

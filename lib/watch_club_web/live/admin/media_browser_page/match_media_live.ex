@@ -36,7 +36,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
         size="md"
         phone="full_screen"
         on_close={JS.push("close", target: @myself)}
-        class="w-full sm:h-[min(44rem,85svh)]"
+        class="w-full md:h-[min(44rem,85svh)]"
       >
         <:title>
           {if @media.content,

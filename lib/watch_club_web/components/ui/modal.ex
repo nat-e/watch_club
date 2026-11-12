@@ -93,7 +93,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
           :for={title <- @title}
           id={"#{@id}-title"}
           data-slot="modal-title"
-          class={["pr-10 text-lg font-semibold leading-none", title[:class]]}
+          class={["pr-10 text-lg font-semibold leading-tight", title[:class]]}
         >
           {render_slot(title)}
         </h2>
