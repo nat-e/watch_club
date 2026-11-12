@@ -2,7 +2,8 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
   The Content in progress on Home that is Ready to Play: the latest one in the spotlight, the
   others in Up next. Resume plays the Movie or the Sports Event, or the TV Show's next TV Show
-  Episode, and the title opens the Content's page.
+  Episode, and the title opens the Content's page. Hide sends `hide_from_home` with its
+  `content_id`.
   """
   use WatchClubWeb, :component
 
@@ -83,17 +84,30 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
                 <span>{status(@playable, @locale)}</span>
               </div>
             </div>
-            <.button
-              id="spotlight-resume"
-              variant="primary"
-              size="lg"
-              navigate={play_href(@content)}
-              aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
-              class="min-w-40"
-            >
-              <:icon><Lucideicons.play /></:icon>
-              {dgettext("home", "Resume")}
-            </.button>
+            <div class="flex flex-wrap items-center gap-related">
+              <.button
+                id="spotlight-resume"
+                variant="primary"
+                size="lg"
+                navigate={play_href(@content)}
+                aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
+                class="min-w-40"
+              >
+                <:icon><Lucideicons.play /></:icon>
+                {dgettext("home", "Resume")}
+              </.button>
+              <.button
+                id="spotlight-hide"
+                variant="overlay"
+                size="lg"
+                phx-click="hide_from_home"
+                phx-value-content_id={@content.id}
+                aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
+              >
+                <:icon><Lucideicons.eye_off /></:icon>
+                {dgettext("home", "Hide")}
+              </.button>
+            </div>
           </div>
         </div>
       </div>
@@ -122,31 +136,46 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       assign(assigns, :playable, playable(assigns.content))
 
     ~H"""
-    <article class="flex w-64 shrink-0 snap-start flex-col gap-related @xl:w-72">
-      <.link
-        navigate={play_href(@content)}
-        aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
-        class="group/play relative overflow-hidden rounded-card"
-      >
-        <.tmdb_still
-          path={image(@content, @playable)}
-          size="w300"
-          class="w-full"
-        />
-        <span
-          aria-hidden="true"
-          class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100"
+    <article class="group/card flex w-64 shrink-0 snap-start flex-col gap-related @xl:w-72">
+      <div class="relative">
+        <.link
+          navigate={play_href(@content)}
+          aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
+          class="group/play relative block overflow-hidden rounded-card"
         >
-          <span class="flex size-control-lg items-center justify-center rounded-full bg-black/60 text-white">
-            <Lucideicons.play class="size-icon-lg" />
+          <.tmdb_still
+            path={image(@content, @playable)}
+            size="w300"
+            class="w-full"
+          />
+          <span
+            aria-hidden="true"
+            class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100"
+          >
+            <span class="flex size-control-lg items-center justify-center rounded-full bg-black/60 text-white">
+              <Lucideicons.play class="size-icon-lg" />
+            </span>
           </span>
-        </span>
-        <.progress_bar
-          :if={@playable.actor_progress}
-          percent={@playable.actor_progress.percent_watched}
-          class="absolute inset-x-0 bottom-0 rounded-none! bg-white/20!"
-        />
-      </.link>
+          <.progress_bar
+            :if={@playable.actor_progress}
+            percent={@playable.actor_progress.percent_watched}
+            class="absolute inset-x-0 bottom-0 rounded-none! bg-white/20!"
+          />
+        </.link>
+        <%!-- On hover and keyboard focus, always on touch screens --%>
+        <.button
+          id={"up-next-#{@content.id}-hide"}
+          variant="secondary"
+          size="icon"
+          phx-click="hide_from_home"
+          phx-value-content_id={@content.id}
+          aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
+          title={dgettext("home", "Hide")}
+          class="absolute top-related right-related rounded-full! shadow-overlay opacity-0 transition-opacity duration-150 group-hover/card:opacity-100 focus-visible:opacity-100 pointer-coarse:size-touch-target! [@media(hover:none)]:opacity-100"
+        >
+          <Lucideicons.eye_off />
+        </.button>
+      </div>
       <.link
         navigate={Url.content_details_link(@content)}
         class="group/details rounded-control"

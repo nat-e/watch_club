@@ -134,3 +134,21 @@ msgid "%{show} (%{count} episode)"
 msgid_plural "%{show} (%{count} episodes)"
 msgstr[0] "%{show} (%{count} épisode)"
 msgstr[1] "%{show} (%{count} épisodes)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{title} is hidden until you play it again."
+msgstr "%{title} n'apparaîtra plus ici jusqu'à votre prochaine lecture."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide"
+msgstr "Masquer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide %{title}"
+msgstr "Masquer %{title}"

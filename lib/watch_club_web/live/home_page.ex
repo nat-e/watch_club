@@ -5,7 +5,8 @@ defmodule WatchClubWeb.HomePage do
   The latest Content in progress that is Ready to Play fills the spotlight. Below, Up next, For
   You, New in the library and New sports events sit beside Watching Now and the Activity Feed, or
   above them in a narrow page. Sports Events have their own row, as they arrive far more often
-  than Movies and TV Shows. Watching Now loads with the page.
+  than Movies and TV Shows. Watching Now loads with the page. The User can Hide from Home what
+  they won't continue.
   """
   use WatchClubWeb, :live_view
 
@@ -15,6 +16,7 @@ defmodule WatchClubWeb.HomePage do
   alias WatchClub.ActivityFeed.Events.ContentWatchedEvent
   alias WatchClub.Conversations
   alias WatchClub.Conversations.Participant
+  alias WatchClub.History.HiddenFromHome
   alias WatchClubWeb.Components.Contents.PlayOrRequestButtonLive
   alias WatchClubWeb.Helpers.KeysetStreamState
   alias WatchClubWeb.HomePage.ForYou
@@ -162,6 +164,24 @@ defmodule WatchClubWeb.HomePage do
   end
 
   @impl true
+  def handle_event("hide_from_home", %{"content_id" => content_id}, socket) do
+    hidden =
+      History.hide_from_home!(content_id,
+        load: [content: :title],
+        actor: socket.assigns.current_user
+      )
+
+    # The notification of the hiding reloads the Content in progress
+    {:noreply,
+     put_flash(
+       socket,
+       :info,
+       dgettext("home", "%{title} is hidden until you play it again.",
+         title: hidden.content.title
+       )
+     )}
+  end
+
   def handle_event("load_activity_feed_page", _params, socket) do
     if KeysetStreamState.can_load_more?(socket.assigns.feed_state),
       do: {:noreply, load_feed_page(socket)},
@@ -185,6 +205,8 @@ defmodule WatchClubWeb.HomePage do
   defp reload_after(socket, %Notification{resource: resource})
        when resource in [Media, WatchProgress],
        do: socket |> load_in_progress() |> load_new_in_library()
+
+  defp reload_after(socket, %Notification{resource: HiddenFromHome}), do: load_in_progress(socket)
 
   defp reload_after(socket, %Notification{resource: resource})
        when resource in @for_you_resources,
