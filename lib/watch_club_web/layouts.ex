@@ -65,7 +65,10 @@ defmodule WatchClubWeb.Layouts do
   slot :inner_block, required: true
 
   slot :hero,
-    doc: "Full-width content between the bar and the page, outside the page's padding"
+    doc: """
+    Full-width content between the bar and the page, outside the page's padding. The page paints
+    above it, so a negative bottom margin slides the page over the hero's bottom.
+    """
 
   slot :parent, doc: "the page this page belongs to" do
     attr :navigate, :string, required: true

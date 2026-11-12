@@ -29,89 +29,87 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
 
   # The latest Content in progress, edge to edge. The image fades on the left and at the bottom so
   # the text stays readable. The page slides up over the faded bottom by --overlap, so Up next sits
-  # on the image and shows on the first screen, under the text. The section is the container, so
-  # its height sits on an inner div.
+  # on the image and shows on the first screen, under the text. In a narrow spotlight the text
+  # spans the image, so the bottom fade reaches the top.
   def spotlight(assigns) do
     assigns = assign(assigns, :playable, playable(assigns.content))
 
     ~H"""
     <section
       aria-labelledby="spotlight-label spotlight-title"
-      class="@container -mb-(--overlap) [--overlap:18rem]"
+      class="@container relative isolate -mb-(--overlap) flex min-h-[min(75svh,46rem)] items-end overflow-hidden [--overlap:18rem]"
     >
-      <div class="relative isolate flex min-h-[clamp(30rem,75svh,46rem)] items-end overflow-hidden">
-        <.tmdb_backdrop
-          :if={image(@content, @playable)}
-          path={image(@content, @playable)}
-          size="w1280"
-          aria-hidden="true"
-          class="absolute inset-0 -z-10 h-full w-full object-cover object-top"
-        />
-        <div
-          aria-hidden="true"
-          class="absolute inset-0 -z-10 bg-linear-to-r from-canvas via-canvas/60 to-transparent"
-        >
-        </div>
-        <div
-          aria-hidden="true"
-          class="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-linear-to-t from-canvas via-canvas/80 to-transparent"
-        >
-        </div>
-        <div class="mx-auto w-full max-w-layout-page px-page pb-[calc(var(--overlap)+var(--spacing-group))]">
-          <div class="flex max-w-xl flex-col items-start gap-group">
-            <div class="flex flex-col gap-related">
-              <.text_label
-                id="spotlight-label"
-                text={dgettext("home", "Continue watching")}
-                class="font-heading text-text-muted!"
+      <.tmdb_backdrop
+        :if={image(@content, @playable)}
+        path={image(@content, @playable)}
+        size="w1280"
+        aria-hidden="true"
+        class="absolute inset-0 -z-10 h-full w-full object-cover object-top"
+      />
+      <div
+        aria-hidden="true"
+        class="absolute inset-0 -z-10 bg-linear-to-r from-canvas via-canvas/60 to-transparent"
+      >
+      </div>
+      <div
+        aria-hidden="true"
+        class="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-linear-to-t from-canvas via-canvas/80 to-transparent @max-xl:h-full"
+      >
+      </div>
+      <div class="mx-auto w-full max-w-layout-page px-page pt-page-y pb-[calc(var(--overlap)+var(--spacing-group))]">
+        <div class="flex max-w-xl flex-col items-start gap-group">
+          <div class="flex flex-col gap-related">
+            <.text_label
+              id="spotlight-label"
+              text={dgettext("home", "Continue watching")}
+              class="font-heading text-text-muted!"
+            />
+            <h2
+              id="spotlight-title"
+              class="text-3xl font-semibold tracking-tight text-text @xl:text-5xl"
+            >
+              <.link
+                navigate={Url.content_details_link(@content)}
+                class="decoration-text-subtle decoration-2 underline-offset-4 hover:underline"
+              >
+                {title(@content)}
+              </.link>
+            </h2>
+            <div class="flex items-center gap-related text-sm text-text-muted">
+              <span :if={episode_number(@playable)} class="font-semibold tracking-wider uppercase">
+                {episode_number(@playable)}
+              </span>
+              <.progress_bar
+                :if={@playable.actor_progress}
+                percent={@playable.actor_progress.percent_watched}
+                class="w-24 bg-white/20!"
               />
-              <h2
-                id="spotlight-title"
-                class="text-3xl font-semibold tracking-tight text-text @xl:text-5xl"
-              >
-                <.link
-                  navigate={Url.content_details_link(@content)}
-                  class="decoration-text-subtle decoration-2 underline-offset-4 hover:underline"
-                >
-                  {title(@content)}
-                </.link>
-              </h2>
-              <div class="flex items-center gap-related text-sm text-text-muted">
-                <span :if={episode_number(@playable)} class="font-semibold tracking-wider uppercase">
-                  {episode_number(@playable)}
-                </span>
-                <.progress_bar
-                  :if={@playable.actor_progress}
-                  percent={@playable.actor_progress.percent_watched}
-                  class="w-24 bg-white/20!"
-                />
-                <span>{status(@playable, @locale)}</span>
-              </div>
+              <span>{status(@playable, @locale)}</span>
             </div>
-            <div class="flex flex-wrap items-center gap-related">
-              <.button
-                id="spotlight-resume"
-                variant="primary"
-                size="lg"
-                navigate={play_href(@content)}
-                aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
-                class="min-w-40"
-              >
-                <:icon><Lucideicons.play /></:icon>
-                {dgettext("home", "Resume")}
-              </.button>
-              <.button
-                id="spotlight-hide"
-                variant="overlay"
-                size="lg"
-                phx-click="hide_from_continue_watching"
-                phx-value-content_id={@content.id}
-                aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
-              >
-                <:icon><Lucideicons.eye_off /></:icon>
-                {dgettext("home", "Hide")}
-              </.button>
-            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-related">
+            <.button
+              id="spotlight-resume"
+              variant="primary"
+              size="lg"
+              navigate={play_href(@content)}
+              aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
+              class="min-w-40"
+            >
+              <:icon><Lucideicons.play /></:icon>
+              {dgettext("home", "Resume")}
+            </.button>
+            <.button
+              id="spotlight-hide"
+              variant="overlay"
+              size="lg"
+              phx-click="hide_from_continue_watching"
+              phx-value-content_id={@content.id}
+              aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
+            >
+              <:icon><Lucideicons.eye_off /></:icon>
+              {dgettext("home", "Hide")}
+            </.button>
           </div>
         </div>
       </div>
@@ -229,7 +227,9 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   defp play_href(%Content{actor_next_medias_to_play: medias}), do: Url.player_link(medias)
 
   # A TV Show Episode's still, else the Content's backdrop
-  defp image(_content, %TvShowEpisode{still_path: still_path}), do: still_path
+  defp image(content, %TvShowEpisode{still_path: still_path}),
+    do: still_path || content.backdrop_path
+
   defp image(content, _playable), do: content.backdrop_path
 
   defp episode_number(%TvShowEpisode{formatted_episode_number: number}), do: number
