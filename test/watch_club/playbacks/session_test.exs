@@ -54,7 +54,7 @@ defmodule WatchClub.Playbacks.SessionTest do
                Playbacks.play!(first_part.id, "player", actor: user)
     end
 
-    test "brings the Content back on the actor's Home" do
+    test "brings the Content back on the actor's Home with a new Playback" do
       [user, other] = generate_many(user(), 2)
       media = movie_media()
       generate(hidden_from_home(user, media.content_id))
@@ -90,14 +90,16 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert session.current_playback.media_id == media.id
     end
 
-    test "goes on with the current Playback when it already plays the Media there" do
+    test "goes on with the current Playback when it already plays the Media there, and keeps its Content hidden from Home" do
       user = generate(user())
       media = movie_media()
       active = generate(playback_session(media, started_by: user))
+      generate(hidden_from_home(user, media.content_id))
 
       session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
 
       assert session.current_playback.id == active.current_playback.id
+      assert [%HiddenFromHome{}] = Ash.read!(HiddenFromHome, authorize?: false)
     end
 
     test "forbids a User from playing Unmatched Media" do

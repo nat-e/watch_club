@@ -1,8 +1,9 @@
 defmodule WatchClub.History.HiddenFromHome do
   @moduledoc """
-  A Content a User hid from Home: it leaves their Content in progress until they Play it again.
-  It stands for the whole Content, so a TV Show hides whichever TV Show Episode comes next, and
-  their Watch Progress doesn't change. Each User sees only their own.
+  A Content a User hid from Home: it leaves their Content in progress until a new Playback of it
+  starts. A Playback that goes on, such as on a TV, doesn't count. It stands for the whole Content,
+  so a TV Show hides whichever TV Show Episode comes next, and their Watch Progress doesn't
+  change. Each User sees only their own.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -40,7 +41,7 @@ defmodule WatchClub.History.HiddenFromHome do
     end
 
     destroy :show do
-      description "The actor plays the Content again: it comes back on Home, if they hid it."
+      description "A new Playback of the Content started: the actor's Home may show it again, if they hid it."
       argument :content_id, :uuid_v7, allow_nil?: false
 
       # Only the actor's own: the read policy would forbid other Users' rows, not skip them

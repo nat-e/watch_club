@@ -151,7 +151,7 @@ defmodule WatchClub.Contents.Content do
       prepare build(sort: [added_to_library_at: :desc, id: :desc])
     end
 
-    read :user_recently_watched do
+    read :in_progress_on_home do
       description "The actor's Content in progress that is Ready to Play and that they didn't hide from Home, the most recently watched first. Not limited: there are few."
 
       prepare build(

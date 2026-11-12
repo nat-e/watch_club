@@ -216,7 +216,7 @@ defmodule WatchClubWeb.HomePage do
 
   defp load_in_progress(socket) do
     in_progress =
-      Contents.get_user_recently_watched!(
+      Contents.get_in_progress_on_home!(
         load: content_load(),
         actor: socket.assigns.current_user
       )

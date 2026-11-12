@@ -39,7 +39,7 @@ defmodule WatchClub.Contents do
 
       define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
 
-      define :get_user_recently_watched, action: :user_recently_watched
+      define :get_in_progress_on_home, action: :in_progress_on_home
     end
 
     resource Movie

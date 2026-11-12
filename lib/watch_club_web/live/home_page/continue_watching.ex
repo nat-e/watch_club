@@ -119,16 +119,35 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   attr :locale, :atom, required: true
 
   def up_next(assigns) do
+    ids = Enum.map(assigns.contents, & &1.id)
+
+    # Once a card hides, keyboard focus moves to the next card, else to the one before, else to
+    # the spotlight's Hide
+    focus_after_hide =
+      Enum.zip_with([nil | ids], Enum.drop(ids, 1) ++ [nil], fn
+        nil, nil -> "#spotlight-hide"
+        previous, nil -> "#up-next-#{previous}-resume"
+        _previous, next -> "#up-next-#{next}-resume"
+      end)
+
+    assigns = assign(assigns, :cards, Enum.zip(assigns.contents, focus_after_hide))
+
     ~H"""
     <.page_section id="up-next-title" title={dgettext("home", "Up next")}>
       <.scroll_row id="up-next">
-        <.up_next_card :for={content <- @contents} content={content} locale={@locale} />
+        <.up_next_card
+          :for={{content, focus_after_hide} <- @cards}
+          content={content}
+          focus_after_hide={focus_after_hide}
+          locale={@locale}
+        />
       </.scroll_row>
     </.page_section>
     """
   end
 
   attr :content, Content, required: true
+  attr :focus_after_hide, :string, required: true, doc: "a selector"
   attr :locale, :atom, required: true
 
   defp up_next_card(assigns) do
@@ -139,6 +158,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     <article class="group/card flex w-64 shrink-0 snap-start flex-col gap-related @xl:w-72">
       <div class="relative">
         <.link
+          id={"up-next-#{@content.id}-resume"}
           navigate={play_href(@content)}
           aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
           class="group/play relative block overflow-hidden rounded-card"
@@ -167,8 +187,10 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
           id={"up-next-#{@content.id}-hide"}
           variant="secondary"
           size="icon"
-          phx-click="hide_from_home"
-          phx-value-content_id={@content.id}
+          phx-click={
+            JS.push("hide_from_home", value: %{content_id: @content.id})
+            |> JS.focus(to: @focus_after_hide)
+          }
           aria-label={dgettext("home", "Hide %{title}", title: title(@content))}
           title={dgettext("home", "Hide")}
           class="absolute top-related right-related rounded-full! shadow-overlay opacity-0 transition-opacity duration-150 group-hover/card:opacity-100 focus-visible:opacity-100 pointer-coarse:size-touch-target! [@media(hover:none)]:opacity-100"
