@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
   @moduledoc """
-  The dialogs of the Playlists page: New playlist, and the owner's Edit, Delete and Share for the
-  Playlist shown. The page renders it once and opens its dialogs with `open/2`.
+  The dialogs of the Playlists page: New playlist, then for the Playlist shown, Add to Playlist
+  for the Users who can edit it, and its owner's Edit, Delete and Share. The page renders it once
+  and opens its dialogs with `open/2`.
   """
   use WatchClubWeb, :live_component
 
@@ -11,15 +12,16 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
 
   alias WatchClubWeb.Components.UI.IconPickerLive
   alias WatchClubWeb.Hooks.Flash
+  alias WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLive
 
   @dom_id "playlist-dialogs"
 
   def dom_id, do: @dom_id
 
   @doc """
-  Opens a dialog: `:new`, or `:edit`, `:delete` or `:share` for the Playlist shown.
+  Opens a dialog: `:new`, or `:add`, `:edit`, `:delete` or `:share` for the Playlist shown.
   """
-  def open(js \\ %JS{}, dialog) when dialog in [:new, :edit, :delete, :share],
+  def open(js \\ %JS{}, dialog) when dialog in [:new, :add, :edit, :delete, :share],
     do: JS.push(js, "open", target: "##{@dom_id}", value: %{dialog: dialog})
 
   attr :playlist, Playlist, doc: "the Playlist shown, with the `user` of its `accesses`"
@@ -29,6 +31,14 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
   def render(assigns) do
     ~H"""
     <div id={@id}>
+      <.live_component
+        :if={@dialog == :add}
+        module={AddContentModalLive}
+        id="add-content-modal"
+        playlist={@playlist}
+        current_user={@current_user}
+        on_close={JS.push("close", target: @myself)}
+      />
       <.playlist_form_modal :if={@dialog in [:new, :edit]} form={@form} myself={@myself} />
       <.live_component
         :if={@icon_picker_open?}
@@ -77,6 +87,9 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
     form = Playlists.form_to_update_playlist(playlist, actor: user)
     {:noreply, assign(socket, dialog: :edit, form: to_form(form))}
   end
+
+  def handle_event("open", %{"dialog" => "add"}, socket),
+    do: {:noreply, assign(socket, :dialog, :add)}
 
   def handle_event("open", %{"dialog" => "delete"}, socket),
     do: {:noreply, assign(socket, :dialog, :delete)}

@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   @moduledoc """
-  The open Playlist: its name, who has it and what it holds, its owner's actions, then its
-  Playlist Items, each with Play, Resume or Request.
+  The open Playlist: its name, who has it and what it holds, Add for the Users who can edit it and
+  its owner's actions, then its Playlist Items, each with Play, Resume or Request.
   """
   use WatchClubWeb, :component
 
@@ -89,8 +89,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             </span>
           </div>
         </div>
-        <div :if={@owner?} class="flex shrink-0 gap-related">
+        <div :if={@playlist.editable_by?} class="flex shrink-0 gap-related">
+          <.button id="add-to-playlist" phx-click={PlaylistDialogsLive.open(:add)}>
+            <:icon><Lucideicons.plus /></:icon>
+            {dgettext("playlists", "Add")}
+          </.button>
           <.button
+            :if={@owner?}
             id="share-playlist"
             variant="secondary"
             phx-click={PlaylistDialogsLive.open(:share)}
@@ -98,7 +103,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
             <:icon><Lucideicons.user_plus /></:icon>
             {dgettext("playlists", "Share")}
           </.button>
-          <.dropdown_menu id="playlist-actions">
+          <.dropdown_menu :if={@owner?} id="playlist-actions">
             <:trigger>
               <.button
                 id="playlist-actions-button"
@@ -130,12 +135,17 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           <.empty>
             <:icon><Lucideicons.clapperboard /></:icon>
             <:title>{dgettext("playlists", "Nothing here yet")}</:title>
-            <:description>
-              {dgettext("playlists", "Add movies and TV shows from their page.")}
+            <:description :if={@playlist.editable_by?}>
+              {dgettext("playlists", "Search for movies and TV shows to add.")}
             </:description>
-            <.button id="empty-browse" variant="secondary" navigate={~p"/browse"}>
-              <:icon><Lucideicons.clapperboard /></:icon>
-              {dgettext("nav", "Browse")}
+            <.button
+              :if={@playlist.editable_by?}
+              id="empty-add-to-playlist"
+              variant="secondary"
+              phx-click={PlaylistDialogsLive.open(:add)}
+            >
+              <:icon><Lucideicons.plus /></:icon>
+              {dgettext("playlists", "Add")}
             </.button>
           </.empty>
         </li>

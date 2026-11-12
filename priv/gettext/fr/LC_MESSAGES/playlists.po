@@ -46,12 +46,6 @@ msgid "Actions for %{playlist}"
 msgstr "Actions pour %{playlist}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
-#, elixir-autogen, elixir-format
-msgid "Add movies and TV shows from their page."
-msgstr "Ajoutez des films et des séries depuis leur page."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete the playlist %{playlist}?"
@@ -316,6 +310,7 @@ msgstr "Ajouter à une playlist"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr "Terminé"
@@ -363,3 +358,27 @@ msgid "%{count} sports event"
 msgid_plural "%{count} sports events"
 msgstr[0] "%{count} événement sportif"
 msgstr[1] "%{count} événements sportifs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Add"
+msgstr "Ajouter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Add to %{playlist}"
+msgstr "Ajouter à %{playlist}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't add %{content}. Try again."
+msgstr "Impossible d'ajouter %{content}. Réessayez."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Search for movies and TV shows to add."
+msgstr "Cherchez des films et des séries à ajouter."

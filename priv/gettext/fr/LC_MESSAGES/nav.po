@@ -101,7 +101,6 @@ msgstr "Demandes"
 #: lib/watch_club_web/live/browse_page.ex
 #: lib/watch_club_web/live/home_page.ex
 #: lib/watch_club_web/live/my_requests_page.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
 msgstr "Parcourir"

@@ -12,6 +12,7 @@ msgid ""
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
@@ -28,6 +29,7 @@ msgid "We didn't find any content for %{query}"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search results"
 msgstr ""
