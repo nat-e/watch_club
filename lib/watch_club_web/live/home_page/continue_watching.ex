@@ -28,13 +28,18 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   attr :locale, :atom, required: true
 
   # The latest Content in progress, edge to edge. The image fades on the left and at the bottom so
-  # the text stays readable. The section is the container, so its height sits on an inner div.
+  # the text stays readable. The page slides up over the faded bottom by --overlap, so Up next sits
+  # on the image and shows on the first screen, under the text. The section is the container, so
+  # its height sits on an inner div.
   def spotlight(assigns) do
     assigns = assign(assigns, :playable, playable(assigns.content))
 
     ~H"""
-    <section aria-labelledby="spotlight-label spotlight-title" class="@container">
-      <div class="relative isolate flex min-h-[28rem] items-end overflow-hidden @xl:h-[min(70svh,44rem)]">
+    <section
+      aria-labelledby="spotlight-label spotlight-title"
+      class="@container -mb-(--overlap) [--overlap:18rem]"
+    >
+      <div class="relative isolate flex min-h-[clamp(30rem,75svh,46rem)] items-end overflow-hidden">
         <.tmdb_backdrop
           :if={image(@content, @playable)}
           path={image(@content, @playable)}
@@ -49,10 +54,10 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
         </div>
         <div
           aria-hidden="true"
-          class="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-linear-to-t from-canvas to-transparent"
+          class="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-linear-to-t from-canvas via-canvas/80 to-transparent"
         >
         </div>
-        <div class="mx-auto w-full max-w-layout-page px-page pb-cluster">
+        <div class="mx-auto w-full max-w-layout-page px-page pb-[calc(var(--overlap)+var(--spacing-group))]">
           <div class="flex max-w-xl flex-col items-start gap-group">
             <div class="flex flex-col gap-related">
               <.text_label
