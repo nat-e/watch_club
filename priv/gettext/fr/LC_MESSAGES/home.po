@@ -50,12 +50,6 @@ msgid "For you"
 msgstr "Pour toi"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
-msgid "New in the library"
-msgstr "Nouveautés dans la bibliothèque"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
@@ -170,3 +164,9 @@ msgstr "Ton film est prêt"
 #, elixir-autogen, elixir-format
 msgid "Your sports event is ready"
 msgstr "Ton contenu est prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New on %{name}"
+msgstr "Nouveautés sur %{name}"

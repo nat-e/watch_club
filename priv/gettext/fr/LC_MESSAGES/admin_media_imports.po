@@ -404,7 +404,7 @@ msgstr "Sonarr"
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Start a new import of %{name} from:"
-msgstr "Lancer un nouvel import de %{name} depuis :"
+msgstr "Lancer un nouvel import de %{name} depuis :"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
@@ -446,7 +446,7 @@ msgstr "Cette source de médias n'a pas encore été importée. Lancez un import
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "This will delete the Media Source %{name}:"
-msgstr "Cela supprimera la source de médias %{name} :"
+msgstr "Cela supprimera la source de médias %{name} :"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex

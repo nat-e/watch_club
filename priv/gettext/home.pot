@@ -43,11 +43,6 @@ msgstr ""
 msgid "For you"
 msgstr ""
 
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
-msgid "New in the library"
-msgstr ""
-
 #: lib/watch_club_web/live/home_page/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
@@ -143,4 +138,9 @@ msgstr ""
 #: lib/watch_club_web/live/home_page/for_you.ex
 #, elixir-autogen, elixir-format
 msgid "Your sports event is ready"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New on %{name}"
 msgstr ""

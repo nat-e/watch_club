@@ -86,11 +86,6 @@ msgstr ""
 msgid "%{count} more"
 msgstr ""
 
-#: lib/watch_club_web/components/ui/select.ex
-#, elixir-autogen, elixir-format
-msgid "Select..."
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
@@ -130,4 +125,9 @@ msgstr ""
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this page. It may not exist, or you may not have access to it."
+msgstr ""
+
+#: lib/watch_club_web/components/ui/select.ex
+#, elixir-autogen, elixir-format
+msgid "Select…"
 msgstr ""

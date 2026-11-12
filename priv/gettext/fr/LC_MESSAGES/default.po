@@ -72,7 +72,7 @@ msgstr "Impossible de charger la page"
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Go home"
-msgstr "Retour à l’accueil"
+msgstr "Retour à l'accueil"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
@@ -97,12 +97,6 @@ msgstr "Notifications"
 #, elixir-autogen, elixir-format
 msgid "%{count} more"
 msgstr "%{count} de plus"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/ui/select.ex
-#, elixir-autogen, elixir-format
-msgid "Select..."
-msgstr "Sélectionner..."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -145,10 +139,16 @@ msgstr "Essaie un autre terme de recherche."
 #: lib/watch_club_web/components/ui/icon_picker_live.ex
 #, elixir-autogen, elixir-format
 msgid "Use %{icon_name} icon"
-msgstr "Utiliser l’icône %{icon_name}"
+msgstr "Utiliser l'icône %{icon_name}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this page. It may not exist, or you may not have access to it."
 msgstr "On n'a pas trouvé cette page. Elle n'existe peut-être pas, ou tu n'y as pas accès."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/select.ex
+#, elixir-autogen, elixir-format
+msgid "Select…"
+msgstr "Sélectionner…"

@@ -63,11 +63,6 @@ msgstr ""
 msgid "Welcome back!"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr ""
-
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
 msgid "Back to sign in"
@@ -118,4 +113,9 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
 msgid "Reset links expire after 3 days. Ask the administrator for a new one."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Welcome to Watch Club!"
 msgstr ""

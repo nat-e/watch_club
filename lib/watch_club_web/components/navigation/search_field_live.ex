@@ -229,8 +229,8 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               >
                 <span class="flex-1">
                   {raw(
-                    dgettext("search", "See all results for %{query}",
-                      query: gtspan("“#{@query}”", "font-semibold text-text")
+                    dgettext("search", "See all results for “%{query}”",
+                      query: gtspan(@query, "font-semibold text-text")
                     )
                   )}
                 </span>

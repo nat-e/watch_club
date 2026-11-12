@@ -318,7 +318,7 @@ defmodule WatchClubWeb.PlayerPage do
     do:
       dgettext(
         "player",
-        "Couldn't play on the TV. It may not reach WatchClub: the TV needs an HTTPS address with a trusted certificate."
+        "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
       )
 
   defp cast_failed_message(%{administrator: administrator}),

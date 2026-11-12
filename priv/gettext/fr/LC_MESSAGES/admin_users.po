@@ -65,7 +65,7 @@ msgstr "Administrateur de l'instance"
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
 msgstr ""
-"Êtes-vous sûr de vouloir supprimer %{username} ? Il ne pourra plus accéder à "
+"Êtes-vous sûr de vouloir supprimer %{username} ? Il ne pourra plus accéder à "
 "%{name} et tout son historique sera effacé."
 
 # AI-translated (Claude)

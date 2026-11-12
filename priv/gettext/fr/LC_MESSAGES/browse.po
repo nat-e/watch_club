@@ -15,7 +15,7 @@ msgstr ""
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
-msgstr "Langue originale : %{language}"
+msgstr "Langue originale : %{language}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
@@ -83,7 +83,7 @@ msgstr "Retire un filtre pour en voir plus."
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sort: %{sort}"
-msgstr "Tri : %{sort}"
+msgstr "Tri : %{sort}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex

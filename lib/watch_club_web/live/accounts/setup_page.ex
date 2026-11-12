@@ -4,7 +4,7 @@ defmodule WatchClubWeb.Accounts.SetupPage do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome to watch.club!")}>
+    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Welcome to Watch Club!")}>
       <.stack space="related" class="text-text-muted">
         <p>
           {dgettext(

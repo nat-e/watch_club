@@ -24,7 +24,7 @@ msgstr[1] "%{count} messages non lus"
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{name}: %{text}"
-msgstr "%{name} : %{text}"
+msgstr "%{name} : %{text}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
@@ -108,7 +108,7 @@ msgstr "Ta recommandation à %{recipients}"
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "You: %{text}"
-msgstr "Toi : %{text}"
+msgstr "Toi : %{text}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex

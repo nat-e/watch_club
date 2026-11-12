@@ -110,13 +110,13 @@ msgstr "Lent ou saccadé"
 #: lib/watch_club_web/live/player/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What happened?"
-msgstr "Que s'est-il passé ?"
+msgstr "Que s'est-il passé ?"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What's wrong?"
-msgstr "Quel est le problème ?"
+msgstr "Quel est le problème ?"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
@@ -313,12 +313,6 @@ msgstr "Lire %{name}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
-msgid "Couldn't play on the TV. It may not reach WatchClub: the TV needs an HTTPS address with a trusted certificate."
-msgstr "Impossible de lire sur la TV. Elle n'arrive peut-être pas à joindre WatchClub : il lui faut une adresse HTTPS avec un certificat de confiance."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player_page.ex
-#, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. Try again, and let %{admin} know if it keeps happening."
 msgstr "Impossible de lire sur la TV. Réessaie, et préviens %{admin} si ça continue."
 
@@ -338,7 +332,7 @@ msgstr "Dis à %{admin} ce qui ne va pas avec cette vidéo."
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thanks! We sent your report to %{admin}."
-msgstr "Merci ! On a envoyé ton signalement à %{admin}."
+msgstr "Merci ! On a envoyé ton signalement à %{admin}."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
@@ -351,3 +345,9 @@ msgstr "On n'a pas trouvé cette vidéo."
 #, elixir-autogen, elixir-format
 msgid "We couldn't play this video"
 msgstr "On n'a pas pu lire cette vidéo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
+msgstr "Impossible de lire sur la TV. Elle n'arrive peut-être pas à joindre Watch Club : il lui faut une adresse HTTPS avec un certificat de confiance."

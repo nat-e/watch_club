@@ -77,8 +77,8 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
       <:title>{dgettext("search", "No results")}</:title>
       <:description>
         {raw(
-          dgettext("search", "We didn't find anything for %{query}.",
-            query: gtspan("“#{@query}”", "font-semibold text-text")
+          dgettext("search", "We didn't find anything for “%{query}”.",
+            query: gtspan(@query, "font-semibold text-text")
           )
         )}
       </:description>

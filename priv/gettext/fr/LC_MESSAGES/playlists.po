@@ -246,7 +246,7 @@ msgstr "Aucun accès"
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Private: only you can see it."
-msgstr "Privée : visible par toi seulement."
+msgstr "Privée : visible par toi seulement."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
@@ -258,7 +258,7 @@ msgstr "Partager"
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Share “%{playlist}”"
-msgstr "Partager « %{playlist} »"
+msgstr "Partager « %{playlist} »"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
@@ -401,7 +401,7 @@ msgstr "%{user} n'a encore rien ajouté."
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete %{playlist}? You can't undo this."
-msgstr "Supprimer %{playlist} ? C'est définitif."
+msgstr "Supprimer %{playlist} ? C'est définitif."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex

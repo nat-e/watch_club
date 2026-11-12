@@ -135,7 +135,7 @@ msgstr "Pas encore sorti"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
-msgstr "Langue originale : %{language}"
+msgstr "Langue originale : %{language}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
@@ -268,13 +268,13 @@ msgstr "Nouveau"
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{title}: %{status}"
-msgstr "%{title} : %{status}"
+msgstr "%{title} : %{status}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}%"
-msgstr "%{percent} %"
+msgstr "%{percent} %"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex

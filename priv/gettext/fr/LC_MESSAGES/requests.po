@@ -39,7 +39,7 @@ msgstr "Ne plus me prévenir pour %{title}"
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}% downloaded"
-msgstr "%{percent} % téléchargé"
+msgstr "%{percent} % téléchargé"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex

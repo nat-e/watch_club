@@ -263,11 +263,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
-msgid "Couldn't play on the TV. It may not reach WatchClub: the TV needs an HTTPS address with a trusted certificate."
-msgstr ""
-
-#: lib/watch_club_web/live/player_page.ex
-#, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. Try again, and let %{admin} know if it keeps happening."
 msgstr ""
 
@@ -294,4 +289,9 @@ msgstr ""
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't play this video"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
 msgstr ""

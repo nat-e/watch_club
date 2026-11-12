@@ -70,13 +70,7 @@ msgstr "Nom d'utilisateur"
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome back!"
-msgstr "Bon retour parmi nous !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr "Bienvenue sur watch.club !"
+msgstr "Bon retour parmi nous !"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
@@ -132,10 +126,16 @@ msgstr "Tes amis le verront. Utilise des lettres minuscules, des chiffres et _."
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Forgot your password? Ask the administrator for a reset link."
-msgstr "Mot de passe oublié ? Demande un lien de réinitialisation à l'administrateur."
+msgstr "Mot de passe oublié ? Demande un lien de réinitialisation à l'administrateur."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
 msgid "Reset links expire after 3 days. Ask the administrator for a new one."
 msgstr "Les liens de réinitialisation expirent au bout de 3 jours. Demande un nouveau lien à l'administrateur."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Welcome to Watch Club!"
+msgstr "Bienvenue sur Watch Club !"

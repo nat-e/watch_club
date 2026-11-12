@@ -39,12 +39,6 @@ msgid "Searching…"
 msgstr "Recherche…"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/search_field_live.ex
-#, elixir-autogen, elixir-format
-msgid "See all results for %{query}"
-msgstr "Voir tous les résultats pour %{query}"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "The search didn't work."
@@ -90,7 +84,13 @@ msgid "Find any movie or TV show, even ones that aren't in the library yet."
 msgstr "Cherche parmi tous les films et séries, même ceux qui ne sont pas encore dans la bibliothèque."
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#, elixir-autogen, elixir-format
+msgid "See all results for “%{query}”"
+msgstr "Voir tous les résultats pour « %{query} »"
+
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
-msgid "We didn't find anything for %{query}."
-msgstr "On n'a rien trouvé pour %{query}."
+msgid "We didn't find anything for “%{query}”."
+msgstr "On n'a rien trouvé pour « %{query} »."

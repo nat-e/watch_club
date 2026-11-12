@@ -70,7 +70,7 @@ defmodule WatchClubWeb.HomePage do
           <.new_in_library_row
             :if={@new_in_library != []}
             id="new-in-library"
-            title={dgettext("home", "New in the library")}
+            title={dgettext("home", "New on %{name}", name: @instance_settings.name)}
             contents={@new_in_library}
             current_user={@current_user}
           />
