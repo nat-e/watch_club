@@ -3,8 +3,9 @@ defmodule WatchClubWeb.HomePage do
   Home: what's up next for the User, and what's happening in WatchClub. Signing in opens it.
 
   The latest Content in progress that is Ready to Play fills the spotlight. Below, Up next, For
-  You and New in the library sit beside Watching Now and the Activity Feed, or above them in a
-  narrow page. Watching Now loads with the page.
+  You, New in the library and New sports events sit beside Watching Now and the Activity Feed, or
+  above them in a narrow page. Sports Events have their own row, as they arrive far more often
+  than Movies and TV Shows. Watching Now loads with the page.
   """
   use WatchClubWeb, :live_view
 
@@ -65,32 +66,21 @@ defmodule WatchClubWeb.HomePage do
             locale={@current_user.settings.locale}
           />
           <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
-          <.page_section
+          <.new_in_library_row
             :if={@new_in_library != []}
-            id="new-in-library-title"
+            id="new-in-library"
             title={dgettext("home", "New in the library")}
-          >
-            <.scroll_row id="new-in-library">
-              <div
-                :for={content <- @new_in_library}
-                id={"new-in-library-#{content.id}"}
-                class="w-28 shrink-0 snap-start @3xl:w-36"
-              >
-                <.poster_card content={content} locale={@current_user.settings.locale}>
-                  <:action>
-                    <.live_component
-                      id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(content))}
-                      module={PlayOrRequestButtonLive}
-                      content_identity={ContentIdentity.from_content(content)}
-                      current_user={@current_user}
-                      variant="poster"
-                    />
-                  </:action>
-                </.poster_card>
-              </div>
-            </.scroll_row>
-          </.page_section>
-          <.empty :if={@new_in_library == []} id="library-empty">
+            contents={@new_in_library}
+            current_user={@current_user}
+          />
+          <.new_in_library_row
+            :if={@new_sports_events != []}
+            id="new-sports-events"
+            title={dgettext("home", "New sports events")}
+            contents={@new_sports_events}
+            current_user={@current_user}
+          />
+          <.empty :if={@new_in_library == [] and @new_sports_events == []} id="library-empty">
             <:icon><Lucideicons.popcorn /></:icon>
             <:title>{dgettext("home", "Nothing in the library yet")}</:title>
             <:description>
@@ -119,6 +109,37 @@ defmodule WatchClubWeb.HomePage do
         </div>
       </div>
     </Layouts.app>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :title, :string, required: true
+  attr :contents, :list, required: true, doc: "with `@new_in_library_load` loaded"
+  attr :current_user, User, required: true
+
+  defp new_in_library_row(assigns) do
+    ~H"""
+    <.page_section id={"#{@id}-title"} title={@title}>
+      <.scroll_row id={@id}>
+        <div
+          :for={content <- @contents}
+          id={"#{@id}-#{content.id}"}
+          class="w-28 shrink-0 snap-start @3xl:w-36"
+        >
+          <.poster_card content={content} locale={@current_user.settings.locale}>
+            <:action>
+              <.live_component
+                id={PlayOrRequestButtonLive.dom_id(ContentIdentity.from_content(content))}
+                module={PlayOrRequestButtonLive}
+                content_identity={ContentIdentity.from_content(content)}
+                current_user={@current_user}
+                variant="poster"
+              />
+            </:action>
+          </.poster_card>
+        </div>
+      </.scroll_row>
+    </.page_section>
     """
   end
 
@@ -230,15 +251,18 @@ defmodule WatchClubWeb.HomePage do
   end
 
   defp load_new_in_library(socket) do
-    new_in_library =
-      Contents.get_new_in_library!(
+    load = fn content_type ->
+      Contents.get_new_in_library!(%{content_type: content_type},
         load: @new_in_library_load,
         query: [limit: @new_in_library_limit],
         actor: socket.assigns.current_user
       )
+    end
 
-    # Intentionally small: @new_in_library_limit Contents
-    assign(socket, :new_in_library, new_in_library)
+    # Intentionally small: @new_in_library_limit Contents each
+    socket
+    |> assign(:new_in_library, load.(:movies_and_shows))
+    |> assign(:new_sports_events, load.(:sports_events))
   end
 
   defp load_feed_page(socket) do

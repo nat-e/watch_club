@@ -132,3 +132,9 @@ msgstr "La bibliothèque est encore vide"
 #, elixir-autogen, elixir-format
 msgid "Search for a title in Browse and request it. New titles will show up here."
 msgstr "Cherchez un titre dans Parcourir et demandez‑le. Les nouveaux titres apparaîtront ici."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New sports events"
+msgstr "Nouveaux événements sportifs"

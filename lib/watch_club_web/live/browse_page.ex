@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
-  Browse: the Library's posters, with a row of filters and a sort menu. Filters and the sort live
-  in the URL, so Back undoes them.
+  Browse: the Library's posters of one Content Type, Movies first, with a row of filters and a
+  sort menu. The type, filters and sort live in the URL, so Back undoes them.
   """
   use WatchClubWeb, :live_view
 
@@ -25,8 +25,9 @@ defmodule WatchClubWeb.BrowsePage do
     :incomplete?,
     actor_recommendations: [:recommended_by]
   ]
+  @default_type :movie
+  # What Clear filters resets. The type isn't a filter: Browse always shows one.
   @no_filters %{
-    type: nil,
     not_watched?: false,
     recommended?: false,
     genres: [],
@@ -54,6 +55,25 @@ defmodule WatchClubWeb.BrowsePage do
     >
       <div class="flex min-w-0 items-center gap-related">
         <.scroll_row id="filters" variant="chips" class="min-w-0 flex-1">
+          <div
+            id="filter-types"
+            role="radiogroup"
+            aria-label={dgettext("browse", "Type")}
+            class="flex shrink-0 items-center gap-related"
+          >
+            <.filter_chip
+              :for={type <- ContentType.library_display_order()}
+              id={"filter-type-#{type}"}
+              on={@type == type}
+              radio
+              phx-click="change_type"
+              phx-value-type={type}
+            >
+              <:icon><.content_type_icon type={type} /></:icon>
+              {ContentType.translated_plural_label(type)}
+            </.filter_chip>
+          </div>
+          <.divider />
           <%!-- Hidden rather than removed, so the chips after it keep their focus --%>
           <div
             id="filters-clear"
@@ -71,26 +91,6 @@ defmodule WatchClubWeb.BrowsePage do
             </.button>
             <.divider />
           </div>
-          <div
-            id="filter-types"
-            role="radiogroup"
-            aria-label={dgettext("browse", "Type")}
-            class="flex shrink-0 items-center gap-related"
-          >
-            <.filter_chip
-              :for={type <- ContentType.library_display_order()}
-              id={"filter-type-#{type}"}
-              on={@filters.type == type}
-              radio
-              phx-click="change_filter"
-              phx-value-filter="type"
-              phx-value-choice={type}
-            >
-              <:icon><.content_type_icon type={type} /></:icon>
-              {ContentType.translated_plural_label(type)}
-            </.filter_chip>
-          </div>
-          <.divider />
           <.filter_chip
             id="filter-not-watched"
             on={@filters.not_watched?}
@@ -112,7 +112,7 @@ defmodule WatchClubWeb.BrowsePage do
           <.divider />
           <.more_button filters={@filters} />
         </.scroll_row>
-        <.sort_menu filters={@filters} sort={@sort} />
+        <.sort_menu type={@type} filters={@filters} sort={@sort} />
       </div>
 
       <ul
@@ -131,10 +131,10 @@ defmodule WatchClubWeb.BrowsePage do
             </.button>
           </.empty>
           <.empty :if={not filtered?(@filters)}>
-            <:icon><Lucideicons.clapperboard /></:icon>
-            <:title>{dgettext("browse", "Nothing in the library yet")}</:title>
+            <:icon><.content_type_icon type={@type} /></:icon>
+            <:title>{empty_title(@type)}</:title>
             <:description>
-              {dgettext("browse", "Movies and TV shows show up here once they're on the server.")}
+              {dgettext("browse", "They show up here once they're on the server.")}
             </:description>
           </.empty>
         </li>
@@ -163,6 +163,10 @@ defmodule WatchClubWeb.BrowsePage do
     </Layouts.app>
     """
   end
+
+  defp empty_title(:movie), do: dgettext("browse", "No movies yet")
+  defp empty_title(:tv_show), do: dgettext("browse", "No TV shows yet")
+  defp empty_title(:sports_event), do: dgettext("browse", "No sports events yet")
 
   # Between the type chips, Not watched and More
   defp divider(assigns) do
@@ -203,6 +207,7 @@ defmodule WatchClubWeb.BrowsePage do
     """
   end
 
+  attr :type, :atom, required: true, doc: "a `ContentType`"
   attr :filters, :map, required: true
   attr :sort, :atom, required: true, doc: "a `LibrarySort`"
 
@@ -225,7 +230,7 @@ defmodule WatchClubWeb.BrowsePage do
       <.dropdown_menu_item
         :for={sort <- LibrarySort.values()}
         id={"sort-#{sort}"}
-        patch={browse_path(@filters, sort)}
+        patch={browse_path(@type, @filters, sort)}
         checked={@sort == sort}
       >
         {LibrarySort.translated_label(sort)}
@@ -341,15 +346,22 @@ defmodule WatchClubWeb.BrowsePage do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply,
-     socket
-     |> assign(:filters, filters(params))
-     |> assign(
-       :sort,
-       Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
-     )
-     |> assign(:stream_state, KeysetStreamState.init(@page_size))
-     |> load_page!()}
+    filters = filters(params)
+    sort = Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
+
+    case Url.parse_url_param(params["type"], ContentType.library_display_order()) do
+      # Without a known type, Browse shows Movies, with their type in the URL
+      nil ->
+        {:noreply,
+         push_patch(socket, to: browse_path(@default_type, filters, sort), replace: true)}
+
+      type ->
+        {:noreply,
+         socket
+         |> assign(type: type, filters: filters, sort: sort)
+         |> assign(:stream_state, KeysetStreamState.init(@page_size))
+         |> load_page!()}
+    end
   end
 
   @impl true
@@ -374,12 +386,17 @@ defmodule WatchClubWeb.BrowsePage do
     {:noreply, assign(socket, :filter_options, nil)}
   end
 
+  def handle_event("change_type", %{"type" => type}, socket) do
+    %{filters: filters, sort: sort} = socket.assigns
+    type = Url.parse_url_param(type, ContentType.library_display_order(), @default_type)
+    {:noreply, push_patch(socket, to: browse_path(type, filters, sort))}
+  end
+
   # Changes the filters from the server's own state, so quick taps all count
   def handle_event("change_filter", %{"filter" => filter} = params, socket) do
-    %{filters: filters, sort: sort} = socket.assigns
-
-    {:noreply,
-     push_patch(socket, to: browse_path(change_filter(filters, filter, params["choice"]), sort))}
+    %{type: type, filters: filters, sort: sort} = socket.assigns
+    filters = change_filter(filters, filter, params["choice"])
+    {:noreply, push_patch(socket, to: browse_path(type, filters, sort))}
   end
 
   @impl true
@@ -408,11 +425,10 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
-  # The filters in the URL. Unknown types, genres and ratings, and decades that aren't numbers, are
-  # left out.
+  # The filters in the URL. Unknown genres and ratings, and decades that aren't numbers, are left
+  # out.
   defp filters(params) do
     %{
-      type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
       not_watched?: params["not_watched"] == "true",
       recommended?: params["recommended"] == "true",
       genres:
@@ -428,11 +444,8 @@ defmodule WatchClubWeb.BrowsePage do
   # Missing, or a list from a hand-edited URL such as `decades[]=1990`
   defp list_param(_values), do: []
 
-  # A type or rating replaces the one that's on. The other choices turn on or off.
+  # A rating replaces the one that's on. The other choices turn on or off.
   defp change_filter(_filters, "clear", _choice), do: @no_filters
-
-  defp change_filter(filters, "type", type),
-    do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
 
   defp change_filter(filters, "rating", min_rating),
     do: %{filters | min_rating: Url.parse_url_param(min_rating, @min_ratings)}
@@ -458,12 +471,13 @@ defmodule WatchClubWeb.BrowsePage do
     if choice in choices, do: List.delete(choices, choice), else: choices ++ [choice]
   end
 
-  # Browse's URL with these filters and sort, without the ones that are off
-  defp browse_path(filters, sort) do
+  # Browse's URL with this type, filters and sort, without the filters that are off and the default
+  # sort
+  defp browse_path(type, filters, sort) do
     params =
       Enum.reject(
         [
-          type: filters.type,
+          type: type,
           not_watched: filters.not_watched?,
           recommended: filters.recommended?,
           genres: Enum.join(filters.genres, ","),
@@ -478,22 +492,22 @@ defmodule WatchClubWeb.BrowsePage do
     ~p"/browse?#{params}"
   end
 
-  # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
+  # Keeps the type and the sort, and moves focus to the first filter, as the clear buttons hide
   defp clear_filters do
     "change_filter"
     |> JS.push(value: %{filter: "clear"})
-    |> JS.focus_first(to: "#filter-types")
+    |> JS.focus(to: "#filter-not-watched")
   end
 
   defp filtered?(filters), do: filters != @no_filters
 
   defp load_page!(socket) do
-    %{stream_state: stream_state, filters: filters, sort: sort, current_user: user} =
+    %{stream_state: stream_state, type: type, filters: filters, sort: sort, current_user: user} =
       socket.assigns
 
     {:ok, new_state, contents} =
       KeysetStreamState.load_page(stream_state, fn page_options ->
-        Contents.get_contents_in_library(Map.put(filters, :sort, sort),
+        Contents.get_contents_in_library(Map.merge(filters, %{type: type, sort: sort}),
           load: @content_fields,
           page: page_options,
           actor: user
@@ -508,9 +522,9 @@ defmodule WatchClubWeb.BrowsePage do
   # With the Recently added sort, a Content that joins the Library goes first. One that no longer
   # matches the filters goes, and the others update in place if they're loaded.
   defp update_poster!(socket, content_id, new_media_added_at \\ nil) do
-    %{filters: filters, sort: sort, current_user: user} = socket.assigns
+    %{type: type, filters: filters, sort: sort, current_user: user} = socket.assigns
 
-    case Contents.get_contents_in_library!(filters,
+    case Contents.get_contents_in_library!(Map.put(filters, :type, type),
            query: [filter: [id: content_id]],
            load: [:added_to_library_at | @content_fields],
            actor: user

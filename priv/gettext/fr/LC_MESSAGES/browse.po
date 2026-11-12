@@ -12,18 +12,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Movies and TV shows show up here once they're on the server."
-msgstr "Les films et les séries apparaissent ici une fois sur le serveur."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Nothing in the library yet"
-msgstr "La bibliothèque est encore vide"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
@@ -153,3 +141,27 @@ msgstr[1] "De %{name} et %{count} autres"
 #, elixir-autogen, elixir-format
 msgid "Recommended to me"
 msgstr "Recommandés pour moi"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "No TV shows yet"
+msgstr "Aucune série pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "No movies yet"
+msgstr "Aucun film pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "No sports events yet"
+msgstr "Aucun événement sportif pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "They show up here once they're on the server."
+msgstr "À retrouver ici dès leur arrivée sur le serveur."

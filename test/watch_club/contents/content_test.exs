@@ -1470,6 +1470,18 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert get_new_in_library!(actor: member) |> Enum.map(& &1.id) == [completed.id, older.id]
     end
+
+    test "returns the Sports Events apart from the Movies and TV Shows", %{member: member} do
+      movie = generate(movie())
+      event = generate(sports_event())
+      add_video!(movie.id)
+      add_sports_event_video!(event.id)
+
+      assert get_new_in_library!(actor: member) |> Enum.map(& &1.id) == [movie.id]
+
+      assert get_new_in_library!(%{content_type: :sports_events}, actor: member)
+             |> Enum.map(& &1.id) == [event.id]
+    end
   end
 
   describe "get_library_filter_options/*" do

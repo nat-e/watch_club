@@ -745,12 +745,13 @@ _Avoid_: Group, aggregate, card, item
 - A **User** has one **Preferred Content Localization** for each **Content** when a matching localization exists
 - A **Content** is in the **Library** while it has **Media**; a **TV Show** is in it while any of its **TV Show Episodes** has **Media**
 - A **User** gets missing **Content** into the **Library** with **Request Content**
-- Every **User** sees the whole **Library** in **Browse**
+- Every **User** sees the whole **Library** in **Browse**, one **Content Type** at a time, **Movies** first
 - Every **User** sees which **TV Shows** are **Incomplete TV Shows**, whether or not they have a **Content Request**. A **TV Show** is incomplete, for example, while its **Content Request** brings its **TV Show Episodes**, after a new one airs until it has **Media**, or when it was imported with gaps
 
 ### Home
 
-- **Home** shows the **User**'s **Content** in progress that is **Ready to Play**, their **For You**, the **Content** most recently added to the **Library**, who is **Watching Now**, and the **Activity Feed**
+- **Home** shows the **User**'s **Content** in progress that is **Ready to Play**, their **For You**, the **Movies** and **TV Shows** most recently added to the **Library**, the **Sports Events** most recently added, who is **Watching Now**, and the **Activity Feed**
+- **Home** keeps the newest **Sports Events** apart from the newest **Movies** and **TV Shows**, because they arrive far more often
 - **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
 - **Home** shows a **Content** with a **Content Request** among the newest in the **Library** only once that **Content Request** is Completed
