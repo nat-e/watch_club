@@ -325,5 +325,18 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Add it to a playlist to find it again later, or share it with friends."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Add it to a playlist to find it again later, or share it with friends."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
 msgid "Add it to a playlist to find it again later, or share it with friends."
 msgstr ""

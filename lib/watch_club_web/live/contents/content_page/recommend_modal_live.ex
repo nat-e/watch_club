@@ -62,7 +62,7 @@ defmodule WatchClubWeb.Contents.ContentPage.RecommendModalLive do
                       :if={user.id in @recommended_by_ids}
                       class="truncate text-xs text-text-muted"
                     >
-                      {dgettext("contents", "Recommended it to you")}
+                      {recommended_it_to_you(@content_identity.type)}
                     </span>
                   </span>
                   <.checkbox
@@ -108,6 +108,15 @@ defmodule WatchClubWeb.Contents.ContentPage.RecommendModalLive do
     </div>
     """
   end
+
+  # The French names the Content Type, which sets the words' gender
+  defp recommended_it_to_you(:movie), do: dpgettext("contents", "movie", "Recommended it to you")
+
+  defp recommended_it_to_you(:tv_show),
+    do: dpgettext("contents", "tv_show", "Recommended it to you")
+
+  defp recommended_it_to_you(:sports_event),
+    do: dpgettext("contents", "sports_event", "Recommended it to you")
 
   defp summary([user], _current_user),
     do: dgettext("contents", "Starts a conversation with %{name}.", name: user.username)

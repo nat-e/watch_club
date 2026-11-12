@@ -324,7 +324,7 @@ msgstr "Dans des playlists"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Not in your playlists yet"
-msgstr "Pas encore dans vos playlists"
+msgstr "Pas encore dans tes playlists"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
@@ -385,5 +385,20 @@ msgstr "Cherchez des films, des séries et des événements sportifs à ajouter.
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
+msgctxt "movie"
 msgid "Add it to a playlist to find it again later, or share it with friends."
-msgstr "Ajoute ce titre à une playlist pour le retrouver plus tard, ou le partager avec tes amis."
+msgstr "Ajoute ce film à une playlist pour le retrouver plus tard, ou le partager avec tes amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Add it to a playlist to find it again later, or share it with friends."
+msgstr "Ajoute ce contenu à une playlist pour le retrouver plus tard, ou le partager avec tes amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Add it to a playlist to find it again later, or share it with friends."
+msgstr "Ajoute cette série à une playlist pour la retrouver plus tard, ou la partager avec tes amis."

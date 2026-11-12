@@ -89,10 +89,19 @@ defmodule WatchClubWeb.Contents.ContentPage do
         />
 
         <div class="flex flex-col gap-section px-page pt-cluster pb-page-y">
-          <.conversations_section conversations={@conversations} current_user={@current_user} />
-          <.watchers_section watchers={@watchers} locale={@current_user.settings.locale} />
+          <.conversations_section
+            conversations={@conversations}
+            type={@content_identity.type}
+            current_user={@current_user}
+          />
+          <.watchers_section
+            watchers={@watchers}
+            type={@content_identity.type}
+            locale={@current_user.settings.locale}
+          />
           <.playlists_section
             playlists={Enum.filter(@playlists, & &1.holds_content?)}
+            type={@content_identity.type}
             current_user={@current_user}
           />
           <.cast_section people={localization(@content).cast} />
@@ -402,6 +411,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     required: true,
     doc: "the User's Conversations about it, intentionally small"
 
+  attr :type, :atom, required: true, doc: "the Content Type"
   attr :current_user, User, required: true
 
   # The User's Conversations about it, then a card to Recommend Content, which starts another
@@ -426,12 +436,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           </span>
           <span class="flex min-w-0 flex-col gap-tight">
             <span class="font-semibold text-accent">{dgettext("contents", "Recommend")}</span>
-            <span class="text-sm text-text-muted">
-              {dgettext(
-                "contents",
-                "Recommend it to friends, tell them why they'll love it, and talk about it together."
-              )}
-            </span>
+            <span class="text-sm text-text-muted">{recommend_hint(@type)}</span>
           </span>
         </button>
       </.scroll_row>
@@ -493,7 +498,33 @@ defmodule WatchClubWeb.Contents.ContentPage do
     )
   end
 
+  # The French names the Content Type, which sets the words' gender
+  defp recommend_hint(:movie),
+    do:
+      dpgettext(
+        "contents",
+        "movie",
+        "Recommend it to friends, tell them why they'll love it, and talk about it together."
+      )
+
+  defp recommend_hint(:tv_show),
+    do:
+      dpgettext(
+        "contents",
+        "tv_show",
+        "Recommend it to friends, tell them why they'll love it, and talk about it together."
+      )
+
+  defp recommend_hint(:sports_event),
+    do:
+      dpgettext(
+        "contents",
+        "sports_event",
+        "Recommend it to friends, tell them why they'll love it, and talk about it together."
+      )
+
   attr :watchers, :list, required: true, doc: "the `Watcher`s, intentionally small: the Users"
+  attr :type, :atom, required: true, doc: "the Content Type"
   attr :locale, :atom, required: true
 
   # The other Users who watched it or are watching it, the latest first, each with a check or a
@@ -532,13 +563,24 @@ defmodule WatchClubWeb.Contents.ContentPage do
         </.person_tile>
       </.scroll_row>
       <p :if={@watchers == []} class="text-sm text-text-muted">
-        {dgettext("contents", "Nobody has watched it yet.")}
+        {nobody_watched_text(@type)}
       </p>
     </.page_section>
     """
   end
 
+  # The French names the Content Type, which sets the words' gender
+  defp nobody_watched_text(:movie),
+    do: dpgettext("contents", "movie", "Nobody has watched it yet.")
+
+  defp nobody_watched_text(:tv_show),
+    do: dpgettext("contents", "tv_show", "Nobody has watched it yet.")
+
+  defp nobody_watched_text(:sports_event),
+    do: dpgettext("contents", "sports_event", "Nobody has watched it yet.")
+
   attr :playlists, :list, required: true, doc: "the Playlists the User sees that hold it"
+  attr :type, :atom, required: true, doc: "the Content Type"
   attr :current_user, User, required: true
 
   # The Playlists the User sees that hold it, with Add to playlist, or the empty state
@@ -572,12 +614,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       <.empty :if={@playlists == []} id="no-playlists">
         <:icon><Lucideicons.list /></:icon>
         <:title>{dgettext("playlists", "Not in your playlists yet")}</:title>
-        <:description>
-          {dgettext(
-            "playlists",
-            "Add it to a playlist to find it again later, or share it with friends."
-          )}
-        </:description>
+        <:description>{add_to_playlist_hint(@type)}</:description>
         <.button id="empty-add-to-playlist" variant="secondary" phx-click="open_add_to_playlist">
           <:icon><Lucideicons.list_plus /></:icon>
           {dgettext("playlists", "Add to playlist")}
@@ -586,6 +623,31 @@ defmodule WatchClubWeb.Contents.ContentPage do
     </.page_section>
     """
   end
+
+  # The French names the Content Type, which sets the words' gender
+  defp add_to_playlist_hint(:movie),
+    do:
+      dpgettext(
+        "playlists",
+        "movie",
+        "Add it to a playlist to find it again later, or share it with friends."
+      )
+
+  defp add_to_playlist_hint(:tv_show),
+    do:
+      dpgettext(
+        "playlists",
+        "tv_show",
+        "Add it to a playlist to find it again later, or share it with friends."
+      )
+
+  defp add_to_playlist_hint(:sports_event),
+    do:
+      dpgettext(
+        "playlists",
+        "sports_event",
+        "Add it to a playlist to find it again later, or share it with friends."
+      )
 
   attr :people, :list, required: true, doc: "the persisted cast, intentionally small"
 

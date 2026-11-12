@@ -107,11 +107,6 @@ msgstr ""
 msgid "Mark season %{number} as watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Nobody has watched it yet."
-msgstr ""
-
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
@@ -191,11 +186,6 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommend %{title}"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Recommended it to you"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -320,11 +310,6 @@ msgstr ""
 msgid "Loading…"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button_live.ex
 #, elixir-autogen, elixir-format
 msgid "Request sent. We'll let you know when you can watch %{title}."
@@ -363,4 +348,58 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't load this sports event. Try again in a moment."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommended it to you"
 msgstr ""
