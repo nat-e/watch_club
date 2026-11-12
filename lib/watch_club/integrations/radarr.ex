@@ -42,32 +42,18 @@ defmodule WatchClub.Integrations.Radarr do
   Adds a movie to Radarr — monitored, on the given quality profile + root
   folder — and triggers a search. No lookup needed: Radarr fills the rest of
   the movie metadata from `tmdb_id`, so only the title is sent alongside it.
-  Radarr downloads it once it's `minimum_availability`. Returns the created `Movie`.
+  Returns the created `Movie`.
   """
-  @spec add_movie(
-          String.t(),
-          String.t(),
-          integer(),
-          String.t(),
-          integer(),
-          String.t(),
-          :announced | :released
-        ) :: {:ok, Movie.t()} | {:error, Client.error()}
-  def add_movie(
-        base_url,
-        api_key,
-        tmdb_id,
-        title,
-        quality_profile_id,
-        root_folder_path,
-        minimum_availability
-      ) do
+  @spec add_movie(String.t(), String.t(), integer(), String.t(), integer(), String.t()) ::
+          {:ok, Movie.t()} | {:error, Client.error()}
+  def add_movie(base_url, api_key, tmdb_id, title, quality_profile_id, root_folder_path) do
     body = %{
       "tmdbId" => tmdb_id,
       "title" => title,
       "qualityProfileId" => quality_profile_id,
       "rootFolderPath" => root_folder_path,
-      "minimumAvailability" => Atom.to_string(minimum_availability),
+      # Radarr never searches a movie with no cinema, digital or disc date unless it's announced
+      "minimumAvailability" => "announced",
       "monitored" => true,
       "addOptions" => %{"searchForMovie" => true, "monitor" => "movieOnly"}
     }

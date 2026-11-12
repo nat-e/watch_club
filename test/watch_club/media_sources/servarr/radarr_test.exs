@@ -112,7 +112,7 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
   end
 
   describe "submit_request!/2" do
-    setup do
+    test "adds the movie to download as soon as it's found, whatever its release date" do
       test_pid = self()
 
       Req.Test.stub(Client, fn
@@ -124,36 +124,10 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
           Req.Test.json(conn, movie(%{"id" => 42}))
       end)
 
-      :ok
-    end
-
-    test "adds an old movie to download as soon as it's found" do
-      content = %Content{
-        external_id: "11",
-        original_title: "Star Wars",
-        release_date: ~D[1977-05-25]
-      }
+      content = %Content{external_id: "11", original_title: "Star Wars"}
 
       assert {:ok, 42} = Radarr.submit_request!(servarr(), content)
       assert_received {:added, %{"tmdbId" => 11, "minimumAvailability" => "announced"}}
-    end
-
-    test "adds a movie with no release date to download as soon as it's found" do
-      content = %Content{external_id: "11", original_title: "Star Wars", release_date: nil}
-
-      assert {:ok, 42} = Radarr.submit_request!(servarr(), content)
-      assert_received {:added, %{"minimumAvailability" => "announced"}}
-    end
-
-    test "adds a new movie to download once it's released" do
-      content = %Content{
-        external_id: "11",
-        original_title: "Star Wars",
-        release_date: Date.utc_today()
-      }
-
-      assert {:ok, 42} = Radarr.submit_request!(servarr(), content)
-      assert_received {:added, %{"minimumAvailability" => "released"}}
     end
   end
 end
