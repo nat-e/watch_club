@@ -7,6 +7,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Contents.IncompleteBadge
   import WatchClubWeb.Components.Contents.StarRating
   import WatchClubWeb.Components.Contents.TmdbPoster
@@ -136,8 +137,8 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       title={@label}
       class="absolute top-related left-related"
     >
-      <.avatar_group
-        avatars={Enum.map(@users, &%{id: &1.id, name: &1.username})}
+      <.user_avatar_group
+        users={@users}
         avatar_size="sm"
         avatar_class="ring-2 ring-black/40"
         class="-space-x-1.5!"

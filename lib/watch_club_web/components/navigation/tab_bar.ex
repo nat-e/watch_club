@@ -5,6 +5,7 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Navigation.AccountMenu
 
   alias WatchClubWeb.Components.Navigation.Sections
@@ -43,12 +44,7 @@ defmodule WatchClubWeb.Components.Navigation.TabBar do
             class="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-tight text-xs text-text-muted focus-visible:-outline-offset-2"
           >
             <span class="flex h-control-sm w-14 items-center justify-center">
-              <.avatar
-                id={@current_user.id}
-                name={@current_user.username}
-                size="md"
-                aria-hidden="true"
-              />
+              <.user_avatar user={@current_user} size="md" aria-hidden="true" />
             </span>
             <span class="max-w-full truncate">{dgettext("nav", "You")}</span>
             <.unread_badge

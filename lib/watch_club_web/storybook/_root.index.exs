@@ -76,4 +76,5 @@ defmodule WatchClubWeb.Storybook.Root do
     do: [name: "Search result summary", icon: {:fa, "magnifying-glass"}, index: 42]
 
   def entry("search_form"), do: [name: "Search form", icon: {:fa, "magnifying-glass"}, index: 43]
+  def entry("user_avatar_group"), do: [name: "User avatar group", icon: {:fa, "users"}, index: 44]
 end

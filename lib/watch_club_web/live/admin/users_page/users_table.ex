@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
+
   attr :users, :list, required: true
   attr :current_user, User, required: true
 
@@ -39,7 +41,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
     <.table_row>
       <.table_cell class="w-full">
         <.inline space="related">
-          <.avatar id={@user.id} name={@user.username} />
+          <.user_avatar user={@user} />
           <.stack space="tight" class="min-w-0">
             <span class="truncate font-semibold">{@user.username}</span>
             <.badge :if={@user.administrator?} variant="accent" class="w-fit">

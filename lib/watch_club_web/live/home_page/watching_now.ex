@@ -5,6 +5,7 @@ defmodule WatchClubWeb.HomePage.WatchingNow do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   attr :watchers, :list,
@@ -35,7 +36,7 @@ defmodule WatchClubWeb.HomePage.WatchingNow do
     ~H"""
     <li id={"watching-now-#{@user.id}"} class="relative flex items-center gap-group py-related">
       <span class="relative shrink-0">
-        <.avatar id={@user.id} name={@user.username} size="lg" aria-hidden="true" />
+        <.user_avatar user={@user} size="lg" aria-hidden="true" />
         <span
           aria-hidden="true"
           class="absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-accent ring-2 ring-canvas"

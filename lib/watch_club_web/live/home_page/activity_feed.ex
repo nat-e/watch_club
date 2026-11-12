@@ -5,6 +5,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Contents.TmdbPoster
 
   alias WatchClub.ActivityFeed.FeedEntry
@@ -74,7 +75,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
         <span class="size-2 shrink-0 rounded-full bg-border"></span>
         <span class="w-px flex-1 bg-border-subtle group-last/entry:hidden"></span>
       </div>
-      <.avatar id={@user.id} name={@user.username} size="sm" aria-hidden="true" />
+      <.user_avatar user={@user} size="sm" aria-hidden="true" />
       <div class="flex min-w-0 flex-1 flex-col gap-related pb-cluster group-last/entry:pb-0">
         <div>
           <p class="text-sm text-text-muted">{sentence(@user, @watched, @more, @locale)}</p>

@@ -541,13 +541,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         >
           <:picture>
             <span class="relative">
-              <%!-- Its id picks its color, as everywhere else --%>
-              <.avatar
-                id={watcher.user.id}
-                name={watcher.user.username}
-                size="lg"
-                aria-hidden="true"
-              />
+              <.user_avatar user={watcher.user} size="lg" aria-hidden="true" />
               <span class="absolute -right-tight -bottom-tight flex size-icon items-center justify-center rounded-full bg-surface-raised ring-2 ring-canvas">
                 <Lucideicons.check :if={watcher.status == :completed} class="size-3 text-success" />
                 <Lucideicons.contrast

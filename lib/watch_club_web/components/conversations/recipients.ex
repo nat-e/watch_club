@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.Conversations.Recipients do
 
     assigns =
       assign(assigns,
-        avatars: Enum.map(users, &%{id: &1 && &1.id, name: username(&1)}),
+        users: users,
         names:
           WatchClub.Cldr.List.to_string!(names,
             locale: UserLocale.to_cldr_locale_name(assigns.current_user.settings.locale)
@@ -39,8 +39,8 @@ defmodule WatchClubWeb.Components.Conversations.Recipients do
     <span class={@class}>
       <%!-- The names follow --%>
       <span aria-hidden="true" class="mr-tight inline-flex shrink-0 items-center align-middle">
-        <.avatar_group
-          avatars={@avatars}
+        <.user_avatar_group
+          users={@users}
           avatar_size="sm"
           avatar_class={["ring-2", @ring]}
           class="-space-x-1.5!"

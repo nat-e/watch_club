@@ -8,9 +8,10 @@ defmodule WatchClubWeb.Components.UI.Avatar do
 
   attr :id, :string, required: true, doc: "picks its color. Nil shows a blank avatar."
   attr :name, :string, required: true
+  attr :src, :string, default: nil, doc: "a photo, shown instead of the letter"
 
   attr :size, :string,
-    values: ~w(xs sm md lg),
+    values: ~w(xs sm md lg xl),
     default: "md"
 
   attr :class, :any, default: nil
@@ -25,25 +26,27 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex shrink-0 items-center justify-center rounded-full font-semibold select-none",
-        @id && "text-white",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold select-none",
+        @src && "bg-surface-raised",
+        !@src && @id && ["text-white", @background_class],
         !@id && "bg-surface-raised text-text-subtle",
         @size == "xs" && "size-4 text-xs leading-none",
         @size == "sm" && "size-5 text-sm leading-none",
         @size == "md" && "size-7 text-base",
         @size == "lg" && "size-10 text-lg",
-        @background_class,
+        @size == "xl" && "size-20 text-3xl",
         @class
       ]}
       {@rest}
     >
+      <img :if={@src} src={@src} alt="" class="size-full object-cover" />
       <Lucideicons.user_round :if={!@id} class="size-[60%]" />
-      {@id && initial(@name)}
+      {if @id && !@src, do: initial(@name)}
     </span>
     """
   end
 
-  attr :avatars, :list, required: true
+  attr :avatars, :list, required: true, doc: "each with an `id`, a `name` and an optional `src`"
   attr :class, :any, default: nil
 
   attr :avatar_size, :string,
@@ -82,6 +85,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
         :for={avatar <- @visible_avatars}
         id={avatar.id}
         name={avatar.name}
+        src={avatar[:src]}
         size={@avatar_size}
         class={@avatar_class}
       />

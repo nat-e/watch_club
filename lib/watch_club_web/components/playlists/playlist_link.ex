@@ -5,6 +5,8 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
+
   attr :playlist, Playlist,
     required: true,
     doc: "with its `owner`, the `user` of its `accesses`, and its counts"
@@ -40,9 +42,9 @@ defmodule WatchClubWeb.Components.Playlists.PlaylistLink do
         <Lucideicons.lock class="size-icon-sm text-text-subtle" aria-hidden="true" />
         <span class="sr-only">{dgettext("playlists", "Private")}</span>
       </span>
-      <.avatar_group
+      <.user_avatar_group
         :if={@others != []}
-        avatars={Enum.map(@others, &%{id: &1.id, name: &1.username})}
+        users={@others}
         avatar_size="sm"
         avatar_class="ring-2 ring-canvas"
         class="shrink-0 -space-x-1.5!"
