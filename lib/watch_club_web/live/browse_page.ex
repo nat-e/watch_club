@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
-  Browse: the Library's posters, with a row of filters and a sort menu. Filters and the sort live
-  in the URL, so Back undoes them.
+  Browse: the Library's posters of one Content Type, Movies first, with a row of filters and a
+  sort menu. The type, filters and sort live in the URL, so Back undoes them.
   """
   use WatchClubWeb, :live_view
 
@@ -25,8 +25,9 @@ defmodule WatchClubWeb.BrowsePage do
     :incomplete?,
     actor_recommendations: [:recommended_by]
   ]
+  # Browse always shows one type, so clearing the filters keeps it
+  @default_type hd(ContentType.library_display_order())
   @no_filters %{
-    type: nil,
     not_watched?: false,
     recommended?: false,
     genres: [],
@@ -131,10 +132,10 @@ defmodule WatchClubWeb.BrowsePage do
             </.button>
           </.empty>
           <.empty :if={not filtered?(@filters)}>
-            <:icon><Lucideicons.clapperboard /></:icon>
-            <:title>{dgettext("browse", "Nothing in the library yet")}</:title>
+            <:icon><.content_type_icon type={@filters.type} /></:icon>
+            <:title>{empty_title(@filters.type)}</:title>
             <:description>
-              {dgettext("browse", "Movies and TV shows show up here once they're on the server.")}
+              {dgettext("browse", "They show up here once they're on the server.")}
             </:description>
           </.empty>
         </li>
@@ -163,6 +164,10 @@ defmodule WatchClubWeb.BrowsePage do
     </Layouts.app>
     """
   end
+
+  defp empty_title(:movie), do: dgettext("browse", "No movies yet")
+  defp empty_title(:tv_show), do: dgettext("browse", "No TV shows yet")
+  defp empty_title(:sports_event), do: dgettext("browse", "No sports events yet")
 
   # Between the type chips, Not watched and More
   defp divider(assigns) do
@@ -408,11 +413,12 @@ defmodule WatchClubWeb.BrowsePage do
     end
   end
 
-  # The filters in the URL. Unknown types, genres and ratings, and decades that aren't numbers, are
-  # left out.
+  # The type and filters in the URL. An unknown type shows Movies. Unknown genres and ratings, and
+  # decades that aren't numbers, are left out.
   defp filters(params) do
     %{
-      type: Url.parse_url_param(params["type"], ContentType.library_display_order()),
+      type:
+        Url.parse_url_param(params["type"], ContentType.library_display_order(), @default_type),
       not_watched?: params["not_watched"] == "true",
       recommended?: params["recommended"] == "true",
       genres:
@@ -429,10 +435,13 @@ defmodule WatchClubWeb.BrowsePage do
   defp list_param(_values), do: []
 
   # A type or rating replaces the one that's on. The other choices turn on or off.
-  defp change_filter(_filters, "clear", _choice), do: @no_filters
+  defp change_filter(filters, "clear", _choice), do: Map.merge(filters, @no_filters)
 
   defp change_filter(filters, "type", type),
-    do: %{filters | type: Url.parse_url_param(type, ContentType.library_display_order())}
+    do: %{
+      filters
+      | type: Url.parse_url_param(type, ContentType.library_display_order(), @default_type)
+    }
 
   defp change_filter(filters, "rating", min_rating),
     do: %{filters | min_rating: Url.parse_url_param(min_rating, @min_ratings)}
@@ -463,7 +472,7 @@ defmodule WatchClubWeb.BrowsePage do
     params =
       Enum.reject(
         [
-          type: filters.type,
+          type: filters.type != @default_type && filters.type,
           not_watched: filters.not_watched?,
           recommended: filters.recommended?,
           genres: Enum.join(filters.genres, ","),
@@ -478,14 +487,14 @@ defmodule WatchClubWeb.BrowsePage do
     ~p"/browse?#{params}"
   end
 
-  # Keeps the sort, and moves focus to the first filter, as the clear buttons hide
+  # Keeps the type and the sort, and moves focus to the type, as the clear buttons hide
   defp clear_filters do
     "change_filter"
     |> JS.push(value: %{filter: "clear"})
-    |> JS.focus_first(to: "#filter-types")
+    |> JS.focus(to: "#filter-types [aria-checked=true]")
   end
 
-  defp filtered?(filters), do: filters != @no_filters
+  defp filtered?(filters), do: Map.take(filters, Map.keys(@no_filters)) != @no_filters
 
   defp load_page!(socket) do
     %{stream_state: stream_state, filters: filters, sort: sort, current_user: user} =
