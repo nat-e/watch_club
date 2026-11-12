@@ -27,9 +27,12 @@ defmodule WatchClub.MediaSources.Source.Changes.DeleteMedia do
       |> Ash.Query.filter(media_source_id == ^media_source_id and status == :processing)
       |> MediaSources.cancel_media_import!(opts)
 
+      # One at a time: a bulk destroy keeps all its notifications in the process dictionary, which
+      # the Ecto tracing copies on every query, so its time grows with the square of the Media.
       Media
       |> Ash.Query.filter(media_source_id == ^media_source_id)
-      |> MediaCatalog.destroy_media!(Keyword.put(opts, :bulk_options, notify?: true))
+      |> Ash.stream!(opts)
+      |> Enum.each(&MediaCatalog.destroy_media!(&1, opts))
 
       changeset
     end)
