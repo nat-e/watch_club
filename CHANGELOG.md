@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.8](https://github.com/nat-e/watch_club/compare/v0.1.7...v0.1.8) (2026-11-12)
+
+
+### Features
+
+* keep Sports Events from flooding Browse and Home ([#99](https://github.com/nat-e/watch_club/issues/99)) ([e9887dd](https://github.com/nat-e/watch_club/commit/e9887dd8b5eb24e5108f1e1786b191a81c80a43a))
+* **media:** delete a Media Source's Media along with it ([#91](https://github.com/nat-e/watch_club/issues/91)) ([7c8319c](https://github.com/nat-e/watch_club/commit/7c8319cdf3822d73d5b932c15f797dc891815801))
+* **media:** rebuild thumbnails and Markers only when a file changes ([#92](https://github.com/nat-e/watch_club/issues/92)) ([6fe184b](https://github.com/nat-e/watch_club/commit/6fe184b99e0f294d181dd4ac0ede935f2e0f5817))
+* **media:** rematch Media and choose what a Media Import processes ([#88](https://github.com/nat-e/watch_club/issues/88)) ([f93a1b1](https://github.com/nat-e/watch_club/commit/f93a1b128889ddd0fbace54fffcca4620c8a9c84))
+
+
+### Bug Fixes
+
+* **contents:** remove “You're watching it” from the episode list ([#95](https://github.com/nat-e/watch_club/issues/95)) ([f57634e](https://github.com/nat-e/watch_club/commit/f57634ee1a89e2f958511b89f6060b27ef974017))
+* keep toasts above the phone tab bar ([#96](https://github.com/nat-e/watch_club/issues/96)) ([7dafc15](https://github.com/nat-e/watch_club/commit/7dafc15eca5b26fb9cdd7e7997af689921bd8721))
+* **media:** remove a Movie's or TV Show's Media when Radarr or Sonarr deletes it with its files ([#93](https://github.com/nat-e/watch_club/issues/93)) ([ac27a00](https://github.com/nat-e/watch_club/commit/ac27a0033c2586aa33986281032043acc2958435))
+* **search:** find titles by their words ([#90](https://github.com/nat-e/watch_club/issues/90)) ([a687735](https://github.com/nat-e/watch_club/commit/a687735cb1b9f0f169149f15e466ec1d0bc67396))
+* **ui:** draw the clear button of search fields with the design system ([#98](https://github.com/nat-e/watch_club/issues/98)) ([c68f47e](https://github.com/nat-e/watch_club/commit/c68f47ea3d3db22c92ef90ad31122f0c4b42907c))
+* **ui:** return focus to the opening button when a dialog closes ([#97](https://github.com/nat-e/watch_club/issues/97)) ([92f7017](https://github.com/nat-e/watch_club/commit/92f7017eac1286343c7b26411cdd7594b51341d7))
+
 ## [0.1.7](https://github.com/nat-e/watch_club/compare/v0.1.6...v0.1.7) (2026-11-10)
 
 
