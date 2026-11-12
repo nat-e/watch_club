@@ -57,6 +57,7 @@ defmodule WatchClub.MediaSources.Import do
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:completed)
+      change Changes.ReportFinish
     end
 
     update :fail do
@@ -64,6 +65,7 @@ defmodule WatchClub.MediaSources.Import do
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
+      change Changes.ReportFinish
     end
 
     update :finish_scan do
@@ -103,6 +105,7 @@ defmodule WatchClub.MediaSources.Import do
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:cancelled)
+      change Changes.ReportFinish
       change Changes.CancelObanJobs
     end
   end

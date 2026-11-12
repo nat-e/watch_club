@@ -205,6 +205,15 @@ defmodule WatchClubWeb.Telemetry do
         tag_values: &%{"watch_club.metadata_request.served": &1.served}
       ),
 
+      # Each Media Import, from its start to its end, by its final status
+      summary("watch_club.media_import.duration",
+        event_name: [:watch_club, :media_import, :finish],
+        unit: {:microsecond, :second},
+        tags: [:"watch_club.media_import.status"],
+        tag_values: &%{"watch_club.media_import.status": &1.status},
+        reporter_options: [buckets: @job_buckets]
+      ),
+
       # Each run of a file's ingest job, by its outcome. A crash is `failed`, with its `error.type`.
       span_summary("watch_club.media_ingest.duration", [:watch_club, :media_ingest],
         tags: [

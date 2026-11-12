@@ -16,6 +16,8 @@ defmodule WatchClub.MediaSources.ImportTest do
 
   describe "start_media_import/*" do
     test "completes the Media Import when the pipeline succeeds" do
+      ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :media_import, :finish]])
+      on_exit(fn -> :telemetry.detach(ref) end)
       admin = generate(administrator())
       media_source = generate(filesystem_media_source(actor: admin))
 
@@ -28,6 +30,11 @@ defmodule WatchClub.MediaSources.ImportTest do
 
       assert %Import{status: :completed} =
                get_media_import_by_id!(media_import.id, actor: admin)
+
+      assert_received {[:watch_club, :media_import, :finish], ^ref, %{duration: duration},
+                       %{status: :completed}}
+
+      assert duration >= 0
     end
 
     test "fails the Media Import when the pipeline raises" do

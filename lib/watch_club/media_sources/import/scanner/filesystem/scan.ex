@@ -82,11 +82,21 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
         :drop
 
       {:error, :timeout} ->
-        Logger.warning("Filesystem lstat timed out, skipping: #{path}")
+        Logger.warning("Filesystem lstat timed out, skipping: #{path}",
+          event: :filesystem_scan_path_skipped,
+          path: path,
+          reason: :timeout
+        )
+
         :drop
 
       {:error, reason} ->
-        Logger.warning("Cannot inspect filesystem path, skipping #{path} (#{inspect(reason)})")
+        Logger.warning("Cannot inspect filesystem path, skipping #{path} (#{inspect(reason)})",
+          event: :filesystem_scan_path_skipped,
+          path: path,
+          reason: reason
+        )
+
         :drop
     end
   end
@@ -99,12 +109,20 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan do
         |> Enum.map(&Path.join(path, &1))
 
       {:error, :timeout} ->
-        Logger.warning("Filesystem ls timed out, skipping subtree: #{path}")
+        Logger.warning("Filesystem ls timed out, skipping subtree: #{path}",
+          event: :filesystem_scan_path_skipped,
+          path: path,
+          reason: :timeout
+        )
+
         []
 
       {:error, reason} ->
         Logger.warning(
-          "Cannot list filesystem directory, skipping subtree #{path} (#{inspect(reason)})"
+          "Cannot list filesystem directory, skipping subtree #{path} (#{inspect(reason)})",
+          event: :filesystem_scan_path_skipped,
+          path: path,
+          reason: reason
         )
 
         []
