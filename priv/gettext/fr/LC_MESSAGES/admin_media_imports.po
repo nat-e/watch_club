@@ -635,3 +635,9 @@ msgstr "Ses médias seront aussi retirés de l'instance. Leurs fichiers restent 
 #, elixir-autogen, elixir-format
 msgid "Even for files that haven't changed. New files always get them."
 msgstr "Même pour les fichiers qui n'ont pas changé. Les nouveaux fichiers les obtiennent toujours."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Deleting…"
+msgstr "Suppression…"

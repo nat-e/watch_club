@@ -525,3 +525,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Even for files that haven't changed. New files always get them."
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Deleting…"
+msgstr ""
