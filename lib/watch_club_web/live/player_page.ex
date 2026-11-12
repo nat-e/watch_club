@@ -20,12 +20,7 @@ defmodule WatchClubWeb.PlayerPage do
           :markers,
           :credits_start_seconds,
           :next_to_play,
-          :previous_to_play,
-          parts: [
-            movie: [:best_localization],
-            sports_event: [],
-            tv_show_episode: [:formatted_episode_number, tv_show: [:best_localization]]
-          ]
+          :previous_to_play | NowPlaying.video_fields()
         ]
       ]
     ]

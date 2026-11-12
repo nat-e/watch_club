@@ -25,7 +25,7 @@ defmodule WatchClub.MediaCatalog.Video do
   alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{AudioTrack, Media, Part, TextTrack, VideoPart, VideoTrack}
-  alias WatchClub.MediaCatalog.Calculations.ToPlay
+  alias WatchClub.MediaCatalog.Calculations.{ToPlay, VideosAfter}
   alias WatchClub.MediaCatalog.Changes.{RelateParts, ScheduleTrickplay}
 
   postgres do
@@ -244,6 +244,12 @@ defmodule WatchClub.MediaCatalog.Video do
     # What the Player's previous button plays
     calculate :previous_to_play, :struct, {ToPlay, which: :previous} do
       constraints instance_of: ToPlay
+      public? true
+    end
+
+    # What the Remote's Up next offers
+    calculate :videos_after, {:array, :struct}, VideosAfter do
+      constraints items: [instance_of: __MODULE__]
       public? true
     end
   end

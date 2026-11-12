@@ -598,6 +598,7 @@ _Avoid_: Group, aggregate, card, item
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
 - When the **Credits** of a **Video** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **Part**, else the next **TV Show Episode** if it has **Media**
 - The **Player**'s previous and next buttons go to the previous and next **Part**, else to the previous and next **TV Show Episode**
+- The **Player**, the **TV** and the **Remote** name the **Part** that plays when its **Movie**, **TV Show Episode** or **Sports Event** has several: Friends · S06E15 · Part 2
 - **Watch Progress** counts each **Video** up to the start of its **Credits**, and the **Parts** of a **Movie**, **TV Show Episode** or **Sports Event** one after another
 - Playing a **Video** that holds two **TV Show Episodes** moves the **Watch Progress** of both
 - A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
@@ -613,6 +614,7 @@ _Avoid_: Group, aggregate, card, item
 - Any device of the **User** can open the **Remote**, including devices that can't **Cast**
 - The **Remote** never reports a position: the **TV** does
 - Leaving the **Remote** leaves the **TV** playing
+- The **Remote**'s Up next lists the files that play after the current one, one per row: the other **Parts** of what plays, then the next **TV Show Episodes** with **Media**
 - Every page shows the **Playback Session** playing on a **TV**, with a way to the **Remote**, only while that **TV** is connected
 - Another **User** casting to the same **TV** takes it: the first **Playback Session** loses its **Screen**
 

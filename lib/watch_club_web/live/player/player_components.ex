@@ -133,7 +133,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
       <div class="min-w-0 flex-1">
         <h1 class="truncate text-base font-semibold sm:text-xl">
-          {header_title(@video)}
+          {NowPlaying.subtitle(@video) || NowPlaying.title(@video)}
         </h1>
       </div>
 
@@ -554,22 +554,6 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   defp media_menu_button_style,
     do:
       "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
-
-  defp header_title(%Video{} = video) do
-    case Video.work(video) do
-      %Movie{} = movie ->
-        movie.best_localization.title
-
-      %SportsEvent{} = event ->
-        event.title
-
-      %TvShowEpisode{} = episode ->
-        "#{episode.tv_show.best_localization.title} - #{NowPlaying.episode_numbers(video)}"
-
-      nil ->
-        dgettext("player", "Video")
-    end
-  end
 
   # What the previous or next button plays: another Part of the work, or a TV Show Episode
   defp to_play_name(%ToPlay{part: %Part{} = part}), do: Parts.name(part)

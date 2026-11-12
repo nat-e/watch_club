@@ -306,7 +306,6 @@ msgstr "À suivre"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/helpers/now_playing.ex
-#: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Video"
 msgstr "Vidéo"

@@ -1,46 +1,57 @@
 defmodule WatchClubWeb.Helpers.NowPlaying do
   @moduledoc """
-  What a Playback Session plays, in words and pictures, for the TV, the TV bar and the Remote.
+  What a Video plays, in words and pictures, for the Player, the TV, the TV bar and the Remote.
+  They name its Part when its Movie, TV Show Episode or Sports Event has several: Friends · S06E15 ·
+  Part 2.
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Playbacks.Session
+  alias WatchClubWeb.Helpers.Parts
 
   @doc "What to load on a Playback Session to describe what it plays, and its tracks."
   def fields do
     [
       current_playback: [
         media: [
-          video: [
-            :duration_seconds,
-            audio_tracks: [:display_label],
-            text_tracks: [:display_label, :language_code, :hls_supported?],
-            parts: [
-              movie: [:best_localization, :backdrop_path],
-              sports_event: [],
-              tv_show_episode: [
-                :formatted_episode_number,
-                :still_path,
-                :best_localization,
-                tv_show: [:best_localization, :backdrop_path]
-              ]
-            ]
-          ]
+          video:
+            [
+              audio_tracks: [:display_label],
+              text_tracks: [:display_label, :language_code, :hls_supported?]
+            ] ++ video_fields()
         ]
       ]
     ]
   end
 
-  @doc "The Movie's title, the Sports Event's, or the TV Show Episode's."
+  @doc "What to load on a Video to describe it."
+  def video_fields do
+    [
+      :duration_seconds,
+      parts: [
+        movie: [:best_localization, :backdrop_path, :parts],
+        sports_event: [:parts],
+        tv_show_episode: [
+          :formatted_episode_number,
+          :still_path,
+          :best_localization,
+          :parts,
+          tv_show: [:best_localization, :backdrop_path]
+        ]
+      ]
+    ]
+  end
+
+  @doc "The Movie's title or the Sports Event's, with its Part, or the TV Show Episode's title."
   def title(%Video{} = video) do
     case Video.work(video) do
       %Movie{} = movie ->
-        movie.best_localization.title
+        with_part(movie.best_localization.title, video)
 
       %SportsEvent{} = event ->
-        event.title
+        with_part(event.title, video)
 
       %TvShowEpisode{} = episode ->
         (episode.best_localization && episode.best_localization.title) ||
@@ -51,11 +62,11 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     end
   end
 
-  @doc "The TV Show and the episode's number, for a TV Show Episode."
+  @doc "The TV Show, and the episode's number with its Part, for a TV Show Episode."
   def subtitle(%Video{} = video) do
     case Video.work(video) do
       %TvShowEpisode{} = episode ->
-        "#{episode.tv_show.best_localization.title} · #{episode_numbers(video)}"
+        "#{episode.tv_show.best_localization.title} · #{episode_number(video)}"
 
       _movie_sports_event_or_unmatched ->
         nil
@@ -64,22 +75,35 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
 
   @doc """
   The number of the TV Show Episode a Video holds, such as S04E23, or of the first and the last
-  for a file holding several: S04E23–E24.
+  for a file holding several: S04E23–E24. With its Part: S04E23 · Part 2. Nil for a Movie or a
+  Sports Event.
   """
-  def episode_numbers(%Video{parts: parts}) do
-    first = List.first(parts).tv_show_episode
-    last = List.last(parts).tv_show_episode
+  def episode_number(%Video{parts: parts} = video) do
+    case {List.first(parts), List.last(parts)} do
+      {%Part{tv_show_episode: %TvShowEpisode{} = first}, %Part{tv_show_episode: last}} ->
+        with_part(numbers(first, last), video)
 
-    cond do
-      first.id == last.id ->
-        first.formatted_episode_number
-
-      first.season_number == last.season_number ->
-        "#{first.formatted_episode_number}–E#{String.pad_leading("#{last.episode_number}", 2, "0")}"
-
-      true ->
-        "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
+      _movie_sports_event_or_unmatched ->
+        nil
     end
+  end
+
+  defp numbers(%TvShowEpisode{id: id} = episode, %TvShowEpisode{id: id}),
+    do: episode.formatted_episode_number
+
+  defp numbers(
+         %TvShowEpisode{season_number: season} = first,
+         %TvShowEpisode{season_number: season} = last
+       ),
+       do:
+         "#{first.formatted_episode_number}–E#{String.pad_leading("#{last.episode_number}", 2, "0")}"
+
+  defp numbers(first, last),
+    do: "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
+
+  # Names the Part it plays when its Movie, TV Show Episode or Sports Event has several
+  defp with_part(text, %Video{parts: [part | _]}) do
+    if length(Part.work(part).parts) > 1, do: "#{text} · #{Parts.name(part)}", else: text
   end
 
   @doc "The TMDB path of a 16:9 picture of it, or the image URL of a Sports Event's."
