@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.10](https://github.com/nat-e/watch_club/compare/v0.1.9...v0.1.10) (2026-11-12)
+
+
+### Features
+
+* **home:** show only finished plays in the Activity Feed ([#102](https://github.com/nat-e/watch_club/issues/102)) ([4c9d636](https://github.com/nat-e/watch_club/commit/4c9d636c707a8eaf2f4e487f23a055f88b81dc46))
+* open the Content's page from the Up next card's title ([#103](https://github.com/nat-e/watch_club/issues/103)) ([3673d17](https://github.com/nat-e/watch_club/commit/3673d17ea0671708deef3c7783360acc1e79defc))
+
+
+### Bug Fixes
+
+* **media-sources:** speed up deleting a Media Source with many Media ([#101](https://github.com/nat-e/watch_club/issues/101)) ([67b37fd](https://github.com/nat-e/watch_club/commit/67b37fdb7fd40c8d5b38eebf9b98fcd133915022))
+
 ## [0.1.9](https://github.com/nat-e/watch_club/compare/v0.1.8...v0.1.9) (2026-11-12)
 
 
