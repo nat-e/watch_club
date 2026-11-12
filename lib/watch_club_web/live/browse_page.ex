@@ -1,7 +1,9 @@
 defmodule WatchClubWeb.BrowsePage do
   @moduledoc """
   Browse: the Library's posters of one Content Type, Movies first, with a row of filters and a
-  sort menu. The type, filters and sort live in the URL, so Back undoes them.
+  sort menu. The type, filters and sort live in the URL, so Back undoes them. So does the number
+  of pages loaded, so Back and reload show the same posters and LiveView restores the scroll
+  position.
   """
   use WatchClubWeb, :live_view
 
@@ -348,26 +350,42 @@ defmodule WatchClubWeb.BrowsePage do
   def handle_params(params, _uri, socket) do
     filters = filters(params)
     sort = Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
+    pages = pages(params)
 
     case Url.parse_url_param(params["type"], ContentType.library_display_order()) do
       # Without a known type, Browse shows Movies, with their type in the URL
       nil ->
         {:noreply,
-         push_patch(socket, to: browse_path(@default_type, filters, sort), replace: true)}
+         push_patch(socket, to: browse_path(@default_type, filters, sort, pages), replace: true)}
 
       type ->
-        {:noreply,
-         socket
-         |> assign(type: type, filters: filters, sort: sort)
-         |> assign(:stream_state, KeysetStreamState.init(@page_size))
-         |> load_page!()}
+        query = %{type: type, filters: filters, sort: sort}
+
+        # More pages of the same posters keep the ones already loaded
+        socket =
+          if Map.take(socket.assigns, [:type, :filters, :sort]) == query and
+               pages > socket.assigns.stream_state.pages do
+            socket
+          else
+            socket
+            |> assign(query)
+            |> assign(:stream_state, KeysetStreamState.init(@page_size))
+          end
+
+        {:noreply, load_pages!(socket, pages - socket.assigns.stream_state.pages)}
     end
   end
 
   @impl true
   def handle_event("load_more", _params, socket) do
-    if KeysetStreamState.can_load_more?(socket.assigns.stream_state) do
-      {:noreply, load_page!(socket)}
+    %{type: type, filters: filters, sort: sort, stream_state: stream_state} = socket.assigns
+
+    if KeysetStreamState.can_load_more?(stream_state) do
+      {:noreply,
+       push_patch(socket,
+         to: browse_path(type, filters, sort, stream_state.pages + 1),
+         replace: true
+       )}
     else
       {:noreply, socket}
     end
@@ -440,6 +458,16 @@ defmodule WatchClubWeb.BrowsePage do
     }
   end
 
+  # The number of pages loaded, at least 1
+  defp pages(params) do
+    with value when is_binary(value) <- params["pages"],
+         {pages, ""} when pages > 1 <- Integer.parse(value) do
+      pages
+    else
+      _other -> 1
+    end
+  end
+
   defp list_param(values) when is_binary(values), do: String.split(values, ",", trim: true)
   # Missing, or a list from a hand-edited URL such as `decades[]=1990`
   defp list_param(_values), do: []
@@ -471,9 +499,9 @@ defmodule WatchClubWeb.BrowsePage do
     if choice in choices, do: List.delete(choices, choice), else: choices ++ [choice]
   end
 
-  # Browse's URL with this type, filters and sort, without the filters that are off and the default
-  # sort
-  defp browse_path(type, filters, sort) do
+  # Browse's URL with this type, filters, sort and number of pages, without the filters that are off,
+  # the default sort and a single page
+  defp browse_path(type, filters, sort, pages \\ 1) do
     params =
       Enum.reject(
         [
@@ -484,7 +512,8 @@ defmodule WatchClubWeb.BrowsePage do
           decades: Enum.join(filters.decades, ","),
           languages: Enum.join(filters.original_languages, ","),
           rating: filters.min_rating,
-          sort: sort != LibrarySort.default() && sort
+          sort: sort != LibrarySort.default() && sort,
+          pages: pages > 1 && pages
         ],
         fn {_param, value} -> value in [nil, false, ""] end
       )
@@ -501,12 +530,12 @@ defmodule WatchClubWeb.BrowsePage do
 
   defp filtered?(filters), do: filters != @no_filters
 
-  defp load_page!(socket) do
+  defp load_pages!(socket, count) do
     %{stream_state: stream_state, type: type, filters: filters, sort: sort, current_user: user} =
       socket.assigns
 
     {:ok, new_state, contents} =
-      KeysetStreamState.load_page(stream_state, fn page_options ->
+      KeysetStreamState.load_pages(stream_state, count, fn page_options ->
         Contents.get_contents_in_library(Map.merge(filters, %{type: type, sort: sort}),
           load: @content_fields,
           page: page_options,
