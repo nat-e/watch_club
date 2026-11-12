@@ -2,7 +2,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   @moduledoc """
   The Content in progress on Home that is Ready to Play: the latest one in the spotlight, the
   others in Up next. Resume plays the Movie or the Sports Event, or the TV Show's next TV Show
-  Episode.
+  Episode, and the title opens the Content's page.
   """
   use WatchClubWeb, :component
 
@@ -117,45 +117,47 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   attr :content, Content, required: true
   attr :locale, :atom, required: true
 
-  # The whole card is the title link, stretched with ::after, so it has one name and one focus
-  # outline, drawn on the card.
+  # Two links: the still resumes the Content, and the title, with the line under it, opens its page
   defp up_next_card(assigns) do
     assigns =
       assign(assigns, :playable, playable(assigns.content))
 
     ~H"""
-    <article class="group/card relative flex w-64 shrink-0 snap-start flex-col gap-related rounded-card has-focus-visible:outline-2 has-focus-visible:outline-offset-4 @xl:w-72">
-      <div class="relative overflow-hidden rounded-card">
+    <article class="flex w-64 shrink-0 snap-start flex-col gap-related @xl:w-72">
+      <.link
+        navigate={play_href(@content)}
+        aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
+        class="group/play relative block overflow-hidden rounded-card"
+      >
         <.tmdb_still
           path={image(@content, @playable)}
           size="w300"
           class="w-full"
         />
-        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/card:opacity-100 group-has-focus-visible/card:opacity-100 [@media(hover:none)]:opacity-100">
+        <span class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100">
           <span class="flex size-control-lg items-center justify-center rounded-full bg-black/60 text-white">
             <Lucideicons.play class="size-icon-lg" />
           </span>
-        </div>
+        </span>
         <.progress_bar
           :if={@playable.actor_progress}
           percent={@playable.actor_progress.percent_watched}
           class="absolute inset-x-0 bottom-0 rounded-none! bg-white/20!"
         />
-      </div>
-      <div class="min-w-0">
-        <.link
-          navigate={play_href(@content)}
-          aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
-          class="block truncate font-semibold text-text outline-none after:absolute after:inset-0"
-        >
+      </.link>
+      <.link
+        navigate={Url.content_details_link(@content)}
+        class="group/details block min-w-0 rounded-control"
+      >
+        <span class="block truncate font-semibold text-text decoration-text-subtle decoration-2 underline-offset-4 group-hover/details:underline">
           {title(@content)}
-        </.link>
-        <p class="truncate text-sm text-text-muted">
+        </span>
+        <span class="block truncate text-sm text-text-muted">
           {[episode_number(@playable), status(@playable, @locale)]
           |> Enum.reject(&is_nil/1)
           |> Enum.join(" · ")}
-        </p>
-      </div>
+        </span>
+      </.link>
     </article>
     """
   end
