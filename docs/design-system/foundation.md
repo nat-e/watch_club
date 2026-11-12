@@ -50,7 +50,7 @@ Watch Club source variables may use a project prefix internally, e.g. `--wc-colo
 | `color.surface-overlay` | Floating surface for dialogs, popovers, dropdowns |
 | `color.surface-hover` | Shared hover state for neutral interactive surfaces |
 | `color.surface-active` | Shared pressed state for neutral interactive surfaces |
-| `color.surface-selected` | Selected neutral surface, such as active nav, the current item of a segmented control, or a selected card |
+| `color.surface-selected` | Selected neutral surface, such as active nav, the current item of a segmented control, or a selected card. Also the User's own Message bubbles |
 
 Higher layers are lighter: `canvas` < `surface` < `surface-raised` = `surface-overlay`. `surface-inset` sits at canvas level, below the surface around it. Hover, pressed and selected each step lighter than every surface they appear on, in that order.
 
@@ -115,7 +115,7 @@ A starting point for choosing between pink, purple and neutral, not a strict rul
 | --- | --- | --- |
 | `primary` (pink) | What people act on or turn on | The strong fill for the main action, such as Play. The tint for selected controls, such as filter chips and search scopes |
 | `accent` (purple) | What the app points out | Unread counts, New badges, the highlight on something that just arrived |
-| Neutral (`surface-selected`) | Where people are | The current page in navigation, the current item of a segmented control |
+| Neutral (`surface-selected`) | Where people are, and what they wrote | The current page in navigation, the current item of a segmented control. The User's own Message bubbles, beside the others' on `surface-raised` |
 
 A selected chip shows its state with its tint alone, without a check mark: its fill sets it apart from the outlined chips around it.
 
@@ -249,7 +249,7 @@ The tokens can't enforce these rules from *Refactoring UI*, by Adam Wathan and S
 - **Icons:** an icon next to text gets a quieter color than the text, such as `text-muted`, because icons look heavier than letters.
 - **Headings:** the tag follows the page structure and the size follows importance, so a section title can be an `h2` at `text-base`.
 - **Labels:** skip `label: value` when the format or context already says what the data is, like a release year, and fold a needed label into the value ("12 episodes").
-- **Buttons:** one `primary` button per screen, `secondary` or `accent` for secondary actions, `ghost` for minor ones, and `danger` only for the confirm button of a destructive dialog.
+- **Buttons:** one `primary` button per screen, or one per independent task, such as Play and Send in a Conversation, `secondary` or `accent` for secondary actions, `ghost` for minor ones, and `danger` only for the confirm button of a destructive dialog.
 - **Color:** never show meaning with color alone; add an icon, a label or a shape.
 - **Spacing:** leave more space around a group than inside it.
 - **Widths:** sidebars, panels and dialogs get a fixed width or a `max-w-*` so they stop growing; only the main area flexes.
