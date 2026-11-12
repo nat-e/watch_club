@@ -1,6 +1,7 @@
 defmodule WatchClub.MediaSources.Servarr.RadarrTest do
   use ExUnit.Case, async: false
 
+  alias WatchClub.Contents.Content
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
@@ -107,6 +108,26 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
       Req.Test.stub(Client, fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
 
       assert_raise MatchError, fn -> Radarr.scan!(servarr()) end
+    end
+  end
+
+  describe "submit_request!/2" do
+    test "adds the movie to download as soon as it's found, whatever its release date" do
+      test_pid = self()
+
+      Req.Test.stub(Client, fn
+        %{method: "GET"} = conn ->
+          Req.Test.json(conn, [])
+
+        %{method: "POST"} = conn ->
+          send(test_pid, {:added, conn.body_params})
+          Req.Test.json(conn, movie(%{"id" => 42}))
+      end)
+
+      content = %Content{external_id: "11", original_title: "Star Wars"}
+
+      assert {:ok, 42} = Radarr.submit_request!(servarr(), content)
+      assert_received {:added, %{"tmdbId" => 11, "minimumAvailability" => "announced"}}
     end
   end
 end

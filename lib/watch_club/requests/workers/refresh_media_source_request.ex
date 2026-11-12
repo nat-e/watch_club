@@ -87,7 +87,7 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
     cond do
       # If the request is "blocked", re-schedule a refresh in 1 hour
-      not_found? or status in [:not_released, :needs_attention] ->
+      not_found? or status == :needs_attention ->
         {:snooze, {1, :hour}}
 
       # If the request is "active", re-schedule a refresh in 5 seconds

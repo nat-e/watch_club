@@ -52,6 +52,8 @@ defmodule WatchClub.Integrations.Radarr do
       "title" => title,
       "qualityProfileId" => quality_profile_id,
       "rootFolderPath" => root_folder_path,
+      # Radarr never searches a movie with no cinema, digital or disc date unless it's announced
+      "minimumAvailability" => "announced",
       "monitored" => true,
       "addOptions" => %{"searchForMovie" => true, "monitor" => "movieOnly"}
     }

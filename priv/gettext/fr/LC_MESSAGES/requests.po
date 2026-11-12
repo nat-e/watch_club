@@ -48,12 +48,6 @@ msgid "Not found, we'll keep looking for it"
 msgstr "Introuvable, on continue à chercher"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_status.ex
-#, elixir-autogen, elixir-format
-msgid "Not released yet"
-msgstr "Sortie à venir"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "On the way"

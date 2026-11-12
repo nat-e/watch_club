@@ -125,7 +125,7 @@ A user’s request for WatchClub to make a piece of content available on the med
 _Avoid_: Media Request, Request Media, download request, fetch request, acquisition request
 
 **Content Request Status**:
-The status of a **Content Request** as shown on **My Requests**, derived when read from whether it is a **Completed Content Request**, the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. It says how far the **Content Request** got, not whether its **Content** is **Ready to Play**. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
+The status of a **Content Request** as shown on **My Requests**, derived when read from whether it is a **Completed Content Request**, the **Content**'s **Media** and its **Media Source Requests**. One of: Not Released, Not Found, Searching, Downloading, Importing, Completed, Failed. It says how far the **Content Request** got, not whether its **Content** is **Ready to Play**. _Importing_ means a **Media Source** reports the file downloaded but its **Media** has not yet been ingested into WatchClub, so a request never shows Completed until **Media** exists. _Not Released_ means its **Content**'s release date is today or later, unless a **Media Source** already downloads it. _Searching_ is the label for a just-submitted request still within its grace window, whose **Media Source** call is still in flight, or with no **Media Source** to request it from.
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
 
 **Completed Content Request**:
@@ -137,7 +137,7 @@ WatchClub's record of asking one **Media Source** to make one **Content** availa
 _Avoid_: Request Attempt, Profile Request, Sourcing
 
 **Media Source Request State**:
-The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and _reconciled from the **Media Source**'s current state_ (not driven by individual events). One of: Submitted, Not Released, Downloading, Downloaded, Needs Attention.
+The progress of a **Media Source Request** in its **Media Source**, recorded on the **Media Source Request** itself and _reconciled from the **Media Source**'s current state_ (not driven by individual events). One of: Submitted, Downloading, Downloaded, Needs Attention.
 _Avoid_: Request Attempt State, *arr status, Grabbed, Searching, Cancelled, Created
 
 **Request Content**:
@@ -537,7 +537,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Content Request** has zero or more associated **Media Source Requests**, found via the **Content** it references and the matching **Media Sources**
 - A **Media Source Request** is a singleton per (**Content**, **Media Source**) pair
 - A **Media Source Request** can only exist for a **Media Source** whose **Media Source Type** supports requests
-- A **Media Source Request** comes into existence only _after_ a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted (or Not Released)
+- A **Media Source Request** comes into existence only _after_ a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted
 - **Request Content** fans out to _every_ request-capable **Media Source** that can serve the **Content** (its **Media Type** produces the **Content**'s **Content Type**), creating one **Media Source Request** per such **Media Source**. This includes multiple **Media Sources** of the same **Media Source Type** (two `radarr` sources each get their own **Media Source Request**) and multiple **Media Types** for one **Content** (a **Book** fans out to both its **Ebook** and **Audiobook** **Media Sources**)
 - For a **TV Show**, the singleton is per (**TV Show**, **Media Source**): one **Media Source Request** covers the whole show, never one per **TV Show Episode**. It maps to the single series resource the **Media Source** creates. Per-**TV Show Episode** availability is read from **Media**, not from **Media Source Requests**
 - A **Content Request** has a derived progress, the share of the **Content** that has **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over _aired_ **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored

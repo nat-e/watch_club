@@ -372,6 +372,51 @@ defmodule WatchClub.Requests.ContentRequestTest do
     end
   end
 
+  describe "status" do
+    test "is :not_released until the Content's release date" do
+      movie = generate(movie(release_date: Date.utc_today()))
+      request = generate(content_request(generate(user()), movie))
+
+      assert Ash.load!(request, :status, authorize?: false).status == :not_released
+    end
+
+    test "is :downloading when its Media Source downloads it before its release date" do
+      movie = generate(movie(release_date: Date.add(Date.utc_today(), 30)))
+
+      request =
+        generate(
+          content_request(generate(user()), movie,
+            best_source_request_id: media_source_request!(movie, :downloading).id
+          )
+        )
+
+      assert Ash.load!(request, :status, authorize?: false).status == :downloading
+    end
+
+    test "is :not_found once its Media Source has searched for 5 minutes after its release date" do
+      movie = generate(movie())
+
+      request =
+        generate(
+          content_request(generate(user()), movie,
+            best_source_request_id: media_source_request!(movie, :searching).id,
+            inserted_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+          )
+        )
+
+      assert Ash.load!(request, :status, authorize?: false).status == :not_found
+    end
+  end
+
+  defp media_source_request!(content, status) do
+    Ash.Seed.seed!(MediaSourceRequest, %{
+      content_id: content.id,
+      media_source_id: generate(radarr_media_source()).id,
+      status: status,
+      external_resource_id: 1
+    })
+  end
+
   defp episodes!(show) do
     Ash.load!(show, [implementation: %{load: [tv_show: :episodes]}], authorize?: false).implementation.episodes
   end

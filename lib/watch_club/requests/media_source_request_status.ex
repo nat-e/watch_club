@@ -13,8 +13,6 @@ defmodule WatchClub.Requests.MediaSourceRequestStatus do
       # The movie (or all aired episodes for a show) have been downloaded and imported
       # in Servarr, but it has not been imported in Watch Club yet
       :downloaded,
-      # The movie is not available (or a show has not started airing) yet.
-      :not_released,
       # There was some issue in Servarr that requires manual action of the admin
       # Most likely the content cannot be matched or extracted, or there was some conflict.
       :needs_attention

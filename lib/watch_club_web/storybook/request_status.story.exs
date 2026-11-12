@@ -32,7 +32,6 @@ defmodule WatchClubWeb.Storybook.RequestStatus do
           }),
           variation(:importing, %ContentRequest{status: :importing, download_progress: 100.0}),
           variation(:out_on, %ContentRequest{status: :not_released}, ~D[2099-03-12]),
-          variation(:not_released, %ContentRequest{status: :not_released}),
           variation(:not_found, %ContentRequest{status: :not_found}),
           variation(:failed, %ContentRequest{status: :failed}),
           variation(:completed, %ContentRequest{status: :completed})

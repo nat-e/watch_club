@@ -252,8 +252,6 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
       aired_episodes != [] and Enum.all?(aired_episodes, & &1.has_file?) -> :downloaded
       Enum.any?(queue, &QueueResource.blocked?/1) -> :needs_attention
       queue != [] -> :downloading
-      # After the other states: a series can be found before it starts airing.
-      episodes != [] and aired_episodes == [] -> :not_released
       true -> :searching
     end
   end

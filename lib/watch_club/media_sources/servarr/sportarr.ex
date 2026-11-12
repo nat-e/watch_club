@@ -213,8 +213,6 @@ defmodule WatchClub.MediaSources.Servarr.Sportarr do
       event.has_file? -> :downloaded
       Enum.any?(queue, &QueueItem.blocked?/1) -> :needs_attention
       queue != [] -> :downloading
-      # After the other states: an event can be found before it happens.
-      event.date && DateTime.after?(event.date, DateTime.utc_now()) -> :not_released
       true -> :searching
     end
   end

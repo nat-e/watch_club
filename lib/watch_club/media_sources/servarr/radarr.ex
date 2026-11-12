@@ -184,8 +184,6 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
       movie.has_file? -> :downloaded
       Enum.any?(queue, &QueueResource.blocked?/1) -> :needs_attention
       queue != [] -> :downloading
-      # After the other states: a movie can be found before its release date.
-      not movie.available? -> :not_released
       true -> :searching
     end
   end

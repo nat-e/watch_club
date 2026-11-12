@@ -39,7 +39,6 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
       variation(:out_later, "Not released, out on a later date", :not_released,
         release_date: Date.add(Date.utc_today(), 40)
       ),
-      variation(:not_released, "Not released, with a date that has passed", :not_released),
       variation(:not_found, "Not found yet", :not_found),
       variation(:failed, "Needs the Instance Administrator", :failed),
       variation(:long_name, "A long name, on two lines at most", :searching,

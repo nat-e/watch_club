@@ -8,7 +8,6 @@ defmodule WatchClub.Integrations.Radarr.Movie do
           title: String.t() | nil,
           year: integer(),
           has_file?: boolean() | nil,
-          available?: boolean(),
           quality_profile_id: integer(),
           root_folder_path: String.t() | nil,
           file_path: String.t() | nil
@@ -23,8 +22,7 @@ defmodule WatchClub.Integrations.Radarr.Movie do
     :quality_profile_id,
     :root_folder_path,
     :file_path,
-    has_file?: false,
-    available?: true
+    has_file?: false
   ]
 
   @spec from_api(map()) :: t()
@@ -36,7 +34,6 @@ defmodule WatchClub.Integrations.Radarr.Movie do
       title: data["title"],
       year: data["year"],
       has_file?: Map.get(data, "hasFile", false) == true,
-      available?: Map.get(data, "isAvailable", true) == true,
       quality_profile_id: data["qualityProfileId"],
       root_folder_path: data["rootFolderPath"],
       file_path: get_in(data, ["movieFile", "path"])
