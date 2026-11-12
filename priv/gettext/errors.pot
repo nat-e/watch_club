@@ -18,37 +18,7 @@ msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
-msgid "Password is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
 msgid "Passwords do not match"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation has already been used"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation has expired"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "The password is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "The username is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Username can only contain lower case letters, numbers and _"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -58,27 +28,12 @@ msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
-msgid "Username is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/sign_in_page.ex
-#, elixir-autogen, elixir-format
-msgid "Your username or password is invalid"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "Max uses must be at least %{greater_than_or_equal_to}"
 msgstr ""
 
 #: lib/watch_club/accounts/invitation_code.ex
@@ -96,29 +51,9 @@ msgstr ""
 msgid "Code must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/apply_invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation code is not valid"
-msgstr ""
-
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This code is already used by another invitation"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "This invitation has already been used more than that"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "This password reset link is invalid or has expired"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is invalid"
 msgstr ""
 
 #: lib/watch_club/instance/instance_settings.ex
@@ -128,27 +63,7 @@ msgstr ""
 
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
-msgid "Instance name is required"
-msgstr ""
-
-#: lib/watch_club/instance/instance_settings.ex
-#, elixir-autogen, elixir-format
 msgid "Instance name must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The API key is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The URL is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The callback URL is required"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -156,29 +71,9 @@ msgstr ""
 msgid "The invitation code is required"
 msgstr ""
 
-#: lib/watch_club/media_sources/source.ex
-#, elixir-autogen, elixir-format
-msgid "The path is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The quality profile is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The root folder is required"
-msgstr ""
-
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "This username is already taken"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is required"
 msgstr ""
 
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -247,16 +142,6 @@ msgstr ""
 msgid "Could not reach %{name}."
 msgstr ""
 
-#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
-#, elixir-autogen, elixir-format
-msgid "The webhook test failed."
-msgstr ""
-
-#: lib/watch_club/media_sources/source.ex
-#, elixir-autogen, elixir-format
-msgid "The media type is required"
-msgstr ""
-
 #: lib/watch_club/conversations/conversation.ex
 #, elixir-autogen, elixir-format
 msgid "Choose at least one person"
@@ -291,11 +176,6 @@ msgstr ""
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist name cannot be longer than %{max} characters"
-msgstr ""
-
-#: lib/watch_club/playlists/playlist.ex
-#, elixir-autogen, elixir-format
-msgid "Playlist name is required"
 msgstr ""
 
 #: lib/watch_club/playlists/playlist.ex
@@ -337,4 +217,124 @@ msgstr ""
 #: lib/watch_club/media_sources/import.ex
 #, elixir-autogen, elixir-format
 msgid "An import of this media source is already running."
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a username"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your username"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation has already been used. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation has expired. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/changes/apply_invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation no longer works. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "This link no longer works"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Use only lowercase letters, numbers and _"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/sign_in_page.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong username or password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your current password"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Name your playlist"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong current password"
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a media type"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a quality profile"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a root folder"
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "Enter a path"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the API key"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the URL"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the Watch Club URL"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "It's already been used more times than that."
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum uses must be at least %{greater_than_or_equal_to}"
+msgstr ""
+
+#: lib/watch_club/instance/instance_settings.ex
+#, elixir-autogen, elixir-format
+msgid "Name your instance"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "The webhook test failed. Check that %{name} can reach this address."
 msgstr ""

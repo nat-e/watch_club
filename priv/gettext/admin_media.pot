@@ -22,11 +22,6 @@ msgstr ""
 msgid "Remove media"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Remove the media from %{name}. This will not delete the file on the disk."
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
@@ -45,11 +40,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Configure media imports or automations to add Media to your instance."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
@@ -75,21 +65,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Frame rate"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Import Media"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Media Browser"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "No Media match your filters"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
@@ -128,11 +103,6 @@ msgstr ""
 msgid "Video"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any media yet"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} fps"
@@ -152,12 +122,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Close details"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
-#, elixir-autogen, elixir-format
-msgid "Media Type"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -207,11 +171,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "Search Media"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "Search file name or title"
 msgstr ""
 
@@ -223,11 +182,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Title"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "View and manage all Media on this instance."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -319,11 +273,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
-msgid "Titles"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
-#, elixir-autogen, elixir-format
 msgid "Couldn't load the episodes."
 msgstr ""
 
@@ -369,15 +318,66 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
-msgid "This file isn't matched to a title."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
-#, elixir-autogen, elixir-format
 msgid "Regenerate thumbnails and markers"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thumbnails and markers will be regenerated in the background."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add a media source to bring your videos into Watch Club."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add media sources"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "By title"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Every file in Watch Club: find the unmatched ones, match them by hand, or remove them."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media browser"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Media type"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No media matches your filters"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No media yet"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Remove this media from Watch Club? Its file stays on disk, so the next import adds it back."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search media"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "This file isn't matched to any content."
 msgstr ""

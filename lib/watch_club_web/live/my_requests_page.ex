@@ -88,6 +88,7 @@ defmodule WatchClubWeb.MyRequestsPage do
             request={request}
             focus_after_removal={focus_after_removal(@requests_on_the_way, index)}
             current_user={@current_user}
+            administrator={@administrator}
           />
         </.stack>
       </.page_section>
@@ -103,7 +104,7 @@ defmodule WatchClubWeb.MyRequestsPage do
         <:description>
           {dgettext(
             "requests",
-            "Search for a title in Browse and request it. You'll see here when you can watch it."
+            "Request the movies and TV shows you'd like to watch. You can follow them here until they're ready."
           )}
         </:description>
         <.button id="my-requests-browse" variant="secondary" navigate={~p"/browse"}>
@@ -142,6 +143,7 @@ defmodule WatchClubWeb.MyRequestsPage do
     {:ok,
      socket
      |> assign(:ready_unseen_ids, ready_unseen_ids)
+     |> assign(:administrator, Accounts.get_instance_administrator!(actor: user))
      |> stream_configure(:ready_requests, dom_id: &"ready-request-#{&1.content_id}")
      |> stream(:ready_requests, ready_requests)
      # Intentionally small: what's still downloading or waiting to be

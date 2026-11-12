@@ -51,10 +51,20 @@ defmodule WatchClub.MediaSources.Servarr.Validations.CheckWebhookUrl do
 
   defp error_message(reason) do
     case reason do
-      :webhook_unreachable -> dgettext_noop("errors", "%{name} could not reach this URL.")
-      :server_error -> dgettext_noop("errors", "%{name} returned a server error.")
-      :connection_failed -> dgettext_noop("errors", "Could not connect to %{name}.")
-      _other -> dgettext_noop("errors", "The webhook test failed.")
+      :webhook_unreachable ->
+        dgettext_noop("errors", "%{name} could not reach this URL.")
+
+      :server_error ->
+        dgettext_noop("errors", "%{name} returned a server error.")
+
+      :connection_failed ->
+        dgettext_noop("errors", "Could not connect to %{name}.")
+
+      _other ->
+        dgettext_noop(
+          "errors",
+          "The webhook test failed. Check that %{name} can reach this address."
+        )
     end
   end
 end

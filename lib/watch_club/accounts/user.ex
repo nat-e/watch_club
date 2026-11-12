@@ -130,6 +130,12 @@ defmodule WatchClub.Accounts.User do
               )
     end
 
+    read :instance_administrator do
+      description "The Instance Administrator, whom Users ask for help."
+      get? true
+      filter expr(administrator? == true)
+    end
+
     read :get_current_user do
       description "Gets the user and relationships corresponding to the actor"
       get? true
@@ -163,12 +169,12 @@ defmodule WatchClub.Accounts.User do
       argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
 
       validate present(:current_password) do
-        message dgettext_noop("errors", "Your current password is required")
+        message dgettext_noop("errors", "Enter your current password")
       end
 
       validate {AshAuthentication.Strategy.Password.PasswordValidation,
                 strategy_name: :password, password_argument: :current_password} do
-        message dgettext_noop("errors", "Your current password is invalid")
+        message dgettext_noop("errors", "Wrong current password")
       end
 
       change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
@@ -199,11 +205,11 @@ defmodule WatchClub.Accounts.User do
       end
 
       validate present(:username) do
-        message dgettext_noop("errors", "Username is required")
+        message dgettext_noop("errors", "Enter your username")
       end
 
       validate present(:password) do
-        message dgettext_noop("errors", "Password is required")
+        message dgettext_noop("errors", "Enter your password")
       end
 
       # validates the provided username and password and generates a token
@@ -331,7 +337,7 @@ defmodule WatchClub.Accounts.User do
 
       # validates the provided reset token
       validate AshAuthentication.Strategy.Password.ResetTokenValidation do
-        message dgettext_noop("errors", "This password reset link is invalid or has expired")
+        message dgettext_noop("errors", "This link no longer works")
       end
 
       # Hashes the provided password
@@ -380,7 +386,7 @@ defmodule WatchClub.Accounts.User do
       authorize_if expr(id == ^actor(:id))
     end
 
-    policy action(:read) do
+    policy action([:read, :instance_administrator]) do
       authorize_if always()
     end
 
@@ -409,7 +415,7 @@ defmodule WatchClub.Accounts.User do
     # Customer-facing validations own localized messages for form errors.
     # Keep shape rules here instead of duplicating them as argument or attribute constraints.
     validate present(:username) do
-      message dgettext_noop("errors", "The username is required")
+      message dgettext_noop("errors", "Choose a username")
     end
 
     validate string_length(:username, min: 3) do
@@ -421,14 +427,11 @@ defmodule WatchClub.Accounts.User do
     end
 
     validate match(:username, ~r/^[a-z0-9_]+$/) do
-      message dgettext_noop(
-                "errors",
-                "Username can only contain lower case letters, numbers and _"
-              )
+      message dgettext_noop("errors", "Use only lowercase letters, numbers and _")
     end
 
     validate present(:password) do
-      message dgettext_noop("errors", "The password is required")
+      message dgettext_noop("errors", "Choose a password")
     end
 
     validate string_length(:password, min: 8) do

@@ -64,11 +64,6 @@ msgstr ""
 msgid "No conversations yet"
 msgstr ""
 
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
-msgid "Recommend a movie or a TV show from its page to start one."
-msgstr ""
-
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by %{name}"
@@ -87,11 +82,6 @@ msgstr ""
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Send"
-msgstr ""
-
-#: lib/watch_club_web/live/conversations/inbox_page.ex
-#, elixir-autogen, elixir-format
-msgid "This conversation doesn't exist"
 msgstr ""
 
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
@@ -119,4 +109,14 @@ msgstr ""
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this conversation."
+msgstr ""
+
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "When you and your friends recommend movies and TV shows to each other, you talk about them here."
 msgstr ""

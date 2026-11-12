@@ -39,12 +39,6 @@ msgstr "Paramètres de l'instance"
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/account_menu.ex
 #, elixir-autogen, elixir-format
-msgid "Media Sources"
-msgstr "Sources de médias"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/navigation/account_menu.ex
-#, elixir-autogen, elixir-format
 msgid "Media browser"
 msgstr "Explorateur de médias"
 
@@ -123,7 +117,7 @@ msgstr "Playlists"
 #: lib/watch_club_web/components/navigation/tab_bar.ex
 #, elixir-autogen, elixir-format
 msgid "You"
-msgstr "Vous"
+msgstr "Moi"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sections.ex
@@ -153,8 +147,8 @@ msgstr "Signalements"
 #, elixir-autogen, elixir-format
 msgid "%{count} playlist newly shared with you"
 msgid_plural "%{count} playlists newly shared with you"
-msgstr[0] "%{count} playlist nouvellement partagée avec vous"
-msgstr[1] "%{count} playlists nouvellement partagées avec vous"
+msgstr[0] "%{count} playlist nouvellement partagée avec toi"
+msgstr[1] "%{count} playlists nouvellement partagées avec toi"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/sections.ex
@@ -162,3 +156,9 @@ msgstr[1] "%{count} playlists nouvellement partagées avec vous"
 #, elixir-autogen, elixir-format
 msgid "Home"
 msgstr "Accueil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Media sources"
+msgstr "Sources de médias"

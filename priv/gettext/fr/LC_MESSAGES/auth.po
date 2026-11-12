@@ -34,13 +34,6 @@ msgstr "Créer un compte"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Do not share the credentials of this account, you will be able to invite other users later."
-msgstr "Ne partagez pas les identifiants de ce compte, vous pourrez inviter d'autres utilisateurs plus tard."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/reset_password_page.ex
-#: lib/watch_club_web/live/accounts/setup_page.ex
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
@@ -55,12 +48,6 @@ msgstr "Se connecter"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "To configure your instance, you need to setup a unique administrator account."
-msgstr "Pour configurer votre instance, vous devez créer un compte administrateur unique."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
@@ -71,26 +58,7 @@ msgstr "Nom d'utilisateur"
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome back!"
-msgstr "Bon retour !"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/controllers/auth_controller.ex
-#: lib/watch_club_web/live/accounts/reset_password_page.ex
-#, elixir-autogen, elixir-format
-msgid "Your password has successfully been reset"
-msgstr "Votre mot de passe a bien été réinitialisé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/invitations/invitation_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation Code"
-msgstr "Code d'invitation"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/setup_page.ex
-#, elixir-autogen, elixir-format
-msgid "Welcome to watch.club!"
-msgstr "Bienvenue sur watch.club !"
+msgstr "Bon retour parmi nous !"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
@@ -100,24 +68,74 @@ msgstr "Retour à la connexion"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
+#: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "Reset password"
-msgstr "Réinitialiser le mot de passe"
+msgid "At least %{min} characters."
+msgstr "Au moins %{min} caractères."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "Reset your password"
-msgstr "Réinitialisez votre mot de passe"
+msgid "Choose a new password"
+msgstr "Choisis un nouveau mot de passe"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "You can ask your administrator for a new one."
-msgstr "Vous pouvez en demander un nouveau à votre administrateur."
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/auth_controller.ex
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "New password saved."
+msgstr "Nouveau mot de passe enregistré."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "This password reset link is invalid or has expired"
-msgstr "Ce lien de réinitialisation de mot de passe est invalide ou a expiré"
+msgid "Save password"
+msgstr "Enregistrer le mot de passe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "This link no longer works"
+msgstr "Ce lien ne marche plus"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/invitations/invitation_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your friends will see it. Use lowercase letters, numbers and _."
+msgstr "Tes amis le verront. Utilise des lettres minuscules, des chiffres et _."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/sign_in_page.ex
+#, elixir-autogen, elixir-format
+msgid "Forgot your password? Ask the administrator for a reset link."
+msgstr "Mot de passe oublié ? Demande un lien de réinitialisation à l'administrateur."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reset links expire after 3 days. Ask the administrator for a new one."
+msgstr "Les liens de réinitialisation expirent au bout de 3 jours. Demande un nouveau lien à l'administrateur."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Welcome to Watch Club!"
+msgstr "Bienvenue sur Watch Club !"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Create the administrator account. You'll use it to manage Watch Club and invite your friends."
+msgstr "Crée le compte administrateur. Il te servira à gérer Watch Club et à inviter tes amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/setup_page.ex
+#, elixir-autogen, elixir-format
+msgid "Keep it to yourself: your friends get their own accounts through invitations."
+msgstr "Garde-le pour toi : tes amis auront leur propre compte grâce aux invitations."

@@ -63,7 +63,7 @@ defmodule WatchClubWeb.Components.UI.Select do
   def select(assigns) do
     assigns =
       assigns
-      |> assign(:placeholder, assigns.placeholder || dgettext("default", "Select..."))
+      |> assign(:placeholder, assigns.placeholder || dgettext("default", "Select…"))
       |> assign(:trigger_id, assigns.trigger_id || "#{assigns.id}-trigger")
 
     ~H"""

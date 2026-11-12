@@ -18,6 +18,7 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
 
   attr :category, :atom, default: nil, doc: "the category picked when the form opens"
   attr :current_user, User, required: true
+  attr :administrator, User, required: true, doc: "the Instance Administrator, who reads it"
   attr :on_close, JS, required: true
 
   @impl true
@@ -27,7 +28,9 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
       <.modal id={"#{@id}-modal"} size="sm" phone="sheet" on_close={@on_close}>
         <:title>{dgettext("player", "Report a problem")}</:title>
         <:description>
-          {dgettext("player", "Let the administrator know there's a problem with this content.")}
+          {dgettext("player", "Tell %{admin} what's wrong with this video.",
+            admin: @administrator.username
+          )}
         </:description>
 
         <.form

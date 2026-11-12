@@ -43,7 +43,10 @@ defmodule WatchClubWeb.Conversations.InboxPage do
           <:icon><Lucideicons.inbox /></:icon>
           <:title>{dgettext("conversations", "No conversations yet")}</:title>
           <:description>
-            {dgettext("conversations", "Recommend a movie or a TV show from its page to start one.")}
+            {dgettext(
+              "conversations",
+              "When you and your friends recommend movies and TV shows to each other, you talk about them here."
+            )}
           </:description>
           <.button id="conversations-browse" variant="secondary" navigate={~p"/browse"}>
             {dgettext("conversations", "Browse")}
@@ -270,7 +273,7 @@ defmodule WatchClubWeb.Conversations.InboxPage do
       {:error, _not_found} ->
         {:noreply,
          socket
-         |> put_flash(:error, dgettext("conversations", "This conversation doesn't exist"))
+         |> put_flash(:error, dgettext("conversations", "We couldn't find this conversation."))
          |> push_patch(to: ~p"/inbox")}
     end
   end

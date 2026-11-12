@@ -51,7 +51,7 @@ defmodule WatchClub.Accounts.InvitationCode do
 
         message dgettext_noop(
                   "errors",
-                  "This invitation has already been used more than that"
+                  "It's already been used more times than that."
                 )
       end
     end
@@ -60,11 +60,17 @@ defmodule WatchClub.Accounts.InvitationCode do
       description "Uses an invitation code to signup a user"
 
       validate compare(:expires_at, greater_than: &DateTime.utc_now/0) do
-        message dgettext_noop("errors", "The invitation has expired")
+        message dgettext_noop(
+                  "errors",
+                  "This invitation has expired. Ask the person who sent it for a new link."
+                )
       end
 
       validate WatchClub.Accounts.Validations.InvitationNotUsed do
-        message dgettext_noop("errors", "The invitation has already been used")
+        message dgettext_noop(
+                  "errors",
+                  "This invitation has already been used. Ask the person who sent it for a new link."
+                )
       end
 
       # The action is atomic: the validations above and the increment compile
@@ -126,7 +132,7 @@ defmodule WatchClub.Accounts.InvitationCode do
 
     validate compare(:max_uses, greater_than_or_equal_to: 1) do
       where changing(:max_uses)
-      message dgettext_noop("errors", "Max uses must be at least %{greater_than_or_equal_to}")
+      message dgettext_noop("errors", "Maximum uses must be at least %{greater_than_or_equal_to}")
     end
   end
 

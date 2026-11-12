@@ -57,31 +57,29 @@ msgstr "Utilisateurs"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
-msgid "Instance Admin"
-msgstr "Administrateur de l'instance"
+msgid "Reset password"
+msgstr "Réinitialiser le mot de passe"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Are you sure you want to delete %{username}? They will not be able to access %{name} and all their history will be erased."
-msgstr ""
-"Êtes-vous sûr de vouloir supprimer %{username} ? Il ne pourra plus accéder à "
-"%{name} et tout son historique sera effacé."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Manage access to %{name}."
-msgstr "Gérez l'accès à %{name}."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Password reset link copied to clipboard"
-msgstr "Lien de réinitialisation du mot de passe copié dans le presse-papiers"
+msgid "Delete %{username}? They can't sign in anymore, and their watch history and playlists are deleted. Their messages and requests stay, shown as from a deleted user. You can't undo this."
+msgstr "Supprimer %{username} ? Cette personne ne pourra plus se connecter, et son historique et ses playlists seront supprimés. Ses messages et ses demandes restent, au nom d'un utilisateur supprimé. C'est définitif."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
-msgid "Reset password"
-msgstr "Réinitialiser le mot de passe"
+msgid "Instance administrator"
+msgstr "Administrateur de l'instance"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends to %{name} and manage who has access."
+msgstr "Invite tes amis sur %{name} et gère qui y a accès."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reset link copied. Send it to %{username}: it works for 3 days."
+msgstr "Lien de réinitialisation copié. Envoie-le à %{username} : il est valable 3 jours."

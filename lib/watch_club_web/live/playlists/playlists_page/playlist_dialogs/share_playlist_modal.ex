@@ -23,7 +23,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModa
       <:description>
         {dgettext(
           "playlists",
-          "They'll find it in their Playlists. Choose who can only view it and who can also edit it."
+          "They'll find it in their Playlists. Choose who can only view it, and who can also add and remove content."
         )}
       </:description>
 

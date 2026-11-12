@@ -27,31 +27,31 @@ msgstr "Aucune demande pour le moment"
 #: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
-msgstr "Ne plus être prévenu"
+msgstr "Ne plus me prévenir"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified about %{title}"
-msgstr "Ne plus être prévenu pour %{title}"
+msgstr "Ne plus me prévenir pour %{title}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}% downloaded"
-msgstr "%{percent} % téléchargé"
+msgstr "%{percent} % téléchargé"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not found, we'll keep looking for it"
-msgstr "Introuvable, nous continuons à le chercher"
+msgstr "Introuvable, on continue à chercher"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not released yet"
-msgstr "Pas encore sorti"
+msgstr "Sortie à venir"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
@@ -69,25 +69,7 @@ msgstr "Sort le %{date}"
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Ready to watch"
-msgstr "Prêt à regarder"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/my_requests_page.ex
-#, elixir-autogen, elixir-format
-msgid "Search for a title in Browse and request it. You'll see here when you can watch it."
-msgstr "Cherchez un titre dans Parcourir et demandez‑le. Vous verrez ici quand vous pourrez le regarder."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_status.ex
-#, elixir-autogen, elixir-format
-msgid "There was a problem, the instance administrator was told"
-msgstr "Il y a eu un problème, l'administrateur de l'instance a été prévenu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/requests/request_status.ex
-#, elixir-autogen, elixir-format
-msgid "Error downloading"
-msgstr "Erreur de téléchargement"
+msgstr "Prêts à regarder"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
@@ -102,3 +84,21 @@ msgid "%{ready} of %{count} episode ready"
 msgid_plural "%{ready} of %{count} episodes ready"
 msgstr[0] "%{ready} sur %{count} épisode prêt"
 msgstr[1] "%{ready} sur %{count} épisodes prêts"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Download stuck"
+msgstr "Téléchargement bloqué"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. You can follow them here until they're ready."
+msgstr "Demande les films et les séries que tu aimerais regarder. Tu peux suivre leur avancement ici jusqu'à ce qu'ils soient prêts."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "The download is stuck. Let %{admin} know."
+msgstr "Le téléchargement est bloqué. Préviens %{admin}."

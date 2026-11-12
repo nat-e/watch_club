@@ -39,11 +39,6 @@ msgstr ""
 msgid "Season %{number}"
 msgstr ""
 
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
-msgid "Could not request this right now."
-msgstr ""
-
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Request"
@@ -112,11 +107,6 @@ msgstr ""
 msgid "Mark season %{number} as watched"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Nobody has watched it yet."
-msgstr ""
-
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not out yet"
@@ -144,11 +134,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
-msgid "This movie or TV show doesn't exist"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
 msgid "Watch trailer"
 msgstr ""
 
@@ -159,22 +144,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "It isn't in the library yet. Mark what you've watched elsewhere."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Not in the library yet"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
-msgstr ""
-
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
-msgid "You'll be told when %{title} is ready. It's in your Requests."
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -215,11 +185,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "Recommended it to you"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Recommended to %{names}. The conversation is in your Inbox."
 msgstr ""
 
@@ -231,11 +196,6 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Starts one group conversation with %{names}."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "To one person or several. Several people share one conversation."
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -253,11 +213,6 @@ msgstr ""
 msgid "to %{recipients}"
 msgstr ""
 
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Recommend it to people, with a message if you want. It starts a conversation."
-msgstr ""
-
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "New"
@@ -271,16 +226,6 @@ msgstr ""
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}%"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Content details are unavailable. Please try again later."
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Loading content…"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -348,4 +293,113 @@ msgstr[1] ""
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Same file as %{episodes}"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't send the request. Try again in a moment."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Loading…"
+msgstr ""
+
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Request sent. We'll let you know when you can watch %{title}."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Tell them why they'll love it. You'll talk about it together in your Inbox."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this TV show."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this movie."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this sports event."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this TV show. Try again in a moment."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this movie. Try again in a moment."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this sports event. Try again in a moment."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Nobody has watched it yet."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not on %{name} yet"
 msgstr ""

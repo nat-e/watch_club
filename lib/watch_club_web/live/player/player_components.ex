@@ -468,17 +468,21 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
+  attr :administrator, User, required: true, doc: "the Instance Administrator"
+
   @doc """
-  An full page overlay displayed when there is an error loading media in the player.
-  Contains a CTA that redirects to the homepage
+  An full page overlay displayed when the video fails while it plays, with a way home and one to
+  Report a Problem
   """
   def player_load_error_overlay(assigns) do
     ~H"""
     <.player_overlay id="watch-club-player-error" role="alert" aria-live="assertive">
       <:icon><Lucideicons.triangle_alert /></:icon>
-      <:title>{dgettext("player", "Error loading video")}</:title>
+      <:title>{dgettext("player", "We couldn't play this video")}</:title>
       <:description>
-        {dgettext("player", "We couldn't find the media you were looking for.")}
+        {dgettext("player", "Report the problem so %{admin} can look into it.",
+          admin: @administrator.username
+        )}
       </:description>
       <.button id="player-error-back-button" navigate={~p"/"}>
         {dgettext("player", "Back home")}

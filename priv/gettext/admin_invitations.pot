@@ -31,11 +31,6 @@ msgstr ""
 msgid "Invitation created"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation link copied to clipboard"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Unlimited"
@@ -56,24 +51,9 @@ msgstr ""
 msgid "Create"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Create an invitation link and share it with your friends. The link will expire after 7 days"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Delete code"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Delete invitation code"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
@@ -81,24 +61,9 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Edit invitation code"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation code deleted"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation updated"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invite users"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
@@ -116,27 +81,57 @@ msgstr ""
 msgid "The code cannot be changed once created."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
-msgid "Usage limit"
+msgid "Active invitations"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Users will no longer be able to sign up with the %{code} code."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any active invite links"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Active Invitations"
+msgid "Delete invitation"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Create invitation code"
+msgid "Edit invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation deleted"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation link copied. Send it to your friends."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum uses"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "No active invitations"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Nobody can sign up with %{code} anymore. Accounts already created with it stay."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Share the link with friends so they can create their account. It works for 7 days."
 msgstr ""

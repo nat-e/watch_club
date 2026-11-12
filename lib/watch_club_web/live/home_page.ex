@@ -66,11 +66,11 @@ defmodule WatchClubWeb.HomePage do
             contents={tl(@in_progress)}
             locale={@current_user.settings.locale}
           />
-          <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
+          <.for_you items={@for_you} locale={@current_user.settings.locale} />
           <.new_in_library_row
             :if={@new_in_library != []}
             id="new-in-library"
-            title={dgettext("home", "New in the library")}
+            title={dgettext("home", "New on %{name}", name: @instance_settings.name)}
             contents={@new_in_library}
             current_user={@current_user}
           />
@@ -83,11 +83,13 @@ defmodule WatchClubWeb.HomePage do
           />
           <.empty :if={@new_in_library == [] and @new_sports_events == []} id="library-empty">
             <:icon><Lucideicons.popcorn /></:icon>
-            <:title>{dgettext("home", "Nothing in the library yet")}</:title>
+            <:title>
+              {dgettext("home", "Nothing on %{name} yet", name: @instance_settings.name)}
+            </:title>
             <:description>
               {dgettext(
                 "home",
-                "Search for a title in Browse and request it. New titles will show up here."
+                "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
               )}
             </:description>
             <.button id="library-empty-browse" variant="secondary" navigate={~p"/browse"}>

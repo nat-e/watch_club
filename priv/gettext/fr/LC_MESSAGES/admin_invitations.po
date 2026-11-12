@@ -36,12 +36,6 @@ msgid "Invitation created"
 msgstr "Invitation créée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation link copied to clipboard"
-msgstr "Lien d'invitation copié dans le presse-papiers"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Unlimited"
@@ -66,28 +60,10 @@ msgid "Create"
 msgstr "Créer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Create an invitation link and share it with your friends. The link will expire after 7 days"
-msgstr "Créez un lien d'invitation et partagez-le avec vos amis. Le lien expirera au bout de 7 jours"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Supprimer"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Delete code"
-msgstr "Supprimer le code"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Delete invitation code"
-msgstr "Supprimer le code d'invitation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
@@ -96,34 +72,16 @@ msgid "Edit"
 msgstr "Modifier"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Edit invitation code"
-msgstr "Modifier le code d'invitation"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation code deleted"
-msgstr "Code d'invitation supprimé"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation updated"
 msgstr "Invitation mise à jour"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invite users"
-msgstr "Inviter des utilisateurs"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Maximum number of accounts this invitation can create. Leave empty for unlimited."
-msgstr "Nombre maximal de comptes que cette invitation peut créer. Laissez vide pour ne pas fixer de limite."
+msgstr "Nombre maximal de comptes que cette invitation peut créer. Laisse vide pour ne pas fixer de limite."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
@@ -138,31 +96,67 @@ msgid "The code cannot be changed once created."
 msgstr "Le code ne peut plus être modifié une fois créé."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
-msgid "Usage limit"
-msgstr "Limite d'utilisation"
+msgid "Active invitations"
+msgstr "Invitations actives"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Users will no longer be able to sign up with the %{code} code."
-msgstr "Les utilisateurs ne pourront plus s'inscrire avec le code %{code}."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any active invite links"
-msgstr "Vous n'avez aucun lien d'invitation actif"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
-#, elixir-autogen, elixir-format
-msgid "Active Invitations"
-msgstr "Invitations actives"
+msgid "Delete invitation"
+msgstr "Supprimer l'invitation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
-msgid "Create invitation code"
-msgstr "Créer un code d'invitation"
+msgid "Edit invitation"
+msgstr "Modifier l'invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation deleted"
+msgstr "Invitation supprimée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation link copied. Send it to your friends."
+msgstr "Lien d'invitation copié. Envoie-le à tes amis."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends"
+msgstr "Inviter des amis"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum uses"
+msgstr "Utilisations maximum"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New invitation"
+msgstr "Nouvelle invitation"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "No active invitations"
+msgstr "Aucune invitation active"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Nobody can sign up with %{code} anymore. Accounts already created with it stay."
+msgstr "Plus personne ne pourra s'inscrire avec %{code}. Les comptes déjà créés avec restent."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Share the link with friends so they can create their account. It works for 7 days."
+msgstr "Partage le lien avec tes amis pour qu'ils créent leur compte. Il est valable 7 jours."

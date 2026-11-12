@@ -34,7 +34,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       {:error, _} ->
         {:noreply,
          socket
-         |> put_flash(:error, dgettext("admin_media_imports", "Media Source not found"))
+         |> put_flash(:error, dgettext("admin_media_imports", "Media source not found"))
          |> push_navigate(to: ~p"/admin/media/sources")}
     end
   end
@@ -54,18 +54,18 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
     >
       <:parent
         navigate={~p"/admin/media/sources"}
-        label={dgettext("admin_media_imports", "Media Sources")}
+        label={dgettext("admin_media_imports", "Media sources")}
       />
       <.history_header media_source={@media_source} />
 
       <.section title={dgettext("admin_media_imports", "Import history")}>
         <.empty :if={@media_source.imports == []} border={false}>
           <:icon><Lucideicons.history /></:icon>
-          <:title>{dgettext("admin_media_imports", "No Media Imports yet")}</:title>
+          <:title>{dgettext("admin_media_imports", "No imports yet")}</:title>
           <:description>
             {dgettext(
               "admin_media_imports",
-              "This Media Source has not been imported yet. Run an import to add your medias."
+              "Nothing imported from this source yet. Run an import to add its files to Watch Club."
             )}
           </:description>
           <.button
@@ -106,7 +106,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       playback_session={@playback_session}
-      title={dgettext("admin_media_imports", "Media Sources")}
+      title={dgettext("admin_media_imports", "Media sources")}
     >
     </Layouts.app>
     """
@@ -143,7 +143,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
       when source_id == socket.assigns.media_source.id do
     {:noreply,
      socket
-     |> put_flash(:info, dgettext("admin_media_imports", "Media Source was deleted"))
+     |> put_flash(:info, dgettext("admin_media_imports", "Media source was deleted"))
      |> push_navigate(to: ~p"/admin/media/sources")}
   end
 

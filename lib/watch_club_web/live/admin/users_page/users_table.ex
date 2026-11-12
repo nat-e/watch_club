@@ -44,7 +44,7 @@ defmodule WatchClubWeb.Live.Admin.UsersPage.UsersTable do
             <span class="truncate font-semibold">{@user.username}</span>
             <.badge :if={@user.administrator?} variant="accent" class="w-fit">
               <:icon><Lucideicons.shield /></:icon>
-              {dgettext("admin_users", "Instance Admin")}
+              {dgettext("admin_users", "Instance administrator")}
             </.badge>
           </.stack>
         </.inline>

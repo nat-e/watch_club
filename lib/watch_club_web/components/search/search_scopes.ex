@@ -1,8 +1,8 @@
 defmodule WatchClubWeb.Components.Search.SearchScopes do
   @moduledoc """
   What a search looks in: one scope per Metadata Provider, because their results can't share one
-  list: Movies and TV Shows, or Sports Events. Then the In the library filter, which keeps only
-  the Library.
+  list: Movies and TV Shows, or Sports Events. Then the filter that keeps only the Library, named
+  after the instance.
   """
   use WatchClubWeb, :component
 
@@ -13,8 +13,9 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
     required: true,
     doc: "the event or JS commands of a scope, with its `scope`"
 
-  attr :has_media, :boolean, required: true, doc: "whether the In the library filter is on"
+  attr :has_media, :boolean, required: true, doc: "whether the Library filter is on"
   attr :on_toggle, :any, required: true, doc: "the event or JS commands of the filter"
+  attr :instance_name, :string, required: true, doc: "names the Library filter"
   attr :class, :any, default: nil
 
   def search_scopes(assigns) do
@@ -42,7 +43,7 @@ defmodule WatchClubWeb.Components.Search.SearchScopes do
       </div>
       <.filter_chip id={"#{@id}-in-library"} on={@has_media} phx-click={@on_toggle} class="ml-auto">
         <:icon><Lucideicons.library /></:icon>
-        {dgettext("search", "In the library")}
+        {dgettext("search", "On %{name}", name: @instance_name)}
       </.filter_chip>
     </div>
     """

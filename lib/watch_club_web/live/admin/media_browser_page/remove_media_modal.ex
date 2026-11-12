@@ -11,8 +11,6 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal do
   import WatchClubWeb.Components.UI.Button
   import WatchClubWeb.Components.UI.Modal
 
-  attr :instance_settings, InstanceSettings, required: true
-
   def remove_media_modal(assigns) do
     ~H"""
     <.modal id="remove-media-modal" size="sm" on_close={JS.push("close_remove_media_modal")}>
@@ -20,8 +18,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.RemoveMediaModal do
       <:description>
         {dgettext(
           "admin_media",
-          "Remove the media from %{name}. This will not delete the file on the disk.",
-          name: @instance_settings.name
+          "Remove this media from Watch Club? Its file stays on disk, so the next import adds it back."
         )}
       </:description>
       <:footer>

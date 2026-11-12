@@ -109,7 +109,7 @@ defmodule WatchClubWeb.BrowsePage do
             phx-value-filter="recommended"
           >
             <:icon><Lucideicons.user_round_check /></:icon>
-            {dgettext("browse", "Recommended to me")}
+            {dgettext("browse", "Recommended by friends")}
           </.filter_chip>
           <.divider />
           <.more_button filters={@filters} />
@@ -135,9 +135,7 @@ defmodule WatchClubWeb.BrowsePage do
           <.empty :if={not filtered?(@filters)}>
             <:icon><.content_type_icon type={@type} /></:icon>
             <:title>{empty_title(@type)}</:title>
-            <:description>
-              {dgettext("browse", "They show up here once they're on the server.")}
-            </:description>
+            <:description>{empty_description(@type)}</:description>
           </.empty>
         </li>
         <li :for={{dom_id, content} <- @streams.library} id={dom_id}>
@@ -169,6 +167,27 @@ defmodule WatchClubWeb.BrowsePage do
   defp empty_title(:movie), do: dgettext("browse", "No movies yet")
   defp empty_title(:tv_show), do: dgettext("browse", "No TV shows yet")
   defp empty_title(:sports_event), do: dgettext("browse", "No sports events yet")
+
+  defp empty_description(:movie),
+    do:
+      dgettext(
+        "browse",
+        "Request the movies you'd like to watch. We'll look for them and add them here for everyone."
+      )
+
+  defp empty_description(:tv_show),
+    do:
+      dgettext(
+        "browse",
+        "Request the TV shows you'd like to watch. We'll look for them and add them here for everyone."
+      )
+
+  defp empty_description(:sports_event),
+    do:
+      dgettext(
+        "browse",
+        "Request the sports events you'd like to watch. We'll look for them and add them here for everyone."
+      )
 
   # Between the type chips, Not watched and More
   defp divider(assigns) do

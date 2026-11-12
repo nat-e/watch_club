@@ -16,6 +16,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
   attr :id, :string, required: true
   attr :playlist, Playlist, required: true
   attr :current_user, User, required: true
+  attr :instance_name, :string, required: true, doc: "names the Library in the search"
   attr :on_close, JS, required: true
 
   @impl true
@@ -45,6 +46,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
             on_scope={JS.push("change_scope", target: @myself)}
             has_media={@has_media?}
             on_toggle={JS.push("toggle_has_media", target: @myself)}
+            instance_name={@instance_name}
           />
         </div>
 
@@ -74,7 +76,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.AddContentModalLi
               phx-target={@myself}
               class="group/result flex w-full items-center gap-group rounded-control p-related text-left transition-colors hover:bg-surface-hover focus-visible:-outline-offset-2 aria-pressed:bg-surface-selected phx-click-loading:pointer-events-none phx-click-loading:opacity-60"
             >
-              <.search_result_summary result={result} />
+              <.search_result_summary result={result} instance_name={@instance_name} />
               <Lucideicons.circle_plus class="size-icon shrink-0 text-text-muted group-aria-pressed/result:hidden" />
               <Lucideicons.circle_check class="hidden size-icon shrink-0 text-success group-aria-pressed/result:block" />
             </button>

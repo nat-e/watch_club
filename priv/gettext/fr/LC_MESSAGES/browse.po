@@ -15,7 +15,7 @@ msgstr ""
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
-msgstr "Langue originale : %{language}"
+msgstr "Langue originale : %{language}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
@@ -77,13 +77,13 @@ msgstr "Langue originale"
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Remove a filter to see more."
-msgstr "Retirez un filtre pour en voir plus."
+msgstr "Retire un filtre pour en voir plus."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sort: %{sort}"
-msgstr "Tri : %{sort}"
+msgstr "Tri : %{sort}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
@@ -123,26 +123,6 @@ msgid "Any"
 msgstr "Toutes"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/poster_card.ex
-#, elixir-autogen, elixir-format
-msgid "From %{names}"
-msgstr "De %{names}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/poster_card.ex
-#, elixir-autogen, elixir-format
-msgid "From %{name} and %{count} other"
-msgid_plural "From %{name} and %{count} others"
-msgstr[0] "De %{name} et %{count} autre"
-msgstr[1] "De %{name} et %{count} autres"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/browse_page.ex
-#, elixir-autogen, elixir-format
-msgid "Recommended to me"
-msgstr "Recommandés pour moi"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "No TV shows yet"
@@ -161,7 +141,39 @@ msgid "No sports events yet"
 msgstr "Aucun événement sportif pour l'instant"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{names}"
+msgstr "Recommandation de %{names}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{name} and %{count} other"
+msgid_plural "Recommended by %{name} and %{count} others"
+msgstr[0] "Recommandation de %{name} et %{count} autre"
+msgstr[1] "Recommandation de %{name} et %{count} autres"
+
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
-msgid "They show up here once they're on the server."
-msgstr "À retrouver ici dès leur arrivée sur le serveur."
+msgid "Recommended by friends"
+msgstr "Recommandés par mes amis"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the TV shows you'd like to watch. We'll look for them and add them here for everyone."
+msgstr "Demande les séries que tu aimerais regarder. On les cherche et on les ajoute ici pour tout le monde."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies you'd like to watch. We'll look for them and add them here for everyone."
+msgstr "Demande les films que tu aimerais regarder. On les cherche et on les ajoute ici pour tout le monde."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/browse_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the sports events you'd like to watch. We'll look for them and add them here for everyone."
+msgstr "Demande les contenus que tu aimerais regarder. On les cherche et on les ajoute ici pour tout le monde."

@@ -14,6 +14,7 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
   attr :search, :boolean, required: true
   attr :current_url, Url, required: true
   attr :current_user, User, required: true
+  attr :instance_name, :string, required: true
   attr :class, :any, default: nil
 
   def app_bar(assigns) do
@@ -102,6 +103,7 @@ defmodule WatchClubWeb.Components.Navigation.AppBar do
           id="app-bar-search"
           current_url={@current_url}
           current_user={@current_user}
+          instance_name={@instance_name}
         />
       </div>
     </header>

@@ -142,12 +142,12 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       current_user={@current_user}
       instance_settings={@instance_settings}
       playback_session={@playback_session}
-      title={dgettext("admin_media", "Media Browser")}
+      title={dgettext("admin_media", "Media browser")}
     >
       <:parent
         :if={@selected}
         navigate={media_browser_path(@list, nil)}
-        label={dgettext("admin_media", "Media Browser")}
+        label={dgettext("admin_media", "Media browser")}
         patch
         narrow_only
       />
@@ -155,7 +155,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       <%!-- Narrow screens show the selected Media's details instead of the list --%>
       <div class={@selected && "@max-split-view/main:hidden"}>
         <.page_description text={
-          dgettext("admin_media", "View and manage all Media on this instance.")
+          dgettext(
+            "admin_media",
+            "Every file in Watch Club: find the unmatched ones, match them by hand, or remove them."
+          )
         } />
       </div>
 
@@ -209,9 +212,10 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         module={MatchMediaLive}
         media={@matching}
         current_user={@current_user}
+        instance_name={@instance_settings.name}
         on_close={fn -> send(self(), :close_match_media_modal) end}
       />
-      <.remove_media_modal :if={@removing} instance_settings={@instance_settings} />
+      <.remove_media_modal :if={@removing} />
     </Layouts.app>
     """
   end
@@ -244,7 +248,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
             field={@form[:search]}
             type="search"
             placeholder={dgettext("admin_media", "Search file name or title")}
-            aria-label={dgettext("admin_media", "Search Media")}
+            aria-label={dgettext("admin_media", "Search media")}
             autocomplete="off"
             phx-debounce="300"
             class="pl-9!"
@@ -254,7 +258,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
       <.scroll_row id="media-filters" variant="chips">
         <div
           role="radiogroup"
-          aria-label={dgettext("admin_media", "Media Type")}
+          aria-label={dgettext("admin_media", "Media type")}
           class="flex shrink-0 items-center gap-related"
         >
           <.filter_chip
@@ -288,16 +292,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search /></:icon>
-      <:title>{dgettext("admin_media", "You don't have any media yet")}</:title>
+      <:title>{dgettext("admin_media", "No media yet")}</:title>
       <:description>
         {dgettext(
           "admin_media",
-          "Configure media imports or automations to add Media to your instance."
+          "Add a media source to bring your videos into Watch Club."
         )}
       </:description>
       <.button id="empty-state-import-media" navigate={~p"/admin/media/sources"} variant="primary">
         <:icon><Lucideicons.download /></:icon>
-        {dgettext("admin_media", "Import Media")}
+        {dgettext("admin_media", "Add media sources")}
       </.button>
     </.empty>
     """
@@ -307,7 +311,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
     ~H"""
     <.empty>
       <:icon><Lucideicons.search_x /></:icon>
-      <:title>{dgettext("admin_media", "No Media match your filters")}</:title>
+      <:title>{dgettext("admin_media", "No media matches your filters")}</:title>
       <:description>
         {dgettext("admin_media", "Try clearing your filters or searching for something else")}
       </:description>

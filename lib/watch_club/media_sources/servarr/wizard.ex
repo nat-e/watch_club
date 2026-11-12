@@ -84,11 +84,11 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       accept [:base_url, :api_key]
 
       validate present(:base_url) do
-        message dgettext_noop("errors", "The URL is required")
+        message dgettext_noop("errors", "Enter the URL")
       end
 
       validate present(:api_key) do
-        message dgettext_noop("errors", "The API key is required")
+        message dgettext_noop("errors", "Enter the API key")
       end
 
       change {NormalizeUrl, attribute: :base_url}
@@ -106,11 +106,11 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       accept [:selected_root_path, :selected_quality_profile_id, :local_root_folder_path]
 
       validate present(:selected_quality_profile_id) do
-        message dgettext_noop("errors", "The quality profile is required")
+        message dgettext_noop("errors", "Choose a quality profile")
       end
 
       validate present(:selected_root_path) do
-        message dgettext_noop("errors", "The root folder is required")
+        message dgettext_noop("errors", "Choose a root folder")
       end
 
       change transition_state(:webhook)
@@ -121,7 +121,7 @@ defmodule WatchClub.MediaSources.Servarr.Wizard do
       accept [:webhook_callback_base_url]
 
       validate present(:webhook_callback_base_url) do
-        message dgettext_noop("errors", "The callback URL is required")
+        message dgettext_noop("errors", "Enter the Watch Club URL")
       end
 
       change {NormalizeUrl, attribute: :webhook_callback_base_url}

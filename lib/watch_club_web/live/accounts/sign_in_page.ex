@@ -30,6 +30,9 @@ defmodule WatchClubWeb.Accounts.SignInPage do
           </.button>
         </:action>
       </.form>
+      <p class="text-sm text-text-muted">
+        {dgettext("auth", "Forgot your password? Ask the administrator for a reset link.")}
+      </p>
     </Layouts.centered_card>
     """
   end
@@ -41,7 +44,7 @@ defmodule WatchClubWeb.Accounts.SignInPage do
         context: %{token_type: :sign_in},
         transform_errors: fn
           _query, %AshAuthentication.Errors.AuthenticationFailed{} ->
-            [{:password, dgettext_noop("errors", "Your username or password is invalid"), []}]
+            [{:password, dgettext_noop("errors", "Wrong username or password"), []}]
 
           _query, error ->
             error

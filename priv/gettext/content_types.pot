@@ -23,27 +23,12 @@ msgstr ""
 
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
-msgid "TV Show"
-msgstr ""
-
-#: lib/watch_club/contents/content_type.ex
-#, elixir-autogen, elixir-format
 msgid "Books"
-msgstr ""
-
-#: lib/watch_club/contents/search_content_type.ex
-#, elixir-autogen, elixir-format
-msgid "Movies and Shows"
 msgstr ""
 
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
-msgstr ""
-
-#: lib/watch_club/contents/content_type.ex
-#, elixir-autogen, elixir-format
-msgid "TV Shows"
 msgstr ""
 
 #: lib/watch_club/contents/content_type.ex
@@ -57,7 +42,22 @@ msgstr ""
 msgid "Sports"
 msgstr ""
 
+#: lib/watch_club/contents/search_content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Movies and TV shows"
+msgstr ""
+
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
-msgid "Sports Event"
+msgid "Sports event"
+msgstr ""
+
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV show"
+msgstr ""
+
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV shows"
 msgstr ""

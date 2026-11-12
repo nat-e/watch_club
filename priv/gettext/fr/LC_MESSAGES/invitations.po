@@ -15,22 +15,22 @@ msgstr ""
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
 msgid "Ask the person who invited you for a new link."
-msgstr "Demandez un nouveau lien à la personne qui vous a invité."
+msgstr "Demande un nouveau lien à la personne qui te l'a envoyée."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "This invitation is no longer available"
-msgstr "Cette invitation n'est plus active"
+msgid "A private community for watching and discussing movies, TV shows and more with friends."
+msgstr "Une communauté privée pour regarder des films, des séries et plus encore, et en discuter entre amis."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "Welcome!"
-msgstr "Bienvenue !"
+msgid "This invitation no longer works"
+msgstr "Cette invitation n'est plus valable"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "You are invited to create an account on %{name}!"
-msgstr "Vous êtes invité à créer un compte sur %{name} !"
+msgid "You're invited to %{name}"
+msgstr "On t'invite à rejoindre %{name}"

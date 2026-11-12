@@ -6,14 +6,16 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
         %{invitation: %InvitationCode{status: :active}, form: %Phoenix.HTML.Form{}} = assigns
       ) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title={dgettext("invitations", "Welcome!")}>
-      <.stack space="related">
-        <p>
-          {dgettext("invitations", "You are invited to create an account on %{name}!",
-            name: @instance_settings.name
-          )}
-        </p>
-      </.stack>
+    <Layouts.centered_card
+      flash={@flash}
+      title={dgettext("invitations", "You're invited to %{name}", name: @instance_settings.name)}
+    >
+      <p>
+        {dgettext(
+          "invitations",
+          "A private community for watching and discussing movies, TV shows and more with friends."
+        )}
+      </p>
       <.form
         for={@form}
         id="invitation-registration-form"
@@ -26,25 +28,31 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
           label={dgettext("auth", "Username")}
           autocomplete="username"
           type="text"
-        />
+        >
+          <:hint>
+            {dgettext("auth", "Your friends will see it. Use lowercase letters, numbers and _.")}
+          </:hint>
+        </.field>
         <.field
           field={@form[:password]}
           label={dgettext("auth", "Password")}
           autocomplete="new-password"
           type="password"
-        />
+        >
+          <:hint>{dgettext("auth", "At least %{min} characters.", min: 8)}</:hint>
+        </.field>
         <.field
           field={@form[:password_confirmation]}
           label={dgettext("auth", "Confirm password")}
           autocomplete="new-password"
           type="password"
         />
-        <.field
-          field={@form[:invitation_code]}
-          label={dgettext("auth", "Invitation Code")}
-          readonly={true}
-          type="text"
+        <input
+          type="hidden"
+          name={@form[:invitation_code].name}
+          value={@form[:invitation_code].value}
         />
+        <.field_errors field={@form[:invitation_code]} show_untouched={true} />
         <:action>
           <.button id="invitation-registration-form-submit-button" type="submit" class="w-full">
             {dgettext("auth", "Create account")}
@@ -59,7 +67,7 @@ defmodule WatchClubWeb.Invitations.InvitationPage do
     ~H"""
     <Layouts.centered_card
       flash={@flash}
-      title={dgettext("invitations", "This invitation is no longer available")}
+      title={dgettext("invitations", "This invitation no longer works")}
     >
       <p>
         {dgettext("invitations", "Ask the person who invited you for a new link.")}

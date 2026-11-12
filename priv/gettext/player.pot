@@ -30,11 +30,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
-msgid "Error loading video"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr ""
 
@@ -43,16 +38,6 @@ msgstr ""
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
-msgstr ""
-
-#: lib/watch_club_web/live/player_page.ex
-#, elixir-autogen, elixir-format
-msgid "The video you were looking for does not exist"
-msgstr ""
-
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "We couldn't find the media you were looking for."
 msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
@@ -68,11 +53,6 @@ msgstr ""
 #: lib/watch_club_web/live/player/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Details (optional)"
-msgstr ""
-
-#: lib/watch_club_web/live/player/report_problem_live.ex
-#, elixir-autogen, elixir-format
-msgid "Let the administrator know there's a problem with this content."
 msgstr ""
 
 #: lib/watch_club_web/components/playbacks/problem_category.ex
@@ -109,11 +89,6 @@ msgstr ""
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Slow or buffering"
-msgstr ""
-
-#: lib/watch_club_web/live/player_page.ex
-#, elixir-autogen, elixir-format
-msgid "Thanks! Your report was sent."
 msgstr ""
 
 #: lib/watch_club_web/live/player/report_problem_live.ex
@@ -159,11 +134,6 @@ msgstr ""
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Connecting to %{tv}…"
-msgstr ""
-
-#: lib/watch_club_web/live/player_page.ex
-#, elixir-autogen, elixir-format
-msgid "Couldn't play on the TV. It needs to reach WatchClub at an HTTPS address with a trusted certificate."
 msgstr ""
 
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
@@ -289,4 +259,39 @@ msgstr ""
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{name}"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. Try again, and let %{admin} know if it keeps happening."
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Report the problem so %{admin} can look into it."
+msgstr ""
+
+#: lib/watch_club_web/live/player/report_problem_live.ex
+#, elixir-autogen, elixir-format
+msgid "Tell %{admin} what's wrong with this video."
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Thanks! We sent your report to %{admin}."
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this video."
+msgstr ""
+
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't play this video"
+msgstr ""
+
+#: lib/watch_club_web/live/player_page.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
 msgstr ""

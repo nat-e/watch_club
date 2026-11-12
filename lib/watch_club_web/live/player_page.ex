@@ -98,7 +98,7 @@ defmodule WatchClubWeb.PlayerPage do
         <.cast_connecting_overlay :if={@casting_to} tv_name={@casting_to} />
       </div>
 
-      <.player_load_error_overlay :if={@playback_error} />
+      <.player_load_error_overlay :if={@playback_error} administrator={@administrator} />
 
       <.playing_elsewhere_overlay :if={@playing_elsewhere?} />
 
@@ -112,6 +112,7 @@ defmodule WatchClubWeb.PlayerPage do
       details={@problem_details}
       category={if @playback_error, do: :player}
       current_user={@current_user}
+      administrator={@administrator}
       on_close={JS.push("close_problem_report")}
     />
 
@@ -131,7 +132,8 @@ defmodule WatchClubWeb.PlayerPage do
        casting_to: nil,
        reconnected?: connected?(socket) and get_connect_params(socket)["_mounts"] > 0,
        user_agent: get_connect_info(socket, :user_agent),
-       problem_details: nil
+       problem_details: nil,
+       administrator: Accounts.get_instance_administrator!(actor: socket.assigns.current_user)
      )}
   end
 
@@ -248,13 +250,7 @@ defmodule WatchClubWeb.PlayerPage do
     {:noreply,
      socket
      |> assign(:casting_to, nil)
-     |> put_flash(
-       :error,
-       dgettext(
-         "player",
-         "Couldn't play on the TV. It needs to reach WatchClub at an HTTPS address with a trusted certificate."
-       )
-     )}
+     |> put_flash(:error, cast_failed_message(socket.assigns))}
   end
 
   def handle_event("cast_failed", %{"reason" => "cancelled"}, socket) do
@@ -306,11 +302,32 @@ defmodule WatchClubWeb.PlayerPage do
   def handle_info({ReportProblemLive, :reported}, socket) do
     {:noreply,
      socket
-     |> put_flash(:info, dgettext("player", "Thanks! Your report was sent."))
+     |> put_flash(
+       :info,
+       dgettext("player", "Thanks! We sent your report to %{admin}.",
+         admin: socket.assigns.administrator.username
+       )
+     )
      |> assign(:problem_details, nil)}
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
+
+  # Only the Instance Administrator can fix WatchClub's address, so only they get the likely cause
+  defp cast_failed_message(%{current_user: %User{administrator?: true}}),
+    do:
+      dgettext(
+        "player",
+        "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
+      )
+
+  defp cast_failed_message(%{administrator: administrator}),
+    do:
+      dgettext(
+        "player",
+        "Couldn't play on the TV. Try again, and let %{admin} know if it keeps happening.",
+        admin: administrator.username
+      )
 
   defp start_at(t) do
     case t && Float.parse(t) do
@@ -332,7 +349,7 @@ defmodule WatchClubWeb.PlayerPage do
         Logger.error("Error playing Media: #{inspect(error)}")
 
         socket
-        |> put_flash(:error, dgettext("player", "The video you were looking for does not exist"))
+        |> put_flash(:error, dgettext("player", "We couldn't find this video."))
         |> push_navigate(to: ~p"/")
     end
   end

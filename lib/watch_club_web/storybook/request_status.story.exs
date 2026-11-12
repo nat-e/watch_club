@@ -1,6 +1,7 @@
 defmodule WatchClubWeb.Storybook.RequestStatus do
   use PhoenixStorybook.Story, :component
 
+  alias WatchClub.Accounts.User
   alias WatchClub.Requests.ContentRequest
   alias WatchClubWeb.Components.Requests.RequestStatus
 
@@ -43,7 +44,12 @@ defmodule WatchClubWeb.Storybook.RequestStatus do
   defp variation(id, request, release_date \\ nil) do
     %Variation{
       id: id,
-      attributes: %{request: request, release_date: release_date, locale: :en_US}
+      attributes: %{
+        request: request,
+        release_date: release_date,
+        locale: :en_US,
+        administrator: %User{username: "nate"}
+      }
     }
   end
 end

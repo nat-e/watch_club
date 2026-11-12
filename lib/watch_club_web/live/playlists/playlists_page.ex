@@ -117,7 +117,10 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
               <:icon><Lucideicons.list /></:icon>
               <:title>{dgettext("playlists", "No playlists yet")}</:title>
               <:description>
-                {dgettext("playlists", "Keep what you want to watch in one place.")}
+                {dgettext(
+                  "playlists",
+                  "Keep what you want to watch in one place, and share it with friends."
+                )}
               </:description>
               <.button
                 id="empty-new-playlist"
@@ -137,6 +140,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         id={PlaylistDialogsLive.dom_id()}
         playlist={@shown}
         current_user={@current_user}
+        instance_name={@instance_settings.name}
       />
     </Layouts.app>
     """

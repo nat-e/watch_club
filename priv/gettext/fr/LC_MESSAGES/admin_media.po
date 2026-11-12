@@ -25,12 +25,6 @@ msgid "Remove media"
 msgstr "Retirer le média"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Remove the media from %{name}. This will not delete the file on the disk."
-msgstr "Retirez le média de %{name}. Cela ne supprimera pas le fichier sur le disque."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
@@ -53,12 +47,6 @@ msgstr "Effacer les filtres"
 #, elixir-autogen, elixir-format
 msgid "Codec"
 msgstr "Codec"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Configure media imports or automations to add Media to your instance."
-msgstr "Configurez des imports de médias ou des automatisations pour ajouter des médias à votre instance."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
@@ -91,24 +79,6 @@ msgid "Frame rate"
 msgstr "Fréquence d'images"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Import Media"
-msgstr "Importer des médias"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "Media Browser"
-msgstr "Explorateur de médias"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "No Media match your filters"
-msgstr "Aucun média ne correspond à vos filtres"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
@@ -136,7 +106,7 @@ msgstr "Sous-titres (%{count})"
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Try clearing your filters or searching for something else"
-msgstr "Essayez d'effacer vos filtres ou de chercher autre chose"
+msgstr "Essaie d'effacer tes filtres ou de chercher autre chose"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -150,12 +120,6 @@ msgstr "Non associé"
 #, elixir-autogen, elixir-format
 msgid "Video"
 msgstr "Vidéo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "You don't have any media yet"
-msgstr "Vous n'avez encore aucun média"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
@@ -181,13 +145,6 @@ msgstr "Ajouté"
 #, elixir-autogen, elixir-format
 msgid "Close details"
 msgstr "Fermer les détails"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
-#, elixir-autogen, elixir-format
-msgid "Media Type"
-msgstr "Type de média"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -246,12 +203,6 @@ msgstr "Page précédente"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
-msgid "Search Media"
-msgstr "Rechercher des médias"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
 msgid "Search file name or title"
 msgstr "Rechercher un nom de fichier ou un titre"
 
@@ -259,19 +210,13 @@ msgstr "Rechercher un nom de fichier ou un titre"
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Select a file to see its details."
-msgstr "Sélectionnez un fichier pour voir ses détails."
+msgstr "Sélectionne un fichier pour voir ses détails."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Titre"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page.ex
-#, elixir-autogen, elixir-format
-msgid "View and manage all Media on this instance."
-msgstr "Consultez et gérez tous les médias de cette instance."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -351,7 +296,7 @@ msgstr "Rechercher sur TMDB"
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search TMDB by title or TMDB ID."
-msgstr "Recherchez sur TMDB par titre ou par ID TMDB."
+msgstr "Recherche sur TMDB par titre ou par ID TMDB."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -380,12 +325,6 @@ msgstr "Titre de la série ou ID TMDB"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
-msgid "Titles"
-msgstr "Titres"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
-#, elixir-autogen, elixir-format
 msgid "Couldn't load the episodes."
 msgstr "Impossible de charger les épisodes."
 
@@ -393,7 +332,7 @@ msgstr "Impossible de charger les épisodes."
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't match the file. Try again."
-msgstr "Impossible d'associer le fichier. Réessayez."
+msgstr "Impossible d'associer le fichier. Réessaie."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -423,7 +362,7 @@ msgstr "Rechercher sur sportarr.net"
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search sportarr.net by title or Sportarr ID."
-msgstr "Recherchez sur sportarr.net par titre ou par ID Sportarr."
+msgstr "Recherche sur sportarr.net par titre ou par ID Sportarr."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
@@ -440,12 +379,6 @@ msgstr "Association manuelle retirée. Le fichier n'est plus associé jusqu'à c
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
-msgid "This file isn't matched to a title."
-msgstr "Ce fichier n'est associé à aucun titre."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
-#, elixir-autogen, elixir-format
 msgid "Regenerate thumbnails and markers"
 msgstr "Régénérer les miniatures et les marqueurs"
 
@@ -454,3 +387,70 @@ msgstr "Régénérer les miniatures et les marqueurs"
 #, elixir-autogen, elixir-format
 msgid "Thumbnails and markers will be regenerated in the background."
 msgstr "Les miniatures et les marqueurs seront régénérés en arrière-plan."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add a media source to bring your videos into Watch Club."
+msgstr "Ajoute une source de médias pour amener tes vidéos dans Watch Club."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add media sources"
+msgstr "Ajouter des sources de médias"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#, elixir-autogen, elixir-format
+msgid "By title"
+msgstr "Par titre"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Every file in Watch Club: find the unmatched ones, match them by hand, or remove them."
+msgstr "Tous les fichiers de Watch Club : trouve ceux qui ne sont pas associés, associe-les à la main ou retire-les."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Media browser"
+msgstr "Explorateur de médias"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
+#, elixir-autogen, elixir-format
+msgid "Media type"
+msgstr "Type de média"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No media matches your filters"
+msgstr "Aucun média ne correspond à tes filtres"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "No media yet"
+msgstr "Aucun média pour l'instant"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Remove this media from Watch Club? Its file stays on disk, so the next import adds it back."
+msgstr "Retirer ce média de Watch Club ? Son fichier reste sur le disque, donc le prochain import le rajoutera."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page.ex
+#, elixir-autogen, elixir-format
+msgid "Search media"
+msgstr "Rechercher des médias"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "This file isn't matched to any content."
+msgstr "Ce fichier n'est associé à aucun contenu."

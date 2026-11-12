@@ -24,6 +24,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
     doc: "a Video, with its `content`'s `title` and `poster_path`, and its `video`'s episode"
 
   attr :current_user, User, required: true
+  attr :instance_name, :string, required: true, doc: "says which results are in the Library"
   attr :on_close, :any, required: true, doc: "a function the dialog calls once it closes"
 
   @impl true
@@ -50,7 +51,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
         <%= if @tv_show do %>
           <div id={"#{@id}-tv-show"} class="flex items-center gap-group p-related text-base">
-            <.search_result_summary result={@picked} type={false} />
+            <.search_result_summary result={@picked} type={false} instance_name={@instance_name} />
           </div>
           <.episode_picker
             id={@id}
@@ -62,7 +63,13 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
             myself={@myself}
           />
         <% else %>
-          <.current_match :if={@media.content} id={@id} media={@media} myself={@myself} />
+          <.current_match
+            :if={@media.content}
+            id={@id}
+            media={@media}
+            instance_name={@instance_name}
+            myself={@myself}
+          />
           <.search_form
             id={"#{@id}-search"}
             query={@query}
@@ -77,6 +84,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
             query={@query}
             media={@media}
             picked={@picked}
+            instance_name={@instance_name}
             myself={@myself}
           />
         <% end %>
@@ -114,6 +122,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
 
   attr :id, :string, required: true
   attr :media, Media, required: true
+  attr :instance_name, :string, required: true
   attr :myself, :any, required: true
 
   # The Content the file has, with its year or episode, and the removal of a Manual Match. The
@@ -145,7 +154,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
       />
       <div class="flex flex-wrap items-center gap-x-group gap-y-related p-related">
         <div class="flex min-w-60 flex-1 items-center gap-group text-base">
-          <.search_result_summary result={@result}>
+          <.search_result_summary result={@result} instance_name={@instance_name}>
             <:facts>
               <span :if={!@episode}>{@result.year}</span>
               <.badge :if={@episode} variant="secondary" size="sm" class="tabular-nums">
@@ -179,6 +188,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   attr :query, :string, required: true
   attr :media, Media, required: true
   attr :picked, SearchResult
+  attr :instance_name, :string, required: true
   attr :myself, :any, required: true
 
   # The title with the typed TMDB ID first, labeled, then the titles TMDB finds
@@ -215,6 +225,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
           id={"#{@id}-typed-id-result"}
           result={@found.id_result}
           picked={@picked}
+          instance_name={@instance_name}
           myself={@myself}
         />
         <p
@@ -229,7 +240,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
       <section :if={@status == :ok and @found.titles != []} class="flex flex-col gap-tight">
         <.text_label
           :if={@found.typed_id}
-          text={dgettext("admin_media", "Titles")}
+          text={dgettext("admin_media", "By title")}
           class="px-related"
         />
         <ul class="flex flex-col gap-px">
@@ -238,6 +249,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
               id={"#{@id}-result-#{result.identity.external_id}"}
               result={result}
               picked={@picked}
+              instance_name={@instance_name}
               myself={@myself}
             />
           </li>
@@ -250,6 +262,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
   attr :id, :string, required: true
   attr :result, SearchResult, required: true
   attr :picked, SearchResult
+  attr :instance_name, :string, required: true
   attr :myself, :any, required: true
 
   # A Movie is picked, then matched. A TV Show opens its seasons.
@@ -263,7 +276,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
       phx-target={@myself}
       class="text-base"
     >
-      <.search_result_summary result={@result} type={false} />
+      <.search_result_summary result={@result} type={false} instance_name={@instance_name} />
     </.option_row>
     """
   end

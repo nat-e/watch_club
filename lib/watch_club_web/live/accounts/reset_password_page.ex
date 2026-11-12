@@ -2,11 +2,23 @@ defmodule WatchClubWeb.Accounts.ResetPasswordPage do
   use WatchClubWeb, :live_view
 
   @impl true
+  def render(%{form: nil} = assigns) do
+    ~H"""
+    <Layouts.centered_card flash={@flash} title={dgettext("auth", "This link no longer works")}>
+      <p>
+        {dgettext("auth", "Reset links expire after 3 days. Ask the administrator for a new one.")}
+      </p>
+      <.button id="back-to-sign-in-button" navigate={~p"/sign-in"} class="w-full">
+        {dgettext("auth", "Back to sign in")}
+      </.button>
+    </Layouts.centered_card>
+    """
+  end
+
   def render(assigns) do
     ~H"""
-    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Reset your password")}>
+    <Layouts.centered_card flash={@flash} title={dgettext("auth", "Choose a new password")}>
       <.form
-        :if={@form}
         for={@form}
         id="reset-password-form"
         phx-change="validate_reset_password"
@@ -15,10 +27,12 @@ defmodule WatchClubWeb.Accounts.ResetPasswordPage do
       >
         <.field
           field={@form[:password]}
-          label={dgettext("auth", "Password")}
+          label={dgettext("auth", "New password")}
           autocomplete="new-password"
           type="password"
-        />
+        >
+          <:hint>{dgettext("auth", "At least %{min} characters.", min: 8)}</:hint>
+        </.field>
         <.field
           field={@form[:password_confirmation]}
           label={dgettext("auth", "Confirm password")}
@@ -28,21 +42,10 @@ defmodule WatchClubWeb.Accounts.ResetPasswordPage do
         <.field_errors field={@form[:reset_token]} show_untouched={true} />
         <:action>
           <.button id="reset-password-form-submit-button" type="submit" class="w-full">
-            {dgettext("auth", "Reset password")}
+            {dgettext("auth", "Save password")}
           </.button>
         </:action>
       </.form>
-
-      <.empty :if={is_nil(@form)}>
-        <:icon><Lucideicons.key_round /></:icon>
-        <:title>{dgettext("auth", "This password reset link is invalid or has expired")}</:title>
-        <:description>
-          {dgettext("auth", "You can ask your administrator for a new one.")}
-        </:description>
-        <.button id="back-to-sign-in-button" navigate={~p"/sign-in"} class="w-full">
-          {dgettext("auth", "Back to sign in")}
-        </.button>
-      </.empty>
     </Layouts.centered_card>
     """
   end
@@ -79,7 +82,7 @@ defmodule WatchClubWeb.Accounts.ResetPasswordPage do
         {
           :noreply,
           socket
-          |> put_flash(:success, dgettext("auth", "Your password has successfully been reset"))
+          |> put_flash(:success, dgettext("auth", "New password saved."))
           |> redirect(
             to: ~p"/auth/user/password/sign_in_with_token?token=#{user.__metadata__.token}"
           )
