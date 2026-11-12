@@ -140,6 +140,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage do
         id={PlaylistDialogsLive.dom_id()}
         playlist={@shown}
         current_user={@current_user}
+        instance_name={@instance_settings.name}
       />
     </Layouts.app>
     """

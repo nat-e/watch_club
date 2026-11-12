@@ -109,7 +109,7 @@ msgstr[1] "%{show} (%{count} épisodes)"
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{title} is hidden until you play it again."
-msgstr "%{title} n'apparaîtra plus ici jusqu'à votre prochaine lecture."
+msgstr "%{title} n'apparaîtra plus ici jusqu'à ta prochaine lecture."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/continue_watching.ex

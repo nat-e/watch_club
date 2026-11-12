@@ -26,6 +26,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
 
   attr :playlist, Playlist, doc: "the Playlist shown, with the `user` of its `accesses`"
   attr :current_user, User, required: true
+  attr :instance_name, :string, required: true, doc: "names the Library in the search"
 
   @impl true
   def render(assigns) do
@@ -37,6 +38,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogsLive do
         id="add-content-modal"
         playlist={@playlist}
         current_user={@current_user}
+        instance_name={@instance_name}
         on_close={JS.push("close", target: @myself)}
       />
       <.playlist_form_modal :if={@dialog in [:new, :edit]} form={@form} myself={@myself} />

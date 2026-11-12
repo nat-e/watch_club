@@ -247,6 +247,7 @@ msgid "Add to playlist"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr ""

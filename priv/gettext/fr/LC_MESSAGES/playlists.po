@@ -292,6 +292,7 @@ msgstr "Ajouter à une playlist"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr "Terminé"
@@ -350,19 +351,19 @@ msgstr "Ajouter à %{playlist}"
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't add %{content}. Try again."
-msgstr "Impossible d'ajouter %{content}. Réessayez."
+msgstr "Impossible d'ajouter %{content}. Réessaie."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search by title, then pick what to add."
-msgstr "Cherchez par titre, puis choisissez ce que vous voulez ajouter."
+msgstr "Cherche par titre, puis choisis ce que tu veux ajouter."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Search for movies, TV shows and sports events to add."
-msgstr "Cherchez des films, des séries et des événements sportifs à ajouter."
+msgstr "Cherche des films, des séries et des événements sportifs à ajouter."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -384,12 +385,6 @@ msgstr "Ajoute ce contenu à une playlist pour le retrouver plus tard, ou le par
 msgctxt "tv_show"
 msgid "Add it to a playlist to find it again later, or share it with friends."
 msgstr "Ajoute cette série à une playlist pour la retrouver plus tard, ou la partager avec tes amis."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
-#, elixir-autogen, elixir-format
-msgid "Add movies and TV shows from their page."
-msgstr "Ajoute des films et des séries depuis leur page."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
