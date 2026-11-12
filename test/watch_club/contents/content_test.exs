@@ -1464,6 +1464,72 @@ defmodule WatchClub.Contents.ContentTest do
       assert get_actor_continue_watching!(actor: member) |> Enum.map(& &1.id) == [shown.id]
     end
 
+    test "leaves out the Content the actor last watched more than 90 days ago",
+         %{member: member} do
+      [stale, recent] = generate_many(movie(), 2)
+
+      for {movie, days_ago} <- [{stale, 91}, {recent, 89}] do
+        add_video!(movie.id)
+
+        generate(
+          watch_progress(member,
+            movie_id: movie.id,
+            position_seconds: 30.0,
+            duration_seconds: 100.0,
+            updated_at: DateTime.add(DateTime.utc_now(), -days_ago, :day)
+          )
+        )
+      end
+
+      assert get_actor_continue_watching!(actor: member) |> Enum.map(& &1.id) == [recent.id]
+    end
+
+    test "leaves out the Content the actor watched less than 10% of, or less than 10% of each of its TV Show Episodes",
+         %{member: member} do
+      [tried, watched] = generate_many(movie(), 2)
+
+      [tried_show, watched_show] =
+        generate_many(tv_show(num_seasons: 1, episodes_per_season: 2), 2)
+
+      for {movie, position} <- [{tried, 9.0}, {watched, 10.0}] do
+        add_video!(movie.id)
+
+        generate(
+          watch_progress(member,
+            movie_id: movie.id,
+            position_seconds: position,
+            duration_seconds: 100.0
+          )
+        )
+      end
+
+      add_episode_video!(tried_show, 1)
+
+      generate(
+        watch_progress(member,
+          tv_show_episode_id: episode!(tried_show, 1).id,
+          position_seconds: 9.0,
+          duration_seconds: 100.0
+        )
+      )
+
+      # Its S01E01 finished, its S01E02 just tried
+      add_episode_video!(watched_show, 1, 2)
+
+      for {number, position} <- [{1, 95.0}, {2, 1.0}] do
+        generate(
+          watch_progress(member,
+            tv_show_episode_id: episode!(watched_show, 1, number).id,
+            position_seconds: position,
+            duration_seconds: 100.0
+          )
+        )
+      end
+
+      assert get_actor_continue_watching!(actor: member) |> MapSet.new(& &1.id) ==
+               MapSet.new([watched.id, watched_show.id])
+    end
+
     test "plays the Part the actor stopped in", %{member: member} do
       movie = generate(movie())
 
