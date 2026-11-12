@@ -22,7 +22,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   def dropdown_menu(assigns) do
     ~H"""
     <%!--
-      The hook owns popover positioning only. Menu content remains
+      The hook positions the popover and focuses its trigger. Menu content remains
       LiveView-owned so conditional items can patch; ignore only the inline
       style written while positioning the popover.
     --%>
@@ -112,9 +112,6 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           if (isOpen(this.content)) {
             this.content.hidePopover();
           } else {
-            // Keyboard activation (Enter/Space) fires a click with detail 0. A
-            // keyboard-opened menu keeps focus on the trigger when dismissed.
-            this.keepTriggerFocus = event.detail === 0;
             this.content.style.visibility = "hidden";
             this.content.showPopover();
             this.position();
@@ -131,9 +128,8 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             return;
           }
 
-          // Whatever opened the menu, even when the click didn't focus the trigger
-          this.keepTriggerFocus = true;
           this.content.hidePopover();
+          // hidePopover() returns focus only from inside the menu, and Safari doesn't focus a clicked item
           this.triggerControl.focus();
         },
         onKeydown(event) {
@@ -150,10 +146,6 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             this.addPositionListeners();
           } else {
             this.removePositionListeners();
-
-            // A pointer-opened menu leaves the trigger focused on dismissal, which
-            // would keep a hover-reveal overlay (e.g. the content card) open.
-            if (!this.keepTriggerFocus) this.triggerControl.blur();
           }
         },
         addPositionListeners() {

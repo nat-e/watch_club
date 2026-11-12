@@ -203,7 +203,7 @@ defmodule WatchClubWeb.Components.UI.Modal do
           teardown.call(this);
 
           // close() returns focus, but removing the open dialog drops it on the body
-          if (document.activeElement === document.body && this.opener.isConnected) {
+          if (!this.closed && document.activeElement === document.body && this.opener.isConnected) {
             this.opener.focus();
           }
         },
