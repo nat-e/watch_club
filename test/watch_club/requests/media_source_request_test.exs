@@ -12,6 +12,7 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.Requests
   alias WatchClub.Requests.MediaSourceRequest
+  alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
   alias WatchClub.SystemActor
 
   setup do
@@ -90,6 +91,20 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
     test "a movie whose file is present is :downloaded", ctx do
       stub_radarr(movie_json(%{"hasFile" => true}), [])
       assert create_and_refresh(ctx.source, ctx.content).status == :downloaded
+    end
+  end
+
+  describe "destroy_media_source_request/2" do
+    test "ends the request's scheduled refresh" do
+      request =
+        generate(media_source_request(generate(movie()), seed_servarr_source(:radarr, :movie)))
+
+      request.id |> RefreshMediaSourceRequest.new_job() |> Oban.insert!()
+
+      Requests.destroy_media_source_request!(request, actor: SystemActor.actor())
+
+      assert %{success: 1, failure: 0} =
+               Oban.drain_queue(queue: :media_source_requests, with_scheduled: true)
     end
   end
 

@@ -13,6 +13,8 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
 
   Because of that, we don't need to rely on Grab/Download webhooks from Radarr/Sonarr, since they can't give us download
   progress anyway.
+
+  It stops once the request is deleted, on its own or with its Content or Source.
   """
   use Oban.Worker,
     queue: :media_source_requests,
@@ -26,7 +28,6 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
   alias WatchClub.Requests.MediaSourceRequest
   alias WatchClub.SystemActor
 
-  require Ash.Query
   require Logger
 
   def new_job(media_source_request_id, opts \\ []) do
@@ -38,13 +39,18 @@ defmodule WatchClub.Requests.Workers.RefreshMediaSourceRequest do
     Logger.metadata(media_source_request_id: id)
     actor = SystemActor.actor()
 
-    %MediaSourceRequest{} =
-      request =
-      MediaSourceRequest
-      |> Ash.Query.filter(id == ^id)
-      |> Ash.Query.load(media_source: [:implementation])
-      |> Ash.read_one!(actor: actor)
+    MediaSourceRequest
+    |> Ash.get!(id,
+      load: [media_source: :implementation],
+      not_found_error?: false,
+      actor: actor
+    )
+    |> refresh!(actor)
+  end
 
+  defp refresh!(nil, _actor), do: :ok
+
+  defp refresh!(%MediaSourceRequest{} = request, actor) do
     servarr = request.media_source.implementation
 
     {status, progress} =
