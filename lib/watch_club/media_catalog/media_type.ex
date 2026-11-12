@@ -11,13 +11,13 @@ defmodule WatchClub.MediaCatalog.MediaType do
     ]
 
   def translated_label(:movie), do: dgettext("media_types", "Movie")
-  def translated_label(:tv_show_episode), do: dgettext("media_types", "TV Show Episode")
-  def translated_label(:sports_event), do: dgettext("media_types", "Sports Event")
+  def translated_label(:tv_show_episode), do: dgettext("media_types", "TV show episode")
+  def translated_label(:sports_event), do: dgettext("media_types", "Sports event")
   def translated_label(:ebook), do: dgettext("media_types", "Ebook")
   def translated_label(:audiobook), do: dgettext("media_types", "Audiobook")
 
   def translated_plural_label(:movie), do: dgettext("media_types", "Movies")
-  def translated_plural_label(:tv_show_episode), do: dgettext("media_types", "TV Shows")
+  def translated_plural_label(:tv_show_episode), do: dgettext("media_types", "TV shows")
   def translated_plural_label(:sports_event), do: dgettext("media_types", "Sports")
   def translated_plural_label(:ebook), do: dgettext("media_types", "Ebooks")
   def translated_plural_label(:audiobook), do: dgettext("media_types", "Audiobooks")

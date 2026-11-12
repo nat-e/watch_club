@@ -50,23 +50,23 @@ msgstr "Films"
 # AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
-msgid "TV Show Episode"
-msgstr "Épisode de série TV"
-
-# AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format
-msgid "TV Shows"
-msgstr "Séries TV"
-
-# AI-translated (Claude)
-#: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format
 msgid "Sports"
 msgstr "Sport"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
-msgid "Sports Event"
+msgid "Sports event"
 msgstr "Événement sportif"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV show episode"
+msgstr "Épisode de série"
+
+# AI-translated (Claude)
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV shows"
+msgstr "Séries"

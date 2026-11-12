@@ -23,32 +23,14 @@ msgstr "Film"
 # AI-translated (Claude)
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
-msgid "TV Show"
-msgstr "Série"
-
-# AI-translated (Claude)
-#: lib/watch_club/contents/content_type.ex
-#, elixir-autogen, elixir-format
 msgid "Books"
 msgstr "Livres"
-
-# AI-translated (Claude)
-#: lib/watch_club/contents/search_content_type.ex
-#, elixir-autogen, elixir-format
-msgid "Movies and Shows"
-msgstr "Films et séries"
 
 # AI-translated (Claude)
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
 msgstr "Films"
-
-# AI-translated (Claude)
-#: lib/watch_club/contents/content_type.ex
-#, elixir-autogen, elixir-format
-msgid "TV Shows"
-msgstr "Séries"
 
 # AI-translated (Claude)
 #: lib/watch_club/contents/content_type.ex
@@ -64,7 +46,25 @@ msgid "Sports"
 msgstr "Sport"
 
 # AI-translated (Claude)
+#: lib/watch_club/contents/search_content_type.ex
+#, elixir-autogen, elixir-format
+msgid "Movies and TV shows"
+msgstr "Films et séries"
+
+# AI-translated (Claude)
 #: lib/watch_club/contents/content_type.ex
 #, elixir-autogen, elixir-format
-msgid "Sports Event"
+msgid "Sports event"
 msgstr "Événement sportif"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV show"
+msgstr "Série"
+
+# AI-translated (Claude)
+#: lib/watch_club/contents/content_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV shows"
+msgstr "Séries"

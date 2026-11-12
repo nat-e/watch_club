@@ -229,7 +229,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MatchMediaLive do
       <section :if={@status == :ok and @found.titles != []} class="flex flex-col gap-tight">
         <.text_label
           :if={@found.typed_id}
-          text={dgettext("admin_media", "Titles")}
+          text={dgettext("admin_media", "By title")}
           class="px-related"
         />
         <ul class="flex flex-col gap-px">

@@ -43,20 +43,20 @@ msgstr ""
 
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
-msgid "TV Show Episode"
-msgstr ""
-
-#: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format
-msgid "TV Shows"
-msgstr ""
-
-#: lib/watch_club/media_catalog/media_type.ex
-#, elixir-autogen, elixir-format
 msgid "Sports"
 msgstr ""
 
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
-msgid "Sports Event"
+msgid "Sports event"
+msgstr ""
+
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV show episode"
+msgstr ""
+
+#: lib/watch_club/media_catalog/media_type.ex
+#, elixir-autogen, elixir-format
+msgid "TV shows"
 msgstr ""

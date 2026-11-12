@@ -30,7 +30,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
             {dgettext("admin_media", "Title")}
           </.sort_head>
           <.table_head class="min-w-44 @max-xl/table:hidden">
-            {dgettext("admin_media", "Media Type")}
+            {dgettext("admin_media", "Media type")}
           </.table_head>
           <.table_head class="min-w-24 @max-3xl/table:hidden">
             {dgettext("admin_media", "Audio")}
