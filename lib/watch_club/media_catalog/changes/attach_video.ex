@@ -1,9 +1,10 @@
 defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   @moduledoc """
-  Makes the Video of a Media hold the one Part of its new Content: a Movie file the Movie's, a
-  Sports Event file the Sports Event's, a TV Show Episode file the one of the episode of the TV
-  Show at the action's `season_number` and `episode_number`. Movies, Sports Events and TV Shows
-  share the id of their Content. Without Content, the Video is unmatched and holds no Part.
+  Links a Media's Video to its new Content, for a Manual Match or its removal. Use it on Media
+  actions, after the Media's `content_id` is set.
+
+  The Video holds Part 1 of the Movie or Sports Event, or of the TV Show Episode at the action's
+  `season_number` and `episode_number`. Without Content, the Video holds no Part.
   """
   use Ash.Resource.Change
 
@@ -25,6 +26,8 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   end
 
   defp parts!(%Media{content_id: nil}, _arguments), do: []
+
+  # Movies, Sports Events and TV Shows share the id of their Content
 
   defp parts!(%Media{type: :movie, content_id: movie_id}, _arguments),
     do: [%{movie_id: movie_id, number: 1}]

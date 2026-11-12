@@ -1,9 +1,10 @@
 defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   @moduledoc """
-  Ends the current Playback and starts one for the `media_id` argument, from where the actor's
-  Watch Progress left it in the Part its Video holds, unless they finished it. The Screen given
-  as the `screen_id` argument plays it, unless the Playback Session plays on a TV. Expects the
-  Playback Session locked.
+  Ends the current Playback and starts one for the `media_id` argument, on the `screen_id`
+  Screen, or on the TV when the Playback Session plays there. Expects the Playback Session locked.
+
+  It resumes where the actor's Watch Progress stopped when that's in the Part this Video holds and
+  they haven't finished it. Otherwise it starts from the beginning.
   """
   use Ash.Resource.Change
 
@@ -54,7 +55,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
     end
   end
 
-  # Where the actor stopped, when it's in the Part the Video holds and they haven't finished
+  # The position in this Video's Part, if the actor stopped there and hasn't finished
   defp resume_position(%Video{parts: [part | _]}) do
     case Part.work(part).actor_progress do
       %{completed: false, part_number: number, part_position_seconds: seconds}

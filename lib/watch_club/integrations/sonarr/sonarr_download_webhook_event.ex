@@ -8,7 +8,7 @@ defmodule WatchClub.Integrations.Sonarr.SonarrDownloadWebhookEvent do
   alias WatchClub.Integrations.Servarr.Webhook.MediaFile
 
   defmodule Episode do
-    @moduledoc "One episode in a `Download` payload: its numbers, title, air date and TVDB id."
+    @moduledoc "An episode of the downloaded file, with its numbers, title, air date and TVDB id."
 
     @type t :: %__MODULE__{
             season_number: integer() | nil,

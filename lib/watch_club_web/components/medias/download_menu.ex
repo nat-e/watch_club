@@ -1,8 +1,10 @@
 defmodule WatchClubWeb.Components.Medias.DownloadMenu do
   @moduledoc """
-  Download for the files of a Movie, a TV Show Episode or a Sports Event. Its trigger downloads
-  the only file straight away, or opens a menu of the files, each named by its resolution and its
-  file name, and by its Parts when there are several.
+  The Download button of a Movie, TV Show Episode or Sports Event. Pass its `parts` with their
+  Videos, and render the button in the `trigger` slot with the attributes it gets.
+
+  With one file, the button downloads it. With several, it opens a menu listing each file by its
+  resolution and file name, and by its Parts when the work has several.
   """
   use WatchClubWeb, :component
 
@@ -48,7 +50,7 @@ defmodule WatchClubWeb.Components.Medias.DownloadMenu do
     """
   end
 
-  # Each file once, with the Parts it holds, in the order of its first Part
+  # Each file once with the Parts it holds, ordered by its first Part
   defp files(parts) do
     held = for part <- parts, video <- part.videos, do: {video, part}
 

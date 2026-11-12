@@ -4,7 +4,7 @@ defmodule WatchClub.Integrations.Tmdb.FindByExternalIdResponse do
   alias WatchClub.Integrations.Tmdb.{MovieSearchResult, TvSearchResult}
 
   defmodule TvEpisodeResult do
-    @moduledoc "A TV episode found by another catalog's id, such as a TVDB episode id."
+    @moduledoc "A TMDB episode found from another site's id, such as a TVDB episode id."
 
     @type t :: %__MODULE__{
             show_id: integer(),

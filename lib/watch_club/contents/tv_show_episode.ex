@@ -104,8 +104,8 @@ defmodule WatchClub.Contents.TvShowEpisode do
       from_many? true
     end
 
-    # The Parts it has files for, in watching order
     has_many :parts, Part do
+      description "Its Parts held by a Video, in order. Parts without a Video are left out."
       public? true
       filter expr(exists(videos, true))
       sort number: :asc
@@ -166,14 +166,18 @@ defmodule WatchClub.Contents.TvShowEpisode do
     # numbers stay under 100,000.
     calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
-    calculate :has_media?, :boolean, expr(exists(parts, true))
+    calculate :has_media?, :boolean, expr(exists(parts, true)) do
+      description "Whether a Video holds one of its Parts."
+    end
 
     calculate :videos_to_play, {:array, :struct}, VideosToPlay do
+      description "The Videos the Player plays for it, one after the other."
       constraints items: [instance_of: Video]
       public? true
     end
 
     calculate :actor_video_to_play, :struct, ActorVideoToPlay do
+      description "The Video a Play button opens for the actor: where they stopped, else the first."
       constraints instance_of: Video
       public? true
     end

@@ -78,8 +78,7 @@ defmodule WatchClub.Repo.Migrations.AddParts do
 
     create index(:video_parts, [:part_id])
 
-    # Each Video's Movie, TV Show Episode or Sports Event becomes the one Part it holds; its copies
-    # share that Part
+    # Each Video's work becomes Part 1, shared by its copies
     execute("""
     INSERT INTO parts (movie_id, tv_show_episode_id, sports_event_id, number)
     SELECT DISTINCT movie_id, tv_show_episode_id, sports_event_id, 1
@@ -143,7 +142,7 @@ defmodule WatchClub.Repo.Migrations.AddParts do
           )
     end
 
-    # Each Video goes back to the work of one of its Parts
+    # Each Video gets back the work of one of its Parts
     execute("""
     UPDATE videos
     SET movie_id = parts.movie_id,

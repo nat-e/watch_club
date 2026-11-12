@@ -136,7 +136,7 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
   defp comparable?(%Video{} = video),
     do: episode(video) != nil and video.duration_seconds != nil and video.audio_tracks != []
 
-  # The first TV Show Episode a Video holds a Part of, in order: the Video's place in its season
+  # The TV Show Episode of the Video's first Part, which places the Video in its season
   defp episode(%Video{parts: parts}), do: Enum.find_value(parts, & &1.tv_show_episode)
 
   defp has_marker?(reading, kind), do: Enum.any?(reading.chapter_markers, &(&1.kind == kind))
@@ -195,9 +195,8 @@ defmodule WatchClub.Markers.Marker.Actions.Detect do
     end)
   end
 
-  # Intro Skipper's search: each episode is compared with the next ones until one shares
-  # audio with it, and keeps the longest audio it shares with any of them. Two Videos of one
-  # episode, its copies or its Parts, aren't compared: copies share all their audio.
+  # Intro Skipper's search: compares each episode with the next ones until one shares audio, and
+  # keeps the longest shared range. Skips Videos of the same episode: copies share all their audio.
   defp longest_shared_ranges(episodes, fingerprints, min_seconds, max_seconds) do
     episodes
     |> Enum.with_index(1)

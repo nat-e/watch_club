@@ -9,8 +9,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   - If not, try to match with other IDs (IMDB, TVDB, ...)
   - If not, fuzzy match with title, and year when known
 
-  A Movie or Sports Event file holds its Part 1. A TV Show Episode file holds the Parts that
-  `EpisodeParts` finds. Missing Content or TV Show Episodes fail the Oban job so it can retry.
+  A Movie or Sports Event file gets Part 1 of its match. A TV Show Episode file gets the Parts
+  `EpisodeParts` finds. When Content or a TV Show Episode is missing, the Oban job fails so it
+  can retry.
   """
 
   alias WatchClub.Contents
@@ -48,7 +49,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
     end
   end
 
-  # The Parts of the Manual Match of the file's Video
+  # The Parts the file's Video holds when it has a Manual Match, else []
   defp manual_match(%Candidate{media_source_id: media_source_id, path: path}) do
     case MediaCatalog.get_media_by_path(media_source_id, path,
            load: [video: :parts],

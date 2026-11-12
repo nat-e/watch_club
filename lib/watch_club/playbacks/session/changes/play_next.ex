@@ -1,9 +1,10 @@
 defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
   @moduledoc """
-  Plays what follows the current Video on the same Screen: the next Part of its Movie, TV Show
-  Episode or Sports Event, else the TV Show Episode after it when it has Media. Otherwise,
-  nothing follows: the Playback Session ends. Expects the Playback Session locked.
-  Fails when the `playback_id` argument is no longer the current Playback: it finished late.
+  Plays what follows the current Video on the same Screen: the next Part of the same work, else
+  the next TV Show Episode if it has Media. When nothing follows, the Playback Session ends.
+
+  Expects the Playback Session locked. Fails with a stale record error when the `playback_id`
+  argument isn't the current Playback anymore, so a late report changes nothing.
   """
   use Ash.Resource.Change
 

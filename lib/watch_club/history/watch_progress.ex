@@ -1,11 +1,11 @@
 defmodule WatchClub.History.WatchProgress do
   @moduledoc """
-  A resource that records whether a User has watched a given Movie, TV Show Episode or Sports Event.
-  We only create WatchProgress objects for contents that a user has started watching.
-  We record the time watched and the time left, through all its Parts, and consider that the content is completed
-  when they have watched at least 90% of it. The Part they were in, and where in it, is where Play resumes.
-  It is also possible for user to "Mark as Watched" without watching. In this case, position_seconds and duration_seconds
-  are set to nil, and the content is considered watched.
+  How far a User has got through a Movie, TV Show Episode or Sports Event, and whether they
+  finished it. It exists once they start watching it or mark it as watched.
+
+  Positions count through all its Parts, one after the other, and it's completed from 90%.
+  `part_number` and `part_position_seconds` tell where Play resumes. Marking it as watched sets
+  the positions to nil.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -217,18 +217,18 @@ defmodule WatchClub.History.WatchProgress do
   attributes do
     uuid_v7_primary_key :id
 
-    # How far the User got, in seconds through all the Parts. Nil when marking as watched
+    # Seconds watched, counted through all the Parts. Nil when marked as watched
     attribute :position_seconds, :float
 
-    # The length of all the Parts together. Nil when marking as watched
+    # Length of all the Parts, in seconds. Nil when marked as watched or a length is unknown
     attribute :duration_seconds, :float
 
-    # The Part the User was in, where Play resumes. Nil when marking as watched
+    # The number of the Part where Play resumes. Nil when marked as watched
     attribute :part_number, :integer do
       constraints min: 1
     end
 
-    # Where the User was in that Part, in seconds. Nil when marking as watched
+    # Seconds watched in that Part. Nil when marked as watched
     attribute :part_position_seconds, :float
 
     timestamps()
@@ -277,18 +277,17 @@ defmodule WatchClub.History.WatchProgress do
       public? false
     end
 
-    # A content is considered watch when a user has watched 90% of more of it, or marked it as
-    # watched, which leaves position_seconds nil. duration_seconds is nil too then, and while the
-    # length of one of its files is unknown, which playing it never completes.
+    # A nil position means marked as watched
     calculate :completed,
               :boolean,
               expr(
                 is_nil(position_seconds) or
                   (not is_nil(duration_seconds) and
                      position_seconds / duration_seconds >= @complete_after_ratio)
-              )
+              ) do
+      description "Whether the User finished it: marked it as watched, or watched 90% of it. Never true while its length is unknown."
+    end
 
-    # The number of seconds left, through the Parts still to watch
     calculate :seconds_left,
               :float,
               expr(
@@ -297,11 +296,10 @@ defmodule WatchClub.History.WatchProgress do
                 else
                   duration_seconds - position_seconds
                 end
-              )
+              ) do
+      description "Seconds left to watch through all the Parts. Nil when marked as watched or its length is unknown."
+    end
 
-    # The percentage of the media that has been watched
-    # Returns 100% for media that have been marked watched, and 0% while its length is unknown
-    # When more than 90% have been watched, we return 100
     calculate :percent_watched,
               :float,
               expr(
@@ -318,7 +316,9 @@ defmodule WatchClub.History.WatchProgress do
                   true ->
                     position_seconds / duration_seconds * 100
                 end
-              )
+              ) do
+      description "How much was watched, from 0 to 100: 100 once completed, 0 while its length is unknown."
+    end
   end
 
   identities do

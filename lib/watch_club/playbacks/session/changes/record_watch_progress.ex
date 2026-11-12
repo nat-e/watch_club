@@ -1,12 +1,10 @@
 defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   @moduledoc """
-  Records the actor's Watch Progress for the current Playback from the heartbeat's
-  reported position.
+  Records the actor's Watch Progress from a heartbeat's position. Use it on the heartbeat action.
 
-  Upserts the progress of each Movie, TV Show Episode or Sports Event the Playback's Video holds a
-  Part of: how far through all its Parts, laid end to end in the order Play plays them, and the
-  Part the Video holds with the position in it, where Play resumes. Each file counts up to its
-  Credits, so playing the next one from there completes it. No-op for Media without Content.
+  For each work the Video holds a Part of, it saves the position through all the Parts, as if
+  their Videos played one after the other, and the Part and the position in it. Each Video counts
+  up to its Credits. Does nothing for Unmatched Media.
   """
   use Ash.Resource.Change
 
@@ -45,7 +43,7 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
           seconds -> min(position, seconds)
         end
 
-      # Its first Part of each Movie, TV Show Episode or Sports Event
+      # One Watch Progress per work the Video holds a Part of
       for part <- Enum.uniq_by(video.parts, &Part.work_id/1) do
         videos = Part.work(part).videos_to_play
         {before, _from_it} = VideosToPlay.split_at(videos, video, part)
@@ -54,7 +52,7 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
         progress = %{
           last_media_id: media_id,
           position_seconds: Enum.sum_by(before, &(counted_seconds(&1) || 0.0)) + part_position,
-          # Unknown while the length of one of the files is
+          # Unknown while any Video's length is unknown
           duration_seconds: if(nil in lengths, do: nil, else: Enum.sum(lengths)),
           part_number: part.number,
           part_position_seconds: part_position
@@ -69,7 +67,7 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
     end)
   end
 
-  # How long a file counts for: up to its Credits
+  # A Video's length up to its Credits, or its full length without Credits
   defp counted_seconds(%Video{} = video),
     do: video.credits_start_seconds || video.duration_seconds
 end

@@ -1,10 +1,11 @@
 defmodule WatchClub.Markers.Changes.ScheduleDetection do
   @moduledoc """
-  Enqueues the `DetectMarkers` job of the season of the Video's TV Show Episode, or of its Movie,
-  when its file is new, its File Fingerprint changed or its Parts changed. With `always?: true`,
-  every time. Unmatched Media gets no Markers, and neither do Sports Events.
+  Schedules Marker detection for a saved Video: for the season of its TV Show Episode, or for its
+  Movie. Use it as a change on Video actions.
 
-  The job is inserted in the action's transaction, so it runs once the Video is saved.
+  It schedules only when the file is new, its File Fingerprint changed or its Parts changed, or
+  always with `always?: true`. Unmatched Media and Sports Events get no Markers. The job is
+  inserted in the action's transaction, so it runs once the Video is saved.
   """
 
   use Ash.Resource.Change
@@ -18,7 +19,7 @@ defmodule WatchClub.Markers.Changes.ScheduleDetection do
     Ash.Changeset.after_action(changeset, fn changeset, video ->
       if Keyword.get(opts, :always?, false) or changeset.context[:parts_changed?] or
            Ash.Changeset.changing_attribute?(changeset, :file_fingerprint) do
-        # A file holding several TV Show Episodes holds them in one season
+        # A file holding several TV Show Episodes holds episodes of one season
         case Ash.load!(video, [parts: [:tv_show_episode]], scope: context).parts do
           [%Part{tv_show_episode: %TvShowEpisode{} = episode} | _] ->
             OpentelemetryOban.insert!(

@@ -143,7 +143,7 @@ defmodule WatchClubWeb.Helpers.Url do
   def content_details_link(%{type: :tv_show, external_id: id}), do: ~p"/shows/#{id}"
   def content_details_link(%{type: :sports_event, external_id: id}), do: ~p"/sports/#{id}"
 
-  @doc "The Player of a Video, or of the first Video of a list."
+  @doc "The Player's URL for a Video, or for the first Video of a list."
   def player_link(%Video{} = video), do: ~p"/play/#{video.id}"
   def player_link([%Video{} = video | _]), do: player_link(video)
 end

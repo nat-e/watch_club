@@ -42,7 +42,7 @@ defmodule WatchClubWeb.Storybook.TvBar do
     ]
   end
 
-  # Playing Part `part_number` of an episode in `part_number` files
+  # A Playback Session on a TV, playing Part `part_number` of an episode in that many files
   def session(paused?, part_number \\ 1) do
     parts = for number <- 1..part_number, do: %Part{number: number, movie: nil, sports_event: nil}
 

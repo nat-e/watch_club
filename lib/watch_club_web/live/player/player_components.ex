@@ -303,8 +303,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   attr :video, Video, required: true
 
   @doc """
-  The lower bar of the control panel of the footer, that contains the seek bar with the thumbnails
-  and the duration timer, between the previous and the next Part or TV Show Episode.
+  The bottom bar of the Player's controls: the seek bar with its thumbnails, the time, and the
+  buttons to the previous and next Part or TV Show Episode.
   """
   def controls_footer(assigns) do
     assigns =
@@ -361,9 +361,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   attr :video, Video, required: true
 
   @doc """
-  "Up next" prompt revealed from the start of the Video's Credits, or during its final 5 seconds
-  when it has none. It plays the next Part or TV Show Episode after 5 seconds of playback, or when
-  the Video ends.
+  The Up next prompt. It shows from the start of the Credits, or 5 seconds before the end without
+  Credits, and plays the next Part or TV Show Episode after 5 seconds or when the Video ends.
   """
   def up_next_button(assigns) do
     %Video{duration_seconds: duration} = assigns.video
@@ -555,7 +554,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     do:
       "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
 
-  # What the previous or next button plays: another Part of the work, or a TV Show Episode
+  # The name of what a button plays: Part 2, or S06E16
   defp to_play_name(%ToPlay{part: %Part{} = part}), do: Parts.name(part)
   defp to_play_name(%ToPlay{episode: episode}), do: episode.formatted_episode_number
 end

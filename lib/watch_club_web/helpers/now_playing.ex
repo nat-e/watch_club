@@ -1,7 +1,9 @@
 defmodule WatchClubWeb.Helpers.NowPlaying do
   @moduledoc """
-  What a Video plays, in words and pictures, for the Player, the TV, the TV bar and the Remote.
-  They name its Part when it holds only some of the Parts: Friends · S06E15 · Part 2.
+  Titles and pictures describing what a Video plays, for the Player, the TV, the TV bar and the
+  Remote. Load `fields/0` on a Playback Session, or `video_fields/0` on a Video, first.
+
+  When a Video holds only some of its work's Parts, the titles name them: Friends · S06E15 · Part 2.
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -25,7 +27,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     ]
   end
 
-  @doc "What to load on a Video to describe it."
+  @doc "What to load on a Video before describing it with this module."
   def video_fields do
     [
       :duration_seconds,
@@ -43,7 +45,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     ]
   end
 
-  @doc "The Movie's title or the Sports Event's, with its Part, or the TV Show Episode's title."
+  @doc "The main title: the TV Show Episode's title, or the Movie's or Sports Event's with its Parts."
   def title(%Video{} = video) do
     case Video.work(video) do
       %Movie{} = movie ->
@@ -61,7 +63,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     end
   end
 
-  @doc "The TV Show, and the episode's number with its Part, for a TV Show Episode."
+  @doc "The second line of a TV Show Episode, such as Friends · S06E15 · Part 2. Nil otherwise."
   def subtitle(%Video{} = video) do
     case Video.work(video) do
       %TvShowEpisode{} = episode ->
@@ -73,9 +75,8 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   end
 
   @doc """
-  The number of the TV Show Episode a Video holds, such as S04E23, or of the first and the last
-  for a file holding several: S04E23–E24. With its Part: S04E23 · Part 2. Nil for a Movie or a
-  Sports Event.
+  The episode number of a Video: S04E23, S04E23–E24 for a file holding two episodes, or
+  S04E23 · Part 2. Nil for a Movie or a Sports Event.
   """
   def episode_number(%Video{parts: parts} = video) do
     case {List.first(parts), List.last(parts)} do
@@ -100,7 +101,7 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   defp numbers(first, last),
     do: "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
 
-  # Names the Parts a file holds when they're only some of its work's Parts: Part 2
+  # Adds the Parts the Video holds, unless it holds all of its work's Parts
   defp with_part(text, %Video{parts: [first | _] = parts}) do
     work = Part.work(first)
     held = Enum.filter(parts, &(Part.work_id(&1) == work.id))

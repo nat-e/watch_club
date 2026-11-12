@@ -13,7 +13,7 @@ defmodule WatchClub.Repo.Migrations.WatchProgressResumesInItsPart do
       add :part_position_seconds, :float
     end
 
-    # Every Watch Progress so far is in the one Part of its work
+    # Existing Watch Progress is in Part 1, at the same position
     execute("""
     UPDATE watch_progresses
     SET part_number = 1, part_position_seconds = position_seconds

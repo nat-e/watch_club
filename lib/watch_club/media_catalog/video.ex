@@ -1,8 +1,8 @@
 defmodule WatchClub.MediaCatalog.Video do
   @moduledoc """
-  Concrete Media for a playable video file. Holds the Parts of the Movie, TV Show Episode or
-  Sports Event it plays: usually the one Part of one of them; none for Unmatched Media. Owns its
-  video, audio, and text tracks.
+  Concrete Media for a playable video file. It holds one or more Parts of the Movie, TV Show
+  Episode or Sports Event it plays, usually Part 1 of one of them, and none when it's Unmatched
+  Media. It owns its video, audio, and text tracks.
 
   `Video.id` is the same value as its parent `Media.id` (shared primary key,
   no separate `media_id` column).
@@ -46,7 +46,7 @@ defmodule WatchClub.MediaCatalog.Video do
       accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
 
       argument :parts, {:array, :map} do
-        description "Each Part it holds: a movie_id, tv_show_episode_id or sports_event_id, a number and an optional name"
+        description "The Parts it holds, each with a movie_id, tv_show_episode_id or sports_event_id, a number and an optional name"
         allow_nil? false
         default []
       end
@@ -74,7 +74,7 @@ defmodule WatchClub.MediaCatalog.Video do
       change ScheduleDetection
     end
 
-    # The Parts of a Manual Match
+    # Sets the Parts of a Manual Match
     update :attach do
       require_atomic? false
 
@@ -198,7 +198,7 @@ defmodule WatchClub.MediaCatalog.Video do
       source_attribute :id
     end
 
-    # In watching order: by TV Show Episode, then by number
+    # In watching order: by TV Show Episode, then by Part number
     many_to_many :parts, Part do
       public? true
       through VideoPart
@@ -235,28 +235,29 @@ defmodule WatchClub.MediaCatalog.Video do
   end
 
   calculations do
-    # What the Player's next button and Up next play, and when the Video ends
     calculate :next_to_play, :struct, {ToPlay, which: :next} do
+      description "What the Player plays after it: the next Part, else the next TV Show Episode. Nil when nothing follows."
       constraints instance_of: ToPlay
       public? true
     end
 
-    # What the Player's previous button plays
     calculate :previous_to_play, :struct, {ToPlay, which: :previous} do
+      description "What the Player's previous button plays: the previous Part, else the previous TV Show Episode."
       constraints instance_of: ToPlay
       public? true
     end
 
-    # What the Remote's Up next offers
     calculate :videos_after, {:array, :struct}, VideosAfter do
+      description "The Videos the Remote's Up next offers after it, at most 10."
       constraints items: [instance_of: __MODULE__]
       public? true
     end
   end
 
   aggregates do
-    # Its place in its TV Show: the first TV Show Episode it holds a Part of
-    min :episode_rank, [:parts, :tv_show_episode], :rank
+    min :episode_rank, [:parts, :tv_show_episode], :rank do
+      description "The rank of the first TV Show Episode it holds a Part of, to sort the Media Browser."
+    end
 
     # Where the Player offers the next episode and Watch Progress stops counting
     first :credits_start_seconds, :markers, :start_seconds do
@@ -266,8 +267,8 @@ defmodule WatchClub.MediaCatalog.Video do
   end
 
   @doc """
-  The Movie, TV Show Episode or Sports Event of its first Part, with `parts` and their works
-  loaded, or nil for Unmatched Media.
+  The Movie, TV Show Episode or Sports Event of its first Part, or nil for Unmatched Media. Load
+  its `parts` with their `movie`, `tv_show_episode` and `sports_event` first.
   """
   def work(%__MODULE__{parts: [part | _]}), do: Part.work(part)
   def work(%__MODULE__{parts: []}), do: nil

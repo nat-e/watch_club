@@ -1,7 +1,10 @@
 defmodule WatchClub.Contents.Calculations.ActorVideoToPlay do
   @moduledoc """
-  The file Play opens for the actor, among the `videos_to_play` of a Movie, TV Show Episode or
-  Sports Event: the one holding the Part they stopped in, else the first. Nil without Media.
+  The Video a Play button opens for the actor, so they resume where they stopped. Load it as
+  `actor_video_to_play` on a Movie, TV Show Episode or Sports Event.
+
+  Returns the Video of `videos_to_play` holding the Part of the actor's Watch Progress, or the
+  first one when they haven't started or have finished. Nil when there is no Video.
   """
   use Ash.Resource.Calculation
 

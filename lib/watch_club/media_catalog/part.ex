@@ -1,12 +1,11 @@
 defmodule WatchClub.MediaCatalog.Part do
   @moduledoc """
-  A piece of a Movie, TV Show Episode or Sports Event, in watching order. Most have one Part, the
-  whole of it; a TV Show Episode that TMDB keeps whole while Sonarr has each half in its own file
-  has two. A Video contains one or more Parts, and Videos containing the same Part are copies.
+  A numbered piece of a Movie, TV Show Episode or Sports Event. Most have only Part 1, the whole of
+  it. A two-part episode that TMDB lists as one, but that Sonarr splits in two files, has two.
 
-  WatchClub only knows the Parts it has files for: a Part no Video contains anymore is left out
-  of its Movie's, TV Show Episode's or Sports Event's `parts`, and comes back with its next file.
-  Deleting a Movie, TV Show Episode or Sports Event deletes its Parts, unless a Video contains one.
+  Parts are created when a Video is linked to them, through the Video's `parts` argument. Videos
+  holding the same Part are copies. A Part that no Video holds stays, but its work's `parts`
+  leave it out. Deleting the work deletes its Parts, unless a Video holds one.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -22,7 +21,7 @@ defmodule WatchClub.MediaCatalog.Part do
     repo WatchClub.Repo
 
     references do
-      # The unique_number_per_work index starts with movie_id
+      # No index: the unique_number_per_work index starts with movie_id
       reference :movie, on_delete: :delete
       reference :tv_show_episode, on_delete: :delete, index?: true
       reference :sports_event, on_delete: :delete, index?: true
@@ -75,7 +74,7 @@ defmodule WatchClub.MediaCatalog.Part do
       constraints min: 1
     end
 
-    # The name its source gives it, such as Sportarr's Main Card
+    # A name from its source, such as Sportarr's Main Card. Usually nil
     attribute :name, :string do
       public? true
     end
@@ -99,14 +98,15 @@ defmodule WatchClub.MediaCatalog.Part do
       through VideoPart
       source_attribute_on_join_resource :part_id
       destination_attribute_on_join_resource :video_id
-      # The oldest copy first
+      # Oldest first: ids are UUIDv7, which sort by creation time
       sort id: :asc
     end
   end
 
   calculations do
-    # Where its TV Show Episode is in its TV Show, which orders the Parts of a file holding several
-    calculate :episode_rank, :integer, expr(tv_show_episode.rank)
+    calculate :episode_rank, :integer, expr(tv_show_episode.rank) do
+      description "The rank of its TV Show Episode in its TV Show, to order the Parts of a file. Nil for other works."
+    end
   end
 
   identities do
@@ -115,10 +115,13 @@ defmodule WatchClub.MediaCatalog.Part do
     end
   end
 
-  @doc "The Movie, TV Show Episode or Sports Event of a Part, loaded."
+  @doc """
+  The Movie, TV Show Episode or Sports Event a Part belongs to. Load all three relationships
+  first: an unloaded one would be returned instead.
+  """
   def work(%__MODULE__{} = part), do: part.movie || part.tv_show_episode || part.sports_event
 
-  @doc "The id of the Movie, TV Show Episode or Sports Event of a Part."
+  @doc "The id of the Movie, TV Show Episode or Sports Event a Part belongs to."
   def work_id(%__MODULE__{} = part),
     do: part.movie_id || part.tv_show_episode_id || part.sports_event_id
 end

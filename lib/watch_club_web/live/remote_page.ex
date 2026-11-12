@@ -293,7 +293,7 @@ defmodule WatchClubWeb.RemotePage do
     end
   end
 
-  # What plays, and the files that play after it, intentionally few
+  # The playing Video and the Videos after it, a list intentionally small: at most 10
   defp assign_up_next!(%{assigns: %{playback_session: %Session{} = session}} = socket) do
     %{current_playback: %{media: %{video: video}}} = session
     user = socket.assigns.current_user

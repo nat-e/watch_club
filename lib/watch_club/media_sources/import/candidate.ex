@@ -35,12 +35,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defmodule MatchResult do
     @moduledoc """
-    Outcome of the `MatchContent` stage. `:success` means the candidate's
-    identity was resolved to the Parts the file holds, each a `movie_id`,
-    `tv_show_episode_id` or `sports_event_id` with a `number` and maybe a `name`;
-    `:not_matched` means the stage ran but no Content could be resolved, and
-    `parts` is empty. A `nil` `match_result` on the parent `Candidate` means the
-    stage has not yet run.
+    The result of the `MatchContent` stage. With `result: :success`, `parts` lists the Parts the
+    file holds, as maps for the Video's `parts` argument. With `:not_matched`, `parts` is empty. A
+    nil `match_result` on the `Candidate` means the stage hasn't run yet.
     """
 
     @type t :: %__MODULE__{
@@ -67,10 +64,11 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defmodule EpisodeIdentity do
     @moduledoc """
-    A TV Show by its ids, or else its `title`, and the `episodes` a file holds as its source
-    numbers them: Sonarr like TVDB, a file name like its release. Sonarr also gives each one's
-    title, air date and TVDB id, which find the Metadata Provider's episode when its numbers
-    differ, such as for a two-part episode it lists as one.
+    Identifies a TV Show, by its ids or else its `title`, and the `episodes` a file holds.
+
+    Episode numbers come from the source: TVDB's for Sonarr, the file name's for a filesystem
+    Media Source. Sonarr also gives each episode's title, air date and TVDB id, which find the
+    TMDB episode when the numbers differ.
     """
 
     defmodule Episode do
@@ -186,9 +184,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`,
-  `identity` and `regenerate_thumbnails_and_markers?`) into a plain map for an Oban job's args.
-  `identity` is flattened with `Map.from_struct/1`; the episodes in it encode to JSON themselves.
+  Turns a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, `identity` and
+  `regenerate_thumbnails_and_markers?`) into a map for an Oban job's args. `from_map/1` reverses it.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -248,7 +245,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       {__MODULE__.EpisodeIdentity, %{episodes: episodes} = fields} ->
         struct(module, %{fields | episodes: Enum.map(episodes, &episode/1)})
 
-      # Enqueued before a file held a list of episodes
+      # Jobs enqueued before `episodes` existed have one episode's numbers instead
       {__MODULE__.EpisodeIdentity, fields} ->
         episode = struct(__MODULE__.EpisodeIdentity.Episode, fields)
         struct(module, Map.put(fields, :episodes, [episode]))
@@ -267,7 +264,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     })
   end
 
-  # to_existing_atom: identity keys are struct fields, so the atoms exist.
+  # The keys are struct fields, so their atoms already exist
   defp atom_keys(fields),
     do: Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
 

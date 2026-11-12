@@ -1,8 +1,7 @@
 defmodule WatchClub.MediaSources.Servarr.Sonarr do
   @moduledoc """
-  Sonarr as a `WatchClub.MediaSources.Servarr.App`: one TV Show per Sonarr
-  series, identified by its TVDB id, with one Candidate per episode file, holding
-  one or more episodes.
+  Sonarr as a `WatchClub.MediaSources.Servarr.App`: one TV Show per Sonarr series, identified by
+  its TVDB id, and one Candidate per episode file, with the episodes it holds.
   """
   @behaviour WatchClub.MediaSources.Servarr.App
 
@@ -154,8 +153,8 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   defp refresh_request(%{"series" => %{"id" => id}}), do: [{:refresh_request, id}]
   defp refresh_request(_params), do: []
 
-  # The file holding the `episodes`, in order. `series` is a Sonarr series or a Download webhook
-  # event, and the episodes theirs: both carry the same ids and titles.
+  # Builds the Candidate of a file holding `episodes`. `series` is a Sonarr series or a Download
+  # webhook event: both have the series' ids and title.
   defp episode_candidate(path, series, episodes) do
     %Candidate{
       path: path,

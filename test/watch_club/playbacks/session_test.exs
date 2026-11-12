@@ -618,8 +618,7 @@ defmodule WatchClub.Playbacks.SessionTest do
     |> generate()
   end
 
-  # The two Media holding the Parts of a TV Show Episode, a minute each, and the Media of the
-  # episode after it
+  # Media for a TV Show Episode in two Parts, a minute each, and for the episode after it
   defp two_part_episode_media do
     [episode, next_episode] = episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 2)))
 

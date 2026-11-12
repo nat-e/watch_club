@@ -315,8 +315,8 @@ defmodule WatchClub.Generator do
     )
   end
 
-  # A User's Watch Progress: pass the `movie_id`, `tv_show_episode_id` or `sports_event_id` of its
-  # work, and where the User is in it
+  # A User's Watch Progress. Pass its work's `movie_id`, `tv_show_episode_id` or
+  # `sports_event_id`, and the positions
   def watch_progress(%User{} = user, opts) do
     seed_generator(%WatchProgress{user_id: user.id}, overrides: opts)
   end
@@ -462,8 +462,7 @@ defmodule WatchClub.Generator do
     }
   end
 
-  # The video of the Movie, TV Show Episode or Sports Event `id`, as its only Part, or Unmatched
-  # Media without a Part when `id` is nil
+  # Video input holding Part 1 of the work `id`, or no Part, for Unmatched Media, when `id` is nil
   def video_input(media_type, id) do
     work_field =
       case media_type do

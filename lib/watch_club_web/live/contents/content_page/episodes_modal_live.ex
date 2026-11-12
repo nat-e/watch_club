@@ -122,10 +122,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   attr :locale, :atom, required: true
   attr :myself, :any, required: true
 
-  # Its still, with Play once it's in the Library, its number and name, its length, its Parts when it
-  # has several, the episodes its file also holds and a word on where it is, its story, and a check
-  # to mark it as watched or not once it aired, with Download under it once it's in the Library.
-  # The still is grey while it isn't out, and when a TV Show in the Library misses it.
+  # One episode: its still with Play, its number, title, length, notes and story, then the watched
+  # check and Download. The still is grey before it airs, or when a TV Show in the Library lacks it.
   defp episode_row(assigns) do
     episode = assigns.episode
     localization = episode.best_localization || %{title: nil, overview: nil}

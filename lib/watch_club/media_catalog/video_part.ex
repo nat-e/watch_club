@@ -1,5 +1,5 @@
 defmodule WatchClub.MediaCatalog.VideoPart do
-  @moduledoc "A Video contains a Part. Written through the Video's `parts`."
+  @moduledoc "Links a Video to a Part it holds. Don't write it directly: set the Video's `parts`."
   use Ash.Resource,
     otp_app: :watch_club,
     domain: WatchClub.MediaCatalog,
@@ -13,9 +13,9 @@ defmodule WatchClub.MediaCatalog.VideoPart do
     repo WatchClub.Repo
 
     references do
-      # The primary key starts with video_id
+      # No index: the primary key starts with video_id
       reference :video, on_delete: :delete
-      # A Part's Movie, TV Show Episode or Sports Event can't be deleted while a Video contains it
+      # Restricted, so a work can't be deleted while a Video holds one of its Parts
       reference :part, on_delete: :restrict, index?: true
     end
   end

@@ -1,9 +1,11 @@
 defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
   @moduledoc """
-  What plays after a Video, or before it with `which: :previous`: the next or previous file Play
-  plays for its Movie, TV Show Episode or Sports Event, with the `part` it starts with. Past the
-  ends of a TV Show Episode, the first file of the next or previous `episode`. Nil when nothing
-  plays there, and for Unmatched Media.
+  What the Player plays after a Video, or before it with `which: :previous`. Load it as
+  `next_to_play` or `previous_to_play` on a Video.
+
+  Returns a `%ToPlay{}` with the `video` to play and what it is: its `part`, when it's another
+  Part of the same work, or its `episode`, when it's the next or previous TV Show Episode. Nil when
+  nothing comes next, and for Unmatched Media.
   """
   use Ash.Resource.Calculation
 
@@ -38,7 +40,7 @@ defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
 
   defp to_play(%Video{parts: []}, _which), do: nil
 
-  # After the last of the TV Show Episodes a file holds, before the first
+  # For a file holding several TV Show Episodes, looks after the last one or before the first
   defp to_play(%Video{parts: parts} = video, which) do
     part = if which == :next, do: List.last(parts), else: List.first(parts)
     work = Part.work(part)

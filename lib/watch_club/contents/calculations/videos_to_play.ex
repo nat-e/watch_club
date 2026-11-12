@@ -1,7 +1,10 @@
 defmodule WatchClub.Contents.Calculations.VideosToPlay do
   @moduledoc """
-  The Videos to play for a Movie, TV Show Episode or Sports Event, in order, never repeating a
-  Part. Each has `parts` and `credits_start_seconds`.
+  The Videos the Player plays for a Movie, TV Show Episode or Sports Event, one after the other.
+  Load it as `videos_to_play`.
+
+  Returns Videos in Part order that hold each Part once: a whole file replaces its halves. Each
+  Video comes with its `parts` and `credits_start_seconds`. Empty when there is no Video.
   """
   use Ash.Resource.Calculation
 
@@ -33,8 +36,8 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
     Enum.reverse(videos)
   end
 
-  # A whole file beats its halves, so prefer the copy holding the most of the work's Parts, then
-  # the oldest. Skip copies that repeat a played Part, unless they all do.
+  # Picks the copy holding the most Parts, so a whole file wins over its halves, then the oldest.
+  # Skips copies holding a Part already played, unless every copy does.
   defp pick([oldest | _] = copies, played, work_part_ids) do
     copies
     |> Enum.reject(fn video -> Enum.any?(video.parts, &(&1.id in played)) end)
@@ -46,8 +49,9 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   end
 
   @doc """
-  Splits `videos_to_play` into the Videos before the playing `video` and the rest, from it on.
-  If `video` is a copy that isn't listed, splits at the listed Video holding its `part`.
+  Splits `videos_to_play` around the playing `video`, which holds `part`. Returns
+  `{videos_before, videos_from_it}`, like `Enum.split_while/2`. When `video` is a copy that isn't
+  in the list, it splits at the listed Video holding the same `part`.
   """
   def split_at(videos_to_play, video, part),
     do: Enum.split_while(videos_to_play, &(not holds?(&1, video, part)))

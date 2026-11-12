@@ -1,11 +1,10 @@
 defmodule WatchClub.MediaCatalog.Changes.SetContent do
   @moduledoc """
-  Sets the Content of a Media: the Content of the Movie, TV Show Episode or Sports Event its
-  Video's first Part belongs to, or of the Book its Ebook or Audiobook is attached to. Movies,
-  Sports Events and Books share the id of their Content, and a TV Show Episode belongs to a TV
-  Show. A Video without Parts is Unmatched Media, without Content.
+  Sets a Media's `content_id` from the Video, Ebook or Audiobook input it's saved with. Pass
+  `attachment:`, the name of the action argument holding that input, with atom keys.
 
-  `:attachment` is the action argument holding the Video, Ebook or Audiobook input, with atom keys.
+  A Video gets the Content of its first Part's Movie, TV Show Episode or Sports Event. A Video
+  without Parts gets no Content: it's Unmatched Media.
   """
   use Ash.Resource.Change
 
@@ -25,6 +24,7 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
     end)
   end
 
+  # Movies and Sports Events share the id of their Content. A TV Show Episode's is its TV Show's.
   defp content_id!(%{movie_id: movie_id}) when is_binary(movie_id), do: movie_id
   defp content_id!(%{sports_event_id: event_id}) when is_binary(event_id), do: event_id
 

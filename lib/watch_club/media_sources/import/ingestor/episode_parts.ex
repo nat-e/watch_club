@@ -1,20 +1,19 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   @moduledoc """
-  The Parts a file holds of a TV Show's episodes, from the episodes its source says it holds.
-  Sonarr numbers episodes like TVDB, which splits some episodes the Metadata Provider lists
-  whole, so the numbers drift apart. Each source episode is the TV Show Episode:
+  Finds the Parts of TV Show Episodes a file holds, from the episodes its source lists for it.
+  `MatchContent` uses it for TV Show Episode files.
 
-  1. with its number, when their titles match;
-  2. else with its title, aired within a day of it;
-  3. else that TMDB links to its TVDB id;
-  4. else with its number.
+  Sonarr numbers episodes like TVDB, which splits some episodes that TMDB lists as one, so the
+  numbers can drift apart. Each source episode is matched to a TMDB episode, in this order:
 
-  Titles match without their case, punctuation, leading "The" and a part marker such as "(2)"
-  or "Part 2", which must be the same when both titles have one. A source episode found by its
-  title alone, whose title has a part marker that the TV Show Episode's title lacks, is that
-  Part of it: "Fun Run (2)" is Part 2 of "Fun Run". Any other is Part 1. On an episode found by
-  its number, a part marker rather means a story told over two episodes with different titles,
-  such as "The One with the Morning After (2)".
+  1. the same number, if the titles match;
+  2. the same title, if they aired within a day of each other;
+  3. the episode TMDB links to its TVDB id;
+  4. the same number.
+
+  Titles are compared without case, punctuation, a leading "The" or a part marker like "(2)". A
+  source episode found by its title, whose title ends with "(2)" or "Part 2" while the TMDB title
+  doesn't, is Part 2 of it: "Fun Run (2)" is Part 2 of "Fun Run". Any other match is Part 1.
   """
 
   alias WatchClub.Contents.TvShowEpisode
@@ -25,10 +24,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   @part_marker ~r/\s*(?:[\(\[]\s*(?:part\s*)?(\d+)\s*[\)\]]|[,:\-–]?\s*part\s+(\d+))\s*$/iu
 
   @doc """
-  The Parts the file holds, as `%{tv_show_episode_id: id, number: number}`, among the
-  `episodes` of the TV Show `tmdb_id`, loaded with their `localizations`. `source_episodes` are
-  in their source's order. Raises `TvShowEpisodeNotListedError` when one of them matches none,
-  so the file isn't saved and a later scan retries it.
+  Returns the Parts a file holds, as `%{tv_show_episode_id: id, number: number}` maps, in order.
+  Pass the TV Show's `episodes` with their `localizations`, its TMDB id, and the file's
+  `source_episodes` in their source's order.
+
+  Raises `TvShowEpisodeNotListedError` when a source episode matches none, so the file isn't
+  saved and a later import retries it.
   """
   @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()]
   def find!(episodes, tmdb_id, source_episodes) do
@@ -52,6 +53,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
       )
 
     cond do
+      # A part marker here ends a story told over two differently titled episodes, so it's Part 1
       numbered && same_title?(source, numbered) ->
         {numbered, 1}
 
@@ -107,13 +109,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
 
   defp linked_to_tvdb_id!(_source, _episodes, _tmdb_id), do: nil
 
-  # The English title, which Sonarr's are in, else any
+  # Sonarr's titles are in English, so compare with the English title, else any
   defp title(%TvShowEpisode{localizations: localizations}) do
     Enum.find_value(localizations, &(&1.iso_639_1 == "en" && &1.title)) ||
       Enum.find_value(localizations, & &1.title)
   end
 
-  # What a title is compared by, and the number of its part marker or nil
+  # Returns the title to compare, normalized, and the number of its part marker or nil
   defp title_key(nil), do: {nil, nil}
 
   defp title_key(title) do

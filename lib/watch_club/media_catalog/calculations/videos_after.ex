@@ -1,8 +1,10 @@
 defmodule WatchClub.MediaCatalog.Calculations.VideosAfter do
   @moduledoc """
-  The files a User can play after a Video, in order and at most 10: the rest of the files of its
-  Movie, TV Show Episode or Sports Event, then those of the TV Show Episodes with Media after the
-  last one it holds. Each file once, with its `parts`. Empty for Unmatched Media.
+  The Videos the Remote's Up next offers after a Video. Load it as `videos_after` on a Video.
+
+  Returns up to 10 Videos in play order: the next Parts of the same work, then the Videos of the
+  next TV Show Episodes with Media. Each Video comes once, with its `parts`. Empty for Unmatched
+  Media.
   """
   use Ash.Resource.Calculation
 

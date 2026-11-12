@@ -1,10 +1,10 @@
 defmodule WatchClubWeb.Helpers.Parts do
-  @moduledoc "Parts named in the User's locale."
+  @moduledoc "Names Parts for display, in the User's locale."
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.MediaCatalog.Part
 
-  @doc "The name its source gives a Part, such as Main Card, else its number: Part 2."
+  @doc "A Part's display name: its name from its source, such as Main Card, else Part 2."
   def name(%Part{name: nil, number: number}),
     do: dgettext("contents", "Part %{number}", number: number)
 
