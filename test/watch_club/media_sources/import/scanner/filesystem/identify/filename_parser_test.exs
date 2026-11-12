@@ -379,6 +379,13 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
                  FilenameParser.parse_episode(@input)
       end
     end
+
+    test "keeps a range followed by a resolution" do
+      for input <- ["Show - S01E23-24-1080p.mkv", "Show - Episode 23-24-720p.mkv"] do
+        assert %{episode_number: 23, ending_episode_number: 24} =
+                 FilenameParser.parse_episode(input)
+      end
+    end
   end
 
   describe "parse_episode/1 — episode title" do

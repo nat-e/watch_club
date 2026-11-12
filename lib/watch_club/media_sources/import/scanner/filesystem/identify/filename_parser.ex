@@ -60,7 +60,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
     # 10. "Name - 101.mkv" anime absolute.
     ~r/.*\/(?<seriesname>[^\/]+?)[\s_]+-[\s_]+(?<epnumber>[0-9]+)[\s_]*(?:\[.*?\]|\(.*?\))*[\s_]*(?:\.\w+)?$/,
     # 13. "Episode 16".
-    ~r/[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\/]*$/i,
+    ~r/[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+)(?![0-9ip]))?[^\/]*$/i,
     # 14-15. Path-anchored S?NN x|e NN (kept as fallbacks).
     ~r/.*\/[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\/]*$/,
     ~r/.*\/[sS](?<seasonnumber>[0-9]+)[xX]?[eE](?<epnumber>[0-9]+)[^\/]*$/,
@@ -71,18 +71,20 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
   # MultipleEpisodeExpressions — the end of a range of episodes, such as
   # S01E01-E03. NamingOptions.cs lines 771-782, then Sonarr's Duplicate
   # multi-episode style, S01E01 - S01E02, which Jellyfin doesn't read.
+  # `(?![0-9iIpP])` stands for EpisodePathParser's check that the last number
+  # isn't part of a resolution, such as -1080p, so the range before it stays.
   @multiple_episode_expressions [
-    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})(-[xE]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xXeE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3}))+[^/]*$",
-    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[eE](?<epnumber>[0-9]{1,3})([ ._-]+[sS][0-9]{1,4}[eE](?<endingepnumber>[0-9]{1,3}))+[^/]*$"
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})(-[xE]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[eE](?<epnumber>[0-9]{1,3})([ ._-]+[sS][0-9]{1,4}[eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$"
   ]
 
   # SeasonPathParser — Emby.Naming/TV/SeasonPathParser.cs
@@ -236,8 +238,6 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
   defp ending_episode(regex, path, episode) do
     Enum.find_value([regex | @multiple_episode_expressions], fn expression ->
       with {start, length} <- capture_index(expression, path, "endingepnumber"),
-           # A digit, "p" or "i" after it makes it part of a resolution, such as -1080p
-           false <- binary_slice(path, start + length, 1) =~ ~r/^[0-9ip]/i,
            # A range can't end before it starts: S03E21 - E2 is a title
            ending when ending >= episode <- String.to_integer(binary_part(path, start, length)) do
         {ending, start + length}
