@@ -80,12 +80,6 @@ msgstr "Lire à %{time}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "Problems users report from the Player show up here."
-msgstr "Les problèmes signalés depuis le lecteur s'affichent ici."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr "Qualité"
 
@@ -110,12 +104,6 @@ msgstr "Sous-titres"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "This report doesn't exist."
-msgstr "Ce signalement n'existe pas."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "Time in video"
 msgstr "Moment de la vidéo"
 
@@ -136,3 +124,15 @@ msgstr "Pas chargée"
 #, elixir-autogen, elixir-format
 msgid "No archived reports"
 msgstr "Aucun signalement archivé"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this report."
+msgstr "On n'a pas trouvé ce signalement."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "When friends report a problem from the Player, it shows up here, with what the Player showed at that moment."
+msgstr "Quand tes amis signalent un problème depuis le lecteur, il apparaît ici, avec ce que le lecteur affichait à ce moment-là."

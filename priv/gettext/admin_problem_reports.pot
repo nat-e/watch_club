@@ -68,11 +68,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "Problems users report from the Player show up here."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr ""
 
@@ -93,11 +88,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
-msgid "This report doesn't exist."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/problem_reports_page.ex
-#, elixir-autogen, elixir-format
 msgid "Time in video"
 msgstr ""
 
@@ -114,4 +104,14 @@ msgstr ""
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "No archived reports"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this report."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "When friends report a problem from the Player, it shows up here, with what the Player showed at that moment."
 msgstr ""

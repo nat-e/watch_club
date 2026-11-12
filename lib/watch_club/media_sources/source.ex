@@ -51,11 +51,11 @@ defmodule WatchClub.MediaSources.Source do
       accept [:media_type]
 
       validate present(:media_type) do
-        message dgettext_noop("errors", "The media type is required")
+        message dgettext_noop("errors", "Choose a media type")
       end
 
       validate present(:filesystem_path) do
-        message dgettext_noop("errors", "The path is required")
+        message dgettext_noop("errors", "Enter a path")
       end
 
       change set_attribute(:source_type, :filesystem)

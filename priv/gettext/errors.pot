@@ -38,11 +38,6 @@ msgstr ""
 
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
-msgid "Max uses must be at least %{greater_than_or_equal_to}"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
 msgid "Code can only contain upper case letters, numbers and _"
 msgstr ""
 
@@ -61,11 +56,6 @@ msgstr ""
 msgid "This code is already used by another invitation"
 msgstr ""
 
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "This invitation has already been used more than that"
-msgstr ""
-
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name cannot be longer than %{max} characters"
@@ -73,47 +63,12 @@ msgstr ""
 
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
-msgid "Instance name is required"
-msgstr ""
-
-#: lib/watch_club/instance/instance_settings.ex
-#, elixir-autogen, elixir-format
 msgid "Instance name must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The API key is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The URL is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The callback URL is required"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "The invitation code is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/source.ex
-#, elixir-autogen, elixir-format
-msgid "The path is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The quality profile is required"
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/wizard.ex
-#, elixir-autogen, elixir-format
-msgid "The root folder is required"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -185,16 +140,6 @@ msgstr ""
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "Could not reach %{name}."
-msgstr ""
-
-#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
-#, elixir-autogen, elixir-format
-msgid "The webhook test failed."
-msgstr ""
-
-#: lib/watch_club/media_sources/source.ex
-#, elixir-autogen, elixir-format
-msgid "The media type is required"
 msgstr ""
 
 #: lib/watch_club/conversations/conversation.ex
@@ -337,4 +282,59 @@ msgstr ""
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong current password"
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a media type"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a quality profile"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a root folder"
+msgstr ""
+
+#: lib/watch_club/media_sources/source.ex
+#, elixir-autogen, elixir-format
+msgid "Enter a path"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the API key"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the URL"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/wizard.ex
+#, elixir-autogen, elixir-format
+msgid "Enter the Watch Club URL"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "It's already been used more times than that."
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum uses must be at least %{greater_than_or_equal_to}"
+msgstr ""
+
+#: lib/watch_club/instance/instance_settings.ex
+#, elixir-autogen, elixir-format
+msgid "Name your instance"
+msgstr ""
+
+#: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
+#, elixir-autogen, elixir-format
+msgid "The webhook test failed. Check that %{name} can reach this address."
 msgstr ""

@@ -58,7 +58,10 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
           <:icon><Lucideicons.flag /></:icon>
           <:title>{dgettext("admin_problem_reports", "No open reports")}</:title>
           <:description>
-            {dgettext("admin_problem_reports", "Problems users report from the Player show up here.")}
+            {dgettext(
+              "admin_problem_reports",
+              "When friends report a problem from the Player, it shows up here, with what the Player showed at that moment."
+            )}
           </:description>
           <.button
             :if={@any_archived?}
@@ -375,7 +378,7 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
 
       {:error, _not_found} ->
         socket
-        |> put_flash(:error, dgettext("admin_problem_reports", "This report doesn't exist."))
+        |> put_flash(:error, dgettext("admin_problem_reports", "We couldn't find this report."))
         |> push_patch(to: list_path(socket.assigns.archived?))
     end
   end
