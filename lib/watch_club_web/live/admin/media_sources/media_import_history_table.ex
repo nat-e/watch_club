@@ -93,7 +93,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   # Which files it processes, how far it got, and their outcomes
   defp files(assigns) do
     ~H"""
-    <.stack space="tight" class="items-start">
+    <.stack space="related" class="items-start">
       <.badge variant="muted" size="sm">
         {files_to_process_label(@media_import.files_to_process)}
       </.badge>
@@ -120,10 +120,11 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             "%{processed} of %{total} file",
             "%{processed} of %{total} files",
             @media_import.file_count,
-            processed: number(@media_import.processed_file_count, @locale),
-            total: number(@media_import.file_count, @locale)
+            processed: number!(@media_import.processed_file_count, @locale),
+            total: number!(@media_import.file_count, @locale)
           )}
         </span>
+        <%!-- A job run again after a crash between its count and Oban's ack counts a file twice --%>
         <.progress_bar
           :if={@media_import.status == :processing}
           percent={min(100 * @media_import.processed_file_count / @media_import.file_count, 100)}
@@ -141,7 +142,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             "%{number} matched",
             "%{number} matched",
             @media_import.matched_file_count,
-            number: number(@media_import.matched_file_count, @locale)
+            number: number!(@media_import.matched_file_count, @locale)
           )}
         </li>
         <li :if={@media_import.unmatched_file_count > 0}>
@@ -155,7 +156,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
               "%{number} unmatched",
               "%{number} unmatched",
               @media_import.unmatched_file_count,
-              number: number(@media_import.unmatched_file_count, @locale)
+              number: number!(@media_import.unmatched_file_count, @locale)
             )}
           </.link>
         </li>
@@ -165,7 +166,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             "%{number} unreadable",
             "%{number} unreadable",
             @media_import.unreadable_file_count,
-            number: number(@media_import.unreadable_file_count, @locale)
+            number: number!(@media_import.unreadable_file_count, @locale)
           )}
         </li>
         <li :if={@media_import.failed_file_count > 0} class="text-danger">
@@ -174,7 +175,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             "%{number} failed",
             "%{number} failed",
             @media_import.failed_file_count,
-            number: number(@media_import.failed_file_count, @locale)
+            number: number!(@media_import.failed_file_count, @locale)
           )}
         </li>
       </.stack>
@@ -182,7 +183,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
     """
   end
 
-  defp number(count, locale),
+  defp number!(count, locale),
     do: WatchClub.Cldr.Number.to_string!(count, locale: UserLocale.to_cldr_locale_name(locale))
 
   defp files_to_process_label(:new), do: dgettext("admin_media_imports", "New")

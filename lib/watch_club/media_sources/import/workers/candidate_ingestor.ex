@@ -61,29 +61,31 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args} = job) do
-    candidate = Candidate.from_map(args)
     media_import_id = args["media_import_id"]
-    trigger = if media_import_id, do: :media_import, else: :webhook
 
-    Logger.metadata(
-      path: candidate.path,
-      media_type: candidate.media_type,
-      media_import_id: media_import_id,
-      trigger: trigger
-    )
+    # From the job's arguments, so a Candidate that can't be built is reported too
+    start_metadata = %{
+      path: args["path"],
+      media_type: args["media_type"],
+      trigger: if(media_import_id, do: :media_import, else: :webhook)
+    }
 
-    start_metadata = %{path: candidate.path, media_type: candidate.media_type, trigger: trigger}
+    Logger.metadata([media_import_id: media_import_id] ++ Map.to_list(start_metadata))
 
     :telemetry.span([:watch_club, :media_ingest], start_metadata, fn ->
-      outcome = ingest(candidate)
+      outcome =
+        try do
+          args |> Candidate.from_map() |> ingest()
+        catch
+          kind, reason ->
+            # Oban retries a crash, and the last one counts the file as failed
+            if job.attempt >= job.max_attempts, do: count_file!(media_import_id, :failed)
+            :erlang.raise(kind, reason, __STACKTRACE__)
+        end
+
       count_file!(media_import_id, outcome.outcome)
       {:ok, Map.merge(start_metadata, outcome)}
     end)
-  rescue
-    exception ->
-      # Oban retries a crash, and the last one counts the file as failed
-      if job.attempt >= job.max_attempts, do: count_file!(args["media_import_id"], :failed)
-      reraise exception, __STACKTRACE__
   end
 
   # The file's outcome, its reason, and what explains it

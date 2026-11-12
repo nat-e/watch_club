@@ -96,7 +96,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       assert movie_id == movie.id
 
       assert_received {[:watch_club, :media_ingest, :stop], ^ref, %{duration: _},
-                       %{media_type: :movie, trigger: :webhook, outcome: :matched, reason: nil}}
+                       %{media_type: "movie", trigger: :webhook, outcome: :matched, reason: nil}}
     end
 
     test "saves a file no Content matches as Unmatched Media", %{telemetry_ref: ref} do
@@ -141,6 +141,40 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
       assert_received {[:watch_club, :media_ingest, :stop], ^ref, _measurements,
                        %{outcome: :unreadable, reason: nil}}
+    end
+  end
+
+  describe "perform/1 — crash" do
+    setup do
+      ref =
+        :telemetry_test.attach_event_handlers(self(), [[:watch_club, :media_ingest, :exception]])
+
+      on_exit(fn -> :telemetry.detach(ref) end)
+      %{telemetry_ref: ref}
+    end
+
+    test "reports a crash as the failed outcome, and lets it reach Oban", %{telemetry_ref: ref} do
+      stub(ProbeMock, :probe, fn _path -> raise "boom" end)
+      path = tmp_file!()
+
+      candidate = %Candidate{
+        media_source_id: default_media_source_id(),
+        path: path,
+        media_type: :movie,
+        identity: %MovieIdentity{tmdb_id: 11}
+      }
+
+      log =
+        capture_log([format: "$metadata$message", metadata: [:event, :outcome]], fn ->
+          assert_raise RuntimeError, "boom", fn ->
+            perform_job(CandidateIngestor, Candidate.to_map(candidate))
+          end
+        end)
+
+      assert log =~ "event=media_ingested outcome=failed Couldn't ingest #{path}"
+
+      assert_received {[:watch_club, :media_ingest, :exception], ^ref, _measurements,
+                       %{path: ^path, kind: :error}}
     end
   end
 
