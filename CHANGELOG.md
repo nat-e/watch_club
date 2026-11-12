@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.11](https://github.com/nat-e/watch_club/compare/v0.1.10...v0.1.11) (2026-11-12)
+
+
+### Features
+
+* **home:** hide a title from Continue watching and Up next ([#108](https://github.com/nat-e/watch_club/issues/108)) ([18235b4](https://github.com/nat-e/watch_club/commit/18235b417d7fabfcc66f9bcd317922083b96b636))
+* **home:** let titles leave Continue Watching on their own ([#109](https://github.com/nat-e/watch_club/issues/109)) ([54966b0](https://github.com/nat-e/watch_club/commit/54966b067bad32a68bf3ef7b4c2f0256053c20d6))
+* rewrite the interface copy in English and French ([#114](https://github.com/nat-e/watch_club/issues/114)) ([e8d9346](https://github.com/nat-e/watch_club/commit/e8d93468d69ae516e21ee8efab48814857cb0605))
+
+
+### Bug Fixes
+
+* **browse:** keep the scroll position after going back from a Content page ([#113](https://github.com/nat-e/watch_club/issues/113)) ([b26b8f9](https://github.com/nat-e/watch_club/commit/b26b8f9c28055d542a0a7f44291a43c68899801f))
+* **conversations:** make own Message bubbles and Send stand out ([#112](https://github.com/nat-e/watch_club/issues/112)) ([de8979f](https://github.com/nat-e/watch_club/commit/de8979ff9edad540004dbe0ddbab8df6a08f42ea))
+* **home:** show Up next on the first screen, over the Continue watching spotlight ([#111](https://github.com/nat-e/watch_club/issues/111)) ([64fb1c6](https://github.com/nat-e/watch_club/commit/64fb1c69ba43ffdd37cc14373a244e4e76664a54))
+* **media-sources:** link filesystem episode files by title, and every episode they hold ([#106](https://github.com/nat-e/watch_club/issues/106)) ([b8bf56d](https://github.com/nat-e/watch_club/commit/b8bf56d784fc4089cfd6ef790b5c0dab6b7d206c))
+
 ## [0.1.10](https://github.com/nat-e/watch_club/compare/v0.1.9...v0.1.10) (2026-11-12)
 
 
