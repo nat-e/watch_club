@@ -346,20 +346,22 @@ defmodule WatchClubWeb.BrowsePage do
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply,
-     socket
-     # An unknown type shows Movies
-     |> assign(
-       :type,
-       Url.parse_url_param(params["type"], ContentType.library_display_order(), @default_type)
-     )
-     |> assign(:filters, filters(params))
-     |> assign(
-       :sort,
-       Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
-     )
-     |> assign(:stream_state, KeysetStreamState.init(@page_size))
-     |> load_page!()}
+    filters = filters(params)
+    sort = Url.parse_url_param(params["sort"], LibrarySort.values(), LibrarySort.default())
+
+    case Url.parse_url_param(params["type"], ContentType.library_display_order()) do
+      # Without a known type, Browse shows Movies, with their type in the URL
+      nil ->
+        {:noreply,
+         push_patch(socket, to: browse_path(@default_type, filters, sort), replace: true)}
+
+      type ->
+        {:noreply,
+         socket
+         |> assign(type: type, filters: filters, sort: sort)
+         |> assign(:stream_state, KeysetStreamState.init(@page_size))
+         |> load_page!()}
+    end
   end
 
   @impl true
@@ -469,12 +471,13 @@ defmodule WatchClubWeb.BrowsePage do
     if choice in choices, do: List.delete(choices, choice), else: choices ++ [choice]
   end
 
-  # Browse's URL with this type, filters and sort, without the defaults
+  # Browse's URL with this type, filters and sort, without the filters that are off and the default
+  # sort
   defp browse_path(type, filters, sort) do
     params =
       Enum.reject(
         [
-          type: type != @default_type && type,
+          type: type,
           not_watched: filters.not_watched?,
           recommended: filters.recommended?,
           genres: Enum.join(filters.genres, ","),
