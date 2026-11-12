@@ -28,6 +28,11 @@ defmodule WatchClubWeb.Storybook.Input do
         attributes: %{type: "email", placeholder: "name@example.com", autocomplete: "email"}
       },
       %Variation{
+        id: :search,
+        description: "Search input, with the clear button Chrome and Safari add",
+        attributes: %{type: "search", value: "Dune", placeholder: "Search the Library"}
+      },
+      %Variation{
         id: :disabled,
         description: "Disabled input",
         attributes: %{placeholder: "Unavailable", disabled: true}
