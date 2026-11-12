@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/nat-e/watch_club/compare/v0.1.8...v0.1.9) (2026-11-12)
+
+
+### Features
+
+* play TV Show Episodes made of several files, and link Sonarr files by title ([#94](https://github.com/nat-e/watch_club/issues/94)) ([cca4619](https://github.com/nat-e/watch_club/commit/cca4619f3937310e00edfaf7a3ca729f3a85427d))
+
 ## [0.1.8](https://github.com/nat-e/watch_club/compare/v0.1.7...v0.1.8) (2026-11-12)
 
 
