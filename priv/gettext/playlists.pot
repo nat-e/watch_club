@@ -40,11 +40,6 @@ msgstr ""
 msgid "Actions for %{playlist}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
-#, elixir-autogen, elixir-format
-msgid "Add movies and TV shows from their page."
-msgstr ""
-
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Are you sure you want to delete the playlist %{playlist}?"
@@ -267,6 +262,7 @@ msgid "Add to playlist"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr ""
@@ -307,3 +303,28 @@ msgid "%{count} sports event"
 msgid_plural "%{count} sports events"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Add"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Add to %{playlist}"
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't add %{content}. Try again."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search by title, then pick what to add."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "Search for movies, TV shows and sports events to add."
+msgstr ""

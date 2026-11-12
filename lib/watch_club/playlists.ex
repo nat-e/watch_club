@@ -23,6 +23,11 @@ defmodule WatchClub.Playlists do
 
     resource PlaylistItem do
       define :list_playlist_items, action: :for_playlist, args: [:playlist_id]
+
+      define :list_playlist_items_for_contents,
+        action: :for_contents,
+        args: [:playlist_id, :content_identities]
+
       define :get_playlist_item, action: :read, get_by: [:playlist_id, :content_id]
       define :add_to_playlist, action: :add, args: [:playlist_id, :content_identity]
       define :remove_from_playlist, action: :destroy, get_by: [:playlist_id, :content_id]

@@ -15,6 +15,7 @@ defmodule WatchClub.Playlists.PlaylistItem do
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Changes.EnsureContentExists
   alias WatchClub.Contents.{Content, ContentIdentity}
+  alias WatchClub.Contents.Preparations.FilterByContentIdentities
   alias WatchClub.Playlists.Playlist
 
   postgres do
@@ -39,6 +40,15 @@ defmodule WatchClub.Playlists.PlaylistItem do
 
       filter expr(playlist_id == ^arg(:playlist_id))
       prepare build(sort: [added_at: :desc])
+    end
+
+    read :for_contents do
+      description "The Playlist's Items of these Content, if it holds them"
+      argument :playlist_id, :uuid_v7, allow_nil?: false
+      argument :content_identities, {:array, ContentIdentity}, allow_nil?: false
+
+      filter expr(playlist_id == ^arg(:playlist_id))
+      prepare {FilterByContentIdentities, content_path: :content}
     end
 
     create :add do
