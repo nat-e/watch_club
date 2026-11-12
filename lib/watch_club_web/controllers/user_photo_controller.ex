@@ -7,7 +7,7 @@ defmodule WatchClubWeb.UserPhotoController do
   alias WatchClub.Accounts.UserPhoto
 
   def show(conn, %{"revision" => revision}) do
-    path = UserPhoto.path(revision)
+    path = UserPhoto.path!(revision)
 
     if File.exists?(path) do
       conn

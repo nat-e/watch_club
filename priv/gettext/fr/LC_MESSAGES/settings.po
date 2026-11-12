@@ -220,3 +220,21 @@ msgstr "Dézoomer"
 #, elixir-autogen, elixir-format
 msgid "We couldn't save your photo. Try again."
 msgstr "On n'a pas pu enregistrer ta photo. Réessaie."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Drag the photo, or click where to center it."
+msgstr "Fais glisser la photo, ou clique sur l'endroit à centrer."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your photo is removed"
+msgstr "Ta photo est supprimée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your photo is saved"
+msgstr "Ta photo est enregistrée"

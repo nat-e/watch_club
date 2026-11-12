@@ -22,7 +22,7 @@ defmodule WatchClub.Accounts.UserPhoto do
          {:ok, image} <- Image.open(source_path, fail_on: :error),
          true <- Image.width(image) * Image.height(image) <= @max_pixels,
          {:ok, photo} <- Image.thumbnail(image, @size, crop: :center),
-         {:ok, _photo} <- Image.write(photo, path(revision), strip_metadata: true) do
+         {:ok, _photo} <- Image.write(photo, path!(revision), strip_metadata: true) do
       {:ok, revision}
     else
       _unreadable ->
@@ -32,15 +32,15 @@ defmodule WatchClub.Accounts.UserPhoto do
   end
 
   @doc "The file of a photo. A revision comes from the URL, so anything but a UUID raises."
-  @spec path(Ecto.UUID.t()) :: Path.t()
-  def path(revision), do: Path.join(dir(), "#{Ecto.UUID.cast!(revision)}.webp")
+  @spec path!(Ecto.UUID.t()) :: Path.t()
+  def path!(revision), do: Path.join(dir(), "#{Ecto.UUID.cast!(revision)}.webp")
 
   @doc "Deletes a photo's file, if any"
   @spec delete(Ecto.UUID.t() | nil) :: :ok
   def delete(nil), do: :ok
 
   def delete(revision) do
-    File.rm(path(revision))
+    File.rm(path!(revision))
     :ok
   end
 

@@ -282,7 +282,7 @@ defmodule WatchClub.Accounts.UserTest do
 
       user = set_photo!(user, Ash.Type.File.from_path(photo_file!(tmp_dir)), actor: user)
 
-      photo = Image.open!(UserPhoto.path(user.photo_revision))
+      photo = Image.open!(UserPhoto.path!(user.photo_revision))
       assert {Image.width(photo), Image.height(photo)} == {256, 256}
       assert {:ok, fields} = Vix.Vips.Image.header_field_names(photo)
       refute "exif-data" in fields
@@ -294,7 +294,7 @@ defmodule WatchClub.Accounts.UserTest do
 
       set_photo!(user, Ash.Type.File.from_path(photo_file!(tmp_dir)), actor: user)
 
-      refute File.exists?(UserPhoto.path(old_revision))
+      refute File.exists?(UserPhoto.path!(old_revision))
     end
 
     test "fails when the file isn't a JPEG, PNG or WebP image", %{tmp_dir: tmp_dir} do
@@ -325,7 +325,7 @@ defmodule WatchClub.Accounts.UserTest do
       user = generate(user(photo_revision: revision))
 
       assert %User{photo_revision: nil} = remove_photo!(user, actor: user)
-      refute File.exists?(UserPhoto.path(revision))
+      refute File.exists?(UserPhoto.path!(revision))
     end
 
     test "Users can only remove their own photo", %{tmp_dir: tmp_dir} do
@@ -408,7 +408,7 @@ defmodule WatchClub.Accounts.UserTest do
 
       destroy_user!(member, actor: admin)
 
-      refute File.exists?(UserPhoto.path(revision))
+      refute File.exists?(UserPhoto.path!(revision))
     end
 
     test "only the administrator can delete users", %{member: member} do

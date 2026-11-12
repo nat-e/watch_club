@@ -185,3 +185,18 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "We couldn't save your photo. Try again."
 msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Drag the photo, or click where to center it."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your photo is removed"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your photo is saved"
+msgstr ""

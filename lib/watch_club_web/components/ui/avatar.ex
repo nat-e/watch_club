@@ -27,8 +27,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       title={@name}
       class={[
         "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold select-none",
-        @src && "bg-surface-raised",
-        !@src && @id && ["text-white", @background_class],
+        @id && ["text-white", @background_class],
         !@id && "bg-surface-raised text-text-subtle",
         @size == "xs" && "size-4 text-xs leading-none",
         @size == "sm" && "size-5 text-sm leading-none",
@@ -39,9 +38,16 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       ]}
       {@rest}
     >
-      <img :if={@src} src={@src} alt="" class="size-full object-cover" />
       <Lucideicons.user_round :if={!@id} class="size-[60%]" />
-      {if @id && !@src, do: initial(@name)}
+      {@id && initial(@name)}
+      <%!-- Over the letter, which shows while it loads, or if its file is missing --%>
+      <img
+        :if={@src}
+        src={@src}
+        alt=""
+        onerror="this.hidden = true"
+        class="absolute inset-0 size-full object-cover"
+      />
     </span>
     """
   end

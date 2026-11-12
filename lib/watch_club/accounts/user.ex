@@ -16,6 +16,14 @@ defmodule WatchClub.Accounts.User do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
+  # The actions that set a password, which the password validations check
+  @password_actions [
+    :create_administrator,
+    :register_with_password,
+    :change_password,
+    :reset_password_with_token
+  ]
+
   postgres do
     table "users"
     repo WatchClub.Repo
@@ -68,12 +76,9 @@ defmodule WatchClub.Accounts.User do
       change WatchClub.Accounts.Changes.DeleteOldPhoto
     end
 
-    # The photo actions don't touch the username or the password, which the global validations
-    # check
     update :set_photo do
       description "Makes an image the User's photo, shown instead of their letter."
       require_atomic? false
-      skip_global_validations? true
       accept []
 
       argument :photo, Ash.Type.File do
@@ -88,7 +93,6 @@ defmodule WatchClub.Accounts.User do
     update :remove_photo do
       description "Removes the User's photo, so their letter shows again."
       require_atomic? false
-      skip_global_validations? true
       accept []
       change set_attribute(:photo_revision, nil)
       change WatchClub.Accounts.Changes.DeleteOldPhoto
@@ -472,21 +476,24 @@ defmodule WatchClub.Accounts.User do
     end
 
     validate present(:password) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Choose a password")
     end
 
     validate string_length(:password, min: 8) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Password must be at least %{min} characters")
     end
 
     validate present(:password_confirmation) do
       # `confirm` can't catch the empty confirmation when the password is
       # empty too (nil == nil), this fills that gap with the same message
-      where absent(:password)
+      where [action_is(@password_actions), absent(:password)]
       message dgettext_noop("errors", "Passwords do not match")
     end
 
     validate confirm(:password, :password_confirmation) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Passwords do not match")
     end
   end
