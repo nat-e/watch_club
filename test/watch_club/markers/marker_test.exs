@@ -245,14 +245,15 @@ defmodule WatchClub.Markers.MarkerTest do
   end
 
   # The fingerprint of each Video's beginning is made of the given sounds, as names and numbers
-  # of points. Its fingerprint of the end has 400 points of credits music after 2000 points. The
+  # of points. Its fingerprint of the end has 400 points of credits music after 2000 points named
+  # after its beginning, not its random path, so chance matches are the same on every run. The
   # audio of the other Videos can't be read.
   defp stub_fingerprints(beginnings) do
     stub(ProbeMock, :audio_fingerprint, fn path, from_seconds, _seconds ->
       cond do
         not Map.has_key?(beginnings, path) -> {:error, "Invalid data found"}
         from_seconds == 0 -> {:ok, Enum.flat_map(beginnings[path], fn {n, p} -> sound(n, p) end)}
-        true -> {:ok, sound({path, :end}, 2000) ++ sound(:credits, 400)}
+        true -> {:ok, sound({:end, beginnings[path]}, 2000) ++ sound(:credits, 400)}
       end
     end)
   end
