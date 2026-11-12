@@ -146,12 +146,13 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
     """
   end
 
-  # "From guigui74", "From guigui74 and vinz", "From guigui74 and 2 others"
+  # "Recommended by guigui74", "Recommended by guigui74 and vinz", "Recommended by guigui74 and 2
+  # others"
   defp recommended_by([user | others], _locale) when length(others) > 1 do
     dngettext(
       "browse",
-      "From %{name} and %{count} other",
-      "From %{name} and %{count} others",
+      "Recommended by %{name} and %{count} other",
+      "Recommended by %{name} and %{count} others",
       length(others),
       name: user.username
     )
@@ -163,7 +164,7 @@ defmodule WatchClubWeb.Components.Contents.PosterCard do
       |> Enum.map(& &1.username)
       |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
 
-    dgettext("browse", "From %{names}", names: names)
+    dgettext("browse", "Recommended by %{names}", names: names)
   end
 
   attr :id, :string, required: true

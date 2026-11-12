@@ -38,7 +38,8 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
   defp status_body(%{status: :idle} = assigns) do
     ~H"""
     <p id={@id} class={["p-group text-center text-sm text-text-muted", @class]}>
-      {@hint || dgettext("search", "Search by title.")}
+      {@hint ||
+        dgettext("search", "Find any movie or TV show, even ones that aren't in the library yet.")}
     </p>
     """
   end
@@ -76,7 +77,7 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
       <:title>{dgettext("search", "No results")}</:title>
       <:description>
         {raw(
-          dgettext("search", "We didn't find any content for %{query}",
+          dgettext("search", "We didn't find anything for %{query}.",
             query: gtspan("“#{@query}”", "font-semibold text-text")
           )
         )}
