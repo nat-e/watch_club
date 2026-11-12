@@ -262,7 +262,6 @@ msgid "Add to playlist"
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
 msgstr ""
@@ -275,11 +274,6 @@ msgstr ""
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Not in your playlists yet"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Save it to one of your playlists, or to a shared one you can edit."
 msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
@@ -327,4 +321,9 @@ msgstr ""
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Search for movies, TV shows and sports events to add."
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Add it to a playlist to find it again later, or share it with friends."
 msgstr ""

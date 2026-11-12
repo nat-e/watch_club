@@ -74,7 +74,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
               class="size-icon-lg shrink-0 motion-safe:animate-spin"
             />
             <h1 id="content-title" data-page-title class="font-heading text-xl font-semibold">
-              {dgettext("contents", "Loading content…")}
+              {dgettext("contents", "Loading…")}
             </h1>
           </.stack>
         </.page>
@@ -429,7 +429,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
             <span class="text-sm text-text-muted">
               {dgettext(
                 "contents",
-                "Recommend it to people, with a message if you want. It starts a conversation."
+                "Recommend it to friends, tell them why they'll love it, and talk about it together."
               )}
             </span>
           </span>
@@ -573,7 +573,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
         <:icon><Lucideicons.list /></:icon>
         <:title>{dgettext("playlists", "Not in your playlists yet")}</:title>
         <:description>
-          {dgettext("playlists", "Save it to one of your playlists, or to a shared one you can edit.")}
+          {dgettext(
+            "playlists",
+            "Add it to a playlist to find it again later, or share it with friends."
+          )}
         </:description>
         <.button id="empty-add-to-playlist" variant="secondary" phx-click="open_add_to_playlist">
           <:icon><Lucideicons.list_plus /></:icon>
@@ -664,7 +667,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
       _invalid_url ->
         {:noreply,
          socket
-         |> put_flash(:error, dgettext("contents", "This movie or TV show doesn't exist"))
+         |> put_flash(:error, not_found_message(socket.assigns.live_action))
          |> push_navigate(to: ~p"/")}
     end
   end
@@ -689,13 +692,30 @@ defmodule WatchClubWeb.Contents.ContentPage do
   def handle_async(:refresh_content, {:ok, {:ok, _content}}, socket), do: {:noreply, socket}
 
   def handle_async(:refresh_content, {:ok, {:error, %{errors: errors}}}, socket) do
+    type = socket.assigns.live_action
+
     message =
       if Enum.any?(errors, &match?(%MetadataUnavailable{reason: :not_found}, &1)),
-        do: dgettext("contents", "This movie or TV show doesn't exist"),
-        else: dgettext("contents", "Content details are unavailable. Please try again later.")
+        do: not_found_message(type),
+        else: unavailable_message(type)
 
     {:noreply, socket |> put_flash(:error, message) |> push_navigate(to: ~p"/")}
   end
+
+  defp not_found_message(:movie), do: dgettext("contents", "We couldn't find this movie.")
+  defp not_found_message(:tv_show), do: dgettext("contents", "We couldn't find this TV show.")
+
+  defp not_found_message(:sports_event),
+    do: dgettext("contents", "We couldn't find this sports event.")
+
+  defp unavailable_message(:movie),
+    do: dgettext("contents", "We couldn't load this movie. Try again in a moment.")
+
+  defp unavailable_message(:tv_show),
+    do: dgettext("contents", "We couldn't load this TV show. Try again in a moment.")
+
+  defp unavailable_message(:sports_event),
+    do: dgettext("contents", "We couldn't load this sports event. Try again in a moment.")
 
   # The Content's identity from the URL
   defp content_identity_for(:movie, tmdb_id), do: ContentIdentity.for_movie(tmdb_id)
@@ -887,7 +907,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   defp localization(_content), do: %{runtime: nil, cast: [], trailer_url: nil}
 
-  defp title(nil), do: dgettext("contents", "Loading content…")
+  defp title(nil), do: dgettext("contents", "Loading…")
   defp title(content), do: content.title
 
   # The season of the episode Play plays, else the first one

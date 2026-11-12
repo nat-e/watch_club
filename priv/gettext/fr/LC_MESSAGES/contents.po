@@ -45,12 +45,6 @@ msgid "Season %{number}"
 msgstr "Saison %{number}"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
-msgid "Could not request this right now."
-msgstr "Impossible de faire cette demande pour le moment."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/play_or_request_button.ex
 #, elixir-autogen, elixir-format
 msgid "Request"
@@ -135,7 +129,7 @@ msgstr "Marquer la saison %{number} comme vue"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nobody has watched it yet."
-msgstr "Personne ne l'a encore regardé."
+msgstr "Personne n'a encore regardé ce titre."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
@@ -170,12 +164,6 @@ msgstr "Voir sur TMDB"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
-msgid "This movie or TV show doesn't exist"
-msgstr "Ce film ou cette série TV n'existe pas"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
 msgid "Watch trailer"
 msgstr "Voir la bande-annonce"
 
@@ -183,13 +171,7 @@ msgstr "Voir la bande-annonce"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Who watched it"
-msgstr "Qui l'a regardé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "It isn't in the library yet. Mark what you've watched elsewhere."
-msgstr "Elle n'est pas encore dans la bibliothèque. Marquez ce que vous avez vu ailleurs."
+msgstr "Qui a regardé"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
@@ -202,12 +184,6 @@ msgstr "Pas encore dans la bibliothèque"
 #, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr "Épisode %{number} vu"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
-#, elixir-autogen, elixir-format
-msgid "You'll be told when %{title} is ready. It's in your Requests."
-msgstr "Vous serez prévenu quand %{title} sera prêt. C'est dans vos Demandes."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -256,13 +232,13 @@ msgstr "Recommander %{title}"
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended it to you"
-msgstr "Vous a recommandé ce titre"
+msgstr "T'a recommandé ce titre"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended to %{names}. The conversation is in your Inbox."
-msgstr "Recommandé à %{names}. La conversation est dans votre messagerie."
+msgstr "Recommandé à %{names}. La conversation est dans ta messagerie."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -279,12 +255,6 @@ msgstr "Démarre une conversation de groupe avec %{names}."
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "To one person or several. Several people share one conversation."
-msgstr "À une personne ou plusieurs. Plusieurs personnes partagent une seule conversation."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Why they'd love it"
 msgstr "Pourquoi ça va leur plaire"
 
@@ -292,19 +262,13 @@ msgstr "Pourquoi ça va leur plaire"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "You recommended it"
-msgstr "Votre recommandation"
+msgstr "Ta recommandation"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "to %{recipients}"
 msgstr "à %{recipients}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Recommend it to people, with a message if you want. It starts a conversation."
-msgstr "Recommandez ce titre à des personnes, avec un message si vous le souhaitez. Cela démarre une conversation."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex
@@ -327,18 +291,6 @@ msgstr "%{percent} %"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
-msgid "Content details are unavailable. Please try again later."
-msgstr "Les détails de ce contenu sont indisponibles. Veuillez réessayer plus tard."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
-msgid "Loading content…"
-msgstr "Chargement du contenu…"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page.ex
-#, elixir-autogen, elixir-format
 msgid "Download"
 msgstr "Télécharger"
 
@@ -352,7 +304,7 @@ msgstr "Télécharger l'épisode %{number}"
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play or download any episode, and mark what you've watched."
-msgstr "Lancez ou téléchargez n'importe quel épisode, et marquez ce que vous avez vu."
+msgstr "Lance ou télécharge n'importe quel épisode, et marque ce que tu as vu."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/contents/incomplete_badge.ex
@@ -414,3 +366,69 @@ msgstr[1] "%{count} parties"
 #, elixir-autogen, elixir-format
 msgid "Same file as %{episodes}"
 msgstr "Même fichier que %{episodes}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't send the request. Try again in a moment."
+msgstr "La demande n'a pas pu être envoyée. Réessaie dans un instant."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Loading…"
+msgstr "Chargement…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr "Recommande ce titre à tes amis, dis-leur pourquoi ça va leur plaire, et parlez-en ensemble."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Request sent. We'll let you know when you can watch %{title}."
+msgstr "Demande envoyée. On te prévient dès que tu pourras regarder %{title}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Tell them why they'll love it. You'll talk about it together in your Inbox."
+msgstr "Dis-leur pourquoi ça va leur plaire. Vous en parlerez ensemble dans ta messagerie."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this TV show."
+msgstr "On n'a pas trouvé cette série."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this movie."
+msgstr "On n'a pas trouvé ce film."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this sports event."
+msgstr "On n'a pas trouvé ce contenu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this TV show. Try again in a moment."
+msgstr "On n'a pas pu charger cette série. Réessaie dans un instant."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this movie. Try again in a moment."
+msgstr "On n'a pas pu charger ce film. Réessaie dans un instant."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this sports event. Try again in a moment."
+msgstr "On n'a pas pu charger ce contenu. Réessaie dans un instant."

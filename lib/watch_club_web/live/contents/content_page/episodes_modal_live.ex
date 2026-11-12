@@ -46,11 +46,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         class="w-full"
       >
         <:title>{@title}</:title>
-        <:description>
-          {if @in_library?,
-            do: dgettext("contents", "Play or download any episode, and mark what you've watched."),
-            else:
-              dgettext("contents", "It isn't in the library yet. Mark what you've watched elsewhere.")}
+        <:description :if={@in_library?}>
+          {dgettext("contents", "Play or download any episode, and mark what you've watched.")}
         </:description>
 
         <%!-- A container for the rows' breakpoints --%>

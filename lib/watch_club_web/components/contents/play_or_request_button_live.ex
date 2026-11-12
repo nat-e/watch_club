@@ -152,7 +152,11 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
         {:noreply, assign(socket, :focus_status, true)}
 
       {:error, _error} ->
-        Flash.send_flash(:error, dgettext("contents", "Could not request this right now."))
+        Flash.send_flash(
+          :error,
+          dgettext("contents", "Couldn't send the request. Try again in a moment.")
+        )
+
         {:noreply, socket}
     end
   end
@@ -167,7 +171,7 @@ defmodule WatchClubWeb.Components.Contents.PlayOrRequestButtonLive do
   defp send_told_when_ready(title) do
     Flash.send_flash(
       :info,
-      dgettext("contents", "You'll be told when %{title} is ready. It's in your Requests.",
+      dgettext("contents", "Request sent. We'll let you know when you can watch %{title}.",
         title: title
       )
     )

@@ -31,7 +31,10 @@ defmodule WatchClubWeb.Contents.ContentPage.RecommendModalLive do
       <.modal id={@id} size="md" on_close={JS.push("close", target: @myself)}>
         <:title>{dgettext("contents", "Recommend %{title}", title: @title)}</:title>
         <:description>
-          {dgettext("contents", "To one person or several. Several people share one conversation.")}
+          {dgettext(
+            "contents",
+            "Tell them why they'll love it. You'll talk about it together in your Inbox."
+          )}
         </:description>
 
         <.form
