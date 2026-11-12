@@ -1514,16 +1514,17 @@ defmodule WatchClub.Contents.ContentTest do
       )
 
       # Its S01E01 finished, its S01E02 just tried
-      finish_episode!(watched_show, member)
       add_episode_video!(watched_show, 1, 2)
 
-      generate(
-        watch_progress(member,
-          tv_show_episode_id: episode!(watched_show, 1, 2).id,
-          position_seconds: 1.0,
-          duration_seconds: 100.0
+      for {number, position} <- [{1, 95.0}, {2, 1.0}] do
+        generate(
+          watch_progress(member,
+            tv_show_episode_id: episode!(watched_show, 1, number).id,
+            position_seconds: position,
+            duration_seconds: 100.0
+          )
         )
-      )
+      end
 
       assert get_actor_continue_watching!(actor: member) |> MapSet.new(& &1.id) ==
                MapSet.new([watched.id, watched_show.id])
