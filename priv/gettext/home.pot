@@ -110,7 +110,7 @@ msgstr ""
 
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} episode of %{show}"
-msgid_plural "%{count} episodes of %{show}"
+msgid "%{show} (%{count} episode)"
+msgid_plural "%{show} (%{count} episodes)"
 msgstr[0] ""
 msgstr[1] ""

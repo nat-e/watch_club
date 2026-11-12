@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ActivityFeed do
   @moduledoc """
   The Activity Feed on Home: its Feed Entries, latest first, then Show more. Each entry is one
-  sentence, such as "leadelpeut watched WAR, Severance S01E02, and 3 episodes of Fleabag".
+  sentence, such as "leadelpeut watched WAR, Severance S01E02, and Fleabag (3 episodes)".
   """
   use WatchClubWeb, :component
 
@@ -111,7 +111,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
   end
 
   # "A", "A and B", "A, B, C, and 2 more", in the User's language. A TV Show reads as its TV Show
-  # Episode, such as "Fleabag S01E03", or as how many, such as "3 episodes of Fleabag".
+  # Episode, such as "Fleabag S01E03", or as how many, such as "Fleabag (3 episodes)".
   defp sentence(user, watched, more, locale) do
     contents =
       watched
@@ -145,8 +145,8 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
   defp watched_part(content, episodes) do
     dngettext(
       "home",
-      "%{count} episode of %{show}",
-      "%{count} episodes of %{show}",
+      "%{show} (%{count}\u00A0episode)",
+      "%{show} (%{count}\u00A0episodes)",
       length(episodes),
       show: sentence_part(content_link(%{content: content}))
     )

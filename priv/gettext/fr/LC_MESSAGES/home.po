@@ -130,7 +130,7 @@ msgstr "Nouveaux événements sportifs"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} episode of %{show}"
-msgid_plural "%{count} episodes of %{show}"
-msgstr[0] "%{count} épisode de %{show}"
-msgstr[1] "%{count} épisodes de %{show}"
+msgid "%{show} (%{count} episode)"
+msgid_plural "%{show} (%{count} episodes)"
+msgstr[0] "%{show} (%{count} épisode)"
+msgstr[1] "%{show} (%{count} épisodes)"
