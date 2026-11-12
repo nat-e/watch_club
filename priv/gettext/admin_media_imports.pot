@@ -116,7 +116,7 @@ msgstr ""
 msgid "Create Media Source"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Delete Media Source"
 msgstr ""
@@ -217,7 +217,7 @@ msgstr ""
 msgid "Media Source configured"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources_page.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source deleted"
 msgstr ""
@@ -371,7 +371,7 @@ msgstr ""
 msgid "This Media Source has not been imported yet. Run an import to add your medias."
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "This will delete the Media Source %{name}:"
 msgstr ""
@@ -516,7 +516,7 @@ msgstr ""
 msgid "Regenerate thumbnails and markers"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Its media will be removed from the instance too. Their files stay on disk."
 msgstr ""
@@ -524,4 +524,9 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Even for files that haven't changed. New files always get them."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Deleting…"
 msgstr ""

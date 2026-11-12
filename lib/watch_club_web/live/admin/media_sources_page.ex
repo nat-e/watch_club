@@ -10,15 +10,15 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   """
   use WatchClubWeb, :live_view
 
-  import WatchClubWeb.Admin.MediaSources.{
-    CreateOrEditMediaSourceModal,
-    DeleteMediaSourceModal,
-    MediaSourceCard
-  }
+  import WatchClubWeb.Admin.MediaSources.{CreateOrEditMediaSourceModal, MediaSourceCard}
 
   import WatchClubWeb.Components.Media.SourceTypeIcon
 
-  alias WatchClubWeb.Admin.MediaSources.{AddServarrSourceModal, RunImportModalLive}
+  alias WatchClubWeb.Admin.MediaSources.{
+    AddServarrSourceModal,
+    DeleteMediaSourceModalLive,
+    RunImportModalLive
+  }
 
   @impl true
   def mount(_params, _session, socket) do
@@ -144,9 +144,13 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         current_user={@current_user}
         instance_settings={@instance_settings}
       />
-      <.delete_media_source_modal
+      <.live_component
         :if={@delete_media_source}
+        module={DeleteMediaSourceModalLive}
+        id="delete-media-source"
         media_source={@delete_media_source}
+        current_user={@current_user}
+        on_close={fn -> send(self(), :close_modals) end}
       />
       <.live_component
         :if={@run_import_media_source}
@@ -154,7 +158,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         id="run-import"
         media_source={@run_import_media_source}
         current_user={@current_user}
-        on_close={fn -> send(self(), :close_run_import_modal) end}
+        on_close={fn -> send(self(), :close_modals) end}
       />
     </Layouts.app>
     """
@@ -310,21 +314,6 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
     end
   end
 
-  def handle_event("confirm_delete_media_source", %{"id" => id}, socket) do
-    case find_media_source(socket, id) do
-      %Source{} = media_source ->
-        MediaSources.destroy_media_source!(media_source, actor: socket.assigns.current_user)
-
-        {:noreply,
-         socket
-         |> reset_modals()
-         |> put_flash(:info, dgettext("admin_media_imports", "Media Source deleted"))}
-
-      nil ->
-        {:noreply, reset_modals(socket)}
-    end
-  end
-
   def handle_event("open_run_import_modal", %{"id" => id}, socket) do
     case find_media_source(socket, id) do
       %Source{} = media_source ->
@@ -344,7 +333,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   # ---------------------------------------------------------------------------
 
   @impl true
-  def handle_info(:close_run_import_modal, socket), do: {:noreply, reset_modals(socket)}
+  def handle_info(:close_modals, socket), do: {:noreply, reset_modals(socket)}
 
   def handle_info(:close_servarr_source_modal, socket) do
     {:noreply, assign(socket, :servarr_modal, nil)}
