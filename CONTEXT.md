@@ -432,6 +432,10 @@ _Avoid_: Dashboard, landing page, feed
 What was addressed to one **User** lately, on **Home**: the recommendations to them, their **Content Requests** that were Completed and the **Playlists** shared with them.
 _Avoid_: Notifications, alerts, inbox
 
+**Hide from Home**:
+A **User** takes one of their **Content** in progress off **Home** until they **Play** it again, keeping its **Watch Progress**.
+_Avoid_: Remove, dismiss, remove from Continue Watching, mark as watched
+
 ### Activity Feed
 
 **Activity Feed**:
@@ -766,11 +770,13 @@ _Avoid_: Group, aggregate, card, item
 
 ### Home
 
-- **Home** shows the **User**'s **Content** in progress that is **Ready to Play**, their **For You**, the **Movies** and **TV Shows** most recently added to the **Library**, the **Sports Events** most recently added, who is **Watching Now**, and the **Activity Feed**
+- **Home** shows the **User**'s **Content** in progress that is **Ready to Play** and that they didn't **Hide from Home**, their **For You**, the **Movies** and **TV Shows** most recently added to the **Library**, the **Sports Events** most recently added, who is **Watching Now**, and the **Activity Feed**
 - **Home** keeps the newest **Sports Events** apart from the newest **Movies** and **TV Shows**, because they arrive far more often
 - **For You** shows its 5 latest items, newest first, whether or not the **User** has seen them
 - A **Content** is new in the **Library** from when its first **Media** arrives: new **TV Show Episodes** of a **TV Show** already in the **Library** don't make it new again
 - **Home** shows a **Content** with a **Content Request** among the newest in the **Library** only once that **Content Request** is Completed
+- **Hide from Home** takes a whole **TV Show** off **Home**, whichever **TV Show Episode** comes next
+- A **Content** comes back on **Home** when the **User** who hid it starts to **Play** it again. A new **TV Show Episode**, marking it as watched or not watched, and a **Screen** reporting its position don't bring it back
 
 ### Activity Feed
 
@@ -825,4 +831,5 @@ _Avoid_: Group, aggregate, card, item
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only when a **Media Import** or a webhook processes the file again.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
+- Home's Up next row and the **Remote**'s Up next share a label; resolved: Up next in this glossary is the **Remote**'s, and Home's row shows the **User**'s **Content** in progress. **Hide from Home** names neither row.
 - Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.
