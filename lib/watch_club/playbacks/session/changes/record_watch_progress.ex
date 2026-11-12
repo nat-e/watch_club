@@ -1,11 +1,10 @@
 defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   @moduledoc """
-  Records the actor's Watch Progress at the `position_seconds` argument, a position in the
-  current Playback's Video.
+  Records how far the actor got, from the `position_seconds` argument in the current Playback's
+  Video, in the Watch Progress of each Movie, TV Show Episode or Sports Event it plays.
 
-  For each work the Video holds a Part of, it saves the position through all the Parts, as if
-  their Videos played one after the other, and the Part and the position in it. Each Video counts
-  up to its Credits. Does nothing for Unmatched Media.
+  The progress counts through all the Parts, up to their Credits, and keeps the Part the actor is
+  in. Does nothing for Unmatched Media.
   """
   use Ash.Resource.Change
 

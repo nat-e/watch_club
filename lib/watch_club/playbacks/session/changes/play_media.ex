@@ -3,8 +3,8 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   Ends the current Playback and starts one for the `media_id` argument, on the `screen_id`
   Screen, or on the TV when the Playback Session plays there. Expects the Playback Session locked.
 
-  It resumes where the actor's Watch Progress stopped when that's in the Part this Video holds and
-  they haven't finished it. Otherwise it starts from the beginning.
+  It resumes where the actor stopped in this Video, unless they finished it. Otherwise it starts
+  from the beginning.
   """
   use Ash.Resource.Change
 

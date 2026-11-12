@@ -115,8 +115,8 @@ defmodule WatchClub.MediaCatalog.Part do
   end
 
   @doc """
-  The Movie, TV Show Episode or Sports Event a Part belongs to. Load all three relationships
-  first: an unloaded one would be returned instead.
+  The Movie, TV Show Episode or Sports Event a Part belongs to. Needs its `movie`,
+  `tv_show_episode` and `sports_event` loaded.
   """
   def work(%__MODULE__{} = part), do: part.movie || part.tv_show_episode || part.sports_event
 

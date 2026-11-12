@@ -3,8 +3,8 @@ defmodule WatchClub.MediaCatalog.Changes.RelateParts do
   Sets the Parts a Video holds from its `parts` argument.
 
   Each item has a `movie_id`, `tv_show_episode_id` or `sports_event_id`, a `number`, and an
-  optional `name`. Parts are found or created, so copies of a file share them. Sets the
-  `parts_changed?` context when the Parts differ from before.
+  optional `name`. Copies of a file hold the same Parts. Sets the `parts_changed?` context when
+  the Parts differ from before.
   """
   use Ash.Resource.Change
 

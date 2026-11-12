@@ -267,8 +267,8 @@ defmodule WatchClub.MediaCatalog.Video do
   end
 
   @doc """
-  The Movie, TV Show Episode or Sports Event of its first Part, or nil for Unmatched Media. Load
-  its `parts` with their `movie`, `tv_show_episode` and `sports_event` first.
+  The Movie, TV Show Episode or Sports Event the Video plays, the first one for a file holding
+  several, or nil for Unmatched Media. Needs its `parts` loaded with their works.
   """
   def work(%__MODULE__{parts: [part | _]}), do: Part.work(part)
   def work(%__MODULE__{parts: []}), do: nil

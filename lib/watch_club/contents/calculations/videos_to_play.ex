@@ -2,8 +2,8 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   @moduledoc """
   The Videos to play for a Movie, TV Show Episode or Sports Event, one after the other.
 
-  Returns Videos in Part order that hold each Part once: a whole file replaces its halves. Each
-  Video comes with its `parts` and `credits_start_seconds`. Empty when there is no Video.
+  Each Part plays once, and a file holding a whole episode plays instead of its halves. The Videos
+  have their `parts` and `credits_start_seconds` loaded. Empty when there is no Video.
   """
   use Ash.Resource.Calculation
 
@@ -48,9 +48,9 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   end
 
   @doc """
-  Splits `videos_to_play` around the playing `video`, which holds `part`. Returns
-  `{videos_before, videos_from_it}`, like `Enum.split_while/2`. When `video` is a copy that isn't
-  in the list, it splits at the listed Video holding the same `part`.
+  Splits `videos_to_play` around the playing `video`, which holds `part`, into
+  `{videos_before, videos_from_it}`. A copy that isn't in the list counts as the listed Video
+  holding the same `part`.
   """
   def split_at(videos_to_play, video, part),
     do: Enum.split_while(videos_to_play, &(not holds?(&1, video, part)))

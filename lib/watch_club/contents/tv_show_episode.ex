@@ -167,7 +167,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
     calculate :has_media?, :boolean, expr(exists(parts, true)) do
-      description "Whether a Video holds one of its Parts."
+      description "Whether it has a Video to play."
     end
 
     calculate :videos_to_play, {:array, :struct}, VideosToPlay do
@@ -177,7 +177,7 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
 
     calculate :actor_video_to_play, :struct, ActorVideoToPlay do
-      description "The Video where the actor resumes it: the one holding their Part, else the first."
+      description "The Video the actor plays to watch it: the one where they stopped, else the first."
       constraints instance_of: Video
       public? true
     end

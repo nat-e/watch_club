@@ -1,9 +1,7 @@
 defmodule WatchClub.Contents.Calculations.ActorVideoToPlay do
   @moduledoc """
-  The Video where the actor resumes a Movie, TV Show Episode or Sports Event.
-
-  Returns the Video of `videos_to_play` holding the Part of the actor's Watch Progress, or the
-  first one when they haven't started or have finished. Nil when there is no Video.
+  The Video the actor plays to watch a Movie, TV Show Episode or Sports Event: the one where they
+  stopped, or the first one when they haven't started or have finished. Nil when there is none.
   """
   use Ash.Resource.Calculation
 
