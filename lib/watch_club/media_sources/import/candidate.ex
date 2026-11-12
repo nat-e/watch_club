@@ -66,8 +66,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     @moduledoc """
     Identifies a TV Show, by its ids or else its `title`, and the `episodes` a file holds.
 
-    Episode numbers come from the source: TVDB's for Sonarr, the file name's for a filesystem
-    Media Source. Sonarr also gives each episode's title, air date and TVDB id.
+    Episode numbers and titles come from the source: Sonarr's, which follow TVDB, or the file
+    name's for a filesystem Media Source. Sonarr also gives each episode's air date and TVDB id.
     """
 
     defmodule Episode do

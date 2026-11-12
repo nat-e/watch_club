@@ -271,6 +271,146 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
     defp to_cleaned_lower(value), do: value |> FilenameParser.clean_title() |> String.downcase()
   end
 
+  describe "parse_episode/1 — Jellyfin MultiEpisodeTests" do
+    # Port of `tests/Jellyfin.Naming.Tests/TV/MultiEpisodeTests.cs`.
+    # Format: {path, expected_ending_episode_number}.
+    @cases [
+      {"Season 1/4x01 – 20 Hours in America (1).mkv", nil},
+      {"Season 1/01x02 blah.avi", nil},
+      {"Season 1/S01x02 blah.avi", nil},
+      {"Season 1/S01E02 blah.avi", nil},
+      {"Season 1/S01xE02 blah.avi", nil},
+      {"Season 1/seriesname 01x02 blah.avi", nil},
+      {"Season 1/seriesname S01x02 blah.avi", nil},
+      {"Season 1/seriesname S01E02 blah.avi", nil},
+      {"Season 1/seriesname S01xE02 blah.avi", nil},
+      {"Season 2/02x03 - 04 Ep Name.mp4", nil},
+      {"Season 2/My show name 02x03 - 04 Ep Name.mp4", nil},
+      {"Season 2/Elementary - 02x03 - 02x04 - 02x15 - Ep Name.mp4", 15},
+      {"Season 2/02x03 - 02x04 - 02x15 - Ep Name.mp4", 15},
+      {"Season 2/02x03-04-15 - Ep Name.mp4", 15},
+      {"Season 2/Elementary - 02x03-04-15 - Ep Name.mp4", 15},
+      {"Season 02/02x03-E15 - Ep Name.mp4", 15},
+      {"Season 02/Elementary - 02x03-E15 - Ep Name.mp4", 15},
+      {"Season 02/02x03 - x04 - x15 - Ep Name.mp4", 15},
+      {"Season 02/Elementary - 02x03 - x04 - x15 - Ep Name.mp4", 15},
+      {"Season 02/02x03x04x15 - Ep Name.mp4", 15},
+      {"Season 02/Elementary - 02x03x04x15 - Ep Name.mp4", 15},
+      {"Season 1/Elementary - S01E23-E24-E26 - The Woman.mp4", 26},
+      {"Season 1/S01E23-E24-E26 - The Woman.mp4", 26},
+      {"Season 2009/2009x02 blah.avi", nil},
+      {"Season 2009/S2009x02 blah.avi", nil},
+      {"Season 2009/S2009E02 blah.avi", nil},
+      {"Season 2009/S2009xE02 blah.avi", nil},
+      {"Season 2009/seriesname 2009x02 blah.avi", nil},
+      {"Season 2009/seriesname S2009x02 blah.avi", nil},
+      {"Season 2009/seriesname S2009E02 blah.avi", nil},
+      {"Season 2009/seriesname S2009xE02 blah.avi", nil},
+      {"Season 2009/Elementary - 2009x03 - 2009x04 - 2009x15 - Ep Name.mp4", 15},
+      {"Season 2009/2009x03 - 2009x04 - 2009x15 - Ep Name.mp4", 15},
+      {"Season 2009/2009x03-04-15 - Ep Name.mp4", 15},
+      {"Season 2009/Elementary - 2009x03-04-15 - Ep Name.mp4", 15},
+      {"Season 2009/2009x03-E15 - Ep Name.mp4", 15},
+      {"Season 2009/Elementary - 2009x03-E15 - Ep Name.mp4", 15},
+      {"Season 2009/2009x03 - x04 - x15 - Ep Name.mp4", 15},
+      {"Season 2009/Elementary - 2009x03 - x04 - x15 - Ep Name.mp4", 15},
+      {"Season 2009/2009x03x04x15 - Ep Name.mp4", 15},
+      {"Season 2009/Elementary - 2009x03x04x15 - Ep Name.mp4", 15},
+      {"Season 2009/Elementary - S2009E23-E24-E26 - The Woman.mp4", 26},
+      {"Season 2009/S2009E23-E24-E26 - The Woman.mp4", 26},
+      {"Season 1/02 - blah.avi", nil},
+      {"Season 2/02 - blah 14 blah.avi", nil},
+      {"Season 1/02 - blah-02 a.avi", nil},
+      {"Season 2/02.avi", nil},
+      {"Season 2 /[HorribleSubs] Hunter X Hunter - 136[720p].mkv", nil},
+      {"Season 1/series-s09e14-1080p.mkv", nil},
+      {"Season 1/series-s09e14-720p.mkv", nil},
+      {"Season 1/series-s09e14-720i.mkv", nil},
+      {"Season 1/MOONLIGHTING_s01e01-e04.mkv", 4},
+      {"Season 1/MOONLIGHTING_s01e01-e04", 4},
+      {"Season 1/S01E01 The 6-10 to Lubbock [WEBRip-1080p][AV1 Opus].mkv", nil},
+      {"Season 5/S05E23 11-59 [HDTV-1080p][x265 AC3].mkv", nil},
+      {"Season 5/S05E23 11-59 [HDTV-1080p][HEVC AC3].mkv", nil},
+      {"Season 1/S01E01 1-23-45 [Bluray-1080p][AV1 Opus].mkv", nil},
+      {"Season 03/Star Trek Enterprise (2001) - S03E21 - E2 (1080p BluRay x265).mkv", nil},
+      {"Season 02/Series Name (2001) - S02E10 - E5 [WEBRip-1080p].mkv", nil}
+    ]
+
+    for {input, expected} <- @cases do
+      @input input
+      @expected expected
+
+      test ~s{#{inspect(input)} → ending=#{inspect(expected)}} do
+        assert FilenameParser.parse_episode(@input)[:ending_episode_number] == @expected
+      end
+    end
+
+    # Jellyfin reads these ranges, ending at 3, 4, 5 and 4, with episode expressions we don't port
+    @tag :jellyfin_out_of_scope
+    test ~s{"Season 1/02-03 - blah.avi" and other ranges without a season number} do
+      for input <- [
+            "Season 1/02-03 - blah.avi",
+            "Season 2/02-04 - blah 14 blah.avi",
+            "Season 1/02-05 - blah-02 a.avi",
+            "Season 2/02-04.avi"
+          ] do
+        assert FilenameParser.parse_episode(input)[:ending_episode_number] == nil
+      end
+    end
+  end
+
+  describe "parse_episode/1 — Sonarr's multi-episode styles" do
+    # Sonarr's FileNameBuilder.cs, with each style of S01E01, S01E02 and S01E03
+    @cases [
+      {"Extend", "Show - S01E01-02-03 - Title.mkv"},
+      {"Duplicate", "Show - S01E01 - S01E02 - S01E03 - Title.mkv"},
+      {"Duplicate with dots", "Show.S01E01.S01E02.S01E03.Title.mkv"},
+      {"Repeat", "Show - S01E01E02E03 - Title.mkv"},
+      {"Scene", "Show - S01E01-E02-E03 - Title.mkv"},
+      {"Range", "Show - S01E01-03 - Title.mkv"},
+      {"Prefixed Range", "Show - S01E01-E03 - Title.mkv"}
+    ]
+
+    for {style, input} <- @cases do
+      @input input
+
+      test "#{style}: #{inspect(input)}" do
+        assert %{episode_number: 1, ending_episode_number: 3, episode_title: "Title"} =
+                 FilenameParser.parse_episode(@input)
+      end
+    end
+
+    test "keeps a range followed by a resolution" do
+      for input <- ["Show - S01E23-24-1080p.mkv", "Show - Episode 23-24-720p.mkv"] do
+        assert %{episode_number: 23, ending_episode_number: 24} =
+                 FilenameParser.parse_episode(input)
+      end
+    end
+  end
+
+  describe "parse_episode/1 — episode title" do
+    @cases [
+      {"The Office (US) - S04E02 - Fun Run (2).mkv", "Fun Run (2)"},
+      {"The Office (US) - S04E02 - Fun Run (2) Bluray-1080p.mkv", "Fun Run (2)"},
+      {"Friends (1994) - S01E02 - The One with the Sonogram at the End [WEBDL-1080p][EAC3 5.1][h265]-FTMVHD.mkv",
+       "The One with the Sonogram at the End"},
+      {"The.Office.US.S04E02.Fun.Run.Part.2.720p.HDTV.x264-GRP.mkv", "Fun Run Part 2"},
+      {"Season 2/Elementary - 02x03 - Ep Name.mp4", "Ep Name"},
+      {"Star Trek Enterprise (2001) - S03E21 - E2 (1080p BluRay x265).mkv", "E2"},
+      {"The Office (US) - S04E02.mkv", nil},
+      {"[HorribleSubs] Made in Abyss - 13 [720p].mkv", nil}
+    ]
+
+    for {input, expected} <- @cases do
+      @input input
+      @expected expected
+
+      test ~s{#{inspect(input)} → #{inspect(expected)}} do
+        assert FilenameParser.parse_episode(@input)[:episode_title] == @expected
+      end
+    end
+  end
+
   describe "parse_episode/1 — false positives (Jellyfin)" do
     @tag :jellyfin_divergence
     test ~s{"Series Special (1920x1080).mkv" — Jellyfin rejects pixel rates, we don't yet} do

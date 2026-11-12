@@ -634,8 +634,10 @@ _Avoid_: Group, aggregate, card, item
 - A **Video** that holds no **Part** is **Unmatched Media**
 - A **Part** belongs to exactly one **Movie**, **TV Show Episode** or **Sports Event**, which plays its **Parts** in order
 - **Videos** holding the same **Part** are copies of it
-- Sonarr numbers episodes like TVDB, which splits some episodes that the **Metadata Provider** lists whole. A **Media Import** links each episode of a Sonarr file to the **TV Show Episode** with its number when their titles match, else with its title when they aired within a day, else to the one TMDB links to its TVDB id, else to the one with its number
-- A Sonarr episode titled "Fun Run (2)" or "Fun Run, Part 2" is **Part** 2 of the **TV Show Episode** "Fun Run". A file holding every half of a **TV Show Episode** holds all its **Parts**
+- Sonarr, and the file names it writes, number episodes like TVDB, which splits some episodes that the **Metadata Provider** lists whole. A **Media Import** links each episode of a file to the **TV Show Episode** with its number when their titles match, else with its title when they aired within a day, else to the one TMDB links to its TVDB id, else to the one with its number
+- A filesystem **Media Source** reads each episode's number and title from the file name, which has no air date: a **TV Show Episode** with its title in the same season stands in for one that aired within a day
+- An episode titled "Fun Run (2)" or "Fun Run, Part 2" is **Part** 2 of the **TV Show Episode** "Fun Run". A file holding every half of a **TV Show Episode** holds all its **Parts**
+- A file name such as `S04E01-E02 - Fun Run` holds every episode of its range. Sonarr joins their titles with " + ", or names the halves of one story by the title they share, so each half is a **Part** of "Fun Run"
 - **Play** never plays a **Part** twice. Among the copies of a **Part**, it picks the one holding the most **Parts**, then the oldest
 - A **Video** has one or more **Video Tracks**
 - A **Video** has exactly one **Default Video Track**

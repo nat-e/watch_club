@@ -3,8 +3,8 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
   Extracts identity information from a candidate's path. Port of Jellyfin's
   `Emby.Naming` namespace — pure functions on strings, no I/O.
 
-  The regex tables (`@episode_expressions`, `@clean_strings`,
-  `@clean_date_times`, `@season_*`) are translated from
+  The regex tables (`@episode_expressions`, `@multiple_episode_expressions`,
+  `@clean_strings`, `@clean_date_times`, `@season_*`) are translated from
   `Emby.Naming/Common/NamingOptions.cs` and `Emby.Naming/TV/SeasonPathParser.cs`
   on the Jellyfin `master` branch. Patterns are tried in the order Jellyfin
   defines; the first match wins.
@@ -60,12 +60,31 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
     # 10. "Name - 101.mkv" anime absolute.
     ~r/.*\/(?<seriesname>[^\/]+?)[\s_]+-[\s_]+(?<epnumber>[0-9]+)[\s_]*(?:\[.*?\]|\(.*?\))*[\s_]*(?:\.\w+)?$/,
     # 13. "Episode 16".
-    ~r/[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\/]*$/i,
+    ~r/[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+)(?![0-9ip]))?[^\/]*$/i,
     # 14-15. Path-anchored S?NN x|e NN (kept as fallbacks).
     ~r/.*\/[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\/]*$/,
     ~r/.*\/[sS](?<seasonnumber>[0-9]+)[xX]?[eE](?<epnumber>[0-9]+)[^\/]*$/,
     # 26. Anime `[Group][Series][21]`.
     ~r/(?:\[(?:[^\]]+)\]\s*)?(?<seriesname>\[[^\]]+\]|[^\[\]]+)\s*\[(?<epnumber>[0-9]+)\]/
+  ]
+
+  # MultipleEpisodeExpressions — the end of a range of episodes, such as
+  # S01E01-E03. NamingOptions.cs lines 771-782, then Sonarr's Duplicate
+  # multi-episode style, S01E01 - S01E02, which Jellyfin doesn't read.
+  # `(?![0-9iIpP])` stands for EpisodePathParser's check that the last number
+  # isn't part of a resolution, such as -1080p, so the range before it stays.
+  @multiple_episode_expressions [
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[eExX](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/[sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3})(-[xE]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )[0-9]{1,4}[xX][eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>((?![sS]?[0-9]{1,4}[xX][0-9]{1,3})[^/])*)?([sS]?(?<seasonnumber>[0-9]{1,4})[xX](?<epnumber>[0-9]{1,3}))(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})((-| - )?[xXeE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[xX\.]?[eE](?<epnumber>[0-9]{1,3})(-[xX]?[eE]?(?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$",
+    ~r".*/(?<seriesname>[^/]*)[sS](?<seasonnumber>[0-9]{1,4})[eE](?<epnumber>[0-9]{1,3})([ ._-]+[sS][0-9]{1,4}[eE](?<endingepnumber>[0-9]{1,3})(?![0-9iIpP]))+[^/]*$"
   ]
 
   # SeasonPathParser — Emby.Naming/TV/SeasonPathParser.cs
@@ -92,18 +111,23 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
 
   @doc """
   Parses season/episode information from the basename. Returns a map with
-  `:tv_show_title`, `:season_number`, `:episode_number`, `:episode_title`
-  when a pattern matches; otherwise an empty map.
+  `:tv_show_title`, `:season_number`, `:episode_number`,
+  `:ending_episode_number` and `:episode_title` when a pattern matches;
+  otherwise an empty map.
 
   Jellyfin's `EpisodePathParser.Parse` runs the expression table top-to-bottom
   and returns on the first match. We mirror that. The `seriesname` capture (if
   any) becomes `:tv_show_title`; numeric captures become `:season_number` /
-  `:episode_number`.
+  `:episode_number`. A file holding a range of episodes, such as S01E01-E03,
+  also gets the last one's number as `:ending_episode_number`. The
+  `:episode_title` is the text after the last episode number, without the
+  release details.
   """
   @spec parse_episode(String.t()) :: %{
           optional(:tv_show_title) => String.t(),
           optional(:season_number) => integer(),
           optional(:episode_number) => integer(),
+          optional(:ending_episode_number) => integer(),
           optional(:episode_title) => String.t()
         }
   def parse_episode(path) when is_binary(path) do
@@ -115,7 +139,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
     |> Enum.find_value(%{}, fn regex ->
       case Regex.named_captures(regex, candidate_path) do
         nil -> nil
-        captures -> build_episode(captures, path)
+        captures -> build_episode(regex, captures, candidate_path)
       end
     end)
   end
@@ -190,28 +214,61 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.FilenamePars
   # ----------------------------------------------------------------------
   # parse_episode helpers
 
-  defp build_episode(captures, path) do
+  defp build_episode(regex, captures, path) do
     season = captures |> Map.get("seasonnumber") |> parse_int()
     episode = captures |> Map.get("epnumber") |> parse_int()
     series = captures |> Map.get("seriesname") |> blank_to_nil()
 
+    {ending, numbers_end} =
+      case episode && ending_episode(regex, path, episode) do
+        nil -> {nil, capture_end(regex, path, "epnumber")}
+        ending_and_end -> ending_and_end
+      end
+
     %{}
     |> put_if(:season_number, season)
     |> put_if(:episode_number, episode)
+    |> put_if(:ending_episode_number, ending)
     |> put_if(:tv_show_title, series && clean_title(series))
-    |> put_episode_title(captures, path)
+    |> put_if(:episode_title, numbers_end && episode_title(path, numbers_end))
   end
 
-  defp put_episode_title(acc, _captures, path) do
-    # Jellyfin: episode title is the trailing portion of the stem after the
-    # SxxExx marker. We isolate it by splitting the cleaned stem on the
-    # season-episode token.
-    stem = path |> Path.basename() |> drop_extension()
+  # Port of Jellyfin's `EpisodePathParser`: the last episode of a range from the matching
+  # expression, else from the multiple episode ones. Returns it with the index where it ends.
+  defp ending_episode(regex, path, episode) do
+    Enum.find_value([regex | @multiple_episode_expressions], fn expression ->
+      with {start, length} <- capture_index(expression, path, "endingepnumber"),
+           # A range can't end before it starts: S03E21 - E2 is a title
+           ending when ending >= episode <- String.to_integer(binary_part(path, start, length)) do
+        {ending, start + length}
+      else
+        _not_a_range -> nil
+      end
+    end)
+  end
 
-    case Regex.run(~r/[Ss]\d{1,3}[][ ._-]*[Ee]\d{1,3}[\s._-]+(.+)$/, stem) do
-      [_, trailing] -> put_if(acc, :episode_title, clean_title(trailing))
-      _ -> acc
+  defp capture_end(regex, path, name) do
+    case capture_index(regex, path, name) do
+      {start, length} -> start + length
+      nil -> nil
     end
+  end
+
+  defp capture_index(regex, path, name) do
+    case Regex.run(regex, path, capture: [name], return: :index) do
+      [{start, length}] when start >= 0 -> {start, length}
+      _no_capture -> nil
+    end
+  end
+
+  # Sonarr puts the release details in brackets after the title: "Fun Run [WEBDL-1080p]-Group"
+  defp episode_title(path, numbers_end) do
+    path
+    |> drop_extension()
+    |> binary_slice(numbers_end..-1//1)
+    |> String.split("[", parts: 2)
+    |> hd()
+    |> clean_title()
   end
 
   defp parse_int(nil), do: nil
