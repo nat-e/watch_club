@@ -380,6 +380,9 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
      )}
   end
 
+  # Its file counts aren't on this page, and change with every file an import processes
+  def handle_info(%Notification{action: %{name: :count_file}}, socket), do: {:noreply, socket}
+
   def handle_info(%Notification{resource: resource}, socket)
       when resource in [Source, Import] do
     {:noreply, load_media_sources(socket)}

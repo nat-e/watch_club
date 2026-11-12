@@ -10,9 +10,9 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       scan.
 
   Each run ends with the file's outcome: `matched`, `unmatched`, or `unreadable` when ffprobe
-  can't read it, which saves no Media. It reports the outcome, with a reason, in one log line,
-  in its trace span and in a `[:watch_club, :media_ingest]` telemetry span. An exception makes
-  Oban retry with backoff.
+  can't read it, which saves no Media. It counts the file on its Media Import, and reports the
+  outcome, with a reason, in one log line, in its trace span and in a
+  `[:watch_club, :media_ingest]` telemetry span. An exception makes Oban retry with backoff.
 
   Unique on `(media_source_id, media_import_id, path)` over active states; webhook jobs have no
   `media_import_id` and dedupe by Media Source and `path`.
@@ -29,10 +29,12 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
     ]
 
   alias OpenTelemetry.Tracer
+  alias WatchClub.MediaSources
   alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MatchResult
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
+  alias WatchClub.SystemActor
 
   require Logger
 
@@ -77,6 +79,12 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
     :telemetry.span([:watch_club, :media_ingest], start_metadata, fn ->
       {outcome, reason} = ingest(candidate)
+
+      if media_import_id do
+        media_import_id
+        |> MediaSources.get_media_import_by_id!(actor: SystemActor.actor())
+        |> MediaSources.count_media_import_file!(outcome, actor: SystemActor.actor())
+      end
 
       Tracer.set_attributes(%{
         "file.path" => candidate.path,

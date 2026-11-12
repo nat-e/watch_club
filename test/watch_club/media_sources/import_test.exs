@@ -4,9 +4,12 @@ defmodule WatchClub.MediaSources.ImportTest do
   import Mox
   import WatchClub.MediaSources
 
+  alias WatchClub.Ffmpeg.ProbeMock
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.{Candidate, ScannerMock}
+  alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
+  alias WatchClub.SystemActor
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -88,6 +91,59 @@ defmodule WatchClub.MediaSources.ImportTest do
       end
     end
 
+    test "counts the files it processes by outcome" do
+      admin = generate(administrator())
+      media_source = generate(filesystem_media_source(actor: admin))
+      generate(movie(external_id: "11", metadata_refreshed_at: DateTime.utc_now()))
+
+      root = media_source.implementation.filesystem_path
+      File.mkdir_p!(root)
+      on_exit(fn -> File.rm_rf!(root) end)
+
+      candidates =
+        for {name, identity} <- [
+              matched: %MovieIdentity{tmdb_id: 11},
+              unmatched: %MovieIdentity{},
+              unreadable: %MovieIdentity{},
+              crashing: %MovieIdentity{}
+            ] do
+          path = Path.join(root, "#{name}.mkv")
+          File.write!(path, "stub")
+          %Candidate{path: path, media_type: :movie, identity: identity}
+        end
+
+      stub(ScannerMock, :scan, fn _media_import -> candidates end)
+
+      stub(ProbeMock, :probe, fn path ->
+        case Path.basename(path) do
+          "unreadable.mkv" -> {:error, "ffprobe exited with 1"}
+          "crashing.mkv" -> raise "boom"
+          _readable -> {:ok, ffprobe_fixture("video_friends_s01e01")}
+        end
+      end)
+
+      media_import = start_media_import!(media_source.id, actor: admin)
+
+      Oban.drain_queue(queue: :media_source_scans)
+
+      Oban.drain_queue(
+        queue: :media_candidate_ingestions,
+        with_scheduled: true,
+        with_recursion: true
+      )
+
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
+
+      assert %Import{
+               status: :failed,
+               file_count: 4,
+               matched_file_count: 1,
+               unmatched_file_count: 1,
+               unreadable_file_count: 1,
+               failed_file_count: 1
+             } = get_media_import_by_id!(media_import.id, actor: admin)
+    end
+
     test "rejects a new Media Import while one is already processing for the same Media Source" do
       admin = generate(administrator())
       media_source = generate(filesystem_media_source(actor: admin))
@@ -151,6 +207,56 @@ defmodule WatchClub.MediaSources.ImportTest do
     |> all_enqueued()
     |> Enum.map(& &1.args["path"])
     |> Enum.sort()
+  end
+
+  describe "finish_media_import_scan/*" do
+    test "records the files the scan found to process" do
+      media_import = processing_media_import(generate(administrator()))
+
+      assert %Import{file_count: 12} =
+               finish_media_import_scan!(media_import, 12, actor: SystemActor.actor())
+    end
+
+    test "rejects the Instance Administrator" do
+      admin = generate(administrator())
+
+      admin
+      |> processing_media_import()
+      |> finish_media_import_scan(12, actor: admin)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "count_media_import_file/*" do
+    test "adds the file to the count of its outcome" do
+      media_import = processing_media_import(generate(administrator()))
+
+      count_media_import_file!(media_import, :unmatched, actor: SystemActor.actor())
+
+      assert %Import{matched_file_count: 1, unmatched_file_count: 1, unreadable_file_count: 0} =
+               count_media_import_file!(media_import, :matched, actor: SystemActor.actor())
+    end
+
+    test "rejects the Instance Administrator" do
+      admin = generate(administrator())
+
+      admin
+      |> processing_media_import()
+      |> count_media_import_file(:matched, actor: admin)
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  defp processing_media_import(admin) do
+    media_source = generate(filesystem_media_source(actor: admin))
+    start_media_import!(media_source.id, actor: admin)
+  end
+
+  defp ffprobe_fixture(name) do
+    [__DIR__, "../../support/fixtures/ffprobe", "#{name}.json"]
+    |> Path.join()
+    |> File.read!()
+    |> Jason.decode!()
   end
 
   describe "list_media_imports/*" do

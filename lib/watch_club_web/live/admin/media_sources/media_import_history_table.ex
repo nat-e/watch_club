@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
   @moduledoc """
   History table of `Media Imports` for one `Media Source`.
 
-  Columns: Status, Started, Duration, Trigger, and the Files it processed.
+  Columns: Status, Started, Duration, Trigger, and the Files it processed, with their outcomes.
   Duration is rendered as `—` for in-progress Media Imports because there is
   no finished timestamp yet.
   """
@@ -43,9 +43,12 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
             <.trigger_badge triggered_manually?={media_import.triggered_manually?} />
           </.table_cell>
           <.table_cell>
-            <.badge variant="muted" size="sm">
-              {files_to_process_label(media_import.files_to_process)}
-            </.badge>
+            <div class="flex flex-col items-start gap-tight">
+              <.badge variant="muted" size="sm">
+                {files_to_process_label(media_import.files_to_process)}
+              </.badge>
+              <.file_counts media_import={media_import} />
+            </div>
           </.table_cell>
           <.table_cell class="text-end!">
             <.button
@@ -84,6 +87,104 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
       <:icon><Lucideicons.calendar /></:icon>
       {dgettext("admin_media_imports", "Scheduled")}
     </.badge>
+    """
+  end
+
+  attr :media_import, Import, required: true
+
+  defp file_counts(%{media_import: %Import{file_count: nil, status: :processing}} = assigns) do
+    ~H"""
+    <span class="text-text-muted">{dgettext("admin_media_imports", "Finding files…")}</span>
+    """
+  end
+
+  # The scan failed or was cancelled, or the Media Import ran before files were counted
+  defp file_counts(%{media_import: %Import{file_count: nil}} = assigns), do: ~H""
+
+  defp file_counts(%{media_import: %Import{file_count: 0}} = assigns) do
+    ~H"""
+    <span class="text-text-muted">{dgettext("admin_media_imports", "No files to process")}</span>
+    """
+  end
+
+  defp file_counts(%{media_import: %Import{status: :processing} = media_import} = assigns) do
+    assigns =
+      assign(
+        assigns,
+        :processed,
+        media_import.matched_file_count + media_import.unmatched_file_count +
+          media_import.unreadable_file_count
+      )
+
+    ~H"""
+    <div class="flex min-w-32 flex-col gap-tight">
+      <span class="text-text-muted tabular-nums">
+        {dngettext(
+          "admin_media_imports",
+          "%{processed} of %{count} file",
+          "%{processed} of %{count} files",
+          @media_import.file_count,
+          processed: @processed
+        )}
+      </span>
+      <.progress_bar percent={100 * @processed / @media_import.file_count} />
+    </div>
+    """
+  end
+
+  # A cancelled Media Import may have processed no file
+  defp file_counts(
+         %{
+           media_import: %Import{
+             matched_file_count: 0,
+             unmatched_file_count: 0,
+             unreadable_file_count: 0,
+             failed_file_count: 0
+           }
+         } = assigns
+       ),
+       do: ~H""
+
+  defp file_counts(assigns) do
+    ~H"""
+    <div class="flex flex-col items-start whitespace-nowrap tabular-nums">
+      <span :if={@media_import.matched_file_count > 0}>
+        {dngettext(
+          "admin_media_imports",
+          "%{count} matched",
+          "%{count} matched",
+          @media_import.matched_file_count
+        )}
+      </span>
+      <.link
+        :if={@media_import.unmatched_file_count > 0}
+        navigate={~p"/admin/media?unmatched=true"}
+        class="underline underline-offset-4"
+      >
+        {dngettext(
+          "admin_media_imports",
+          "%{count} unmatched",
+          "%{count} unmatched",
+          @media_import.unmatched_file_count
+        )}
+      </.link>
+      <span :if={@media_import.unreadable_file_count > 0} class="text-text-muted">
+        {dngettext(
+          "admin_media_imports",
+          "%{count} unreadable",
+          "%{count} unreadable",
+          @media_import.unreadable_file_count
+        )}
+      </span>
+      <span :if={@media_import.failed_file_count > 0} class="text-danger">
+        {dngettext(
+          "admin_media_imports",
+          "%{count} failed",
+          "%{count} failed",
+          @media_import.failed_file_count
+        )}
+      </span>
+    </div>
     """
   end
 

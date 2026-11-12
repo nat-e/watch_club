@@ -633,3 +633,55 @@ msgstr "Tu ne pourras plus changer le type de média ensuite."
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. Find it in %{name} under Settings > General."
 msgstr "Ta clé API %{name}. Tu la trouveras dans %{name}, sous Paramètres > Général."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} failed"
+msgid_plural "%{count} failed"
+msgstr[0] "%{count} en échec"
+msgstr[1] "%{count} en échec"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} matched"
+msgid_plural "%{count} matched"
+msgstr[0] "%{count} associé"
+msgstr[1] "%{count} associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unmatched"
+msgid_plural "%{count} unmatched"
+msgstr[0] "%{count} non associé"
+msgstr[1] "%{count} non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unreadable"
+msgid_plural "%{count} unreadable"
+msgstr[0] "%{count} illisible"
+msgstr[1] "%{count} illisibles"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{processed} of %{count} file"
+msgid_plural "%{processed} of %{count} files"
+msgstr[0] "%{processed} sur %{count} fichier"
+msgstr[1] "%{processed} sur %{count} fichiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "Finding files…"
+msgstr "Recherche des fichiers…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "No files to process"
+msgstr "Aucun fichier à traiter"

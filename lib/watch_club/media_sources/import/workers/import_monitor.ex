@@ -9,6 +9,9 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
   Unique by `media_import_id` across active states so any second enqueue
   attempt collapses to the already-pending job.
 
+  A Media Import with a discarded job fails, and counts the files whose ingest job was
+  discarded as failed.
+
   Becomes a no-op if the Media Import has already reached a terminal
   state — `:cancel`, `:fail`, or a prior `:complete` got there first.
   """
@@ -26,6 +29,7 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
   import Ecto.Query
 
   alias WatchClub.MediaSources.Import
+  alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
   alias WatchClub.{Repo, SystemActor}
 
   require Logger
@@ -68,7 +72,7 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
         where: j.id != ^job_id,
         where: fragment("? @> ?", j.tags, ^[tag])
       )
-      |> select([:state])
+      |> select([:state, :worker])
       |> Repo.all()
 
     cond do
@@ -82,7 +86,14 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
           media_import_id: media_import.id
         )
 
-        Ash.update!(media_import, %{}, action: :fail, actor: actor)
+        failed_file_count =
+          Enum.count(jobs, &(&1.state == "discarded" and &1.worker == inspect(CandidateIngestor)))
+
+        Ash.update!(media_import, %{failed_file_count: failed_file_count},
+          action: :fail,
+          actor: actor
+        )
+
         :ok
 
       Enum.any?(jobs, &(&1.state == "cancelled")) ->

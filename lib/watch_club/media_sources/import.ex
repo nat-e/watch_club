@@ -60,10 +60,41 @@ defmodule WatchClub.MediaSources.Import do
     end
 
     update :fail do
-      accept []
+      accept [:failed_file_count]
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
+    end
+
+    update :finish_scan do
+      description "Records how many files the scan found to process"
+      accept [:file_count]
+    end
+
+    # Concurrent ingest jobs count their files, so the counts add up in the database
+    update :count_file do
+      description "Counts a file the Media Import processed, by its outcome"
+      accept []
+
+      argument :outcome, :atom do
+        allow_nil? false
+        constraints one_of: [:matched, :unmatched, :unreadable]
+      end
+
+      change atomic_update(
+               :matched_file_count,
+               expr(matched_file_count + if(^arg(:outcome) == :matched, do: 1, else: 0))
+             )
+
+      change atomic_update(
+               :unmatched_file_count,
+               expr(unmatched_file_count + if(^arg(:outcome) == :unmatched, do: 1, else: 0))
+             )
+
+      change atomic_update(
+               :unreadable_file_count,
+               expr(unreadable_file_count + if(^arg(:outcome) == :unreadable, do: 1, else: 0))
+             )
     end
 
     update :cancel do
@@ -95,7 +126,7 @@ defmodule WatchClub.MediaSources.Import do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:complete, :fail]) do
+    policy action([:complete, :fail, :finish_scan, :count_file]) do
       description "Only the system actor can process Media Imports in the background"
       authorize_if WatchClub.Checks.IsSystemActor
     end
@@ -139,6 +170,37 @@ defmodule WatchClub.MediaSources.Import do
     end
 
     attribute :finished_at, :utc_datetime_usec do
+      public? true
+    end
+
+    attribute :file_count, :integer do
+      description "The files the scan found to process, nil until it finishes"
+      public? true
+    end
+
+    attribute :matched_file_count, :integer do
+      allow_nil? false
+      default 0
+      public? true
+    end
+
+    attribute :unmatched_file_count, :integer do
+      allow_nil? false
+      default 0
+      public? true
+    end
+
+    attribute :unreadable_file_count, :integer do
+      description "Files ffprobe couldn't read, which got no Media"
+      allow_nil? false
+      default 0
+      public? true
+    end
+
+    attribute :failed_file_count, :integer do
+      description "Files whose ingest job crashed on its last attempt"
+      allow_nil? false
+      default 0
       public? true
     end
 

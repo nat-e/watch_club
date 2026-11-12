@@ -14,6 +14,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
 
   use Oban.Worker, queue: :media_source_scans, max_attempts: 1
 
+  alias WatchClub.MediaSources
   alias WatchClub.MediaSources.{Import, Source}
 
   alias WatchClub.MediaSources.Import.Scanner
@@ -62,6 +63,10 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
         skip?
       end)
       |> enqueue_candidates(import_job)
+
+    MediaSources.finish_media_import_scan!(import_job, candidates_enqueued,
+      actor: SystemActor.actor()
+    )
 
     Logger.info("Media Import scan finished: #{candidates_enqueued} files to process",
       event: :import_scan_success,
