@@ -159,11 +159,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "You're watching it"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "It isn't in the library yet. Mark what you've watched elsewhere."
 msgstr ""
 
