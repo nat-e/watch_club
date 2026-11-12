@@ -168,11 +168,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
-msgid "Your photo couldn't be saved. Try again."
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
 msgid "Zoom"
 msgstr ""
 
@@ -184,4 +179,9 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom out"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't save your photo. Try again."
 msgstr ""

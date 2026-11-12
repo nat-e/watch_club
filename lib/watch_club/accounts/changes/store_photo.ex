@@ -23,7 +23,11 @@ defmodule WatchClub.Accounts.Changes.StorePhoto do
         {:error, :unreadable} ->
           Ash.Changeset.add_error(changeset,
             field: :photo,
-            message: dgettext_noop("errors", "Choose a JPEG, PNG or WebP photo")
+            message:
+              dgettext_noop(
+                "errors",
+                "We can't open this file. Choose a JPEG, PNG or WebP photo."
+              )
           )
       end
     end)

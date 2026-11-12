@@ -382,7 +382,9 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
 
   def handle_event("unreadable", _params, socket) do
     {:noreply,
-     assign(socket, :pick_errors, [dgettext("errors", "Choose a JPEG, PNG or WebP photo")])}
+     assign(socket, :pick_errors, [
+       dgettext("errors", "We can't open this file. Choose a JPEG, PNG or WebP photo.")
+     ])}
   end
 
   def handle_event("cancel", _params, socket) do
@@ -422,7 +424,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
 
   defp save_photo(:photo, _entry, socket), do: {:noreply, socket}
 
-  defp save_error, do: dgettext("settings", "Your photo couldn't be saved. Try again.")
+  defp save_error, do: dgettext("settings", "We couldn't save your photo. Try again.")
 
   defp cancel_uploads(socket) do
     Enum.reduce(socket.assigns.uploads.photo.entries, socket, &cancel_upload(&2, :photo, &1.ref))

@@ -159,13 +159,13 @@ msgstr "Changer de photo"
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
 msgid "Crop your photo"
-msgstr "Recadrez votre photo"
+msgstr "Recadre ta photo"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
 msgid "Drag the photo, or tap where to center it."
-msgstr "Faites glisser la photo, ou touchez l'endroit à centrer."
+msgstr "Fais glisser la photo, ou touche l'endroit à centrer."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
@@ -195,13 +195,7 @@ msgstr "Importer une photo"
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
 msgid "Your new photo. Move it with the arrow keys."
-msgstr "Votre nouvelle photo. Déplacez-la avec les flèches du clavier."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Your photo couldn't be saved. Try again."
-msgstr "Votre photo n'a pas pu être enregistrée. Réessayez."
+msgstr "Ta nouvelle photo. Déplace-la avec les flèches du clavier."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
@@ -220,3 +214,9 @@ msgstr "Zoomer"
 #, elixir-autogen, elixir-format
 msgid "Zoom out"
 msgstr "Dézoomer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't save your photo. Try again."
+msgstr "On n'a pas pu enregistrer ta photo. Réessaie."
