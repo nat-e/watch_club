@@ -60,11 +60,17 @@ defmodule WatchClub.Accounts.InvitationCode do
       description "Uses an invitation code to signup a user"
 
       validate compare(:expires_at, greater_than: &DateTime.utc_now/0) do
-        message dgettext_noop("errors", "The invitation has expired")
+        message dgettext_noop(
+                  "errors",
+                  "This invitation has expired. Ask the person who sent it for a new link."
+                )
       end
 
       validate WatchClub.Accounts.Validations.InvitationNotUsed do
-        message dgettext_noop("errors", "The invitation has already been used")
+        message dgettext_noop(
+                  "errors",
+                  "This invitation has already been used. Ask the person who sent it for a new link."
+                )
       end
 
       # The action is atomic: the validations above and the increment compile

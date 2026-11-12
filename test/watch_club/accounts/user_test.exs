@@ -185,7 +185,8 @@ defmodule WatchClub.Accounts.UserTest do
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{
                  field: :invitation_code,
-                 message: "The invitation has already been used"
+                 message:
+                   "This invitation has already been used. Ask the person who sent it for a new link."
                } ->
                  true
 
@@ -209,7 +210,8 @@ defmodule WatchClub.Accounts.UserTest do
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{
                  field: :invitation_code,
-                 message: "The invitation has expired"
+                 message:
+                   "This invitation has expired. Ask the person who sent it for a new link."
                } ->
                  true
 
@@ -229,7 +231,8 @@ defmodule WatchClub.Accounts.UserTest do
              |> assert_has_error(Ash.Error.Invalid, fn
                %Ash.Error.Changes.InvalidArgument{
                  field: :invitation_code,
-                 message: "The invitation code is not valid"
+                 message:
+                   "This invitation no longer works. Ask the person who sent it for a new link."
                } ->
                  true
 

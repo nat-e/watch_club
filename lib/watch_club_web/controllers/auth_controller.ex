@@ -9,7 +9,7 @@ defmodule WatchClubWeb.AuthController do
 
     message =
       case activity do
-        {:password, :reset} -> dgettext("auth", "Your password has successfully been reset")
+        {:password, :reset} -> dgettext("auth", "New password saved.")
         _ -> nil
       end
 

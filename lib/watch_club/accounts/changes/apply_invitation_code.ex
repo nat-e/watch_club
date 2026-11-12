@@ -46,7 +46,12 @@ defmodule WatchClub.Accounts.Changes.ApplyInvitationCode do
   defp to_invitation_code_error(error) do
     case error do
       %Ash.Error.Query.NotFound{} ->
-        invalid(dgettext_noop("errors", "The invitation code is not valid"))
+        invalid(
+          dgettext_noop(
+            "errors",
+            "This invitation no longer works. Ask the person who sent it for a new link."
+          )
+        )
 
       # Ash.Error.Invalid wraps a list of inner errors – unwrap and recurse
       %Ash.Error.Invalid{errors: [inner | _]} ->

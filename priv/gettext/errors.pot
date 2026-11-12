@@ -18,37 +18,7 @@ msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
-msgid "Password is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
 msgid "Passwords do not match"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation has already been used"
-msgstr ""
-
-#: lib/watch_club/accounts/invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation has expired"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "The password is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "The username is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Username can only contain lower case letters, numbers and _"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -58,17 +28,7 @@ msgstr ""
 
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
-msgid "Username is required"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/sign_in_page.ex
-#, elixir-autogen, elixir-format
-msgid "Your username or password is invalid"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -96,11 +56,6 @@ msgstr ""
 msgid "Code must be at least %{min} characters"
 msgstr ""
 
-#: lib/watch_club/accounts/changes/apply_invitation_code.ex
-#, elixir-autogen, elixir-format
-msgid "The invitation code is not valid"
-msgstr ""
-
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This code is already used by another invitation"
@@ -109,11 +64,6 @@ msgstr ""
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This invitation has already been used more than that"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "This password reset link is invalid or has expired"
 msgstr ""
 
 #: lib/watch_club/accounts/user.ex
@@ -337,4 +287,54 @@ msgstr ""
 #: lib/watch_club/media_sources/import.ex
 #, elixir-autogen, elixir-format
 msgid "An import of this media source is already running."
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a username"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your username"
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation has already been used. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation has expired. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/changes/apply_invitation_code.ex
+#, elixir-autogen, elixir-format
+msgid "This invitation no longer works. Ask the person who sent it for a new link."
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "This link no longer works"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Use only lowercase letters, numbers and _"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/sign_in_page.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong username or password"
 msgstr ""

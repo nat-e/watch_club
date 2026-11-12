@@ -34,7 +34,6 @@ msgstr ""
 msgid "Do not share the credentials of this account, you will be able to invite other users later."
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/reset_password_page.ex
 #: lib/watch_club_web/live/accounts/setup_page.ex
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #: lib/watch_club_web/live/invitations/invitation_page.ex
@@ -64,17 +63,6 @@ msgstr ""
 msgid "Welcome back!"
 msgstr ""
 
-#: lib/watch_club_web/controllers/auth_controller.ex
-#: lib/watch_club_web/live/accounts/reset_password_page.ex
-#, elixir-autogen, elixir-format
-msgid "Your password has successfully been reset"
-msgstr ""
-
-#: lib/watch_club_web/live/invitations/invitation_page.ex
-#, elixir-autogen, elixir-format
-msgid "Invitation Code"
-msgstr ""
-
 #: lib/watch_club_web/live/accounts/setup_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to watch.club!"
@@ -86,21 +74,48 @@ msgid "Back to sign in"
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
+#: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "Reset password"
+msgid "At least %{min} characters."
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "Reset your password"
+msgid "Choose a new password"
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "You can ask your administrator for a new one."
+msgid "New password"
+msgstr ""
+
+#: lib/watch_club_web/controllers/auth_controller.ex
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "New password saved."
 msgstr ""
 
 #: lib/watch_club_web/live/accounts/reset_password_page.ex
 #, elixir-autogen, elixir-format
-msgid "This password reset link is invalid or has expired"
+msgid "Save password"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "This link no longer works"
+msgstr ""
+
+#: lib/watch_club_web/live/invitations/invitation_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your friends will see it. Use lowercase letters, numbers and _."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/sign_in_page.ex
+#, elixir-autogen, elixir-format
+msgid "Forgot your password? Ask the administrator for a reset link."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/reset_password_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reset links expire after 3 days. Ask the administrator for a new one."
 msgstr ""

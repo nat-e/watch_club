@@ -18,15 +18,15 @@ msgstr ""
 
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "This invitation is no longer available"
+msgid "A private community for watching and discussing movies, TV shows and more with friends."
 msgstr ""
 
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "Welcome!"
+msgid "This invitation no longer works"
 msgstr ""
 
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
-msgid "You are invited to create an account on %{name}!"
+msgid "You're invited to %{name}"
 msgstr ""
