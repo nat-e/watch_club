@@ -13,6 +13,7 @@ defmodule WatchClub.Generator do
   }
 
   alias WatchClub.Conversations.{Conversation, Message}
+  alias WatchClub.History.WatchProgress
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.{Import, Source}
   alias WatchClub.MediaSources.Servarr.Wizard
@@ -314,6 +315,12 @@ defmodule WatchClub.Generator do
     )
   end
 
+  # A User's Watch Progress. Pass its work's `movie_id`, `tv_show_episode_id` or
+  # `sports_event_id`, and the positions
+  def watch_progress(%User{} = user, opts) do
+    seed_generator(%WatchProgress{user_id: user.id}, overrides: opts)
+  end
+
   def problem_report(%Playback{} = playback, opts \\ []) do
     seed_generator(
       %ProblemReport{playback_id: playback.id, category: :subtitles, position_seconds: 42.0},
@@ -455,8 +462,9 @@ defmodule WatchClub.Generator do
     }
   end
 
+  # Video input holding Part 1 of the work `id`, or no Part, for Unmatched Media, when `id` is nil
   def video_input(media_type, id) do
-    id_field =
+    work_field =
       case media_type do
         :movie -> :movie_id
         :tv_show_episode -> :tv_show_episode_id
@@ -464,6 +472,7 @@ defmodule WatchClub.Generator do
       end
 
     %{
+      parts: if(id, do: [%{work_field => id, number: 1}], else: []),
       file_fingerprint: Ash.UUIDv7.generate(),
       video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
       audio_tracks: [
@@ -471,6 +480,5 @@ defmodule WatchClub.Generator do
       ],
       text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
     }
-    |> Map.put(id_field, id)
   end
 end

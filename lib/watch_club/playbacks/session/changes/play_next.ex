@@ -1,12 +1,13 @@
 defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
   @moduledoc """
-  Plays the TV Show Episode after the current one when it has Media, on the same Screen.
-  Otherwise, nothing follows: the Playback Session ends. Expects the Playback Session locked.
-  Fails when the `playback_id` argument is no longer the current Playback: it finished late.
+  Plays what follows the current Video on the same Screen: the next Part of the same work, else
+  the next TV Show Episode if it has Media. When nothing follows, the Playback Session ends.
+
+  Expects the Playback Session locked. Fails with a stale record error when the `playback_id`
+  argument isn't the current Playback anymore.
   """
   use Ash.Resource.Change
 
-  alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Playbacks.Session
   alias WatchClub.Playbacks.Session.Changes.{EndCurrentPlayback, PlayMedia}
 
@@ -16,7 +17,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
       %{current_playback: playback} =
         Ash.load!(
           changeset.data,
-          [current_playback: [media: [video: [tv_show_episode: [next_episode: :videos]]]]],
+          [current_playback: [media: [video: :next_to_play]]],
           scope: context
         )
 
@@ -31,8 +32,8 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
             )
           )
 
-        next_video = next_video(playback.media.video.tv_show_episode) ->
-          PlayMedia.play!(changeset, next_video.id, context)
+        next = playback.media.video.next_to_play ->
+          PlayMedia.play!(changeset, next.video.id, context)
 
         true ->
           EndCurrentPlayback.end_current_playback!(changeset.data, context)
@@ -49,7 +50,4 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
       end
     end)
   end
-
-  defp next_video(%TvShowEpisode{next_episode: %TvShowEpisode{videos: [video | _]}}), do: video
-  defp next_video(_movie_or_last_episode), do: nil
 end

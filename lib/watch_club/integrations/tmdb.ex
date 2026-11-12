@@ -124,7 +124,7 @@ defmodule WatchClub.Integrations.Tmdb do
     response
   end
 
-  @spec find_by_external_id(String.t(), :imdb_id | :tvdb_id) ::
+  @spec find_by_external_id(String.t() | integer(), :imdb_id | :tvdb_id) ::
           {:ok, FindByExternalIdResponse.t()} | {:error, term()}
   def find_by_external_id(external_id, source) when source in [:imdb_id, :tvdb_id] do
     case request(
@@ -137,7 +137,8 @@ defmodule WatchClub.Integrations.Tmdb do
     end
   end
 
-  @spec find_by_external_id!(String.t(), :imdb_id | :tvdb_id) :: FindByExternalIdResponse.t()
+  @spec find_by_external_id!(String.t() | integer(), :imdb_id | :tvdb_id) ::
+          FindByExternalIdResponse.t()
   def find_by_external_id!(external_id, source) do
     {:ok, response} = find_by_external_id(external_id, source)
     response

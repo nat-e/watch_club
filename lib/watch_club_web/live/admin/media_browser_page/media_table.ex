@@ -100,7 +100,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaTable do
       assign(assigns,
         file_name: Path.basename(assigns.media.path),
         added: Time.relative_or_date!(assigns.media.inserted_at, assigns.locale),
-        episode: assigns.media.video && assigns.media.video.tv_show_episode
+        episode:
+          assigns.media.video && Enum.find_value(assigns.media.video.parts, & &1.tv_show_episode)
       )
 
     ~H"""

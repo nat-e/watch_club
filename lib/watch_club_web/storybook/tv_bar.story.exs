@@ -3,7 +3,7 @@ defmodule WatchClubWeb.Storybook.TvBar do
 
   alias WatchClub.Accounts.{User, UserSettings}
   alias WatchClub.Contents.{TvShow, TvShowEpisode, TvShowEpisodeLocalization, TvShowLocalization}
-  alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.{Media, Part, Video}
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClubWeb.Components.Playbacks.TvBar
 
@@ -31,13 +31,33 @@ defmodule WatchClubWeb.Storybook.TvBar do
           %Variation{
             id: :paused,
             attributes: %{id: "tv-bar-paused", session: session(true), current_user: user()}
+          },
+          %Variation{
+            id: :part,
+            description: "Playing Part 2 of an episode in two files",
+            attributes: %{id: "tv-bar-part", session: session(false, 2), current_user: user()}
           }
         ]
       }
     ]
   end
 
-  def session(paused?) do
+  # A Playback Session on a TV, playing Part `part_number` of an episode in that many files
+  def session(paused?, part_number \\ 1) do
+    parts = for number <- 1..part_number, do: %Part{number: number, movie: nil, sports_event: nil}
+
+    episode = %TvShowEpisode{
+      id: Ash.UUIDv7.generate(),
+      formatted_episode_number: "S02E03",
+      still_path: "/j4AUAq1XJOBmfXsLphZzsCz6pZs.jpg",
+      best_localization: %TvShowEpisodeLocalization{title: "Who Is Alive?"},
+      parts: parts,
+      tv_show: %TvShow{
+        best_localization: %TvShowLocalization{title: "Severance"},
+        backdrop_path: "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg"
+      }
+    }
+
     %Session{
       tv_name: "Living Room TV",
       paused?: paused?,
@@ -47,16 +67,7 @@ defmodule WatchClubWeb.Storybook.TvBar do
         media: %Media{
           video: %Video{
             duration_seconds: 2940.0,
-            movie: nil,
-            tv_show_episode: %TvShowEpisode{
-              formatted_episode_number: "S02E03",
-              still_path: "/j4AUAq1XJOBmfXsLphZzsCz6pZs.jpg",
-              best_localization: %TvShowEpisodeLocalization{title: "Who Is Alive?"},
-              tv_show: %TvShow{
-                best_localization: %TvShowLocalization{title: "Severance"},
-                backdrop_path: "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg"
-              }
-            }
+            parts: [%{List.last(parts) | tv_show_episode: episode}]
           }
         }
       }

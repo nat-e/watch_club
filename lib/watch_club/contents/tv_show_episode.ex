@@ -4,9 +4,15 @@ defmodule WatchClub.Contents.TvShowEpisode do
     domain: WatchClub.Contents,
     data_layer: AshPostgres.DataLayer
 
-  alias WatchClub.Contents.{TvShow, TvShowEpisodeLocalization}
+  alias WatchClub.Contents.{
+    Calculations.ActorVideoToPlay,
+    Calculations.VideosToPlay,
+    TvShow,
+    TvShowEpisodeLocalization
+  }
+
   alias WatchClub.History.{WatchProgress, WatchStatus}
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Shared.AnyFieldChanged
 
   postgres do
@@ -98,7 +104,13 @@ defmodule WatchClub.Contents.TvShowEpisode do
       from_many? true
     end
 
-    has_many :videos, Video
+    has_many :parts, Part do
+      description "Its Parts held by a Video, in order. Parts without a Video are left out."
+      public? true
+      filter expr(exists(videos, true))
+      sort number: :asc
+    end
+
     has_many :watch_progresses, WatchProgress
 
     has_one :actor_progress, WatchProgress do
@@ -154,7 +166,21 @@ defmodule WatchClub.Contents.TvShowEpisode do
     # numbers stay under 100,000.
     calculate :rank, :integer, expr(season_number * 100_000 + episode_number)
 
-    calculate :has_media?, :boolean, expr(videos_count > 0)
+    calculate :has_media?, :boolean, expr(exists(parts, true)) do
+      description "Whether it has a Video to play."
+    end
+
+    calculate :videos_to_play, {:array, :struct}, VideosToPlay do
+      description "The Videos to play for it, one after the other."
+      constraints items: [instance_of: Video]
+      public? true
+    end
+
+    calculate :actor_video_to_play, :struct, ActorVideoToPlay do
+      description "The Video the actor plays to watch it: the one where they stopped, else the first."
+      constraints instance_of: Video
+      public? true
+    end
 
     # Once its air date has passed. Only aired episodes can be marked as watched, and they decide
     # whether a TV Show is finished and how complete its Content Request is.
@@ -172,10 +198,6 @@ defmodule WatchClub.Contents.TvShowEpisode do
 
     # The date at which the current user has most recently watched this episode, or nil
     calculate :actor_last_watched_at, :utc_datetime_usec, expr(actor_progress.updated_at)
-  end
-
-  aggregates do
-    count :videos_count, :videos
   end
 
   identities do

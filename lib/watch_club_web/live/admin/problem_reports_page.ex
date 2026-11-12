@@ -22,9 +22,11 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
       session: [:started_by],
       media: [
         video: [
-          movie: [:best_localization],
-          sports_event: [],
-          tv_show_episode: [tv_show: [:best_localization]]
+          parts: [
+            movie: [:best_localization],
+            sports_event: [],
+            tv_show_episode: [tv_show: [:best_localization]]
+          ]
         ]
       ]
     ]
@@ -260,18 +262,18 @@ defmodule WatchClubWeb.Admin.ProblemReportsPage do
   # Refresh Metadata can leave the Video Unmatched Media, named by its file.
   defp about(%ProblemReport{playback: %{session: %{started_by: reporter}, media: media}}) do
     {title, episode, poster_path} =
-      case media.video do
-        %Video{movie: %Movie{best_localization: localization}} ->
+      case Video.work(media.video) do
+        %Movie{best_localization: localization} ->
           {localization.title, nil, localization.poster_path}
 
-        %Video{sports_event: %SportsEvent{} = event} ->
+        %SportsEvent{} = event ->
           {event.title, nil, event.poster_url}
 
-        %Video{tv_show_episode: %TvShowEpisode{tv_show: tv_show} = episode} ->
+        %TvShowEpisode{tv_show: tv_show} = episode ->
           {tv_show.best_localization.title, episode.formatted_episode_number,
            tv_show.best_localization.poster_path}
 
-        %Video{} ->
+        nil ->
           {Path.basename(media.path), nil, nil}
       end
 

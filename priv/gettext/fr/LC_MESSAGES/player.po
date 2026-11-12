@@ -52,24 +52,6 @@ msgid "Subtitles"
 msgstr "Sous-titres"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play %{episode}"
-msgstr "Lire %{episode}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play next episode"
-msgstr "Lire l'épisode suivant"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/player/player_components.ex
-#, elixir-autogen, elixir-format
-msgid "Play previous episode"
-msgstr "Lire l'épisode précédent"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "The video you were looking for does not exist"
@@ -357,3 +339,9 @@ msgstr "Sections de la télécommande"
 #, elixir-autogen, elixir-format
 msgid "Stopped casting to %{tv}."
 msgstr "Diffusion arrêtée sur %{tv}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
+#, elixir-autogen, elixir-format
+msgid "Play %{name}"
+msgstr "Lire %{name}"

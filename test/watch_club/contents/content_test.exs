@@ -345,7 +345,7 @@ defmodule WatchClub.Contents.ContentTest do
       original_s2e2_with_relations =
         TvShowEpisode
         |> Ash.Query.filter(id == ^original_s2e2.id)
-        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.Query.load([:videos_to_play, :watch_progresses])
         |> Ash.read_one!(authorize?: false)
 
       original_s2e2_localizations =
@@ -412,15 +412,15 @@ defmodule WatchClub.Contents.ContentTest do
       refreshed_s2e2 =
         TvShowEpisode
         |> Ash.Query.filter(id == ^original_s2e2.id)
-        |> Ash.Query.load([:videos, :watch_progresses])
+        |> Ash.Query.load([:videos_to_play, :watch_progresses])
         |> Ash.read_one!(authorize?: false)
 
       assert refreshed_s2e2.air_date == original_s2e2.air_date
       assert refreshed_s2e2.runtime == original_s2e2.runtime
       assert refreshed_s2e2.still_path == original_s2e2.still_path
 
-      assert Enum.map(refreshed_s2e2.videos, & &1.id) ==
-               Enum.map(original_s2e2_with_relations.videos, & &1.id)
+      assert Enum.map(refreshed_s2e2.videos_to_play, & &1.id) ==
+               Enum.map(original_s2e2_with_relations.videos_to_play, & &1.id)
 
       assert Enum.map(refreshed_s2e2.watch_progresses, & &1.id) ==
                Enum.map(original_s2e2_with_relations.watch_progresses, & &1.id)
@@ -1452,6 +1452,34 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) ==
                [newer.id, ready_show.id, older.id]
+    end
+
+    test "plays the Part the actor stopped in", %{member: member} do
+      movie = generate(movie())
+
+      [_first_part, second_part] =
+        for number <- [1, 2] do
+          generate(
+            video_media(movie,
+              video: %{duration_seconds: 60.0, parts: [%{movie_id: movie.id, number: number}]}
+            )
+          )
+        end
+
+      generate(
+        watch_progress(member,
+          movie_id: movie.id,
+          position_seconds: 90.0,
+          duration_seconds: 120.0,
+          part_number: 2,
+          part_position_seconds: 30.0
+        )
+      )
+
+      assert [%Content{actor_next_medias_to_play: [video]}] =
+               get_user_recently_watched!(actor: member)
+
+      assert video.id == second_part.id
     end
   end
 

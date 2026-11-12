@@ -1,9 +1,9 @@
 defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   @moduledoc """
-  Attaches the Video of a Media to its new Content: a Movie file to the Movie, a Sports Event file
-  to the Sports Event, a TV Show Episode file to the episode of the TV Show at the action's
-  `season_number` and `episode_number`. Movies, Sports Events and TV Shows share the id of their
-  Content. Without Content, the Video is unmatched.
+  Links a Media's Video to the Media's Content, which must already be set.
+
+  The Video holds Part 1 of the Movie or Sports Event, or of the TV Show Episode at the action's
+  `season_number` and `episode_number`. Without Content, the Video holds no Part.
   """
   use Ash.Resource.Change
 
@@ -15,22 +15,26 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
     Ash.Changeset.after_action(changeset, fn changeset, media ->
       Video
       |> Ash.get!(media.id, authorize?: false)
-      |> Ash.update!(attachment(media, changeset.arguments), action: :attach, authorize?: false)
+      |> Ash.update!(%{parts: parts!(media, changeset.arguments)},
+        action: :attach,
+        authorize?: false
+      )
 
       {:ok, media}
     end)
   end
 
-  defp attachment(%Media{content_id: nil}, _arguments),
-    do: %{movie_id: nil, tv_show_episode_id: nil, sports_event_id: nil}
+  defp parts!(%Media{content_id: nil}, _arguments), do: []
 
-  defp attachment(%Media{type: :movie, content_id: movie_id}, _arguments),
-    do: %{movie_id: movie_id, tv_show_episode_id: nil, sports_event_id: nil}
+  # Movies, Sports Events and TV Shows share the id of their Content
 
-  defp attachment(%Media{type: :sports_event, content_id: sports_event_id}, _arguments),
-    do: %{movie_id: nil, tv_show_episode_id: nil, sports_event_id: sports_event_id}
+  defp parts!(%Media{type: :movie, content_id: movie_id}, _arguments),
+    do: [%{movie_id: movie_id, number: 1}]
 
-  defp attachment(%Media{type: :tv_show_episode, content_id: tv_show_id}, arguments) do
+  defp parts!(%Media{type: :sports_event, content_id: sports_event_id}, _arguments),
+    do: [%{sports_event_id: sports_event_id, number: 1}]
+
+  defp parts!(%Media{type: :tv_show_episode, content_id: tv_show_id}, arguments) do
     episode =
       Ash.get!(
         TvShowEpisode,
@@ -42,6 +46,6 @@ defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
         authorize?: false
       )
 
-    %{movie_id: nil, tv_show_episode_id: episode.id, sports_event_id: nil}
+    [%{tv_show_episode_id: episode.id, number: 1}]
   end
 end

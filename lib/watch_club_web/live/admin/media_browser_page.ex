@@ -19,11 +19,11 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
   @sorts [:added, :title]
   @row_load [
     content: [:title, :poster_path],
-    video: [:audio_tracks, :text_tracks, :tv_show_episode]
+    video: [:audio_tracks, :text_tracks, parts: [:tv_show_episode]]
   ]
   @details_load [
     content: [:title, :poster_path],
-    video: [:default_video_track, :audio_tracks, :text_tracks, :tv_show_episode]
+    video: [:default_video_track, :audio_tracks, :text_tracks, parts: [:tv_show_episode]]
   ]
 
   @impl true

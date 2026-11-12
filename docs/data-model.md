@@ -238,12 +238,25 @@ classDiagram
   }
   class Video {
     uuid id «same as Media»
-    uuid movie_id
-    uuid tv_show_episode_id
-    uuid sports_event_id
+    string file_fingerprint
     float duration_seconds
     string container
     integer bit_rate
+  }
+  class Part {
+    uuid id
+    uuid movie_id
+    uuid tv_show_episode_id
+    uuid sports_event_id
+    integer number
+    string name
+    «exactly one of» movie_id, tv_show_episode_id, sports_event_id
+    «unique» movie_id + tv_show_episode_id + sports_event_id + number
+  }
+  class VideoPart {
+    uuid video_id
+    uuid part_id
+    «unique» video_id + part_id
   }
   class VideoTrack {
     uuid id
@@ -296,15 +309,19 @@ classDiagram
   Video "0..1" --> "1" Media
   Ebook "0..1" --> "1" Media
   Audiobook "0..1" --> "1" Media
-  Video "*" --> "0..1" Movie
-  Video "*" --> "0..1" TvShowEpisode
-  Video "*" --> "0..1" SportsEvent
+  VideoPart "*" --> "1" Video
+  VideoPart "*" --> "1" Part
+  Part "*" --> "0..1" Movie
+  Part "*" --> "0..1" TvShowEpisode
+  Part "*" --> "0..1" SportsEvent
   VideoTrack "1..*" --> "1" Video
   AudioTrack "*" --> "1" Video
   TextTrack "*" --> "1" Video
   Ebook "*" --> "1" Book
   Audiobook "*" --> "1" Book
 ```
+
+A Video holds its Parts through VideoPart: usually the one Part of a Movie, TV Show Episode or Sports Event, and none for Unmatched Media. Copies of a Part share it. A Part stays when no Video holds it anymore, but its work's `parts` leave it out.
 
 ## Markers
 

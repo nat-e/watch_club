@@ -56,8 +56,12 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
 
     %EpisodeIdentity{
       title: title,
-      season_number: episode[:season_number],
-      episode_number: episode[:episode_number],
+      episodes: [
+        %EpisodeIdentity.Episode{
+          season_number: episode[:season_number],
+          episode_number: episode[:episode_number]
+        }
+      ],
       tmdb_id: path_ids.tmdb,
       tvdb_id: path_ids.tvdb,
       imdb_id: path_ids.imdb

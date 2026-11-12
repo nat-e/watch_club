@@ -122,16 +122,22 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   attr :locale, :atom, required: true
   attr :myself, :any, required: true
 
-  # Its still, with Play once it's in the Library, its number and name, its length and a word on
-  # where it is, its story, and a check to mark it as watched or not once it aired, with Download
-  # under it once it's in the Library. The still is grey while it isn't out, and when a TV Show in
-  # the Library misses it.
+  # One episode: its still with Play, its number, title, length, notes and story, then the watched
+  # check and Download. The still is grey before it airs, or when a TV Show in the Library lacks it.
   defp episode_row(assigns) do
     episode = assigns.episode
     localization = episode.best_localization || %{title: nil, overview: nil}
     aired? = episode.aired?
     playable? = episode.has_media?
     watching? = episode.actor_progress_status == :in_progress
+
+    shares_file_with =
+      for part <- episode.parts,
+          video <- part.videos,
+          %{tv_show_episode: %TvShowEpisode{} = other} <- video.parts,
+          other.id != episode.id,
+          uniq: true,
+          do: TvShowEpisode.format_number(other.season_number, other.episode_number)
 
     assigns =
       assign(assigns,
@@ -140,6 +146,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         playable?: playable?,
         watching?: watching?,
         runtime: Time.minutes(episode.runtime, assigns.locale),
+        shares_file_with: shares_file_with,
         watched?: episode.actor_progress_status == :completed,
         note:
           cond do
@@ -174,7 +181,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
             id={"episode-#{@episode.episode_number}-play"}
             variant="primary"
             size="icon"
-            href={Url.player_link(@episode)}
+            href={Url.player_link(@episode.actor_video_to_play)}
             aria-label={
               dgettext("contents", "Play episode %{number}", number: @episode.episode_number)
             }
@@ -199,6 +206,14 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         </span>
         <span class="flex flex-wrap gap-x-related text-xs text-text-muted">
           <span :if={@runtime}>{@runtime}</span>
+          <span :if={length(@episode.videos_to_play) > 1}>
+            {dngettext("contents", "%{count} part", "%{count} parts", length(@episode.videos_to_play))}
+          </span>
+          <span :if={@shares_file_with != []}>
+            {dgettext("contents", "Same file as %{episodes}",
+              episodes: Enum.join(@shares_file_with, ", ")
+            )}
+          </span>
           <span :if={@note} class="font-semibold">{@note}</span>
         </span>
         <span
@@ -234,7 +249,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         <.download_menu
           :if={@playable?}
           id={"episode-#{@episode.episode_number}-download"}
-          videos={@episode.videos}
+          parts={@episode.parts}
         >
           <:trigger :let={download_link}>
             <.button
@@ -333,7 +348,9 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :has_media?,
         :actor_progress_status,
         :actor_progress,
-        videos: [:media, :default_video_track]
+        :videos_to_play,
+        :actor_video_to_play,
+        parts: [videos: [:media, :default_video_track, parts: :tv_show_episode]]
       ],
       actor: assigns.current_user
     )

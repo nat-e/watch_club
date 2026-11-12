@@ -129,7 +129,7 @@ The status of a **Content Request** as shown on **My Requests**, derived when re
 _Avoid_: Pending, Requested, Available, request state, Media Source Request State
 
 **Completed Content Request**:
-A **Content Request** whose **Content** has had **Media** for every aired part: the **Movie** or **Book**, or every aired **TV Show Episode**. It stays Completed, even when new **TV Show Episodes** air or its **Media** is deleted.
+A **Content Request** whose **Content** has had **Media**: the **Movie**, **Sports Event** or **Book**, or every aired **TV Show Episode**. It stays Completed, even when new **TV Show Episodes** air or its **Media** is deleted.
 _Avoid_: Fulfilled, fully downloaded, available, ready, playable
 
 **Media Source Request**:
@@ -187,8 +187,12 @@ The kind of media, one of **Movie**, **TV Show Episode**, **Sports Event**, **Eb
 _Avoid_: Content Type, file type
 
 **Video**:
-Media that can be played and is attached to a movie, a TV show episode or a sports event.
+Media that can be played: a file holding one or more **Parts**, one after another.
 _Avoid_: Media Version, video version
+
+**Part**:
+A piece of a **Movie**, **TV Show Episode** or **Sports Event**, in watching order. Most have one, the whole of it. A two-part episode that the **Metadata Provider** lists as one **TV Show Episode** can have two, and a UFC event its Prelims and its Main Card. WatchClub knows the **Parts** it has a **Video** for.
+_Avoid_: Segment, chapter, disc, CD, stack, version
 
 **File Fingerprint**:
 A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file changed.
@@ -247,7 +251,7 @@ Where a **Playback Session** plays right now: a **Player** or a **TV**.
 _Avoid_: Device, output, display, receiver
 
 **Watch Progress**:
-How far a **User** has got through one **Movie** or one **TV Show Episode**, and whether they have finished it. Tied to the watchable work, not to a specific **Media**, so the several **Videos** that back one **Movie** or **Episode** share a single Watch Progress. Covers video only for now; reading a **Book** or listening to an **Audiobook** would be sibling concepts, not the same record.
+How far a **User** has got through one **Movie**, **TV Show Episode** or **Sports Event**, across all its **Parts**, and whether they have finished it. Tied to the watchable work, not to a specific **Media**, so the **Videos** that back one **Movie** or **Episode**, its copies and its **Parts**, share a single Watch Progress. Covers video only for now; reading a **Book** or listening to an **Audiobook** would be sibling concepts, not the same record.
 _Avoid_: watch history, watch session, resume point, playhead, watched flag
 
 **Watcher**:
@@ -375,7 +379,7 @@ A TV Show Episode's title and overview adapted for a Locale.
 _Avoid_: Episode translation, localized episode
 
 **Sports Event**:
-Content whose content type is sports event, such as a UFC event or a Formula 1 race. Like a **Movie**, it can have several **Videos**, such as its prelims and its main card, and one watch progress. Its metadata comes from sportarr.net, in English only.
+Content whose content type is sports event, such as a UFC event or a Formula 1 race. Like a **Movie**, it can have several **Parts**, such as its Prelims and its Main Card, and one **Watch Progress**. Its metadata comes from sportarr.net, in English only.
 _Avoid_: Sport, match, fight, game
 
 **Book**:
@@ -507,7 +511,7 @@ _Avoid_: Group, aggregate, card, item
 - **Add to Playlist** and **Request Content** are independent actions: neither one triggers the other
 - A **Content Request** is made by exactly one **User** and references exactly one **Content**
 - A **Content** has at most one **Content Request**, made by the first **User** who requests it
-- **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media** for an aired part: the **Movie**, or an aired **TV Show Episode**
+- **Request Content** is possible only while the **Content** has no **Content Request** and is missing **Media**: the **Movie** or **Sports Event**, or an aired **TV Show Episode**
 - Request does **Request Content** while the **Content** has no **Content Request**, and **Get Notified** once it has one
 - Outside **My Requests**, **Content** in the **Library** shows Play, disabled until it is **Ready to Play**; **Content** not in the **Library** shows Request to a **User** who is not a **Request Subscriber**, or its **Content Request Status** to one who is
 - In **My Requests**, a **Content Request** that is not Completed shows Play only once its **Content** is **Ready to Play**
@@ -528,11 +532,11 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Source Request** comes into existence only _after_ a successful call to its **Media Source** (the movie or series was added or adopted). It is not created speculatively; until the call succeeds there is no **Media Source Request** for that **Media Source**, so its first observable state is Submitted (or Not Released)
 - **Request Content** fans out to _every_ request-capable **Media Source** that can serve the **Content** (its **Media Type** produces the **Content**'s **Content Type**), creating one **Media Source Request** per such **Media Source**. This includes multiple **Media Sources** of the same **Media Source Type** (two `radarr` sources each get their own **Media Source Request**) and multiple **Media Types** for one **Content** (a **Book** fans out to both its **Ebook** and **Audiobook** **Media Sources**)
 - For a **TV Show**, the singleton is per (**TV Show**, **Media Source**): one **Media Source Request** covers the whole show, never one per **TV Show Episode**. It maps to the single series resource the **Media Source** creates. Per-**TV Show Episode** availability is read from **Media**, not from **Media Source Requests**
-- A **Content Request** has a derived progress, the share of the **Content**'s expected parts that have **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over _aired_ **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored
+- A **Content Request** has a derived progress, the share of the **Content** that has **Media**: for a **Movie** this is all-or-nothing, for a **TV Show** it is available **TV Show Episodes** over _aired_ **TV Show Episodes** (those whose air date has passed). It is computed at read time, not stored
 - A **TV Show Episode** records its air date, sourced from the **Metadata Provider**
 - The call to a **Media Source** is performed asynchronously when the **Content Request** is created (one call per matching **Media Source**); the **Media Source Request** is recorded once that call succeeds. While the call is in flight the **Content Request** has no **Media Source Request** yet and reads as queued; if the call never succeeds it reads as not found
 - A **Content Request** can be created for a **Content** whose **Content Type** has no request-capable **Media Sources**; it simply has no **Media Source Requests**. **Media Source Requests** are created _only_ when the **Content Request** is created, against the **Media Sources** that exist at that moment — there is no backfill. Connecting a request-capable **Media Source** later does nothing for existing **Content Requests**; to have a pre-existing **Content Request** picked up, the **Instance Administrator** uses **Delete Content Request** so the **Content** can be requested again
-- When all of a **Content**'s aired parts have **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** is Completed regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
+- When the **Content** has **Media** (the **Movie**, or every aired **TV Show Episode**), the **Content Request** is Completed regardless of its **Media Source Requests** — including a **Content Request** with no **Media Source Requests** at all that was later fulfilled by a **Media Import**. **Media** is the authority for fulfillment, not the request machinery
 - A **Media Source Request** carries one **Media Source Request State**, recomputed from the **Media Source**'s current state (its movie/series record plus download queue) whenever a webhook or poll arrives; the event triggers a refresh, it does not itself set the state
 - A **Media Source Request** stores the **Media Source**'s internal identifier for the resource it created _or adopted_ — a request may adopt a movie or series already present in the **Media Source** rather than failing (e.g. the Radarr movie id, the Sonarr series id)
 - A **Media Source Request** persists after **Delete Content Request** (the upstream resource still exists)
@@ -553,6 +557,7 @@ _Avoid_: Group, aggregate, card, item
 - **Play** on a **TV Show** starts the **TV Show Episode** the **User** is up to; any other **TV Show Episode** with **Media** plays from the **TV Show**'s episodes
 - **Play** opens the **Player** after exactly one **Media** file has been selected
 - **Play** starts a new **Playback** in the **User**'s active **Playback Session**, or creates the **Playback Session** when there is none, before playback succeeds
+- **Play** resumes in the **Part** where the **User** stopped, at the position they reached in it
 - Advancing to another **Media**, such as the next **TV Show Episode**, creates a new **Playback** in the same **Playback Session**
 - Initially, **Playbacks** are created only for **Video** **Media**
 - A **Playback Session** is started by exactly one **User**
@@ -564,7 +569,7 @@ _Avoid_: Group, aggregate, card, item
 - The **Instance Administrator** can additionally start a **Playback** for **Unmatched Media** through the **Media Browser**
 - A **Playback Session** has at most one current **Playback** at any time
 - A **Playback** is current while it has not ended; it ends when another **Playback** starts in the same **Playback Session**, or when the **Playback Session** ends
-- When a **Playback** finishes, its **Playback Session** plays the next available **TV Show Episode** on the same **Screen**; with nothing next, the **Playback Session** ends
+- When a **Playback** finishes, its **Playback Session** plays the next **Part** on the same **Screen**, else the next available **TV Show Episode**; with nothing next, the **Playback Session** ends
 - A **Playback Session** is active until it ends: on **Stop Casting**, when nothing is left to play, or after about two minutes without a **Screen**
 - A **User** is **Watching Now** while their active **Playback Session** has a **Screen**, paused included
 - Every **User** sees which other **Users** are **Watching Now** and what they play, but not their **Playback Sessions**
@@ -591,8 +596,11 @@ _Avoid_: Group, aggregate, card, item
 - In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
 - A **Playback Session** keeps the audio language and the subtitles, or no subtitles, of its **Content**: each next **Playback** of the same **Content**, on any **Screen**, starts with them, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
-- When the **Credits** of a **TV Show Episode** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **TV Show Episode** if it has **Media**
-- **Watch Progress** counts a **Video** up to the start of its **Credits**
+- When the **Credits** of a **Video** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **Part**, else the next **TV Show Episode** if it has **Media**
+- The **Player**'s previous and next buttons go to the previous and next **Part**, else to the previous and next **TV Show Episode**
+- The **Player**, the **TV** and the **Remote** name the **Part** that plays when its **Movie**, **TV Show Episode** or **Sports Event** has several: Friends · S06E15 · Part 2
+- **Watch Progress** counts each **Video** up to the start of its **Credits**, and the **Parts** of a **Movie**, **TV Show Episode** or **Sports Event** one after another
+- Playing a **Video** that holds two **TV Show Episodes** moves the **Watch Progress** of both
 - A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
 - A **Problem Report** belongs to the **Playback** it was sent from, which gives its **User**, **Video** and **Content**
 - Only the **Instance Administrator** can read and **Archive a Problem Report**; an archived **Problem Report** stays archived
@@ -606,6 +614,7 @@ _Avoid_: Group, aggregate, card, item
 - Any device of the **User** can open the **Remote**, including devices that can't **Cast**
 - The **Remote** never reports a position: the **TV** does
 - Leaving the **Remote** leaves the **TV** playing
+- The **Remote**'s Up next lists the files that play after the current one, one per row: the other **Parts** of what plays, then the next **TV Show Episodes** with **Media**
 - Every page shows the **Playback Session** playing on a **TV**, with a way to the **Remote**, only while that **TV** is connected
 - Another **User** casting to the same **TV** takes it: the first **Playback Session** loses its **Screen**
 
@@ -621,8 +630,13 @@ _Avoid_: Group, aggregate, card, item
 - Deleting **Media** deletes its concrete **Video**, **Ebook**, or **Audiobook** and their technical details
 - Deleting **Media** does not delete **Playback Sessions** or **Playbacks**
 - Deleting **Media** does not delete **Content**, **Movies**, **Books**, or **TV Show Episodes**
-- A **Video** is attached to at most one **Movie** or at most one **TV Show Episode**
-- A **Video** with no attached **Movie** or **TV Show Episode** is **Unmatched Media**
+- A **Video** usually holds the one **Part** of one **Movie**, **TV Show Episode** or **Sports Event**. It can also hold several **Parts** of one, or a **Part** of each of the **TV Show Episodes** it holds
+- A **Video** that holds no **Part** is **Unmatched Media**
+- A **Part** belongs to exactly one **Movie**, **TV Show Episode** or **Sports Event**, which plays its **Parts** in order
+- **Videos** holding the same **Part** are copies of it
+- Sonarr numbers episodes like TVDB, which splits some episodes that the **Metadata Provider** lists whole. A **Media Import** links each episode of a Sonarr file to the **TV Show Episode** with its number when their titles match, else with its title when they aired within a day, else to the one TMDB links to its TVDB id, else to the one with its number
+- A Sonarr episode titled "Fun Run (2)" or "Fun Run, Part 2" is **Part** 2 of the **TV Show Episode** "Fun Run". A file holding every half of a **TV Show Episode** holds all its **Parts**
+- **Play** never plays a **Part** twice. Among the copies of a **Part**, it picks the one holding the most **Parts**, then the oldest
 - A **Video** has one or more **Video Tracks**
 - A **Video** has exactly one **Default Video Track**
 - A **Video** may have zero or more **Audio Tracks**
@@ -636,8 +650,8 @@ _Avoid_: Group, aggregate, card, item
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
 - **Unmatched Media** is not part of the **Library**: it is visible only to the **Instance Administrator**, who can also start a **Playback** for an **Unmatched Media** video
-- A **Movie**, **Book**, or **TV Show Episode** can have multiple selectable **Videos**, **Ebooks**, or **Audiobooks**
-- A **Manual Match** attaches a **Movie** file to a **Movie**, a **TV Show Episode** file to a **TV Show Episode**, and a **Sports Event** file to a **Sports Event**
+- A **Book** can have multiple selectable **Ebooks** or **Audiobooks**
+- A **Manual Match** makes a **Movie** file hold the one **Part** of a **Movie**, a **TV Show Episode** file the one of a **TV Show Episode**, and a **Sports Event** file the one of a **Sports Event**
 - A **Manual Match** may create the missing **Content**, as **Request Content** does
 - **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
 - Removing a **Manual Match** makes the **Video** **Unmatched Media**, until a **Media Import** or a webhook matches it again
@@ -787,7 +801,7 @@ _Avoid_: Group, aggregate, card, item
 - "External Source" was replaced by **Metadata Provider** for catalogs such as TMDB or Hardcover.
 - "Automation Service" and "Request Profile" are not canonical; resolved: the upstream system, the connection details, and the request-side settings are all attributes of a **Media Source**. An `radarr` or `sonarr` **Media Source** is both an import source and a request destination; a `filesystem` **Media Source** is import-only.
 - **Pending Content Request**, **Requested Content Request**, **Available Content Request**, and **Failed Content Request** are not canonical: the displayed **Content Request Status** _is_ canonical, but as a _derived read-model value_ computed when read from the **Content**'s **Media** and its **Media Source Requests** — vocabulary, not a stored attribute. Only **Completed Content Request** is a canonical subtype, because a **Content Request** stays Completed once it is.
-- "Playable" meant **Content** with any **Media**, so a **TV Show** looked ready, and Play could start whichever **TV Show Episode** downloaded first; resolved: **Library** for **Content** with any **Media**, **Ready to Play** for what **Play** can start for a **User**, and **Completed Content Request** for a **Content Request** whose every aired part has **Media**.
+- "Playable" meant **Content** with any **Media**, so a **TV Show** looked ready, and Play could start whichever **TV Show Episode** downloaded first; resolved: **Library** for **Content** with any **Media**, **Ready to Play** for what **Play** can start for a **User**, and **Completed Content Request** for a **Content Request** whose **Content** has had **Media**, every aired **TV Show Episode** of a **TV Show**.
 - The work a request-capable **Media Source** does for one piece of **Content** is a first-class concept tracked as a **Media Source Request**. A **Media Source Request** is not user-scoped. "Request Attempt" was an earlier working name; the canonical term is **Media Source Request**.
 - "Request Media" is not a canonical action; resolved: **Request Content** is the user action that creates a **Content Request**. It is independent of **Playlists**: **Add to Playlist** does not create a **Content Request**.
 - "User settings" may appear where the domain means **User Preferences**; resolved: the canonical term is **User Preferences**.

@@ -9,7 +9,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   - If not, try to match with other IDs (IMDB, TVDB, ...)
   - If not, fuzzy match with title, and year when known
 
-  Missing Content or TV Show Episodes fail the Oban job so it can retry.
+  A Movie or Sports Event file gets Part 1 of its match. A TV Show Episode file gets the Parts
+  `EpisodeParts` finds. It raises when TMDB doesn't list a file's TV Show Episode yet.
   """
 
   alias WatchClub.Contents
@@ -19,6 +20,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
+  alias WatchClub.MediaSources.Import.Ingestor.EpisodeParts
 
   alias WatchClub.MediaSources.Import.Candidate.{
     BookIdentity,
@@ -37,29 +39,32 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   def apply!(%Candidate{} = candidate) do
     case manual_match(candidate) do
-      nil ->
+      [] ->
         match_automatically!(candidate)
 
-      matched_id ->
+      parts ->
         Logger.info("#{candidate.path} keeps its Manual Match", event: :manual_match_kept)
-        %{candidate | match_result: %MatchResult{result: :success, matched_id: matched_id}}
+        %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
     end
   end
 
-  # The Movie, TV Show Episode or Sports Event of the Manual Match of the file's Video
+  # The Parts the file's Video holds when it has a Manual Match, else []
   defp manual_match(%Candidate{media_source_id: media_source_id, path: path}) do
     case MediaCatalog.get_media_by_path(media_source_id, path,
-           load: :video,
+           load: [video: :parts],
            actor: SystemActor.actor()
          ) do
-      {:ok, %Media{manually_matched?: true, video: video}} ->
-        video.movie_id || video.tv_show_episode_id || video.sports_event_id
+      {:ok, %Media{manually_matched?: true, video: %{parts: parts}}} ->
+        Enum.map(
+          parts,
+          &Map.take(&1, [:movie_id, :tv_show_episode_id, :sports_event_id, :number, :name])
+        )
 
       {:ok, %Media{}} ->
-        nil
+        []
 
       {:error, %Ash.Error.Invalid{}} ->
-        nil
+        []
     end
   end
 
@@ -79,17 +84,20 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
           result: :not_matched
         })
 
-        %{candidate | match_result: %MatchResult{result: :not_matched, matched_id: nil}}
+        %{candidate | match_result: %MatchResult{result: :not_matched}}
 
-      match ->
-        Logger.info("#{candidate.path} matched to: #{to_string(match)}",
+      content ->
+        parts = parts!(content, candidate.identity)
+
+        Logger.info("#{candidate.path} matched to: #{to_string(content)}",
           event: :match_found,
-          external_id: match.id,
-          name: to_string(match)
+          external_id: content.id,
+          name: to_string(content),
+          parts: parts
         )
 
         :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{result: :matched})
-        %{candidate | match_result: %MatchResult{result: :success, matched_id: match.id}}
+        %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
     end
   rescue
     error in TvShowEpisodeNotListedError ->
@@ -143,28 +151,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
 
   # TV Shows
   # 1. Match by TMDB ID
-  defp find_content!(%EpisodeIdentity{
-         tmdb_id: tmdb_id,
-         season_number: season_number,
-         episode_number: episode_number
-       })
-       when is_integer(tmdb_id) do
-    content =
-      Contents.get_or_refresh_content!(
-        ContentIdentity.for_tv_show(tmdb_id),
-        %{max_age: @metadata_max_age},
-        actor: SystemActor.actor(),
-        load: [implementation: %{load: [tv_show: [:episodes]]}]
-      )
-
-    Enum.find(
-      content.implementation.episodes,
-      &(&1.season_number == season_number and &1.episode_number == episode_number)
-    ) ||
-      raise TvShowEpisodeNotListedError,
-        tmdb_id: tmdb_id,
-        season_number: season_number,
-        episode_number: episode_number
+  defp find_content!(%EpisodeIdentity{tmdb_id: tmdb_id}) when is_integer(tmdb_id) do
+    Contents.get_or_refresh_content!(
+      ContentIdentity.for_tv_show(tmdb_id),
+      %{max_age: @metadata_max_age},
+      actor: SystemActor.actor(),
+      load: [implementation: %{load: [tv_show: [episodes: :localizations]]}]
+    )
   end
 
   # 2. Match by TVDB ID. We just fetch the TMDB ID and go back to step 1.
@@ -220,6 +213,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   end
 
   defp find_content!(_identity), do: nil
+
+  # Movies, TV Shows and Sports Events share the id of their Content
+  defp parts!(content, %MovieIdentity{}), do: [%{movie_id: content.id, number: 1}]
+  defp parts!(content, %SportsEventIdentity{}), do: [%{sports_event_id: content.id, number: 1}]
+
+  defp parts!(%{implementation: tv_show}, %EpisodeIdentity{episodes: episodes}),
+    do: EpisodeParts.find!(tv_show.episodes, tv_show.tmdb_id, episodes)
 
   # sportarr.net only finds titles with every word, but file names add words such as
   # "Prelims". Drops the last word until events match, and keeps the match only when

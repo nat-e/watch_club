@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.Live.Player.PlayerComponents do
   use WatchClubWeb, :component
 
+  alias WatchClub.MediaCatalog.Calculations.ToPlay
+
   attr :id, :string, required: true
   attr :label, :string, required: true, doc: "Menu title and trigger aria-label."
   attr :class, :any, default: nil, doc: "The trigger's classes, such as when it shows."
@@ -131,7 +133,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
       <div class="min-w-0 flex-1">
         <h1 class="truncate text-base font-semibold sm:text-xl">
-          {header_title(@video)}
+          {NowPlaying.subtitle(@video) || NowPlaying.title(@video)}
         </h1>
       </div>
 
@@ -301,17 +303,14 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   attr :video, Video, required: true
 
   @doc """
-  The lower bar of the control panel of the footer, that contains the seek bar with the thumbnails
-  and the duration timer.
+  The bottom bar of the Player's controls: the seek bar with its thumbnails, the time, and the
+  buttons to the previous and next Part or TV Show Episode.
   """
   def controls_footer(assigns) do
-    current_episode = assigns.video.tv_show_episode
-
     assigns =
-      assigns
-      |> assign(
-        next_episode: current_episode && current_episode.next_episode,
-        previous_episode: current_episode && current_episode.previous_episode
+      assign(assigns,
+        previous: assigns.video.previous_to_play,
+        next: assigns.video.next_to_play
       )
 
     ~H"""
@@ -321,15 +320,15 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
       </div>
       <div class="flex items-center justify-center">
         <.button
-          :if={@previous_episode && @previous_episode.has_media?}
+          :if={@previous}
           id="player-previous-episode-button"
           variant="secondary"
           class="absolute left-group"
           phx-click="play_previous_episode"
-          aria-label={dgettext("player", "Play previous episode")}
+          aria-label={dgettext("player", "Play %{name}", name: to_play_name(@previous))}
         >
           <:icon><Lucideicons.skip_back /></:icon>
-          {@previous_episode.formatted_episode_number}
+          {to_play_name(@previous)}
         </.button>
         <.inline
           id="player-time"
@@ -342,16 +341,16 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           <media-time type="duration" />
         </.inline>
         <.button
-          :if={@next_episode && @next_episode.has_media?}
+          :if={@next}
           id="player-next-episode-button"
           variant="secondary"
           class="absolute right-group"
           phx-click="play_next_episode"
           phx-value-playback_id={@playback_id}
-          aria-label={dgettext("player", "Play next episode")}
+          aria-label={dgettext("player", "Play %{name}", name: to_play_name(@next))}
         >
           <:icon><Lucideicons.skip_forward /></:icon>
-          {@next_episode.formatted_episode_number}
+          {to_play_name(@next)}
         </.button>
       </div>
     </footer>
@@ -362,21 +361,21 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
   attr :video, Video, required: true
 
   @doc """
-  "Up next" prompt revealed from the start of the episode's Credits, or during its final 5 seconds
-  when it has none. It plays the next episode after 5 seconds of playback, or when the episode ends.
+  The Up next prompt. It shows from the start of the Credits, or 5 seconds before the end without
+  Credits, and plays the next Part or TV Show Episode after 5 seconds or when the Video ends.
   """
   def up_next_button(assigns) do
-    %Video{tv_show_episode: current_episode, duration_seconds: duration} = assigns.video
+    %Video{duration_seconds: duration} = assigns.video
 
     assigns =
       assign(assigns,
-        next_episode: current_episode && current_episode.next_episode,
+        next: assigns.video.next_to_play,
         from: assigns.video.credits_start_seconds || (duration && duration - 5)
       )
 
     ~H"""
     <.player_prompt
-      :if={@next_episode && @next_episode.has_media?}
+      :if={@next}
       id="player-up-next-button"
       from={@from}
       data-countdown
@@ -390,7 +389,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
         aria-hidden="true"
         class="absolute inset-y-0 left-0 -z-10 w-[calc(var(--countdown,0)*100%)] bg-primary/40 motion-safe:transition-[width] motion-safe:duration-300 motion-safe:ease-linear"
       />
-      {dgettext("player", "Play %{episode}", episode: @next_episode.formatted_episode_number)}
+      {dgettext("player", "Play %{name}", name: to_play_name(@next))}
     </.player_prompt>
     """
   end
@@ -555,9 +554,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     do:
       "inline-flex size-10 sm:size-12 [&_svg]:size-6 sm:[&_svg]:size-7 items-center justify-center rounded-md text-white outline-none cursor-pointer hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80"
 
-  defp header_title(%Video{movie: %Movie{} = movie}), do: movie.best_localization.title
-  defp header_title(%Video{sports_event: %SportsEvent{} = event}), do: event.title
-
-  defp header_title(%Video{tv_show_episode: %TvShowEpisode{} = episode}),
-    do: "#{episode.tv_show.best_localization.title} - #{episode.formatted_episode_number}"
+  # The name of what a button plays: Part 2, or S06E16
+  defp to_play_name(%ToPlay{part: %Part{} = part}), do: Parts.name(part)
+  defp to_play_name(%ToPlay{episode: episode}), do: episode.formatted_episode_number
 end

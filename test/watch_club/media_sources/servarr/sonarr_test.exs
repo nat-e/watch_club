@@ -6,6 +6,7 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity
+  alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity.Episode
   alias WatchClub.MediaSources.Servarr
   alias WatchClub.MediaSources.Servarr.Sonarr
 
@@ -75,6 +76,9 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
         "seriesId" => 1,
         "seasonNumber" => 1,
         "episodeNumber" => 1,
+        "title" => "Pilot",
+        "airDate" => "2008-01-20",
+        "tvdbId" => 349_232,
         "hasFile" => true,
         "episodeFile" => %{"path" => "/tv/Breaking Bad/S01E01.mkv"}
       },
@@ -83,7 +87,7 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
   end
 
   describe "scan!/1" do
-    test "emits one candidate per downloaded episode with series identity and locally-mapped path" do
+    test "emits one candidate per episode file with series identity and locally-mapped path" do
       stub([series(%{})], %{"1" => [episode(%{})]})
 
       assert [candidate] = Sonarr.scan!(servarr())
@@ -95,10 +99,33 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
                  tmdb_id: 1396,
                  imdb_id: "tt0903747",
                  title: "Breaking Bad",
-                 season_number: 1,
-                 episode_number: 1
+                 episodes: [
+                   %Episode{
+                     season_number: 1,
+                     episode_number: 1,
+                     title: "Pilot",
+                     air_date: ~D[2008-01-20],
+                     tvdb_id: 349_232
+                   }
+                 ]
                }
              } = candidate
+    end
+
+    test "emits one candidate holding every episode of a file, in order" do
+      file = %{"path" => "/tv/Breaking Bad/S01E01-E02.mkv"}
+
+      stub([series(%{})], %{
+        "1" => [
+          episode(%{"id" => 2, "episodeNumber" => 2, "episodeFile" => file}),
+          episode(%{"id" => 1, "episodeFile" => file})
+        ]
+      })
+
+      assert [%Candidate{identity: %EpisodeIdentity{episodes: episodes}}] =
+               Sonarr.scan!(servarr())
+
+      assert [1, 2] = Enum.map(episodes, & &1.episode_number)
     end
 
     test "uses the Sonarr path verbatim when there is no local mapping" do
@@ -167,6 +194,46 @@ defmodule WatchClub.MediaSources.Servarr.SonarrTest do
         end)
 
       assert log =~ "Error listing episodes for: Broken"
+    end
+  end
+
+  describe "interpret_webhook!/2" do
+    test "a Download ingests its file as one candidate holding its episodes" do
+      assert [{:ingest, [candidate]}, {:refresh_request, 1}] =
+               Sonarr.interpret_webhook!(servarr(), %{
+                 "eventType" => "Download",
+                 "series" => %{"id" => 1, "tvdbId" => 79_168, "path" => "/tv/Friends"},
+                 "episodes" =>
+                   for {number, title} <- [
+                         {1, "The One with the Proposal (1)"},
+                         {2, "The One with the Proposal (2)"}
+                       ] do
+                     %{
+                       "seasonNumber" => 3,
+                       "episodeNumber" => number,
+                       "title" => title,
+                       "airDate" => "1996-05-16",
+                       "tvdbId" => 300_000 + number
+                     }
+                   end,
+                 "episodeFile" => %{"relativePath" => "Season 03/S03E01-E02.mkv"}
+               })
+
+      assert %Candidate{
+               path: "/data/tv/Friends/Season 03/S03E01-E02.mkv",
+               identity: %EpisodeIdentity{
+                 tvdb_id: 79_168,
+                 episodes: [
+                   %Episode{season_number: 3, episode_number: 1, tvdb_id: 300_001},
+                   %Episode{
+                     season_number: 3,
+                     episode_number: 2,
+                     title: "The One with the Proposal (2)",
+                     air_date: ~D[1996-05-16]
+                   }
+                 ]
+               }
+             } = candidate
     end
   end
 end

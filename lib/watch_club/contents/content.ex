@@ -456,7 +456,9 @@ defmodule WatchClub.Contents.Content do
 
     calculate :actor_next_medias_to_play,
               {:array, :struct},
-              ActorNextMediasToPlay
+              ActorNextMediasToPlay do
+      description "What the actor plays next: the Video where they resume, or a Book's Audiobooks and Ebooks."
+    end
 
     # The decade it came out in, such as 1990 for 1994
     calculate :decade,

@@ -6,7 +6,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.Ffmpeg.{ProbeMock, Trickplay}
   alias WatchClub.Markers.Workers.DetectMarkers
-  alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.{Media, Part, Video}
   alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.Candidate
@@ -81,7 +81,9 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
       assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
 
-      assert %Media{type: :movie, video: %Video{movie_id: movie_id}} = load_media!(path)
+      assert %Media{type: :movie, video: %Video{parts: [%Part{movie_id: movie_id}]}} =
+               load_media!(path)
+
       assert movie_id == movie.id
     end
   end
@@ -146,7 +148,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   defp load_media!(path) do
     Media
     |> Ash.Query.filter(path == ^Path.expand(path))
-    |> Ash.Query.load(video: [:video_tracks, :audio_tracks, :text_tracks])
+    |> Ash.Query.load(video: [:parts, :video_tracks, :audio_tracks, :text_tracks])
     |> Ash.read_one!(authorize?: false)
   end
 

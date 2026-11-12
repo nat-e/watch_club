@@ -1,12 +1,14 @@
 defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
   @moduledoc """
-  Ends the current Playback and starts one for the `media_id` argument, from where the actor's
-  Watch Progress left it, unless they finished it. The Screen given as the `screen_id` argument
-  plays it, unless the Playback Session plays on a TV. Expects the Playback Session locked.
+  Ends the current Playback and starts one for the `media_id` argument, on the `screen_id`
+  Screen, or on the TV when the Playback Session plays there. Expects the Playback Session locked.
+
+  It resumes where the actor stopped in this Video, unless they finished it. Otherwise it starts
+  from the beginning.
   """
   use Ash.Resource.Change
 
-  alias WatchClub.MediaCatalog.Video
+  alias WatchClub.MediaCatalog.{Part, Video}
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Session.Changes.EndCurrentPlayback
 
@@ -26,9 +28,11 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
            load: [
              media: [
                video: [
-                 movie: :actor_progress,
-                 tv_show_episode: :actor_progress,
-                 sports_event: :actor_progress
+                 parts: [
+                   movie: :actor_progress,
+                   tv_show_episode: :actor_progress,
+                   sports_event: :actor_progress
+                 ]
                ]
              ]
            ],
@@ -51,8 +55,17 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayMedia do
     end
   end
 
-  defp resume_position(%Video{movie: movie, tv_show_episode: episode, sports_event: event}) do
-    progress = (movie || episode || event || %{actor_progress: nil}).actor_progress
-    if progress && !progress.completed, do: progress.position_seconds, else: 0.0
+  # The position in this Video's Part, if the actor stopped there and hasn't finished
+  defp resume_position(%Video{parts: [part | _]}) do
+    case Part.work(part).actor_progress do
+      %{completed: false, part_number: number, part_position_seconds: seconds}
+      when number == part.number and is_float(seconds) ->
+        seconds
+
+      _not_started_finished_or_elsewhere ->
+        0.0
+    end
   end
+
+  defp resume_position(%Video{parts: []}), do: 0.0
 end

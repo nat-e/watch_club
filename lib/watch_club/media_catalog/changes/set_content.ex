@@ -1,11 +1,10 @@
 defmodule WatchClub.MediaCatalog.Changes.SetContent do
   @moduledoc """
-  Sets the Content of a Media from the Movie, TV Show Episode, Sports Event or Book that its
-  Video, Ebook or Audiobook is attached to. Movies, TV Shows, Sports Events and Books share the
-  id of their Content. An unmatched Video has a `nil` `movie_id`, `tv_show_episode_id` or
-  `sports_event_id`, and its Media has no Content. Any other input crashes.
+  Sets a Media's `content_id` from the Video, Ebook or Audiobook input it's saved with. Pass
+  `attachment:`, the name of the action argument holding that input, with atom keys.
 
-  `:attachment` is the action argument holding the Video, Ebook or Audiobook input, with atom keys.
+  A Video gets the Content of its first Part's Movie, TV Show Episode or Sports Event. A Video
+  without Parts gets no Content: it's Unmatched Media.
   """
   use Ash.Resource.Change
 
@@ -16,29 +15,19 @@ defmodule WatchClub.MediaCatalog.Changes.SetContent do
     Ash.Changeset.before_action(changeset, fn changeset ->
       content_id =
         case Ash.Changeset.get_argument(changeset, opts[:attachment]) do
-          %{movie_id: movie_id} when not is_nil(movie_id) ->
-            movie_id
-
-          %{tv_show_episode_id: episode_id} when not is_nil(episode_id) ->
-            Ash.get!(TvShowEpisode, episode_id, authorize?: false).tv_show_id
-
-          %{sports_event_id: sports_event_id} when not is_nil(sports_event_id) ->
-            sports_event_id
-
-          %{book_id: book_id} ->
-            book_id
-
-          %{movie_id: nil} ->
-            nil
-
-          %{tv_show_episode_id: nil} ->
-            nil
-
-          %{sports_event_id: nil} ->
-            nil
+          %{parts: [part | _]} -> content_id!(part)
+          %{book_id: book_id} -> book_id
+          _unmatched_video -> nil
         end
 
       Ash.Changeset.force_change_attribute(changeset, :content_id, content_id)
     end)
   end
+
+  # Movies and Sports Events share the id of their Content. A TV Show Episode's is its TV Show's.
+  defp content_id!(%{movie_id: movie_id}) when is_binary(movie_id), do: movie_id
+  defp content_id!(%{sports_event_id: event_id}) when is_binary(event_id), do: event_id
+
+  defp content_id!(%{tv_show_episode_id: episode_id}) when is_binary(episode_id),
+    do: Ash.get!(TvShowEpisode, episode_id, authorize?: false).tv_show_id
 end

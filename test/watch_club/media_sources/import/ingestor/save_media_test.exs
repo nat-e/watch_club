@@ -2,7 +2,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   use WatchClub.DataCase, async: false
 
   alias WatchClub.Contents.{Content, Movie, TvShow, TvShowEpisode}
-  alias WatchClub.MediaCatalog.{Media, Video, VideoTrack}
+  alias WatchClub.MediaCatalog.{Media, Part, Video, VideoTrack}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.{MatchResult, MediaStructure}
   alias WatchClub.MediaSources.Import.Ingestor.SaveMedia
@@ -17,7 +17,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: "tmp/star-wars.mkv",
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: sample_video_structure()
       }
 
@@ -27,8 +27,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
                type: :movie,
                path: normalized_path,
                video: %Video{
-                 movie_id: movie_id,
-                 tv_show_episode_id: nil,
+                 parts: [%Part{movie_id: movie_id, number: 1}],
                  container: "matroska",
                  video_tracks: [%{codec: "h264"}],
                  audio_tracks: [_],
@@ -49,7 +48,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: "tmp/friends-s01e01.mkv",
         media_type: :tv_show_episode,
-        match_result: %MatchResult{result: :success, matched_id: episode.id},
+        match_result: %MatchResult{
+          result: :success,
+          parts: [%{tv_show_episode_id: episode.id, number: 1}]
+        },
         media_structure: sample_video_structure()
       }
 
@@ -57,10 +59,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
       assert %Media{
                type: :tv_show_episode,
-               video: %Video{
-                 movie_id: nil,
-                 tv_show_episode_id: tv_show_episode_id
-               }
+               video: %Video{parts: [%Part{tv_show_episode_id: tv_show_episode_id}]}
              } = load_media!(candidate.path)
 
       assert tv_show_episode_id == episode.id
@@ -68,12 +67,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   end
 
   describe "apply/1 —unmatched" do
-    test "persists Media + unattached Video on a movie run when matched_id is nil" do
+    test "persists Media + unattached Video on a movie run when nothing matched" do
       candidate = %Candidate{
         media_source_id: default_media_source_id(),
         path: "tmp/unmatched-movie.mkv",
         media_type: :movie,
-        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        match_result: %MatchResult{result: :not_matched},
         media_structure: sample_video_structure()
       }
 
@@ -82,8 +81,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       assert %Media{
                type: :movie,
                video: %Video{
-                 movie_id: nil,
-                 tv_show_episode_id: nil,
+                 parts: [],
                  container: "matroska",
                  video_tracks: [%{codec: "h264"}],
                  audio_tracks: [_],
@@ -92,12 +90,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
              } = load_media!(candidate.path)
     end
 
-    test "persists Media + unattached Video on a tv_show_episode run when matched_id is nil" do
+    test "persists Media + unattached Video on a tv_show_episode run when nothing matched" do
       candidate = %Candidate{
         media_source_id: default_media_source_id(),
         path: "tmp/unmatched-episode.mkv",
         media_type: :tv_show_episode,
-        match_result: %MatchResult{result: :not_matched, matched_id: nil},
+        match_result: %MatchResult{result: :not_matched},
         media_structure: sample_video_structure()
       }
 
@@ -105,7 +103,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
 
       assert %Media{
                type: :tv_show_episode,
-               video: %Video{movie_id: nil, tv_show_episode_id: nil}
+               video: %Video{parts: []}
              } = load_media!(candidate.path)
     end
   end
@@ -119,7 +117,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: sample_video_structure()
       }
 
@@ -131,7 +129,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
         media_source_id: default_media_source_id(),
         path: path,
         media_type: :movie,
-        match_result: %MatchResult{result: :success, matched_id: movie.id},
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
         media_structure: %{
           sample_video_structure()
           | video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
@@ -171,7 +169,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
   defp load_media!(path) do
     Media
     |> Ash.Query.filter(path == ^Path.expand(path))
-    |> Ash.Query.load(video: [:video_tracks, :audio_tracks, :text_tracks])
+    |> Ash.Query.load(video: [:parts, :video_tracks, :audio_tracks, :text_tracks])
     |> Ash.read_one!(authorize?: false)
   end
 

@@ -23,6 +23,9 @@ defmodule WatchClub.MediaCatalog do
       define :regenerate_thumbnails_and_markers, action: :regenerate_thumbnails_and_markers
     end
 
+    resource WatchClub.MediaCatalog.Part
+    resource WatchClub.MediaCatalog.VideoPart
+
     resource WatchClub.MediaCatalog.Ebook
     resource WatchClub.MediaCatalog.Audiobook
     resource WatchClub.MediaCatalog.VideoTrack

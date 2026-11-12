@@ -1,11 +1,11 @@
 defmodule WatchClub.History.WatchProgress do
   @moduledoc """
-  A resource that records whether a User has watched a given Movie, TV Show Episode or Sports Event.
-  We only create WatchProgress objects for contents that a user has started watching.
-  We record the time watched and the time left, and consider that the content is completed when they have watched
-  at least 90% of the content.
-  It is also possible for user to "Mark as Watched" without watching. In this case, position_seconds and duration_seconds
-  are set to nil, and the content is considered watched.
+  How far a User has got through a Movie, TV Show Episode or Sports Event, and whether they
+  finished it. It exists once they start watching it or mark it as watched.
+
+  Positions count through all its Parts, one after the other, and it's completed from 90%.
+  `part_number` and `part_position_seconds` give the Part the User is in and the position in it.
+  Marking it as watched sets the positions to nil.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -66,19 +66,36 @@ defmodule WatchClub.History.WatchProgress do
 
       upsert? true
       upsert_identity :unique_content_per_user
-      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
+
+      upsert_fields [
+        :position_seconds,
+        :last_media_id,
+        :duration_seconds,
+        :part_number,
+        :part_position_seconds
+      ]
+
       accept [:movie_id, :book_id, :tv_show_episode_id, :sports_event_id]
 
       change set_attribute(:position_seconds, nil)
       change set_attribute(:duration_seconds, nil)
       change set_attribute(:last_media_id, nil)
+      change set_attribute(:part_number, nil)
+      change set_attribute(:part_position_seconds, nil)
       change relate_actor(:user)
     end
 
     create :record_progress do
       upsert? true
       upsert_identity :unique_content_per_user
-      upsert_fields [:position_seconds, :last_media_id, :duration_seconds]
+
+      upsert_fields [
+        :position_seconds,
+        :last_media_id,
+        :duration_seconds,
+        :part_number,
+        :part_position_seconds
+      ]
 
       accept [
         :book_id,
@@ -87,7 +104,9 @@ defmodule WatchClub.History.WatchProgress do
         :sports_event_id,
         :last_media_id,
         :position_seconds,
-        :duration_seconds
+        :duration_seconds,
+        :part_number,
+        :part_position_seconds
       ]
 
       change relate_actor(:user)
@@ -198,11 +217,19 @@ defmodule WatchClub.History.WatchProgress do
   attributes do
     uuid_v7_primary_key :id
 
-    # The number of seconds that the User has watched on a Media. Nil when marking as watched
+    # Seconds watched, counted through all the Parts. Nil when marked as watched
     attribute :position_seconds, :float
 
-    # The total duration of the Media that was being watched by the User. Nil when marking as watched
+    # Length of all the Parts, in seconds. Nil when marked as watched or a length is unknown
     attribute :duration_seconds, :float
+
+    # The number of the Part the User is in. Nil when marked as watched
+    attribute :part_number, :integer do
+      constraints min: 1
+    end
+
+    # Seconds watched in that Part. Nil when marked as watched
+    attribute :part_position_seconds, :float
 
     timestamps()
   end
@@ -250,16 +277,17 @@ defmodule WatchClub.History.WatchProgress do
       public? false
     end
 
-    # A content is considered watch when a user has watched 90% of more of it
-    # position_seconds and duration_seconds will be nil when the content is marked as watched.
+    # A nil position means marked as watched
     calculate :completed,
               :boolean,
               expr(
-                is_nil(position_seconds) or is_nil(duration_seconds) or
-                  position_seconds / duration_seconds >= @complete_after_ratio
-              )
+                is_nil(position_seconds) or
+                  (not is_nil(duration_seconds) and
+                     position_seconds / duration_seconds >= @complete_after_ratio)
+              ) do
+      description "Whether the User finished it: marked it as watched, or watched 90% of it. Never true while its length is unknown."
+    end
 
-    # The number of seconds left. This will always be positive since it's computed on the same Media
     calculate :seconds_left,
               :float,
               expr(
@@ -268,17 +296,19 @@ defmodule WatchClub.History.WatchProgress do
                 else
                   duration_seconds - position_seconds
                 end
-              )
+              ) do
+      description "Seconds left to watch through all the Parts. Nil when marked as watched or its length is unknown."
+    end
 
-    # The percentage of the media that has been watched
-    # Returns 100% for media that have been marked watched
-    # When more than 90% have been watched, we return 100
     calculate :percent_watched,
               :float,
               expr(
                 cond do
-                  is_nil(position_seconds) or is_nil(duration_seconds) or duration_seconds == 0 ->
+                  is_nil(position_seconds) or duration_seconds == 0 ->
                     100.0
+
+                  is_nil(duration_seconds) ->
+                    0.0
 
                   position_seconds / duration_seconds >= @complete_after_ratio ->
                     100.0
@@ -286,7 +316,9 @@ defmodule WatchClub.History.WatchProgress do
                   true ->
                     position_seconds / duration_seconds * 100
                 end
-              )
+              ) do
+      description "How much was watched, from 0 to 100: 100 once completed, 0 while its length is unknown."
+    end
   end
 
   identities do

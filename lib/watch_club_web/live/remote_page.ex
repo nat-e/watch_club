@@ -160,28 +160,28 @@ defmodule WatchClubWeb.RemotePage do
               tabbed?
             >
               <ul class="-mx-related flex list-none flex-col gap-px p-0">
-                <li :for={episode <- @up_next}>
+                <li :for={video <- @up_next}>
                   <button
-                    id={"remote-play-#{episode.id}"}
+                    id={"remote-play-#{video.id}"}
                     type="button"
-                    phx-click="play_episode"
-                    phx-value-media_id={List.first(episode.videos).id}
+                    phx-click="play"
+                    phx-value-media_id={video.id}
                     class="flex w-full items-center gap-group rounded-control p-related text-left transition-colors hover:bg-surface-hover"
                   >
                     <.tmdb_still
-                      path={episode.still_path}
+                      path={NowPlaying.still_path(video)}
                       size="w300"
                       class="w-28 shrink-0 rounded-control"
                     />
                     <span class="flex min-w-0 flex-1 flex-col gap-tight">
-                      <span class="truncate text-sm font-semibold">
-                        {(episode.best_localization && episode.best_localization.title) ||
-                          episode.formatted_episode_number}
-                      </span>
+                      <span class="truncate text-sm font-semibold">{NowPlaying.title(video)}</span>
                       <span class="truncate text-xs text-text-muted">
                         {[
-                          episode.formatted_episode_number,
-                          Time.minutes(episode.runtime, @current_user.settings.locale)
+                          NowPlaying.episode_number(video),
+                          Time.minutes(
+                            video.duration_seconds && round(video.duration_seconds / 60),
+                            @current_user.settings.locale
+                          )
                         ]
                         |> Enum.reject(&is_nil/1)
                         |> Enum.join(" · ")}
@@ -269,7 +269,7 @@ defmodule WatchClubWeb.RemotePage do
   end
 
   # Plays on the TV, even if it just left: it plays there once it's back
-  def handle_event("play_episode", %{"media_id" => media_id}, socket) do
+  def handle_event("play", %{"media_id" => media_id}, socket) do
     %{playback_session: session, current_user: user} = socket.assigns
     Playbacks.play!(media_id, session.screen_id, actor: user)
     {:noreply, socket}
@@ -293,30 +293,16 @@ defmodule WatchClubWeb.RemotePage do
     end
   end
 
-  # What plays, and the TV Show Episodes after it, intentionally few
+  # The playing Video and the Videos after it, a list intentionally small: at most 10
   defp assign_up_next!(%{assigns: %{playback_session: %Session{} = session}} = socket) do
-    video = session.current_playback.media.video
+    %{current_playback: %{media: %{video: video}}} = session
+    user = socket.assigns.current_user
 
     up_next =
-      if video.tv_show_episode,
-        do:
-          Ash.load!(
-            video.tv_show_episode,
-            [
-              playable_episodes_after:
-                TvShowEpisode
-                |> Ash.Query.limit(10)
-                |> Ash.Query.load([
-                  :videos,
-                  :still_path,
-                  :runtime,
-                  :formatted_episode_number,
-                  :best_localization
-                ])
-            ],
-            actor: socket.assigns.current_user
-          ).playable_episodes_after,
-        else: []
+      video
+      |> Ash.load!(:videos_after, actor: user)
+      |> Map.fetch!(:videos_after)
+      |> Ash.load!(NowPlaying.video_fields(), actor: user)
 
     assign(socket, video: video, up_next: up_next)
   end

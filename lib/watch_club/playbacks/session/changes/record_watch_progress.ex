@@ -1,16 +1,16 @@
 defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   @moduledoc """
-  Records the actor's Watch Progress for the current Playback from the heartbeat's
-  reported position.
+  Records how far the actor got, from the `position_seconds` argument in the current Playback's
+  Video, in the Watch Progress of each Movie, TV Show Episode or Sports Event it plays.
 
-  Resolves the Playback's Media to its Movie or TV Show Episode and upserts the
-  per-unit progress, marking it completed once playback passes 90% of the
-  Video up to its Credits. No-op for Media without Content.
+  The progress counts through all the Parts, up to their Credits, and keeps the Part the actor is
+  in. Does nothing for Unmatched Media.
   """
   use Ash.Resource.Change
 
+  alias WatchClub.Contents.Calculations.VideosToPlay
   alias WatchClub.History
-  alias WatchClub.MediaCatalog.{Media, Video}
+  alias WatchClub.MediaCatalog.{Media, Part, Video}
 
   @impl true
   def change(changeset, _opts, context) do
@@ -18,54 +18,56 @@ defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
 
     Ash.Changeset.after_action(changeset, fn _changeset, session ->
       %Media{id: media_id, video: video} =
-        Ash.load!(session, [current_playback: [media: [video: :credits_start_seconds]]],
+        Ash.load!(
+          session,
+          [
+            current_playback: [
+              media: [
+                video: [
+                  :credits_start_seconds,
+                  parts: [
+                    movie: :videos_to_play,
+                    tv_show_episode: :videos_to_play,
+                    sports_event: :videos_to_play
+                  ]
+                ]
+              ]
+            ]
+          ],
           scope: context
         ).current_playback.media
 
-      record_progress(video, media_id, position, context)
+      part_position =
+        case counted_seconds(video) do
+          nil -> position
+          seconds -> min(position, seconds)
+        end
+
+      # One Watch Progress per work the Video holds a Part of
+      for part <- Enum.uniq_by(video.parts, &Part.work_id/1) do
+        videos = Part.work(part).videos_to_play
+        {before, _from_it} = VideosToPlay.split_at(videos, video, part)
+        lengths = Enum.map(videos, &counted_seconds/1)
+
+        progress = %{
+          last_media_id: media_id,
+          position_seconds: Enum.sum_by(before, &(counted_seconds(&1) || 0.0)) + part_position,
+          # Unknown while any Video's length is unknown
+          duration_seconds: if(nil in lengths, do: nil, else: Enum.sum(lengths)),
+          part_number: part.number,
+          part_position_seconds: part_position
+        }
+
+        progress
+        |> Map.merge(Map.take(part, [:movie_id, :tv_show_episode_id, :sports_event_id]))
+        |> History.record_watch_progress!(scope: context)
+      end
+
       {:ok, session}
     end)
   end
 
-  defp record_progress(%Video{movie_id: movie_id} = video, media_id, position, context)
-       when not is_nil(movie_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :movie_id, movie_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(
-         %Video{tv_show_episode_id: episode_id} = video,
-         media_id,
-         position,
-         context
-       )
-       when not is_nil(episode_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :tv_show_episode_id, episode_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(%Video{sports_event_id: event_id} = video, media_id, position, context)
-       when not is_nil(event_id) do
-    History.record_watch_progress!(
-      Map.put(progress(video, media_id, position), :sports_event_id, event_id),
-      scope: context
-    )
-  end
-
-  defp record_progress(_unmatched_video, _media_id, _position, _context), do: :ok
-
-  # Progress counts up to the Credits, so playing the next episode from there completes it
-  defp progress(video, media_id, position) do
-    duration = video.credits_start_seconds || video.duration_seconds
-
-    %{
-      last_media_id: media_id,
-      position_seconds: if(duration, do: min(position, duration), else: position),
-      duration_seconds: duration
-    }
-  end
+  # A Video's length up to its Credits, or its full length without Credits
+  defp counted_seconds(%Video{} = video),
+    do: video.credits_start_seconds || video.duration_seconds
 end

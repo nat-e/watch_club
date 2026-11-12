@@ -18,7 +18,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
           media_source_id: candidate.media_source_id,
           path: candidate.path,
           type: media_type,
-          video: build_video_input(media_type, candidate)
+          video: build_video_input(candidate)
         },
         actor: SystemActor.actor(),
         load: :video
@@ -54,21 +54,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
     media
   end
 
-  defp build_video_input(
-         media_type,
-         %Candidate{
-           media_structure: structure,
-           match_result: %MatchResult{matched_id: matched_id}
-         }
-       ) do
-    foreign_key =
-      case media_type do
-        :movie -> %{movie_id: matched_id}
-        :tv_show_episode -> %{tv_show_episode_id: matched_id}
-        :sports_event -> %{sports_event_id: matched_id}
-      end
-
-    Map.merge(foreign_key, %{
+  defp build_video_input(%Candidate{
+         media_structure: structure,
+         match_result: %MatchResult{parts: parts}
+       }) do
+    %{
+      parts: parts,
       file_fingerprint: structure.file_fingerprint,
       duration_seconds: structure.duration_seconds,
       container: structure.container,
@@ -76,6 +67,6 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       video_tracks: structure.video_tracks,
       audio_tracks: structure.audio_tracks,
       text_tracks: structure.text_tracks
-    })
+    }
   end
 end

@@ -1,7 +1,7 @@
 defmodule WatchClub.MediaSources.Servarr.Sonarr do
   @moduledoc """
-  Sonarr as a `WatchClub.MediaSources.Servarr.App`: one TV Show per Sonarr
-  series, identified by its TVDB id, with one Candidate per downloaded episode.
+  Sonarr as a `WatchClub.MediaSources.Servarr.App`: one TV Show per Sonarr series, identified by
+  its TVDB id, and one Candidate per episode file, with the episodes it holds.
   """
   @behaviour WatchClub.MediaSources.Servarr.App
 
@@ -65,7 +65,7 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
       |> Enum.filter(&belongs_to_source?(&1, servarr))
       |> Enum.flat_map(&series_candidates(&1, servarr))
 
-    Logger.info("Found #{length(candidates)} eligible episodes",
+    Logger.info("Found #{length(candidates)} eligible episode files",
       event: :sonarr_scan_finished,
       num_candidates: length(candidates)
     )
@@ -83,10 +83,11 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   defp series_candidates(%Series{} = series, %Servarr{} = servarr) do
     case SonarrApi.list_episodes(servarr.base_url, servarr.api_key, series.id) do
       {:ok, episodes} ->
-        for %Episode{has_file?: true} = episode <- episodes,
-            path = App.local_path(servarr, episode.file_path),
+        for {server_path, file_episodes} <-
+              episodes |> Enum.filter(& &1.has_file?) |> Enum.group_by(& &1.file_path),
+            path = App.local_path(servarr, server_path),
             is_binary(path) do
-          episode_candidate(path, series, episode.season_number, episode.episode_number)
+          episode_candidate(path, series, file_episodes)
         end
 
       {:error, reason} ->
@@ -111,15 +112,8 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
           Logger.warning("sonarr webhook: file doesn't match source")
           []
 
-        # One Candidate per episode; a multi-episode file shares the one path.
         path ->
-          [
-            {:ingest,
-             Enum.map(
-               event.episodes,
-               &episode_candidate(path, event, &1.season_number, &1.episode_number)
-             )}
-          ]
+          [{:ingest, [episode_candidate(path, event, event.episodes)]}]
       end
 
     ingest ++ refresh_request(params)
@@ -159,8 +153,9 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
   defp refresh_request(%{"series" => %{"id" => id}}), do: [{:refresh_request, id}]
   defp refresh_request(_params), do: []
 
-  # `series` is a Sonarr series or a Download webhook event: both carry its ids and title.
-  defp episode_candidate(path, series, season_number, episode_number) do
+  # Builds the Candidate of a file holding `episodes`. `series` is a Sonarr series or a Download
+  # webhook event: both have the series' ids and title.
+  defp episode_candidate(path, series, episodes) do
     %Candidate{
       path: path,
       media_type: :tv_show_episode,
@@ -169,8 +164,18 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
         tmdb_id: series.tmdb_id,
         imdb_id: series.imdb_id,
         title: series.title,
-        season_number: season_number,
-        episode_number: episode_number
+        episodes:
+          episodes
+          |> Enum.sort_by(&{&1.season_number, &1.episode_number})
+          |> Enum.map(
+            &%EpisodeIdentity.Episode{
+              season_number: &1.season_number,
+              episode_number: &1.episode_number,
+              title: &1.title,
+              air_date: &1.air_date,
+              tvdb_id: &1.tvdb_id
+            }
+          )
       }
     }
   end

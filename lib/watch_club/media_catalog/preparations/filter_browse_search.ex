@@ -36,7 +36,7 @@ defmodule WatchClub.MediaCatalog.Preparations.FilterBrowseSearch do
     if episode == [] do
       query
     else
-      Ash.Query.filter(query, video: [tv_show_episode: episode])
+      Ash.Query.filter(query, video: [parts: [tv_show_episode: episode]])
     end
   end
 end

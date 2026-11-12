@@ -1,14 +1,15 @@
 defmodule WatchClub.MediaCatalog.Video do
   @moduledoc """
-  Concrete Media for a playable video file. Attached to exactly one `Movie` or
-  `TvShowEpisode`. Owns its video, audio, and text tracks.
+  Concrete Media for a playable video file. It holds one or more Parts of the Movie, TV Show
+  Episode or Sports Event it plays, usually Part 1 of one of them, and none when it's Unmatched
+  Media. It owns its video, audio, and text tracks.
 
   `Video.id` is the same value as its parent `Media.id` (shared primary key,
   no separate `media_id` column).
 
   Saving a Video builds its Scrubbing Thumbnails when its file is new or changed,
   as its File Fingerprint tells, or when they're missing. It finds its Markers
-  when its file or its match changes.
+  when its file or its Parts change.
 
   Direct creation is reserved for Instance Administrator access; the production
   path goes through `WatchClub.MediaCatalog.create_video/2`, which uses relationship
@@ -21,11 +22,11 @@ defmodule WatchClub.MediaCatalog.Video do
     data_layer: AshPostgres.DataLayer,
     authorizers: [Ash.Policy.Authorizer]
 
-  alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.Markers.Changes.ScheduleDetection
   alias WatchClub.Markers.Marker
-  alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack, VideoTrack}
-  alias WatchClub.MediaCatalog.Changes.ScheduleTrickplay
+  alias WatchClub.MediaCatalog.{AudioTrack, Media, Part, TextTrack, VideoPart, VideoTrack}
+  alias WatchClub.MediaCatalog.Calculations.{ToPlay, VideosAfter}
+  alias WatchClub.MediaCatalog.Changes.{RelateParts, ScheduleTrickplay}
 
   postgres do
     table "videos"
@@ -33,16 +34,6 @@ defmodule WatchClub.MediaCatalog.Video do
 
     references do
       reference :media, on_delete: :delete
-      reference :movie, on_delete: :restrict, index?: true
-      reference :tv_show_episode, on_delete: :restrict, index?: true
-      reference :sports_event, on_delete: :restrict, index?: true
-    end
-
-    check_constraints do
-      check_constraint [:movie_id, :tv_show_episode_id, :sports_event_id],
-        name: "videos_at_most_one_content_attachment_check",
-        check: "num_nonnulls(movie_id, tv_show_episode_id, sports_event_id) <= 1",
-        message: "Video may be attached to at most one Movie, TV Show Episode or Sports Event"
     end
   end
 
@@ -52,15 +43,13 @@ defmodule WatchClub.MediaCatalog.Video do
     create :create do
       primary? true
 
-      accept [
-        :movie_id,
-        :tv_show_episode_id,
-        :sports_event_id,
-        :file_fingerprint,
-        :duration_seconds,
-        :container,
-        :bit_rate
-      ]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+
+      argument :parts, {:array, :map} do
+        description "The Parts it holds, each with a movie_id, tv_show_episode_id or sports_event_id, a number and an optional name"
+        allow_nil? false
+        default []
+      end
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -77,6 +66,7 @@ defmodule WatchClub.MediaCatalog.Video do
         default []
       end
 
+      change RelateParts
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
@@ -84,11 +74,16 @@ defmodule WatchClub.MediaCatalog.Video do
       change ScheduleDetection
     end
 
-    # The Movie, TV Show Episode or Sports Event of a Manual Match
+    # Replaces the Parts it holds
     update :attach do
       require_atomic? false
-      accept [:movie_id, :tv_show_episode_id, :sports_event_id]
 
+      argument :parts, {:array, :map} do
+        description "Each Part it holds, as in create"
+        allow_nil? false
+      end
+
+      change RelateParts
       change ScheduleDetection
     end
 
@@ -109,15 +104,13 @@ defmodule WatchClub.MediaCatalog.Video do
       primary? true
       require_atomic? false
 
-      accept [
-        :movie_id,
-        :tv_show_episode_id,
-        :sports_event_id,
-        :file_fingerprint,
-        :duration_seconds,
-        :container,
-        :bit_rate
-      ]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+
+      argument :parts, {:array, :map} do
+        description "Each Part it holds, as in create"
+        allow_nil? false
+        default []
+      end
 
       argument :video_tracks, {:array, :map} do
         allow_nil? false
@@ -134,6 +127,7 @@ defmodule WatchClub.MediaCatalog.Video do
         default []
       end
 
+      change RelateParts
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
       change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
@@ -204,19 +198,13 @@ defmodule WatchClub.MediaCatalog.Video do
       source_attribute :id
     end
 
-    belongs_to :movie, Movie do
-      allow_nil? true
+    # In watching order: by TV Show Episode, then by Part number
+    many_to_many :parts, Part do
       public? true
-    end
-
-    belongs_to :tv_show_episode, TvShowEpisode do
-      allow_nil? true
-      public? true
-    end
-
-    belongs_to :sports_event, SportsEvent do
-      allow_nil? true
-      public? true
+      through VideoPart
+      source_attribute_on_join_resource :video_id
+      destination_attribute_on_join_resource :part_id
+      sort episode_rank: :asc, number: :asc, id: :asc
     end
 
     has_many :video_tracks, VideoTrack do
@@ -246,11 +234,42 @@ defmodule WatchClub.MediaCatalog.Video do
     end
   end
 
+  calculations do
+    calculate :next_to_play, :struct, {ToPlay, which: :next} do
+      description "What plays after it: the next Part, else the next TV Show Episode. Nil when nothing follows."
+      constraints instance_of: ToPlay
+      public? true
+    end
+
+    calculate :previous_to_play, :struct, {ToPlay, which: :previous} do
+      description "What plays before it: the previous Part, else the previous TV Show Episode. Nil when nothing precedes."
+      constraints instance_of: ToPlay
+      public? true
+    end
+
+    calculate :videos_after, {:array, :struct}, VideosAfter do
+      description "The Videos that can play after it, in order, at most 10."
+      constraints items: [instance_of: __MODULE__]
+      public? true
+    end
+  end
+
   aggregates do
+    min :episode_rank, [:parts, :tv_show_episode], :rank do
+      description "The rank of the first TV Show Episode it holds a Part of. Nil without one."
+    end
+
     # Where the Player offers the next episode and Watch Progress stops counting
     first :credits_start_seconds, :markers, :start_seconds do
       public? true
       filter expr(kind == :credits)
     end
   end
+
+  @doc """
+  The Movie, TV Show Episode or Sports Event the Video plays, the first one for a file holding
+  several, or nil for Unmatched Media. Needs its `parts` loaded with their works.
+  """
+  def work(%__MODULE__{parts: [part | _]}), do: Part.work(part)
+  def work(%__MODULE__{parts: []}), do: nil
 end

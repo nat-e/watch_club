@@ -19,13 +19,8 @@ defmodule WatchClubWeb.PlayerPage do
         video: [
           :markers,
           :credits_start_seconds,
-          movie: [:best_localization],
-          sports_event: [],
-          tv_show_episode: [
-            tv_show: [:best_localization],
-            next_episode: [:has_media?, :videos],
-            previous_episode: [:has_media?, :videos]
-          ]
+          :next_to_play,
+          :previous_to_play | NowPlaying.video_fields()
         ]
       ]
     ]
@@ -228,12 +223,10 @@ defmodule WatchClubWeb.PlayerPage do
       do: {:noreply, play_next(socket, playback_id)}
 
   def handle_event("play_previous_episode", _params, socket) do
-    video = socket.assigns.session.current_playback.media.video
-    previous_episode = video.tv_show_episode && video.tv_show_episode.previous_episode
-
-    if previous_episode && previous_episode.has_media?,
-      do: {:noreply, push_patch(socket, to: Url.player_link(previous_episode), replace: true)},
-      else: {:noreply, socket}
+    case socket.assigns.session.current_playback.media.video.previous_to_play do
+      %{video: video} -> {:noreply, push_patch(socket, to: Url.player_link(video), replace: true)}
+      nil -> {:noreply, socket}
+    end
   end
 
   # Chrome connected to the TV: the TV takes the Playback Session with this token

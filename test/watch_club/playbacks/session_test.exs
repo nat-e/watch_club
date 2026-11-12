@@ -3,7 +3,6 @@ defmodule WatchClub.Playbacks.SessionTest do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Content
-  alias WatchClub.History
   alias WatchClub.History.WatchProgress
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{Media, Video}
@@ -17,14 +16,14 @@ defmodule WatchClub.Playbacks.SessionTest do
       user = generate(user())
       media = movie_media()
 
-      History.record_watch_progress!(
-        %{
+      generate(
+        watch_progress(user,
           movie_id: media.content_id,
-          last_media_id: media.id,
           position_seconds: 30.0,
-          duration_seconds: 60.0
-        },
-        actor: user
+          duration_seconds: 60.0,
+          part_number: 1,
+          part_position_seconds: 30.0
+        )
       )
 
       session = Playbacks.play!(media.id, "player", load: :current_playback, actor: user)
@@ -32,6 +31,27 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert %Session{screen_id: "player", tv_name: nil, position_seconds: 30.0} = session
       assert session.started_by_id == user.id
       assert session.current_playback.media_id == media.id
+    end
+
+    test "resumes in the Part the Watch Progress left, and starts the other Parts from the start" do
+      user = generate(user())
+      {[first_part, second_part], _next_episode} = two_part_episode_media()
+
+      generate(
+        watch_progress(user,
+          tv_show_episode_id: episode_id(second_part),
+          position_seconds: 65.0,
+          duration_seconds: 120.0,
+          part_number: 2,
+          part_position_seconds: 5.0
+        )
+      )
+
+      assert %Session{position_seconds: 5.0} =
+               Playbacks.play!(second_part.id, "player", actor: user)
+
+      assert %Session{position_seconds: +0.0} =
+               Playbacks.play!(first_part.id, "player", actor: user)
     end
 
     test "plays in the active Playback Session, in the Player that plays it" do
@@ -188,6 +208,50 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert session.current_playback.media_id == second.id
     end
 
+    test "plays the next Part, then the TV Show Episode after it" do
+      user = generate(user())
+      {[first_part, second_part], next_episode} = two_part_episode_media()
+      session = generate(playback_session(first_part, started_by: user))
+
+      session =
+        Playbacks.play_next!(session, "player", session.current_playback.id,
+          load: :current_playback,
+          actor: user
+        )
+
+      assert session.current_playback.media_id == second_part.id
+
+      session =
+        Playbacks.play_next!(session, "player", session.current_playback.id,
+          load: :current_playback,
+          actor: user
+        )
+
+      assert session.current_playback.media_id == next_episode.id
+    end
+
+    test "plays a file holding every Part of the next TV Show Episode rather than its halves" do
+      user = generate(user())
+
+      [episode, next_episode] =
+        episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 2)))
+
+      every_part =
+        for number <- [1, 2], do: %{tv_show_episode_id: next_episode.id, number: number}
+
+      for part <- every_part, do: generate(video_media(next_episode, video: %{parts: [part]}))
+      whole = generate(video_media(next_episode, video: %{parts: every_part}))
+      session = generate(playback_session(generate(video_media(episode)), started_by: user))
+
+      session =
+        Playbacks.play_next!(session, "player", session.current_playback.id,
+          load: :current_playback,
+          actor: user
+        )
+
+      assert session.current_playback.media_id == whole.id
+    end
+
     test "ends the Playback Session when nothing follows" do
       user = generate(user())
       session = generate(playback_session(movie_media(), started_by: user))
@@ -265,6 +329,85 @@ defmodule WatchClub.Playbacks.SessionTest do
 
       assert %WatchProgress{position_seconds: 50.0, duration_seconds: 50.0, completed: true} =
                Ash.read_one!(WatchProgress, load: :completed, actor: user)
+    end
+
+    test "records the Watch Progress through every Part, and the Part and where in it" do
+      user = generate(user())
+      {[_first_part, second_part], _next_episode} = two_part_episode_media()
+      session = generate(playback_session(second_part, started_by: user))
+
+      Playbacks.heartbeat!(session, "player", session.current_playback.id, 30.0, false,
+        actor: user
+      )
+
+      assert %WatchProgress{
+               position_seconds: 90.0,
+               duration_seconds: 120.0,
+               part_number: 2,
+               part_position_seconds: 30.0
+             } = Ash.read_one!(WatchProgress, actor: user)
+    end
+
+    test "records Watch Progress that isn't completed while the length of a Part is unknown" do
+      user = generate(user())
+      [episode] = episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 1)))
+
+      [first_part, _second_part] =
+        for {number, duration} <- [{1, 60.0}, {2, nil}] do
+          generate(
+            video_media(episode,
+              video: %{
+                duration_seconds: duration,
+                parts: [%{tv_show_episode_id: episode.id, number: number}]
+              }
+            )
+          )
+        end
+
+      session = generate(playback_session(first_part, started_by: user))
+
+      Playbacks.heartbeat!(session, "player", session.current_playback.id, 30.0, false,
+        actor: user
+      )
+
+      assert %WatchProgress{
+               position_seconds: 30.0,
+               duration_seconds: nil,
+               completed: false,
+               percent_watched: +0.0
+             } = Ash.read_one!(WatchProgress, load: [:completed, :percent_watched], actor: user)
+    end
+
+    test "records the Watch Progress of each TV Show Episode a file holds" do
+      user = generate(user())
+      [first, second] = episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 2)))
+
+      media =
+        generate(
+          video_media(first,
+            video: %{
+              duration_seconds: 120.0,
+              parts: [
+                %{tv_show_episode_id: first.id, number: 1},
+                %{tv_show_episode_id: second.id, number: 1}
+              ]
+            }
+          )
+        )
+
+      session = generate(playback_session(media, started_by: user))
+
+      Playbacks.heartbeat!(session, "player", session.current_playback.id, 30.0, false,
+        actor: user
+      )
+
+      assert [
+               %WatchProgress{position_seconds: 30.0, duration_seconds: 120.0},
+               %WatchProgress{position_seconds: 30.0, duration_seconds: 120.0}
+             ] = Ash.read!(WatchProgress, actor: user)
+
+      assert MapSet.new(Ash.read!(WatchProgress, actor: user), & &1.tv_show_episode_id) ==
+               MapSet.new([first.id, second.id])
     end
 
     test "fails for a Screen that no longer holds the Playback Session" do
@@ -473,6 +616,32 @@ defmodule WatchClub.Playbacks.SessionTest do
     generate(movie(original_language: original_language))
     |> video_media(video: video_tracks(tracks))
     |> generate()
+  end
+
+  # Media for a TV Show Episode in two Parts, a minute each, and for the episode after it
+  defp two_part_episode_media do
+    [episode, next_episode] = episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 2)))
+
+    parts =
+      for number <- [1, 2] do
+        generate(
+          video_media(episode,
+            video: %{
+              duration_seconds: 60.0,
+              parts: [%{tv_show_episode_id: episode.id, number: number}]
+            }
+          )
+        )
+      end
+
+    {parts, generate(video_media(next_episode, video: %{duration_seconds: 60.0}))}
+  end
+
+  defp episodes(tv_show), do: Enum.sort_by(tv_show.tv_show.episodes, & &1.episode_number)
+
+  defp episode_id(media) do
+    [part] = Ash.load!(media, [video: :parts], authorize?: false).video.parts
+    part.tv_show_episode_id
   end
 
   # Media for two TV Show Episodes in a row, whose Videos have the given tracks

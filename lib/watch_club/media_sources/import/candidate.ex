@@ -35,19 +35,17 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defmodule MatchResult do
     @moduledoc """
-    Outcome of the `MatchContent` stage. `:success` means the candidate's
-    identity was resolved to a Content row (its id is in `matched_id`);
-    `:not_matched` means the stage ran but no Content could be resolved.
-    A `nil` `match_result` on the parent `Candidate` means the stage has
-    not yet run.
+    The result of matching a file to its Content. With `result: :success`, `parts` lists the
+    Parts the file holds, each a map with a `movie_id`, `tv_show_episode_id` or `sports_event_id`
+    and a `number`. With `:not_matched`, `parts` is empty. Nil until the file is matched.
     """
 
     @type t :: %__MODULE__{
             result: :success | :not_matched,
-            matched_id: Ash.UUIDv7.t() | nil
+            parts: [map()]
           }
 
-    defstruct [:result, :matched_id]
+    defstruct [:result, parts: []]
   end
 
   defmodule MovieIdentity do
@@ -65,21 +63,41 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   defmodule EpisodeIdentity do
+    @moduledoc """
+    Identifies a TV Show, by its ids or else its `title`, and the `episodes` a file holds.
+
+    Episode numbers come from the source: TVDB's for Sonarr, the file name's for a filesystem
+    Media Source. Sonarr also gives each episode's title, air date and TVDB id.
+    """
+
+    defmodule Episode do
+      @moduledoc false
+      @derive Jason.Encoder
+
+      @type t :: %__MODULE__{
+              season_number: integer() | nil,
+              episode_number: integer() | nil,
+              title: String.t() | nil,
+              air_date: Date.t() | nil,
+              tvdb_id: integer() | nil
+            }
+
+      defstruct [:season_number, :episode_number, :title, :air_date, :tvdb_id]
+    end
+
     @type t :: %__MODULE__{
             tmdb_id: integer() | nil,
             tvdb_id: integer() | nil,
             imdb_id: String.t() | nil,
             title: String.t() | nil,
-            season_number: integer() | nil,
-            episode_number: integer() | nil
+            episodes: [Episode.t()]
           }
 
     defstruct tmdb_id: nil,
               tvdb_id: nil,
               imdb_id: nil,
               title: nil,
-              season_number: nil,
-              episode_number: nil
+              episodes: []
   end
 
   defmodule SportsEventIdentity do
@@ -165,9 +183,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Flattens a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`,
-  `identity` and `regenerate_thumbnails_and_markers?`) into a plain map for an Oban job's args.
-  `identity` is flattened with `Map.from_struct/1`, so no JSON encoder impl is required.
+  Turns a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, `identity` and
+  `regenerate_thumbnails_and_markers?`) into a map that can be stored as JSON. `from_map/1`
+  reverses it.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -223,11 +241,32 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         type when type in [:ebook, :audiobook] -> __MODULE__.BookIdentity
       end
 
-    # to_existing_atom: identity keys are struct fields, so the atoms exist.
-    fields = Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
+    case {module, atom_keys(fields)} do
+      {__MODULE__.EpisodeIdentity, %{episodes: episodes} = fields} ->
+        struct(module, %{fields | episodes: Enum.map(episodes, &episode/1)})
 
-    struct(module, fields)
+      # Jobs enqueued before `episodes` existed have one episode's numbers instead
+      {__MODULE__.EpisodeIdentity, fields} ->
+        episode = struct(__MODULE__.EpisodeIdentity.Episode, fields)
+        struct(module, Map.put(fields, :episodes, [episode]))
+
+      {module, fields} ->
+        struct(module, fields)
+    end
   end
+
+  defp episode(fields) do
+    fields = atom_keys(fields)
+
+    struct(__MODULE__.EpisodeIdentity.Episode, %{
+      fields
+      | air_date: WatchClub.Helpers.maybe_date!(fields.air_date)
+    })
+  end
+
+  # The keys are struct fields, so their atoms already exist
+  defp atom_keys(fields),
+    do: Map.new(fields, fn {key, value} -> {String.to_existing_atom(key), value} end)
 
   defimpl String.Chars, for: __MODULE__ do
     def to_string(%{path: path}), do: path
