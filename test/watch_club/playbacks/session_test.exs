@@ -3,7 +3,7 @@ defmodule WatchClub.Playbacks.SessionTest do
 
   alias WatchClub.Accounts.User
   alias WatchClub.Contents.Content
-  alias WatchClub.History.WatchProgress
+  alias WatchClub.History.{HiddenFromHome, WatchProgress}
   alias WatchClub.Markers.Marker
   alias WatchClub.MediaCatalog.{Media, Video}
   alias WatchClub.Playbacks
@@ -52,6 +52,18 @@ defmodule WatchClub.Playbacks.SessionTest do
 
       assert %Session{position_seconds: +0.0} =
                Playbacks.play!(first_part.id, "player", actor: user)
+    end
+
+    test "brings the Content back on the actor's Home" do
+      [user, other] = generate_many(user(), 2)
+      media = movie_media()
+      generate(hidden_from_home(user, media.content_id))
+      generate(hidden_from_home(other, media.content_id))
+
+      Playbacks.play!(media.id, "player", actor: user)
+
+      assert [%HiddenFromHome{user_id: other_id}] = Ash.read!(HiddenFromHome, authorize?: false)
+      assert other_id == other.id
     end
 
     test "plays in the active Playback Session, in the Player that plays it" do

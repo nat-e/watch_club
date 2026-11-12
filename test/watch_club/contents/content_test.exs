@@ -1454,6 +1454,16 @@ defmodule WatchClub.Contents.ContentTest do
                [newer.id, ready_show.id, older.id]
     end
 
+    test "leaves out the Content the actor hid from Home", %{member: member} do
+      [hidden, shown] = generate_many(movie(), 2)
+      start_movie!(hidden, member)
+      start_movie!(shown, member)
+      generate(hidden_from_home(member, hidden.id))
+      generate(hidden_from_home(generate(user()), shown.id))
+
+      assert get_user_recently_watched!(actor: member) |> Enum.map(& &1.id) == [shown.id]
+    end
+
     test "plays the Part the actor stopped in", %{member: member} do
       movie = generate(movie())
 
