@@ -138,7 +138,7 @@ msgid "Create Media Source"
 msgstr "Créer la source de médias"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete Media Source"
 msgstr "Supprimer la source de médias"
@@ -259,7 +259,7 @@ msgid "Media Source configured"
 msgstr "Source de médias configurée"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media Source deleted"
 msgstr "Source de médias supprimée"
@@ -443,7 +443,7 @@ msgid "This Media Source has not been imported yet. Run an import to add your me
 msgstr "Cette source de médias n'a pas encore été importée. Lancez un import pour ajouter vos médias."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "This will delete the Media Source %{name}:"
 msgstr "Cela supprimera la source de médias %{name} :"
@@ -625,7 +625,7 @@ msgid "Regenerate thumbnails and markers"
 msgstr "Régénérer les miniatures et les marqueurs"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Its media will be removed from the instance too. Their files stay on disk."
 msgstr "Ses médias seront aussi retirés de l'instance. Leurs fichiers restent sur le disque."
@@ -637,7 +637,7 @@ msgid "Even for files that haven't changed. New files always get them."
 msgstr "Même pour les fichiers qui n'ont pas changé. Les nouveaux fichiers les obtiennent toujours."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Deleting…"
 msgstr "Suppression…"

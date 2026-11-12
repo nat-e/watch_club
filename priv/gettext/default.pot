@@ -15,7 +15,7 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
-#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal_live.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
