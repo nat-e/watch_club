@@ -34,6 +34,11 @@ defmodule WatchClub.Contents.Content do
 
   import Ash.Expr
 
+  # A Content leaves Continue Watching this many days after the actor last watched it
+  @continue_watching_days 90
+  # Continue Watching leaves out what the actor watched less of: they only tried it
+  @continue_watching_min_percent 10
+
   postgres do
     table "contents"
     repo WatchClub.Repo
@@ -152,12 +157,28 @@ defmodule WatchClub.Contents.Content do
     end
 
     read :actor_continue_watching do
-      description "The actor's Continue Watching: their Content in progress that is Ready to Play and that they didn't hide, the most recently watched first. Not limited: there are few."
+      description "The actor's Continue Watching: their Content in progress that they watched in the last 90 days, at least 10% of it or of one of its TV Show Episodes, that is Ready to Play and that they didn't hide, the most recently watched first. Not limited: there are few."
 
       prepare build(
                 filter:
                   expr(
                     actor_progress_status == :in_progress and
+                      actor_last_watched_at >= ago(@continue_watching_days, :day) and
+                      cond do
+                        type == :movie ->
+                          movie.actor_progress.percent_watched >=
+                            @continue_watching_min_percent
+
+                        type == :sports_event ->
+                          sports_event.actor_progress.percent_watched >=
+                            @continue_watching_min_percent
+
+                        type == :tv_show ->
+                          exists(
+                            tv_show.episodes,
+                            actor_progress.percent_watched >= @continue_watching_min_percent
+                          )
+                      end and
                       not exists(hidden_from_continue_watching, user_id == ^actor(:id))
                   ),
                 sort: [actor_last_watched_at: :desc]

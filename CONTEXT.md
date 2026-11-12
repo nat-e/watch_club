@@ -259,7 +259,7 @@ A **User** with **Watch Progress** on a **Movie** or a **TV Show**: they watched
 _Avoid_: Viewer, audience
 
 **Continue Watching**:
-A **User**'s **Content** in progress that is **Ready to Play** and that they didn't **Hide from Continue Watching**, the most recently watched first.
+A **User**'s **Content** in progress that they watched in the last 90 days, at least 10% of it or of one of its **TV Show Episodes**, that is **Ready to Play** and that they didn't **Hide from Continue Watching**, the most recently watched first.
 _Avoid_: Up next, recently watched, in progress list
 
 **Hide from Continue Watching**:
@@ -609,6 +609,8 @@ _Avoid_: Group, aggregate, card, item
 - The **Player**, the **TV** and the **Remote** name the **Part** that plays when its **Movie**, **TV Show Episode** or **Sports Event** has several: Friends · S06E15 · Part 2
 - **Watch Progress** counts each **Video** up to the start of its **Credits**, and the **Parts** of a **Movie**, **TV Show Episode** or **Sports Event** one after another
 - Playing a **Video** that holds two **TV Show Episodes** moves the **Watch Progress** of both
+- A **Content** leaves **Continue Watching** on its own 90 days after its **User** last watched it, and comes back when they watch it again. A new **TV Show Episode** doesn't bring it back
+- **Continue Watching** leaves out a **Content** its **User** only tried: less than 10% of a **Movie** or **Sports Event**, or of each **TV Show Episode** they started. **Play** still resumes where they stopped
 - **Hide from Continue Watching** takes a whole **TV Show** out, whichever **TV Show Episode** comes next
 - A **Content** comes back in **Continue Watching** when the **User** who hid it starts to **Play** it again. A new **TV Show Episode**, marking it as watched or not watched, and a **Screen** reporting its position don't bring it back
 - A **User** can **Report a Problem** about the **Playback** they're in, even when its **Video** fails to play
