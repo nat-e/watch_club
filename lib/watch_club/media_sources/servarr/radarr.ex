@@ -156,11 +156,20 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
             tmdb_id,
             content.original_title,
             servarr.quality_profile_id,
-            servarr.root_folder_path
+            servarr.root_folder_path,
+            minimum_availability(content.release_date)
           )
 
         {:ok, id}
     end
+  end
+
+  # Radarr never searches a movie without a cinema, digital or disc date, as many old ones are,
+  # unless it's :announced. New movies wait for their release, so we don't get early bad copies.
+  defp minimum_availability(release_date) do
+    if is_nil(release_date) or Date.before?(release_date, Date.shift(Date.utc_today(), year: -1)),
+      do: :announced,
+      else: :released
   end
 
   @impl true
