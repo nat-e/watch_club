@@ -439,7 +439,7 @@ What a **User** can see of what **Users** do in WatchClub, newest first.
 _Avoid_: Timeline, news feed, event log
 
 **Feed Event**:
-One thing a **User** did that shows in an activity feed: watching or having watched **Content**.
+One thing a **User** did that shows in an activity feed: finishing a **Movie**, **TV Show Episode** or **Sports Event** by playing past 90% of it.
 _Avoid_: Activity, notification, action
 
 **Feed Entry**:
@@ -775,7 +775,8 @@ _Avoid_: Group, aggregate, card, item
 - A **Feed Entry** holds the **Feed Events** of one **User** doing the same thing
 - A **Feed Event** joins the latest **Feed Entry** of the same **User** doing the same thing when that entry's first **Feed Event** is less than 12 hours old; otherwise it starts a new **Feed Entry**
 - A **Feed Entry** is placed at the time of its latest **Feed Event**
-- When a **User**'s **Watch Progress** on a **Content** changes, their watching **Feed Event** for it moves to that time, and to a new **Feed Entry** if the old one's 12 hours are over. While they play, this happens at most once a minute
+- A **User** gets a **Feed Event** as soon as they play a **Movie**, **TV Show Episode** or **Sports Event** past 90%. Marking it as watched or not watched adds or removes none
+- A **Feed Entry** holds each **Movie**, **TV Show Episode** or **Sports Event** once: finishing it again within that **Feed Entry** adds nothing
 - Every **User** sees the **Feed Events** of every **User**, their own included
 - A **User** cannot hide what they watch from the **Activity Feed**
 
@@ -822,5 +823,4 @@ _Avoid_: Group, aggregate, card, item
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only when a **Media Import** or a webhook processes the file again.
 - "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
-- "Is watching" in the **Activity Feed** means the **User** has unfinished **Watch Progress**, possibly from days ago; resolved: **Watching Now** means their **Playback Session** plays on a **Screen** right now.
 - Grouping **Feed Events** by day was considered; resolved: a **Feed Entry** spans at most 12 hours from its first **Feed Event**, like Mastodon's grouped notifications, so grouping needs no day boundary or time zone.

@@ -621,22 +621,14 @@ classDiagram
 
 ```mermaid
 classDiagram
-  class FeedEvent {
+  class ContentWatchedEvent {
     uuid id
-    FeedEventType type
     uuid actor_id
     uuid content_id
-    uuid playlist_id
-    map data
+    uuid tv_show_episode_id
     string group_key
-    datetime occurred_at
-    «unique» actor_id + content_id when content_watched
-  }
-  class FeedEventType {
-    <<enumeration>>
-    content_watched
-    content_requested
-    playlist_shared
+    datetime created_at
+    «unique» actor_id + content_id + tv_show_episode_id + group_key
   }
   class FeedEntry {
     string group_key «primary key»
@@ -644,9 +636,9 @@ classDiagram
   }
   class User
   class Content
-  class Playlist
-  FeedEvent "*" --> "1" FeedEntry : group_key
-  FeedEvent "*" --> "1" User : actor
-  FeedEvent "*" --> "0..1" Content
-  FeedEvent "*" --> "0..1" Playlist
+  class TvShowEpisode
+  ContentWatchedEvent "*" --> "1" FeedEntry : group_key
+  ContentWatchedEvent "*" --> "1" User : actor
+  ContentWatchedEvent "*" --> "1" Content
+  ContentWatchedEvent "*" --> "0..1" TvShowEpisode
 ```

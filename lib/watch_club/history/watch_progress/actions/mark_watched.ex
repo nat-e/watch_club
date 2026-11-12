@@ -10,15 +10,12 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
 
   require Ash.Query
 
-  alias WatchClub.ActivityFeed.Workers.SyncContentWatchedFeedEvent
   alias WatchClub.Contents
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.History.WatchProgress
 
   @impl true
   def run(input, _opts, context) do
-    actor = context.actor
-
     content =
       Contents.get_or_refresh_content!(input.arguments.content_identity, %{max_age: :infinity},
         scope: context
@@ -32,7 +29,6 @@ defmodule WatchClub.History.WatchProgress.Actions.MarkWatched do
         context
       )
 
-    OpentelemetryOban.insert!(SyncContentWatchedFeedEvent.new_job(actor.id, content.id))
     {:ok, content, notifications}
   end
 

@@ -1,15 +1,10 @@
 defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
   @moduledoc """
-  A :content_watched activity feed event: a User is watching / has watched a Content.
+  A :content_watched Feed Event: a User finished a Movie, TV Show Episode or Sports Event by
+  playing past 90% of it. Marking it as watched doesn't add one.
 
-  There is exactly one ContentWatchedEvent per (actor, content). It is a derived projection of the
-  User's WatchProgress for that Content, recomputed by `Actions.Sync` after every watch action:
-  - it exists iff the User has at least one WatchProgress for the Content (partial or completed)
-  - `completed` is true when the whole Content is completed (a Movie/Book that's completed, or a
-    TV Show whose every episode is completed)
-  - `completed_episodes` lists the completed episodes (empty for Movies/Books and partial watches)
-
-  Every User sees the event. Its group_key identifies its Feed Entry.
+  A Feed Entry holds each Movie, TV Show Episode or Sports Event once: adding it again changes
+  nothing. Every User sees the event. Its group_key identifies its Feed Entry.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -19,7 +14,7 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
 
   alias WatchClub.Accounts.User
   alias WatchClub.ActivityFeed.Changes.SetGroupKey
-  alias WatchClub.Contents.Content
+  alias WatchClub.Contents.{Content, TvShowEpisode}
 
   postgres do
     table "activity_feed_content_watched_events"
@@ -29,27 +24,30 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
       index [:group_key]
     end
 
-    identity_index_names unique_per_actor_content: "acwe_unique_per_actor_content_index"
+    identity_index_names once_per_feed_entry: "acwe_once_per_feed_entry_index"
 
     references do
+      # The once_per_feed_entry index starts with actor_id
       reference :actor, on_delete: :delete
       reference :content, on_delete: :delete, index?: true
+      reference :tv_show_episode, on_delete: :delete, index?: true
     end
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
 
-    create :upsert do
+    create :add do
       primary? true
-      upsert? true
-      upsert_identity :unique_per_actor_content
-      upsert_fields [:completed, :completed_episodes, :group_key, :created_at]
+      accept [:content_id, :tv_show_episode_id]
 
-      accept [:actor_id, :content_id, :completed, :completed_episodes]
+      upsert? true
+      upsert_identity :once_per_feed_entry
+      # Already in its Feed Entry: keep the event as it is
+      upsert_condition expr(false)
+      return_skipped_upsert? true
 
       change relate_actor(:actor)
-      change set_attribute(:created_at, &DateTime.utc_now/0)
       change SetGroupKey
     end
   end
@@ -59,37 +57,27 @@ defmodule WatchClub.ActivityFeed.Events.ContentWatchedEvent do
     name WatchClub.PubSub
     prefix "feed"
 
-    publish_all :create, ["global"]
-    publish_all :destroy, ["global"]
+    publish_all :create, ["global"],
+      filter: &(!Ash.Resource.get_metadata(&1.data, :upsert_skipped))
   end
 
   attributes do
     uuid_v7_primary_key :id
     attribute :group_key, :string, allow_nil?: false
     create_timestamp :created_at
-
-    # Whether the entire Content has been completed
-    attribute :completed, :boolean, allow_nil?: false, default: false
-
-    # Completed episodes as [%{season_number: integer, episode_number: integer}] (TV shows only)
-    attribute :completed_episodes, {:array, :map} do
-      allow_nil? true
-
-      constraints items: [
-                    fields: [
-                      season_number: [type: :integer, allow_nil?: false],
-                      episode_number: [type: :integer, allow_nil?: false]
-                    ]
-                  ]
-    end
   end
 
   relationships do
     belongs_to :actor, User, allow_nil?: false
+    # The TV Show for a TV Show Episode
     belongs_to :content, Content, allow_nil?: false
+    # Nil for a Movie or a Sports Event
+    belongs_to :tv_show_episode, TvShowEpisode
   end
 
   identities do
-    identity :unique_per_actor_content, [:actor_id, :content_id]
+    identity :once_per_feed_entry, [:actor_id, :content_id, :tv_show_episode_id, :group_key] do
+      nils_distinct? false
+    end
   end
 end

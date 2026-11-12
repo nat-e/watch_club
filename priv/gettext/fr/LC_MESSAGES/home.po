@@ -28,18 +28,6 @@ msgstr "Il reste %{time}"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "%{user} is watching %{contents}"
-msgstr "%{user} regarde %{contents}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{watching}, and watched %{watched}"
-msgstr "%{user} regarde %{watching} et a regardé %{watched}"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page/activity_feed.ex
-#, elixir-autogen, elixir-format
 msgid "%{user} watched %{contents}"
 msgstr "%{user} a regardé %{contents}"
 
@@ -138,3 +126,11 @@ msgstr "Cherchez un titre dans Parcourir et demandez‑le. Les nouveaux titres a
 #, elixir-autogen, elixir-format
 msgid "New sports events"
 msgstr "Nouveaux événements sportifs"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{show} (%{count} episode)"
+msgid_plural "%{show} (%{count} episodes)"
+msgstr[0] "%{show} (%{count} épisode)"
+msgstr[1] "%{show} (%{count} épisodes)"

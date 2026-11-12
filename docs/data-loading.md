@@ -51,7 +51,7 @@ Data can be upated directly from the Notification payload if straight forward. I
 | `content:global` | Contents | Global | Notification about a Content that affects everybody | `ContentRequest:CUD`, `Media:CUD`, `Content:CUD` | Any page that displays content (Content page, Browse...) |
 | `history:global` | History | Global | Every User's Watch Progress, for the Watchers of a Content | `WatchProgress:CD` | `/movies/:tmdb_id`, `/shows/:tmdb_id` |
 | `conversation:<conversation_id>` | Conversations | Conversation | A Message posted in a Conversation | `Message:C` | Every page of its Participants, subscribed to all their Conversations |
-| `feed:global` | ActivityFeed | Global | A Feed Event joined or left a Feed Entry | `ContentWatchedEvent:CD` | `/` (Home) |
+| `feed:global` | ActivityFeed | Global | A Feed Event joined a Feed Entry | `ContentWatchedEvent:C` | `/` (Home) |
 | `video:<video_id>` | Markers | Video | The Markers of a Video, found in the background after its import | `Marker:CD` | `/play/:media_id`, subscribed to each Video it plays |
 
 

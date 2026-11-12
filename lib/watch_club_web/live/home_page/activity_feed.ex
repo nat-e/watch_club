@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.HomePage.ActivityFeed do
   @moduledoc """
   The Activity Feed on Home: its Feed Entries, latest first, then Show more. Each entry is one
-  sentence, such as "leadelpeut is watching WAR, Dune, and Fleabag, and watched Privileges".
+  sentence, such as "leadelpeut watched WAR, Severance S01E02, and Fleabag (3 episodes)".
   """
   use WatchClubWeb, :component
 
@@ -49,14 +49,18 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
   # The time sits on the left of the line, or under the sentence in a narrow column. The posters
   # are hidden from screen readers, because the sentence already links each Content.
   defp feed_entry(assigns) do
-    {posters, more_posters} = assigns.entry.events |> Enum.map(& &1.content) |> listed()
+    events = assigns.entry.events
+    episodes = Enum.group_by(events, & &1.content_id, & &1.tv_show_episode)
 
-    assigns =
-      assign(assigns,
-        user: hd(assigns.entry.events).actor,
-        posters: posters,
-        more_posters: more_posters
-      )
+    # Each Content once, latest first, with its TV Show Episodes
+    {watched, more} =
+      events
+      |> Enum.map(& &1.content)
+      |> Enum.uniq_by(& &1.id)
+      |> Enum.map(&{&1, episodes[&1.id]})
+      |> listed()
+
+    assigns = assign(assigns, user: hd(events).actor, watched: watched, more: more)
 
     ~H"""
     <li id={@id} data-activity class="group/entry flex gap-related @xl:gap-group">
@@ -73,7 +77,7 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
       <.avatar id={@user.id} name={@user.username} size="sm" aria-hidden="true" />
       <div class="flex min-w-0 flex-1 flex-col gap-related pb-cluster group-last/entry:pb-0">
         <div>
-          <p class="text-sm text-text-muted">{sentence(@entry.events, @user, @locale)}</p>
+          <p class="text-sm text-text-muted">{sentence(@user, @watched, @more, @locale)}</p>
           <time
             datetime={DateTime.to_iso8601(@entry.latest_at)}
             class="block text-xs text-text-subtle @xl:hidden"
@@ -81,9 +85,9 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
             {Time.relative_from_now(@entry.latest_at, @locale)}
           </time>
         </div>
-        <div :if={@posters != []} aria-hidden="true" class="flex gap-related">
+        <div aria-hidden="true" class="flex gap-related">
           <.link
-            :for={content <- @posters}
+            :for={{content, _episodes} <- @watched}
             navigate={Url.content_details_link(content)}
             tabindex="-1"
             class="block min-w-0 basis-12"
@@ -95,10 +99,10 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
             />
           </.link>
           <span
-            :if={@more_posters > 0}
+            :if={@more > 0}
             class="flex aspect-2/3 min-w-0 basis-12 items-center justify-center rounded-lg bg-surface text-sm font-semibold text-text-muted"
           >
-            +{@more_posters}
+            +{@more}
           </span>
         </div>
       </div>
@@ -106,49 +110,47 @@ defmodule WatchClubWeb.HomePage.ActivityFeed do
     """
   end
 
-  defp sentence(events, user, locale) do
-    {watched, watching} = Enum.split_with(events, & &1.completed)
-    user = gtspan(user.username, "font-semibold text-text")
+  # "A", "A and B", "A, B, C, and 2 more", in the User's language. A TV Show reads as its TV Show
+  # Episode, such as "Fleabag S01E03", or as how many, such as "Fleabag (3 episodes)".
+  defp sentence(user, watched, more, locale) do
+    contents =
+      watched
+      |> Enum.map(fn {content, episodes} -> watched_part(content, episodes) end)
+      |> Enum.concat(
+        if more > 0, do: [dngettext("home", "%{count} more", "%{count} more", more)], else: []
+      )
+      |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
 
-    case {watching, watched} do
-      {_watching, []} ->
-        dgettext("home", "%{user} is watching %{contents}",
-          user: user,
-          contents: contents_part!(watching, locale)
-        )
-
-      {[], _watched} ->
-        dgettext("home", "%{user} watched %{contents}",
-          user: user,
-          contents: contents_part!(watched, locale)
-        )
-
-      _both ->
-        dgettext("home", "%{user} is watching %{watching}, and watched %{watched}",
-          user: user,
-          watching: contents_part!(watching, locale),
-          watched: contents_part!(watched, locale)
-        )
-    end
-    |> raw()
-  end
-
-  # "A", "A and B", "A, B, C, and 2 more", in the User's language
-  defp contents_part!(events, locale) do
-    {shown, more} = events |> Enum.map(&content_link(%{content: &1.content})) |> listed()
-
-    shown
-    |> Enum.map(&sentence_part/1)
-    |> Enum.concat(
-      if more > 0, do: [dngettext("home", "%{count} more", "%{count} more", more)], else: []
+    dgettext("home", "%{user} watched %{contents}",
+      user: gtspan(user.username, "font-semibold text-text"),
+      contents: contents
     )
-    |> WatchClub.Cldr.List.to_string!(locale: UserLocale.to_cldr_locale_name(locale))
+    |> raw()
   end
 
   # The items to show and how many are left. "and 1 more" or "+1" would take the place of the item
   # it hides, so one extra item is shown instead.
   defp listed(items) when length(items) <= @listed_count + 1, do: {items, 0}
   defp listed(items), do: {Enum.take(items, @listed_count), length(items) - @listed_count}
+
+  # A Movie or Sports Event has no TV Show Episode
+  defp watched_part(content, [nil]), do: sentence_part(content_link(%{content: content}))
+
+  # The link only leads to the TV Show, so the episode stays outside it, kept on the same line
+  defp watched_part(content, [episode]) do
+    link = sentence_part(content_link(%{content: content}))
+    "#{link}\u00A0#{episode.formatted_episode_number}"
+  end
+
+  defp watched_part(content, episodes) do
+    dngettext(
+      "home",
+      "%{show} (%{count}\u00A0episode)",
+      "%{show} (%{count}\u00A0episodes)",
+      length(episodes),
+      show: sentence_part(content_link(%{content: content}))
+    )
+  end
 
   # A component as HTML inside a translated sentence. The template's line breaks would show as a
   # space, such as before a comma.
