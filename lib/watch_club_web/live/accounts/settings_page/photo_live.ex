@@ -292,6 +292,8 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
         },
 
         destroyed() {
+          // A crop still encoding when the dialog closes isn't uploaded
+          this.closed = true;
           this.saveButton?.removeEventListener("click", this.onSave);
           if (this.url) URL.revokeObjectURL(this.url);
           // Picking the same file again opens the dialog again
@@ -385,6 +387,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
         async save() {
           const canvas = await this.selection.$toCanvas({ width: OUTPUT_SIZE, height: OUTPUT_SIZE });
           const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+          if (this.closed) return;
           const form = document.getElementById(this.el.dataset.uploadForm);
           this.uploadTo(form, "photo", [new File([blob], "photo.jpg", { type: "image/jpeg" })]);
         },
