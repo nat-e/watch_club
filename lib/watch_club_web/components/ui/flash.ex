@@ -1,6 +1,9 @@
 defmodule WatchClubWeb.Components.UI.Flash do
   @moduledoc """
   Token-driven Watch Club flash/toast primitive.
+
+  At the bottom, the toasts stay above `--wc-bottom-bars-height`, the bars docked at the bottom
+  of the screen, when an ancestor sets it.
   """
 
   use Phoenix.Component
@@ -44,9 +47,9 @@ defmodule WatchClubWeb.Components.UI.Flash do
              "top-left" -> "top: 1rem; left: 1rem"
              "top-center" -> "top: 1rem; left: 50%; transform: translateX(-50%)"
              "top-right" -> "top: 1rem; right: 1rem"
-             "bottom-left" -> "bottom: 1rem; left: 1rem"
-             "bottom-center" -> "bottom: 1rem; left: 50%; transform: translateX(-50%)"
-             "bottom-right" -> "right: 1rem; bottom: 1rem"
+             "bottom-left" -> "bottom: calc(var(--wc-bottom-bars-height, 0px) + 1rem); left: 1rem"
+             "bottom-center" -> "bottom: calc(var(--wc-bottom-bars-height, 0px) + 1rem); left: 50%; transform: translateX(-50%)"
+             "bottom-right" -> "right: 1rem; bottom: calc(var(--wc-bottom-bars-height, 0px) + 1rem)"
            end) <>
           if(@style in [nil, ""], do: "", else: "; #{to_string(@style)}")
       }
