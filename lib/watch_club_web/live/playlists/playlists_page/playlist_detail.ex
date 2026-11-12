@@ -139,8 +139,13 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           <.empty>
             <:icon><Lucideicons.clapperboard /></:icon>
             <:title>{dgettext("playlists", "Nothing here yet")}</:title>
-            <:description :if={@playlist.editable_by?}>
-              {dgettext("playlists", "Search for movies, TV shows and sports events to add.")}
+            <:description>
+              {if @playlist.editable_by?,
+                do: dgettext("playlists", "Search for movies, TV shows and sports events to add."),
+                else:
+                  dgettext("playlists", "%{user} hasn't added anything yet.",
+                    user: @playlist.owner.username
+                  )}
             </:description>
             <.button
               :if={@playlist.editable_by?}

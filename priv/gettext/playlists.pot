@@ -40,11 +40,6 @@ msgstr ""
 msgid "Actions for %{playlist}"
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
-#, elixir-autogen, elixir-format
-msgid "Are you sure you want to delete the playlist %{playlist}?"
-msgstr ""
-
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Change the icon"
@@ -80,11 +75,6 @@ msgstr ""
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "It's private until you share it."
-msgstr ""
-
-#: lib/watch_club_web/live/playlists/playlists_page.ex
-#, elixir-autogen, elixir-format
-msgid "Keep what you want to watch in one place."
 msgstr ""
 
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
@@ -241,11 +231,6 @@ msgstr ""
 msgid "The playlist is private."
 msgstr ""
 
-#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
-#, elixir-autogen, elixir-format
-msgid "They'll find it in their Playlists. Choose who can only view it and who can also edit it."
-msgstr ""
-
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{user}'s playlist"
@@ -339,4 +324,24 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgctxt "tv_show"
 msgid "Add it to a playlist to find it again later, or share it with friends."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} hasn't added anything yet."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Delete %{playlist}? You can't undo this."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Keep what you want to watch in one place, and share it with friends."
+msgstr ""
+
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "They'll find it in their Playlists. Choose who can only view it, and who can also add and remove content."
 msgstr ""

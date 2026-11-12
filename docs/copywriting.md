@@ -8,6 +8,11 @@ How WatchClub's interface text reads, in English and French. Use the terms in `C
 - WatchClub speaks as "we" ("on" in French). Users don't need to know it is self-hosted: name the Instance Administrator only when the user has to contact them.
 - French uses "tu".
 
+## Words
+
+- Name the type when the text is about one movie or TV show: "this movie", "cette série". In French, this also sets the gender of the words around it.
+- Say "content" ("contenu") for movies, TV shows and sports events together, not "titles". French calls a sports event "contenu" too.
+
 ## Say what it's for, then one action
 
 - Explain what a feature does for the user before how to use it: "Request a movie or a TV show: we'll look for it and add it here for everyone", not "Search for a title in Browse and request it."

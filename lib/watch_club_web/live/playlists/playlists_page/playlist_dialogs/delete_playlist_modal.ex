@@ -15,7 +15,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.DeletePlaylistMod
       <:title>{dgettext("playlists", "Delete playlist")}</:title>
       <p>
         {raw(
-          dgettext("playlists", "Are you sure you want to delete the playlist %{playlist}?",
+          dgettext("playlists", "Delete %{playlist}? You can't undo this.",
             playlist: gtbold(@playlist.name)
           )
         )}
