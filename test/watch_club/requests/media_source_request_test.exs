@@ -93,6 +93,25 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
     end
   end
 
+  describe "destroy_media_source_request/2" do
+    test "ends the request's scheduled refresh" do
+      request =
+        Requests.create_media_source_request!(
+          %{
+            content_id: seed_content(:movie).id,
+            media_source_id: seed_servarr_source(:radarr, :movie).id,
+            external_resource_id: 1
+          },
+          actor: SystemActor.actor()
+        )
+
+      Requests.destroy_media_source_request!(request, actor: SystemActor.actor())
+
+      assert %{success: 1, failure: 0} =
+               Oban.drain_queue(queue: :media_source_requests, with_scheduled: true)
+    end
+  end
+
   # ── Fixtures ────────────────────────────────────────────────────────────────
 
   defp seed_servarr_source(flavor, media_type) do
