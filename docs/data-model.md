@@ -534,7 +534,6 @@ classDiagram
     searching
     downloading
     downloaded
-    not_released
     needs_attention
   }
   class Content

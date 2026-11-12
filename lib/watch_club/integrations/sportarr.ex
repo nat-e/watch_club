@@ -18,11 +18,10 @@ defmodule WatchClub.Integrations.Sportarr do
             external_id: String.t() | nil,
             monitored?: boolean(),
             has_file?: boolean(),
-            date: DateTime.t() | nil,
             file_paths: [String.t()]
           }
 
-    defstruct [:id, :external_id, :date, monitored?: false, has_file?: false, file_paths: []]
+    defstruct [:id, :external_id, monitored?: false, has_file?: false, file_paths: []]
 
     @doc false
     def from_api(data) do
@@ -31,11 +30,6 @@ defmodule WatchClub.Integrations.Sportarr do
         external_id: data["externalId"],
         monitored?: data["monitored"] == true,
         has_file?: data["hasFile"] == true,
-        date:
-          case DateTime.from_iso8601(data["eventDate"] || "") do
-            {:ok, date, _offset} -> date
-            {:error, _} -> nil
-          end,
         file_paths: for(%{"filePath" => path, "exists" => true} <- data["files"] || [], do: path)
       }
     end

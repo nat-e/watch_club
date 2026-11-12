@@ -126,12 +126,8 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   def status_words(%ContentRequest{status: :downloading} = request, _release_date, _locale),
     do: dgettext("requests", "%{percent}% downloaded", percent: round(request.download_progress))
 
-  # TMDB's date is often the cinema release, before the one we can download
-  def status_words(%ContentRequest{status: :not_released}, release_date, locale) do
-    if release_date && Date.after?(release_date, Date.utc_today()),
-      do: dgettext("requests", "Out on %{date}", date: Time.long_date(release_date, locale)),
-      else: dgettext("requests", "Not released yet")
-  end
+  def status_words(%ContentRequest{status: :not_released}, release_date, locale),
+    do: dgettext("requests", "Out on %{date}", date: Time.long_date(release_date, locale))
 
   def status_words(%ContentRequest{status: :not_found}, _release_date, _locale),
     do: dgettext("requests", "Not found, still looking")

@@ -256,28 +256,27 @@ defmodule WatchClub.Requests.ContentRequest do
                   completed? ->
                     :completed
 
-                  is_nil(best_source_request) ->
-                    :searching
-
-                  best_source_request.status == :not_released ->
-                    :not_released
-
                   best_source_request.status == :needs_attention ->
                     :failed
-
-                  # If it has been more than 5 minutes and we're still searching, we consider
-                  # that the content has not been found
-                  best_source_request.status == :searching and inserted_at < ago(5, :minute) ->
-                    :not_found
-
-                  best_source_request.status == :searching ->
-                    :searching
 
                   best_source_request.status == :downloading ->
                     :downloading
 
                   best_source_request.status == :downloaded ->
                     :importing
+
+                  # After the others: a Media Source can find it before its release date
+                  content.release_date >= today() ->
+                    :not_released
+
+                  is_nil(best_source_request) ->
+                    :searching
+
+                  inserted_at < ago(5, :minute) ->
+                    :not_found
+
+                  true ->
+                    :searching
                 end
               ) do
       public? true

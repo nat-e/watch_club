@@ -89,7 +89,7 @@ defmodule WatchClub.Integrations.Servarr.TestStub do
     do: ok(conn, %{"id" => :erlang.unique_integer([:positive])})
 
   def call(%Plug.Conn{path_info: ["api", "v3", "movie", _id], method: "GET"} = conn, _opts),
-    do: ok(conn, %{"hasFile" => false, "isAvailable" => true})
+    do: ok(conn, %{"hasFile" => false})
 
   # ── Request + download flow (Sonarr) ──────────────────────────────
 

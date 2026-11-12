@@ -41,14 +41,9 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
       %{source: seed_servarr_source(:sonarr, :tv_show_episode), content: seed_content(:tv_show)}
     end
 
-    test "a just-added series with no episodes yet is :searching, not :not_released", ctx do
+    test "a just-added series with no episodes yet is :searching", ctx do
       stub_sonarr([], [])
       assert create_and_refresh(ctx.source, ctx.content).status == :searching
-    end
-
-    test "a series whose episodes have all yet to air is :not_released", ctx do
-      stub_sonarr([episode(%{"airDateUtc" => "2999-01-01T00:00:00Z"})], [])
-      assert create_and_refresh(ctx.source, ctx.content).status == :not_released
     end
 
     test "a series with all episodes present is :downloaded", ctx do
@@ -81,11 +76,6 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   describe "create derives movie status from Radarr" do
     setup do
       %{source: seed_servarr_source(:radarr, :movie), content: seed_content(:movie)}
-    end
-
-    test "a movie not yet released is :not_released", ctx do
-      stub_radarr(movie_json(%{"hasFile" => false, "isAvailable" => false}), [])
-      assert create_and_refresh(ctx.source, ctx.content).status == :not_released
     end
 
     test "a movie whose file is present is :downloaded", ctx do
@@ -177,7 +167,7 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
 
   defp movie_json(attrs) do
     Map.merge(
-      %{"id" => 1, "title" => "Seeded movie", "hasFile" => false, "isAvailable" => true},
+      %{"id" => 1, "title" => "Seeded movie", "hasFile" => false},
       attrs
     )
   end

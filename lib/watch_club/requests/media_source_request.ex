@@ -146,8 +146,7 @@ defmodule WatchClub.Requests.MediaSourceRequest do
                 cond do
                   status == :downloaded -> 4
                   status == :downloading -> 3
-                  status == :needs_attention -> 2
-                  status == :not_released -> 1
+                  status == :needs_attention -> 1
                   status == :searching -> 0
                 end
               ) do

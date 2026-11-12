@@ -45,7 +45,6 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
         "externalId" => "ev-028133",
         "monitored" => true,
         "hasFile" => false,
-        "eventDate" => "2025-01-19T01:00:00Z",
         "files" => []
       },
       attrs
@@ -234,15 +233,6 @@ defmodule WatchClub.MediaSources.Servarr.SportarrTest do
       })
 
       assert {:downloaded, 100.0} = Sportarr.request_state!(@servarr, 60)
-    end
-
-    test "is not released before the event" do
-      stub_sportarr(%{
-        {"GET", "/api/events/60"} => event(%{"eventDate" => "2999-01-01T00:00:00Z"}),
-        {"GET", "/api/queue"} => []
-      })
-
-      assert {:not_released, +0.0} = Sportarr.request_state!(@servarr, 60)
     end
 
     test "needs attention when its download failed" do
