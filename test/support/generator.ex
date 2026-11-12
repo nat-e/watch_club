@@ -19,7 +19,7 @@ defmodule WatchClub.Generator do
   alias WatchClub.MediaSources.Servarr.Wizard
   alias WatchClub.Playbacks.{Playback, ProblemReport, Session}
   alias WatchClub.Playlists.{Playlist, PlaylistAccess, PlaylistItem}
-  alias WatchClub.Requests.{ContentRequest, RequestSubscriber}
+  alias WatchClub.Requests.{ContentRequest, MediaSourceRequest, RequestSubscriber}
 
   @default_password "passw0rd"
   @default_hashed_password (
@@ -337,6 +337,18 @@ defmodule WatchClub.Generator do
   def content_request(%User{} = requested_by, %Content{} = content, opts \\ []) do
     seed_generator(
       %ContentRequest{requested_by_id: requested_by.id, content_id: content.id},
+      overrides: opts
+    )
+  end
+
+  # Without the refresh that the `:create` action schedules
+  def media_source_request(%Content{} = content, %Source{} = media_source, opts \\ []) do
+    seed_generator(
+      %MediaSourceRequest{
+        content_id: content.id,
+        media_source_id: media_source.id,
+        external_resource_id: sequence(:external_resource_id, & &1)
+      },
       overrides: opts
     )
   end

@@ -12,6 +12,7 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   alias WatchClub.MediaSources.{Servarr, Source}
   alias WatchClub.Requests
   alias WatchClub.Requests.MediaSourceRequest
+  alias WatchClub.Requests.Workers.RefreshMediaSourceRequest
   alias WatchClub.SystemActor
 
   setup do
@@ -96,14 +97,9 @@ defmodule WatchClub.Requests.MediaSourceRequestTest do
   describe "destroy_media_source_request/2" do
     test "ends the request's scheduled refresh" do
       request =
-        Requests.create_media_source_request!(
-          %{
-            content_id: seed_content(:movie).id,
-            media_source_id: seed_servarr_source(:radarr, :movie).id,
-            external_resource_id: 1
-          },
-          actor: SystemActor.actor()
-        )
+        generate(media_source_request(generate(movie()), seed_servarr_source(:radarr, :movie)))
+
+      request.id |> RefreshMediaSourceRequest.new_job() |> Oban.insert!()
 
       Requests.destroy_media_source_request!(request, actor: SystemActor.actor())
 
