@@ -6,7 +6,11 @@ defmodule WatchClubWeb.Plugs.BrowserLocale do
 
   alias WatchClub.Accounts.UserLocale
 
-  @locales UserLocale.values()
+  # AcceptLanguage matches language tags such as `:"fr-FR"`, not locales such as `:fr_FR`
+  @locales_by_tag Map.new(UserLocale.values(), fn locale ->
+                    {locale |> Atom.to_string() |> String.replace("_", "-") |> String.to_atom(),
+                     locale}
+                  end)
   @default_locale UserLocale.default()
 
   @spec get(map()) :: :atom
@@ -37,9 +41,9 @@ defmodule WatchClubWeb.Plugs.BrowserLocale do
   defp negotiate(nil), do: @default_locale
 
   defp negotiate(header) do
-    case AcceptLanguage.negotiate(header, @locales) do
+    case AcceptLanguage.negotiate(header, Map.keys(@locales_by_tag)) do
       nil -> @default_locale
-      locale -> locale
+      tag -> @locales_by_tag[tag]
     end
   end
 end
