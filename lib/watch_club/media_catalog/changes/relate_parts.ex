@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaCatalog.Changes.RelateParts do
   @moduledoc """
-  Sets the Parts a Video holds from its `parts` argument. Use it on Video actions taking `parts`.
+  Sets the Parts a Video holds from its `parts` argument.
 
   Each item has a `movie_id`, `tv_show_episode_id` or `sports_event_id`, a `number`, and an
   optional `name`. Parts are found or created, so copies of a file share them. Sets the

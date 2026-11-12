@@ -1,7 +1,6 @@
 defmodule WatchClub.MediaCatalog.Calculations.ToPlay do
   @moduledoc """
-  What the Player plays after a Video, or before it with `which: :previous`. Load it as
-  `next_to_play` or `previous_to_play` on a Video.
+  What plays after a Video, or before it with `which: :previous`.
 
   Returns a `%ToPlay{}` with the `video` to play and what it is: its `part`, when it's another
   Part of the same work, or its `episode`, when it's the next or previous TV Show Episode. Nil when

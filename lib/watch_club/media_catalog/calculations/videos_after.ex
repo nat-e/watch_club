@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaCatalog.Calculations.VideosAfter do
   @moduledoc """
-  The Videos the Remote's Up next offers after a Video. Load it as `videos_after` on a Video.
+  The Videos that can play after a Video.
 
   Returns up to 10 Videos in play order: the next Parts of the same work, then the Videos of the
   next TV Show Episodes with Media. Each Video comes once, with its `parts`. Empty for Unmatched

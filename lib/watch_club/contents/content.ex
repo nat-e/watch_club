@@ -457,7 +457,7 @@ defmodule WatchClub.Contents.Content do
     calculate :actor_next_medias_to_play,
               {:array, :struct},
               ActorNextMediasToPlay do
-      description "What Play opens for the actor: the Video to resume, or a Book's Audiobooks and Ebooks."
+      description "What the actor plays next: the Video where they resume, or a Book's Audiobooks and Ebooks."
     end
 
     # The decade it came out in, such as 1990 for 1994

@@ -3,9 +3,8 @@ defmodule WatchClub.MediaCatalog.Part do
   A numbered piece of a Movie, TV Show Episode or Sports Event. Most have only Part 1, the whole of
   it. A two-part episode that TMDB lists as one, but that Sonarr splits in two files, has two.
 
-  Parts are created when a Video is linked to them, through the Video's `parts` argument. Videos
-  holding the same Part are copies. A Part that no Video holds stays, but its work's `parts`
-  leave it out. Deleting the work deletes its Parts, unless a Video holds one.
+  Videos hold Parts, and Videos holding the same Part are copies. A Part stays when no Video holds
+  it anymore. Deleting its work deletes it, unless a Video holds it.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -105,7 +104,7 @@ defmodule WatchClub.MediaCatalog.Part do
 
   calculations do
     calculate :episode_rank, :integer, expr(tv_show_episode.rank) do
-      description "The rank of its TV Show Episode in its TV Show, to order the Parts of a file. Nil for other works."
+      description "The rank of its TV Show Episode in its TV Show. Nil for other works."
     end
   end
 

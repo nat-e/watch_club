@@ -4,8 +4,8 @@ defmodule WatchClub.History.WatchProgress do
   finished it. It exists once they start watching it or mark it as watched.
 
   Positions count through all its Parts, one after the other, and it's completed from 90%.
-  `part_number` and `part_position_seconds` tell where Play resumes. Marking it as watched sets
-  the positions to nil.
+  `part_number` and `part_position_seconds` give the Part the User is in and the position in it.
+  Marking it as watched sets the positions to nil.
   """
   use Ash.Resource,
     otp_app: :watch_club,
@@ -223,7 +223,7 @@ defmodule WatchClub.History.WatchProgress do
     # Length of all the Parts, in seconds. Nil when marked as watched or a length is unknown
     attribute :duration_seconds, :float
 
-    # The number of the Part where Play resumes. Nil when marked as watched
+    # The number of the Part the User is in. Nil when marked as watched
     attribute :part_number, :integer do
       constraints min: 1
     end

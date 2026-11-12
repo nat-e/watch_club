@@ -10,8 +10,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   - If not, fuzzy match with title, and year when known
 
   A Movie or Sports Event file gets Part 1 of its match. A TV Show Episode file gets the Parts
-  `EpisodeParts` finds. When Content or a TV Show Episode is missing, the Oban job fails so it
-  can retry.
+  `EpisodeParts` finds. It raises when TMDB doesn't list a file's TV Show Episode yet.
   """
 
   alias WatchClub.Contents

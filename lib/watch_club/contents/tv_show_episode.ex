@@ -171,13 +171,13 @@ defmodule WatchClub.Contents.TvShowEpisode do
     end
 
     calculate :videos_to_play, {:array, :struct}, VideosToPlay do
-      description "The Videos the Player plays for it, one after the other."
+      description "The Videos to play for it, one after the other."
       constraints items: [instance_of: Video]
       public? true
     end
 
     calculate :actor_video_to_play, :struct, ActorVideoToPlay do
-      description "The Video a Play button opens for the actor: where they stopped, else the first."
+      description "The Video where the actor resumes it: the one holding their Part, else the first."
       constraints instance_of: Video
       public? true
     end

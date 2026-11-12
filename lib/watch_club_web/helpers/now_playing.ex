@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Helpers.NowPlaying do
   @moduledoc """
-  Titles and pictures describing what a Video plays, for the Player, the TV, the TV bar and the
-  Remote. Load `fields/0` on a Playback Session, or `video_fields/0` on a Video, first.
+  Titles and pictures describing what a Video plays. Load `fields/0` on a Playback Session, or
+  `video_fields/0` on a Video, first.
 
   When a Video holds only some of its work's Parts, the titles name them: Friends · S06E15 · Part 2.
   """

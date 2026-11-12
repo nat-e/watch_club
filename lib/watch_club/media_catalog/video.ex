@@ -74,7 +74,7 @@ defmodule WatchClub.MediaCatalog.Video do
       change ScheduleDetection
     end
 
-    # Sets the Parts of a Manual Match
+    # Replaces the Parts it holds
     update :attach do
       require_atomic? false
 
@@ -236,19 +236,19 @@ defmodule WatchClub.MediaCatalog.Video do
 
   calculations do
     calculate :next_to_play, :struct, {ToPlay, which: :next} do
-      description "What the Player plays after it: the next Part, else the next TV Show Episode. Nil when nothing follows."
+      description "What plays after it: the next Part, else the next TV Show Episode. Nil when nothing follows."
       constraints instance_of: ToPlay
       public? true
     end
 
     calculate :previous_to_play, :struct, {ToPlay, which: :previous} do
-      description "What the Player's previous button plays: the previous Part, else the previous TV Show Episode."
+      description "What plays before it: the previous Part, else the previous TV Show Episode. Nil when nothing precedes."
       constraints instance_of: ToPlay
       public? true
     end
 
     calculate :videos_after, {:array, :struct}, VideosAfter do
-      description "The Videos the Remote's Up next offers after it, at most 10."
+      description "The Videos that can play after it, in order, at most 10."
       constraints items: [instance_of: __MODULE__]
       public? true
     end
@@ -256,7 +256,7 @@ defmodule WatchClub.MediaCatalog.Video do
 
   aggregates do
     min :episode_rank, [:parts, :tv_show_episode], :rank do
-      description "The rank of the first TV Show Episode it holds a Part of, to sort the Media Browser."
+      description "The rank of the first TV Show Episode it holds a Part of. Nil without one."
     end
 
     # Where the Player offers the next episode and Watch Progress stops counting

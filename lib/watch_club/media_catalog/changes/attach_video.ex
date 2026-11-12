@@ -1,7 +1,6 @@
 defmodule WatchClub.MediaCatalog.Changes.AttachVideo do
   @moduledoc """
-  Links a Media's Video to its new Content, for a Manual Match or its removal. Use it on Media
-  actions, after the Media's `content_id` is set.
+  Links a Media's Video to the Media's Content, which must already be set.
 
   The Video holds Part 1 of the Movie or Sports Event, or of the TV Show Episode at the action's
   `season_number` and `episode_number`. Without Content, the Video holds no Part.

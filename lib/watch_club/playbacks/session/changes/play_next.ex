@@ -4,7 +4,7 @@ defmodule WatchClub.Playbacks.Session.Changes.PlayNext do
   the next TV Show Episode if it has Media. When nothing follows, the Playback Session ends.
 
   Expects the Playback Session locked. Fails with a stale record error when the `playback_id`
-  argument isn't the current Playback anymore, so a late report changes nothing.
+  argument isn't the current Playback anymore.
   """
   use Ash.Resource.Change
 

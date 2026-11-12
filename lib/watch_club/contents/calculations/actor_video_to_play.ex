@@ -1,7 +1,6 @@
 defmodule WatchClub.Contents.Calculations.ActorVideoToPlay do
   @moduledoc """
-  The Video a Play button opens for the actor, so they resume where they stopped. Load it as
-  `actor_video_to_play` on a Movie, TV Show Episode or Sports Event.
+  The Video where the actor resumes a Movie, TV Show Episode or Sports Event.
 
   Returns the Video of `videos_to_play` holding the Part of the actor's Watch Progress, or the
   first one when they haven't started or have finished. Nil when there is no Video.

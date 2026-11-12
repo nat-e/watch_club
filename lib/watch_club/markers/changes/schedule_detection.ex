@@ -1,7 +1,7 @@
 defmodule WatchClub.Markers.Changes.ScheduleDetection do
   @moduledoc """
   Schedules Marker detection for a saved Video: for the season of its TV Show Episode, or for its
-  Movie. Use it as a change on Video actions.
+  Movie.
 
   It schedules only when the file is new, its File Fingerprint changed or its Parts changed, or
   always with `always?: true`. Unmatched Media and Sports Events get no Markers. The job is

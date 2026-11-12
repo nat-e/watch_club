@@ -1,7 +1,6 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   @moduledoc """
   Finds the Parts of TV Show Episodes a file holds, from the episodes its source lists for it.
-  `MatchContent` uses it for TV Show Episode files.
 
   Sonarr numbers episodes like TVDB, which splits some episodes that TMDB lists as one, so the
   numbers can drift apart. Each source episode is matched to a TMDB episode, in this order:
@@ -28,8 +27,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   Pass the TV Show's `episodes` with their `localizations`, its TMDB id, and the file's
   `source_episodes` in their source's order.
 
-  Raises `TvShowEpisodeNotListedError` when a source episode matches none, so the file isn't
-  saved and a later import retries it.
+  Raises `TvShowEpisodeNotListedError` when a source episode matches none.
   """
   @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()]
   def find!(episodes, tmdb_id, source_episodes) do

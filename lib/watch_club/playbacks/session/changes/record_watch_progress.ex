@@ -1,6 +1,7 @@
 defmodule WatchClub.Playbacks.Session.Changes.RecordWatchProgress do
   @moduledoc """
-  Records the actor's Watch Progress from a heartbeat's position. Use it on the heartbeat action.
+  Records the actor's Watch Progress at the `position_seconds` argument, a position in the
+  current Playback's Video.
 
   For each work the Video holds a Part of, it saves the position through all the Parts, as if
   their Videos played one after the other, and the Part and the position in it. Each Video counts

@@ -35,9 +35,9 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   defmodule MatchResult do
     @moduledoc """
-    The result of the `MatchContent` stage. With `result: :success`, `parts` lists the Parts the
-    file holds, as maps for the Video's `parts` argument. With `:not_matched`, `parts` is empty. A
-    nil `match_result` on the `Candidate` means the stage hasn't run yet.
+    The result of matching a file to its Content. With `result: :success`, `parts` lists the
+    Parts the file holds, each a map with a `movie_id`, `tv_show_episode_id` or `sports_event_id`
+    and a `number`. With `:not_matched`, `parts` is empty. Nil until the file is matched.
     """
 
     @type t :: %__MODULE__{
@@ -67,8 +67,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     Identifies a TV Show, by its ids or else its `title`, and the `episodes` a file holds.
 
     Episode numbers come from the source: TVDB's for Sonarr, the file name's for a filesystem
-    Media Source. Sonarr also gives each episode's title, air date and TVDB id, which find the
-    TMDB episode when the numbers differ.
+    Media Source. Sonarr also gives each episode's title, air date and TVDB id.
     """
 
     defmodule Episode do
@@ -185,7 +184,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
 
   @doc """
   Turns a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, `identity` and
-  `regenerate_thumbnails_and_markers?`) into a map for an Oban job's args. `from_map/1` reverses it.
+  `regenerate_thumbnails_and_markers?`) into a map that can be stored as JSON. `from_map/1`
+  reverses it.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do

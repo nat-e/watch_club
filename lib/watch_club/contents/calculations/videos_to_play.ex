@@ -1,7 +1,6 @@
 defmodule WatchClub.Contents.Calculations.VideosToPlay do
   @moduledoc """
-  The Videos the Player plays for a Movie, TV Show Episode or Sports Event, one after the other.
-  Load it as `videos_to_play`.
+  The Videos to play for a Movie, TV Show Episode or Sports Event, one after the other.
 
   Returns Videos in Part order that hold each Part once: a whole file replaces its halves. Each
   Video comes with its `parts` and `credits_start_seconds`. Empty when there is no Video.

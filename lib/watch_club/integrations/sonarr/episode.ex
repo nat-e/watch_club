@@ -40,7 +40,7 @@ defmodule WatchClub.Integrations.Sonarr.Episode do
       tvdb_id: data["tvdbId"],
       has_file?: Map.get(data, "hasFile", false) == true,
       file_path: get_in(data, ["episodeFile", "path"]),
-      # The air date in its country's time zone, as TMDB gives it, so the two compare
+      # The local air date, in the country where it aired
       air_date: WatchClub.Helpers.maybe_date!(data["airDate"]),
       air_date_utc: WatchClub.Helpers.maybe_datetime!(data["airDateUtc"])
     }
