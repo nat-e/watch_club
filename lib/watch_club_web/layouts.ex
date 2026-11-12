@@ -89,7 +89,10 @@ defmodule WatchClubWeb.Layouts do
           # lines, and their padding
           @tv_bar_session &&
             "[--wc-tv-bar-height:var(--wc-size-row-lg)] md:[--wc-tv-bar-height:calc(4*var(--wc-space-related)+2.25rem)]",
-          !@tv_bar_session && "[--wc-tv-bar-height:0px]"
+          !@tv_bar_session && "[--wc-tv-bar-height:0px]",
+          # The bars docked at the bottom of the screen, which the page and the toasts stay above
+          "[--wc-bottom-bars-height:calc(var(--wc-tab-bar-height)+var(--wc-tv-bar-height))] md:[--wc-bottom-bars-height:var(--wc-tv-bar-height)]",
+          @full_screen? && "max-md:[--wc-bottom-bars-height:0px]"
         ]
       }
     >
@@ -100,11 +103,7 @@ defmodule WatchClubWeb.Layouts do
       />
 
       <%!-- Pages lay out by the main column's width, which leaves out the sidebar --%>
-      <div class={[
-        "@container/main md:pl-(--wc-sidebar-width)",
-        !@full_screen? && "pb-[calc(var(--wc-tab-bar-height)+var(--wc-tv-bar-height))]",
-        "md:pb-(--wc-tv-bar-height)"
-      ]}>
+      <div class="@container/main pb-(--wc-bottom-bars-height) md:pl-(--wc-sidebar-width)">
         <.app_bar
           :if={@app_bar?}
           title={@title}
@@ -146,9 +145,9 @@ defmodule WatchClubWeb.Layouts do
         current_user={@current_user}
         class={@full_screen? && "max-md:hidden"}
       />
-    </div>
 
-    <.flash flash={@flash} />
+      <.flash flash={@flash} />
+    </div>
     """
   end
 

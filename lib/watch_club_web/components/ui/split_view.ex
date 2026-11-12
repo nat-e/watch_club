@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
   @moduledoc """
   A list beside what's open from it, as on the Playlists page. Narrow screens show one at a time:
   the list, or what's open. Wider screens show both, each scrolling on its own under the app bar.
-  Phones float the list's main action above the tabs.
+  Phones float the list's main action above the bars docked at the bottom.
 
   It switches at the `split-view` width of the layout's main column, as the app bar's back arrow
   for a `narrow_only` parent does.
@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
   attr :open, :boolean, required: true, doc: "narrow screens show the detail instead of the list"
   slot :list, required: true
   slot :detail, required: true, doc: "a container, so its content follows its own width"
-  slot :fab, doc: "the list's main action, floating above the tabs on phones"
+  slot :fab, doc: "the list's main action, floating above the bars docked at the bottom on phones"
 
   def split_view(assigns) do
     ~H"""
@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
       </div>
       <div
         :if={@fab != [] and not @open}
-        class="fixed right-page bottom-[calc(var(--wc-tab-bar-height)+var(--spacing-group))] z-30 md:hidden"
+        class="fixed right-page bottom-[calc(var(--wc-bottom-bars-height)+var(--spacing-group))] z-30 md:hidden"
       >
         {render_slot(@fab)}
       </div>
