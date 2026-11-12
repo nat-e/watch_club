@@ -66,7 +66,7 @@ defmodule WatchClubWeb.HomePage do
             contents={tl(@in_progress)}
             locale={@current_user.settings.locale}
           />
-          <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
+          <.for_you items={@for_you} locale={@current_user.settings.locale} />
           <.new_in_library_row
             :if={@new_in_library != []}
             id="new-in-library"
@@ -87,7 +87,7 @@ defmodule WatchClubWeb.HomePage do
             <:description>
               {dgettext(
                 "home",
-                "Search for a title in Browse and request it. New titles will show up here."
+                "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
               )}
             </:description>
             <.button id="library-empty-browse" variant="secondary" navigate={~p"/browse"}>

@@ -47,31 +47,19 @@ msgstr "Continuer à regarder"
 #: lib/watch_club_web/live/home_page/for_you.ex
 #, elixir-autogen, elixir-format
 msgid "For you"
-msgstr "Pour vous"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page/for_you.ex
-#, elixir-autogen, elixir-format
-msgid "From %{user}"
-msgstr "De %{user}"
+msgstr "Pour toi"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "New in the library"
-msgstr "Nouveau dans la bibliothèque"
+msgstr "Nouveautés dans la bibliothèque"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr "Pas commencé"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page/for_you.ex
-#, elixir-autogen, elixir-format
-msgid "Ready to watch"
-msgstr "Prêt à regarder"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/continue_watching.ex
@@ -107,19 +95,13 @@ msgstr "À suivre"
 #: lib/watch_club_web/live/home_page/watching_now.ex
 #, elixir-autogen, elixir-format
 msgid "Watching now"
-msgstr "En train de regarder"
+msgstr "En ce moment"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing in the library yet"
 msgstr "La bibliothèque est encore vide"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
-msgid "Search for a title in Browse and request it. New titles will show up here."
-msgstr "Cherchez un titre dans Parcourir et demandez‑le. Les nouveaux titres apparaîtront ici."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page.ex
@@ -152,3 +134,39 @@ msgstr "Masquer"
 #, elixir-autogen, elixir-format
 msgid "Hide %{title}"
 msgstr "Masquer %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{user}"
+msgstr "Recommandation de %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
+msgstr "Demande les films et les séries que tu aimerais regarder. On les cherche et on les ajoute ici pour tout le monde."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "What friends recommend or share with you shows up here, and your requests once they're ready."
+msgstr "Ce que tes amis te recommandent ou partagent avec toi apparaîtra ici, ainsi que tes demandes une fois prêtes."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your TV show is ready"
+msgstr "Ta série est prête"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your movie is ready"
+msgstr "Ton film est prêt"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your sports event is ready"
+msgstr "Ton contenu est prêt"

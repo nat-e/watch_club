@@ -43,11 +43,6 @@ msgstr ""
 msgid "For you"
 msgstr ""
 
-#: lib/watch_club_web/live/home_page/for_you.ex
-#, elixir-autogen, elixir-format
-msgid "From %{user}"
-msgstr ""
-
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "New in the library"
@@ -56,11 +51,6 @@ msgstr ""
 #: lib/watch_club_web/live/home_page/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Not started"
-msgstr ""
-
-#: lib/watch_club_web/live/home_page/for_you.ex
-#, elixir-autogen, elixir-format
-msgid "Ready to watch"
 msgstr ""
 
 #: lib/watch_club_web/live/home_page/continue_watching.ex
@@ -100,11 +90,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
-msgid "Search for a title in Browse and request it. New titles will show up here."
-msgstr ""
-
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
 msgid "New sports events"
 msgstr ""
 
@@ -128,4 +113,34 @@ msgstr ""
 #: lib/watch_club_web/live/home_page/continue_watching.ex
 #, elixir-autogen, elixir-format
 msgid "Hide %{title}"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{user}"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "What friends recommend or share with you shows up here, and your requests once they're ready."
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your TV show is ready"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your movie is ready"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your sports event is ready"
 msgstr ""

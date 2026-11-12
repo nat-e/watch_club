@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.HomePage.ForYou do
   @moduledoc """
   For You on Home: the latest recommendations to the User, their Completed Content Requests and
-  the Playlists shared with them, newest first, one card each, seen or not.
+  the Playlists shared with them, newest first, one card each, seen or not. Until there is one, a
+  line says what will show up.
   """
   use WatchClubWeb, :component
 
@@ -39,7 +40,13 @@ defmodule WatchClubWeb.HomePage.ForYou do
   def for_you(assigns) do
     ~H"""
     <.page_section id="for-you-title" title={dgettext("home", "For you")}>
-      <.scroll_row id="for-you">
+      <p :if={@items == []} id="for-you-empty" class="text-text-muted">
+        {dgettext(
+          "home",
+          "What friends recommend or share with you shows up here, and your requests once they're ready."
+        )}
+      </p>
+      <.scroll_row :if={@items != []} id="for-you">
         <.for_you_card :for={item <- @items} item={item} locale={@locale} />
       </.scroll_row>
     </.page_section>
@@ -62,7 +69,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
       <:reason>
         <Lucideicons.message_circle class="size-icon-sm shrink-0" />
         <span class="truncate">
-          {dgettext("home", "From %{user}", user: username(@item.recommended_by))}
+          {dgettext("home", "Recommended by %{user}", user: username(@item.recommended_by))}
         </span>
       </:reason>
       <.recommendation_text
@@ -86,7 +93,7 @@ defmodule WatchClubWeb.HomePage.ForYou do
       </:artwork>
       <:reason>
         <Lucideicons.circle_check class="size-icon-sm shrink-0" />
-        <span class="truncate">{dgettext("home", "Ready to watch")}</span>
+        <span class="truncate">{completed_request_reason(@item.content.type)}</span>
       </:reason>
       <time
         datetime={DateTime.to_iso8601(@item.content.added_to_library_at)}
@@ -120,6 +127,12 @@ defmodule WatchClubWeb.HomePage.ForYou do
     </.card_frame>
     """
   end
+
+  defp completed_request_reason(:movie), do: dgettext("home", "Your movie is ready")
+  defp completed_request_reason(:tv_show), do: dgettext("home", "Your TV show is ready")
+
+  defp completed_request_reason(:sports_event),
+    do: dgettext("home", "Your sports event is ready")
 
   attr :id, :string, required: true
   attr :navigate, :string, required: true
