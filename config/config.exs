@@ -108,7 +108,6 @@ config :watch_club, Oban,
   # Retries jobs left in `executing` by a crash or a deploy
   lifeline: [rescue_after: {2, :hours}],
   queues: [
-    activity_feed_event_handlers: 5,
     media_source_scans: 1,
     media_candidate_ingestions: 3,
     media_import_monitors: 5,

@@ -15,7 +15,7 @@ defmodule WatchClub.History.WatchProgress do
     notifiers: [Ash.Notifier.PubSub]
 
   alias WatchClub.Accounts.User
-  alias WatchClub.ActivityFeed.Changes.ScheduleContentWatchedEventSync
+  alias WatchClub.ActivityFeed.Changes.AddContentWatchedEvent
   alias WatchClub.Contents.{Book, Content, ContentIdentity, Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.History.Watcher
   alias WatchClub.History.WatchProgress.Actions.{ListWatchers, MarkNotWatched, MarkWatched}
@@ -53,13 +53,10 @@ defmodule WatchClub.History.WatchProgress do
   end
 
   actions do
-    # :destroy stays atomic; MarkNotWatched recomputes the ContentWatchedEvent after the bulk delete.
     defaults [:read, :destroy]
 
-    # Mark watched is only intended to use by the generic mark_*_watched actions.
-    # It does not trigger side-effect to stay atomic to keep marking a show with many
-    # episodes watched fast.
-    # Side effects are triggered once per batch on the generic actions
+    # Only for the generic mark_content_watched action, which marks many episodes at once.
+    # Marking doesn't add Feed Events: only playing past 90% does.
     create :mark_watched do
       description "Marks a single movie, book, episode or Sports Event as watched"
       primary? true
@@ -110,7 +107,7 @@ defmodule WatchClub.History.WatchProgress do
       ]
 
       change relate_actor(:user)
-      change ScheduleContentWatchedEventSync
+      change AddContentWatchedEvent
     end
 
     action :mark_content_watched, :struct do

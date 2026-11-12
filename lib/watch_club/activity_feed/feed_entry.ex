@@ -1,6 +1,6 @@
 defmodule WatchClub.ActivityFeed.FeedEntry do
   @moduledoc """
-  The watching Feed Events of one User within 12 hours of the entry's first event.
+  The Feed Events of one User within 12 hours of the entry's first event.
   Every User sees every entry, latest activity first.
   """
   use Ash.Resource,
@@ -24,7 +24,13 @@ defmodule WatchClub.ActivityFeed.FeedEntry do
 
       prepare build(
                 sort: [latest_at: :desc, group_key: :asc],
-                load: [events: [:actor, content: [:title, :poster_path]]]
+                load: [
+                  events: [
+                    :actor,
+                    content: [:title, :poster_path],
+                    tv_show_episode: :formatted_episode_number
+                  ]
+                ]
               )
     end
   end

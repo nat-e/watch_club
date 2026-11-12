@@ -25,16 +25,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/home_page/activity_feed.ex
 #, elixir-autogen, elixir-format
-msgid "%{user} is watching %{contents}"
-msgstr ""
-
-#: lib/watch_club_web/live/home_page/activity_feed.ex
-#, elixir-autogen, elixir-format
-msgid "%{user} is watching %{watching}, and watched %{watched}"
-msgstr ""
-
-#: lib/watch_club_web/live/home_page/activity_feed.ex
-#, elixir-autogen, elixir-format
 msgid "%{user} watched %{contents}"
 msgstr ""
 
@@ -117,3 +107,10 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "New sports events"
 msgstr ""
+
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} episode of %{show}"
+msgid_plural "%{count} episodes of %{show}"
+msgstr[0] ""
+msgstr[1] ""

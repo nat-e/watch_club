@@ -176,25 +176,10 @@ defmodule WatchClubWeb.HomePage do
 
   def handle_info(_message, socket), do: {:noreply, socket}
 
-  # A Feed Event joined or left a Feed Entry: reload the entry. A new event moves its entry to the
-  # top. A removed one updates the entry in place, or removes it once it has no events left.
-  defp reload_after(socket, %Notification{
-         resource: ContentWatchedEvent,
-         action: action,
-         data: %{group_key: key}
-       }) do
+  # A Feed Event joined a Feed Entry: reload the entry and move it to the top
+  defp reload_after(socket, %Notification{resource: ContentWatchedEvent, data: %{group_key: key}}) do
     entry = ActivityFeed.get_user_feed_entry!(key, actor: socket.assigns.current_user)
-
-    case {action.type, entry} do
-      {_type, nil} ->
-        stream_delete_by_dom_id(socket, :feed, feed_entry_dom_id(key))
-
-      {:create, entry} ->
-        socket |> stream_delete(:feed, entry) |> stream_insert(:feed, entry, at: 0)
-
-      {:destroy, entry} ->
-        stream_insert(socket, :feed, entry, update_only: true)
-    end
+    socket |> stream_delete(:feed, entry) |> stream_insert(:feed, entry, at: 0)
   end
 
   defp reload_after(socket, %Notification{resource: resource})
