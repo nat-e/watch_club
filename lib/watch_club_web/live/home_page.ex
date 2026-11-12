@@ -66,14 +66,14 @@ defmodule WatchClubWeb.HomePage do
             locale={@current_user.settings.locale}
           />
           <.for_you :if={@for_you != []} items={@for_you} locale={@current_user.settings.locale} />
-          <.new_in_library
+          <.new_in_library_row
             :if={@new_in_library != []}
             id="new-in-library"
             title={dgettext("home", "New in the library")}
             contents={@new_in_library}
             current_user={@current_user}
           />
-          <.new_in_library
+          <.new_in_library_row
             :if={@new_sports_events != []}
             id="new-sports-events"
             title={dgettext("home", "New sports events")}
@@ -117,7 +117,7 @@ defmodule WatchClubWeb.HomePage do
   attr :contents, :list, required: true, doc: "with `@new_in_library_load` loaded"
   attr :current_user, User, required: true
 
-  defp new_in_library(assigns) do
+  defp new_in_library_row(assigns) do
     ~H"""
     <.page_section id={"#{@id}-title"} title={@title}>
       <.scroll_row id={@id}>

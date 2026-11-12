@@ -141,9 +141,12 @@ defmodule WatchClub.Contents.Content do
       filter expr(has_media? and not exists(request, not completed?))
 
       prepare fn query, _context ->
-        types = SearchContentType.content_types(query.arguments.content_type)
-        Ash.Query.filter(query, type in ^types)
-      end
+                types =
+                  SearchContentType.content_types(Ash.Query.get_argument(query, :content_type))
+
+                Ash.Query.filter(query, type in ^types)
+              end,
+              only_when_valid?: true
 
       prepare build(sort: [added_to_library_at: :desc, id: :desc])
     end
