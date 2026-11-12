@@ -5,6 +5,8 @@ defmodule WatchClub.Contents.Content do
     data_layer: AshPostgres.DataLayer,
     notifiers: [Ash.Notifier.PubSub]
 
+  require Ash.Query
+
   alias WatchClub.Contents.{
     Book,
     ContentIdentity,
@@ -132,8 +134,17 @@ defmodule WatchClub.Contents.Content do
     end
 
     read :new_in_library do
-      description "The Content in the Library, the latest added first. A requested one waits until its Content Request is Completed."
+      description "The Content of one scope in the Library, the latest added first. A requested one waits until its Content Request is Completed."
+
+      argument :content_type, SearchContentType, allow_nil?: false, default: :movies_and_shows
+
       filter expr(has_media? and not exists(request, not completed?))
+
+      prepare fn query, _context ->
+        types = SearchContentType.content_types(query.arguments.content_type)
+        Ash.Query.filter(query, type in ^types)
+      end
+
       prepare build(sort: [added_to_library_at: :desc, id: :desc])
     end
 
