@@ -230,6 +230,28 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert session.current_playback.media_id == next_episode.id
     end
 
+    test "plays a file holding every Part of the next TV Show Episode rather than its halves" do
+      user = generate(user())
+
+      [episode, next_episode] =
+        episodes(generate(tv_show(num_seasons: 1, episodes_per_season: 2)))
+
+      every_part =
+        for number <- [1, 2], do: %{tv_show_episode_id: next_episode.id, number: number}
+
+      for part <- every_part, do: generate(video_media(next_episode, video: %{parts: [part]}))
+      whole = generate(video_media(next_episode, video: %{parts: every_part}))
+      session = generate(playback_session(generate(video_media(episode)), started_by: user))
+
+      session =
+        Playbacks.play_next!(session, "player", session.current_playback.id,
+          load: :current_playback,
+          actor: user
+        )
+
+      assert session.current_playback.media_id == whole.id
+    end
+
     test "ends the Playback Session when nothing follows" do
       user = generate(user())
       session = generate(playback_session(movie_media(), started_by: user))

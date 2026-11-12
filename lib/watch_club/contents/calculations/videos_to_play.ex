@@ -1,8 +1,7 @@
 defmodule WatchClub.Contents.Calculations.VideosToPlay do
   @moduledoc """
-  The files Play plays for a Movie, TV Show Episode or Sports Event, one after another: the oldest
-  copy of each Part, in order, skipping the Parts a file before already holds. Each Video comes
-  with its `credits_start_seconds` and its `parts`.
+  The Videos to play for a Movie, TV Show Episode or Sports Event, in order, never repeating a
+  Part. Each has `parts` and `credits_start_seconds`.
   """
   use Ash.Resource.Calculation
 
@@ -18,28 +17,37 @@ defmodule WatchClub.Contents.Calculations.VideosToPlay do
   def calculate(records, _opts, _context), do: Enum.map(records, &videos_to_play(&1.parts))
 
   defp videos_to_play(parts) do
-    numbers_by_video =
-      for part <- parts, video <- part.videos, reduce: %{} do
-        numbers -> Map.update(numbers, video.id, [part.number], &[part.number | &1])
-      end
+    work_part_ids = MapSet.new(parts, & &1.id)
 
-    {videos, _held} =
-      Enum.reduce(parts, {[], MapSet.new()}, fn part, {videos, held} ->
-        if MapSet.member?(held, part.number) do
-          {videos, held}
+    {videos, _played} =
+      Enum.reduce(parts, {[], MapSet.new()}, fn part, {videos, played} ->
+        if part.id in played do
+          {videos, played}
         else
-          [video | _copies] = part.videos
-          {[video | videos], MapSet.union(held, MapSet.new(numbers_by_video[video.id]))}
+          video = pick(part.videos, played, work_part_ids)
+          held = for other <- video.parts, other.id in work_part_ids, into: played, do: other.id
+          {[video | videos], held}
         end
       end)
 
     Enum.reverse(videos)
   end
 
+  # A whole file beats its halves, so prefer the copy holding the most of the work's Parts, then
+  # the oldest. Skip copies that repeat a played Part, unless they all do.
+  defp pick([oldest | _] = copies, played, work_part_ids) do
+    copies
+    |> Enum.reject(fn video -> Enum.any?(video.parts, &(&1.id in played)) end)
+    |> Enum.max_by(
+      fn video -> Enum.count(video.parts, &(&1.id in work_part_ids)) end,
+      &>=/2,
+      fn -> oldest end
+    )
+  end
+
   @doc """
-  Splits the `videos_to_play` of a Movie, TV Show Episode or Sports Event at the playing `video`,
-  which holds its `part`: the files before it, and the rest from it. When the `video` is a copy
-  Play doesn't play, the file Play plays for its `part` stands for it.
+  Splits `videos_to_play` into the Videos before the playing `video` and the rest, from it on.
+  If `video` is a copy that isn't listed, splits at the listed Video holding its `part`.
   """
   def split_at(videos_to_play, video, part),
     do: Enum.split_while(videos_to_play, &(not holds?(&1, video, part)))

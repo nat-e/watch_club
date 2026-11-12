@@ -1,8 +1,7 @@
 defmodule WatchClubWeb.Helpers.NowPlaying do
   @moduledoc """
   What a Video plays, in words and pictures, for the Player, the TV, the TV bar and the Remote.
-  They name its Part when its Movie, TV Show Episode or Sports Event has several: Friends · S06E15 ·
-  Part 2.
+  They name its Part when it holds only some of the Parts: Friends · S06E15 · Part 2.
   """
   use Gettext, backend: WatchClubWeb.Gettext
 
@@ -101,9 +100,14 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   defp numbers(first, last),
     do: "#{first.formatted_episode_number}–#{last.formatted_episode_number}"
 
-  # Names the Part it plays when its Movie, TV Show Episode or Sports Event has several
-  defp with_part(text, %Video{parts: [part | _]}) do
-    if length(Part.work(part).parts) > 1, do: "#{text} · #{Parts.name(part)}", else: text
+  # Names the Parts a file holds when they're only some of its work's Parts: Part 2
+  defp with_part(text, %Video{parts: [first | _] = parts}) do
+    work = Part.work(first)
+    held = Enum.filter(parts, &(Part.work_id(&1) == work.id))
+
+    if length(held) < length(work.parts),
+      do: "#{text} · #{Enum.map_join(held, ", ", &Parts.name/1)}",
+      else: text
   end
 
   @doc "The TMDB path of a 16:9 picture of it, or the image URL of a Sports Event's."

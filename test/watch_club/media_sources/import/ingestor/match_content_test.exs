@@ -632,7 +632,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert part == %{tv_show_episode_id: morning_after.id, number: 1}
     end
 
-    test "matches a file holding every half of a TV Show Episode to its Part 1" do
+    test "matches a file holding every half of a TV Show Episode to all its Parts" do
       show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 2))
       [fun_run, _dunder_mifflin_infinity] = title(show, ["Fun Run", "Dunder Mifflin Infinity"])
 
@@ -650,10 +650,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
             end
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :success, parts: parts}} =
                MatchContent.apply!(candidate)
 
-      assert part == %{tv_show_episode_id: fun_run.id, number: 1}
+      assert parts == [
+               %{tv_show_episode_id: fun_run.id, number: 1},
+               %{tv_show_episode_id: fun_run.id, number: 2}
+             ]
     end
 
     test "matches a file holding two TV Show Episodes to a Part of each" do

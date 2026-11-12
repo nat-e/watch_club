@@ -208,8 +208,8 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         </span>
         <span class="flex flex-wrap gap-x-related text-xs text-text-muted">
           <span :if={@runtime}>{@runtime}</span>
-          <span :if={length(@episode.parts) > 1}>
-            {dngettext("contents", "%{count} part", "%{count} parts", length(@episode.parts))}
+          <span :if={length(@episode.videos_to_play) > 1}>
+            {dngettext("contents", "%{count} part", "%{count} parts", length(@episode.videos_to_play))}
           </span>
           <span :if={@shares_file_with != []}>
             {dgettext("contents", "Same file as %{episodes}",
@@ -350,6 +350,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
         :has_media?,
         :actor_progress_status,
         :actor_progress,
+        :videos_to_play,
         :actor_video_to_play,
         parts: [videos: [:media, :default_video_track, parts: :tv_show_episode]]
       ],

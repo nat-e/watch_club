@@ -12,9 +12,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   Titles match without their case, punctuation, leading "The" and a part marker such as "(2)"
   or "Part 2", which must be the same when both titles have one. A source episode found by its
   title alone, whose title has a part marker that the TV Show Episode's title lacks, is that
-  Part of it: "Fun Run (2)" is Part 2 of "Fun Run". Any other is Part 1, and so is a file
-  holding every half of one. On an episode found by its number, a part marker rather means a
-  story told over two episodes with different titles, such as "The One with the Morning After (2)".
+  Part of it: "Fun Run (2)" is Part 2 of "Fun Run". Any other is Part 1. On an episode found by
+  its number, a part marker rather means a story told over two episodes with different titles,
+  such as "The One with the Morning After (2)".
   """
 
   alias WatchClub.Contents.TvShowEpisode
@@ -40,7 +40,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
           season_number: source.season_number,
           episode_number: source.episode_number
     end)
-    |> Enum.uniq_by(fn {episode, _number} -> episode.id end)
+    |> Enum.uniq_by(fn {episode, number} -> {episode.id, number} end)
     |> Enum.map(fn {episode, number} -> %{tv_show_episode_id: episode.id, number: number} end)
   end
 
