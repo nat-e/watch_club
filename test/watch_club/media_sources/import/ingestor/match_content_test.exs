@@ -607,6 +607,38 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert part == %{tv_show_episode_id: fun_run.id, number: 2}
     end
 
+    test "matches an episode without an air date by its title in the same season" do
+      show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 2))
+      [fun_run, _dunder_mifflin_infinity] = title(show, ["Fun Run", "Dunder Mifflin Infinity"])
+
+      candidate =
+        candidate_with(%EpisodeIdentity{
+          tmdb_id: 1668,
+          episodes: [%Episode{season_number: 1, episode_number: 2, title: "Fun Run (2)"}]
+        })
+
+      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+               MatchContent.apply!(candidate)
+
+      assert part == %{tv_show_episode_id: fun_run.id, number: 2}
+    end
+
+    test "doesn't match an episode without an air date by its title in another season" do
+      show = generate(tv_show(external_id: "1668", num_seasons: 2, episodes_per_season: 1))
+      [_fun_run, season_2_premiere] = title(show, ["Fun Run", "Weight Loss"])
+
+      candidate =
+        candidate_with(%EpisodeIdentity{
+          tmdb_id: 1668,
+          episodes: [%Episode{season_number: 2, episode_number: 1, title: "Fun Run (2)"}]
+        })
+
+      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+               MatchContent.apply!(candidate)
+
+      assert part == %{tv_show_episode_id: season_2_premiere.id, number: 1}
+    end
+
     test "matches an episode with the TV Show Episode's number and title to its Part 1, even with a part marker" do
       show = generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 2))
 

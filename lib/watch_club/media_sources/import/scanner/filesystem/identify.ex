@@ -54,14 +54,24 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
 
     path_ids = ExternalIdExtractor.from_text(Path.dirname(candidate.path))
 
+    numbers =
+      case episode do
+        %{episode_number: first, ending_episode_number: last} -> Enum.to_list(first..last)
+        _one_or_none -> [episode[:episode_number]]
+      end
+
     %EpisodeIdentity{
       title: title,
-      episodes: [
-        %EpisodeIdentity.Episode{
-          season_number: episode[:season_number],
-          episode_number: episode[:episode_number]
-        }
-      ],
+      episodes:
+        numbers
+        |> Enum.zip(episode_titles(episode[:episode_title], numbers))
+        |> Enum.map(fn {number, episode_title} ->
+          %EpisodeIdentity.Episode{
+            season_number: episode[:season_number],
+            episode_number: number,
+            title: episode_title
+          }
+        end),
       tmdb_id: path_ids.tmdb,
       tvdb_id: path_ids.tvdb,
       imdb_id: path_ids.imdb
@@ -85,5 +95,17 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Identify do
 
   defp extract_identity(:ebook, _candidate, _media_source) do
     raise "Books not supported yet"
+  end
+
+  # Sonarr joins a file's episode titles with " + ", but names the halves of one story by their
+  # shared title, "Fun Run" for "Fun Run (1)" and "Fun Run (2)": each half gets its part number back
+  defp episode_titles(title, [_number]), do: [title]
+  defp episode_titles(nil, numbers), do: Enum.map(numbers, fn _number -> nil end)
+
+  defp episode_titles(title, numbers) do
+    case String.split(title, " + ") do
+      titles when length(titles) == length(numbers) -> titles
+      _shared -> Enum.map(1..length(numbers), &"#{title} (#{&1})")
+    end
   end
 end

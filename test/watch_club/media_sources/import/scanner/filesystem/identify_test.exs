@@ -104,6 +104,58 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.IdentifyTest do
              } = Identify.apply(candidate, source)
     end
 
+    test "takes the episode's title from the filename" do
+      candidate =
+        Candidate.new(
+          "/library/The Office (US)/Season 04/The Office (US) - S04E02 - Fun Run (2) [WEBDL-1080p]-GRP.mkv",
+          :tv_show_episode
+        )
+
+      source = source_for(:tv_show_episode, "/library")
+
+      assert %Candidate{
+               identity: %EpisodeIdentity{
+                 episodes: [
+                   %EpisodeIdentity.Episode{
+                     season_number: 4,
+                     episode_number: 2,
+                     title: "Fun Run (2)"
+                   }
+                 ]
+               }
+             } = Identify.apply(candidate, source)
+    end
+
+    test "builds an episode for each number of a file holding several, each with its title" do
+      candidate =
+        Candidate.new("/library/Show - S01E01-E02 - Pilot + Second.mkv", :tv_show_episode)
+
+      source = source_for(:tv_show_episode, "/library")
+
+      assert %Candidate{identity: %EpisodeIdentity{episodes: episodes}} =
+               Identify.apply(candidate, source)
+
+      assert episodes == [
+               %EpisodeIdentity.Episode{season_number: 1, episode_number: 1, title: "Pilot"},
+               %EpisodeIdentity.Episode{season_number: 1, episode_number: 2, title: "Second"}
+             ]
+    end
+
+    test "gives each half of a story in one file the title they share with its part number" do
+      candidate =
+        Candidate.new("/library/The Office (US) - S04E01-E02 - Fun Run.mkv", :tv_show_episode)
+
+      source = source_for(:tv_show_episode, "/library")
+
+      assert %Candidate{identity: %EpisodeIdentity{episodes: episodes}} =
+               Identify.apply(candidate, source)
+
+      assert Enum.map(episodes, &{&1.episode_number, &1.title}) == [
+               {1, "Fun Run (1)"},
+               {2, "Fun Run (2)"}
+             ]
+    end
+
     test "falls back to deriving the show title from the path when the filename lacks one" do
       candidate = Candidate.new("/library/American Gods/Season 01/S01E03.mkv", :tv_show_episode)
       source = source_for(:tv_show_episode, "/library")

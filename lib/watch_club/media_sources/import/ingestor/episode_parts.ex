@@ -2,11 +2,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   @moduledoc """
   Finds the Parts of TV Show Episodes a file holds, from the episodes its source lists for it.
 
-  Sonarr numbers episodes like TVDB, which splits some episodes that TMDB lists as one, so the
-  numbers can drift apart. Each source episode is matched to a TMDB episode, in this order:
+  Sonarr, and the file names it writes, number episodes like TVDB, which splits some episodes
+  that TMDB lists as one, so the numbers can drift apart. Each source episode is matched to a
+  TMDB episode, in this order:
 
   1. the same number, if the titles match;
-  2. the same title, if they aired within a day of each other;
+  2. the same title, if they aired within a day of each other, or are in the same season when
+     the source has no air date, as with a file name;
   3. the episode TMDB links to its TVDB id;
   4. the same number.
 
@@ -55,7 +57,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
       numbered && same_title?(source, numbered) ->
         {numbered, 1}
 
-      titled = Enum.find(episodes, &(same_title?(source, &1) and aired_within_a_day?(source, &1))) ->
+      titled = Enum.find(episodes, &(same_title?(source, &1) and aired_close?(source, &1))) ->
         {titled, part_number(source, titled)}
 
       linked = linked_to_tvdb_id!(source, episodes, tmdb_id) ->
@@ -84,13 +86,16 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
     end
   end
 
-  defp aired_within_a_day?(
+  defp aired_close?(
          %Episode{air_date: %Date{} = aired},
          %TvShowEpisode{air_date: %Date{}} = episode
        ),
        do: abs(Date.diff(aired, episode.air_date)) <= 1
 
-  defp aired_within_a_day?(_source, _episode), do: false
+  defp aired_close?(%Episode{air_date: nil} = source, %TvShowEpisode{} = episode),
+    do: source.season_number == episode.season_number
+
+  defp aired_close?(_source, _episode), do: false
 
   defp linked_to_tvdb_id!(%Episode{tvdb_id: tvdb_id}, episodes, tmdb_id)
        when is_integer(tvdb_id) do
