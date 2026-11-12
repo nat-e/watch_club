@@ -3,7 +3,9 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   Token-driven Watch Club dropdown menu primitive.
 
   Uses the native Popover API for top-layer rendering and dismissal. A small
-  colocated hook only positions the popover next to its trigger.
+  colocated hook positions the popover next to its trigger, and returns focus
+  to the trigger when an item is chosen, so a modal the item opens returns
+  focus there too.
   """
 
   use Phoenix.Component
@@ -20,7 +22,7 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
   def dropdown_menu(assigns) do
     ~H"""
     <%!--
-      The hook owns popover positioning only. Menu content remains
+      The hook positions the popover and focuses its trigger. Menu content remains
       LiveView-owned so conditional items can patch; ignore only the inline
       style written while positioning the popover.
     --%>
@@ -110,9 +112,6 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           if (isOpen(this.content)) {
             this.content.hidePopover();
           } else {
-            // Keyboard activation (Enter/Space) fires a click with detail 0. We
-            // only restore focus to the trigger on close for keyboard opens.
-            this.openedViaKeyboard = event.detail === 0;
             this.content.style.visibility = "hidden";
             this.content.showPopover();
             this.position();
@@ -130,6 +129,8 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
           }
 
           this.content.hidePopover();
+          // hidePopover() returns focus only from inside the menu, and Safari doesn't focus a clicked item
+          this.triggerControl.focus();
         },
         onKeydown(event) {
           // Escape closes only the open menu (the browser does it), not what
@@ -145,11 +146,6 @@ defmodule WatchClubWeb.Components.UI.DropdownMenu do
             this.addPositionListeners();
           } else {
             this.removePositionListeners();
-
-            // A pointer-opened menu leaves the trigger focused on dismissal, which
-            // would keep a hover-reveal overlay (e.g. the content card) open. Drop
-            // that focus; keyboard opens keep it so focus returns to the trigger.
-            if (!this.openedViaKeyboard) this.triggerControl.blur();
           }
         },
         addPositionListeners() {
