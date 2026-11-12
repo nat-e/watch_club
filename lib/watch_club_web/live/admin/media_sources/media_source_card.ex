@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
       padding="group"
       surface="raised"
       shadow={false}
-      class="flex flex-col gap-group phx-click-loading:pointer-events-none phx-click-loading:opacity-50"
+      class="flex flex-col gap-group inert:opacity-50"
     >
       <div class="flex items-start gap-related">
         <.stack space="tight" class="min-w-0 flex-1">

@@ -43,10 +43,12 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
           id="confirm-delete-media-source-button"
           variant="danger"
           phx-click={
-            JS.push("confirm_delete_media_source",
+            # The card's actions would wait for the delete, then act on a deleted Media Source
+            JS.set_attribute({"inert", ""}, to: "#media-source-card-#{@media_source.id}")
+            # Hides Cancel, since the delete can't be cancelled
+            |> JS.push("confirm_delete_media_source",
               value: %{id: @media_source.id},
-              # The delete can't be cancelled, and the card's actions wait for it
-              loading: "#cancel-delete-media-source-button, #media-source-card-#{@media_source.id}"
+              loading: "#cancel-delete-media-source-button"
             )
           }
           phx-disable-with={dgettext("admin_media_imports", "Deleting…")}
