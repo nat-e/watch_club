@@ -154,9 +154,6 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
             assigns.in_library? and !playable? ->
               dgettext("contents", "Not in the library yet")
 
-            watching? ->
-              dgettext("contents", "You're watching it")
-
             true ->
               nil
           end
