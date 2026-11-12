@@ -28,7 +28,7 @@ defmodule WatchClubWeb.Components.UI.SplitView do
       </div>
       <div
         :if={@fab != [] and not @open}
-        class="fixed right-page bottom-[calc(var(--wc-tab-bar-height)+var(--spacing-group))] z-30 md:hidden"
+        class="fixed right-page bottom-[calc(var(--wc-bottom-bars-height)+var(--spacing-group))] z-30 md:hidden"
       >
         {render_slot(@fab)}
       </div>
