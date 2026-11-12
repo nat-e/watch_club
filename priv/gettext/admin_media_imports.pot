@@ -533,45 +533,50 @@ msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} failed"
-msgid_plural "%{count} failed"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} matched"
-msgid_plural "%{count} matched"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} unmatched"
-msgid_plural "%{count} unmatched"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} unreadable"
-msgid_plural "%{count} unreadable"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{processed} of %{count} file"
-msgid_plural "%{processed} of %{count} files"
-msgstr[0] ""
-msgstr[1] ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
 msgid "Finding files…"
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "No files to process"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} failed"
+msgid_plural "%{number} failed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} matched"
+msgid_plural "%{number} matched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unmatched"
+msgid_plural "%{number} unmatched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unreadable"
+msgid_plural "%{number} unreadable"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{processed} of %{total} file"
+msgid_plural "%{processed} of %{total} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "See every unmatched file"
 msgstr ""

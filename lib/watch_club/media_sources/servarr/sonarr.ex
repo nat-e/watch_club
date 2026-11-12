@@ -111,7 +111,8 @@ defmodule WatchClub.MediaSources.Servarr.Sonarr do
         nil ->
           Logger.warning(
             "Sonarr webhook's file in #{event.series_path} is outside the Media Source's root folder",
-            event: :servarr_webhook_file_outside_source
+            event: :servarr_webhook_file_outside_source,
+            path: event.series_path
           )
 
           []

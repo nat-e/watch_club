@@ -9,6 +9,7 @@ defmodule WatchClub.Application do
   def start(_type, _args) do
     WatchClub.Telemetry.setup!()
     WatchClub.Shared.ObanLogger.attach()
+    WatchClub.MediaSources.Import.IngestReporter.attach()
 
     children = [
       {Cachex, [:tmdb_api_cache]},

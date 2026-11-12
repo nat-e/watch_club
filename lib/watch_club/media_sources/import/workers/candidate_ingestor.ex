@@ -10,9 +10,10 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       scan.
 
   Each run ends with the file's outcome: `matched`, `unmatched`, or `unreadable` when ffprobe
-  can't read it, which saves no Media. It counts the file on its Media Import, and reports the
-  outcome, with a reason, in one log line, in its trace span and in a
-  `[:watch_club, :media_ingest]` telemetry span. An exception makes Oban retry with backoff.
+  can't read it, which saves no Media. It counts the file on its Media Import, and emits the
+  outcome, with a reason, in a `[:watch_club, :media_ingest]` telemetry span, which
+  `IngestReporter` logs and `WatchClubWeb.Telemetry` measures. A crash is the `failed` outcome:
+  Oban retries it with backoff, and the last attempt counts the file as failed.
 
   Unique on `(media_source_id, media_import_id, path)` over active states; webhook jobs have no
   `media_import_id` and dedupe by Media Source and `path`.
@@ -28,15 +29,12 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       period: :infinity
     ]
 
-  alias OpenTelemetry.Tracer
   alias WatchClub.MediaSources
   alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MatchResult
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
   alias WatchClub.SystemActor
-
-  require Logger
 
   @doc """
   Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
@@ -62,82 +60,58 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
   end
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args}) do
+  def perform(%Oban.Job{args: args} = job) do
     candidate = Candidate.from_map(args)
     media_import_id = args["media_import_id"]
+    trigger = if media_import_id, do: :media_import, else: :webhook
 
     Logger.metadata(
       path: candidate.path,
       media_type: candidate.media_type,
-      media_import_id: media_import_id
+      media_import_id: media_import_id,
+      trigger: trigger
     )
 
-    start_metadata = %{
-      media_type: candidate.media_type,
-      trigger: if(media_import_id, do: :media_import, else: :webhook)
-    }
+    start_metadata = %{path: candidate.path, media_type: candidate.media_type, trigger: trigger}
 
     :telemetry.span([:watch_club, :media_ingest], start_metadata, fn ->
-      {outcome, reason} = ingest(candidate)
-
-      if media_import_id do
-        media_import_id
-        |> MediaSources.get_media_import_by_id!(actor: SystemActor.actor())
-        |> MediaSources.count_media_import_file!(outcome, actor: SystemActor.actor())
-      end
-
-      Tracer.set_attributes(%{
-        "file.path" => candidate.path,
-        "watch_club.media.type" => to_string(candidate.media_type),
-        "watch_club.media_ingest.outcome" => to_string(outcome),
-        "watch_club.media_ingest.reason" => to_string(reason)
-      })
-
-      {:ok, Map.merge(start_metadata, %{outcome: outcome, reason: reason})}
+      outcome = ingest(candidate)
+      count_file!(media_import_id, outcome.outcome)
+      {:ok, Map.merge(start_metadata, outcome)}
     end)
+  rescue
+    exception ->
+      # Oban retries a crash, and the last one counts the file as failed
+      if job.attempt >= job.max_attempts, do: count_file!(args["media_import_id"], :failed)
+      reraise exception, __STACKTRACE__
   end
 
-  # Ingests the file and logs its outcome, returned as `{outcome, reason}`
-  defp ingest(%Candidate{path: path} = candidate) do
+  # The file's outcome, its reason, and what explains it
+  defp ingest(%Candidate{} = candidate) do
     case ExtractStructure.apply(candidate) do
       {:ok, candidate} ->
         %Candidate{match_result: %MatchResult{result: result, reason: reason}} =
           candidate = MatchContent.apply!(candidate)
 
-        SaveMedia.apply(candidate)
+        SaveMedia.apply!(candidate)
 
-        {level, message} =
-          case {result, reason} do
-            {:matched, :manual_match} ->
-              {:info, "#{path} keeps its Manual Match"}
-
-            {:matched, nil} ->
-              {:info, "Matched #{path}"}
-
-            {:unmatched, :content_not_found} ->
-              {:warning, "No Content matches #{path}"}
-
-            {:unmatched, :episode_not_listed} ->
-              {:warning, "TMDB doesn't list the TV Show Episode of #{path}"}
-          end
-
-        Logger.log(level, message,
-          event: :media_ingested,
+        %{
           outcome: result,
           reason: reason,
           tmdb_id: get_in(candidate.identity, [Access.key(:tmdb_id)])
-        )
-
-        {result, reason}
+        }
 
       {:error, error} ->
-        Logger.warning("Couldn't read #{path}: #{inspect(error)}",
-          event: :media_ingested,
-          outcome: :unreadable,
-          error: error
-        )
-
-        {:unreadable, nil}
+        %{outcome: :unreadable, reason: nil, error: error}
     end
+  end
+
+  # A webhook's file has no Media Import
+  defp count_file!(nil, _outcome), do: :ok
+
+  defp count_file!(media_import_id, outcome) do
+    media_import_id
+    |> MediaSources.get_media_import_by_id!(actor: SystemActor.actor())
+    |> MediaSources.count_media_import_file!(outcome, actor: SystemActor.actor())
   end
 end

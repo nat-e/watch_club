@@ -8,9 +8,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
   alias WatchClub.MediaSources.Import.Candidate.MatchResult
   alias WatchClub.SystemActor
 
-  require Logger
-
-  def apply(%Candidate{media_type: media_type} = candidate)
+  def apply!(%Candidate{media_type: media_type} = candidate)
       when media_type in [:movie, :tv_show_episode, :sports_event] do
     media =
       MediaCatalog.create_or_update_video!(
@@ -28,30 +26,21 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       MediaCatalog.regenerate_thumbnails_and_markers!(media.video, actor: SystemActor.actor())
     end
 
-    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
     media
   end
 
-  def apply(%Candidate{media_type: :audiobook} = candidate) do
-    media =
-      MediaCatalog.create_or_update_audiobook!(
-        %{media_source_id: candidate.media_source_id, path: candidate.path, audiobook: %{}},
-        actor: SystemActor.actor()
-      )
-
-    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
-    media
+  def apply!(%Candidate{media_type: :audiobook} = candidate) do
+    MediaCatalog.create_or_update_audiobook!(
+      %{media_source_id: candidate.media_source_id, path: candidate.path, audiobook: %{}},
+      actor: SystemActor.actor()
+    )
   end
 
-  def apply(%Candidate{media_type: :ebook} = candidate) do
-    media =
-      MediaCatalog.create_or_update_ebook!(
-        %{media_source_id: candidate.media_source_id, path: candidate.path, ebook: %{}},
-        actor: SystemActor.actor()
-      )
-
-    Logger.info("Successfully imported #{candidate.path}", event: :save_media_success)
-    media
+  def apply!(%Candidate{media_type: :ebook} = candidate) do
+    MediaCatalog.create_or_update_ebook!(
+      %{media_source_id: candidate.media_source_id, path: candidate.path, ebook: %{}},
+      actor: SystemActor.actor()
+    )
   end
 
   defp build_video_input(%Candidate{

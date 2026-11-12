@@ -637,46 +637,6 @@ msgstr "Ta clé API %{name}. Tu la trouveras dans %{name}, sous Paramètres > G�
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
-msgid "%{count} failed"
-msgid_plural "%{count} failed"
-msgstr[0] "%{count} en échec"
-msgstr[1] "%{count} en échec"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} matched"
-msgid_plural "%{count} matched"
-msgstr[0] "%{count} associé"
-msgstr[1] "%{count} associés"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} unmatched"
-msgid_plural "%{count} unmatched"
-msgstr[0] "%{count} non associé"
-msgstr[1] "%{count} non associés"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{count} unreadable"
-msgid_plural "%{count} unreadable"
-msgstr[0] "%{count} illisible"
-msgstr[1] "%{count} illisibles"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "%{processed} of %{count} file"
-msgid_plural "%{processed} of %{count} files"
-msgstr[0] "%{processed} sur %{count} fichier"
-msgstr[1] "%{processed} sur %{count} fichiers"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
 msgid "Finding files…"
 msgstr "Recherche des fichiers…"
 
@@ -685,3 +645,49 @@ msgstr "Recherche des fichiers…"
 #, elixir-autogen, elixir-format
 msgid "No files to process"
 msgstr "Aucun fichier à traiter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} failed"
+msgid_plural "%{number} failed"
+msgstr[0] "%{number} en échec"
+msgstr[1] "%{number} en échec"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} matched"
+msgid_plural "%{number} matched"
+msgstr[0] "%{number} associé"
+msgstr[1] "%{number} associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unmatched"
+msgid_plural "%{number} unmatched"
+msgstr[0] "%{number} non associé"
+msgstr[1] "%{number} non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unreadable"
+msgid_plural "%{number} unreadable"
+msgstr[0] "%{number} illisible"
+msgstr[1] "%{number} illisibles"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{processed} of %{total} file"
+msgid_plural "%{processed} of %{total} files"
+msgstr[0] "%{processed} sur %{total} fichier"
+msgstr[1] "%{processed} sur %{total} fichiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "See every unmatched file"
+msgstr "Voir tous les fichiers non associés"

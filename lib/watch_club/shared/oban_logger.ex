@@ -17,14 +17,17 @@ defmodule WatchClub.Shared.ObanLogger do
     [:oban, :job, :exception]
   ]
 
-  # Ignore start/stop for some very verbose jobs, and for those that log their own outcome. Oban
-  # stores `worker` as a string, so match against the inspected module names.
-  @ignored_workers [
-    "WatchClub.MediaSources.Import.Workers.CandidateIngestor",
-    "WatchClub.MediaSources.Import.Workers.ImportMonitor",
-    "WatchClub.Playbacks.Workers.EndAbandonedSessions",
-    "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
-  ]
+  # Oban stores `worker` as a string, so match against the inspected module names.
+  # These log their own outcome, crashes included.
+  @self_reporting_workers ["WatchClub.MediaSources.Import.Workers.CandidateIngestor"]
+
+  # Ignore start/stop for some very verbose jobs.
+  @ignored_workers @self_reporting_workers ++
+                     [
+                       "WatchClub.MediaSources.Import.Workers.ImportMonitor",
+                       "WatchClub.Playbacks.Workers.EndAbandonedSessions",
+                       "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
+                     ]
 
   @doc "Attaches the handler. Call once on application start."
   def attach do
@@ -45,7 +48,8 @@ defmodule WatchClub.Shared.ObanLogger do
     Logger.log(:info, "#{meta.worker} job finished", duration: measure.duration)
   end
 
-  def handle_event([:oban, :job, :exception], _measure, meta, _config) do
+  def handle_event([:oban, :job, :exception], _measure, meta, _config)
+      when meta.worker not in @self_reporting_workers do
     # The :oban domain keeps Sentry from reporting the error a second time
     Logger.log(
       :error,

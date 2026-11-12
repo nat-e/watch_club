@@ -1,6 +1,7 @@
 defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   use WatchClub.DataCase, async: false
 
+  import ExUnit.CaptureLog
   import Mox
 
   alias WatchClub.Contents.{Content, Movie}
@@ -109,7 +110,13 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
         identity: %MovieIdentity{}
       }
 
-      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+      log =
+        capture_log([format: "$metadata$message", metadata: [:event, :outcome, :reason]], fn ->
+          assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+        end)
+
+      assert log =~ "event=media_ingested outcome=unmatched reason=content_not_found"
+      assert log =~ "No Content matches #{path}"
 
       assert %Media{content_id: nil, video: %Video{parts: []}} = load_media!(path)
 

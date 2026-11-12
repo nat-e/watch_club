@@ -61,7 +61,7 @@ defmodule WatchClub.MediaSources.Import do
     end
 
     update :fail do
-      accept [:failed_file_count]
+      accept []
 
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
@@ -80,7 +80,7 @@ defmodule WatchClub.MediaSources.Import do
 
       argument :outcome, :atom do
         allow_nil? false
-        constraints one_of: [:matched, :unmatched, :unreadable]
+        constraints one_of: [:matched, :unmatched, :unreadable, :failed]
       end
 
       change atomic_update(
@@ -96,6 +96,11 @@ defmodule WatchClub.MediaSources.Import do
       change atomic_update(
                :unreadable_file_count,
                expr(unreadable_file_count + if(^arg(:outcome) == :unreadable, do: 1, else: 0))
+             )
+
+      change atomic_update(
+               :failed_file_count,
+               expr(failed_file_count + if(^arg(:outcome) == :failed, do: 1, else: 0))
              )
     end
 
@@ -213,6 +218,18 @@ defmodule WatchClub.MediaSources.Import do
   relationships do
     belongs_to :media_source, Source do
       allow_nil? false
+      public? true
+    end
+  end
+
+  calculations do
+    calculate :processed_file_count,
+              :integer,
+              expr(
+                matched_file_count + unmatched_file_count + unreadable_file_count +
+                  failed_file_count
+              ) do
+      description "The files with an outcome so far"
       public? true
     end
   end
