@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
 
   def source_identifier(%{media_source: %Source{source_type: :filesystem}} = assigns) do
     ~H"""
-    <.badge variant="muted" class="rounded-sm">
+    <.badge variant="muted" class="max-w-full rounded-sm">
       <:icon><.lucide_icon name="folder" /></:icon>
       <span class="truncate">{@media_source.implementation.filesystem_path}</span>
     </.badge>
@@ -21,19 +21,19 @@ defmodule WatchClubWeb.Components.Media.SourceIdentifier do
   def source_identifier(%{media_source: %Source{source_type: type}} = assigns)
       when type in [:radarr, :sonarr, :sportarr] do
     ~H"""
-    <.badge variant="muted" class="rounded-sm">
+    <.badge variant="muted" class="max-w-full rounded-sm">
       <:icon><.lucide_icon name="link" /></:icon>
       <span class="truncate">
         {Url.strip_scheme(@media_source.implementation.base_url)}
       </span>
     </.badge>
-    <.badge variant="muted" class="rounded-sm">
+    <.badge variant="muted" class="max-w-full rounded-sm">
       <:icon><.lucide_icon name="sparkles" /></:icon>
       <span class="truncate">
         {@media_source.implementation.quality_profile_name}
       </span>
     </.badge>
-    <.badge variant="muted" class="rounded-sm">
+    <.badge variant="muted" class="max-w-full rounded-sm">
       <:icon><.lucide_icon name="folder" /></:icon>
       <span class="truncate">{@media_source.implementation.root_folder_path}</span>
     </.badge>
