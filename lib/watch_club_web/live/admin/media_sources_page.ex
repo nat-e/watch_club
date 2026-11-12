@@ -49,13 +49,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
       playback_session={@playback_session}
       space="cluster"
       class="max-w-panel"
-      title={dgettext("admin_media_imports", "Media Sources")}
+      title={dgettext("admin_media_imports", "Media sources")}
     >
       <.page_description text={
         dgettext(
           "admin_media_imports",
-          "Configure Media Sources to import and request media to your %{name} instance.",
-          name: @instance_settings.name
+          "Media sources are where Watch Club finds its videos, and where it sends your friends' requests."
         )
       } />
 
@@ -83,7 +82,9 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         <.source_type_section
           type={:radarr}
           title={dgettext("admin_media_imports", "Radarr")}
-          description={dgettext("admin_media_imports", "Import movies from a Radarr server.")}
+          description={
+            dgettext("admin_media_imports", "Import movies from Radarr, and send it movie requests.")
+          }
           add_event="open_add_radarr_source_modal"
           sources={@radarr_sources}
           empty_copy={
@@ -98,7 +99,12 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         <.source_type_section
           type={:sonarr}
           title={dgettext("admin_media_imports", "Sonarr")}
-          description={dgettext("admin_media_imports", "Import TV shows from a Sonarr server.")}
+          description={
+            dgettext(
+              "admin_media_imports",
+              "Import TV shows from Sonarr, and send it TV show requests."
+            )
+          }
           add_event="open_add_sonarr_source_modal"
           sources={@sonarr_sources}
           empty_copy={
@@ -114,7 +120,10 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
           type={:sportarr}
           title={dgettext("admin_media_imports", "Sportarr")}
           description={
-            dgettext("admin_media_imports", "Import sports events from a Sportarr server.")
+            dgettext(
+              "admin_media_imports",
+              "Import sports events from Sportarr, and send it sports event requests."
+            )
           }
           add_event="open_add_sportarr_source_modal"
           sources={@sportarr_sources}
@@ -142,7 +151,6 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         flavor={@servarr_modal.flavor}
         media_source={@servarr_modal.media_source}
         current_user={@current_user}
-        instance_settings={@instance_settings}
       />
       <.delete_media_source_modal
         :if={@delete_media_source}
@@ -318,7 +326,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         {:noreply,
          socket
          |> reset_modals()
-         |> put_flash(:info, dgettext("admin_media_imports", "Media Source deleted"))}
+         |> put_flash(:info, dgettext("admin_media_imports", "Media source deleted"))}
 
       nil ->
         {:noreply, reset_modals(socket)}
@@ -353,8 +361,8 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
   def handle_info({:servarr_source_saved, mode}, socket) do
     message =
       case mode do
-        :edit -> dgettext("admin_media_imports", "Media Source updated")
-        :create -> dgettext("admin_media_imports", "Media Source configured")
+        :edit -> dgettext("admin_media_imports", "Media source updated")
+        :create -> dgettext("admin_media_imports", "Media source configured")
       end
 
     {:noreply,
@@ -413,7 +421,7 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         {:noreply,
          socket
          |> reset_modals()
-         |> put_flash(:info, dgettext("admin_media_imports", "Media Source configured"))}
+         |> put_flash(:info, dgettext("admin_media_imports", "Media source configured"))}
 
       {:error, form} ->
         {:noreply, assign(socket, :configure_form, form)}
@@ -432,14 +440,14 @@ defmodule WatchClubWeb.Admin.MediaSourcesPage do
         {:noreply,
          socket
          |> reset_modals()
-         |> put_flash(:info, dgettext("admin_media_imports", "Media Source updated"))}
+         |> put_flash(:info, dgettext("admin_media_imports", "Media source updated"))}
 
       {:error, _error} ->
         {:noreply,
          put_flash(
            socket,
            :error,
-           dgettext("admin_media_imports", "Could not update Media Source")
+           dgettext("admin_media_imports", "Could not update media source")
          )}
     end
   end

@@ -11,11 +11,11 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
   def delete_media_source_modal(assigns) do
     ~H"""
     <.modal id="delete-media-source-modal" size="sm" on_close={JS.push("close_modals")}>
-      <:title>{dgettext("admin_media_imports", "Delete Media Source")}</:title>
+      <:title>{dgettext("admin_media_imports", "Delete media source")}</:title>
       <.stack space="related">
         <p class="text-sm text-text wrap-break-word">
           {raw(
-            dgettext("admin_media_imports", "This will delete the Media Source %{name}:",
+            dgettext("admin_media_imports", "This will delete the media source %{name}:",
               name: gtbold(@media_source.name)
             )
           )}
@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
         <p class="text-sm text-text-muted">
           {dgettext(
             "admin_media_imports",
-            "Its media will be removed from the instance too. Their files stay on disk."
+            "Its media will be removed from Watch Club too. Their files stay on disk."
           )}
         </p>
       </.stack>
@@ -53,7 +53,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
           }
           phx-disable-with={dgettext("admin_media_imports", "Deleting…")}
         >
-          {dgettext("admin_media_imports", "Delete Media Source")}
+          {dgettext("admin_media_imports", "Delete media source")}
         </.button>
       </:footer>
     </.modal>

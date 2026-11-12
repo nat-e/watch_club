@@ -34,11 +34,6 @@ msgstr ""
 
 #: lib/watch_club_web/components/navigation/account_menu.ex
 #, elixir-autogen, elixir-format
-msgid "Media Sources"
-msgstr ""
-
-#: lib/watch_club_web/components/navigation/account_menu.ex
-#, elixir-autogen, elixir-format
 msgid "Media browser"
 msgstr ""
 
@@ -138,4 +133,9 @@ msgstr[1] ""
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "Home"
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Media sources"
 msgstr ""

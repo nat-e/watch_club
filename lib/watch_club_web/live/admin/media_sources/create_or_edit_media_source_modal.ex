@@ -33,7 +33,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
           <:hint>
             {dgettext(
               "admin_media_imports",
-              "The directory and all its sub-directories will be scanned for media matching the selected type."
+              "Watch Club looks for files of this type in the folder and all its subfolders."
             )}
           </:hint>
         </.field>
@@ -68,8 +68,7 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
             :create -> assigns.form[:media_type].value
             :edit -> assigns.media_source.media_type
           end,
-        locked_message:
-          dgettext("admin_media_imports", "Media type cannot be changed after creation.")
+        locked_message: dgettext("admin_media_imports", "You can't change the media type later.")
       )
 
     ~H"""
@@ -99,19 +98,19 @@ defmodule WatchClubWeb.Admin.MediaSources.CreateOrEditMediaSourceModal do
 
   defp mode_copy(:create) do
     %{
-      title: dgettext("admin_media_imports", "Configure Media Source"),
+      title: dgettext("admin_media_imports", "Configure media source"),
       description:
         dgettext(
           "admin_media_imports",
-          "Configure what media should be imported from your filesystem."
+          "Choose what to import from your filesystem."
         ),
-      submit_label: dgettext("admin_media_imports", "Create Media Source")
+      submit_label: dgettext("admin_media_imports", "Create media source")
     }
   end
 
   defp mode_copy(:edit) do
     %{
-      title: dgettext("admin_media_imports", "Edit Media Source"),
+      title: dgettext("admin_media_imports", "Edit media source"),
       description: nil,
       submit_label: dgettext("admin_media_imports", "Save changes")
     }

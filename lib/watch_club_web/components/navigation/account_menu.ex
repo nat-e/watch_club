@@ -194,7 +194,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
       },
       %{
         id: "media-sources",
-        label: dgettext("nav", "Media Sources"),
+        label: dgettext("nav", "Media sources"),
         navigate: ~p"/admin/media/sources",
         icon: "folder-input"
       },
