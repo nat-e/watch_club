@@ -24,10 +24,11 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
 
     ~H"""
     <.card
+      id={"media-source-card-#{@media_source.id}"}
       padding="group"
       surface="raised"
       shadow={false}
-      class="flex flex-col gap-group"
+      class="flex flex-col gap-group phx-click-loading:pointer-events-none phx-click-loading:opacity-50"
     >
       <div class="flex items-start gap-related">
         <.stack space="tight" class="min-w-0 flex-1">

@@ -13,7 +13,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
     <.modal id="delete-media-source-modal" size="sm" on_close={JS.push("close_modals")}>
       <:title>{dgettext("admin_media_imports", "Delete Media Source")}</:title>
       <.stack space="related">
-        <p class="text-sm text-text">
+        <p class="text-sm text-text wrap-break-word">
           {raw(
             dgettext("admin_media_imports", "This will delete the Media Source %{name}:",
               name: gtbold(@media_source.name)
@@ -34,6 +34,7 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
           id="cancel-delete-media-source-button"
           type="button"
           variant="secondary"
+          class="phx-click-loading:hidden!"
           data-modal-close
         >
           {dgettext("default", "Cancel")}
@@ -41,8 +42,13 @@ defmodule WatchClubWeb.Admin.MediaSources.DeleteMediaSourceModal do
         <.button
           id="confirm-delete-media-source-button"
           variant="danger"
-          phx-click="confirm_delete_media_source"
-          phx-value-id={@media_source.id}
+          phx-click={
+            JS.push("confirm_delete_media_source",
+              value: %{id: @media_source.id},
+              # The delete can't be cancelled, and the card's actions wait for it
+              loading: "#cancel-delete-media-source-button, #media-source-card-#{@media_source.id}"
+            )
+          }
           phx-disable-with={dgettext("admin_media_imports", "Deleting…")}
         >
           {dgettext("admin_media_imports", "Delete Media Source")}
