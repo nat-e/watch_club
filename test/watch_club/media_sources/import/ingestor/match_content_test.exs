@@ -1,11 +1,9 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   use WatchClub.DataCase, async: false
 
-  import ExUnit.CaptureLog
-
   alias WatchClub.Contents.{Content, ContentIdentity, TvShowEpisodeLocalization}
   alias WatchClub.MediaCatalog
-  alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
+  alias WatchClub.MediaSources.Import.Candidate
 
   alias WatchClub.MediaSources.Import.Candidate.{
     EpisodeIdentity,
@@ -508,7 +506,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert Ash.get!(Content, show.id).metadata_refreshed_at == show.metadata_refreshed_at
     end
 
-    test "raises when TMDB still does not list the file's TV Show Episode", %{telemetry_ref: ref} do
+    test "is unmatched when TMDB still does not list the file's TV Show Episode", %{
+      telemetry_ref: ref
+    } do
       generate(
         tv_show(
           external_id: "1668",
@@ -526,27 +526,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 2, episode_number: 1}]
         })
 
-      log =
-        capture_log(
-          [format: "$metadata$message", metadata: [:event, :path, :tmdb_id, :episode]],
-          fn ->
-            assert %TvShowEpisodeNotListedError{
-                     tmdb_id: 1668,
-                     season_number: 2,
-                     episode_number: 1
-                   } =
-                     assert_raise(
-                       TvShowEpisodeNotListedError,
-                       ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
-                       fn -> MatchContent.apply!(candidate) end
-                     )
-          end
-        )
-
-      assert log =~ "event=tv_show_episode_not_listed"
-      assert log =~ "path=/library/file.mkv"
-      assert log =~ "tmdb_id=1668"
-      assert log =~ "episode=S02E01"
+      assert %Candidate{match_result: %MatchResult{result: :not_matched, parts: []}} =
+               MatchContent.apply!(candidate)
 
       assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
                        %{result: :episode_not_listed}}
@@ -567,11 +548,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 2, episode_number: 1}]
         })
 
-      assert_raise TvShowEpisodeNotListedError,
-                   ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
-                   fn ->
-                     MatchContent.apply!(candidate)
-                   end
+      assert %Candidate{match_result: %MatchResult{result: :not_matched}} =
+               MatchContent.apply!(candidate)
     end
 
     test "passes through unmatched when no TV strategy matches" do
@@ -747,7 +725,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert part == %{tv_show_episode_id: meeting.id, number: 1}
     end
 
-    test "raises when TMDB doesn't list one of the TV Show Episodes a file holds" do
+    test "is unmatched when TMDB doesn't list one of the TV Show Episodes a file holds" do
       generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 1))
 
       candidate =
@@ -759,8 +737,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           ]
         })
 
-      assert %TvShowEpisodeNotListedError{season_number: 1, episode_number: 2} =
-               assert_raise(TvShowEpisodeNotListedError, fn -> MatchContent.apply!(candidate) end)
+      assert %Candidate{match_result: %MatchResult{result: :not_matched, parts: []}} =
+               MatchContent.apply!(candidate)
     end
 
     test "matches a Sports Event refreshed under 15 minutes ago by its Sportarr ID" do

@@ -10,16 +10,16 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
   - If not, fuzzy match with title, and year when known
 
   A Movie or Sports Event file gets Part 1 of its match. A TV Show Episode file gets the Parts
-  `EpisodeParts` finds. It raises when TMDB doesn't list a file's TV Show Episode yet.
+  `EpisodeParts` finds, and is unmatched when TMDB doesn't list one of its TV Show Episodes.
   """
 
   alias WatchClub.Contents
-  alias WatchClub.Contents.{ContentIdentity, TvShowEpisode}
+  alias WatchClub.Contents.ContentIdentity
   alias WatchClub.Integrations.SportarrHub
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaCatalog.Media
-  alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
+  alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Ingestor.EpisodeParts
 
   alias WatchClub.MediaSources.Import.Candidate.{
@@ -87,37 +87,35 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContent do
         %{candidate | match_result: %MatchResult{result: :not_matched}}
 
       content ->
-        parts = parts!(content, candidate.identity)
+        case parts!(content, candidate.identity) do
+          nil ->
+            Logger.warning("TMDB doesn't list a TV Show Episode of #{candidate.path}",
+              event: :tv_show_episode_not_listed,
+              path: candidate.path,
+              tmdb_id: candidate.identity.tmdb_id
+            )
 
-        Logger.info("#{candidate.path} matched to: #{to_string(content)}",
-          event: :match_found,
-          external_id: content.id,
-          name: to_string(content),
-          parts: parts
-        )
+            :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
+              result: :episode_not_listed
+            })
 
-        :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{result: :matched})
-        %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
+            %{candidate | match_result: %MatchResult{result: :not_matched}}
+
+          parts ->
+            Logger.info("#{candidate.path} matched to: #{to_string(content)}",
+              event: :match_found,
+              external_id: content.id,
+              name: to_string(content),
+              parts: parts
+            )
+
+            :telemetry.execute([:watch_club, :media_import, :match], %{count: 1}, %{
+              result: :matched
+            })
+
+            %{candidate | match_result: %MatchResult{result: :success, parts: parts}}
+        end
     end
-  rescue
-    error in TvShowEpisodeNotListedError ->
-      episode = TvShowEpisode.format_number(error.season_number, error.episode_number)
-
-      Logger.warning(
-        "TV Show Episode #{episode} for TMDB TV Show #{error.tmdb_id} is not listed for #{candidate.path}",
-        event: :tv_show_episode_not_listed,
-        path: candidate.path,
-        tmdb_id: error.tmdb_id,
-        episode: episode
-      )
-
-      :telemetry.execute(
-        [:watch_club, :media_import, :match],
-        %{count: 1},
-        %{result: :episode_not_listed}
-      )
-
-      reraise error, __STACKTRACE__
   end
 
   # 1. Match by TMDB ID
