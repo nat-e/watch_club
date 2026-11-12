@@ -70,7 +70,8 @@ defmodule WatchClubWeb.Storybook.RequestOnTheWay do
           }
         },
         focus_after_removal: "requests-on-the-way-heading",
-        current_user: %User{settings: %UserSettings{locale: :en_US}}
+        current_user: %User{settings: %UserSettings{locale: :en_US}},
+        administrator: %User{username: "nate"}
       }
     }
   end

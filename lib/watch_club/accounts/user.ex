@@ -130,6 +130,12 @@ defmodule WatchClub.Accounts.User do
               )
     end
 
+    read :instance_administrator do
+      description "The Instance Administrator, whom Users ask for help."
+      get? true
+      filter expr(administrator? == true)
+    end
+
     read :get_current_user do
       description "Gets the user and relationships corresponding to the actor"
       get? true
@@ -380,7 +386,7 @@ defmodule WatchClub.Accounts.User do
       authorize_if expr(id == ^actor(:id))
     end
 
-    policy action(:read) do
+    policy action([:read, :instance_administrator]) do
       authorize_if always()
     end
 

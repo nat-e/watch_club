@@ -20,6 +20,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
     doc: "the id of what gets the focus once the User stops getting notified"
 
   attr :current_user, User, required: true
+  attr :administrator, User, required: true, doc: "the Instance Administrator"
 
   def request_on_the_way(assigns) do
     assigns =
@@ -63,6 +64,7 @@ defmodule WatchClubWeb.MyRequestsPage.RequestOnTheWay do
           request={@request}
           release_date={@request.content.release_date}
           locale={@current_user.settings.locale}
+          administrator={@administrator}
         />
       </div>
       <.button

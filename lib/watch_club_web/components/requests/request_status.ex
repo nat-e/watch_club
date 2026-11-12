@@ -13,6 +13,11 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
 
   attr :release_date, Date, default: nil, doc: "the Content's, for when it's not released yet"
   attr :locale, :atom, required: true, doc: "a `UserLocale`"
+
+  attr :administrator, User,
+    required: true,
+    doc: "the Instance Administrator, whom the User tells when it's stuck"
+
   attr :rest, :global
 
   def request_status(assigns) do
@@ -22,7 +27,7 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
         <span class="flex h-lh shrink-0 items-center">
           <.status_icon status={@request.status} />
         </span>
-        {when_watchable(@request, @release_date, @locale)}
+        {when_watchable(@request, @release_date, @locale, @administrator)}
       </span>
       <.progress_bar
         :if={@request.status == :downloading}
@@ -71,11 +76,19 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
   end
 
   # My Requests says a little more when it's stuck
-  defp when_watchable(%ContentRequest{status: :not_found}, _release_date, _locale),
-    do: dgettext("requests", "Not found, we'll keep looking for it")
+  defp when_watchable(
+         %ContentRequest{status: :not_found},
+         _release_date,
+         _locale,
+         _administrator
+       ),
+       do: dgettext("requests", "Not found, we'll keep looking for it")
 
-  defp when_watchable(%ContentRequest{status: :failed}, _release_date, _locale),
-    do: dgettext("requests", "There was a problem, the instance administrator was told")
+  defp when_watchable(%ContentRequest{status: :failed}, _release_date, _locale, administrator),
+    do:
+      dgettext("requests", "The download is stuck. Let %{admin} know.",
+        admin: administrator.username
+      )
 
   # Once some of its TV Show Episodes have Media, how many. Nil for a Movie.
   defp when_watchable(
@@ -85,7 +98,8 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
            aired_episodes_count: aired
          },
          _release_date,
-         _locale
+         _locale,
+         _administrator
        )
        when status in [:downloading, :importing] and is_integer(ready) and ready > 0,
        do:
@@ -97,7 +111,7 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
            ready: ready
          )
 
-  defp when_watchable(request, release_date, locale),
+  defp when_watchable(request, release_date, locale, _administrator),
     do: status_words(request, release_date, locale)
 
   @doc """
@@ -123,5 +137,5 @@ defmodule WatchClubWeb.Components.Requests.RequestStatus do
     do: dgettext("requests", "Not found, still looking")
 
   def status_words(%ContentRequest{status: :failed}, _release_date, _locale),
-    do: dgettext("requests", "Error downloading")
+    do: dgettext("requests", "Download stuck")
 end

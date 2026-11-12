@@ -13,6 +13,7 @@ defmodule WatchClub.Accounts do
       define :register_with_password
       define :sign_in, action: :sign_in_with_password
       define :get_current_user
+      define :get_instance_administrator, action: :instance_administrator
       define :get_user_by_id, action: :read, get_by: [:id]
       define :destroy_user, action: :destroy
       define :generate_password_reset_token, args: [:user_id]

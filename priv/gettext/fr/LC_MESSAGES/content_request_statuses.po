@@ -15,7 +15,7 @@ msgstr ""
 #: lib/watch_club/requests/content_request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Almost ready"
-msgstr "Presque prêt"
+msgstr "Presque là"
 
 # AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status.ex
@@ -45,7 +45,7 @@ msgstr "Introuvable"
 #: lib/watch_club/requests/content_request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not released"
-msgstr "Pas encore sorti"
+msgstr "Sortie à venir"
 
 # AI-translated (Claude)
 #: lib/watch_club/requests/content_request_status.ex
