@@ -21,7 +21,12 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
 
   @impl true
   def update(assigns, socket) do
-    socket = assign(socket, id: assigns.id, current_user: assigns.current_user)
+    socket =
+      assign(socket,
+        id: assigns.id,
+        current_user: assigns.current_user,
+        instance_name: assigns.instance_name
+      )
 
     # The field follows the search page's query and filter when its URL changes, and keeps what
     # you type in between
@@ -196,6 +201,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               on_scope={JS.push("change_scope", target: @myself)}
               has_media={@has_media?}
               on_toggle={JS.push("toggle_has_media", target: @myself)}
+              instance_name={@instance_name}
             />
           </div>
           <div class="max-h-[min(32rem,calc(100svh-10rem))] overflow-y-auto max-md:max-h-none max-md:overflow-visible">
@@ -205,6 +211,13 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
               query={@query}
               result_count={length(@results)}
               on_retry={JS.push("retry", target: @myself)}
+              hint={
+                dgettext(
+                  "search",
+                  "Find any movie or TV show, even ones that aren't on %{name} yet.",
+                  name: @instance_name
+                )
+              }
             />
             <div
               :if={@status == :ok and @results != []}
@@ -217,6 +230,7 @@ defmodule WatchClubWeb.Components.Navigation.SearchFieldLive do
                 :for={result <- @results}
                 id={"#{@id}-result-#{result.identity.type}-#{result.identity.external_id}"}
                 result={result}
+                instance_name={@instance_name}
                 role="option"
                 tabindex="-1"
               />

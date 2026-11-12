@@ -144,11 +144,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "Not in the library yet"
-msgstr ""
-
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr ""
 
@@ -402,4 +397,9 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgctxt "tv_show"
 msgid "Recommended it to you"
+msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not on %{name} yet"
 msgstr ""

@@ -83,7 +83,9 @@ defmodule WatchClubWeb.HomePage do
           />
           <.empty :if={@new_in_library == [] and @new_sports_events == []} id="library-empty">
             <:icon><Lucideicons.popcorn /></:icon>
-            <:title>{dgettext("home", "Nothing in the library yet")}</:title>
+            <:title>
+              {dgettext("home", "Nothing on %{name} yet", name: @instance_settings.name)}
+            </:title>
             <:description>
               {dgettext(
                 "home",

@@ -13,6 +13,7 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
   attr :id, :string, required: true
   attr :result, SearchResult, required: true
   attr :overview, :boolean, default: false, doc: "shows the overview under the title"
+  attr :instance_name, :string, required: true, doc: "says it's in the Library"
   attr :class, :any, default: nil
   attr :rest, :global, doc: "e.g. `role=\"option\"` inside a combobox"
 
@@ -27,7 +28,7 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
       ]}
       {@rest}
     >
-      <.search_result_summary result={@result} overview={@overview} />
+      <.search_result_summary result={@result} overview={@overview} instance_name={@instance_name} />
     </.link>
     """
   end
@@ -35,6 +36,7 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
   attr :result, SearchResult, required: true
   attr :overview, :boolean, default: false, doc: "shows the overview under the title"
   attr :type, :boolean, default: true, doc: "shows the Content Type"
+  attr :instance_name, :string, required: true, doc: "says it's in the Library"
   slot :facts, doc: "other facts under the title, instead of its type, year and Library"
 
   @doc "A search result's poster, title and facts, for a row to wrap."
@@ -61,7 +63,7 @@ defmodule WatchClubWeb.Components.Search.SearchResultRow do
             class="inline-flex min-w-0 items-center gap-tight text-accent"
           >
             <Lucideicons.library class="size-icon-sm shrink-0" />
-            <span class="truncate">{dgettext("search", "In the library")}</span>
+            <span class="truncate">{dgettext("search", "On %{name}", name: @instance_name)}</span>
           </span>
         <% end %>
       </span>

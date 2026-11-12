@@ -80,11 +80,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
-msgid "Nothing in the library yet"
-msgstr ""
-
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
 msgid "New sports events"
 msgstr ""
 
@@ -143,4 +138,9 @@ msgstr ""
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "New on %{name}"
+msgstr ""
+
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing on %{name} yet"
 msgstr ""

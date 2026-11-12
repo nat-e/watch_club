@@ -31,6 +31,7 @@ defmodule WatchClubWeb.SearchPage do
         on_scope="change_scope"
         has_media={@has_media?}
         on_toggle="toggle_has_media"
+        instance_name={@instance_settings.name}
       />
       <.search_status
         id="search-page-status"
@@ -38,6 +39,13 @@ defmodule WatchClubWeb.SearchPage do
         query={@query}
         result_count={@result_count}
         on_retry="retry"
+        hint={
+          dgettext(
+            "search",
+            "Find any movie or TV show, even ones that aren't on %{name} yet.",
+            name: @instance_settings.name
+          )
+        }
       />
 
       <div id="search-results" phx-update="stream" class="flex flex-col gap-tight">
@@ -46,6 +54,7 @@ defmodule WatchClubWeb.SearchPage do
           id={dom_id}
           result={result}
           overview
+          instance_name={@instance_settings.name}
         />
       </div>
 

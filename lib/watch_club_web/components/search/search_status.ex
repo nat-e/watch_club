@@ -11,7 +11,7 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
   attr :query, :string, required: true
   attr :result_count, :integer, required: true
   attr :on_retry, :any, required: true, doc: "the event or JS commands of the Try again button"
-  attr :hint, :string, default: nil, doc: "what to type, before typing"
+  attr :hint, :string, required: true, doc: "what to type, before typing"
   attr :class, :any, default: nil
 
   def search_status(assigns) do
@@ -38,8 +38,7 @@ defmodule WatchClubWeb.Components.Search.SearchStatus do
   defp status_body(%{status: :idle} = assigns) do
     ~H"""
     <p id={@id} class={["p-group text-center text-sm text-text-muted", @class]}>
-      {@hint ||
-        dgettext("search", "Find any movie or TV show, even ones that aren't in the library yet.")}
+      {@hint}
     </p>
     """
   end

@@ -59,13 +59,6 @@ msgstr[0] "%{count} résultat"
 msgstr[1] "%{count} résultats"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/search/search_result_row.ex
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "In the library"
-msgstr "Dans la bibliothèque"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "Close search"
@@ -78,12 +71,6 @@ msgid "Search in"
 msgstr "Rechercher dans"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/components/search/search_status.ex
-#, elixir-autogen, elixir-format
-msgid "Find any movie or TV show, even ones that aren't in the library yet."
-msgstr "Cherche parmi tous les films et séries, même ceux qui ne sont pas encore dans la bibliothèque."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "See all results for “%{query}”"
@@ -94,3 +81,17 @@ msgstr "Voir tous les résultats pour « %{query} »"
 #, elixir-autogen, elixir-format
 msgid "We didn't find anything for “%{query}”."
 msgstr "On n'a rien trouvé pour « %{query} »."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
+#, elixir-autogen, elixir-format
+msgid "Find any movie or TV show, even ones that aren't on %{name} yet."
+msgstr "Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/search/search_result_row.ex
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "On %{name}"
+msgstr "Sur %{name}"

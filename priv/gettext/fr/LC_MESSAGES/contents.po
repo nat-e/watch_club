@@ -170,12 +170,6 @@ msgstr "Qui a regardé"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
-msgid "Not in the library yet"
-msgstr "Pas encore dans la bibliothèque"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
-#, elixir-autogen, elixir-format
 msgid "Watched episode %{number}"
 msgstr "Épisode %{number} vu"
 
@@ -477,3 +471,9 @@ msgstr "Recommande cette série à tes amis, dis-leur pourquoi ça va leur plair
 msgctxt "tv_show"
 msgid "Recommended it to you"
 msgstr "T'a recommandé cette série"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not on %{name} yet"
+msgstr "Pas encore sur %{name}"

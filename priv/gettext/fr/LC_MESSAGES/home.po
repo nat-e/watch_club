@@ -94,12 +94,6 @@ msgstr "En ce moment"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
-msgid "Nothing in the library yet"
-msgstr "La bibliothèque est encore vide"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/home_page.ex
-#, elixir-autogen, elixir-format
 msgid "New sports events"
 msgstr "Nouveaux événements sportifs"
 
@@ -170,3 +164,9 @@ msgstr "Ton contenu est prêt"
 #, elixir-autogen, elixir-format
 msgid "New on %{name}"
 msgstr "Nouveautés sur %{name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing on %{name} yet"
+msgstr "Rien sur %{name} pour l'instant"

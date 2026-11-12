@@ -117,6 +117,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
         season_numbers={season_numbers(@content)}
         initial_season={current_season_number(@content)}
         in_library?={in_library?(@content)}
+        instance_name={@instance_settings.name}
         current_user={@current_user}
         on_close={JS.push("close_episodes")}
       />

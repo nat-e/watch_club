@@ -20,22 +20,22 @@ defmodule WatchClubWeb.Storybook.SearchResultSummary do
       %Variation{
         id: :in_library,
         description: "Its type, year and whether it's in the Library",
-        attributes: %{result: dune(has_media?: true)}
+        attributes: %{result: dune(has_media?: true), instance_name: "kflix"}
       },
       %Variation{
         id: :without_type,
         description: "Without its type, when the search has only one",
-        attributes: %{result: dune(), type: false}
+        attributes: %{result: dune(), type: false, instance_name: "kflix"}
       },
       %Variation{
         id: :overview,
         description: "With its overview, as on the Search page",
-        attributes: %{result: dune(), overview: true}
+        attributes: %{result: dune(), overview: true, instance_name: "kflix"}
       },
       %Variation{
         id: :other_facts,
         description: "Other facts instead, such as a Media's episode",
-        attributes: %{result: severance()},
+        attributes: %{result: severance(), instance_name: "kflix"},
         slots: [
           """
           <:facts>

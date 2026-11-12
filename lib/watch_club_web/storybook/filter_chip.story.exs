@@ -20,12 +20,12 @@ defmodule WatchClubWeb.Storybook.FilterChip do
           %Variation{
             id: :off,
             attributes: %{on: false},
-            slots: ["<:icon><Lucideicons.library /></:icon>", "In the library"]
+            slots: ["<:icon><Lucideicons.library /></:icon>", "On kflix"]
           },
           %Variation{
             id: :on,
             attributes: %{on: true},
-            slots: ["<:icon><Lucideicons.library /></:icon>", "In the library"]
+            slots: ["<:icon><Lucideicons.library /></:icon>", "On kflix"]
           }
         ]
       },

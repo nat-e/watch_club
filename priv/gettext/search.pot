@@ -51,12 +51,6 @@ msgid_plural "%{count} results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/watch_club_web/components/search/search_result_row.ex
-#: lib/watch_club_web/components/search/search_scopes.ex
-#, elixir-autogen, elixir-format
-msgid "In the library"
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "Close search"
@@ -67,11 +61,6 @@ msgstr ""
 msgid "Search in"
 msgstr ""
 
-#: lib/watch_club_web/components/search/search_status.ex
-#, elixir-autogen, elixir-format
-msgid "Find any movie or TV show, even ones that aren't in the library yet."
-msgstr ""
-
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "See all results for “%{query}”"
@@ -80,4 +69,16 @@ msgstr ""
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find anything for “%{query}”."
+msgstr ""
+
+#: lib/watch_club_web/components/navigation/search_field_live.ex
+#: lib/watch_club_web/live/search_page.ex
+#, elixir-autogen, elixir-format
+msgid "Find any movie or TV show, even ones that aren't on %{name} yet."
+msgstr ""
+
+#: lib/watch_club_web/components/search/search_result_row.ex
+#: lib/watch_club_web/components/search/search_scopes.ex
+#, elixir-autogen, elixir-format
+msgid "On %{name}"
 msgstr ""

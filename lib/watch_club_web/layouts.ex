@@ -115,6 +115,7 @@ defmodule WatchClubWeb.Layouts do
           search={@search}
           current_url={@current_url}
           current_user={@current_user}
+          instance_name={@instance_settings.name}
           class={@full_screen? && "max-md:hidden"}
         />
 

@@ -212,6 +212,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage do
         module={MatchMediaLive}
         media={@matching}
         current_user={@current_user}
+        instance_name={@instance_settings.name}
         on_close={fn -> send(self(), :close_match_media_modal) end}
       />
       <.remove_media_modal :if={@removing} />

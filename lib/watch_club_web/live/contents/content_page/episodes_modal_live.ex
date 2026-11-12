@@ -24,6 +24,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
   attr :season_numbers, :list, required: true
   attr :initial_season, :integer, required: true, doc: "the season it opens on"
   attr :in_library?, :boolean, required: true
+  attr :instance_name, :string, required: true, doc: "names the Library"
   attr :current_user, User, required: true
   attr :on_close, JS, required: true
 
@@ -104,6 +105,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               :for={episode <- @episodes}
               episode={episode}
               in_library?={@in_library?}
+              instance_name={@instance_name}
               locale={@current_user.settings.locale}
               myself={@myself}
             />
@@ -116,6 +118,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
 
   attr :episode, TvShowEpisode, required: true
   attr :in_library?, :boolean, required: true
+  attr :instance_name, :string, required: true
   attr :locale, :atom, required: true
   attr :myself, :any, required: true
 
@@ -156,7 +159,7 @@ defmodule WatchClubWeb.Contents.ContentPage.EpisodesModalLive do
               )
 
             assigns.in_library? and !playable? ->
-              dgettext("contents", "Not in the library yet")
+              dgettext("contents", "Not on %{name} yet", name: assigns.instance_name)
 
             true ->
               nil
