@@ -148,3 +148,75 @@ msgstr "Langues sans sous-titres"
 #, elixir-autogen, elixir-format
 msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
 msgstr "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change photo"
+msgstr "Changer de photo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Crop your photo"
+msgstr "Recadrez votre photo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Drag the photo, or tap where to center it."
+msgstr "Faites glisser la photo, ou touchez l'endroit à centrer."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Remove photo"
+msgstr "Supprimer la photo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Save photo"
+msgstr "Enregistrer la photo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Saving…"
+msgstr "Enregistrement…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Upload photo"
+msgstr "Importer une photo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your new photo. Move it with the arrow keys."
+msgstr "Votre nouvelle photo. Déplacez-la avec les flèches du clavier."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your photo couldn't be saved. Try again."
+msgstr "Votre photo n'a pas pu être enregistrée. Réessayez."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom"
+msgstr "Zoom"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom in"
+msgstr "Zoomer"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom out"
+msgstr "Dézoomer"

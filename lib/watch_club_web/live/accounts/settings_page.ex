@@ -1,6 +1,8 @@
 defmodule WatchClubWeb.Accounts.SettingsPage do
   use WatchClubWeb, :live_view
 
+  alias WatchClubWeb.Accounts.SettingsPage.PhotoLive
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -15,6 +17,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
       title={dgettext("settings", "Settings")}
     >
       <.page_description text={dgettext("settings", "Manage your account preferences.")} />
+      <.live_component module={PhotoLive} id="photo" current_user={@current_user} />
 
       <.section
         title={dgettext("settings", "Preferences")}

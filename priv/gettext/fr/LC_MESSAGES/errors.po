@@ -405,6 +405,7 @@ msgid "The webhook test failed. Check that %{name} can reach this address."
 msgstr "Le test du webhook a échoué. Vérifie que %{name} peut joindre cette adresse."
 
 #: lib/watch_club/accounts/changes/store_photo.ex
+#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a JPEG, PNG or WebP photo"
 msgstr "Choisissez une photo JPEG, PNG ou WebP"
