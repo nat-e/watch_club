@@ -117,7 +117,6 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   attr :content, Content, required: true
   attr :locale, :atom, required: true
 
-  # Two links: the still resumes the Content, and the title, with the line under it, opens its page
   defp up_next_card(assigns) do
     assigns =
       assign(assigns, :playable, playable(assigns.content))
@@ -127,14 +126,17 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       <.link
         navigate={play_href(@content)}
         aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
-        class="group/play relative block overflow-hidden rounded-card"
+        class="group/play relative overflow-hidden rounded-card"
       >
         <.tmdb_still
           path={image(@content, @playable)}
           size="w300"
           class="w-full"
         />
-        <span class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100">
+        <span
+          aria-hidden="true"
+          class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100"
+        >
           <span class="flex size-control-lg items-center justify-center rounded-full bg-black/60 text-white">
             <Lucideicons.play class="size-icon-lg" />
           </span>
@@ -147,7 +149,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       </.link>
       <.link
         navigate={Url.content_details_link(@content)}
-        class="group/details block min-w-0 rounded-control"
+        class="group/details rounded-control"
       >
         <span class="block truncate font-semibold text-text decoration-text-subtle decoration-2 underline-offset-4 group-hover/details:underline">
           {title(@content)}
