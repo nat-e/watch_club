@@ -337,4 +337,8 @@ msgstr ""
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "The webhook test failed. Check that %{name} can reach this address."
+
+#: lib/watch_club/accounts/changes/store_photo.ex
+#, elixir-autogen, elixir-format
+msgid "Choose a JPEG, PNG or WebP photo"
 msgstr ""

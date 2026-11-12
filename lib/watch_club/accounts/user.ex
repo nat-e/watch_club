@@ -59,7 +59,40 @@ defmodule WatchClub.Accounts.User do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
+
+    destroy :destroy do
+      primary? true
+      # Deletes the photo's file after commit, which an atomic destroy can't
+      require_atomic? false
+      change WatchClub.Accounts.Changes.DeleteOldPhoto
+    end
+
+    # The photo actions don't touch the username or the password, which the global validations
+    # check
+    update :set_photo do
+      description "Makes an image the User's photo, shown instead of their letter."
+      require_atomic? false
+      skip_global_validations? true
+      accept []
+
+      argument :photo, Ash.Type.File do
+        description "A JPEG, PNG or WebP image."
+        allow_nil? false
+      end
+
+      change WatchClub.Accounts.Changes.StorePhoto
+      change WatchClub.Accounts.Changes.DeleteOldPhoto
+    end
+
+    update :remove_photo do
+      description "Removes the User's photo, so their letter shows again."
+      require_atomic? false
+      skip_global_validations? true
+      accept []
+      change set_attribute(:photo_revision, nil)
+      change WatchClub.Accounts.Changes.DeleteOldPhoto
+    end
 
     create :create_administrator do
       description "Creates the administrator for this instance."
@@ -373,6 +406,10 @@ defmodule WatchClub.Accounts.User do
       authorize_if expr(id == ^actor(:id))
     end
 
+    policy action([:set_photo, :remove_photo]) do
+      authorize_if expr(id == ^actor(:id))
+    end
+
     # Only the instance administrator can create password reset links
     policy action(:generate_password_reset_token) do
       authorize_if actor_attribute_equals(:administrator?, true)
@@ -404,6 +441,10 @@ defmodule WatchClub.Accounts.User do
 
     publish_all :create, ["users", "admin"]
     publish_all :destroy, ["users", "admin"]
+
+    # The User's pages reload the avatar in their navigation
+    publish :set_photo, ["user", :id]
+    publish :remove_photo, ["user", :id]
   end
 
   changes do
@@ -469,6 +510,9 @@ defmodule WatchClub.Accounts.User do
       allow_nil?: false,
       default: false,
       source: :is_administrator
+
+    # Names the file of the User's photo, see UserPhoto. Without one, their letter shows.
+    attribute :photo_revision, :uuid
 
     timestamps()
   end

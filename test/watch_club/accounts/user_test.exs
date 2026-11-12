@@ -1,7 +1,7 @@
 defmodule WatchClub.Accounts.UserTest do
   use WatchClub.DataCase
 
-  alias WatchClub.Accounts.{InvitationCode, User}
+  alias WatchClub.Accounts.{InvitationCode, User, UserPhoto}
   alias WatchClub.Playlists
   alias WatchClub.Playlists.{Playlist, PlaylistItem}
   alias WatchClub.Requests.ContentRequest
@@ -274,6 +274,69 @@ defmodule WatchClub.Accounts.UserTest do
     end
   end
 
+  describe "set_photo/*" do
+    @describetag :tmp_dir
+
+    test "makes the image a 256px square without metadata", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+
+      user = set_photo!(user, Ash.Type.File.from_path(photo_file!(tmp_dir)), actor: user)
+
+      photo = Image.open!(UserPhoto.path(user.photo_revision))
+      assert {Image.width(photo), Image.height(photo)} == {256, 256}
+      assert {:ok, fields} = Vix.Vips.Image.header_field_names(photo)
+      refute "exif-data" in fields
+    end
+
+    test "deletes the photo it replaces", %{tmp_dir: tmp_dir} do
+      {:ok, old_revision} = UserPhoto.store(photo_file!(tmp_dir))
+      user = generate(user(photo_revision: old_revision))
+
+      set_photo!(user, Ash.Type.File.from_path(photo_file!(tmp_dir)), actor: user)
+
+      refute File.exists?(UserPhoto.path(old_revision))
+    end
+
+    test "fails when the file isn't a JPEG, PNG or WebP image", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+      path = Path.join(tmp_dir, "photo.svg")
+      File.write!(path, ~s(<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9"/>))
+
+      set_photo(user, Ash.Type.File.from_path(path), actor: user)
+      |> assert_has_error(Ash.Error.Invalid, fn
+        %{field: :photo} -> true
+        _ -> false
+      end)
+    end
+
+    test "Users can only set their own photo", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+
+      set_photo(user, Ash.Type.File.from_path(photo_file!(tmp_dir)), actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "remove_photo/*" do
+    @describetag :tmp_dir
+
+    test "removes the User's photo and its file", %{tmp_dir: tmp_dir} do
+      {:ok, revision} = UserPhoto.store(photo_file!(tmp_dir))
+      user = generate(user(photo_revision: revision))
+
+      assert %User{photo_revision: nil} = remove_photo!(user, actor: user)
+      refute File.exists?(UserPhoto.path(revision))
+    end
+
+    test "Users can only remove their own photo", %{tmp_dir: tmp_dir} do
+      {:ok, revision} = UserPhoto.store(photo_file!(tmp_dir))
+      user = generate(user(photo_revision: revision))
+
+      remove_photo(user, actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "destroy_user/*" do
     setup do
       admin = generate(administrator())
@@ -338,6 +401,16 @@ defmodule WatchClub.Accounts.UserTest do
                Playlists.list_playlist_items!(playlist.id, actor: owner)
     end
 
+    @tag :tmp_dir
+    test "deletes the user's photo", %{admin: admin, tmp_dir: tmp_dir} do
+      {:ok, revision} = UserPhoto.store(photo_file!(tmp_dir))
+      member = generate(user(photo_revision: revision))
+
+      destroy_user!(member, actor: admin)
+
+      refute File.exists?(UserPhoto.path(revision))
+    end
+
     test "only the administrator can delete users", %{member: member} do
       other_user = generate(user())
 
@@ -349,5 +422,17 @@ defmodule WatchClub.Accounts.UserTest do
       assert destroy_user(admin, actor: admin)
              |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+  end
+
+  # A JPEG with metadata, as phones take them
+  defp photo_file!(tmp_dir) do
+    path = Path.join(tmp_dir, "#{System.unique_integer([:positive])}.jpg")
+
+    {:ok, image} =
+      Image.new!(600, 400, color: :blue)
+      |> Image.mutate(&Vix.Vips.MutableImage.set(&1, "exif-ifd0-Artist", :gchararray, "nate"))
+
+    Image.write!(image, path)
+    path
   end
 end
