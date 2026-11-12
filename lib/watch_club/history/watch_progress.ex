@@ -83,6 +83,7 @@ defmodule WatchClub.History.WatchProgress do
     end
 
     create :record_progress do
+      description "Records how far the User played a Movie, TV Show Episode or Sports Event. Adds a Feed Event once it's completed."
       upsert? true
       upsert_identity :unique_content_per_user
 
@@ -95,7 +96,6 @@ defmodule WatchClub.History.WatchProgress do
       ]
 
       accept [
-        :book_id,
         :movie_id,
         :tv_show_episode_id,
         :sports_event_id,
