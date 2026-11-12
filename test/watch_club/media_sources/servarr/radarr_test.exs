@@ -138,6 +138,13 @@ defmodule WatchClub.MediaSources.Servarr.RadarrTest do
       assert_received {:added, %{"tmdbId" => 11, "minimumAvailability" => "announced"}}
     end
 
+    test "adds a movie with no release date to download as soon as it's found" do
+      content = %Content{external_id: "11", original_title: "Star Wars", release_date: nil}
+
+      assert {:ok, 42} = Radarr.submit_request!(servarr(), content)
+      assert_received {:added, %{"minimumAvailability" => "announced"}}
+    end
+
     test "adds a new movie to download once it's released" do
       content = %Content{
         external_id: "11",
