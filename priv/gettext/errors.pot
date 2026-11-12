@@ -66,11 +66,6 @@ msgstr ""
 msgid "This invitation has already been used more than that"
 msgstr ""
 
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is invalid"
-msgstr ""
-
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name cannot be longer than %{max} characters"
@@ -124,11 +119,6 @@ msgstr ""
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "This username is already taken"
-msgstr ""
-
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is required"
 msgstr ""
 
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -245,11 +235,6 @@ msgstr ""
 
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
-msgid "Playlist name is required"
-msgstr ""
-
-#: lib/watch_club/playlists/playlist.ex
-#, elixir-autogen, elixir-format
 msgid "Playlist name must be at least %{min} characters"
 msgstr ""
 
@@ -337,4 +322,19 @@ msgstr ""
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong username or password"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your current password"
+msgstr ""
+
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Name your playlist"
+msgstr ""
+
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong current password"
 msgstr ""

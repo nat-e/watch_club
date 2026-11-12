@@ -93,7 +93,7 @@ defmodule WatchClub.Playlists.Playlist do
     # Customer-facing validations own localized messages for form errors.
     # Keep shape rules here instead of duplicating them as attribute constraints.
     validate present(:name) do
-      message dgettext_noop("errors", "Playlist name is required")
+      message dgettext_noop("errors", "Name your playlist")
     end
 
     validate string_length(:name, min: 3) do

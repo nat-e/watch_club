@@ -27,7 +27,7 @@ msgstr "Paramètres"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Manage your account preferences."
-msgstr "Gérez les préférences de votre compte."
+msgstr "Gère les préférences de ton compte."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
@@ -39,13 +39,13 @@ msgstr "Préférences"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Choose the language used across %{name}."
-msgstr "Choisissez la langue utilisée dans %{name}."
+msgstr "Choisis la langue utilisée dans %{name}."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Change the password used to sign in. Your other devices will be signed out."
-msgstr "Modifiez le mot de passe utilisé pour vous connecter. Vos autres appareils seront déconnectés."
+msgstr "Modifie le mot de passe utilisé pour te connecter. Tes autres appareils seront déconnectés."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
@@ -81,7 +81,7 @@ msgstr "Mettre à jour le mot de passe"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Your password has been updated"
-msgstr "Votre mot de passe a été mis à jour"
+msgstr "Ton mot de passe a été mis à jour"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
@@ -111,7 +111,7 @@ msgstr "Audio et sous-titres"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Choose the audio and subtitles videos start with. You can still change them while watching."
-msgstr "Choisissez l'audio et les sous-titres avec lesquels les vidéos démarrent. Vous pouvez toujours les changer pendant la lecture."
+msgstr "Choisis l'audio et les sous-titres avec lesquels les vidéos démarrent. Tu peux toujours les changer pendant la lecture."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
@@ -135,7 +135,7 @@ msgstr "Sous-titres"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Your audio and subtitle preferences are saved"
-msgstr "Vos préférences d'audio et de sous-titres sont enregistrées"
+msgstr "Tes préférences d'audio et de sous-titres sont enregistrées"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex

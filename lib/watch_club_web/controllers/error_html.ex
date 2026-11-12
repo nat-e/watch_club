@@ -93,20 +93,20 @@ defmodule WatchClubWeb.ErrorHTML do
     do:
       dgettext(
         "default",
-        "The page you are looking for does not exist or you do not have access to it."
+        "We couldn't find this page. It may not exist, or you may not have access to it."
       )
 
   defp description_from_template("403.html") do
     dgettext(
       "default",
-      "The page you are looking for does not exist or you do not have access to it."
+      "We couldn't find this page. It may not exist, or you may not have access to it."
     )
   end
 
   defp description_from_template("404.html") do
     dgettext(
       "default",
-      "The page you are looking for does not exist or you do not have access to it."
+      "We couldn't find this page. It may not exist, or you may not have access to it."
     )
   end
 

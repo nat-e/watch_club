@@ -78,12 +78,6 @@ msgid "This invitation has already been used more than that"
 msgstr "L'invitation a déjà été utilisée plus de fois que cette limite"
 
 # AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is invalid"
-msgstr "Votre mot de passe actuel est invalide"
-
-# AI-translated (Claude)
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name cannot be longer than %{max} characters"
@@ -148,12 +142,6 @@ msgstr "Le dossier racine est requis"
 #, elixir-autogen, elixir-format
 msgid "This username is already taken"
 msgstr "Ce nom d'utilisateur est déjà pris"
-
-# AI-translated (Claude)
-#: lib/watch_club/accounts/user.ex
-#, elixir-autogen, elixir-format
-msgid "Your current password is required"
-msgstr "Votre mot de passe actuel est requis"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
@@ -250,7 +238,7 @@ msgstr "Le type de média est requis"
 #: lib/watch_club/conversations/conversation.ex
 #, elixir-autogen, elixir-format
 msgid "Choose at least one person"
-msgstr "Choisissez au moins une personne"
+msgstr "Choisis au moins une personne"
 
 # AI-translated (Claude)
 #: lib/watch_club/conversations/conversation.ex
@@ -263,7 +251,7 @@ msgstr "Le message ne peut pas dépasser %{max} caractères"
 #: lib/watch_club/conversations/message.ex
 #, elixir-autogen, elixir-format
 msgid "Write a message"
-msgstr "Écrivez un message"
+msgstr "Écris un message"
 
 # AI-translated (Claude)
 #: lib/watch_club/requests/content_request.ex
@@ -292,12 +280,6 @@ msgstr "Le nom de la playlist ne peut pas dépasser %{max} caractères"
 # AI-translated (Claude)
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
-msgid "Playlist name is required"
-msgstr "Le nom de la playlist est requis"
-
-# AI-translated (Claude)
-#: lib/watch_club/playlists/playlist.ex
-#, elixir-autogen, elixir-format
 msgid "Playlist name must be at least %{min} characters"
 msgstr "Le nom de la playlist doit contenir au moins %{min} caractères"
 
@@ -317,7 +299,7 @@ msgstr "C'est déjà dans la playlist"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Choose an option from the list"
-msgstr "Choisissez une option de la liste"
+msgstr "Choisis une option dans la liste"
 
 # AI-translated (Claude)
 #: lib/watch_club/playbacks/problem_report.ex
@@ -329,7 +311,7 @@ msgstr "Les détails ne peuvent pas dépasser %{max} caractères"
 #: lib/watch_club/playbacks/problem_report.ex
 #, elixir-autogen, elixir-format
 msgid "Pick what's wrong"
-msgstr "Choisissez ce qui ne va pas"
+msgstr "Choisis ce qui ne va pas"
 
 # AI-translated (Claude)
 #: lib/watch_club/playbacks/playback.ex
@@ -403,3 +385,21 @@ msgstr "Utilise seulement des lettres minuscules, des chiffres et _"
 #, elixir-autogen, elixir-format
 msgid "Wrong username or password"
 msgstr "Nom d'utilisateur ou mot de passe incorrect"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Enter your current password"
+msgstr "Saisis ton mot de passe actuel"
+
+# AI-translated (Claude)
+#: lib/watch_club/playlists/playlist.ex
+#, elixir-autogen, elixir-format
+msgid "Name your playlist"
+msgstr "Donne un nom à ta playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user.ex
+#, elixir-autogen, elixir-format
+msgid "Wrong current password"
+msgstr "Mot de passe actuel incorrect"

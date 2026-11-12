@@ -169,12 +169,12 @@ defmodule WatchClub.Accounts.User do
       argument :password_confirmation, :string, sensitive?: true, allow_nil?: false
 
       validate present(:current_password) do
-        message dgettext_noop("errors", "Your current password is required")
+        message dgettext_noop("errors", "Enter your current password")
       end
 
       validate {AshAuthentication.Strategy.Password.PasswordValidation,
                 strategy_name: :password, password_argument: :current_password} do
-        message dgettext_noop("errors", "Your current password is invalid")
+        message dgettext_noop("errors", "Wrong current password")
       end
 
       change {AshAuthentication.Strategy.Password.HashPasswordChange, strategy_name: :password}
