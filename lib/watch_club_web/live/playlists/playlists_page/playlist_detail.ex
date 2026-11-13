@@ -5,6 +5,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
   import WatchClubWeb.Components.Contents.TmdbPoster
   import WatchClubWeb.Components.Playlists.PlaylistLink, only: [content_counts: 1]
 
@@ -71,8 +72,8 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
                     aria-label={Usernames.join(@shared_with, @current_user)}
                     class="rounded-full"
                   >
-                    <.avatar_group
-                      avatars={Enum.map(@shared_with, &%{id: &1.id, name: &1.username})}
+                    <.user_avatar_group
+                      users={@shared_with}
                       avatar_size="sm"
                       avatar_class="ring-2 ring-canvas"
                       class="-space-x-1.5!"
@@ -258,12 +259,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
           :if={@playlist.accesses != [] and @item.added_by}
           class="mt-auto flex min-w-0 items-center gap-tight text-xs text-text-subtle"
         >
-          <.avatar
-            id={@item.added_by.id}
-            name={@item.added_by.username}
-            size="xs"
-            aria-hidden="true"
-          />
+          <.user_avatar user={@item.added_by} size="xs" aria-hidden="true" />
           <span class="truncate">
             {dgettext("playlists", "Added by %{user}", user: @item.added_by.username)}
           </span>
@@ -279,7 +275,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDetail do
   defp person(assigns) do
     ~H"""
     <span class="inline-flex items-center gap-tight">
-      <.avatar id={@user.id} name={@user.username} size="sm" aria-hidden="true" />
+      <.user_avatar user={@user} size="sm" aria-hidden="true" />
       <span class="font-semibold text-text">{@user.username}</span>
     </span>
     """

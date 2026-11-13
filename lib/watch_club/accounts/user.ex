@@ -16,6 +16,14 @@ defmodule WatchClub.Accounts.User do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
+  # The actions that set a password, which the password validations check
+  @password_actions [
+    :create_administrator,
+    :register_with_password,
+    :change_password,
+    :reset_password_with_token
+  ]
+
   postgres do
     table "users"
     repo WatchClub.Repo
@@ -59,7 +67,36 @@ defmodule WatchClub.Accounts.User do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
+
+    destroy :destroy do
+      primary? true
+      # Deletes the profile picture's file after commit, which an atomic destroy can't
+      require_atomic? false
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
+    end
+
+    update :set_profile_picture do
+      description "Makes an image the User's profile picture, shown instead of their letter."
+      require_atomic? false
+      accept []
+
+      argument :profile_picture, Ash.Type.File do
+        description "A JPEG, PNG or WebP image."
+        allow_nil? false
+      end
+
+      change WatchClub.Accounts.Changes.StoreProfilePicture
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
+    end
+
+    update :remove_profile_picture do
+      description "Removes the User's profile picture, so their letter shows again."
+      require_atomic? false
+      accept []
+      change set_attribute(:profile_picture_revision, nil)
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
+    end
 
     create :create_administrator do
       description "Creates the administrator for this instance."
@@ -373,6 +410,10 @@ defmodule WatchClub.Accounts.User do
       authorize_if expr(id == ^actor(:id))
     end
 
+    policy action([:set_profile_picture, :remove_profile_picture]) do
+      authorize_if expr(id == ^actor(:id))
+    end
+
     # Only the instance administrator can create password reset links
     policy action(:generate_password_reset_token) do
       authorize_if actor_attribute_equals(:administrator?, true)
@@ -404,6 +445,10 @@ defmodule WatchClub.Accounts.User do
 
     publish_all :create, ["users", "admin"]
     publish_all :destroy, ["users", "admin"]
+
+    # The User's pages reload the avatar in their navigation
+    publish :set_profile_picture, ["user", :id]
+    publish :remove_profile_picture, ["user", :id]
   end
 
   changes do
@@ -431,21 +476,24 @@ defmodule WatchClub.Accounts.User do
     end
 
     validate present(:password) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Choose a password")
     end
 
     validate string_length(:password, min: 8) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Password must be at least %{min} characters")
     end
 
     validate present(:password_confirmation) do
       # `confirm` can't catch the empty confirmation when the password is
       # empty too (nil == nil), this fills that gap with the same message
-      where absent(:password)
+      where [action_is(@password_actions), absent(:password)]
       message dgettext_noop("errors", "Passwords do not match")
     end
 
     validate confirm(:password, :password_confirmation) do
+      where action_is(@password_actions)
       message dgettext_noop("errors", "Passwords do not match")
     end
   end
@@ -469,6 +517,10 @@ defmodule WatchClub.Accounts.User do
       allow_nil?: false,
       default: false,
       source: :is_administrator
+
+    # Names the file of the User's profile picture, see ProfilePicture. Without one, their letter
+    # shows.
+    attribute :profile_picture_revision, :uuid
 
     timestamps()
   end

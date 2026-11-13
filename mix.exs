@@ -91,6 +91,7 @@ defmodule WatchClub.MixProject do
       {:ex_m3u8, "~> 0.16"},
       {:finch, "~> 0.24"},
       {:gettext, "~> 1.0"},
+      {:image, "~> 0.73"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:jason, "~> 1.2"},
       {:oban, "~> 2.22"},

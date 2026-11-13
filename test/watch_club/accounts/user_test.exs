@@ -1,11 +1,12 @@
 defmodule WatchClub.Accounts.UserTest do
   use WatchClub.DataCase
 
-  alias WatchClub.Accounts.{InvitationCode, User}
+  alias WatchClub.Accounts.{InvitationCode, ProfilePicture, User}
   alias WatchClub.Playlists
   alias WatchClub.Playlists.{Playlist, PlaylistItem}
   alias WatchClub.Requests.ContentRequest
 
+  import ExUnit.CaptureLog
   import WatchClub.Accounts
 
   describe "create_administrator/*" do
@@ -274,6 +275,74 @@ defmodule WatchClub.Accounts.UserTest do
     end
   end
 
+  describe "set_profile_picture/*" do
+    @describetag :tmp_dir
+
+    test "makes the image a 256px square without metadata", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+
+      user =
+        set_profile_picture!(user, Ash.Type.File.from_path(picture_file!(tmp_dir)), actor: user)
+
+      picture = Image.open!(ProfilePicture.path!(user.profile_picture_revision))
+      assert {Image.width(picture), Image.height(picture)} == {256, 256}
+      assert {:ok, fields} = Vix.Vips.Image.header_field_names(picture)
+      refute "exif-data" in fields
+    end
+
+    test "deletes the profile picture it replaces", %{tmp_dir: tmp_dir} do
+      {:ok, old_revision} = ProfilePicture.store(picture_file!(tmp_dir))
+      user = generate(user(profile_picture_revision: old_revision))
+
+      set_profile_picture!(user, Ash.Type.File.from_path(picture_file!(tmp_dir)), actor: user)
+
+      refute File.exists?(ProfilePicture.path!(old_revision))
+    end
+
+    test "fails when the file isn't a JPEG, PNG or WebP image", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+      path = Path.join(tmp_dir, "picture.svg")
+      File.write!(path, ~s(<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9"/>))
+
+      capture_log(fn ->
+        set_profile_picture(user, Ash.Type.File.from_path(path), actor: user)
+        |> assert_has_error(Ash.Error.Invalid, fn
+          %{field: :profile_picture} -> true
+          _ -> false
+        end)
+      end)
+    end
+
+    test "Users can only set their own profile picture", %{tmp_dir: tmp_dir} do
+      user = generate(user())
+
+      set_profile_picture(user, Ash.Type.File.from_path(picture_file!(tmp_dir)),
+        actor: generate(user())
+      )
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  describe "remove_profile_picture/*" do
+    @describetag :tmp_dir
+
+    test "removes the User's profile picture and its file", %{tmp_dir: tmp_dir} do
+      {:ok, revision} = ProfilePicture.store(picture_file!(tmp_dir))
+      user = generate(user(profile_picture_revision: revision))
+
+      assert %User{profile_picture_revision: nil} = remove_profile_picture!(user, actor: user)
+      refute File.exists?(ProfilePicture.path!(revision))
+    end
+
+    test "Users can only remove their own profile picture", %{tmp_dir: tmp_dir} do
+      {:ok, revision} = ProfilePicture.store(picture_file!(tmp_dir))
+      user = generate(user(profile_picture_revision: revision))
+
+      remove_profile_picture(user, actor: generate(user()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "destroy_user/*" do
     setup do
       admin = generate(administrator())
@@ -338,6 +407,16 @@ defmodule WatchClub.Accounts.UserTest do
                Playlists.list_playlist_items!(playlist.id, actor: owner)
     end
 
+    @tag :tmp_dir
+    test "deletes the user's profile picture", %{admin: admin, tmp_dir: tmp_dir} do
+      {:ok, revision} = ProfilePicture.store(picture_file!(tmp_dir))
+      member = generate(user(profile_picture_revision: revision))
+
+      destroy_user!(member, actor: admin)
+
+      refute File.exists?(ProfilePicture.path!(revision))
+    end
+
     test "only the administrator can delete users", %{member: member} do
       other_user = generate(user())
 
@@ -349,5 +428,17 @@ defmodule WatchClub.Accounts.UserTest do
       assert destroy_user(admin, actor: admin)
              |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
+  end
+
+  # A JPEG with metadata, as phones take them
+  defp picture_file!(tmp_dir) do
+    path = Path.join(tmp_dir, "#{System.unique_integer([:positive])}.jpg")
+
+    {:ok, image} =
+      Image.new!(600, 400, color: :blue)
+      |> Image.mutate(&Vix.Vips.MutableImage.set(&1, "exif-ifd0-Artist", :gchararray, "nate"))
+
+    Image.write!(image, path)
+    path
   end
 end

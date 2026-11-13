@@ -48,6 +48,7 @@ msgid "Administration"
 msgstr ""
 
 #: lib/watch_club_web/components/navigation/account_menu.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Instance administrator"
 msgstr ""

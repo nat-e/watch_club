@@ -11,6 +11,7 @@
 msgid ""
 msgstr ""
 
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex

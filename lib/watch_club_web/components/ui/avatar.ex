@@ -8,9 +8,10 @@ defmodule WatchClubWeb.Components.UI.Avatar do
 
   attr :id, :string, required: true, doc: "picks its color. Nil shows a blank avatar."
   attr :name, :string, required: true
+  attr :src, :string, default: nil, doc: "a picture, shown instead of the letter"
 
   attr :size, :string,
-    values: ~w(xs sm md lg),
+    values: ~w(xs sm md lg xl),
     default: "md"
 
   attr :class, :any, default: nil
@@ -25,25 +26,33 @@ defmodule WatchClubWeb.Components.UI.Avatar do
       aria-label={@name}
       title={@name}
       class={[
-        "relative flex shrink-0 items-center justify-center rounded-full font-semibold select-none",
-        @id && "text-white",
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold select-none",
+        @id && ["text-white", @background_class],
         !@id && "bg-surface-raised text-text-subtle",
         @size == "xs" && "size-4 text-xs leading-none",
         @size == "sm" && "size-5 text-sm leading-none",
         @size == "md" && "size-7 text-base",
         @size == "lg" && "size-10 text-lg",
-        @background_class,
+        @size == "xl" && "size-20 text-3xl",
         @class
       ]}
       {@rest}
     >
       <Lucideicons.user_round :if={!@id} class="size-[60%]" />
       {@id && initial(@name)}
+      <%!-- Over the letter, which shows while it loads, or if its file is missing --%>
+      <img
+        :if={@src}
+        src={@src}
+        alt=""
+        onerror="this.hidden = true"
+        class="absolute inset-0 size-full object-cover"
+      />
     </span>
     """
   end
 
-  attr :avatars, :list, required: true
+  attr :avatars, :list, required: true, doc: "each with an `id`, a `name` and an optional `src`"
   attr :class, :any, default: nil
 
   attr :avatar_size, :string,
@@ -82,6 +91,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
         :for={avatar <- @visible_avatars}
         id={avatar.id}
         name={avatar.name}
+        src={avatar[:src]}
         size={@avatar_size}
         class={@avatar_class}
       />

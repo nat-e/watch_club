@@ -6,6 +6,8 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModa
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
+
   attr :playlist, Playlist, required: true
 
   attr :users, :list,
@@ -36,7 +38,7 @@ defmodule WatchClubWeb.Playlists.PlaylistsPage.PlaylistDialogs.SharePlaylistModa
         class="-mx-related flex flex-col"
       >
         <div :for={user <- @users} class="flex items-center gap-related p-related">
-          <.avatar id={user.id} name={user.username} aria-hidden="true" />
+          <.user_avatar user={user} aria-hidden="true" />
           <span class="min-w-0 flex-1 truncate text-sm font-semibold">{user.username}</span>
           <.select
             id={"share-#{user.id}"}

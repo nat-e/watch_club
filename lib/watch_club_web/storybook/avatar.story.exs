@@ -14,6 +14,20 @@ defmodule WatchClubWeb.Storybook.Avatar do
         attributes: %{id: "user-jane", name: "Jane Doe"}
       },
       %Variation{
+        id: :picture,
+        description: "With a picture, shown instead of the letter",
+        attributes: %{
+          id: "user-jane",
+          name: "Jane Doe",
+          src: "https://image.tmdb.org/t/p/w185/6uFaCOupDTPRnTiedveTUvjOikC.jpg"
+        }
+      },
+      %Variation{
+        id: :extra_large,
+        description: "Extra large, as the profile picture heading Settings",
+        attributes: %{id: "user-jane", name: "Jane Doe", size: "xl"}
+      },
+      %Variation{
         id: :blank,
         description: "Without an id, as for a deleted User",
         attributes: %{id: nil, name: "Deleted user"}
@@ -25,7 +39,7 @@ defmodule WatchClubWeb.Storybook.Avatar do
         <.avatar_group
           avatars={[
             %{id: "user-cinema", name: "Alice"},
-            %{id: "user-books", name: "Ben"},
+            %{id: "user-books", name: "Ben", src: "https://image.tmdb.org/t/p/w185/6uFaCOupDTPRnTiedveTUvjOikC.jpg"},
             %{id: "user-series", name: "Clara"},
             %{id: "user-games", name: "Daniel"}
           ]}

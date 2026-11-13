@@ -9,6 +9,8 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
   """
   use WatchClubWeb, :component
 
+  import WatchClubWeb.Components.Accounts.UserAvatar
+
   attr :id, :string, required: true
   attr :user, User, required: true
 
@@ -21,7 +23,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
           type="button"
           class="flex w-full items-center gap-related rounded-control p-related text-left transition-colors hover:bg-surface-hover aria-expanded:bg-surface-hover"
         >
-          <.avatar id={@user.id} name={@user.username} size="md" aria-hidden="true" />
+          <.user_avatar user={@user} size="md" aria-hidden="true" />
           <.user_name user={@user} />
           <Lucideicons.chevrons_up_down class="size-icon-sm shrink-0 text-text-subtle" />
         </button>
@@ -29,7 +31,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
 
       <%!-- Repeats the trigger, so screen readers skip it --%>
       <div class="flex w-56 items-center gap-related p-related" aria-hidden="true">
-        <.avatar id={@user.id} name={@user.username} size="md" />
+        <.user_avatar user={@user} size="md" />
         <.user_name user={@user} />
       </div>
       <.dropdown_menu_separator />
@@ -93,7 +95,7 @@ defmodule WatchClubWeb.Components.Navigation.AccountMenu do
 
       <div class="flex flex-1 flex-col gap-cluster overflow-y-auto px-page py-cluster">
         <div class="flex items-center gap-related px-related">
-          <.avatar id={@user.id} name={@user.username} size="md" aria-hidden="true" />
+          <.user_avatar user={@user} size="md" aria-hidden="true" />
           <.user_name user={@user} />
         </div>
 
