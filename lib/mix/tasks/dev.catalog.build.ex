@@ -8,7 +8,10 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
       mix dev.catalog.build                 # every missing file
       mix dev.catalog.build Sintel          # the missing files whose path contains "Sintel"
 
-  ffmpeg reads only the clip it needs from each remote source.
+  ffmpeg downloads each clip of a remote source once, with a margin, to `tmp/dev_catalog/clips`,
+  and music and subtitles are downloaded whole.
+  Picture subtitles also need `seconv`, Subtitle Edit's command line, and Dolby Vision needs
+  `dovi_tool` and `mkvmerge`.
 
   ## Manifests
 
@@ -24,7 +27,11 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
         subtitle_urls: %{eng: "…", fre: "…"}                       # optional
       }
 
-  A file is cut from a source, from one or more `{start, duration}` clips in seconds:
+  A music source has an `audio_url` instead, and a font a `font_url` and its `font_family`.
+  Sources with the same `page_url` are one work in the attribution.
+
+  A file is cut from a source, from one or more `{start, duration}` clips in seconds, played
+  one after the other. A clip can come from another source, as `{other_source, start, duration}`:
 
       %{
         path: "movies/Coffee Run (2020) {tmdb-717986}/Coffee Run (2020).mkv",
@@ -36,19 +43,44 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
         subtitles: [eng: [], fre: [:forced]],  # optional, embedded, with their flags
         sidecars: [eng: [], fre: [:forced]],   # optional, next to the file: name.fr.forced.srt
         chapters: [{0, "Intro"}, {25, "Chapter 1"}],  # optional, starts in seconds
+        input_options: ["-noautorotate"],    # optional, ffmpeg options of each clip
+        inputs: [other_source: {60, 120}],   # optional, a clip of another source's video
+        font: :some_font,                    # optional, attached, and used by ASS subtitles
+        dolby_vision: %{…},                  # optional, see below
         ffmpeg: [...]                        # optional, encoding arguments that replace the default
       }
 
-  `ffmpeg` arguments come after the inputs, in this order: the clips, then the subtitles, then
-  the music, then the chapters. Without them, a file is encoded in HEVC or H.264 and stereo
-  AAC, with its embedded subtitles in SRT, or `mov_text` in MP4.
+  Flags can also set a subtitle's `format`, such as `subtitles: [eng: [:default, format: :pgs]]`.
+  Embedded subtitles are `:srt` by default, `:ass`, or pictures rendered by `seconv`: `:pgs` in
+  1920x1080 or `:vobsub` in 720x480. Sidecars are `:srt` or `:vtt`, and `charset:
+  "WINDOWS-1252"` re-encodes one from UTF-8.
+
+  `ffmpeg` arguments map and encode the video and audio of the inputs, which come in this
+  order: the clips, then the subtitles, then the music, then the chapters, then the other
+  inputs. Without them, a file is encoded in HEVC or H.264 and stereo AAC. The embedded
+  subtitles are added after them, with their language and flags, in their format, or in
+  `mov_text` in MP4, M4V and MOV, and in WebVTT in WebM.
+
+  `dolby_vision` takes the Level 6 metadata of a Dolby Vision profile 8.1 RPU, such as
+  `%{max_display_mastering_luminance: 1000, min_display_mastering_luminance: 1,
+  max_content_light_level: 1000, max_frame_average_light_level: 400}`. Every frame of the file,
+  an MKV of HDR10 HEVC, gets the same RPU.
   """
   use Mix.Task
 
   @catalog "dev/catalog"
   @cache "tmp/dev_catalog"
   @user_agent "WatchClubDevCatalog/1.0 (https://github.com/nat-e/watch_club)"
-  @reconnect ["-reconnect", "1", "-reconnect_on_network_error", "1", "-reconnect_delay_max", "10"]
+  @reconnect [
+    "-reconnect",
+    "1",
+    "-reconnect_on_network_error",
+    "1",
+    "-reconnect_on_http_error",
+    "429,5xx",
+    "-reconnect_delay_max",
+    "10"
+  ]
   # ISO 639-2 codes in metadata, ISO 639-1 codes in sidecar file names
   @two_letter_codes %{
     ara: "ar",
@@ -80,7 +112,7 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
         Mix.shell().info("Keep #{file.path}")
       else
         Mix.shell().info("Build #{file.path}")
-        build!(file, Map.fetch!(sources, file.source), sources, output)
+        build!(file, sources, output)
       end
     end
 
@@ -102,35 +134,41 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     end)
   end
 
-  defp build!(file, source, sources, output) do
+  defp build!(file, sources, output) do
     File.mkdir_p!(Path.dirname(output))
-    tmp_output = Path.join(Path.dirname(output), ".building-" <> Path.basename(output))
 
-    clip_inputs =
-      Enum.flat_map(file.clips, fn {start, duration} ->
-        ["-ss", to_string(start), "-t", to_string(duration)] ++
-          @reconnect ++ ["-i", source.video_url]
+    # Each build writes its own file, so that two builds of a file can't mix their writes
+    tmp_name = "#{:erlang.phash2(output)}-#{System.pid()}#{Path.extname(output)}"
+    tmp_output = Path.join([@cache, "building", tmp_name])
+
+    File.mkdir_p!(Path.dirname(tmp_output))
+    source = Map.fetch!(sources, file.source)
+    input_options = Map.get(file, :input_options, [])
+
+    clips =
+      Enum.map(file.clips, fn
+        {start, duration} -> {source.video_url, {start, duration}}
+        {key, start, duration} -> {Map.fetch!(sources, key).video_url, {start, duration}}
       end)
 
-    {first_start, _duration} = hd(file.clips)
-    total_duration = file.clips |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+    clip_inputs =
+      Enum.flat_map(clips, fn {url, clip} -> input_options ++ remote_clip(url, clip) end)
+
+    [{_url, {first_start, _duration}} | _clips] = clips
+
+    total_duration =
+      clips |> Enum.map(fn {_url, {_start, duration}} -> duration end) |> Enum.sum()
 
     # Subtitles are cut like the first clip, so they stay in sync
-    subtitles = Map.get(file, :subtitles, [])
-
     subtitle_inputs =
-      Enum.flat_map(subtitles, fn {language, _flags} ->
-        path = cached_subtitle!(source, language)
-        ["-ss", to_string(first_start), "-t", to_string(total_duration), "-i", path]
+      Enum.flat_map(Map.get(file, :subtitles, []), fn {language, flags} ->
+        subtitle_input!(file, sources, language, flags, first_start, total_duration)
       end)
 
     music_inputs =
       case Map.get(file, :music) do
-        nil ->
-          []
-
-        key ->
-          ["-stream_loop", "-1", "-t", to_string(total_duration), "-i", sources[key].audio_url]
+        nil -> []
+        key -> ["-stream_loop", "-1", "-t", to_string(total_duration), "-i", music!(sources[key])]
       end
 
     chapters_inputs =
@@ -139,26 +177,92 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
         chapters -> ["-i", chapters_metadata!(chapters, total_duration)]
       end
 
-    arguments =
-      ["-hide_banner", "-loglevel", "error", "-y", "-user_agent", @user_agent] ++
+    other_inputs =
+      Enum.flat_map(Map.get(file, :inputs, []), fn {key, clip} ->
+        remote_clip(sources[key].video_url, clip)
+      end)
+
+    cmd!(
+      "ffmpeg",
+      ["-hide_banner", "-loglevel", "error", "-y"] ++
         clip_inputs ++
         subtitle_inputs ++
         music_inputs ++
         chapters_inputs ++
-        Map.get_lazy(file, :ffmpeg, fn -> default_encoding(file, output) end) ++
-        chapters_arguments(file) ++ ["-t", to_string(total_duration), tmp_output]
+        other_inputs ++
+        Map.get_lazy(file, :ffmpeg, fn -> default_encoding(file) end) ++
+        subtitle_arguments(file, output) ++
+        chapters_arguments(file) ++
+        font_arguments(file, sources) ++ ["-t", to_string(total_duration), tmp_output]
+    )
 
-    case System.cmd("ffmpeg", arguments, stderr_to_stdout: true) do
-      {_output, 0} -> File.rename!(tmp_output, output)
-      {log, status} -> Mix.raise("ffmpeg exited with #{status} for #{file.path}:\n#{log}")
-    end
+    if level6 = Map.get(file, :dolby_vision), do: add_dolby_vision!(tmp_output, level6)
+    File.rename!(tmp_output, output)
 
     for {language, flags} <- Map.get(file, :sidecars, []) do
       write_sidecar!(source, language, flags, first_start, total_duration, output)
     end
   end
 
-  defp default_encoding(file, output) do
+  defp remote_clip(url, {start, duration} = clip) do
+    ["-seek_timestamp", "1", "-ss", to_string(start), "-t", to_string(duration)] ++
+      ["-i", cached_clip!(url, clip)]
+  end
+
+  # The clip with 5 s around it and its original timestamps, downloaded once for every file
+  # cut from it
+  defp cached_clip!(url, {start, duration}) do
+    path = Path.join([@cache, "clips", "#{:erlang.phash2({url, start, duration})}.mkv"])
+    tmp_path = Path.rootname(path) <> ".downloading.mkv"
+
+    unless File.exists?(path) do
+      File.mkdir_p!(Path.dirname(path))
+
+      # Seeking to the start of an Ogg file loses its first half second of sound
+      seek = if start > 5, do: ["-ss", to_string(start - 5)], else: []
+
+      cmd!(
+        "ffmpeg",
+        ["-hide_banner", "-loglevel", "error", "-y"] ++
+          seek ++
+          ["-t", to_string(min(start, 5) + duration + 5), "-user_agent", @user_agent] ++
+          @reconnect ++
+          ["-i", url, "-map", "0:v?", "-map", "0:a?", "-c", "copy", "-copyts", tmp_path]
+      )
+
+      # ffmpeg ends a download cut short by the server without an error. The duration of an
+      # MKV with the original timestamps is the end of the clip
+      %{"format" => %{"duration" => end_time}} =
+        "ffprobe"
+        |> cmd!(~w(-v error -show_entries format=duration -of json) ++ [tmp_path])
+        |> JSON.decode!()
+
+      if String.to_float(end_time) < start + duration - 1 do
+        Mix.raise("The download of #{url} stopped at #{end_time} s: try again later")
+      end
+
+      File.rename!(tmp_path, path)
+    end
+
+    path
+  end
+
+  # The whole music, which is looped when it is shorter than the file
+  defp music!(source) do
+    cached_download!(source.audio_url, "music", Path.extname(URI.parse(source.audio_url).path))
+  end
+
+  defp subtitle_input!(file, sources, language, flags, start, duration) do
+    srt = sources |> Map.fetch!(file.source) |> subtitle_clip!(language, start, duration)
+
+    case flag_option(flags, :format, :srt) do
+      :srt -> ["-i", srt]
+      :ass -> ["-i", ass_subtitle!(srt, sources[file.font].font_family)]
+      format -> picture_subtitle!(srt, format)
+    end
+  end
+
+  defp default_encoding(file) do
     clip_count = length(file.clips)
     subtitles = Map.get(file, :subtitles, [])
     music_index = if Map.has_key?(file, :music), do: clip_count + length(subtitles)
@@ -175,24 +279,6 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
          "#{pads}concat=n=#{clip_count}:v=1:a=1[vc][a];[vc]scale=-2:#{height},format=yuv420p[v]"}
       end
 
-    subtitle_maps =
-      subtitles
-      |> Enum.with_index(clip_count)
-      |> Enum.flat_map(fn {{language, flags}, input} ->
-        index = input - clip_count
-
-        [
-          "-map",
-          "#{input}:s:0",
-          "-metadata:s:s:#{index}",
-          "language=#{language}",
-          "-disposition:s:#{index}",
-          disposition(flags)
-        ]
-      end)
-
-    subtitle_codec = if Path.extname(output) == ".mp4", do: "mov_text", else: "srt"
-
     video_codec =
       case Map.get(file, :codec, :hevc) do
         :hevc ->
@@ -203,14 +289,43 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
       end
 
     ["-filter_complex", filter] ++
-      media_maps ++
-      subtitle_maps ++
-      video_codec ++
-      ["-c:a", "aac", "-b:a", "128k", "-ac", "2", "-c:s", subtitle_codec]
+      media_maps ++ video_codec ++ ["-c:a", "aac", "-b:a", "128k", "-ac", "2"]
   end
 
-  defp disposition([]), do: "0"
-  defp disposition(flags), do: Enum.map_join(flags, "+", &to_string/1)
+  # The subtitle inputs, with their language, flags and a codec that the container takes
+  defp subtitle_arguments(file, output) do
+    clip_count = length(file.clips)
+
+    file
+    |> Map.get(:subtitles, [])
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {{language, flags}, index} ->
+      format = flag_option(flags, :format, :srt)
+
+      codec =
+        cond do
+          format in [:pgs, :vobsub] -> "copy"
+          Path.extname(output) in ~w(.mp4 .m4v .mov) -> "mov_text"
+          Path.extname(output) == ".webm" -> "webvtt"
+          true -> to_string(format)
+        end
+
+      ["-map", "#{clip_count + index}:s:0", "-metadata:s:s:#{index}", "language=#{language}"] ++
+        ["-disposition:s:#{index}", disposition(flags), "-c:s:#{index}", codec]
+    end)
+  end
+
+  # Flags are dispositions, such as :forced, and options, such as `format: :pgs`
+  defp disposition(flags) do
+    case Enum.filter(flags, &is_atom/1) do
+      [] -> "0"
+      dispositions -> Enum.map_join(dispositions, "+", &to_string/1)
+    end
+  end
+
+  defp flag_option(flags, key, default) do
+    flags |> List.keyfind(key, 0, {key, default}) |> elem(1)
+  end
 
   defp chapters_arguments(%{chapters: _chapters} = file) do
     input = length(file.clips) + length(Map.get(file, :subtitles, [])) + music_count(file)
@@ -220,6 +335,16 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
   defp chapters_arguments(_file), do: []
 
   defp music_count(file), do: if(Map.has_key?(file, :music), do: 1, else: 0)
+
+  defp font_arguments(%{font: key}, sources) do
+    url = sources[key].font_url
+    file_name = URI.decode(Path.basename(URI.parse(url).path))
+
+    ["-attach", cached_download!(url, "fonts", Path.extname(file_name))] ++
+      ["-metadata:s:t:0", "mimetype=font/ttf", "-metadata:s:t:0", "filename=#{file_name}"]
+  end
+
+  defp font_arguments(_file, _sources), do: []
 
   defp chapters_metadata!(chapters, total_duration) do
     ends = chapters |> Enum.drop(1) |> Enum.map(&elem(&1, 0)) |> Kernel.++([total_duration])
@@ -237,21 +362,144 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     path
   end
 
-  defp write_sidecar!(source, language, flags, start, duration, output) do
-    suffix = Enum.map_join([Map.fetch!(@two_letter_codes, language) | flags], ".", &to_string/1)
-    path = Path.rootname(output) <> ".#{suffix}.srt"
+  # The SRT in ASS, in the given font
+  defp ass_subtitle!(srt, font_family) do
+    path = Path.rootname(srt) <> "-#{:erlang.phash2(font_family)}.ass"
+    cmd!("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", srt, "-c:s", "ass", path])
 
-    arguments =
-      ["-hide_banner", "-loglevel", "error", "-y"] ++
-        ["-ss", to_string(start), "-t", to_string(duration)] ++
-        ["-i", cached_subtitle!(source, language), "-c:s", "srt", path]
+    content =
+      path
+      |> File.read!()
+      |> String.replace("Style: Default,Arial,", "Style: Default,#{font_family},")
 
-    {_output, 0} = System.cmd("ffmpeg", arguments, stderr_to_stdout: true)
+    File.write!(path, content)
+    path
   end
 
-  defp cached_subtitle!(source, language) do
-    url = source.subtitle_urls |> Map.fetch!(language)
-    path = Path.join([@cache, "subtitles", "#{:erlang.phash2(url)}.srt"])
+  # The input of the SRT as pictures, in a Blu-ray .sup or a VobSub .idx and .sub
+  defp picture_subtitle!(srt, format) do
+    {seconv_format, resolution, extension} =
+      case format do
+        :pgs -> {"bluraysup", "1920x1080", ".sup"}
+        :vobsub -> {"vobsub", "720x480", ".idx"}
+      end
+
+    cmd!("seconv", [
+      srt,
+      seconv_format,
+      "--resolution:#{resolution}",
+      "--output-folder:#{Path.dirname(srt)}",
+      "--overwrite"
+    ])
+
+    path = Path.rootname(srt) <> extension
+
+    # ffmpeg moves the start of an input to 0, which shifts a .sup: it has a start, unlike an SRT
+    %{"format" => probed} =
+      "ffprobe"
+      |> cmd!(~w(-v error -show_entries format=start_time -of json) ++ [path])
+      |> JSON.decode!()
+
+    case probed do
+      %{"start_time" => start_time} -> ["-itsoffset", start_time, "-i", path]
+      _no_start -> ["-i", path]
+    end
+  end
+
+  # mkvmerge writes the Dolby Vision configuration that ffmpeg doesn't find in raw HEVC
+  defp add_dolby_vision!(path, level6) do
+    base = Path.rootname(path)
+
+    [hevc, rpu, config, with_rpu, muxed] =
+      Enum.map(~w(.hevc .rpu .json .dv.hevc .dv.mkv), &(base <> &1))
+
+    cmd!("ffmpeg", [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-y",
+      "-i",
+      path,
+      "-map",
+      "0:v:0",
+      "-c",
+      "copy",
+      hevc
+    ])
+
+    %{"streams" => [%{"nb_read_packets" => frames, "r_frame_rate" => frame_rate}]} =
+      "ffprobe"
+      |> cmd!(
+        ~w(-v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets,r_frame_rate -of json) ++
+          [path]
+      )
+      |> JSON.decode!()
+
+    File.write!(
+      config,
+      JSON.encode!(%{profile: "8.1", length: String.to_integer(frames), level6: level6})
+    )
+
+    cmd!("dovi_tool", ["generate", "-j", config, "-o", rpu])
+    cmd!("dovi_tool", ["inject-rpu", "-i", hevc, "--rpu-in", rpu, "-o", with_rpu])
+
+    cmd!("mkvmerge", [
+      "-q",
+      "-o",
+      muxed,
+      "--default-duration",
+      "0:#{frame_rate}fps",
+      with_rpu,
+      "--no-video",
+      path
+    ])
+
+    File.rename!(muxed, path)
+    Enum.each([hevc, rpu, config, with_rpu], &File.rm!/1)
+  end
+
+  defp write_sidecar!(source, language, flags, start, duration, output) do
+    format = flag_option(flags, :format, :srt)
+    names = [Map.fetch!(@two_letter_codes, language) | Enum.filter(flags, &is_atom/1)]
+    path = Path.rootname(output) <> ".#{Enum.map_join(names, ".", &to_string/1)}.#{format}"
+    codec = if format == :vtt, do: "webvtt", else: "srt"
+    srt = subtitle_clip!(source, language, start, duration)
+    cmd!("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", srt, "-c:s", codec, path])
+
+    if charset = flag_option(flags, :charset, nil) do
+      {content, 0} = System.cmd("iconv", ["-f", "UTF-8", "-t", charset, path])
+      File.write!(path, content)
+    end
+  end
+
+  # The subtitles of the clip. Seeking in the input would shift them by the time between the
+  # start and the subtitle before it, so the output drops what comes before the start instead
+  defp subtitle_clip!(source, language, start, duration) do
+    srt = source.subtitle_urls |> Map.fetch!(language) |> cached_download!("subtitles", ".srt")
+    path = Path.rootname(srt) <> "-#{start}-#{duration}.srt"
+
+    cmd!(
+      "ffmpeg",
+      ["-hide_banner", "-loglevel", "error", "-y", "-i", srt, "-ss", to_string(start)] ++
+        ["-t", to_string(duration), "-output_ts_offset", "-#{start}", "-c:s", "srt", path]
+    )
+
+    # A subtitle that ends after the clip would make the file longer
+    clip_end = Time.add(~T[00:00:00.000], round(duration * 1000), :millisecond)
+
+    content =
+      Regex.replace(~r/ --> (\d\d:\d\d:\d\d),(\d\d\d)/, File.read!(path), fn arrow, time, ms ->
+        if Time.compare(Time.from_iso8601!("#{time}.#{ms}"), clip_end) == :gt,
+          do: " --> " <> String.replace(Time.to_string(clip_end), ".", ","),
+          else: arrow
+      end)
+
+    File.write!(path, content)
+    path
+  end
+
+  defp cached_download!(url, directory, extension) do
+    path = Path.join([@cache, directory, "#{:erlang.phash2(url)}#{extension}"])
 
     unless File.exists?(path) do
       File.mkdir_p!(Path.dirname(path))
@@ -265,48 +513,78 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     path
   end
 
+  # Wikimedia answers 429 Too Many Requests when it gets too many: wait, then try again
+  defp cmd!(command, arguments, attempt \\ 1) do
+    case System.cmd(command, arguments, stderr_to_stdout: true) do
+      {output, 0} ->
+        output
+
+      {log, status} ->
+        if attempt < 5 and String.contains?(log, "429 Too Many Requests") do
+          Mix.shell().info("Too many requests, trying again in a minute")
+          Process.sleep(60_000)
+          cmd!(command, arguments, attempt + 1)
+        else
+          Mix.raise("#{command} exited with #{status}:\n#{log}")
+        end
+    end
+  end
+
   defp write_attribution!(sources, files) do
+    # A file's works are its source and the sources of its other inputs
     rows =
       files
-      |> Enum.group_by(& &1.source)
-      |> Enum.sort_by(fn {key, _files} -> String.downcase(sources[key].title) end)
-      |> Enum.map_join("\n", fn {key, source_files} ->
-        source = sources[key]
-        paths = Enum.map_join(source_files, "<br>", &"`#{&1.path}`")
-
-        "| [#{source.title}](#{source.page_url}) | #{source.author} | " <>
-          "[#{source.license}](#{source.license_url}) | #{paths} |"
+      |> Enum.flat_map(fn file ->
+        Enum.map(
+          Enum.uniq(
+            [file.source | Keyword.keys(Map.get(file, :inputs, []))] ++
+              for({key, _start, _duration} <- file.clips, do: key)
+          ),
+          &{sources[&1], file.path}
+        )
+      end)
+      |> Enum.group_by(fn {source, _path} -> source.page_url end)
+      |> Enum.map(fn {_page_url, [{source, _path} | _] = works} ->
+        {source, works |> Enum.map(&elem(&1, 1)) |> Enum.uniq()}
+      end)
+      |> Enum.sort_by(fn {source, _paths} -> String.downcase(source.title) end)
+      |> Enum.map_join("\n", fn {source, paths} ->
+        "| #{work_cells(source)} | " <> Enum.map_join(paths, "<br>", &"`#{&1}`") <> " |"
       end)
 
-    music_rows =
+    added_rows =
       files
-      |> Enum.map(&Map.get(&1, :music))
+      |> Enum.flat_map(&[Map.get(&1, :music), Map.get(&1, :font)])
       |> Enum.reject(&is_nil/1)
       |> Enum.uniq()
       |> Enum.map_join("\n", fn key ->
-        source = sources[key]
-
-        "| [#{source.title}](#{source.page_url}) | #{source.author} | " <>
-          "[#{source.license}](#{source.license_url}) |"
+        "| #{work_cells(sources[key])} |"
       end)
 
     File.write!(Path.join(@catalog, "ATTRIBUTION.md"), """
     # Attribution
 
     Generated by `mix dev.catalog.build` from `manifest/`. Each file in `media/` is a clip of
-    the work it is listed with, cut, scaled and re-encoded, and some have subtitles, chapters or
-    music added. Each file keeps the license of its work: files cut from a CC BY-SA work are
-    under CC BY-SA too.
+    the work it is listed with, cut, scaled and re-encoded, and some have subtitles, chapters,
+    music or fonts added. Each file keeps the license of its work: files cut from a CC BY-SA
+    work are under CC BY-SA too. Subtitles taken from Wikimedia Commons are by its
+    contributors, under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
     | Work | Author | License | Files |
     | --- | --- | --- | --- |
     #{rows}
 
-    ## Music added to silent films
+    ## Music added to silent films, and fonts attached to subtitles
 
     | Work | Author | License |
     | --- | --- | --- |
-    #{music_rows}
+    #{added_rows}
     """)
+  end
+
+  # The work, author and license cells of a table row, where a | would start another cell
+  defp work_cells(source) do
+    "[#{source.title}](#{source.page_url}) | #{String.replace(source.author, "|", "\\|")} | " <>
+      "[#{source.license}](#{source.license_url})"
   end
 end
