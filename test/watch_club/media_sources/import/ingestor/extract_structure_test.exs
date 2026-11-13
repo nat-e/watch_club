@@ -36,7 +36,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                     %AudioTrack{codec: "eac3", language: "eng", channels: 6},
                     %AudioTrack{codec: "eac3", language: "fre", channels: 2}
                   ],
-                  text_tracks: [%TextTrack{codec: "subrip", language: "fre"}]
+                  text_tracks: [%TextTrack{codec: "subrip", language: "fr"}]
                 }
               }} = ExtractStructure.apply(candidate)
     end
@@ -58,6 +58,74 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       # Same size, last byte replaced
       File.open!(path, [:read, :write, :binary], &:file.pwrite(&1, {:eof, -1}, "x"))
       refute fingerprint.() == original
+    end
+
+    @tag :tmp_dir
+    test "reads the language, region, forced and SDH of the Text Tracks from their titles too",
+         %{tmp_dir: tmp_dir} do
+      stub_ffprobe(
+        video_metadata([
+          audio("fre"),
+          subtitles("fre", "VFQ"),
+          subtitles("spa", "Español (Latinoamérica)"),
+          subtitles(nil, "English SDH"),
+          subtitles("eng", "English", %{"hearing_impaired" => 1}),
+          subtitles("fre", "Forced"),
+          subtitles("fre", "Full", %{"forced" => 1}),
+          subtitles("eng", "Shutter.Island.2010.1080p.BluRay.x265-Forced")
+        ])
+      )
+
+      {:ok, candidate} = ExtractStructure.apply(Candidate.new(video_file!(tmp_dir), :movie))
+
+      assert [
+               %TextTrack{language: "fr-CA", forced?: false, sdh?: false},
+               %TextTrack{language: "es-419", forced?: false, sdh?: false},
+               %TextTrack{language: "en", forced?: false, sdh?: true},
+               %TextTrack{language: "en", forced?: false, sdh?: true},
+               %TextTrack{language: "fr", forced?: true, sdh?: false},
+               %TextTrack{language: "fr", forced?: false, sdh?: false},
+               %TextTrack{language: "en", forced?: false, sdh?: false}
+             ] = candidate.media_structure.text_tracks
+    end
+
+    @tag :tmp_dir
+    test "counts a Text Track marked forced as full when no Audio Track is in its language",
+         %{tmp_dir: tmp_dir} do
+      stub_ffprobe(
+        video_metadata([
+          audio("spa"),
+          subtitles("eng", "English", %{"forced" => 1}),
+          subtitles("spa", "Spanish", %{"forced" => 1})
+        ])
+      )
+
+      {:ok, candidate} = ExtractStructure.apply(Candidate.new(video_file!(tmp_dir), :movie))
+
+      assert [
+               %TextTrack{language: "en", forced?: false},
+               %TextTrack{language: "es", forced?: true}
+             ] = candidate.media_structure.text_tracks
+    end
+
+    @tag :tmp_dir
+    test "reads the language, region, forced and SDH of sidecar Text Tracks from their names",
+         %{tmp_dir: tmp_dir} do
+      stub_ffprobe(video_metadata([audio("eng")]))
+      path = video_file!(tmp_dir)
+
+      for suffix <- ~w(da en.hi hi pt-BR.forced) do
+        File.write!(Path.join(tmp_dir, "Friends - S01E01.#{suffix}.srt"), "")
+      end
+
+      {:ok, candidate} = ExtractStructure.apply(Candidate.new(path, :movie))
+
+      assert [
+               %TextTrack{language: "da", forced?: false, sdh?: false},
+               %TextTrack{language: "en", forced?: false, sdh?: true},
+               %TextTrack{language: "hi", forced?: false, sdh?: false},
+               %TextTrack{language: "pt-BR", forced?: true, sdh?: false}
+             ] = candidate.media_structure.text_tracks
     end
 
     test "returns an error when the file can't be read" do
@@ -138,6 +206,28 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
     path = Path.join(dir, "Friends - S01E01.mkv")
     File.write!(path, :crypto.strong_rand_bytes(200 * 1024))
     path
+  end
+
+  defp video_metadata(streams) do
+    %{
+      "format" => %{"format_name" => "matroska,webm", "duration" => "60.0"},
+      "streams" => [
+        %{"codec_type" => "video", "codec_name" => "h264", "width" => 1920, "height" => 1080}
+        | streams
+      ]
+    }
+  end
+
+  defp audio(language),
+    do: %{"codec_type" => "audio", "codec_name" => "ac3", "tags" => %{"language" => language}}
+
+  defp subtitles(language, title, disposition \\ %{}) do
+    %{
+      "codec_type" => "subtitle",
+      "codec_name" => "subrip",
+      "tags" => %{"language" => language, "title" => title},
+      "disposition" => disposition
+    }
   end
 
   defp stub_ffprobe(metadata) do
