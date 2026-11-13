@@ -4,15 +4,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   container, duration, and tracks. Dispatches by `candidate.media_type`:
 
     * `:video` → probe with `ffprobe`, build the structure, read the keyframes of
-      its Default Video Track, append sidecar text tracks, and compute the File
-      Fingerprint.
+      its Default Video Track, compute the File Fingerprint, append sidecar text
+      tracks, and decide their languages and markers.
     * `:audiobook` → probe with `ffprobe`, build the structure.
     * `:ebook` → record the file extension as container; no probing.
   """
 
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MediaStructure
-  alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure.{Sidecars, Tracks}
+  alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure.{Sidecars, TextTracks, Tracks}
 
   @ffprobe Application.compile_env(:watch_club, :ffprobe, WatchClub.Ffmpeg)
 
@@ -29,8 +29,17 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
          {:ok, keyframe_seconds} <-
            @ffprobe.keyframes(candidate.path, default_video_track(structure).stream_index),
          {:ok, fingerprint} <- file_fingerprint(candidate.path) do
-      structure = %{structure | file_fingerprint: fingerprint, keyframe_seconds: keyframe_seconds}
-      {:ok, Sidecars.append(%{candidate | media_structure: structure})}
+      candidate =
+        Sidecars.append(%{
+          candidate
+          | media_structure: %{
+              structure
+              | file_fingerprint: fingerprint,
+                keyframe_seconds: keyframe_seconds
+            }
+        })
+
+      {:ok, %{candidate | media_structure: TextTracks.classify(candidate.media_structure)}}
     end
   end
 

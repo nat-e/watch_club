@@ -10,6 +10,8 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
   import WatchClubWeb.Components.Media.MediaTypeBadge
   import WatchClubWeb.Components.Medias.VideoResolutionBadge
 
+  alias WatchClub.Languages
+
   attr :media, Media,
     required: true,
     doc: "with its `content`'s `title` and `poster_path`, and its `video`'s tracks and episode"
@@ -122,7 +124,7 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
       >
         <dl class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-group gap-y-related text-sm">
           <%= for track <- @media.video.audio_tracks do %>
-            <dt><.language language={track.language} /></dt>
+            <dt><.language language={track.language} locale={@locale} /></dt>
             <dd class="flex items-center gap-tight">
               <.badge :if={track.codec} variant="muted" size="sm">{track.codec}</.badge>
               <.badge :if={track.channels} variant="muted" size="sm">
@@ -147,13 +149,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
           class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-group gap-y-related text-sm"
         >
           <%= for track <- @media.video.text_tracks do %>
-            <dt><.language language={track.language} /></dt>
+            <dt><.language language={track.language} locale={@locale} /></dt>
             <dd class="flex items-center gap-tight">
               <.badge :if={track.default?} variant="muted" size="sm">
                 {dgettext("admin_media", "Default")}
               </.badge>
               <.badge :if={track.forced?} variant="muted" size="sm">
                 {dgettext("admin_media", "Forced")}
+              </.badge>
+              <.badge :if={track.sdh?} variant="muted" size="sm">
+                {dgettext("admin_media", "SDH")}
               </.badge>
             </dd>
           <% end %>
@@ -213,12 +218,16 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
   end
 
   attr :language, :string, required: true
+  attr :locale, :atom, required: true
 
+  # Named as the Player names Text Track Choices, such as French (Canada)
   defp language(assigns) do
     ~H"""
     <span class="flex min-w-0 items-center gap-related">
-      <span class="text-base leading-none">{WatchClub.Languages.to_flag(@language)}</span>
-      <span class="truncate text-text">{WatchClub.Languages.to_name(@language) || "—"}</span>
+      <span class="text-base leading-none">{Languages.to_flag(@language)}</span>
+      <span class="truncate text-text">
+        {if tag = Languages.to_tag(@language), do: Languages.display_name!(tag, @locale), else: "—"}
+      </span>
     </span>
     """
   end

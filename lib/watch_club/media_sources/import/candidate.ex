@@ -184,7 +184,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         :language,
         :title,
         default?: false,
-        forced?: false
+        forced?: false,
+        sdh?: false
       ]
     end
   end

@@ -12,15 +12,29 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   alias ExM3U8.MultivariantPlaylist
   alias ExM3U8.Tags.{Discontinuity, Media, Segment, Stream}
 
+  alias WatchClub.Languages
   alias WatchClub.Playbacks.Playback.QualityLadder.Quality
 
-  defmodule ForcedMedia do
-    @moduledoc "A subtitles media tag with `FORCED=YES`, which ExM3U8's media tag can't serialize."
+  defmodule SubtitlesMedia do
+    @moduledoc """
+    A subtitles media tag, with `FORCED=YES` for a Forced Text Track and the accessibility
+    characteristics of an SDH Text Track, which ExM3U8's media tag can't serialize.
+    """
 
-    defstruct [:media]
+    defstruct [:media, :forced?, :sdh?]
 
     defimpl ExM3U8.Serializer do
-      def serialize(%{media: media}), do: [ExM3U8.Serializer.serialize(media), ",FORCED=YES"]
+      def serialize(%{media: media, forced?: forced?, sdh?: sdh?}) do
+        [
+          ExM3U8.Serializer.serialize(media),
+          if(forced?, do: ",FORCED=YES", else: []),
+          if(sdh?,
+            do:
+              ~s(,CHARACTERISTICS="public.accessibility.transcribes-spoken-dialog,public.accessibility.describes-music-and-sound"),
+            else: []
+          )
+        ]
+      end
     end
   end
 
@@ -33,6 +47,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
           video: %{frame_rate: float()},
           audio_tracks: [map()],
           subtitle_tracks: [map()],
+          subtitle_names: %{String.t() => String.t()},
           default_audio_track_id: String.t() | nil,
           default_subtitle_track_id: String.t() | nil,
           query: String.t()
@@ -127,17 +142,19 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
 
   defp master_subtitle_tags(metadata) do
     Enum.map(metadata.subtitle_tracks, fn track ->
-      media = %Media{
-        type: :subtitles,
-        group_id: "subs",
-        name: escape(track.display_label),
-        language: language(track),
-        default?: track.id == metadata.default_subtitle_track_id,
-        auto_select?: true,
-        uri: "subtitles/#{track.id}/index.m3u8#{metadata.query}"
+      %SubtitlesMedia{
+        media: %Media{
+          type: :subtitles,
+          group_id: "subs",
+          name: escape(metadata.subtitle_names[track.id]),
+          language: escape(Languages.to_tag(track.language) || "und"),
+          default?: track.id == metadata.default_subtitle_track_id,
+          auto_select?: true,
+          uri: "subtitles/#{track.id}/index.m3u8#{metadata.query}"
+        },
+        forced?: track.forced?,
+        sdh?: track.sdh?
       }
-
-      if track.forced?, do: %ForcedMedia{media: media}, else: media
     end)
   end
 

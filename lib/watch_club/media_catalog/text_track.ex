@@ -32,12 +32,21 @@ defmodule WatchClub.MediaCatalog.TextTrack do
     defaults [
       :read,
       :destroy,
-      update: [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?]
+      update: [
+        :stream_index,
+        :sidecar_path,
+        :codec,
+        :language,
+        :title,
+        :default?,
+        :forced?,
+        :sdh?
+      ]
     ]
 
     create :create do
       primary? true
-      accept [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?]
+      accept [:stream_index, :sidecar_path, :codec, :language, :title, :default?, :forced?, :sdh?]
 
       change {NormalizePath, attribute: :sidecar_path}
     end
@@ -81,6 +90,7 @@ defmodule WatchClub.MediaCatalog.TextTrack do
     end
 
     attribute :language, :string do
+      description "Its BCP 47 tag, with a script or region when known: fr, fr-CA, zh-Hant."
       allow_nil? true
       public? true
     end
@@ -98,10 +108,19 @@ defmodule WatchClub.MediaCatalog.TextTrack do
     end
 
     attribute :forced?, :boolean do
+      description "Whether it's a Forced Text Track."
       allow_nil? false
       default false
       public? true
       source :is_forced
+    end
+
+    attribute :sdh?, :boolean do
+      description "Whether it's an SDH Text Track."
+      allow_nil? false
+      default false
+      public? true
+      source :is_sdh
     end
   end
 
@@ -113,12 +132,6 @@ defmodule WatchClub.MediaCatalog.TextTrack do
   end
 
   calculations do
-    calculate :display_label,
-              :string,
-              {WatchClub.MediaCatalog.Calculations.TrackDisplayLabel, fallback_prefix: "Subtitle"} do
-      public? true
-    end
-
     calculate :language_code, :string, WatchClub.MediaCatalog.Calculations.LanguageCode do
       description "The track's language code."
       public? true
