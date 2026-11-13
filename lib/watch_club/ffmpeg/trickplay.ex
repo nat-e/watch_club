@@ -2,8 +2,8 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   @moduledoc """
   Storage, geometry, and manifest logic for a Video's scrubbing thumbnails.
 
-  Sprite sheets are JPEG grids of `@columns` x `@rows` tiles, one frame sampled
-  every `@interval_seconds`, each tile scaled to `@tile_width` wide with an even
+  Sprite sheets are JPEG grids of `@columns` x `@rows` tiles, one per
+  `@interval_seconds` slot, each tile scaled to `@tile_width` wide with an even
   height derived from the source aspect ratio. Files land in
   `<trickplay root>/<video_id>/` as `0.jpg`, `1.jpg`, … next to a `meta.json`
   freezing the generation-time geometry, sheet count, and source duration.
@@ -61,46 +61,59 @@ defmodule WatchClub.Ffmpeg.Trickplay do
 
   @doc """
   Wipes the Video's trickplay directory and rebuilds its sprite sheets: JPEG
-  grids of `@columns` x `@rows` tiles, one frame every `@interval_seconds`, each
-  scaled to the (forced) tile dimensions derived from `track`. Files are named
-  `0.jpg`, `1.jpg`, … Once ffmpeg succeeds, writes `meta.json` with the
-  geometry, sheet count, and `duration` (seconds, nullable) the manifest is
-  built from — until then the Video simply has no manifest. Returns `:ok`;
-  crashes (and the job retries) if ffmpeg fails.
+  grids of `@columns` x `@rows` tiles, one per `@interval_seconds` slot until
+  `duration` (seconds, nullable), each scaled to the (forced) tile dimensions
+  derived from `track`. Files are named `0.jpg`, `1.jpg`, … Once ffmpeg
+  succeeds, writes `meta.json` with the geometry, sheet count, and `duration`
+  the manifest is built from — until then the Video simply has no manifest.
+  Returns `:ok`; crashes (and the job retries) if ffmpeg fails.
+
+  Each tile shows the saved frame nearest the middle of its slot. ffmpeg saves
+  only keyframes, unless the `:trickplay_keyframes_only` config is off or the
+  keyframes can't be read; it then saves one frame per slot from a full decode.
   """
   def generate_sprites!(video_id, source_path, %VideoTrack{} = track, duration) do
     dir = dir(video_id)
     File.rm_rf!(dir)
-    File.mkdir_p!(dir)
+    frames_dir = Path.join(dir, "frames")
+    slots_dir = Path.join(dir, "slots")
+    File.mkdir_p!(slots_dir)
 
     {tile_width, tile_height} = tile_dimensions(track)
 
-    filters =
-      "fps=1/#{@interval_seconds},scale=#{tile_width}:#{tile_height},tile=#{@columns}x#{@rows}"
+    duration =
+      try do
+        frames = extract_frames!(source_path, frames_dir, "scale=#{tile_width}:#{tile_height}")
+        # Without a known duration, the tiles last an interval past the last frame.
+        {last_frame_time, _path} = List.last(frames)
+        duration = duration || last_frame_time + @interval_seconds
 
-    args = [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-y",
-      "-i",
-      source_path,
-      "-an",
-      "-sn",
-      "-vf",
-      filters,
-      "-q:v",
-      "4",
-      # image2 numbers `%d` from 1 by default; force 0 so the manifest's
-      # zero-based sheet index lines up with the files.
-      "-start_number",
-      "0",
-      Path.join(dir, "%d.jpg")
-    ]
+        for slot <- 0..(max(round(duration / @interval_seconds), 1) - 1) do
+          middle = (slot + 0.5) * @interval_seconds
+          {_time, path} = Enum.min_by(frames, fn {time, _path} -> abs(time - middle) end)
+          File.cp!(path, Path.join(slots_dir, "#{slot}.jpg"))
+        end
 
-    Logger.debug("Running trickplay ffmpeg job: ffmpeg #{Enum.join(args, " ")}")
+        {_output, 0} =
+          run_ffmpeg([
+            "-i",
+            Path.join(slots_dir, "%d.jpg"),
+            "-vf",
+            "tile=#{@columns}x#{@rows}",
+            "-q:v",
+            "4",
+            # image2 numbers `%d` from 1 by default; force 0 so the manifest's
+            # zero-based sheet index lines up with the files.
+            "-start_number",
+            "0",
+            Path.join(dir, "%d.jpg")
+          ])
 
-    {_output, 0} = System.cmd("ffmpeg", args, stderr_to_stdout: true)
+        duration
+      after
+        File.rm_rf!(frames_dir)
+        File.rm_rf!(slots_dir)
+      end
 
     metadata = %{
       interval_seconds: @interval_seconds,
@@ -167,6 +180,98 @@ defmodule WatchClub.Ffmpeg.Trickplay do
     else
       {:error, _missing_or_invalid} -> {:error, :not_found}
     end
+  end
+
+  # Returns the `{time, path}` of each frame saved in `frames_dir`, sorted by
+  # time. Keyframes skip decoding the other frames; the full decode is the
+  # fallback, because some files can't be read that way.
+  defp extract_frames!(source_path, frames_dir, scale) do
+    # `select` keeps at most a frame a second when every frame is decoded anyway:
+    # decoders that ignore `-skip_frame`, such as VP9's, or files of keyframes only.
+    keyframes =
+      Application.fetch_env!(:watch_club, :trickplay_keyframes_only) &&
+        extract_frames(
+          source_path,
+          frames_dir,
+          ["-skip_frame", "nokey"],
+          "select='isnan(prev_selected_t)+gte(abs(t-prev_selected_t),1)',#{scale}"
+        )
+
+    case keyframes do
+      {:ok, [_ | _] = frames} ->
+        frames
+
+      disabled_or_failed ->
+        if disabled_or_failed do
+          Logger.warning(
+            "Can't build Scrubbing Thumbnails from the keyframes of #{source_path}, " <>
+              "decoding every frame instead: #{inspect(disabled_or_failed)}"
+          )
+        end
+
+        {:ok, frames} =
+          extract_frames(source_path, frames_dir, [], "fps=1/#{@interval_seconds},#{scale}")
+
+        frames
+    end
+  end
+
+  defp extract_frames(source_path, frames_dir, input_args, filters) do
+    File.rm_rf!(frames_dir)
+    File.mkdir_p!(frames_dir)
+    times_path = Path.join(frames_dir, "times.txt")
+
+    # Decoders can return keyframes out of order, which the JPEG encoder
+    # rejects: `setpts` numbers them in the encoder's time base, and `{ti}`
+    # still records their time.
+    args =
+      input_args ++
+        [
+          "-i",
+          source_path,
+          "-an",
+          "-sn",
+          "-vf",
+          "#{filters},setpts=N",
+          "-fps_mode",
+          "passthrough",
+          "-enc_time_base",
+          "filter",
+          "-q:v",
+          "2",
+          "-stats_enc_pre",
+          times_path,
+          "-stats_enc_pre_fmt",
+          "{ti}",
+          "-start_number",
+          "0",
+          Path.join(frames_dir, "%d.jpg")
+        ]
+
+    case run_ffmpeg(args) do
+      {_output, 0} ->
+        frames =
+          times_path
+          |> File.read!()
+          |> String.split("\n", trim: true)
+          |> Enum.with_index(fn time, index ->
+            {time, ""} = Float.parse(time)
+            {time, Path.join(frames_dir, "#{index}.jpg")}
+          end)
+          |> Enum.sort()
+
+        {:ok, frames}
+
+      {output, status} ->
+        {:error, "ffmpeg exited with #{status}: #{String.trim(output)}"}
+    end
+  end
+
+  # At the lowest CPU priority, so Playback transcodes get the CPU first.
+  defp run_ffmpeg(args) do
+    args = ["-n", "19", "ffmpeg", "-hide_banner", "-loglevel", "error", "-y" | args]
+    Logger.debug("Running trickplay ffmpeg job: nice #{Enum.join(args, " ")}")
+    System.cmd("nice", args, stderr_to_stdout: true)
   end
 
   defp trickplay_root,
