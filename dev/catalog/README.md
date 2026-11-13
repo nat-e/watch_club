@@ -7,19 +7,30 @@ domain, listed in [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## Seed
 
-`mix setup` and `mix reset` run `mix dev.catalog.seed`, which takes about 3 minutes. It needs
-Docker, Git LFS, ffmpeg, the internet and `WC_TMDB_API_KEY` in `.env`. Stop the dev server
-first: the seed serves the app on its port while Radarr and Sonarr test their webhooks.
-
-It creates:
+`mix setup` and `mix reset` run `mix dev.catalog.seed`. Stop the dev server first: the seed
+serves the app on its port while Radarr and Sonarr test their webhooks. It creates:
 
 - the Users `admin`, the Instance Administrator, `alice` and `bob`, who uses French, all with
   the password `passw0rd`. `wt open` signs in as `WC_DEV_USERNAME`, `admin` in
   `.env.example.dev`.
 - this worktree's own Radarr, Sonarr and Sportarr, filled with the files of their folder.
-- a Media Source for each folder of `media/`, and their Media Imports.
+- a Media Source for each folder of `media/`, and their Media Imports, with their Scrubbing
+  Thumbnails and Markers.
 
-The dev server then builds Scrubbing Thumbnails and finds Markers in the background.
+The first seed of a version of the catalog takes about 5 minutes. It needs Docker, Git LFS,
+ffmpeg, the internet and `WC_TMDB_API_KEY` in `.env`. It then saves a snapshot, which later
+seeds restore in about 10 seconds, in any worktree, without the internet:
+
+- the catalog's files and the Scrubbing Thumbnails, in the primary worktree's
+  `tmp/dev_catalog_snapshots/<name>/`
+- the database, in the Postgres database `watch_club_catalog_<name>`
+- the data of Radarr, Sonarr and Sportarr, in the Docker volumes `watch_club_catalog_<name>_*`
+
+A snapshot is for one version of the catalog's committed files and of the seed, its `@version`
+in `WatchClub.Dev.Catalog`: bump it when you change what the seed creates. A restored database
+gets this branch's newer migrations. A branch that lacks one of the snapshot's migrations
+seeds from scratch and replaces the snapshot. To seed from scratch, delete the snapshot's
+folder.
 
 ## Radarr, Sonarr and Sportarr
 
@@ -39,8 +50,9 @@ They have no indexer or download client, so a Content Request never downloads an
 ## Files
 
 `media/` is stored with Git LFS. `.lfsconfig` skips it, so clones and CI don't download it.
-The seed fetches it, and makes each file a copy-on-write clone of the Git LFS store that
-worktrees share, so a worktree takes no extra disk space on APFS, Btrfs or XFS.
+The seed fetches the files once, and reads them from the snapshot's folder, as copy-on-write
+clones of the Git LFS store that worktrees share, so they take no extra disk space on APFS,
+Btrfs or XFS. It only knows the committed files.
 
 | Folder | Media Source | Content |
 | --- | --- | --- |

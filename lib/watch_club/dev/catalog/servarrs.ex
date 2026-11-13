@@ -1,35 +1,38 @@
 defmodule WatchClub.Dev.Catalog.Servarrs do
   @moduledoc """
   This worktree's own Radarr, Sonarr and Sportarr, run with Docker Compose from
-  `dev/catalog/docker-compose.yml`. `recreate!/2` deletes them and starts them again empty,
-  then has each one take the catalog's files in `media/radarr`, `media/sonarr` and
-  `media/sportarr` where they are, so they match the Media that the seed imports.
+  `dev/catalog/docker-compose.yml` on ports derived from the app's: + 20000, + 30000 and
+  + 40000. They read the catalog's files in the `radarr`, `sonarr` and `sportarr` folders
+  of a snapshot's media, see `WatchClub.Dev.Catalog.Snapshot`.
+
+  `fill!/3` starts them empty and has each one take its files where they are. `save!/4` and
+  `restore!/4` copy their data to and from Docker volumes named after a snapshot.
   """
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.Integrations.{Sportarr, SportarrHub}
   alias WatchClub.MediaSources.Import.Scanner.Filesystem.Identify.ExternalIdExtractor
 
   @compose_file "dev/catalog/docker-compose.yml"
-  @media_root "dev/catalog/media"
+  @flavors [:radarr, :sonarr, :sportarr]
+  @port_offsets %{radarr: 20_000, sonarr: 30_000, sportarr: 40_000}
   # Adding a movie or a series fetches its metadata first
   @slow [receive_timeout: 120_000]
 
   @doc """
-  Deletes the apps of the Docker Compose `project` with their data, starts them again on ports
-  derived from the app's `port`, and returns, for each one, the arguments that `create_servarr_media_source` needs to connect to it.
+  Deletes the apps of the Docker Compose `project` with their data, starts them again empty,
+  and has them take the files in `media`. Returns, for each app, the arguments that
+  `create_servarr_media_source` needs to connect to it.
   """
-  def recreate!(project, port) do
-    ports = %{radarr: port + 20_000, sonarr: port + 30_000, sportarr: port + 40_000}
-    compose!(project, ports, ["down", "--volumes", "--remove-orphans"])
-    compose!(project, ports, ["up", "--detach"])
+  def fill!(project, port, media) do
+    compose!(project, port, media, ["down", "--volumes", "--remove-orphans"])
+    compose!(project, port, media, ["up", "--detach"])
 
-    for flavor <- [:radarr, :sonarr, :sportarr] do
-      base_url = "http://localhost:#{ports[flavor]}"
+    for flavor <- @flavors do
+      base_url = base_url(port, flavor)
       wait_until_up!(base_url)
-      api_key = api_key!(project, ports, flavor)
+      api_key = api_key!(project, port, media, flavor)
       root_folder_path = "/media/#{flavor}"
-      local_root_folder_path = Path.expand(Path.join(@media_root, to_string(flavor)))
-      File.mkdir_p!(local_root_folder_path)
+      local_root_folder_path = Path.join(media, to_string(flavor))
 
       # Sportarr adds root folders outside its Sonarr-compatible API
       root_folders_path =
@@ -63,6 +66,73 @@ defmodule WatchClub.Dev.Catalog.Servarrs do
         local_root_folder_path: local_root_folder_path
       }
     end
+  end
+
+  @doc "Copies the data of the apps of `project` to the volumes of the snapshot `name`."
+  def save!(project, port, media, name) do
+    # Their databases are only consistent once they are stopped
+    compose!(project, port, media, ["stop"])
+
+    for flavor <- @flavors do
+      docker!(["volume", "rm", "--force", snapshot_volume(name, flavor)])
+      copy_volume!(project_volume(project, flavor), snapshot_volume(name, flavor))
+    end
+
+    compose!(project, port, media, ["start"])
+  end
+
+  @doc "Whether the volumes of the snapshot `name` exist."
+  def saved?(name) do
+    Enum.all?(@flavors, fn flavor ->
+      match?(
+        {_output, 0},
+        System.cmd("docker", ["volume", "inspect", snapshot_volume(name, flavor)],
+          stderr_to_stdout: true
+        )
+      )
+    end)
+  end
+
+  @doc """
+  Recreates the apps of `project` with the data of the snapshot `name`, and returns the base URL
+  of each one by flavor.
+  """
+  def restore!(project, port, media, name) do
+    compose!(project, port, media, ["down", "--volumes", "--remove-orphans"])
+    # Creates their volumes, empty, without starting them
+    compose!(project, port, media, ["create"])
+
+    for flavor <- @flavors,
+        do: copy_volume!(snapshot_volume(name, flavor), project_volume(project, flavor))
+
+    compose!(project, port, media, ["start"])
+
+    Map.new(@flavors, fn flavor ->
+      base_url = base_url(port, flavor)
+      wait_until_up!(base_url)
+      {flavor, base_url}
+    end)
+  end
+
+  defp base_url(port, flavor), do: "http://localhost:#{port + @port_offsets[flavor]}"
+
+  defp project_volume(project, flavor), do: "#{project}_#{flavor}-config"
+  defp snapshot_volume(name, flavor), do: "watch_club_catalog_#{name}_#{flavor}"
+
+  defp copy_volume!(from, to) do
+    docker!([
+      "run",
+      "--rm",
+      "-v",
+      "#{from}:/from:ro",
+      "-v",
+      "#{to}:/to",
+      "alpine",
+      "cp",
+      "-a",
+      "/from/.",
+      "/to/"
+    ])
   end
 
   # A movie's folder, named "Title (Year) {tmdb-123}"
@@ -192,32 +262,36 @@ defmodule WatchClub.Dev.Catalog.Servarrs do
   end
 
   # Each app writes its API key to its config.xml when it first starts
-  defp api_key!(project, ports, flavor) do
+  defp api_key!(project, port, media, flavor) do
     config =
-      compose!(project, ports, ["exec", "-T", to_string(flavor), "cat", "/config/config.xml"])
+      compose!(project, port, media, [
+        "exec",
+        "-T",
+        to_string(flavor),
+        "cat",
+        "/config/config.xml"
+      ])
 
     [_match, api_key] = Regex.run(~r/<ApiKey>(\w+)<\/ApiKey>/, config)
     api_key
   end
 
-  defp compose!(project, ports, arguments) do
-    env = [
-      {"RADARR_PORT", to_string(ports.radarr)},
-      {"SONARR_PORT", to_string(ports.sonarr)},
-      {"SPORTARR_PORT", to_string(ports.sportarr)}
-    ]
+  defp compose!(project, port, media, arguments) do
+    env =
+      [{"CATALOG_MEDIA", media}] ++
+        for {flavor, offset} <- @port_offsets,
+            do: {"#{String.upcase(to_string(flavor))}_PORT", to_string(port + offset)}
 
-    case System.cmd(
-           "docker",
-           ["compose", "--project-name", project, "--file", @compose_file | arguments],
-           env: env,
-           stderr_to_stdout: true
-         ) do
+    docker!(["compose", "--project-name", project, "--file", @compose_file | arguments], env)
+  end
+
+  defp docker!(arguments, env \\ []) do
+    case System.cmd("docker", arguments, env: env, stderr_to_stdout: true) do
       {output, 0} ->
         output
 
       {output, status} ->
-        raise "docker compose #{Enum.join(arguments, " ")} exited with #{status}:\n#{output}"
+        raise "docker #{Enum.join(arguments, " ")} exited with #{status}:\n#{output}"
     end
   end
 end

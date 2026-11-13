@@ -7,15 +7,13 @@ defmodule Mix.Tasks.Dev.Catalog.Seed do
   """
   use Mix.Task
 
-  # Only the queues that import Media run here. The dev server runs the others, such as
-  # Scrubbing Thumbnails and Markers, when it starts.
-  @queues [:media_source_scans, :media_candidate_ingestions, :media_import_monitors]
-
   @requirements ["app.config"]
 
   @impl true
   def run(_args) do
     if Mix.env() != :dev, do: Mix.raise("mix dev.catalog.seed only seeds the dev database")
+    # The seed starts the app itself, after restoring its database, unlike `mix app.start`
+    Logger.configure(level: Application.fetch_env!(:logger, :level))
 
     endpoint = Application.fetch_env!(:watch_club, WatchClubWeb.Endpoint)
     port = endpoint[:http][:port]
@@ -35,15 +33,6 @@ defmodule Mix.Tasks.Dev.Catalog.Seed do
       Keyword.merge(endpoint, server: true, watchers: [])
     )
 
-    oban = Application.fetch_env!(:watch_club, Oban)
-
-    Application.put_env(
-      :watch_club,
-      Oban,
-      Keyword.update!(oban, :queues, &Keyword.take(&1, @queues))
-    )
-
-    Mix.Task.run("app.start")
     WatchClub.Dev.Catalog.seed!(port)
   end
 end

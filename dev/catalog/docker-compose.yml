@@ -1,5 +1,6 @@
 # The Radarr, Sonarr and Sportarr of one worktree, filled from the catalog by
-# `mix dev.catalog.seed`, which starts them with their ports and project name.
+# `mix dev.catalog.seed`, which starts them with their ports, project name and the folder of
+# the catalog's files.
 # They have no indexer or download client, so they never download anything.
 
 x-servarr: &servarr
@@ -19,7 +20,7 @@ services:
     ports:
       - 127.0.0.1:${RADARR_PORT}:7878
     volumes:
-      - ./media:/media
+      - ${CATALOG_MEDIA}:/media
       - radarr-config:/config
 
   sonarr:
@@ -28,7 +29,7 @@ services:
     ports:
       - 127.0.0.1:${SONARR_PORT}:8989
     volumes:
-      - ./media:/media
+      - ${CATALOG_MEDIA}:/media
       - sonarr-config:/config
 
   sportarr:
@@ -37,7 +38,7 @@ services:
     ports:
       - 127.0.0.1:${SPORTARR_PORT}:1867
     volumes:
-      - ./media:/media
+      - ${CATALOG_MEDIA}:/media
       - sportarr-config:/config
 
 volumes:

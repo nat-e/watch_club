@@ -25,8 +25,8 @@ docker exec wc-db psql -U postgres -At -F $'\t' -d "$db" 2>/dev/null \
   done || true
 
 # The worktree's own Radarr, Sonarr and Sportarr, which `mix dev.catalog.seed` started. Their
-# ports don't matter to remove them.
-RADARR_PORT=0 SONARR_PORT=0 SPORTARR_PORT=0 docker compose --project-name "${db}_servarrs" \
+# ports and files don't matter to remove them.
+RADARR_PORT=0 SONARR_PORT=0 SPORTARR_PORT=0 CATALOG_MEDIA=/tmp docker compose --project-name "${db}_servarrs" \
   --file "$(dirname "$0")/../../dev/catalog/docker-compose.yml" down --volumes
 
 docker exec wc-db dropdb -U postgres --if-exists --force "$db"

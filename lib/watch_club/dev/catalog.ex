@@ -1,50 +1,75 @@
 defmodule WatchClub.Dev.Catalog do
   @moduledoc """
-  Seeds an empty dev database with the catalog in `dev/catalog`, as its README describes:
-  its Users, its own Radarr, Sonarr and Sportarr, and the Media Sources that import the
+  Seeds an empty dev database with the catalog in `dev/catalog`, as its README describes: its
+  Users, this worktree's own Radarr, Sonarr and Sportarr, and the Media Sources that import the
   catalog's files.
+
+  The first seed of a version of the catalog imports its files for real, waits for their
+  Scrubbing Thumbnails and Markers, then saves a snapshot. Later seeds, in any worktree,
+  restore that snapshot in seconds, see `WatchClub.Dev.Catalog.Snapshot`.
   """
+  require Ecto.Query
   require Logger
 
-  alias WatchClub.{Accounts, MediaSources}
-  alias WatchClub.Dev.Catalog.Servarrs
+  alias WatchClub.{Accounts, MediaSources, Repo}
+  alias WatchClub.Dev.Catalog.{Servarrs, Snapshot}
 
-  @media_root "dev/catalog/media"
+  # Bump it when the seed changes what it creates, so that no older snapshot is restored
+  @version 1
   @password "passw0rd"
 
   @doc """
-  Seeds the database. The app must serve on `port`, because Radarr and Sonarr test the
-  webhook of a new Media Source.
+  Seeds the database, which the app's Repo must not use yet. The seed starts the app, which
+  must serve on `port`, because Radarr and Sonarr test the webhook of a Media Source.
   """
   def seed!(port) do
-    if Accounts.administrator_exists?() do
-      raise "The database is already seeded: run `mix reset` to seed it again"
-    end
+    {:ok, seeded?, _apps} =
+      Ecto.Migrator.with_repo(Repo, fn _repo -> Accounts.administrator_exists?() end)
 
-    fetch_files!()
-    project = WatchClub.Repo.config()[:database] <> "_servarrs"
-    servarrs = Servarrs.recreate!(project, port)
+    if seeded?, do: raise("The database is already seeded: run `mix reset` to seed it again")
+
+    snapshot = Snapshot.prepare!(@version)
+    project = Repo.config()[:database] <> "_servarrs"
+
+    if Servarrs.saved?(snapshot.name) and Snapshot.restore!(snapshot) do
+      {:ok, _apps} = Application.ensure_all_started(:watch_club)
+      base_urls = Servarrs.restore!(project, port, snapshot.media, snapshot.name)
+      reconnect_servarrs!(base_urls, port)
+      Logger.info("Restored the snapshot #{snapshot.name} of the catalog")
+    else
+      {:ok, _apps} = Application.ensure_all_started(:watch_club)
+      admin = import!(snapshot, project, port)
+      wait_until_idle!()
+      video_ids = Enum.map(Ash.read!(WatchClub.MediaCatalog.Video, actor: admin), & &1.id)
+      # The snapshot's database is a copy, which needs the database without connections
+      :ok = Application.stop(:watch_club)
+      Servarrs.save!(project, port, snapshot.media, snapshot.name)
+      Snapshot.save!(snapshot, video_ids)
+      Logger.info("Saved the snapshot #{snapshot.name} of the catalog")
+    end
+  end
+
+  defp import!(snapshot, project, port) do
     admin = create_users!()
 
-    media_sources =
-      Enum.map(servarrs, fn servarr ->
+    # Radarr, Sonarr and Sportarr take their files first: Sportarr and the imports use the
+    # same sportarr.net, which limits each IP address
+    servarr_sources =
+      for servarr <- Servarrs.fill!(project, port, snapshot.media) do
         servarr
-        |> Map.put(:webhook_callback_base_url, "http://host.docker.internal:#{port}")
+        |> Map.put(:webhook_callback_base_url, webhook_callback_base_url(port))
         |> MediaSources.create_servarr_media_source!(actor: admin)
-      end) ++
-        for {media_type, folder} <- [
-              movie: "movies",
-              tv_show_episode: "tv",
-              sports_event: "sports"
-            ] do
-          MediaSources.create_filesystem_media_source!(
-            %{
-              media_type: media_type,
-              filesystem_path: Path.expand(Path.join(@media_root, folder))
-            },
-            actor: admin
-          )
-        end
+      end
+
+    filesystem_sources =
+      for {media_type, folder} <- [movie: "movies", tv_show_episode: "tv", sports_event: "sports"] do
+        MediaSources.create_filesystem_media_source!(
+          %{media_type: media_type, filesystem_path: Path.join(snapshot.media, folder)},
+          actor: admin
+        )
+      end
+
+    media_sources = servarr_sources ++ filesystem_sources
 
     media_imports =
       Enum.map(media_sources, &MediaSources.start_media_import!(&1.id, actor: admin))
@@ -65,54 +90,28 @@ defmodule WatchClub.Dev.Catalog do
                   )
       end
     end
+
+    admin
   end
 
-  # Clones and CI skip the catalog's files, see .lfsconfig. Each one becomes a copy-on-write
-  # clone of the Git LFS store that worktrees share, where the disk allows it, so worktrees
-  # take no more space. `git lfs dedup` does the same, but only in a worktree without changes.
-  defp fetch_files! do
-    git!(["lfs", "install", "--local"])
-    git!(["lfs", "fetch", "--include", "#{@media_root}/**", "--exclude", ""])
-    objects = Path.join(String.trim(git!(["rev-parse", "--git-common-dir"])), "lfs/objects")
+  # The snapshot's Media Sources connect to the snapshot's ports
+  defp reconnect_servarrs!(base_urls, port) do
+    admin = Accounts.get_instance_administrator!(authorize?: false)
 
-    changed =
-      ["status", "--porcelain", "-z", "--", @media_root]
-      |> git!()
-      |> String.split(<<0>>, trim: true)
-      |> MapSet.new(&String.slice(&1, 3..-1//1))
-
-    lfs_files = git!(["lfs", "ls-files", "--long", "--include", "#{@media_root}/**"])
-
-    cloned =
-      for line <- String.split(lfs_files, "\n", trim: true),
-          [oid, _status, path] = String.split(line, " ", parts: 3),
-          path not in changed do
-        object = Path.join([objects, String.slice(oid, 0, 2), String.slice(oid, 2, 2), oid])
-        clone = Path.join(Path.dirname(path), ".clone-" <> Path.basename(path))
-        {_output, 0} = System.cmd("cp", [clone_option(), object, clone], stderr_to_stdout: true)
-        File.rename!(clone, path)
-        path
-      end
-
-    # Git still has the size of the placeholders a new worktree had, and keeps showing the files
-    # as changed until they are added again, which changes nothing else
-    pathspec = Path.join(System.tmp_dir!(), "dev-catalog-#{System.unique_integer([:positive])}")
-    File.write!(pathspec, Enum.join(cloned, <<0>>))
-    git!(["add", "--pathspec-from-file=#{pathspec}", "--pathspec-file-nul"])
-    File.rm!(pathspec)
-  end
-
-  defp clone_option do
-    case :os.type() do
-      {:unix, :darwin} -> "-c"
-      _linux -> "--reflink=auto"
+    for %{implementation: %MediaSources.Servarr{} = servarr} <-
+          MediaSources.list_media_sources!(actor: admin) do
+      MediaSources.update_servarr_media_source!(
+        servarr,
+        %{
+          base_url: Map.fetch!(base_urls, servarr.flavor),
+          webhook_callback_base_url: webhook_callback_base_url(port)
+        },
+        actor: admin
+      )
     end
   end
 
-  defp git!(arguments) do
-    {output, 0} = System.cmd("git", arguments, stderr_to_stdout: true)
-    output
-  end
+  defp webhook_callback_base_url(port), do: "http://host.docker.internal:#{port}"
 
   defp create_users! do
     admin =
@@ -151,6 +150,31 @@ defmodule WatchClub.Dev.Catalog do
 
       true ->
         raise "A Media Import is still processing after 15 minutes"
+    end
+  end
+
+  # Until the Scrubbing Thumbnails and Markers are done, including the Markers of a season,
+  # which wait a minute after its last episode
+  defp wait_until_idle!(attempts \\ 1_800) do
+    pending =
+      Oban.Job
+      |> Ecto.Query.where([job], job.queue in ["trickplay_generation", "marker_detection"])
+      |> Ecto.Query.where(
+        [job],
+        job.state in ["available", "scheduled", "executing", "retryable"]
+      )
+      |> Repo.aggregate(:count)
+
+    cond do
+      pending == 0 ->
+        :ok
+
+      attempts > 0 ->
+        Process.sleep(1_000)
+        wait_until_idle!(attempts - 1)
+
+      true ->
+        raise "#{pending} background jobs are still pending after 30 minutes"
     end
   end
 end
