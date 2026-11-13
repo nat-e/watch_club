@@ -7,8 +7,9 @@ domain, listed in [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## Seed
 
-`mix setup` and `mix reset` run `mix dev.catalog.seed`. Stop the dev server first: the seed
-serves the app on its port while Radarr and Sonarr test their webhooks. It creates:
+`mix setup`, `mix reset` and `wt switch --create` run `mix dev.catalog.seed`. Stop the dev
+server first: the seed serves the app on its port while Radarr and Sonarr test their
+webhooks. It creates:
 
 - the Users `admin`, the Instance Administrator, `alice` and `bob`, who uses French, all with
   the password `passw0rd`. `wt open` signs in as `WC_DEV_USERNAME`, `admin` in
@@ -34,10 +35,9 @@ folder.
 
 ## Radarr, Sonarr and Sportarr
 
-`mix reset` gives a worktree its own, in the Docker Compose project `<database>_servarrs`, so
-they match its database. Until then, a new worktree has a copy of main's database and uses
-main's. `mix reset` recreates them and `wt remove` deletes them. They open without signing
-in, at:
+Each worktree has its own, in the Docker Compose project `<database>_servarrs`, so they match
+its database. `mix reset` recreates them and `wt remove` deletes them. Main keeps the ones of
+`docker-compose.dev.yml` until you run `mix reset` there. They open without signing in, at:
 
 | App | Port |
 | --- | --- |

@@ -15,13 +15,14 @@ Rules:
 ## Dev server
 
 - The app runs at `WC_URL` from `.env`, or at `http://localhost:<WC_PORT>` when `WC_URL` is unset
-- To log in: on an empty database, `/setup` creates the instance administrator. Otherwise, create an invitation code with `WatchClub.Accounts.create_invitation_code` and register a user with it through `register_with_password`
+- To log in: a worktree's database is seeded from the dev catalog, with the users `admin`, `alice` and `bob` and the password `passw0rd`, see `dev/catalog/README.md`. On an empty database, `/setup` creates the instance administrator. Otherwise, create an invitation code with `WatchClub.Accounts.create_invitation_code` and register a user with it through `register_with_password`
 
 ## Worktrees
 
-- `wt switch --create <branch>` creates a worktree with its own server and databases. `wt dev` starts the server, `wt open` opens it in the browser, signed in as `WC_DEV_USERNAME` from `.env` when it is set, and `wt remove` deletes the worktree. The hooks are in `.config/wt.toml` and `scripts/worktree/`
+- `wt switch --create <branch>` creates a worktree with its own server, databases, Radarr, Sonarr and Sportarr, seeded from the dev catalog. `wt dev` starts the server, `wt open` opens it in the browser, signed in as `WC_DEV_USERNAME` from `.env` when it is set, and `wt remove` deletes the worktree. The hooks are in `.config/wt.toml` and `scripts/worktree/`
 - Each worktree's `.env` holds its URL, port and database names
-- Radarr, Sonarr and `media/` are shared with main and every other worktree, so changes to them affect all of them
+- Main keeps its own database, and the Radarr, Sonarr, Sportarr and `media/` of `docker-compose.dev.yml`, which worktrees don't use
+- `mix reset` seeds a database again in about 12 seconds, from a snapshot shared by the worktrees, see `dev/catalog/README.md`
 - After a merge, the `post-merge` hook updates main with `scripts/worktree/update_main.sh`. Main's dev server needs a restart to pick up new dependencies or config
 - To restart a dev server, stop it, wait for `WC_PORT` to be free, start it with `wt dev`, then check that the app responds on `WC_PORT`
 

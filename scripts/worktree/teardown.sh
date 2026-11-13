@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Stops and deletes what setup.sh and register_webhooks.sh created. Safe to run
-# again after a failure.
+# Stops and deletes what setup.sh created. Safe to run again after a failure.
 #
 # Names come from the arguments and never from .env: after a failed setup, .env
 # can still hold main's values.
@@ -13,8 +12,8 @@ port=$3
 
 lsof -ti "tcp:$port" -sTCP:LISTEN | xargs kill 2>/dev/null || true
 
-# Only this worktree's webhooks match: until they're registered, the rows still
-# hold main's.
+# A worktree that copied main's database, before worktrees were seeded, has
+# webhooks in main's Radarr and Sonarr. Only this worktree's match.
 docker exec wc-db psql -U postgres -At -F $'\t' -d "$db" 2>/dev/null \
   -c "select base_url, api_key, notification_id from servarr_media_sources
       where webhook_callback_base_url = 'http://host.docker.internal:$port'" |
