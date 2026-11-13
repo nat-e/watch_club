@@ -332,10 +332,12 @@ defmodule WatchClubWeb.PlayerPage do
       )
 
   # The Text Tracks the JS player hook loads, and what its subtitles menus offer: the Text Track
-  # Choices, the Forced Text Track of each Audio Track, which plays with Off, and the one picked
+  # Choices, the Forced Text Track of each Audio Track, which plays with Off, and the one picked.
+  # `audio` is the Audio Track the Playback starts with.
   defp subtitles(%Playback{text_track_choices: choices} = playback) do
     Jason.encode!(%{
       tracks: NowPlaying.text_track_files(playback),
+      audio: playback.audio_track_id,
       choices: Enum.map(choices.choices, &%{id: &1.id, name: choices.names[&1.id]}),
       forced:
         Map.new(choices.forced, fn {audio_track_id, track} -> {audio_track_id, track.id} end),

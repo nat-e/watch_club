@@ -313,13 +313,13 @@ const Player = {
 		this.showSubtitles();
 	},
 
-	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any
+	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any: the
+	// Playback's audio until hls.js tells which plays, which native HLS doesn't
 	showSubtitles() {
-		if (!this.media.engine) return;
-		const { forced } = JSON.parse(this.el.dataset.subtitles);
+		const { forced, audio } = JSON.parse(this.el.dataset.subtitles);
 		const id =
 			this.pickedSubtitles === "off"
-				? forced[this.playingTracks().audio_track_id]
+				? forced[this.playingTracks().audio_track_id ?? audio]
 				: this.pickedSubtitles;
 		for (const textTrack of this.subtitleTextTracks())
 			textTrack.mode = textTrack.id === id ? "showing" : "disabled";
@@ -328,7 +328,7 @@ const Player = {
 	// The ids of the tracks playing: the audio from its playlist's path
 	playingTracks() {
 		const hls = this.media.engine;
-		const audio = hls.audioTracks[hls.audioTrack];
+		const audio = hls?.audioTracks[hls.audioTrack];
 
 		return {
 			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
