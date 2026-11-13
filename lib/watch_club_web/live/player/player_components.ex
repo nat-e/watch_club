@@ -16,7 +16,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   @doc """
   A control-bar dropdown holding Video.js menu items, such as a radio group, and the submenus they
-  open. Video.js gives the trigger `data-availability` once its radio group has options.
+  open. Video.js gives the trigger `data-availability` once its radio group has options, and the
+  JS player hook for the subtitles.
   """
   def player_menu(assigns) do
     ~H"""
@@ -81,14 +82,20 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
-  @doc "A single option rendered inside a radio group's <template>."
+  attr :value, :string, default: nil, doc: "Unless a radio group's <template> holds it."
+  slot :inner_block, doc: "Its label, unless a radio group's <template> holds it."
+
+  @doc "An option of a radio group, or the one inside its <template>."
   def player_radio(assigns) do
     ~H"""
-    <media-menu-radio-item class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20">
+    <media-menu-radio-item
+      value={@value}
+      class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20"
+    >
       <media-menu-item-indicator force-mount class="opacity-0 in-aria-checked:opacity-100">
         <Lucideicons.check class="size-icon-sm" />
       </media-menu-item-indicator>
-      <span data-part="label"></span>
+      <span data-part="label">{render_slot(@inner_block)}</span>
     </media-menu-radio-item>
     """
   end
@@ -255,11 +262,18 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
+  # The JS player hook adds an option per Text Track Choice from the <template>. Video.js's own
+  # captions group would also list the Forced Text Tracks.
   defp subtitles_options(assigns) do
     ~H"""
-    <media-captions-radio-group label={dgettext("player", "Subtitles")}>
+    <media-menu-radio-group
+      data-subtitles-menu
+      value="off"
+      aria-label={dgettext("player", "Subtitles")}
+    >
+      <.player_radio value="off">{dgettext("player", "Off")}</.player_radio>
       <template><.player_radio /></template>
-    </media-captions-radio-group>
+    </media-menu-radio-group>
     """
   end
 

@@ -33,7 +33,9 @@ defmodule WatchClubWeb.TvSocket do
              load: :started_by,
              actor: SystemActor.actor()
            ) do
-      {:ok, assign(socket, cast: cast, user: session.started_by)}
+      # The TV names the subtitles in the User's Locale
+      user = Ash.load!(session.started_by, :settings, actor: session.started_by)
+      {:ok, assign(socket, cast: cast, user: user)}
     else
       _invalid_token_or_ended_session -> :error
     end

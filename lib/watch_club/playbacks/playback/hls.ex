@@ -11,6 +11,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
+  alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache}
 
@@ -26,12 +27,15 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     |> trunc()
   end
 
-  @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
+  @doc """
+  Lists its Text Track Choices, then the Forced Text Tracks. `query`, such as `?token=…`, follows
+  every URI of the playlists, which need it.
+  """
   def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query) do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
-      subtitle_tracks: video.text_tracks,
+      subtitle_tracks: TextTrackChoices.text_tracks(playback.text_track_choices),
       default_audio_track_id: playback.audio_track_id,
       default_subtitle_track_id: playback.text_track_id,
       query: query

@@ -69,6 +69,18 @@ const Player = {
 			{ signal: this.abortController.signal },
 		);
 
+		// After Video.js applied the pick. Off shows the Forced Text Track of the audio.
+		this.el.addEventListener(
+			"value-change",
+			(event) => {
+				if (event.target.matches("[data-subtitles-menu]"))
+					this.pickSubtitles(event.detail.value);
+				if (event.target.matches("media-audio-track-radio-group"))
+					this.showSubtitles();
+			},
+			{ signal: this.abortController.signal },
+		);
+
 		// Delegated: the skip buttons change with each episode, and the server renders the
 		// casting overlay
 		this.el.addEventListener(
@@ -162,9 +174,10 @@ const Player = {
 	},
 
 	// Loads the video in the data attributes, which plays on its own from their start
-	// position, with the tracks the master playlist marks as default
+	// position, with the audio the master playlist marks as default and the subtitles picked
 	loadVideo() {
 		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
+		this.loadSubtitlesMenus();
 		this.reportedTracks = undefined;
 		// Where the countdown of the "up next" prompt started, in seconds of the video
 		this.countdownStart = undefined;
@@ -192,8 +205,9 @@ const Player = {
 			// segment, which hls.js needs to place the subtitles
 			if (this.startPosition) this.media.currentTime = this.startPosition;
 			// The browser has picked subtitles on its own by now
-			this.startSubtitles();
+			this.showSubtitles();
 		});
+
 		on("canplay", () => this.reportReady());
 		on("playing", () => {
 			this.reportReady();
@@ -247,55 +261,70 @@ const Player = {
 		);
 	},
 
-	// Starts the subtitles the master playlist marks as default, if any
-	startSubtitles() {
-		const hls = this.media.engine;
-		if (!hls) return;
+	// The subtitles menus offer the server's Text Track Choices, from their <template>, and Off.
+	// In the top bar and in Settings.
+	loadSubtitlesMenus() {
+		const { choices, picked } = JSON.parse(this.el.dataset.subtitles);
+		for (const menu of this.el.querySelectorAll("[data-subtitles-menu]")) {
+			for (const item of menu.querySelectorAll("[data-choice]")) item.remove();
+			const template = menu.querySelector("template").content;
+			for (const { id, name } of choices) {
+				const item = template.firstElementChild.cloneNode(true);
+				item.setAttribute("value", id);
+				item.dataset.choice = "";
+				item.querySelector('[data-part="label"]').textContent = name;
+				menu.append(item);
+			}
+		}
+		this.pickSubtitles(picked);
+	},
 
-		const subtitles = hls.subtitleTracks.find((track) => track.default);
+	// `off`, or the id of a Text Track Choice
+	pickSubtitles(value) {
+		const { choices } = JSON.parse(this.el.dataset.subtitles);
+		this.pickedSubtitles = value;
+		for (const menu of this.el.querySelectorAll("[data-subtitles-menu]")) {
+			menu.value = value;
+			// As Video.js's own groups do: shows the menu, and in Settings what's picked
+			menu.publishMenuOptionState(
+				false,
+				choices.length === 0,
+				choices.length === 0 ? "unavailable" : "available",
+			);
+		}
+		this.showSubtitles();
+	},
+
+	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any. The
+	// master playlist names the subtitles after their Text Tracks' ids.
+	showSubtitles() {
+		if (!this.media.engine) return;
+		const { forced } = JSON.parse(this.el.dataset.subtitles);
+		const id =
+			this.pickedSubtitles === "off"
+				? forced[this.playingTracks().audio_track_id]
+				: this.pickedSubtitles;
 		for (const textTrack of this.subtitleTextTracks()) {
-			textTrack.mode = this.isTextTrackOf(textTrack, subtitles)
-				? "showing"
-				: "disabled";
+			textTrack.mode = textTrack.label === id ? "showing" : "disabled";
 		}
 	},
 
-	// The ids of the tracks playing, from their playlists' paths
+	// The ids of the tracks playing: the audio from its playlist's path
 	playingTracks() {
 		const hls = this.media.engine;
 		const audio = hls.audioTracks[hls.audioTrack];
-		const subtitles = this.showingSubtitles(hls.subtitleTracks);
 
 		return {
 			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
 			text_track_id:
-				subtitles?.url.match(/\/subtitles\/([^/]+)\//)?.[1] ?? null,
+				this.pickedSubtitles === "off" ? null : this.pickedSubtitles,
 		};
-	},
-
-	// hls.js keeps its subtitle track when they're turned off, so the showing text track
-	// tells which ones play
-	showingSubtitles(subtitleTracks) {
-		const showing = this.subtitleTextTracks().find(
-			(textTrack) => textTrack.mode === "showing",
-		);
-		return subtitleTracks.find((track) => this.isTextTrackOf(showing, track));
 	},
 
 	subtitleTextTracks() {
 		return Array.from(this.media.textTracks).filter(
 			(textTrack) =>
 				textTrack.kind === "subtitles" || textTrack.kind === "captions",
-		);
-	},
-
-	// Video.js gives each hls.js subtitle track a text track with its name and language
-	isTextTrackOf(textTrack, subtitles) {
-		return (
-			textTrack !== undefined &&
-			subtitles !== undefined &&
-			textTrack.label === subtitles.name &&
-			textTrack.language === subtitles.lang
 		);
 	},
 
@@ -356,9 +385,10 @@ const Player = {
 		this.pushEvent("report_problem", {
 			position_seconds: store.currentTime,
 			audio: picked("player-audio-menu"),
-			subtitles: store.subtitlesShowing
-				? picked("player-subtitles-menu")
-				: undefined,
+			subtitles:
+				this.pickedSubtitles === "off"
+					? undefined
+					: picked("player-subtitles-menu"),
 			quality: picked("player-quality-menu"),
 		});
 	},

@@ -8,7 +8,9 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
+  alias WatchClub.Languages
   alias WatchClub.MediaCatalog.{Part, Video}
+  alias WatchClub.Playbacks.Calculations.TextTrackChoices.Choice
   alias WatchClub.Playbacks.Session
   alias WatchClubWeb.Helpers.Parts
 
@@ -16,13 +18,8 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   def fields do
     [
       current_playback: [
-        media: [
-          video:
-            [
-              audio_tracks: [:display_label],
-              text_tracks: [:display_label, :language_code, :hls_supported?]
-            ] ++ video_fields()
-        ]
+        :text_track_choices,
+        media: [video: [audio_tracks: [:display_label]] ++ video_fields()]
       ]
     ]
   end
@@ -129,7 +126,12 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
       session.position_seconds +
         DateTime.diff(DateTime.utc_now(), session.last_heartbeat_at, :millisecond) / 1000
 
-  @doc "The Text Tracks a Screen can show, in the order of the master playlist."
-  def text_tracks(%Video{text_tracks: text_tracks}),
-    do: Enum.filter(text_tracks, & &1.hls_supported?)
+  @doc """
+  The name of a Text Track Choice in a Locale: its language, with its region when another choice
+  has the same language, and SDH. Such as French (Canada) or English (SDH).
+  """
+  def text_track_name(%Choice{language: language, text_track: text_track}, locale) do
+    name = Languages.display_name(language, locale)
+    if text_track.sdh?, do: dgettext("player", "%{language} (SDH)", language: name), else: name
+  end
 end

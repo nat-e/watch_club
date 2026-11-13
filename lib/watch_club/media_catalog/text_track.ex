@@ -132,12 +132,6 @@ defmodule WatchClub.MediaCatalog.TextTrack do
   end
 
   calculations do
-    calculate :display_label,
-              :string,
-              {WatchClub.MediaCatalog.Calculations.TrackDisplayLabel, fallback_prefix: "Subtitle"} do
-      public? true
-    end
-
     calculate :language_code, :string, WatchClub.MediaCatalog.Calculations.LanguageCode do
       description "The track's language code."
       public? true

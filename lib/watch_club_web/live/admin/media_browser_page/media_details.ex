@@ -155,6 +155,9 @@ defmodule WatchClubWeb.Admin.MediaBrowserPage.MediaDetails do
               <.badge :if={track.forced?} variant="muted" size="sm">
                 {dgettext("admin_media", "Forced")}
               </.badge>
+              <.badge :if={track.sdh?} variant="muted" size="sm">
+                {dgettext("admin_media", "SDH")}
+              </.badge>
             </dd>
           <% end %>
         </dl>

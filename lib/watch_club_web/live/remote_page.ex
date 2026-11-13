@@ -208,19 +208,26 @@ defmodule WatchClubWeb.RemotePage do
                   selected={@playback_session.current_playback.audio_track_id}
                 />
                 <.track_chips
-                  :if={NowPlaying.text_tracks(@video) != []}
+                  :if={@playback_session.current_playback.text_track_choices.choices != []}
                   id="remote-subtitles"
                   label={dgettext("player", "Subtitles")}
                   event="pick_subtitles"
                   playback_id={@playback_session.current_playback.id}
                   choices={[
                     {"off", dgettext("player", "Off")}
-                    | Enum.map(NowPlaying.text_tracks(@video), &{&1.id, &1.display_label})
+                    | Enum.map(
+                        @playback_session.current_playback.text_track_choices.choices,
+                        &{&1.text_track.id,
+                         NowPlaying.text_track_name(&1, @current_user.settings.locale)}
+                      )
                   ]}
                   selected={@playback_session.current_playback.text_track_id || "off"}
                 />
                 <p
-                  :if={length(@video.audio_tracks) < 2 and NowPlaying.text_tracks(@video) == []}
+                  :if={
+                    length(@video.audio_tracks) < 2 and
+                      @playback_session.current_playback.text_track_choices.choices == []
+                  }
                   class="text-sm text-text-muted"
                 >
                   {dgettext("player", "This video has no other audio or subtitles.")}

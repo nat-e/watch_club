@@ -125,12 +125,13 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
     end)
   end
 
+  # Named after their ids, which the Player finds them by: its own menu names them
   defp master_subtitle_tags(metadata) do
     Enum.map(metadata.subtitle_tracks, fn track ->
       media = %Media{
         type: :subtitles,
         group_id: "subs",
-        name: escape(track.display_label),
+        name: track.id,
         language: language(track),
         default?: track.id == metadata.default_subtitle_track_id,
         auto_select?: true,
