@@ -1,7 +1,8 @@
 defmodule WatchClubWeb.Components.Accounts.UserAvatar do
   @moduledoc """
-  A User's avatar, with their photo or their letter, or a blank one once they're deleted, and
-  their name. Every User's avatar goes through these components, which alone know photos' URLs.
+  A User's avatar, with their profile picture or their letter, or a blank one once they're
+  deleted, and their name. Every User's avatar goes through these components, which alone know
+  profile pictures' URLs.
   """
   use WatchClubWeb, :component
 
@@ -15,7 +16,7 @@ defmodule WatchClubWeb.Components.Accounts.UserAvatar do
     <.avatar
       id={@user && @user.id}
       name={username(@user)}
-      src={photo_url(@user)}
+      src={profile_picture_url(@user)}
       size={@size}
       class={@class}
       {@rest}
@@ -33,7 +34,9 @@ defmodule WatchClubWeb.Components.Accounts.UserAvatar do
   def user_avatar_group(assigns) do
     ~H"""
     <.avatar_group
-      avatars={Enum.map(@users, &%{id: &1 && &1.id, name: username(&1), src: photo_url(&1)})}
+      avatars={
+        Enum.map(@users, &%{id: &1 && &1.id, name: username(&1), src: profile_picture_url(&1)})
+      }
       avatar_size={@avatar_size}
       avatar_class={@avatar_class}
       class={@class}
@@ -49,8 +52,8 @@ defmodule WatchClubWeb.Components.Accounts.UserAvatar do
   def username(nil), do: dgettext("default", "Deleted user")
   def username(%User{username: username}), do: username
 
-  defp photo_url(%User{photo_revision: revision}) when is_binary(revision),
-    do: ~p"/users/photos/#{revision}"
+  defp profile_picture_url(%User{profile_picture_revision: revision}) when is_binary(revision),
+    do: ~p"/profile-pictures/#{revision}"
 
-  defp photo_url(_no_photo), do: nil
+  defp profile_picture_url(_no_profile_picture), do: nil
 end

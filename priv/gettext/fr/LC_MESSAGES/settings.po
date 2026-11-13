@@ -150,91 +150,91 @@ msgid "When the audio is in one of these languages, only forced subtitles show, 
 msgstr "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Change photo"
-msgstr "Changer de photo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Crop your photo"
-msgstr "Recadre ta photo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Drag the photo, or tap where to center it."
-msgstr "Fais glisser la photo, ou touche l'endroit à centrer."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Remove photo"
-msgstr "Supprimer la photo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Save photo"
-msgstr "Enregistrer la photo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Saving…"
 msgstr "Enregistrement…"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Upload photo"
-msgstr "Importer une photo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Your new photo. Move it with the arrow keys."
-msgstr "Ta nouvelle photo. Déplace-la avec les flèches du clavier."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom"
 msgstr "Zoom"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom in"
 msgstr "Zoomer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom out"
 msgstr "Dézoomer"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "We couldn't save your photo. Try again."
-msgstr "On n'a pas pu enregistrer ta photo. Réessaie."
+msgid "Change profile picture"
+msgstr "Changer de photo de profil"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Drag the photo, or click where to center it."
-msgstr "Fais glisser la photo, ou clique sur l'endroit à centrer."
+msgid "Crop your profile picture"
+msgstr "Recadre ta photo de profil"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Your photo is removed"
-msgstr "Ta photo est supprimée"
+msgid "Drag the picture, or click where to center it."
+msgstr "Fais glisser l'image, ou clique sur l'endroit à centrer."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Your photo is saved"
-msgstr "Ta photo est enregistrée"
+msgid "Drag the picture, or tap where to center it."
+msgstr "Fais glisser l'image, ou touche l'endroit à centrer."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Remove profile picture"
+msgstr "Supprimer la photo de profil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Save profile picture"
+msgstr "Enregistrer la photo de profil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Upload profile picture"
+msgstr "Importer une photo de profil"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't save your profile picture. Try again."
+msgstr "On n'a pas pu enregistrer ta photo de profil. Réessaie."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your new profile picture. Move it with the arrow keys."
+msgstr "Ta nouvelle photo de profil. Déplace-la avec les flèches du clavier."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is removed"
+msgstr "Ta photo de profil est supprimée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is saved"
+msgstr "Ta photo de profil est enregistrée"

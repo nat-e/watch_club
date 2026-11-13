@@ -1,4 +1,4 @@
-defmodule WatchClub.Repo.Migrations.UserPhotos do
+defmodule WatchClub.Repo.Migrations.UserProfilePictures do
   @moduledoc """
   Updates resources based on their most recent snapshots.
 
@@ -9,13 +9,13 @@ defmodule WatchClub.Repo.Migrations.UserPhotos do
 
   def up do
     alter table(:users) do
-      add :photo_revision, :uuid
+      add :profile_picture_revision, :uuid
     end
   end
 
   def down do
     alter table(:users) do
-      remove :photo_revision
+      remove :profile_picture_revision
     end
   end
 end

@@ -8,8 +8,8 @@ defmodule WatchClubWeb.Hooks.Auth do
 
   alias AshAuthentication.Phoenix.LiveSession
 
-  # What the navigation shows of the current user, such as their photo and the Inbox and Requests
-  # tabs' counts
+  # What the navigation shows of the current user, such as their profile picture and the Inbox
+  # and Requests tabs' counts
   @navigation_resources [
     WatchClub.Accounts.User,
     WatchClub.Accounts.UserSettings,

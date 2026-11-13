@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Components.UI.Avatar do
 
   attr :id, :string, required: true, doc: "picks its color. Nil shows a blank avatar."
   attr :name, :string, required: true
-  attr :src, :string, default: nil, doc: "a photo, shown instead of the letter"
+  attr :src, :string, default: nil, doc: "a picture, shown instead of the letter"
 
   attr :size, :string,
     values: ~w(xs sm md lg xl),

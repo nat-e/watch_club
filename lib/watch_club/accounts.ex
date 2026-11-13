@@ -19,8 +19,8 @@ defmodule WatchClub.Accounts do
       define :generate_password_reset_token, args: [:user_id]
       define :reset_password_with_token
       define :change_password
-      define :set_photo, args: [:photo]
-      define :remove_photo
+      define :set_profile_picture, args: [:profile_picture]
+      define :remove_profile_picture
     end
 
     resource WatchClub.Accounts.InvitationCode do

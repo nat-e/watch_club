@@ -1,13 +1,13 @@
-defmodule WatchClubWeb.UserPhotoController do
+defmodule WatchClubWeb.ProfilePictureController do
   @moduledoc """
-  A User's photo. A new photo gets a new revision, so browsers keep each one for good.
+  A User's profile picture. A new one gets a new revision, so browsers keep each one for good.
   """
   use WatchClubWeb, :controller
 
-  alias WatchClub.Accounts.UserPhoto
+  alias WatchClub.Accounts.ProfilePicture
 
   def show(conn, %{"revision" => revision}) do
-    path = UserPhoto.path!(revision)
+    path = ProfilePicture.path!(revision)
 
     if File.exists?(path) do
       conn

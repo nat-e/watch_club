@@ -14,8 +14,8 @@ defmodule WatchClubWeb.Storybook.Avatar do
         attributes: %{id: "user-jane", name: "Jane Doe"}
       },
       %Variation{
-        id: :photo,
-        description: "With a photo, shown instead of the letter",
+        id: :picture,
+        description: "With a picture, shown instead of the letter",
         attributes: %{
           id: "user-jane",
           name: "Jane Doe",
@@ -24,7 +24,7 @@ defmodule WatchClubWeb.Storybook.Avatar do
       },
       %Variation{
         id: :extra_large,
-        description: "Extra large, as the photo heading Settings",
+        description: "Extra large, as the profile picture heading Settings",
         attributes: %{id: "user-jane", name: "Jane Doe", size: "xl"}
       },
       %Variation{

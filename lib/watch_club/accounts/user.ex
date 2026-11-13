@@ -71,31 +71,31 @@ defmodule WatchClub.Accounts.User do
 
     destroy :destroy do
       primary? true
-      # Deletes the photo's file after commit, which an atomic destroy can't
+      # Deletes the profile picture's file after commit, which an atomic destroy can't
       require_atomic? false
-      change WatchClub.Accounts.Changes.DeleteOldPhoto
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
     end
 
-    update :set_photo do
-      description "Makes an image the User's photo, shown instead of their letter."
+    update :set_profile_picture do
+      description "Makes an image the User's profile picture, shown instead of their letter."
       require_atomic? false
       accept []
 
-      argument :photo, Ash.Type.File do
+      argument :profile_picture, Ash.Type.File do
         description "A JPEG, PNG or WebP image."
         allow_nil? false
       end
 
-      change WatchClub.Accounts.Changes.StorePhoto
-      change WatchClub.Accounts.Changes.DeleteOldPhoto
+      change WatchClub.Accounts.Changes.StoreProfilePicture
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
     end
 
-    update :remove_photo do
-      description "Removes the User's photo, so their letter shows again."
+    update :remove_profile_picture do
+      description "Removes the User's profile picture, so their letter shows again."
       require_atomic? false
       accept []
-      change set_attribute(:photo_revision, nil)
-      change WatchClub.Accounts.Changes.DeleteOldPhoto
+      change set_attribute(:profile_picture_revision, nil)
+      change WatchClub.Accounts.Changes.DeleteOldProfilePicture
     end
 
     create :create_administrator do
@@ -410,7 +410,7 @@ defmodule WatchClub.Accounts.User do
       authorize_if expr(id == ^actor(:id))
     end
 
-    policy action([:set_photo, :remove_photo]) do
+    policy action([:set_profile_picture, :remove_profile_picture]) do
       authorize_if expr(id == ^actor(:id))
     end
 
@@ -447,8 +447,8 @@ defmodule WatchClub.Accounts.User do
     publish_all :destroy, ["users", "admin"]
 
     # The User's pages reload the avatar in their navigation
-    publish :set_photo, ["user", :id]
-    publish :remove_photo, ["user", :id]
+    publish :set_profile_picture, ["user", :id]
+    publish :remove_profile_picture, ["user", :id]
   end
 
   changes do
@@ -518,8 +518,9 @@ defmodule WatchClub.Accounts.User do
       default: false,
       source: :is_administrator
 
-    # Names the file of the User's photo, see UserPhoto. Without one, their letter shows.
-    attribute :photo_revision, :uuid
+    # Names the file of the User's profile picture, see ProfilePicture. Without one, their letter
+    # shows.
+    attribute :profile_picture_revision, :uuid
 
     timestamps()
   end

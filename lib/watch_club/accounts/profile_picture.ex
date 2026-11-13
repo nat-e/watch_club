@@ -1,7 +1,8 @@
-defmodule WatchClub.Accounts.UserPhoto do
+defmodule WatchClub.Accounts.ProfilePicture do
   @moduledoc """
-  The files of Users' photos, in the app data folder. Each photo is re-encoded as a 256px square
-  WebP without metadata, and named by its revision: a new photo never overwrites the one shown.
+  The files of Users' profile pictures, in the app data folder. Each one is re-encoded as a 256px
+  square WebP without metadata, and named by its revision: a new profile picture never
+  overwrites the one shown.
   """
 
   @size 256
@@ -12,7 +13,7 @@ defmodule WatchClub.Accounts.UserPhoto do
 
   @loaders ~w(VipsForeignLoadJpegFile VipsForeignLoadPngFile VipsForeignLoadWebpFile)
 
-  @doc "Stores the JPEG, PNG or WebP image at `source_path` as a new photo"
+  @doc "Stores the JPEG, PNG or WebP image at `source_path` as a new profile picture"
   @spec store(Path.t()) :: {:ok, revision :: Ecto.UUID.t()} | {:error, :unreadable}
   def store(source_path) do
     revision = Ash.UUIDv7.generate()
@@ -21,8 +22,8 @@ defmodule WatchClub.Accounts.UserPhoto do
     with {:ok, loader} when loader in @loaders <- Vix.Vips.Foreign.find_load(source_path),
          {:ok, image} <- Image.open(source_path, fail_on: :error),
          true <- Image.width(image) * Image.height(image) <= @max_pixels,
-         {:ok, photo} <- Image.thumbnail(image, @size, crop: :center),
-         {:ok, _photo} <- Image.write(photo, path!(revision), strip_metadata: true) do
+         {:ok, picture} <- Image.thumbnail(image, @size, crop: :center),
+         {:ok, _picture} <- Image.write(picture, path!(revision), strip_metadata: true) do
       {:ok, revision}
     else
       _unreadable ->
@@ -31,11 +32,11 @@ defmodule WatchClub.Accounts.UserPhoto do
     end
   end
 
-  @doc "The file of a photo. A revision comes from the URL, so anything but a UUID raises."
+  @doc "The file of a profile picture. A revision comes from the URL, so anything but a UUID raises."
   @spec path!(Ecto.UUID.t()) :: Path.t()
   def path!(revision), do: Path.join(dir(), "#{Ecto.UUID.cast!(revision)}.webp")
 
-  @doc "Deletes a photo's file, if any"
+  @doc "Deletes a profile picture's file, if any"
   @spec delete(Ecto.UUID.t() | nil) :: :ok
   def delete(nil), do: :ok
 
@@ -44,5 +45,5 @@ defmodule WatchClub.Accounts.UserPhoto do
     :ok
   end
 
-  defp dir, do: Path.join(Application.fetch_env!(:watch_club, :app_data), "user_photos")
+  defp dir, do: Path.join(Application.fetch_env!(:watch_club, :app_data), "profile_pictures")
 end

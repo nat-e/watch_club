@@ -69,7 +69,7 @@
       "references": null,
       "scale": null,
       "size": null,
-      "source": "photo_revision",
+      "source": "profile_picture_revision",
       "type": "uuid"
     },
     {
@@ -103,7 +103,7 @@
   "custom_indexes": [],
   "custom_statements": [],
   "has_create_action": true,
-  "hash": "7734136468414FB968B064810A5DD97BA9104BEBE6FD3C5565BD6DE7417F4B8C",
+  "hash": "78F9629961154F459FC1287F7C29619FF37205AAAC440EC131B2F4FD0F76CB80",
   "identities": [
     {
       "all_tenants?": false,

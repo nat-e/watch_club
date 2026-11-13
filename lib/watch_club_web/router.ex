@@ -39,7 +39,7 @@ defmodule WatchClubWeb.Router do
     plug :accepts, ["json"]
   end
 
-  # Files for a signed-in User: Downloads and Users' photos. Like :browser but without CSRF
+  # Files for a signed-in User: Downloads and profile pictures. Like :browser but without CSRF
   # protection and HTML rendering, so :accepts, layouts, and flash are
   # intentionally absent.
   pipeline :signed_in_files do
@@ -88,7 +88,7 @@ defmodule WatchClubWeb.Router do
     pipe_through :signed_in_files
 
     get "/media/:media_id/download", DownloadController, :download
-    get "/users/photos/:revision", UserPhotoController, :show
+    get "/profile-pictures/:revision", ProfilePictureController, :show
   end
 
   scope "/", WatchClubWeb do

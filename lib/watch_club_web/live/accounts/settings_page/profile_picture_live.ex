@@ -1,8 +1,8 @@
-defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
+defmodule WatchClubWeb.Accounts.SettingsPage.ProfilePictureLive do
   @moduledoc """
-  The User's photo and Username, heading Settings. The camera button picks a photo, or removes
-  it. A picked photo opens a dialog to crop it in a circle: the browser crops it, then uploads the
-  square, which `Accounts.set_photo/3` re-encodes.
+  The User's profile picture and Username, heading Settings. The camera button picks a picture,
+  or removes it. A picked picture opens a dialog to crop it in a circle: the browser crops it, then
+  uploads the square, which `Accounts.set_profile_picture/3` re-encodes.
   """
   use WatchClubWeb, :live_component
 
@@ -16,14 +16,14 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
   def render(assigns) do
     ~H"""
     <div id={@id} class="flex flex-col gap-group">
-      <%!-- The browser opens the picked photo itself: only its crop is uploaded. Ignored by
+      <%!-- The browser opens the picked picture itself: only its crop is uploaded. Ignored by
       LiveView, which would clear it. --%>
       <input
         id={"#{@id}-file"}
         type="file"
         accept="image/*"
         class="hidden"
-        phx-hook=".PhotoPicker"
+        phx-hook=".ProfilePicturePicker"
         phx-update="ignore"
         phx-target={@myself}
       />
@@ -34,32 +34,32 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
         phx-target={@myself}
         class="hidden"
       >
-        <.live_file_input upload={@uploads.photo} />
+        <.live_file_input upload={@uploads.profile_picture} />
       </.form>
 
       <div class="flex items-center gap-group">
         <div class="relative shrink-0">
           <.user_avatar user={@current_user} size="xl" />
-          <%!-- Adding or removing the photo swaps the camera button: focus moves to the new one --%>
+          <%!-- Adding or removing the profile picture swaps the camera button: focus moves to the new one --%>
           <div class="absolute -right-tight -bottom-tight">
-            <%!-- With no photo to remove, the camera button picks one at once --%>
+            <%!-- With no profile picture to remove, the camera button picks one at once --%>
             <.camera_button
-              :if={!@current_user.photo_revision}
+              :if={!@current_user.profile_picture_revision}
               id={"#{@id}-pick"}
-              label={dgettext("settings", "Upload photo")}
-              phx-click={pick_photo(@id)}
+              label={dgettext("settings", "Upload profile picture")}
+              phx-click={pick_profile_picture(@id)}
               phx-mounted={@refocus_camera? && JS.focus()}
             />
-            <.dropdown_menu :if={@current_user.photo_revision} id={"#{@id}-menu"}>
+            <.dropdown_menu :if={@current_user.profile_picture_revision} id={"#{@id}-menu"}>
               <:trigger>
                 <.camera_button
                   id={"#{@id}-menu-button"}
-                  label={dgettext("settings", "Change photo")}
+                  label={dgettext("settings", "Change profile picture")}
                   phx-mounted={@refocus_camera? && JS.focus()}
                 />
               </:trigger>
-              <.dropdown_menu_item id={"#{@id}-menu-pick"} phx-click={pick_photo(@id)}>
-                <Lucideicons.upload />{dgettext("settings", "Upload photo")}
+              <.dropdown_menu_item id={"#{@id}-menu-pick"} phx-click={pick_profile_picture(@id)}>
+                <Lucideicons.upload />{dgettext("settings", "Upload profile picture")}
               </.dropdown_menu_item>
               <.dropdown_menu_item
                 id={"#{@id}-menu-remove"}
@@ -67,7 +67,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
                 phx-click="remove"
                 phx-target={@myself}
               >
-                <Lucideicons.trash_2 />{dgettext("settings", "Remove photo")}
+                <Lucideicons.trash_2 />{dgettext("settings", "Remove profile picture")}
               </.dropdown_menu_item>
             </.dropdown_menu>
           </div>
@@ -86,13 +86,13 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
         id={"#{@id}-crop"}
         file_input={"#{@id}-file"}
         upload_form={"#{@id}-upload"}
-        saving?={@uploads.photo.entries != []}
+        saving?={@uploads.profile_picture.entries != []}
         errors={@save_errors}
         myself={@myself}
       />
 
-      <script :type={Phoenix.LiveView.ColocatedHook} name=".PhotoPicker">
-        // Opens the crop dialog for a photo the browser can open
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".ProfilePicturePicker">
+        // Opens the crop dialog for a picture the browser can open
         export default {
           mounted() {
             this.el.addEventListener("change", async () => {
@@ -121,13 +121,13 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
   end
 
   attr :id, :string, required: true
-  attr :file_input, :string, required: true, doc: "the id of the input with the picked photo"
+  attr :file_input, :string, required: true, doc: "the id of the input with the picked picture"
   attr :upload_form, :string, required: true, doc: "the id of the form uploading the crop"
   attr :saving?, :boolean, required: true
   attr :errors, :list, required: true
   attr :myself, :any, required: true
 
-  # Cropper.js shows the picked photo under a circle: the User moves and zooms it, then the hook
+  # Cropper.js shows the picked picture under a circle: the User moves and zooms it, then the hook
   # uploads the circle's square
   defp crop_modal(assigns) do
     ~H"""
@@ -138,11 +138,11 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
       class="w-full"
       on_close={JS.push("cancel", target: @myself)}
     >
-      <:title>{dgettext("settings", "Crop your photo")}</:title>
+      <:title>{dgettext("settings", "Crop your profile picture")}</:title>
       <%!-- Cropper.js owns this part of the page --%>
       <div
         id={"#{@id}-cropper"}
-        phx-hook=".PhotoCropper"
+        phx-hook=".ProfilePictureCropper"
         phx-update="ignore"
         data-file-input={@file_input}
         data-upload-form={@upload_form}
@@ -154,7 +154,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
           role="group"
           tabindex="0"
           autofocus
-          aria-label={dgettext("settings", "Your new photo. Move it with the arrow keys.")}
+          aria-label={dgettext("settings", "Your new profile picture. Move it with the arrow keys.")}
           data-stage
           class="relative mx-auto aspect-square w-80 max-w-full cursor-grab overflow-hidden rounded-card bg-black focus-visible:-outline-offset-2"
         >
@@ -171,10 +171,10 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
           </cropper-canvas>
         </div>
         <p class="text-center text-text-muted pointer-coarse:hidden">
-          {dgettext("settings", "Drag the photo, or click where to center it.")}
+          {dgettext("settings", "Drag the picture, or click where to center it.")}
         </p>
         <p class="text-center text-text-muted pointer-fine:hidden">
-          {dgettext("settings", "Drag the photo, or tap where to center it.")}
+          {dgettext("settings", "Drag the picture, or tap where to center it.")}
         </p>
         <fieldset data-zoom class="flex items-center gap-related">
           <.button
@@ -219,12 +219,12 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
           <Lucideicons.loader_circle :if={@saving?} class="motion-safe:animate-spin" />
           {if @saving?,
             do: dgettext("settings", "Saving…"),
-            else: dgettext("settings", "Save photo")}
+            else: dgettext("settings", "Save profile picture")}
         </.button>
       </:footer>
     </.modal>
 
-    <script :type={Phoenix.LiveView.ColocatedHook} name=".PhotoCropper">
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".ProfilePictureCropper">
       import "cropperjs";
 
       // The crop's size: the server re-encodes it smaller
@@ -389,7 +389,9 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
           const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
           if (this.closed) return;
           const form = document.getElementById(this.el.dataset.uploadForm);
-          this.uploadTo(form, "photo", [new File([blob], "photo.jpg", { type: "image/jpeg" })]);
+          this.uploadTo(form, "profile_picture", [
+            new File([blob], "profile_picture.jpg", { type: "image/jpeg" }),
+          ]);
         },
       };
     </script>
@@ -416,20 +418,20 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
     """
   end
 
-  defp pick_photo(id), do: JS.dispatch("click", to: "##{id}-file")
+  defp pick_profile_picture(id), do: JS.dispatch("click", to: "##{id}-file")
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
      |> assign(cropping?: false, pick_errors: [], save_errors: [], refocus_camera?: false)
-     |> allow_upload(:photo,
+     |> allow_upload(:profile_picture,
        accept: ~w(.jpg .jpeg),
        max_entries: 1,
        # The crop is a 512px JPEG
        max_file_size: 1_000_000,
        auto_upload: true,
-       progress: &save_photo/3
+       progress: &save_profile_picture/3
      )}
   end
 
@@ -440,7 +442,7 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
   def handle_event("unreadable", _params, socket) do
     {:noreply,
      assign(socket, :pick_errors, [
-       dgettext("errors", "We can't open this file. Choose a JPEG, PNG or WebP photo.")
+       dgettext("errors", "We can't open this file. Choose a JPEG, PNG or WebP image.")
      ])}
   end
 
@@ -456,23 +458,23 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
 
   def handle_event("remove", _params, socket) do
     user = socket.assigns.current_user
-    Accounts.remove_photo!(user, actor: user)
-    Flash.send_flash(:success, dgettext("settings", "Your photo is removed"))
+    Accounts.remove_profile_picture!(user, actor: user)
+    Flash.send_flash(:success, dgettext("settings", "Your profile picture is removed"))
     {:noreply, assign(socket, pick_errors: [], refocus_camera?: true)}
   end
 
-  # The User's pages reload their avatar once the photo is saved, this one included
-  defp save_photo(:photo, %{done?: true} = entry, socket) do
+  # The User's pages reload their avatar once the profile picture is saved, this one included
+  defp save_profile_picture(:profile_picture, %{done?: true} = entry, socket) do
     user = socket.assigns.current_user
 
     result =
       consume_uploaded_entry(socket, entry, fn %{path: path} ->
-        {:ok, Accounts.set_photo(user, Ash.Type.File.from_path(path), actor: user)}
+        {:ok, Accounts.set_profile_picture(user, Ash.Type.File.from_path(path), actor: user)}
       end)
 
     case result do
       {:ok, _user} ->
-        Flash.send_flash(:success, dgettext("settings", "Your photo is saved"))
+        Flash.send_flash(:success, dgettext("settings", "Your profile picture is saved"))
         {:noreply, assign(socket, cropping?: false, refocus_camera?: true)}
 
       {:error, _error} ->
@@ -480,21 +482,26 @@ defmodule WatchClubWeb.Accounts.SettingsPage.PhotoLive do
     end
   end
 
-  defp save_photo(:photo, _entry, socket), do: {:noreply, fail_rejected_upload(socket)}
+  defp save_profile_picture(:profile_picture, _entry, socket),
+    do: {:noreply, fail_rejected_upload(socket)}
 
   # Only the crop is uploaded, which fits the upload's limits: a rejected or failed upload is a
   # failed save
   defp fail_rejected_upload(socket) do
-    upload = socket.assigns.uploads.photo
+    upload = socket.assigns.uploads.profile_picture
 
     if Enum.any?(upload.entries, &(upload_errors(upload, &1) != [])),
       do: socket |> cancel_uploads() |> assign(:save_errors, [save_error()]),
       else: socket
   end
 
-  defp save_error, do: dgettext("settings", "We couldn't save your photo. Try again.")
+  defp save_error, do: dgettext("settings", "We couldn't save your profile picture. Try again.")
 
   defp cancel_uploads(socket) do
-    Enum.reduce(socket.assigns.uploads.photo.entries, socket, &cancel_upload(&2, :photo, &1.ref))
+    Enum.reduce(
+      socket.assigns.uploads.profile_picture.entries,
+      socket,
+      &cancel_upload(&2, :profile_picture, &1.ref)
+    )
   end
 end

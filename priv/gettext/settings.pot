@@ -126,77 +126,77 @@ msgstr ""
 msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Change photo"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Crop your photo"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Drag the photo, or tap where to center it."
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Remove photo"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Save photo"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Saving…"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Upload photo"
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
-#, elixir-autogen, elixir-format
-msgid "Your new photo. Move it with the arrow keys."
-msgstr ""
-
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom in"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "Zoom out"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "We couldn't save your photo. Try again."
+msgid "Change profile picture"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Drag the photo, or click where to center it."
+msgid "Crop your profile picture"
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Your photo is removed"
+msgid "Drag the picture, or click where to center it."
 msgstr ""
 
-#: lib/watch_club_web/live/accounts/settings_page/photo_live.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
-msgid "Your photo is saved"
+msgid "Drag the picture, or tap where to center it."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Remove profile picture"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Save profile picture"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Upload profile picture"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't save your profile picture. Try again."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your new profile picture. Move it with the arrow keys."
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is removed"
+msgstr ""
+
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is saved"
 msgstr ""
