@@ -6,8 +6,8 @@ Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security 
 
 ## Setup
 
-1. Install [mise](https://mise.jdx.dev) and run `mise install`. It installs Erlang, Elixir, Node and Biome at the versions in `mise.lock`.
-2. Install ffmpeg and Chromaprint's `fpcalc`, for example with `brew install ffmpeg chromaprint`.
+1. Install [mise](https://mise.jdx.dev) and run `mise install`. It installs Erlang, Elixir, Node, Biome and ffmpeg at the versions in `mise.lock`. The Docker image ships the same ffmpeg.
+2. Install Chromaprint's `fpcalc`, for example with `brew install chromaprint`.
 3. Start Postgres, for example with `docker compose -f docker-compose.dev.yml up -d db`.
 4. Run `mix setup`.
 

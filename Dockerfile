@@ -17,9 +17,28 @@ ARG ELIXIR_VERSION=1.20.4
 ARG OTP_VERSION=29.1.2
 # renovate: datasource=docker depName=debian versioning=regex:^trixie-(?<patch>\d{8})-slim$
 ARG DEBIAN_VERSION=trixie-20261020-slim
+# renovate: datasource=docker depName=jdxcode/mise
+ARG MISE_VERSION=2026.11.7
 
 ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
+ARG MISE_IMAGE="docker.io/jdxcode/mise:${MISE_VERSION}"
+
+FROM ${MISE_IMAGE} AS mise
+
+# ffmpeg and ffprobe from the conda-forge build that mise.lock pins, as in development and CI.
+# The final image keeps their path: mise's wrappers in .mise-bins name it.
+FROM ${RUNNER_IMAGE} AS ffmpeg
+
+COPY --from=mise /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=mise /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENV MISE_DATA_DIR=/opt/mise
+WORKDIR /tools
+COPY mise.toml mise.lock ./
+RUN mise trust mise.toml \
+  && mise install conda:ffmpeg \
+  && ln -s "$(mise where conda:ffmpeg)/.mise-bins" /opt/mise/ffmpeg-bin \
+  && rm -rf /opt/mise/conda-packages
 
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -84,8 +103,6 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE} AS final
 
-# renovate: datasource=deb depName=ffmpeg
-ARG FFMPEG_VERSION=7:7.1.5-0+deb13u1
 # fpcalc, which fingerprints audio to find the Markers of Videos
 # renovate: datasource=deb depName=libchromaprint-tools
 ARG CHROMAPRINT_VERSION=1.5.1-7
@@ -93,9 +110,11 @@ ARG CHROMAPRINT_VERSION=1.5.1-7
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   libstdc++6 openssl libncurses6 locales ca-certificates tini curl \
-  ffmpeg=${FFMPEG_VERSION} \
   libchromaprint-tools=${CHROMAPRINT_VERSION} \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ffmpeg /opt/mise /opt/mise
+ENV PATH="/opt/mise/ffmpeg-bin:${PATH}"
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
