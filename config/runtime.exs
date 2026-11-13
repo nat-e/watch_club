@@ -148,6 +148,12 @@ if config_env() != :test do
   # Mount a volume at WC_APP_DATA so they survive container upgrades.
   config :watch_club, :app_data, env!("WC_APP_DATA", :string, "/data")
 
+  # Scrubbing Thumbnails from keyframes only are much faster to build, but a
+  # thumbnail can be a few seconds off.
+  config :watch_club,
+         :trickplay_keyframes_only,
+         env!("WC_TRICKPLAY_KEYFRAMES_ONLY", :boolean, true)
+
   # Configure the logger
   if env!("WC_LOG_FORMAT", :string, "text") == "json" do
     config :logger, :default_handler,

@@ -116,8 +116,7 @@ config :watch_club, Oban,
     # Low concurrency: submissions add+search on the *arr instance, so keep
     # the load (and indexer pressure) gentle even on a big fan-out/backfill.
     media_source_requests: 2,
-    # Single worker so trickplay's full-decode ffmpeg pass never crowds out
-    # imports.
+    # Single worker so trickplay's ffmpeg passes never crowd out imports.
     trickplay_generation: 1,
     # Single worker so marker detection's audio decoding stays in the background
     marker_detection: 1
