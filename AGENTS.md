@@ -102,7 +102,7 @@ Every tool takes a `port`: use `WC_PORT` from `.env`. The tools only work while 
 
 ## Tests
 
-We write tests for all the functions exposed in our Ash domains and only for those.
+We write tests for all the functions exposed in our Ash domains and only for those. The one exception is `WatchClub.Ffmpeg`, whose transcodes no domain action exposes: `test/watch_club/ffmpeg_test.exs` runs the real ffmpeg on media it generates.
 
 - Do not create resources and domain actions only to be used by tests. Tests can use `seed_generator` when they need to do something not exposed by the domain.
 - Do not write tests to test simple read actions
