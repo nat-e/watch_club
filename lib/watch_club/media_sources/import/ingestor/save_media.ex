@@ -53,6 +53,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       duration_seconds: structure.duration_seconds,
       container: structure.container,
       bit_rate: structure.bit_rate,
+      keyframe_seconds: structure.keyframe_seconds,
       video_tracks: structure.video_tracks,
       audio_tracks: structure.audio_tracks,
       text_tracks: structure.text_tracks

@@ -129,6 +129,8 @@ defmodule WatchClub.MediaSources.ImportTest do
         end
       end)
 
+      stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, [0.0, 2.002]} end)
+
       media_import = start_media_import!(media_source.id, actor: admin)
 
       Oban.drain_queue(queue: :media_source_scans)

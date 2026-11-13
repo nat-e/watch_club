@@ -10,7 +10,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       scan.
 
   Each run ends with the file's outcome: `matched`, `unmatched`, or `unreadable` when ffprobe
-  can't read it, which saves no Media. It counts the file on its Media Import, and emits the
+  can't read it or its Keyframes, which saves no Media. It counts the file on its Media Import, and emits the
   outcome, with a reason, in a `[:watch_club, :media_ingest]` telemetry span, which
   `IngestReporter` logs and `WatchClubWeb.Telemetry` measures. A crash is the `failed` outcome:
   Oban retries it with backoff, and the last attempt counts the file as failed.

@@ -199,7 +199,7 @@ defmodule WatchClub.MediaSources.Import do
     end
 
     attribute :unreadable_file_count, :integer do
-      description "Files ffprobe couldn't read, which got no Media"
+      description "Files ffprobe couldn't read, or whose Keyframes it couldn't, which got no Media"
       allow_nil? false
       default 0
       public? true
