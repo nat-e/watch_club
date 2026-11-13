@@ -9,7 +9,8 @@ defmodule WatchClub.Ffmpeg.Probe do
 
   @callback probe(path :: String.t()) :: {:ok, map()} | {:error, term()}
 
-  @callback keyframes(path :: String.t()) :: {:ok, [float()]} | {:error, term()}
+  @callback keyframes(path :: String.t(), stream_index :: non_neg_integer()) ::
+              {:ok, [float()]} | {:error, term()}
 
   @callback audio_fingerprint(path :: String.t(), from_seconds :: number(), seconds :: number()) ::
               {:ok, [non_neg_integer()]} | {:error, term()}

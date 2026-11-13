@@ -21,7 +21,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   @keyframe_seconds [0.0, 2.002, 4.004]
 
   setup do
-    stub(ProbeMock, :keyframes, fn _path -> {:ok, @keyframe_seconds} end)
+    stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, @keyframe_seconds} end)
     :ok
   end
 

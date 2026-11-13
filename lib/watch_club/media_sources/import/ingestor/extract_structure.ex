@@ -3,8 +3,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   Populates `candidate.media_structure` with the file's technical shape —
   container, duration, and tracks. Dispatches by `candidate.media_type`:
 
-    * `:video` → probe with `ffprobe`, build the structure, read the keyframes,
-      append sidecar text tracks, and compute the File Fingerprint.
+    * `:video` → probe with `ffprobe`, build the structure, read the keyframes of
+      its Default Video Track, append sidecar text tracks, and compute the File
+      Fingerprint.
     * `:audiobook` → probe with `ffprobe`, build the structure.
     * `:ebook` → record the file extension as container; no probing.
   """
@@ -25,7 +26,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
        when media_type in [:movie, :tv_show_episode, :sports_event] do
     with {:ok, metadata} <- @ffprobe.probe(candidate.path),
          {:ok, structure} <- Tracks.for_video(metadata),
-         {:ok, keyframe_seconds} <- @ffprobe.keyframes(candidate.path),
+         {:ok, keyframe_seconds} <-
+           @ffprobe.keyframes(candidate.path, default_video_track(structure).stream_index),
          {:ok, fingerprint} <- file_fingerprint(candidate.path) do
       structure = %{structure | file_fingerprint: fingerprint, keyframe_seconds: keyframe_seconds}
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}
@@ -42,6 +44,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   defp probe(:ebook, candidate) do
     structure = %MediaStructure{container: container_from_path(candidate.path)}
     {:ok, %{candidate | media_structure: structure}}
+  end
+
+  # Picked as `WatchClub.MediaCatalog.Video`'s `default_video_track` picks it
+  defp default_video_track(structure) do
+    Enum.min_by(structure.video_tracks, &{not &1.default?, &1.stream_index})
   end
 
   # The size and both ends of the file tell a replaced file apart, reading only 128 KB. The

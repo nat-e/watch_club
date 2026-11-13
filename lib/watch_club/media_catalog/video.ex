@@ -192,7 +192,7 @@ defmodule WatchClub.MediaCatalog.Video do
     # Thousands of numbers, so only loaded on demand
     attribute :keyframe_seconds, {:array, :float} do
       description """
-      Where playback can cut the file: the times of the keyframes of its first video stream, in
+      Where playback can cut the file: the times of the keyframes of its Default Video Track, in
       seconds from the file's start. Nil for a Video no Media Import has read them for.
       """
 
@@ -223,6 +223,7 @@ defmodule WatchClub.MediaCatalog.Video do
       public? true
     end
 
+    # The import reads the keyframes of the same Video Track
     has_one :default_video_track, VideoTrack do
       public? true
       from_many? true

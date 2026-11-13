@@ -71,16 +71,16 @@ defmodule WatchClub.Ffmpeg do
   end
 
   @doc """
-  The times of the keyframes of the file's first video stream, in seconds from the file's start,
-  as `-ss` counts them. They come from the Cues of a Matroska file, and otherwise from every
-  packet `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe` fails or
-  finds no keyframe.
+  The times of the keyframes of the video stream at `stream_index`, in seconds from the file's
+  start, as `-ss` counts them. They come from the Cues of a Matroska file, and otherwise from
+  every packet `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe`
+  fails or finds no keyframe.
   """
   @impl true
-  def keyframes(path) when is_binary(path) do
+  def keyframes(path, stream_index) when is_binary(path) do
     with {:ok, ffprobe} <- find_executable("ffprobe"),
          {:ok, start_time} <- start_time(ffprobe, path),
-         {:ok, times} <- keyframe_times(ffprobe, path) do
+         {:ok, times} <- keyframe_times(ffprobe, path, stream_index) do
       {:ok, Enum.map(times, &Float.round(&1 - start_time, 6))}
     end
   end
@@ -101,22 +101,22 @@ defmodule WatchClub.Ffmpeg do
     end
   end
 
-  defp keyframe_times(ffprobe, path) do
-    case MatroskaCues.keyframe_times(path) do
+  defp keyframe_times(ffprobe, path, stream_index) do
+    case MatroskaCues.keyframe_times(path, stream_index) do
       {:ok, times} -> {:ok, times}
-      :error -> scan_keyframe_times(ffprobe, path)
+      :error -> scan_keyframe_times(ffprobe, path, stream_index)
     end
   end
 
   # `+genpts` gives a time to packets without one, as in AVI files
-  defp scan_keyframe_times(ffprobe, path) do
+  defp scan_keyframe_times(ffprobe, path, stream_index) do
     args = [
       "-v",
       "error",
       "-fflags",
       "+genpts",
       "-select_streams",
-      "v:0",
+      Integer.to_string(stream_index),
       "-show_entries",
       "packet=pts_time,flags",
       "-of",

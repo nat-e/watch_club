@@ -106,8 +106,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
   end
 
   # ffprobe reports an unknown level as -99
-  defp level(level) when is_integer(level) and level > 0, do: level
-  defp level(_unknown), do: nil
+  defp level(-99), do: nil
+  defp level(level), do: level
 
   defp stream_duration(streams) do
     Enum.find_value(streams, fn stream -> parse_float(stream["duration"]) end)
