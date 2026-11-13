@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.12](https://github.com/nat-e/watch_club/compare/v0.1.11...v0.1.12) (2026-11-13)
+
+
+### Features
+
+* **accounts:** users upload a profile picture instead of their letter avatar ([#117](https://github.com/nat-e/watch_club/issues/117)) ([a7228b9](https://github.com/nat-e/watch_club/commit/a7228b91e7f8290e12d09ab660aee72cafae7e2e))
+* **media:** build Scrubbing Thumbnails from keyframes at the lowest CPU priority ([#122](https://github.com/nat-e/watch_club/issues/122)) ([ecb81fc](https://github.com/nat-e/watch_club/commit/ecb81fc8f7e62f23b6ec5f4a41c97dc17956efb4))
+* **media:** read each Video's keyframes and codec profile at import ([#124](https://github.com/nat-e/watch_club/issues/124)) ([4826e34](https://github.com/nat-e/watch_club/commit/4826e34486009d3c2d4b9e8d9868563ec95c07a6))
+* **player:** show one clearly named Text Track per language ([#121](https://github.com/nat-e/watch_club/issues/121)) ([e0f6bf0](https://github.com/nat-e/watch_club/commit/e0f6bf029626a7375d61bd6cac0a16fd80b1a671))
+
+
+### Bug Fixes
+
+* end the refresh of a deleted Media Source Request ([#115](https://github.com/nat-e/watch_club/issues/115)) ([32224a7](https://github.com/nat-e/watch_club/commit/32224a7e4a7b9f7f7bbafe67c60e981af322c494))
+* **media-sources:** import files whose TV Show Episode TMDB doesn't list, and observe the import pipeline ([#119](https://github.com/nat-e/watch_club/issues/119)) ([29fdc10](https://github.com/nat-e/watch_club/commit/29fdc102a831ad096d7e3b6963829e17368d9665))
+* **player:** keep subtitles in sync during long Playbacks ([#125](https://github.com/nat-e/watch_club/issues/125)) ([d7caff8](https://github.com/nat-e/watch_club/commit/d7caff8c416b10762c7981be0aa6a60fff980705))
+* **player:** show the Cast button wherever Chrome can cast ([#120](https://github.com/nat-e/watch_club/issues/120)) ([f86cd00](https://github.com/nat-e/watch_club/commit/f86cd001b9bb4a134d881b34b5dc4d3714196b46))
+* **requests:** say Not Released only before the release date ([#116](https://github.com/nat-e/watch_club/issues/116)) ([610cf72](https://github.com/nat-e/watch_club/commit/610cf72262d2833bf4ab657626313758c7955d6b))
+
 ## [0.1.11](https://github.com/nat-e/watch_club/compare/v0.1.10...v0.1.11) (2026-11-12)
 
 
