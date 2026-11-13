@@ -83,14 +83,23 @@ defmodule WatchClub.Dev.Catalog do
 
     lfs_files = git!(["lfs", "ls-files", "--long", "--include", "#{@media_root}/**"])
 
-    for line <- String.split(lfs_files, "\n", trim: true),
-        [oid, _status, path] = String.split(line, " ", parts: 3),
-        path not in changed do
-      object = Path.join([objects, String.slice(oid, 0, 2), String.slice(oid, 2, 2), oid])
-      clone = Path.join(Path.dirname(path), ".clone-" <> Path.basename(path))
-      {_output, 0} = System.cmd("cp", [clone_option(), object, clone], stderr_to_stdout: true)
-      File.rename!(clone, path)
-    end
+    cloned =
+      for line <- String.split(lfs_files, "\n", trim: true),
+          [oid, _status, path] = String.split(line, " ", parts: 3),
+          path not in changed do
+        object = Path.join([objects, String.slice(oid, 0, 2), String.slice(oid, 2, 2), oid])
+        clone = Path.join(Path.dirname(path), ".clone-" <> Path.basename(path))
+        {_output, 0} = System.cmd("cp", [clone_option(), object, clone], stderr_to_stdout: true)
+        File.rename!(clone, path)
+        path
+      end
+
+    # Git still has the size of the placeholders a new worktree had, and keeps showing the files
+    # as changed until they are added again, which changes nothing else
+    pathspec = Path.join(System.tmp_dir!(), "dev-catalog-#{System.unique_integer([:positive])}")
+    File.write!(pathspec, Enum.join(cloned, <<0>>))
+    git!(["add", "--pathspec-from-file=#{pathspec}", "--pathspec-file-nul"])
+    File.rm!(pathspec)
   end
 
   defp clone_option do
