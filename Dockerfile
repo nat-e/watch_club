@@ -27,7 +27,7 @@ ARG MISE_IMAGE="docker.io/jdxcode/mise:${MISE_VERSION}"
 FROM ${MISE_IMAGE} AS mise
 
 # ffmpeg and ffprobe from the conda-forge build that mise.lock pins, as in development and CI.
-# The final image keeps their path: mise's wrappers in .mise-bins name it.
+# The final image keeps their path, which mise's wrappers name.
 FROM ${RUNNER_IMAGE} AS ffmpeg
 
 COPY --from=mise /usr/local/bin/mise /usr/local/bin/mise
@@ -36,8 +36,8 @@ ENV MISE_DATA_DIR=/opt/mise
 WORKDIR /tools
 COPY mise.toml mise.lock ./
 RUN mise trust mise.toml \
-  && mise install conda:ffmpeg \
-  && ln -s "$(mise where conda:ffmpeg)/.mise-bins" /opt/mise/ffmpeg-bin \
+  && mise install --locked conda:ffmpeg \
+  && ln -s "$(mise bin-paths conda:ffmpeg)" /opt/mise/ffmpeg-bin \
   && rm -rf /opt/mise/conda-packages
 
 FROM ${BUILDER_IMAGE} AS builder
