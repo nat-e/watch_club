@@ -17,6 +17,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
   setup :verify_on_exit!
 
+  @keyframe_seconds [0.0, 2.002, 4.004]
+
   describe "apply/1 —movie" do
     @tag :tmp_dir
     test "probes the file and populates the structure with video, audio, and subtitle tracks",
@@ -24,6 +26,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
       candidate = Candidate.new(video_file!(tmp_dir), :movie)
+      keyframe_seconds = @keyframe_seconds
 
       assert {:ok,
               %Candidate{
@@ -31,7 +34,16 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   container: "matroska,webm",
                   duration_seconds: 1369.312,
                   bit_rate: 3_030_460,
-                  video_tracks: [%VideoTrack{codec: "hevc", width: 1920, height: 1080}],
+                  keyframe_seconds: ^keyframe_seconds,
+                  video_tracks: [
+                    %VideoTrack{
+                      codec: "hevc",
+                      profile: "Main",
+                      level: 120,
+                      width: 1920,
+                      height: 1080
+                    }
+                  ],
                   audio_tracks: [
                     %AudioTrack{codec: "eac3", language: "eng", channels: 6},
                     %AudioTrack{codec: "eac3", language: "fre", channels: 2}
@@ -58,6 +70,16 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       # Same size, last byte replaced
       File.open!(path, [:read, :write, :binary], &:file.pwrite(&1, {:eof, -1}, "x"))
       refute fingerprint.() == original
+    end
+
+    @tag :tmp_dir
+    test "returns an error when the keyframes can't be read", %{tmp_dir: tmp_dir} do
+      stub_ffprobe(load_fixture("video_friends_s01e01"))
+      stub(ProbeMock, :keyframes, fn _path -> {:error, "ffprobe found no keyframes"} end)
+
+      candidate = Candidate.new(video_file!(tmp_dir), :movie)
+
+      assert ExtractStructure.apply(candidate) == {:error, "ffprobe found no keyframes"}
     end
 
     test "returns an error when the file can't be read" do
@@ -142,6 +164,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
   defp stub_ffprobe(metadata) do
     stub(ProbeMock, :probe, fn _path -> {:ok, metadata} end)
+    stub(ProbeMock, :keyframes, fn _path -> {:ok, @keyframe_seconds} end)
   end
 
   defp load_fixture(name) do

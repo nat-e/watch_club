@@ -16,6 +16,8 @@ defmodule WatchClub.Ffmpeg do
 
   @behaviour WatchClub.Ffmpeg.Probe
 
+  alias WatchClub.Ffmpeg.MatroskaCues
+
   require Logger
 
   @doc """
@@ -65,6 +67,80 @@ defmodule WatchClub.Ffmpeg do
     case Jason.decode(json) do
       {:ok, metadata} -> {:ok, metadata}
       {:error, error} -> {:error, "ffprobe returned invalid JSON: #{Exception.message(error)}"}
+    end
+  end
+
+  @doc """
+  The times of the keyframes of the file's first video stream, in seconds from the file's start,
+  as `-ss` counts them. They come from the Cues of a Matroska file, and otherwise from every
+  packet `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe` fails or
+  finds no keyframe.
+  """
+  @impl true
+  def keyframes(path) when is_binary(path) do
+    with {:ok, ffprobe} <- find_executable("ffprobe"),
+         {:ok, start_time} <- start_time(ffprobe, path),
+         {:ok, times} <- keyframe_times(ffprobe, path) do
+      {:ok, Enum.map(times, &Float.round(&1 - start_time, 6))}
+    end
+  end
+
+  defp start_time(ffprobe, path) do
+    args = ["-v", "error", "-show_entries", "format=start_time", "-of", "csv=p=0", path]
+
+    case System.cmd(ffprobe, args) do
+      {output, 0} ->
+        case Float.parse(output) do
+          {start_time, _rest} -> {:ok, start_time}
+          # N/A when no stream has a timestamp
+          :error -> {:ok, 0.0}
+        end
+
+      {_output, status} ->
+        {:error, "ffprobe exited with #{status} while reading the start time"}
+    end
+  end
+
+  defp keyframe_times(ffprobe, path) do
+    case MatroskaCues.keyframe_times(path) do
+      {:ok, times} -> {:ok, times}
+      :error -> scan_keyframe_times(ffprobe, path)
+    end
+  end
+
+  # `+genpts` gives a time to packets without one, as in AVI files
+  defp scan_keyframe_times(ffprobe, path) do
+    args = [
+      "-v",
+      "error",
+      "-fflags",
+      "+genpts",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "packet=pts_time,flags",
+      "-of",
+      "csv=p=0",
+      path
+    ]
+
+    case System.cmd(ffprobe, args) do
+      {output, 0} ->
+        times =
+          for line <- String.split(output, "\n", trim: true),
+              [time, flags | _side_data] <- [String.split(line, ",")],
+              String.contains?(flags, "K"),
+              {time, ""} <- [Float.parse(time)] do
+            time
+          end
+
+        case times |> Enum.sort() |> Enum.dedup() do
+          [] -> {:error, "ffprobe found no keyframes"}
+          times -> {:ok, times}
+        end
+
+      {_output, status} ->
+        {:error, "ffprobe exited with #{status} while reading the keyframes"}
     end
   end
 

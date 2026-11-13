@@ -194,6 +194,10 @@ _Avoid_: Media Version, video version
 A piece of a **Movie**, **TV Show Episode** or **Sports Event**, in watching order. Most have one, the whole of it. A two-part episode that the **Metadata Provider** lists as one **TV Show Episode** can have two, and a UFC event its Prelims and its Main Card. WatchClub knows the **Parts** it has a **Video** for.
 _Avoid_: Segment, chapter, disc, CD, stack, version
 
+**Keyframe**:
+A frame of a **Video** that decodes on its own, where playback can cut the **Video** into segments. A **Media Import** reads them.
+_Avoid_: I-frame, sync sample, cue point
+
 **File Fingerprint**:
 A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file changed.
 _Avoid_: File hash, checksum, audio fingerprint
@@ -327,7 +331,7 @@ The kind of upstream system a **Media Source** represents. One of `filesystem`, 
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
+One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it or its **Keyframes**, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Files to Process**:

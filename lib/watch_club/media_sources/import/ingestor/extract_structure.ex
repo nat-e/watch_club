@@ -3,8 +3,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
   Populates `candidate.media_structure` with the file's technical shape —
   container, duration, and tracks. Dispatches by `candidate.media_type`:
 
-    * `:video` → probe with `ffprobe`, build the structure, append sidecar
-      text tracks, and compute the File Fingerprint.
+    * `:video` → probe with `ffprobe`, build the structure, read the keyframes,
+      append sidecar text tracks, and compute the File Fingerprint.
     * `:audiobook` → probe with `ffprobe`, build the structure.
     * `:ebook` → record the file extension as container; no probing.
   """
@@ -25,8 +25,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure do
        when media_type in [:movie, :tv_show_episode, :sports_event] do
     with {:ok, metadata} <- @ffprobe.probe(candidate.path),
          {:ok, structure} <- Tracks.for_video(metadata),
+         {:ok, keyframe_seconds} <- @ffprobe.keyframes(candidate.path),
          {:ok, fingerprint} <- file_fingerprint(candidate.path) do
-      structure = %{structure | file_fingerprint: fingerprint}
+      structure = %{structure | file_fingerprint: fingerprint, keyframe_seconds: keyframe_seconds}
       {:ok, Sidecars.append(%{candidate | media_structure: structure})}
     end
   end

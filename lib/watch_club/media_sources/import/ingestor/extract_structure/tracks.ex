@@ -64,6 +64,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
       %VideoTrack{
         stream_index: stream["index"],
         codec: stream["codec_name"],
+        profile: stream["profile"],
+        level: level(stream["level"]),
         width: stream["width"],
         height: stream["height"],
         frame_rate: frame_rate(stream["avg_frame_rate"] || stream["r_frame_rate"]),
@@ -102,6 +104,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
       }
     end)
   end
+
+  # ffprobe reports an unknown level as -99
+  defp level(level) when is_integer(level) and level > 0, do: level
+  defp level(_unknown), do: nil
 
   defp stream_duration(streams) do
     Enum.find_value(streams, fn stream -> parse_float(stream["duration"]) end)

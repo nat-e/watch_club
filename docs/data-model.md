@@ -242,6 +242,7 @@ classDiagram
     float duration_seconds
     string container
     integer bit_rate
+    float[] keyframe_seconds
   }
   class Part {
     uuid id
@@ -263,6 +264,8 @@ classDiagram
     uuid video_id
     integer stream_index
     string codec
+    string profile
+    integer level
     integer width
     integer height
     float frame_rate
