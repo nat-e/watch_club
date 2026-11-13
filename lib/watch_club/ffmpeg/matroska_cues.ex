@@ -122,8 +122,11 @@ defmodule WatchClub.Ffmpeg.MatroskaCues do
 
   defp timestamp_scale(info) do
     case Map.new(children(info)) do
-      %{@timestamp_scale => scale} -> unsigned(scale)
-      _default -> @default_timestamp_scale
+      %{@timestamp_scale => scale} ->
+        if unsigned(scale) > 0, do: unsigned(scale), else: throw(:unusable)
+
+      _default ->
+        @default_timestamp_scale
     end
   end
 
@@ -131,19 +134,20 @@ defmodule WatchClub.Ffmpeg.MatroskaCues do
   defp cue_time(cue_point, track_number) do
     elements = children(cue_point)
 
-    in_track? =
-      Enum.any?(elements, fn
-        {@cue_track_positions, positions} ->
-          positions |> children() |> Map.new() |> Map.get(@cue_track) |> unsigned() ==
-            track_number
-
-        _other ->
-          false
-      end)
+    tracks =
+      for {@cue_track_positions, positions} <- elements do
+        case Map.new(children(positions)) do
+          %{@cue_track => track} -> unsigned(track)
+          _incomplete -> throw(:unusable)
+        end
+      end
 
     case List.keyfind(elements, @cue_time, 0) do
-      {@cue_time, time} -> if in_track?, do: [unsigned(time)], else: []
-      nil -> throw(:unusable)
+      {@cue_time, time} when tracks != [] ->
+        if track_number in tracks, do: [unsigned(time)], else: []
+
+      _incomplete ->
+        throw(:unusable)
     end
   end
 

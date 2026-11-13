@@ -19,17 +19,29 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
     end
 
     @tag :tmp_dir
-    test "returns an error when the Cues can't be read to their end", %{tmp_dir: tmp_dir} do
-      data = File.read!(@fixture)
+    test "returns an error when a CuePoint runs past the end of the Cues", %{tmp_dir: tmp_dir} do
       # The last CuePoint claims one byte more than the Cues hold
-      {cue_point, _length} = data |> :binary.matches(<<0xBB, 0x90, 0xB3>>) |> List.last()
-      path = Path.join(tmp_dir, "damaged.mkv")
+      path = damage!(tmp_dir, <<0xBB, 0x90, 0xB3>>, <<0xBB, 0x91, 0xB3>>)
 
-      File.write!(path, [
-        binary_part(data, 0, cue_point + 1),
-        0x91,
-        binary_part(data, cue_point + 2, byte_size(data) - cue_point - 2)
-      ])
+      assert MatroskaCues.keyframe_times(path, 1) == :error
+    end
+
+    @tag :tmp_dir
+    test "returns an error when a CuePoint doesn't say its track", %{tmp_dir: tmp_dir} do
+      # The last CueTrack becomes a Void element of the same size
+      path = damage!(tmp_dir, <<0xF7, 0x81, 0x02>>, <<0xEC, 0x81, 0x00>>)
+
+      assert MatroskaCues.keyframe_times(path, 1) == :error
+    end
+
+    @tag :tmp_dir
+    test "returns an error when the timestamp scale is zero", %{tmp_dir: tmp_dir} do
+      path =
+        damage!(
+          tmp_dir,
+          <<0x2A, 0xD7, 0xB1, 0x83, 0x0F, 0x42, 0x40>>,
+          <<0x2A, 0xD7, 0xB1, 0x83, 0, 0, 0>>
+        )
 
       assert MatroskaCues.keyframe_times(path, 1) == :error
     end
@@ -45,5 +57,20 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
 
       assert MatroskaCues.keyframe_times(path, 0) == :error
     end
+  end
+
+  # A copy of the fixture with the last `bytes` replaced
+  defp damage!(tmp_dir, bytes, replacement) do
+    data = File.read!(@fixture)
+    {position, length} = data |> :binary.matches(bytes) |> List.last()
+    path = Path.join(tmp_dir, "damaged.mkv")
+
+    File.write!(path, [
+      binary_part(data, 0, position),
+      replacement,
+      binary_part(data, position + length, byte_size(data) - position - length)
+    ])
+
+    path
   end
 end
