@@ -8,7 +8,7 @@ defmodule WatchClubWeb.Admin.MediaSourceHistoryPage do
   use WatchClubWeb, :live_view
 
   # The fields that need to be loaded on the Source object to display the page
-  @media_source_fields [:imports]
+  @media_source_fields [imports: [:processed_file_count]]
 
   import WatchClubWeb.Admin.MediaSources.{HistoryHeader, MediaImportHistoryTable}
 

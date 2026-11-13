@@ -204,12 +204,27 @@ defmodule WatchClubWeb.Telemetry do
         tags: [:"watch_club.metadata_request.served"],
         tag_values: &%{"watch_club.metadata_request.served": &1.served}
       ),
-      counter("watch_club.media_import.matches",
-        event_name: [:watch_club, :media_import, :match],
-        measurement: :count,
-        unit: :"{match}",
-        tags: [:"watch_club.media_import.match.result"],
-        tag_values: &%{"watch_club.media_import.match.result": &1.result}
+
+      # Each Media Import, from its start to its end, by its final status
+      summary("watch_club.media_import.duration",
+        event_name: [:watch_club, :media_import, :finish],
+        unit: {:microsecond, :second},
+        tags: [:"watch_club.media_import.status"],
+        tag_values: &%{"watch_club.media_import.status": &1.status},
+        reporter_options: [buckets: @job_buckets]
+      ),
+
+      # Each run of a file's ingest job, by its outcome. A crash is `failed`, with its `error.type`.
+      span_summary("watch_club.media_ingest.duration", [:watch_club, :media_ingest],
+        tags: [
+          :"watch_club.media.type",
+          :"watch_club.media_ingest.trigger",
+          :"watch_club.media_ingest.outcome",
+          :"watch_club.media_ingest.reason",
+          :"error.type"
+        ],
+        tag_values: &media_ingest_tags/1,
+        reporter_options: [buckets: @job_buckets]
       ),
 
       # Which Markers detection finds, and where from. Fingerprints: cache use and decoding time.
@@ -435,6 +450,25 @@ defmodule WatchClubWeb.Telemetry do
           %{result: result} -> Atom.to_string(result)
           _crashed -> exception_type(metadata)
         end
+    }
+  end
+
+  # A crash's metadata has the exception as its `reason`, so it can't share the outcome's clause
+  defp media_ingest_tags(%{kind: _kind} = metadata) do
+    %{
+      "watch_club.media.type": metadata.media_type,
+      "watch_club.media_ingest.trigger": metadata.trigger,
+      "watch_club.media_ingest.outcome": :failed,
+      "error.type": exception_type(metadata)
+    }
+  end
+
+  defp media_ingest_tags(metadata) do
+    %{
+      "watch_club.media.type": metadata.media_type,
+      "watch_club.media_ingest.trigger": metadata.trigger,
+      "watch_club.media_ingest.outcome": metadata.outcome,
+      "watch_club.media_ingest.reason": metadata.reason
     }
   end
 

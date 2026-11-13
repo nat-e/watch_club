@@ -1,11 +1,9 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   use WatchClub.DataCase, async: false
 
-  import ExUnit.CaptureLog
-
   alias WatchClub.Contents.{Content, ContentIdentity, TvShowEpisodeLocalization}
   alias WatchClub.MediaCatalog
-  alias WatchClub.MediaSources.Import.{Candidate, TvShowEpisodeNotListedError}
+  alias WatchClub.MediaSources.Import.Candidate
 
   alias WatchClub.MediaSources.Import.Candidate.{
     EpisodeIdentity,
@@ -17,12 +15,6 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity.Episode
 
   alias WatchClub.MediaSources.Import.Ingestor.MatchContent
-
-  setup do
-    ref = :telemetry_test.attach_event_handlers(self(), [[:watch_club, :media_import, :match]])
-    on_exit(fn -> :telemetry.detach(ref) end)
-    {:ok, telemetry_ref: ref}
-  end
 
   describe "apply!/1" do
     test "keeps the Manual Match of the file's Media without HTTP requests" do
@@ -41,7 +33,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
+                 reason: :manual_match,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
@@ -50,9 +43,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert matched_id == manual_match.id
     end
 
-    test "matches a Movie refreshed under 15 minutes ago without HTTP requests", %{
-      telemetry_ref: ref
-    } do
+    test "matches a Movie refreshed under 15 minutes ago without HTTP requests" do
       movie =
         generate(
           movie(
@@ -69,18 +60,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
                MatchContent.apply!(candidate)
 
       assert matched_id == movie.id
-
-      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
-                       %{result: :matched}}
-
-      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
     end
 
     test "creates and matches a movie that does not exist" do
@@ -93,7 +79,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
@@ -123,7 +109,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       for _ <- 1..2 do
         assert %Candidate{
                  match_result: %MatchResult{
-                   result: :success,
+                   result: :matched,
                    parts: [%{movie_id: matched_id, number: 1}]
                  }
                } =
@@ -154,7 +140,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       for {imdb_id, movie} <- [{"tt0000011", first}, {"tt0000012", second}, {"tt0000011", first}] do
         assert %Candidate{
                  match_result: %MatchResult{
-                   result: :success,
+                   result: :matched,
                    parts: [%{movie_id: matched_id, number: 1}]
                  }
                } =
@@ -184,7 +170,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
@@ -205,7 +191,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
@@ -232,7 +218,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{movie_id: matched_id, number: 1}]
                }
              } =
@@ -241,18 +227,17 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert matched_id == movie.id
     end
 
-    test "passes through unmatched when no movie strategy matches", %{
-      telemetry_ref: ref
-    } do
+    test "passes through unmatched when no movie strategy matches" do
       candidate = candidate_with(%MovieIdentity{})
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched, parts: []}} =
+      assert %Candidate{
+               match_result: %MatchResult{
+                 result: :unmatched,
+                 reason: :content_not_found,
+                 parts: []
+               }
+             } =
                MatchContent.apply!(candidate)
-
-      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
-                       %{result: :not_matched}}
-
-      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
     end
 
     test "passes through unmatched when TMDB title search returns no results" do
@@ -260,7 +245,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       candidate = candidate_with(%MovieIdentity{title: "Unknown Film", year: 1999})
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched, parts: []}} =
+      assert %Candidate{match_result: %MatchResult{result: :unmatched, parts: []}} =
                MatchContent.apply!(candidate)
     end
 
@@ -299,7 +284,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -319,7 +304,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -345,7 +330,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -371,7 +356,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -397,7 +382,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -427,7 +412,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -457,7 +442,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       for number <- 1..3 do
         assert %Candidate{
-                 match_result: %MatchResult{result: :success, parts: [%{tv_show_episode_id: id}]}
+                 match_result: %MatchResult{result: :matched, parts: [%{tv_show_episode_id: id}]}
                } =
                  MatchContent.apply!(
                    candidate_with(%EpisodeIdentity{
@@ -493,7 +478,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{tv_show_episode_id: matched_id, number: 1}]
                }
              } =
@@ -508,7 +493,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
       assert Ash.get!(Content, show.id).metadata_refreshed_at == show.metadata_refreshed_at
     end
 
-    test "raises when TMDB still does not list the file's TV Show Episode", %{telemetry_ref: ref} do
+    test "is unmatched when TMDB still does not list the file's TV Show Episode" do
       generate(
         tv_show(
           external_id: "1668",
@@ -526,32 +511,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 2, episode_number: 1}]
         })
 
-      log =
-        capture_log(
-          [format: "$metadata$message", metadata: [:event, :path, :tmdb_id, :episode]],
-          fn ->
-            assert %TvShowEpisodeNotListedError{
-                     tmdb_id: 1668,
-                     season_number: 2,
-                     episode_number: 1
-                   } =
-                     assert_raise(
-                       TvShowEpisodeNotListedError,
-                       ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
-                       fn -> MatchContent.apply!(candidate) end
-                     )
-          end
-        )
-
-      assert log =~ "event=tv_show_episode_not_listed"
-      assert log =~ "path=/library/file.mkv"
-      assert log =~ "tmdb_id=1668"
-      assert log =~ "episode=S02E01"
-
-      assert_received {[:watch_club, :media_import, :match], ^ref, %{count: 1},
-                       %{result: :episode_not_listed}}
-
-      refute_received {[:watch_club, :media_import, :match], ^ref, _, _}
+      assert %Candidate{
+               match_result: %MatchResult{
+                 result: :unmatched,
+                 reason: :episode_not_listed,
+                 parts: []
+               }
+             } =
+               MatchContent.apply!(candidate)
     end
 
     test "does not fetch again for a missing TV Show Episode under the 15-minute max_age" do
@@ -567,11 +534,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 2, episode_number: 1}]
         })
 
-      assert_raise TvShowEpisodeNotListedError,
-                   ~r/TV Show Episode S02E01 for TMDB TV Show 1668 is still missing/,
-                   fn ->
-                     MatchContent.apply!(candidate)
-                   end
+      assert %Candidate{match_result: %MatchResult{result: :unmatched}} =
+               MatchContent.apply!(candidate)
     end
 
     test "passes through unmatched when no TV strategy matches" do
@@ -580,7 +544,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 1, episode_number: 3}]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched, parts: []}} =
+      assert %Candidate{match_result: %MatchResult{result: :unmatched, parts: []}} =
                MatchContent.apply!(candidate)
     end
 
@@ -601,7 +565,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           ]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: [part]}} =
                MatchContent.apply!(candidate)
 
       assert part == %{tv_show_episode_id: fun_run.id, number: 2}
@@ -617,7 +581,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 1, episode_number: 2, title: "Fun Run (2)"}]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: [part]}} =
                MatchContent.apply!(candidate)
 
       assert part == %{tv_show_episode_id: fun_run.id, number: 2}
@@ -633,7 +597,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           episodes: [%Episode{season_number: 2, episode_number: 1, title: "Fun Run (2)"}]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: [part]}} =
                MatchContent.apply!(candidate)
 
       assert part == %{tv_show_episode_id: season_2_premiere.id, number: 1}
@@ -658,7 +622,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           ]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: [part]}} =
                MatchContent.apply!(candidate)
 
       assert part == %{tv_show_episode_id: morning_after.id, number: 1}
@@ -682,7 +646,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
             end
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: parts}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: parts}} =
                MatchContent.apply!(candidate)
 
       assert parts == [
@@ -709,7 +673,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
             end
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: parts}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: parts}} =
                MatchContent.apply!(candidate)
 
       assert parts == [
@@ -741,13 +705,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           ]
         })
 
-      assert %Candidate{match_result: %MatchResult{result: :success, parts: [part]}} =
+      assert %Candidate{match_result: %MatchResult{result: :matched, parts: [part]}} =
                MatchContent.apply!(candidate)
 
       assert part == %{tv_show_episode_id: meeting.id, number: 1}
     end
 
-    test "raises when TMDB doesn't list one of the TV Show Episodes a file holds" do
+    test "is unmatched when TMDB doesn't list one of the TV Show Episodes a file holds" do
       generate(tv_show(external_id: "1668", num_seasons: 1, episodes_per_season: 1))
 
       candidate =
@@ -759,8 +723,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
           ]
         })
 
-      assert %TvShowEpisodeNotListedError{season_number: 1, episode_number: 2} =
-               assert_raise(TvShowEpisodeNotListedError, fn -> MatchContent.apply!(candidate) end)
+      assert %Candidate{match_result: %MatchResult{result: :unmatched, parts: []}} =
+               MatchContent.apply!(candidate)
     end
 
     test "matches a Sports Event refreshed under 15 minutes ago by its Sportarr ID" do
@@ -772,7 +736,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{sports_event_id: matched_id, number: 1}]
                }
              } =
@@ -804,7 +768,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
 
       assert %Candidate{
                match_result: %MatchResult{
-                 result: :success,
+                 result: :matched,
                  parts: [%{sports_event_id: matched_id, number: 1}]
                }
              } =
@@ -833,7 +797,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         })
       end)
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched}} =
+      assert %Candidate{match_result: %MatchResult{result: :unmatched}} =
                MatchContent.apply!(
                  candidate_with(%SportsEventIdentity{title: "Formula 1", year: 2020})
                )
@@ -845,7 +809,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         Req.Test.json(conn, %{"data" => %{"search" => nil}})
       end)
 
-      assert %Candidate{match_result: %MatchResult{result: :not_matched}} =
+      assert %Candidate{match_result: %MatchResult{result: :unmatched}} =
                MatchContent.apply!(candidate_with(%SportsEventIdentity{title: "UFC Prelims"}))
     end
   end

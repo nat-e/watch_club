@@ -20,29 +20,25 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   alias WatchClub.Contents.TvShowEpisode
   alias WatchClub.Integrations.Tmdb
   alias WatchClub.MediaSources.Import.Candidate.EpisodeIdentity.Episode
-  alias WatchClub.MediaSources.Import.TvShowEpisodeNotListedError
 
   @part_marker ~r/\s*(?:[\(\[]\s*(?:part\s*)?(\d+)\s*[\)\]]|[,:\-–]?\s*part\s+(\d+))\s*$/iu
 
   @doc """
-  Returns the Parts a file holds, as `%{tv_show_episode_id: id, number: number}` maps, in order.
-  Pass the TV Show's `episodes` with their `localizations`, its TMDB id, and the file's
-  `source_episodes` in their source's order.
+  Returns the Parts a file holds, as `%{tv_show_episode_id: id, number: number}` maps, in order,
+  or nil when one of its source episodes matches none. Pass the TV Show's `episodes` with their
+  `localizations`, its TMDB id, and the file's `source_episodes` in their source's order.
 
-  Raises `TvShowEpisodeNotListedError` when a source episode matches none.
+  Raises when a TMDB request fails.
   """
-  @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()]
+  @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()] | nil
   def find!(episodes, tmdb_id, source_episodes) do
-    source_episodes
-    |> Enum.map(fn source ->
-      match!(source, episodes, tmdb_id) ||
-        raise TvShowEpisodeNotListedError,
-          tmdb_id: tmdb_id,
-          season_number: source.season_number,
-          episode_number: source.episode_number
-    end)
-    |> Enum.uniq_by(fn {episode, number} -> {episode.id, number} end)
-    |> Enum.map(fn {episode, number} -> %{tv_show_episode_id: episode.id, number: number} end)
+    matches = Enum.map(source_episodes, &match!(&1, episodes, tmdb_id))
+
+    if nil not in matches do
+      matches
+      |> Enum.uniq_by(fn {episode, number} -> {episode.id, number} end)
+      |> Enum.map(fn {episode, number} -> %{tv_show_episode_id: episode.id, number: number} end)
+    end
   end
 
   defp match!(%Episode{} = source, episodes, tmdb_id) do

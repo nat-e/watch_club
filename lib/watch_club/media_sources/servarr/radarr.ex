@@ -85,7 +85,12 @@ defmodule WatchClub.MediaSources.Servarr.Radarr do
     ingest =
       case App.local_file_path(servarr, event.folder_path, event.file) do
         nil ->
-          Logger.warning("radarr webhook: file doesn't match source")
+          Logger.warning(
+            "Radarr webhook's file in #{event.folder_path} is outside the Media Source's root folder",
+            event: :servarr_webhook_file_outside_source,
+            path: event.folder_path
+          )
+
           []
 
         path ->

@@ -9,10 +9,14 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       (no Media Import), higher priority so live events preempt a running
       scan.
 
-  `:ok` on success and when `ExtractStructure` skips the file (no retry); an
-  exception makes Oban retry with backoff. Unique on `(media_source_id, media_import_id, path)`
-  over active states; webhook jobs have no `media_import_id` and dedupe by
-  Media Source and `path`.
+  Each run ends with the file's outcome: `matched`, `unmatched`, or `unreadable` when ffprobe
+  can't read it, which saves no Media. It counts the file on its Media Import, and emits the
+  outcome, with a reason, in a `[:watch_club, :media_ingest]` telemetry span, which
+  `IngestReporter` logs and `WatchClubWeb.Telemetry` measures. A crash is the `failed` outcome:
+  Oban retries it with backoff, and the last attempt counts the file as failed.
+
+  Unique on `(media_source_id, media_import_id, path)` over active states; webhook jobs have no
+  `media_import_id` and dedupe by Media Source and `path`.
   """
 
   use Oban.Worker,
@@ -25,9 +29,12 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
       period: :infinity
     ]
 
+  alias WatchClub.MediaSources
   alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
+  alias WatchClub.MediaSources.Import.Candidate.MatchResult
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
+  alias WatchClub.SystemActor
 
   @doc """
   Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
@@ -53,22 +60,65 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
   end
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args}) do
-    Logger.metadata(path: args["path"], media_type: args["media_type"])
+  def perform(%Oban.Job{args: args} = job) do
+    # From the job's arguments, so a Candidate that can't be built is reported too
+    metadata = %{
+      path: args["path"],
+      media_type: args["media_type"],
+      trigger: if(args["media_import_id"], do: :media_import, else: :webhook)
+    }
 
-    args
-    |> Candidate.from_map()
-    |> ingest()
+    Logger.metadata([media_import_id: args["media_import_id"]] ++ Map.to_list(metadata))
+
+    :telemetry.span([:watch_club, :media_ingest], metadata, fn ->
+      {:ok, Map.merge(metadata, ingest_and_count!(job))}
+    end)
   end
 
+  # Ingests the file and counts its outcome on its Media Import. Oban retries a crash, and the
+  # last one counts the file as failed.
+  defp ingest_and_count!(%Oban.Job{args: args} = job) do
+    media_import_id = args["media_import_id"]
+
+    outcome =
+      try do
+        args |> Candidate.from_map() |> ingest()
+      catch
+        kind, reason ->
+          if job.attempt >= job.max_attempts, do: count_file!(media_import_id, :failed)
+          :erlang.raise(kind, reason, __STACKTRACE__)
+      end
+
+    count_file!(media_import_id, outcome.outcome)
+    outcome
+  end
+
+  # The file's outcome, its reason, and what explains it
   defp ingest(%Candidate{} = candidate) do
-    with {:ok, candidate} <- ExtractStructure.apply(candidate),
-         candidate <- MatchContent.apply!(candidate),
-         _candidate <- SaveMedia.apply(candidate) do
-      :ok
-    else
-      :skip ->
-        :ok
+    case ExtractStructure.apply(candidate) do
+      {:ok, candidate} ->
+        %Candidate{match_result: %MatchResult{result: result, reason: reason}} =
+          candidate = MatchContent.apply!(candidate)
+
+        SaveMedia.apply!(candidate)
+
+        %{
+          outcome: result,
+          reason: reason,
+          tmdb_id: get_in(candidate.identity, [Access.key(:tmdb_id)])
+        }
+
+      {:error, error} ->
+        %{outcome: :unreadable, reason: nil, error: error}
     end
+  end
+
+  # A webhook's file has no Media Import
+  defp count_file!(nil, _outcome), do: :ok
+
+  defp count_file!(media_import_id, outcome) do
+    media_import_id
+    |> MediaSources.get_media_import_by_id!(actor: SystemActor.actor())
+    |> MediaSources.count_media_import_file!(outcome, actor: SystemActor.actor())
   end
 end

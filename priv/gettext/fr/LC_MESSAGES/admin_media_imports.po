@@ -633,3 +633,61 @@ msgstr "Tu ne pourras plus changer le type de média ensuite."
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. Find it in %{name} under Settings > General."
 msgstr "Ta clé API %{name}. Tu la trouveras dans %{name}, sous Paramètres > Général."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "Finding files…"
+msgstr "Recherche des fichiers…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "No files to process"
+msgstr "Aucun fichier à traiter"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} failed"
+msgid_plural "%{number} failed"
+msgstr[0] "%{number} en échec"
+msgstr[1] "%{number} en échec"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} matched"
+msgid_plural "%{number} matched"
+msgstr[0] "%{number} associé"
+msgstr[1] "%{number} associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unmatched"
+msgid_plural "%{number} unmatched"
+msgstr[0] "%{number} non associé"
+msgstr[1] "%{number} non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unreadable"
+msgid_plural "%{number} unreadable"
+msgstr[0] "%{number} illisible"
+msgstr[1] "%{number} illisibles"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{processed} of %{total} file"
+msgid_plural "%{processed} of %{total} files"
+msgstr[0] "%{processed} sur %{total} fichier"
+msgstr[1] "%{processed} sur %{total} fichiers"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "See every unmatched file"
+msgstr "Voir tous les fichiers non associés"

@@ -17,28 +17,30 @@ defmodule WatchClub.Shared.ObanLogger do
     [:oban, :job, :exception]
   ]
 
-  # Ignore start/stop for some very verbose jobs. Oban stores `worker` as a
-  # string, so match against the inspected module names.
-  @ignored_workers [
-    "WatchClub.MediaSources.Import.Workers.ImportMonitor",
-    "WatchClub.Playbacks.Workers.EndAbandonedSessions",
-    "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
-  ]
+  # Oban stores `worker` as a string, so match against the inspected module names.
+  # These log their own outcome, crashes included.
+  @self_reporting_workers ["WatchClub.MediaSources.Import.Workers.CandidateIngestor"]
+
+  # Ignore start/stop for some very verbose jobs.
+  @ignored_workers @self_reporting_workers ++
+                     [
+                       "WatchClub.MediaSources.Import.Workers.ImportMonitor",
+                       "WatchClub.Playbacks.Workers.EndAbandonedSessions",
+                       "WatchClub.Requests.Workers.RefreshMediaSourceRequest"
+                     ]
 
   @doc "Attaches the handler. Call once on application start."
   def attach do
     :telemetry.attach_many("watch-club-oban-logger", @job_events, &__MODULE__.handle_event/4, nil)
   end
 
-  def handle_event([:oban, :job, :start], _measure, meta, _config)
-      when meta.worker not in @ignored_workers do
+  # Every job's logs get its metadata, including the ignored workers' own logs
+  def handle_event([:oban, :job, :start], _measure, meta, _config) do
     Logger.metadata(metadata(meta))
 
-    Logger.log(
-      :info,
-      "#{meta.worker} job started",
-      args: meta.args
-    )
+    if meta.worker not in @ignored_workers do
+      Logger.log(:info, "#{meta.worker} job started", args: meta.args)
+    end
   end
 
   def handle_event([:oban, :job, :stop], measure, meta, _config)
@@ -46,7 +48,8 @@ defmodule WatchClub.Shared.ObanLogger do
     Logger.log(:info, "#{meta.worker} job finished", duration: measure.duration)
   end
 
-  def handle_event([:oban, :job, :exception], _measure, meta, _config) do
+  def handle_event([:oban, :job, :exception], _measure, meta, _config)
+      when meta.worker not in @self_reporting_workers do
     # The :oban domain keeps Sentry from reporting the error a second time
     Logger.log(
       :error,

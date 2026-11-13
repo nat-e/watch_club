@@ -530,3 +530,53 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Your %{name} API key. Find it in %{name} under Settings > General."
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "Finding files…"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "No files to process"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} failed"
+msgid_plural "%{number} failed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} matched"
+msgid_plural "%{number} matched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unmatched"
+msgid_plural "%{number} unmatched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{number} unreadable"
+msgid_plural "%{number} unreadable"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "%{processed} of %{total} file"
+msgid_plural "%{processed} of %{total} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "See every unmatched file"
+msgstr ""

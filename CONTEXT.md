@@ -327,7 +327,7 @@ The kind of upstream system a **Media Source** represents. One of `filesystem`, 
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, what it discovered) and is the umbrella for the per-file ingest work it enqueues. A webhook-triggered single-file ingest is not a **Media Import**.
+One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Files to Process**:
@@ -735,7 +735,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** may create a missing **Movie** or **Book** before creating **Media** for it
 - When a **Media Import** identifies a video file as an episode of an unknown **TV Show**, it creates the **TV Show** and all known regular **TV Show Episodes** together before creating the **Video**
 - A **Media Import** refreshes the **Content** of each file it matches when its metadata is older than 15 minutes
-- A file whose **TV Show Episode** is still missing after that fails ingestion; a later scan retries it because no **Media** was saved
+- A file whose **TV Show Episode** is still missing after that becomes **Unmatched Media**, which a **Media Import** with New and unmatched files matches again
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
 - With New files only, a **Media Import** skips the files that already have **Media**, even when the same path would now match different **Content** or **Media Type**
@@ -836,7 +836,7 @@ _Avoid_: Group, aggregate, card, item
 - A separate "Cast Session" was considered; resolved: casting moves the **Playback Session** to a **TV**, and the **TV** is only its **Screen**.
 - "Stream" and "HLS Stream" are technical names for the runtime state of one media file being played; the domain concept is **Playback** (one **Media** being played inside a **Playback Session**).
 - "Playback probe" and "start-of-session probe" are not canonical; resolved: playback uses stored technical details, refreshed only when a **Media Import** or a webhook processes the file again.
-- "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted today, only the **Media Import**'s overall **Media Import Status**.
+- "Media Import Result" is not canonical; resolved: per-file outcomes are not persisted, only the **Media Import**'s overall **Media Import Status** and its count of files by outcome.
 - The second phase of a **Media Import** is the **ingest phase** (formerly called the "processing phase"); resolved: the two phases are the **scan phase** and the **ingest phase**. This is distinct from the **Media Import Status** value Processing, which is a separate axis (the whole import being in progress) and keeps its name.
 - Home's Up next row and the **Remote**'s Up next share a label; resolved: Up next in this glossary is the **Remote**'s, and Home's row shows the **User**'s **Continue Watching**.
 - Hiding was first named after **Home**, where it shows; resolved: **Hide from Continue Watching**, because the data model doesn't depend on where it's displayed.
