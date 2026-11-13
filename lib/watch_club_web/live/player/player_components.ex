@@ -172,7 +172,7 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
           <Lucideicons.volume_x class="hidden group-data-muted/mute:block" />
         </media-mute-button>
 
-        <%!-- Shown by the JS player hook when Chrome finds a TV --%>
+        <%!-- Shown by the JS player hook where Chrome can cast --%>
         <button
           id="player-cast-button"
           type="button"

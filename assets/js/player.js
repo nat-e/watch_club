@@ -105,25 +105,12 @@ const Player = {
 		}
 	},
 
-	// Shows the cast button while Chrome finds a TV
+	// Shows the cast button wherever Chrome can cast, TV or not: on a computer, Chrome only looks
+	// for TVs once its Cast dialog opens
 	async offerCasting() {
-		const button = this.el.querySelector("#player-cast-button");
 		const { castAppId, castEmulator } = this.el.dataset;
-		const context = await castContext(castAppId, castEmulator);
-		if (!context || this.disposed) return;
-
-		const { CastContextEventType, CastState } = cast.framework;
-		const sync = () => {
-			button.hidden = context.getCastState() === CastState.NO_DEVICES_AVAILABLE;
-		};
-		context.addEventListener(CastContextEventType.CAST_STATE_CHANGED, sync);
-		this.abortController.signal.addEventListener("abort", () =>
-			context.removeEventListener(
-				CastContextEventType.CAST_STATE_CHANGED,
-				sync,
-			),
-		);
-		sync();
+		if (await castContext(castAppId, castEmulator))
+			this.el.querySelector("#player-cast-button").hidden = false;
 	},
 
 	// Once Chrome connected to the TV, the TV takes the Playback Session from where this
