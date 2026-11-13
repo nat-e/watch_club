@@ -11,14 +11,16 @@ defmodule WatchClub.Accounts.UserSettingsTest do
       assert %UserSettings{
                audio_language: :fr,
                subtitle_language: nil,
-               languages_without_subtitles: [:en, :fr]
+               languages_without_subtitles: [:en, :fr],
+               prefer_sdh?: true
              } =
                Accounts.update_user_settings!(
                  user.settings,
                  %{
                    audio_language: :fr,
                    subtitle_language: nil,
-                   languages_without_subtitles: [:en, :fr]
+                   languages_without_subtitles: [:en, :fr],
+                   prefer_sdh?: true
                  },
                  actor: user
                )

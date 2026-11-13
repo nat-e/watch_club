@@ -158,7 +158,7 @@ defmodule WatchClub.Playbacks.SessionTest do
       assert start_track_titles(media, user) == {"Japanese", nil}
     end
 
-    test "starts with forced subtitles only when the audio is in a language without subtitles" do
+    test "starts without subtitles when the audio is in a language without subtitles" do
       user = generate(user(subtitle_language: :en, languages_without_subtitles: [:en]))
 
       media =
@@ -170,7 +170,25 @@ defmodule WatchClub.Playbacks.SessionTest do
           ]
         )
 
-      assert start_track_titles(media, user) == {"English", "English forced"}
+      assert start_track_titles(media, user) == {"English", nil}
+    end
+
+    test "keeps the region of the subtitles of the same Content" do
+      user = generate(user(subtitle_language: :fr))
+      tracks = [audio: [%{language: "eng"}], text: [%{language: "fr-FR"}, %{language: "fr-CA"}]]
+      [first, second] = episode_media(tracks)
+
+      generate(
+        playback_session(first,
+          started_by: user,
+          playback: [text_track_id: text_track_id(first, "fr-CA")]
+        )
+      )
+
+      %{current_playback: playback} =
+        Playbacks.play!(second.id, "player", load: :current_playback, actor: user)
+
+      assert playback.text_track_id == text_track_id(second, "fr-CA")
     end
 
     test "assumes audio without a language is in the original language" do

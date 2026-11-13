@@ -120,6 +120,12 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
               </.select>
             </:control>
           </.field>
+          <.checkbox_card field={@audio_and_subtitles_form[:prefer_sdh?]}>
+            {dgettext("settings", "Prefer subtitles for the deaf and hard of hearing (SDH)")}
+            <:description>
+              {dgettext("settings", "They also describe sounds and say who is speaking.")}
+            </:description>
+          </.checkbox_card>
           <fieldset
             class="flex flex-col gap-related"
             aria-describedby="languages-without-subtitles-hint"

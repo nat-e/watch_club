@@ -98,7 +98,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
         language: get_in(stream, ["tags", "language"]),
         title: get_in(stream, ["tags", "title"]),
         default?: get_in(stream, ["disposition", "default"]) == 1,
-        forced?: get_in(stream, ["disposition", "forced"]) == 1
+        forced?: get_in(stream, ["disposition", "forced"]) == 1,
+        sdh?: get_in(stream, ["disposition", "hearing_impaired"]) == 1
       }
     end)
   end

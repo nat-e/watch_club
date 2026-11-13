@@ -20,7 +20,13 @@ defmodule WatchClub.Accounts.UserSettings do
   actions do
     defaults [
       :read,
-      update: [:locale, :audio_language, :subtitle_language, :languages_without_subtitles]
+      update: [
+        :locale,
+        :audio_language,
+        :subtitle_language,
+        :languages_without_subtitles,
+        :prefer_sdh?
+      ]
     ]
 
     create :create do
@@ -84,6 +90,14 @@ defmodule WatchClub.Accounts.UserSettings do
       allow_nil? false
       default []
       public? true
+    end
+
+    attribute :prefer_sdh?, :boolean do
+      description "Whether the User prefers SDH Text Tracks."
+      allow_nil? false
+      default false
+      public? true
+      source :prefer_sdh
     end
 
     timestamps()

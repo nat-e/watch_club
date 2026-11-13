@@ -16,13 +16,8 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   def fields do
     [
       current_playback: [
-        media: [
-          video:
-            [
-              audio_tracks: [:display_label],
-              text_tracks: [:display_label, :language_code, :hls_supported?]
-            ] ++ video_fields()
-        ]
+        :text_track_choices,
+        media: [video: [audio_tracks: [:display_label]] ++ video_fields()]
       ]
     ]
   end
@@ -128,8 +123,4 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
     do:
       session.position_seconds +
         DateTime.diff(DateTime.utc_now(), session.last_heartbeat_at, :millisecond) / 1000
-
-  @doc "The Text Tracks a Screen can show, in the order of the master playlist."
-  def text_tracks(%Video{text_tracks: text_tracks}),
-    do: Enum.filter(text_tracks, & &1.hls_supported?)
 end
