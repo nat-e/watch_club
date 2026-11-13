@@ -23,9 +23,10 @@ The dev server then builds Scrubbing Thumbnails and finds Markers in the backgro
 
 ## Radarr, Sonarr and Sportarr
 
-Each worktree runs its own, in the Docker Compose project `<database>_servarrs`, so they always
-match its database. `mix reset` recreates them and `wt remove` deletes them. They open
-without signing in, at:
+`mix reset` gives a worktree its own, in the Docker Compose project `<database>_servarrs`, so
+they match its database. Until then, a new worktree has a copy of main's database and uses
+main's. `mix reset` recreates them and `wt remove` deletes them. They open without signing
+in, at:
 
 | App | Port |
 | --- | --- |

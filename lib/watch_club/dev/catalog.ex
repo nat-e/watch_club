@@ -17,9 +17,13 @@ defmodule WatchClub.Dev.Catalog do
   webhook of a new Media Source.
   """
   def seed!(port) do
+    if Accounts.administrator_exists?() do
+      raise "The database is already seeded: run `mix reset` to seed it again"
+    end
+
     fetch_files!()
     project = WatchClub.Repo.config()[:database] <> "_servarrs"
-    servarrs = Servarrs.start!(project, port)
+    servarrs = Servarrs.recreate!(project, port)
     admin = create_users!()
 
     media_sources =
@@ -45,14 +49,21 @@ defmodule WatchClub.Dev.Catalog do
     media_imports =
       Enum.map(media_sources, &MediaSources.start_media_import!(&1.id, actor: admin))
 
+    # The catalog's Unmatched Media are on purpose, but every file must be read
     for {media_source, media_import} <- Enum.zip(media_sources, media_imports) do
-      media_import = wait_until_finished!(media_import, admin)
+      case wait_until_finished!(media_import, admin) do
+        %{status: :completed, unreadable_file_count: 0, failed_file_count: 0} = media_import ->
+          Logger.info(
+            "#{media_source.name}: #{media_import.matched_file_count} matched, " <>
+              "#{media_import.unmatched_file_count} unmatched"
+          )
 
-      Logger.info(
-        "#{media_source.name}: #{media_import.status}, #{media_import.matched_file_count} matched, " <>
-          "#{media_import.unmatched_file_count} unmatched, " <>
-          "#{media_import.unreadable_file_count} unreadable, #{media_import.failed_file_count} failed"
-      )
+        media_import ->
+          raise "The Media Import of #{media_source.name} didn't import every file: " <>
+                  inspect(
+                    Map.take(media_import, [:status, :unreadable_file_count, :failed_file_count])
+                  )
+      end
     end
   end
 
@@ -118,14 +129,19 @@ defmodule WatchClub.Dev.Catalog do
     admin
   end
 
-  defp wait_until_finished!(media_import, admin) do
+  defp wait_until_finished!(media_import, admin, attempts \\ 900) do
     media_import = MediaSources.get_media_import_by_id!(media_import.id, actor: admin)
 
-    if media_import.status == :processing do
-      Process.sleep(1_000)
-      wait_until_finished!(media_import, admin)
-    else
-      media_import
+    cond do
+      media_import.status != :processing ->
+        media_import
+
+      attempts > 0 ->
+        Process.sleep(1_000)
+        wait_until_finished!(media_import, admin, attempts - 1)
+
+      true ->
+        raise "A Media Import is still processing after 15 minutes"
     end
   end
 end

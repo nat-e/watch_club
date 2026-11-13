@@ -15,6 +15,8 @@ defmodule Mix.Tasks.Dev.Catalog.Seed do
 
   @impl true
   def run(_args) do
+    if Mix.env() != :dev, do: Mix.raise("mix dev.catalog.seed only seeds the dev database")
+
     endpoint = Application.fetch_env!(:watch_club, WatchClubWeb.Endpoint)
     port = endpoint[:http][:port]
 

@@ -1,9 +1,9 @@
 defmodule WatchClub.Dev.Catalog.Servarrs do
   @moduledoc """
   This worktree's own Radarr, Sonarr and Sportarr, run with Docker Compose from
-  `dev/catalog/docker-compose.yml`. `start!/2` recreates them empty, then has each one
-  take the catalog's files in `media/radarr`, `media/sonarr` and `media/sportarr` where
-  they are, so they match the Media that the seed imports.
+  `dev/catalog/docker-compose.yml`. `recreate!/2` deletes them and starts them again empty,
+  then has each one take the catalog's files in `media/radarr`, `media/sonarr` and
+  `media/sportarr` where they are, so they match the Media that the seed imports.
   """
   alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.Integrations.{Sportarr, SportarrHub}
@@ -15,10 +15,10 @@ defmodule WatchClub.Dev.Catalog.Servarrs do
   @slow [receive_timeout: 120_000]
 
   @doc """
-  Starts the apps of the Docker Compose `project` on ports derived from the app's `port`, and
-  returns, for each one, the arguments that `create_servarr_media_source` needs to connect to it.
+  Deletes the apps of the Docker Compose `project` with their data, starts them again on ports
+  derived from the app's `port`, and returns, for each one, the arguments that `create_servarr_media_source` needs to connect to it.
   """
-  def start!(project, port) do
+  def recreate!(project, port) do
     ports = %{radarr: port + 20_000, sonarr: port + 30_000, sportarr: port + 40_000}
     compose!(project, ports, ["down", "--volumes", "--remove-orphans"])
     compose!(project, ports, ["up", "--detach"])

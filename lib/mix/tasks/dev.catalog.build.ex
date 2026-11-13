@@ -114,6 +114,10 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
         Mix.shell().info("Build #{file.path}")
         build!(file, sources, output)
       end
+
+      # A video is only kept once its sidecars are there, but a sidecar deleted later is
+      # written again without building the video again
+      write_sidecars!(file, sources, output)
     end
 
     write_attribution!(sources, files)
@@ -154,10 +158,7 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     clip_inputs =
       Enum.flat_map(clips, fn {url, clip} -> input_options ++ remote_clip(url, clip) end)
 
-    [{_url, {first_start, _duration}} | _clips] = clips
-
-    total_duration =
-      clips |> Enum.map(fn {_url, {_start, duration}} -> duration end) |> Enum.sum()
+    {first_start, total_duration} = first_start_and_duration(file)
 
     # Subtitles are cut like the first clip, so they stay in sync
     subtitle_inputs =
@@ -197,11 +198,18 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     )
 
     if level6 = Map.get(file, :dolby_vision), do: add_dolby_vision!(tmp_output, level6)
+    write_sidecars!(file, sources, output)
     File.rename!(tmp_output, output)
+  end
 
-    for {language, flags} <- Map.get(file, :sidecars, []) do
-      write_sidecar!(source, language, flags, first_start, total_duration, output)
-    end
+  defp first_start_and_duration(file) do
+    ranges =
+      Enum.map(file.clips, fn
+        {start, duration} -> {start, duration}
+        {_source, start, duration} -> {start, duration}
+      end)
+
+    {ranges |> hd() |> elem(0), ranges |> Enum.map(&elem(&1, 1)) |> Enum.sum()}
   end
 
   defp remote_clip(url, {start, duration} = clip) do
@@ -458,17 +466,31 @@ defmodule Mix.Tasks.Dev.Catalog.Build do
     Enum.each([hevc, rpu, config, with_rpu], &File.rm!/1)
   end
 
-  defp write_sidecar!(source, language, flags, start, duration, output) do
-    format = flag_option(flags, :format, :srt)
-    names = [Map.fetch!(@two_letter_codes, language) | Enum.filter(flags, &is_atom/1)]
-    path = Path.rootname(output) <> ".#{Enum.map_join(names, ".", &to_string/1)}.#{format}"
-    codec = if format == :vtt, do: "webvtt", else: "srt"
-    srt = subtitle_clip!(source, language, start, duration)
-    cmd!("ffmpeg", ["-hide_banner", "-loglevel", "error", "-y", "-i", srt, "-c:s", codec, path])
+  defp write_sidecars!(file, sources, output) do
+    source = Map.fetch!(sources, file.source)
+    {start, duration} = first_start_and_duration(file)
 
-    if charset = flag_option(flags, :charset, nil) do
-      {content, 0} = System.cmd("iconv", ["-f", "UTF-8", "-t", charset, path])
-      File.write!(path, content)
+    for {language, flags} <- Map.get(file, :sidecars, []) do
+      format = flag_option(flags, :format, :srt)
+      names = [Map.fetch!(@two_letter_codes, language) | Enum.filter(flags, &is_atom/1)]
+      path = Path.rootname(output) <> ".#{Enum.map_join(names, ".", &to_string/1)}.#{format}"
+
+      unless File.exists?(path) do
+        File.mkdir_p!(Path.dirname(path))
+        codec = if format == :vtt, do: "webvtt", else: "srt"
+        srt = subtitle_clip!(source, language, start, duration)
+
+        cmd!(
+          "ffmpeg",
+          ["-hide_banner", "-loglevel", "error", "-y", "-i", srt] ++
+            ["-c:s", codec, path]
+        )
+
+        if charset = flag_option(flags, :charset, nil) do
+          {content, 0} = System.cmd("iconv", ["-f", "UTF-8", "-t", charset, path])
+          File.write!(path, content)
+        end
+      end
     end
   end
 
