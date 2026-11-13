@@ -9,8 +9,8 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
 
   alias WatchClub.Contents.{Movie, SportsEvent, TvShowEpisode}
   alias WatchClub.MediaCatalog.{Part, Video}
-  alias WatchClub.Playbacks.Session
-  alias WatchClubWeb.Helpers.Parts
+  alias WatchClub.Playbacks.{Playback, Session}
+  alias WatchClubWeb.Helpers.{Parts, PlaybackPaths}
 
   @doc "What to load on a Playback Session to describe what it plays, and its tracks."
   def fields do
@@ -129,7 +129,23 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
       session.position_seconds +
         DateTime.diff(DateTime.utc_now(), session.last_heartbeat_at, :millisecond) / 1000
 
-  @doc "The Text Tracks a Screen can show, in the order of the master playlist."
+  @doc "The Text Tracks a Screen can show."
   def text_tracks(%Video{text_tracks: text_tracks}),
     do: Enum.filter(text_tracks, & &1.hls_supported?)
+
+  @doc """
+  The Text Tracks a Screen can show, with the path of each one's WebVTT file: every Screen loads them
+  itself, because the master playlist doesn't list them.
+  """
+  def text_track_files(%Playback{media: %{video: video}} = playback) do
+    Enum.map(
+      text_tracks(video),
+      &%{
+        id: &1.id,
+        path: PlaybackPaths.subtitles(playback, &1),
+        name: &1.display_label,
+        language: &1.language_code
+      }
+    )
+  end
 end

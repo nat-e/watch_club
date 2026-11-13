@@ -19,10 +19,7 @@ defmodule WatchClubWeb.PlayerController do
       video: [
         :default_video_track,
         audio_tracks: [:display_label, :language_code],
-        text_tracks:
-          TextTrack
-          |> Ash.Query.filter(hls_supported? == true)
-          |> Ash.Query.load([:display_label, :language_code])
+        text_tracks: Ash.Query.filter(TextTrack, hls_supported? == true)
       ]
     ]
   ]
@@ -55,17 +52,6 @@ defmodule WatchClubWeb.PlayerController do
     send_text_result(
       conn,
       with_current_playback(params, &Hls.audio_playlist(&1.media.video, track_id, query)),
-      @m3u8,
-      "no-store"
-    )
-  end
-
-  def subtitle_playlist(conn, %{"track_id" => track_id} = params) do
-    query = PlaybackPaths.query(params["token"])
-
-    send_text_result(
-      conn,
-      with_current_playback(params, &Hls.subtitle_playlist(&1.media.video, track_id, query)),
       @m3u8,
       "no-store"
     )

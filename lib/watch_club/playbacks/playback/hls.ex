@@ -31,9 +31,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
-      subtitle_tracks: video.text_tracks,
       default_audio_track_id: playback.audio_track_id,
-      default_subtitle_track_id: playback.text_track_id,
       query: query
     }
 
@@ -49,12 +47,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   def audio_playlist(%Video{} = video, track_id, query) do
     with {:ok, _track} <- find_audio_track(video, track_id) do
       {:ok, render_media_playlist(video, query)}
-    end
-  end
-
-  def subtitle_playlist(%Video{} = video, track_id, query) do
-    with {:ok, track} <- find_subtitle_track(video, track_id) do
-      {:ok, IO.iodata_to_binary(Playlist.subtitle(track, video.duration_seconds, query))}
     end
   end
 

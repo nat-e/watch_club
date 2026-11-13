@@ -14,40 +14,29 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
 
   alias WatchClub.Playbacks.Playback.QualityLadder.Quality
 
-  defmodule ForcedMedia do
-    @moduledoc "A subtitles media tag with `FORCED=YES`, which ExM3U8's media tag can't serialize."
-
-    defstruct [:media]
-
-    defimpl ExM3U8.Serializer do
-      def serialize(%{media: media}), do: [ExM3U8.Serializer.serialize(media), ",FORCED=YES"]
-    end
-  end
-
   @hls_video_codec "avc1.4d401f"
   @hls_audio_codec "mp4a.40.2"
 
-  # The default tracks are the ones every Screen starts with. `query`, such as `?token=…`, follows
-  # every URI, because a player resolves them without the playlist's own query.
+  # The default audio track is the one every Screen starts with. `query`, such as `?token=…`,
+  # follows every URI, because a player resolves them without the playlist's own query.
   @type metadata :: %{
           video: %{frame_rate: float()},
           audio_tracks: [map()],
-          subtitle_tracks: [map()],
           default_audio_track_id: String.t() | nil,
-          default_subtitle_track_id: String.t() | nil,
           query: String.t()
         }
 
+  @doc """
+  Lists no subtitles: every Screen loads the WebVTT files of the Text Tracks itself. AirPlay, which
+  only reads them from the playlist, shows none.
+  """
   @spec master(metadata(), [Quality.t()]) :: iodata()
   def master(metadata, qualities) do
-    subtitle_group = if metadata.subtitle_tracks == [], do: nil, else: "subs"
-
     %MultivariantPlaylist{
       version: 6,
       independent_segments: true,
       items:
         master_audio_tags(metadata) ++
-          master_subtitle_tags(metadata) ++
           Enum.map(qualities, fn quality ->
             %Stream{
               bandwidth: quality.bandwidth,
@@ -56,7 +45,6 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
               resolution: {quality.width, quality.height},
               frame_rate: metadata.video.frame_rate,
               audio: "audio",
-              subtitles: subtitle_group,
               uri: "video/#{quality.id}/index.m3u8#{metadata.query}"
             }
           end)
@@ -89,23 +77,6 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
     |> ExM3U8.serialize()
   end
 
-  @spec subtitle(map(), float(), String.t()) :: iodata()
-  def subtitle(track, duration, query) do
-    target_duration = duration |> Float.ceil() |> trunc()
-
-    %MediaPlaylist{
-      info: %MediaPlaylistInfo{
-        version: 6,
-        target_duration: target_duration,
-        media_sequence: 0,
-        playlist_type: :vod,
-        end_list?: true
-      },
-      timeline: [%Segment{duration: duration, uri: "#{track.id}.vtt#{query}"}]
-    }
-    |> ExM3U8.serialize()
-  end
-
   @spec pad_segment(integer()) :: String.t()
   def pad_segment(index), do: index |> Integer.to_string() |> String.pad_leading(5, "0")
 
@@ -121,22 +92,6 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         channels: "2",
         uri: "audio/#{track.id}/index.m3u8#{metadata.query}"
       }
-    end)
-  end
-
-  defp master_subtitle_tags(metadata) do
-    Enum.map(metadata.subtitle_tracks, fn track ->
-      media = %Media{
-        type: :subtitles,
-        group_id: "subs",
-        name: escape(track.display_label),
-        language: language(track),
-        default?: track.id == metadata.default_subtitle_track_id,
-        auto_select?: true,
-        uri: "subtitles/#{track.id}/index.m3u8#{metadata.query}"
-      }
-
-      if track.forced?, do: %ForcedMedia{media: media}, else: media
     end)
   end
 

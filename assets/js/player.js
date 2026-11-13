@@ -162,24 +162,38 @@ const Player = {
 	},
 
 	// Loads the video in the data attributes, which plays on its own from their start
-	// position, with the tracks the master playlist marks as default
+	// position, with the audio the master playlist marks as default. The master playlist lists
+	// no subtitles: each Text Track loads from its file, under its id.
 	loadVideo() {
-		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
+		const { src, thumbnailsSrc, startPosition, textTracks } = this.el.dataset;
 		this.reportedTracks = undefined;
 		// Where the countdown of the "up next" prompt started, in seconds of the video
 		this.countdownStart = undefined;
 		this.playingNext = false;
 		this.src = src;
-		this.startPosition = Number(startPosition);
-		this.media.source = { src, engine: { hlsJs: hlsConfig } };
+		this.media.source = {
+			src,
+			engine: { hlsJs: { ...hlsConfig, startPosition: Number(startPosition) } },
+		};
+
+		for (const track of this.media.querySelectorAll("track")) track.remove();
 
 		const thumbnails = document.createElement("track");
 		thumbnails.kind = "metadata";
 		thumbnails.label = "thumbnails";
 		thumbnails.default = true;
 		thumbnails.src = thumbnailsSrc;
-		this.media.querySelector("track")?.remove();
 		this.media.append(thumbnails);
+
+		for (const { id, path, name, language } of JSON.parse(textTracks)) {
+			const subtitles = document.createElement("track");
+			subtitles.kind = "subtitles";
+			subtitles.id = id;
+			subtitles.src = path;
+			subtitles.label = name;
+			subtitles.srclang = language ?? "";
+			this.media.append(subtitles);
+		}
 	},
 
 	bindMediaEvents() {
@@ -187,13 +201,8 @@ const Player = {
 		const on = (type, listener) =>
 			this.media.addEventListener(type, listener, { signal });
 
-		on("loadedmetadata", () => {
-			// Seeking now, rather than starting hls.js at the position, loads the first
-			// segment, which hls.js needs to place the subtitles
-			if (this.startPosition) this.media.currentTime = this.startPosition;
-			// The browser has picked subtitles on its own by now
-			this.startSubtitles();
-		});
+		// The browser has picked subtitles on its own by now
+		on("loadedmetadata", () => this.startSubtitles());
 		on("canplay", () => this.reportReady());
 		on("playing", () => {
 			this.reportReady();
@@ -247,55 +256,32 @@ const Player = {
 		);
 	},
 
-	// Starts the subtitles the master playlist marks as default, if any
+	// Shows the Text Track the server picked, if any
 	startSubtitles() {
-		const hls = this.media.engine;
-		if (!hls) return;
-
-		const subtitles = hls.subtitleTracks.find((track) => track.default);
-		for (const textTrack of this.subtitleTextTracks()) {
-			textTrack.mode = this.isTextTrackOf(textTrack, subtitles)
-				? "showing"
-				: "disabled";
-		}
+		const { textTrackId } = this.el.dataset;
+		for (const textTrack of this.subtitleTextTracks())
+			textTrack.mode = textTrack.id === textTrackId ? "showing" : "disabled";
 	},
 
-	// The ids of the tracks playing, from their playlists' paths
+	// The ids of the tracks playing: the audio's from its playlist's path, the subtitles' from
+	// their text track
 	playingTracks() {
 		const hls = this.media.engine;
 		const audio = hls.audioTracks[hls.audioTrack];
-		const subtitles = this.showingSubtitles(hls.subtitleTracks);
+		const subtitles = this.subtitleTextTracks().find(
+			(textTrack) => textTrack.mode === "showing",
+		);
 
 		return {
 			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
-			text_track_id:
-				subtitles?.url.match(/\/subtitles\/([^/]+)\//)?.[1] ?? null,
+			text_track_id: subtitles?.id ?? null,
 		};
 	},
 
-	// hls.js keeps its subtitle track when they're turned off, so the showing text track
-	// tells which ones play
-	showingSubtitles(subtitleTracks) {
-		const showing = this.subtitleTextTracks().find(
-			(textTrack) => textTrack.mode === "showing",
-		);
-		return subtitleTracks.find((track) => this.isTextTrackOf(showing, track));
-	},
-
+	// The text tracks of the Text Tracks, which `loadVideo` adds
 	subtitleTextTracks() {
 		return Array.from(this.media.textTracks).filter(
-			(textTrack) =>
-				textTrack.kind === "subtitles" || textTrack.kind === "captions",
-		);
-	},
-
-	// Video.js gives each hls.js subtitle track a text track with its name and language
-	isTextTrackOf(textTrack, subtitles) {
-		return (
-			textTrack !== undefined &&
-			subtitles !== undefined &&
-			textTrack.label === subtitles.name &&
-			textTrack.language === subtitles.lang
+			(textTrack) => textTrack.kind === "subtitles",
 		);
 	},
 

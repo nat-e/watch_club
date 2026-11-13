@@ -16,12 +16,14 @@ defmodule WatchClubWeb.PlayerPage do
   @playback_session_fields [
     current_playback: [
       media: [
-        video: [
-          :markers,
-          :credits_start_seconds,
-          :next_to_play,
-          :previous_to_play | NowPlaying.video_fields()
-        ]
+        video:
+          [
+            :markers,
+            :credits_start_seconds,
+            :next_to_play,
+            :previous_to_play,
+            text_tracks: [:display_label, :language_code, :hls_supported?]
+          ] ++ NowPlaying.video_fields()
       ]
     ]
   ]
@@ -38,6 +40,8 @@ defmodule WatchClubWeb.PlayerPage do
         data-playback-id={@session.current_playback.id}
         data-src={PlaybackPaths.master_playlist(@session.current_playback)}
         data-thumbnails-src={PlaybackPaths.thumbnails(@session.current_playback)}
+        data-text-tracks={Jason.encode!(NowPlaying.text_track_files(@session.current_playback))}
+        data-text-track-id={@session.current_playback.text_track_id}
         data-start-position={@start_at || @session.position_seconds}
         data-cast-app-id={Application.fetch_env!(:watch_club, :cast_app_id)}
         data-cast-emulator={cast_emulator()}
