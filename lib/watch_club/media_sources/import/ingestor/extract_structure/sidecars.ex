@@ -2,6 +2,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
   @moduledoc """
   Internal helper for `ExtractStructure`. Discovers sidecar subtitle files
   alongside a video candidate and appends them to its `MediaStructure.text_tracks`.
+  `TextTracks` then reads their language and markers from their titles.
 
   Only called from the video branch of `ExtractStructure`; never called from
   the pipeline orchestrator.
@@ -12,39 +13,6 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
   alias WatchClub.Shared.Path, as: Paths
 
   @subtitle_extensions MapSet.new([".ass", ".srt", ".ssa", ".sub", ".vtt"])
-
-  @language_codes %{
-    "ar" => "ara",
-    "ara" => "ara",
-    "de" => "deu",
-    "deu" => "deu",
-    "ger" => "deu",
-    "en" => "eng",
-    "eng" => "eng",
-    "es" => "spa",
-    "spa" => "spa",
-    "fr" => "fra",
-    "fra" => "fra",
-    "fre" => "fra",
-    "hi" => "hin",
-    "hin" => "hin",
-    "it" => "ita",
-    "ita" => "ita",
-    "ja" => "jpn",
-    "jpn" => "jpn",
-    "ko" => "kor",
-    "kor" => "kor",
-    "nl" => "nld",
-    "nld" => "nld",
-    "dut" => "nld",
-    "pt" => "por",
-    "por" => "por",
-    "ru" => "rus",
-    "rus" => "rus",
-    "zh" => "zho",
-    "zho" => "zho",
-    "chi" => "zho"
-  }
 
   def append(%Candidate{} = candidate) do
     sidecars = discover(candidate)
@@ -81,17 +49,13 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
          true <- matching_sidecar?(subtitle_basename, video_basename),
          {:ok, %{type: :regular}} <- File.lstat(path) do
       suffix = String.replace_prefix(subtitle_basename, video_basename, "")
-      parsed = parse_suffix(suffix)
 
       [
         %TextTrack{
           sidecar_path: Paths.normalize(path),
-          codec: codec_for_extension(extension),
-          language: parsed.language,
-          title: parsed.title,
-          default?: parsed.default?,
-          forced?: parsed.forced?
+          codec: codec_for_extension(extension)
         }
+        |> struct!(parse_suffix(suffix))
       ]
     else
       _ -> []
@@ -106,77 +70,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
       )
   end
 
-  defp parse_suffix(""), do: empty_suffix()
-
+  # The words after the video's name, such as `.en.hi` or `.fr-CA.forced`, are its title, from
+  # which `TextTracks` reads its language, region and markers
   defp parse_suffix(suffix) do
-    suffix
-    |> String.trim_leading(".")
-    |> String.split(".", trim: true)
-    |> Enum.reverse()
-    |> Enum.reduce(empty_suffix(), fn token, acc ->
-      parse_token(token, acc)
-    end)
-    |> Map.update!(:title_tokens, &Enum.reverse/1)
-    |> title_from_tokens()
-  end
+    {default, words} =
+      suffix
+      |> String.split(".", trim: true)
+      |> Enum.split_with(&(String.downcase(&1) == "default"))
 
-  defp empty_suffix do
-    %{
-      language: nil,
-      title: nil,
-      title_tokens: [],
-      default?: false,
-      forced?: false,
-      hearing_impaired?: false
-    }
-  end
-
-  defp parse_token(token, acc) do
-    normalized = token |> String.downcase() |> String.trim()
-
-    cond do
-      String.contains?(normalized, "default") ->
-        %{acc | default?: true}
-
-      String.contains?(normalized, "forced") or String.contains?(normalized, "foreign") ->
-        %{acc | forced?: true}
-
-      normalized in ["cc", "sdh"] ->
-        %{acc | hearing_impaired?: true}
-
-      normalized == "hi" and is_nil(acc.language) ->
-        %{acc | language: "hin", hearing_impaired?: true}
-
-      language = language_code(normalized) ->
-        if is_nil(acc.language) do
-          %{acc | language: language}
-        else
-          %{acc | title_tokens: [token | acc.title_tokens]}
-        end
-
-      true ->
-        %{acc | title_tokens: [token | acc.title_tokens]}
-    end
-  end
-
-  defp language_code(token) do
-    token
-    |> String.split("-", parts: 2)
-    |> List.first()
-    |> then(&Map.get(@language_codes, &1))
-  end
-
-  defp title_from_tokens(%{title_tokens: []} = parsed), do: Map.delete(parsed, :title_tokens)
-
-  defp title_from_tokens(parsed) do
-    title =
-      parsed.title_tokens
-      |> Enum.join(" ")
-      |> String.trim()
-
-    parsed
-    |> Map.put(:title, title)
-    |> Map.delete(:title_tokens)
+    %{title: if(words != [], do: Enum.join(words, " ")), default?: default != []}
   end
 
   defp codec_for_extension(".ass"), do: "ass"

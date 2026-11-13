@@ -38,6 +38,10 @@ _Avoid_: Default subtitles, caption language
 The audio languages a **User** watches without subtitles.
 _Avoid_: Hidden subtitle languages, understood languages
 
+**Prefer SDH**:
+A **User**'s choice to get an **SDH Text Track** in each language that has one.
+_Avoid_: Closed captions setting, hearing impaired mode
+
 **Instance Administrator**:
 The single user who administers the WatchClub instance.
 _Avoid_: Administrator, admin, owner
@@ -194,6 +198,10 @@ _Avoid_: Media Version, video version
 A piece of a **Movie**, **TV Show Episode** or **Sports Event**, in watching order. Most have one, the whole of it. A two-part episode that the **Metadata Provider** lists as one **TV Show Episode** can have two, and a UFC event its Prelims and its Main Card. WatchClub knows the **Parts** it has a **Video** for.
 _Avoid_: Segment, chapter, disc, CD, stack, version
 
+**Keyframe**:
+A frame of a **Video** that decodes on its own, where playback can cut the **Video** into segments. A **Media Import** reads them.
+_Avoid_: I-frame, sync sample, cue point
+
 **File Fingerprint**:
 A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file changed.
 _Avoid_: File hash, checksum, audio fingerprint
@@ -306,6 +314,14 @@ _Avoid_: Subtitle track, caption track, stream metadata
 A **Text Track** that only translates what the audio's language doesn't cover, such as signs or lines in another language.
 _Avoid_: Forced subtitles, foreign parts subtitles
 
+**SDH Text Track**:
+A **Text Track** that also describes sounds and names who speaks, for deaf and hard of hearing viewers.
+_Avoid_: Closed captions, CC, hearing impaired subtitles
+
+**Text Track Choices**:
+The **Text Tracks** a **User** can pick in a **Playback**: one per language and region among English, French and the original language of the **Content**, named after it.
+_Avoid_: Subtitle list, subtitle menu, visible tracks
+
 **Preferred Audio Track**:
 The **Audio Track** a **Playback** of new **Content** starts with, chosen from its **User**'s **User Preferences**.
 _Avoid_: Default audio track, selected audio
@@ -327,7 +343,7 @@ The kind of upstream system a **Media Source** represents. One of `filesystem`, 
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
+One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it or its **Keyframes**, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
 **Files to Process**:
@@ -463,7 +479,7 @@ _Avoid_: Group, aggregate, card, item
 - A **User** has one set of **User Preferences**
 - **User Preferences** belong to one **User** and are managed only by that **User**
 - **User Preferences** include the user’s preferred **Locale**
-- **User Preferences** include the user’s **Preferred Audio Language**, **Preferred Subtitle Language** and **Languages Without Subtitles**
+- **User Preferences** include the user’s **Preferred Audio Language**, **Preferred Subtitle Language**, **Languages Without Subtitles** and **Prefer SDH**
 - A new **User** gets subtitles in the language of their **Locale**, except when the audio is already in it
 - Deleting a **User** does not delete their **Playback Sessions** or **Playbacks**
 - Every **User** can see every other **User**
@@ -599,9 +615,11 @@ _Avoid_: Group, aggregate, card, item
 - When multiple **Media** files are available for **Play** or **Download**, the **User** chooses one
 - A **Playback** of new **Content** starts with its **Preferred Audio Track** and **Preferred Text Track**
 - The **Preferred Audio Track** is in the **Preferred Audio Language**, otherwise in the original language of the **Content**, otherwise the **Video**'s default **Audio Track**
-- The **Preferred Text Track** is a full **Text Track** in the **Preferred Subtitle Language**, unless the audio is in one of the **Languages Without Subtitles**; otherwise, or when the **Video** has none, it is a **Forced Text Track** in the audio's language, if any
+- The **Preferred Text Track** is a **Text Track Choice** in the **Preferred Subtitle Language**, unless the audio is in one of the **Languages Without Subtitles**; otherwise none
+- **Text Track Choices** never include a **Forced Text Track** or a picture-based **Text Track**. When a language and region has several **Text Tracks**, its choice is an **SDH Text Track** if the **User** has **Prefer SDH** and a regular one otherwise, when the **Video** has one; among equal ones, the first
+- While no **Text Track** is picked, the **Forced Text Track** in the **Preferred Subtitle Language** plays, otherwise the one in the audio's language, if any
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
-- In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track**, or turn subtitles off
+- In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track Choice**, or turn subtitles off
 - A **Playback Session** keeps the audio language and the subtitles, or no subtitles, of its **Content**: each next **Playback** of the same **Content**, on any **Screen**, starts with them, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
 - When the **Credits** of a **Video** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **Part**, else the next **TV Show Episode** if it has **Media**
@@ -659,7 +677,8 @@ _Avoid_: Group, aggregate, card, item
 - An **Audio Track** belongs to exactly one **Video**
 - A **Text Track** belongs to exactly one **Video**
 - A **Text Track** may be embedded in the **Video** file or provided by a separate local file
-- A **Text Track** may identify its language, default selection, and forced selection
+- A **Text Track** may identify its language and region, default selection, and whether it is a **Forced Text Track** or an **SDH Text Track**. A **Media Import** reads them from the file's markers and from the track's or sidecar file's name, because the markers are often wrong
+- A **Text Track** marked forced is a full one when its name says so, or when its language matches none of its **Video**'s **Audio Tracks**
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**

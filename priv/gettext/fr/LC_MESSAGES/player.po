@@ -185,6 +185,7 @@ msgid "Now playing"
 msgstr "En cours de lecture"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
@@ -351,3 +352,15 @@ msgstr "On n'a pas pu lire cette vidéo"
 #, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
 msgstr "Impossible de lire sur la TV. Elle n'arrive peut-être pas à joindre Watch Club : il lui faut une adresse HTTPS avec un certificat de confiance."
+
+# AI-translated (Claude)
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (SDH)"
+msgstr "%{language} (SME)"
+
+# AI-translated (Claude)
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (forced)"
+msgstr "%{language} (forcés)"

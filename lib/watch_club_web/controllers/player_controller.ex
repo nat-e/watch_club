@@ -1,11 +1,9 @@
 defmodule WatchClubWeb.PlayerController do
   use WatchClubWeb, :controller
 
-  require Ash.Query
   require Logger
 
   alias WatchClub.Ffmpeg.Trickplay
-  alias WatchClub.MediaCatalog.TextTrack
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.Hls
@@ -16,11 +14,7 @@ defmodule WatchClubWeb.PlayerController do
 
   @playback_fields [
     media: [
-      video: [
-        :default_video_track,
-        audio_tracks: [:display_label, :language_code],
-        text_tracks: Ash.Query.filter(TextTrack, hls_supported? == true)
-      ]
+      video: [:default_video_track, :text_tracks, audio_tracks: [:display_label, :language_code]]
     ]
   ]
 

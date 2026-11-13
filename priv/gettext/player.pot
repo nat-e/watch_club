@@ -156,6 +156,7 @@ msgstr ""
 msgid "Now playing"
 msgstr ""
 
+#: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
@@ -294,4 +295,14 @@ msgstr ""
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
+msgstr ""
+
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (SDH)"
+msgstr ""
+
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (forced)"
 msgstr ""

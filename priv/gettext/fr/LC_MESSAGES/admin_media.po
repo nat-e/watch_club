@@ -454,3 +454,9 @@ msgstr "Rechercher des médias"
 #, elixir-autogen, elixir-format
 msgid "This file isn't matched to any content."
 msgstr "Ce fichier n'est associé à aucun contenu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "SDH"
+msgstr "SME"

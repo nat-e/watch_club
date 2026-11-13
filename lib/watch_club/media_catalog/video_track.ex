@@ -21,12 +21,33 @@ defmodule WatchClub.MediaCatalog.VideoTrack do
     defaults [
       :read,
       :destroy,
-      update: [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate, :default?]
+      update: [
+        :stream_index,
+        :codec,
+        :profile,
+        :level,
+        :width,
+        :height,
+        :frame_rate,
+        :bit_rate,
+        :default?
+      ]
     ]
 
     create :create do
       primary? true
-      accept [:stream_index, :codec, :width, :height, :frame_rate, :bit_rate, :default?]
+
+      accept [
+        :stream_index,
+        :codec,
+        :profile,
+        :level,
+        :width,
+        :height,
+        :frame_rate,
+        :bit_rate,
+        :default?
+      ]
     end
   end
 
@@ -63,6 +84,18 @@ defmodule WatchClub.MediaCatalog.VideoTrack do
 
     attribute :codec, :string do
       allow_nil? false
+      public? true
+    end
+
+    attribute :profile, :string do
+      description "The codec profile, as ffprobe names it, such as High or Main 10"
+      allow_nil? true
+      public? true
+    end
+
+    attribute :level, :integer do
+      description "The codec level, as ffprobe reports it, such as 41 for H.264 level 4.1"
+      allow_nil? true
       public? true
     end
 

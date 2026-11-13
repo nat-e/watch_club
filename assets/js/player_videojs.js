@@ -28,4 +28,4 @@ import "@videojs/html/ui/menu-radio-item";
 import "@videojs/html/ui/menu-item-indicator";
 import "@videojs/html/ui/quality-radio-group";
 import "@videojs/html/ui/audio-track-radio-group";
-import "@videojs/html/ui/captions-radio-group";
+import "@videojs/html/ui/menu-radio-group";

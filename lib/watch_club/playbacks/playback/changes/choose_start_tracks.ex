@@ -1,6 +1,6 @@
 defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
   @moduledoc """
-  Picks the Audio Track and the Text Track a Playback starts with.
+  Picks the Audio Track and the Text Track Choice a Playback starts with.
 
   After a Playback of the same Content in its Playback Session, it keeps that one's audio
   language and its subtitles, or no subtitles. Otherwise, or when its Video has no track in that
@@ -8,9 +8,8 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
   Preferences of the User who started the Playback Session.
 
   Audio: the preferred audio language, then the Content's original language, then the file's
-  default track. Subtitles: a full Text Track in the preferred subtitle language, unless the
-  audio is in one of the User's languages without subtitles; otherwise a forced Text Track in
-  the audio's language, if any.
+  default track. Subtitles: a choice in the preferred subtitle language, unless the audio is in
+  one of the User's languages without subtitles. Without one, its Forced Text Track plays.
   """
 
   use Ash.Resource.Change
@@ -19,6 +18,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
 
   alias WatchClub.Languages
   alias WatchClub.MediaCatalog.Media
+  alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.{Playback, Session}
 
   @impl true
@@ -36,14 +36,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
     previous = previous_playback!(session_id, media.content_id)
 
     settings =
-      Ash.get!(Session, session_id,
-        load: [
-          started_by: [
-            settings: [:audio_language, :subtitle_language, :languages_without_subtitles]
-          ]
-        ],
-        authorize?: false
-      ).started_by.settings
+      Ash.get!(Session, session_id, load: [started_by: :settings], authorize?: false).started_by.settings
 
     original_language = Languages.to_code(media.content && media.content.original_language)
     audio_tracks = sort_default_first(media.video.audio_tracks)
@@ -52,8 +45,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
       carried_over_audio_track(audio_tracks, previous) ||
         preferred_audio_track(audio_tracks, original_language, settings)
 
-    text_tracks =
-      media.video.text_tracks |> Enum.filter(& &1.hls_supported?) |> sort_default_first()
+    text_tracks = TextTrackChoices.new!(media.video, original_language, settings, nil).choices
 
     text_track =
       case carried_over_text_track(text_tracks, previous) do
@@ -69,13 +61,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
 
   defp load_media(media_id) do
     Ash.get(Media, media_id,
-      load: [
-        content: [:original_language],
-        video: [
-          audio_tracks: [:language_code, :default?, :stream_index],
-          text_tracks: [:language_code, :default?, :forced?, :stream_index, :hls_supported?]
-        ]
-      ],
+      load: [content: [:original_language], video: TextTrackChoices.video_fields()],
       authorize?: false
     )
   end
@@ -88,7 +74,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
     |> Ash.Query.filter(session_id == ^session_id and media.content_id == ^content_id)
     |> Ash.Query.sort(inserted_at: :desc)
     |> Ash.Query.limit(1)
-    |> Ash.Query.load(audio_track: [:language_code], text_track: [:language_code, :forced?])
+    |> Ash.Query.load(audio_track: [:language_code], text_track: [:language_code])
     |> Ash.read_one!(authorize?: false)
   end
 
@@ -98,15 +84,15 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
   defp carried_over_audio_track(tracks, %Playback{audio_track: audio_track}),
     do: find_in_language(tracks, audio_track.language_code)
 
-  # {:ok, nil} keeps the subtitles off
+  # {:ok, nil} keeps the subtitles off. Keeps their region too, when the choices have it.
   defp carried_over_text_track(_tracks, nil), do: :none
   defp carried_over_text_track(_tracks, %Playback{text_track: nil}), do: {:ok, nil}
 
   defp carried_over_text_track(tracks, %Playback{text_track: text_track}) do
-    case Enum.find(
-           tracks,
-           &(&1.language_code == text_track.language_code and &1.forced? == text_track.forced?)
-         ) do
+    tag = Languages.to_tag(text_track.language)
+
+    case Enum.find(tracks, &(Languages.to_tag(&1.language) == tag)) ||
+           find_in_language(tracks, text_track.language_code) do
       nil -> :none
       track -> {:ok, track}
     end
@@ -125,18 +111,14 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
   end
 
   defp preferred_text_track(tracks, audio_track, settings) do
-    {forced_tracks, full_tracks} = Enum.split_with(tracks, & &1.forced?)
     audio_language = audio_track && audio_track.language_code
 
     languages_without_subtitles =
       Enum.map(settings.languages_without_subtitles, &Atom.to_string/1)
 
-    full_track =
-      if settings.subtitle_language && audio_language not in languages_without_subtitles do
-        find_in_language(full_tracks, Atom.to_string(settings.subtitle_language))
-      end
-
-    full_track || find_in_language(forced_tracks, audio_language)
+    if settings.subtitle_language && audio_language not in languages_without_subtitles do
+      find_in_language(tracks, Atom.to_string(settings.subtitle_language))
+    end
   end
 
   defp sort_default_first(tracks), do: Enum.sort_by(tracks, &{not &1.default?, &1.stream_index})

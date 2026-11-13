@@ -43,7 +43,7 @@ defmodule WatchClub.MediaCatalog.Video do
     create :create do
       primary? true
 
-      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate, :keyframe_seconds]
 
       argument :parts, {:array, :map} do
         description "The Parts it holds, each with a movie_id, tv_show_episode_id or sports_event_id, a number and an optional name"
@@ -104,7 +104,7 @@ defmodule WatchClub.MediaCatalog.Video do
       primary? true
       require_atomic? false
 
-      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate]
+      accept [:file_fingerprint, :duration_seconds, :container, :bit_rate, :keyframe_seconds]
 
       argument :parts, {:array, :map} do
         description "Each Part it holds, as in create"
@@ -188,6 +188,18 @@ defmodule WatchClub.MediaCatalog.Video do
       public? true
       constraints min: 0
     end
+
+    # Thousands of numbers, so only loaded on demand
+    attribute :keyframe_seconds, {:array, :float} do
+      description """
+      Where playback can cut the file: the times of the keyframes of its Default Video Track, in
+      seconds from the file's start. Nil for a Video no Media Import has read them for.
+      """
+
+      allow_nil? true
+      public? true
+      select_by_default? false
+    end
   end
 
   relationships do
@@ -211,6 +223,7 @@ defmodule WatchClub.MediaCatalog.Video do
       public? true
     end
 
+    # The import reads the keyframes of the same Video Track
     has_one :default_video_track, VideoTrack do
       public? true
       from_many? true

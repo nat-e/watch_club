@@ -98,13 +98,7 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
 
   defp checkbox_group_item(assigns) do
     ~H"""
-    <label
-      for={"#{@field.id}-#{@value}"}
-      class={[
-        "flex h-control-lg w-full items-center justify-between rounded-card border border-border-subtle bg-surface p-related text-sm text-text",
-        @disabled? && "cursor-not-allowed opacity-40"
-      ]}
-    >
+    <.checkbox_row for={"#{@field.id}-#{@value}"} disabled?={@disabled?}>
       {render_slot(@label, @option)}
       <.checkbox
         id={"#{@field.id}-#{@value}"}
@@ -113,6 +107,50 @@ defmodule WatchClubWeb.Components.UI.Checkbox do
         checked={@value in @field.value}
         disabled={@disabled?}
       />
+    </.checkbox_row>
+    """
+  end
+
+  attr :field, Phoenix.HTML.FormField, required: true, doc: "A boolean form field"
+  slot :inner_block, required: true, doc: "Its label"
+  slot :description, doc: "What it does, under its label"
+
+  @doc "A checkbox for a boolean form field, in a card with its label and description."
+  def checkbox_card(assigns) do
+    ~H"""
+    <.checkbox_row for={@field.id}>
+      <span class="flex flex-col gap-tight">
+        <span id={"#{@field.id}-label"}>{render_slot(@inner_block)}</span>
+        <span :if={@description != []} id={"#{@field.id}-description"} class="text-text-muted">
+          {render_slot(@description)}
+        </span>
+      </span>
+      <%!-- Submits false when unchecked --%>
+      <input type="hidden" name={@field.name} value="false" />
+      <.checkbox
+        field={@field}
+        aria-labelledby={"#{@field.id}-label"}
+        aria-describedby={@description != [] && "#{@field.id}-description"}
+      />
+    </.checkbox_row>
+    """
+  end
+
+  attr :for, :string, required: true
+  attr :disabled?, :boolean, default: false
+  slot :inner_block, required: true
+
+  # A bordered row holding a checkbox and its label, which checks it
+  defp checkbox_row(assigns) do
+    ~H"""
+    <label
+      for={@for}
+      class={[
+        "flex min-h-control-lg w-full items-center justify-between gap-related rounded-card border border-border-subtle bg-surface p-related text-sm text-text",
+        @disabled? && "cursor-not-allowed opacity-40"
+      ]}
+    >
+      {render_slot(@inner_block)}
     </label>
     """
   end
