@@ -6,6 +6,7 @@ defmodule WatchClub.Accounts.UserTest do
   alias WatchClub.Playlists.{Playlist, PlaylistItem}
   alias WatchClub.Requests.ContentRequest
 
+  import ExUnit.CaptureLog
   import WatchClub.Accounts
 
   describe "create_administrator/*" do
@@ -303,10 +304,12 @@ defmodule WatchClub.Accounts.UserTest do
       path = Path.join(tmp_dir, "picture.svg")
       File.write!(path, ~s(<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9"/>))
 
-      set_profile_picture(user, Ash.Type.File.from_path(path), actor: user)
-      |> assert_has_error(Ash.Error.Invalid, fn
-        %{field: :profile_picture} -> true
-        _ -> false
+      capture_log(fn ->
+        set_profile_picture(user, Ash.Type.File.from_path(path), actor: user)
+        |> assert_has_error(Ash.Error.Invalid, fn
+          %{field: :profile_picture} -> true
+          _ -> false
+        end)
       end)
     end
 
