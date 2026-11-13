@@ -30,7 +30,7 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
 
   defstruct choices: [], forced: %{}, names: %{}
 
-  @doc "What to load on a Video for `new/4`. Its Text Tracks are in the file's order."
+  @doc "What to load on a Video for `new!/4`. Its Text Tracks are in the file's order."
   def video_fields,
     do: [audio_tracks: [:language_code], text_tracks: [:language_code, :hls_supported?]]
 
@@ -38,8 +38,8 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
   The choices of a Video, for the Content's original language code, a User's preferences and
   the Text Track picked, if any.
   """
-  @spec new(Video.t(), String.t() | nil, UserSettings.t(), String.t() | nil) :: t()
-  def new(%Video{} = video, original_language, %UserSettings{} = settings, text_track_id) do
+  @spec new!(Video.t(), String.t() | nil, UserSettings.t(), String.t() | nil) :: t()
+  def new!(%Video{} = video, original_language, %UserSettings{} = settings, text_track_id) do
     {forced, full} =
       video.text_tracks
       |> Enum.filter(& &1.hls_supported?)
@@ -47,7 +47,7 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
 
     choices = choices(full, original_language, settings.prefer_sdh?, text_track_id)
     forced = forced(forced, video.audio_tracks, settings.subtitle_language)
-    names = names(choices, Map.values(forced), settings.locale)
+    names = names!(choices, Map.values(forced), settings.locale)
 
     %__MODULE__{
       choices: Enum.sort_by(choices, &names[&1.id]),
@@ -81,7 +81,7 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
   def calculate(playbacks, _opts, _context) do
     Enum.map(playbacks, fn %{media: media, session: session} = playback ->
       original_language = Languages.to_code(media.content && media.content.original_language)
-      new(media.video, original_language, session.started_by.settings, playback.text_track_id)
+      new!(media.video, original_language, session.started_by.settings, playback.text_track_id)
     end)
   end
 
@@ -114,7 +114,7 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
   defp find_in_language(tracks, language), do: Enum.find(tracks, &(&1.language_code == language))
 
   # The region only tells apart choices of the same language
-  defp names(choices, forced, locale) do
+  defp names!(choices, forced, locale) do
     choices_per_language = Enum.frequencies_by(choices, & &1.language_code)
 
     Gettext.with_locale(WatchClubWeb.Gettext, UserLocale.to_cldr_locale_name(locale), fn ->
