@@ -100,8 +100,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           source_path: playback.media.path,
           output_path: output_path,
           start_time: index * @segment_duration,
-          duration: segment_duration_at(playback.media.video, index),
-          segment_duration: @segment_duration,
+          end_time: (index + 1) * @segment_duration,
           width: quality.width,
           height: quality.height,
           video_bitrate: quality.video_bitrate
@@ -126,7 +125,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           source_path: playback.media.path,
           output_path: output_path,
           start_time: index * @segment_duration,
-          duration: segment_duration_at(playback.media.video, index),
+          end_time: (index + 1) * @segment_duration,
           stream_index: track.stream_index
         })
       end)
@@ -236,11 +235,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     else
       {:error, :not_found}
     end
-  end
-
-  defp segment_duration_at(%Video{} = video, index) do
-    remaining = video.duration_seconds - index * @segment_duration
-    min(@segment_duration, max(remaining, 0.1))
   end
 
   defp video_segment_path(%Playback{} = playback, quality, index) do

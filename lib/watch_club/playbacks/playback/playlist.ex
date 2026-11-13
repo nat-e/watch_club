@@ -10,7 +10,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   alias ExM3U8.MediaPlaylist
   alias ExM3U8.MediaPlaylist.Info, as: MediaPlaylistInfo
   alias ExM3U8.MultivariantPlaylist
-  alias ExM3U8.Tags.{Discontinuity, Media, Segment, Stream}
+  alias ExM3U8.Tags.{Media, Segment, Stream}
 
   alias WatchClub.Playbacks.Playback.QualityLadder.Quality
 
@@ -64,6 +64,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
     |> ExM3U8.serialize()
   end
 
+  @doc "Segments keep the file's timestamps, so they form a single timeline."
   @spec segments(float(), integer(), float(), String.t()) :: iodata()
   def segments(duration, segment_count, segment_duration, query) do
     target_duration = segment_duration |> Float.ceil() |> trunc()
@@ -78,13 +79,11 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         end_list?: true
       },
       timeline:
-        Enum.flat_map(0..(segment_count - 1), fn index ->
-          segment = %Segment{
+        Enum.map(0..(segment_count - 1), fn index ->
+          %Segment{
             duration: segment_duration_at(duration, index, segment_duration),
             uri: "seg_#{pad_segment(index)}.ts#{query}"
           }
-
-          if index == 0, do: [segment], else: [%Discontinuity{}, segment]
         end)
     }
     |> ExM3U8.serialize()
