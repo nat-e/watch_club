@@ -91,10 +91,14 @@ defmodule WatchClub.Ffmpeg do
       ~S(ffmpeg -nostdin -v error -ss "$2" -t "$3" -i "$1" -map 0:a:0 -ac 1 -ar 11025 -f s16le - ) <>
         ~S(| fpcalc -raw -format s16le -rate 11025 -channels 1 -length "$3" -)
 
-    # pipefail: fpcalc would succeed on the audio ffmpeg decoded before failing
+    # pipefail: fpcalc would succeed on the audio ffmpeg decoded before failing.
+    # At the lowest CPU priority, so Playback transcodes get the CPU first.
     case System.cmd(
-           "bash",
+           "nice",
            [
+             "-n",
+             "19",
+             "bash",
              "-c",
              "set -o pipefail; " <> pipeline,
              "bash",
