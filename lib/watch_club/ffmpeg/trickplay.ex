@@ -84,9 +84,9 @@ defmodule WatchClub.Ffmpeg.Trickplay do
     duration =
       try do
         frames = extract_frames!(source_path, frames_dir, "scale=#{tile_width}:#{tile_height}")
-        # Without a known duration, the tiles last until the last frame.
+        # Without a known duration, the tiles last an interval past the last frame.
         {last_frame_time, _path} = List.last(frames)
-        duration = duration || last_frame_time
+        duration = duration || last_frame_time + @interval_seconds
 
         for slot <- 0..(max(round(duration / @interval_seconds), 1) - 1) do
           middle = (slot + 0.5) * @interval_seconds
