@@ -313,25 +313,28 @@ const Player = {
 		this.showSubtitles();
 	},
 
-	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any: the
-	// Playback's audio until hls.js tells which plays, which native HLS doesn't
+	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any
 	showSubtitles() {
-		const { forced, audio } = JSON.parse(this.el.dataset.subtitles);
+		const { forced } = JSON.parse(this.el.dataset.subtitles);
 		const id =
 			this.pickedSubtitles === "off"
-				? forced[this.playingTracks().audio_track_id ?? audio]
+				? forced[this.playingTracks().audio_track_id]
 				: this.pickedSubtitles;
 		for (const textTrack of this.subtitleTextTracks())
 			textTrack.mode = textTrack.id === id ? "showing" : "disabled";
 	},
 
-	// The ids of the tracks playing: the audio from its playlist's path
+	// The ids of the tracks playing: the audio from its playlist's path, else the Playback's, until
+	// hls.js tells which plays. Native HLS doesn't.
 	playingTracks() {
 		const hls = this.media.engine;
 		const audio = hls?.audioTracks[hls.audioTrack];
 
 		return {
-			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
+			audio_track_id:
+				audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ??
+				this.el.dataset.audioTrackId ??
+				null,
 			text_track_id:
 				this.pickedSubtitles === "off" ? null : this.pickedSubtitles,
 		};
@@ -430,7 +433,7 @@ const Player = {
 			() => {},
 		);
 
-		if (!this.media.engine || this.media.readyState === 0) return;
+		if (this.media.readyState === 0) return;
 		const tracks = this.playingTracks();
 		const reported = JSON.stringify(tracks);
 		if (this.reportedTracks === undefined) {
