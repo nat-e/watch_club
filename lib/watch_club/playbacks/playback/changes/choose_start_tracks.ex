@@ -45,11 +45,7 @@ defmodule WatchClub.Playbacks.Playback.Changes.ChooseStartTracks do
       carried_over_audio_track(audio_tracks, previous) ||
         preferred_audio_track(audio_tracks, original_language, settings)
 
-    text_tracks =
-      Enum.map(
-        TextTrackChoices.new(media.video, original_language, settings).choices,
-        & &1.text_track
-      )
+    text_tracks = TextTrackChoices.new(media.video, original_language, settings, nil).choices
 
     text_track =
       case carried_over_text_track(text_tracks, previous) do

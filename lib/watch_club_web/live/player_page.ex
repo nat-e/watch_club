@@ -40,7 +40,7 @@ defmodule WatchClubWeb.PlayerPage do
         data-src={PlaybackPaths.master_playlist(@session.current_playback)}
         data-thumbnails-src={PlaybackPaths.thumbnails(@session.current_playback)}
         data-start-position={@start_at || @session.position_seconds}
-        data-subtitles={subtitles(@session.current_playback, @current_user.settings.locale)}
+        data-subtitles={subtitles(@session.current_playback)}
         data-cast-app-id={Application.fetch_env!(:watch_club, :cast_app_id)}
         data-cast-emulator={cast_emulator()}
         class="size-full"
@@ -333,13 +333,9 @@ defmodule WatchClubWeb.PlayerPage do
 
   # What the JS player hook's subtitles menus offer: the Text Track Choices, the Forced Text Track
   # of each Audio Track, which plays with Off, and the one picked
-  defp subtitles(%Playback{text_track_choices: choices} = playback, locale) do
+  defp subtitles(%Playback{text_track_choices: choices} = playback) do
     Jason.encode!(%{
-      choices:
-        Enum.map(
-          choices.choices,
-          &%{id: &1.text_track.id, name: NowPlaying.text_track_name(&1, locale)}
-        ),
+      choices: Enum.map(choices.choices, &%{id: &1.id, name: choices.names[&1.id]}),
       forced:
         Map.new(choices.forced, fn {audio_track_id, track} -> {audio_track_id, track.id} end),
       picked: playback.text_track_id || "off"

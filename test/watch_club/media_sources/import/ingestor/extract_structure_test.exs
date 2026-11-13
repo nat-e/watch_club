@@ -67,12 +67,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
         video_metadata([
           audio("fre"),
           subtitles("fre", "VFQ"),
+          subtitles("fre", "French (fr-CA)"),
           subtitles("spa", "Español (Latinoamérica)"),
           subtitles(nil, "English SDH"),
           subtitles("eng", "English", %{"hearing_impaired" => 1}),
           subtitles("fre", "Forced"),
           subtitles("fre", "Full", %{"forced" => 1}),
-          subtitles("eng", "Shutter.Island.2010.1080p.BluRay.x265-Forced")
+          subtitles("eng", "Signs.2002.1080p.BluRay.x264-GROUP"),
+          subtitles("eng", "English - Forced - 1080p")
         ])
       )
 
@@ -80,12 +82,14 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
       assert [
                %TextTrack{language: "fr-CA", forced?: false, sdh?: false},
+               %TextTrack{language: "fr-CA", forced?: false, sdh?: false},
                %TextTrack{language: "es-419", forced?: false, sdh?: false},
                %TextTrack{language: "en", forced?: false, sdh?: true},
                %TextTrack{language: "en", forced?: false, sdh?: true},
                %TextTrack{language: "fr", forced?: true, sdh?: false},
                %TextTrack{language: "fr", forced?: false, sdh?: false},
-               %TextTrack{language: "en", forced?: false, sdh?: false}
+               %TextTrack{language: "en", forced?: false, sdh?: false},
+               %TextTrack{language: "en", forced?: true, sdh?: false}
              ] = candidate.media_structure.text_tracks
     end
 

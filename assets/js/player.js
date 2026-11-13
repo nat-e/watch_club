@@ -69,14 +69,11 @@ const Player = {
 			{ signal: this.abortController.signal },
 		);
 
-		// After Video.js applied the pick. Off shows the Forced Text Track of the audio.
 		this.el.addEventListener(
 			"value-change",
 			(event) => {
 				if (event.target.matches("[data-subtitles-menu]"))
 					this.pickSubtitles(event.detail.value);
-				if (event.target.matches("media-audio-track-radio-group"))
-					this.showSubtitles();
 			},
 			{ signal: this.abortController.signal },
 		);
@@ -206,6 +203,15 @@ const Player = {
 			if (this.startPosition) this.media.currentTime = this.startPosition;
 			// The browser has picked subtitles on its own by now
 			this.showSubtitles();
+
+			// Off shows the Forced Text Track of the audio. Each video has its own audio tracks.
+			this.audioTracksListener?.abort();
+			this.audioTracksListener = new AbortController();
+			this.media.audioTracks?.addEventListener(
+				"change",
+				() => this.showSubtitles(),
+				{ signal: this.audioTracksListener.signal },
+			);
 		});
 
 		on("canplay", () => this.reportReady());
@@ -295,17 +301,25 @@ const Player = {
 		this.showSubtitles();
 	},
 
-	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any. The
-	// master playlist names the subtitles after their Text Tracks' ids.
+	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any
 	showSubtitles() {
-		if (!this.media.engine) return;
+		const hls = this.media.engine;
+		if (!hls) return;
 		const { forced } = JSON.parse(this.el.dataset.subtitles);
 		const id =
 			this.pickedSubtitles === "off"
 				? forced[this.playingTracks().audio_track_id]
 				: this.pickedSubtitles;
+		// Video.js gives each hls.js subtitles track a text track with its name and language
+		const subtitles = hls.subtitleTracks.find((track) =>
+			track.url.includes(`/subtitles/${id}/`),
+		);
 		for (const textTrack of this.subtitleTextTracks()) {
-			textTrack.mode = textTrack.label === id ? "showing" : "disabled";
+			textTrack.mode =
+				textTrack.label === subtitles?.name &&
+				textTrack.language === subtitles?.lang
+					? "showing"
+					: "disabled";
 		}
 	},
 

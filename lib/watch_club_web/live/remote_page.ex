@@ -217,8 +217,7 @@ defmodule WatchClubWeb.RemotePage do
                     {"off", dgettext("player", "Off")}
                     | Enum.map(
                         @playback_session.current_playback.text_track_choices.choices,
-                        &{&1.text_track.id,
-                         NowPlaying.text_track_name(&1, @current_user.settings.locale)}
+                        &{&1.id, @playback_session.current_playback.text_track_choices.names[&1.id]}
                       )
                   ]}
                   selected={@playback_session.current_playback.text_track_id || "off"}

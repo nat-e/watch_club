@@ -58,9 +58,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
   @european_words ~w(european europeen europeenne europe)
   @european_regions %{"es" => "ES", "pt" => "PT", "fr" => "FR"}
 
-  # A word of a release's name, such as `Shutter.Island.2010.1080p.BluRay.x265`, which some
-  # files give their tracks as title
+  # Some files give their tracks a release's name as title, such as
+  # `Signs.2002.1080p.BluRay.x264-GROUP`, whose words say nothing about the track. It has one of
+  # these words, and many others, unlike a title such as "English - Forced - 1080p".
   @release_word ~r/^(\d{3,4}p|[xh]26[45]|hevc|bluray|webrip|webdl|hdtv|dvdrip|brrip)$/
+  @release_name_min_words 5
 
   @doc "Decides the `language`, `forced?` and `sdh?` of the structure's Text Tracks."
   @spec classify(MediaStructure.t()) :: MediaStructure.t()
@@ -76,7 +78,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
     words = Enum.flat_map(tokens, &String.split(&1, "-", trim: true))
 
     {tokens, words} =
-      if Enum.any?(words, &(&1 =~ @release_word)), do: {[], []}, else: {tokens, words}
+      if length(words) >= @release_name_min_words and Enum.any?(words, &(&1 =~ @release_word)),
+        do: {[], []},
+        else: {tokens, words}
 
     language = language(track.language, tokens, words)
     code = Languages.to_code(language)
@@ -97,10 +101,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
     }
   end
 
-  # The language of the file's marker, else the one the title names. With the region the title
-  # names, unless the marker has one.
+  # The language of the file's marker, else the one the title names. With the region the marker
+  # names, else the title, by a code such as `fr-CA` or by a word such as "Canada".
   defp language(marker, tokens, words) do
-    tag = Languages.to_tag(marker) || Enum.find_value(words, &language_name/1) || code_in(tokens)
+    title_code = code_in(tokens)
+    tag = Languages.to_tag(marker) || Enum.find_value(words, &language_name/1) || title_code
     code = Languages.to_code(tag)
 
     region =
@@ -108,7 +113,12 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
         if word in @european_words, do: @european_regions[code], else: @regions[word]
       end)
 
-    if region && tag == code, do: Languages.to_tag("#{code}-#{region}"), else: tag
+    cond do
+      tag != code -> tag
+      Languages.to_code(title_code) == code and title_code != code -> title_code
+      region -> Languages.to_tag("#{code}-#{region}")
+      true -> tag
+    end
   end
 
   # A code such as `en` or `pt-br`, nearest the end first. A title's other words are often codes

@@ -3,7 +3,6 @@ defmodule WatchClub.Playbacks.PlaybackTest do
 
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Calculations.TextTrackChoices
-  alias WatchClub.Playbacks.Calculations.TextTrackChoices.Choice
 
   describe "text_track_choices" do
     test "offers one Text Track per language and region among English, French and the original language" do
@@ -23,13 +22,14 @@ defmodule WatchClub.Playbacks.PlaybackTest do
           ]
         )
 
-      assert %TextTrackChoices{choices: choices} = text_track_choices(media, generate(user()))
+      %TextTrackChoices{choices: choices, names: names} =
+        text_track_choices(media, generate(user()))
 
-      assert Enum.map(choices, &{&1.language, &1.text_track.title}) == [
-               {"en", "English"},
-               {"es", "Spanish"},
-               {"fr-CA", "VFQ"},
-               {"fr-FR", "VFF"}
+      assert Enum.map(choices, &{names[&1.id], &1.title}) == [
+               {"English", "English"},
+               {"French (Canada)", "VFQ"},
+               {"French (France)", "VFF"},
+               {"Spanish", "Spanish"}
              ]
     end
 
@@ -40,8 +40,35 @@ defmodule WatchClub.Playbacks.PlaybackTest do
           text: [%{language: "en", title: "English"}, %{language: "en", title: "SDH", sdh?: true}]
         )
 
-      assert %TextTrackChoices{choices: [%Choice{text_track: %{title: "SDH"}}]} =
-               text_track_choices(media, generate(user(prefer_sdh?: true)))
+      %TextTrackChoices{choices: [choice], names: names} =
+        text_track_choices(media, generate(user(prefer_sdh?: true)))
+
+      assert {names[choice.id], choice.title} == {"English (SDH)", "SDH"}
+    end
+
+    test "keeps the picked Text Track as the choice of its language" do
+      user = generate(user(prefer_sdh?: false))
+
+      media =
+        movie_media("en",
+          audio: [%{language: "eng"}],
+          text: [%{language: "en", title: "English"}, %{language: "en", title: "SDH", sdh?: true}]
+        )
+
+      sdh =
+        Enum.find(
+          Ash.load!(media, [video: :text_tracks], authorize?: false).video.text_tracks,
+          & &1.sdh?
+        )
+
+      session =
+        generate(playback_session(media, started_by: user, playback: [text_track_id: sdh.id]))
+
+      assert %TextTrackChoices{choices: [%{title: "SDH"}]} =
+               Playbacks.get_playback_by_id!(session.current_playback.id,
+                 load: :text_track_choices,
+                 actor: user
+               ).text_track_choices
     end
 
     test "plays the Forced Text Track in the Preferred Subtitle Language with every Audio Track" do

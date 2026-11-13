@@ -77,10 +77,10 @@ defmodule WatchClub.Languages do
   `"fr"` → "French", `"fr-CA"` → "French (Canada)", `"zh-Hant"` → "Chinese (Traditional)".
   Capitalized, as it starts a label.
   """
-  @spec display_name(String.t(), atom()) :: String.t()
-  def display_name(tag, locale) do
-    {:ok, name} =
-      Cldr.LocaleDisplay.display_name(tag,
+  @spec display_name!(String.t(), atom()) :: String.t()
+  def display_name!(tag, locale) do
+    name =
+      Cldr.LocaleDisplay.display_name!(tag,
         locale: UserLocale.to_cldr_locale_name(locale),
         backend: WatchClub.Cldr
       )

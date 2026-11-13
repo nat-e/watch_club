@@ -14,7 +14,6 @@ defmodule WatchClubWeb.TvChannel do
   require Logger
 
   alias Ash.Notifier.Notification
-  alias WatchClub.Accounts.UserLocale
   alias WatchClub.Playbacks
   alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.{Playback, Session}
@@ -23,8 +22,6 @@ defmodule WatchClubWeb.TvChannel do
   @impl true
   def join("tv", _params, socket) do
     %{cast: cast, user: user} = socket.assigns
-    # Names what it plays in the User's language
-    Gettext.put_locale(WatchClubWeb.Gettext, UserLocale.to_cldr_locale_name(user.settings.locale))
 
     with {:ok, before} <- Playbacks.get_session_by_id(cast.session_id, actor: user),
          {:ok, session} <-
@@ -37,7 +34,7 @@ defmodule WatchClubWeb.TvChannel do
       :telemetry.execute([:watch_club, :cast], %{count: 1}, %{result: result})
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "playback_session:#{user.id}")
       Phoenix.PubSub.subscribe(WatchClub.PubSub, "tv:#{session.id}")
-      {:ok, state(session, user.settings.locale), assign(socket, :session, session)}
+      {:ok, state(session), assign(socket, :session, session)}
     else
       _ended_or_playing_elsewhere ->
         :telemetry.execute([:watch_club, :cast], %{count: 1}, %{result: :refused})
@@ -127,7 +124,7 @@ defmodule WatchClubWeb.TvChannel do
 
       true ->
         session = Ash.load!(session, NowPlaying.fields(), actor: user)
-        push(socket, "state", state(session, user.settings.locale))
+        push(socket, "state", state(session))
         {:noreply, assign(socket, :session, session)}
     end
   end
@@ -150,12 +147,8 @@ defmodule WatchClubWeb.TvChannel do
   # and loads the subtitles from their files: Google's receiver framework doesn't place the ones
   # of the master playlist right, because each video segment starts its own timeline. While no
   # Text Track Choice is picked, it shows the Forced Text Track of the audio, if any.
-  defp state(
-         %Session{current_playback: %Playback{media: %{video: video}} = playback} = session,
-         locale
-       ) do
+  defp state(%Session{current_playback: %Playback{media: %{video: video}} = playback} = session) do
     choices = playback.text_track_choices
-    names = Map.new(choices.choices, &{&1.text_track.id, NowPlaying.text_track_name(&1, locale)})
     forced = choices.forced[playback.audio_track_id]
 
     %{
@@ -172,7 +165,7 @@ defmodule WatchClubWeb.TvChannel do
             &%{
               id: &1.id,
               path: PlaybackPaths.subtitles(playback, &1),
-              name: names[&1.id],
+              name: choices.names[&1.id],
               language: &1.language_code
             }
           ),

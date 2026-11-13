@@ -297,7 +297,12 @@ msgstr ""
 msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
 msgstr ""
 
-#: lib/watch_club_web/helpers/now_playing.ex
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
 #, elixir-autogen, elixir-format
 msgid "%{language} (SDH)"
+msgstr ""
+
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (forced)"
 msgstr ""

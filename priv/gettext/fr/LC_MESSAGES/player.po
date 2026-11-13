@@ -354,7 +354,13 @@ msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTT
 msgstr "Impossible de lire sur la TV. Elle n'arrive peut-être pas à joindre Watch Club : il lui faut une adresse HTTPS avec un certificat de confiance."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/helpers/now_playing.ex
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
 #, elixir-autogen, elixir-format
 msgid "%{language} (SDH)"
 msgstr "%{language} (SME)"
+
+# AI-translated (Claude)
+#: lib/watch_club/playbacks/calculations/text_track_choices.ex
+#, elixir-autogen, elixir-format
+msgid "%{language} (forced)"
+msgstr "%{language} (forcés)"

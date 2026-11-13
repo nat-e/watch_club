@@ -36,6 +36,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
       subtitle_tracks: TextTrackChoices.text_tracks(playback.text_track_choices),
+      subtitle_names: playback.text_track_choices.names,
       default_audio_track_id: playback.audio_track_id,
       default_subtitle_track_id: playback.text_track_id,
       query: query
