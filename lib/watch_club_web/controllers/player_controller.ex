@@ -13,7 +13,6 @@ defmodule WatchClubWeb.PlayerController do
   @m3u8 "application/vnd.apple.mpegurl"
 
   @playback_fields [
-    :text_track_choices,
     media: [
       video: [:default_video_track, :text_tracks, audio_tracks: [:display_label, :language_code]]
     ]
@@ -47,17 +46,6 @@ defmodule WatchClubWeb.PlayerController do
     send_text_result(
       conn,
       with_current_playback(params, &Hls.audio_playlist(&1.media.video, track_id, query)),
-      @m3u8,
-      "no-store"
-    )
-  end
-
-  def subtitle_playlist(conn, %{"track_id" => track_id} = params) do
-    query = PlaybackPaths.query(params["token"])
-
-    send_text_result(
-      conn,
-      with_current_playback(params, &Hls.subtitle_playlist(&1.media.video, track_id, query)),
       @m3u8,
       "no-store"
     )

@@ -15,7 +15,6 @@ defmodule WatchClubWeb.TvChannel do
 
   alias Ash.Notifier.Notification
   alias WatchClub.Playbacks
-  alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClubWeb.Helpers.{NowPlaying, PlaybackPaths, Url}
 
@@ -144,9 +143,8 @@ defmodule WatchClubWeb.TvChannel do
   end
 
   # What the TV plays. It finds the audio tracks by their order, which is the master playlist's,
-  # and loads the subtitles from their files: Google's receiver framework doesn't place the ones
-  # of the master playlist right, because each video segment starts its own timeline. While no
-  # Text Track Choice is picked, it shows the Forced Text Track of the audio, if any.
+  # and loads the subtitles from their files. While no Text Track Choice is picked, it shows the
+  # Forced Text Track of the audio, if any.
   defp state(%Session{current_playback: %Playback{media: %{video: video}} = playback} = session) do
     choices = playback.text_track_choices
     forced = choices.forced[playback.audio_track_id]
@@ -159,16 +157,7 @@ defmodule WatchClubWeb.TvChannel do
         subtitle: NowPlaying.subtitle(video),
         image: image_url(NowPlaying.still_path(video)),
         audio_track_ids: Enum.map(video.audio_tracks, & &1.id),
-        text_tracks:
-          Enum.map(
-            TextTrackChoices.text_tracks(choices),
-            &%{
-              id: &1.id,
-              path: PlaybackPaths.subtitles(playback, &1),
-              name: choices.names[&1.id],
-              language: &1.language_code
-            }
-          ),
+        text_tracks: NowPlaying.text_track_files(playback),
         audio_track_id: playback.audio_track_id,
         text_track_id: playback.text_track_id || (forced && forced.id)
       },

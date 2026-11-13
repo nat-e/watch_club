@@ -77,7 +77,6 @@ defmodule WatchClubWeb.Router do
     get "/hls/:playback_id/master.m3u8", PlayerController, :master_playlist
     get "/hls/:playback_id/video/:variant/index.m3u8", PlayerController, :video_playlist
     get "/hls/:playback_id/audio/:track_id/index.m3u8", PlayerController, :audio_playlist
-    get "/hls/:playback_id/subtitles/:track_id/index.m3u8", PlayerController, :subtitle_playlist
     get "/hls/:playback_id/video/:variant/:segment", PlayerController, :video_segment
     get "/hls/:playback_id/audio/:track_id/:segment", PlayerController, :audio_segment
     get "/hls/:playback_id/subtitles/:track_id/:file", PlayerController, :subtitle_file

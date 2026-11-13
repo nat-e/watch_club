@@ -171,7 +171,8 @@ const Player = {
 	},
 
 	// Loads the video in the data attributes, which plays on its own from their start
-	// position, with the audio the master playlist marks as default and the subtitles picked
+	// position, with the audio the master playlist marks as default and the subtitles picked.
+	// The master playlist lists no subtitles: each Text Track loads from its file, under its id.
 	loadVideo() {
 		const { src, thumbnailsSrc, startPosition } = this.el.dataset;
 		this.loadSubtitlesMenus();
@@ -180,16 +181,30 @@ const Player = {
 		this.countdownStart = undefined;
 		this.playingNext = false;
 		this.src = src;
-		this.startPosition = Number(startPosition);
-		this.media.source = { src, engine: { hlsJs: hlsConfig } };
+		this.media.source = {
+			src,
+			engine: { hlsJs: { ...hlsConfig, startPosition: Number(startPosition) } },
+		};
+
+		for (const track of this.media.querySelectorAll("track")) track.remove();
 
 		const thumbnails = document.createElement("track");
 		thumbnails.kind = "metadata";
 		thumbnails.label = "thumbnails";
 		thumbnails.default = true;
 		thumbnails.src = thumbnailsSrc;
-		this.media.querySelector("track")?.remove();
 		this.media.append(thumbnails);
+
+		const { tracks } = JSON.parse(this.el.dataset.subtitles);
+		for (const { id, path, name, language } of tracks) {
+			const subtitles = document.createElement("track");
+			subtitles.kind = "subtitles";
+			subtitles.id = id;
+			subtitles.src = path;
+			subtitles.label = name;
+			subtitles.srclang = language ?? "";
+			this.media.append(subtitles);
+		}
 	},
 
 	bindMediaEvents() {
@@ -198,9 +213,6 @@ const Player = {
 			this.media.addEventListener(type, listener, { signal });
 
 		on("loadedmetadata", () => {
-			// Seeking now, rather than starting hls.js at the position, loads the first
-			// segment, which hls.js needs to place the subtitles
-			if (this.startPosition) this.media.currentTime = this.startPosition;
 			// The browser has picked subtitles on its own by now
 			this.showSubtitles();
 
@@ -303,33 +315,26 @@ const Player = {
 
 	// Shows the subtitles picked, or with Off, the Forced Text Track of the audio, if any
 	showSubtitles() {
-		const hls = this.media.engine;
-		if (!hls) return;
 		const { forced } = JSON.parse(this.el.dataset.subtitles);
 		const id =
 			this.pickedSubtitles === "off"
 				? forced[this.playingTracks().audio_track_id]
 				: this.pickedSubtitles;
-		// Video.js gives each hls.js subtitles track a text track with its name and language
-		const subtitles = hls.subtitleTracks.find((track) =>
-			track.url.includes(`/subtitles/${id}/`),
-		);
-		for (const textTrack of this.subtitleTextTracks()) {
-			textTrack.mode =
-				textTrack.label === subtitles?.name &&
-				textTrack.language === subtitles?.lang
-					? "showing"
-					: "disabled";
-		}
+		for (const textTrack of this.subtitleTextTracks())
+			textTrack.mode = textTrack.id === id ? "showing" : "disabled";
 	},
 
-	// The ids of the tracks playing: the audio from its playlist's path
+	// The ids of the tracks playing: the audio from its playlist's path, else the Playback's, until
+	// hls.js tells which plays. Native HLS doesn't.
 	playingTracks() {
 		const hls = this.media.engine;
-		const audio = hls.audioTracks[hls.audioTrack];
+		const audio = hls?.audioTracks[hls.audioTrack];
 
 		return {
-			audio_track_id: audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ?? null,
+			audio_track_id:
+				audio?.url.match(/\/audio\/([^/]+)\//)?.[1] ??
+				this.el.dataset.audioTrackId ??
+				null,
 			text_track_id:
 				this.pickedSubtitles === "off" ? null : this.pickedSubtitles,
 		};
@@ -428,7 +433,7 @@ const Player = {
 			() => {},
 		);
 
-		if (!this.media.engine || this.media.readyState === 0) return;
+		if (this.media.readyState === 0) return;
 		const tracks = this.playingTracks();
 		const reported = JSON.stringify(tracks);
 		if (this.reportedTracks === undefined) {

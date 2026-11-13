@@ -11,7 +11,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
-  alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.Playback
   alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache}
 
@@ -27,18 +26,12 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     |> trunc()
   end
 
-  @doc """
-  Lists its Text Track Choices, then the Forced Text Tracks. `query`, such as `?token=…`, follows
-  every URI of the playlists, which need it.
-  """
+  @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
   def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query) do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
-      subtitle_tracks: TextTrackChoices.text_tracks(playback.text_track_choices),
-      subtitle_names: playback.text_track_choices.names,
       default_audio_track_id: playback.audio_track_id,
-      default_subtitle_track_id: playback.text_track_id,
       query: query
     }
 
@@ -54,12 +47,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   def audio_playlist(%Video{} = video, track_id, query) do
     with {:ok, _track} <- find_audio_track(video, track_id) do
       {:ok, render_media_playlist(video, query)}
-    end
-  end
-
-  def subtitle_playlist(%Video{} = video, track_id, query) do
-    with {:ok, track} <- find_subtitle_track(video, track_id) do
-      {:ok, IO.iodata_to_binary(Playlist.subtitle(track, video.duration_seconds, query))}
     end
   end
 
@@ -105,8 +92,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           source_path: playback.media.path,
           output_path: output_path,
           start_time: index * @segment_duration,
-          duration: segment_duration_at(playback.media.video, index),
-          segment_duration: @segment_duration,
+          end_time: (index + 1) * @segment_duration,
           width: quality.width,
           height: quality.height,
           video_bitrate: quality.video_bitrate
@@ -131,7 +117,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
           source_path: playback.media.path,
           output_path: output_path,
           start_time: index * @segment_duration,
-          duration: segment_duration_at(playback.media.video, index),
+          end_time: (index + 1) * @segment_duration,
           stream_index: track.stream_index
         })
       end)
@@ -241,11 +227,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     else
       {:error, :not_found}
     end
-  end
-
-  defp segment_duration_at(%Video{} = video, index) do
-    remaining = video.duration_seconds - index * @segment_duration
-    min(@segment_duration, max(remaining, 0.1))
   end
 
   defp video_segment_path(%Playback{} = playback, quality, index) do
