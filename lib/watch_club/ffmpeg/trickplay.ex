@@ -80,33 +80,40 @@ defmodule WatchClub.Ffmpeg.Trickplay do
     File.mkdir_p!(slots_dir)
 
     {tile_width, tile_height} = tile_dimensions(track)
-    frames = extract_frames!(source_path, frames_dir, "scale=#{tile_width}:#{tile_height}")
-    {last_frame_time, _path} = List.last(frames)
-    slot_count = max(round((duration || last_frame_time) / @interval_seconds), 1)
 
-    for slot <- 0..(slot_count - 1) do
-      middle = (slot + 0.5) * @interval_seconds
-      {_time, path} = Enum.min_by(frames, fn {time, _path} -> abs(time - middle) end)
-      File.cp!(path, Path.join(slots_dir, "#{slot}.jpg"))
-    end
+    duration =
+      try do
+        frames = extract_frames!(source_path, frames_dir, "scale=#{tile_width}:#{tile_height}")
+        # Without a known duration, the tiles last until the last frame.
+        {last_frame_time, _path} = List.last(frames)
+        duration = duration || last_frame_time
 
-    {_output, 0} =
-      run_ffmpeg([
-        "-i",
-        Path.join(slots_dir, "%d.jpg"),
-        "-vf",
-        "tile=#{@columns}x#{@rows}",
-        "-q:v",
-        "4",
-        # image2 numbers `%d` from 1 by default; force 0 so the manifest's
-        # zero-based sheet index lines up with the files.
-        "-start_number",
-        "0",
-        Path.join(dir, "%d.jpg")
-      ])
+        for slot <- 0..(max(round(duration / @interval_seconds), 1) - 1) do
+          middle = (slot + 0.5) * @interval_seconds
+          {_time, path} = Enum.min_by(frames, fn {time, _path} -> abs(time - middle) end)
+          File.cp!(path, Path.join(slots_dir, "#{slot}.jpg"))
+        end
 
-    File.rm_rf!(frames_dir)
-    File.rm_rf!(slots_dir)
+        {_output, 0} =
+          run_ffmpeg([
+            "-i",
+            Path.join(slots_dir, "%d.jpg"),
+            "-vf",
+            "tile=#{@columns}x#{@rows}",
+            "-q:v",
+            "4",
+            # image2 numbers `%d` from 1 by default; force 0 so the manifest's
+            # zero-based sheet index lines up with the files.
+            "-start_number",
+            "0",
+            Path.join(dir, "%d.jpg")
+          ])
+
+        duration
+      after
+        File.rm_rf!(frames_dir)
+        File.rm_rf!(slots_dir)
+      end
 
     metadata = %{
       interval_seconds: @interval_seconds,
@@ -179,11 +186,16 @@ defmodule WatchClub.Ffmpeg.Trickplay do
   # time. Keyframes skip decoding the other frames; the full decode is the
   # fallback, because some files can't be read that way.
   defp extract_frames!(source_path, frames_dir, scale) do
-    # `select=key` also drops the other frames of decoders that ignore
-    # `-skip_frame`, such as VP9's.
+    # `select` keeps at most a frame a second when every frame is decoded anyway:
+    # decoders that ignore `-skip_frame`, such as VP9's, or files of keyframes only.
     keyframes =
       Application.fetch_env!(:watch_club, :trickplay_keyframes_only) &&
-        extract_frames(source_path, frames_dir, ["-skip_frame", "nokey"], "select=key,#{scale}")
+        extract_frames(
+          source_path,
+          frames_dir,
+          ["-skip_frame", "nokey"],
+          "select='isnan(prev_selected_t)+gte(abs(t-prev_selected_t),1)',#{scale}"
+        )
 
     case keyframes do
       {:ok, [_ | _] = frames} ->
@@ -210,7 +222,8 @@ defmodule WatchClub.Ffmpeg.Trickplay do
     times_path = Path.join(frames_dir, "times.txt")
 
     # Decoders can return keyframes out of order, which the JPEG encoder
-    # rejects: `setpts` renumbers them, and `{ti}` still records their time.
+    # rejects: `setpts` numbers them in the encoder's time base, and `{ti}`
+    # still records their time.
     args =
       input_args ++
         [
@@ -219,9 +232,11 @@ defmodule WatchClub.Ffmpeg.Trickplay do
           "-an",
           "-sn",
           "-vf",
-          "#{filters},setpts=N/TB",
+          "#{filters},setpts=N",
           "-fps_mode",
           "passthrough",
+          "-enc_time_base",
+          "filter",
           "-q:v",
           "2",
           "-stats_enc_pre",
