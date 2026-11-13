@@ -141,6 +141,20 @@ defmodule WatchClubWeb.Accounts.SettingsPage do
               <:label :let={language}>{TrackLanguage.translated_label(language)}</:label>
             </.checkbox_group>
           </fieldset>
+          <label
+            for={@audio_and_subtitles_form[:prefer_sdh?].id}
+            class="flex w-full items-center justify-between gap-related rounded-card border border-border-subtle bg-surface p-related text-sm text-text"
+          >
+            <span class="flex flex-col gap-tight">
+              {dgettext("settings", "Prefer subtitles for the deaf and hard of hearing (SDH)")}
+              <span class="text-text-muted">
+                {dgettext("settings", "They also describe sounds and say who is speaking.")}
+              </span>
+            </span>
+            <%!-- Submits false when unchecked --%>
+            <input type="hidden" name={@audio_and_subtitles_form[:prefer_sdh?].name} value="false" />
+            <.checkbox field={@audio_and_subtitles_form[:prefer_sdh?]} />
+          </label>
           <:action class="sm:justify-start">
             <.button id="audio-and-subtitles-submit-button" type="submit">
               {dgettext("default", "Save")}
