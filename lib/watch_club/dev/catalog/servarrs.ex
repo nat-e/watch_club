@@ -98,6 +98,8 @@ defmodule WatchClub.Dev.Catalog.Servarrs do
   of each one by flavor.
   """
   def restore!(project, port, media, name) do
+    # Runs before the app starts
+    {:ok, _apps} = Application.ensure_all_started(:req)
     compose!(project, port, media, ["down", "--volumes", "--remove-orphans"])
     # Creates their volumes, empty, without starting them
     compose!(project, port, media, ["create"])

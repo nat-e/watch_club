@@ -31,21 +31,21 @@ defmodule WatchClub.Dev.Catalog do
     snapshot = Snapshot.prepare!(@version)
     project = Repo.config()[:database] <> "_servarrs"
 
-    if Servarrs.saved?(snapshot.name) and Snapshot.restore!(snapshot) do
-      {:ok, _apps} = Application.ensure_all_started(:watch_club)
-      base_urls = Servarrs.restore!(project, port, snapshot.media, snapshot.name)
-      reconnect_servarrs!(base_urls, port)
-      Logger.info("Restored the snapshot #{snapshot.name} of the catalog")
-    else
-      {:ok, _apps} = Application.ensure_all_started(:watch_club)
-      admin = import!(snapshot, project, port)
-      wait_until_idle!()
-      video_ids = Enum.map(Ash.read!(WatchClub.MediaCatalog.Video, actor: admin), & &1.id)
-      # The snapshot's database is a copy, which needs the database without connections
-      :ok = Application.stop(:watch_club)
-      Servarrs.save!(project, port, snapshot.media, snapshot.name)
-      Snapshot.save!(snapshot, video_ids)
-      Logger.info("Saved the snapshot #{snapshot.name} of the catalog")
+    case Snapshot.restore!(snapshot, project, port) do
+      {:ok, base_urls} ->
+        {:ok, _apps} = Application.ensure_all_started(:watch_club)
+        reconnect_servarrs!(base_urls, port)
+        Logger.info("Restored the snapshot #{snapshot.name} of the catalog")
+
+      :not_saved ->
+        {:ok, _apps} = Application.ensure_all_started(:watch_club)
+        admin = import!(snapshot, project, port)
+        wait_until_idle!()
+        video_ids = Enum.map(Ash.read!(WatchClub.MediaCatalog.Video, actor: admin), & &1.id)
+        # The snapshot's database is a copy, which needs the database without connections
+        :ok = Application.stop(:watch_club)
+        Snapshot.save!(snapshot, project, port, video_ids)
+        Logger.info("Saved the snapshot #{snapshot.name} of the catalog")
     end
   end
 
@@ -154,19 +154,19 @@ defmodule WatchClub.Dev.Catalog do
   end
 
   # Until the Scrubbing Thumbnails and Markers are done, including the Markers of a season,
-  # which wait a minute after its last episode
+  # which wait a minute after its last episode. A snapshot must not keep a failure.
   defp wait_until_idle!(attempts \\ 1_800) do
-    pending =
+    jobs =
       Oban.Job
       |> Ecto.Query.where([job], job.queue in ["trickplay_generation", "marker_detection"])
-      |> Ecto.Query.where(
-        [job],
-        job.state in ["available", "scheduled", "executing", "retryable"]
-      )
-      |> Repo.aggregate(:count)
+      |> Ecto.Query.where([job], job.state != "completed")
+      |> Repo.all()
 
     cond do
-      pending == 0 ->
+      failed = Enum.find(jobs, &(&1.state in ["discarded", "cancelled"])) ->
+        raise "#{failed.worker} failed for #{inspect(failed.args)}: #{inspect(failed.errors)}"
+
+      jobs == [] ->
         :ok
 
       attempts > 0 ->
@@ -174,7 +174,7 @@ defmodule WatchClub.Dev.Catalog do
         wait_until_idle!(attempts - 1)
 
       true ->
-        raise "#{pending} background jobs are still pending after 30 minutes"
+        raise "#{length(jobs)} background jobs are still pending after 30 minutes"
     end
   end
 end
