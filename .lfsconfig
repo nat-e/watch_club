@@ -1,0 +1,3 @@
+# The dev catalog is fetched by its seed, so clones and CI skip it. See dev/catalog/README.md
+[lfs]
+	fetchexclude = dev/catalog/media/**
