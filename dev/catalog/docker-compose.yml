@@ -1,0 +1,46 @@
+# The Radarr, Sonarr and Sportarr of one worktree, filled from the catalog by
+# `mix dev.catalog.seed`, which starts them with their ports and project name.
+# They have no indexer or download client, so they never download anything.
+
+x-servarr: &servarr
+  environment:
+    - TZ=Etc/UTC
+    # No sign-in in the browser. The API still needs the key.
+    - RADARR__AUTH__METHOD=External
+    - SONARR__AUTH__METHOD=External
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  restart: unless-stopped
+
+services:
+  radarr:
+    <<: *servarr
+    image: lscr.io/linuxserver/radarr:6.2.1
+    ports:
+      - 127.0.0.1:${RADARR_PORT}:7878
+    volumes:
+      - ./media:/media
+      - radarr-config:/config
+
+  sonarr:
+    <<: *servarr
+    image: lscr.io/linuxserver/sonarr:4.0.19
+    ports:
+      - 127.0.0.1:${SONARR_PORT}:8989
+    volumes:
+      - ./media:/media
+      - sonarr-config:/config
+
+  sportarr:
+    <<: *servarr
+    image: sportarr/sportarr:4.1.12.1122
+    ports:
+      - 127.0.0.1:${SPORTARR_PORT}:1867
+    volumes:
+      - ./media:/media
+      - sportarr-config:/config
+
+volumes:
+  radarr-config:
+  sonarr-config:
+  sportarr-config:

@@ -24,5 +24,8 @@ docker exec wc-db psql -U postgres -At -F $'\t' -d "$db" 2>/dev/null \
       echo "Could not delete webhook $notification_id from $base_url" >&2
   done || true
 
+# The worktree's own Radarr, Sonarr and Sportarr, which `mix dev.catalog.seed` started
+docker compose --project-name "${db}_servarrs" down --volumes --remove-orphans
+
 docker exec wc-db dropdb -U postgres --if-exists --force "$db"
 docker exec wc-db dropdb -U postgres --if-exists --force "$test_db"
