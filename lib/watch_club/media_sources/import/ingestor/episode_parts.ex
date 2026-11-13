@@ -27,6 +27,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.EpisodeParts do
   Returns the Parts a file holds, as `%{tv_show_episode_id: id, number: number}` maps, in order,
   or nil when one of its source episodes matches none. Pass the TV Show's `episodes` with their
   `localizations`, its TMDB id, and the file's `source_episodes` in their source's order.
+
+  Raises when a TMDB request fails.
   """
   @spec find!([TvShowEpisode.t()], integer(), [Episode.t()]) :: [map()] | nil
   def find!(episodes, tmdb_id, source_episodes) do

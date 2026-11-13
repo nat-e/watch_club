@@ -61,31 +61,36 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args} = job) do
-    media_import_id = args["media_import_id"]
-
     # From the job's arguments, so a Candidate that can't be built is reported too
-    start_metadata = %{
+    metadata = %{
       path: args["path"],
       media_type: args["media_type"],
-      trigger: if(media_import_id, do: :media_import, else: :webhook)
+      trigger: if(args["media_import_id"], do: :media_import, else: :webhook)
     }
 
-    Logger.metadata([media_import_id: media_import_id] ++ Map.to_list(start_metadata))
+    Logger.metadata([media_import_id: args["media_import_id"]] ++ Map.to_list(metadata))
 
-    :telemetry.span([:watch_club, :media_ingest], start_metadata, fn ->
-      outcome =
-        try do
-          args |> Candidate.from_map() |> ingest()
-        catch
-          kind, reason ->
-            # Oban retries a crash, and the last one counts the file as failed
-            if job.attempt >= job.max_attempts, do: count_file!(media_import_id, :failed)
-            :erlang.raise(kind, reason, __STACKTRACE__)
-        end
-
-      count_file!(media_import_id, outcome.outcome)
-      {:ok, Map.merge(start_metadata, outcome)}
+    :telemetry.span([:watch_club, :media_ingest], metadata, fn ->
+      {:ok, Map.merge(metadata, ingest_and_count!(job))}
     end)
+  end
+
+  # Ingests the file and counts its outcome on its Media Import. Oban retries a crash, and the
+  # last one counts the file as failed.
+  defp ingest_and_count!(%Oban.Job{args: args} = job) do
+    media_import_id = args["media_import_id"]
+
+    outcome =
+      try do
+        args |> Candidate.from_map() |> ingest()
+      catch
+        kind, reason ->
+          if job.attempt >= job.max_attempts, do: count_file!(media_import_id, :failed)
+          :erlang.raise(kind, reason, __STACKTRACE__)
+      end
+
+    count_file!(media_import_id, outcome.outcome)
+    outcome
   end
 
   # The file's outcome, its reason, and what explains it
