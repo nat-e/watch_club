@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.13](https://github.com/nat-e/watch_club/compare/v0.1.12...v0.1.13) (2026-11-14)
+
+
+### Features
+
+* **dev:** seed dev with a catalog of free-licensed media ([#123](https://github.com/nat-e/watch_club/issues/123)) ([66e5e24](https://github.com/nat-e/watch_club/commit/66e5e2418f6a8a70e064ce039b382310190a1ba8))
+
+
+### Bug Fixes
+
+* **media:** count Text Tracks flagged forced as full from their lines per minute ([#127](https://github.com/nat-e/watch_club/issues/127)) ([578c616](https://github.com/nat-e/watch_club/commit/578c616508b0ad842e8be683c80948c471d0defe))
+
 ## [0.1.12](https://github.com/nat-e/watch_club/compare/v0.1.11...v0.1.12) (2026-11-13)
 
 
