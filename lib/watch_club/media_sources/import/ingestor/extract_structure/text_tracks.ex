@@ -5,9 +5,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
 
   Files often mark them wrong, so it also reads each track's title, which for a sidecar file
   is the end of its name: "French (Canada)", "VFQ", "English SDH", "en.hi", "Forced", "Full".
-  A track marked forced is a full one when its title says so. Otherwise, it's full with at least
-  5 lines per minute of the video, when the file counts its lines, or else when its language
-  matches none of the audio tracks'.
+  A title saying Full or Forced wins over the forced marker. A track marked forced whose title
+  says neither is full with at least 5 lines per minute of the video, when the file counts its
+  lines, or else when its language matches none of the audio tracks'.
   """
 
   alias WatchClub.Languages

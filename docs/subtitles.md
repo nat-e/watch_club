@@ -18,7 +18,7 @@ Picture based subtitles tracks are hidden and not supported.
 
 Subtitle tracks metadata is extracted at import time and stored in the database.
 Since Forced and SDH markers are often not accurate, we also extract them, with the language and region, from the name of the file/track.
-A track marked forced is a full track when its name says so ("Full", "Complet"). Otherwise, it is full with at least 5 lines per minute of the video, when the file counts its lines (mkvmerge writes the count), or else when its language matches none of the video's audio tracks.
+A track's name wins over its forced marker: "Full" or "Complet" makes it a full track, "Forced" a forced one. A track marked forced whose name says neither is a full track with at least 5 lines per minute of the video, when the file counts its lines (mkvmerge writes the count), or else when its language matches none of the video's audio tracks.
 All tracks metadata is stored in the database, and filtered later, so that adding or removing a language does not need re-importing.
 
 ## Future improvements
