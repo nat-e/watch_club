@@ -5,8 +5,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
 
   Files often mark them wrong, so it also reads each track's title, which for a sidecar file
   is the end of its name: "French (Canada)", "VFQ", "English SDH", "en.hi", "Forced", "Full".
-  A track marked forced is a full one when its title says so, or when its language matches
-  none of the audio tracks'.
+  A title saying Full or Forced wins over the forced marker. A track marked forced whose title
+  says neither is full with at least 5 lines per minute of the video, when the file counts its
+  lines, or else when its language matches none of the audio tracks'.
   """
 
   alias WatchClub.Languages
@@ -16,6 +17,9 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
   @full_words ~w(full complet complete completo)
   # `hi` is also Hindi's code
   @sdh_words ~w(sdh shd cc hi sme malentendants hearing deaf)
+
+  # Among 19,000 text tracks of one catalog, forced ones have at most 2.3, full ones at least 6.6
+  @full_track_min_lines_per_minute 5
 
   # The region or script each word names. `european` leaves it to the language.
   @regions %{
@@ -69,10 +73,17 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
   def classify(%MediaStructure{} = structure) do
     audio_languages = Enum.map(structure.audio_tracks, &Languages.to_code(&1.language))
 
-    %{structure | text_tracks: Enum.map(structure.text_tracks, &classify(&1, audio_languages))}
+    %{
+      structure
+      | text_tracks:
+          Enum.map(
+            structure.text_tracks,
+            &classify(&1, audio_languages, structure.duration_seconds)
+          )
+    }
   end
 
-  defp classify(track, audio_languages) do
+  defp classify(track, audio_languages, duration_seconds) do
     # Tokens keep the hyphens of tags such as `pt-BR`, words split them
     tokens = (track.title || "") |> normalize() |> String.split(~r/[^\p{L}\p{N}-]+/u, trim: true)
     words = Enum.flat_map(tokens, &String.split(&1, "-", trim: true))
@@ -86,6 +97,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
     code = Languages.to_code(language)
     sdh_words = if code == "hi", do: @sdh_words -- ["hi"], else: @sdh_words
 
+    lines_per_minute =
+      if track.line_count && duration_seconds && duration_seconds > 0,
+        do: track.line_count / duration_seconds * 60
+
     %{
       track
       | language: language,
@@ -94,9 +109,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
           cond do
             Enum.any?(words, &(&1 in @full_words)) -> false
             Enum.any?(words, &(&1 in @forced_words)) -> true
+            not track.forced? -> false
+            lines_per_minute -> lines_per_minute < @full_track_min_lines_per_minute
             # An audio track without a language may be in any
-            track.forced? -> code in audio_languages or nil in audio_languages
-            true -> false
+            true -> code in audio_languages or nil in audio_languages
           end
     }
   end

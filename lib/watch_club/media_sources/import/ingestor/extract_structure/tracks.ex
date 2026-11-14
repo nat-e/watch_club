@@ -99,10 +99,19 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
         codec: stream["codec_name"],
         language: get_in(stream, ["tags", "language"]),
         title: get_in(stream, ["tags", "title"]),
+        line_count: line_count(stream["tags"]),
         default?: get_in(stream, ["disposition", "default"]) == 1,
         forced?: get_in(stream, ["disposition", "forced"]) == 1,
         sdh?: get_in(stream, ["disposition", "hearing_impaired"]) == 1
       }
+    end)
+  end
+
+  # mkvmerge's statistics count a text track's lines in `NUMBER_OF_FRAMES`, which some files
+  # suffix with the track's language, such as `NUMBER_OF_FRAMES-eng`
+  defp line_count(tags) do
+    Enum.find_value(tags || %{}, fn {key, value} ->
+      if String.starts_with?(key, "NUMBER_OF_FRAMES"), do: parse_int(value)
     end)
   end
 

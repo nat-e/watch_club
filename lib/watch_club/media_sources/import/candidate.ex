@@ -183,6 +183,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
         :codec,
         :language,
         :title,
+        # From the file's statistics, for deciding whether it's forced. Not saved.
+        :line_count,
         default?: false,
         forced?: false,
         sdh?: false
