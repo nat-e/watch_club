@@ -153,6 +153,28 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
     end
 
     @tag :tmp_dir
+    test "counts a Text Track marked forced as full from the lines per minute the file counts",
+         %{tmp_dir: tmp_dir} do
+      # A one-minute Video
+      stub_ffprobe(
+        video_metadata([
+          audio("eng"),
+          subtitles("eng", "English", %{"forced" => 1}, %{"NUMBER_OF_FRAMES-eng" => "12"}),
+          subtitles("fre", "French", %{"forced" => 1}, %{"NUMBER_OF_FRAMES" => "2"}),
+          subtitles("eng", "English Forced", %{"forced" => 1}, %{"NUMBER_OF_FRAMES" => "12"})
+        ])
+      )
+
+      {:ok, candidate} = ExtractStructure.apply(Candidate.new(video_file!(tmp_dir), :movie))
+
+      assert [
+               %TextTrack{language: "en", forced?: false},
+               %TextTrack{language: "fr", forced?: true},
+               %TextTrack{language: "en", forced?: true}
+             ] = candidate.media_structure.text_tracks
+    end
+
+    @tag :tmp_dir
     test "reads the language, region, forced and SDH of sidecar Text Tracks from their names",
          %{tmp_dir: tmp_dir} do
       stub_ffprobe(video_metadata([audio("eng")]))
@@ -265,11 +287,11 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
   defp audio(language),
     do: %{"codec_type" => "audio", "codec_name" => "ac3", "tags" => %{"language" => language}}
 
-  defp subtitles(language, title, disposition \\ %{}) do
+  defp subtitles(language, title, disposition \\ %{}, tags \\ %{}) do
     %{
       "codec_type" => "subtitle",
       "codec_name" => "subrip",
-      "tags" => %{"language" => language, "title" => title},
+      "tags" => Map.merge(%{"language" => language, "title" => title}, tags),
       "disposition" => disposition
     }
   end

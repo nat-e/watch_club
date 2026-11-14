@@ -678,7 +678,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Text Track** belongs to exactly one **Video**
 - A **Text Track** may be embedded in the **Video** file or provided by a separate local file
 - A **Text Track** may identify its language and region, default selection, and whether it is a **Forced Text Track** or an **SDH Text Track**. A **Media Import** reads them from the file's markers and from the track's or sidecar file's name, because the markers are often wrong
-- A **Text Track** marked forced is a full one when its name says so, or when its language matches none of its **Video**'s **Audio Tracks**
+- A **Text Track** marked forced is a full one when its name says so. Otherwise, it is full with at least 5 lines per minute of its **Video**, when the file counts its lines, or else when its language matches none of its **Video**'s **Audio Tracks**
 - A sidecar **Text Track** file is part of its **Video**, not separate **Media**
 - An **Ebook** is attached to exactly one **Book**
 - An **Audiobook** is attached to exactly one **Book**
