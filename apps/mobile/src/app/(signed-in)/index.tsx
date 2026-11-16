@@ -7,7 +7,7 @@ import {Button} from '@/components/button';
 import {Screen} from '@/components/screen';
 import {useSessionStore} from '@/session';
 
-/** Home, where signed-in Users land: who they are, their settings, and signing out. */
+/** Shows Home, where signed-in Users land: who they are, their settings, and signing out. */
 export default function Home() {
   const {t} = useTranslation('core');
   const user = useCurrentUser();
@@ -23,10 +23,21 @@ export default function Home() {
           <Text className="text-muted-foreground">{t($ => $.core.user.instanceAdministrator)}</Text>
         )}
       </View>
-      <Button variant="outline" onPress={() => router.navigate('/settings')}>
+      <Button
+        variant="outline"
+        onPress={() => {
+          router.navigate('/settings');
+        }}
+      >
         {t($ => $.core.settings.title)}
       </Button>
-      <Button variant="outline" disabled={signOut.isPending} onPress={() => signOut.mutate()}>
+      <Button
+        variant="outline"
+        disabled={signOut.isPending}
+        onPress={() => {
+          signOut.mutate();
+        }}
+      >
         {t($ => $.core.user.signOut)}
       </Button>
     </Screen>

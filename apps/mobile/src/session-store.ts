@@ -1,6 +1,7 @@
 /**
- * Who's signed in, and to which Instance, outside React. The Instance's URL and the session token
- * stay in the device's secure storage, and the API client sends every request with them.
+ * The Session outside React: who's signed in, and to which Instance. The Instance's URL and the
+ * session token stay in the device's secure storage, and the API client sends every request with
+ * them.
  */
 import type {QueryClient} from '@tanstack/react-query';
 import {type Credentials, client, loginToken, logout} from '@watchclub/api';
@@ -8,7 +9,7 @@ import {forgetCurrentUser, setCurrentUser} from '@watchclub/core/accounts/curren
 import {getBundleOrigin} from 'expo/internal/bundle-origin';
 import * as secureStore from 'expo-secure-store';
 
-/** Which Instance the app talks to, and whether it has a session token for it. */
+/** The Instance the app talks to, and whether the app has a session token for it. */
 export interface Session {
   /** The base URL of the Instance the User last signed in to, or null before they first do */
   readonly instanceUrl: string | null;

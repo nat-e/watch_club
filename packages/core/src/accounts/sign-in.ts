@@ -34,12 +34,12 @@ export function useSignInFormOptions(signIn: (credentials: Credentials) => Promi
     onSubmit: async ({value, createValidationError}) => {
       try {
         await signIn({username: value.username.trim(), password: value.password});
-        return null;
       } catch (error) {
         return hasCode(error, 'wrong_credentials')
           ? createValidationError({fields: {password: t($ => $.core.signIn.wrongCredentials)}})
           : createValidationError(t($ => $.core.errors.somethingWentWrong));
       }
+      return null;
     },
   });
 }

@@ -8,7 +8,7 @@ import {Screen} from '@/components/screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
-/** Where the User signs in to their WatchClub with its address, their username and password. */
+/** Shows the form that signs the User in to their WatchClub: its address, username and password. */
 export default function SignIn() {
   const {t} = useTranslation(['mobile', 'core']);
   const {session} = useSession();
@@ -16,7 +16,7 @@ export default function SignIn() {
   // The keyboard's next key moves from one field to the next
   const usernameInput = useRef<ComponentRef<typeof TextInput>>(null);
   const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
-  // Where the credentials go: the URL the address form's submission found a WatchClub at
+  // The URL the credentials go to, which the address form's submission found a WatchClub at
   const destination = useRef<string | null>(null);
   const signInForm = useAppForm(
     useSignInFormOptions(credentials => {

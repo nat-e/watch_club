@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, Text, View} from 'react-native';
 import {Screen} from '@/components/screen';
 
-/** Settings, where Users choose their User Preferences. Picking a language saves it. */
+/** Shows Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
   const {t} = useTranslation('core');
   const localeNames = useLocaleNames();
@@ -36,7 +36,9 @@ export default function Settings() {
               accessibilityRole="radio"
               accessibilityState={{checked: selected}}
               disabled={save.isPending}
-              onPress={() => save.mutate({body: {locale}})}
+              onPress={() => {
+                save.mutate({body: {locale}});
+              }}
               className={`h-11 justify-center rounded-lg border px-4 focus:ring-2 focus:ring-ring ${selected ? 'border-primary bg-accent' : 'border-border active:bg-accent'}`}
             >
               <Text className="text-base text-foreground">{localeNames[locale]}</Text>

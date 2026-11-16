@@ -22,7 +22,7 @@ interface SessionState {
   isInstanceUnreachable: boolean;
 }
 
-/** What the provider gives the screens: the store, and its state once loaded. */
+/** The store and its state, which the provider gives the screens once loaded. */
 interface SessionContextValue extends SessionState {
   store: SessionStore;
 }

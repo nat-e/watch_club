@@ -6,8 +6,8 @@ import {Screen} from '@/components/screen';
 import {useRetrySession, useSessionStore} from '@/session';
 
 /**
- * Where signed-in Users land when the app can't reach their WatchClub, as when the device is
- * offline: they try again, or sign out to sign in elsewhere.
+ * Shows that the app can't reach the User's WatchClub, as when the device is offline, and lets
+ * them try again, or sign out to sign in elsewhere.
  */
 export default function Unreachable() {
   const {t} = useTranslation(['mobile', 'core']);
