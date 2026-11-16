@@ -4,7 +4,7 @@
  */
 import {MutationCache, QueryCache, QueryClient} from '@tanstack/react-query';
 import {hasCode, UnexpectedError} from '@watchclub/api';
-import {signedOut} from './accounts/session';
+import {forgetCurrentUser} from './accounts/current-user';
 
 /** The number of times a read is tried again, as many as TanStack Query tries by default. */
 const MAX_RETRIES = 3;
@@ -24,9 +24,9 @@ interface QueryClientOptions {
  * session ends, the API refuses requests: the client then signs the User out.
  */
 export function createQueryClient({onSessionEnded}: QueryClientOptions = {}): QueryClient {
-  async function signOutWhenRefused(error: unknown) {
+  async function forgetUserWhenSessionEnds(error: unknown) {
     if (hasCode(error, 'unauthorized')) {
-      await signedOut(queryClient);
+      await forgetCurrentUser(queryClient);
       await onSessionEnded?.();
     }
   }
@@ -38,8 +38,8 @@ export function createQueryClient({onSessionEnded}: QueryClientOptions = {}): Qu
           error instanceof UnexpectedError && failureCount < MAX_RETRIES,
       },
     },
-    queryCache: new QueryCache({onError: signOutWhenRefused}),
-    mutationCache: new MutationCache({onError: signOutWhenRefused}),
+    queryCache: new QueryCache({onError: forgetUserWhenSessionEnds}),
+    mutationCache: new MutationCache({onError: forgetUserWhenSessionEnds}),
   });
   return queryClient;
 }

@@ -3,7 +3,7 @@
  */
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {updatePreferencesMutation} from '@watchclub/api';
-import {signedIn} from './session';
+import {setCurrentUser} from './current-user';
 
 /** Returns the mutation that saves the User's Preferences, after which the app follows them. */
 export function useSavePreferences() {
@@ -11,6 +11,6 @@ export function useSavePreferences() {
   return useMutation({
     ...updatePreferencesMutation(),
     // The app switches to the User's new Locale
-    onSuccess: user => signedIn(queryClient, user),
+    onSuccess: user => setCurrentUser(queryClient, user),
   });
 }

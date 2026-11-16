@@ -1,21 +1,16 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useQueryClient} from '@tanstack/react-query';
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
 import {
-  type CreateInstanceAdministratorError,
-  createInstanceAdministratorMutation,
+  createInstanceAdministrator,
   getInstanceOptions,
-  hasCode,
   type PasswordProblem,
   UnexpectedError,
   type UsernameProblem,
 } from '@watchclub/api';
-import {signedIn} from '@watchclub/core/accounts/session';
+import {setCurrentUser} from '@watchclub/core/accounts/current-user';
 import {negotiateLocale} from '@watchclub/core/l10n';
-import {type FormEvent, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {SomethingWentWrong} from '@/components/something-went-wrong';
-import {TextField} from '@/components/text-field';
-import {Button} from '@/components/ui/button';
+import {useAppForm} from '@/components/form';
 import {Card, CardContent, CardDescription, CardHeader} from '@/components/ui/card';
 
 /** Setup, where a new WatchClub's first visitor creates the Instance Administrator. */
@@ -33,65 +28,15 @@ function Setup() {
   const {t} = useTranslation(['web', 'core']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [passwordsDiffer, setPasswordsDiffer] = useState(false);
 
-  /** Records that WatchClub is set up, so the pages stop sending visitors here. */
-  function setUpDone() {
+  /** Marks Setup as done, so the pages stop sending visitors here. */
+  function markSetupDone() {
     queryClient.setQueryData(
       getInstanceOptions().queryKey,
       // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
       instance => instance && {...instance, needs_setup: false},
     );
   }
-
-  const setUp = useMutation({
-    ...createInstanceAdministratorMutation(),
-    onSuccess: async user => {
-      setUpDone();
-      await signedIn(queryClient, user);
-      await navigate({to: '/'});
-    },
-    onError: async error => {
-      // Someone else finished Setup in the meantime
-      if (hasCode(error, 'instance_administrator_already_exists')) {
-        setUpDone();
-        await navigate({to: '/'});
-      }
-    },
-  });
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const password = String(form.get('password'));
-    const passwordsDiffer = form.get('password_confirmation') !== password;
-    setPasswordsDiffer(passwordsDiffer);
-    if (passwordsDiffer) {
-      // Its errors were about values the visitor may have changed since
-      setUp.reset();
-    } else {
-      const username = String(form.get('username'));
-      const locale = negotiateLocale(navigator.languages);
-      setUp.mutate({body: {username, password, locale}});
-    }
-  }
-
-  /** Returns the problems with the fields that made Setup fail, if they did. */
-  function fieldProblems(error: CreateInstanceAdministratorError | UnexpectedError) {
-    if (error instanceof UnexpectedError) {
-      return undefined;
-    }
-    switch (error.code) {
-      case 'invalid_fields':
-        return error;
-      case 'instance_administrator_already_exists':
-      case 'invalid_request':
-      case 'internal_error':
-        return undefined;
-    }
-  }
-
-  const problems = setUp.error ? fieldProblems(setUp.error) : undefined;
 
   function usernameMessage(problem: UsernameProblem): string {
     switch (problem.code) {
@@ -115,6 +60,55 @@ function Setup() {
     }
   }
 
+  const form = useAppForm({
+    defaultValues: {username: '', password: '', passwordConfirmation: ''},
+    validators: [
+      {
+        // On submit only, as the visitor may not have typed the confirmation yet
+        triggers: [],
+        run: ({value, createErrorMap}) => {
+          const errors = createErrorMap();
+          if (value.passwordConfirmation !== value.password) {
+            errors.fields.passwordConfirmation = t($ => $.web.setup.passwordsDiffer);
+          }
+          return errors;
+        },
+      },
+    ],
+    onSubmit: async ({value, createValidationError}) => {
+      const locale = negotiateLocale(navigator.languages);
+      const {data: user, error} = await createInstanceAdministrator({
+        body: {username: value.username, password: value.password, locale},
+      });
+      if (user) {
+        markSetupDone();
+        await setCurrentUser(queryClient, user);
+        await navigate({to: '/'});
+        return null;
+      }
+      if (error instanceof UnexpectedError) {
+        return createValidationError(t($ => $.core.errors.somethingWentWrong));
+      }
+      switch (error.code) {
+        case 'invalid_fields':
+          return createValidationError({
+            fields: {
+              username: error.username && usernameMessage(error.username),
+              password: error.password && passwordMessage(error.password),
+            },
+          });
+        // Someone else finished Setup in the meantime
+        case 'instance_administrator_already_exists':
+          markSetupDone();
+          await navigate({to: '/'});
+          return null;
+        case 'invalid_request':
+        case 'internal_error':
+          return createValidationError(t($ => $.core.errors.somethingWentWrong));
+      }
+    },
+  });
+
   return (
     <Card>
       <CardHeader className="gap-3">
@@ -123,34 +117,39 @@ function Setup() {
         <CardDescription>{t($ => $.web.setup.keepItToYourself)}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* The server's errors show under the fields, rather than the browser's */}
-        <form noValidate onSubmit={submit} className="flex flex-col gap-6">
-          <TextField
-            label={t($ => $.core.user.username)}
-            error={problems?.username ? usernameMessage(problems.username) : undefined}
-            name="username"
-            autoComplete="username"
-            autoFocus
-          />
-          <TextField
-            label={t($ => $.core.user.password)}
-            error={problems?.password ? passwordMessage(problems.password) : undefined}
-            name="password"
-            type="password"
-            autoComplete="new-password"
-          />
-          <TextField
-            label={t($ => $.web.setup.confirmPassword)}
-            error={passwordsDiffer ? t($ => $.web.setup.passwordsDiffer) : undefined}
-            name="password_confirmation"
-            type="password"
-            autoComplete="new-password"
-          />
-          {setUp.isError && !problems && <SomethingWentWrong />}
-          <Button type="submit" className="w-full" disabled={setUp.isPending}>
-            {t($ => $.web.setup.submit)}
-          </Button>
-        </form>
+        <form.AppForm>
+          <form.Form className="flex flex-col gap-6">
+            <form.Field name="username">
+              {field => (
+                <field.TextField
+                  label={t($ => $.core.user.username)}
+                  autoComplete="username"
+                  autoFocus
+                />
+              )}
+            </form.Field>
+            <form.Field name="password">
+              {field => (
+                <field.TextField
+                  label={t($ => $.core.user.password)}
+                  type="password"
+                  autoComplete="new-password"
+                />
+              )}
+            </form.Field>
+            <form.Field name="passwordConfirmation">
+              {field => (
+                <field.TextField
+                  label={t($ => $.web.setup.confirmPassword)}
+                  type="password"
+                  autoComplete="new-password"
+                />
+              )}
+            </form.Field>
+            <form.FormError />
+            <form.SubmitButton className="w-full">{t($ => $.web.setup.submit)}</form.SubmitButton>
+          </form.Form>
+        </form.AppForm>
       </CardContent>
     </Card>
   );

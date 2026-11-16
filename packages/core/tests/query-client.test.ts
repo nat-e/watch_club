@@ -1,6 +1,6 @@
 import {ApiError, UnexpectedError, type User} from '@watchclub/api';
 import {describe, expect, it, vi} from 'vitest';
-import {currentUserQuery} from '../src/accounts/session';
+import {currentUserQuery} from '../src/accounts/current-user';
 import {createQueryClient} from '../src/query-client';
 
 const ALICE: User = {

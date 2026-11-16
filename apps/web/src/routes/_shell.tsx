@@ -8,8 +8,9 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import {logoutMutation, type User} from '@watchclub/api';
-import {currentUserQuery, signedOut} from '@watchclub/core/accounts/session';
+import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
 import {ChevronsUpDownIcon, HouseIcon, LogOutIcon, SettingsIcon} from 'lucide-react';
+import {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {
@@ -31,9 +32,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 
-/** Lays out the pages for signed-in Users, beside a sidebar with the navigation and their menu. */
+/**
+ * Lays out the pages for signed-in Users, beside a sidebar with the navigation and their menu. On
+ * phones, the sidebar slides in from a bar above the page.
+ */
 export const Route = createFileRoute('/_shell')({
   beforeLoad: async ({context, location}) => {
     const user = await context.queryClient.ensureQueryData(currentUserQuery);
@@ -46,55 +52,18 @@ export const Route = createFileRoute('/_shell')({
 });
 
 function Shell() {
-  const {t} = useTranslation(['web', 'core']);
   const {data: user} = useSuspenseQuery(currentUserQuery);
-  const location = useLocation();
   // Signed out: `beforeLoad` sends the visitor to sign in once the router runs it again
   if (!user) {
     return null;
   }
 
+  // `open` keeps the sidebar on wide screens, which have no button to bring it back
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="none" className="sticky top-0 h-svh">
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" render={<Link to="/" />}>
-                {/* i18next-instrument-ignore: the name stays the same in every language */}
-                <span className="font-heading text-base font-semibold">WatchClub</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <nav aria-label={t($ => $.web.shell.navigation)}>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={location.pathname === '/'}
-                      render={<Link to="/" />}
-                    >
-                      <HouseIcon />
-                      <span>{t($ => $.core.home.title)}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </nav>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <UserMenu user={user} />
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
+    <SidebarProvider open>
+      <AppSidebar user={user} />
       <SidebarInset>
+        <PhoneBar />
         <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-6">
           <Outlet />
         </div>
@@ -103,15 +72,83 @@ function Shell() {
   );
 }
 
+/**
+ * Shows the navigation and the User's menu. On phones, it slides in over the page, and hides once
+ * one of its links opens a page.
+ */
+function AppSidebar({user}: {user: User}) {
+  const {t} = useTranslation(['web', 'core']);
+  const location = useLocation();
+  const router = useRouter();
+  const {setOpenMobile} = useSidebar();
+  useEffect(
+    () =>
+      router.subscribe('onResolved', () => {
+        setOpenMobile(false);
+      }),
+    [router, setOpenMobile],
+  );
+
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" render={<Link to="/" />}>
+              {/* i18next-instrument-ignore: the name stays the same in every language */}
+              <span className="font-heading text-base font-semibold">WatchClub</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <nav aria-label={t($ => $.web.shell.navigation)}>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton isActive={location.pathname === '/'} render={<Link to="/" />}>
+                    <HouseIcon />
+                    <span>{t($ => $.core.home.title)}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </nav>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <UserMenu user={user} />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
+/** Shows a bar above the page on phones, whose button slides the sidebar in. */
+function PhoneBar() {
+  return (
+    <header className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background px-3 md:hidden">
+      <SidebarTrigger />
+      {/* i18next-instrument-ignore: the name stays the same in every language */}
+      <span className="font-heading text-base font-semibold">WatchClub</span>
+    </header>
+  );
+}
+
 /** The button that opens the User's menu, with their settings and signing out. */
 function UserMenu({user}: {user: User}) {
   const {t} = useTranslation('core');
   const queryClient = useQueryClient();
   const router = useRouter();
+  const {isMobile} = useSidebar();
   const signOut = useMutation({
     ...logoutMutation(),
     onSuccess: async () => {
-      await signedOut(queryClient);
+      await forgetCurrentUser(queryClient);
       await router.invalidate();
     },
   });
@@ -134,7 +171,8 @@ function UserMenu({user}: {user: User}) {
         </span>
         <ChevronsUpDownIcon className="ml-auto" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="right" align="end">
+      {/* On phones, the sidebar leaves no room on its right */}
+      <DropdownMenuContent side={isMobile ? 'top' : 'right'} align="end">
         <DropdownMenuItem render={<Link to="/settings" />}>
           <SettingsIcon />
           {t($ => $.core.settings.title)}

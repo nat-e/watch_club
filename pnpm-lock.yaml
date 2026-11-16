@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@tanstack/react-form':
+      specifier: 2.0.0-alpha.3
+      version: 2.0.0-alpha.3
     '@tanstack/react-query':
       specifier: ^5.104.1
       version: 5.107.1
@@ -50,6 +53,9 @@ importers:
       '@formatjs/intl-pluralrules':
         specifier: ^7.0.2
         version: 7.0.2
+      '@tanstack/react-form':
+        specifier: 'catalog:'
+        version: 2.0.0-alpha.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.3.0)
@@ -146,6 +152,9 @@ importers:
       '@fontsource-variable/reddit-sans':
         specifier: ^5.3.0
         version: 5.3.0
+      '@tanstack/react-form':
+        specifier: 'catalog:'
+        version: 2.0.0-alpha.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.3.0)
@@ -231,6 +240,9 @@ importers:
 
   packages/core:
     devDependencies:
+      '@tanstack/react-form':
+        specifier: 'catalog:'
+        version: 2.0.0-alpha.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.107.1(@types/react@19.3.0)(react@19.3.0)
@@ -1855,12 +1867,26 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
+  '@tanstack/form-core@2.0.0-alpha.3':
+    resolution: {integrity: sha512-TbwZhIJpK7MWxzA40JuPtTOEJ32d1NPd2ksk8mlGzzx24tN+tGI2v+xOssJvlu3CFvj4BluV1x6unaqd4VWiPQ==}
+    engines: {node: '>=18'}
+
   '@tanstack/history@1.162.5':
     resolution: {integrity: sha512-w1+YvwmTkwt5n8yUqEH3IWZ9DsmorCZW/EQ3KYHnqEgIkOZpH54NvW6/Epq3Dzb8H0ifIeYX8PExvrNLIH5FIA==}
     engines: {node: '>=20.19'}
 
+  '@tanstack/pacer-lite@0.2.2':
+    resolution: {integrity: sha512-eQ1MyLKCHyXiH7NbdmB80W77OhiMgGBUb+qDx/8WMGbwg5Lf/NlfD0TfNYAqY77i8V3AxoDoYdICrQE5ADw4Yw==}
+    engines: {node: '>=18'}
+
   '@tanstack/query-core@5.107.1':
     resolution: {integrity: sha512-PSyAik11oQBEVOiVy5hjZWHmoUqOXqK1WYy4v55mcxozEfKaQgpUMsgnXhWjuESzSht8JfzqMS1m6M/9CpNgvg==}
+
+  '@tanstack/react-form@2.0.0-alpha.3':
+    resolution: {integrity: sha512-n3ocTax6Dlb26j6/WVRmDmRS1Hllgr83XscB5XjO109ZnWNRQ/jZyad8IctFZp2CdyqoUwqpO5niFvHevgSp3A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
 
   '@tanstack/react-query@5.107.1':
     resolution: {integrity: sha512-udCOOLp3ZAheUrIHLCe+ZZge6nr2ZUrGMSWcCuXsjY1Bf2JeeE09oxst97PILiCY6N8xo/7bIo3Hvz13zh06FA==}
@@ -6426,9 +6452,24 @@ snapshots:
       tailwindcss: 4.3.5
       vite: 8.3.6(@types/node@26.6.6)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
+  '@tanstack/form-core@2.0.0-alpha.3':
+    dependencies:
+      '@tanstack/pacer-lite': 0.2.2
+      '@tanstack/store': 0.11.2
+
   '@tanstack/history@1.162.5': {}
 
+  '@tanstack/pacer-lite@0.2.2': {}
+
   '@tanstack/query-core@5.107.1': {}
+
+  '@tanstack/react-form@2.0.0-alpha.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@tanstack/form-core': 2.0.0-alpha.3
+      '@tanstack/react-store': 0.11.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react: 19.3.0
+    transitivePeerDependencies:
+      - react-dom
 
   '@tanstack/react-query@5.107.1(@types/react@19.3.0)(react@19.3.0)':
     dependencies:

@@ -1,5 +1,5 @@
 /**
- * The signed-in User, as both apps read it, or null once signed out.
+ * The current User, who's signed in, as both apps read and change it.
  */
 import {hashKey, type QueryClient, queryOptions, useSuspenseQuery} from '@tanstack/react-query';
 import {getCurrentUser, getCurrentUserQueryKey, hasCode, type User} from '@watchclub/api';
@@ -21,7 +21,7 @@ export const currentUserQuery = queryOptions({
 });
 
 /** Returns the signed-in User, for the screens that only Users see. */
-export function useUser(): User {
+export function useCurrentUser(): User {
   const {data: user} = useSuspenseQuery(currentUserQuery);
   if (!user) {
     throw new Error('only signed-in screens can read the User');
@@ -29,15 +29,16 @@ export function useUser(): User {
   return user;
 }
 
-/** Records that the User signed in, so screens show them without asking the API again. */
-export async function signedIn(queryClient: QueryClient, user: User): Promise<void> {
-  // A request sent before signing in would answer that nobody is
+/** Makes `user` the current User, so screens show them without asking the API again. */
+export async function setCurrentUser(queryClient: QueryClient, user: User): Promise<void> {
+  // A request sent earlier would overwrite `user` with an older answer, such as that nobody is
+  // signed in
   await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
   queryClient.setQueryData(currentUserQuery.queryKey, user);
 }
 
-/** Records that the User signed out, and forgets everything the API told them. */
-export async function signedOut(queryClient: QueryClient): Promise<void> {
+/** Makes nobody the current User, and forgets everything the API told the last one. */
+export async function forgetCurrentUser(queryClient: QueryClient): Promise<void> {
   await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
   // Updated rather than removed, so the screens that show the User see it
   queryClient.setQueryData(currentUserQuery.queryKey, null);

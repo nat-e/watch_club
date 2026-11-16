@@ -1,5 +1,5 @@
+import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
-import {useUser} from '@watchclub/core/accounts/session';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
 import {Pressable, Text, View} from 'react-native';
@@ -9,7 +9,7 @@ import {Screen} from '@/components/screen';
 export default function Settings() {
   const {t} = useTranslation('core');
   const localeNames = useLocaleNames();
-  const user = useUser();
+  const user = useCurrentUser();
   const save = useSavePreferences();
 
   return (

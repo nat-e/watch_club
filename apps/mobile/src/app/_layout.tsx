@@ -8,16 +8,19 @@ import {useEffect} from 'react';
 import {useCSSVariable} from 'uniwind';
 import {Localization} from '@/l10n';
 import {SessionProvider, useSession} from '@/session';
+import {SessionStore} from '@/session-store';
 
 splashScreen.preventAutoHideAsync();
 
-// Once the session ends, `Screens` shows signing in, as it follows the User
-const queryClient = createQueryClient();
+// Once the session ends, the store forgets its token, and `Screens` shows signing in
+const queryClient = createQueryClient({onSessionEnded: () => sessionStore.forgetToken()});
+const sessionStore = new SessionStore(queryClient);
+sessionStore.restore();
 
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
+      <SessionProvider store={sessionStore}>
         <Localization>
           <StatusBar style="light" />
           <Screens />
@@ -27,9 +30,9 @@ export default function RootLayout() {
   );
 }
 
-/** Shows the screens for where the User is: picking their WatchClub, signing in, or signed in. */
+/** Shows the screens for where the User is: signing in, or signed in. */
 function Screens() {
-  const {server, user} = useSession();
+  const {user} = useSession();
   const background = useCSSVariable('--color-background');
 
   useEffect(() => {
@@ -40,10 +43,7 @@ function Screens() {
     <Stack
       screenOptions={{headerShown: false, contentStyle: {backgroundColor: String(background)}}}
     >
-      <Stack.Protected guard={server === null}>
-        <Stack.Screen name="connect" />
-      </Stack.Protected>
-      <Stack.Protected guard={server !== null && user === null}>
+      <Stack.Protected guard={user === null}>
         <Stack.Screen name="sign-in" />
       </Stack.Protected>
       <Stack.Protected guard={user !== null}>
