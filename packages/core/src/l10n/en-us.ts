@@ -5,6 +5,11 @@ export default {
   home: {
     title: 'Home',
   },
+  notFound: {
+    description: "We couldn't find this page. It may not exist, or you may not have access to it.",
+    goHome: 'Go home',
+    title: 'Page not found',
+  },
   settings: {
     description: 'Manage your account preferences.',
     englishUs: 'English (US)',
