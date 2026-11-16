@@ -7,9 +7,7 @@ import {createRoot} from 'react-dom/client';
 import {SomethingWentWrong} from './components/something-went-wrong';
 import {routeTree} from './routeTree.gen';
 
-// Once the session ends, as it expires or the User signs out in another tab, signed-in pages send
-// the User to sign in again
-const queryClient = createQueryClient({onSessionEnded: () => router.invalidate()});
+const queryClient = createQueryClient();
 
 const router = createRouter({
   routeTree,

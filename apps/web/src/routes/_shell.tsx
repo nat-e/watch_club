@@ -53,7 +53,15 @@ export const Route = createFileRoute('/_shell')({
 
 function Shell() {
   const {data: user} = useSuspenseQuery(currentUserQuery);
-  // Signed out: `beforeLoad` sends the visitor to sign in once the router runs it again
+  const router = useRouter();
+  const isSignedIn = user !== null;
+  // Once nobody is signed in, however the session ended, running `beforeLoad` again sends the
+  // visitor to sign in
+  useEffect(() => {
+    if (!isSignedIn) {
+      void router.invalidate();
+    }
+  }, [isSignedIn, router]);
   if (!user) {
     return null;
   }
@@ -143,14 +151,10 @@ function PhoneBar() {
 function UserMenu({user}: {user: User}) {
   const {t} = useTranslation('core');
   const queryClient = useQueryClient();
-  const router = useRouter();
   const {isMobile} = useSidebar();
   const signOut = useMutation({
     ...logoutMutation(),
-    onSuccess: async () => {
-      await forgetCurrentUser(queryClient);
-      await router.invalidate();
-    },
+    onSuccess: () => forgetCurrentUser(queryClient),
   });
   // Usernames are lowercase ASCII, so their first character is a letter or digit
   const initial = user.username.slice(0, 1).toUpperCase();
