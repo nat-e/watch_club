@@ -69,6 +69,14 @@ const Player = {
 			{ signal: this.abortController.signal },
 		);
 
+		// A tap on the video only shows or hides the controls, which Video.js does when the finger
+		// lifts. Cancelling the tap stops the browser from sending its click to the button that
+		// just appeared under the finger. Remove once Video.js does it:
+		// https://github.com/videojs/video.js/issues/9770
+		this.media.addEventListener("touchend", (event) => event.preventDefault(), {
+			signal: this.abortController.signal,
+		});
+
 		this.el.addEventListener(
 			"value-change",
 			(event) => {
