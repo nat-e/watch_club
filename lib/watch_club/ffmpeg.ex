@@ -20,6 +20,10 @@ defmodule WatchClub.Ffmpeg do
 
   require Logger
 
+  # Keyframe times are rounded to the microsecond. Video segments bound their frames a millisecond
+  # before their times, less than a frame, so that a keyframe lands on the right side.
+  @frame_margin 0.001
+
   @aac_sample_rate 48_000
   @aac_frame_samples 1024
   # Encoded past each end of an audio segment: an AAC frame blends with its neighbours, and the
@@ -200,8 +204,22 @@ defmodule WatchClub.Ffmpeg do
   end
 
   @doc """
-  Encodes the video from `start_time` to `end_time`, in seconds of the file, as an MPEG-TS segment.
-  Segments keep the file's timestamps, so consecutive ones form a single timeline.
+  Copies the H.264 video stream at `stream_index` from `start_time` to `end_time`, in seconds of
+  the file, as an MPEG-TS segment. Segments keep the file's timestamps, so consecutive ones form
+  a single timeline.
+
+  `start_time` is a keyframe, or the file's start. `end_time` is the next segment's
+  `start_time`, or the end of the file.
+  """
+  def copy_video_segment(job) do
+    run_ffmpeg(Map.put(job, :type, :video_copy))
+  end
+
+  @doc """
+  Encodes the video stream at `stream_index` from `start_time` to `end_time` as an MPEG-TS
+  segment of H.264 Constrained Baseline at `level`, such as 40 for level 4.0. It has the same
+  frames and timestamps as `copy_video_segment/1` for the same times, and decodes from the
+  keyframe at `start_time` only.
   """
   def transcode_video_segment(job) do
     run_ffmpeg(Map.put(job, :type, :video))
@@ -221,11 +239,9 @@ defmodule WatchClub.Ffmpeg do
     run_ffmpeg(Map.put(job, :type, :subtitle))
   end
 
-  defp run_ffmpeg(%{type: :video} = job) do
+  defp run_ffmpeg(%{type: :video_copy} = job) do
     File.mkdir_p!(Path.dirname(job.output_path))
     tmp_path = tmp_path(job.output_path)
-
-    filters = "scale=#{job.width}:#{job.height},setsar=1,format=yuv420p"
 
     args = [
       "-hide_banner",
@@ -235,25 +251,78 @@ defmodule WatchClub.Ffmpeg do
       # The file's timestamps, from its start
       "-copyts",
       "-start_at_zero",
+      # Starts reading on the keyframe at or before the seek time
       "-ss",
-      seconds(job.start_time),
+      seconds(job.start_time + @frame_margin),
       "-i",
       job.source_path,
       # With -copyts, -t would count from 0
       "-to",
-      seconds(job.end_time),
+      seconds(job.end_time - @frame_margin),
       "-map",
-      "0:v:0",
-      "-an",
-      "-sn",
+      "0:#{job.stream_index}",
+      "-c:v",
+      "copy",
+      # Gives every keyframe the parameter sets, which an MP4 or Matroska file stores once, so
+      # that a segment can start on a keyframe that isn't an IDR frame. Then keeps the frames
+      # inside the segment: -to stops on a decoding time, which runs behind the display time.
+      "-bsf:v",
+      "h264_mp4toannexb,dump_extra=freq=keyframe," <>
+        "noise=drop=lt(pts*tb\\,#{seconds(job.start_time - @frame_margin)})" <>
+        "+gte(pts*tb\\,#{seconds(job.end_time - @frame_margin)})",
+      "-avoid_negative_ts",
+      "disabled",
+      "-muxpreload",
+      "0",
+      "-muxdelay",
+      "0",
+      "-f",
+      "mpegts",
+      tmp_path
+    ]
+
+    run_command(args, tmp_path, job)
+  end
+
+  defp run_ffmpeg(%{type: :video} = job) do
+    File.mkdir_p!(Path.dirname(job.output_path))
+    tmp_path = tmp_path(job.output_path)
+
+    # Drops the frames shown before the keyframe, which need the previous segment's frames
+    filters =
+      "trim=start=#{seconds(job.start_time - @frame_margin)}," <>
+        "scale=#{job.width}:#{job.height},setsar=1,format=yuv420p"
+
+    args = [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-y",
+      # The file's timestamps, from its start
+      "-copyts",
+      "-start_at_zero",
+      # Starts decoding on the keyframe at or before the seek time, and keeps its frames
+      "-noaccurate_seek",
+      "-ss",
+      seconds(job.start_time + @frame_margin),
+      "-i",
+      job.source_path,
+      # With -copyts, -t would count from 0
+      "-to",
+      seconds(job.end_time - @frame_margin),
+      "-map",
+      "0:#{job.stream_index}",
       "-vf",
       filters,
       "-c:v",
       "libx264",
       "-preset",
       "ultrafast",
+      # The ultrafast preset uses only the tools of Constrained Baseline
       "-profile:v",
-      "main",
+      "baseline",
+      "-level:v",
+      Integer.to_string(job.level),
       "-pix_fmt",
       "yuv420p",
       "-b:v",
@@ -391,7 +460,7 @@ defmodule WatchClub.Ffmpeg do
     do: :erlang.float_to_binary(samples / @aac_sample_rate, decimals: 6)
 
   defp seconds(value) when is_integer(value), do: Integer.to_string(value)
-  defp seconds(value) when is_float(value), do: :erlang.float_to_binary(value, decimals: 3)
+  defp seconds(value) when is_float(value), do: :erlang.float_to_binary(value, decimals: 6)
 
   defp bitrate(value) when is_integer(value), do: "#{value}"
   defp bitrate(value) when is_float(value), do: value |> round() |> bitrate()

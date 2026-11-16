@@ -492,6 +492,7 @@ defmodule WatchClub.Generator do
     %{
       parts: if(id, do: [%{work_field => id, number: 1}], else: []),
       file_fingerprint: Ash.UUIDv7.generate(),
+      keyframe_seconds: [0.0],
       video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
       audio_tracks: [
         %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
