@@ -5,8 +5,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   The "original" variant copies the file's video when it's 8-bit H.264, which browsers and TVs
   decode. Otherwise it's encoded at the source's size, at a bitrate capped from the source's.
   The ladder adds 720p / 480p / 360p rungs as long as the source is taller. Each rung carries
-  its width, height, video bitrate, codecs, and the bandwidth values exposed in the master
-  playlist.
+  its width, height, video bitrate, H.264 level, codecs, and the bandwidth values exposed in the
+  master playlist. The codecs tell a Screen whether it can decode the rung.
   """
 
   alias WatchClub.MediaCatalog.{Video, VideoTrack}
@@ -20,6 +20,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
       :height,
       :copy?,
       :video_bitrate,
+      :level,
       :codecs,
       :bandwidth,
       :average_bandwidth
@@ -33,6 +34,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
             height: integer(),
             copy?: boolean(),
             video_bitrate: integer(),
+            level: integer(),
             codecs: String.t(),
             bandwidth: integer(),
             average_bandwidth: integer()
@@ -40,13 +42,28 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   end
 
   # The H.264 profiles that browsers and TVs decode, with the RFC 6381 profile and constraint
-  # bytes of each
-  @copied_h264_profiles %{
+  # bytes of each. Encoded rungs are Constrained Baseline.
+  @h264_profiles %{
     "Constrained Baseline" => "42e0",
     "Baseline" => "4200",
     "Main" => "4d40",
     "High" => "6400"
   }
+
+  # The H.264 levels of encoded rungs, as {level, max frame size, max decoding speed}, both in
+  # 16×16 macroblocks. From 3.1, every level allows the bitrates the rungs encode at.
+  @h264_levels [
+    {31, 3_600, 108_000},
+    {32, 5_120, 216_000},
+    {40, 8_192, 245_760},
+    {42, 8_704, 522_240},
+    {50, 22_080, 589_824},
+    {51, 36_864, 983_040},
+    {52, 36_864, 2_073_600},
+    {60, 139_264, 4_177_920},
+    {61, 139_264, 8_355_840},
+    {62, 139_264, 16_711_680}
+  ]
 
   @encoded_rungs [
     %{id: "720p", label: "720p", height: 720, video_bitrate: 2_800_000},
@@ -75,9 +92,10 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   defp original(track, source_bit_rate) do
     label = "Original (#{track.height}p)"
 
-    case copied_codecs(track) do
+    case track do
       # A copy's peak bit rate isn't known: twice its average
-      {:ok, codecs} ->
+      %VideoTrack{codec: "h264", profile: profile, level: level}
+      when is_map_key(@h264_profiles, profile) and is_integer(level) ->
         %Quality{
           id: "original",
           label: label,
@@ -85,12 +103,13 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
           height: track.height,
           copy?: true,
           video_bitrate: source_bit_rate,
-          codecs: codecs,
+          level: level,
+          codecs: codecs(profile, level),
           bandwidth: source_bit_rate * 2 + @audio_bandwidth_overhead,
           average_bandwidth: source_bit_rate + @audio_average_bandwidth_overhead
         }
 
-      :error ->
+      _other ->
         video_bitrate =
           (source_bit_rate * 2)
           |> max(@min_original_bitrate)
@@ -103,28 +122,35 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     end
   end
 
-  # The RFC 6381 codecs of H.264 video that can be copied, such as avc1.640029 for High 4.1
-  defp copied_codecs(%VideoTrack{codec: "h264", profile: profile, level: level})
-       when is_map_key(@copied_h264_profiles, profile) and is_integer(level) do
-    level = level |> Integer.to_string(16) |> String.pad_leading(2, "0") |> String.downcase()
-    {:ok, "avc1.#{@copied_h264_profiles[profile]}#{level}"}
-  end
-
-  defp copied_codecs(%VideoTrack{}), do: :error
-
-  # Encoded as H.264 Main
   defp encoded(rung, track) do
+    width = scaled_width(rung.height, track.width, track.height)
+    macroblocks = div(width + 15, 16) * div(rung.height + 15, 16)
+    # An unknown frame rate counts as 60, which can only overstate the level
+    macroblocks_per_second = macroblocks * (track.frame_rate || 60)
+
+    {level, _max_macroblocks, _max_macroblocks_per_second} =
+      Enum.find(@h264_levels, List.last(@h264_levels), fn {_level, max, max_per_second} ->
+        macroblocks <= max and macroblocks_per_second <= max_per_second
+      end)
+
     %Quality{
       id: rung.id,
       label: rung.label,
-      width: scaled_width(rung.height, track.width, track.height),
+      width: width,
       height: rung.height,
       copy?: false,
       video_bitrate: rung.video_bitrate,
-      codecs: "avc1.4d401f",
+      level: level,
+      codecs: codecs("Constrained Baseline", level),
       bandwidth: rung.video_bitrate + @audio_bandwidth_overhead,
       average_bandwidth: rung.video_bitrate + @audio_average_bandwidth_overhead
     }
+  end
+
+  # RFC 6381 codecs, such as avc1.640029 for High 4.1
+  defp codecs(profile, level) do
+    level = level |> Integer.to_string(16) |> String.pad_leading(2, "0") |> String.downcase()
+    "avc1.#{@h264_profiles[profile]}#{level}"
   end
 
   defp scaled_width(height, source_width, source_height) do

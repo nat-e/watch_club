@@ -217,8 +217,8 @@ defmodule WatchClub.Ffmpeg do
 
   @doc """
   Encodes the video stream at `stream_index` from `start_time` to `end_time` as an MPEG-TS
-  segment, with the same frames and timestamps as `copy_video_segment/1` for the same times. It
-  decodes from the keyframe at `start_time` only.
+  segment of H.264 Constrained Baseline at `level`, such as 40 for level 4.0, with the same frames and timestamps
+  as `copy_video_segment/1` for the same times. It decodes from the keyframe at `start_time` only.
   """
   def transcode_video_segment(job) do
     run_ffmpeg(Map.put(job, :type, :video))
@@ -317,8 +317,11 @@ defmodule WatchClub.Ffmpeg do
       "libx264",
       "-preset",
       "ultrafast",
+      # The ultrafast preset uses only the tools of Constrained Baseline
       "-profile:v",
-      "main",
+      "baseline",
+      "-level:v",
+      Integer.to_string(job.level),
       "-pix_fmt",
       "yuv420p",
       "-b:v",

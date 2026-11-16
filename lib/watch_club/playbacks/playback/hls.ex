@@ -121,7 +121,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
         trace_transcode("transcode video segment", attributes, fn ->
           job
-          |> Map.merge(Map.take(quality, [:width, :height, :video_bitrate]))
+          |> Map.merge(Map.take(quality, [:width, :height, :video_bitrate, :level]))
           |> Ffmpeg.transcode_video_segment()
         end)
       end

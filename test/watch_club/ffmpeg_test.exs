@@ -49,7 +49,8 @@ defmodule WatchClub.FfmpegTest do
             output_path: Path.join(tmp_dir, "video.ts"),
             width: 160,
             height: 120,
-            video_bitrate: 200_000
+            video_bitrate: 200_000,
+            level: 31
           })
         )
 
