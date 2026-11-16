@@ -5,6 +5,8 @@ description: "Write WatchClub's interface text in English and French, and transl
 
 Write WatchClub's interface text in English and French. Use the terms in `CONTEXT.md`.
 
+When the Phoenix app, `~/dev/watch_club`, already shows a message, copy its English and French from `priv/gettext`, even where it departs from these rules or `CONTEXT.md`.
+
 ## Voice
 
 - Warm, like a friend running the club. Keep it plain: no jokes, slang or marketing claims.
