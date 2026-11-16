@@ -21,7 +21,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - `pnpm dev` runs the server and the web app's dev server at `APP_URL`, and reloads both on changes. Sign in as `admin`, `alice`, `bob`, with the password `passw0rd`
 - `pnpm --filter server seed` fills an empty database with the demo Users
 - `pnpm dev --expo` also runs Expo's dev server; `turbo run android --filter=mobile` builds the app and runs it on Android. Run them through turbo, which generates the API client first. Turbo shows each task in its own pane: select Expo's and press `i` to send it keys, `Ctrl+Z` to stop. Expo's dev server forwards `/api` to the server, and the app in development connects through it rather than asking for an address
-- `pnpm check` runs Biome, the type checks, Clippy and `i18next-cli`, which checks the translations against the code; `pnpm test` runs the tests, and `pnpm fix` formats and sorts the translations
+- `pnpm check` runs Biome, rustfmt, the type checks, Clippy and `i18next-cli`, which checks the translations against the code; `pnpm test` runs the tests, and `pnpm fix` formats and sorts the translations
 - After changing a query, run `cargo sqlx prepare -- --all-targets --all-features` in `apps/server` and commit `apps/server/.sqlx`: the Docker build has no database
 
 ## Errors

@@ -22,7 +22,7 @@
       "persistent": true
     },
     "check": {
-      "description": "Type-checks each package: TypeScript with tsc, Rust with Clippy",
+      "description": "Checks each package: TypeScript with tsc, Rust with rustfmt and Clippy",
       "dependsOn": ["^generate:client"]
     },
     "test": {
