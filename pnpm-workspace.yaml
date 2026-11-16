@@ -11,6 +11,9 @@ minimumReleaseAgeExclude:
   - expo-*
   - "@expo/*"
   - babel-preset-expo
+# Refuses a version published with weaker proof of where it comes from than the versions before it,
+# as when a stolen token publishes it outside the package's usual pipeline
+trustPolicy: no-downgrade
 
 # Versions shared by the web and mobile apps. Expo pins React per SDK release: upgrade React here
 # with Expo, as two React versions in one app break it
@@ -20,13 +23,18 @@ catalog:
   "@tanstack/react-query": ^5.104.1
   "@types/node": ^26.6.0
   "@types/react": ~19.3.0
+  "@types/react-dom": ~19.3.0
   # The apps and packages/core must share one copy of each, or the apps can't find the translations
   i18next: ^27.0.1
   react-i18next: ^18.0.0
   react: 19.3.0
   react-dom: 19.3.0
-  # Hey API and Expo use the compiler's JavaScript API, which TypeScript 7 no longer has
-  typescript: ~6.0.3
+  tailwindcss: ^4.3.5
+  # TypeScript 7 checks the types. Hey API's generator needs TypeScript 6's JavaScript API, which 7
+  # lacks, so packages/api installs 6 as `typescript` and 7 as `@typescript/native`
+  typescript: ^7.0.2
+  "@typescript/native": npm:typescript@^7.0.2
+  vite: ^8.3.6
   vitest: ^5.0.3
 
 allowBuilds:

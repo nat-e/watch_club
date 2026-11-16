@@ -10,12 +10,12 @@ import {Localization} from '@/l10n';
 import {SessionProvider, useSession} from '@/session';
 import {SessionStore} from '@/session-store';
 
-splashScreen.preventAutoHideAsync();
+void splashScreen.preventAutoHideAsync();
 
 // Once the session ends, the store forgets its token, and `Screens` shows signing in
 const queryClient = createQueryClient({onSessionEnded: () => sessionStore.forgetToken()});
 const sessionStore = new SessionStore(queryClient);
-sessionStore.restore();
+void sessionStore.restore();
 
 export default function RootLayout() {
   return (

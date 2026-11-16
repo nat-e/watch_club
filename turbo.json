@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalDependencies": ["tsconfig.base.json"],
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "PORT",
@@ -24,11 +25,15 @@
     },
     "check": {
       "description": "Checks each package: TypeScript with tsc, Rust with rustfmt and Clippy",
-      "dependsOn": ["^generate:client"]
+      "dependsOn": ["transit", "^generate:client"]
     },
     "test": {
       "description": "Runs each package's tests: TypeScript with Vitest, Rust with cargo test",
-      "dependsOn": ["^generate:client"]
+      "dependsOn": ["transit", "^generate:client"]
+    },
+    "transit": {
+      "description": "Runs nothing. Its hash covers the files of the packages a package imports, so the tasks that depend on it miss the cache when those change",
+      "dependsOn": ["^transit"]
     },
     "generate:client": {
       "description": "Generates the API client before running tasks in packages that depend on it"

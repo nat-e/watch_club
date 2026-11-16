@@ -20,6 +20,12 @@
     "lineWidth": 100
   },
   "linter": {
+    "domains": {
+      "react": "recommended",
+      "tanstackQuery": "recommended",
+      "test": "recommended",
+      "turborepo": "recommended"
+    },
     "rules": {
       "complexity": {
         "noImplicitCoercions": {
@@ -94,7 +100,9 @@
       "nursery": {
         "noExtendNative": "error",
         "noImpliedEval": "error",
+        "noFloatingPromises": "error",
         "noInvalidRemoveEventListener": "error",
+        "noMisusedPromises": "error",
         "noObjectConstructor": "error",
         "noThisOutsideOfClass": "error",
         "noUnsafeTypeAssertion": "error",
@@ -140,6 +148,14 @@
       },
       "formatter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["apps/mobile/**"],
+      "linter": {
+        "domains": {
+          "reactNative": "recommended"
+        }
       }
     },
     {

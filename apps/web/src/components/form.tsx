@@ -41,7 +41,7 @@ function Form(props: Omit<ComponentProps<'form'>, 'onSubmit' | 'noValidate'>) {
       noValidate
       onSubmit={event => {
         event.preventDefault();
-        form.handleSubmit();
+        void form.handleSubmit();
       }}
     />
   );

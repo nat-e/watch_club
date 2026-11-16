@@ -2,6 +2,14 @@
   "$schema": "https://turborepo.dev/schema.json",
   "extends": ["//"],
   "tasks": {
+    "generate:routes": {
+      "description": "Writes Expo Router's types for the routes in src/app, which Git ignores",
+      "outputs": [".expo/types/**", "expo-env.d.ts"]
+    },
+    "check": {
+      "description": "Type-checks the app, with the types of its routes",
+      "dependsOn": ["$TURBO_EXTENDS$", "generate:routes"]
+    },
     "dev": {
       "description": "Runs Expo's dev server, which takes keyboard shortcuts",
       "interactive": true
