@@ -66,6 +66,13 @@ mod password {
             Some(PasswordError::TooShort { min: 8 })
         );
     }
+
+    #[test]
+    fn debug_hides_the_password() {
+        let password = Password::parse(PASSWORD.to_owned()).unwrap();
+
+        assert_eq!(format!("{password:?}"), "Password(…)");
+    }
 }
 
 mod has_instance_administrator {
@@ -236,6 +243,13 @@ mod session_token {
         assert_eq!(SessionToken::decode("not base64!"), None);
         assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 31])), None);
         assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 33])), None);
+    }
+
+    #[test]
+    fn debug_hides_the_token() {
+        let token = SessionToken::decode(&URL_SAFE_NO_PAD.encode([7; 32])).unwrap();
+
+        assert_eq!(format!("{token:?}"), "SessionToken(…)");
     }
 }
 

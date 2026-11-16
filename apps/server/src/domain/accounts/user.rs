@@ -109,6 +109,13 @@ impl Password {
     }
 }
 
+/// Keeps the secret out of logs.
+impl fmt::Debug for Password {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("Password(…)")
+    }
+}
+
 /// Potential errors when parsing Passwords
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
