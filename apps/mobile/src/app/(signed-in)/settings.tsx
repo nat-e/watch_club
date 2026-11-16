@@ -37,7 +37,7 @@ export default function Settings() {
               accessibilityState={{checked: selected}}
               disabled={save.isPending}
               onPress={() => {
-                save.mutate({body: {locale}});
+                save.mutate({locale});
               }}
               className={`h-11 justify-center rounded-lg border px-4 focus:ring-2 focus:ring-ring ${selected ? 'border-primary bg-accent' : 'border-border active:bg-accent'}`}
             >

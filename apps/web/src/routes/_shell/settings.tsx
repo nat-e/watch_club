@@ -27,7 +27,7 @@ function Settings() {
     defaultValues: {locale: user.locale},
     onSubmit: async ({value, createValidationError}) => {
       try {
-        await save.mutateAsync({body: {locale: value.locale}});
+        await save.mutateAsync({locale: value.locale});
         return null;
       } catch {
         return createValidationError(t($ => $.core.errors.somethingWentWrong));
