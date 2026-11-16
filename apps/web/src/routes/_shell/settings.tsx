@@ -28,10 +28,10 @@ function Settings() {
     onSubmit: async ({value, createValidationError}) => {
       try {
         await save.mutateAsync({locale: value.locale});
-        return null;
       } catch {
         return createValidationError(t($ => $.core.errors.somethingWentWrong));
       }
+      return null;
     },
   });
 
