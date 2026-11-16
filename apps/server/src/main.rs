@@ -1,12 +1,14 @@
 //! Runs the server: reads the environment, connects to the database and serves the app.
 
-use std::{env, io, net::Ipv4Addr};
+use std::{io, net::Ipv4Addr};
 
 use anyhow::Context;
+use secrecy::ExposeSecret;
 use tokio::{
     net::TcpListener,
     signal::unix::{SignalKind, signal},
 };
+use watch_club::config::Config;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -16,21 +18,17 @@ async fn main() -> anyhow::Result<()> {
         )
         .init();
 
-    let url = env::var("DATABASE_URL").context("failed to read DATABASE_URL")?;
-    let port: u16 = env::var("PORT")
-        .context("failed to read PORT")?
-        .parse()
-        .context("PORT isn't a port number")?;
+    let config = Config::from_env()?;
 
-    let db = watch_club::connect_database(&url)
+    let db = watch_club::connect_database(config.database_url.expose_secret())
         .await
         .context("failed to connect to the database")?;
     // On every address, as containers need
-    let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port))
+    let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
-        .with_context(|| format!("failed to listen on port {port}"))?;
+        .with_context(|| format!("failed to listen on port {}", config.port))?;
     let shutdown = shutdown_requested().context("failed to listen for shutdown signals")?;
-    tracing::info!("listening on port {port}");
+    tracing::info!("listening on port {}", config.port);
     axum::serve(listener, watch_club::router(db.clone()))
         .with_graceful_shutdown(shutdown)
         .await
