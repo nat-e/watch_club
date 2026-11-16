@@ -40,4 +40,5 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 ## Git
 
+- The rewrite lives on the `rust` branch of `nat-e/watch_club`, whose `main` is still the Phoenix app. Open pull requests against `rust`: `gh pr create --base rust`
 - Commit messages and PR titles follow Conventional Commits (`feat: …`, `fix(inbox): …`)
