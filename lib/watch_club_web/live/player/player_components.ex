@@ -102,15 +102,19 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   def seek_bar(assigns) do
     ~H"""
+    <%!-- Each seek makes the server convert a new segment. The longest delay a browser timer
+    allows leaves a drag with two seeks: when it starts and when the User lets go. The fill and
+    the thumb follow the pointer during the drag --%>
     <media-time-slider
       step="10"
+      change-throttle="2147483647"
       class="group/timeline relative flex h-10 w-full cursor-pointer touch-none items-center outline-none"
     >
       <media-slider-track class="relative block h-[5px] w-full rounded-full bg-white/20">
         <media-slider-buffer class="absolute inset-y-0 left-0 block w-(--media-slider-buffer) rounded-full bg-white/40" />
-        <media-slider-fill class="absolute inset-y-0 left-0 block w-(--media-slider-fill) rounded-full bg-primary" />
+        <media-slider-fill class="absolute inset-y-0 left-0 block w-(--media-slider-fill) rounded-full bg-primary data-dragging:w-(--media-slider-pointer)" />
       </media-slider-track>
-      <media-slider-thumb class="absolute left-(--media-slider-fill) block size-4 -translate-x-1/2 rounded-full bg-white opacity-90 shadow-overlay outline-none ring-white/40 transition-transform group-hover/timeline:scale-125 data-dragging:scale-125 data-dragging:ring-4 focus-visible:ring-2 focus-visible:ring-white/80" />
+      <media-slider-thumb class="absolute left-(--media-slider-fill) data-dragging:left-(--media-slider-pointer) block size-4 -translate-x-1/2 rounded-full bg-white opacity-90 shadow-overlay outline-none ring-white/40 transition-transform group-hover/timeline:scale-125 data-dragging:scale-125 data-dragging:ring-4 focus-visible:ring-2 focus-visible:ring-white/80" />
 
       <media-slider-preview class="pointer-events-none absolute bottom-full mb-3 flex flex-col items-center gap-tight opacity-0 transition-opacity duration-200 data-pointing:opacity-100 data-dragging:opacity-100">
         <%!-- Video.js scales the sprite tile to fit these min and max sizes --%>
