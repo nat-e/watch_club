@@ -7,6 +7,10 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   first keyframe at or after a multiple of 6 seconds, so that every quality and audio track cuts
   at the same times. A quality copies the file's video or encodes it, see `QualityLadder`.
 
+  MPEG-TS and MPEG-PS files (`.ts`, `.m2ts`, `.mpg`) aren't supported: their segments can miss
+  frames. ffmpeg can't seek them to a keyframe, as they have no index, and counts their times from
+  the start of the stream it reads rather than from the start of the file.
+
   Segments are cached on disk at the Playback level.
   """
 

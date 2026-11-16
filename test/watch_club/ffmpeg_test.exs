@@ -86,10 +86,10 @@ defmodule WatchClub.FfmpegTest do
     {output, 0} =
       System.cmd("ffprobe", ~w(-v error -show_entries packet=pts_time -of csv=p=0) ++ [path])
 
-    # A packet with side data ends its line with them
+    # A packet with side data lists them after its time
     output
-    |> String.split()
-    |> Enum.map(fn line -> line |> Float.parse() |> elem(0) end)
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line -> line |> String.split(",") |> hd() |> String.to_float() end)
     |> Enum.sort()
   end
 

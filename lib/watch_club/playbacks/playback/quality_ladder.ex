@@ -39,7 +39,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
           }
   end
 
-  # The profiles of 8-bit H.264, with the RFC 6381 profile and constraint bytes of each
+  # The H.264 profiles that browsers and TVs decode, with the RFC 6381 profile and constraint
+  # bytes of each
   @copied_h264_profiles %{
     "Constrained Baseline" => "42e0",
     "Baseline" => "4200",
