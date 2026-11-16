@@ -34,16 +34,13 @@ impl<S: Send + Sync> OptionalFromRequestParts<S> for SessionToken {
         parts: &mut Parts,
         _: &S,
     ) -> impl Future<Output = Result<Option<Self>, Infallible>> + Send {
-        let header = parts
-            .headers
-            .typed_get::<Authorization<Bearer>>()
-            .map(|authorization| authorization.token().to_owned());
-        let token = header.or_else(|| {
-            let jar = CookieJar::from_headers(&parts.headers);
-            jar.get(SESSION_COOKIE)
-                .map(|cookie| cookie.value().to_owned())
-        });
-        future::ready(Ok(token.and_then(|token| Self::decode(&token))))
+        let token = match parts.headers.typed_get::<Authorization<Bearer>>() {
+            Some(authorization) => Self::decode(authorization.token()),
+            None => CookieJar::from_headers(&parts.headers)
+                .get(SESSION_COOKIE)
+                .and_then(|cookie| Self::decode(cookie.value())),
+        };
+        future::ready(Ok(token))
     }
 }
 
