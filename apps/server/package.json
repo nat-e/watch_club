@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "private": true,
+  "scripts": {
+    "dev": "watchexec --restart --project-origin . --wrap-process none --watch src --watch migrations --watch Cargo.toml --watch sqlx.toml -- cargo run",
+    "build": "cargo build --release --locked",
+    "check": "cargo clippy --all-targets --all-features --locked -- --deny warnings",
+    "test": "cargo test --locked",
+    "format": "cargo fmt",
+    "seed": "cargo run --features dev-seed --bin seed"
+  }
+}

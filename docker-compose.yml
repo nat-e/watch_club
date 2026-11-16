@@ -1,82 +1,19 @@
-name: watch_club
-
-# Distribution compose for self-hosting WatchClub.
-#
-#   1. Copy .env.example to .env and fill in the required values.
-#   2. Run: docker compose up -d
-#
-# Upgrades: docker compose pull && docker compose up -d
-# (migrations run automatically on each start).
-
+# The app's Postgres server, apart from the Phoenix app's
 services:
-  postgres:
-    image: postgres:18
-    restart: unless-stopped
-    # Recommended when running Postgres under docker compose.
-    shm_size: 128mb
+  db:
+    image: postgres:18.3-trixie
     environment:
-      POSTGRES_DB: watch_club
-      POSTGRES_USER: watch_club
-      POSTGRES_PASSWORD: securepassword
+      POSTGRES_PASSWORD: postgres
+    # Each worktree runs its own copy, see .config/wt.toml
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      retries: 30
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U watch_club -d watch_club"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  watch-club:
-    image: ghcr.io/nat-e/watch_club:${WATCH_CLUB_VERSION}
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      WC_DATABASE_URL: ${WC_DATABASE_URL}
-      WC_SECRET: ${WC_SECRET}
-      WC_URL: ${WC_URL}
-      WC_PORT: ${WC_PORT}
-      WC_APP_DATA: /data
-      WC_TMDB_API_KEY: ${WC_TMDB_API_KEY}
-      WC_LOG_LEVEL: ${WC_LOG_LEVEL}
-      WC_LOG_FORMAT: ${WC_LOG_FORMAT}
-      WC_SENTRY_DSN: ${WC_SENTRY_DSN:-}
-      WC_SENTRY_LOG_LEVEL: ${WC_SENTRY_LOG_LEVEL:-}
-      WC_TRICKPLAY_KEYFRAMES_ONLY: ${WC_TRICKPLAY_KEYFRAMES_ONLY:-true}
-      OTEL_TRACES_EXPORTER: ${OTEL_TRACES_EXPORTER:-none}
-      OTEL_METRICS_EXPORTER: ${OTEL_METRICS_EXPORTER:-none}
-      OTEL_LOGS_EXPORTER: ${OTEL_LOGS_EXPORTER:-none}
-      OTEL_SDK_DISABLED: ${OTEL_SDK_DISABLED:-false}
-      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-watch_club}
-      OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES:-}
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
-      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
-      OTEL_EXPORTER_OTLP_PROTOCOL: ${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}
-      OTEL_EXPORTER_OTLP_COMPRESSION: ${OTEL_EXPORTER_OTLP_COMPRESSION:-}
-      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}
-      OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${OTEL_EXPORTER_OTLP_TRACES_HEADERS:-}
-      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: ${OTEL_EXPORTER_OTLP_TRACES_PROTOCOL:-}
-      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-}
-      OTEL_EXPORTER_OTLP_METRICS_HEADERS: ${OTEL_EXPORTER_OTLP_METRICS_HEADERS:-}
-      OTEL_EXPORTER_OTLP_METRICS_PROTOCOL: ${OTEL_EXPORTER_OTLP_METRICS_PROTOCOL:-}
-      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: ${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-}
-      OTEL_EXPORTER_OTLP_LOGS_HEADERS: ${OTEL_EXPORTER_OTLP_LOGS_HEADERS:-}
-      OTEL_EXPORTER_OTLP_LOGS_PROTOCOL: ${OTEL_EXPORTER_OTLP_LOGS_PROTOCOL:-}
-      OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-60000}
-      OTEL_TRACES_SAMPLER: ${OTEL_TRACES_SAMPLER:-}
-      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-}
-    ports:
-      - "${WC_PORT}:${WC_PORT}"
-    volumes:
-      # Persistent app data. Used for cache, thumbnails, ...
-      - wc-data:/data
-      # Mount your media folders below
-      # You can mount this to any path you'd like and configure the import path in app
-      - /path/to/my/media:/media:ro
-      - /path/to/my/media2:/other-media:ro
 
 volumes:
   pgdata:
-  wc-data:

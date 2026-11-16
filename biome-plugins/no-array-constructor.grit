@@ -1,0 +1,9 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  JsNewExpression(callee=`Array`),
+  JsCallExpression(callee=`Array`)
+} as $call where {
+  register_diagnostic(span=$call, message="Use an array literal or `Array.from()`, not the `Array` constructor.")
+}

@@ -1,0 +1,44 @@
+/* WatchClub's design tokens, Velvet Club v0, shared by the web app's Tailwind and the mobile
+   app's Uniwind. WatchClub is dark only.
+
+   The neutral ramp is an aubergine-tinted grey; pink (primary) and purple (focus) keep the
+   Dracula hues at their 400 shade. Higher surfaces are lighter: background < card < popover.
+   Every text colour clears 4.5:1 on every surface, and control borders 3:1. */
+
+@theme {
+  --color-background: hsl(256 30% 8%);
+  --color-foreground: hsl(256 80% 93.4%);
+  --color-card: hsl(256 29% 13.1%);
+  --color-card-foreground: hsl(256 80% 93.4%);
+  --color-popover: hsl(256 29% 17.2%);
+  --color-popover-foreground: hsl(256 80% 93.4%);
+  --color-primary: hsl(325.5 100% 73.7%);
+  --color-primary-foreground: hsl(322.2 100% 9%);
+  --color-secondary: hsl(256 29% 17.2%);
+  --color-secondary-foreground: hsl(256 80% 93.4%);
+  --color-muted: hsl(256 29% 17.2%);
+  --color-muted-foreground: hsl(256 34% 81.7%);
+  --color-accent: hsl(256 29% 23.7%);
+  --color-accent-foreground: hsl(256 80% 93.4%);
+  --color-destructive: oklch(70.4% 0.191 22.216);
+  --color-border: hsl(256 35% 31.3%);
+  --color-input: hsl(256 20% 54.4%);
+  --color-ring: hsl(267.7 88.8% 68.4%);
+
+  --color-sidebar: hsl(256 29% 13.1%);
+  --color-sidebar-foreground: hsl(256 80% 93.4%);
+  --color-sidebar-primary: hsl(325.5 100% 73.7%);
+  --color-sidebar-primary-foreground: hsl(322.2 100% 9%);
+  --color-sidebar-accent: hsl(256 29% 23.7%);
+  --color-sidebar-accent-foreground: hsl(256 80% 93.4%);
+  --color-sidebar-border: hsl(256 29% 23.7%);
+  --color-sidebar-ring: hsl(267.7 88.8% 68.4%);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.725rem;
+  --radius-4xl: 1.95rem;
+}

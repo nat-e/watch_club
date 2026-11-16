@@ -1,0 +1,18 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  JsCallExpression(callee=or {
+    `parseFloat`,
+    `Number.parseFloat`
+  }),
+  JsCallExpression(callee=or {
+    `parseInt`,
+    `Number.parseInt`
+  }, arguments=JsCallArguments(args=or {
+    [$_],
+    [$_, `10`]
+  }))
+} as $call where {
+  register_diagnostic(span=$call, message="Parse base-10 numbers with `Number()` and check for `NaN`. Use `parseInt` only for other bases, after checking the digits.")
+}

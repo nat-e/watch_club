@@ -1,0 +1,5 @@
+name = "software-design-reviewer"
+description = "Reviews new code and the existing code it builds on for complexity against the software-design skill."
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+developer_instructions = "Read `.claude/agents/software-design-reviewer.md` and follow the instructions after its frontmatter."

@@ -1,0 +1,12 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  TsPropertySignatureTypeMember(type_annotation=TsTypeAnnotation(ty=TsUnionType(types=$types))),
+  JsPropertyClassMember(property_annotation=TsTypeAnnotation(ty=TsUnionType(types=$types))),
+  JsFormalParameter(type_annotation=TsTypeAnnotation(ty=TsUnionType(types=$types)), initializer=.)
+} as $member where {
+  $types <: some TsUndefinedType(),
+  not $member <: r"[^:]*\?\s*:[\s\S]*",
+  register_diagnostic(span=$member, message="Make the field or parameter optional (`name?: T`) rather than typing it `T | undefined`.", severity="warn")
+}

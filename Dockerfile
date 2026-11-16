@@ -1,150 +1,47 @@
-# Find eligible builder and runner images on Docker Hub. We use Ubuntu/Debian
-# instead of Alpine to avoid DNS resolution issues in production.
-#
-# https://hub.docker.com/r/hexpm/elixir/tags?name=ubuntu
-# https://hub.docker.com/_/ubuntu/tags
-#
-# This file is based on these images:
-#
-#   - https://hub.docker.com/r/hexpm/elixir/tags - for the build image
-#   - https://hub.docker.com/_/debian/tags?name=trixie-20261020-slim - for the release image
-#   - https://pkgs.org/ - resource for finding needed packages
-#   - Ex: docker.io/hexpm/elixir:1.20.4-erlang-29.1.2-debian-trixie-20261020-slim
-#
-# renovate: datasource=hexpm-bob depName=elixir
-ARG ELIXIR_VERSION=1.20.4
-# renovate: datasource=github-tags depName=erlang packageName=erlang/otp versioning=regex:^(?<major>\d+?)\.(?<minor>\d+?)(\.(?<patch>\d+))?$ extractVersion=^OTP-(?<version>\S+)
-ARG OTP_VERSION=29.1.2
-# renovate: datasource=docker depName=debian versioning=regex:^trixie-(?<patch>\d{8})-slim$
-ARG DEBIAN_VERSION=trixie-20261020-slim
-# renovate: datasource=docker depName=jdxcode/mise
-ARG MISE_VERSION=2026.11.7
+# syntax=docker/dockerfile:1
+# The image self-hosters run: the server, with the web app built into it.
 
-ARG BUILDER_IMAGE="docker.io/hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
-ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
-ARG MISE_IMAGE="docker.io/jdxcode/mise:${MISE_VERSION}"
+ARG NODE_VERSION=26.12.1
+ARG RUST_VERSION=1.99.1
+ARG DEBIAN_VERSION=trixie
 
-FROM ${MISE_IMAGE} AS mise
-
-# ffmpeg and ffprobe from the conda-forge build that mise.lock pins, as in development and CI.
-# The final image keeps their path, which mise's wrappers name.
-FROM ${RUNNER_IMAGE} AS ffmpeg
-
-COPY --from=mise /usr/local/bin/mise /usr/local/bin/mise
-COPY --from=mise /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-ENV MISE_DATA_DIR=/opt/mise
-WORKDIR /tools
-COPY mise.toml mise.lock ./
-RUN mise trust mise.toml \
-  && mise install --locked conda:ffmpeg \
-  && ln -s "$(mise bin-paths conda:ffmpeg)" /opt/mise/ffmpeg-bin \
-  && rm -rf /opt/mise/conda-packages
-
-FROM ${BUILDER_IMAGE} AS builder
-
-# install build dependencies. Node.js + npm are needed to install the JS
-# dependencies (Video.js, sortablejs) that esbuild bundles.
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential git nodejs npm \
-  && rm -rf /var/lib/apt/lists/*
-
-# prepare build dir
+# The web app, built from the workspace packages it uses
+FROM node:${NODE_VERSION}-${DEBIAN_VERSION}-slim AS web
+RUN npm install --global pnpm@11.12.0
 WORKDIR /app
+# The manifests first, so code changes don't reinstall the dependencies
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/
+COPY packages/api/package.json packages/api/
+COPY packages/core/package.json packages/core/
+RUN pnpm install --frozen-lockfile --filter web...
+COPY tsconfig.base.json ./
+COPY packages packages
+COPY apps/web apps/web
+RUN pnpm --filter @watchclub/api generate:client && pnpm --filter web build
 
-# install hex + rebar
-RUN mix local.hex --force \
-  && mix local.rebar --force
+# The server, which embeds the web app
+FROM rust:${RUST_VERSION}-slim-${DEBIAN_VERSION} AS server
+WORKDIR /app/apps/server
+COPY apps/server ./
+COPY --from=web /app/apps/web/dist /app/apps/web/dist
+# The SQLx macros check queries against .sqlx, as no database runs here
+ENV SQLX_OFFLINE=true
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/apps/server/target,sharing=locked \
+    cargo build --release --locked --bin watch_club \
+    && cp target/release/watch_club /usr/local/bin/
 
-# set build ENV
-ENV MIX_ENV="prod"
-
-# install mix dependencies
-COPY mix.exs mix.lock ./
-RUN mix deps.get --only $MIX_ENV
-RUN mkdir config
-
-# copy compile-time config files before we compile dependencies
-# to ensure any relevant config change will trigger the dependencies
-# to be re-compiled.
-COPY config/config.exs config/${MIX_ENV}.exs config/
-RUN mix deps.compile
-
-# Copy the JS manifests first so `mix assets.setup` (which runs
-# `npm install --prefix assets`) can install into assets/node_modules. This
-# layer is cached until package.json/package-lock.json change. node_modules is
-# excluded via .dockerignore, so the later `COPY assets assets` won't clobber it.
-COPY assets/package.json assets/package-lock.json assets/
-RUN mix assets.setup
-
-COPY priv priv
-
-COPY lib lib
-
-# Compile the release
-RUN mix compile
-
-# Bundles the source code into the release so Sentry can show it around errors
-RUN mix sentry.package_source_code
-
-COPY assets assets
-
-# compile assets
-RUN mix assets.deploy
-
-# Changes to config/runtime.exs don't require recompiling the code
-COPY config/runtime.exs config/
-
-COPY rel rel
-# `release` for the release images, `edge` otherwise: it picks the Cast app (see docs/chromecast.md)
-ARG CAST_RECEIVER=edge
-RUN mix release
-
-# start a new build stage so that the final image will only contain
-# the compiled release and other runtime necessities
-FROM ${RUNNER_IMAGE} AS final
-
-# fpcalc, which fingerprints audio to find the Markers of Videos
-# renovate: datasource=deb depName=libchromaprint-tools
-ARG CHROMAPRINT_VERSION=1.5.1-7
-
+FROM debian:${DEBIAN_VERSION}-slim
+# tini reaps the processes the server starts
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-  libstdc++6 openssl libncurses6 locales ca-certificates tini curl \
-  libchromaprint-tools=${CHROMAPRINT_VERSION} \
-  && rm -rf /var/lib/apt/lists/*
-
-COPY --from=ffmpeg /opt/mise /opt/mise
-ENV PATH="/opt/mise/ffmpeg-bin:${PATH}"
-
-# Set the locale
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
-  && locale-gen
-
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
-
-WORKDIR "/app"
-RUN chown nobody /app
-
-# Persistent data dir (trickplay sprite sheets, etc.). Created and owned by
-# nobody here so a fresh named volume mounted over it inherits that ownership.
-RUN mkdir -p /data/trickplay && chown -R nobody:root /data
-
-# set runner ENV
-ENV MIX_ENV="prod"
-
-# Only copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/watch_club ./
-
+    && apt-get install --yes --no-install-recommends ca-certificates curl tini \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=server /usr/local/bin/watch_club /usr/local/bin/
 USER nobody
-
-# Lets `docker compose up --wait` and orchestrators know when the app is ready
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --start-interval=2s \
-  CMD curl -fsS "http://localhost:${WC_PORT:-4000}/health" > /dev/null || exit 1
-
-# Using tini as an entrypoint to avoid zombie ffmpeg processes
-# See https://github.com/krallin/tini for details
+ENV PORT=4000
+EXPOSE 4000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s \
+    CMD curl --fail --silent "http://localhost:${PORT}/api/instance" > /dev/null || exit 1
 ENTRYPOINT ["/usr/bin/tini", "--"]
-
-CMD ["/app/bin/docker-entrypoint"]
+CMD ["watch_club"]

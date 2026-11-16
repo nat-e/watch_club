@@ -1,0 +1,40 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "PORT",
+    "WEB_PORT",
+    "RCT_METRO_PORT",
+    "RUST_LOG",
+    "RUSTUP_TOOLCHAIN"
+  ],
+  "tasks": {
+    "build": {
+      "description": "Builds each app for release",
+      "dependsOn": ["^build", "^generate:client"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "description": "Runs an app's dev server, which reloads on changes",
+      "dependsOn": ["^generate:client"],
+      "cache": false,
+      "persistent": true
+    },
+    "check": {
+      "description": "Type-checks each package: TypeScript with tsc, Rust with Clippy",
+      "dependsOn": ["^generate:client"]
+    },
+    "test": {
+      "description": "Runs each package's tests: TypeScript with Vitest, Rust with cargo test",
+      "dependsOn": ["^generate:client"]
+    },
+    "generate:client": {
+      "description": "Generates the API client before running tasks in packages that depend on it"
+    },
+    "format": {
+      "description": "Formats the Rust code; Biome formats the rest from the root, in `pnpm fix`",
+      "cache": false
+    }
+  }
+}

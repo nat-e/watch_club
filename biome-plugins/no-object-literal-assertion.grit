@@ -1,0 +1,7 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+TsAsExpression(expression=JsObjectExpression(), ty=$type) as $assertion where {
+  not $type <: r"const",
+  register_diagnostic(span=$assertion, message="Type an object literal with an annotation (`const x: Foo = {...}`) or `satisfies`, not `as Foo`.")
+}

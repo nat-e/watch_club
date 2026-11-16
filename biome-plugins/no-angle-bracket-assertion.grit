@@ -1,0 +1,6 @@
+engine biome(1.0)
+language js(typescript)
+
+TsTypeAssertionExpression() as $assertion where {
+  register_diagnostic(span=$assertion, message="Write type assertions with `as`, not `<T>value`.")
+}

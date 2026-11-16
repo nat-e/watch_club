@@ -1,0 +1,28 @@
+//! The server's tests, in one crate so they compile and link once: the domain through its public
+//! functions, and the API through requests to the app's router.
+
+#![expect(clippy::unwrap_used, reason = "a failed unwrap fails the test")]
+
+mod domain {
+    mod accounts {
+        mod preferences;
+        mod user;
+    }
+}
+mod routes {
+    mod auth {
+        mod login;
+        mod login_token;
+        mod logout;
+    }
+    mod instance {
+        mod create_administrator;
+        mod get;
+    }
+    mod me {
+        mod get;
+        mod update_preferences;
+    }
+}
+mod support;
+mod web;

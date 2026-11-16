@@ -1,12 +1,16 @@
 [tools]
-erlang = "latest"
-elixir = "latest"
-node = "latest"
-# Pinned: a new Biome version can reject biome.json until `biome migrate` runs.
-biome = "2.4.13"
-# The same ffmpeg and ffprobe in development, CI and the Docker image, from conda-forge
-"conda:ffmpeg" = "9.0.2"
+rust = { version = "1.99.1", components = "rustfmt,clippy,rust-src,rust-analyzer" }
+node = "26.12.1"
+pnpm = "11.12.0"
+"cargo:sqlx-cli" = "0.9.0"
+"npm:turbo" = "2.11.10"
+watchexec = "2.8.0"
 
 [settings]
 lockfile = true
-experimental = true # Required for monorepo
+
+# The Git-ignored local settings: DATABASE_URL, PORT, WEB_PORT, RCT_METRO_PORT
+[env]
+_.file = ".env"
+# turbo comes from mise rather than package.json, so it can't find a copy in the repository
+TURBO_GLOBAL_WARNING_DISABLED = "1"

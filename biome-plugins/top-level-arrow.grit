@@ -1,0 +1,17 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsVariableDeclarator(id=$id, variable_annotation=$annotation, initializer=JsInitializerClause(expression=or {
+  JsArrowFunctionExpression(),
+  JsFunctionExpression()
+})) as $decl where {
+  $annotation <: .,
+  not $decl <: within or {
+    JsFunctionBody(),
+    JsArrowFunctionExpression(),
+    JsClassDeclaration(),
+    JsClassExpression(),
+    JsObjectExpression()
+  },
+  register_diagnostic(span=$id, message="Declare a top-level named function with `function`, not an arrow function assigned to a `const`.")
+}

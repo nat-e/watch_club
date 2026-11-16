@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "description": "Runs the server and restarts it on changes. `--project-origin .` keeps watchexec from reading the main checkout's .gitignore, which ignores the worktrees; `--wrap-process none` lets turbo stop the server with watchexec"
+    },
+    "build": {
+      "description": "Builds the server after the web app, which it embeds. Cargo caches the build itself",
+      "dependsOn": ["web#build"],
+      "cache": false
+    },
+    "check": {
+      "description": "Lints the server with Clippy. Not cached: the SQLx macros check the queries against the database",
+      "cache": false
+    },
+    "test": {
+      "description": "Runs the server's tests. Not cached: they run against the database",
+      "cache": false
+    }
+  }
+}

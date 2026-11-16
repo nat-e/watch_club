@@ -1,7 +1,0 @@
-/*
-components layer
-This contains all styles defined in our UI components
-*/
-@layer components.base, components.variants;
-
-@source "../../lib/watch_club_web/ui";

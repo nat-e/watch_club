@@ -1,0 +1,9 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  JsPrivateClassMemberName(),
+  JsPrivateName()
+} as $name where {
+  register_diagnostic(span=$name, message="Use TypeScript's `private` instead of a `#private` field.")
+}

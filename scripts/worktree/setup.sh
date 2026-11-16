@@ -1,29 +1,33 @@
 #!/usr/bin/env bash
-# Sets up a new worktree, once .env and the build caches are copied into it: its databases,
-# seeded from the dev catalog with its own Radarr, Sonarr and Sportarr, see
-# dev/catalog/README.md.
-# Usage: setup.sh <slug> <db-suffix> <port>
+# Sets up a new worktree, once .env and the build cache are copied into it: its own Postgres, with
+# the migrations and the demo data.
+# Usage: setup.sh <slug> <port>
 set -euo pipefail
 
 slug=$1
-db="watch_club_$2"
-test_db="watch_club_test_$2"
-port=$3
+port=$2
+web_port=$((port + 1))
+expo_port=$((port + 2))
+db_port=$((port + 10000))
 
+# .env files from before the web app's and Expo's dev servers lack their ports
+grep -q '^WEB_PORT=' .env || echo 'WEB_PORT=' >>.env
+grep -q '^RCT_METRO_PORT=' .env || echo 'RCT_METRO_PORT=' >>.env
 sed -E \
-  -e "s|^(WC_DATABASE_URL=.*/).*|\1$db|" \
-  -e "s|^WC_URL=.*|WC_URL=http://$slug.localhost:$port|" \
-  -e "s|^WC_PORT=.*|WC_PORT=$port|" \
+  -e "s|^DATABASE_URL=.*|DATABASE_URL=postgres://postgres:postgres@localhost:$db_port/watch_club|" \
+  -e "s|^PORT=.*|PORT=$port|" \
+  -e "s|^WEB_PORT=.*|WEB_PORT=$web_port|" \
+  -e "s|^RCT_METRO_PORT=.*|RCT_METRO_PORT=$expo_port|" \
+  -e "s|^APP_URL=.*|APP_URL=http://$slug.localhost:$web_port|" \
   .env >.env.worktree
-printf '\nWC_TEST_DATABASE=%s\nWC_LIVE_DEBUGGER_PORT=%s\n' "$test_db" "$((port + 10000))" >>.env.worktree
 mv .env.worktree .env
 
-# Approving the Tidewave server here avoids a prompt in each new worktree.
-settings=.claude/settings.local.json
-[[ -f $settings ]] || echo '{}' >"$settings"
-jq '.enabledMcpjsonServers = ["tidewave-mcp"]' "$settings" >"$settings.worktree"
-mv "$settings.worktree" "$settings"
+# mise only loads .env for a trusted config, and trust goes by path
+mise trust --quiet mise.toml
 
-# A worktree whose seed failed, such as without the internet, still works: `mix reset`
-# seeds it again.
-mix ecto.setup || echo "Couldn't seed the database: run mix reset" >&2
+DB_PORT=$db_port docker compose -p "watch-club-rs-$slug" up -d --wait
+mise exec -- pnpm install
+# The API client isn't committed: generate it now, for the editor
+mise exec -- turbo run generate:client
+mise exec -- sqlx database setup --source apps/server/migrations
+mise exec -- pnpm --filter server seed

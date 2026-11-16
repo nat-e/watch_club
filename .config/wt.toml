@@ -1,32 +1,25 @@
-# Gives each worktree its own server and databases.
+# Gives each worktree its own Postgres, database and port: tests run in parallel worktrees would
+# otherwise create and drop the same test databases on a shared server.
 # Scripts run from the primary worktree so that they don't depend on the branch.
+# A worktree's server port is its branch's hash_port + 20000, clear of the Phoenix worktrees' ports, and
+# the web app's and Expo's dev servers are on the next two ports.
 
-# Copies the files in .worktreeinclude from the primary worktree, including the local prototypes
-# (dev/prototypes, ignored by git). Each worktree gets its own copy, so a prototype that doesn't
-# compile on one branch can't break the others. prototypes.sh copies them back on removal.
+# Copies the files in .worktreeinclude from the primary worktree: .env and the build cache
 [[pre-start]]
 copy = "wt step copy-ignored"
 
 [[pre-start]]
-prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh snapshot"
-
-[[pre-start]]
-setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
-
-# Steps run in order: the prototypes are saved before the teardown starts.
-[[pre-remove]]
-prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh save {{ primary_worktree_path }}"
+setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ (branch | hash_port) + 20000 }}"
 
 [[pre-remove]]
-teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
+teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ (branch | hash_port) + 20000 }}"
 
 [post-merge]
 update = "{{ primary_worktree_path }}/scripts/worktree/update_main.sh"
 
 [list]
-url = "{% if branch == 'main' %}http://localhost:4000{% else %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ branch | hash_port }}{% endif %}"
+url = "{% if branch == 'main' %}http://localhost:4101{% else %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ (branch | hash_port) + 20001 }}{% endif %}"
 
 [aliases]
-dev = "mix ecto.migrate && iex -S mix phx.server"
-# Signs in as WC_DEV_USERNAME from .env when it is set.
+dev = "pnpm dev"
 open = "{{ primary_worktree_path }}/scripts/worktree/open.sh {{ worktree_path }}"

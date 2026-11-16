@@ -1,0 +1,10 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+TsTypeAliasDeclaration(ty=TsUnionType(types=$types)) as $alias where {
+  $types <: some or {
+    TsUndefinedType(),
+    TsNullLiteralType()
+  },
+  register_diagnostic(span=$alias, message="Don't put `| null` or `| undefined` in a type alias. Add it where the alias is used.")
+}

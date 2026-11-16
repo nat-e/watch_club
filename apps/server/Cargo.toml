@@ -1,0 +1,70 @@
+[package]
+name = "watch_club"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+description = "A self-hosted media server for small private groups"
+license = "MIT"
+publish = false
+default-run = "watch_club"
+
+[features]
+# Builds the `seed` binary, which only development needs
+dev-seed = []
+
+[[bin]]
+name = "seed"
+required-features = ["dev-seed"]
+
+[dependencies]
+anyhow = "1.0.104"
+axum = { version = "0.8.9", features = ["macros"] }
+axum-extra = { version = "0.12.6", features = ["cookie", "typed-header"] }
+base64 = "0.23.1"
+getrandom = "0.4.3"
+jiff = "0.2.43"
+jiff-sqlx = { version = "0.2.2", features = ["postgres"] }
+password-auth = "2.0.0"
+rust-embed = { version = "8.14.0", features = ["mime-guess"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.149"
+sha2 = "0.11.1"
+sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "postgres", "uuid", "macros", "migrate", "sqlx-toml"] }
+thiserror = "2.0.21"
+# The `Duration` cookies take
+time = { version = "0.3.55", default-features = false }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "sync", "net", "signal"] }
+tower-http = { version = "0.7.1", features = ["trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+utoipa = { version = "6.0.0", features = ["uuid"] }
+utoipa-axum = "0.3.0"
+uuid = { version = "1.29.2", features = ["serde"] }
+
+[dev-dependencies]
+http-body-util = "0.1.5"
+tower = { version = "0.5.3", features = ["util"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# The crate only serves its binaries and tests, not other crates
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+# A long function can be the clearest way to say one thing
+too_many_lines = "allow"
+# A module with children lives in `name.rs` next to `name/`
+mod_module_files = "deny"
+# `expect` says which invariant broke. Tests may unwrap
+unwrap_used = "warn"
+
+# Speed up compilation while keeping file and line numbers in error backtraces.
+[profile.dev]
+debug = "line-tables-only"
+
+# Speed up compilation by skipping debug information for dependencies.
+[profile.dev.package."*"]
+debug = false

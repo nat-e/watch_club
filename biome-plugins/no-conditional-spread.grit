@@ -1,0 +1,10 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsSpread(argument=$argument) as $spread where {
+  $argument <: or {
+    `$_ && $_`,
+    JsParenthesizedExpression(expression=`$_ && $_`)
+  },
+  register_diagnostic(span=$spread, message="Don't spread a value that may be falsy. Use a ternary: `...(cond ? x : {})`.")
+}

@@ -1,0 +1,5 @@
+name = "typescript-reviewer"
+description = "Reviews the TypeScript in a change against the typescript skill and the Google TypeScript Style Guide."
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+developer_instructions = "Read `.claude/agents/typescript-reviewer.md` and follow the instructions after its frontmatter."

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "generate:client": {
+      "description": "Generates the client from openapi.json, which is committed, unlike the client",
+      "inputs": ["openapi.json", "openapi-ts.config.ts"],
+      "outputs": ["src/generated/**"]
+    },
+    "generate": {
+      "description": "Writes the server's OpenAPI document to openapi.json, then generates the client. Run it after changing the API",
+      "inputs": [
+        "$TURBO_ROOT$/apps/server/src/**",
+        "$TURBO_ROOT$/apps/server/Cargo.toml",
+        "openapi-ts.config.ts"
+      ],
+      "outputs": ["openapi.json", "src/generated/**"]
+    },
+    "check": {
+      "description": "Type-checks the client, and checks that openapi.json matches the server",
+      "dependsOn": ["generate:client"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/server/src/**",
+        "$TURBO_ROOT$/apps/server/Cargo.toml"
+      ]
+    }
+  }
+}

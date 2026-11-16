@@ -1,0 +1,22 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  TsArrayType(element_type=$element) as $type where {
+    not $element <: r"[\w$.]+(?:\[\])*",
+    not $type <: within TsTypeOperatorType(),
+    register_diagnostic(span=$type, message="Use `Array<T>` when the element type is more than letters, digits and dots: `Array<string | number>`, `Array<Map<string, User>>`.")
+  },
+  TsTypeOperatorType() as $type where {
+    $type <: r"readonly\s+(?:[\w$.]+(?:\[\]){2,}|\([\s\S]*\)\[\]|[\s\S]*[^\w$.\]\[\s][\s\S]*\[\])",
+    register_diagnostic(span=$type, message="Use `ReadonlyArray<T>` when the element type is more than letters, digits and dots: `ReadonlyArray<string[]>`, `ReadonlyArray<string | number>`.")
+  },
+  TsReferenceType(name=`Array`, type_arguments=$arguments) as $type where {
+    $arguments <: r"<[\w$.]+(?:\[\])*>",
+    register_diagnostic(span=$type, message="Use `T[]` when the element type is only letters, digits and dots: `string[]`, `User[][]`.")
+  },
+  TsReferenceType(name=`ReadonlyArray`, type_arguments=$arguments) as $type where {
+    $arguments <: r"<[\w$.]+>",
+    register_diagnostic(span=$type, message="Use `readonly T[]` when the element type is only letters, digits and dots: `readonly string[]`.")
+  }
+}

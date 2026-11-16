@@ -1,0 +1,14 @@
+# The Rust types the SQLx macros give columns, so queries don't repeat them with `AS "id: UserId"`.
+# Table overrides only apply to output columns that come straight from a table. Paths start with
+# `::watch_club` to work in the library, the binaries and the tests alike.
+
+[macros.type-overrides]
+# SQLx has no Jiff support, see jiff-sqlx. Also checks the parameters bound to `timestamptz`.
+'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"
+
+[macros.table-overrides.'users']
+'id' = "::watch_club::domain::accounts::UserId"
+'locale' = "::watch_club::domain::accounts::Locale"
+
+[macros.table-overrides.'sessions']
+'user_id' = "::watch_club::domain::accounts::UserId"

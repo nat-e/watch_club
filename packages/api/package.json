@@ -1,0 +1,24 @@
+{
+  "name": "@watchclub/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "pnpm generate:spec && pnpm generate:client",
+    "generate:client": "openapi-ts",
+    "generate:spec": "cargo run --quiet --manifest-path ../../apps/server/Cargo.toml --bin openapi > openapi.json",
+    "check": "pnpm check:client && pnpm check:spec",
+    "check:client": "tsc",
+    "check:spec": "cargo run --quiet --manifest-path ../../apps/server/Cargo.toml --bin openapi | diff openapi.json - || (echo \"openapi.json doesn't match the server's API. Run pnpm generate to update it.\" && false)"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
+    "@tanstack/react-query": "catalog:",
+    "typescript": "catalog:"
+  }
+}

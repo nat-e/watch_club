@@ -1,0 +1,24 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsFormalParameter(binding=$binding, initializer=$initializer) as $param where {
+  or {
+    and {
+      $binding <: JsArrayBindingPattern(),
+      $initializer <: JsInitializerClause(expression=$default),
+      not $default <: `[]`
+    },
+    and {
+      $binding <: JsObjectBindingPattern(),
+      $initializer <: JsInitializerClause(expression=$default),
+      not $default <: `{}`
+    },
+    and {
+      $binding <: JsObjectBindingPattern(properties=$properties),
+      $properties <: some JsObjectBindingPatternProperty() as $property where {
+        $property <: r"[^:]*:\s*[\[{][\s\S]*"
+      }
+    }
+  },
+  register_diagnostic(span=$param, message="Keep parameter destructuring one level deep, put defaults inside the pattern and default the whole parameter to `{}` or `[]`: `{limit = 10}: Options = {}`.")
+}

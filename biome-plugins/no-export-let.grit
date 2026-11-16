@@ -1,0 +1,18 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+  JsExport(export_clause=JsVariableDeclarationClause() as $clause) as $export where {
+    $clause <: r"(?:let|var)\s[\s\S]*"
+  },
+  JsExport(export_clause=JsExportNamedClause(specifiers=$specifiers)) as $export where {
+    $export <: within JsModule(items=$items),
+    $specifiers <: contains JsReferenceIdentifier() as $exported,
+    $items <: some JsVariableStatement() as $statement where {
+      $statement <: r"(?:let|var)\s[\s\S]*",
+      $statement <: contains JsIdentifierBinding() as $binding where { $binding <: $exported }
+    }
+  }
+} where {
+  register_diagnostic(span=$export, message="Don't export a mutable binding. Export a `const` or a getter function.")
+}

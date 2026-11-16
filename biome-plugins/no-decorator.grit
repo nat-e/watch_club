@@ -1,0 +1,6 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsDecorator() as $decorator where {
+  register_diagnostic(span=$decorator, message="Don't use decorators: no framework here needs them.")
+}

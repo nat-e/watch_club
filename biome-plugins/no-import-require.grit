@@ -1,0 +1,6 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+TsImportEqualsDeclaration() as $import where {
+  register_diagnostic(span=$import, message="Use ES module `import`, not `import x = require()`.")
+}

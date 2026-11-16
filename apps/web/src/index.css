@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@watchclub/core/theme.css";
+@import "@fontsource-variable/reddit-sans";
+@import "@fontsource-variable/oxanium";
+@import "@fontsource-variable/fira-code";
+
+/* WatchClub is dark only, so `<html>` always carries `dark` */
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Reddit Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Oxanium Variable", serif;
+  --font-mono: "Fira Code Variable", monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+}

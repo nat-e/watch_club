@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# Brings the primary worktree up to date with GitHub and installs what the new
-# commits need. The dev server keeps its old dependencies and config until it
-# restarts.
+# Brings the primary worktree's tools and database up to date with what was merged. The dev server
+# picks up the new code on its own.
 set -euo pipefail
 
-git fetch
-git merge --ff-only '@{upstream}' || git rebase '@{upstream}'
-git push
-
 mise install
-mise exec -- mix deps.get
-mise exec -- mix assets.setup
-mise exec -- mix ecto.migrate
+mise exec -- pnpm install
+# Regenerate the uncommitted API client so the dev server picks up merged API changes
+mise exec -- turbo run generate:client
+mise exec -- sqlx migrate run --source apps/server/migrations

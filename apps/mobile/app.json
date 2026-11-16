@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "WatchClub",
+    "slug": "watchclub",
+    "scheme": "watchclub",
+    "version": "0.1.0",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#120e1b",
+    "ios": {
+      "bundleIdentifier": "club.watch.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "package": "club.watch.app"
+    },
+    "plugins": [
+      "expo-router",
+      "@react-native-tvos/config-tv",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#120e1b"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

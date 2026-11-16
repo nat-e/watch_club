@@ -1,56 +1,166 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
-	"css": {
-		"formatter": {
-			"enabled": true
-		},
-		"linter": {
-			"enabled": true
-		},
-		"parser": {
-			"tailwindDirectives": true
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"enabled": true
-		},
-		"linter": {
-			"enabled": true
-		}
-	},
-	"json": {
-		"formatter": {
-			"enabled": true
-		},
-		"linter": {
-			"enabled": true
-		}
-	},
-	"files": {
-		"includes": [
-			"**/*.css",
-			"**/*.js",
-			"**/*.json",
-			"!assets/css/phx.css",
-			"!**/deps",
-			"!**/priv",
-			"!**/assets/vendor",
-			"!.claude/skills/refactoring-ui",
-			"!**/_build",
-			"!**/.expert"
-		]
-	},
-	"linter": {
-		"rules": {
-			"nursery": {
-				"useSortedClasses": "error"
-			}
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/routeTree.gen.ts",
+      "!**/uniwind-types.d.ts",
+      "!packages/api/openapi.json",
+      "!**/*.md",
+      "!apps/server/.sqlx"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
+  "linter": {
+    "rules": {
+      "complexity": {
+        "noImplicitCoercions": {
+          "level": "error",
+          "options": {
+            "allowDoubleNegation": true
+          }
+        }
+      },
+      "style": {
+        "noCommonJs": "error",
+        "noDefaultExport": "error",
+        "noInferrableTypes": "error",
+        "noMultilineString": "error",
+        "noNamespace": "error",
+        "useBlockStatements": "error",
+        "useConsistentBuiltinInstantiation": "error",
+        "useImportsFirst": "error",
+        "useSingleVarDeclarator": "error",
+        "useSpreadOverApply": "error",
+        "useThrowNewError": "error",
+        "useThrowOnlyError": "error",
+        "useConsistentMemberAccessibility": {
+          "level": "error",
+          "options": {
+            "accessibility": "noPublic"
+          }
+        },
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "interface"
+          }
+        },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case"]
+          }
+        },
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "enumMember"
+                },
+                "formats": ["CONSTANT_CASE"]
+              },
+              {
+                "selector": {
+                  "kind": "importNamespace"
+                },
+                "formats": ["camelCase"]
+              }
+            ]
+          }
+        },
+        "useReadonlyClassProperties": {
+          "level": "error",
+          "options": {
+            "checkAllProperties": true
+          }
+        }
+      },
+      "suspicious": {
+        "noEmptyBlockStatements": "error",
+        "noVar": "error",
+        "useGuardForIn": "error"
+      },
+      "nursery": {
+        "noExtendNative": "error",
+        "noImpliedEval": "error",
+        "noInvalidRemoveEventListener": "error",
+        "noObjectConstructor": "error",
+        "noThisOutsideOfClass": "error",
+        "noUnsafeTypeAssertion": "error",
+        "useExhaustiveSwitchCases": "error",
+        "usePromiseRejectErrors": "error"
+      }
+    }
+  },
+  "plugins": [
+    "./biome-plugins/array-type.grit",
+    "./biome-plugins/no-angle-bracket-assertion.grit",
+    "./biome-plugins/no-array-constructor.grit",
+    "./biome-plugins/no-arrow-class-property.grit",
+    "./biome-plugins/no-conditional-spread.grit",
+    "./biome-plugins/no-decorator.grit",
+    "./biome-plugins/no-export-let.grit",
+    "./biome-plugins/no-import-require.grit",
+    "./biome-plugins/no-nullable-type-alias.grit",
+    "./biome-plugins/no-object-literal-assertion.grit",
+    "./biome-plugins/no-parse-int-float.grit",
+    "./biome-plugins/no-private-identifier.grit",
+    "./biome-plugins/param-destructuring-default.grit",
+    "./biome-plugins/prefer-optional.grit",
+    "./biome-plugins/top-level-arrow.grit"
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "bracketSpacing": false,
+      "arrowParentheses": "asNeeded"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/components/ui/**", "apps/web/src/hooks/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
+      "includes": ["apps/mobile/src/app/**", "**/*.config.ts", "**/*.d.ts", "**/src/l10n/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.config.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noCommonJs": "off"
+          }
+        }
+      }
+    }
+  ]
 }

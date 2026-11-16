@@ -1,0 +1,16 @@
+import tailwindcss from '@tailwindcss/vite';
+import {tanstackRouter} from '@tanstack/router-plugin/vite';
+import react from '@vitejs/plugin-react';
+import {defineConfig} from 'vite';
+
+export default defineConfig({
+  // The router plugin must come before the React plugin
+  plugins: [tanstackRouter({target: 'react', autoCodeSplitting: true}), react(), tailwindcss()],
+  resolve: {tsconfigPaths: true},
+  server: {
+    port: Number(process.env.WEB_PORT ?? 5173),
+    strictPort: true,
+    // Forwards API calls to the server that `pnpm dev` runs on PORT
+    proxy: {'/api': `http://127.0.0.1:${process.env.PORT}`},
+  },
+});

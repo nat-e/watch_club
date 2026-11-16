@@ -1,0 +1,32 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Only installs versions published at least a week ago (in minutes), so a hijacked release has
+# time to be found and pulled before it reaches us
+minimumReleaseAge: 10080
+# Except Expo's own packages: each Expo SDK patch expects the latest patches of its modules
+minimumReleaseAgeExclude:
+  - expo
+  - expo-*
+  - "@expo/*"
+  - babel-preset-expo
+
+# Versions shared by the web and mobile apps. Expo pins React per SDK release: upgrade React here
+# with Expo, as two React versions in one app break it
+catalog:
+  "@tanstack/react-query": ^5.104.1
+  "@types/node": ^26.6.0
+  "@types/react": ~19.3.0
+  # The apps and packages/core must share one copy of each, or the apps can't find the translations
+  i18next: ^27.0.1
+  react-i18next: ^18.0.0
+  react: 19.3.0
+  react-dom: 19.3.0
+  # Hey API and Expo use the compiler's JavaScript API, which TypeScript 7 no longer has
+  typescript: ~6.0.3
+  vitest: ^5.0.3
+
+allowBuilds:
+  # i18next-cli's parser: its install script only checks that the binary for this platform loads
+  "@swc/core": false

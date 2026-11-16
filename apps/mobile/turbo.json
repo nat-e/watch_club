@@ -1,0 +1,25 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "description": "Runs Expo's dev server, which takes keyboard shortcuts",
+      "interactive": true
+    },
+    "android": {
+      "description": "Builds the app, runs it on Android and keeps Expo's dev server running",
+      "dependsOn": ["^generate:client"],
+      "passThroughEnv": ["ANDROID_HOME", "ANDROID_SDK_ROOT", "JAVA_HOME"],
+      "cache": false,
+      "persistent": true,
+      "interactive": true
+    },
+    "ios": {
+      "description": "Builds the app, runs it on iOS and keeps Expo's dev server running",
+      "dependsOn": ["^generate:client"],
+      "cache": false,
+      "persistent": true,
+      "interactive": true
+    }
+  }
+}

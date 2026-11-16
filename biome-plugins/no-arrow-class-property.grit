@@ -1,0 +1,6 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsPropertyClassMember(name=$name, value=JsInitializerClause(expression=JsArrowFunctionExpression())) where {
+  register_diagnostic(span=$name, message="Use a method, and call it through an arrow where needed. Use arrow properties only for event handlers that must be removed later.", severity="warn")
+}
