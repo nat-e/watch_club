@@ -259,6 +259,9 @@ pub async fn sign_in(
     .await
     .context("failed to find the User signing in")?
     else {
+        // Hashes the password all the same, which takes as long as checking it, so the time to
+        // answer doesn't tell which usernames exist
+        hash_slowly(move || password_auth::generate_hash(password)).await;
         return Ok(None);
     };
 
