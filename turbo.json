@@ -7,9 +7,9 @@
     "WEB_PORT",
     "RCT_METRO_PORT",
     "RUST_LOG",
-    "RUSTUP_TOOLCHAIN",
-    "SQLX_OFFLINE"
+    "RUSTUP_TOOLCHAIN"
   ],
+  "globalEnv": ["SQLX_OFFLINE"],
   "tasks": {
     "build": {
       "description": "Builds each app for release",
