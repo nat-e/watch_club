@@ -6,6 +6,7 @@ import {useSignInFormOptions} from '@watchclub/core/accounts/sign-in';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/form';
 import {Card, CardContent, CardHeader} from '@/components/ui/card';
+import {sitePath} from '@/lib/site-path';
 
 interface SignInSearch {
   /** The page that sent the visitor to sign in, where they go back afterwards */
@@ -30,15 +31,6 @@ export const Route = createFileRoute('/_signed-out/sign-in')({
   },
   component: SignIn,
 });
-
-/** Returns the value if it's a path on this site, so a link can't send Users to another one. */
-function sitePath(value: unknown): string | undefined {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-  const isSitePath = value.startsWith('/') && !value.startsWith('//') && !value.includes('\\');
-  return isSitePath ? value : undefined;
-}
 
 function SignIn() {
   const {t} = useTranslation('core');
