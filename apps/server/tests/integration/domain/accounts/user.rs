@@ -263,16 +263,16 @@ mod session_user {
     }
 }
 
-mod delete_session {
+mod sign_out {
     use super::*;
 
     #[sqlx::test]
-    async fn ends_the_session_of_this_device_only(db: PgPool) {
+    async fn signs_out_this_device_only(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let phone = new_session(&db, &user).await;
         let laptop = new_session(&db, &user).await;
 
-        accounts::delete_session(&db, &phone).await.unwrap();
+        accounts::sign_out(&db, &phone).await.unwrap();
 
         assert_eq!(accounts::session_user(&db, &phone).await.unwrap(), None);
         assert_eq!(

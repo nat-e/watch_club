@@ -303,8 +303,8 @@ pub async fn session_user(
     Ok(user)
 }
 
-/// Deletes the token's session, which signs its device out.
-pub async fn delete_session(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
+/// Signs out the device that the token keeps signed in.
+pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
         .execute(db)
         .await
