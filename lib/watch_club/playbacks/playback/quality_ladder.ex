@@ -42,7 +42,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   end
 
   # The H.264 profiles that browsers and TVs decode, with the RFC 6381 profile and constraint
-  # bytes of each. Encoded rungs are Constrained Baseline.
+  # bytes of each
   @h264_profiles %{
     "Constrained Baseline" => "42e0",
     "Baseline" => "4200",
@@ -50,8 +50,11 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     "High" => "6400"
   }
 
-  # The H.264 levels of encoded rungs, as {level, max frame size, max decoding speed}, both in
-  # 16×16 macroblocks. From 3.1, every level allows the bitrates the rungs encode at.
+  # The H.264 levels of encoded rungs, as {level, max macroblocks per frame, max macroblocks per
+  # second}. They start at 3.1: the Original's VBV buffer, twice its bitrate in `WatchClub.Ffmpeg`,
+  # reaches 13 Mbit, over 3.0's limit of 10 Mbit but under 3.1's 14 Mbit, so
+  # `@max_original_bitrate` must stay under 7 Mbps. Levels that only raise the bitrate, such as
+  # 4.1, are left out.
   @h264_levels [
     {31, 3_600, 108_000},
     {32, 5_120, 216_000},
@@ -104,7 +107,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
           copy?: true,
           video_bitrate: source_bit_rate,
           level: level,
-          codecs: codecs(profile, level),
+          codecs: codecs(@h264_profiles[profile], level),
           bandwidth: source_bit_rate * 2 + @audio_bandwidth_overhead,
           average_bandwidth: source_bit_rate + @audio_average_bandwidth_overhead
         }
@@ -125,7 +128,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   defp encoded(rung, track) do
     width = scaled_width(rung.height, track.width, track.height)
     macroblocks = div(width + 15, 16) * div(rung.height + 15, 16)
-    # An unknown frame rate counts as 60, which can only overstate the level
+    # The average frame rate: a variable one can peak above it. An unknown one counts as 60.
     macroblocks_per_second = macroblocks * (track.frame_rate || 60)
 
     {level, _max_macroblocks, _max_macroblocks_per_second} =
@@ -141,16 +144,17 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
       copy?: false,
       video_bitrate: rung.video_bitrate,
       level: level,
-      codecs: codecs("Constrained Baseline", level),
+      # x264 marks its Constrained Baseline with the constraint flags 0 and 1
+      codecs: codecs("42c0", level),
       bandwidth: rung.video_bitrate + @audio_bandwidth_overhead,
       average_bandwidth: rung.video_bitrate + @audio_average_bandwidth_overhead
     }
   end
 
   # RFC 6381 codecs, such as avc1.640029 for High 4.1
-  defp codecs(profile, level) do
+  defp codecs(profile_and_constraints, level) do
     level = level |> Integer.to_string(16) |> String.pad_leading(2, "0") |> String.downcase()
-    "avc1.#{@h264_profiles[profile]}#{level}"
+    "avc1.#{profile_and_constraints}#{level}"
   end
 
   defp scaled_width(height, source_width, source_height) do
