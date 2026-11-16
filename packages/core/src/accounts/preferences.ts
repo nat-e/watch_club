@@ -2,7 +2,7 @@
  * User Preferences: the User's choices, such as their Locale.
  */
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {updatePreferences, type UserPreferences} from '@watchclub/api';
+import {type UserPreferences, updatePreferences} from '@watchclub/api';
 import {updateCurrentUser} from './current-user';
 
 /** Returns the mutation that saves the User's Preferences, after which the app follows them. */
