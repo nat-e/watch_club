@@ -8,7 +8,7 @@ import {Screen} from '@/components/screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
-/** Shows the form that signs the User in to their WatchClub: its address, username and password. */
+/** The form that signs the User in to their WatchClub: its address, username and password. */
 export default function SignIn() {
   const {t} = useTranslation(['mobile', 'core']);
   const {session} = useSession();

@@ -2,7 +2,7 @@ import {type ComponentProps, useId} from 'react';
 import {Field, FieldError, FieldLabel} from '@/components/ui/field';
 import {Input} from '@/components/ui/input';
 
-/** A labelled text input, with the error that its value breaks, if any. */
+/** A labelled text input, with an optional error message. */
 export function TextField({
   label,
   error,

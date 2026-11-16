@@ -18,7 +18,7 @@ declare module 'i18next' {
 
 const MESSAGES: Messages = {'en-US': enUs, 'fr-FR': frFr};
 
-/** Gives the pages inside it the translations into the User's Locale. */
+/** The translations into the User's Locale, for the pages inside it. */
 export function Localization({children}: {children: ReactNode}) {
   const {data: user} = useQuery(currentUserQuery);
   const locale = user?.locale ?? negotiateLocale(navigator.languages);

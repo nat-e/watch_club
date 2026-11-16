@@ -4,7 +4,10 @@ import {Text} from 'react-native';
 import {Button} from '@/components/button';
 import {Screen} from '@/components/screen';
 
-/** Replaces a screen that doesn't exist, as when a link to the app is wrong, with a way home. */
+/**
+ * The screen in place of one that doesn't exist, as when a link to the app is wrong, with a way
+ * home.
+ */
 export default function NotFound() {
   const {t} = useTranslation('core');
   const router = useRouter();

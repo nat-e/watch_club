@@ -37,8 +37,8 @@ interface SessionContextValue extends SessionState {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 /**
- * Gives the screens inside it the store and its state. Renders nothing until it knows who's signed
- * in, or that it can't reach the Instance to know, while the splash screen shows.
+ * The store and its state, for the screens inside it. It renders nothing until it knows who's
+ * signed in, or that it can't reach the Instance to know, while the splash screen shows.
  */
 export function SessionProvider({store, children}: {store: SessionStore; children: ReactNode}) {
   // The same function on each render, or React subscribes again

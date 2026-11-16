@@ -2,7 +2,7 @@ import {Stack} from 'expo-router';
 import {useTranslation} from 'react-i18next';
 import {useCSSVariable} from 'uniwind';
 
-/** Shows the screens of signed-in Users, under a header with the screen's name. */
+/** The screens of signed-in Users, under a header with the screen's name. */
 export default function SignedInLayout() {
   const {t} = useTranslation('core');
   const [background, card, foreground] = useCSSVariable([

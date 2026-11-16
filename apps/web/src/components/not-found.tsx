@@ -2,7 +2,7 @@ import {Link} from '@tanstack/react-router';
 import {useTranslation} from 'react-i18next';
 import {buttonVariants} from '@/components/ui/button';
 
-/** Replaces a page that doesn't exist, as when a link is wrong, with a way back home. */
+/** The page in place of one that doesn't exist, as when a link is wrong, with a way back home. */
 export function NotFound() {
   const {t} = useTranslation('core');
   return (

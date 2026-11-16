@@ -8,8 +8,7 @@ import {withUniwind} from 'uniwind';
 const SafeAreaView = withUniwind(SafeArea);
 
 /**
- * Shows a screen's scrollable content, centered and clear of the notch, the system bars and the
- * keyboard.
+ * A screen's scrollable content, centered and clear of the notch, the system bars and the keyboard.
  */
 export function Screen({children}: {children: ReactNode}) {
   return (

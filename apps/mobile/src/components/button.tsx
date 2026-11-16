@@ -12,7 +12,7 @@ const VARIANTS = {
   },
 } as const;
 
-/** Shows a button labelled with text, whose focus ring shows where the remote is on TVs. */
+/** A button labelled with text, whose focus ring shows where the remote is on TVs. */
 export function Button({
   variant = 'primary',
   children,

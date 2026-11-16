@@ -8,7 +8,7 @@ import {TextField} from '@/components/text-field';
 
 const {fieldComponent} = getFormHookHelpers();
 
-/** Shows a form's field in a text field, with the first of its errors, if any. */
+/** A form's field in a text field, with the first of its errors, if any. */
 function FormTextField({
   field,
   ...textField
@@ -29,7 +29,7 @@ function FormTextField({
   );
 }
 
-/** Shows the form's errors that belong to no field, such as when the server is down. */
+/** The form's errors that belong to no field, such as when the server is down. */
 function FormError() {
   const form = useFormContext();
   return (

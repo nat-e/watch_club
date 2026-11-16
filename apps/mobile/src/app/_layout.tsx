@@ -40,9 +40,7 @@ export default function RootLayout() {
   );
 }
 
-/**
- * Shows the screens for where the User is: signing in, signed in, or unable to reach the Instance.
- */
+/** The screens for where the User is: signing in, signed in, or unable to reach the Instance. */
 function Screens() {
   const {user, isInstanceUnreachable} = useSession();
   const background = useCSSVariable('--color-background');

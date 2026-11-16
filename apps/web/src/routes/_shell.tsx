@@ -38,8 +38,8 @@ import {
 } from '@/components/ui/sidebar';
 
 /**
- * Lays out the pages for signed-in Users, beside a sidebar with the navigation and their menu. On
- * phones, the sidebar slides in from a bar above the page.
+ * The layout of the pages for signed-in Users, beside a sidebar with the navigation and their menu.
+ * On phones, the sidebar slides in from a bar above the page.
  */
 export const Route = createFileRoute('/_shell')({
   beforeLoad: async ({context, location}) => {
@@ -82,8 +82,8 @@ function Shell() {
 }
 
 /**
- * Shows the navigation and the User's menu. On phones, it slides in over the page, and hides once
- * one of its links opens a page.
+ * The navigation and the User's menu. On phones, it slides in over the page, and hides once one of
+ * its links opens a page.
  */
 function AppSidebar({user}: {user: User}) {
   const {t} = useTranslation(['web', 'core']);
@@ -137,7 +137,7 @@ function AppSidebar({user}: {user: User}) {
   );
 }
 
-/** Shows a bar above the page on phones, whose button slides the sidebar in. */
+/** The bar above the page on phones, whose button slides the sidebar in. */
 function PhoneBar() {
   return (
     <header className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background px-3 md:hidden">

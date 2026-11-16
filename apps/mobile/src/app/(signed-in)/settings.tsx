@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {Pressable, Text, View} from 'react-native';
 import {Screen} from '@/components/screen';
 
-/** Shows Settings, where Users choose their User Preferences. Picking a language saves it. */
+/** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
   const {t} = useTranslation('core');
   const localeNames = useLocaleNames();

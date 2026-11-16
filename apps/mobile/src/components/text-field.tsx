@@ -1,7 +1,7 @@
 import {type ComponentRef, type Ref, useId} from 'react';
 import {Text, TextInput, type TextInputProps, View} from 'react-native';
 
-/** Shows a labelled text input, with the error that its value breaks, if any. */
+/** A labelled text input, with an optional error message. */
 export function TextField({
   label,
   error,

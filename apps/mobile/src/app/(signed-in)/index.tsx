@@ -7,7 +7,7 @@ import {Button} from '@/components/button';
 import {Screen} from '@/components/screen';
 import {useSessionStore} from '@/session';
 
-/** Shows Home, where signed-in Users land: who they are, their settings, and signing out. */
+/** Home, where signed-in Users land: who they are, their settings, and signing out. */
 export default function Home() {
   const {t} = useTranslation('core');
   const user = useCurrentUser();
