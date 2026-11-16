@@ -39,9 +39,11 @@ export async function setCurrentUser(queryClient: QueryClient, user: User): Prom
 
 /** Makes nobody the current User, and forgets everything the API told the last one. */
 export async function forgetCurrentUser(queryClient: QueryClient): Promise<void> {
+  // Before waiting, so it doesn't cancel the requests the app sends meanwhile, such as the next
+  // page's
+  const currentUserHash = hashKey(currentUserQuery.queryKey);
+  queryClient.removeQueries({predicate: query => query.queryHash !== currentUserHash});
   await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
   // Updated rather than removed, so the screens that show the User see it
   queryClient.setQueryData(currentUserQuery.queryKey, null);
-  const currentUserHash = hashKey(currentUserQuery.queryKey);
-  queryClient.removeQueries({predicate: query => query.queryHash !== currentUserHash});
 }

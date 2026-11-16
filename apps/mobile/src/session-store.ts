@@ -63,9 +63,11 @@ export class SessionStore {
       await secureStore.deleteItemAsync(tokenKey(lastInstanceUrl));
     }
     await secureStore.setItemAsync(INSTANCE_URL_KEY, instanceUrl);
-    // The User first, so the token doesn't make the app wait for them
-    await setCurrentUser(this.queryClient, data.user);
     await secureStore.setItemAsync(tokenKey(instanceUrl), data.token);
+    // The client before the User, as the screens that show the User ask the API again with its
+    // token, and the User before the listeners, so the app doesn't wait for the API
+    configureClient(instanceUrl, data.token);
+    await setCurrentUser(this.queryClient, data.user);
     this.update(instanceUrl, data.token);
   }
 
@@ -93,15 +95,20 @@ export class SessionStore {
 
   /** Sends the API's requests to the Instance with the token, and tells the listeners. */
   private update(instanceUrl: string | null, token: string | null) {
-    client.setConfig({
-      baseUrl: instanceUrl ?? undefined,
-      auth: scheme => (scheme.scheme === 'bearer' ? (token ?? undefined) : undefined),
-    });
+    configureClient(instanceUrl, token);
     this.session = {instanceUrl, hasToken: token !== null};
     for (const listener of this.listeners) {
       listener();
     }
   }
+}
+
+/** Sends the API's requests to the Instance, with the token. */
+function configureClient(instanceUrl: string | null, token: string | null) {
+  client.setConfig({
+    baseUrl: instanceUrl ?? undefined,
+    auth: scheme => (scheme.scheme === 'bearer' ? (token ?? undefined) : undefined),
+  });
 }
 
 /**
