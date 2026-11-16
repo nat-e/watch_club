@@ -18,6 +18,9 @@ export interface Session {
 
 const INSTANCE_URL_KEY = 'instance-url';
 
+/** The time the app waits for the Instance's answer before giving up, as React Native sets none. */
+const REQUEST_TIMEOUT_MS = 15_000;
+
 /**
  * The store of the device's Session, which keeps it in secure storage and in the API client's
  * settings.
@@ -108,7 +111,16 @@ function configureClient(instanceUrl: string | null, token: string | null) {
   client.setConfig({
     baseUrl: instanceUrl ?? undefined,
     auth: scheme => (scheme.scheme === 'bearer' ? (token ?? undefined) : undefined),
+    fetch: fetchWithTimeout,
   });
+}
+
+/** Sends the request, and gives up once the Instance doesn't answer within REQUEST_TIMEOUT_MS. */
+function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const request = new Request(input, init);
+  // The caller can still cancel it, as TanStack Query does once no screen needs the answer
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]);
+  return fetch(request, {signal});
 }
 
 /**
