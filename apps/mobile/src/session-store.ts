@@ -46,13 +46,13 @@ export class SessionStore {
   }
 
   /**
-   * Restores the Session the app had when it last stopped. In development, the Instance is the Expo
-   * dev server the app loaded from, which forwards the API to the server running beside it.
+   * Restores the Session the app had when it last stopped, without what the device can't read. In
+   * development, the Instance is the Expo dev server the app loaded from, which forwards the API to
+   * the server running beside it.
    */
   async restore(): Promise<void> {
-    const instanceUrl = getBundleOrigin() ?? (await secureStore.getItemAsync(INSTANCE_URL_KEY));
-    const token =
-      instanceUrl === null ? null : await secureStore.getItemAsync(tokenKey(instanceUrl));
+    const instanceUrl = getBundleOrigin() ?? (await readItem(INSTANCE_URL_KEY));
+    const token = instanceUrl === null ? null : await readItem(tokenKey(instanceUrl));
     this.update(instanceUrl, token);
   }
 
@@ -104,6 +104,21 @@ export class SessionStore {
     for (const listener of this.listeners) {
       listener();
     }
+  }
+}
+
+/**
+ * Returns the value of the key in secure storage, or null when there's none or the device can't
+ * read it, as when Android lost the key that encrypts it. An unreadable value is deleted, so the
+ * next start reads the storage cleanly.
+ */
+async function readItem(key: string): Promise<string | null> {
+  try {
+    return await secureStore.getItemAsync(key);
+  } catch {
+    // Starting signed out matters more than cleaning up, which the next start tries again
+    await secureStore.deleteItemAsync(key).catch(() => undefined);
+    return null;
   }
 }
 
