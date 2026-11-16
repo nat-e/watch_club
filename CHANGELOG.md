@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.13](https://github.com/nat-e/watch_club/compare/v0.1.12...v0.1.13) (2026-11-16)
+
+
+### Features
+
+* **dev:** seed dev with a catalog of free-licensed media ([#123](https://github.com/nat-e/watch_club/issues/123)) ([66e5e24](https://github.com/nat-e/watch_club/commit/66e5e2418f6a8a70e064ce039b382310190a1ba8))
+* **player:** play Original as a copy of the file's video, cut on its keyframes ([#130](https://github.com/nat-e/watch_club/issues/130)) ([824b36b](https://github.com/nat-e/watch_club/commit/824b36b1e01436a838d14a65e0ea6ff72f8e538e))
+
+
+### Bug Fixes
+
+* **media:** count Text Tracks flagged forced as full from their lines per minute ([#127](https://github.com/nat-e/watch_club/issues/127)) ([578c616](https://github.com/nat-e/watch_club/commit/578c616508b0ad842e8be683c80948c471d0defe))
+* **player:** a tap that shows the controls no longer presses the button under it ([#128](https://github.com/nat-e/watch_club/issues/128)) ([976db13](https://github.com/nat-e/watch_club/commit/976db13ca0719733ef4240c963c7dd70c9f8be90))
+* **player:** seek when the User lets go of the progress bar ([#129](https://github.com/nat-e/watch_club/issues/129)) ([fa1f21f](https://github.com/nat-e/watch_club/commit/fa1f21f5fc0892b82757f3b776a74f47d3c5a0a0))
+
 ## [0.1.12](https://github.com/nat-e/watch_club/compare/v0.1.11...v0.1.12) (2026-11-13)
 
 
