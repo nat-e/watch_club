@@ -3,7 +3,11 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   Helpers functions for building HLS playlists for videos and transcoding
   HLS segments.
 
-  Transcoded segments are cached on disk at the Playback level.
+  Segments are cut on the keyframes of the Video's Default Video Track: each starts on the
+  first keyframe at or after a multiple of 6 seconds, so that every quality and audio track cuts
+  at the same times. A quality copies the file's video or encodes it, see `QualityLadder`.
+
+  Segments are cached on disk at the Playback level.
   """
 
   require Logger
@@ -16,16 +20,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
   @segment_duration 6.0
 
-  @doc "Segment duration in seconds used by the player and the playlists."
-  def segment_duration, do: @segment_duration
-
-  @doc "Number of segments needed to cover the Playback's source duration."
-  def segment_count(video) do
-    (video.duration_seconds / @segment_duration)
-    |> Float.ceil()
-    |> trunc()
-  end
-
   @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
   def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query) do
     metadata = %{
@@ -35,7 +29,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       query: query
     }
 
-    {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities(video)))}
+    {:ok, IO.iodata_to_binary(Playlist.master(metadata, QualityLadder.build(video)))}
   end
 
   def video_playlist(%Video{} = video, variant_id, query) do
@@ -53,16 +47,16 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   def video_segment(%Playback{} = playback, variant_id, segment_name) do
     with {:ok, quality} <- find_quality(playback.media.video, variant_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         :ok <- validate_segment_index(playback.media.video, index) do
-      ensure_video_segment(playback, quality, index)
+         {:ok, segment} <- find_segment(playback.media.video, index) do
+      ensure_video_segment(playback, quality, index, segment)
     end
   end
 
   def audio_segment(%Playback{} = playback, track_id, segment_name) do
     with {:ok, track} <- find_audio_track(playback.media.video, track_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         :ok <- validate_segment_index(playback.media.video, index) do
-      ensure_audio_segment(playback, track, index)
+         {:ok, segment} <- find_segment(playback.media.video, index) do
+      ensure_audio_segment(playback, track, index, segment)
     end
   end
 
@@ -74,34 +68,63 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   end
 
   defp render_media_playlist(%Video{} = video, query) do
-    IO.iodata_to_binary(
-      Playlist.segments(video.duration_seconds, segment_count(video), @segment_duration, query)
-    )
+    durations = Enum.map(segments(video), &Float.round(&1.end_time - &1.start_time, 6))
+    IO.iodata_to_binary(Playlist.segments(durations, query))
   end
 
-  defp ensure_video_segment(%Playback{} = playback, quality, index) do
+  # The Video's segments, in order: the first starts with the file, the others on a keyframe
+  defp segments(%Video{keyframe_seconds: keyframes, duration_seconds: duration}) do
+    starts =
+      keyframes
+      |> Enum.reduce([0.0], fn keyframe, [start | _] = starts ->
+        next_mark = (Float.floor(start / @segment_duration) + 1) * @segment_duration
+        if keyframe >= next_mark and keyframe < duration, do: [keyframe | starts], else: starts
+      end)
+      |> Enum.reverse()
+
+    Enum.zip_with(starts, tl(starts) ++ [duration], &%{start_time: &1, end_time: &2})
+  end
+
+  defp find_segment(%Video{} = video, index) do
+    case Enum.at(segments(video), index) do
+      nil -> {:error, :not_found}
+      segment -> {:ok, segment}
+    end
+  end
+
+  defp ensure_video_segment(%Playback{} = playback, quality, index, segment) do
     output_path = video_segment_path(playback, quality, index)
 
     if cached?(output_path) do
       {:ok, output_path}
     else
-      attributes = %{"watch_club.hls.quality": quality.id, "watch_club.hls.segment_index": index}
-
-      trace_transcode("transcode video segment", attributes, fn ->
-        Ffmpeg.transcode_video_segment(%{
+      job =
+        Map.merge(segment, %{
           source_path: playback.media.path,
           output_path: output_path,
-          start_time: index * @segment_duration,
-          end_time: (index + 1) * @segment_duration,
-          width: quality.width,
-          height: quality.height,
-          video_bitrate: quality.video_bitrate
+          stream_index: playback.media.video.default_video_track.stream_index
         })
-      end)
+
+      if quality.copy? do
+        attributes = %{"watch_club.hls.segment_index": index}
+
+        trace_transcode("copy video segment", attributes, fn -> Ffmpeg.copy_video_segment(job) end)
+      else
+        attributes = %{
+          "watch_club.hls.quality": quality.id,
+          "watch_club.hls.segment_index": index
+        }
+
+        trace_transcode("transcode video segment", attributes, fn ->
+          job
+          |> Map.merge(Map.take(quality, [:width, :height, :video_bitrate]))
+          |> Ffmpeg.transcode_video_segment()
+        end)
+      end
     end
   end
 
-  defp ensure_audio_segment(%Playback{} = playback, %AudioTrack{} = track, index) do
+  defp ensure_audio_segment(%Playback{} = playback, %AudioTrack{} = track, index, segment) do
     output_path = audio_segment_path(playback, track, index)
 
     if cached?(output_path) do
@@ -116,8 +139,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
         Ffmpeg.transcode_audio_segment(%{
           source_path: playback.media.path,
           output_path: output_path,
-          start_time: index * @segment_duration,
-          end_time: (index + 1) * @segment_duration,
+          start_time: segment.start_time,
+          end_time: segment.end_time,
           stream_index: track.stream_index
         })
       end)
@@ -188,13 +211,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     if file_name == "#{track.id}.vtt", do: :ok, else: {:error, :not_found}
   end
 
-  defp qualities(%Video{} = video) do
-    track = video.default_video_track
-    QualityLadder.build(track.width, track.height, track.bit_rate)
-  end
-
   defp find_quality(%Video{} = video, id) do
-    case Enum.find(qualities(video), &(&1.id == id)) do
+    case Enum.find(QualityLadder.build(video), &(&1.id == id)) do
       nil -> {:error, :not_found}
       quality -> {:ok, quality}
     end
@@ -218,14 +236,6 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     case Regex.run(~r/^seg_(\d+)\.ts$/, segment_name) do
       [_segment_name, index] -> {:ok, String.to_integer(index)}
       _no_match -> {:error, :invalid_segment}
-    end
-  end
-
-  defp validate_segment_index(%Video{} = video, index) do
-    if index >= 0 and index < segment_count(video) do
-      :ok
-    else
-      {:error, :not_found}
     end
   end
 

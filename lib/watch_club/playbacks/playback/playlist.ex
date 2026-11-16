@@ -2,9 +2,8 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   @moduledoc """
   Serializes the HLS master and per-track media playlists for a Playback.
 
-  Pure module — callers pass the probed metadata, the quality ladder, the
-  segment duration, and the segment count. Nothing here touches disk or
-  state.
+  Pure module — callers pass the probed metadata, the quality ladder, and the
+  segment durations. Nothing here touches disk or state.
   """
 
   alias ExM3U8.MediaPlaylist
@@ -14,7 +13,6 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
 
   alias WatchClub.Playbacks.Playback.QualityLadder.Quality
 
-  @hls_video_codec "avc1.4d401f"
   @hls_audio_codec "mp4a.40.2"
 
   # The default audio track is the one every Screen starts with. `query`, such as `?token=…`,
@@ -41,7 +39,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
             %Stream{
               bandwidth: quality.bandwidth,
               average_bandwidth: quality.average_bandwidth,
-              codecs: "#{@hls_video_codec},#{@hls_audio_codec}",
+              codecs: "#{quality.codecs},#{@hls_audio_codec}",
               resolution: {quality.width, quality.height},
               frame_rate: metadata.video.frame_rate,
               audio: "audio",
@@ -53,9 +51,9 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   end
 
   @doc "Segments keep the file's timestamps, so they form a single timeline."
-  @spec segments(float(), integer(), float(), String.t()) :: iodata()
-  def segments(duration, segment_count, segment_duration, query) do
-    target_duration = segment_duration |> Float.ceil() |> trunc()
+  @spec segments([float()], String.t()) :: iodata()
+  def segments(durations, query) do
+    target_duration = durations |> Enum.max() |> Float.ceil() |> trunc()
 
     %MediaPlaylist{
       info: %MediaPlaylistInfo{
@@ -67,11 +65,10 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
         end_list?: true
       },
       timeline:
-        Enum.map(0..(segment_count - 1), fn index ->
-          %Segment{
-            duration: segment_duration_at(duration, index, segment_duration),
-            uri: "seg_#{pad_segment(index)}.ts#{query}"
-          }
+        durations
+        |> Enum.with_index()
+        |> Enum.map(fn {duration, index} ->
+          %Segment{duration: duration, uri: "seg_#{pad_segment(index)}.ts#{query}"}
         end)
     }
     |> ExM3U8.serialize()
@@ -98,11 +95,6 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   # The same code for a language in every playlist, so the Player can find the
   # previous video's tracks in the next video's
   defp language(track), do: escape(track.language_code || "und")
-
-  defp segment_duration_at(duration, index, segment_duration) do
-    remaining = duration - index * segment_duration
-    min(segment_duration, max(remaining, 0.1))
-  end
 
   defp escape(value) do
     value

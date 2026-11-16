@@ -14,7 +14,12 @@ defmodule WatchClubWeb.PlayerController do
 
   @playback_fields [
     media: [
-      video: [:default_video_track, :text_tracks, audio_tracks: [:display_label, :language_code]]
+      video: [
+        :keyframe_seconds,
+        :default_video_track,
+        :text_tracks,
+        audio_tracks: [:display_label, :language_code]
+      ]
     ]
   ]
 
