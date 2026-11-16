@@ -190,7 +190,12 @@ function UserMenu({user}: {user: User}) {
           {t($ => $.core.settings.title)}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled={signOut.isPending} onClick={() => signOut.mutate({})}>
+        <DropdownMenuItem
+          disabled={signOut.isPending}
+          onClick={() => {
+            signOut.mutate({});
+          }}
+        >
           <LogOutIcon />
           {t($ => $.core.user.signOut)}
         </DropdownMenuItem>
