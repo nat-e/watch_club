@@ -37,6 +37,18 @@ export async function setCurrentUser(queryClient: QueryClient, user: User): Prom
   queryClient.setQueryData(currentUserQuery.queryKey, user);
 }
 
+/**
+ * Replaces the current User with a newer copy of them from the API, such as after they change
+ * their User Preferences. Does nothing once they've signed out, as the answer can arrive later.
+ */
+export async function updateCurrentUser(queryClient: QueryClient, user: User): Promise<void> {
+  // A request sent earlier would overwrite `user` with an older answer
+  await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
+  queryClient.setQueryData(currentUserQuery.queryKey, current =>
+    current?.id === user.id ? user : current,
+  );
+}
+
 /** Makes nobody the current User, and forgets everything the API told the last one. */
 export async function forgetCurrentUser(queryClient: QueryClient): Promise<void> {
   // Before waiting, so it doesn't cancel the requests the app sends meanwhile, such as the next
