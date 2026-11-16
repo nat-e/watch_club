@@ -1,5 +1,5 @@
+import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
-import {useUser} from '@watchclub/core/accounts/session';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
 import {Pressable, Text, View} from 'react-native';
@@ -9,7 +9,7 @@ import {Screen} from '@/components/screen';
 export default function Settings() {
   const {t} = useTranslation('core');
   const localeNames = useLocaleNames();
-  const user = useUser();
+  const user = useCurrentUser();
   const save = useSavePreferences();
 
   return (
@@ -36,7 +36,9 @@ export default function Settings() {
               accessibilityRole="radio"
               accessibilityState={{checked: selected}}
               disabled={save.isPending}
-              onPress={() => save.mutate({body: {locale}})}
+              onPress={() => {
+                save.mutate({locale});
+              }}
               className={`h-11 justify-center rounded-lg border px-4 focus:ring-2 focus:ring-ring ${selected ? 'border-primary bg-accent' : 'border-border active:bg-accent'}`}
             >
               <Text className="text-base text-foreground">{localeNames[locale]}</Text>

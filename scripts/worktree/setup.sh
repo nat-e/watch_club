@@ -27,7 +27,7 @@ mise trust --quiet mise.toml
 
 DB_PORT=$db_port docker compose -p "watch-club-rs-$slug" up -d --wait
 mise exec -- pnpm install
-# The API client isn't committed: generate it now, for the editor
-mise exec -- turbo run generate:client
+# The API client and Expo Router's types aren't committed: generate them now, for the editor
+mise exec -- turbo run generate:client generate:routes
 mise exec -- sqlx database setup --source apps/server/migrations
 mise exec -- pnpm --filter server seed

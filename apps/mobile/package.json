@@ -8,11 +8,13 @@
     "ios": "expo run:ios",
     "prebuild": "expo prebuild --clean",
     "prebuild:tv": "EXPO_TV=1 expo prebuild --clean",
+    "generate:routes": "expo customize tsconfig.json",
     "check": "tsc",
     "test": "vitest run"
   },
   "dependencies": {
     "@formatjs/intl-pluralrules": "^7.0.2",
+    "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@watchclub/api": "workspace:*",
     "@watchclub/core": "workspace:*",
@@ -31,15 +33,14 @@
     "react-native": "npm:react-native-tvos@0.88-stable",
     "react-native-safe-area-context": "~5.11.1",
     "react-native-screens": "~4.30.1",
-    "tailwindcss": "^4.3.5",
+    "tailwindcss": "catalog:",
     "uniwind": "^1.13.2"
   },
   "devDependencies": {
     "@react-native-tvos/config-tv": "^0.1.7",
     "@types/react": "catalog:",
-    "babel-preset-expo": "~58.0.25",
     "typescript": "catalog:",
-    "vite": "^8.3.6",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

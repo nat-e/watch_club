@@ -1,6 +1,6 @@
 //! The app assembled into one router, as a library that `main.rs`, the tests and `bin/` share.
 
-use axum::{Router, middleware};
+use axum::{Router, middleware, routing::get};
 use sqlx::PgPool;
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 use tracing::Level;
@@ -26,7 +26,7 @@ pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
 pub fn router(db: PgPool) -> Router {
     Router::new()
         .merge(routes::routes())
-        .fallback(web::serve)
+        .fallback_service(get(web::serve))
         .layer(middleware::from_fn(error::log_internal_errors))
         .layer(
             TraceLayer::new_for_http()

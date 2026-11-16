@@ -2,12 +2,16 @@ import {type ComponentProps, useId} from 'react';
 import {Field, FieldError, FieldLabel} from '@/components/ui/field';
 import {Input} from '@/components/ui/input';
 
-/** A labelled text input, with the error that its value breaks, if any. */
+/** A labelled text input, with an optional error message. */
 export function TextField({
   label,
   error,
   ...input
-}: {label: string; error?: string} & ComponentProps<typeof Input>) {
+}: {label: string; error?: string} & Omit<
+  ComponentProps<typeof Input>,
+  // It sets them itself, to tie the label and the error to the input
+  'id' | 'aria-invalid' | 'aria-describedby'
+>) {
   const id = useId();
   const errorId = useId();
   return (

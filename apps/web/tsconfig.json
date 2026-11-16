@@ -1,10 +1,11 @@
 {
-  "extends": "../../tsconfig.base.json",
+  // The app runs in the browser and its Vite config in Node, so each has its own types
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  // For the shadcn CLI, which reads the `@/` alias from this file
   "compilerOptions": {
-    "types": ["vite/client", "node"],
     "paths": {
       "@/*": ["./src/*"]
     }
-  },
-  "include": ["src", "tests", "vite.config.ts"]
+  }
 }

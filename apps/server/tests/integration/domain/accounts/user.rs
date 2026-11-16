@@ -66,6 +66,13 @@ mod password {
             Some(PasswordError::TooShort { min: 8 })
         );
     }
+
+    #[test]
+    fn debug_hides_the_password() {
+        let password = Password::parse(PASSWORD.to_owned()).unwrap();
+
+        assert_eq!(format!("{password:?}"), "Password(…)");
+    }
 }
 
 mod has_instance_administrator {
@@ -237,6 +244,13 @@ mod session_token {
         assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 31])), None);
         assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 33])), None);
     }
+
+    #[test]
+    fn debug_hides_the_token() {
+        let token = SessionToken::decode(&URL_SAFE_NO_PAD.encode([7; 32])).unwrap();
+
+        assert_eq!(format!("{token:?}"), "SessionToken(…)");
+    }
 }
 
 mod session_user {
@@ -263,16 +277,16 @@ mod session_user {
     }
 }
 
-mod delete_session {
+mod sign_out {
     use super::*;
 
     #[sqlx::test]
-    async fn ends_the_session_of_this_device_only(db: PgPool) {
+    async fn signs_out_this_device_only(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let phone = new_session(&db, &user).await;
         let laptop = new_session(&db, &user).await;
 
-        accounts::delete_session(&db, &phone).await.unwrap();
+        accounts::sign_out(&db, &phone).await.unwrap();
 
         assert_eq!(accounts::session_user(&db, &phone).await.unwrap(), None);
         assert_eq!(

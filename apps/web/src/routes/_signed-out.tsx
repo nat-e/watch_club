@@ -1,6 +1,6 @@
 import {createFileRoute, Outlet} from '@tanstack/react-router';
 
-/** Lays out the pages for visitors who aren't signed in: a card in the middle of the page. */
+/** The layout of the pages for visitors who aren't signed in: a card in the middle of the page. */
 export const Route = createFileRoute('/_signed-out')({
   component: () => (
     <main className="flex min-h-svh items-center justify-center p-6">

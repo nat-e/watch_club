@@ -3,7 +3,7 @@
  * messages are in the `web` namespace, beside the `core` one it shares with the mobile app.
  */
 import {useQuery} from '@tanstack/react-query';
-import {currentUserQuery} from '@watchclub/core/accounts/session';
+import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {createI18n, type Messages, negotiateLocale} from '@watchclub/core/l10n';
 import {type ReactNode, useEffect, useMemo} from 'react';
 import {I18nextProvider} from 'react-i18next';
@@ -18,7 +18,7 @@ declare module 'i18next' {
 
 const MESSAGES: Messages = {'en-US': enUs, 'fr-FR': frFr};
 
-/** Gives the pages inside it the translations into the User's Locale. */
+/** The translations into the User's Locale, for the pages inside it. */
 export function Localization({children}: {children: ReactNode}) {
   const {data: user} = useQuery(currentUserQuery);
   const locale = user?.locale ?? negotiateLocale(navigator.languages);

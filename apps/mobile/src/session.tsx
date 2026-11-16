@@ -1,131 +1,103 @@
 /**
- * Who's signed in, and to which WatchClub. The server's address and a session token for each server
- * stay in the device's secure storage, and the API client sends every request with them.
+ * Gives the screens the app's SessionStore, and the Session and signed-in User it holds.
  */
-import {useQuery, useQueryClient} from '@tanstack/react-query';
-import {type AppSession, client, logout, type User} from '@watchclub/api';
-import {currentUserQuery, signedIn, signedOut} from '@watchclub/core/accounts/session';
-import {getBundleOrigin} from 'expo/internal/bundle-origin';
-import * as secureStore from 'expo-secure-store';
-import {createContext, type ReactNode, use, useEffect, useState} from 'react';
+import {queryOptions, useQuery} from '@tanstack/react-query';
+import type {User} from '@watchclub/api';
+import {currentUserQuery} from '@watchclub/core/accounts/current-user';
+import {
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useSyncExternalStore,
+} from 'react';
+import type {Session, SessionStore} from '@/session-store';
 
-interface Session {
-  /** The server's base URL, or null until the User picks one */
-  server: string | null;
-  /** The signed-in User, or null when signed out */
+/**
+ * The query for the signed-in User, tried once: when the Instance doesn't answer, the app says so
+ * at once, and asks again when the User taps to or comes back to the app.
+ */
+const SESSION_USER_QUERY = queryOptions({...currentUserQuery, retry: false});
+
+/** The Session, the signed-in User, and whether the app can reach the Instance. */
+interface SessionState {
+  session: Session;
+  /** The signed-in User, or null when signed out or when the app can't reach the Instance */
   user: User | null;
-  /** Talks to this server from now on, as the User who last signed in to it, if any. */
-  connect(server: string): Promise<void>;
-  /** Forgets the server, so the User can pick another one, but keeps its session. */
-  disconnect(): Promise<void>;
-  /** Keeps the User signed in on this device with the session the API gave the app. */
-  signIn(session: AppSession): Promise<void>;
-  /** Ends the session, on this device even when the server can't be reached. */
-  signOut(): Promise<void>;
+  /** Whether the app has a session token, but can't reach the Instance to learn whose it is */
+  isInstanceUnreachable: boolean;
 }
 
-/** The server the app talks to, and the session token it sends it. */
-interface Connection {
-  server: string | null;
-  token: string | null;
+/** The store and its state, which the provider gives the screens once loaded. */
+interface SessionContextValue extends SessionState {
+  store: SessionStore;
 }
 
-const SERVER_KEY = 'server';
+const SessionContext = createContext<SessionContextValue | null>(null);
 
-const SessionContext = createContext<Session | null>(null);
-
-/** Renders nothing until it knows who's signed in, while the splash screen shows. */
-export function SessionProvider({children}: {children: ReactNode}) {
-  const queryClient = useQueryClient();
-  const [connection, setConnection] = useState<Connection>();
-  const token = connection?.token ?? null;
-  const {data: user, isPending} = useQuery({...currentUserQuery, enabled: token !== null});
-
-  function apply(next: Connection) {
-    client.setConfig({
-      baseUrl: next.server ?? undefined,
-      auth: scheme => (scheme.scheme === 'bearer' ? (next.token ?? undefined) : undefined),
-    });
-    setConnection(next);
-  }
-
+/**
+ * The store and its state, for the screens inside it. It renders nothing until it knows who's
+ * signed in, or that it can't reach the Instance to know, while the splash screen shows.
+ */
+export function SessionProvider({store, children}: {store: SessionStore; children: ReactNode}) {
+  // The same function on each render, or React subscribes again
+  const subscribe = useCallback((listener: () => void) => store.subscribe(listener), [store]);
+  const session = useSyncExternalStore(subscribe, () => store.getSession());
+  const hasToken = session?.hasToken ?? false;
+  const {data: user, errorUpdateCount} = useQuery({...SESSION_USER_QUERY, enabled: hasToken});
+  // The Instance refused the token: the session ended, while the app was closed or since
+  const isTokenRefused = hasToken && user === null;
   useEffect(() => {
-    restore().then(next => {
-      apply(next);
-    });
-  }, []);
-
-  if (!connection || (token !== null && isPending)) {
+    if (isTokenRefused) {
+      void store.forgetToken();
+    }
+  }, [isTokenRefused, store]);
+  // Once a request failed, the app stays unreachable while it asks again
+  const isUserUnknown = hasToken && user === undefined;
+  const isInstanceUnreachable = isUserUnknown && errorUpdateCount > 0;
+  if (!session || (isUserUnknown && !isInstanceUnreachable)) {
     return null;
   }
-
-  const saveToken = async (next: string | null) => {
-    if (connection.server === null) {
-      throw new Error('only the sign-in screen, which has a server, signs in and out');
-    }
-    await write(tokenKey(connection.server), next);
-    apply({...connection, token: next});
+  const value: SessionContextValue = {
+    store,
+    session,
+    user: hasToken ? (user ?? null) : null,
+    isInstanceUnreachable,
   };
+  return <SessionContext value={value}>{children}</SessionContext>;
+}
 
-  const session: Session = {
-    server: connection.server,
-    user: token === null ? null : (user ?? null),
-    connect: async server => {
-      await secureStore.setItemAsync(SERVER_KEY, server);
-      const token = await secureStore.getItemAsync(tokenKey(server));
-      // Forgets the last server's answers: the new server's User then loads as when the app starts
-      queryClient.clear();
-      apply({server, token});
-    },
-    disconnect: async () => {
-      await secureStore.deleteItemAsync(SERVER_KEY);
-      apply({server: null, token: null});
-      await signedOut(queryClient);
-    },
-    signIn: async ({token, user}) => {
-      // The User first, so the token doesn't make the app wait for them
-      await signedIn(queryClient, user);
-      await saveToken(token);
-    },
-    signOut: async () => {
-      await logout();
-      await saveToken(null);
-      await signedOut(queryClient);
-    },
-  };
-  return <SessionContext value={session}>{children}</SessionContext>;
+/** Returns the Session and the signed-in User, and renders again when either changes. */
+export function useSession(): SessionState {
+  const {session, user, isInstanceUnreachable} = useSessionContext();
+  return {session, user, isInstanceUnreachable};
+}
+
+/** Returns the store, which signs in and out and changes the Instance. */
+export function useSessionStore(): SessionStore {
+  return useSessionContext().store;
 }
 
 /**
- * Returns the server the app starts with and its session token. In development, the server is the
- * Expo dev server the app loaded from, which forwards the API to the server running beside it.
+ * Returns the function that asks the Instance again who's signed in, once the app couldn't reach
+ * it, and whether it's asking.
  */
-async function restore(): Promise<Connection> {
-  const server = getBundleOrigin() ?? (await secureStore.getItemAsync(SERVER_KEY));
-  const token = server === null ? null : await secureStore.getItemAsync(tokenKey(server));
-  return {server, token};
+export function useRetrySession(): {retry: () => void; isRetrying: boolean} {
+  // Disabled, so it only asks when the User does
+  const {refetch, isFetching} = useQuery({...SESSION_USER_QUERY, enabled: false});
+  return {
+    retry: () => {
+      void refetch();
+    },
+    isRetrying: isFetching,
+  };
 }
 
-/** Returns the key of a server's session token, in the characters secure storage allows. */
-function tokenKey(server: string): string {
-  const hex = Array.from(new TextEncoder().encode(server), byte =>
-    byte.toString(16).padStart(2, '0'),
-  );
-  return `session-token-${hex.join('')}`;
-}
-
-async function write(key: string, value: string | null) {
-  if (value === null) {
-    await secureStore.deleteItemAsync(key);
-  } else {
-    await secureStore.setItemAsync(key, value);
+function useSessionContext(): SessionContextValue {
+  const value = use(SessionContext);
+  if (!value) {
+    throw new Error('the session hooks need a SessionProvider above them');
   }
-}
-
-export function useSession(): Session {
-  const session = use(SessionContext);
-  if (!session) {
-    throw new Error('useSession needs a SessionProvider above it');
-  }
-  return session;
+  return value;
 }

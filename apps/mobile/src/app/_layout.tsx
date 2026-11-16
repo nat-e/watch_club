@@ -1,23 +1,36 @@
 import '../global.css';
-import {QueryClientProvider} from '@tanstack/react-query';
+import {focusManager, QueryClientProvider} from '@tanstack/react-query';
 import {createQueryClient} from '@watchclub/core/query-client';
 import {Stack} from 'expo-router';
 import * as splashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
 import {useEffect} from 'react';
+import {AppState} from 'react-native';
 import {useCSSVariable} from 'uniwind';
 import {Localization} from '@/l10n';
 import {SessionProvider, useSession} from '@/session';
+import {SessionStore} from '@/session-store';
 
-splashScreen.preventAutoHideAsync();
+void splashScreen.preventAutoHideAsync();
 
-// Once the session ends, `Screens` shows signing in, as it follows the User
 const queryClient = createQueryClient();
+const sessionStore = new SessionStore(queryClient);
+void sessionStore.restore();
+
+// TanStack Query asks the API again when the app comes back to the foreground, as for a browser tab
+focusManager.setEventListener(setFocused => {
+  const subscription = AppState.addEventListener('change', state => {
+    setFocused(state === 'active');
+  });
+  return () => {
+    subscription.remove();
+  };
+});
 
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
+      <SessionProvider store={sessionStore}>
         <Localization>
           <StatusBar style="light" />
           <Screens />
@@ -27,9 +40,9 @@ export default function RootLayout() {
   );
 }
 
-/** Shows the screens for where the User is: picking their WatchClub, signing in, or signed in. */
+/** The screens for where the User is: signing in, signed in, or unable to reach the Instance. */
 function Screens() {
-  const {server, user} = useSession();
+  const {user, isInstanceUnreachable} = useSession();
   const background = useCSSVariable('--color-background');
 
   useEffect(() => {
@@ -40,10 +53,10 @@ function Screens() {
     <Stack
       screenOptions={{headerShown: false, contentStyle: {backgroundColor: String(background)}}}
     >
-      <Stack.Protected guard={server === null}>
-        <Stack.Screen name="connect" />
+      <Stack.Protected guard={isInstanceUnreachable}>
+        <Stack.Screen name="unreachable" />
       </Stack.Protected>
-      <Stack.Protected guard={server !== null && user === null}>
+      <Stack.Protected guard={user === null && !isInstanceUnreachable}>
         <Stack.Screen name="sign-in" />
       </Stack.Protected>
       <Stack.Protected guard={user !== null}>

@@ -9,8 +9,6 @@ use axum::{
 };
 use rust_embed::{EmbeddedFile, RustEmbed};
 
-use crate::routes;
-
 #[derive(RustEmbed)]
 #[folder = "../web/dist"]
 // The web app's dev server serves it during development, so the server builds without it
@@ -18,15 +16,8 @@ use crate::routes;
 struct Files;
 
 /// Returns the web app's file at the URI's path, or else its page, which shows the right screen
-/// for the path itself. Unknown API paths aren't found, rather than showing the web app.
+/// for the path itself.
 pub(crate) async fn serve(uri: Uri) -> Response {
-    if uri
-        .path()
-        .strip_prefix(routes::PATH)
-        .is_some_and(|rest| rest.is_empty() || rest.starts_with('/'))
-    {
-        return StatusCode::NOT_FOUND.into_response();
-    }
     let path = uri.path().trim_start_matches('/');
     if let Some(file) = Files::get(path) {
         return respond(path, file);

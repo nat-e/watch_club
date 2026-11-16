@@ -4,7 +4,7 @@
   "type": "module",
   "exports": {
     "./accounts/preferences": "./src/accounts/preferences.ts",
-    "./accounts/session": "./src/accounts/session.ts",
+    "./accounts/current-user": "./src/accounts/current-user.ts",
     "./accounts/sign-in": "./src/accounts/sign-in.ts",
     "./l10n": "./src/l10n.ts",
     "./query-client": "./src/query-client.ts",
@@ -15,6 +15,7 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@watchclub/api": "workspace:*",
     "i18next": "catalog:",
@@ -22,6 +23,7 @@
     "react-i18next": "catalog:"
   },
   "devDependencies": {
+    "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
     "@watchclub/api": "workspace:*",
@@ -29,7 +31,7 @@
     "react": "catalog:",
     "react-i18next": "catalog:",
     "typescript": "catalog:",
-    "vite": "^8.3.2",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

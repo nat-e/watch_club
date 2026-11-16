@@ -19,6 +19,7 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "0.99.0",
     "@tanstack/react-query": "catalog:",
-    "typescript": "catalog:"
+    "@typescript/native": "catalog:",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }

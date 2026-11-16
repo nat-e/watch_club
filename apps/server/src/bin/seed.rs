@@ -23,6 +23,8 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let password_hash = password_auth::generate_hash(PASSWORD);
+    // All or none, so a failed run leaves the database empty for the next one
+    let mut transaction = db.begin().await.context("failed to start a transaction")?;
     for (username, locale, is_instance_administrator) in [
         ("admin", Locale::EnUs, true),
         ("alice", Locale::EnUs, false),
@@ -38,10 +40,14 @@ async fn main() -> anyhow::Result<()> {
             locale as Locale,
             is_instance_administrator,
         )
-        .execute(&db)
+        .execute(&mut *transaction)
         .await
         .with_context(|| format!("failed to create {username}"))?;
     }
+    transaction
+        .commit()
+        .await
+        .context("failed to save the demo Users")?;
 
     println!("Seeded. Sign in as admin, alice or bob with the password \"{PASSWORD}\"");
     Ok(())

@@ -6,7 +6,9 @@ mod me;
 
 use axum::{
     extract::FromRequest,
+    http::StatusCode,
     response::{IntoResponse, Response},
+    routing::any,
 };
 use serde::Serialize;
 use sqlx::PgPool;
@@ -14,16 +16,19 @@ use utoipa_axum::router::OpenApiRouter;
 
 use crate::error::ApiError;
 
-/// The path every API path starts with.
-pub const PATH: &str = "/api";
-
 /// Returns the routes of the API, with the descriptions of their endpoints.
 pub(crate) fn routes() -> OpenApiRouter<PgPool> {
     let api = OpenApiRouter::new()
         .merge(instance::routes())
         .merge(auth::routes())
-        .merge(me::routes());
-    OpenApiRouter::new().nest(PATH, api)
+        .merge(me::routes())
+        // Unknown API paths aren't found, rather than showing the web app
+        .fallback(StatusCode::NOT_FOUND);
+    OpenApiRouter::new()
+        .nest("/api", api)
+        // The fallback misses this path: axum nests it at `/api` and `/api/{*rest}`, and the
+        // wildcard doesn't match an empty rest
+        .route("/api/", any(StatusCode::NOT_FOUND))
 }
 
 /// Like axum's `Json`, but a body that isn't the JSON the endpoint takes fails with a 400. That

@@ -125,7 +125,7 @@ async fn logout(
     cookie: SessionCookie,
 ) -> Result<(StatusCode, CookieJar), ApiError> {
     if let Some(token) = token {
-        accounts::delete_session(&db, &token).await?;
+        accounts::sign_out(&db, &token).await?;
     }
     Ok((StatusCode::NO_CONTENT, cookie.remove()))
 }

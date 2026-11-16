@@ -5,6 +5,12 @@ export default {
   home: {
     title: 'Accueil',
   },
+  notFound: {
+    description:
+      "On n'a pas trouvé cette page. Elle n'existe peut-être pas, ou tu n'y as pas accès.",
+    goHome: "Retour à l'accueil",
+    title: 'Page introuvable',
+  },
   settings: {
     description: 'Gère les préférences de ton compte.',
     englishUs: 'Anglais (États-Unis)',

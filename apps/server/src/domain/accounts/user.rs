@@ -109,6 +109,13 @@ impl Password {
     }
 }
 
+/// Keeps the secret out of logs.
+impl fmt::Debug for Password {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("Password(…)")
+    }
+}
+
 /// Potential errors when parsing Passwords
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
@@ -259,6 +266,9 @@ pub async fn sign_in(
     .await
     .context("failed to find the User signing in")?
     else {
+        // Hashes the password all the same, which takes as long as checking it, so the time to
+        // answer doesn't tell which usernames exist
+        hash_slowly(move || password_auth::generate_hash(password)).await;
         return Ok(None);
     };
 
@@ -300,8 +310,8 @@ pub async fn session_user(
     Ok(user)
 }
 
-/// Deletes the token's session, which signs its device out.
-pub async fn delete_session(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
+/// Signs out the device that the token keeps signed in.
+pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
         .execute(db)
         .await

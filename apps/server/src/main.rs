@@ -1,9 +1,12 @@
 //! Runs the server: reads the environment, connects to the database and serves the app.
 
-use std::{env, net::Ipv4Addr};
+use std::{env, io, net::Ipv4Addr};
 
 use anyhow::Context;
-use tokio::{net::TcpListener, signal};
+use tokio::{
+    net::TcpListener,
+    signal::unix::{SignalKind, signal},
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -26,26 +29,25 @@ async fn main() -> anyhow::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port))
         .await
         .with_context(|| format!("failed to listen on port {port}"))?;
+    let shutdown = shutdown_requested().context("failed to listen for shutdown signals")?;
     tracing::info!("listening on port {port}");
-    axum::serve(listener, watch_club::router(db))
-        .with_graceful_shutdown(shutdown_requested())
+    axum::serve(listener, watch_club::router(db.clone()))
+        .with_graceful_shutdown(shutdown)
         .await
-        .context("failed to serve")
+        .context("failed to serve")?;
+    db.close().await;
+    Ok(())
 }
 
-/// Waits for Ctrl-C, or the SIGTERM that `docker stop` sends.
-async fn shutdown_requested() {
-    let ctrl_c = async {
-        signal::ctrl_c().await.expect("Ctrl-C can be listened to");
-    };
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("SIGTERM can be listened to")
-            .recv()
-            .await;
-    };
-    tokio::select! {
-        () = ctrl_c => {},
-        () = terminate => {},
-    }
+/// Listens for Ctrl-C and the SIGTERM that `docker stop` sends, and returns a future that waits
+/// for either.
+fn shutdown_requested() -> io::Result<impl Future<Output = ()>> {
+    let mut interrupt = signal(SignalKind::interrupt())?;
+    let mut terminate = signal(SignalKind::terminate())?;
+    Ok(async move {
+        tokio::select! {
+            _ = interrupt.recv() => {},
+            _ = terminate.recv() => {},
+        }
+    })
 }

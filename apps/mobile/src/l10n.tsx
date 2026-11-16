@@ -23,7 +23,7 @@ declare module 'i18next' {
 
 const MESSAGES: Messages = {'en-US': enUs, 'fr-FR': frFr};
 
-/** Gives the screens inside it the translations into the User's Locale. */
+/** The translations into the User's Locale, for the screens inside it. */
 export function Localization({children}: {children: ReactNode}) {
   const {user} = useSession();
   const locale = user?.locale ?? negotiateLocale(getLocales().map(locale => locale.languageTag));

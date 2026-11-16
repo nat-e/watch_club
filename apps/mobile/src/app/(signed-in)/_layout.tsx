@@ -9,7 +9,7 @@ export default function SignedInLayout() {
     '--color-background',
     '--color-card',
     '--color-foreground',
-  ]).map(String);
+  ]).map(value => String(value));
 
   return (
     <Stack

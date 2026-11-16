@@ -3,7 +3,7 @@ const {getDefaultConfig} = require('expo/metro-config');
 const {withUniwindConfig} = require('uniwind/metro');
 
 const config = getDefaultConfig(__dirname);
-// The app in development finds the API at the address it loaded from: see `src/session.tsx`.
+// The app in development finds the API at the address it loaded from: see `src/session-store.ts`.
 // Expo's Metro takes no other middleware, though Metro deprecates this option.
 config.server.enhanceMiddleware = metro => (request, response, next) => {
   if (request.url.startsWith('/api/')) {
