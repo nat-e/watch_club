@@ -62,41 +62,19 @@ const Player = {
 	},
 
 	bindDomEvents() {
-		const signal = this.abortController.signal;
-
 		// From the top bar, the Settings menu and the error screen
 		this.el.addEventListener(
 			"player:report-problem",
 			() => this.reportProblem(),
-			{ signal },
+			{ signal: this.abortController.signal },
 		);
 
-		// A tap on hidden controls only shows them. Video.js shows them when the finger lifts,
-		// then the browser sends the tap's click to the button that just appeared under it, so
-		// that click is dropped.
-		let tapStartedOnHiddenControls = false;
-		this.el.addEventListener(
-			"pointerdown",
-			() => {
-				tapStartedOnHiddenControls = !this.el
-					.querySelector("media-controls")
-					.hasAttribute("data-visible");
-			},
-			{ capture: true, signal },
-		);
-		this.el.addEventListener(
-			"click",
-			(event) => {
-				const showingClick =
-					tapStartedOnHiddenControls && event.target.closest("media-controls");
-				tapStartedOnHiddenControls = false;
-				if (showingClick) {
-					event.preventDefault();
-					event.stopPropagation();
-				}
-			},
-			{ capture: true, signal },
-		);
+		// A tap on the video only shows or hides the controls, which Video.js does when the finger
+		// lifts. Cancelling the tap stops the browser from sending its click to the button that
+		// just appeared under the finger.
+		this.media.addEventListener("touchend", (event) => event.preventDefault(), {
+			signal: this.abortController.signal,
+		});
 
 		// Delegated: the skip buttons change with each episode, and the server renders the
 		// casting overlay
@@ -114,7 +92,7 @@ const Player = {
 					this.handleCommand(commandButton.dataset.playerCommand);
 				}
 			},
-			{ signal },
+			{ signal: this.abortController.signal },
 		);
 	},
 

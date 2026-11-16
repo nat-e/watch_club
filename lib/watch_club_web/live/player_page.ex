@@ -66,7 +66,8 @@ defmodule WatchClubWeb.PlayerPage do
                 <media-hotkey keys="ArrowLeft" action="seekStep" value="-10" target="document" />
                 <media-hotkey keys="ArrowRight" action="seekStep" value="10" target="document" />
 
-                <media-buffering-indicator class="absolute inset-0 z-20 opacity-0 transition-opacity data-visible:opacity-100">
+                <%!-- Lets taps through to the video, which the Player hook cancels --%>
+                <media-buffering-indicator class="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity data-visible:opacity-100">
                   <.player_loader class="size-full" />
                 </media-buffering-indicator>
 
