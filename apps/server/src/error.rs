@@ -10,6 +10,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
+use serde_json::json;
 use utoipa::ToSchema;
 
 use crate::domain::InternalError;
@@ -62,13 +63,6 @@ impl ApiError {
     }
 }
 
-/// The body of an `ApiError`.
-#[derive(Serialize)]
-struct ApiErrorBody {
-    code: &'static str,
-    message: String,
-}
-
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let kind = self.kind();
@@ -78,8 +72,8 @@ impl IntoResponse for ApiError {
             // The cause stays in the logs
             Self::Internal(_) => "internal error".to_owned(),
         };
-        let body = ApiErrorBody {
-            code: kind.code(),
+        let body = ErrorBody {
+            error: json!({ "code": kind.code() }),
             message,
         };
         let mut response = (kind.status(), Json(body)).into_response();
