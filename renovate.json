@@ -98,6 +98,13 @@
 			"semanticCommitType": "fix"
 		},
 		{
+			"description": "ffmpeg comes from conda-forge, and the Docker image runs it, so its updates are fixes",
+			"matchManagers": ["mise"],
+			"matchPackageNames": ["ffmpeg"],
+			"registryUrls": ["https://api.anaconda.org/package/conda-forge/"],
+			"semanticCommitType": "fix"
+		},
+		{
 			"description": "Debian packages: the deb datasource has no release dates, and Debian drops replaced versions",
 			"matchDatasources": ["deb"],
 			"minimumReleaseAge": null,

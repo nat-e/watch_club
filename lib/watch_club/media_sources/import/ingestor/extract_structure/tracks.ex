@@ -64,6 +64,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
       %VideoTrack{
         stream_index: stream["index"],
         codec: stream["codec_name"],
+        profile: stream["profile"],
+        level: level(stream["level"]),
         width: stream["width"],
         height: stream["height"],
         frame_rate: frame_rate(stream["avg_frame_rate"] || stream["r_frame_rate"]),
@@ -97,11 +99,25 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Tracks do
         codec: stream["codec_name"],
         language: get_in(stream, ["tags", "language"]),
         title: get_in(stream, ["tags", "title"]),
+        line_count: line_count(stream["tags"]),
         default?: get_in(stream, ["disposition", "default"]) == 1,
-        forced?: get_in(stream, ["disposition", "forced"]) == 1
+        forced?: get_in(stream, ["disposition", "forced"]) == 1,
+        sdh?: get_in(stream, ["disposition", "hearing_impaired"]) == 1
       }
     end)
   end
+
+  # mkvmerge's statistics count a text track's lines in `NUMBER_OF_FRAMES`, which some files
+  # suffix with the track's language, such as `NUMBER_OF_FRAMES-eng`
+  defp line_count(tags) do
+    Enum.find_value(tags || %{}, fn {key, value} ->
+      if String.starts_with?(key, "NUMBER_OF_FRAMES"), do: parse_int(value)
+    end)
+  end
+
+  # ffprobe reports an unknown level as -99
+  defp level(-99), do: nil
+  defp level(level), do: level
 
   defp stream_duration(streams) do
     Enum.find_value(streams, fn stream -> parse_float(stream["duration"]) end)

@@ -93,7 +93,7 @@ defmodule WatchClub.MediaSources.Import.Scanner.Filesystem.Scan.MediaTypeFilter 
     MapSet.member?(extensions_for(media_source.media_type), extension)
   end
 
-  defp extensions_for(media_type) when media_type in [:movie, :tv_show_episode],
+  defp extensions_for(media_type) when media_type in [:movie, :tv_show_episode, :sports_event],
     do: @video_extensions
 
   defp extensions_for(:ebook), do: @ebook_extensions

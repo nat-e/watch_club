@@ -16,7 +16,15 @@ defmodule WatchClub.Ffmpeg do
 
   @behaviour WatchClub.Ffmpeg.Probe
 
+  alias WatchClub.Ffmpeg.MatroskaCues
+
   require Logger
+
+  @aac_sample_rate 48_000
+  @aac_frame_samples 1024
+  # Encoded past each end of an audio segment: an AAC frame blends with its neighbours, and the
+  # first frame of a run is silent
+  @aac_margin 2 * @aac_frame_samples
 
   @doc """
   Inspects a media file with `ffprobe` and returns the decoded JSON metadata
@@ -65,6 +73,80 @@ defmodule WatchClub.Ffmpeg do
     case Jason.decode(json) do
       {:ok, metadata} -> {:ok, metadata}
       {:error, error} -> {:error, "ffprobe returned invalid JSON: #{Exception.message(error)}"}
+    end
+  end
+
+  @doc """
+  The times of the keyframes of the video stream at `stream_index`, in seconds from the file's
+  start, as `-ss` counts them. They come from the Cues of a Matroska file, and otherwise from
+  every packet `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe`
+  fails or finds no keyframe.
+  """
+  @impl true
+  def keyframes(path, stream_index) when is_binary(path) do
+    with {:ok, ffprobe} <- find_executable("ffprobe"),
+         {:ok, start_time} <- start_time(ffprobe, path),
+         {:ok, times} <- keyframe_times(ffprobe, path, stream_index) do
+      {:ok, Enum.map(times, &Float.round(&1 - start_time, 6))}
+    end
+  end
+
+  defp start_time(ffprobe, path) do
+    args = ["-v", "error", "-show_entries", "format=start_time", "-of", "csv=p=0", path]
+
+    case System.cmd(ffprobe, args) do
+      {output, 0} ->
+        case Float.parse(output) do
+          {start_time, _rest} -> {:ok, start_time}
+          # N/A when no stream has a timestamp
+          :error -> {:ok, 0.0}
+        end
+
+      {_output, status} ->
+        {:error, "ffprobe exited with #{status} while reading the start time"}
+    end
+  end
+
+  defp keyframe_times(ffprobe, path, stream_index) do
+    case MatroskaCues.keyframe_times(path, stream_index) do
+      {:ok, times} -> {:ok, times}
+      :error -> scan_keyframe_times(ffprobe, path, stream_index)
+    end
+  end
+
+  # `+genpts` gives a time to packets without one, as in AVI files
+  defp scan_keyframe_times(ffprobe, path, stream_index) do
+    args = [
+      "-v",
+      "error",
+      "-fflags",
+      "+genpts",
+      "-select_streams",
+      Integer.to_string(stream_index),
+      "-show_entries",
+      "packet=pts_time,flags",
+      "-of",
+      "csv=p=0",
+      path
+    ]
+
+    case System.cmd(ffprobe, args) do
+      {output, 0} ->
+        times =
+          for line <- String.split(output, "\n", trim: true),
+              [time, flags | _side_data] <- [String.split(line, ",")],
+              String.contains?(flags, "K"),
+              {time, ""} <- [Float.parse(time)] do
+            time
+          end
+
+        case times |> Enum.sort() |> Enum.dedup() do
+          [] -> {:error, "ffprobe found no keyframes"}
+          times -> {:ok, times}
+        end
+
+      {_output, status} ->
+        {:error, "ffprobe exited with #{status} while reading the keyframes"}
     end
   end
 
@@ -117,10 +199,20 @@ defmodule WatchClub.Ffmpeg do
     end
   end
 
+  @doc """
+  Encodes the video from `start_time` to `end_time`, in seconds of the file, as an MPEG-TS segment.
+  Segments keep the file's timestamps, so consecutive ones form a single timeline.
+  """
   def transcode_video_segment(job) do
     run_ffmpeg(Map.put(job, :type, :video))
   end
 
+  @doc """
+  Encodes the audio from `start_time` to `end_time`, in seconds of the file, as an MPEG-TS segment of
+  AAC with the file's timestamps. An AAC encoder starts each run with a frame of silence, so each run
+  encodes past both ends, then keeps the frames inside the segment: consecutive segments join
+  without a gap.
+  """
   def transcode_audio_segment(job) do
     run_ffmpeg(Map.put(job, :type, :audio))
   end
@@ -140,12 +232,16 @@ defmodule WatchClub.Ffmpeg do
       "-loglevel",
       "error",
       "-y",
+      # The file's timestamps, from its start
+      "-copyts",
+      "-start_at_zero",
       "-ss",
       seconds(job.start_time),
       "-i",
       job.source_path,
-      "-t",
-      seconds(job.duration),
+      # With -copyts, -t would count from 0
+      "-to",
+      seconds(job.end_time),
       "-map",
       "0:v:0",
       "-an",
@@ -166,10 +262,11 @@ defmodule WatchClub.Ffmpeg do
       bitrate(round(job.video_bitrate * 1.2)),
       "-bufsize",
       bitrate(job.video_bitrate * 2),
-      "-force_key_frames",
-      "expr:gte(t,n_forced*#{seconds(job.segment_duration)})",
+      # Rounding timestamps to the frame rate would move a frame across -to, but not across -ss
+      "-enc_time_base:v",
+      "1/90000",
       "-avoid_negative_ts",
-      "make_zero",
+      "disabled",
       "-muxpreload",
       "0",
       "-muxdelay",
@@ -186,31 +283,45 @@ defmodule WatchClub.Ffmpeg do
     File.mkdir_p!(Path.dirname(job.output_path))
     tmp_path = tmp_path(job.output_path)
 
+    first_sample = aac_frame_boundary(job.start_time)
+    end_sample = aac_frame_boundary(job.end_time)
+    input_start = max(first_sample - @aac_margin, 0)
+    half_frame = div(@aac_frame_samples, 2)
+
     args = [
       "-hide_banner",
       "-loglevel",
       "error",
       "-y",
+      # The file's timestamps, from its start
+      "-copyts",
+      "-start_at_zero",
       "-ss",
-      seconds(job.start_time),
+      sample_time(input_start),
       "-i",
       job.source_path,
-      "-t",
-      seconds(job.duration),
+      # With -copyts, -t would count from 0
+      "-to",
+      sample_time(end_sample + @aac_margin),
       "-map",
       "0:#{job.stream_index}",
       "-vn",
       "-sn",
+      # Timestamps counted in samples from the first one, so every frame falls on a boundary
+      "-af",
+      "aresample=#{@aac_sample_rate},aresample=async=1:first_pts=#{input_start}",
       "-c:a",
       "aac",
       "-ac",
       "2",
       "-b:a",
       "160k",
-      "-ar",
-      "48000",
+      # Keeps the frames inside the segment
+      "-bsf:a",
+      "noise=drop=lt(pts*tb\\,#{sample_time(first_sample - half_frame)})" <>
+        "+gte(pts*tb\\,#{sample_time(end_sample - half_frame)})",
       "-avoid_negative_ts",
-      "make_zero",
+      "disabled",
       "-muxpreload",
       "0",
       "-muxdelay",
@@ -271,6 +382,13 @@ defmodule WatchClub.Ffmpeg do
     suffix = :erlang.unique_integer([:positive])
     "#{output_path}.#{suffix}.tmp"
   end
+
+  # The AAC frame boundary closest to `seconds`, in samples. Every audio segment cuts on these.
+  defp aac_frame_boundary(seconds),
+    do: round(seconds * @aac_sample_rate / @aac_frame_samples) * @aac_frame_samples
+
+  defp sample_time(samples),
+    do: :erlang.float_to_binary(samples / @aac_sample_rate, decimals: 6)
 
   defp seconds(value) when is_integer(value), do: Integer.to_string(value)
   defp seconds(value) when is_float(value), do: :erlang.float_to_binary(value, decimals: 3)

@@ -7,7 +7,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   alias WatchClub.Contents.{Content, Movie}
   alias WatchClub.Ffmpeg.{ProbeMock, Trickplay}
   alias WatchClub.Markers.Workers.DetectMarkers
-  alias WatchClub.MediaCatalog.{Media, Part, Video}
+  alias WatchClub.MediaCatalog.{Media, Part, Video, VideoTrack}
   alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.Candidate
@@ -17,6 +17,13 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   require Ash.Query
 
   setup :verify_on_exit!
+
+  @keyframe_seconds [0.0, 2.002, 4.004]
+
+  setup do
+    stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, @keyframe_seconds} end)
+    :ok
+  end
 
   describe "new_job/2" do
     test "enqueues a webhook candidate at high priority with no media_import_id" do
@@ -89,9 +96,16 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       }
 
       assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
+      keyframe_seconds = @keyframe_seconds
 
-      assert %Media{type: :movie, video: %Video{parts: [%Part{movie_id: movie_id}]}} =
-               load_media!(path)
+      assert %Media{
+               type: :movie,
+               video: %Video{
+                 parts: [%Part{movie_id: movie_id}],
+                 keyframe_seconds: ^keyframe_seconds,
+                 video_tracks: [%VideoTrack{codec: "hevc", profile: "Main", level: 120}]
+               }
+             } = load_media!(path)
 
       assert movie_id == movie.id
 
@@ -245,7 +259,9 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   defp load_media!(path) do
     Media
     |> Ash.Query.filter(path == ^Path.expand(path))
-    |> Ash.Query.load(video: [:parts, :video_tracks, :audio_tracks, :text_tracks])
+    |> Ash.Query.load(
+      video: [:keyframe_seconds, :parts, :video_tracks, :audio_tracks, :text_tracks]
+    )
     |> Ash.read_one!(authorize?: false)
   end
 

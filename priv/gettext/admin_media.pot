@@ -381,3 +381,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "This file isn't matched to any content."
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
+#, elixir-autogen, elixir-format
+msgid "SDH"
+msgstr ""

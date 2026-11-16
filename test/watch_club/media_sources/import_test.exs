@@ -8,6 +8,7 @@ defmodule WatchClub.MediaSources.ImportTest do
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.{Candidate, ScannerMock}
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
+  alias WatchClub.MediaSources.Import.Scanner.Filesystem
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
   alias WatchClub.SystemActor
 
@@ -70,6 +71,22 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert ingested_paths() == Enum.sort([paths.new, paths.unmatched])
     end
 
+    test "processes the video files of a filesystem Media Source of Sports Events" do
+      admin = generate(administrator())
+      media_source = generate(filesystem_media_source(actor: admin, media_type: :sports_event))
+      root = media_source.implementation.filesystem_path
+      path = Path.join(root, "WRC - S2024E04 - WRC Croatia Rally - sportarr-ev-369605.mkv")
+      File.mkdir_p!(root)
+      File.write!(path, "stub")
+      on_exit(fn -> File.rm_rf!(root) end)
+      stub_with(ScannerMock, Filesystem)
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == [path]
+    end
+
     test "processes every file with :all" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
 
@@ -128,6 +145,8 @@ defmodule WatchClub.MediaSources.ImportTest do
           _readable -> {:ok, ffprobe_fixture("video_friends_s01e01")}
         end
       end)
+
+      stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, [0.0, 2.002]} end)
 
       media_import = start_media_import!(media_source.id, actor: admin)
 

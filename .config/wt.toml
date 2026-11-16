@@ -13,11 +13,6 @@ prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh snapsho
 [[pre-start]]
 setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
 
-# Radarr and Sonarr only accept a webhook they can reach, so this waits for the
-# worktree's server in the background.
-[post-start]
-webhooks = "{{ primary_worktree_path }}/scripts/worktree/register_webhooks.sh {{ branch | sanitize | replace('.', '-') }} {{ branch | sanitize_db }} {{ branch | hash_port }}"
-
 # Steps run in order: the prototypes are saved before the teardown starts.
 [[pre-remove]]
 prototypes = "{{ primary_worktree_path }}/scripts/worktree/prototypes.sh save {{ primary_worktree_path }}"

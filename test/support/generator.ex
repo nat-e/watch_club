@@ -56,7 +56,8 @@ defmodule WatchClub.Generator do
         :locale,
         :audio_language,
         :subtitle_language,
-        :languages_without_subtitles
+        :languages_without_subtitles,
+        :prefer_sdh?
       ])
 
     # Use seed generator to skip invitation

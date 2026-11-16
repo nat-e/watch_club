@@ -1,6 +1,6 @@
 defmodule WatchClub.MediaCatalog.Calculations.TrackDisplayLabel do
   @moduledoc """
-  Calculates a human-readable label for an Audio Track or Text Track.
+  Calculates a human-readable label for an Audio Track.
 
   Combines the CLDR-localised language name with the track's `title`, falling
   back to an indexed default (e.g. "Audio 1") when the title is blank.

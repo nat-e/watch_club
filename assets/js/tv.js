@@ -13,8 +13,8 @@ let stopCurrent;
 const tracksInOrder = (manager) =>
 	manager.getTracks().sort((a, b) => a.trackId - b.trackId);
 
-// The subtitles load from their files, under ids apart from the tracks of the master playlist,
-// whose subtitles CAF doesn't place right: each video segment starts its own timeline
+// The master playlist lists no subtitles: they load from their files, under ids apart from the
+// ones CAF gives its audio tracks
 const textTrackId = (index) => 1000 + index;
 
 const start = (context, { origin, token }) => {

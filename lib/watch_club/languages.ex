@@ -4,6 +4,8 @@ defmodule WatchClub.Languages do
   human-readable names via CLDR.
   """
 
+  alias WatchClub.Accounts.UserLocale
+
   @doc """
   Returns the localized full name for an ISO 639 language code (e.g. `"eng"`
   or `"en"` → `"English"`). Falls back to canonical-tag resolution, then to
@@ -47,6 +49,44 @@ defmodule WatchClub.Languages do
       {:ok, %{language: code}} -> code
       {:error, _reason} -> nil
     end
+  end
+
+  @doc """
+  Returns the BCP 47 tag of a language however it is written, with its script and region when
+  it has them: `"fre"` → `"fr"`, `"fr-CA"` → `"fr-CA"`, `"chi-Hant"` → `"zh-Hant"`. Returns nil
+  for an undetermined (`"und"`) or unknown language.
+  """
+  @spec to_tag(String.t() | nil) :: String.t() | nil
+  def to_tag(nil), do: nil
+
+  def to_tag(language) when is_binary(language) do
+    case Cldr.Locale.canonical_language_tag(language, WatchClub.Cldr, add_likely_subtags: false) do
+      {:ok, %{language: "und"}} ->
+        nil
+
+      {:ok, tag} ->
+        [tag.language, tag.script, tag.territory] |> Enum.reject(&is_nil/1) |> Enum.join("-")
+
+      {:error, _reason} ->
+        nil
+    end
+  end
+
+  @doc """
+  Returns the localized name of a language tag, with its script or region in parentheses:
+  `"fr"` → "French", `"fr-CA"` → "French (Canada)", `"zh-Hant"` → "Chinese (Traditional)".
+  Capitalized, as it starts a label.
+  """
+  @spec display_name!(String.t(), atom()) :: String.t()
+  def display_name!(tag, locale) do
+    name =
+      Cldr.LocaleDisplay.display_name!(tag,
+        locale: UserLocale.to_cldr_locale_name(locale),
+        backend: WatchClub.Cldr
+      )
+
+    {first, rest} = String.split_at(name, 1)
+    String.upcase(first) <> rest
   end
 
   @doc """

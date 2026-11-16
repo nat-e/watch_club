@@ -4,7 +4,7 @@ defmodule WatchClub.MixProject do
   def project do
     [
       app: :watch_club,
-      version: "0.1.11",
+      version: "0.1.12",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -86,6 +86,7 @@ defmodule WatchClub.MixProject do
       {:ex_cldr_dates_times, "~> 2.25"},
       {:ex_cldr_languages, "~> 0.3"},
       {:ex_cldr_lists, "~> 2.12"},
+      {:ex_cldr_locale_display, "~> 1.7"},
       {:ex_cldr_numbers, "~> 2.38"},
       {:ex_cldr_units, "~> 3.20"},
       {:ex_m3u8, "~> 0.16"},
@@ -143,8 +144,8 @@ defmodule WatchClub.MixProject do
   defp aliases do
     [
       setup: ["deps.get", "deps.compile", "ecto.setup", "assets.setup", "assets.build"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      reset: ["ash.tear_down --force-drop", "ash.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate", "dev.catalog.seed"],
+      reset: ["ash.tear_down --force-drop", "ash.setup", "dev.catalog.seed"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": [
         "tailwind.install --if-missing",

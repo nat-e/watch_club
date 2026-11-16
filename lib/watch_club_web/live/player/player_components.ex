@@ -16,7 +16,8 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
 
   @doc """
   A control-bar dropdown holding Video.js menu items, such as a radio group, and the submenus they
-  open. Video.js gives the trigger `data-availability` once its radio group has options.
+  open. Video.js gives the trigger `data-availability` once its radio group has options, and the
+  JS player hook for the subtitles.
   """
   def player_menu(assigns) do
     ~H"""
@@ -81,29 +82,39 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
-  @doc "A single option rendered inside a radio group's <template>."
+  attr :value, :string, default: nil, doc: "Unless a radio group's <template> holds it."
+  slot :inner_block, doc: "Its label, unless a radio group's <template> holds it."
+
+  @doc "An option of a radio group, or the one inside its <template>."
   def player_radio(assigns) do
     ~H"""
-    <media-menu-radio-item class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20">
+    <media-menu-radio-item
+      value={@value}
+      class="flex min-h-touch-target w-full cursor-pointer items-center gap-related rounded-control px-related text-left outline-none data-highlighted:bg-white/20"
+    >
       <media-menu-item-indicator force-mount class="opacity-0 in-aria-checked:opacity-100">
         <Lucideicons.check class="size-icon-sm" />
       </media-menu-item-indicator>
-      <span data-part="label"></span>
+      <span data-part="label">{render_slot(@inner_block)}</span>
     </media-menu-radio-item>
     """
   end
 
   def seek_bar(assigns) do
     ~H"""
+    <%!-- Each seek makes the server convert a new segment. The longest delay a browser timer
+    allows leaves a drag with two seeks: when it starts and when the User lets go. The fill and
+    the thumb follow the pointer during the drag --%>
     <media-time-slider
       step="10"
+      change-throttle="2147483647"
       class="group/timeline relative flex h-10 w-full cursor-pointer touch-none items-center outline-none"
     >
       <media-slider-track class="relative block h-[5px] w-full rounded-full bg-white/20">
         <media-slider-buffer class="absolute inset-y-0 left-0 block w-(--media-slider-buffer) rounded-full bg-white/40" />
-        <media-slider-fill class="absolute inset-y-0 left-0 block w-(--media-slider-fill) rounded-full bg-primary" />
+        <media-slider-fill class="absolute inset-y-0 left-0 block w-(--media-slider-fill) rounded-full bg-primary data-dragging:w-(--media-slider-pointer)" />
       </media-slider-track>
-      <media-slider-thumb class="absolute left-(--media-slider-fill) block size-4 -translate-x-1/2 rounded-full bg-white opacity-90 shadow-overlay outline-none ring-white/40 transition-transform group-hover/timeline:scale-125 data-dragging:scale-125 data-dragging:ring-4 focus-visible:ring-2 focus-visible:ring-white/80" />
+      <media-slider-thumb class="absolute left-(--media-slider-fill) data-dragging:left-(--media-slider-pointer) block size-4 -translate-x-1/2 rounded-full bg-white opacity-90 shadow-overlay outline-none ring-white/40 transition-transform group-hover/timeline:scale-125 data-dragging:scale-125 data-dragging:ring-4 focus-visible:ring-2 focus-visible:ring-white/80" />
 
       <media-slider-preview class="pointer-events-none absolute bottom-full mb-3 flex flex-col items-center gap-tight opacity-0 transition-opacity duration-200 data-pointing:opacity-100 data-dragging:opacity-100">
         <%!-- Video.js scales the sprite tile to fit these min and max sizes --%>
@@ -255,11 +266,18 @@ defmodule WatchClubWeb.Live.Player.PlayerComponents do
     """
   end
 
+  # The JS player hook adds an option per Text Track Choice from the <template>. Video.js's own
+  # captions group would also list the Forced Text Tracks.
   defp subtitles_options(assigns) do
     ~H"""
-    <media-captions-radio-group label={dgettext("player", "Subtitles")}>
+    <media-menu-radio-group
+      data-subtitles-menu
+      value="off"
+      aria-label={dgettext("player", "Subtitles")}
+    >
+      <.player_radio value="off">{dgettext("player", "Off")}</.player_radio>
       <template><.player_radio /></template>
-    </media-captions-radio-group>
+    </media-menu-radio-group>
     """
   end
 

@@ -22,6 +22,7 @@ defmodule WatchClub.Playbacks.Playback do
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack}
+  alias WatchClub.Playbacks.Calculations.TextTrackChoices
   alias WatchClub.Playbacks.Playback.Changes.ChooseStartTracks
   alias WatchClub.Playbacks.Session
 
@@ -115,7 +116,15 @@ defmodule WatchClub.Playbacks.Playback do
     end
 
     belongs_to :text_track, TextTrack do
-      description "Nil for no subtitles."
+      description "One of its Text Track Choices, or nil for none."
+      public? true
+    end
+  end
+
+  calculations do
+    calculate :text_track_choices, :struct, TextTrackChoices do
+      description "Its Text Track Choices, and the Forced Text Track that plays with each Audio Track while none is picked."
+      constraints instance_of: TextTrackChoices
       public? true
     end
   end

@@ -4,6 +4,8 @@ elixir = "latest"
 node = "latest"
 # Pinned: a new Biome version can reject biome.json until `biome migrate` runs.
 biome = "2.4.13"
+# The same ffmpeg and ffprobe in development, CI and the Docker image, from conda-forge
+"conda:ffmpeg" = "9.0.2"
 
 [settings]
 lockfile = true

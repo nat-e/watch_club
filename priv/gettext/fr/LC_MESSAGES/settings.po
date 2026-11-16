@@ -238,3 +238,15 @@ msgstr "Ta photo de profil est supprimée"
 #, elixir-autogen, elixir-format
 msgid "Your profile picture is saved"
 msgstr "Ta photo de profil est enregistrée"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Prefer subtitles for the deaf and hard of hearing (SDH)"
+msgstr "Préférer les sous-titres pour sourds et malentendants (SME)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "They also describe sounds and say who is speaking."
+msgstr "Ils décrivent aussi les sons et indiquent qui parle."
