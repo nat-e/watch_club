@@ -193,10 +193,10 @@ defmodule WatchClub.MediaCatalog.Video do
     attribute :keyframe_seconds, {:array, :float} do
       description """
       Where playback can cut the file: the times of the keyframes of its Default Video Track, in
-      seconds from the file's start. Nil for a Video no Media Import has read them for.
+      seconds from the file's start.
       """
 
-      allow_nil? true
+      allow_nil? false
       public? true
       select_by_default? false
     end

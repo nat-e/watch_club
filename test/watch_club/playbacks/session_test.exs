@@ -704,7 +704,12 @@ defmodule WatchClub.Playbacks.SessionTest do
         type: :movie
       })
 
-    Ash.Seed.seed!(Video, %{id: media.id, file_fingerprint: "fingerprint", duration_seconds: 60.0})
+    Ash.Seed.seed!(Video, %{
+      id: media.id,
+      file_fingerprint: "fingerprint",
+      keyframe_seconds: [0.0],
+      duration_seconds: 60.0
+    })
 
     media
   end
