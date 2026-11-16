@@ -4,7 +4,14 @@
 import {queryOptions, useQuery} from '@tanstack/react-query';
 import type {User} from '@watchclub/api';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
-import {createContext, type ReactNode, use, useCallback, useSyncExternalStore} from 'react';
+import {
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useSyncExternalStore,
+} from 'react';
 import type {Session, SessionStore} from '@/session-store';
 
 /**
@@ -39,6 +46,13 @@ export function SessionProvider({store, children}: {store: SessionStore; childre
   const session = useSyncExternalStore(subscribe, () => store.getSession());
   const hasToken = session?.hasToken ?? false;
   const {data: user, errorUpdateCount} = useQuery({...SESSION_USER_QUERY, enabled: hasToken});
+  // The Instance refused the token: the session ended, while the app was closed or since
+  const isTokenRefused = hasToken && user === null;
+  useEffect(() => {
+    if (isTokenRefused) {
+      void store.forgetToken();
+    }
+  }, [isTokenRefused, store]);
   // Once a request failed, the app stays unreachable while it asks again
   const isUserUnknown = hasToken && user === undefined;
   const isInstanceUnreachable = isUserUnknown && errorUpdateCount > 0;

@@ -4,15 +4,20 @@
 import {hashKey, type QueryClient, queryOptions, useSuspenseQuery} from '@tanstack/react-query';
 import {getCurrentUser, getCurrentUserQueryKey, hasCode, type User} from '@watchclub/api';
 
-/** The query for the signed-in User, which answers null when nobody is. */
+/**
+ * The query for the signed-in User, which answers null when nobody is. Once the session of the User
+ * it shows ends, it fails like any other request the API refuses, so the query client signs them
+ * out.
+ */
 export const currentUserQuery = queryOptions({
   queryKey: getCurrentUserQueryKey(),
-  queryFn: async ({signal}): Promise<User | null> => {
+  queryFn: async ({signal, client: queryClient, queryKey}): Promise<User | null> => {
     try {
       const {data} = await getCurrentUser({signal, throwOnError: true});
       return data;
     } catch (error) {
-      if (hasCode(error, 'unauthorized')) {
+      const shownUser = queryClient.getQueryData<User | null>(queryKey);
+      if (hasCode(error, 'unauthorized') && !shownUser) {
         return null;
       }
       throw error;

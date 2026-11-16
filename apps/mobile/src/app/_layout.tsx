@@ -13,8 +13,7 @@ import {SessionStore} from '@/session-store';
 
 void splashScreen.preventAutoHideAsync();
 
-// Once the session ends, the store forgets its token, and `Screens` shows signing in
-const queryClient = createQueryClient({onSessionEnded: () => sessionStore.forgetToken()});
+const queryClient = createQueryClient();
 const sessionStore = new SessionStore(queryClient);
 void sessionStore.restore();
 

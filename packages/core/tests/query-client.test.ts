@@ -1,3 +1,4 @@
+import type {QueryClient} from '@tanstack/react-query';
 import {ApiError, UnexpectedError, type User} from '@watchclub/api';
 import {describe, expect, it, vi} from 'vitest';
 import {currentUserQuery} from '../src/accounts/current-user';
@@ -13,18 +14,17 @@ const ALICE: User = {
 
 const SESSION_ENDED = new ApiError({code: 'unauthorized', message: 'Sign in'});
 
-/** Returns a client with Alice signed in and her Inbox cached, and whether her session ended. */
-function signedInClient() {
-  const onSessionEnded = vi.fn(() => Promise.resolve());
-  const queryClient = createQueryClient({onSessionEnded});
+/** Returns a client with Alice signed in and her Inbox cached. */
+function signedInClient(): QueryClient {
+  const queryClient = createQueryClient();
   queryClient.setQueryData(currentUserQuery.queryKey, ALICE);
   queryClient.setQueryData(['inbox'], ['a conversation']);
-  return {queryClient, onSessionEnded};
+  return queryClient;
 }
 
 describe('createQueryClient', () => {
   it('signs the User out once the API refuses a read', async () => {
-    const {queryClient, onSessionEnded} = signedInClient();
+    const queryClient = signedInClient();
 
     const read = queryClient.fetchQuery({
       queryKey: ['conversation'],
@@ -33,14 +33,13 @@ describe('createQueryClient', () => {
 
     await expect(read).rejects.toThrow('Sign in');
     await vi.waitFor(() => {
-      expect(onSessionEnded).toHaveBeenCalledOnce();
+      expect(queryClient.getQueryData(currentUserQuery.queryKey)).toBeNull();
     });
-    expect(queryClient.getQueryData(currentUserQuery.queryKey)).toBeNull();
     expect(queryClient.getQueryData<string[]>(['inbox'])).toBeUndefined();
   });
 
   it('signs the User out once the API refuses a change', async () => {
-    const {queryClient, onSessionEnded} = signedInClient();
+    const queryClient = signedInClient();
 
     const change = queryClient
       .getMutationCache()
@@ -49,13 +48,12 @@ describe('createQueryClient', () => {
 
     await expect(change).rejects.toThrow('Sign in');
     await vi.waitFor(() => {
-      expect(onSessionEnded).toHaveBeenCalledOnce();
+      expect(queryClient.getQueryData(currentUserQuery.queryKey)).toBeNull();
     });
-    expect(queryClient.getQueryData(currentUserQuery.queryKey)).toBeNull();
   });
 
   it('keeps the User signed in when a read fails otherwise', async () => {
-    const {queryClient, onSessionEnded} = signedInClient();
+    const queryClient = signedInClient();
 
     const read = queryClient.fetchQuery({
       queryKey: ['conversation'],
@@ -63,7 +61,6 @@ describe('createQueryClient', () => {
     });
 
     await expect(read).rejects.toThrow('Not found');
-    expect(onSessionEnded).not.toHaveBeenCalled();
     expect(queryClient.getQueryData(currentUserQuery.queryKey)).toEqual(ALICE);
   });
 
