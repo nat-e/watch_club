@@ -7,7 +7,11 @@ export function TextField({
   label,
   error,
   ...input
-}: {label: string; error?: string} & ComponentProps<typeof Input>) {
+}: {label: string; error?: string} & Omit<
+  ComponentProps<typeof Input>,
+  // It sets them itself, to tie the label and the error to the input
+  'id' | 'aria-invalid' | 'aria-describedby'
+>) {
   const id = useId();
   const errorId = useId();
   return (
