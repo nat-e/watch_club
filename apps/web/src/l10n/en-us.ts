@@ -20,10 +20,14 @@ export default {
   },
   shell: {
     navigation: 'Main navigation',
+    signOutFailed: "We couldn't sign you out. Try again in a moment.",
   },
   sidebar: {
     description: 'The main navigation and your menu.',
     title: 'Sidebar',
     toggle: 'Show or hide the sidebar',
+  },
+  toaster: {
+    notifications: 'Notifications',
   },
 } as const;

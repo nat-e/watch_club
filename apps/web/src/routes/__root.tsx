@@ -2,6 +2,7 @@ import type {QueryClient} from '@tanstack/react-query';
 import {createRootRouteWithContext, Outlet} from '@tanstack/react-router';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {SomethingWentWrong} from '@/components/something-went-wrong';
+import {Toaster} from '@/components/ui/sonner';
 import {Localization} from '@/l10n';
 
 export const Route = createRootRouteWithContext<{queryClient: QueryClient}>()({
@@ -12,6 +13,7 @@ export const Route = createRootRouteWithContext<{queryClient: QueryClient}>()({
   component: () => (
     <Localization>
       <Outlet />
+      <Toaster />
     </Localization>
   ),
   errorComponent: () => (

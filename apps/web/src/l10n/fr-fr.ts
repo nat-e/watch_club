@@ -20,10 +20,14 @@ export default {
   },
   shell: {
     navigation: 'Navigation principale',
+    signOutFailed: "On n'a pas pu te déconnecter. Réessaie dans un instant.",
   },
   sidebar: {
     description: 'La navigation principale et ton menu.',
     title: 'Barre latérale',
     toggle: 'Afficher ou masquer la barre latérale',
+  },
+  toaster: {
+    notifications: 'Notifications',
   },
 } as const;

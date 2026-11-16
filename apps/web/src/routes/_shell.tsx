@@ -12,6 +12,7 @@ import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/curr
 import {ChevronsUpDownIcon, HouseIcon, LogOutIcon, SettingsIcon} from 'lucide-react';
 import {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
+import {toast} from 'sonner';
 import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -149,12 +150,19 @@ function PhoneBar() {
 
 /** The button that opens the User's menu, with their settings and signing out. */
 function UserMenu({user}: {user: User}) {
-  const {t} = useTranslation('core');
+  const {t} = useTranslation(['web', 'core']);
   const queryClient = useQueryClient();
   const {isMobile} = useSidebar();
   const signOut = useMutation({
     ...logoutMutation(),
+    // Fails at once when the device is offline, rather than waiting for the network unseen
+    networkMode: 'always',
     onSuccess: () => forgetCurrentUser(queryClient),
+    // The User stays signed in, as only the server can remove the session cookie, and the menu has
+    // closed, so a toast tells them
+    onError: () => {
+      toast.error(t($ => $.web.shell.signOutFailed));
+    },
   });
   // Usernames are lowercase ASCII, so their first character is a letter or digit
   const initial = user.username.slice(0, 1).toUpperCase();
