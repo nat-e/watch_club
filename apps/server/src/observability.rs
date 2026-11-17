@@ -32,7 +32,7 @@ use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
 use tracing::Metadata;
 use tracing_subscriber::{
-    EnvFilter, Layer,
+    Layer,
     filter::{LevelFilter, filter_fn},
     layer::SubscriberExt,
     util::SubscriberInitExt,
@@ -153,7 +153,7 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
     });
 
     tracing_subscriber::registry()
-        .with(EnvFilter::new(&config.log_filter))
+        .with(config.log_filter.clone())
         .with(tracing_subscriber::fmt::layer())
         .with(tracer_provider.as_ref().map(|provider| {
             tracing_opentelemetry::layer()

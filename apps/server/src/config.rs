@@ -16,7 +16,7 @@ pub struct Config {
     pub database_url: SecretString,
     /// The port the server listens on, from `PORT`
     pub port: u16,
-    /// What the server tells its host about itself: its logs, telemetry and errors
+    /// The settings of the server's logs, telemetry and error reports
     pub observability: ObservabilityConfig,
 }
 
@@ -24,7 +24,7 @@ pub struct Config {
 #[derive(Debug)]
 pub struct ObservabilityConfig {
     /// The logs the server writes, from `RUST_LOG`: `info` by default
-    pub log_filter: String,
+    pub log_filter: EnvFilter,
     /// The OpenTelemetry signals the server exports
     pub exports: Exports,
     /// The name the server reports its telemetry under, from `OTEL_SERVICE_NAME`: `watch_club` by
@@ -41,8 +41,11 @@ pub struct ObservabilityConfig {
 /// stays off unless the host turns it on.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Exports {
+    /// Whether the server exports traces
     pub traces: bool,
+    /// Whether the server exports metrics
     pub metrics: bool,
+    /// Whether the server exports logs
     pub logs: bool,
 }
 
@@ -62,8 +65,8 @@ impl Config {
 
 impl ObservabilityConfig {
     fn from_env() -> anyhow::Result<Self> {
-        let log_filter = optional_var("RUST_LOG").unwrap_or_else(|| "info".to_owned());
-        EnvFilter::try_new(&log_filter).context("RUST_LOG isn't a log filter")?;
+        let log_filter = EnvFilter::try_new(optional_var("RUST_LOG").as_deref().unwrap_or("info"))
+            .context("RUST_LOG isn't a log filter")?;
         let web_sentry_dsn = optional_var("SENTRY_WEB_DSN");
         if let Some(dsn) = &web_sentry_dsn {
             parse_dsn("SENTRY_WEB_DSN", dsn)?;
