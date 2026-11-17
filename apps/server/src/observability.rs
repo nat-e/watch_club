@@ -224,6 +224,16 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
         }))
         .try_init()
         .context("failed to set up logging")?;
+    // Answers "is it even on?" when telemetry doesn't arrive
+    tracing::event!(
+        name: "observability.started",
+        Level::INFO,
+        otlp.traces = tracer_provider.is_some(),
+        otlp.metrics = meter_provider.is_some(),
+        otlp.logs = logger_provider.is_some(),
+        sentry = sentry.is_some(),
+        "set up the telemetry",
+    );
 
     Ok(Observability {
         tracer_provider,

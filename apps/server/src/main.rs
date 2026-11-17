@@ -40,6 +40,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     tracing::event!(
         name: "server.started",
         Level::INFO,
+        service.version = %env!("CARGO_PKG_VERSION"),
         server.port = config.port,
         "listening for requests",
     );
@@ -71,6 +72,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     // Gives up on the connections that a stopped job's query still holds, to exit within the 10 s
     // `docker stop` waits
     let _ = time::timeout(Duration::from_secs(1), db.close()).await;
+    tracing::event!(name: "server.stopped", Level::INFO, "stopped");
     Ok(())
 }
 
@@ -79,10 +81,16 @@ fn cancel_on_signals(shutdown: CancellationToken) -> io::Result<()> {
     let mut interrupt = signal(SignalKind::interrupt())?;
     let mut terminate = signal(SignalKind::terminate())?;
     tokio::spawn(async move {
-        tokio::select! {
-            _ = interrupt.recv() => {},
-            _ = terminate.recv() => {},
-        }
+        let signal = tokio::select! {
+            _ = interrupt.recv() => "SIGINT",
+            _ = terminate.recv() => "SIGTERM",
+        };
+        tracing::event!(
+            name: "server.stopping",
+            Level::INFO,
+            signal = %signal,
+            "stopping once the requests and jobs in progress end",
+        );
         shutdown.cancel();
     });
     Ok(())

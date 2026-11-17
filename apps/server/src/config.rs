@@ -23,7 +23,7 @@ pub struct Config {
 /// The settings of the server's logs, of its OpenTelemetry export, and of the Sentry reports.
 #[derive(Debug)]
 pub struct ObservabilityConfig {
-    /// The logs the server writes, from `LOG_LEVEL`: `info` by default
+    /// The logs the server writes, from `LOG_LEVEL`: `DEFAULT_LOG_LEVEL` when it's unset
     pub log_filter: EnvFilter,
     /// The format of the console's logs, from `LOG_FORMAT`: text by default
     pub log_format: LogFormat,
@@ -84,10 +84,18 @@ impl Config {
     }
 }
 
+/// The logs the server writes when `LOG_LEVEL` is unset: `info`, without the notices Postgres sends
+/// on every start, such as the one saying the table `_sqlx_migrations` already exists.
+const DEFAULT_LOG_LEVEL: &str = "info,sqlx::postgres::notice=warn";
+
 impl ObservabilityConfig {
     fn from_env() -> anyhow::Result<Self> {
-        let log_filter = EnvFilter::try_new(optional_var("LOG_LEVEL").as_deref().unwrap_or("info"))
-            .context("LOG_LEVEL isn't a log level")?;
+        let log_filter = EnvFilter::try_new(
+            optional_var("LOG_LEVEL")
+                .as_deref()
+                .unwrap_or(DEFAULT_LOG_LEVEL),
+        )
+        .context("LOG_LEVEL isn't a log level")?;
         let web_sentry_dsn = optional_var("SENTRY_WEB_DSN");
         if let Some(dsn) = &web_sentry_dsn {
             parse_dsn("SENTRY_WEB_DSN", dsn)?;

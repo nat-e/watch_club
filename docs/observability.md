@@ -25,6 +25,8 @@ LOG_FORMAT=json
 
 `LOG_LEVEL` sets how much the server logs: `info` by default, `debug` for more, `warn` or `error` for less.
 
+When it starts, the server logs its version and which of the telemetry below it sends, so you can check your settings.
+
 ## OpenTelemetry
 
 The server can send its telemetry to any tool that accepts OpenTelemetry (OTLP), such as Grafana, SigNoz, Jaeger or Sentry:
