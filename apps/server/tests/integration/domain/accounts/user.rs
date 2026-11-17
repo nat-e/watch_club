@@ -1,12 +1,10 @@
-use std::time::Duration;
-
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::PgPool;
 use watch_club::domain::accounts::{
     self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
     Username, UsernameError,
 };
-use watch_club::testing::{database, database_with};
+use watch_club::testing::{database, database_with_one_connection};
 
 use crate::support::{self, PASSWORD};
 
@@ -163,12 +161,7 @@ mod create_instance_administrator {
 
     #[tokio::test]
     async fn fails_when_there_is_one_already_with_a_single_connection() {
-        let db = database_with(
-            PgPoolOptions::new()
-                .max_connections(1)
-                .acquire_timeout(Duration::from_secs(2)),
-        )
-        .await;
+        let db = database_with_one_connection().await;
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(

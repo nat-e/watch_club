@@ -20,12 +20,21 @@ use sqlx::{
 /// dropped with the pool, once the test has dropped every clone of it.
 pub async fn database() -> PgPool {
     // Leaves connections to the other tests and worktrees
-    database_with(PgPoolOptions::new().max_connections(5)).await
+    create(PgPoolOptions::new().max_connections(5)).await
 }
 
-/// Creates a database like `database`, with a pool of these options, which must not set
-/// `after_connect`.
-pub async fn database_with(options: PgPoolOptions) -> PgPool {
+/// Creates a database like `database`, with a pool of a single connection, for code that must not
+/// need a second one: waiting for it fails after 2 seconds rather than hanging.
+pub async fn database_with_one_connection() -> PgPool {
+    create(
+        PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(Duration::from_secs(2)),
+    )
+    .await
+}
+
+async fn create(options: PgPoolOptions) -> PgPool {
     static CREATED: AtomicU32 = AtomicU32::new(0);
 
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL is set");
