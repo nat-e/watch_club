@@ -270,7 +270,7 @@
             }
           },
           "503": {
-            "description": "The server can't reach its database"
+            "description": "The server doesn't work"
           }
         }
       }
