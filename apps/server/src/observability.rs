@@ -35,7 +35,7 @@ use tower_http::trace::TraceLayer;
 use tracing::Metadata;
 use tracing_subscriber::{
     Layer,
-    filter::{LevelFilter, filter_fn},
+    filter::{FilterExt, LevelFilter, filter_fn},
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
@@ -75,21 +75,37 @@ impl fmt::Debug for Observability {
 
 impl Drop for Observability {
     fn drop(&mut self) {
+        // Keeps the failures below on the console: the log export they'd go to is shut down
+        let _suppressed = opentelemetry::Context::enter_telemetry_suppressed_scope();
+        // In the order of OpenTelemetry's examples: the metrics last, as the log export may record
+        // some about itself while it shuts down
         let results = [
-            self.tracer_provider
-                .as_ref()
-                .map(SdkTracerProvider::shutdown),
-            self.meter_provider.as_ref().map(SdkMeterProvider::shutdown),
-            self.logger_provider
-                .as_ref()
-                .map(SdkLoggerProvider::shutdown),
+            (
+                "traces",
+                self.tracer_provider
+                    .as_ref()
+                    .map(SdkTracerProvider::shutdown),
+            ),
+            (
+                "logs",
+                self.logger_provider
+                    .as_ref()
+                    .map(SdkLoggerProvider::shutdown),
+            ),
+            (
+                "metrics",
+                self.meter_provider.as_ref().map(SdkMeterProvider::shutdown),
+            ),
         ];
-        for error in results.into_iter().flatten().filter_map(Result::err) {
-            tracing::warn!(
-                name: "observability.shutdown.failed",
-                %error,
-                "failed to send the last telemetry",
-            );
+        for (signal, result) in results {
+            if let Some(Err(error)) = result {
+                tracing::warn!(
+                    name: "observability.shutdown.failed",
+                    signal,
+                    %error,
+                    "failed to send the last telemetry",
+                );
+            }
         }
     }
 }
@@ -190,9 +206,14 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
                 .with_filter(filter_fn(|metadata| !is_from_exporter(metadata)))
         }))
         .with(sentry.is_some().then(|| {
+            // Failures to send telemetry stay on the console: they're problems with the host's
+            // setup rather than bugs in the app, and would use up the Sentry quota while they last
+            let not_from_exporter = || filter_fn(|metadata| !is_from_exporter(metadata));
             ErrorLayer::new()
-                .with_filter(LevelFilter::ERROR)
-                .and_then(BreadcrumbLayer::new().with_filter(LevelFilter::INFO))
+                .with_filter(LevelFilter::ERROR.and(not_from_exporter()))
+                .and_then(
+                    BreadcrumbLayer::new().with_filter(LevelFilter::INFO.and(not_from_exporter())),
+                )
         }))
         .try_init()
         .context("failed to set up logging")?;
