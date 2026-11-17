@@ -51,23 +51,23 @@ pub trait Job {
     fn run(self, db: &PgPool) -> impl Future<Output = Result<(), JobError>> + Send;
 }
 
-/// The reason a job didn't complete.
+/// The reason a job didn't complete. A job with nothing left to do, such as when what it works on
+/// is gone, completes instead.
 #[derive(Debug, thiserror::Error)]
 pub enum JobError {
-    /// The job has nothing left to do, such as when what it works on is gone. It ends cancelled.
-    #[error("cancelled: {0}")]
-    Cancel(String),
-    /// A failure that trying again won't fix. The job ends failed at once.
-    #[error("failed for good: {0:#}")]
-    Fail(anyhow::Error),
-    /// Any other failure. The job runs again later, unless it has no attempts left.
+    /// A failure that may go away, such as the database being down. The job runs again later,
+    /// unless it has no attempts left.
     #[error(transparent)]
-    Internal(#[from] anyhow::Error),
+    Retryable(#[from] anyhow::Error),
+    /// A failure that trying again won't fix, such as invalid arguments. The job ends failed at
+    /// once.
+    #[error(transparent)]
+    NonRetryable(anyhow::Error),
 }
 
 impl From<InternalError> for JobError {
     fn from(error: InternalError) -> Self {
-        Self::Internal(error.into())
+        Self::Retryable(error.into())
     }
 }
 
@@ -99,6 +99,7 @@ pub enum JobState {
     Completed,
     /// Failed for good
     Failed,
+    /// Cancelled with `cancel` before it ran
     Cancelled,
 }
 

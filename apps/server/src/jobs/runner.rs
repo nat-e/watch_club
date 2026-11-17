@@ -213,17 +213,13 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
         .unwrap_or("no message")
 }
 
-/// Saves how a job's attempt ended: completed, cancelled, failed, or back in its queue to try
-/// again after a backoff.
+/// Saves how a job's attempt ended: completed, failed, or back in its queue to try again after a
+/// backoff.
 async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
     let state = match outcome {
         Ok(()) => JobState::Completed,
-        Err(JobError::Cancel(reason)) => {
-            tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
-            JobState::Cancelled
-        }
-        Err(JobError::Fail(error)) => {
+        Err(JobError::NonRetryable(error)) => {
             tracing::error!(
                 name: "jobs.job.failed",
                 attempt,
@@ -232,7 +228,7 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
             );
             JobState::Failed
         }
-        Err(JobError::Internal(error)) if attempt < max_attempts => {
+        Err(JobError::Retryable(error)) if attempt < max_attempts => {
             tracing::warn!(
                 name: "jobs.attempt.failed",
                 attempt,
@@ -242,7 +238,7 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
             );
             JobState::Available
         }
-        Err(JobError::Internal(error)) => {
+        Err(JobError::Retryable(error)) => {
             tracing::error!(
                 name: "jobs.job.failed",
                 attempt,
@@ -375,16 +371,18 @@ mod tests {
 
         #[tokio::test]
         async fn returns_how_the_work_ended() {
-            let outcome = run_attempt(TIMEOUT, async { Err(JobError::Cancel("done".to_owned())) });
+            let outcome = run_attempt(TIMEOUT, async {
+                Err(JobError::NonRetryable(anyhow!("invalid arguments")))
+            });
 
-            assert!(matches!(outcome.await, Err(JobError::Cancel(reason)) if reason == "done"));
+            assert!(matches!(outcome.await, Err(JobError::NonRetryable(_))));
         }
 
         #[tokio::test]
         async fn turns_a_panic_into_a_failed_attempt() {
             let outcome = run_attempt(TIMEOUT, async { panic!("the job broke") }).await;
 
-            let Err(JobError::Internal(error)) = outcome else {
+            let Err(JobError::Retryable(error)) = outcome else {
                 panic!("expected a failed attempt, got {outcome:?}");
             };
             assert_eq!(error.to_string(), "panicked: the job broke");
@@ -394,7 +392,7 @@ mod tests {
         async fn turns_a_timeout_into_a_failed_attempt() {
             let outcome = run_attempt(Duration::from_millis(10), future::pending()).await;
 
-            let Err(JobError::Internal(error)) = outcome else {
+            let Err(JobError::Retryable(error)) = outcome else {
                 panic!("expected a failed attempt, got {outcome:?}");
             };
             assert_eq!(error.to_string(), "timed out after 10ms");
@@ -473,21 +471,17 @@ mod tests {
         }
 
         #[sqlx::test]
-        async fn fails_the_job_at_once_on_a_permanent_failure(db: PgPool) {
+        async fn fails_the_job_at_once_on_a_non_retryable_failure(db: PgPool) {
             let job = claimed_job(&db, 1, 3).await;
 
-            save_outcome(&db, &job, Err(JobError::Fail(anyhow!("never works")))).await;
+            save_outcome(
+                &db,
+                &job,
+                Err(JobError::NonRetryable(anyhow!("never works"))),
+            )
+            .await;
 
             assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
-        }
-
-        #[sqlx::test]
-        async fn cancels_a_job_that_cancelled_itself(db: PgPool) {
-            let job = claimed_job(&db, 1, 3).await;
-
-            save_outcome(&db, &job, Err(JobError::Cancel("nothing to do".to_owned()))).await;
-
-            assert_eq!(job_state(&db, job.id).await, (JobState::Cancelled, None));
         }
 
         #[sqlx::test]
