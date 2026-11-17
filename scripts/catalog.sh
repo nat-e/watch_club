@@ -7,9 +7,9 @@
 # Usage: catalog.sh start|reset
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
-git_dir=$(git rev-parse --path-format=absolute --git-common-dir)
-media="$(dirname "$git_dir")/tmp/catalog"
+# The worktrees share one catalog, so it comes from the primary worktree, whichever runs this
+cd "$(dirname "$(git -C "$(dirname "$0")" rev-parse --path-format=absolute --git-common-dir)")"
+media=$PWD/tmp/catalog
 project=watch-club-rs-catalog
 apps=(radarr sonarr sportarr)
 
@@ -19,8 +19,8 @@ compose() {
 }
 
 # Puts back the clips, and the apps' data from the snapshot: the Docker volumes
-# watch-club-rs-catalog-snapshot-*. Creates the apps' volumes last, so that start tries again
-# after a failure.
+# watch-club-rs-catalog-snapshot-*. The apps' volumes exist only once it succeeds, so that start
+# tries again after a failure.
 restore() {
   for app in "${apps[@]}"; do
     if ! docker volume inspect "$project-snapshot-$app" >/dev/null 2>&1; then
@@ -41,13 +41,15 @@ restore() {
     while read -r oid _ path; do
       target=$media/${path#dev/catalog/media/}
       mkdir -p "$(dirname "$target")"
-      "${clone[@]}" "$git_dir/lfs/objects/${oid:0:2}/${oid:2:2}/$oid" "$target"
+      "${clone[@]}" ".git/lfs/objects/${oid:0:2}/${oid:2:2}/$oid" "$target"
     done
 
+  trap 'compose down --volumes' EXIT
   for app in "${apps[@]}"; do
     compose run --rm --no-deps --no-TTY --volume "$project-snapshot-$app:/snapshot:ro" \
       --entrypoint cp "$app" -a /snapshot/. /config/
   done
+  trap - EXIT
 }
 
 start() {
