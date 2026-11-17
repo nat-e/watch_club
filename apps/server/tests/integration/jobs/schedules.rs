@@ -3,6 +3,7 @@
 
 use sqlx::PgPool;
 use watch_club::jobs;
+use watch_club_test_macros::database_test;
 
 /// Returns the kinds of the jobs in the queue, finished or not.
 async fn job_kinds(db: &PgPool) -> Vec<String> {
@@ -49,7 +50,7 @@ async fn set_next_run_from_now(db: &PgPool, interval: &str) {
 mod run_available {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn schedules_the_next_run_without_queuing_the_job(db: PgPool) {
         jobs::run_available(&db).await.unwrap();
 
@@ -57,7 +58,7 @@ mod run_available {
         assert_eq!(job_kinds(&db).await, Vec::<String>::new());
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn queues_the_job_once_when_its_run_comes(db: PgPool) {
         jobs::run_available(&db).await.unwrap();
         set_next_run_from_now(&db, "-1 minute").await;
@@ -70,7 +71,7 @@ mod run_available {
         assert!(runs_next_on_the_coming_sunday(&db).await);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn queues_the_job_once_after_missing_several_runs(db: PgPool) {
         jobs::run_available(&db).await.unwrap();
         set_next_run_from_now(&db, "-3 weeks").await;
@@ -81,7 +82,7 @@ mod run_available {
         assert!(runs_next_on_the_coming_sunday(&db).await);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn moves_the_next_run_when_the_cron_expression_changes(db: PgPool) {
         jobs::run_available(&db).await.unwrap();
         sqlx::query!(
@@ -107,7 +108,7 @@ mod run_available {
         assert!(runs_next_on_the_coming_sunday(&db).await);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn deletes_the_schedules_that_are_gone_from_the_code(db: PgPool) {
         sqlx::query!(
             r#"

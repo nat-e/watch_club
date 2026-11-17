@@ -3589,6 +3589,15 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "uuid",
+ "watch_club_test_macros",
+]
+
+[[package]]
+name = "watch_club_test_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 3.0.10",
 ]
 
 [[package]]

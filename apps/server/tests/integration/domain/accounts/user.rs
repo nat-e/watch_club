@@ -1,14 +1,12 @@
 use std::time::Duration;
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use sqlx::{
-    PgPool,
-    postgres::{PgConnectOptions, PgPoolOptions},
-};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use watch_club::domain::accounts::{
     self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
     Username, UsernameError,
 };
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
@@ -78,7 +76,7 @@ mod password {
 mod has_instance_administrator {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_false_until_setup(db: PgPool) {
         support::create_user(&db, "ada").await;
 
@@ -87,7 +85,7 @@ mod has_instance_administrator {
         assert!(!set_up);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_true_once_the_instance_administrator_exists(db: PgPool) {
         support::create_instance_administrator(&db).await;
 
@@ -100,7 +98,7 @@ mod has_instance_administrator {
 mod create_instance_administrator {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
         let (admin, token) = accounts::create_instance_administrator(
             &db,
@@ -122,7 +120,7 @@ mod create_instance_administrator {
         assert_eq!(signed_in, admin);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn fails_when_there_is_one_already(db: PgPool) {
         support::create_instance_administrator(&db).await;
 
@@ -140,7 +138,7 @@ mod create_instance_administrator {
         ));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn fails_when_there_is_one_already_with_the_same_username(db: PgPool) {
         let admin = support::create_instance_administrator(&db).await;
 
@@ -158,15 +156,12 @@ mod create_instance_administrator {
         ));
     }
 
-    #[sqlx::test]
-    async fn fails_when_there_is_one_already_with_a_single_connection(
-        pool: PgPoolOptions,
-        connection: PgConnectOptions,
-    ) {
-        let db = pool
+    #[database_test]
+    async fn fails_when_there_is_one_already_with_a_single_connection(db: PgPool) {
+        let db = PgPoolOptions::new()
             .max_connections(1)
             .acquire_timeout(Duration::from_secs(2))
-            .connect_with(connection)
+            .connect_with(db.connect_options().as_ref().clone())
             .await
             .unwrap();
         support::create_instance_administrator(&db).await;
@@ -189,7 +184,7 @@ mod create_instance_administrator {
 mod sign_in {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn signs_in_the_user_with_this_password(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
 
@@ -203,7 +198,7 @@ mod sign_in {
         assert_eq!(session_user, Some(user));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn gives_each_device_its_own_token(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
 
@@ -213,7 +208,7 @@ mod sign_in {
         assert_ne!(phone.encode(), laptop.encode());
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_none_for_a_wrong_password(db: PgPool) {
         support::create_user(&db, "ada").await;
 
@@ -224,7 +219,7 @@ mod sign_in {
         assert!(signed_in.is_none());
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_none_for_an_unknown_username(db: PgPool) {
         let signed_in = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
@@ -259,7 +254,7 @@ mod session_token {
 mod session_user {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_none_for_a_token_that_never_signed_in(db: PgPool) {
         let token = SessionToken::decode(&"A".repeat(43)).unwrap();
 
@@ -268,7 +263,7 @@ mod session_user {
         assert_eq!(signed_in, None);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_none_once_the_session_expired(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let token = new_session(&db, &user).await;
@@ -283,7 +278,7 @@ mod session_user {
 mod sign_out {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn signs_out_this_device_only(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let phone = new_session(&db, &user).await;
@@ -302,7 +297,7 @@ mod sign_out {
 mod delete_expired_sessions {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn deletes_only_the_expired_sessions(db: PgPool) {
         let ada = support::create_user(&db, "ada").await;
         let bob = support::create_user(&db, "bob").await;

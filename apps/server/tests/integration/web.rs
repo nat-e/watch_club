@@ -1,9 +1,10 @@
 use axum::http::StatusCode;
 use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::Client;
 
-#[sqlx::test]
+#[database_test]
 async fn unknown_paths_are_not_found_rather_than_the_web_app(db: PgPool) {
     let mut client = Client::new(&db);
     for path in ["/api", "/api/", "/api/nothing-here"] {
@@ -15,7 +16,7 @@ async fn unknown_paths_are_not_found_rather_than_the_web_app(db: PgPool) {
     }
 }
 
-#[sqlx::test]
+#[database_test]
 async fn only_get_and_head_reach_the_web_app(db: PgPool) {
     let response = Client::new(&db).post_without_body("/index.html").await;
 

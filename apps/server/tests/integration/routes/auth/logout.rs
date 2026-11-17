@@ -1,9 +1,10 @@
 use axum::http::StatusCode;
 use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client};
 
-#[sqlx::test]
+#[database_test]
 async fn ends_the_browsers_session(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
@@ -21,7 +22,7 @@ async fn ends_the_browsers_session(db: PgPool) {
     assert_eq!(copy.get("/api/me").await.status, StatusCode::UNAUTHORIZED);
 }
 
-#[sqlx::test]
+#[database_test]
 async fn ends_the_apps_session(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut app = Client::new(&db);
@@ -33,7 +34,7 @@ async fn ends_the_apps_session(db: PgPool) {
     assert_eq!(app.get("/api/me").await.status, StatusCode::UNAUTHORIZED);
 }
 
-#[sqlx::test]
+#[database_test]
 async fn succeeds_when_signed_out_already(db: PgPool) {
     let response = Client::new(&db).post_without_body("/api/auth/logout").await;
 

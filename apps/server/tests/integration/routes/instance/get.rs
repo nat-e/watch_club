@@ -1,10 +1,11 @@
 use axum::http::StatusCode;
 use serde_json::Value;
 use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client};
 
-#[sqlx::test]
+#[database_test]
 async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.status, StatusCode::OK);
@@ -17,7 +18,7 @@ async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
     assert_eq!(response.body["version"], env!("CARGO_PKG_VERSION"));
 }
 
-#[sqlx::test]
+#[database_test]
 async fn names_no_sentry_dsn_unless_the_host_sets_one(db: PgPool) {
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.body["web_sentry_dsn"], Value::Null);

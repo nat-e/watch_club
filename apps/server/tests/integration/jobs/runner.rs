@@ -3,6 +3,7 @@
 
 use sqlx::PgPool;
 use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
+use watch_club_test_macros::database_test;
 
 use super::job_state;
 
@@ -14,7 +15,7 @@ async fn enqueue(db: &PgPool) -> JobId {
 mod run_available {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn runs_jobs_by_priority_then_in_the_order_they_are_due(db: PgPool) {
         let low = enqueue(&db).await;
         let second = enqueue(&db).await;
@@ -40,7 +41,7 @@ mod run_available {
         assert_eq!(order, [first, second, low]);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn waits_for_the_time_a_job_runs_at(db: PgPool) {
         let id = enqueue(&db).await;
         sqlx::query!(
@@ -56,7 +57,7 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Available, 0));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn runs_each_job_once_when_runners_claim_at_the_same_time(db: PgPool) {
         for _ in 0..20 {
             enqueue(&db).await;
@@ -85,22 +86,46 @@ mod run_available {
         );
     }
 
-    #[sqlx::test]
-    async fn retries_a_job_whose_arguments_dont_read(db: PgPool) {
-        let id = sqlx::query_scalar!(
+    /// Queues a job whose attempts fail, as its kind no longer exists.
+    async fn enqueue_failing(db: &PgPool, max_attempts: i16) -> JobId {
+        sqlx::query_scalar!(
             r#"
             INSERT INTO jobs (queue, kind, max_attempts)
-            VALUES ('default', 'removed_job', 3)
+            VALUES ('default', 'removed_job', $1)
             RETURNING id
-            "#
+            "#,
+            max_attempts,
         )
-        .fetch_one(&db)
+        .fetch_one(db)
         .await
-        .unwrap();
+        .unwrap()
+    }
+
+    #[database_test]
+    async fn schedules_a_retry_with_a_backoff(db: PgPool) {
+        let id = enqueue_failing(&db, 3).await;
 
         jobs::run_available(&db).await.unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Available, 1));
+        let wait = sqlx::query_scalar!(
+            r#"SELECT extract(epoch FROM run_at - now())::float8 AS "wait!" FROM jobs WHERE id = $1"#,
+            id as JobId,
+        )
+        .fetch_one(&db)
+        .await
+        .unwrap();
+        // 1⁴ + 15 seconds, plus up to 10%
+        assert!((15.0..=17.6).contains(&wait), "waits {wait} s");
+    }
+
+    #[database_test]
+    async fn fails_a_job_after_its_last_attempt(db: PgPool) {
+        let id = enqueue_failing(&db, 1).await;
+
+        jobs::run_available(&db).await.unwrap();
+
+        assert_eq!(job_state(&db, id).await, (JobState::Failed, 1));
     }
 
     /// Makes the job look like an attempt that started this long ago and never ended.
@@ -120,7 +145,7 @@ mod run_available {
         .unwrap();
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn rescues_a_job_left_running_for_an_hour(db: PgPool) {
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "61 minutes").await;
@@ -130,7 +155,7 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Completed, 2));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn leaves_a_job_running_for_less_than_an_hour(db: PgPool) {
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "59 minutes").await;
@@ -140,7 +165,7 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Executing, 1));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn fails_a_job_left_running_on_its_last_attempt(db: PgPool) {
         let id = enqueue(&db).await;
         leave_running(&db, id, 3, "61 minutes").await;
@@ -166,7 +191,7 @@ mod run_available {
         .unwrap();
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn deletes_the_jobs_finished_over_a_week_ago(db: PgPool) {
         for state in [JobState::Completed, JobState::Failed, JobState::Cancelled] {
             let id = enqueue(&db).await;

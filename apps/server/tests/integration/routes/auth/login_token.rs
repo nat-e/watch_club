@@ -1,10 +1,11 @@
 use axum::http::{StatusCode, header::SET_COOKIE};
 use serde_json::json;
 use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client, PASSWORD};
 
-#[sqlx::test]
+#[database_test]
 async fn gives_the_app_a_token_that_signs_its_requests_in(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut app = Client::new(&db);
@@ -16,7 +17,7 @@ async fn gives_the_app_a_token_that_signs_its_requests_in(db: PgPool) {
     assert_eq!(me.body["username"], "ada");
 }
 
-#[sqlx::test]
+#[database_test]
 async fn sets_no_cookie(db: PgPool) {
     support::create_user(&db, "ada").await;
 
@@ -29,7 +30,7 @@ async fn sets_no_cookie(db: PgPool) {
     assert!(!response.headers.contains_key(SET_COOKIE));
 }
 
-#[sqlx::test]
+#[database_test]
 async fn refuses_wrong_credentials(db: PgPool) {
     support::create_user(&db, "ada").await;
 

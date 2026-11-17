@@ -2,13 +2,14 @@
 //! API.
 
 mod client;
+mod database;
 
 use std::process::Command;
 
 use sqlx::PgPool;
 use watch_club::domain::accounts::{Locale, User, UserId};
 
-pub use self::client::Client;
+pub use self::{client::Client, database::TestDatabase};
 
 /// Every test User's password
 pub const PASSWORD: &str = "passw0rd";

@@ -1,0 +1,3 @@
+# Clones and CI skip the dev catalog's clips: scripts/catalog.sh fetches them
+[lfs]
+	fetchexclude = dev/catalog/media/**

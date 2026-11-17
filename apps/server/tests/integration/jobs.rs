@@ -8,6 +8,7 @@ use watch_club::{
     domain::accounts,
     jobs::{self, DeleteExpiredSessions, JobId, JobState},
 };
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
@@ -23,7 +24,7 @@ async fn job_state(db: &PgPool, id: JobId) -> (JobState, i16) {
 mod enqueue {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn queues_the_job_for_the_runner(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         accounts::sign_in(&db, "ada", PASSWORD.into())
@@ -42,7 +43,7 @@ mod enqueue {
         assert_eq!(sessions, 0);
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn queues_nothing_when_the_transaction_rolls_back(db: PgPool) {
         let mut transaction = db.begin().await.unwrap();
 
@@ -62,7 +63,7 @@ mod enqueue {
 mod cancel {
     use super::*;
 
-    #[sqlx::test]
+    #[database_test]
     async fn cancels_a_queued_job(db: PgPool) {
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
 
@@ -73,7 +74,7 @@ mod cancel {
         assert_eq!(job_state(&db, id).await, (JobState::Cancelled, 0));
     }
 
-    #[sqlx::test]
+    #[database_test]
     async fn is_too_late_once_the_job_ran(db: PgPool) {
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
         jobs::run_available(&db).await.unwrap();

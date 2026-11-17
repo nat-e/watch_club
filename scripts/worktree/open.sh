@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Opens a worktree's app in the browser. Sign in with a demo User, such as alice / watchclub.
+# Opens a worktree's app in the browser. Sign in as a demo User, such as alice, with the password
+# passw0rd.
 # Usage: open.sh <worktree-path>
 set -euo pipefail
 

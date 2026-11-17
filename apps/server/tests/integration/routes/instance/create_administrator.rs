@@ -1,10 +1,11 @@
 use axum::http::StatusCode;
 use serde_json::json;
 use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client};
 
-#[sqlx::test]
+#[database_test]
 async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
     let mut browser = Client::new(&db);
 
@@ -19,7 +20,7 @@ async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
     assert_eq!(me.body["username"], "ada", "{me:?}");
 }
 
-#[sqlx::test]
+#[database_test]
 async fn refuses_once_watchclub_is_set_up(db: PgPool) {
     support::create_instance_administrator(&db).await;
 
@@ -35,7 +36,7 @@ async fn refuses_once_watchclub_is_set_up(db: PgPool) {
     );
 }
 
-#[sqlx::test]
+#[database_test]
 async fn says_which_rules_the_account_breaks(db: PgPool) {
     let account = json!({ "username": "Ada!", "password": "short", "locale": "en-US" });
     let response = Client::new(&db)
@@ -54,7 +55,7 @@ async fn says_which_rules_the_account_breaks(db: PgPool) {
     );
 }
 
-#[sqlx::test]
+#[database_test]
 async fn refuses_a_locale_watchclub_does_not_have(db: PgPool) {
     let account = json!({ "username": "ada", "password": "secret password", "locale": "de-DE" });
     let response = Client::new(&db)
