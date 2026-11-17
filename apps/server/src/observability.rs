@@ -9,7 +9,7 @@ use opentelemetry::{
     InstrumentationScope, KeyValue, global,
     trace::{TraceContextExt, TracerProvider},
 };
-use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+use opentelemetry_appender_tracing::layer::{OpenTelemetryTracingBridge, TracingSpanAttributes};
 use opentelemetry_instrumentation_tower::http::server as otel_http;
 use opentelemetry_otlp::{LogExporter, MetricExporter, SpanExporter};
 use opentelemetry_sdk::{
@@ -17,11 +17,14 @@ use opentelemetry_sdk::{
     propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
 use opentelemetry_semantic_conventions::{
-    attribute::{DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE},
+    attribute::{
+        DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE, HTTP_REQUEST_METHOD, URL_PATH,
+    },
     metric::{DB_CLIENT_CONNECTION_COUNT, DB_CLIENT_CONNECTION_MAX},
     resource::SERVICE_VERSION,
 };
 use sentry::{
+    Hub, SentryFutureExt,
     integrations::{
         tower::{NewSentryLayer, SentryHttpLayer},
         tracing::{BreadcrumbLayer, ErrorLayer},
@@ -30,7 +33,7 @@ use sentry::{
 };
 use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
-use tracing::Metadata;
+use tracing::{Instrument, Metadata};
 use tracing_subscriber::{
     Layer,
     filter::{LevelFilter, filter_fn},
@@ -38,14 +41,23 @@ use tracing_subscriber::{
     util::SubscriberInitExt,
 };
 use utoipa_axum::router::OpenApiRouter;
+use uuid::Uuid;
 
 use crate::{config::ObservabilityConfig, error};
 
 /// The name of the server's own instrumentation, apart from the libraries'
 const SCOPE: &str = env!("CARGO_PKG_NAME");
 
-/// The name of the span `instrument` gives each request, for the console logs
+/// The name of the span `instrument` gives each request, for the logs
 const REQUEST_SPAN: &str = "request";
+
+/// The fields of the span `instrument_job` gives each run of a job
+const JOB_KIND: &str = "job.kind";
+const JOB_ID: &str = "job.id";
+
+/// The fields of the request's or job's span that the exported logs copy, as the console shows them
+/// before each line
+const LOGGED_SPAN_FIELDS: [&str; 4] = [HTTP_REQUEST_METHOD, URL_PATH, JOB_KIND, JOB_ID];
 
 /// The crates that send what OpenTelemetry exports. Exporting their own logs and spans would make
 /// each export start another one.
@@ -158,10 +170,16 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
         .with(tracer_provider.as_ref().map(|provider| {
             tracing_opentelemetry::layer()
                 .with_tracer(provider.tracer(SCOPE))
-                .with_filter(filter_fn(is_exported))
+                // The request's span repeats the one `otel_http` exports
+                .with_filter(filter_fn(|metadata| {
+                    !is_from_exporter(metadata) && !is_request_span(metadata)
+                }))
         }))
         .with(logger_provider.as_ref().map(|provider| {
-            OpenTelemetryTracingBridge::new(provider).with_filter(filter_fn(is_exported))
+            OpenTelemetryTracingBridge::builder(provider)
+                .with_tracing_span_attributes(TracingSpanAttributes::allowlist(LOGGED_SPAN_FIELDS))
+                .build()
+                .with_filter(filter_fn(|metadata| !is_from_exporter(metadata)))
         }))
         .with(sentry.is_some().then(|| {
             ErrorLayer::new()
@@ -179,8 +197,8 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
     })
 }
 
-/// Adds what observes each request to the routes: its span on the console logs, the log of its
-/// internal error, its trace and metrics, and its details on the errors Sentry gets.
+/// Adds what observes each request to the routes: its span, whose method and path its logs show, the
+/// log of its internal error, its trace and metrics, and its details on the errors Sentry gets.
 pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
     routes: OpenApiRouter<S>,
 ) -> OpenApiRouter<S> {
@@ -192,8 +210,8 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
                 .make_span_with(|request: &Request| {
                     tracing::info_span!(
                         REQUEST_SPAN,
-                        method = %request.method(),
-                        uri = %request.uri(),
+                        { HTTP_REQUEST_METHOD } = %request.method(),
+                        { URL_PATH } = %request.uri().path(),
                         version = ?request.version(),
                     )
                 })
@@ -205,6 +223,24 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
         .layer(SentryHttpLayer::new())
         // Outside the other Sentry layer, which needs a Sentry hub of the request's own
         .layer(NewSentryLayer::new_from_top())
+}
+
+/// Observes a run of a job: gives it a span, whose kind and ID its logs show, and a Sentry scope of
+/// its own, so that its errors name the job and carry only its breadcrumbs.
+pub(crate) fn instrument_job<F: Future>(
+    kind: &str,
+    id: Uuid,
+    run: F,
+) -> impl Future<Output = F::Output> {
+    let span = tracing::info_span!("job", { JOB_KIND } = %kind, { JOB_ID } = %id);
+    let hub = Hub::new_from_top(Hub::current());
+    hub.configure_scope(|scope| {
+        scope.set_tag(JOB_KIND, kind);
+        scope.set_tag(JOB_ID, id);
+        // An issue for each kind of job, rather than one for the failures of every kind
+        scope.set_fingerprint(Some(&["{{ default }}", kind]));
+    });
+    run.instrument(span).bind_hub(hub)
 }
 
 /// Reports the database's connections in metrics: how many are used and idle, and the most the
@@ -253,16 +289,17 @@ pub fn observe_pool(db: &PgPool) {
         .build();
 }
 
-/// Returns whether the OpenTelemetry layers export what the span or event describes: not what the
-/// exporters do themselves, nor the console's span for each request, which repeats the trace's.
-fn is_exported(metadata: &Metadata<'_>) -> bool {
+/// Returns whether the span or event comes from the crates that export, which mustn't be exported.
+fn is_from_exporter(metadata: &Metadata<'_>) -> bool {
     let target = metadata.target();
-    let from_exporter = EXPORTER_TARGETS
+    EXPORTER_TARGETS
         .iter()
-        .any(|prefix| target.starts_with(prefix));
-    let request_span =
-        metadata.is_span() && metadata.name() == REQUEST_SPAN && target == module_path!();
-    !from_exporter && !request_span
+        .any(|prefix| target.starts_with(prefix))
+}
+
+/// Returns whether it's the span `instrument` gives each request.
+fn is_request_span(metadata: &Metadata<'_>) -> bool {
+    metadata.is_span() && metadata.name() == REQUEST_SPAN && metadata.target() == module_path!()
 }
 
 /// Points the Sentry event at the trace of the request that sent it, when the trace is exported.

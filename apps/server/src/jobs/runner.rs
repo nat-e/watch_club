@@ -13,10 +13,9 @@ use tokio::{
     time::{self, MissedTickBehavior},
 };
 use tokio_util::sync::CancellationToken;
-use tracing::Instrument;
 
 use super::{AnyJob, JobError, JobId, JobState, Queue, schedules};
-use crate::domain::InternalError;
+use crate::{domain::InternalError, observability};
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
 /// that didn't wait for it, and runs again.
@@ -176,9 +175,9 @@ async fn claim_jobs(
 /// Runs a claimed job, and saves how its attempt ended. Arguments that don't read count as a
 /// failed attempt.
 async fn run_job(db: &PgPool, mut job: ClaimedJob) {
-    let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
-    async {
-        let outcome = match AnyJob::from_row(&job.kind, job.args.take()) {
+    let args = job.args.take();
+    let run = async {
+        let outcome = match AnyJob::from_row(&job.kind, args) {
             Ok(any_job) => {
                 let timeout = any_job.timeout().min(MAX_TIMEOUT);
                 run_attempt(timeout, any_job.run(db)).await
@@ -186,9 +185,8 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
             Err(error) => Err(error.context("failed to read the job").into()),
         };
         save_outcome(db, &job, outcome).await;
-    }
-    .instrument(span)
-    .await;
+    };
+    observability::instrument_job(&job.kind, job.id.0, run).await;
 }
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
@@ -324,22 +322,23 @@ async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
     .fetch_all(db)
     .await
     .context("failed to rescue the jobs left running")?;
+    // No job's span holds these logs, so they carry its fields themselves
     for job in rescued {
         let (kind, id, attempt) = (job.kind, job.id.0, job.attempt);
         if job.will_retry {
             tracing::warn!(
                 name: "jobs.job.rescued",
-                kind,
-                %id,
                 attempt,
+                job.kind = %kind,
+                job.id = %id,
                 "the job's attempt never ended, and will retry",
             );
         } else {
             tracing::error!(
                 name: "jobs.job.failed",
-                kind,
-                %id,
                 attempt,
+                job.kind = %kind,
+                job.id = %id,
                 "the job's last attempt never ended",
             );
         }

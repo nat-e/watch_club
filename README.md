@@ -46,7 +46,7 @@ The server reports as `watch_club`, with its version: `OTEL_SERVICE_NAME` change
   - `db.client.connection.count`, the database connections by state, `idle` or `used`, and `db.client.connection.max`, the most the server opens
 
   Prometheus-compatible backends replace dots with underscores and add unit suffixes, such as `http_server_request_duration_seconds`.
-- **Logs**: the lines the console shows, with the trace of the request that wrote them.
+- **Logs**: the lines the console shows, with the method and path of the request that wrote them, or the kind and ID of the job, as `http.request.method`, `url.path`, `job.kind` and `job.id`, and with its trace when traces are on.
 
 Traces include each request's path, query string and user agent. Query parameters that usually hold credentials, such as `sig`, show as `REDACTED`. Logs include error messages. Only send them to an endpoint you trust with this data.
 
@@ -63,7 +63,7 @@ SENTRY_ENVIRONMENT=production
 
 Set either DSN, or both. Sentry recommends a project for each, as the server and the web app are different platforms. GlitchTip and Bugsink also accept these reports.
 
-The server reports the errors it logs and its crashes, with the request's method, URL and headers, except those that hold credentials, such as cookies. When traces are on, each report links to the trace of its request. The web app reports its errors, except failed requests to the server, which reports its own. Neither sends the IP addresses of Users.
+The server reports the errors it logs and its crashes, with the request's method, URL and headers, except those that hold credentials, such as cookies, or with the job's kind and ID as the tags `job.kind` and `job.id`. Each kind of job has its own issues. When traces are on, each report links to the trace of its request or job. The web app reports its errors, except failed requests to the server, which reports its own. Neither sends the IP addresses of Users.
 
 The mobile apps we publish report their crashes and errors to our own Sentry, not yours, without the addresses of Instances or the IP addresses of Users. The image includes the web app's source maps, so Sentry can show the source of its stack traces when it can reach WatchClub.
 
