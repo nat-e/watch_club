@@ -2,11 +2,7 @@
 //! its limit, with retries, and the maintenance that queues the scheduled jobs, rescues the jobs a
 //! crash left running and deletes old ones.
 
-use std::{
-    any::Any,
-    panic::{self, AssertUnwindSafe},
-    time::Duration,
-};
+use std::{any::Any, panic::AssertUnwindSafe, time::Duration};
 
 use anyhow::{Context, anyhow};
 use futures_util::{FutureExt, future};
@@ -86,7 +82,7 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
     let mut running = JoinSet::new();
     loop {
         while let Some(ended) = running.try_join_next() {
-            propagate_panic(ended);
+            log_panic(ended);
         }
         let room = queue.limit() - running.len();
         let claimed = if room == 0 {
@@ -111,21 +107,23 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
         tokio::select! {
             () = shutdown.cancelled() => break,
             () = time::sleep(POLL_INTERVAL), if is_drained => {}
-            Some(ended) = running.join_next(), if !is_drained => propagate_panic(ended),
+            Some(ended) = running.join_next(), if !is_drained => log_panic(ended),
         }
     }
     while let Some(ended) = running.join_next().await {
-        propagate_panic(ended);
+        log_panic(ended);
     }
 }
 
-/// Panics again with the panic of a job's task. `supervise` catches the job's own panics, so this
-/// one comes from the runner itself, which must stop.
-fn propagate_panic(ended: Result<(), JoinError>) {
-    if let Err(error) = ended
-        && error.is_panic()
-    {
-        panic::resume_unwind(error.into_panic());
+/// Logs the panic of a job's task. `supervise` catches the job's own panics, so this one comes from
+/// the runner's code around the job, which then stays `executing` until it's rescued.
+fn log_panic(ended: Result<(), JoinError>) {
+    if let Err(error) = ended {
+        tracing::error!(
+            name: "jobs.task.panicked",
+            %error,
+            "the runner panicked around a job, which will run again later",
+        );
     }
 }
 
