@@ -65,7 +65,7 @@ function Screens() {
   );
 }
 
-/** The app's colors, which every navigator draws its headers, tab bar and screens with. */
+/** Returns the app's colors as a theme for the navigators' headers, tab bars and screens. */
 function useNavigationTheme(): Theme {
   const [background, card, foreground, border, destructive] = useCSSVariable([
     '--color-background',

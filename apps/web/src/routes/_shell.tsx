@@ -5,27 +5,11 @@ import {
   type LinkProps,
   Outlet,
   redirect,
-  useMatchRoute,
   useRouter,
 } from '@tanstack/react-router';
 import {logoutMutation, type User} from '@watchclub/api';
 import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
-import {
-  ChevronsUpDownIcon,
-  ClapperboardIcon,
-  DownloadIcon,
-  FilmIcon,
-  FlagIcon,
-  FolderInputIcon,
-  HouseIcon,
-  InboxIcon,
-  ListIcon,
-  LogOutIcon,
-  type LucideIcon,
-  Settings2Icon,
-  SettingsIcon,
-  UsersIcon,
-} from 'lucide-react';
+import * as icons from 'lucide-react';
 import {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -130,21 +114,25 @@ function AppSidebar({user}: {user: User}) {
           <SidebarGroupContent>
             <nav aria-label={t($ => $.web.shell.navigation)}>
               <SidebarMenu>
-                <SectionLink to="/" icon={HouseIcon} label={t($ => $.core.home.title)} />
+                <SectionLink to="/" icon={icons.HouseIcon} label={t($ => $.core.home.title)} />
                 <SectionLink
                   to="/browse"
-                  icon={ClapperboardIcon}
+                  icon={icons.ClapperboardIcon}
                   label={t($ => $.core.browse.title)}
                 />
                 <SectionLink
                   to="/playlists"
-                  icon={ListIcon}
+                  icon={icons.ListIcon}
                   label={t($ => $.core.playlists.title)}
                 />
-                <SectionLink to="/inbox" icon={InboxIcon} label={t($ => $.core.inbox.title)} />
+                <SectionLink
+                  to="/inbox"
+                  icon={icons.InboxIcon}
+                  label={t($ => $.core.inbox.title)}
+                />
                 <SectionLink
                   to="/my-requests"
-                  icon={DownloadIcon}
+                  icon={icons.DownloadIcon}
                   label={t($ => $.core.myRequests.navigationLabel)}
                 />
               </SidebarMenu>
@@ -170,15 +158,22 @@ function SectionLink({
   label,
 }: {
   to: LinkProps['to'];
-  icon: LucideIcon;
+  icon: icons.LucideIcon;
   label: string;
 }) {
-  const matchRoute = useMatchRoute();
-  // Every path starts with Home's, though no page is under Home
-  const isActive = Boolean(matchRoute({to, fuzzy: to !== '/'}));
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton isActive={isActive} render={<Link to={to} />}>
+      <SidebarMenuButton
+        render={
+          <Link
+            to={to}
+            // Every path starts with Home's, though no page is under Home
+            activeOptions={{exact: to === '/'}}
+            // The sidebar's style for the current section
+            activeProps={{'data-active': ''}}
+          />
+        }
+      >
         <Icon />
         <span>{label}</span>
       </SidebarMenuButton>
@@ -222,12 +217,12 @@ function UserMenu({user}: {user: User}) {
             </span>
           )}
         </span>
-        <ChevronsUpDownIcon className="ml-auto" />
+        <icons.ChevronsUpDownIcon className="ml-auto" />
       </DropdownMenuTrigger>
       {/* On phones, the sidebar leaves no room on its right */}
       <DropdownMenuContent side={isMobile ? 'top' : 'right'} align="end">
         <DropdownMenuItem render={<Link to="/settings" />}>
-          <SettingsIcon />
+          <icons.SettingsIcon />
           {t($ => $.core.settings.title)}
         </DropdownMenuItem>
         {user.is_instance_administrator && (
@@ -236,23 +231,23 @@ function UserMenu({user}: {user: User}) {
             <DropdownMenuGroup>
               <DropdownMenuLabel>{t($ => $.web.shell.administration)}</DropdownMenuLabel>
               <DropdownMenuItem render={<Link to="/admin/settings" />}>
-                <Settings2Icon />
+                <icons.Settings2Icon />
                 {t($ => $.web.instanceSettings.title)}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/users" />}>
-                <UsersIcon />
+                <icons.UsersIcon />
                 {t($ => $.web.users.title)}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/media" />}>
-                <FilmIcon />
+                <icons.FilmIcon />
                 {t($ => $.web.mediaBrowser.title)}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/media/sources" />}>
-                <FolderInputIcon />
+                <icons.FolderInputIcon />
                 {t($ => $.web.mediaSources.title)}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/problem-reports" />}>
-                <FlagIcon />
+                <icons.FlagIcon />
                 {t($ => $.web.problemReports.title)}
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -265,7 +260,7 @@ function UserMenu({user}: {user: User}) {
             signOut.mutate({});
           }}
         >
-          <LogOutIcon />
+          <icons.LogOutIcon />
           {t($ => $.core.user.signOut)}
         </DropdownMenuItem>
       </DropdownMenuContent>
