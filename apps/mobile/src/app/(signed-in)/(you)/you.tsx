@@ -1,10 +1,11 @@
+import {FieldGroup, Icon, ListItem, Text} from '@expo/ui';
 import {useMutation} from '@tanstack/react-query';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {Text, View} from 'react-native';
-import {Button} from '@/components/button';
-import {Screen} from '@/components/screen';
+import {Platform} from 'react-native';
+import {useCSSVariable} from 'uniwind';
+import {FormScreen} from '@/components/form-screen';
 import {useSessionStore} from '@/session';
 
 /** You: who the User is, the pages that have no tab, and signing out. */
@@ -14,40 +15,56 @@ export default function You() {
   const router = useRouter();
   const sessionStore = useSessionStore();
   const signOut = useMutation({mutationFn: () => sessionStore.signOut()});
+  const [mutedForeground, destructive] = useCSSVariable([
+    '--color-muted-foreground',
+    '--color-destructive',
+  ]).map(value => String(value));
+  // iOS marks the rows that open a page; Android's lists don't
+  const chevron =
+    Platform.OS === 'ios' ? <Icon name="chevron.right" size={14} color={mutedForeground} /> : null;
 
   return (
-    <Screen>
-      <View className="gap-1">
-        <Text className="text-2xl font-semibold text-foreground">{user.username}</Text>
-        {user.is_instance_administrator && (
-          <Text className="text-muted-foreground">{t($ => $.core.user.instanceAdministrator)}</Text>
-        )}
-      </View>
-      <Button
-        variant="outline"
-        onPress={() => {
-          router.navigate('/my-requests');
-        }}
-      >
-        {t($ => $.core.myRequests.navigationLabel)}
-      </Button>
-      <Button
-        variant="outline"
-        onPress={() => {
-          router.navigate('/settings');
-        }}
-      >
-        {t($ => $.core.settings.title)}
-      </Button>
-      <Button
-        variant="outline"
-        disabled={signOut.isPending}
-        onPress={() => {
-          signOut.mutate();
-        }}
-      >
-        {t($ => $.core.user.signOut)}
-      </Button>
-    </Screen>
+    <FormScreen>
+      <FieldGroup.Section>
+        <ListItem
+          supportingText={
+            user.is_instance_administrator ? t($ => $.core.user.instanceAdministrator) : undefined
+          }
+        >
+          {user.username}
+        </ListItem>
+      </FieldGroup.Section>
+      <FieldGroup.Section>
+        <ListItem
+          trailing={chevron}
+          onPress={() => {
+            router.navigate('/my-requests');
+          }}
+        >
+          {t($ => $.core.myRequests.navigationLabel)}
+        </ListItem>
+        <ListItem
+          trailing={chevron}
+          onPress={() => {
+            router.navigate('/settings');
+          }}
+        >
+          {t($ => $.core.settings.title)}
+        </ListItem>
+      </FieldGroup.Section>
+      <FieldGroup.Section>
+        <ListItem
+          onPress={
+            signOut.isPending
+              ? undefined
+              : () => {
+                  signOut.mutate();
+                }
+          }
+        >
+          <Text textStyle={{color: destructive}}>{t($ => $.core.user.signOut)}</Text>
+        </ListItem>
+      </FieldGroup.Section>
+    </FormScreen>
   );
 }

@@ -27,7 +27,7 @@ export default function Unreachable() {
         {t($ => $.mobile.unreachable.tryAgain)}
       </Button>
       <Button
-        variant="outline"
+        variant="outlined"
         disabled={signOut.isPending}
         onPress={() => {
           signOut.mutate();

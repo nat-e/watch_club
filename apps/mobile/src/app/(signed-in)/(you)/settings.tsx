@@ -1,9 +1,11 @@
+import {FieldGroup, Picker, Text} from '@expo/ui';
+import type {Locale} from '@watchclub/api';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
-import {Pressable, Text, View} from 'react-native';
-import {Screen} from '@/components/screen';
+import {useCSSVariable} from 'uniwind';
+import {FormScreen} from '@/components/form-screen';
 
 /** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
@@ -11,46 +13,37 @@ export default function Settings() {
   const localeNames = useLocaleNames();
   const user = useCurrentUser();
   const save = useSavePreferences();
+  const language = t($ => $.core.settings.language);
+  const [mutedForeground, destructive] = useCSSVariable([
+    '--color-muted-foreground',
+    '--color-destructive',
+  ]).map(value => String(value));
 
   return (
-    <Screen>
-      <Text className="text-base text-muted-foreground">{t($ => $.core.settings.description)}</Text>
-      <View className="gap-1">
-        <Text accessibilityRole="header" className="text-lg font-semibold text-foreground">
-          {t($ => $.core.settings.preferences)}
-        </Text>
-        <Text className="text-sm text-muted-foreground">
-          {t($ => $.core.settings.preferencesDescription)}
-        </Text>
-      </View>
-      <View
-        accessibilityRole="radiogroup"
-        accessibilityLabel={t($ => $.core.settings.language)}
-        className="gap-2"
-      >
-        {LOCALES.map(locale => {
-          const selected = locale === user.locale;
-          return (
-            <Pressable
-              key={locale}
-              accessibilityRole="radio"
-              accessibilityState={{checked: selected}}
-              disabled={save.isPending}
-              onPress={() => {
-                save.mutate({locale});
-              }}
-              className={`h-11 justify-center rounded-lg border px-4 focus:ring-2 focus:ring-ring ${selected ? 'border-primary bg-accent' : 'border-border active:bg-accent'}`}
-            >
-              <Text className="text-base text-foreground">{localeNames[locale]}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {save.isError && (
-        <Text accessibilityLiveRegion="polite" className="text-destructive">
-          {t($ => $.core.errors.somethingWentWrong)}
-        </Text>
-      )}
-    </Screen>
+    <FormScreen>
+      <FieldGroup.Section title={language}>
+        <Picker
+          accessibilityLabel={language}
+          selectedValue={user.locale}
+          enabled={!save.isPending}
+          onValueChange={(locale: Locale) => {
+            save.mutate({locale});
+          }}
+        >
+          {LOCALES.map(locale => (
+            <Picker.Item key={locale} label={localeNames[locale]} value={locale} />
+          ))}
+        </Picker>
+        <FieldGroup.SectionFooter>
+          {save.isError ? (
+            <Text textStyle={{color: destructive}}>{t($ => $.core.errors.somethingWentWrong)}</Text>
+          ) : (
+            <Text textStyle={{color: mutedForeground}}>
+              {t($ => $.core.settings.preferencesDescription)}
+            </Text>
+          )}
+        </FieldGroup.SectionFooter>
+      </FieldGroup.Section>
+    </FormScreen>
   );
 }
