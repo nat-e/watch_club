@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 use crate::{
     domain::accounts,
-    jobs::{Job, JobError},
+    jobs::{Job, JobError, Schedule},
 };
 
 /// The cleanup of the sessions whose lifetime has run out, which would otherwise pile up.
@@ -13,6 +13,14 @@ use crate::{
 pub struct DeleteExpiredSessions {}
 
 impl Job for DeleteExpiredSessions {
+    fn schedule() -> Option<Schedule<Self>> {
+        // Every Sunday at 03:00
+        Some(Schedule {
+            cron: "0 3 * * SUN",
+            job: Self {},
+        })
+    }
+
     async fn run(self, db: &PgPool) -> Result<(), JobError> {
         let deleted = accounts::delete_expired_sessions(db).await?;
         tracing::info!(

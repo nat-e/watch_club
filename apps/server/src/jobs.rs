@@ -1,8 +1,8 @@
 //! Background jobs: work the server runs outside requests, from a queue in the database.
 //!
 //! Each kind of job has its file in `jobs/kinds/`, apart from the runner's code: a struct with its
-//! arguments, whose `Job` implementation sets its settings and calls a function of the domain. List
-//! it in `AnyJob`, and in `SCHEDULES` when it recurs.
+//! arguments, whose `Job` implementation sets its settings, its schedule if it recurs, and calls a
+//! function of the domain. List it in `AnyJob` and the lines below it.
 //!
 //! A job runs at least once: a crash can make it run again, so every job must be safe to repeat.
 //! The database stores its arguments as JSON until it runs, so change them in ways that still read
@@ -24,15 +24,17 @@ use serde_json::Value;
 use sqlx::{PgExecutor, PgPool};
 use uuid::Uuid;
 
+use self::runner::RESCUE_AFTER;
 #[cfg(feature = "test-util")]
 pub use self::runner::run_available;
-pub use self::{kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run};
-use self::{runner::RESCUE_AFTER, schedules::Schedule};
+pub use self::{
+    kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run, schedules::Schedule,
+};
 use crate::domain::InternalError;
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
-pub trait Job {
+pub trait Job: Sized {
     /// The queue the job runs in.
     const QUEUE: Queue = Queue::Default;
     /// The job's place in its queue, from 0, which runs first, to 9.
@@ -46,6 +48,12 @@ pub trait Job {
     /// job at an `.await`, so blocking work, such as `spawn_blocking` or a child process, needs its
     /// own limit.
     const TIMEOUT: Duration = Duration::from_mins(10);
+
+    /// Returns the schedule on which the server queues this job by itself, or None for a job that
+    /// only runs when something queues it.
+    fn schedule() -> Option<Schedule<Self>> {
+        None
+    }
 
     /// Does the job's work.
     fn run(self, db: &PgPool) -> impl Future<Output = Result<(), JobError>> + Send;
@@ -138,6 +146,13 @@ impl AnyJob {
         }
     }
 
+    /// Returns the schedule of each kind of job that has one. List every kind here.
+    fn schedules() -> impl Iterator<Item = Schedule<Self>> {
+        [DeleteExpiredSessions::schedule().map(Schedule::into_any)]
+            .into_iter()
+            .flatten()
+    }
+
     /// Reads a job from its stored kind and arguments.
     fn from_row(kind: &str, args: Value) -> serde_json::Result<Self> {
         serde_json::from_value(Value::from_iter([
@@ -182,14 +197,6 @@ const fn check_timeout(timeout: Duration) {
         "a job's TIMEOUT must be shorter than RESCUE_AFTER"
     );
 }
-
-/// The jobs that run on a schedule, in UTC.
-const SCHEDULES: &[Schedule] = &[Schedule {
-    name: "delete_expired_sessions",
-    // Every Sunday at 03:00
-    cron: "0 3 * * SUN",
-    job: || DeleteExpiredSessions {}.into(),
-}];
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued
 /// if the transaction commits.
