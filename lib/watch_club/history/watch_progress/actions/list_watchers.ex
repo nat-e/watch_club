@@ -1,6 +1,6 @@
 defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
   @moduledoc """
-  Lists the Users other than the actor who have Watch Progress on a Content, as `Watcher`s, the
+  Lists the Users who have Watch Progress on a Content, the actor included, as `Watcher`s, the
   latest first.
   """
   use Ash.Resource.Actions.Implementation
@@ -25,9 +25,8 @@ defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
   defp watchers!(content, context) do
     WatchProgress
     |> Ash.Query.filter(
-      user_id != ^context.actor.id and
-        (movie_id == ^content.id or sports_event_id == ^content.id or
-           tv_show_episode.tv_show_id == ^content.id)
+      movie_id == ^content.id or sports_event_id == ^content.id or
+        tv_show_episode.tv_show_id == ^content.id
     )
     |> Ash.Query.load([:user, tv_show_episode: [:aired?]])
     |> Ash.read!(Ash.Context.to_opts(context))
@@ -42,7 +41,7 @@ defmodule WatchClub.History.WatchProgress.Actions.ListWatchers do
     |> Enum.sort_by(& &1.last_watched_at, {:desc, DateTime})
   end
 
-  # The rules of Movie.actor_progress_status and TvShow.actor_progress_status, for another User.
+  # The rules of Movie.actor_progress_status and TvShow.actor_progress_status, for any User.
   # A Sports Event has one progress, like a Movie.
   defp status(%{type: type}, [%WatchProgress{completed: true}])
        when type in [:movie, :sports_event],

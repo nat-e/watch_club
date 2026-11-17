@@ -2,7 +2,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
   @moduledoc """
   The page of a Movie or a TV Show: its persisted metadata, how far the User got, with Play or
   Resume, every TV Show Episode in a modal, the User's Conversations about it, with Recommend
-  Content, the other Users who watched it, and the Playlists that hold it, with Add to Playlist.
+  Content, the Users who watched it, and the Playlists that hold it, with Add to Playlist.
   """
   use WatchClubWeb, :live_view
 
@@ -97,7 +97,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           <.watchers_section
             watchers={@watchers}
             type={@content_identity.type}
-            locale={@current_user.settings.locale}
+            current_user={@current_user}
           />
           <.playlists_section
             playlists={Enum.filter(@playlists, & &1.holds_content?)}
@@ -526,10 +526,10 @@ defmodule WatchClubWeb.Contents.ContentPage do
 
   attr :watchers, :list, required: true, doc: "the `Watcher`s, intentionally small: the Users"
   attr :type, :atom, required: true, doc: "the Content Type"
-  attr :locale, :atom, required: true
+  attr :current_user, User, required: true
 
-  # The other Users who watched it or are watching it, the latest first, each with a check or a
-  # half circle, their name, their status and when they last watched it.
+  # The Users who watched it or are watching it, the latest first, each with a check or a half
+  # circle, their name, the User as "You", their status and when they last watched it.
   defp watchers_section(assigns) do
     ~H"""
     <.page_section id="watchers-heading" title={dgettext("contents", "Who watched it")}>
@@ -537,7 +537,11 @@ defmodule WatchClubWeb.Contents.ContentPage do
         <.person_tile
           :for={watcher <- @watchers}
           id={"watcher-#{watcher.user.id}"}
-          name={watcher.user.username}
+          name={
+            if watcher.user.id == @current_user.id,
+              do: dgettext("contents", "You"),
+              else: watcher.user.username
+          }
         >
           <:picture>
             <span class="relative">
@@ -553,7 +557,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
           </:picture>
           <:line class="text-text-muted">{WatchStatus.translated_label(watcher.status)}</:line>
           <:line class="text-text-subtle">
-            {Time.relative_from_now(watcher.last_watched_at, @locale)}
+            {Time.relative_from_now(watcher.last_watched_at, @current_user.settings.locale)}
           </:line>
         </.person_tile>
       </.scroll_row>
@@ -863,10 +867,15 @@ defmodule WatchClubWeb.Contents.ContentPage do
     PlayOrRequestButtonLive.handle_pubsub_message(notification, user)
 
     case notification do
-      %{resource: resource, metadata: %{content_identity: ^identity}}
-      when resource in [Media, WatchProgress] ->
+      # Its Media changes what the User can play
+      %{resource: Media, metadata: %{content_identity: ^identity}} ->
         if socket.assigns.episodes_open?, do: EpisodesModalLive.reload_episodes()
         {:noreply, load_content!(socket)}
+
+      # The User's Watch Progress on it changes how far they got and Who watched it
+      %{resource: WatchProgress, metadata: %{content_identity: ^identity}} ->
+        if socket.assigns.episodes_open?, do: EpisodesModalLive.reload_episodes()
+        {:noreply, socket |> load_content!() |> load_watchers!()}
 
       # Created when someone first marks it or recommends it, or refreshed
       %{resource: Content, data: %Content{} = content} ->

@@ -129,7 +129,7 @@ defmodule WatchClub.History.WatchProgress do
     end
 
     action :watchers, {:array, Watcher} do
-      description "The other Users who watched a Content or are watching it, the latest first"
+      description "The Users who watched a Content or are watching it, the latest first"
       argument :content_identity, ContentIdentity, allow_nil?: false
 
       run ListWatchers

@@ -119,7 +119,7 @@ defmodule WatchClub.History.WatchProgressTest do
                Ash.load!(event, [sports_event: [:actor_progress_status]], actor: user)
     end
 
-    test "lists who else watched a Sports Event" do
+    test "lists who watched a Sports Event" do
       watcher = generate(user())
       event = generate(sports_event())
       History.mark_content_watched!(ContentIdentity.from_content(event), actor: watcher)
@@ -465,25 +465,28 @@ defmodule WatchClub.History.WatchProgressTest do
   end
 
   describe "list_watchers/*" do
-    test "lists who else watched a movie or is watching it, the latest first" do
+    test "lists who watched a movie or is watching it, the actor included, the latest first" do
       [watched, watching, actor] = generate_many(user(), 3)
       movie = generate(movie())
       identity = ContentIdentity.from_content(movie)
 
       History.mark_content_watched!(identity, actor: watched)
+      History.mark_content_watched!(identity, actor: actor)
 
       History.record_watch_progress!(
         %{movie_id: movie.id, position_seconds: 30 * 60, duration_seconds: 100 * 60},
         actor: watching
       )
 
-      History.mark_content_watched!(identity, actor: actor)
-
-      assert [%Watcher{status: :in_progress} = first, %Watcher{status: :completed} = second] =
-               History.list_watchers!(identity, actor: actor)
+      assert [
+               %Watcher{status: :in_progress} = first,
+               %Watcher{status: :completed} = second,
+               %Watcher{status: :completed} = third
+             ] = History.list_watchers!(identity, actor: actor)
 
       assert first.user.id == watching.id
-      assert second.user.id == watched.id
+      assert second.user.id == actor.id
+      assert third.user.id == watched.id
     end
 
     test "has watched a TV show once every aired episode is watched" do
