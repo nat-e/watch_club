@@ -1,27 +1,19 @@
-import {FieldGroup, Icon, ListItem, Text} from '@expo/ui';
+import {FieldGroup, ListItem, Text} from '@expo/ui';
 import {useMutation} from '@tanstack/react-query';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
-import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {Platform} from 'react-native';
 import {useCSSVariable} from 'uniwind';
-import {ListScreen} from '@/components/list-screen';
+import {ListScreen} from '@/components/layouts/list-screen';
+import {linkRow} from '@/components/lists/link-row';
 import {useSessionStore} from '@/session';
 
 /** You: who the User is, the pages that have no tab, and signing out. */
 export default function You() {
   const {t} = useTranslation('core');
   const user = useCurrentUser();
-  const router = useRouter();
   const sessionStore = useSessionStore();
   const signOut = useMutation({mutationFn: () => sessionStore.signOut()});
-  const [mutedForeground, destructive] = useCSSVariable([
-    '--color-muted-foreground',
-    '--color-destructive',
-  ]).map(value => String(value));
-  // iOS marks the rows that open a page; Android's lists don't
-  const chevron =
-    Platform.OS === 'ios' ? <Icon name="chevron.right" size={14} color={mutedForeground} /> : null;
+  const destructive = useCSSVariable('--color-destructive');
 
   return (
     <ListScreen>
@@ -35,22 +27,8 @@ export default function You() {
         </ListItem>
       </FieldGroup.Section>
       <FieldGroup.Section>
-        <ListItem
-          trailing={chevron}
-          onPress={() => {
-            router.navigate('/my-requests');
-          }}
-        >
-          {t($ => $.core.myRequests.navigationLabel)}
-        </ListItem>
-        <ListItem
-          trailing={chevron}
-          onPress={() => {
-            router.navigate('/settings');
-          }}
-        >
-          {t($ => $.core.settings.title)}
-        </ListItem>
+        {linkRow({label: t($ => $.core.myRequests.navigationLabel), href: '/my-requests'})}
+        {linkRow({label: t($ => $.core.settings.title), href: '/settings'})}
       </FieldGroup.Section>
       <FieldGroup.Section>
         <ListItem
@@ -62,7 +40,7 @@ export default function You() {
                 }
           }
         >
-          <Text textStyle={{color: destructive}}>{t($ => $.core.user.signOut)}</Text>
+          <Text textStyle={{color: String(destructive)}}>{t($ => $.core.user.signOut)}</Text>
         </ListItem>
       </FieldGroup.Section>
     </ListScreen>
