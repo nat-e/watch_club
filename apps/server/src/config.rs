@@ -1,6 +1,6 @@
 //! The server's settings, which it reads from environment variables when it starts. The
-//! OpenTelemetry and Sentry SDKs read the rest of their standard variables themselves, such as
-//! `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_RESOURCE_ATTRIBUTES` and `SENTRY_ENVIRONMENT`.
+//! OpenTelemetry SDK reads the rest of its standard variables itself, such as
+//! `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_RESOURCE_ATTRIBUTES`.
 
 use std::env;
 
@@ -36,6 +36,12 @@ pub struct ObservabilityConfig {
     pub sentry_dsn: Option<Dsn>,
     /// The Sentry DSN of the web app's errors, from `SENTRY_WEB_DSN`, as the host wrote it
     pub web_sentry_dsn: Option<String>,
+    /// The Sentry DSN of the mobile apps' crashes and errors, from `SENTRY_MOBILE_DSN`, as the host
+    /// wrote it
+    pub mobile_sentry_dsn: Option<String>,
+    /// The environment that the server's and the apps' Sentry reports name, from
+    /// `SENTRY_ENVIRONMENT`: by default, Sentry's own, `production`, or `development` in debug builds
+    pub sentry_environment: String,
 }
 
 /// The format of the console's logs.
@@ -96,10 +102,6 @@ impl ObservabilityConfig {
                 .unwrap_or(DEFAULT_LOG_LEVEL),
         )
         .context("LOG_LEVEL isn't a log level")?;
-        let web_sentry_dsn = optional_var("SENTRY_WEB_DSN");
-        if let Some(dsn) = &web_sentry_dsn {
-            parse_dsn("SENTRY_WEB_DSN", dsn)?;
-        }
         Ok(Self {
             log_filter,
             log_format: LogFormat::from_env()?,
@@ -109,7 +111,16 @@ impl ObservabilityConfig {
             sentry_dsn: optional_var("SENTRY_DSN")
                 .map(|dsn| parse_dsn("SENTRY_DSN", &dsn))
                 .transpose()?,
-            web_sentry_dsn,
+            web_sentry_dsn: app_dsn("SENTRY_WEB_DSN")?,
+            mobile_sentry_dsn: app_dsn("SENTRY_MOBILE_DSN")?,
+            sentry_environment: optional_var("SENTRY_ENVIRONMENT").unwrap_or_else(|| {
+                let default = if cfg!(debug_assertions) {
+                    "development"
+                } else {
+                    "production"
+                };
+                default.to_owned()
+            }),
         })
     }
 }
@@ -143,6 +154,16 @@ fn exports(signal: &str) -> anyhow::Result<bool> {
         Some("otlp") => Ok(true),
         Some(other) => bail!("{name} must be otlp or none, not {other}"),
     }
+}
+
+/// Returns the Sentry DSN that an app reports to, from the environment variable `name`, as the host
+/// wrote it, once it reads as one.
+fn app_dsn(name: &str) -> anyhow::Result<Option<String>> {
+    let dsn = optional_var(name);
+    if let Some(dsn) = &dsn {
+        parse_dsn(name, dsn)?;
+    }
+    Ok(dsn)
 }
 
 /// Parses the Sentry DSN that the environment variable `name` holds.

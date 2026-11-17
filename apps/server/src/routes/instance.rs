@@ -44,7 +44,9 @@ async fn get_instance(
     Ok(Json(GetInstanceResponse {
         version: env!("CARGO_PKG_VERSION"),
         needs_setup,
-        web_sentry_dsn: state.web_sentry_dsn,
+        web_sentry_dsn: state.apps_sentry.web_dsn,
+        mobile_sentry_dsn: state.apps_sentry.mobile_dsn,
+        sentry_environment: state.apps_sentry.environment,
     }))
 }
 
@@ -59,6 +61,13 @@ struct GetInstanceResponse {
     /// The Sentry DSN the web app reports its errors to, or null when it reports none
     #[schema(value_type = Option<String>, required = true)]
     web_sentry_dsn: Option<Arc<str>>,
+    /// The Sentry DSN the mobile apps report their crashes and errors to, or null when they report
+    /// none
+    #[schema(value_type = Option<String>, required = true)]
+    mobile_sentry_dsn: Option<Arc<str>>,
+    /// The environment the apps' Sentry reports name, as the server's do, such as `production`
+    #[schema(value_type = String)]
+    sentry_environment: Arc<str>,
 }
 
 /// Creates the Instance Administrator and signs the browser in as them.

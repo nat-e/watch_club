@@ -64,14 +64,20 @@ Your telemetry shows up under the name `watch_club`. Set `OTEL_SERVICE_NAME` to 
 
 ## Error reports
 
-The server and the web app can report their errors and crashes to Sentry, or to GlitchTip or Bugsink. Set the DSN of a Sentry project for each:
+The server and the apps can report their errors and crashes to Sentry, or to GlitchTip or Bugsink. Set the DSN of a Sentry project for each:
 
 ```dotenv
 # The server
 SENTRY_DSN=https://key@o0.ingest.sentry.io/0
 # The web app
 SENTRY_WEB_DSN=https://key@o0.ingest.sentry.io/1
+# The mobile apps
+SENTRY_MOBILE_DSN=https://key@o0.ingest.sentry.io/2
+# Optional: the environment all their reports name, production by default
+SENTRY_ENVIRONMENT=staging
 ```
+
+The apps get these settings from your server, so their reports go to your Sentry, not to us. For now, the mobile apps' crash reports don't show their source code.
 
 ## Health check
 

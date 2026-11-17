@@ -781,12 +781,25 @@
         "required": [
           "version",
           "needs_setup",
-          "web_sentry_dsn"
+          "web_sentry_dsn",
+          "mobile_sentry_dsn",
+          "sentry_environment"
         ],
         "properties": {
+          "mobile_sentry_dsn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The Sentry DSN the mobile apps report their crashes and errors to, or null when they report\nnone"
+          },
           "needs_setup": {
             "type": "boolean",
             "description": "Whether Setup still has to create the Instance Administrator"
+          },
+          "sentry_environment": {
+            "type": "string",
+            "description": "The environment the apps' Sentry reports name, as the server's do, such as `production`"
           },
           "version": {
             "type": "string",

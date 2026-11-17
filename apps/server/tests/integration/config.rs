@@ -85,6 +85,16 @@ fn ignores_the_exporters_when_opentelemetry_is_disabled() {
 }
 
 #[test]
+fn fails_when_the_mobile_apps_sentry_dsn_is_invalid() {
+    let errors = startup_error_with(&[("SENTRY_MOBILE_DSN", "https://sentry.example.com")]);
+
+    assert!(
+        errors.contains("SENTRY_MOBILE_DSN isn't a Sentry DSN"),
+        "{errors}"
+    );
+}
+
+#[test]
 fn fails_when_a_sentry_dsn_is_invalid() {
     let errors = startup_error_with(&[("SENTRY_WEB_DSN", "https://sentry.example.com")]);
 

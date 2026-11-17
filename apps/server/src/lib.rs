@@ -22,8 +22,18 @@ mod web;
 #[derive(Clone, Debug, FromRef)]
 pub struct AppState {
     pub db: db::Pool,
-    /// The Sentry DSN the web app reports its errors to, if the host set one
-    pub web_sentry_dsn: Option<Arc<str>>,
+    pub apps_sentry: AppsSentry,
+}
+
+/// The Sentry settings the apps report their errors with, which `GET /api/instance` gives them.
+#[derive(Clone, Debug)]
+pub struct AppsSentry {
+    /// The DSN of the web app's Sentry project, if the host set one
+    pub web_dsn: Option<Arc<str>>,
+    /// The DSN of the mobile apps' Sentry project, if the host set one
+    pub mobile_dsn: Option<Arc<str>>,
+    /// The environment their reports name, as the server's do
+    pub environment: Arc<str>,
 }
 
 /// Builds the app's router, with the routes in `routes`.

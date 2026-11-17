@@ -13,7 +13,7 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
-use watch_club::{AppState, config::Config, db, jobs, observability};
+use watch_club::{AppState, AppsSentry, config::Config, db, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
@@ -48,7 +48,11 @@ async fn serve(config: Config) -> anyhow::Result<()> {
         listener,
         watch_club::router(AppState {
             db: db.clone(),
-            web_sentry_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+            apps_sentry: AppsSentry {
+                web_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+                mobile_dsn: config.observability.mobile_sentry_dsn.map(Arc::from),
+                environment: config.observability.sentry_environment.into(),
+            },
         }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());

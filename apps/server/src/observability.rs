@@ -173,6 +173,8 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
             dsn,
             sentry::ClientOptions::new()
                 .maybe_release(sentry::release_name!())
+                // As the apps' reports, which get it from `GET /api/instance`
+                .environment(config.sentry_environment.clone())
                 .before_send(|event| Some(link_to_trace(without_query(event)))),
         ))
     });
