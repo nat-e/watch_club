@@ -1,6 +1,6 @@
 # Development Environment
 
-To run the app:
+Install [mise](https://mise.jdx.dev) and Docker, then run the app:
 
 1. Copy `.env.example` to `.env`, then install the tools and dependencies: `mise trust && mise install && pnpm install`
 2. Start the shared services in Docker (Postgres, Radarr, Sonarr and Sportarr): `pnpm dev:shared`
@@ -25,7 +25,7 @@ Each worktree's web app runs at `http://<branch>.localhost:<port>`, and `wt list
 
 ### Mobile app
 
-The mobile app runs in a development build made with `expo-dev-client`, not in Expo Go: Expo Go ships its own, older native libraries, so the app would behave differently. One build serves every worktree: it lists their dev servers, and you can switch between them. Build it with `turbo run android --filter=mobile`, and rebuild it only when native code changes.
+The mobile app runs in a development build made with `expo-dev-client`, not in Expo Go: Expo Go ships its own, older native libraries, so the app would behave differently. One build serves every worktree: it lists their dev servers, and you can switch between them. To build it for Android, install Android Studio, and set `JAVA_HOME` to its Java (`/Applications/Android Studio.app/Contents/jbr/Contents/Home` on macOS) and `ANDROID_HOME` to its SDK (`~/Library/Android/sdk`). Then connect a phone or start an emulator, and run `turbo run android --filter=mobile`. Rebuild it only when native code changes.
 
 ## Dev catalog
 
