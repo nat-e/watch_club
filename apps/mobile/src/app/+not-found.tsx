@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {StatusScreen} from '@/components/status-screen';
+import {StatusScreen} from '@/components/layouts/status-screen';
 
 /**
  * The screen in place of one that doesn't exist, as when a link to the app is wrong, with a way

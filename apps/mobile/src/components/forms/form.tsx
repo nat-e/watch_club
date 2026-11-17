@@ -10,8 +10,8 @@ import {
   getFormHookHelpers,
   useSelector,
 } from '@tanstack/react-form';
-import {Feedback} from '@/components/forms/feedback';
 import {TextField, type TextFieldProps} from '@/components/forms/text-field';
+import {Feedback} from '@/components/text';
 
 const {fieldComponent} = getFormHookHelpers();
 

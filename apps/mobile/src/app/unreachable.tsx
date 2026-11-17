@@ -1,6 +1,6 @@
 import {useMutation} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {StatusScreen} from '@/components/status-screen';
+import {StatusScreen} from '@/components/layouts/status-screen';
 import {useRetrySession, useSessionStore} from '@/session';
 
 /**

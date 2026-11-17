@@ -3,9 +3,9 @@ import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
-import {choiceRows} from '@/components/forms/choice-rows';
-import {Feedback} from '@/components/forms/feedback';
-import {ListScreen} from '@/components/list-screen';
+import {ListScreen} from '@/components/layouts/list-screen';
+import {choiceRows} from '@/components/lists/choice-rows';
+import {Feedback} from '@/components/text';
 
 /** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {

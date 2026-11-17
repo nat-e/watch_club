@@ -1,8 +1,7 @@
-import {Button, Column, Text} from '@expo/ui';
-import {font} from '@expo/ui/swift-ui/modifiers';
+import {Button, Column} from '@expo/ui';
 import {Text as ReactNativeText, ScrollView} from 'react-native';
-import {useCSSVariable} from 'uniwind';
 import {Host} from '@/components/host';
+import {Description} from '@/components/text';
 
 /** An action of a status screen, as a button. */
 interface Action {
@@ -24,8 +23,6 @@ export function StatusScreen({
   description: string;
   actions: readonly Action[];
 }) {
-  const mutedForeground = useCSSVariable('--color-muted-foreground');
-
   return (
     // It scrolls when the User's text size makes it taller than the screen
     <ScrollView contentContainerClassName="grow justify-center gap-4 p-6">
@@ -38,13 +35,7 @@ export function StatusScreen({
       </ReactNativeText>
       <Host matchContents={{vertical: true}}>
         <Column alignment="center" spacing={16} style={{width: '100%'}}>
-          <Text
-            textStyle={{color: String(mutedForeground), fontSize: 17, textAlign: 'center'}}
-            // iOS sizes it as its body text, with the User's text size
-            modifiers={[font({textStyle: 'body'})]}
-          >
-            {description}
-          </Text>
+          <Description centered>{description}</Description>
           {actions.map(({label, onPress, disabled}, index) => (
             <Button
               key={label}

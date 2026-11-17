@@ -2,7 +2,7 @@ import {Column, Text, TextInput, type TextInputRef} from '@expo/ui';
 import {font, textFieldStyle} from '@expo/ui/swift-ui/modifiers';
 import {type Ref, useImperativeHandle, useRef} from 'react';
 import {useCSSVariable} from 'uniwind';
-import {Feedback} from '@/components/forms/feedback';
+import {Feedback} from '@/components/text';
 
 /** A text field that the keyboard's next key can move to. */
 export interface FocusableField {

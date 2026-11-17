@@ -1,8 +1,8 @@
 import {OutlinedTextField, Text, type TextFieldRef, useNativeState} from '@expo/ui/jetpack-compose';
 import {fillMaxWidth, semantics} from '@expo/ui/jetpack-compose/modifiers';
-import {useEffect, useImperativeHandle, useRef} from 'react';
-import {AccessibilityInfo} from 'react-native';
+import {useImperativeHandle, useRef} from 'react';
 import type {TextFieldProps} from '@/components/forms/text-field';
+import {useAnnouncement} from '@/components/text';
 
 /**
  * A text field as Material 3 draws one: outlined, with its label inside, and its error or hint
@@ -29,11 +29,8 @@ export function TextField({
       void field.current?.focus();
     },
   }));
-  useEffect(() => {
-    if (error !== undefined) {
-      AccessibilityInfo.announceForAccessibility(error);
-    }
-  }, [error]);
+  // Material shows the error itself, rather than through `Feedback`, which announces it elsewhere
+  useAnnouncement(error);
 
   const isPassword = purpose === 'current-password';
   const supportingText = error ?? hint;

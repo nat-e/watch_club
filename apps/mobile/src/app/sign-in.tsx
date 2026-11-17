@@ -3,8 +3,8 @@ import {Stack} from 'expo-router';
 import {useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
-import {FormScreen} from '@/components/forms/form-screen';
 import type {FocusableField} from '@/components/forms/text-field';
+import {FormScreen} from '@/components/layouts/form-screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
