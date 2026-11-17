@@ -36,7 +36,7 @@ OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=production
 
 Each signal accepts `otlp` or `none`, the default. `OTEL_SDK_DISABLED=true` turns all three off.
 
-The server sends OTLP over HTTP with protobuf, usually on port 4318, and not over gRPC. The endpoint is a base URL, to which it adds `/v1/traces`, `/v1/metrics` or `/v1/logs`. To send a signal elsewhere, set its full URL in `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` or `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`. Each signal also has its own `_HEADERS` and `_TIMEOUT` variables. Sentry, Grafana Alloy, SigNoz, OpenObserve, Uptrace and Jaeger receive OTLP, and so does Prometheus with `--web.enable-otlp-receiver`.
+The server sends OTLP over HTTP with protobuf, usually on port 4318: it doesn't send gRPC, and ignores another `OTEL_EXPORTER_OTLP_PROTOCOL`. The endpoint is a base URL, to which it adds `/v1/traces`, `/v1/metrics` or `/v1/logs`. To send a signal elsewhere, set its full URL in `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` or `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`. Each signal also has its own `_HEADERS` and `_TIMEOUT` variables. Sentry, Grafana Alloy, SigNoz, OpenObserve, Uptrace and Jaeger receive OTLP, and so does Prometheus with `--web.enable-otlp-receiver`.
 
 The server reports as `watch_club`, with its version: `OTEL_SERVICE_NAME` changes the name, and `OTEL_RESOURCE_ATTRIBUTES` adds attributes.
 

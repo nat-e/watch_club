@@ -23,6 +23,7 @@
       "@react-native-tvos/config-tv",
       "expo-secure-store",
       "expo-localization",
+      "@sentry/react-native/expo",
       [
         "expo-build-properties",
         {

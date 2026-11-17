@@ -14,30 +14,6 @@ fn fails_when_a_signal_has_another_exporter_than_otlp() {
 }
 
 #[test]
-fn fails_when_a_signal_has_another_protocol_than_http_protobuf() {
-    let errors = server_startup_error(&[
-        ("OTEL_LOGS_EXPORTER", "otlp"),
-        ("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc"),
-    ]);
-
-    assert!(
-        errors.contains("OTEL_EXPORTER_OTLP_PROTOCOL must be http/protobuf"),
-        "{errors}"
-    );
-}
-
-#[test]
-fn reads_the_protocol_of_the_signal_before_the_shared_one() {
-    let errors = server_startup_error(&[
-        ("OTEL_LOGS_EXPORTER", "otlp"),
-        ("OTEL_EXPORTER_OTLP_LOGS_PROTOCOL", "http/protobuf"),
-        ("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc"),
-    ]);
-
-    assert!(errors.contains("DATABASE_URL isn't set"), "{errors}");
-}
-
-#[test]
 fn ignores_the_exporters_when_the_sdk_is_disabled() {
     let errors = server_startup_error(&[
         ("OTEL_SDK_DISABLED", "true"),

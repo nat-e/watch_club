@@ -17,17 +17,13 @@ use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
 use opentelemetry_instrumentation_tower::http::server as otel_http;
 use opentelemetry_otlp::{LogExporter, MetricExporter, SpanExporter};
 use opentelemetry_sdk::{
-    Resource,
-    logs::SdkLoggerProvider,
-    metrics::SdkMeterProvider,
-    propagation::TraceContextPropagator,
-    resource::{EnvResourceDetector, TelemetryResourceDetector},
-    trace::SdkTracerProvider,
+    Resource, logs::SdkLoggerProvider, metrics::SdkMeterProvider,
+    propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
 use opentelemetry_semantic_conventions::{
     attribute::{DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE},
     metric::{DB_CLIENT_CONNECTION_COUNT, DB_CLIENT_CONNECTION_MAX},
-    resource::{SERVICE_NAME, SERVICE_VERSION},
+    resource::SERVICE_VERSION,
 };
 use sentry::{
     integrations::{
@@ -283,51 +279,22 @@ fn exports(signal: &str) -> anyhow::Result<bool> {
     let variable = format!("OTEL_{signal}_EXPORTER");
     match env::var(&variable).unwrap_or_default().as_str() {
         "" | "none" => Ok(false),
-        "otlp" => {
-            check_protocol(signal)?;
-            Ok(true)
-        }
+        "otlp" => Ok(true),
         other => bail!("{variable} must be otlp or none, not {other}"),
     }
 }
 
-/// Fails unless the signal's protocol is `http/protobuf`, the only one the server is built with.
-/// The exporter would otherwise fall back to it with a warning nobody sees, before logging starts.
-fn check_protocol(signal: &str) -> anyhow::Result<()> {
-    for variable in [
-        format!("OTEL_EXPORTER_OTLP_{signal}_PROTOCOL"),
-        "OTEL_EXPORTER_OTLP_PROTOCOL".to_owned(),
-    ] {
-        let protocol = env::var(&variable).unwrap_or_default();
-        if protocol.eq_ignore_ascii_case("http/protobuf") {
-            return Ok(());
-        }
-        if !protocol.is_empty() {
-            bail!(
-                "{variable} must be http/protobuf, the only protocol WatchClub sends, not {protocol}"
-            );
-        }
-    }
-    Ok(())
-}
-
-/// Returns what every signal says about the server: its name and version, and the attributes in
-/// `OTEL_RESOURCE_ATTRIBUTES`. `OTEL_SERVICE_NAME` overrides the name.
+/// Returns what every signal says about the server: its name, `watch_club` unless
+/// `OTEL_SERVICE_NAME` sets another, its version, and the attributes in `OTEL_RESOURCE_ATTRIBUTES`.
 fn resource() -> Resource {
-    let resource = Resource::builder_empty()
-        .with_attributes([
-            KeyValue::new(SERVICE_NAME, SERVICE),
-            KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")),
-        ])
-        .with_detectors(&[
-            Box::new(TelemetryResourceDetector),
-            Box::new(EnvResourceDetector::new()),
-        ]);
-    match env::var("OTEL_SERVICE_NAME") {
-        Ok(name) if !name.is_empty() => resource.with_service_name(name),
-        _ => resource,
-    }
-    .build()
+    let name = env::var("OTEL_SERVICE_NAME")
+        .ok()
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| SERVICE.to_owned());
+    Resource::builder()
+        .with_service_name(name)
+        .with_attribute(KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")))
+        .build()
 }
 
 /// Returns the Sentry DSN in the environment variable, or None when it's unset or empty.

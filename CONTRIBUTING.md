@@ -22,7 +22,7 @@ CI also builds the Docker image, starts it and checks that the app responds.
 
 ## Sentry in the mobile app
 
-The mobile app reports to Sentry only when it's built with `EXPO_PUBLIC_SENTRY_DSN`. Release builds also upload their source maps and debug symbols when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` are set before `expo prebuild`, and skip it otherwise.
+The mobile app reports to Sentry only when it's built with `EXPO_PUBLIC_SENTRY_DSN`. Release builds upload their source maps and debug symbols to the project that `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` name, and fail without them: set `SENTRY_DISABLE_AUTO_UPLOAD=true` to skip the upload. Debug builds never upload.
 
 ## Translations
 
