@@ -49,6 +49,14 @@ export function hasCode<Code extends string>(
   return error instanceof ApiError && error.code === code;
 }
 
+/**
+ * Returns whether `error` is a request to the API that failed, rather than a bug in the app: the
+ * server reports its own failures, and the network causes the others.
+ */
+export function isRequestFailure(error: unknown): error is ApiError | UnexpectedError {
+  return error instanceof ApiError || error instanceof UnexpectedError;
+}
+
 function isErrorBody(value: unknown): value is ErrorBody {
   return (
     typeof value === 'object' &&
