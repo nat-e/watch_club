@@ -1,11 +1,11 @@
 //! Tests the observability settings by starting the server's binary with chosen environment
 //! variables. A server that gets past them fails on the database settings instead.
 
-use crate::support::start_server;
+use crate::support::server_startup_error;
 
 #[test]
 fn fails_when_a_signal_has_another_exporter_than_otlp() {
-    let errors = start_server(&[("OTEL_TRACES_EXPORTER", "jaeger")]);
+    let errors = server_startup_error(&[("OTEL_TRACES_EXPORTER", "jaeger")]);
 
     assert!(
         errors.contains("OTEL_TRACES_EXPORTER must be otlp or none, not jaeger"),
@@ -15,7 +15,7 @@ fn fails_when_a_signal_has_another_exporter_than_otlp() {
 
 #[test]
 fn fails_when_a_signal_has_another_protocol_than_http_protobuf() {
-    let errors = start_server(&[
+    let errors = server_startup_error(&[
         ("OTEL_LOGS_EXPORTER", "otlp"),
         ("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc"),
     ]);
@@ -28,7 +28,7 @@ fn fails_when_a_signal_has_another_protocol_than_http_protobuf() {
 
 #[test]
 fn reads_the_protocol_of_the_signal_before_the_shared_one() {
-    let errors = start_server(&[
+    let errors = server_startup_error(&[
         ("OTEL_LOGS_EXPORTER", "otlp"),
         ("OTEL_EXPORTER_OTLP_LOGS_PROTOCOL", "http/protobuf"),
         ("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc"),
@@ -39,7 +39,7 @@ fn reads_the_protocol_of_the_signal_before_the_shared_one() {
 
 #[test]
 fn ignores_the_exporters_when_the_sdk_is_disabled() {
-    let errors = start_server(&[
+    let errors = server_startup_error(&[
         ("OTEL_SDK_DISABLED", "true"),
         ("OTEL_TRACES_EXPORTER", "jaeger"),
     ]);
@@ -49,7 +49,7 @@ fn ignores_the_exporters_when_the_sdk_is_disabled() {
 
 #[test]
 fn fails_when_a_sentry_dsn_is_invalid() {
-    let errors = start_server(&[("SENTRY_WEB_DSN", "https://sentry.example.com")]);
+    let errors = server_startup_error(&[("SENTRY_WEB_DSN", "https://sentry.example.com")]);
 
     assert!(
         errors.contains("SENTRY_WEB_DSN isn't a Sentry DSN"),
@@ -59,7 +59,7 @@ fn fails_when_a_sentry_dsn_is_invalid() {
 
 #[test]
 fn counts_an_empty_sentry_dsn_as_not_set() {
-    let errors = start_server(&[("SENTRY_DSN", "")]);
+    let errors = server_startup_error(&[("SENTRY_DSN", "")]);
 
     assert!(errors.contains("DATABASE_URL isn't set"), "{errors}");
 }

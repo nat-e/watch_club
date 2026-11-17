@@ -32,8 +32,8 @@ pub(crate) fn routes() -> OpenApiRouter<AppState> {
         .route("/api/", any(StatusCode::NOT_FOUND))
 }
 
-/// Returns the health check, apart from the other routes so that observability leaves it out: Docker
-/// calls it every 30 seconds, and its traces would bury the others.
+/// Returns the health check, apart from the other routes so that the app can leave it out of
+/// observability.
 pub(crate) fn health_check() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().nest("/api", health::routes())
 }

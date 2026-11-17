@@ -18,7 +18,7 @@ pub const UNREACHABLE_DATABASE_URL: &str = "postgres://localhost:1/watch_club";
 
 /// Runs the server's binary with only these environment variables, as tests can't change their
 /// own process's variables without `unsafe`, and returns what it printed when it failed to start.
-pub fn start_server(vars: &[(&str, &str)]) -> String {
+pub fn server_startup_error(vars: &[(&str, &str)]) -> String {
     let output = Command::new(env!("CARGO_BIN_EXE_watch_club"))
         .env_clear()
         .envs(vars.iter().copied())

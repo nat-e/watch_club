@@ -14,8 +14,14 @@ export function startSentry() {
   }
   sentry.init({
     dsn,
+    // Starts the native SDK from here, even when Expo's config plugin writes an options file, which
+    // would otherwise expect the native code to start it
+    autoInitializeNativeSdk: true,
     // Keeps Sentry's headers out of the requests to the Instances
     tracePropagationTargets: [],
+    // The native iOS SDK's breadcrumbs of requests, which hold the Instances' addresses. The ones
+    // of JavaScript's requests remain, without them
+    enableNetworkBreadcrumbs: false,
     beforeSend: (event, hint) => (isRequestFailure(hint.originalException) ? null : event),
     beforeBreadcrumb: breadcrumb => {
       const url: unknown = breadcrumb.data?.url;

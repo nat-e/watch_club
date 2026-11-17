@@ -1,15 +1,14 @@
-//! What the server tells the people who host it: logs on the console, and, when they turn them on
-//! with environment variables, traces, metrics and logs sent to an OTLP endpoint, and errors sent
-//! to Sentry.
+//! The server's logs on the console, and, when its host turns them on with environment variables,
+//! its traces, metrics and logs sent to an OTLP endpoint, and its errors sent to Sentry.
 //!
 //! OpenTelemetry follows its standard variables, such as `OTEL_EXPORTER_OTLP_ENDPOINT`, except that
 //! each signal stays off until `OTEL_{TRACES,METRICS,LOGS}_EXPORTER` is `otlp`. Sentry reports the
 //! server's errors to `SENTRY_DSN`, and the web app's to `SENTRY_WEB_DSN`.
 
-use std::env;
+use std::{env, fmt};
 
 use anyhow::{Context, bail};
-use axum::{Router, extract::Request};
+use axum::{extract::Request, middleware};
 use opentelemetry::{
     InstrumentationScope, KeyValue, global,
     trace::{TraceContextExt, TracerProvider},
@@ -47,6 +46,9 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
+use utoipa_axum::router::OpenApiRouter;
+
+use crate::error;
 
 /// The name the server reports under, unless `OTEL_SERVICE_NAME` changes it
 const SERVICE: &str = "watch_club";
@@ -64,7 +66,7 @@ pub struct Observability {
     tracer_provider: Option<SdkTracerProvider>,
     meter_provider: Option<SdkMeterProvider>,
     logger_provider: Option<SdkLoggerProvider>,
-    _sentry: Option<sentry::ClientInitGuard>,
+    sentry: Option<sentry::ClientInitGuard>,
     web_sentry_dsn: Option<String>,
 }
 
@@ -72,6 +74,18 @@ impl Observability {
     /// Returns the Sentry DSN the web app reports its errors to, if the host set one.
     pub fn web_sentry_dsn(&self) -> Option<String> {
         self.web_sentry_dsn.clone()
+    }
+}
+
+impl fmt::Debug for Observability {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Observability")
+            .field("exports_traces", &self.tracer_provider.is_some())
+            .field("exports_metrics", &self.meter_provider.is_some())
+            .field("exports_logs", &self.logger_provider.is_some())
+            .field("reports_to_sentry", &self.sentry.is_some())
+            .field("web_reports_to_sentry", &self.web_sentry_dsn.is_some())
+            .finish()
     }
 }
 
@@ -184,15 +198,18 @@ pub fn start() -> anyhow::Result<Observability> {
         tracer_provider,
         meter_provider,
         logger_provider,
-        _sentry: sentry,
+        sentry,
         web_sentry_dsn,
     })
 }
 
-/// Adds what observes each request to the router: its span on the console logs, its trace and
-/// metrics, and its details on the errors Sentry gets.
-pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(router: Router<S>) -> Router<S> {
-    router
+/// Adds what observes each request to the routes: its span on the console logs, the log of its
+/// internal error, its trace and metrics, and its details on the errors Sentry gets.
+pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
+    routes: OpenApiRouter<S>,
+) -> OpenApiRouter<S> {
+    routes
+        .layer(middleware::from_fn(error::log_internal_errors))
         // Shows the method and path on every log line written during a request
         .layer(
             TraceLayer::new_for_http()

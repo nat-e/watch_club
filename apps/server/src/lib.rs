@@ -2,8 +2,9 @@
 
 use std::sync::Arc;
 
-use axum::{Router, extract::FromRef, middleware, routing::get};
+use axum::{Router, extract::FromRef, routing::get};
 use sqlx::{PgPool, postgres::PgPoolOptions};
+use utoipa_axum::router::OpenApiRouter;
 
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
@@ -18,7 +19,7 @@ pub mod openapi;
 pub mod routes;
 mod web;
 
-/// What the request handlers share.
+/// The state the request handlers share.
 #[derive(Clone, FromRef)]
 struct AppState {
     db: PgPool,
@@ -40,14 +41,18 @@ pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
 /// Builds the app's router: the API under `/api`, and the web app on every other path. The web app
 /// reports its errors to `web_sentry_dsn`, if any.
 pub fn router(db: PgPool, web_sentry_dsn: Option<String>) -> Router {
-    let app = Router::new()
-        .merge(routes::routes())
-        .fallback_service(get(web::serve))
-        .layer(middleware::from_fn(error::log_internal_errors));
-    observability::instrument(app)
+    let (router, _) = app().split_for_parts();
+    router.with_state(AppState {
+        db,
+        web_sentry_dsn: web_sentry_dsn.map(Arc::from),
+    })
+}
+
+/// Returns the app's routes, with the descriptions of their endpoints, which `router` serves and
+/// `openapi` documents.
+fn app() -> OpenApiRouter<AppState> {
+    let observed = routes::routes().fallback_service(get(web::serve));
+    observability::instrument(observed)
+        // Docker calls it every 30 seconds: its traces would bury the others
         .merge(routes::health_check())
-        .with_state(AppState {
-            db,
-            web_sentry_dsn: web_sentry_dsn.map(Arc::from),
-        })
 }

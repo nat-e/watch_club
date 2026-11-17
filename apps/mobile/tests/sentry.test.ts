@@ -32,7 +32,9 @@ describe('startSentry', () => {
   });
 
   it("keeps the Instance's address out of breadcrumbs", () => {
-    const {beforeBreadcrumb} = start();
+    const {beforeBreadcrumb, enableNetworkBreadcrumbs} = start();
+
+    expect(enableNetworkBreadcrumbs).toBe(false);
 
     const breadcrumb = beforeBreadcrumb?.({
       category: 'fetch',

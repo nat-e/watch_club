@@ -6,7 +6,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
-use sqlx::{Connection, PgPool};
+use sqlx::PgPool;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
@@ -29,11 +29,8 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn check_health(State(db): State<PgPool>) -> Result<StatusCode, HealthError> {
-    let result = match db.acquire().await {
-        Ok(mut connection) => connection.ping().await,
-        Err(error) => Err(error),
-    };
-    if let Err(error) = result {
+    // The pool pings a connection before handing it out, and opens a new one otherwise
+    if let Err(error) = db.acquire().await {
         tracing::warn!(
             name: "health.database.unreachable",
             %error,
