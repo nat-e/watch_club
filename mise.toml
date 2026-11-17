@@ -5,6 +5,8 @@ pnpm = "11.12.0"
 "cargo:sqlx-cli" = "0.9.0"
 "npm:turbo" = "2.11.10"
 watchexec = "2.8.0"
+# Fetches the dev catalog's clips, see scripts/catalog.sh
+git-lfs = "3.8.1"
 
 [settings]
 lockfile = true

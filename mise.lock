@@ -7,6 +7,52 @@ version = "0.9.0"
 backend = "cargo:sqlx-cli"
 specifiers = ["0.9.0"]
 
+[[tools.git-lfs]]
+version = "3.8.1"
+backend = "aqua:git-lfs/git-lfs"
+specifiers = ["3.8.1"]
+
+[tools.git-lfs."platforms.linux-arm64"]
+checksum = "sha256:67895dd77b63329796bc5efdd47b57f218e1f7b98717ebaf936a8238dbcaec0f"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-linux-arm64-v3.8.1.tar.gz"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666388648"
+
+[tools.git-lfs."platforms.linux-arm64-musl"]
+checksum = "sha256:67895dd77b63329796bc5efdd47b57f218e1f7b98717ebaf936a8238dbcaec0f"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-linux-arm64-v3.8.1.tar.gz"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666388648"
+
+[tools.git-lfs."platforms.linux-x64"]
+checksum = "sha256:e72cf723a4a660438862282e8aecf3885fc8123e88bfcad534cf6b941a354b75"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-linux-amd64-v3.8.1.tar.gz"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666388433"
+
+[tools.git-lfs."platforms.linux-x64-musl"]
+checksum = "sha256:e72cf723a4a660438862282e8aecf3885fc8123e88bfcad534cf6b941a354b75"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-linux-amd64-v3.8.1.tar.gz"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666388433"
+
+[tools.git-lfs."platforms.macos-arm64"]
+checksum = "sha256:0ba10e897e0496412cd86eacaed4ed554c97ddc29bc5c709d28faa5eaaa2222c"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-darwin-arm64-v3.8.1.zip"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666388058"
+
+[tools.git-lfs."platforms.macos-x64"]
+checksum = "sha256:4292b3518e717e53c20a6c2c0696e2069a21e97500ad14b80b06bd52de8f3b72"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-darwin-amd64-v3.8.1.zip"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666387957"
+
+[tools.git-lfs."platforms.windows-x64"]
+checksum = "sha256:5bb771c12b3dacc535e912d0270a010c209d4da2e63819c5918e3547c2defed9"
+checksum_source = "mise-versions"
+url = "https://github.com/git-lfs/git-lfs/releases/download/v3.8.1/git-lfs-windows-amd64-v3.8.1.zip"
+url_api = "https://api.github.com/repos/git-lfs/git-lfs/releases/assets/666389255"
+
 [[tools.node]]
 version = "26.12.1"
 backend = "core:node"

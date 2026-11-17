@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sets up a new worktree, once .env and the build cache are copied into it: its own Postgres, with
-# the migrations and the demo data.
+# the migrations and the demo data, and the dev catalog that the worktrees share.
 # Usage: setup.sh <slug> <port>
 set -euo pipefail
 
@@ -31,3 +31,5 @@ mise exec -- pnpm install
 mise exec -- turbo run generate:client generate:routes
 mise exec -- sqlx database setup --source apps/server/migrations
 mise exec -- pnpm --filter server seed
+# The worktree works without it, until the server connects to Radarr, Sonarr and Sportarr
+"$(dirname "$0")/../catalog.sh" start || echo "Couldn't start the dev catalog" >&2

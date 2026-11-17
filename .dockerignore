@@ -6,3 +6,5 @@ apps/server/target
 .wt
 .env
 apps/mobile
+dev
+tmp

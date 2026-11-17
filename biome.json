@@ -12,7 +12,8 @@
       "!**/uniwind-types.d.ts",
       "!packages/api/openapi.json",
       "!**/*.md",
-      "!apps/server/.sqlx"
+      "!apps/server/.sqlx",
+      "!dev/catalog/media"
     ]
   },
   "formatter": {
