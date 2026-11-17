@@ -5,7 +5,7 @@ import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
-import {Page} from '@/components/page';
+import {Page} from '@/components/layouts/page';
 import {Field, FieldLabel} from '@/components/ui/field';
 import {
   Select,
