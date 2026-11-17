@@ -211,6 +211,7 @@ impl NewJob {
 struct ClaimedJob {
     id: JobId,
     kind: String,
+    queue: Queue,
     args: Value,
     attempt: i16,
     max_attempts: i16,

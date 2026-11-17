@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        UPDATE jobs\n        SET state = 'executing', attempt = attempt + 1, attempted_at = now()\n        WHERE id IN (\n            SELECT id\n            FROM jobs\n            WHERE queue = $1 AND state = 'available' AND run_at <= now()\n            ORDER BY priority, run_at, id\n            LIMIT $2\n            FOR UPDATE SKIP LOCKED\n        )\n        RETURNING id, kind, args, attempt, max_attempts\n        ",
+  "query": "\n        UPDATE jobs\n        SET state = 'executing', attempt = attempt + 1, attempted_at = now()\n        WHERE id IN (\n            SELECT id\n            FROM jobs\n            WHERE queue = $1 AND state = 'available' AND run_at <= now()\n            ORDER BY priority, run_at, id\n            LIMIT $2\n            FOR UPDATE SKIP LOCKED\n        )\n        RETURNING id, kind, queue, args, attempt, max_attempts\n        ",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "queue",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs",
+            "name": "queue"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "args",
         "type_info": "Jsonb",
         "origin": {
@@ -37,7 +48,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "attempt",
         "type_info": "Int2",
         "origin": {
@@ -48,7 +59,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "max_attempts",
         "type_info": "Int2",
         "origin": {
@@ -70,8 +81,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "0f6969059dfd968afc30f3f72f32dc5a75b192cc7cb6060f00248ae88160fc1e"
+  "hash": "0465d2c0e7839c74b4b906eda09f00bf525d9e5d15f743af03af4dadaf367f11"
 }

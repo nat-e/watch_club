@@ -155,7 +155,7 @@ async fn claim_jobs(
             LIMIT $2
             FOR UPDATE SKIP LOCKED
         )
-        RETURNING id, kind, args, attempt, max_attempts
+        RETURNING id, kind, queue, args, attempt, max_attempts
         "#,
         queue as Queue,
         limit,
@@ -180,7 +180,7 @@ async fn run_job(db: &Pool, mut job: ClaimedJob) {
             }
             Err(error) => Err(error.context("failed to read the job").into()),
         };
-        save_outcome(db, &job, outcome).await;
+        save_outcome(db, &job, outcome).await
     };
     super::observability::instrument(&job, run).await;
 }
@@ -209,9 +209,9 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 
 /// Saves how a job's attempt ended: completed, failed, or back in its queue to try again after a
 /// backoff.
-async fn save_outcome(db: &Pool, job: &ClaimedJob, outcome: Result<(), JobError>) {
+async fn save_outcome(db: &Pool, job: &ClaimedJob, outcome: Result<(), JobError>) -> AttemptEnd {
     let attempt = job.attempt;
-    let state = next_state(attempt, job.max_attempts, outcome);
+    let end = attempt_end(attempt, job.max_attempts, outcome);
     // A retry waits `attempt⁴ + 15` seconds, plus up to 10% at random so that jobs that failed
     // together don't retry together. A job that's no longer this attempt's is left alone: after a
     // rescue, it belongs to the next attempt.
@@ -228,7 +228,7 @@ async fn save_outcome(db: &Pool, job: &ClaimedJob, outcome: Result<(), JobError>
         "#,
         job.id as JobId,
         attempt,
-        state as JobState,
+        end.state() as JobState,
     )
     .with_operation("UPDATE", "jobs")
     .execute(db)
@@ -241,12 +241,13 @@ async fn save_outcome(db: &Pool, job: &ClaimedJob, outcome: Result<(), JobError>
             "failed to save how the job ended",
         );
     }
+    end
 }
 
-/// Returns the state an attempt that ended this way leaves its job in, and logs why it failed.
-fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) -> JobState {
+/// Returns how an attempt that ended this way ends for its job, and logs why it failed.
+fn attempt_end(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) -> AttemptEnd {
     match outcome {
-        Ok(()) => JobState::Completed,
+        Ok(()) => AttemptEnd::Completed,
         // The job's span holds its kind, ID and attempt
         Err(JobError::NonRetryable(error)) => {
             tracing::event!(
@@ -255,7 +256,7 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
                 exception.message = %format_args!("{error:#}"),
                 "the job failed for good",
             );
-            JobState::Failed
+            AttemptEnd::Failed
         }
         Err(JobError::Retryable(error)) if attempt < max_attempts => {
             tracing::event!(
@@ -264,7 +265,7 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
                 exception.message = %format_args!("{error:#}"),
                 "the job's attempt failed, and will retry",
             );
-            JobState::Available
+            AttemptEnd::Retry
         }
         Err(JobError::Retryable(error)) => {
             tracing::event!(
@@ -273,7 +274,37 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
                 exception.message = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
-            JobState::Failed
+            AttemptEnd::Failed
+        }
+    }
+}
+
+/// The outcome of a job's attempt.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum AttemptEnd {
+    Completed,
+    /// Failed, with attempts left: the job waits for its next one
+    Retry,
+    /// Failed for good
+    Failed,
+}
+
+impl AttemptEnd {
+    /// Returns the state the job takes.
+    fn state(self) -> JobState {
+        match self {
+            Self::Completed => JobState::Completed,
+            Self::Retry => JobState::Available,
+            Self::Failed => JobState::Failed,
+        }
+    }
+
+    /// Returns the name the metrics give it.
+    pub(super) fn name(self) -> &'static str {
+        match self {
+            Self::Completed => "completed",
+            Self::Retry => "retry",
+            Self::Failed => "failed",
         }
     }
 }
@@ -298,11 +329,13 @@ async fn maintain(db: &Pool, shutdown: &CancellationToken) {
     }
 }
 
-/// Queues the due scheduled jobs, rescues the jobs left running and deletes the old ones.
+/// Queues the due scheduled jobs, rescues the jobs left running, deletes the old ones and records
+/// the waiting jobs in the metrics.
 async fn run_maintenance(db: &Pool) -> Result<(), InternalError> {
     observability::without_export(schedules::enqueue_due(db)).await?;
     rescue_jobs(db).await?;
-    observability::without_export(delete_old_jobs(db)).await
+    observability::without_export(delete_old_jobs(db)).await?;
+    observability::without_export(super::observability::record_waiting(db)).await
 }
 
 /// Puts the jobs `executing` for longer than `RESCUE_AFTER` back in their queue, or fails those
@@ -409,33 +442,33 @@ mod tests {
         }
     }
 
-    mod next_state {
+    mod attempt_end {
         use super::*;
 
         #[test]
         fn completes_a_job_that_succeeded() {
-            assert_eq!(next_state(1, 3, Ok(())), JobState::Completed);
+            assert_eq!(attempt_end(1, 3, Ok(())), AttemptEnd::Completed);
         }
 
         #[test]
         fn retries_a_failed_attempt_with_attempts_left() {
-            let state = next_state(2, 3, Err(anyhow!("down").into()));
+            let end = attempt_end(2, 3, Err(anyhow!("down").into()));
 
-            assert_eq!(state, JobState::Available);
+            assert_eq!(end, AttemptEnd::Retry);
         }
 
         #[test]
         fn fails_the_job_after_its_last_attempt() {
-            let state = next_state(3, 3, Err(anyhow!("down").into()));
+            let end = attempt_end(3, 3, Err(anyhow!("down").into()));
 
-            assert_eq!(state, JobState::Failed);
+            assert_eq!(end, AttemptEnd::Failed);
         }
 
         #[test]
         fn fails_the_job_at_once_on_a_non_retryable_failure() {
             let failure = JobError::NonRetryable(anyhow!("never works"));
 
-            assert_eq!(next_state(1, 3, Err(failure)), JobState::Failed);
+            assert_eq!(attempt_end(1, 3, Err(failure)), AttemptEnd::Failed);
         }
     }
 }
