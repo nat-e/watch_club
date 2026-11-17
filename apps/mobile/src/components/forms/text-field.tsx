@@ -9,20 +9,22 @@ export interface FocusableField {
   focus: () => void;
 }
 
-/** A labelled text field, with its error or hint, and the keyboard it needs. */
+/**
+ * What a text field holds, from which it sets its keyboard, autofill and masking. None of them is
+ * capitalized or corrected.
+ */
+export type TextFieldPurpose = 'url' | 'username' | 'current-password';
+
+/** A labelled text field, with its error or hint. */
 export interface TextFieldProps {
   label: string;
+  purpose: TextFieldPurpose;
   error?: string;
   hint?: string;
   defaultValue?: string;
   onChangeText: (text: string) => void;
   onBlur?: () => void;
   placeholder?: string;
-  secureTextEntry?: boolean;
-  autoComplete?: 'url' | 'username' | 'current-password';
-  inputMode?: 'url';
-  autoCapitalize?: 'none';
-  autoCorrect?: boolean;
   autoFocus?: boolean;
   returnKeyType?: 'next' | 'go';
   onSubmitEditing?: () => void;
@@ -33,7 +35,7 @@ export interface TextFieldProps {
  * A text field as iOS draws one outside a list: its label above a rounded field, and its error or
  * hint under it. Android has its own file.
  */
-export function TextField({label, error, hint, ref, ...input}: TextFieldProps) {
+export function TextField({label, purpose, error, hint, ref, ...input}: TextFieldProps) {
   const foreground = useCSSVariable('--color-foreground');
   const field = useRef<TextInputRef>(null);
   useImperativeHandle(ref, () => ({
@@ -54,6 +56,11 @@ export function TextField({label, error, hint, ref, ...input}: TextFieldProps) {
         ref={field}
         accessibilityLabel={label}
         modifiers={[textFieldStyle('roundedBorder')]}
+        autoComplete={purpose}
+        inputMode={purpose === 'url' ? 'url' : undefined}
+        secureTextEntry={purpose === 'current-password'}
+        autoCapitalize="none"
+        autoCorrect={false}
         {...input}
       />
       <Feedback error={error} hint={hint} />

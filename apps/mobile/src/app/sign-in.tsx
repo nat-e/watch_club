@@ -42,12 +42,9 @@ export default function SignIn() {
           {field => (
             <field.TextField
               label={t($ => $.mobile.signIn.address)}
+              purpose="url"
               placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="url"
               autoFocus={session.instanceUrl === null}
-              inputMode="url"
               returnKeyType="next"
               onSubmitEditing={() => {
                 usernameInput.current?.focus();
@@ -60,9 +57,7 @@ export default function SignIn() {
             <field.TextField
               ref={usernameInput}
               label={t($ => $.core.user.username)}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="username"
+              purpose="username"
               autoFocus={session.instanceUrl !== null}
               returnKeyType="next"
               onSubmitEditing={() => {
@@ -76,10 +71,7 @@ export default function SignIn() {
             <field.TextField
               ref={passwordInput}
               label={t($ => $.core.user.password)}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="current-password"
+              purpose="current-password"
               returnKeyType="go"
               onSubmitEditing={() => {
                 void instanceForm.handleSubmit();

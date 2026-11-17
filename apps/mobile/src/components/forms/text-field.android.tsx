@@ -10,17 +10,13 @@ import type {TextFieldProps} from '@/components/forms/text-field';
  */
 export function TextField({
   label,
+  purpose,
   error,
   hint,
   defaultValue = '',
   onChangeText,
   onBlur,
   placeholder,
-  secureTextEntry = false,
-  autoComplete,
-  inputMode,
-  autoCapitalize,
-  autoCorrect,
   autoFocus,
   returnKeyType,
   onSubmitEditing,
@@ -39,6 +35,7 @@ export function TextField({
     }
   }, [error]);
 
+  const isPassword = purpose === 'current-password';
   const supportingText = error ?? hint;
   return (
     <OutlinedTextField
@@ -47,11 +44,11 @@ export function TextField({
       singleLine
       autoFocus={autoFocus}
       isError={error !== undefined}
-      visualTransformation={secureTextEntry ? 'password' : 'none'}
+      visualTransformation={isPassword ? 'password' : 'none'}
       keyboardOptions={{
-        keyboardType: secureTextEntry ? 'password' : inputMode === 'url' ? 'uri' : 'text',
-        capitalization: autoCapitalize,
-        autoCorrectEnabled: secureTextEntry ? false : autoCorrect,
+        keyboardType: isPassword ? 'password' : purpose === 'url' ? 'uri' : 'text',
+        capitalization: 'none',
+        autoCorrectEnabled: false,
         imeAction: returnKeyType,
       }}
       keyboardActions={{onNext: onSubmitEditing, onGo: onSubmitEditing}}
@@ -62,10 +59,7 @@ export function TextField({
         }
       }}
       // Autofill finds the field by its content type
-      modifiers={[
-        fillMaxWidth(),
-        ...(autoComplete === undefined ? [] : [semantics({contentType: autoComplete})]),
-      ]}
+      modifiers={[fillMaxWidth(), semantics({contentType: purpose})]}
     >
       <OutlinedTextField.Label>
         <Text>{label}</Text>
