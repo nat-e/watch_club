@@ -4,9 +4,7 @@
 @import "@watchclub/core/theme.css";
 /* The static weights, as Google Fonts serves them: the variable fonts draw each weight heavier */
 @import "@fontsource/reddit-sans/400.css";
-@import "@fontsource/reddit-sans/500.css";
 @import "@fontsource/reddit-sans/600.css";
-@import "@fontsource/reddit-sans/700.css";
 @import "@fontsource/oxanium/400.css";
 @import "@fontsource/oxanium/600.css";
 @import "@fontsource-variable/fira-code";
@@ -18,13 +16,18 @@
   --font-sans: "Reddit Sans", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Oxanium", serif;
   --font-mono: "Fira Code Variable", monospace;
+  /* Two weights, regular and semibold: shadcn's medium text, such as its labels and buttons, is
+     semibold */
+  --font-weight-medium: 600;
 
   /* A page's margins, which grow with the window */
   --spacing-page: clamp(1rem, 3vw, 2rem);
   --spacing-page-y: clamp(1.5rem, 4vw, 3rem);
-  /* The widest a page's content gets, and a line of text: 45–75 characters */
-  --container-panel: 56rem;
+  /* A line of text, 45–75 characters, then the widest a page's content gets: narrow pages such as
+     Settings, and the others */
   --container-readable: 34em;
+  --container-panel: 56rem;
+  --container-page: 72rem;
 }
 
 @layer base {
