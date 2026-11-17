@@ -10,7 +10,8 @@
     "RUST_LOG",
     "RUSTUP_TOOLCHAIN",
     "OTEL_*",
-    "SENTRY_*"
+    "SENTRY_*",
+    "EXPO_PUBLIC_SENTRY_DSN"
   ],
   "globalEnv": ["SQLX_OFFLINE"],
   "tasks": {

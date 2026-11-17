@@ -20,6 +20,10 @@ Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security 
 
 CI also builds the Docker image, starts it and checks that the app responds.
 
+## Sentry in the mobile app
+
+The mobile app reports to Sentry only when it's built with `EXPO_PUBLIC_SENTRY_DSN`. Release builds also upload their source maps and debug symbols when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` are set before `expo prebuild`, and skip it otherwise.
+
 ## Translations
 
 The apps are translated into English and French with i18next. After changing text in the code:

@@ -63,7 +63,9 @@ SENTRY_ENVIRONMENT=production
 
 Set either DSN, or both. Sentry recommends a project for each, as the server and the web app are different platforms. GlitchTip and Bugsink also accept these reports.
 
-The server reports the errors it logs and its crashes, with the request's method, URL and headers, except those that hold credentials, such as cookies. When traces are on, each report links to the trace of its request. The web app reports its errors, except failed requests to the server, which reports its own. Neither sends the IP addresses of Users. The image includes the web app's source maps, so Sentry can show the source of its stack traces when it can reach WatchClub.
+The server reports the errors it logs and its crashes, with the request's method, URL and headers, except those that hold credentials, such as cookies. When traces are on, each report links to the trace of its request. The web app reports its errors, except failed requests to the server, which reports its own. Neither sends the IP addresses of Users.
+
+The mobile apps we publish report their crashes and errors to our own Sentry, not yours, without the addresses of Instances or the IP addresses of Users. The image includes the web app's source maps, so Sentry can show the source of its stack traces when it can reach WatchClub.
 
 ## Contributing
 
