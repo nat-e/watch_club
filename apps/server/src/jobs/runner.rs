@@ -311,7 +311,8 @@ async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
     .await
     .context("failed to rescue the jobs left running")?;
     // No job's span holds these logs, so they carry its fields themselves. `event!` rather than
-    // `warn!` or `error!`, which can't take a dotted field first after `name:`
+    // `warn!` or `error!`, which can't take a dotted field first after `name:` until
+    // tokio-rs/tracing#3407 is fixed
     for job in rescued {
         let (kind, id, attempt) = (job.kind, job.id.0, job.attempt);
         if job.will_retry {
