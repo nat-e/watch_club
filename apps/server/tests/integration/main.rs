@@ -15,6 +15,9 @@ mod routes {
         mod login_token;
         mod logout;
     }
+    mod health {
+        mod get;
+    }
     mod instance {
         mod create_administrator;
         mod get;

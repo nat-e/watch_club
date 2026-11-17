@@ -40,8 +40,17 @@ pub struct Response {
 
 impl Client {
     pub fn new(db: &PgPool) -> Self {
+        Self::with_router(watch_club::router(db.clone(), None))
+    }
+
+    /// Calls an app whose host set `SENTRY_WEB_DSN` to this DSN.
+    pub fn with_web_sentry_dsn(db: &PgPool, dsn: &str) -> Self {
+        Self::with_router(watch_club::router(db.clone(), Some(dsn.to_owned())))
+    }
+
+    fn with_router(router: Router) -> Self {
         Self {
-            router: watch_club::router(db.clone()),
+            router,
             cookies: BTreeMap::new(),
             headers: HeaderMap::new(),
         }

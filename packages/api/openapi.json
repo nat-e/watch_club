@@ -235,6 +235,53 @@
         ]
       }
     },
+    "/api/health": {
+      "get": {
+        "summary": "Checks that the server works: that it reaches its database.",
+        "operationId": "check_health",
+        "responses": {
+          "204": {
+            "description": "The server works"
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server can't reach its database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_HealthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/instance": {
       "get": {
         "summary": "Returns the information apps need about the WatchClub instance before signing in.",
@@ -699,6 +746,42 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_HealthError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "database_unreachable"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The reason the server doesn't work."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ErrorBody_LoginRequestError": {
         "allOf": [
           {
@@ -735,12 +818,32 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "HealthError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "database_unreachable"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The reason the server doesn't work."
+      },
       "Instance": {
         "type": "object",
         "description": "The information apps need about the WatchClub instance before signing in.",
         "required": [
           "version",
-          "needs_setup"
+          "needs_setup",
+          "web_sentry_dsn"
         ],
         "properties": {
           "needs_setup": {
@@ -750,6 +853,13 @@
           "version": {
             "type": "string",
             "description": "The server's version"
+          },
+          "web_sentry_dsn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The Sentry DSN the web app reports its errors to, or null when it reports none"
           }
         }
       },

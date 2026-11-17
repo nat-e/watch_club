@@ -20,7 +20,9 @@ struct Description;
 /// Returns the OpenAPI document of the API. Each endpoint describes itself with
 /// `#[utoipa::path]`, and this adds what they share.
 pub fn document() -> openapi::OpenApi {
-    let mut document = Description::openapi().merge_from(routes::routes().into_openapi());
+    let mut document = Description::openapi()
+        .merge_from(routes::routes().into_openapi())
+        .merge_from(routes::health_check().into_openapi());
     add_security_schemes(&mut document);
     add_error_responses(&mut document);
     document

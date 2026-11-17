@@ -13,6 +13,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
+    AppState,
     auth::SessionCookie,
     domain::{
         InternalError,
@@ -22,7 +23,7 @@ use crate::{
     routes::Json,
 };
 
-pub(super) fn routes() -> OpenApiRouter<PgPool> {
+pub(super) fn routes() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(login))
         .routes(routes!(login_token))

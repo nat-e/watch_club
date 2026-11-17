@@ -1,6 +1,7 @@
 //! The JSON API under `/api`, which the web and mobile apps call; `web` serves the other paths.
 
 mod auth;
+mod health;
 mod instance;
 mod me;
 
@@ -11,13 +12,13 @@ use axum::{
     routing::any,
 };
 use serde::Serialize;
-use sqlx::PgPool;
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::error::ApiError;
+use crate::{AppState, error::ApiError};
 
-/// Returns the routes of the API, with the descriptions of their endpoints.
-pub(crate) fn routes() -> OpenApiRouter<PgPool> {
+/// Returns the routes of the API, with the descriptions of their endpoints, except the health
+/// check.
+pub(crate) fn routes() -> OpenApiRouter<AppState> {
     let api = OpenApiRouter::new()
         .merge(instance::routes())
         .merge(auth::routes())
@@ -29,6 +30,12 @@ pub(crate) fn routes() -> OpenApiRouter<PgPool> {
         // The fallback misses this path: axum nests it at `/api` and `/api/{*rest}`, and the
         // wildcard doesn't match an empty rest
         .route("/api/", any(StatusCode::NOT_FOUND))
+}
+
+/// Returns the health check, apart from the other routes so that observability leaves it out: Docker
+/// calls it every 30 seconds, and its traces would bury the others.
+pub(crate) fn health_check() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new().nest("/api", health::routes())
 }
 
 /// Like axum's `Json`, but a body that isn't the JSON the endpoint takes fails with a 400. That
