@@ -30,6 +30,7 @@ restore() {
       exit 1
     fi
   done
+  rm -f "$restored"
   compose down --volumes
 
   # Clones of the files in Git LFS's store, which the worktrees share, take no extra disk space on
