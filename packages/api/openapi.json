@@ -237,11 +237,11 @@
     },
     "/api/health": {
       "get": {
-        "summary": "Checks that the server works: that it reaches its database.",
+        "summary": "Checks that the server reaches its database.",
         "operationId": "check_health",
         "responses": {
-          "204": {
-            "description": "The server works"
+          "200": {
+            "description": "It does"
           },
           "500": {
             "description": "Something went wrong. Try again later.",
@@ -270,14 +270,7 @@
             }
           },
           "503": {
-            "description": "The server can't reach its database",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_HealthError"
-                }
-              }
-            }
+            "description": "It doesn't"
           }
         }
       }
@@ -746,42 +739,6 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
-      "ErrorBody_HealthError": {
-        "allOf": [
-          {
-            "oneOf": [
-              {
-                "type": "object",
-                "required": [
-                  "code"
-                ],
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "enum": [
-                      "database_unreachable"
-                    ]
-                  }
-                }
-              }
-            ],
-            "description": "The reason the server doesn't work."
-          },
-          {
-            "type": "object",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "The failure in English, for developers rather than users"
-              }
-            }
-          }
-        ],
-        "description": "The body of every error response: the error's `code` and details, and a message."
-      },
       "ErrorBody_LoginRequestError": {
         "allOf": [
           {
@@ -817,25 +774,6 @@
           }
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
-      },
-      "HealthError": {
-        "oneOf": [
-          {
-            "type": "object",
-            "required": [
-              "code"
-            ],
-            "properties": {
-              "code": {
-                "type": "string",
-                "enum": [
-                  "database_unreachable"
-                ]
-              }
-            }
-          }
-        ],
-        "description": "The reason the server doesn't work."
       },
       "Instance": {
         "type": "object",
