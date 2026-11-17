@@ -1,7 +1,10 @@
 //! The server's logs on the console, and, when its host turns them on, its traces, metrics and logs
 //! sent to an OTLP endpoint, and its errors sent to Sentry.
 
-use std::fmt::{self, Display};
+use std::{
+    fmt::{self, Display},
+    io::{self, IsTerminal},
+};
 
 use anyhow::Context;
 use axum::extract::Request;
@@ -151,9 +154,18 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
         ))
     });
 
+    let console = tracing_subscriber::fmt::layer();
+    // Colors only on a terminal: Docker and log collectors would keep their codes as text. On a
+    // terminal, the default also leaves them out when `NO_COLOR` is set
+    let console = if io::stdout().is_terminal() {
+        console
+    } else {
+        console.with_ansi(false)
+    };
+
     tracing_subscriber::registry()
         .with(config.log_filter.clone())
-        .with(tracing_subscriber::fmt::layer())
+        .with(console)
         .with(tracer_provider.as_ref().map(|provider| {
             tracing_opentelemetry::layer()
                 .with_tracer(provider.tracer(SCOPE))
