@@ -1,5 +1,7 @@
 //! Users: their usernames and passwords, Setup, and the sessions that keep them signed in.
 
+use std::fmt;
+
 use anyhow::Context;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use jiff::SignedDuration;
@@ -8,7 +10,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgExecutor, PgPool};
 use tokio::sync::Semaphore;
-use tracing::Level;
+use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -19,6 +21,12 @@ use crate::domain::InternalError;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, sqlx::Type, ToSchema)]
 #[sqlx(transparent)]
 pub struct UserId(Uuid);
+
+impl fmt::Display for UserId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// A person with a WatchClub account.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
@@ -118,6 +126,7 @@ pub enum PasswordError {
 }
 
 /// Returns `true` once Setup has created the Instance Administrator.
+#[tracing::instrument(skip_all)]
 pub async fn has_instance_administrator(db: &PgPool) -> Result<bool, InternalError> {
     let exists = sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT FROM users WHERE is_instance_administrator) AS "exists!""#
@@ -144,6 +153,7 @@ impl From<InternalError> for CreateInstanceAdministratorError {
 }
 
 /// Creates the Instance Administrator and signs them in on a new device.
+#[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
     db: &PgPool,
     username: Username,
@@ -204,7 +214,7 @@ pub async fn create_instance_administrator(
     tracing::event!(
         name: "accounts.instance_administrator.created",
         Level::INFO,
-        user.id = %user.id.0,
+        user.id = %user.id,
         user.name = user.username,
         "created the Instance Administrator",
     );
@@ -248,6 +258,7 @@ impl SessionToken {
 /// Signs the User in on a new device, and returns them with their session token.
 ///
 /// Returns None if the username or password is wrong.
+#[tracing::instrument(skip_all)]
 pub async fn sign_in(
     db: &PgPool,
     username: &str,
@@ -267,7 +278,7 @@ pub async fn sign_in(
     tracing::event!(
         name: "accounts.sign_in.succeeded",
         Level::INFO,
-        user.id = %user.id.0,
+        user.id = %user.id,
         user.name = user.username,
         "signed in",
     );
@@ -317,6 +328,7 @@ async fn check_credentials(
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
+#[tracing::instrument(skip_all)]
 pub async fn session_user(
     db: &PgPool,
     token: &SessionToken,
@@ -338,6 +350,7 @@ pub async fn session_user(
 }
 
 /// Signs out the device that the token keeps signed in.
+#[tracing::instrument(skip_all)]
 pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
         .execute(db)
@@ -347,6 +360,7 @@ pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalE
 }
 
 /// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
+#[tracing::instrument(skip_all)]
 pub async fn delete_expired_sessions(db: &PgPool) -> Result<u64, InternalError> {
     let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
         .execute(db)
@@ -386,14 +400,19 @@ static HASHING: Semaphore = Semaphore::const_new(4);
 /// Runs `work`, which hashes a password and is slow on purpose, off the async threads, waiting
 /// for one of the `HASHING` slots first.
 async fn hash_slowly<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> T {
+    // Two spans, so that traces tell a queue of sign-ins from slow hashing
     let slot = HASHING
         .acquire()
+        .instrument(tracing::info_span!("wait_for_hashing_slot"))
         .await
         .expect("the semaphore is never closed");
+    // Under the caller's span, and ended by the work rather than by the request, which may be
+    // dropped before
+    let hashing = tracing::info_span!("hash_password");
     tokio::task::spawn_blocking(move || {
         // Held until the work ends, even when the request is dropped before
         let _slot = slot;
-        work()
+        hashing.in_scope(work)
     })
     .await
     .expect("hashing a password doesn't panic")

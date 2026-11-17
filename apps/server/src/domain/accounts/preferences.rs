@@ -21,6 +21,7 @@ pub enum Locale {
 }
 
 /// Changes the User's language and country, and returns the updated User.
+#[tracing::instrument(skip_all, fields(user.id = %user))]
 pub async fn change_locale(
     db: &PgPool,
     user: UserId,
