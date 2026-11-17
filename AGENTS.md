@@ -30,6 +30,10 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 - An operation returns its own `thiserror` enum when callers handle its failures, with an `Internal(#[from] anyhow::Error)` variant for the rest. Otherwise it returns `InternalError`. Use `.context(…)` to say what failed
 
+## Mobile app
+
+- Prefer the platform's own components: Expo Router's native stack and tabs, `@expo/ui`'s controls inside the `Host` of `@/components/host`, and SF Symbols and Material Symbols for icons. React Native's `Text`, `TextInput` and `ScrollView` are native too. Draw with Uniwind only what no native component offers, such as the app's own content
+
 ## Tests
 
 - Write the server's tests in the single test crate `apps/server/tests/integration/`, whose files mirror `src/`
