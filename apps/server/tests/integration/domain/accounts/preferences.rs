@@ -1,13 +1,14 @@
-use sqlx::PgPool;
 use watch_club::domain::accounts::{self, Locale};
+use watch_club::testing::database;
 
 use crate::support::{self, PASSWORD};
 
 mod change_locale {
     use super::*;
 
-    #[sqlx::test]
-    async fn changes_the_users_locale(db: PgPool) {
+    #[tokio::test]
+    async fn changes_the_users_locale() {
+        let db = database().await;
         let user = support::create_user(&db, "ada").await;
 
         let changed = accounts::change_locale(&db, user.id, Locale::FrFr)

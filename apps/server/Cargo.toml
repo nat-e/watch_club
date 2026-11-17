@@ -11,6 +11,8 @@ default-run = "watch_club"
 [features]
 # Builds the `seed` binary, which only development needs
 dev-seed = []
+# Builds `testing`, which the tests share. Their dev-dependency on this crate turns it on
+testing = []
 
 [[bin]]
 name = "seed"
@@ -57,6 +59,7 @@ uuid = { version = "1.29.2", features = ["serde"] }
 [dev-dependencies]
 http-body-util = "0.1.5"
 tower = { version = "0.5.3", features = ["util"] }
+watch_club = { path = ".", features = ["testing"] }
 
 [lints.rust]
 unsafe_code = "forbid"

@@ -3589,6 +3589,7 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "uuid",
+ "watch_club",
 ]
 
 [[package]]

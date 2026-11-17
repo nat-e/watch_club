@@ -363,6 +363,7 @@ mod tests {
     use std::future;
 
     use super::*;
+    use crate::testing::database;
 
     const TIMEOUT: Duration = Duration::from_mins(1);
 
@@ -439,8 +440,9 @@ mod tests {
             (row.state, row.wait)
         }
 
-        #[sqlx::test]
-        async fn completes_a_job_that_succeeded(db: PgPool) {
+        #[tokio::test]
+        async fn completes_a_job_that_succeeded() {
+            let db = database().await;
             let job = claimed_job(&db, 1, 3).await;
 
             save_outcome(&db, &job, Ok(())).await;
@@ -448,8 +450,9 @@ mod tests {
             assert_eq!(job_state(&db, job.id).await, (JobState::Completed, None));
         }
 
-        #[sqlx::test]
-        async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
+        #[tokio::test]
+        async fn retries_a_failed_attempt_after_a_backoff() {
+            let db = database().await;
             let job = claimed_job(&db, 2, 3).await;
 
             save_outcome(&db, &job, Err(anyhow!("down").into())).await;
@@ -461,8 +464,9 @@ mod tests {
             assert!((30.0..=34.1).contains(&wait), "waits {wait} s");
         }
 
-        #[sqlx::test]
-        async fn fails_the_job_after_its_last_attempt(db: PgPool) {
+        #[tokio::test]
+        async fn fails_the_job_after_its_last_attempt() {
+            let db = database().await;
             let job = claimed_job(&db, 3, 3).await;
 
             save_outcome(&db, &job, Err(anyhow!("down").into())).await;
@@ -470,8 +474,9 @@ mod tests {
             assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
 
-        #[sqlx::test]
-        async fn fails_the_job_at_once_on_a_non_retryable_failure(db: PgPool) {
+        #[tokio::test]
+        async fn fails_the_job_at_once_on_a_non_retryable_failure() {
+            let db = database().await;
             let job = claimed_job(&db, 1, 3).await;
 
             save_outcome(
@@ -484,8 +489,9 @@ mod tests {
             assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
 
-        #[sqlx::test]
-        async fn leaves_a_job_that_a_rescue_gave_to_its_next_attempt(db: PgPool) {
+        #[tokio::test]
+        async fn leaves_a_job_that_a_rescue_gave_to_its_next_attempt() {
+            let db = database().await;
             let job = claimed_job(&db, 1, 3).await;
             sqlx::query!(
                 "UPDATE jobs SET attempt = 2, attempted_at = now() WHERE id = $1",

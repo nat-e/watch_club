@@ -9,7 +9,7 @@ Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security 
 1. Install [mise](https://mise.jdx.dev) and run `mise install`. It installs Rust, Node, pnpm, turbo, sqlx-cli and watchexec at the versions in `mise.lock`.
 2. Install Docker.
 3. Copy `.env.example` to `.env`.
-4. Start Postgres with `docker compose up --detach --wait`.
+4. Start Postgres with `pnpm dev:shared`.
 5. Run `pnpm install`, then `sqlx database setup --source apps/server/migrations` to create the database.
 6. Run `pnpm --filter server seed` to add the demo Users.
 7. Run `pnpm dev`, open `APP_URL` from `.env`, and sign in as `admin`, `alice` or `bob` with the password `passw0rd`. `pnpm dev --expo` also runs Expo's dev server, for the app on phones and TVs.

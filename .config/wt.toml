@@ -1,5 +1,5 @@
-# Gives each worktree its own Postgres, database and port: tests run in parallel worktrees would
-# otherwise create and drop the same test databases on a shared server.
+# Gives each worktree its own database, in the Postgres of docker-compose.dev.yml that they share,
+# and its own ports.
 # Scripts run from the primary worktree so that they don't depend on the branch.
 # A worktree's server port is its branch's hash_port + 20000, clear of the Phoenix worktrees' ports, and
 # the web app's and Expo's dev servers are on the next two ports.
@@ -9,10 +9,10 @@
 copy = "wt step copy-ignored"
 
 [[pre-start]]
-setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} {{ (branch | hash_port) + 20000 }}"
+setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanitize | replace('.', '-') }} watch_club_{{ branch | sanitize_db }} {{ (branch | hash_port) + 20000 }}"
 
 [[pre-remove]]
-teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ (branch | hash_port) + 20000 }}"
+teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} watch_club_{{ branch | sanitize_db }} {{ (branch | hash_port) + 20000 }}"
 
 [post-merge]
 update = "{{ primary_worktree_path }}/scripts/worktree/update_primary.sh"

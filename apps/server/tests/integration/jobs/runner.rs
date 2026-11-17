@@ -3,6 +3,7 @@
 
 use sqlx::PgPool;
 use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
+use watch_club::testing::database;
 
 use super::job_state;
 
@@ -14,8 +15,9 @@ async fn enqueue(db: &PgPool) -> JobId {
 mod run_available {
     use super::*;
 
-    #[sqlx::test]
-    async fn runs_jobs_by_priority_then_in_the_order_they_are_due(db: PgPool) {
+    #[tokio::test]
+    async fn runs_jobs_by_priority_then_in_the_order_they_are_due() {
+        let db = database().await;
         let low = enqueue(&db).await;
         let second = enqueue(&db).await;
         let first = enqueue(&db).await;
@@ -40,8 +42,9 @@ mod run_available {
         assert_eq!(order, [first, second, low]);
     }
 
-    #[sqlx::test]
-    async fn waits_for_the_time_a_job_runs_at(db: PgPool) {
+    #[tokio::test]
+    async fn waits_for_the_time_a_job_runs_at() {
+        let db = database().await;
         let id = enqueue(&db).await;
         sqlx::query!(
             "UPDATE jobs SET run_at = now() + interval '1 minute' WHERE id = $1",
@@ -56,8 +59,9 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Available, 0));
     }
 
-    #[sqlx::test]
-    async fn runs_each_job_once_when_runners_claim_at_the_same_time(db: PgPool) {
+    #[tokio::test]
+    async fn runs_each_job_once_when_runners_claim_at_the_same_time() {
+        let db = database().await;
         for _ in 0..20 {
             enqueue(&db).await;
         }
@@ -85,8 +89,9 @@ mod run_available {
         );
     }
 
-    #[sqlx::test]
-    async fn retries_a_job_whose_arguments_dont_read(db: PgPool) {
+    #[tokio::test]
+    async fn retries_a_job_whose_arguments_dont_read() {
+        let db = database().await;
         let id = sqlx::query_scalar!(
             r#"
             INSERT INTO jobs (queue, kind, max_attempts)
@@ -120,8 +125,9 @@ mod run_available {
         .unwrap();
     }
 
-    #[sqlx::test]
-    async fn rescues_a_job_left_running_for_an_hour(db: PgPool) {
+    #[tokio::test]
+    async fn rescues_a_job_left_running_for_an_hour() {
+        let db = database().await;
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "61 minutes").await;
 
@@ -130,8 +136,9 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Completed, 2));
     }
 
-    #[sqlx::test]
-    async fn leaves_a_job_running_for_less_than_an_hour(db: PgPool) {
+    #[tokio::test]
+    async fn leaves_a_job_running_for_less_than_an_hour() {
+        let db = database().await;
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "59 minutes").await;
 
@@ -140,8 +147,9 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, (JobState::Executing, 1));
     }
 
-    #[sqlx::test]
-    async fn fails_a_job_left_running_on_its_last_attempt(db: PgPool) {
+    #[tokio::test]
+    async fn fails_a_job_left_running_on_its_last_attempt() {
+        let db = database().await;
         let id = enqueue(&db).await;
         leave_running(&db, id, 3, "61 minutes").await;
 
@@ -166,8 +174,9 @@ mod run_available {
         .unwrap();
     }
 
-    #[sqlx::test]
-    async fn deletes_the_jobs_finished_over_a_week_ago(db: PgPool) {
+    #[tokio::test]
+    async fn deletes_the_jobs_finished_over_a_week_ago() {
+        let db = database().await;
         for state in [JobState::Completed, JobState::Failed, JobState::Cancelled] {
             let id = enqueue(&db).await;
             finish(&db, id, state, "7 days 1 minute").await;

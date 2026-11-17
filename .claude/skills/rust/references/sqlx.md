@@ -1,6 +1,6 @@
 # SQLx 0.9 in this app
 
-Official docs: the [`query!` macros](https://docs.rs/sqlx/0.9.0/sqlx/macro.query.html), the [FAQ](https://github.com/launchbadge/sqlx/blob/v0.9.0/FAQ.md), [migrations](https://docs.rs/sqlx/0.9.0/sqlx/macro.migrate.html) and [`#[sqlx::test]`](https://docs.rs/sqlx/0.9.0/sqlx/attr.test.html).
+Official docs: the [`query!` macros](https://docs.rs/sqlx/0.9.0/sqlx/macro.query.html), the [FAQ](https://github.com/launchbadge/sqlx/blob/v0.9.0/FAQ.md) and [migrations](https://docs.rs/sqlx/0.9.0/sqlx/macro.migrate.html).
 
 ## Queries
 
@@ -29,5 +29,4 @@ Official docs: the [`query!` macros](https://docs.rs/sqlx/0.9.0/sqlx/macro.query
 
 ## Tests
 
-- `#[sqlx::test]` creates a database for each test from `apps/server/migrations/` on `DATABASE_URL`'s server and drops it when the test passes
-- SQLx tracks test databases in a `_sqlx_test` schema of the `DATABASE_URL` database
+- Give a `#[tokio::test]` its own database with `testing::database()`, which creates it with the migrations and drops it with its pool. Not `#[sqlx::test]`: it names a test's database after the test alone, so two worktrees running the same test on the Postgres they share would drop each other's

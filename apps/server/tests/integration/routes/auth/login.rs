@@ -1,11 +1,12 @@
 use axum::http::{StatusCode, header::SET_COOKIE};
 use serde_json::json;
-use sqlx::PgPool;
+use watch_club::testing::database;
 
 use crate::support::{self, Client, PASSWORD};
 
-#[sqlx::test]
-async fn signs_the_browser_in_with_a_cookie_scripts_cannot_read(db: PgPool) {
+#[tokio::test]
+async fn signs_the_browser_in_with_a_cookie_scripts_cannot_read() {
+    let db = database().await;
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
 
@@ -22,8 +23,9 @@ async fn signs_the_browser_in_with_a_cookie_scripts_cannot_read(db: PgPool) {
     assert_eq!(me.body["id"], json!(user.id), "{me:?}");
 }
 
-#[sqlx::test]
-async fn sends_the_cookie_only_over_https_behind_an_https_proxy(db: PgPool) {
+#[tokio::test]
+async fn sends_the_cookie_only_over_https_behind_an_https_proxy() {
+    let db = database().await;
     support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.set_header("x-forwarded-proto", "https");
@@ -35,8 +37,9 @@ async fn sends_the_cookie_only_over_https_behind_an_https_proxy(db: PgPool) {
     assert!(cookie.contains("Secure"), "{cookie}");
 }
 
-#[sqlx::test]
-async fn refuses_wrong_credentials(db: PgPool) {
+#[tokio::test]
+async fn refuses_wrong_credentials() {
+    let db = database().await;
     support::create_user(&db, "ada").await;
 
     for (username, password) in [("ada", "wrong password"), ("bob", PASSWORD), ("", "")] {
