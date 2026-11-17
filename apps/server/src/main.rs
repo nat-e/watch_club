@@ -1,7 +1,7 @@
 //! Runs the server: reads the environment, connects to the database, and serves the app and runs
 //! its jobs until it's asked to stop.
 
-use std::{io, net::Ipv4Addr, time::Duration};
+use std::{io, net::Ipv4Addr, sync::Arc, time::Duration};
 
 use anyhow::Context;
 use secrecy::ExposeSecret;
@@ -12,7 +12,7 @@ use tokio::{
     time,
 };
 use tokio_util::sync::CancellationToken;
-use watch_club::{config::Config, jobs, observability};
+use watch_club::{AppState, config::Config, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
@@ -40,7 +40,10 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     tracing::info!("listening on port {}", config.port);
     let server = axum::serve(
         listener,
-        watch_club::router(db.clone(), config.observability.web_sentry_dsn),
+        watch_club::router(AppState {
+            db: db.clone(),
+            web_sentry_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+        }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());
     // Whichever stops first stops the other, so the server exits when the runner fails

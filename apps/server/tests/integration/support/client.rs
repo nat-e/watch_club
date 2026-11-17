@@ -15,7 +15,7 @@ use http_body_util::BodyExt;
 use serde_json::Value;
 use sqlx::PgPool;
 use tower::ServiceExt;
-use watch_club::domain::accounts::User;
+use watch_club::{AppState, domain::accounts::User};
 
 use super::PASSWORD;
 
@@ -40,17 +40,23 @@ pub struct Response {
 
 impl Client {
     pub fn new(db: &PgPool) -> Self {
-        Self::with_router(watch_club::router(db.clone(), None))
+        Self::with_state(AppState {
+            db: db.clone(),
+            web_sentry_dsn: None,
+        })
     }
 
     /// Calls an app whose host set `SENTRY_WEB_DSN` to this DSN.
     pub fn with_web_sentry_dsn(db: &PgPool, dsn: &str) -> Self {
-        Self::with_router(watch_club::router(db.clone(), Some(dsn.to_owned())))
+        Self::with_state(AppState {
+            db: db.clone(),
+            web_sentry_dsn: Some(dsn.into()),
+        })
     }
 
-    fn with_router(router: Router) -> Self {
+    fn with_state(state: AppState) -> Self {
         Self {
-            router,
+            router: watch_club::router(state),
             cookies: BTreeMap::new(),
             headers: HeaderMap::new(),
         }

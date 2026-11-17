@@ -19,12 +19,12 @@ pub mod openapi;
 pub mod routes;
 mod web;
 
-/// The state the request handlers share.
-#[derive(Clone, FromRef)]
-struct AppState {
-    db: PgPool,
+/// The state the request handlers share, which `router` takes.
+#[derive(Clone, Debug, FromRef)]
+pub struct AppState {
+    pub db: PgPool,
     /// The Sentry DSN the web app reports its errors to, if the host set one
-    web_sentry_dsn: Option<Arc<str>>,
+    pub web_sentry_dsn: Option<Arc<str>>,
 }
 
 /// Connects to the app's database, and runs its pending migrations.
@@ -38,14 +38,10 @@ pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
     Ok(db)
 }
 
-/// Builds the app's router: the API under `/api`, and the web app on every other path. The web app
-/// reports its errors to `web_sentry_dsn`, if any.
-pub fn router(db: PgPool, web_sentry_dsn: Option<String>) -> Router {
+/// Builds the app's router: the API under `/api`, and the web app on every other path.
+pub fn router(state: AppState) -> Router {
     let (router, _) = app().split_for_parts();
-    router.with_state(AppState {
-        db,
-        web_sentry_dsn: web_sentry_dsn.map(Arc::from),
-    })
+    router.with_state(state)
 }
 
 /// Returns the app's routes, with the descriptions of their endpoints, which `router` serves and
