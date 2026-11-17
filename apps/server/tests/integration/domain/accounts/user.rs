@@ -1,10 +1,12 @@
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::PgPool;
-use watch_club::domain::accounts::{
-    self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
-    Username, UsernameError,
+use watch_club::{
+    domain::accounts::{
+        self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken,
+        User, Username, UsernameError,
+    },
+    testing::{database, database_with_one_connection},
 };
-use watch_club::testing::{database, database_with_one_connection};
 
 use crate::support::{self, PASSWORD};
 

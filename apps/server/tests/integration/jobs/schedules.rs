@@ -2,8 +2,7 @@
 //! expired sessions as the example.
 
 use sqlx::PgPool;
-use watch_club::jobs;
-use watch_club::testing::database;
+use watch_club::{jobs, testing::database};
 
 /// Returns the kinds of the jobs in the queue, finished or not.
 async fn job_kinds(db: &PgPool) -> Vec<String> {

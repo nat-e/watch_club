@@ -1,5 +1,7 @@
-use watch_club::domain::accounts::{self, Locale};
-use watch_club::testing::database;
+use watch_club::{
+    domain::accounts::{self, Locale},
+    testing::database,
+};
 
 use crate::support::{self, PASSWORD};
 

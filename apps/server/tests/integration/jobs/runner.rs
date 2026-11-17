@@ -2,8 +2,10 @@
 //! deletion of old jobs.
 
 use sqlx::PgPool;
-use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
-use watch_club::testing::database;
+use watch_club::{
+    jobs::{self, DeleteExpiredSessions, JobId, JobState},
+    testing::database,
+};
 
 use super::job_state;
 

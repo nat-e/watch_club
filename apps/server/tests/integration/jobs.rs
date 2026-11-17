@@ -4,10 +4,10 @@ mod runner;
 mod schedules;
 
 use sqlx::PgPool;
-use watch_club::testing::database;
 use watch_club::{
     domain::accounts,
     jobs::{self, DeleteExpiredSessions, JobId, JobState},
+    testing::database,
 };
 
 use crate::support::{self, PASSWORD};
