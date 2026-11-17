@@ -2,11 +2,12 @@
 //! expired sessions as the example.
 
 use sqlx::PgPool;
+use watch_club::db::Pool;
 use watch_club::jobs;
 use watch_club_test_macros::database_test;
 
 /// Returns the kinds of the jobs in the queue, finished or not.
-async fn job_kinds(db: &PgPool) -> Vec<String> {
+async fn job_kinds(db: &Pool) -> Vec<String> {
     sqlx::query_scalar!("SELECT kind FROM jobs")
         .fetch_all(db)
         .await
@@ -15,7 +16,7 @@ async fn job_kinds(db: &PgPool) -> Vec<String> {
 
 /// Returns whether the weekly cleanup of expired sessions runs next on the coming Sunday at 03:00
 /// UTC.
-async fn runs_next_on_the_coming_sunday(db: &PgPool) -> bool {
+async fn runs_next_on_the_coming_sunday(db: &Pool) -> bool {
     sqlx::query_scalar!(
         r#"
         SELECT
@@ -34,7 +35,7 @@ async fn runs_next_on_the_coming_sunday(db: &PgPool) -> bool {
 
 /// Sets the next run of the weekly cleanup of expired sessions to now plus the interval, such as
 /// `-3 weeks`.
-async fn set_next_run_from_now(db: &PgPool, interval: &str) {
+async fn set_next_run_from_now(db: &Pool, interval: &str) {
     sqlx::query!(
         r#"
         UPDATE job_schedules SET next_run_at = now() + $1::text::interval
@@ -52,6 +53,7 @@ mod run_available {
 
     #[database_test]
     async fn schedules_the_next_run_without_queuing_the_job(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         jobs::run_available(&db).await.unwrap();
 
         assert!(runs_next_on_the_coming_sunday(&db).await);
@@ -60,6 +62,7 @@ mod run_available {
 
     #[database_test]
     async fn queues_the_job_once_when_its_run_comes(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         jobs::run_available(&db).await.unwrap();
         set_next_run_from_now(&db, "-1 minute").await;
 
@@ -73,6 +76,7 @@ mod run_available {
 
     #[database_test]
     async fn queues_the_job_once_after_missing_several_runs(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         jobs::run_available(&db).await.unwrap();
         set_next_run_from_now(&db, "-3 weeks").await;
 
@@ -84,6 +88,7 @@ mod run_available {
 
     #[database_test]
     async fn moves_the_next_run_when_the_cron_expression_changes(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         jobs::run_available(&db).await.unwrap();
         sqlx::query!(
             r#"
@@ -110,6 +115,7 @@ mod run_available {
 
     #[database_test]
     async fn deletes_the_schedules_that_are_gone_from_the_code(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         sqlx::query!(
             r#"
             INSERT INTO job_schedules (name, cron, next_run_at)

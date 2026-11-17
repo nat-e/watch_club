@@ -13,7 +13,9 @@ use axum::{
     response::Response,
 };
 use opentelemetry::{
-    KeyValue, global,
+    KeyValue,
+    context::FutureExt as _,
+    global,
     trace::{TraceContextExt, TracerProvider},
 };
 use opentelemetry_appender_tracing::layer::{OpenTelemetryTracingBridge, TracingSpanAttributes};
@@ -277,6 +279,13 @@ pub(crate) fn with_error_scope<F: Future>(
         name_errors(scope, work);
     });
     task.bind_hub(hub)
+}
+
+/// Runs `task` without exporting its spans or logs, for routine work that would bury the other
+/// traces, such as looking for due jobs every second. Its logs still show on the console, and its
+/// metrics still count.
+pub(crate) fn without_export<F: Future>(task: F) -> impl Future<Output = F::Output> {
+    task.with_context(opentelemetry::Context::current().with_telemetry_suppressed())
 }
 
 /// Names the request's Sentry scope after its route, such as `GET /api/me`.

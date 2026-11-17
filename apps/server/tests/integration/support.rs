@@ -6,7 +6,7 @@ mod database;
 
 use std::process::Command;
 
-use sqlx::PgPool;
+use watch_club::db::Pool;
 use watch_club::domain::accounts::{Locale, User, UserId};
 
 pub use self::{client::Client, database::TestDatabase};
@@ -30,16 +30,16 @@ pub fn server_startup_error(vars: &[(&str, &str)]) -> String {
 }
 
 /// Creates a User who signs in with `PASSWORD`.
-pub async fn create_user(db: &PgPool, username: &str) -> User {
+pub async fn create_user(db: &Pool, username: &str) -> User {
     insert_user(db, username, false).await
 }
 
 /// Creates the Instance Administrator, who signs in with `PASSWORD`.
-pub async fn create_instance_administrator(db: &PgPool) -> User {
+pub async fn create_instance_administrator(db: &Pool) -> User {
     insert_user(db, "admin", true).await
 }
 
-async fn insert_user(db: &PgPool, username: &str, is_instance_administrator: bool) -> User {
+async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool) -> User {
     sqlx::query_as!(
         User,
         r#"
@@ -58,7 +58,7 @@ async fn insert_user(db: &PgPool, username: &str, is_instance_administrator: boo
 }
 
 /// Ends the User's sessions as if their lifetime had run out.
-pub async fn expire_sessions(db: &PgPool, user: UserId) {
+pub async fn expire_sessions(db: &Pool, user: UserId) {
     sqlx::query!(
         "UPDATE sessions SET expires_at = now() - interval '1 second' WHERE user_id = $1",
         user as UserId,

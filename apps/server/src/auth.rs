@@ -16,9 +16,9 @@ use axum_extra::{
     },
     headers::{Authorization, HeaderMapExt, authorization::Bearer},
 };
-use sqlx::PgPool;
 
 use crate::{
+    db::Pool,
     domain::accounts::{self, SESSION_LIFETIME, SessionToken, User},
     error::ApiError,
 };
@@ -50,7 +50,7 @@ pub(crate) struct CurrentUser(pub User);
 
 impl<S: Send + Sync> FromRequestParts<S> for CurrentUser
 where
-    PgPool: FromRef<S>,
+    Pool: FromRef<S>,
 {
     type Rejection = ApiError;
 
@@ -58,7 +58,7 @@ where
         let Ok(Some(token)) = parts.extract::<Option<SessionToken>>().await else {
             return Err(ApiError::Unauthorized);
         };
-        let user = accounts::session_user(&PgPool::from_ref(state), &token)
+        let user = accounts::session_user(&Pool::from_ref(state), &token)
             .await?
             .ok_or(ApiError::Unauthorized)?;
         Ok(Self(user))

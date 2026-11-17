@@ -2,13 +2,14 @@
 //! deletion of old jobs.
 
 use sqlx::PgPool;
+use watch_club::db::Pool;
 use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
 use watch_club_test_macros::database_test;
 
 use super::job_state;
 
 /// Queues a job that runs at once.
-async fn enqueue(db: &PgPool) -> JobId {
+async fn enqueue(db: &Pool) -> JobId {
     jobs::enqueue(db, DeleteExpiredSessions {}).await.unwrap()
 }
 
@@ -17,6 +18,7 @@ mod run_available {
 
     #[database_test]
     async fn runs_jobs_by_priority_then_in_the_order_they_are_due(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let low = enqueue(&db).await;
         let second = enqueue(&db).await;
         let first = enqueue(&db).await;
@@ -43,6 +45,7 @@ mod run_available {
 
     #[database_test]
     async fn waits_for_the_time_a_job_runs_at(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue(&db).await;
         sqlx::query!(
             "UPDATE jobs SET run_at = now() + interval '1 minute' WHERE id = $1",
@@ -59,6 +62,7 @@ mod run_available {
 
     #[database_test]
     async fn runs_each_job_once_when_runners_claim_at_the_same_time(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         for _ in 0..20 {
             enqueue(&db).await;
         }
@@ -87,7 +91,7 @@ mod run_available {
     }
 
     /// Queues a job whose attempts fail, as its kind no longer exists.
-    async fn enqueue_failing(db: &PgPool, max_attempts: i16) -> JobId {
+    async fn enqueue_failing(db: &Pool, max_attempts: i16) -> JobId {
         sqlx::query_scalar!(
             r#"
             INSERT INTO jobs (queue, kind, max_attempts)
@@ -103,6 +107,7 @@ mod run_available {
 
     #[database_test]
     async fn schedules_a_retry_with_a_backoff(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue_failing(&db, 3).await;
 
         jobs::run_available(&db).await.unwrap();
@@ -121,6 +126,7 @@ mod run_available {
 
     #[database_test]
     async fn fails_a_job_after_its_last_attempt(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue_failing(&db, 1).await;
 
         jobs::run_available(&db).await.unwrap();
@@ -129,7 +135,7 @@ mod run_available {
     }
 
     /// Makes the job look like an attempt that started this long ago and never ended.
-    async fn leave_running(db: &PgPool, id: JobId, attempt: i16, started_ago: &str) {
+    async fn leave_running(db: &Pool, id: JobId, attempt: i16, started_ago: &str) {
         sqlx::query!(
             r#"
             UPDATE jobs
@@ -147,6 +153,7 @@ mod run_available {
 
     #[database_test]
     async fn rescues_a_job_left_running_for_an_hour(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "61 minutes").await;
 
@@ -157,6 +164,7 @@ mod run_available {
 
     #[database_test]
     async fn leaves_a_job_running_for_less_than_an_hour(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "59 minutes").await;
 
@@ -167,6 +175,7 @@ mod run_available {
 
     #[database_test]
     async fn fails_a_job_left_running_on_its_last_attempt(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = enqueue(&db).await;
         leave_running(&db, id, 3, "61 minutes").await;
 
@@ -176,7 +185,7 @@ mod run_available {
     }
 
     /// Makes the job look like it ended in the state this long ago.
-    async fn finish(db: &PgPool, id: JobId, state: JobState, finished_ago: &str) {
+    async fn finish(db: &Pool, id: JobId, state: JobState, finished_ago: &str) {
         sqlx::query!(
             r#"
             UPDATE jobs SET state = $2, finished_at = now() - $3::text::interval
@@ -193,6 +202,7 @@ mod run_available {
 
     #[database_test]
     async fn deletes_the_jobs_finished_over_a_week_ago(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         for state in [JobState::Completed, JobState::Failed, JobState::Cancelled] {
             let id = enqueue(&db).await;
             finish(&db, id, state, "7 days 1 minute").await;

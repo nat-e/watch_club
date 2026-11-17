@@ -7,6 +7,7 @@ use crate::support::{self, Client};
 
 #[database_test]
 async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.status, StatusCode::OK);
     assert_eq!(response.body["needs_setup"], true);
@@ -20,6 +21,7 @@ async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
 
 #[database_test]
 async fn names_no_sentry_dsn_unless_the_host_sets_one(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.body["web_sentry_dsn"], Value::Null);
 

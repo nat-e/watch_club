@@ -1,10 +1,9 @@
 //! The health check, which Docker and uptime monitors call to know whether the server works.
 
 use axum::{extract::State, http::StatusCode};
-use sqlx::PgPool;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::AppState;
+use crate::{AppState, db::Pool};
 
 pub(super) fn routes() -> OpenApiRouter<AppState> {
     OpenApiRouter::new().routes(routes!(check_health))
@@ -19,7 +18,7 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
         (status = SERVICE_UNAVAILABLE, description = "The server doesn't work"),
     ),
 )]
-async fn check_health(State(db): State<PgPool>) -> StatusCode {
+async fn check_health(State(db): State<Pool>) -> StatusCode {
     match db.acquire().await {
         Ok(_) => StatusCode::OK,
         Err(_) => StatusCode::SERVICE_UNAVAILABLE,

@@ -39,7 +39,7 @@ async fn main() -> anyhow::Result<()> {
             locale as Locale,
             is_instance_administrator,
         )
-        .execute(&mut *transaction)
+        .execute(&mut transaction)
         .await
         .with_context(|| format!("failed to create {username}"))?;
     }

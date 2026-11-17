@@ -7,6 +7,7 @@ use crate::support::{self, Client};
 
 #[database_test]
 async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let mut browser = Client::new(&db);
 
     let account = json!({ "username": "ada", "password": "secret password", "locale": "fr-FR" });
@@ -22,6 +23,7 @@ async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
 
 #[database_test]
 async fn refuses_once_watchclub_is_set_up(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     support::create_instance_administrator(&db).await;
 
     let account = json!({ "username": "ada", "password": "secret password", "locale": "en-US" });
@@ -38,6 +40,7 @@ async fn refuses_once_watchclub_is_set_up(db: PgPool) {
 
 #[database_test]
 async fn says_which_rules_the_account_breaks(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let account = json!({ "username": "Ada!", "password": "short", "locale": "en-US" });
     let response = Client::new(&db)
         .post("/api/instance/administrator", account)
@@ -57,6 +60,7 @@ async fn says_which_rules_the_account_breaks(db: PgPool) {
 
 #[database_test]
 async fn refuses_a_locale_watchclub_does_not_have(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let account = json!({ "username": "ada", "password": "secret password", "locale": "de-DE" });
     let response = Client::new(&db)
         .post("/api/instance/administrator", account)

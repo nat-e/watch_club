@@ -4,6 +4,7 @@ mod runner;
 mod schedules;
 
 use sqlx::PgPool;
+use watch_club::db::Pool;
 use watch_club::{
     domain::accounts,
     jobs::{self, DeleteExpiredSessions, JobId, JobState},
@@ -13,7 +14,7 @@ use watch_club_test_macros::database_test;
 use crate::support::{self, PASSWORD};
 
 /// Returns the job's state, and the number of times it started.
-async fn job_state(db: &PgPool, id: JobId) -> (JobState, i16) {
+async fn job_state(db: &Pool, id: JobId) -> (JobState, i16) {
     let job = sqlx::query!("SELECT state, attempt FROM jobs WHERE id = $1", id as JobId)
         .fetch_one(db)
         .await
@@ -26,6 +27,7 @@ mod enqueue {
 
     #[database_test]
     async fn queues_the_job_for_the_runner(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
         accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
@@ -45,9 +47,10 @@ mod enqueue {
 
     #[database_test]
     async fn queues_nothing_when_the_transaction_rolls_back(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let mut transaction = db.begin().await.unwrap();
 
-        jobs::enqueue(&mut *transaction, DeleteExpiredSessions {})
+        jobs::enqueue(&mut transaction, DeleteExpiredSessions {})
             .await
             .unwrap();
         transaction.rollback().await.unwrap();
@@ -65,6 +68,7 @@ mod cancel {
 
     #[database_test]
     async fn cancels_a_queued_job(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
 
         let cancelled = jobs::cancel(&db, id).await.unwrap();
@@ -76,6 +80,7 @@ mod cancel {
 
     #[database_test]
     async fn is_too_late_once_the_job_ran(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
         jobs::run_available(&db).await.unwrap();
 

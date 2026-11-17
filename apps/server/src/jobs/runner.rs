@@ -6,7 +6,7 @@ use std::{any::Any, panic::AssertUnwindSafe, time::Duration};
 
 use anyhow::{Context, anyhow};
 use futures_util::{FutureExt, future};
-use sqlx::PgPool;
+use sqlx_otel::QueryAnnotateExt;
 use tokio::{
     task::{JoinError, JoinSet},
     time::{self, MissedTickBehavior},
@@ -14,8 +14,8 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
 
-use super::{AnyJob, ClaimedJob, JobError, JobId, JobState, Queue, observability, schedules};
-use crate::domain::InternalError;
+use super::{AnyJob, ClaimedJob, JobError, JobId, JobState, Queue, schedules};
+use crate::{db::Pool, domain::InternalError, observability};
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
 /// that didn't wait for it, and runs again.
@@ -40,9 +40,9 @@ const SHUTDOWN_WAIT: Duration = Duration::from_secs(8);
 
 /// Runs the queued jobs until `shutdown` is cancelled, then waits up to 8 s for the running ones.
 /// Those still running then stay `executing` until they're rescued.
-pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), InternalError> {
+pub async fn run(db: Pool, shutdown: CancellationToken) -> Result<(), InternalError> {
     let jobs = async {
-        schedules::sync_schedules(&db).await?;
+        observability::without_export(schedules::sync_schedules(&db)).await?;
         let queues = future::join_all(Queue::ALL.map(|queue| run_queue(&db, queue, &shutdown)));
         tokio::join!(queues, maintain(&db, &shutdown));
         Ok(())
@@ -68,7 +68,7 @@ pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), Internal
 /// Does at once what the runner does over time, for tests: syncs the schedules, runs the
 /// maintenance, then runs the due jobs one at a time, in the order the runner claims them, until
 /// none is left.
-pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
+pub async fn run_available(db: &Pool) -> Result<(), InternalError> {
     schedules::sync_schedules(db).await?;
     run_maintenance(db).await?;
     for queue in Queue::ALL {
@@ -81,7 +81,7 @@ pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
 
 /// Claims the queue's due jobs whenever it has room, and runs each in its own task, until
 /// `shutdown` is cancelled. Then waits for the running jobs.
-async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
+async fn run_queue(db: &Pool, queue: Queue, shutdown: &CancellationToken) {
     let mut running_jobs = JoinSet::new();
     loop {
         while let Some(task_result) = running_jobs.try_join_next() {
@@ -91,7 +91,7 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
         let claimed = if free_slots == 0 {
             Vec::new()
         } else {
-            claim_jobs(db, queue, free_slots)
+            observability::without_export(claim_jobs(db, queue, free_slots))
                 .await
                 .unwrap_or_else(|error| {
                     tracing::event!(
@@ -137,7 +137,7 @@ fn log_panic(task_result: Result<(), JoinError>) {
 /// Claims up to `limit` of the queue's due jobs, by priority and then by time. No other claim gets
 /// them, even from another server.
 async fn claim_jobs(
-    db: &PgPool,
+    db: &Pool,
     queue: Queue,
     limit: usize,
 ) -> Result<Vec<ClaimedJob>, InternalError> {
@@ -160,6 +160,7 @@ async fn claim_jobs(
         queue as Queue,
         limit,
     )
+    .with_operation("UPDATE", "jobs")
     .fetch_all(db)
     .await
     // Without a context of its own: the runner's log already says that claiming failed
@@ -169,7 +170,7 @@ async fn claim_jobs(
 
 /// Runs a claimed job, and saves how its attempt ended. Arguments that don't read count as a
 /// failed attempt.
-async fn run_job(db: &PgPool, mut job: ClaimedJob) {
+async fn run_job(db: &Pool, mut job: ClaimedJob) {
     let args = job.args.take();
     let run = async {
         let outcome = match AnyJob::from_row(&job.kind, args) {
@@ -181,7 +182,7 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
         };
         save_outcome(db, &job, outcome).await;
     };
-    observability::instrument(&job, run).await;
+    super::observability::instrument(&job, run).await;
 }
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
@@ -208,7 +209,7 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 
 /// Saves how a job's attempt ended: completed, failed, or back in its queue to try again after a
 /// backoff.
-async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobError>) {
+async fn save_outcome(db: &Pool, job: &ClaimedJob, outcome: Result<(), JobError>) {
     let attempt = job.attempt;
     let state = next_state(attempt, job.max_attempts, outcome);
     // A retry waits `attempt⁴ + 15` seconds, plus up to 10% at random so that jobs that failed
@@ -229,6 +230,7 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
         attempt,
         state as JobState,
     )
+    .with_operation("UPDATE", "jobs")
     .execute(db)
     .await;
     if let Err(error) = recorded {
@@ -277,7 +279,7 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
 }
 
 /// Runs the maintenance every minute, starting now, until `shutdown` is cancelled.
-async fn maintain(db: &PgPool, shutdown: &CancellationToken) {
+async fn maintain(db: &Pool, shutdown: &CancellationToken) {
     let mut ticks = time::interval(MAINTENANCE_INTERVAL);
     ticks.set_missed_tick_behavior(MissedTickBehavior::Delay);
     loop {
@@ -297,26 +299,30 @@ async fn maintain(db: &PgPool, shutdown: &CancellationToken) {
 }
 
 /// Queues the due scheduled jobs, rescues the jobs left running and deletes the old ones.
-async fn run_maintenance(db: &PgPool) -> Result<(), InternalError> {
-    schedules::enqueue_due(db).await?;
+async fn run_maintenance(db: &Pool) -> Result<(), InternalError> {
+    observability::without_export(schedules::enqueue_due(db)).await?;
     rescue_jobs(db).await?;
-    delete_old_jobs(db).await
+    observability::without_export(delete_old_jobs(db)).await
 }
 
 /// Puts the jobs `executing` for longer than `RESCUE_AFTER` back in their queue, or fails those
 /// with no attempts left.
-async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
-    let rescued = sqlx::query!(
-        r#"
+async fn rescue_jobs(db: &Pool) -> Result<(), InternalError> {
+    // Only the query: the logs below are exported
+    let rescued = observability::without_export(
+        sqlx::query!(
+            r#"
         UPDATE jobs
         SET state = CASE WHEN attempt < max_attempts THEN 'available'::job_state ELSE 'failed' END,
             finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END
         WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)
         RETURNING id, kind, attempt, state = 'available' AS "will_retry!"
         "#,
-        RESCUE_AFTER.as_secs_f64(),
+            RESCUE_AFTER.as_secs_f64(),
+        )
+        .with_operation("UPDATE", "jobs")
+        .fetch_all(db),
     )
-    .fetch_all(db)
     .await
     .context("failed to rescue the jobs left running")?;
     // No job's span holds these logs, so they carry its fields themselves
@@ -346,7 +352,7 @@ async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
 }
 
 /// Deletes the jobs that finished more than `KEEP_FINISHED` ago.
-async fn delete_old_jobs(db: &PgPool) -> Result<(), InternalError> {
+async fn delete_old_jobs(db: &Pool) -> Result<(), InternalError> {
     sqlx::query!(
         r#"
         DELETE FROM jobs
@@ -355,6 +361,7 @@ async fn delete_old_jobs(db: &PgPool) -> Result<(), InternalError> {
         "#,
         KEEP_FINISHED.as_secs_f64(),
     )
+    .with_operation("DELETE", "jobs")
     .execute(db)
     .await
     .context("failed to delete the old jobs")?;

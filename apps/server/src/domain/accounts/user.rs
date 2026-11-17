@@ -8,14 +8,15 @@ use jiff::SignedDuration;
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use sqlx::{PgExecutor, PgPool};
+use sqlx::PgExecutor;
+use sqlx_otel::QueryAnnotateExt;
 use tokio::sync::Semaphore;
 use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::Locale;
-use crate::domain::InternalError;
+use crate::{db::Pool, domain::InternalError};
 
 /// The unique ID of a User.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, sqlx::Type, ToSchema)]
@@ -127,10 +128,11 @@ pub enum PasswordError {
 
 /// Returns `true` once Setup has created the Instance Administrator.
 #[tracing::instrument(skip_all)]
-pub async fn has_instance_administrator(db: &PgPool) -> Result<bool, InternalError> {
+pub async fn has_instance_administrator(db: &Pool) -> Result<bool, InternalError> {
     let exists = sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT FROM users WHERE is_instance_administrator) AS "exists!""#
     )
+    .with_operation("SELECT", "users")
     .fetch_one(db)
     .await
     .context("failed to check for the Instance Administrator")?;
@@ -155,7 +157,7 @@ impl From<InternalError> for CreateInstanceAdministratorError {
 /// Creates the Instance Administrator and signs them in on a new device.
 #[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
-    db: &PgPool,
+    db: &Pool,
     username: Username,
     password: Password,
     locale: Locale,
@@ -176,7 +178,8 @@ pub async fn create_instance_administrator(
         password_hash,
         locale as Locale,
     )
-    .fetch_one(&mut *transaction)
+    .with_operation("INSERT", "users")
+    .fetch_one(&mut transaction)
     .await;
     let user = match created {
         Ok(user) => user,
@@ -206,7 +209,7 @@ pub async fn create_instance_administrator(
                 .into());
         }
     };
-    let token = create_session(&mut *transaction, user.id).await?;
+    let token = create_session(&mut transaction, user.id).await?;
     transaction
         .commit()
         .await
@@ -260,7 +263,7 @@ impl SessionToken {
 /// Returns None if the username or password is wrong.
 #[tracing::instrument(skip_all)]
 pub async fn sign_in(
-    db: &PgPool,
+    db: &Pool,
     username: &str,
     password: SecretString,
 ) -> Result<Option<(User, SessionToken)>, InternalError> {
@@ -288,7 +291,7 @@ pub async fn sign_in(
 /// Returns the User whose username and password these are, or None. Takes about as long either
 /// way.
 async fn check_credentials(
-    db: &PgPool,
+    db: &Pool,
     username: &str,
     password: SecretString,
 ) -> Result<Option<User>, InternalError> {
@@ -300,6 +303,7 @@ async fn check_credentials(
         "#,
         username,
     )
+    .with_operation("SELECT", "users")
     .fetch_optional(db)
     .await
     .context("failed to find the User signing in")?
@@ -329,10 +333,7 @@ async fn check_credentials(
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
 #[tracing::instrument(skip_all)]
-pub async fn session_user(
-    db: &PgPool,
-    token: &SessionToken,
-) -> Result<Option<User>, InternalError> {
+pub async fn session_user(db: &Pool, token: &SessionToken) -> Result<Option<User>, InternalError> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -343,6 +344,7 @@ pub async fn session_user(
         "#,
         &token.hash(),
     )
+    .with_operation("SELECT", "sessions")
     .fetch_optional(db)
     .await
     .context("failed to find the session's User")?;
@@ -351,8 +353,9 @@ pub async fn session_user(
 
 /// Signs out the device that the token keeps signed in.
 #[tracing::instrument(skip_all)]
-pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
+pub async fn sign_out(db: &Pool, token: &SessionToken) -> Result<(), InternalError> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
+        .with_operation("DELETE", "sessions")
         .execute(db)
         .await
         .context("failed to end a session")?;
@@ -361,8 +364,9 @@ pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalE
 
 /// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
 #[tracing::instrument(skip_all)]
-pub async fn delete_expired_sessions(db: &PgPool) -> Result<u64, InternalError> {
+pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
     let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
+        .with_operation("DELETE", "sessions")
         .execute(db)
         .await
         .context("failed to delete the expired sessions")?;

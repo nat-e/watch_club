@@ -3,7 +3,6 @@
 use std::sync::Arc;
 
 use axum::{Router, extract::FromRef};
-use sqlx::PgPool;
 
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
@@ -22,7 +21,7 @@ mod web;
 /// The state the request handlers share, which `router` takes.
 #[derive(Clone, Debug, FromRef)]
 pub struct AppState {
-    pub db: PgPool,
+    pub db: db::Pool,
     /// The Sentry DSN the web app reports its errors to, if the host set one
     pub web_sentry_dsn: Option<Arc<str>>,
 }

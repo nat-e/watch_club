@@ -13,8 +13,8 @@ use axum::{
 use axum_extra::extract::cookie::Cookie;
 use http_body_util::BodyExt;
 use serde_json::Value;
-use sqlx::PgPool;
 use tower::ServiceExt;
+use watch_club::db::Pool;
 use watch_club::{AppState, domain::accounts::User};
 
 use super::PASSWORD;
@@ -39,7 +39,7 @@ pub struct Response {
 }
 
 impl Client {
-    pub fn new(db: &PgPool) -> Self {
+    pub fn new(db: &Pool) -> Self {
         Self::with_state(AppState {
             db: db.clone(),
             web_sentry_dsn: None,
@@ -47,7 +47,7 @@ impl Client {
     }
 
     /// Calls an app whose host set `SENTRY_WEB_DSN` to this DSN.
-    pub fn with_web_sentry_dsn(db: &PgPool, dsn: &str) -> Self {
+    pub fn with_web_sentry_dsn(db: &Pool, dsn: &str) -> Self {
         Self::with_state(AppState {
             db: db.clone(),
             web_sentry_dsn: Some(dsn.into()),

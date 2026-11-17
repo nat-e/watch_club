@@ -1,67 +1,37 @@
-//! The app's Postgres database: the pool of connections to it, which runs the migrations and reports
-//! its connections in metrics.
+//! The app's Postgres database: the pool of connections to it, which runs the migrations, traces
+//! each query and reports its connections in metrics.
 
-use opentelemetry::{KeyValue, global};
-use opentelemetry_semantic_conventions::{
-    attribute::{DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE},
-    metric::{DB_CLIENT_CONNECTION_COUNT, DB_CLIENT_CONNECTION_MAX},
-};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::{PgPool, Postgres, postgres::PgPoolOptions};
+use sqlx_otel::PoolBuilder;
+
+/// The pool of connections to the app's database. Each query gets a span, with OpenTelemetry's
+/// database conventions: name it with `.with_operation("SELECT", "users")`, from
+/// `sqlx_otel::QueryAnnotateExt`.
+pub type Pool = sqlx_otel::Pool<Postgres>;
 
 /// Connects to the app's database, runs its pending migrations, and reports the pool's connections
-/// in metrics. Call it after `observability::start`, without which the metrics go nowhere.
-pub async fn connect(url: &str) -> Result<PgPool, sqlx::Error> {
+/// in metrics. Call it after `observability::start`, without which the spans and metrics go
+/// nowhere.
+pub async fn connect(url: &str) -> Result<Pool, sqlx::Error> {
     let db = PgPoolOptions::new()
         // Shared by the requests and the jobs, which hold one only while a query runs
         .max_connections(10)
         .connect(url)
         .await?;
     sqlx::migrate!().run(&db).await?;
-    observe(&db);
-    Ok(db)
+    let options = db.connect_options();
+    // The name the conventions give a pool that has none. Naming it turns on the metric of its
+    // connections by state
+    let name = format!(
+        "{}:{}/{}",
+        options.get_host(),
+        options.get_port(),
+        options.get_database().unwrap_or_default(),
+    );
+    Ok(PoolBuilder::from(db).with_pool_name(name).build())
 }
 
-/// Reports the pool's connections in metrics: how many are used and idle, and the most it opens.
-fn observe(db: &PgPool) {
-    let options = db.connect_options();
-    // The name the conventions give a pool that has none
-    let pool_name = KeyValue::new(
-        DB_CLIENT_CONNECTION_POOL_NAME,
-        format!(
-            "{}:{}/{}",
-            options.get_host(),
-            options.get_port(),
-            options.get_database().unwrap_or_default(),
-        ),
-    );
-    let meter = global::meter(env!("CARGO_PKG_NAME"));
-
-    let pool = db.clone();
-    let name = pool_name.clone();
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_COUNT)
-        .with_unit("{connection}")
-        .with_description("The connections to the database, by state.")
-        .with_callback(move |observer| {
-            let size = i64::from(pool.size());
-            let idle = i64::try_from(pool.num_idle()).unwrap_or(i64::MAX).min(size);
-            for (state, count) in [("idle", idle), ("used", size - idle)] {
-                observer.observe(
-                    count,
-                    &[
-                        name.clone(),
-                        KeyValue::new(DB_CLIENT_CONNECTION_STATE, state),
-                    ],
-                );
-            }
-        })
-        .build();
-
-    let max = i64::from(db.options().get_max_connections());
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_MAX)
-        .with_unit("{connection}")
-        .with_description("The most connections the pool opens to the database.")
-        .with_callback(move |observer| observer.observe(max, std::slice::from_ref(&pool_name)))
-        .build();
+/// Traces the queries of a pool that `connect` didn't open, such as a test's.
+pub fn instrument(db: PgPool) -> Pool {
+    PoolBuilder::from(db).build()
 }

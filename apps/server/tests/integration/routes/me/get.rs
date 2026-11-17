@@ -7,6 +7,7 @@ use crate::support::{self, Client};
 
 #[database_test]
 async fn returns_the_signed_in_user(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;
@@ -27,6 +28,7 @@ async fn returns_the_signed_in_user(db: PgPool) {
 
 #[database_test]
 async fn refuses_requests_without_a_session(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let response = Client::new(&db).get("/api/me").await;
 
     assert_eq!(response.status, StatusCode::UNAUTHORIZED);
@@ -36,6 +38,7 @@ async fn refuses_requests_without_a_session(db: PgPool) {
 
 #[database_test]
 async fn refuses_requests_once_the_session_expired(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;

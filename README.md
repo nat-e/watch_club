@@ -40,10 +40,11 @@ The server sends OTLP over HTTP with protobuf, usually on port 4318: it doesn't 
 
 The server reports as `watch_club`, with its version: `OTEL_SERVICE_NAME` changes the name, and `OTEL_RESOURCE_ATTRIBUTES` adds attributes.
 
-- **Traces**: one for each request, named after its route, such as `GET /api/me`, except the health check, and one for each run of a background job, named `job`, with its kind in `job.kind`. A request with a W3C `traceparent` header continues its trace. Every trace is kept unless `OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG` say otherwise.
+- **Traces**: one for each request, named after its route, such as `GET /api/me`, except the health check, and one for each run of a background job, named `job`, with its kind in `job.kind`. Inside them, a span for each database query, such as `SELECT users`, with its SQL, whose values stay out as `$1` placeholders. The job runner's routine queries, such as looking for due jobs every second, aren't traced. A request with a W3C `traceparent` header continues its trace. Every trace is kept unless `OTEL_TRACES_SAMPLER` and `OTEL_TRACES_SAMPLER_ARG` say otherwise.
 - **Metrics**, sent every minute unless `OTEL_METRIC_EXPORT_INTERVAL` sets another interval in milliseconds:
   - `http.server.request.duration`, `http.server.active_requests`, `http.server.request.body.size` and `http.server.response.body.size`, labelled by method, route and status, except for the health check
-  - `db.client.connection.count`, the database connections by state, `idle` or `used`, and `db.client.connection.max`, the most the server opens
+  - `db.client.operation.duration`, the time each database query takes, labelled by operation and table, and `db.client.response.returned_rows`
+  - `db.client.connection.count`, the database connections by state, `idle` or `used`, `db.client.connection.max`, the most the server opens, `db.client.connection.wait_time`, the time spent waiting for one, and the pool's other metrics in OpenTelemetry's database conventions
 
   Prometheus-compatible backends replace dots with underscores and add unit suffixes, such as `http_server_request_duration_seconds`.
 - **Logs**: the lines the console shows, with the fields of the request or job that wrote them, such as `http.request.method`, `url.path`, `job.kind` and `job.attempt`, and with its trace when traces are on.

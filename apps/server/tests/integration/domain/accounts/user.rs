@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::{PgPool, postgres::PgPoolOptions};
+use watch_club::db::Pool;
 use watch_club::domain::accounts::{
     self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
     Username, UsernameError,
@@ -11,7 +12,7 @@ use watch_club_test_macros::database_test;
 use crate::support::{self, PASSWORD};
 
 /// Signs the User in with `PASSWORD`, and returns the token of the session it starts.
-async fn new_session(db: &PgPool, user: &User) -> SessionToken {
+async fn new_session(db: &Pool, user: &User) -> SessionToken {
     let (_, token) = accounts::sign_in(db, &user.username, PASSWORD.into())
         .await
         .unwrap()
@@ -78,6 +79,7 @@ mod has_instance_administrator {
 
     #[database_test]
     async fn is_false_until_setup(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         support::create_user(&db, "ada").await;
 
         let set_up = accounts::has_instance_administrator(&db).await.unwrap();
@@ -87,6 +89,7 @@ mod has_instance_administrator {
 
     #[database_test]
     async fn is_true_once_the_instance_administrator_exists(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         support::create_instance_administrator(&db).await;
 
         let set_up = accounts::has_instance_administrator(&db).await.unwrap();
@@ -100,6 +103,7 @@ mod create_instance_administrator {
 
     #[database_test]
     async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let (admin, token) = accounts::create_instance_administrator(
             &db,
             Username::parse("ada").unwrap(),
@@ -122,6 +126,7 @@ mod create_instance_administrator {
 
     #[database_test]
     async fn fails_when_there_is_one_already(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(
@@ -140,6 +145,7 @@ mod create_instance_administrator {
 
     #[database_test]
     async fn fails_when_there_is_one_already_with_the_same_username(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let admin = support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(
@@ -158,12 +164,14 @@ mod create_instance_administrator {
 
     #[database_test]
     async fn fails_when_there_is_one_already_with_a_single_connection(db: PgPool) {
-        let db = PgPoolOptions::new()
-            .max_connections(1)
-            .acquire_timeout(Duration::from_secs(2))
-            .connect_with(db.connect_options().as_ref().clone())
-            .await
-            .unwrap();
+        let db = watch_club::db::instrument(
+            PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(Duration::from_secs(2))
+                .connect_with(db.connect_options().as_ref().clone())
+                .await
+                .unwrap(),
+        );
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(
@@ -186,6 +194,7 @@ mod sign_in {
 
     #[database_test]
     async fn signs_in_the_user_with_this_password(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
 
         let (signed_in, token) = accounts::sign_in(&db, " ada ", PASSWORD.into())
@@ -200,6 +209,7 @@ mod sign_in {
 
     #[database_test]
     async fn gives_each_device_its_own_token(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
 
         let phone = new_session(&db, &user).await;
@@ -210,6 +220,7 @@ mod sign_in {
 
     #[database_test]
     async fn is_none_for_a_wrong_password(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         support::create_user(&db, "ada").await;
 
         let signed_in = accounts::sign_in(&db, "ada", "wrong password".into())
@@ -221,6 +232,7 @@ mod sign_in {
 
     #[database_test]
     async fn is_none_for_an_unknown_username(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let signed_in = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap();
@@ -256,6 +268,7 @@ mod session_user {
 
     #[database_test]
     async fn is_none_for_a_token_that_never_signed_in(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let token = SessionToken::decode(&"A".repeat(43)).unwrap();
 
         let signed_in = accounts::session_user(&db, &token).await.unwrap();
@@ -265,6 +278,7 @@ mod session_user {
 
     #[database_test]
     async fn is_none_once_the_session_expired(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
         let token = new_session(&db, &user).await;
         support::expire_sessions(&db, user.id).await;
@@ -280,6 +294,7 @@ mod sign_out {
 
     #[database_test]
     async fn signs_out_this_device_only(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
         let phone = new_session(&db, &user).await;
         let laptop = new_session(&db, &user).await;
@@ -299,6 +314,7 @@ mod delete_expired_sessions {
 
     #[database_test]
     async fn deletes_only_the_expired_sessions(db: PgPool) {
+        let db = watch_club::db::instrument(db);
         let ada = support::create_user(&db, "ada").await;
         let bob = support::create_user(&db, "bob").await;
         new_session(&db, &ada).await;

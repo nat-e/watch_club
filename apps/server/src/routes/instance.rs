@@ -11,13 +11,13 @@ use axum::{
 use axum_extra::extract::CookieJar;
 use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppState,
     auth::SessionCookie,
+    db::Pool,
     domain::{
         InternalError,
         accounts::{
@@ -73,7 +73,7 @@ struct GetInstanceResponse {
     ),
 )]
 async fn create_instance_administrator(
-    State(db): State<PgPool>,
+    State(db): State<Pool>,
     cookie: SessionCookie,
     Json(request): Json<CreateInstanceAdministratorRequest>,
 ) -> Result<(StatusCode, CookieJar, Json<User>), CreateInstanceAdministratorRequestError> {
