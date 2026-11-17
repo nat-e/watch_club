@@ -34,11 +34,9 @@ fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
 /// Makes the database's schedules match the code's: adds the new ones, moves the next run of
 /// those whose cron expression changed, and deletes those that are gone.
 pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
-    let now = sqlx::query_scalar!(r#"SELECT now() AS "now!""#)
-        .fetch_one(db)
-        .await
-        .context("failed to read the database's time")?
-        .to_jiff();
+    // The server's clock, as other job queues use: with clocks out of sync, a run around the
+    // server's start could be skipped or come early, and `enqueue_due` sets the next ones right
+    let now = Timestamp::now();
     let schedules = schedules_by_name()?;
     let mut names = Vec::with_capacity(schedules.len());
     let mut crons = Vec::with_capacity(schedules.len());
