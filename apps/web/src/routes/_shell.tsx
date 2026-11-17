@@ -113,7 +113,7 @@ function AppSidebar({user}: {user: User}) {
         <SidebarGroup>
           <SidebarGroupContent>
             <nav aria-label={t($ => $.web.shell.navigation)}>
-              <SidebarMenu>
+              <SidebarMenu className="gap-px">
                 <SectionLink to="/" icon={icons.HouseIcon} label={t($ => $.core.home.title)} />
                 <SectionLink
                   to="/browse"
@@ -164,6 +164,8 @@ function SectionLink({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
+        // Taller for fingers. The current section's text and icon stand out from the others'
+        className="h-9 font-semibold text-muted-foreground pointer-coarse:h-11 hover:text-foreground data-active:font-semibold data-active:text-foreground [&_svg]:text-subtle-foreground data-active:[&_svg]:text-muted-foreground"
         render={
           <Link
             to={to}
