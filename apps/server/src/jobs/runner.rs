@@ -2,7 +2,7 @@
 //! its limit, with retries, and the maintenance that queues the scheduled jobs, rescues the jobs a
 //! crash left running and deletes old ones.
 
-use std::{any::Any, panic::AssertUnwindSafe, time::Duration};
+use std::{panic::AssertUnwindSafe, time::Duration};
 
 use anyhow::{Context, anyhow};
 use futures_util::{FutureExt, future};
@@ -186,25 +186,17 @@ async fn run_job(db: &Pool, mut job: ClaimedJob) {
 }
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
-/// failed attempt.
+/// failed attempt, and the runner goes on, as the server does after a panicking request: see
+/// `routes`.
 async fn run_attempt(
     timeout: Duration,
     work: impl Future<Output = Result<(), JobError>>,
 ) -> Result<(), JobError> {
     match time::timeout(timeout, AssertUnwindSafe(work).catch_unwind()).await {
         Ok(Ok(outcome)) => outcome,
-        Ok(Err(panic)) => Err(anyhow!("panicked: {}", panic_message(&*panic)).into()),
+        Ok(Err(panic)) => Err(InternalError::from_panic(&*panic).into()),
         Err(_) => Err(anyhow!("timed out after {timeout:?}").into()),
     }
-}
-
-/// Returns the message of a panic, which is a `&str` or a `String` when it has one.
-fn panic_message(panic: &(dyn Any + Send)) -> &str {
-    panic
-        .downcast_ref::<&str>()
-        .copied()
-        .or_else(|| panic.downcast_ref::<String>().map(String::as_str))
-        .unwrap_or("no message")
 }
 
 /// Saves how a job's attempt ended: completed, failed, or back in its queue to try again after a

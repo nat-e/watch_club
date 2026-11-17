@@ -70,7 +70,8 @@ thiserror = "2.0.21"
 time = { version = "0.3.55", default-features = false }
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "sync", "net", "signal", "time"] }
 tokio-util = "0.7.20"
-tower-http = { version = "0.7.1", features = ["trace"] }
+# `catch-panic` answers a panicking handler with a 500, as any internal error
+tower-http = { version = "0.7.1", features = ["catch-panic", "trace"] }
 tracing = "0.1.44"
 tracing-opentelemetry = { version = "0.34.0", default-features = false }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
