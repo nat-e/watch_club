@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        UPDATE jobs\n        SET state = CASE WHEN attempt < max_attempts THEN 'available' ELSE 'failed' END,\n            finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END\n        WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)\n        RETURNING id, kind, attempt, state = 'available' AS \"will_retry!\"\n        ",
+  "query": "\n        UPDATE jobs\n        SET state = CASE WHEN attempt < max_attempts THEN 'available'::job_state ELSE 'failed' END,\n            finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END\n        WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)\n        RETURNING id, kind, attempt, state = 'available' AS \"will_retry!\"\n        ",
   "describe": {
     "columns": [
       {
@@ -55,5 +55,5 @@
       null
     ]
   },
-  "hash": "dd1ebb4d5b1cd3cb9dedad55e6a0898e4a7ee3c12f1373e1aae0b6196b05ffc3"
+  "hash": "7d4e6f8617b4aa128cdb71826a52c0c38c92f4ed1e2ecd7d5c98b9ab00efe533"
 }

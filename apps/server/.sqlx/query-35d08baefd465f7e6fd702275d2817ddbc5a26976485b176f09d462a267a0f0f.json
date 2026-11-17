@@ -6,7 +6,20 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Text",
+        {
+          "Custom": {
+            "name": "job_state",
+            "kind": {
+              "Enum": [
+                "available",
+                "executing",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            }
+          }
+        },
         "Text"
       ]
     },

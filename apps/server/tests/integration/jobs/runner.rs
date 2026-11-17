@@ -2,7 +2,7 @@
 //! deletion of old jobs.
 
 use sqlx::PgPool;
-use watch_club::jobs::{self, DeleteExpiredSessions, JobId};
+use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
 
 use super::job_state;
 
@@ -53,7 +53,7 @@ mod run_available {
 
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("available".to_owned(), 0));
+        assert_eq!(job_state(&db, id).await, (JobState::Available, 0));
     }
 
     #[sqlx::test]
@@ -81,7 +81,7 @@ mod run_available {
         assert_eq!(jobs.len(), 20);
         assert!(
             jobs.iter()
-                .all(|job| job.state == "completed" && job.attempt == 1)
+                .all(|job| job.state == JobState::Completed && job.attempt == 1)
         );
     }
 
@@ -100,7 +100,7 @@ mod run_available {
 
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("available".to_owned(), 1));
+        assert_eq!(job_state(&db, id).await, (JobState::Available, 1));
     }
 
     /// Makes the job look like an attempt that started this long ago and never ended.
@@ -127,7 +127,7 @@ mod run_available {
 
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("completed".to_owned(), 2));
+        assert_eq!(job_state(&db, id).await, (JobState::Completed, 2));
     }
 
     #[sqlx::test]
@@ -137,7 +137,7 @@ mod run_available {
 
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("executing".to_owned(), 1));
+        assert_eq!(job_state(&db, id).await, (JobState::Executing, 1));
     }
 
     #[sqlx::test]
@@ -147,18 +147,18 @@ mod run_available {
 
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("failed".to_owned(), 3));
+        assert_eq!(job_state(&db, id).await, (JobState::Failed, 3));
     }
 
     /// Makes the job look like it ended in the state this long ago.
-    async fn finish(db: &PgPool, id: JobId, state: &str, finished_ago: &str) {
+    async fn finish(db: &PgPool, id: JobId, state: JobState, finished_ago: &str) {
         sqlx::query!(
             r#"
             UPDATE jobs SET state = $2, finished_at = now() - $3::text::interval
             WHERE id = $1
             "#,
             id as JobId,
-            state,
+            state as JobState,
             finished_ago,
         )
         .execute(db)
@@ -168,12 +168,12 @@ mod run_available {
 
     #[sqlx::test]
     async fn deletes_the_jobs_finished_over_a_week_ago(db: PgPool) {
-        for state in ["completed", "failed", "cancelled"] {
+        for state in [JobState::Completed, JobState::Failed, JobState::Cancelled] {
             let id = enqueue(&db).await;
             finish(&db, id, state, "7 days 1 minute").await;
         }
         let recent = enqueue(&db).await;
-        finish(&db, recent, "completed", "6 days").await;
+        finish(&db, recent, JobState::Completed, "6 days").await;
 
         jobs::run_available(&db).await.unwrap();
 

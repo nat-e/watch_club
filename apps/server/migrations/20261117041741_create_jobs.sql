@@ -1,3 +1,6 @@
+-- The states of a job. Delayed jobs and retries wait as `available`, with a later `run_at`
+CREATE TYPE job_state AS ENUM ('available', 'executing', 'completed', 'failed', 'cancelled');
+
 -- A background job, which the server runs from this queue
 CREATE TABLE jobs (
     id uuid PRIMARY KEY DEFAULT uuidv7(),
@@ -5,9 +8,7 @@ CREATE TABLE jobs (
     -- The job's type, such as `delete_expired_sessions`, and its arguments
     kind text NOT NULL,
     args jsonb NOT NULL DEFAULT '{}',
-    -- Delayed jobs and retries wait as `available`, with a later `run_at`
-    state text NOT NULL DEFAULT 'available'
-        CHECK (state IN ('available', 'executing', 'completed', 'failed', 'cancelled')),
+    state job_state NOT NULL DEFAULT 'available',
     -- 0 runs first
     priority smallint NOT NULL DEFAULT 0 CHECK (priority BETWEEN 0 AND 9),
     -- The number of times the job started

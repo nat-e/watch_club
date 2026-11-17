@@ -19,7 +19,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Instrument;
 
-use super::{AnyJob, JobError, JobId, Queue, schedules};
+use super::{AnyJob, JobError, JobId, JobState, Queue, schedules};
 use crate::domain::InternalError;
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
@@ -214,10 +214,10 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
     let recorded = match ended {
-        Ok(()) => finish(db, job, Finished::Completed).await,
+        Ok(()) => finish(db, job, JobState::Completed).await,
         Err(JobError::Cancel(reason)) => {
             tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
-            finish(db, job, Finished::Cancelled).await
+            finish(db, job, JobState::Cancelled).await
         }
         Err(JobError::Fail(error)) => {
             tracing::error!(
@@ -226,7 +226,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job failed for good",
             );
-            finish(db, job, Finished::Failed).await
+            finish(db, job, JobState::Failed).await
         }
         Err(JobError::Internal(error)) if attempt < max_attempts => {
             tracing::warn!(
@@ -245,7 +245,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
-            finish(db, job, Finished::Failed).await
+            finish(db, job, JobState::Failed).await
         }
     };
     if let Err(error) = recorded {
@@ -257,19 +257,11 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     }
 }
 
-/// The states a job ends in.
-#[derive(Clone, Copy, Debug, sqlx::Type)]
-#[sqlx(type_name = "text", rename_all = "snake_case")]
-enum Finished {
-    Completed,
-    Failed,
-    Cancelled,
-}
-
 // `finish` and `retry` leave a job alone once it's no longer this attempt's: after a rescue, it
 // belongs to the next attempt.
 
-async fn finish(db: &PgPool, job: &ClaimedJob, state: Finished) -> Result<(), InternalError> {
+/// Ends the job in `state`: completed, failed or cancelled.
+async fn finish(db: &PgPool, job: &ClaimedJob, state: JobState) -> Result<(), InternalError> {
     sqlx::query!(
         r#"
         UPDATE jobs SET state = $3, finished_at = now()
@@ -277,7 +269,7 @@ async fn finish(db: &PgPool, job: &ClaimedJob, state: Finished) -> Result<(), In
         "#,
         job.id as JobId,
         job.attempt,
-        state as Finished,
+        state as JobState,
     )
     .execute(db)
     .await
@@ -336,7 +328,7 @@ async fn rescue(db: &PgPool) -> Result<(), InternalError> {
     let rescued = sqlx::query!(
         r#"
         UPDATE jobs
-        SET state = CASE WHEN attempt < max_attempts THEN 'available' ELSE 'failed' END,
+        SET state = CASE WHEN attempt < max_attempts THEN 'available'::job_state ELSE 'failed' END,
             finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END
         WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)
         RETURNING id, kind, attempt, state = 'available' AS "will_retry!"
@@ -446,7 +438,7 @@ mod tests {
 
         /// Returns the job's state, and the seconds until its next attempt, or None once it
         /// finished.
-        async fn job_state(db: &PgPool, id: JobId) -> (String, Option<f64>) {
+        async fn job_state(db: &PgPool, id: JobId) -> (JobState, Option<f64>) {
             let row = sqlx::query!(
                 r#"
                 SELECT
@@ -470,7 +462,7 @@ mod tests {
 
             record(&db, &job, Ok(())).await;
 
-            assert_eq!(job_state(&db, job.id).await, ("completed".to_owned(), None));
+            assert_eq!(job_state(&db, job.id).await, (JobState::Completed, None));
         }
 
         #[sqlx::test]
@@ -480,7 +472,7 @@ mod tests {
             record(&db, &job, Err(anyhow!("down").into())).await;
 
             let (state, wait) = job_state(&db, job.id).await;
-            assert_eq!(state, "available");
+            assert_eq!(state, JobState::Available);
             // 2⁴ + 15 seconds, plus up to 10%
             let wait = wait.unwrap();
             assert!((30.0..=34.1).contains(&wait), "waits {wait} s");
@@ -492,7 +484,7 @@ mod tests {
 
             record(&db, &job, Err(anyhow!("down").into())).await;
 
-            assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
+            assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
 
         #[sqlx::test]
@@ -501,7 +493,7 @@ mod tests {
 
             record(&db, &job, Err(JobError::Fail(anyhow!("never works")))).await;
 
-            assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
+            assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
 
         #[sqlx::test]
@@ -510,7 +502,7 @@ mod tests {
 
             record(&db, &job, Err(JobError::Cancel("nothing to do".to_owned()))).await;
 
-            assert_eq!(job_state(&db, job.id).await, ("cancelled".to_owned(), None));
+            assert_eq!(job_state(&db, job.id).await, (JobState::Cancelled, None));
         }
 
         #[sqlx::test]
@@ -526,7 +518,7 @@ mod tests {
 
             record(&db, &job, Ok(())).await;
 
-            assert_eq!(job_state(&db, job.id).await.0, "executing");
+            assert_eq!(job_state(&db, job.id).await.0, JobState::Executing);
         }
     }
 }

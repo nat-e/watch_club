@@ -7,7 +7,20 @@
       "Left": [
         "Uuid",
         "Int4",
-        "Text"
+        {
+          "Custom": {
+            "name": "job_state",
+            "kind": {
+              "Enum": [
+                "available",
+                "executing",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            }
+          }
+        }
       ]
     },
     "nullable": []

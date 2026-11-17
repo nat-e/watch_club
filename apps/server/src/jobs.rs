@@ -86,6 +86,19 @@ impl Queue {
     }
 }
 
+/// The state of a job.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
+#[sqlx(type_name = "job_state", rename_all = "snake_case")]
+pub enum JobState {
+    /// Waiting in its queue until its time comes, for its first attempt or a retry
+    Available,
+    Executing,
+    Completed,
+    /// Failed for good
+    Failed,
+    Cancelled,
+}
+
 /// The unique ID of a job.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, sqlx::Type)]
 #[sqlx(transparent)]

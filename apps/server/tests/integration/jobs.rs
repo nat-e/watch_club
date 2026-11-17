@@ -6,13 +6,13 @@ mod schedules;
 use sqlx::PgPool;
 use watch_club::{
     domain::accounts,
-    jobs::{self, DeleteExpiredSessions, JobId},
+    jobs::{self, DeleteExpiredSessions, JobId, JobState},
 };
 
 use crate::support::{self, PASSWORD};
 
 /// Returns the job's state, and the number of times it started.
-async fn job_state(db: &PgPool, id: JobId) -> (String, i32) {
+async fn job_state(db: &PgPool, id: JobId) -> (JobState, i32) {
     let job = sqlx::query!("SELECT state, attempt FROM jobs WHERE id = $1", id as JobId)
         .fetch_one(db)
         .await
@@ -34,7 +34,7 @@ mod enqueue {
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
         jobs::run_available(&db).await.unwrap();
 
-        assert_eq!(job_state(&db, id).await, ("completed".to_owned(), 1));
+        assert_eq!(job_state(&db, id).await, (JobState::Completed, 1));
         let sessions = sqlx::query_scalar!(r#"SELECT count(*) AS "count!" FROM sessions"#)
             .fetch_one(&db)
             .await
@@ -70,7 +70,7 @@ mod cancel {
         jobs::run_available(&db).await.unwrap();
 
         assert!(cancelled);
-        assert_eq!(job_state(&db, id).await, ("cancelled".to_owned(), 0));
+        assert_eq!(job_state(&db, id).await, (JobState::Cancelled, 0));
     }
 
     #[sqlx::test]
@@ -81,6 +81,6 @@ mod cancel {
         let cancelled = jobs::cancel(&db, id).await.unwrap();
 
         assert!(!cancelled);
-        assert_eq!(job_state(&db, id).await, ("completed".to_owned(), 1));
+        assert_eq!(job_state(&db, id).await, (JobState::Completed, 1));
     }
 }
