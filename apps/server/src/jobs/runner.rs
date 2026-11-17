@@ -30,27 +30,45 @@ pub(super) const RESCUE_AFTER: Duration = Duration::from_hours(1);
 const POLL_INTERVAL: Duration = Duration::from_secs(1);
 
 /// The time between two rounds of maintenance, which is as late as a scheduled job can be queued.
-const MAINTENANCE_INTERVAL: Duration = Duration::from_secs(60);
+const MAINTENANCE_INTERVAL: Duration = Duration::from_mins(1);
 
 /// The time finished jobs are kept, to look into what happened.
 const KEEP_FINISHED: Duration = Duration::from_hours(7 * 24);
 
-/// The time shutdown waits for the running jobs: less than the 10 s `docker stop` waits before it
-/// kills the server.
+/// The time the runner has to stop once shutdown is requested: less than the 10 s `docker stop`
+/// waits before it kills the server.
 const SHUTDOWN_WAIT: Duration = Duration::from_secs(8);
 
 /// Runs the queued jobs until `shutdown` is cancelled, then waits up to 8 s for the running ones.
 /// Those still running then stay `executing` until they're rescued.
 pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), InternalError> {
-    schedules::sync(&db).await?;
-    let queues = future::join_all(Queue::ALL.map(|queue| run_queue(&db, queue, &shutdown)));
-    tokio::join!(queues, maintain(&db, &shutdown));
-    Ok(())
+    let work = async {
+        schedules::sync(&db).await?;
+        let queues = future::join_all(Queue::ALL.map(|queue| run_queue(&db, queue, &shutdown)));
+        tokio::join!(queues, maintain(&db, &shutdown));
+        Ok(())
+    };
+    let deadline = async {
+        shutdown.cancelled().await;
+        time::sleep(SHUTDOWN_WAIT).await;
+    };
+    tokio::select! {
+        ran = work => ran,
+        // Drops the work, which stops the jobs still running
+        () = deadline => {
+            tracing::warn!(
+                name: "jobs.shutdown.timed_out",
+                "stopped the jobs still running at shutdown, which will run again later",
+            );
+            Ok(())
+        }
+    }
 }
 
 /// Does at once what the runner does over time, for tests: syncs the schedules, runs the
 /// maintenance, then runs the due jobs one at a time, in the order the runner claims them, until
 /// none is left.
+#[cfg(feature = "test-util")]
 pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
     schedules::sync(db).await?;
     run_maintenance(db).await?;
@@ -63,7 +81,7 @@ pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
 }
 
 /// Claims the queue's due jobs whenever it has room, and runs each in its own task, until
-/// `shutdown` is cancelled.
+/// `shutdown` is cancelled. Then waits for the running jobs.
 async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
     let mut running = JoinSet::new();
     loop {
@@ -75,7 +93,12 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
             Vec::new()
         } else {
             claim(db, queue, room).await.unwrap_or_else(|error| {
-                tracing::error!("failed to claim jobs: {error:#}");
+                tracing::error!(
+                    name: "jobs.claim.failed",
+                    ?queue,
+                    error = %format_args!("{error:#}"),
+                    "failed to claim jobs",
+                );
                 Vec::new()
             })
         };
@@ -91,20 +114,12 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
             Some(ended) = running.join_next(), if !is_drained => propagate_panic(ended),
         }
     }
-
-    let all_ended = time::timeout(SHUTDOWN_WAIT, async {
-        while let Some(ended) = running.join_next().await {
-            propagate_panic(ended);
-        }
-    })
-    .await;
-    if all_ended.is_err() {
-        let count = running.len();
-        tracing::warn!("{count} jobs were still running at shutdown, and will run again later");
+    while let Some(ended) = running.join_next().await {
+        propagate_panic(ended);
     }
 }
 
-/// Panics again with the panic of a job's task. `execute` catches the job's own panics, so this
+/// Panics again with the panic of a job's task. `supervise` catches the job's own panics, so this
 /// one comes from the runner itself, which must stop.
 fn propagate_panic(ended: Result<(), JoinError>) {
     if let Err(error) = ended
@@ -151,39 +166,38 @@ async fn claim(db: &PgPool, queue: Queue, limit: usize) -> Result<Vec<ClaimedJob
     Ok(jobs)
 }
 
-/// Runs a claimed job. Arguments that don't read count as a failed attempt.
+/// Runs a claimed job, and records how its attempt ended. Arguments that don't read count as a
+/// failed attempt.
 async fn run_claimed(db: &PgPool, mut job: ClaimedJob) {
     let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
     async {
-        match AnyJob::load(&job.kind, job.args.take()) {
+        let ended = match AnyJob::load(&job.kind, job.args.take()) {
             Ok(any_job) => {
                 let timeout = any_job.settings().timeout;
-                execute(db, &job, timeout, any_job.run(db)).await;
+                supervise(timeout, any_job.run(db)).await
             }
             Err(error) => {
                 let error = anyhow::Error::new(error).context("failed to read the job's arguments");
-                record(db, &job, Err(error.into())).await;
+                Err(error.into())
             }
-        }
+        };
+        record(db, &job, ended).await;
     }
     .instrument(span)
     .await;
 }
 
-/// Runs the work of a claimed job under its timeout, and records how it ended. A panic or a
-/// timeout counts as a failed attempt.
-async fn execute(
-    db: &PgPool,
-    job: &ClaimedJob,
+/// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
+/// failed attempt.
+async fn supervise(
     timeout: Duration,
     work: impl Future<Output = Result<(), JobError>>,
-) {
-    let ended = match time::timeout(timeout, AssertUnwindSafe(work).catch_unwind()).await {
+) -> Result<(), JobError> {
+    match time::timeout(timeout, AssertUnwindSafe(work).catch_unwind()).await {
         Ok(Ok(ended)) => ended,
         Ok(Err(panic)) => Err(anyhow!("panicked: {}", panic_message(&*panic)).into()),
         Err(_) => Err(anyhow!("timed out after {timeout:?}").into()),
-    };
-    record(db, job, ended).await;
+    }
 }
 
 /// Returns the message of a panic, which is a `&str` or a `String` when it has one.
@@ -200,26 +214,46 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
     let recorded = match ended {
-        Ok(()) => finish(db, job.id, Finished::Completed).await,
+        Ok(()) => finish(db, job, Finished::Completed).await,
         Err(JobError::Cancel(reason)) => {
-            tracing::info!("the job cancelled itself: {reason}");
-            finish(db, job.id, Finished::Cancelled).await
+            tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
+            finish(db, job, Finished::Cancelled).await
         }
         Err(JobError::Fail(error)) => {
-            tracing::error!("the job failed for good: {error:#}");
-            finish(db, job.id, Finished::Failed).await
+            tracing::error!(
+                name: "jobs.job.failed",
+                attempt,
+                error = %format_args!("{error:#}"),
+                "the job failed for good",
+            );
+            finish(db, job, Finished::Failed).await
         }
         Err(JobError::Internal(error)) if attempt < max_attempts => {
-            tracing::warn!("attempt {attempt} of {max_attempts} failed, will retry: {error:#}");
-            retry(db, job.id).await
+            tracing::warn!(
+                name: "jobs.attempt.failed",
+                attempt,
+                max_attempts,
+                error = %format_args!("{error:#}"),
+                "the job's attempt failed, and will retry",
+            );
+            retry(db, job).await
         }
         Err(JobError::Internal(error)) => {
-            tracing::error!("the job's last attempt failed: {error:#}");
-            finish(db, job.id, Finished::Failed).await
+            tracing::error!(
+                name: "jobs.job.failed",
+                attempt,
+                error = %format_args!("{error:#}"),
+                "the job's last attempt failed",
+            );
+            finish(db, job, Finished::Failed).await
         }
     };
     if let Err(error) = recorded {
-        tracing::error!("failed to record how the job ended: {error:#}");
+        tracing::error!(
+            name: "jobs.record.failed",
+            error = %format_args!("{error:#}"),
+            "failed to record how the job ended",
+        );
     }
 }
 
@@ -232,10 +266,17 @@ enum Finished {
     Cancelled,
 }
 
-async fn finish(db: &PgPool, id: JobId, state: Finished) -> Result<(), InternalError> {
+// `finish` and `retry` leave a job alone once it's no longer this attempt's: after a rescue, it
+// belongs to the next attempt.
+
+async fn finish(db: &PgPool, job: &ClaimedJob, state: Finished) -> Result<(), InternalError> {
     sqlx::query!(
-        "UPDATE jobs SET state = $2, finished_at = now() WHERE id = $1",
-        id as JobId,
+        r#"
+        UPDATE jobs SET state = $3, finished_at = now()
+        WHERE id = $1 AND attempt = $2 AND state = 'executing'
+        "#,
+        job.id as JobId,
+        job.attempt,
         state as Finished,
     )
     .execute(db)
@@ -246,15 +287,16 @@ async fn finish(db: &PgPool, id: JobId, state: Finished) -> Result<(), InternalE
 
 /// Puts a job back in its queue to try again after `attempt⁴ + 15` seconds, plus up to 10% at
 /// random so that jobs that failed together don't retry together.
-async fn retry(db: &PgPool, id: JobId) -> Result<(), InternalError> {
+async fn retry(db: &PgPool, job: &ClaimedJob) -> Result<(), InternalError> {
     sqlx::query!(
         r#"
         UPDATE jobs
         SET state = 'available',
             run_at = now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))
-        WHERE id = $1
+        WHERE id = $1 AND attempt = $2 AND state = 'executing'
         "#,
-        id as JobId,
+        job.id as JobId,
+        job.attempt,
     )
     .execute(db)
     .await
@@ -272,7 +314,11 @@ async fn maintain(db: &PgPool, shutdown: &CancellationToken) {
             _ = ticks.tick() => {}
         }
         if let Err(error) = run_maintenance(db).await {
-            tracing::error!("failed to maintain the jobs: {error:#}");
+            tracing::error!(
+                name: "jobs.maintenance.failed",
+                error = %format_args!("{error:#}"),
+                "failed to maintain the jobs",
+            );
         }
     }
 }
@@ -293,7 +339,7 @@ async fn rescue(db: &PgPool) -> Result<(), InternalError> {
         SET state = CASE WHEN attempt < max_attempts THEN 'available' ELSE 'failed' END,
             finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END
         WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)
-        RETURNING id, kind, state = 'available' AS "will_retry!"
+        RETURNING id, kind, attempt, state = 'available' AS "will_retry!"
         "#,
         RESCUE_AFTER.as_secs_f64(),
     )
@@ -301,12 +347,23 @@ async fn rescue(db: &PgPool) -> Result<(), InternalError> {
     .await
     .context("failed to rescue the jobs left running")?;
     for job in rescued {
-        let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
-        let _entered = span.enter();
+        let (kind, id, attempt) = (job.kind, job.id.0, job.attempt);
         if job.will_retry {
-            tracing::warn!("the job never ended, and will retry");
+            tracing::warn!(
+                name: "jobs.job.rescued",
+                kind,
+                %id,
+                attempt,
+                "the job's attempt never ended, and will retry",
+            );
         } else {
-            tracing::error!("the job's last attempt never ended");
+            tracing::error!(
+                name: "jobs.job.failed",
+                kind,
+                %id,
+                attempt,
+                "the job's last attempt never ended",
+            );
         }
     }
     Ok(())
@@ -334,118 +391,142 @@ mod tests {
 
     use super::*;
 
-    const TIMEOUT: Duration = Duration::from_secs(60);
+    const TIMEOUT: Duration = Duration::from_mins(1);
 
-    /// Inserts a job the runner claimed for its `attempt`th attempt out of `max_attempts`.
-    async fn claimed_job(db: &PgPool, attempt: i32, max_attempts: i32) -> ClaimedJob {
-        sqlx::query_as!(
-            ClaimedJob,
-            r#"
-            INSERT INTO jobs (queue, kind, state, attempt, max_attempts, attempted_at)
-            VALUES ('default', 'test', 'executing', $1, $2, now())
-            RETURNING id, kind, args, attempt, max_attempts
-            "#,
-            attempt,
-            max_attempts,
-        )
-        .fetch_one(db)
-        .await
-        .unwrap()
+    mod supervise {
+        use super::*;
+
+        #[tokio::test]
+        async fn returns_how_the_work_ended() {
+            let ended = supervise(TIMEOUT, async { Err(JobError::Cancel("done".to_owned())) });
+
+            assert!(matches!(ended.await, Err(JobError::Cancel(reason)) if reason == "done"));
+        }
+
+        #[tokio::test]
+        async fn turns_a_panic_into_a_failed_attempt() {
+            let ended = supervise(TIMEOUT, async { panic!("the job broke") }).await;
+
+            let Err(JobError::Internal(error)) = ended else {
+                panic!("expected a failed attempt, got {ended:?}");
+            };
+            assert_eq!(error.to_string(), "panicked: the job broke");
+        }
+
+        #[tokio::test]
+        async fn turns_a_timeout_into_a_failed_attempt() {
+            let ended = supervise(Duration::from_millis(10), future::pending()).await;
+
+            let Err(JobError::Internal(error)) = ended else {
+                panic!("expected a failed attempt, got {ended:?}");
+            };
+            assert_eq!(error.to_string(), "timed out after 10ms");
+        }
     }
 
-    /// The job's state, and the seconds until its next attempt, or None once it finished.
-    async fn job_state(db: &PgPool, id: JobId) -> (String, Option<f64>) {
-        let row = sqlx::query!(
-            r#"
-            SELECT
-                state,
-                CASE WHEN finished_at IS NULL
-                    THEN extract(epoch FROM run_at - now())::float8
-                END AS wait
-            FROM jobs WHERE id = $1
-            "#,
-            id as JobId,
-        )
-        .fetch_one(db)
-        .await
-        .unwrap();
-        (row.state, row.wait)
-    }
+    mod record {
+        use super::*;
 
-    #[sqlx::test]
-    async fn a_job_that_succeeds_completes(db: PgPool) {
-        let job = claimed_job(&db, 1, 3).await;
+        /// Inserts a job the runner claimed for its `attempt`th attempt out of `max_attempts`.
+        async fn claimed_job(db: &PgPool, attempt: i32, max_attempts: i32) -> ClaimedJob {
+            sqlx::query_as!(
+                ClaimedJob,
+                r#"
+                INSERT INTO jobs (queue, kind, state, attempt, max_attempts, attempted_at)
+                VALUES ('default', 'test', 'executing', $1, $2, now())
+                RETURNING id, kind, args, attempt, max_attempts
+                "#,
+                attempt,
+                max_attempts,
+            )
+            .fetch_one(db)
+            .await
+            .unwrap()
+        }
 
-        execute(&db, &job, TIMEOUT, async { Ok(()) }).await;
+        /// Returns the job's state, and the seconds until its next attempt, or None once it
+        /// finished.
+        async fn job_state(db: &PgPool, id: JobId) -> (String, Option<f64>) {
+            let row = sqlx::query!(
+                r#"
+                SELECT
+                    state,
+                    CASE WHEN finished_at IS NULL
+                        THEN extract(epoch FROM run_at - now())::float8
+                    END AS wait
+                FROM jobs WHERE id = $1
+                "#,
+                id as JobId,
+            )
+            .fetch_one(db)
+            .await
+            .unwrap();
+            (row.state, row.wait)
+        }
 
-        assert_eq!(job_state(&db, job.id).await, ("completed".to_owned(), None));
-    }
+        #[sqlx::test]
+        async fn completes_a_job_that_succeeded(db: PgPool) {
+            let job = claimed_job(&db, 1, 3).await;
 
-    #[sqlx::test]
-    async fn a_failed_attempt_retries_after_a_backoff(db: PgPool) {
-        let job = claimed_job(&db, 2, 3).await;
+            record(&db, &job, Ok(())).await;
 
-        execute(&db, &job, TIMEOUT, async { Err(anyhow!("down").into()) }).await;
+            assert_eq!(job_state(&db, job.id).await, ("completed".to_owned(), None));
+        }
 
-        let (state, wait) = job_state(&db, job.id).await;
-        assert_eq!(state, "available");
-        // 2⁴ + 15 seconds, plus up to 10%
-        let wait = wait.unwrap();
-        assert!((30.0..=34.1).contains(&wait), "waits {wait} s");
-    }
+        #[sqlx::test]
+        async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
+            let job = claimed_job(&db, 2, 3).await;
 
-    #[sqlx::test]
-    async fn the_last_failed_attempt_fails_the_job(db: PgPool) {
-        let job = claimed_job(&db, 3, 3).await;
+            record(&db, &job, Err(anyhow!("down").into())).await;
 
-        execute(&db, &job, TIMEOUT, async { Err(anyhow!("down").into()) }).await;
+            let (state, wait) = job_state(&db, job.id).await;
+            assert_eq!(state, "available");
+            // 2⁴ + 15 seconds, plus up to 10%
+            let wait = wait.unwrap();
+            assert!((30.0..=34.1).contains(&wait), "waits {wait} s");
+        }
 
-        assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
-    }
+        #[sqlx::test]
+        async fn fails_the_job_after_its_last_attempt(db: PgPool) {
+            let job = claimed_job(&db, 3, 3).await;
 
-    #[sqlx::test]
-    async fn a_permanent_failure_fails_the_job_at_once(db: PgPool) {
-        let job = claimed_job(&db, 1, 3).await;
+            record(&db, &job, Err(anyhow!("down").into())).await;
 
-        execute(&db, &job, TIMEOUT, async {
-            Err(JobError::Fail(anyhow!("never works")))
-        })
-        .await;
+            assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
+        }
 
-        assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
-    }
+        #[sqlx::test]
+        async fn fails_the_job_at_once_on_a_permanent_failure(db: PgPool) {
+            let job = claimed_job(&db, 1, 3).await;
 
-    #[sqlx::test]
-    async fn a_job_can_cancel_itself(db: PgPool) {
-        let job = claimed_job(&db, 1, 3).await;
+            record(&db, &job, Err(JobError::Fail(anyhow!("never works")))).await;
 
-        execute(&db, &job, TIMEOUT, async {
-            Err(JobError::Cancel("nothing to do".to_owned()))
-        })
-        .await;
+            assert_eq!(job_state(&db, job.id).await, ("failed".to_owned(), None));
+        }
 
-        assert_eq!(job_state(&db, job.id).await, ("cancelled".to_owned(), None));
-    }
+        #[sqlx::test]
+        async fn cancels_a_job_that_cancelled_itself(db: PgPool) {
+            let job = claimed_job(&db, 1, 3).await;
 
-    #[sqlx::test]
-    async fn a_panic_is_a_failed_attempt(db: PgPool) {
-        let job = claimed_job(&db, 1, 3).await;
+            record(&db, &job, Err(JobError::Cancel("nothing to do".to_owned()))).await;
 
-        execute(&db, &job, TIMEOUT, async { panic!("the job broke") }).await;
+            assert_eq!(job_state(&db, job.id).await, ("cancelled".to_owned(), None));
+        }
 
-        let (state, wait) = job_state(&db, job.id).await;
-        assert_eq!(state, "available");
-        assert!(wait.is_some());
-    }
+        #[sqlx::test]
+        async fn leaves_a_job_that_a_rescue_gave_to_its_next_attempt(db: PgPool) {
+            let job = claimed_job(&db, 1, 3).await;
+            sqlx::query!(
+                "UPDATE jobs SET attempt = 2, attempted_at = now() WHERE id = $1",
+                job.id as JobId,
+            )
+            .execute(&db)
+            .await
+            .unwrap();
 
-    #[sqlx::test]
-    async fn a_timeout_is_a_failed_attempt(db: PgPool) {
-        let job = claimed_job(&db, 1, 3).await;
+            record(&db, &job, Ok(())).await;
 
-        execute(&db, &job, Duration::from_millis(10), future::pending()).await;
-
-        let (state, wait) = job_state(&db, job.id).await;
-        assert_eq!(state, "available");
-        assert!(wait.is_some());
+            assert_eq!(job_state(&db, job.id).await.0, "executing");
+        }
     }
 }

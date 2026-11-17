@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT name, now() AS \"now!\"\n        FROM job_schedules\n        WHERE next_run_at <= now()\n        FOR UPDATE SKIP LOCKED\n        ",
+  "query": "\n        SELECT name, cron, now() AS \"now!\"\n        FROM job_schedules\n        WHERE next_run_at <= now()\n        FOR UPDATE SKIP LOCKED\n        ",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,17 @@
       },
       {
         "ordinal": 1,
+        "name": "cron",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "job_schedules",
+            "name": "cron"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
         "name": "now!",
         "type_info": "Timestamptz",
         "origin": "Expression"
@@ -26,8 +37,9 @@
     },
     "nullable": [
       false,
+      false,
       null
     ]
   },
-  "hash": "07704158aed8590f84b7d6b27122685a0e687b525683be283d05c69ad564113b"
+  "hash": "f8aeef857ed3b8df480dd11228e253f5c79f793719c5a0f876c5850a5de9bc38"
 }

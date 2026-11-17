@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        UPDATE jobs\n        SET state = CASE WHEN attempt < max_attempts THEN 'available' ELSE 'failed' END,\n            finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END\n        WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)\n        RETURNING id, kind, state = 'available' AS \"will_retry!\"\n        ",
+  "query": "\n        UPDATE jobs\n        SET state = CASE WHEN attempt < max_attempts THEN 'available' ELSE 'failed' END,\n            finished_at = CASE WHEN attempt < max_attempts THEN NULL ELSE now() END\n        WHERE state = 'executing' AND attempted_at < now() - make_interval(secs => $1)\n        RETURNING id, kind, attempt, state = 'available' AS \"will_retry!\"\n        ",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "attempt",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs",
+            "name": "attempt"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "will_retry!",
         "type_info": "Bool",
         "origin": "Expression"
@@ -40,8 +51,9 @@
     "nullable": [
       false,
       false,
+      false,
       null
     ]
   },
-  "hash": "4e839070f24e0883de986bb3b6dddf59d220b221682a01a175cab3a8850bd691"
+  "hash": "dd1ebb4d5b1cd3cb9dedad55e6a0898e4a7ee3c12f1373e1aae0b6196b05ffc3"
 }

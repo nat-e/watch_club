@@ -1,13 +1,14 @@
+//! The runner, through `jobs::run_available`: the order it runs jobs in, its claims, rescues and
+//! deletion of old jobs.
+
 use sqlx::PgPool;
 use watch_club::jobs::{self, DeleteExpiredSessions, JobId};
 
 use super::job_state;
 
-/// Queues a job, then changes it with the SQL statement, which gets the job's ID as `$1`.
-async fn enqueue_and_update(db: &PgPool, update: &'static str) -> JobId {
-    let id = jobs::enqueue(db, DeleteExpiredSessions {}).await.unwrap();
-    sqlx::query(update).bind(id).execute(db).await.unwrap();
-    id
+/// Queues a job that runs at once.
+async fn enqueue(db: &PgPool) -> JobId {
+    jobs::enqueue(db, DeleteExpiredSessions {}).await.unwrap()
 }
 
 mod run_available {
@@ -15,13 +16,20 @@ mod run_available {
 
     #[sqlx::test]
     async fn runs_jobs_by_priority_then_in_the_order_they_are_due(db: PgPool) {
-        let low = enqueue_and_update(&db, "UPDATE jobs SET priority = 5 WHERE id = $1").await;
-        let second = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
-        let first = enqueue_and_update(
-            &db,
+        let low = enqueue(&db).await;
+        let second = enqueue(&db).await;
+        let first = enqueue(&db).await;
+        sqlx::query!("UPDATE jobs SET priority = 5 WHERE id = $1", low as JobId)
+            .execute(&db)
+            .await
+            .unwrap();
+        sqlx::query!(
             "UPDATE jobs SET run_at = now() - interval '1 minute' WHERE id = $1",
+            first as JobId,
         )
-        .await;
+        .execute(&db)
+        .await
+        .unwrap();
 
         jobs::run_available(&db).await.unwrap();
 
@@ -34,11 +42,14 @@ mod run_available {
 
     #[sqlx::test]
     async fn waits_for_the_time_a_job_runs_at(db: PgPool) {
-        let id = enqueue_and_update(
-            &db,
+        let id = enqueue(&db).await;
+        sqlx::query!(
             "UPDATE jobs SET run_at = now() + interval '1 minute' WHERE id = $1",
+            id as JobId,
         )
-        .await;
+        .execute(&db)
+        .await
+        .unwrap();
 
         jobs::run_available(&db).await.unwrap();
 
@@ -48,7 +59,7 @@ mod run_available {
     #[sqlx::test]
     async fn runs_each_job_once_when_runners_claim_at_the_same_time(db: PgPool) {
         for _ in 0..20 {
-            jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
+            enqueue(&db).await;
         }
 
         let runs = tokio::join!(
@@ -92,17 +103,27 @@ mod run_available {
         assert_eq!(job_state(&db, id).await, ("available".to_owned(), 1));
     }
 
+    /// Makes the job look like an attempt that started this long ago and never ended.
+    async fn leave_running(db: &PgPool, id: JobId, attempt: i32, started_ago: &str) {
+        sqlx::query!(
+            r#"
+            UPDATE jobs
+            SET state = 'executing', attempt = $2, attempted_at = now() - $3::text::interval
+            WHERE id = $1
+            "#,
+            id as JobId,
+            attempt,
+            started_ago,
+        )
+        .execute(db)
+        .await
+        .unwrap();
+    }
+
     #[sqlx::test]
     async fn rescues_a_job_left_running_for_an_hour(db: PgPool) {
-        let id = enqueue_and_update(
-            &db,
-            "
-            UPDATE jobs
-            SET state = 'executing', attempt = 1, attempted_at = now() - interval '61 minutes'
-            WHERE id = $1
-            ",
-        )
-        .await;
+        let id = enqueue(&db).await;
+        leave_running(&db, id, 1, "61 minutes").await;
 
         jobs::run_available(&db).await.unwrap();
 
@@ -111,15 +132,8 @@ mod run_available {
 
     #[sqlx::test]
     async fn leaves_a_job_running_for_less_than_an_hour(db: PgPool) {
-        let id = enqueue_and_update(
-            &db,
-            "
-            UPDATE jobs
-            SET state = 'executing', attempt = 1, attempted_at = now() - interval '59 minutes'
-            WHERE id = $1
-            ",
-        )
-        .await;
+        let id = enqueue(&db).await;
+        leave_running(&db, id, 1, "59 minutes").await;
 
         jobs::run_available(&db).await.unwrap();
 
@@ -128,47 +142,38 @@ mod run_available {
 
     #[sqlx::test]
     async fn fails_a_job_left_running_on_its_last_attempt(db: PgPool) {
-        let id = enqueue_and_update(
-            &db,
-            "
-            UPDATE jobs
-            SET state = 'executing', attempt = 3, attempted_at = now() - interval '61 minutes'
-            WHERE id = $1
-            ",
-        )
-        .await;
+        let id = enqueue(&db).await;
+        leave_running(&db, id, 3, "61 minutes").await;
 
         jobs::run_available(&db).await.unwrap();
 
         assert_eq!(job_state(&db, id).await, ("failed".to_owned(), 3));
     }
 
+    /// Makes the job look like it ended in the state this long ago.
+    async fn finish(db: &PgPool, id: JobId, state: &str, finished_ago: &str) {
+        sqlx::query!(
+            r#"
+            UPDATE jobs SET state = $2, finished_at = now() - $3::text::interval
+            WHERE id = $1
+            "#,
+            id as JobId,
+            state,
+            finished_ago,
+        )
+        .execute(db)
+        .await
+        .unwrap();
+    }
+
     #[sqlx::test]
     async fn deletes_the_jobs_finished_over_a_week_ago(db: PgPool) {
         for state in ["completed", "failed", "cancelled"] {
-            let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
-            sqlx::query!(
-                r#"
-                UPDATE jobs
-                SET state = $2, finished_at = now() - interval '7 days 1 minute'
-                WHERE id = $1
-                "#,
-                id as JobId,
-                state,
-            )
-            .execute(&db)
-            .await
-            .unwrap();
+            let id = enqueue(&db).await;
+            finish(&db, id, state, "7 days 1 minute").await;
         }
-        let recent = enqueue_and_update(
-            &db,
-            "
-            UPDATE jobs
-            SET state = 'completed', finished_at = now() - interval '6 days'
-            WHERE id = $1
-            ",
-        )
-        .await;
+        let recent = enqueue(&db).await;
+        finish(&db, recent, "completed", "6 days").await;
 
         jobs::run_available(&db).await.unwrap();
 

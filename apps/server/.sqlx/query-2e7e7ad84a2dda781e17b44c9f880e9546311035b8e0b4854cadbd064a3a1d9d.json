@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE jobs\n        SET state = 'available',\n            run_at = now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))\n        WHERE id = $1 AND attempt = $2 AND state = 'executing'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2e7e7ad84a2dda781e17b44c9f880e9546311035b8e0b4854cadbd064a3a1d9d"
+}

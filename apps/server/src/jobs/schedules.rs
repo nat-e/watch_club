@@ -19,19 +19,15 @@ pub(super) struct Schedule {
     pub(super) job: fn() -> AnyJob,
 }
 
-impl Schedule {
-    /// Returns the schedule's first run after `time`.
-    fn next_run_after(&self, time: Timestamp) -> anyhow::Result<Timestamp> {
-        let name = self.name;
-        let cron: Cron = self
-            .cron
-            .parse()
-            .with_context(|| format!("the schedule {name} has an invalid cron expression"))?;
-        let next = cron
-            .find_next_occurrence(&time.to_zoned(TimeZone::UTC), false)
-            .with_context(|| format!("failed to find the next run of the schedule {name}"))?;
-        Ok(next.timestamp())
-    }
+/// Returns the first run of the cron expression after `time`.
+fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
+    let parsed: Cron = cron
+        .parse()
+        .with_context(|| format!("{cron} isn't a valid cron expression"))?;
+    let next = parsed
+        .find_next_occurrence(&time.to_zoned(TimeZone::UTC), false)
+        .with_context(|| format!("failed to find the next run of {cron}"))?;
+    Ok(next.timestamp())
 }
 
 /// Makes the database's schedules match `SCHEDULES`: adds the new ones, moves the next run of
@@ -42,13 +38,15 @@ pub(super) async fn sync(db: &PgPool) -> Result<(), InternalError> {
         .await
         .context("failed to read the database's time")?
         .to_jiff();
-    let mut names = Vec::new();
-    let mut crons = Vec::new();
-    let mut next_runs = Vec::new();
+    let mut names = Vec::with_capacity(SCHEDULES.len());
+    let mut crons = Vec::with_capacity(SCHEDULES.len());
+    let mut next_runs = Vec::with_capacity(SCHEDULES.len());
     for schedule in SCHEDULES {
+        let next_run = next_run_after(schedule.cron, now)
+            .with_context(|| format!("failed to schedule {}", schedule.name))?;
         names.push(schedule.name);
         crons.push(schedule.cron);
-        next_runs.push(jiff_sqlx::Timestamp::from(schedule.next_run_after(now)?));
+        next_runs.push(jiff_sqlx::Timestamp::from(next_run));
     }
     sqlx::query!(
         r#"
@@ -72,13 +70,14 @@ pub(super) async fn sync(db: &PgPool) -> Result<(), InternalError> {
 }
 
 /// Queues the job of each schedule whose next run has come, and moves the schedule to its next
-/// run after now.
+/// run after now. The next run comes from the stored cron expression, which a server with newer
+/// code may have changed.
 pub(super) async fn queue_due(db: &PgPool) -> Result<(), InternalError> {
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     // Skips the schedules another server is queuing
     let due = sqlx::query!(
         r#"
-        SELECT name, now() AS "now!"
+        SELECT name, cron, now() AS "now!"
         FROM job_schedules
         WHERE next_run_at <= now()
         FOR UPDATE SKIP LOCKED
@@ -92,8 +91,8 @@ pub(super) async fn queue_due(db: &PgPool) -> Result<(), InternalError> {
         let Some(schedule) = SCHEDULES.iter().find(|schedule| schedule.name == row.name) else {
             continue;
         };
-        super::insert(&mut *transaction, &(schedule.job)()).await?;
-        let next_run = schedule.next_run_after(row.now.to_jiff())?;
+        super::enqueue(&mut *transaction, (schedule.job)()).await?;
+        let next_run = next_run_after(&row.cron, row.now.to_jiff())?;
         sqlx::query!(
             "UPDATE job_schedules SET next_run_at = $2 WHERE name = $1",
             row.name,
@@ -117,25 +116,18 @@ mod tests {
     #[test]
     fn every_schedule_has_a_valid_cron_expression() {
         for schedule in SCHEDULES {
-            assert!(
-                schedule.next_run_after(Timestamp::now()).is_ok(),
-                "{}",
-                schedule.name
-            );
+            let next_run = next_run_after(schedule.cron, Timestamp::now());
+
+            assert!(next_run.is_ok(), "{}: {next_run:?}", schedule.name);
         }
     }
 
     #[test]
     fn the_next_run_is_the_first_after_the_time() {
-        let schedule = Schedule {
-            name: "weekly",
-            cron: "0 3 * * SUN",
-            job: || super::super::DeleteExpiredSessions {}.into(),
-        };
         // A Sunday, at the time it runs
         let time: Timestamp = "2026-11-15T03:00:00Z".parse().unwrap();
 
-        let next_run = schedule.next_run_after(time).unwrap();
+        let next_run = next_run_after("0 3 * * SUN", time).unwrap();
 
         assert_eq!(next_run, "2026-11-22T03:00:00Z".parse().unwrap());
     }

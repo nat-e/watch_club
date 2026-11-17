@@ -1,3 +1,6 @@
+//! The jobs that run on a schedule, through `jobs::run_available`, with the weekly cleanup of
+//! expired sessions as the example.
+
 use sqlx::PgPool;
 use watch_club::jobs;
 

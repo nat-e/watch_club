@@ -21,10 +21,9 @@ use serde_json::Value;
 use sqlx::{PgExecutor, PgPool};
 use uuid::Uuid;
 
-pub use self::{
-    delete_expired_sessions::DeleteExpiredSessions,
-    runner::{run, run_available},
-};
+#[cfg(feature = "test-util")]
+pub use self::runner::run_available;
+pub use self::{delete_expired_sessions::DeleteExpiredSessions, runner::run};
 use self::{runner::RESCUE_AFTER, schedules::Schedule};
 use crate::domain::InternalError;
 
@@ -134,8 +133,8 @@ impl AnyJob {
     fn store(&self) -> anyhow::Result<(String, Value)> {
         let mut stored = serde_json::to_value(self).context("failed to serialize a job")?;
         let kind = stored["kind"].take();
-        let kind = kind.as_str().context("a job has no kind")?.to_owned();
-        Ok((kind, stored["args"].take()))
+        let kind = kind.as_str().expect("serde tags every job with its kind");
+        Ok((kind.to_owned(), stored["args"].take()))
     }
 }
 
@@ -181,10 +180,7 @@ pub async fn enqueue(
     db: impl PgExecutor<'_>,
     job: impl Into<AnyJob>,
 ) -> Result<JobId, InternalError> {
-    insert(db, &job.into()).await
-}
-
-async fn insert(db: impl PgExecutor<'_>, job: &AnyJob) -> Result<JobId, InternalError> {
+    let job = job.into();
     let settings = job.settings();
     let (kind, args) = job.store()?;
     let id = sqlx::query_scalar!(
@@ -205,7 +201,8 @@ async fn insert(db: impl PgExecutor<'_>, job: &AnyJob) -> Result<JobId, Internal
     Ok(id)
 }
 
-/// Cancels the job, and returns whether it did: a job that started or ended can't be cancelled.
+/// Cancels the job if it's waiting in its queue, for its first attempt or a retry, and returns
+/// whether it did. A running job goes on, and a finished or missing job stays as it is.
 pub async fn cancel(db: impl PgExecutor<'_>, id: JobId) -> Result<bool, InternalError> {
     let cancelled = sqlx::query!(
         r#"

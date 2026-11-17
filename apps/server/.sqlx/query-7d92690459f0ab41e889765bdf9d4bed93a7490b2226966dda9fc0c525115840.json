@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO jobs (queue, kind, state, attempt, max_attempts, attempted_at)\n            VALUES ('default', 'test', 'executing', $1, $2, now())\n            RETURNING id, kind, args, attempt, max_attempts\n            ",
+  "query": "\n                INSERT INTO jobs (queue, kind, state, attempt, max_attempts, attempted_at)\n                VALUES ('default', 'test', 'executing', $1, $2, now())\n                RETURNING id, kind, args, attempt, max_attempts\n                ",
   "describe": {
     "columns": [
       {
@@ -73,5 +73,5 @@
       false
     ]
   },
-  "hash": "6c501e47c2e7033ade1253e52c8cee8ac9985c876e0c256bc5f863fcabafacd9"
+  "hash": "7d92690459f0ab41e889765bdf9d4bed93a7490b2226966dda9fc0c525115840"
 }
