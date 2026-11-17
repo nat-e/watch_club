@@ -5,7 +5,7 @@ import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
 import {Platform} from 'react-native';
 import {useCSSVariable} from 'uniwind';
-import {FormScreen} from '@/components/form-screen';
+import {FormScreen} from '@/components/forms/form-screen';
 import {useSessionStore} from '@/session';
 
 /** You: who the User is, the pages that have no tab, and signing out. */

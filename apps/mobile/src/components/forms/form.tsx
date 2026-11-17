@@ -10,7 +10,7 @@ import {
   getFormHookHelpers,
 } from '@tanstack/react-form';
 import type {ComponentType, ReactNode} from 'react';
-import {SectionFeedback} from '@/components/section-feedback';
+import {SectionFeedback} from '@/components/forms/section-feedback';
 
 const {fieldComponent} = getFormHookHelpers();
 

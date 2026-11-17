@@ -2,7 +2,7 @@ import {ListItem} from '@expo/ui';
 import {RadioButton} from '@expo/ui/jetpack-compose';
 import {selectable} from '@expo/ui/jetpack-compose/modifiers';
 import type {ReactNode} from 'react';
-import type {Choice} from '@/components/choice-rows';
+import type {Choice} from '@/components/forms/choice-rows';
 
 /**
  * Returns the rows of a `FieldGroup.Section` that pick one of the options, as Android's Settings app

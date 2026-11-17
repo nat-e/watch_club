@@ -3,7 +3,7 @@
  */
 import {createFormHook, type FieldWithValue, getFormHookHelpers} from '@tanstack/react-form';
 import type {ComponentProps} from 'react';
-import {TextField} from '@/components/text-field';
+import {TextField} from '@/components/forms/text-field';
 import {Button} from '@/components/ui/button';
 import {FieldError} from '@/components/ui/field';
 

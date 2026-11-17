@@ -10,7 +10,7 @@ import {
 import {setCurrentUser} from '@watchclub/core/accounts/current-user';
 import {negotiateLocale} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
-import {useAppForm} from '@/components/form';
+import {useAppForm} from '@/components/forms/form';
 import {Card, CardContent, CardDescription, CardHeader} from '@/components/ui/card';
 
 /** Setup, where a new WatchClub's first visitor creates the Instance Administrator. */

@@ -5,8 +5,8 @@ import {Stack} from 'expo-router';
 import {useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useCSSVariable} from 'uniwind';
-import {fieldSection, useAppForm} from '@/components/form';
-import {FormScreen} from '@/components/form-screen';
+import {fieldSection, useAppForm} from '@/components/forms/form';
+import {FormScreen} from '@/components/forms/form-screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 

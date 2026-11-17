@@ -4,7 +4,7 @@ import {getInstanceOptions, loginMutation} from '@watchclub/api';
 import {currentUserQuery, setCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSignInFormOptions} from '@watchclub/core/accounts/sign-in';
 import {useTranslation} from 'react-i18next';
-import {useAppForm} from '@/components/form';
+import {useAppForm} from '@/components/forms/form';
 import {Card, CardContent, CardHeader} from '@/components/ui/card';
 import {sitePath} from '@/lib/site-path';
 
