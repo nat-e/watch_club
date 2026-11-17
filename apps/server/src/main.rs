@@ -1,13 +1,14 @@
 //! Runs the server: reads the environment, connects to the database, and serves the app and runs
 //! its jobs until it's asked to stop.
 
-use std::{io, net::Ipv4Addr};
+use std::{io, net::Ipv4Addr, time::Duration};
 
 use anyhow::Context;
 use secrecy::ExposeSecret;
 use tokio::{
     net::TcpListener,
     signal::unix::{SignalKind, signal},
+    time,
 };
 use tokio_util::sync::CancellationToken;
 use watch_club::{config::Config, jobs};
@@ -52,7 +53,9 @@ async fn main() -> anyhow::Result<()> {
     served.context("failed to serve")?;
     ran.context("the job runner panicked")?
         .context("the job runner failed")?;
-    db.close().await;
+    // Gives up on the connections that a stopped job's query still holds, to exit within the 10 s
+    // `docker stop` waits
+    let _ = time::timeout(Duration::from_secs(1), db.close()).await;
     Ok(())
 }
 
