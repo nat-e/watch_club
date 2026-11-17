@@ -32,7 +32,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 ## Mobile app
 
-- Prefer the platform's own components: Expo Router's native stack and tabs, `@expo/ui`'s controls inside the `Host` of `@/components/host`, and SF Symbols and Material Symbols for icons. React Native's `Text`, `TextInput` and `ScrollView` are native too. Draw with Uniwind only what no native component offers, such as the app's own content
+- Prefer the platform's own components: Expo Router's native stack and tabs, `@expo/ui`'s controls inside the `Host` of `@/components/host`, and SF Symbols and Material Symbols for icons. Draw with React Native's views and Uniwind only what `@expo/ui` doesn't offer, such as the app's own content
 
 ## Tests
 
