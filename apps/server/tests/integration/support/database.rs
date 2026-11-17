@@ -4,6 +4,7 @@
 //! database.
 
 use std::{
+    io::{self, Write},
     str::FromStr,
     sync::atomic::{AtomicU32, Ordering},
     time::Duration,
@@ -59,7 +60,9 @@ impl TestDatabase {
         self.pool.clone()
     }
 
-    /// Drops the database, and the connections the test left open.
+    /// Drops the database, and the connections the test left open. Gives up after 10 seconds, so
+    /// that a stuck Postgres can't hold back the test's own failure, and only reports a failure,
+    /// as the worktree's teardown drops what's left.
     pub async fn drop(self) {
         drop_database(&self.server, &self.name).await;
     }
@@ -79,15 +82,19 @@ async fn migrated_pool(database: PgConnectOptions) -> anyhow::Result<PgPool> {
     Ok(pool)
 }
 
-/// Drops the database, or reports why it couldn't: the worktree's teardown drops what's left. Gives
-/// up after 10 seconds, so that a stuck Postgres can't hold back the test's own failure.
+/// Does `TestDatabase::drop`'s work, also for a database whose setup failed.
 async fn drop_database(server: &PgConnectOptions, name: &str) {
     let sql = format!(r#"DROP DATABASE "{name}" WITH (FORCE)"#);
-    match time::timeout(Duration::from_secs(10), execute(server, sql)).await {
-        Ok(Ok(())) => {}
-        Ok(Err(error)) => eprintln!("Couldn't drop the test database {name}: {error}"),
-        Err(_) => eprintln!("Couldn't drop the test database {name}: timed out"),
-    }
+    let failure = match time::timeout(Duration::from_secs(10), execute(server, sql)).await {
+        Ok(Ok(())) => return,
+        Ok(Err(error)) => error.to_string(),
+        Err(_) => "timed out".to_owned(),
+    };
+    // Unlike `eprintln!`, can't panic and replace the test's own panic
+    let _ = writeln!(
+        io::stderr(),
+        "Couldn't drop the test database {name}: {failure}"
+    );
 }
 
 async fn execute(server: &PgConnectOptions, sql: String) -> Result<(), sqlx::Error> {
