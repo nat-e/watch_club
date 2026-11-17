@@ -48,11 +48,17 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
         crons.push(cron);
         next_runs.push(jiff_sqlx::Timestamp::from(next_run));
     }
+    // Syncing again gives the same result, so a failure between the two statements leaves nothing
+    // wrong: the next start syncs again
+    sqlx::query!(
+        "DELETE FROM job_schedules WHERE name <> ALL($1)",
+        &names as &[String],
+    )
+    .execute(db)
+    .await
+    .context("failed to delete the job schedules gone from the code")?;
     sqlx::query!(
         r#"
-        WITH deleted AS (
-            DELETE FROM job_schedules WHERE name <> ALL($1)
-        )
         INSERT INTO job_schedules (name, cron, next_run_at)
         SELECT * FROM unnest($1::text[], $2::text[], $3::timestamptz[])
         ON CONFLICT (name) DO UPDATE
@@ -65,7 +71,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
     )
     .execute(db)
     .await
-    .context("failed to sync the job schedules")?;
+    .context("failed to save the job schedules")?;
     Ok(())
 }
 

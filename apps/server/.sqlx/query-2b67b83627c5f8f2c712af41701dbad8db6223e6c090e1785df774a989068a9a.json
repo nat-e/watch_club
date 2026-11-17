@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM job_schedules WHERE name <> ALL($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2b67b83627c5f8f2c712af41701dbad8db6223e6c090e1785df774a989068a9a"
+}
