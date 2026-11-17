@@ -102,7 +102,7 @@ mod run_available {
     }
 
     #[database_test]
-    async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
+    async fn schedules_a_retry_with_a_backoff(db: PgPool) {
         let id = enqueue_failing(&db, 3).await;
 
         jobs::run_available(&db).await.unwrap();
