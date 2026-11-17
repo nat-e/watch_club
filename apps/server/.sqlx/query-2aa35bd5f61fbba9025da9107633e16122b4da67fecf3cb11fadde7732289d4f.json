@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE jobs\n            SET state = 'executing', attempt = $2, attempted_at = now() - $3::text::interval\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int2",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2aa35bd5f61fbba9025da9107633e16122b4da67fecf3cb11fadde7732289d4f"
+}

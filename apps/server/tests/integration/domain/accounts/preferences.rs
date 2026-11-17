@@ -15,7 +15,7 @@ mod change_locale {
             .unwrap();
 
         assert_eq!(changed.locale, Locale::FrFr);
-        let (signed_in, _) = accounts::sign_in(&db, "ada", PASSWORD.to_owned())
+        let (signed_in, _) = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap()
             .unwrap();

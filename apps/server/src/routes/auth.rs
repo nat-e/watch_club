@@ -7,6 +7,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use axum_extra::extract::CookieJar;
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use utoipa::ToSchema;
@@ -55,7 +56,8 @@ async fn login(
 #[schema(as = Credentials)]
 struct LoginRequest {
     username: String,
-    password: String,
+    #[schema(value_type = String)]
+    password: SecretString,
 }
 
 /// The failures of a request to sign in.

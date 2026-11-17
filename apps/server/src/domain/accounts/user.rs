@@ -1,10 +1,9 @@
 //! Users: their usernames and passwords, Setup, and the sessions that keep them signed in.
 
-use std::fmt;
-
 use anyhow::Context;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use jiff::SignedDuration;
+use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgExecutor, PgPool};
@@ -85,14 +84,15 @@ pub enum UsernameError {
 }
 
 /// A password for a new account: at least 8 characters, kept exactly as typed.
-pub struct Password(String);
+#[derive(Debug)]
+pub struct Password(SecretString);
 
 impl Password {
     pub const MIN_LENGTH: usize = 8;
 
     /// Checks the text follows the rules.
-    pub fn parse(text: String) -> Result<Self, PasswordError> {
-        let length = text.chars().count();
+    pub fn parse(text: SecretString) -> Result<Self, PasswordError> {
+        let length = text.expose_secret().chars().count();
         if length == 0 {
             return Err(PasswordError::Missing);
         }
@@ -102,17 +102,6 @@ impl Password {
             });
         }
         Ok(Self(text))
-    }
-
-    fn into_inner(self) -> String {
-        self.0
-    }
-}
-
-/// Keeps the secret out of logs.
-impl fmt::Debug for Password {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("Password(…)")
     }
 }
 
@@ -161,7 +150,7 @@ pub async fn create_instance_administrator(
     locale: Locale,
 ) -> Result<(User, SessionToken), CreateInstanceAdministratorError> {
     let password_hash =
-        hash_slowly(move || password_auth::generate_hash(password.into_inner())).await;
+        hash_slowly(move || password_auth::generate_hash(password.0.expose_secret())).await;
 
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     let created = sqlx::query_as!(
@@ -212,37 +201,32 @@ pub const SESSION_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 30)
 
 /// The secret that keeps a User signed in on one device. The database only stores its hash, so
 /// a leaked database signs nobody in.
-#[derive(Clone, PartialEq, Eq)]
-pub struct SessionToken([u8; 32]);
+#[derive(Debug)]
+pub struct SessionToken(SecretBox<[u8; 32]>);
 
 impl SessionToken {
     fn random() -> Result<Self, getrandom::Error> {
-        let mut bytes = [0; 32];
-        getrandom::fill(&mut bytes)?;
+        let mut bytes = SecretBox::<[u8; 32]>::default();
+        getrandom::fill(bytes.expose_secret_mut())?;
         Ok(Self(bytes))
     }
 
     /// Reads a token in the form [`encode`](Self::encode) gives, or returns None.
     pub fn decode(text: &str) -> Option<Self> {
-        let mut bytes = [0; 32];
-        let length = URL_SAFE_NO_PAD.decode_slice(text, &mut bytes).ok()?;
-        (length == bytes.len()).then_some(Self(bytes))
+        let mut bytes = SecretBox::<[u8; 32]>::default();
+        let length = URL_SAFE_NO_PAD
+            .decode_slice(text, bytes.expose_secret_mut())
+            .ok()?;
+        (length == bytes.expose_secret().len()).then_some(Self(bytes))
     }
 
     /// Returns the token as text that fits in a cookie or a header.
     pub fn encode(&self) -> String {
-        URL_SAFE_NO_PAD.encode(self.0)
+        URL_SAFE_NO_PAD.encode(self.0.expose_secret())
     }
 
     fn hash(&self) -> [u8; 32] {
-        Sha256::digest(self.0).into()
-    }
-}
-
-/// Keeps the secret out of logs.
-impl fmt::Debug for SessionToken {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("SessionToken(…)")
+        Sha256::digest(self.0.expose_secret()).into()
     }
 }
 
@@ -252,7 +236,7 @@ impl fmt::Debug for SessionToken {
 pub async fn sign_in(
     db: &PgPool,
     username: &str,
-    password: String,
+    password: SecretString,
 ) -> Result<Option<(User, SessionToken)>, InternalError> {
     let Some(row) = sqlx::query!(
         r#"
@@ -268,13 +252,15 @@ pub async fn sign_in(
     else {
         // Hashes the password all the same, which takes as long as checking it, so the time to
         // answer doesn't tell which usernames exist
-        hash_slowly(move || password_auth::generate_hash(password)).await;
+        hash_slowly(move || password_auth::generate_hash(password.expose_secret())).await;
         return Ok(None);
     };
 
     let hash = row.password_hash;
-    let password_matches =
-        hash_slowly(move || password_auth::verify_password(password, &hash).is_ok()).await;
+    let password_matches = hash_slowly(move || {
+        password_auth::verify_password(password.expose_secret(), &hash).is_ok()
+    })
+    .await;
     if !password_matches {
         return Ok(None);
     }
@@ -317,6 +303,15 @@ pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalE
         .await
         .context("failed to end a session")?;
     Ok(())
+}
+
+/// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
+pub async fn delete_expired_sessions(db: &PgPool) -> Result<u64, InternalError> {
+    let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
+        .execute(db)
+        .await
+        .context("failed to delete the expired sessions")?;
+    Ok(deleted.rows_affected())
 }
 
 /// Creates a session that keeps the User signed in on a new device for `SESSION_LIFETIME`, and

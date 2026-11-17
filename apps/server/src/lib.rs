@@ -1,7 +1,7 @@
 //! The app assembled into one router, as a library that `main.rs`, the tests and `bin/` share.
 
 use axum::{Router, middleware, routing::get};
-use sqlx::PgPool;
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use tower_http::trace::{DefaultMakeSpan, TraceLayer};
 use tracing::Level;
 
@@ -9,15 +9,21 @@ use tracing::Level;
 extern crate self as watch_club;
 
 mod auth;
+pub mod config;
 pub mod domain;
 mod error;
+pub mod jobs;
 pub mod openapi;
 pub mod routes;
 mod web;
 
 /// Connects to the app's database, and runs its pending migrations.
 pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
-    let db = PgPool::connect(url).await?;
+    let db = PgPoolOptions::new()
+        // Shared by the requests and the jobs, which hold one only while a query runs
+        .max_connections(10)
+        .connect(url)
+        .await?;
     sqlx::migrate!().run(&db).await?;
     Ok(db)
 }
