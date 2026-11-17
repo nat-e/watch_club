@@ -11,17 +11,27 @@ export function Host({
   children,
   ...props
 }: Omit<UniversalHostProps, 'colorScheme' | 'seedColor'> & {children: ReactNode}) {
-  const [primary, primaryForeground, background, card, muted, foreground, mutedForeground, border] =
-    useCSSVariable([
-      '--color-primary',
-      '--color-primary-foreground',
-      '--color-background',
-      '--color-card',
-      '--color-muted',
-      '--color-foreground',
-      '--color-muted-foreground',
-      '--color-border',
-    ]).map(value => color(String(value)));
+  const [
+    primary,
+    primaryForeground,
+    background,
+    card,
+    muted,
+    foreground,
+    mutedForeground,
+    border,
+    destructive,
+  ] = useCSSVariable([
+    '--color-primary',
+    '--color-primary-foreground',
+    '--color-background',
+    '--color-card',
+    '--color-muted',
+    '--color-foreground',
+    '--color-muted-foreground',
+    '--color-border',
+    '--color-destructive',
+  ]).map(value => color(String(value)));
   return (
     <ComposeHost
       colorScheme="dark"
@@ -35,6 +45,8 @@ export function Host({
         surfaceContainerHighest: muted,
         onSurfaceVariant: mutedForeground,
         outline: border,
+        // The border, label and message of a field with an error
+        error: destructive,
       }}
       {...props}
     >
