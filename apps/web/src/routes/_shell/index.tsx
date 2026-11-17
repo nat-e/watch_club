@@ -1,10 +1,11 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {useTranslation} from 'react-i18next';
+import {Page} from '@/components/layouts/page';
 
 /** Home, where signed-in Users land. Empty for now. */
 export const Route = createFileRoute('/_shell/')({component: Home});
 
 function Home() {
   const {t} = useTranslation('core');
-  return <h1 className="font-heading text-2xl font-semibold">{t($ => $.core.home.title)}</h1>;
+  return <Page title={t($ => $.core.home.title)} />;
 }

@@ -21,6 +21,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - `pnpm dev` runs the server and the web app's dev server at `APP_URL`, and reloads both on changes. Sign in as `admin`, `alice`, `bob`, with the password `passw0rd`
 - `pnpm --filter server seed` fills an empty database with the demo Users
 - `pnpm dev --expo` also runs Expo's dev server; `turbo run android --filter=mobile` builds the app and runs it on Android. Run them through turbo, which generates the API client first. Turbo shows each task in its own pane: select Expo's and press `i` to send it keys, `Ctrl+Z` to stop. Expo's dev server forwards `/api` to the server, and the app in development connects through it rather than asking for an address
+- The app runs in its development build, not in Expo Go, whose native modules are older than ours. One build serves every worktree: its launcher lists their dev servers by branch. Rebuild it only when native code changes: a native package, the native settings in `app.json` or the Expo SDK
 - `pnpm check` runs Biome, rustfmt, the type checks, Clippy and `i18next-cli`, which checks the translations against the code; `pnpm test` runs the tests, and `pnpm fix` formats and sorts the translations
 - After changing a query, run `cargo sqlx prepare -- --all-targets --all-features` in `apps/server` and commit `apps/server/.sqlx`: the Docker build has no database
 
@@ -33,6 +34,22 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 ### Jobs
 
 - Run background and recurring work as a job, in `src/jobs/kinds/`. `src/jobs.rs` says how to add one
+
+## Web and mobile apps
+
+- Keep the two apps' files organized the same way, under the same folder names, so a component's counterpart is easy to find
+- `src/routes` (web) and `src/app` (mobile) hold only routes: Expo Router makes every file in `src/app` a screen. Keep route files thin: they read the URL, call hooks and put components together. A component only one route uses stays in its route file until it grows, then moves to `src/components`
+- `src/components` holds the components that routes share:
+  - `layouts/`: the frame of a page or screen, such as web's `Page` or mobile's `FormScreen`
+  - `forms/`, `lists/`: generic controls, grouped by kind
+  - a folder per domain, named as in `CONTEXT.md`, such as `contents/`, for the components that show it, such as a poster card
+  - the root: the few components used everywhere, such as mobile's `Host`
+  - `ui/` (web): shadcn's components in its Vega style, as its CLI writes them. Change their look only through the theme, `packages/core/src/theme.css` and `apps/web/src/index.css`, or through classes where we use them. Edit their files only for what isn't style, such as translating their texts
+- Business logic, such as fetching what a poster card shows and deciding what it shows, goes in `packages/core`, in its domain's folder. Each app only draws it
+
+## Mobile app
+
+- Prefer the platform's own components: Expo Router's native stack and tabs, `@expo/ui`'s controls inside the `Host` of `@/components/host`, and SF Symbols and Material Symbols for icons. Draw with React Native's views and Uniwind only what `@expo/ui` doesn't offer, such as the app's own content
 
 ## Tests
 

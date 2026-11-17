@@ -1,10 +1,10 @@
 import {useSignInFormOptions} from '@watchclub/core/accounts/sign-in';
-import {type ComponentRef, useRef} from 'react';
+import {Stack} from 'expo-router';
+import {useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Text, type TextInput} from 'react-native';
-import {Button} from '@/components/button';
-import {useAppForm} from '@/components/form';
-import {Screen} from '@/components/screen';
+import {useAppForm} from '@/components/forms/form';
+import type {FocusableField} from '@/components/forms/text-field';
+import {FormScreen} from '@/components/layouts/form-screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
@@ -14,8 +14,8 @@ export default function SignIn() {
   const {session} = useSession();
   const sessionStore = useSessionStore();
   // The keyboard's next key moves from one field to the next
-  const usernameInput = useRef<ComponentRef<typeof TextInput>>(null);
-  const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
+  const usernameInput = useRef<FocusableField>(null);
+  const passwordInput = useRef<FocusableField>(null);
   // The URL the credentials go to, which the address form's submission found a WatchClub at
   const destination = useRef<string | null>(null);
   const signInForm = useAppForm(
@@ -32,50 +32,34 @@ export default function SignIn() {
     await signInForm.handleSubmit();
   });
 
-  function submit() {
-    void instanceForm.handleSubmit();
-  }
-
   return (
-    <Screen>
-      <Text accessibilityRole="header" className="text-3xl font-semibold text-foreground">
-        {t($ => $.core.signIn.title)}
-      </Text>
-      {session.instanceUrl === null && (
-        <Text className="text-base text-muted-foreground">
-          {t($ => $.mobile.signIn.description)}
-        </Text>
-      )}
-      <instanceForm.Field name="address">
-        {field => (
-          <field.TextField
-            label={t($ => $.mobile.signIn.address)}
-            placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus={session.instanceUrl === null}
-            inputMode="url"
-            returnKeyType="next"
-            submitBehavior="submit"
-            onSubmitEditing={() => {
-              usernameInput.current?.focus();
-            }}
-          />
-        )}
-      </instanceForm.Field>
-      <signInForm.AppForm>
+    <>
+      <Stack.Screen options={{headerShown: true, title: t($ => $.core.signIn.title)}} />
+      <FormScreen
+        description={session.instanceUrl === null ? t($ => $.mobile.signIn.description) : undefined}
+      >
+        <instanceForm.Field name="address">
+          {field => (
+            <field.TextField
+              label={t($ => $.mobile.signIn.address)}
+              purpose="url"
+              placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
+              autoFocus={session.instanceUrl === null}
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                usernameInput.current?.focus();
+              }}
+            />
+          )}
+        </instanceForm.Field>
         <signInForm.Field name="username">
           {field => (
             <field.TextField
               ref={usernameInput}
               label={t($ => $.core.user.username)}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="username"
-              textContentType="username"
+              purpose="username"
               autoFocus={session.instanceUrl !== null}
               returnKeyType="next"
-              submitBehavior="submit"
               onSubmitEditing={() => {
                 passwordInput.current?.focus();
               }}
@@ -87,27 +71,22 @@ export default function SignIn() {
             <field.TextField
               ref={passwordInput}
               label={t($ => $.core.user.password)}
-              onSubmitEditing={submit}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="current-password"
-              textContentType="password"
+              purpose="current-password"
               returnKeyType="go"
+              onSubmitEditing={() => {
+                void instanceForm.handleSubmit();
+              }}
             />
           )}
         </signInForm.Field>
-        <signInForm.FormError />
-      </signInForm.AppForm>
-      <instanceForm.Subscribe selector={state => state.isSubmitting}>
-        {isSubmitting => (
-          <Button disabled={isSubmitting} onPress={submit}>
-            {t($ => $.core.signIn.submit)}
-          </Button>
-        )}
-      </instanceForm.Subscribe>
-      <Text className="text-sm text-muted-foreground">{t($ => $.core.signIn.forgotPassword)}</Text>
-    </Screen>
+        <instanceForm.AppForm>
+          <instanceForm.SubmitButton>{t($ => $.core.signIn.submit)}</instanceForm.SubmitButton>
+        </instanceForm.AppForm>
+        <signInForm.AppForm>
+          <signInForm.FormFeedback hint={t($ => $.core.signIn.forgotPassword)} />
+        </signInForm.AppForm>
+      </FormScreen>
+    </>
   );
 }
 

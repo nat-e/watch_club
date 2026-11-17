@@ -1,15 +1,28 @@
 export default {
+  browse: {
+    title: 'Parcourir',
+  },
   errors: {
     somethingWentWrong: "On n'a pas pu terminer ta demande. Réessaie dans un instant.",
   },
   home: {
     title: 'Accueil',
   },
+  inbox: {
+    title: 'Messagerie',
+  },
+  myRequests: {
+    navigationLabel: 'Demandes',
+    title: 'Mes demandes',
+  },
   notFound: {
     description:
       "On n'a pas trouvé cette page. Elle n'existe peut-être pas, ou tu n'y as pas accès.",
     goHome: "Retour à l'accueil",
     title: 'Page introuvable',
+  },
+  playlists: {
+    title: 'Playlists',
   },
   settings: {
     description: 'Gère les préférences de ton compte.',

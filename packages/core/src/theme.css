@@ -1,30 +1,133 @@
 /* WatchClub's design tokens, Velvet Club v0, shared by the web app's Tailwind and the mobile
    app's Uniwind. WatchClub is dark only.
 
-   The neutral ramp is an aubergine-tinted grey; pink (primary) and purple (focus) keep the
-   Dracula hues at their 400 shade. Higher surfaces are lighter: background < card < popover.
-   Every text colour clears 4.5:1 on every surface, and control borders 3:1. */
+   The neutral ramp is an aubergine-tinted grey; pink (primary) and purple (highlight and focus)
+   keep the Dracula hues at their 400 shade. Higher surfaces are lighter: background < card <
+   popover. Every text colour clears 4.5:1 on every surface, and control borders 3:1.
+
+   The names are shadcn's where shadcn reads them, so `accent` is the hover surface; the Phoenix
+   app's purple accent is `highlight` here. */
 
 @theme {
+  /* ── Brand ramps ──────────────────────────────────────────────────────────
+     Each keeps one perceived hue (OKLCH 347° and 302°); the HSL hues drift only because HSL isn't
+     perceptual. They replace Tailwind's own pink and purple. */
+  --color-pink-50: hsl(332 100% 97.1%);
+  --color-pink-100: hsl(331 100% 93.9%);
+  --color-pink-200: hsl(329.1 100% 87.5%);
+  --color-pink-300: hsl(328.1 100% 81.6%);
+  --color-pink-400: hsl(325.5 100% 73.7%);
+  --color-pink-500: hsl(318.4 100% 52.7%);
+  --color-pink-600: hsl(317.7 100% 40.6%);
+  --color-pink-700: hsl(318.2 100% 30.4%);
+  --color-pink-800: hsl(318.5 100% 21.6%);
+  --color-pink-900: hsl(319.7 100% 12.5%);
+  --color-pink-950: hsl(322.2 100% 9%);
+  --color-purple-50: hsl(260 85.7% 97.3%);
+  --color-purple-100: hsl(261.6 86.2% 94.3%);
+  --color-purple-200: hsl(262.4 89.5% 88.8%);
+  --color-purple-300: hsl(262.9 88.4% 83.1%);
+  --color-purple-400: hsl(264.7 89.5% 77.6%);
+  --color-purple-500: hsl(267.7 88.8% 68.4%);
+  --color-purple-600: hsl(272 89% 57.1%);
+  --color-purple-700: hsl(273 75.7% 42%);
+  --color-purple-800: hsl(273.3 79.9% 29.2%);
+  --color-purple-900: hsl(273.2 88.1% 16.5%);
+  --color-purple-950: hsl(272.2 90% 11.8%);
+
+  /* ── Surfaces ── */
   --color-background: hsl(256 30% 8%);
   --color-foreground: hsl(256 80% 93.4%);
   --color-card: hsl(256 29% 13.1%);
   --color-card-foreground: hsl(256 80% 93.4%);
   --color-popover: hsl(256 29% 17.2%);
   --color-popover-foreground: hsl(256 80% 93.4%);
-  --color-primary: hsl(325.5 100% 73.7%);
-  --color-primary-foreground: hsl(322.2 100% 9%);
   --color-secondary: hsl(256 29% 17.2%);
   --color-secondary-foreground: hsl(256 80% 93.4%);
   --color-muted: hsl(256 29% 17.2%);
-  --color-muted-foreground: hsl(256 34% 81.7%);
+  /* The hover surface, lighter than every surface it appears on */
   --color-accent: hsl(256 29% 23.7%);
   --color-accent-foreground: hsl(256 80% 93.4%);
-  --color-destructive: oklch(70.4% 0.191 22.216);
-  --color-border: hsl(256 35% 31.3%);
-  --color-input: hsl(256 20% 54.4%);
-  --color-ring: hsl(267.7 88.8% 68.4%);
+  /* The pressed surface, a step lighter than the hover */
+  --color-pressed: hsl(256 31% 27.4%);
+  /* The current section in the navigation: lighter than the accent, its hover, so it reads purple */
+  --color-selected: hsl(256 35% 31.3%);
+  /* What dims the page behind a dialog */
+  --color-scrim: hsl(256 30% 8% / 80%);
 
+  /* ── Text ── */
+  --color-muted-foreground: hsl(256 34% 81.7%);
+  /* Text and icons quieter than muted, such as the icons of the sections not shown */
+  --color-subtle-foreground: hsl(256 24% 71.3%);
+  --color-disabled-foreground: hsl(256 20% 54.4%);
+
+  /* ── Borders and focus ── */
+  --color-border: hsl(256 35% 31.3%);
+  /* The decorative borders, such as cards' and the sidebar's */
+  --color-border-subtle: hsl(256 29% 23.7%);
+  /* The borders that are the only sign of a control */
+  --color-input: hsl(256 20% 54.4%);
+  /* The border of a focused control, and the solid halo around it */
+  --color-ring: hsl(267.7 88.8% 68.4%);
+  --color-focus-ring: hsl(273.3 79.9% 29.2%);
+
+  /* ── Fills ──────────────────────────────────────────────────────────────
+     Each comes with its hover and pressed shades, a subtle background and a border for tinted
+     content such as badges, the halo of its focus ring, and the text on the fill. */
+  --color-primary: hsl(325.5 100% 73.7%);
+  --color-primary-hover: hsl(328.1 100% 81.6%);
+  --color-primary-active: hsl(318.4 100% 52.7%);
+  --color-primary-subtle: hsl(322.2 100% 9%);
+  --color-primary-border: hsl(318.2 100% 30.4%);
+  --color-primary-ring: hsl(318.5 100% 21.6%);
+  --color-primary-foreground: hsl(322.2 100% 9%);
+
+  --color-highlight: hsl(264.7 89.5% 77.6%);
+  --color-highlight-hover: hsl(262.9 88.4% 83.1%);
+  --color-highlight-active: hsl(267.7 88.8% 68.4%);
+  --color-highlight-subtle: hsl(272.2 90% 11.8%);
+  --color-highlight-border: hsl(273 75.7% 42%);
+  --color-highlight-ring: hsl(273.3 79.9% 29.2%);
+  --color-highlight-foreground: hsl(272.2 90% 11.8%);
+
+  /* Tailwind's red. The text on the fill is the darkest neutral: red 950 is too light to reach
+     4.5:1 on the pressed fill. */
+  --color-destructive: oklch(70.4% 0.191 22.216);
+  --color-destructive-hover: oklch(80.8% 0.114 19.571);
+  --color-destructive-active: oklch(63.7% 0.237 25.331);
+  --color-destructive-subtle: oklch(25.8% 0.092 26.042);
+  --color-destructive-border: oklch(63.7% 0.237 25.331);
+  --color-destructive-ring: oklch(44.4% 0.177 26.899);
+  --color-destructive-foreground: hsl(256 30% 8%);
+
+  /* Tailwind's emerald */
+  --color-success: oklch(84.5% 0.143 164.978);
+  --color-success-hover: oklch(90.5% 0.093 164.15);
+  --color-success-active: oklch(76.5% 0.177 163.223);
+  --color-success-subtle: oklch(26.2% 0.051 172.552);
+  --color-success-border: oklch(59.6% 0.145 163.225);
+  --color-success-ring: oklch(43.2% 0.095 166.913);
+  --color-success-foreground: oklch(26.2% 0.051 172.552);
+
+  /* Tailwind's amber */
+  --color-warning: oklch(87.9% 0.169 91.605);
+  --color-warning-hover: oklch(92.4% 0.12 95.746);
+  --color-warning-active: oklch(76.9% 0.188 70.08);
+  --color-warning-subtle: oklch(27.9% 0.077 45.635);
+  --color-warning-border: oklch(55.5% 0.163 48.998);
+  --color-warning-ring: oklch(47.3% 0.137 46.201);
+  --color-warning-foreground: oklch(27.9% 0.077 45.635);
+
+  /* Tailwind's cyan */
+  --color-info: oklch(86.5% 0.127 207.078);
+  --color-info-hover: oklch(91.7% 0.08 205.041);
+  --color-info-active: oklch(78.9% 0.154 211.53);
+  --color-info-subtle: oklch(30.2% 0.056 229.695);
+  --color-info-border: oklch(52% 0.105 223.128);
+  --color-info-ring: oklch(45% 0.085 224.283);
+  --color-info-foreground: oklch(30.2% 0.056 229.695);
+
+  /* ── Sidebar ── */
   --color-sidebar: hsl(256 29% 13.1%);
   --color-sidebar-foreground: hsl(256 80% 93.4%);
   --color-sidebar-primary: hsl(325.5 100% 73.7%);
@@ -34,6 +137,7 @@
   --color-sidebar-border: hsl(256 29% 23.7%);
   --color-sidebar-ring: hsl(267.7 88.8% 68.4%);
 
+  /* ── Shapes ── */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.625rem;
@@ -41,4 +145,39 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 1.725rem;
   --radius-4xl: 1.95rem;
+  /* Buttons, fields and other controls, and cards */
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+
+  /* ── Spacing, from the things that belong closest together to the farthest apart ── */
+  --spacing-tight: 0.25rem;
+  --spacing-related: 0.5rem;
+  --spacing-group: 1rem;
+  --spacing-cluster: 1.5rem;
+  --spacing-section: 3rem;
+
+  /* ── Sizes ── */
+  --spacing-control-sm: 2rem;
+  --spacing-control-md: 2.5rem;
+  --spacing-control-lg: 3rem;
+  --spacing-icon-sm: 1rem;
+  --spacing-icon: 1.25rem;
+  --spacing-icon-lg: 1.5rem;
+  --spacing-icon-xl: 2rem;
+  /* The smallest a finger can tap */
+  --spacing-touch-target: 2.75rem;
+  --spacing-row-lg: 4rem;
+
+  /* ── Shadows, by height above the page: cards rest on it, menus float over it, sheets and
+     dialogs sit on top of everything ── */
+  --shadow-2xs: 0 1px 2px rgb(0 0 0 / 20%);
+  --shadow-xs: 0 2px 6px rgb(0 0 0 / 20%);
+  --shadow-sm: 0 6px 18px rgb(0 0 0 / 22%);
+  --shadow-md: 0 14px 40px rgb(0 0 0 / 28%);
+  --shadow-lg: 0 28px 80px rgb(0 0 0 / 58%);
+  --shadow-card: 0 2px 6px rgb(0 0 0 / 20%);
+  --shadow-overlay: 0 14px 40px rgb(0 0 0 / 28%);
+  --shadow-modal: 0 28px 80px rgb(0 0 0 / 58%);
+  /* Around a primary button given emphasis */
+  --shadow-glow: 0 8px 20px rgb(255 121 198 / 18%);
 }

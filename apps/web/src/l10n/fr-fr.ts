@@ -1,4 +1,16 @@
 export default {
+  instanceSettings: {
+    title: "Paramètres de l'instance",
+  },
+  mediaBrowser: {
+    title: 'Explorateur de médias',
+  },
+  mediaSources: {
+    title: 'Sources de médias',
+  },
+  problemReports: {
+    title: 'Signalements',
+  },
   setup: {
     administratorAccount:
       'Crée le compte administrateur. Il te servira à gérer WatchClub et à inviter tes amis.',
@@ -19,6 +31,7 @@ export default {
     close: 'Fermer',
   },
   shell: {
+    administration: 'Administration',
     navigation: 'Navigation principale',
     signOutFailed: "On n'a pas pu te déconnecter. Réessaie dans un instant.",
   },
@@ -29,5 +42,8 @@ export default {
   },
   toaster: {
     notifications: 'Notifications',
+  },
+  users: {
+    title: 'Utilisateurs',
   },
 } as const;

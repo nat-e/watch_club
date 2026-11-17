@@ -14,4 +14,7 @@ export default {
     title: "On n'arrive pas à joindre ton WatchClub",
     tryAgain: 'Réessayer',
   },
+  you: {
+    title: 'Moi',
+  },
 } as const;
