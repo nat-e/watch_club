@@ -8,6 +8,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use sqlx::{PgExecutor, PgPool};
 use tokio::sync::Semaphore;
+use tracing::Level;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -152,6 +153,7 @@ pub async fn create_instance_administrator(
     let password_hash =
         hash_slowly(move || password_auth::generate_hash(password.0.expose_secret())).await;
 
+    let username = username.into_inner();
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     let created = sqlx::query_as!(
         User,
@@ -160,7 +162,7 @@ pub async fn create_instance_administrator(
         VALUES ($1, $2, $3, true)
         RETURNING id, username, locale, is_instance_administrator
         "#,
-        username.into_inner(),
+        &username,
         password_hash,
         locale as Locale,
     )
@@ -181,6 +183,12 @@ pub async fn create_instance_administrator(
                 sqlx::Error::Database(error) if error.is_unique_violation()
             );
             if is_unique_violation && has_instance_administrator(db).await? {
+                tracing::event!(
+                    name: "accounts.instance_administrator.refused",
+                    Level::WARN,
+                    user.name = username,
+                    "refused to create a second Instance Administrator",
+                );
                 return Err(CreateInstanceAdministratorError::AlreadyExists);
             }
             return Err(anyhow::Error::new(error)
@@ -193,6 +201,13 @@ pub async fn create_instance_administrator(
         .commit()
         .await
         .context("failed to create the Instance Administrator")?;
+    tracing::event!(
+        name: "accounts.instance_administrator.created",
+        Level::INFO,
+        user.id = %user.id.0,
+        user.name = user.username,
+        "created the Instance Administrator",
+    );
     Ok((user, token))
 }
 
@@ -238,13 +253,41 @@ pub async fn sign_in(
     username: &str,
     password: SecretString,
 ) -> Result<Option<(User, SessionToken)>, InternalError> {
+    let username = username.trim();
+    let Some(user) = check_credentials(db, username, password).await? else {
+        tracing::event!(
+            name: "accounts.sign_in.failed",
+            Level::WARN,
+            user.name = username,
+            "wrong username or password",
+        );
+        return Ok(None);
+    };
+    let token = create_session(db, user.id).await?;
+    tracing::event!(
+        name: "accounts.sign_in.succeeded",
+        Level::INFO,
+        user.id = %user.id.0,
+        user.name = user.username,
+        "signed in",
+    );
+    Ok(Some((user, token)))
+}
+
+/// Returns the User whose username and password these are, or None. Takes about as long either
+/// way.
+async fn check_credentials(
+    db: &PgPool,
+    username: &str,
+    password: SecretString,
+) -> Result<Option<User>, InternalError> {
     let Some(row) = sqlx::query!(
         r#"
         SELECT id, username, locale, is_instance_administrator, password_hash
         FROM users
         WHERE username = $1
         "#,
-        username.trim(),
+        username,
     )
     .fetch_optional(db)
     .await
@@ -265,14 +308,12 @@ pub async fn sign_in(
         return Ok(None);
     }
 
-    let user = User {
+    Ok(Some(User {
         id: row.id,
         username: row.username,
         locale: row.locale,
         is_instance_administrator: row.is_instance_administrator,
-    };
-    let token = create_session(db, user.id).await?;
-    Ok(Some((user, token)))
+    }))
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.

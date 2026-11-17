@@ -34,6 +34,8 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 ### Logs
 
 - Name each event, and keep its message the same every time: put the values in fields, under OpenTelemetry's names where it has one, such as `server.port`. Put an error with its causes in `exception.message = %format_args!("{error:#}")`
+- Never log IP addresses, passwords or session tokens
+- Record text that users typed as a plain string, without `%`: the console then quotes and escapes it, so a line break in it can't forge another log line
 - Write named events with `tracing::event!` and a `Level`: `info!`, `warn!` and `error!` can't take a dotted field first after `name:` until tokio-rs/tracing#3407 is fixed
 - Give work that runs apart from requests a span with its identity, and run it in `observability::with_error_scope`, as `jobs/observability.rs` does
 
