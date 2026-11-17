@@ -216,8 +216,40 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 /// Saves how a job's attempt ended: completed, failed, or back in its queue to try again after a
 /// backoff.
 async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobError>) {
-    let (attempt, max_attempts) = (job.attempt, job.max_attempts);
-    let state = match outcome {
+    let attempt = job.attempt;
+    let state = next_state(attempt, job.max_attempts, outcome);
+    // A retry waits `attempt⁴ + 15` seconds, plus up to 10% at random so that jobs that failed
+    // together don't retry together. A job that's no longer this attempt's is left alone: after a
+    // rescue, it belongs to the next attempt.
+    let recorded = sqlx::query!(
+        r#"
+        UPDATE jobs
+        SET state = $3,
+            run_at = CASE WHEN $3 = 'available'::job_state
+                THEN now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))
+                ELSE run_at
+            END,
+            finished_at = CASE WHEN $3 = 'available'::job_state THEN NULL ELSE now() END
+        WHERE id = $1 AND attempt = $2 AND state = 'executing'
+        "#,
+        job.id as JobId,
+        attempt,
+        state as JobState,
+    )
+    .execute(db)
+    .await;
+    if let Err(error) = recorded {
+        tracing::error!(
+            name: "jobs.save_outcome.failed",
+            %error,
+            "failed to save how the job ended",
+        );
+    }
+}
+
+/// Returns the state an attempt that ended this way leaves its job in, and logs why it failed.
+fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) -> JobState {
+    match outcome {
         Ok(()) => JobState::Completed,
         Err(JobError::NonRetryable(error)) => {
             tracing::error!(
@@ -247,33 +279,6 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
             );
             JobState::Failed
         }
-    };
-    // A retry waits `attempt⁴ + 15` seconds, plus up to 10% at random so that jobs that failed
-    // together don't retry together. A job that's no longer this attempt's is left alone: after a
-    // rescue, it belongs to the next attempt.
-    let recorded = sqlx::query!(
-        r#"
-        UPDATE jobs
-        SET state = $3,
-            run_at = CASE WHEN $3 = 'available'::job_state
-                THEN now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))
-                ELSE run_at
-            END,
-            finished_at = CASE WHEN $3 = 'available'::job_state THEN NULL ELSE now() END
-        WHERE id = $1 AND attempt = $2 AND state = 'executing'
-        "#,
-        job.id as JobId,
-        attempt,
-        state as JobState,
-    )
-    .execute(db)
-    .await;
-    if let Err(error) = recorded {
-        tracing::error!(
-            name: "jobs.save_outcome.failed",
-            %error,
-            "failed to save how the job ended",
-        );
     }
 }
 
@@ -363,7 +368,6 @@ mod tests {
     use std::future;
 
     use super::*;
-    use watch_club_test_macros::database_test;
 
     const TIMEOUT: Duration = Duration::from_mins(1);
 
@@ -400,105 +404,33 @@ mod tests {
         }
     }
 
-    mod save_outcome {
+    mod next_state {
         use super::*;
 
-        /// Inserts a job the runner claimed for its `attempt`th attempt out of `max_attempts`.
-        async fn claimed_job(db: &PgPool, attempt: i16, max_attempts: i16) -> ClaimedJob {
-            sqlx::query_as!(
-                ClaimedJob,
-                r#"
-                INSERT INTO jobs (queue, kind, state, attempt, max_attempts, attempted_at)
-                VALUES ('default', 'test', 'executing', $1, $2, now())
-                RETURNING id, kind, args, attempt, max_attempts
-                "#,
-                attempt,
-                max_attempts,
-            )
-            .fetch_one(db)
-            .await
-            .unwrap()
+        #[test]
+        fn completes_a_job_that_succeeded() {
+            assert_eq!(next_state(1, 3, Ok(())), JobState::Completed);
         }
 
-        /// Returns the job's state, and the seconds until its next attempt, or None once it
-        /// finished.
-        async fn job_state(db: &PgPool, id: JobId) -> (JobState, Option<f64>) {
-            let row = sqlx::query!(
-                r#"
-                SELECT
-                    state,
-                    CASE WHEN finished_at IS NULL
-                        THEN extract(epoch FROM run_at - now())::float8
-                    END AS wait
-                FROM jobs WHERE id = $1
-                "#,
-                id as JobId,
-            )
-            .fetch_one(db)
-            .await
-            .unwrap();
-            (row.state, row.wait)
-        }
+        #[test]
+        fn retries_a_failed_attempt_with_attempts_left() {
+            let state = next_state(2, 3, Err(anyhow!("down").into()));
 
-        #[database_test]
-        async fn completes_a_job_that_succeeded(db: PgPool) {
-            let job = claimed_job(&db, 1, 3).await;
-
-            save_outcome(&db, &job, Ok(())).await;
-
-            assert_eq!(job_state(&db, job.id).await, (JobState::Completed, None));
-        }
-
-        #[database_test]
-        async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
-            let job = claimed_job(&db, 2, 3).await;
-
-            save_outcome(&db, &job, Err(anyhow!("down").into())).await;
-
-            let (state, wait) = job_state(&db, job.id).await;
             assert_eq!(state, JobState::Available);
-            // 2⁴ + 15 seconds, plus up to 10%
-            let wait = wait.unwrap();
-            assert!((30.0..=34.1).contains(&wait), "waits {wait} s");
         }
 
-        #[database_test]
-        async fn fails_the_job_after_its_last_attempt(db: PgPool) {
-            let job = claimed_job(&db, 3, 3).await;
+        #[test]
+        fn fails_the_job_after_its_last_attempt() {
+            let state = next_state(3, 3, Err(anyhow!("down").into()));
 
-            save_outcome(&db, &job, Err(anyhow!("down").into())).await;
-
-            assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
+            assert_eq!(state, JobState::Failed);
         }
 
-        #[database_test]
-        async fn fails_the_job_at_once_on_a_non_retryable_failure(db: PgPool) {
-            let job = claimed_job(&db, 1, 3).await;
+        #[test]
+        fn fails_the_job_at_once_on_a_non_retryable_failure() {
+            let failure = JobError::NonRetryable(anyhow!("never works"));
 
-            save_outcome(
-                &db,
-                &job,
-                Err(JobError::NonRetryable(anyhow!("never works"))),
-            )
-            .await;
-
-            assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
-        }
-
-        #[database_test]
-        async fn leaves_a_job_that_a_rescue_gave_to_its_next_attempt(db: PgPool) {
-            let job = claimed_job(&db, 1, 3).await;
-            sqlx::query!(
-                "UPDATE jobs SET attempt = 2, attempted_at = now() WHERE id = $1",
-                job.id as JobId,
-            )
-            .execute(&db)
-            .await
-            .unwrap();
-
-            save_outcome(&db, &job, Ok(())).await;
-
-            assert_eq!(job_state(&db, job.id).await.0, JobState::Executing);
+            assert_eq!(next_state(1, 3, Err(failure)), JobState::Failed);
         }
     }
 }

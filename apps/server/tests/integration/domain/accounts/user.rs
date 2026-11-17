@@ -1,11 +1,8 @@
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::PgPool;
-use watch_club::{
-    domain::accounts::{
-        self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken,
-        User, Username, UsernameError,
-    },
-    testing::database_with_one_connection,
+use watch_club::domain::accounts::{
+    self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
+    Username, UsernameError,
 };
 use watch_club_test_macros::database_test;
 
@@ -159,7 +156,7 @@ mod create_instance_administrator {
 
     #[tokio::test]
     async fn fails_when_there_is_one_already_with_a_single_connection() {
-        let db = database_with_one_connection().await;
+        let db = support::database_with_one_connection().await;
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(

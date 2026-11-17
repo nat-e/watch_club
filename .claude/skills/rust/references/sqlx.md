@@ -29,4 +29,4 @@ Official docs: the [`query!` macros](https://docs.rs/sqlx/0.9.0/sqlx/macro.query
 
 ## Tests
 
-- Write a test that needs the database as `#[database_test] async fn name(db: PgPool)`, from `watch_club_test_macros`: it gets a database of its own, with the migrations, which `testing::database()` creates and drops after the test. Not `#[sqlx::test]`: it names a test's database after the test alone, so two worktrees running the same test on the Postgres they share would drop each other's
+- Write a test that needs the database in `tests/`, as `#[database_test] async fn name(db: PgPool)` from `watch_club_test_macros`: it gets a database of its own, with the migrations, which `support::database()` creates and drops after the test. Unit tests don't use the database. Not `#[sqlx::test]`: it names a test's database after the test alone, so two worktrees running the same test on the Postgres they share would drop each other's

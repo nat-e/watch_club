@@ -16,8 +16,6 @@ pub mod jobs;
 pub mod observability;
 pub mod openapi;
 pub mod routes;
-#[cfg(any(test, feature = "testing"))]
-pub mod testing;
 mod web;
 
 /// The state the request handlers share, which `router` takes.

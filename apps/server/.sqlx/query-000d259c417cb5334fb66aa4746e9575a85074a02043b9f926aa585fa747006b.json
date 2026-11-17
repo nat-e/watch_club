@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO jobs (queue, kind, max_attempts)\n            VALUES ('default', 'removed_job', 3)\n            RETURNING id\n            ",
+  "query": "\n            INSERT INTO jobs (queue, kind, max_attempts)\n            VALUES ('default', 'removed_job', $1)\n            RETURNING id\n            ",
   "describe": {
     "columns": [
       {
@@ -16,11 +16,13 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Int2"
+      ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "db8f545ffcca925d0af7707a3bd3a2c6eb3ebc740f9a172ef3ea891189f28398"
+  "hash": "000d259c417cb5334fb66aa4746e9575a85074a02043b9f926aa585fa747006b"
 }

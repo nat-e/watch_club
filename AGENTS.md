@@ -56,7 +56,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - Write the server's tests in the single test crate `apps/server/tests/integration/`, whose files mirror `src/`
 - Test the domain through its public functions, one file per module in `domain/`
 - Test the API through requests to the app's router with `support::Client`, one file per endpoint in `routes/`: check the status and the JSON
-- Add unit tests only for private logic that's hard to reach that way
+- Add unit tests only for private logic that's hard to reach that way. They don't use the database: split such logic from its queries, and test the queries through the public functions
 - Test TypeScript with Vitest, in `.test.ts` files in the package's `tests/` folder, beside `src/`, whose files mirror `src/`
 
 ## Naming

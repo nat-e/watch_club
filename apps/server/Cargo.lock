@@ -3589,7 +3589,6 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "uuid",
- "watch_club",
  "watch_club_test_macros",
 ]
 

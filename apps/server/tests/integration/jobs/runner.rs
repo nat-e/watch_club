@@ -86,22 +86,46 @@ mod run_available {
         );
     }
 
-    #[database_test]
-    async fn retries_a_job_whose_arguments_dont_read(db: PgPool) {
-        let id = sqlx::query_scalar!(
+    /// Queues a job whose attempts fail, as its kind no longer exists.
+    async fn enqueue_failing(db: &PgPool, max_attempts: i16) -> JobId {
+        sqlx::query_scalar!(
             r#"
             INSERT INTO jobs (queue, kind, max_attempts)
-            VALUES ('default', 'removed_job', 3)
+            VALUES ('default', 'removed_job', $1)
             RETURNING id
-            "#
+            "#,
+            max_attempts,
         )
-        .fetch_one(&db)
+        .fetch_one(db)
         .await
-        .unwrap();
+        .unwrap()
+    }
+
+    #[database_test]
+    async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
+        let id = enqueue_failing(&db, 3).await;
 
         jobs::run_available(&db).await.unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Available, 1));
+        let wait = sqlx::query_scalar!(
+            r#"SELECT extract(epoch FROM run_at - now())::float8 AS "wait!" FROM jobs WHERE id = $1"#,
+            id as JobId,
+        )
+        .fetch_one(&db)
+        .await
+        .unwrap();
+        // 1⁴ + 15 seconds, plus up to 10%
+        assert!((15.0..=17.6).contains(&wait), "waits {wait} s");
+    }
+
+    #[database_test]
+    async fn fails_a_job_after_its_last_attempt(db: PgPool) {
+        let id = enqueue_failing(&db, 1).await;
+
+        jobs::run_available(&db).await.unwrap();
+
+        assert_eq!(job_state(&db, id).await, (JobState::Failed, 1));
     }
 
     /// Makes the job look like an attempt that started this long ago and never ended.
