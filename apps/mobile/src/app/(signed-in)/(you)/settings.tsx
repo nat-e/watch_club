@@ -21,20 +21,13 @@ export default function Settings() {
 
   return (
     <FormScreen>
-      <FieldGroup.Section
-        // iOS keeps the language picked until the saved one changes: after a failed save, the
-        // section starts again from the saved one
-        key={String(save.isError)}
-        title={language}
-      >
+      <FieldGroup.Section title={language}>
         {choiceRows({
           label: language,
           options: LOCALES.map(locale => ({value: locale, label: localeNames[locale]})),
           value: user.locale,
           disabled: save.isPending,
-          onChange: locale => {
-            save.mutate({locale});
-          },
+          onChange: locale => save.mutateAsync({locale}),
         })}
         <FieldGroup.SectionFooter>
           {save.isError ? (

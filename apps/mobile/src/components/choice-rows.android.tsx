@@ -29,7 +29,8 @@ export function choiceRows<T extends string>({
                 selectable(
                   selected,
                   () => {
-                    onChange(option.value);
+                    // The rows follow `value`, and the caller shows the failure
+                    onChange(option.value).catch(() => undefined);
                   },
                   'radioButton',
                 ),
