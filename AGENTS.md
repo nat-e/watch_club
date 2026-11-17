@@ -32,7 +32,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 ### Jobs
 
-- Run background and recurring work as a job, in `src/jobs/`. `src/jobs.rs` says how to add one
+- Run background and recurring work as a job, in `src/jobs/kinds/`. `src/jobs.rs` says how to add one
 
 ## Tests
 

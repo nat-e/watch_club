@@ -38,7 +38,7 @@ pub trait Job {
     /// The job's place in its queue, from 0, which runs first, to 9.
     const PRIORITY: i16 = 0;
     /// The number of times the job starts before it fails for good.
-    const MAX_ATTEMPTS: i32 = 3;
+    const MAX_ATTEMPTS: i16 = 3;
     /// The time an attempt may take, after which it stops and counts as failed.
     ///
     /// It must be shorter than an hour, after which a job that's still running counts as crashed
@@ -158,7 +158,7 @@ impl AnyJob {
 struct Settings {
     queue: Queue,
     priority: i16,
-    max_attempts: i32,
+    max_attempts: i16,
     timeout: Duration,
 }
 
