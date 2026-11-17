@@ -3,10 +3,12 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   The User's Continue Watching on Home: the latest one in the spotlight, the others in Up next.
   Resume plays the Movie or the Sports Event, or the TV Show's next TV Show Episode, and the title
   opens the Content's page. Hide sends `hide_from_continue_watching` with its `content_id`.
+
+  Both show the Content's backdrop, never a TV Show Episode's still, which could spoil it.
   """
   use WatchClubWeb, :component
 
-  import WatchClubWeb.Components.Contents.{TmdbBackdrop, TmdbPoster}
+  import WatchClubWeb.Components.Contents.TmdbBackdrop
 
   @doc "What to load on each Content"
   def content_load do
@@ -14,6 +16,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       :actor_next_medias_to_play,
       :title,
       :backdrop_path,
+      :poster_path,
       implementation: %{
         load: [
           movie: [:actor_progress],
@@ -30,7 +33,8 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   # The latest Content in progress, edge to edge. The image fades on the left and at the bottom so
   # the text stays readable. The page slides up over the faded bottom by --overlap, so Up next sits
   # on the image and shows on the first screen, under the text. In a narrow spotlight the text
-  # spans the image, so the bottom fade reaches the top.
+  # spans the image, so the bottom fade reaches the top. Without a backdrop, a blurred poster fills
+  # the spotlight.
   def spotlight(assigns) do
     assigns = assign(assigns, :playable, playable(assigns.content))
 
@@ -40,11 +44,18 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
       class="@container relative isolate -mb-(--overlap) flex min-h-[min(75svh,46rem)] items-end overflow-hidden [--overlap:18rem]"
     >
       <.tmdb_backdrop
-        :if={image(@content, @playable)}
-        path={image(@content, @playable)}
+        :if={@content.backdrop_path}
+        path={@content.backdrop_path}
         size="w1280"
         aria-hidden="true"
         class="absolute inset-0 -z-10 h-full w-full object-cover object-top"
+      />
+      <img
+        :if={!@content.backdrop_path && @content.poster_path}
+        src={Url.content_image(@content.poster_path, "w342")}
+        alt=""
+        aria-hidden="true"
+        class="absolute inset-0 -z-10 h-full w-full scale-110 object-cover blur-2xl"
       />
       <div
         aria-hidden="true"
@@ -165,11 +176,7 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
           aria-label={dgettext("home", "Resume %{title}", title: title(@content))}
           class="group/play relative block overflow-hidden rounded-card"
         >
-          <.tmdb_still
-            path={image(@content, @playable)}
-            size="w300"
-            class="w-full"
-          />
+          <.card_image content={@content} />
           <span
             aria-hidden="true"
             class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover/play:opacity-100 group-focus-visible/play:opacity-100 [@media(hover:none)]:opacity-100"
@@ -217,6 +224,30 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
     """
   end
 
+  attr :content, Content, required: true
+
+  # The backdrop, else the poster centered in the frame, else the title
+  defp card_image(assigns) do
+    ~H"""
+    <div class="flex aspect-video w-full items-center justify-center bg-surface-inset">
+      <%= cond do %>
+        <% @content.backdrop_path -> %>
+          <.tmdb_backdrop path={@content.backdrop_path} size="w300" class="size-full object-cover" />
+        <% @content.poster_path -> %>
+          <img
+            src={Url.content_image(@content.poster_path, "w185")}
+            alt=""
+            class="aspect-2/3 h-full object-cover"
+          />
+        <% true -> %>
+          <span class="line-clamp-3 px-group text-center font-heading text-lg font-semibold text-text">
+            {title(@content)}
+          </span>
+      <% end %>
+    </div>
+    """
+  end
+
   # What Resume plays: the Movie or the Sports Event, or the TV Show's next TV Show Episode
   defp playable(%Content{type: type, implementation: playable})
        when type in [:movie, :sports_event],
@@ -225,12 +256,6 @@ defmodule WatchClubWeb.HomePage.ContinueWatching do
   defp playable(%Content{type: :tv_show, implementation: tv_show}), do: tv_show.actor_next_episode
 
   defp play_href(%Content{actor_next_medias_to_play: medias}), do: Url.player_link(medias)
-
-  # A TV Show Episode's still, else the Content's backdrop
-  defp image(content, %TvShowEpisode{still_path: still_path}),
-    do: still_path || content.backdrop_path
-
-  defp image(content, _playable), do: content.backdrop_path
 
   defp episode_number(%TvShowEpisode{formatted_episode_number: number}), do: number
   defp episode_number(_movie), do: nil
