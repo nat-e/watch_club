@@ -65,7 +65,7 @@ function Screens() {
   );
 }
 
-/** Returns the app's colors as a theme for the navigators' headers, tab bars and screens. */
+/** Returns the app's colors as a theme for the navigators' headers and screens. */
 function useNavigationTheme(): Theme {
   const [background, card, foreground, border, destructive] = useCSSVariable([
     '--color-background',
@@ -78,7 +78,7 @@ function useNavigationTheme(): Theme {
     () => ({
       ...DarkTheme,
       colors: {
-        // The current tab and the back button stand out by their brightness, as in the web app
+        // Back buttons take the text's color rather than a brand color
         primary: String(foreground),
         background: String(background),
         card: String(card),

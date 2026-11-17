@@ -24,6 +24,8 @@
   --color-border: hsl(256 35% 31.3%);
   --color-input: hsl(256 20% 54.4%);
   --color-ring: hsl(267.7 88.8% 68.4%);
+  /* The current section in the navigation: lighter than the accent, its hover, so it reads purple */
+  --color-selected: hsl(256 35% 31.3%);
 
   --color-sidebar: hsl(256 29% 13.1%);
   --color-sidebar-foreground: hsl(256 80% 93.4%);
@@ -31,8 +33,6 @@
   --color-sidebar-primary-foreground: hsl(322.2 100% 9%);
   --color-sidebar-accent: hsl(256 29% 23.7%);
   --color-sidebar-accent-foreground: hsl(256 80% 93.4%);
-  /* The current page's link: lighter than the accent, its hover, so it reads purple */
-  --color-sidebar-selected: hsl(256 35% 31.3%);
   --color-sidebar-border: hsl(256 29% 23.7%);
   --color-sidebar-ring: hsl(267.7 88.8% 68.4%);
 
