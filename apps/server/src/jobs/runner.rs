@@ -19,8 +19,12 @@ use super::{AnyJob, JobError, JobId, JobState, Queue, schedules};
 use crate::domain::InternalError;
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
-/// that didn't wait for it, and runs again. Every job's timeout is shorter.
-pub(super) const RESCUE_AFTER: Duration = Duration::from_hours(1);
+/// that didn't wait for it, and runs again.
+const RESCUE_AFTER: Duration = Duration::from_hours(1);
+
+/// The longest an attempt runs, whatever the job's `TIMEOUT`: shorter than `RESCUE_AFTER`, so that
+/// a job still running is never rescued and started a second time.
+const MAX_TIMEOUT: Duration = RESCUE_AFTER.saturating_sub(Duration::from_mins(1));
 
 /// The time an idle queue waits before it looks for due jobs again.
 const POLL_INTERVAL: Duration = Duration::from_secs(1);
@@ -175,7 +179,10 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
     let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
     async {
         let outcome = match AnyJob::from_row(&job.kind, job.args.take()) {
-            Ok(any_job) => run_attempt(any_job.timeout(), any_job.run(db)).await,
+            Ok(any_job) => {
+                let timeout = any_job.timeout().min(MAX_TIMEOUT);
+                run_attempt(timeout, any_job.run(db)).await
+            }
             Err(error) => Err(error.context("failed to read the job").into()),
         };
         save_outcome(db, &job, outcome).await;

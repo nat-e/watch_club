@@ -24,7 +24,6 @@ use serde_json::Value;
 use sqlx::{PgExecutor, PgPool};
 use uuid::Uuid;
 
-use self::runner::RESCUE_AFTER;
 pub use self::{
     kinds::delete_expired_sessions::DeleteExpiredSessions,
     runner::{run, run_available},
@@ -45,10 +44,9 @@ pub trait Job: Serialize + DeserializeOwned {
     const MAX_ATTEMPTS: i16 = 3;
     /// The time an attempt may take, after which it stops and counts as failed.
     ///
-    /// It must be shorter than an hour, after which a job that's still running counts as crashed
-    /// and runs again: the `check_timeout` line below `AnyJob` checks it. The timeout only stops a
-    /// job at an `.await`, so blocking work, such as `spawn_blocking` or a child process, needs its
-    /// own limit.
+    /// The runner stops an attempt after 59 minutes at most, since a job still running after an
+    /// hour counts as crashed and runs again. The timeout only stops a job at an `.await`, so
+    /// blocking work, such as `spawn_blocking` or a child process, needs its own limit.
     const TIMEOUT: Duration = Duration::from_mins(10);
     /// The cron expression, in UTC, on which the server queues this job by itself with its default
     /// arguments, such as `0 3 * * SUN`. None for a job that only runs when something queues it.
@@ -120,8 +118,6 @@ pub struct JobId(Uuid);
 enum AnyJob {
     DeleteExpiredSessions(DeleteExpiredSessions),
 }
-
-const _: () = check_timeout(DeleteExpiredSessions::TIMEOUT);
 
 impl AnyJob {
     /// Reads a stored job from its kind and arguments.
@@ -201,15 +197,6 @@ impl NewJob {
         .with_context(|| format!("failed to queue a {} job", self.kind))?;
         Ok(id)
     }
-}
-
-/// Fails `cargo check` when a job's timeout isn't shorter than `RESCUE_AFTER`: the job would run
-/// again while it's still running.
-const fn check_timeout(timeout: Duration) {
-    assert!(
-        timeout.as_nanos() < RESCUE_AFTER.as_nanos(),
-        "a job's TIMEOUT must be shorter than RESCUE_AFTER"
-    );
 }
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued
