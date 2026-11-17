@@ -1,4 +1,5 @@
 import '../global.css';
+import * as sentry from '@sentry/react-native';
 import {focusManager, QueryClientProvider} from '@tanstack/react-query';
 import {createQueryClient} from '@watchclub/core/query-client';
 import {Stack} from 'expo-router';
@@ -8,9 +9,11 @@ import {useEffect} from 'react';
 import {AppState} from 'react-native';
 import {useCSSVariable} from 'uniwind';
 import {Localization} from '@/l10n';
+import {startSentry} from '@/sentry';
 import {SessionProvider, useSession} from '@/session';
 import {SessionStore} from '@/session-store';
 
+startSentry();
 void splashScreen.preventAutoHideAsync();
 
 const queryClient = createQueryClient();
@@ -27,7 +30,9 @@ focusManager.setEventListener(setFocused => {
   };
 });
 
-export default function RootLayout() {
+export default sentry.wrap(RootLayout);
+
+function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider store={sessionStore}>

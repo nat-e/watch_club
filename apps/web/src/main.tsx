@@ -6,8 +6,12 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {SomethingWentWrong} from '@/components/something-went-wrong';
 import {routeTree} from '@/routeTree.gen';
+import {reportReactError, startSentry} from '@/sentry';
 
 const queryClient = createQueryClient();
+startSentry(queryClient).catch((error: unknown) => {
+  console.error(error);
+});
 
 const router = createRouter({
   routeTree,
@@ -29,7 +33,11 @@ const container = document.getElementById('root');
 if (!container) {
   throw new Error('index.html has no #root element');
 }
-createRoot(container).render(
+createRoot(container, {
+  onCaughtError: reportReactError,
+  onUncaughtError: reportReactError,
+  onRecoverableError: reportReactError,
+}).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

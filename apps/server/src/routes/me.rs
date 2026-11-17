@@ -7,13 +7,14 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
+    AppState,
     auth::CurrentUser,
     domain::accounts::{self, Locale, User},
     error::ApiError,
     routes::Json,
 };
 
-pub(super) fn routes() -> OpenApiRouter<PgPool> {
+pub(super) fn routes() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_current_user))
         .routes(routes!(update_preferences))

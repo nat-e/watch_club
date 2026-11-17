@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@formatjs/intl-pluralrules": "^7.0.2",
+    "@sentry/react-native": "~8.28.0",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@watchclub/api": "workspace:*",
