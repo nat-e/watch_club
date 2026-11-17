@@ -2,7 +2,7 @@
 //! queued once per run even with several servers, and once after downtime however many runs it
 //! missed.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use anyhow::Context;
 use croner::Cron;
@@ -13,6 +13,7 @@ use super::AnyJob;
 use crate::domain::InternalError;
 
 /// The runs on which the server queues a job by itself.
+#[derive(Debug)]
 pub struct Schedule<J> {
     /// The cron expression of the runs, in UTC, such as `0 3 * * SUN`
     pub cron: &'static str,
@@ -30,7 +31,7 @@ impl<J: Into<AnyJob>> Schedule<J> {
 }
 
 /// Returns each schedule by the name the database keeps its next run under: its job's kind.
-fn schedules_by_name() -> anyhow::Result<HashMap<String, Schedule<AnyJob>>> {
+fn schedules_by_name() -> anyhow::Result<BTreeMap<String, Schedule<AnyJob>>> {
     AnyJob::schedules()
         .map(|schedule| Ok((schedule.job.to_row()?.0, schedule)))
         .collect()
