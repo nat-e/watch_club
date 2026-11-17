@@ -35,6 +35,8 @@ export function Host({
   return (
     <ComposeHost
       colorScheme="dark"
+      // Material derives the colors the app doesn't set from its pink, rather than from the wallpaper
+      seedColor={primary}
       colorOverrides={{
         primary,
         onPrimary: primaryForeground,
@@ -45,6 +47,8 @@ export function Host({
         surfaceContainerHighest: muted,
         onSurfaceVariant: mutedForeground,
         outline: border,
+        // Dividers
+        outlineVariant: border,
         // The border, label and message of a field with an error
         error: destructive,
       }}
