@@ -26,7 +26,7 @@ mod enqueue {
     #[sqlx::test]
     async fn queues_the_job_for_the_runner(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
-        accounts::sign_in(&db, "ada", PASSWORD.to_owned())
+        accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap();
         support::expire_sessions(&db, user.id).await;

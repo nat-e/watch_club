@@ -9,6 +9,7 @@ use tracing::Level;
 extern crate self as watch_club;
 
 mod auth;
+pub mod config;
 pub mod domain;
 mod error;
 pub mod jobs;
