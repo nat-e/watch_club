@@ -35,6 +35,18 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 - Run background and recurring work as a job, in `src/jobs/kinds/`. `src/jobs.rs` says how to add one
 
+## Web and mobile apps
+
+- Keep the two apps' files organized the same way, under the same folder names, so a component's counterpart is easy to find
+- `src/routes` (web) and `src/app` (mobile) hold only routes: Expo Router makes every file in `src/app` a screen. Keep route files thin: they read the URL, call hooks and put components together. A component only one route uses stays in its route file until it grows, then moves to `src/components`
+- `src/components` holds the components that routes share:
+  - `layouts/`: the frame of a page or screen, such as web's `Page` or mobile's `FormScreen`
+  - `forms/`, `lists/`: generic controls, grouped by kind
+  - a folder per domain, named as in `CONTEXT.md`, such as `media/`, for the components that show it, such as a poster card
+  - the root: the few components used everywhere, such as mobile's `Host`
+  - `ui/` (web): shadcn's components, which its CLI writes
+- Business logic, such as fetching what a poster card shows and deciding what it shows, goes in `packages/core`, in its domain's folder. Each app only draws it
+
 ## Mobile app
 
 - Prefer the platform's own components: Expo Router's native stack and tabs, `@expo/ui`'s controls inside the `Host` of `@/components/host`, and SF Symbols and Material Symbols for icons. Draw with React Native's views and Uniwind only what `@expo/ui` doesn't offer, such as the app's own content
