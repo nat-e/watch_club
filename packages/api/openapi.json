@@ -241,7 +241,7 @@
         "operationId": "check_health",
         "responses": {
           "200": {
-            "description": "It does"
+            "description": "The server works"
           },
           "500": {
             "description": "Something went wrong. Try again later.",
@@ -270,7 +270,7 @@
             }
           },
           "503": {
-            "description": "It doesn't"
+            "description": "The server can't reach its database"
           }
         }
       }

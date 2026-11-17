@@ -15,8 +15,8 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     get,
     path = "/health",
     responses(
-        (status = OK, description = "It does"),
-        (status = SERVICE_UNAVAILABLE, description = "It doesn't"),
+        (status = OK, description = "The server works"),
+        (status = SERVICE_UNAVAILABLE, description = "The server can't reach its database"),
     ),
 )]
 async fn check_health(State(db): State<PgPool>) -> StatusCode {
