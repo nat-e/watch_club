@@ -16,7 +16,7 @@ mod kinds {
 mod runner;
 mod schedules;
 
-use std::time::Duration;
+use std::{collections::BTreeMap, time::Duration};
 
 use anyhow::{Context, bail};
 use serde::{Serialize, de::DeserializeOwned};
@@ -146,18 +146,19 @@ impl AnyJob {
     }
 }
 
-/// Returns the cron expression of each kind with a `SCHEDULE`, with the job to queue on it. List
-/// each such kind here.
-fn schedules() -> serde_json::Result<Vec<(&'static str, NewJob)>> {
+/// Returns the cron expression of each kind with a `SCHEDULE`, with the job to queue on it, by
+/// kind. List each such kind here.
+fn schedules() -> serde_json::Result<BTreeMap<&'static str, (&'static str, NewJob)>> {
     [scheduled::<DeleteExpiredSessions>()]
         .into_iter()
         .flatten()
         .collect()
 }
 
-fn scheduled<J: Job + Default>() -> Option<serde_json::Result<(&'static str, NewJob)>> {
+fn scheduled<J: Job + Default>()
+-> Option<serde_json::Result<(&'static str, (&'static str, NewJob))>> {
     let cron = J::SCHEDULE?;
-    Some(NewJob::of(&J::default()).map(|job| (cron, job)))
+    Some(NewJob::of(&J::default()).map(|job| (J::KIND, (cron, job))))
 }
 
 /// A job to insert in the queue: its kind, its arguments and its settings.

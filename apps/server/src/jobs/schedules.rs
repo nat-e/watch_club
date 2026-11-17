@@ -2,25 +2,12 @@
 //! queued once per run even with several servers, and once after downtime however many runs it
 //! missed.
 
-use std::collections::BTreeMap;
-
 use anyhow::Context;
 use croner::Cron;
 use jiff::{Timestamp, tz::TimeZone};
 use sqlx::PgPool;
 
-use super::NewJob;
 use crate::domain::InternalError;
-
-/// Returns the cron expression and job of each schedule, by the name the database keeps its next
-/// run under: its job's kind.
-fn schedules_by_name() -> anyhow::Result<BTreeMap<&'static str, (&'static str, NewJob)>> {
-    let schedules = super::schedules().context("failed to serialize a scheduled job")?;
-    Ok(schedules
-        .into_iter()
-        .map(|(cron, job)| (job.kind, (cron, job)))
-        .collect())
-}
 
 /// Returns the first run of the cron expression after `time`.
 fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
@@ -39,7 +26,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
     // The server's clock, as other job queues use: with clocks out of sync, a run around the
     // server's start could be skipped or come early, and `enqueue_due` sets the next ones right
     let now = Timestamp::now();
-    let schedules = schedules_by_name()?;
+    let schedules = super::schedules().context("failed to serialize a scheduled job")?;
     let mut names = Vec::with_capacity(schedules.len());
     let mut crons = Vec::with_capacity(schedules.len());
     let mut next_runs = Vec::with_capacity(schedules.len());
@@ -81,7 +68,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
 /// run after now. The next run comes from the stored cron expression, which a server with newer
 /// code may have changed.
 pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
-    let mut schedules = schedules_by_name()?;
+    let mut schedules = super::schedules().context("failed to serialize a scheduled job")?;
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     // Skips the schedules another server is queuing
     let due = sqlx::query!(
@@ -124,7 +111,7 @@ mod tests {
 
     #[test]
     fn every_schedule_has_a_valid_cron_expression() {
-        for (name, (cron, _)) in schedules_by_name().unwrap() {
+        for (name, (cron, _)) in super::super::schedules().unwrap() {
             let next_run = next_run_after(cron, Timestamp::now());
 
             assert!(next_run.is_ok(), "{name}: {next_run:?}");
