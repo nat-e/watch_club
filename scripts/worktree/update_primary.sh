@@ -5,8 +5,8 @@ set -euo pipefail
 
 mise install
 mise exec -- pnpm install
-# Applies the changes to docker-compose.dev.yml, and starts the services that are stopped
-"$(dirname "$0")/../dev_shared.sh"
+# Applies the changes to Postgres in docker-compose.dev.yml, and starts it if it's stopped
+mise exec -- pnpm dev:shared
 # Regenerate the uncommitted API client so the dev server picks up merged API changes
 mise exec -- turbo run generate:client
 mise exec -- sqlx migrate run --source apps/server/migrations

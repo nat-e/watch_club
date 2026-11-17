@@ -25,7 +25,7 @@ mv .env.worktree .env
 # mise only loads .env for a trusted config, and trust goes by path
 mise trust --quiet mise.toml
 
-"$(dirname "$0")/../dev_shared.sh"
+mise exec -- pnpm dev:shared
 mise exec -- pnpm install
 # The API client and Expo Router's types aren't committed: generate them now, for the editor
 mise exec -- turbo run generate:client generate:routes

@@ -1,6 +1,6 @@
 # The services that the worktrees share in development, apart from the Phoenix app's: Postgres,
-# where each worktree has its own database, and a Radarr, Sonarr and Sportarr filled with the dev
-# catalog's clips. Start them with `pnpm dev:shared`, see scripts/dev_shared.sh
+# where each worktree has its own database, which `pnpm dev:shared` starts, and the dev catalog's
+# Radarr, Sonarr and Sportarr, which `pnpm catalog` starts, see scripts/catalog.sh
 name: watch_club_rs
 
 services:
@@ -24,6 +24,7 @@ services:
   # primary worktree's tmp/catalog
   radarr:
     image: lscr.io/linuxserver/radarr:6.2.1
+    profiles: [catalog]
     environment:
       # No sign-in in the browser. The API still needs the key
       RADARR__AUTH__METHOD: External
@@ -36,6 +37,7 @@ services:
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:4.0.19
+    profiles: [catalog]
     environment:
       SONARR__AUTH__METHOD: External
     ports:
@@ -47,6 +49,7 @@ services:
 
   sportarr:
     image: sportarr/sportarr:4.1.12.1122
+    profiles: [catalog]
     ports:
       - 127.0.0.1:4105:1867
     volumes:

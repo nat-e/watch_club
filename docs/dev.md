@@ -3,7 +3,7 @@
 Install [mise](https://mise.jdx.dev) and Docker, then run the app:
 
 1. Copy `.env.example` to `.env`, then install the tools and dependencies: `mise trust && mise install && pnpm install`
-2. Start the shared services in Docker (Postgres, Radarr, Sonarr and Sportarr): `pnpm dev:shared`
+2. Start Postgres in Docker: `pnpm dev:shared`
 3. Create the database and add the `admin` user: `sqlx database setup --source apps/server/migrations && pnpm --filter server seed`
 4. Run the server and the web app: `pnpm dev`, or `pnpm dev --expo` to also run the mobile app's dev server
 
@@ -29,8 +29,8 @@ The mobile app runs in a development build made with `expo-dev-client`, not in E
 
 ## Dev catalog
 
-The repo comes with a catalog of free-licensed clips to try the app with: movies, TV shows and sports events in many codecs and formats. Git LFS stores them (about 800 MB). The first `pnpm dev:shared` downloads them and loads them into Radarr, Sonarr and Sportarr from a snapshot. The three apps run at `localhost:4103`, `4104` and `4105`, without signing in.
+The repo comes with an optional catalog of free-licensed clips to try the app with: movies, TV shows and sports events in many codecs and formats. `pnpm catalog` downloads them from Git LFS (about 800 MB), and runs Radarr, Sonarr and Sportarr with them, at `localhost:4103`, `4104` and `4105`.
 
-The worktrees share the clips and the three apps, so a change made in one worktree shows in all of them. `pnpm catalog:reset` undoes every change.
+The worktrees share the catalog, so a change made in one worktree shows in all of them. `pnpm catalog:reset` undoes every change.
 
-For now, the snapshot comes from the Phoenix app's `mix dev.catalog.seed`. Without it, `pnpm dev:shared` only starts Postgres.
+The three apps start from a snapshot, which for now comes from the Phoenix app's `mix dev.catalog.seed`.

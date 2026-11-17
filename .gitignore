@@ -6,7 +6,7 @@ dist/
 /.env
 # Worktrees, see .config/wt.toml
 /.wt/
-# The dev catalog's clips, see scripts/dev_shared.sh
+# The dev catalog's clips, see scripts/catalog.sh
 /tmp/
 # Expo generates the native projects on prebuild
 /apps/mobile/android/
