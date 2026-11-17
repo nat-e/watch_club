@@ -1,31 +1,34 @@
 //! Runs the server: reads the environment, connects to the database, and serves the app and runs
 //! its jobs until it's asked to stop.
 
-use std::{io, net::Ipv4Addr, time::Duration};
+use std::{io, net::Ipv4Addr, sync::Arc, time::Duration};
 
 use anyhow::Context;
 use secrecy::ExposeSecret;
 use tokio::{
     net::TcpListener,
+    runtime::Runtime,
     signal::unix::{SignalKind, signal},
     time,
 };
 use tokio_util::sync::CancellationToken;
-use watch_club::{config::Config, jobs};
+use watch_club::{AppState, config::Config, jobs, observability};
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
-        )
-        .init();
-
+fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
+    // Before the async runtime, as Sentry needs. Dropped after it, to send what's left
+    let _observability = observability::start(&config.observability)?;
+    Runtime::new()
+        .context("failed to start the async runtime")?
+        .block_on(serve(config))
+}
 
+/// Serves the app and runs its jobs until Ctrl-C or `docker stop`.
+async fn serve(config: Config) -> anyhow::Result<()> {
     let db = watch_club::connect_database(config.database_url.expose_secret())
         .await
         .context("failed to connect to the database")?;
+    observability::observe_pool(&db);
     // On every address, as containers need
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
@@ -35,8 +38,14 @@ async fn main() -> anyhow::Result<()> {
 
     let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
     tracing::info!("listening on port {}", config.port);
-    let server = axum::serve(listener, watch_club::router(db.clone()))
-        .with_graceful_shutdown(shutdown.clone().cancelled_owned());
+    let server = axum::serve(
+        listener,
+        watch_club::router(AppState {
+            db: db.clone(),
+            web_sentry_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+        }),
+    )
+    .with_graceful_shutdown(shutdown.clone().cancelled_owned());
     // Whichever stops first stops the other, so the server exits when the runner fails
     let (serve_result, run_result) = tokio::join!(
         async {

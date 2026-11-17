@@ -38,5 +38,8 @@ catalog:
   vitest: ^5.0.3
 
 allowBuilds:
+  # The Sentry SDK's command line tool, which uploads the mobile app's source maps: its install
+  # script only downloads the binary its optional dependencies already install for this platform
+  "@sentry/cli": false
   # i18next-cli's parser: its install script only checks that the binary for this platform loads
   "@swc/core": false

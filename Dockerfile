@@ -42,6 +42,6 @@ USER nobody
 ENV PORT=4000
 EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s \
-    CMD curl --fail --silent "http://localhost:${PORT}/api/instance" > /dev/null || exit 1
+    CMD curl --fail --silent "http://localhost:${PORT}/api/health" || exit 1
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["watch_club"]

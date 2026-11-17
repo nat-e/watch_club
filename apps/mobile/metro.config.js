@@ -1,8 +1,10 @@
 const http = require('node:http');
-const {getDefaultConfig} = require('expo/metro-config');
+const {getSentryExpoConfig} = require('@sentry/react-native/metro');
 const {withUniwindConfig} = require('uniwind/metro');
 
-const config = getDefaultConfig(__dirname);
+// Expo's config, with the debug IDs that match Sentry's stack traces to the source maps. Sentry's
+// middleware, which shows the source of stack traces in development, would replace the one below
+const config = getSentryExpoConfig(__dirname, {enableSourceContextInDevelopment: false});
 // The app in development finds the API at the address it loaded from: see `src/session-store.ts`.
 // Expo's Metro takes no other middleware, though Metro deprecates this option.
 config.server.enhanceMiddleware = metro => (request, response, next) => {

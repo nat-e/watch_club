@@ -235,6 +235,46 @@
         ]
       }
     },
+    "/api/health": {
+      "get": {
+        "summary": "Checks that the server reaches its database.",
+        "operationId": "check_health",
+        "responses": {
+          "200": {
+            "description": "The server works"
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The server doesn't work"
+          }
+        }
+      }
+    },
     "/api/instance": {
       "get": {
         "summary": "Returns the information apps need about the WatchClub instance before signing in.",
@@ -740,7 +780,8 @@
         "description": "The information apps need about the WatchClub instance before signing in.",
         "required": [
           "version",
-          "needs_setup"
+          "needs_setup",
+          "web_sentry_dsn"
         ],
         "properties": {
           "needs_setup": {
@@ -750,6 +791,13 @@
           "version": {
             "type": "string",
             "description": "The server's version"
+          },
+          "web_sentry_dsn": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The Sentry DSN the web app reports its errors to, or null when it reports none"
           }
         }
       },

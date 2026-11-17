@@ -1,6 +1,8 @@
 //! The WatchClub instance: whether it's set up yet, and Setup, where its first visitor creates
 //! the Instance Administrator.
 
+use std::sync::Arc;
+
 use axum::{
     extract::State,
     http::StatusCode,
@@ -14,6 +16,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
+    AppState,
     auth::SessionCookie,
     domain::{
         InternalError,
@@ -26,7 +29,7 @@ use crate::{
     routes::Json,
 };
 
-pub(super) fn routes() -> OpenApiRouter<PgPool> {
+pub(super) fn routes() -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(get_instance))
         .routes(routes!(create_instance_administrator))
@@ -34,11 +37,14 @@ pub(super) fn routes() -> OpenApiRouter<PgPool> {
 
 /// Returns the information apps need about the WatchClub instance before signing in.
 #[utoipa::path(get, path = "/instance", responses((status = OK, body = GetInstanceResponse)))]
-async fn get_instance(State(db): State<PgPool>) -> Result<Json<GetInstanceResponse>, ApiError> {
-    let needs_setup = !accounts::has_instance_administrator(&db).await?;
+async fn get_instance(
+    State(state): State<AppState>,
+) -> Result<Json<GetInstanceResponse>, ApiError> {
+    let needs_setup = !accounts::has_instance_administrator(&state.db).await?;
     Ok(Json(GetInstanceResponse {
         version: env!("CARGO_PKG_VERSION"),
         needs_setup,
+        web_sentry_dsn: state.web_sentry_dsn,
     }))
 }
 
@@ -50,6 +56,9 @@ struct GetInstanceResponse {
     version: &'static str,
     /// Whether Setup still has to create the Instance Administrator
     needs_setup: bool,
+    /// The Sentry DSN the web app reports its errors to, or null when it reports none
+    #[schema(value_type = Option<String>, required = true)]
+    web_sentry_dsn: Option<Arc<str>>,
 }
 
 /// Creates the Instance Administrator and signs the browser in as them.
