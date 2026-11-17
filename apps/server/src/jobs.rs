@@ -93,6 +93,13 @@ impl Queue {
             Self::Default => 10,
         }
     }
+
+    /// Returns the queue's name, as the database stores it.
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Default => "default",
+        }
+    }
 }
 
 /// The state of a job.

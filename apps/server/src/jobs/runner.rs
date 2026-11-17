@@ -97,7 +97,7 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
                     tracing::event!(
                         name: "jobs.claim.failed",
                         Level::ERROR,
-                        ?queue,
+                        job.queue = queue.name(),
                         exception.message = %format_args!("{error:#}"),
                         "failed to claim jobs",
                     );
@@ -162,7 +162,8 @@ async fn claim_jobs(
     )
     .fetch_all(db)
     .await
-    .context("failed to claim jobs")?;
+    // Without a context of its own: the runner's log already says that claiming failed
+    .map_err(anyhow::Error::from)?;
     Ok(jobs)
 }
 
