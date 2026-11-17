@@ -140,7 +140,7 @@ function AppSidebar({user}: {user: User}) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <UserMenu user={user} />
