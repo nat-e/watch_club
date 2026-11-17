@@ -25,9 +25,10 @@ use sqlx::{PgExecutor, PgPool};
 use uuid::Uuid;
 
 use self::runner::RESCUE_AFTER;
-#[cfg(feature = "test-util")]
-pub use self::runner::run_available;
-pub use self::{kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run};
+pub use self::{
+    kinds::delete_expired_sessions::DeleteExpiredSessions,
+    runner::{run, run_available},
+};
 use crate::domain::InternalError;
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its

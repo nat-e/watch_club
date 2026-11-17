@@ -11,8 +11,6 @@ default-run = "watch_club"
 [features]
 # Builds the `seed` binary, which only development needs
 dev-seed = []
-# Builds the helpers only the tests need, such as `jobs::run_available`
-test-util = []
 
 [[bin]]
 name = "seed"
@@ -49,8 +47,6 @@ utoipa-axum = "0.3.0"
 uuid = { version = "1.29.2", features = ["serde"] }
 
 [dev-dependencies]
-# Turns on `test-util` for the tests
-watch_club = { path = ".", features = ["test-util"] }
 http-body-util = "0.1.5"
 tower = { version = "0.5.3", features = ["util"] }
 

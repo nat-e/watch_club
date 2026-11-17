@@ -64,7 +64,6 @@ pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), Internal
 /// Does at once what the runner does over time, for tests: syncs the schedules, runs the
 /// maintenance, then runs the due jobs one at a time, in the order the runner claims them, until
 /// none is left.
-#[cfg(feature = "test-util")]
 pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
     schedules::sync_schedules(db).await?;
     run_maintenance(db).await?;
