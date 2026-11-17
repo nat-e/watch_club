@@ -44,7 +44,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
   - `forms/`, `lists/`: generic controls, grouped by kind
   - a folder per domain, named as in `CONTEXT.md`, such as `contents/`, for the components that show it, such as a poster card
   - the root: the few components used everywhere, such as mobile's `Host`
-  - `ui/` (web): shadcn's components, which its CLI writes
+  - `ui/` (web): shadcn's components in its Vega style, as its CLI writes them. Change their look only through the theme, `packages/core/src/theme.css` and `apps/web/src/index.css`, or through classes where we use them. Edit their files only for what isn't style, such as translating their texts
 - Business logic, such as fetching what a poster card shows and deciding what it shows, goes in `packages/core`, in its domain's folder. Each app only draws it
 
 ## Mobile app

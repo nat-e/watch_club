@@ -98,7 +98,8 @@ function AppSidebar({user}: {user: User}) {
   );
 
   return (
-    <Sidebar>
+    // No border: the sidebar's color sets it apart from the page
+    <Sidebar className="group-data-[side=left]:border-r-0">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -165,7 +166,7 @@ function SectionLink({
     <SidebarMenuItem>
       <SidebarMenuButton
         // Taller for fingers. The current section's text and icon stand out from the others'
-        className="h-9 font-semibold text-muted-foreground pointer-coarse:h-11 hover:text-foreground data-active:font-semibold data-active:text-foreground [&_svg]:text-subtle-foreground data-active:[&_svg]:text-muted-foreground"
+        className="h-9 font-semibold text-muted-foreground pointer-coarse:h-11 hover:text-foreground data-active:bg-selected data-active:font-semibold data-active:text-foreground data-active:hover:bg-selected [&_svg]:text-subtle-foreground data-active:[&_svg]:text-muted-foreground"
         render={
           <Link
             to={to}
