@@ -1,6 +1,8 @@
 # The services that the worktrees share in development, apart from the Phoenix app's: Postgres,
 # where each worktree has its own database, which `pnpm dev:shared` starts, and the dev catalog's
-# Radarr, Sonarr and Sportarr, which `pnpm catalog` starts, see scripts/catalog.sh
+# Radarr, Sonarr and Sportarr, which `pnpm catalog` starts, see scripts/catalog.sh.
+# Both run this file from the primary worktree, whichever worktree runs them, so that a branch's
+# changes don't reach the services the others share.
 name: watch_club_rs
 
 services:

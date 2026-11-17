@@ -25,7 +25,8 @@ mv .env.worktree .env
 # mise only loads .env for a trusted config, and trust goes by path
 mise trust --quiet mise.toml
 
-mise exec -- pnpm dev:shared
+# The primary worktree's command, which this branch may not have
+mise exec -- pnpm --dir "$(dirname "$0")/../.." dev:shared
 mise exec -- pnpm install
 # The API client and Expo Router's types aren't committed: generate them now, for the editor
 mise exec -- turbo run generate:client generate:routes

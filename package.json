@@ -9,7 +9,7 @@
     "check:l10n": "i18next-cli lint && i18next-cli status && i18next-cli extract --ci --dry-run",
     "fix": "i18next-cli extract && biome check --write . && turbo run format",
     "generate": "turbo run generate",
-    "dev:shared": "docker compose --file docker-compose.dev.yml up --detach --wait",
+    "dev:shared": "docker compose --file \"$(git rev-parse --path-format=absolute --git-common-dir)/../docker-compose.dev.yml\" up --detach --wait",
     "catalog": "scripts/catalog.sh",
     "catalog:reset": "scripts/catalog.sh --reset"
   },

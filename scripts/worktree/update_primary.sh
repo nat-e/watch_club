@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Brings the primary worktree's tools, shared services and database up to date with what was merged.
+# Brings the primary worktree's tools, Postgres and database up to date with what was merged.
 # The dev server picks up the new code on its own.
 set -euo pipefail
 
