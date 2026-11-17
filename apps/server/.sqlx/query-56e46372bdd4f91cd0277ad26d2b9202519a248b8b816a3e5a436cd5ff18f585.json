@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE job_schedules SET next_run_at = now() + $1::text::interval\n        WHERE name = 'delete_expired_sessions'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "56e46372bdd4f91cd0277ad26d2b9202519a248b8b816a3e5a436cd5ff18f585"
+}

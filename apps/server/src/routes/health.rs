@@ -34,7 +34,11 @@ async fn check_health(State(db): State<PgPool>) -> Result<StatusCode, HealthErro
         Err(error) => Err(error),
     };
     if let Err(error) = result {
-        tracing::warn!("the health check can't reach the database: {error}");
+        tracing::warn!(
+            name: "health.database.unreachable",
+            %error,
+            "the health check can't reach the database",
+        );
         return Err(HealthError::DatabaseUnreachable);
     }
     Ok(StatusCode::NO_CONTENT)

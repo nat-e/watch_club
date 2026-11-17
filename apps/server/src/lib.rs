@@ -3,14 +3,16 @@
 use std::sync::Arc;
 
 use axum::{Router, extract::FromRef, middleware, routing::get};
-use sqlx::PgPool;
+use sqlx::{PgPool, postgres::PgPoolOptions};
 
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
 
 mod auth;
+pub mod config;
 pub mod domain;
 mod error;
+pub mod jobs;
 pub mod observability;
 pub mod openapi;
 pub mod routes;
@@ -26,7 +28,11 @@ struct AppState {
 
 /// Connects to the app's database, and runs its pending migrations.
 pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
-    let db = PgPool::connect(url).await?;
+    let db = PgPoolOptions::new()
+        // Shared by the requests and the jobs, which hold one only while a query runs
+        .max_connections(10)
+        .connect(url)
+        .await?;
     sqlx::migrate!().run(&db).await?;
     Ok(db)
 }

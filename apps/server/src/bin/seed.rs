@@ -1,18 +1,17 @@
 //! Fills an empty database with demo Users to try the app with. Only for development: run it with
 //! `pnpm --filter server seed`.
 
-use std::env;
-
 use anyhow::Context;
-use watch_club::domain::accounts::Locale;
+use secrecy::ExposeSecret;
+use watch_club::{config, domain::accounts::Locale};
 
 /// Every demo User's password
 const PASSWORD: &str = "passw0rd";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let url = env::var("DATABASE_URL").context("failed to read DATABASE_URL")?;
-    let db = watch_club::connect_database(&url).await?;
+    let url = config::database_url()?;
+    let db = watch_club::connect_database(url.expose_secret()).await?;
 
     let has_users = sqlx::query_scalar!(r#"SELECT EXISTS (SELECT FROM users) AS "exists!""#)
         .fetch_one(&db)

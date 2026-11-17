@@ -14,7 +14,7 @@ use crate::support::{self, PASSWORD};
 
 /// Signs the User in with `PASSWORD`, and returns the token of the session it starts.
 async fn new_session(db: &PgPool, user: &User) -> SessionToken {
-    let (_, token) = accounts::sign_in(db, &user.username, PASSWORD.to_owned())
+    let (_, token) = accounts::sign_in(db, &user.username, PASSWORD.into())
         .await
         .unwrap()
         .unwrap();
@@ -52,26 +52,26 @@ mod password {
 
     #[test]
     fn accepts_8_characters() {
-        assert!(Password::parse("12345678".to_owned()).is_ok());
+        assert!(Password::parse("12345678".into()).is_ok());
     }
 
     #[test]
     fn rejects_short_passwords() {
         assert_eq!(
-            Password::parse(String::new()).err(),
+            Password::parse("".into()).err(),
             Some(PasswordError::Missing)
         );
         assert_eq!(
-            Password::parse("1234567".to_owned()).err(),
+            Password::parse("1234567".into()).err(),
             Some(PasswordError::TooShort { min: 8 })
         );
     }
 
     #[test]
     fn debug_hides_the_password() {
-        let password = Password::parse(PASSWORD.to_owned()).unwrap();
+        let password = Password::parse(PASSWORD.into()).unwrap();
 
-        assert_eq!(format!("{password:?}"), "Password(…)");
+        assert!(!format!("{password:?}").contains(PASSWORD));
     }
 }
 
@@ -105,7 +105,7 @@ mod create_instance_administrator {
         let (admin, token) = accounts::create_instance_administrator(
             &db,
             Username::parse("ada").unwrap(),
-            Password::parse("secret password".to_owned()).unwrap(),
+            Password::parse("secret password".into()).unwrap(),
             Locale::FrFr,
         )
         .await
@@ -115,7 +115,7 @@ mod create_instance_administrator {
         assert_eq!(admin.locale, Locale::FrFr);
         let session_user = accounts::session_user(&db, &token).await.unwrap();
         assert_eq!(session_user.as_ref(), Some(&admin));
-        let (signed_in, _) = accounts::sign_in(&db, "ada", "secret password".to_owned())
+        let (signed_in, _) = accounts::sign_in(&db, "ada", "secret password".into())
             .await
             .unwrap()
             .unwrap();
@@ -129,7 +129,7 @@ mod create_instance_administrator {
         let created = accounts::create_instance_administrator(
             &db,
             Username::parse("ada").unwrap(),
-            Password::parse("secret password".to_owned()).unwrap(),
+            Password::parse("secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;
@@ -147,7 +147,7 @@ mod create_instance_administrator {
         let created = accounts::create_instance_administrator(
             &db,
             Username::parse(&admin.username).unwrap(),
-            Password::parse("secret password".to_owned()).unwrap(),
+            Password::parse("secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;
@@ -174,7 +174,7 @@ mod create_instance_administrator {
         let created = accounts::create_instance_administrator(
             &db,
             Username::parse("ada").unwrap(),
-            Password::parse("secret password".to_owned()).unwrap(),
+            Password::parse("secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;
@@ -193,7 +193,7 @@ mod sign_in {
     async fn signs_in_the_user_with_this_password(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
 
-        let (signed_in, token) = accounts::sign_in(&db, " ada ", PASSWORD.to_owned())
+        let (signed_in, token) = accounts::sign_in(&db, " ada ", PASSWORD.into())
             .await
             .unwrap()
             .unwrap();
@@ -210,27 +210,27 @@ mod sign_in {
         let phone = new_session(&db, &user).await;
         let laptop = new_session(&db, &user).await;
 
-        assert_ne!(phone, laptop);
+        assert_ne!(phone.encode(), laptop.encode());
     }
 
     #[sqlx::test]
     async fn is_none_for_a_wrong_password(db: PgPool) {
         support::create_user(&db, "ada").await;
 
-        let signed_in = accounts::sign_in(&db, "ada", "wrong password".to_owned())
+        let signed_in = accounts::sign_in(&db, "ada", "wrong password".into())
             .await
             .unwrap();
 
-        assert_eq!(signed_in, None);
+        assert!(signed_in.is_none());
     }
 
     #[sqlx::test]
     async fn is_none_for_an_unknown_username(db: PgPool) {
-        let signed_in = accounts::sign_in(&db, "ada", PASSWORD.to_owned())
+        let signed_in = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap();
 
-        assert_eq!(signed_in, None);
+        assert!(signed_in.is_none());
     }
 }
 
@@ -239,17 +239,20 @@ mod session_token {
 
     #[test]
     fn decode_rejects_text_that_is_not_a_token() {
-        assert_eq!(SessionToken::decode(""), None);
-        assert_eq!(SessionToken::decode("not base64!"), None);
-        assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 31])), None);
-        assert_eq!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 33])), None);
+        assert!(SessionToken::decode("").is_none());
+        assert!(SessionToken::decode("not base64!").is_none());
+        assert!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 31])).is_none());
+        assert!(SessionToken::decode(&URL_SAFE_NO_PAD.encode([0; 33])).is_none());
     }
 
     #[test]
     fn debug_hides_the_token() {
-        let token = SessionToken::decode(&URL_SAFE_NO_PAD.encode([7; 32])).unwrap();
+        let text = URL_SAFE_NO_PAD.encode([7; 32]);
+        let token = SessionToken::decode(&text).unwrap();
 
-        assert_eq!(format!("{token:?}"), "SessionToken(…)");
+        let debug = format!("{token:?}");
+        // Neither as text nor as its bytes, which are all 7s
+        assert!(!debug.contains(&text) && !debug.contains('7'));
     }
 }
 
@@ -293,5 +296,29 @@ mod sign_out {
             accounts::session_user(&db, &laptop).await.unwrap(),
             Some(user)
         );
+    }
+}
+
+mod delete_expired_sessions {
+    use super::*;
+
+    #[sqlx::test]
+    async fn deletes_only_the_expired_sessions(db: PgPool) {
+        let ada = support::create_user(&db, "ada").await;
+        let bob = support::create_user(&db, "bob").await;
+        new_session(&db, &ada).await;
+        new_session(&db, &ada).await;
+        let bobs = new_session(&db, &bob).await;
+        support::expire_sessions(&db, ada.id).await;
+
+        let deleted = accounts::delete_expired_sessions(&db).await.unwrap();
+
+        assert_eq!(deleted, 2);
+        let left = sqlx::query_scalar!(r#"SELECT count(*) AS "count!" FROM sessions"#)
+            .fetch_one(&db)
+            .await
+            .unwrap();
+        assert_eq!(left, 1);
+        assert_eq!(accounts::session_user(&db, &bobs).await.unwrap(), Some(bob));
     }
 }

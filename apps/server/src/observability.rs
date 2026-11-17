@@ -87,7 +87,11 @@ impl Drop for Observability {
                 .map(SdkLoggerProvider::shutdown),
         ];
         for error in results.into_iter().flatten().filter_map(Result::err) {
-            tracing::warn!("failed to send the last telemetry: {error}");
+            tracing::warn!(
+                name: "observability.shutdown.failed",
+                %error,
+                "failed to send the last telemetry",
+            );
         }
     }
 }

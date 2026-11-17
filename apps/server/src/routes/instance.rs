@@ -9,6 +9,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use axum_extra::extract::CookieJar;
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use utoipa::ToSchema;
@@ -87,7 +88,8 @@ async fn create_instance_administrator(
 #[schema(as = NewInstanceAdministrator)]
 struct CreateInstanceAdministratorRequest {
     username: String,
-    password: String,
+    #[schema(value_type = String)]
+    password: SecretString,
     /// The Locale of the visitor's browser
     locale: Locale,
 }

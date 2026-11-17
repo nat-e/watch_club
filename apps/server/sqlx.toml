@@ -5,6 +5,7 @@
 [macros.type-overrides]
 # SQLx has no Jiff support, see jiff-sqlx. Also checks the parameters bound to `timestamptz`.
 'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"
+'job_state' = "::watch_club::jobs::JobState"
 
 [macros.table-overrides.'users']
 'id' = "::watch_club::domain::accounts::UserId"
@@ -12,3 +13,7 @@
 
 [macros.table-overrides.'sessions']
 'user_id' = "::watch_club::domain::accounts::UserId"
+
+[macros.table-overrides.'jobs']
+'id' = "::watch_club::jobs::JobId"
+'queue' = "::watch_club::jobs::Queue"

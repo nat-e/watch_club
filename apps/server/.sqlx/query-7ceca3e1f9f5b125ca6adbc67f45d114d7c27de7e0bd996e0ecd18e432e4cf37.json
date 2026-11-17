@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE jobs\n        SET state = $3,\n            run_at = CASE WHEN $3 = 'available'::job_state\n                THEN now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))\n                ELSE run_at\n            END,\n            finished_at = CASE WHEN $3 = 'available'::job_state THEN NULL ELSE now() END\n        WHERE id = $1 AND attempt = $2 AND state = 'executing'\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int2",
+        {
+          "Custom": {
+            "name": "job_state",
+            "kind": {
+              "Enum": [
+                "available",
+                "executing",
+                "completed",
+                "failed",
+                "cancelled"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7ceca3e1f9f5b125ca6adbc67f45d114d7c27de7e0bd996e0ecd18e432e4cf37"
+}

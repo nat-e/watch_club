@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT cron FROM job_schedules WHERE name = 'delete_expired_sessions'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "cron",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "job_schedules",
+            "name": "cron"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c33998130e0c56d80acc34dd7fcb64747a84161617d3e6aa9ce1ede7e4e62a72"
+}

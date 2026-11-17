@@ -3,6 +3,8 @@
 
 mod client;
 
+use std::process::Command;
+
 use sqlx::PgPool;
 use watch_club::domain::accounts::{Locale, User, UserId};
 
@@ -10,6 +12,21 @@ pub use self::client::Client;
 
 /// Every test User's password
 pub const PASSWORD: &str = "passw0rd";
+
+/// A database URL nothing listens on, so a server that gets past its settings fails fast
+pub const UNREACHABLE_DATABASE_URL: &str = "postgres://localhost:1/watch_club";
+
+/// Runs the server's binary with only these environment variables, as tests can't change their
+/// own process's variables without `unsafe`, and returns what it printed when it failed to start.
+pub fn start_server(vars: &[(&str, &str)]) -> String {
+    let output = Command::new(env!("CARGO_BIN_EXE_watch_club"))
+        .env_clear()
+        .envs(vars.iter().copied())
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    String::from_utf8(output.stderr).unwrap()
+}
 
 /// Creates a User who signs in with `PASSWORD`.
 pub async fn create_user(db: &PgPool, username: &str) -> User {

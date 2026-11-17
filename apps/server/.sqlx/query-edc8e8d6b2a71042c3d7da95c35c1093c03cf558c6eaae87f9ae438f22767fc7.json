@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO job_schedules (name, cron, next_run_at)\n        SELECT * FROM unnest($1::text[], $2::text[], $3::timestamptz[])\n        ON CONFLICT (name) DO UPDATE\n        SET cron = excluded.cron, next_run_at = excluded.next_run_at\n        WHERE job_schedules.cron <> excluded.cron\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "TextArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "edc8e8d6b2a71042c3d7da95c35c1093c03cf558c6eaae87f9ae438f22767fc7"
+}
