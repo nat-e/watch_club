@@ -188,7 +188,6 @@ function SectionLink({
 function UserMenu({user}: {user: User}) {
   const {t} = useTranslation(['web', 'core']);
   const queryClient = useQueryClient();
-  const {isMobile} = useSidebar();
   const signOut = useMutation({
     ...logoutMutation(),
     // Fails at once when the device is offline, rather than waiting for the network unseen
@@ -219,8 +218,7 @@ function UserMenu({user}: {user: User}) {
         </span>
         <icons.ChevronsUpDownIcon className="ml-auto" />
       </DropdownMenuTrigger>
-      {/* On phones, the sidebar leaves no room on its right */}
-      <DropdownMenuContent side={isMobile ? 'top' : 'right'} align="end">
+      <DropdownMenuContent side="top">
         <DropdownMenuItem render={<Link to="/settings" />}>
           <icons.SettingsIcon />
           {t($ => $.core.settings.title)}
