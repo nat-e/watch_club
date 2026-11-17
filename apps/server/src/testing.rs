@@ -3,11 +3,14 @@
 //! run in two worktrees at once would drop the other's database.
 
 use std::{
+    io::{self, Write},
     str::FromStr,
     sync::atomic::{AtomicU32, Ordering},
     thread,
+    time::Duration,
 };
 
+use anyhow::Context;
 use sqlx::{
     AssertSqlSafe, Connection, Executor, PgConnection, PgPool,
     postgres::{PgConnectOptions, PgPoolOptions},
@@ -16,6 +19,13 @@ use sqlx::{
 /// Creates a database with the migrations for one test, and returns a pool on it. The database is
 /// dropped with the pool, once the test has dropped every clone of it.
 pub async fn database() -> PgPool {
+    // Leaves connections to the other tests and worktrees
+    database_with(PgPoolOptions::new().max_connections(5)).await
+}
+
+/// Creates a database like `database`, with a pool of these options, which must not set
+/// `after_connect`.
+pub async fn database_with(options: PgPoolOptions) -> PgPool {
     static CREATED: AtomicU32 = AtomicU32::new(0);
 
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL is set");
@@ -42,16 +52,14 @@ pub async fn database() -> PgPool {
         .expect("creates the test database");
     connection.close().await.expect("disconnects");
 
-    let drop_database = DropDatabase {
+    let test_database = TestDatabase {
         server,
         name: name.clone(),
     };
-    let db = PgPoolOptions::new()
-        // Leaves connections to the other tests and worktrees
-        .max_connections(5)
-        // Only holds `drop_database`: the pool drops this callback, and so the database, with it
+    let db = options
+        // Only holds `test_database`: the pool drops this callback, and so the database, with it
         .after_connect(move |_, _| {
-            let _drop_database = &drop_database;
+            let _test_database = &test_database;
             Box::pin(async { Ok(()) })
         })
         .connect_with(worktree.database(&name))
@@ -64,34 +72,53 @@ pub async fn database() -> PgPool {
     db
 }
 
-/// A test's database, which this drops when it's dropped.
-struct DropDatabase {
+/// A test's database, which is dropped with this.
+struct TestDatabase {
     server: PgConnectOptions,
     name: String,
 }
 
-impl Drop for DropDatabase {
+impl Drop for TestDatabase {
     fn drop(&mut self) {
-        let server = self.server.clone();
-        // Also closes the connections the pool still has open
-        let sql = format!(r#"DROP DATABASE "{}" WITH (FORCE)"#, self.name);
+        let (server, name) = (self.server.clone(), self.name.clone());
         // `drop` can't await, and runs in the test's runtime or after it has stopped: a thread with
         // its own runtime works in both cases
-        let dropped = thread::spawn(move || -> anyhow::Result<()> {
-            tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()?
-                .block_on(async {
-                    let mut connection = PgConnection::connect_with(&server).await?;
-                    connection.execute(AssertSqlSafe(sql)).await?;
-                    connection.close().await?;
-                    Ok(())
-                })
-        })
-        .join();
+        let dropped = thread::Builder::new()
+            .spawn(move || {
+                tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()?
+                    .block_on(async {
+                        tokio::time::timeout(Duration::from_secs(10), drop_database(server, name))
+                            .await
+                            .context("timed out")?
+                    })
+            })
+            .context("failed to start a thread")
+            .and_then(|thread| {
+                thread
+                    .join()
+                    .unwrap_or_else(|_| Err(anyhow::anyhow!("panicked")))
+            });
         // Only reports the failure: a panic while a failed test unwinds would abort the tests
-        if let Ok(Err(error)) = dropped {
-            eprintln!("Couldn't drop the test database {}: {error:#}", self.name);
+        if let Err(error) = dropped {
+            let _ = writeln!(
+                io::stderr(),
+                "Couldn't drop the test database {}: {error:#}",
+                self.name
+            );
         }
     }
+}
+
+async fn drop_database(server: PgConnectOptions, name: String) -> anyhow::Result<()> {
+    let mut connection = PgConnection::connect_with(&server).await?;
+    // Also closes the connections the pool still has open
+    connection
+        .execute(AssertSqlSafe(format!(
+            r#"DROP DATABASE "{name}" WITH (FORCE)"#
+        )))
+        .await?;
+    connection.close().await?;
+    Ok(())
 }

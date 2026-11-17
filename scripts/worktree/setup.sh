@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Sets up a new worktree, once .env and the build cache are copied into it: its own database in the
 # Postgres that the worktrees share, with the migrations and the demo data.
-# Usage: setup.sh <slug> <database> <port>
+# Usage: setup.sh <slug> <port> <database>
 set -euo pipefail
 
 slug=$1
-database=$2
-port=$3
+port=$2
+database=${3:?Usage: setup.sh <slug> <port> <database>}
 web_port=$((port + 1))
 expo_port=$((port + 2))
 
@@ -25,9 +25,7 @@ mv .env.worktree .env
 # mise only loads .env for a trusted config, and trust goes by path
 mise trust --quiet mise.toml
 
-# Postgres, and the dev catalog, which the worktree works without until the server connects to
-# Radarr, Sonarr and Sportarr
-"$(dirname "$0")/../dev_shared.sh" || echo "Some shared services didn't start, see above" >&2
+"$(dirname "$0")/../dev_shared.sh"
 mise exec -- pnpm install
 # The API client and Expo Router's types aren't committed: generate them now, for the editor
 mise exec -- turbo run generate:client generate:routes

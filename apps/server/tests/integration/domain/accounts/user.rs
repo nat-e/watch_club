@@ -6,7 +6,7 @@ use watch_club::domain::accounts::{
     self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
     Username, UsernameError,
 };
-use watch_club::testing::database;
+use watch_club::testing::{database, database_with};
 
 use crate::support::{self, PASSWORD};
 
@@ -163,13 +163,12 @@ mod create_instance_administrator {
 
     #[tokio::test]
     async fn fails_when_there_is_one_already_with_a_single_connection() {
-        let database = database().await;
-        let db = PgPoolOptions::new()
-            .max_connections(1)
-            .acquire_timeout(Duration::from_secs(2))
-            .connect_with(database.connect_options().as_ref().clone())
-            .await
-            .unwrap();
+        let db = database_with(
+            PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(Duration::from_secs(2)),
+        )
+        .await;
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(

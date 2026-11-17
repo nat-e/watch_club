@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Starts the services of docker-compose.dev.yml, which the worktrees share: Postgres, and the
-# Radarr, Sonarr and Sportarr of the dev catalog, restored from its snapshot the first time.
+# Radarr, Sonarr and Sportarr of the dev catalog, restored from its snapshot the first time. Without
+# the snapshot, only Postgres starts.
 # --reset-catalog restores the catalog again, which undoes every change to it.
 # Usage: dev_shared.sh [--reset-catalog]
 set -euo pipefail
@@ -17,16 +18,15 @@ compose() {
   docker compose --file docker-compose.dev.yml "$@"
 }
 
-# Replaces the clips, and the apps' data with the snapshot's: the Docker volumes
-# watch_club_rs_<app>_snapshot
-restore_catalog() {
+# Whether the snapshot of the apps' data exists: the Docker volumes watch_club_rs_<app>_snapshot
+has_snapshot() {
   for app in "${apps[@]}"; do
-    if ! docker volume inspect "watch_club_rs_${app}_snapshot" >/dev/null 2>&1; then
-      echo "The dev catalog's snapshot volume watch_club_rs_${app}_snapshot is missing: copy it" \
-        "from the snapshot of the Elixir app's mix dev.catalog.seed" >&2
-      exit 1
-    fi
+    docker volume inspect "watch_club_rs_${app}_snapshot" >/dev/null 2>&1 || return 1
   done
+}
+
+# Replaces the clips, and the apps' data with the snapshot's
+restore_catalog() {
   compose rm --stop --force "${apps[@]}"
 
   # Clones of the files in Git LFS's store, which the worktrees share, take no extra disk space on
@@ -59,9 +59,14 @@ case ${1:-} in
     ;;
 esac
 
-# Postgres first, which the worktrees need even when the catalog fails
 compose up --detach --wait db
 if [[ ! -e $restored ]]; then
+  if ! has_snapshot; then
+    echo "Radarr, Sonarr and Sportarr didn't start: the dev catalog's snapshot is missing. Copy it to" \
+      "the volumes watch_club_rs_<app>_snapshot from the Elixir app's, which its" \
+      "mix dev.catalog.seed makes" >&2
+    exit
+  fi
   restore_catalog
 fi
 compose up --detach
