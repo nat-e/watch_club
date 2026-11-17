@@ -1,4 +1,5 @@
-//! Runs the server: reads the environment, connects to the database and serves the app.
+//! Runs the server: reads the environment, connects to the database, and serves the app and runs
+//! its jobs until it's asked to stop.
 
 use std::{env, io, net::Ipv4Addr};
 
@@ -7,6 +8,8 @@ use tokio::{
     net::TcpListener,
     signal::unix::{SignalKind, signal},
 };
+use tokio_util::sync::CancellationToken;
+use watch_club::jobs;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -29,25 +32,43 @@ async fn main() -> anyhow::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port))
         .await
         .with_context(|| format!("failed to listen on port {port}"))?;
-    let shutdown = shutdown_requested().context("failed to listen for shutdown signals")?;
+    let shutdown = CancellationToken::new();
+    cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
+
+    let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
     tracing::info!("listening on port {port}");
-    axum::serve(listener, watch_club::router(db.clone()))
-        .with_graceful_shutdown(shutdown)
-        .await
-        .context("failed to serve")?;
+    let app = axum::serve(listener, watch_club::router(db.clone()))
+        .with_graceful_shutdown(shutdown.clone().cancelled_owned());
+    // Whichever stops first stops the other, so the server exits when the runner fails
+    let (served, ran) = tokio::join!(
+        async {
+            let served = app.await;
+            shutdown.cancel();
+            served
+        },
+        async {
+            let ran = runner.await;
+            shutdown.cancel();
+            ran
+        },
+    );
+    served.context("failed to serve")?;
+    ran.context("the job runner panicked")?
+        .context("the job runner failed")?;
     db.close().await;
     Ok(())
 }
 
-/// Listens for Ctrl-C and the SIGTERM that `docker stop` sends, and returns a future that waits
-/// for either.
-fn shutdown_requested() -> io::Result<impl Future<Output = ()>> {
+/// Cancels `shutdown` on Ctrl-C or on the SIGTERM that `docker stop` sends.
+fn cancel_on_signals(shutdown: CancellationToken) -> io::Result<()> {
     let mut interrupt = signal(SignalKind::interrupt())?;
     let mut terminate = signal(SignalKind::terminate())?;
-    Ok(async move {
+    tokio::spawn(async move {
         tokio::select! {
             _ = interrupt.recv() => {},
             _ = terminate.recv() => {},
         }
-    })
+        shutdown.cancel();
+    });
+    Ok(())
 }

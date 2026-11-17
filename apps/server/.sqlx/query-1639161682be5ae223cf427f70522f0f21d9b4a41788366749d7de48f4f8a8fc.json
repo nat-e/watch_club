@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE jobs\n                SET state = $2, finished_at = now() - interval '7 days 1 minute'\n                WHERE id = $1\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1639161682be5ae223cf427f70522f0f21d9b4a41788366749d7de48f4f8a8fc"
+}

@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            next_run_at > now()\n            AND next_run_at <= now() + interval '7 days'\n            AND to_char(next_run_at AT TIME ZONE 'UTC', 'Dy HH24:MI:SS') = 'Sun 03:00:00'\n            AS \"is_coming_sunday!\"\n        FROM job_schedules\n        WHERE name = 'delete_expired_sessions'\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_coming_sunday!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "02bf5edd229d2231ecb9a1761aee12e0663bdd92fd766a3d7537bb8d21780ffc"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO job_schedules (name, cron, next_run_at)\n            VALUES ('retired', '* * * * *', now() - interval '1 minute')\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "caae28e915833e3c8c6e681fdbcbe255dd26ffaf4911ec52ab8e22b0f56a97f6"
+}

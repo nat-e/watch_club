@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE job_schedules\n            SET cron = '0 0 1 1 *', next_run_at = now() + interval '1 year'\n            WHERE name = 'delete_expired_sessions'\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "d5caf2b74775761bca34283c68a4b3f41ba04d7a9c9d1bd97eb0335447f2a5e0"
+}

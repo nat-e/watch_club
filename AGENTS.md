@@ -30,6 +30,10 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 - An operation returns its own `thiserror` enum when callers handle its failures, with an `Internal(#[from] anyhow::Error)` variant for the rest. Otherwise it returns `InternalError`. Use `.context(…)` to say what failed
 
+### Jobs
+
+- Run background and recurring work as a job, in `src/jobs/`. `src/jobs.rs` says how to add one
+
 ## Tests
 
 - Write the server's tests in the single test crate `apps/server/tests/integration/`, whose files mirror `src/`
