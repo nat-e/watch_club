@@ -13,6 +13,7 @@ Open a [GitHub issue](https://github.com/nat-e/watch_club/issues). For security 
 5. Run `pnpm install`, then `sqlx database setup --source apps/server/migrations` to create the database.
 6. Run `pnpm --filter server seed` to add the demo Users.
 7. Run `pnpm dev`, open `APP_URL` from `.env`, and sign in as `admin`, `alice` or `bob` with the password `passw0rd`. `pnpm dev --expo` also runs Expo's dev server, for the app on phones and TVs.
+8. To run the app on Android, install Android Studio, then set `JAVA_HOME` to its Java (`/Applications/Android Studio.app/Contents/jbr/Contents/Home` on macOS) and `ANDROID_HOME` to its SDK (`~/Library/Android/sdk`). Connect a phone with USB or wireless debugging, or start an emulator, and run `turbo run android --filter=mobile`: it builds the app and installs it. Then open the app and pick your worktree's dev server. Rebuild it only when native code changes.
 
 ## Checks
 
