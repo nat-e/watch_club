@@ -214,10 +214,10 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
     let recorded = match ended {
-        Ok(()) => finish(db, job, JobState::Completed).await,
+        Ok(()) => finish(db, job, Finished::Completed).await,
         Err(JobError::Cancel(reason)) => {
             tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
-            finish(db, job, JobState::Cancelled).await
+            finish(db, job, Finished::Cancelled).await
         }
         Err(JobError::Fail(error)) => {
             tracing::error!(
@@ -226,7 +226,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job failed for good",
             );
-            finish(db, job, JobState::Failed).await
+            finish(db, job, Finished::Failed).await
         }
         Err(JobError::Internal(error)) if attempt < max_attempts => {
             tracing::warn!(
@@ -245,7 +245,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
-            finish(db, job, JobState::Failed).await
+            finish(db, job, Finished::Failed).await
         }
     };
     if let Err(error) = recorded {
@@ -257,11 +257,28 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     }
 }
 
+/// The states a job ends in.
+#[derive(Clone, Copy, Debug)]
+enum Finished {
+    Completed,
+    Failed,
+    Cancelled,
+}
+
+impl From<Finished> for JobState {
+    fn from(state: Finished) -> Self {
+        match state {
+            Finished::Completed => Self::Completed,
+            Finished::Failed => Self::Failed,
+            Finished::Cancelled => Self::Cancelled,
+        }
+    }
+}
+
 // `finish` and `retry` leave a job alone once it's no longer this attempt's: after a rescue, it
 // belongs to the next attempt.
 
-/// Ends the job in `state`: completed, failed or cancelled.
-async fn finish(db: &PgPool, job: &ClaimedJob, state: JobState) -> Result<(), InternalError> {
+async fn finish(db: &PgPool, job: &ClaimedJob, state: Finished) -> Result<(), InternalError> {
     sqlx::query!(
         r#"
         UPDATE jobs SET state = $3, finished_at = now()
@@ -269,7 +286,7 @@ async fn finish(db: &PgPool, job: &ClaimedJob, state: JobState) -> Result<(), In
         "#,
         job.id as JobId,
         job.attempt,
-        state as JobState,
+        JobState::from(state) as JobState,
     )
     .execute(db)
     .await
