@@ -21,12 +21,14 @@ CREATE TABLE jobs (
     inserted_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Claiming the next jobs of a queue
-CREATE INDEX jobs_claim_idx ON jobs (queue, priority, run_at, id) WHERE state = 'available';
--- Rescuing the jobs a crash left `executing`
-CREATE INDEX jobs_executing_idx ON jobs (attempted_at) WHERE state = 'executing';
--- Deleting old finished jobs
-CREATE INDEX jobs_finished_idx ON jobs (finished_at)
+-- Lets the runner claim a queue's next jobs, in the order it runs them, without going through the
+-- finished jobs that make up most of the table
+CREATE INDEX jobs_available_to_run ON jobs (queue, priority, run_at, id)
+WHERE state = 'available';
+-- Lets the maintenance find the jobs a crash left running every minute, among the few running
+CREATE INDEX jobs_running ON jobs (attempted_at) WHERE state = 'executing';
+-- Lets the maintenance find the finished jobs old enough to delete without reading the others
+CREATE INDEX jobs_finished ON jobs (finished_at)
 WHERE state IN ('completed', 'failed', 'cancelled');
 
 -- The next run of each recurring job that the server's code schedules
