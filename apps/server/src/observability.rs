@@ -7,7 +7,11 @@ use std::{
 };
 
 use anyhow::Context;
-use axum::extract::Request;
+use axum::{
+    extract::{MatchedPath, Request},
+    middleware::{self, Next},
+    response::Response,
+};
 use opentelemetry::{
     KeyValue, global,
     trace::{TraceContextExt, TracerProvider},
@@ -24,7 +28,7 @@ use opentelemetry_semantic_conventions::{
     resource::SERVICE_VERSION,
 };
 use sentry::{
-    Hub, SentryFutureExt,
+    Hub, Scope, SentryFutureExt,
     integrations::{
         tower::{NewSentryLayer, SentryHttpLayer},
         tracing::{BreadcrumbLayer, ErrorLayer},
@@ -32,7 +36,7 @@ use sentry::{
     protocol::{Event, TraceContext},
 };
 use tower_http::trace::TraceLayer;
-use tracing::Metadata;
+use tracing::{Level, Metadata};
 use tracing_subscriber::{
     Layer,
     filter::{FilterExt, LevelFilter, filter_fn},
@@ -99,10 +103,11 @@ impl Drop for Observability {
         ];
         for (signal, result) in results {
             if let Some(Err(error)) = result {
-                tracing::warn!(
+                tracing::event!(
                     name: "observability.shutdown.failed",
+                    Level::WARN,
                     signal,
-                    %error,
+                    exception.message = %format_args!("{error:#}"),
                     "failed to send the last telemetry",
                 );
             }
@@ -227,7 +232,7 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
 }
 
 /// Adds what observes each request to the routes: its span, whose method and path its logs show, its
-/// trace and metrics, and its details on the errors Sentry gets. The layers the routes already have
+/// trace and metrics, and its details and route on the errors Sentry gets. The layers the routes already have
 /// run inside the request's span.
 pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
     routes: OpenApiRouter<S>,
@@ -251,17 +256,18 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
         )
         // Names the spans after the route, such as `GET /api/me`, once the router has matched it
         .layer(otel_http::Layer::new())
+        .layer(middleware::from_fn(name_errors_after_route))
         .layer(SentryHttpLayer::new())
         // Outside the other Sentry layer, which needs a Sentry hub of the request's own
         .layer(NewSentryLayer::new_from_top())
 }
 
 /// Runs `task`, work apart from requests, with a Sentry scope of its own, as `instrument` gives each
-/// request: the errors it reports carry `tags` and only its own breadcrumbs, and Sentry groups them
-/// by their message and `group`.
+/// request: the errors it reports carry `tags` and only its own breadcrumbs, and are named after the
+/// work, such as a kind of job.
 pub(crate) fn with_error_scope<F: Future>(
     tags: &[(&str, &dyn Display)],
-    group: &str,
+    work: &str,
     task: F,
 ) -> impl Future<Output = F::Output> + use<F> {
     let hub = Hub::new_from_top(Hub::current());
@@ -269,9 +275,25 @@ pub(crate) fn with_error_scope<F: Future>(
         for (key, value) in tags {
             scope.set_tag(key, value);
         }
-        scope.set_fingerprint(Some(&["{{ default }}", group]));
+        name_errors(scope, work);
     });
     task.bind_hub(hub)
+}
+
+/// Names the request's Sentry scope after its route, such as `GET /api/me`.
+async fn name_errors_after_route(request: Request, next: Next) -> Response {
+    if let Some(route) = request.extensions().get::<MatchedPath>() {
+        let work = format!("{} {}", request.method(), route.as_str());
+        sentry::configure_scope(|scope| name_errors(scope, &work));
+    }
+    next.run(request).await
+}
+
+/// Names the work whose errors the Sentry scope reports: Sentry shows the name on their issues, and
+/// opens an issue for each work and message, since the messages say what failed rather than why.
+fn name_errors(scope: &mut Scope, work: &str) {
+    scope.set_transaction(Some(work));
+    scope.set_fingerprint(Some(&["{{ default }}", work]));
 }
 
 /// Returns whether the span or event comes from the crates that export, which mustn't be exported.

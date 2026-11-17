@@ -55,8 +55,9 @@ pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), Internal
         run_result = jobs => run_result,
         // Drops the jobs future, which stops the jobs still running
         () = deadline => {
-            tracing::warn!(
+            tracing::event!(
                 name: "jobs.shutdown.timed_out",
+                Level::WARN,
                 "stopped the jobs still running at shutdown, which will run again later",
             );
             Ok(())
@@ -93,10 +94,11 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
             claim_jobs(db, queue, free_slots)
                 .await
                 .unwrap_or_else(|error| {
-                    tracing::error!(
+                    tracing::event!(
                         name: "jobs.claim.failed",
+                        Level::ERROR,
                         ?queue,
-                        error = %format_args!("{error:#}"),
+                        exception.message = %format_args!("{error:#}"),
                         "failed to claim jobs",
                     );
                     Vec::new()
@@ -123,9 +125,10 @@ async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
 /// the runner's code around the job, which then stays `executing` until it's rescued.
 fn log_panic(task_result: Result<(), JoinError>) {
     if let Err(error) = task_result {
-        tracing::error!(
+        tracing::event!(
             name: "jobs.task.panicked",
-            %error,
+            Level::ERROR,
+            exception.message = %format_args!("{error:#}"),
             "the runner panicked around a job, which will run again later",
         );
     }
@@ -228,9 +231,10 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
     .execute(db)
     .await;
     if let Err(error) = recorded {
-        tracing::error!(
+        tracing::event!(
             name: "jobs.save_outcome.failed",
-            %error,
+            Level::ERROR,
+            exception.message = %format_args!("{error:#}"),
             "failed to save how the job ended",
         );
     }
@@ -242,25 +246,28 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
         Ok(()) => JobState::Completed,
         // The job's span holds its kind, ID and attempt
         Err(JobError::NonRetryable(error)) => {
-            tracing::error!(
+            tracing::event!(
                 name: "jobs.job.failed",
-                error = %format_args!("{error:#}"),
+                Level::ERROR,
+                exception.message = %format_args!("{error:#}"),
                 "the job failed for good",
             );
             JobState::Failed
         }
         Err(JobError::Retryable(error)) if attempt < max_attempts => {
-            tracing::warn!(
+            tracing::event!(
                 name: "jobs.attempt.failed",
-                error = %format_args!("{error:#}"),
+                Level::WARN,
+                exception.message = %format_args!("{error:#}"),
                 "the job's attempt failed, and will retry",
             );
             JobState::Available
         }
         Err(JobError::Retryable(error)) => {
-            tracing::error!(
+            tracing::event!(
                 name: "jobs.job.failed",
-                error = %format_args!("{error:#}"),
+                Level::ERROR,
+                exception.message = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
             JobState::Failed
@@ -278,9 +285,10 @@ async fn maintain(db: &PgPool, shutdown: &CancellationToken) {
             _ = ticks.tick() => {}
         }
         if let Err(error) = run_maintenance(db).await {
-            tracing::error!(
+            tracing::event!(
                 name: "jobs.maintenance.failed",
-                error = %format_args!("{error:#}"),
+                Level::ERROR,
+                exception.message = %format_args!("{error:#}"),
                 "failed to maintain the jobs",
             );
         }
@@ -310,9 +318,7 @@ async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
     .fetch_all(db)
     .await
     .context("failed to rescue the jobs left running")?;
-    // No job's span holds these logs, so they carry its fields themselves. `event!` rather than
-    // `warn!` or `error!`, which can't take a dotted field first after `name:` until
-    // tokio-rs/tracing#3407 is fixed
+    // No job's span holds these logs, so they carry its fields themselves
     for job in rescued {
         let (kind, id, attempt) = (job.kind, job.id.0, job.attempt);
         if job.will_retry {

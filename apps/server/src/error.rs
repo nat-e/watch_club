@@ -11,6 +11,7 @@ use axum::{
 };
 use serde::Serialize;
 use serde_json::json;
+use tracing::Level;
 use utoipa::ToSchema;
 
 use crate::domain::InternalError;
@@ -112,7 +113,12 @@ pub(crate) fn response(status: StatusCode, error: &(impl Serialize + Display)) -
 pub(crate) async fn log_internal_errors(request: Request, next: Next) -> Response {
     let response = next.run(request).await;
     if let Some(error) = response.extensions().get::<Arc<InternalError>>() {
-        tracing::error!("request failed: {error:#}");
+        tracing::event!(
+            name: "api.request.failed",
+            Level::ERROR,
+            exception.message = %format_args!("{error:#}"),
+            "request failed",
+        );
     }
     response
 }

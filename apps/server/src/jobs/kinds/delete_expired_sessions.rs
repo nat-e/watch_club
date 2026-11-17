@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::Level;
 
 use crate::{
     domain::accounts,
@@ -19,8 +20,9 @@ impl Job for DeleteExpiredSessions {
 
     async fn run(self, db: &PgPool) -> Result<(), JobError> {
         let deleted = accounts::delete_expired_sessions(db).await?;
-        tracing::info!(
+        tracing::event!(
             name: "accounts.sessions.deleted",
+            Level::INFO,
             deleted,
             "deleted the expired sessions",
         );

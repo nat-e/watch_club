@@ -12,6 +12,7 @@ use tokio::{
     time,
 };
 use tokio_util::sync::CancellationToken;
+use tracing::Level;
 use watch_club::{AppState, config::Config, db, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
@@ -36,7 +37,12 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 
     let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
-    tracing::info!("listening on port {}", config.port);
+    tracing::event!(
+        name: "server.started",
+        Level::INFO,
+        server.port = config.port,
+        "listening for requests",
+    );
     let server = axum::serve(
         listener,
         watch_club::router(AppState {
