@@ -1,61 +1,62 @@
 /**
- * The mobile app's forms, built with TanStack Form, whose components have the web app's names.
+ * The mobile app's forms, built with TanStack Form, whose fields the platform draws as the rows of a
+ * `FieldGroup.Section`, with their errors under them.
  */
+import {TextInput, type TextInputProps} from '@expo/ui';
 import {createFormHook, type FieldWithValue, getFormHookHelpers} from '@tanstack/react-form';
-import type {ComponentProps} from 'react';
-import {Text} from 'react-native';
-import {TextField} from '@/components/text-field';
+import {Message} from '@/components/message';
 
 const {fieldComponent} = getFormHookHelpers();
 
-/** A form's field in a text field, with the first of its errors, if any. */
-function FormTextField({
+/** A form's field in the platform's text input, as a row of its section. */
+function FormTextInput({
   field,
-  ...textField
+  ...input
 }: {field: FieldWithValue<string>} & Omit<
-  ComponentProps<typeof TextField>,
-  'value' | 'onChangeText' | 'onBlur' | 'error'
+  TextInputProps,
+  'value' | 'defaultValue' | 'onChangeText' | 'onBlur'
 >) {
   return (
-    <TextField
-      {...textField}
-      value={field.value}
+    <TextInput
+      {...input}
+      defaultValue={field.value}
       onChangeText={text => {
         field.handleChange(text);
       }}
       onBlur={field.handleBlur}
-      error={field.errors[0]?.message}
     />
   );
 }
 
-/** The form's errors that belong to no field, such as when the server is down. */
-function FormError() {
+/** The first of a field's errors, or else the hint, for the footer of its section. */
+function FieldMessage({field, hint}: {field: FieldWithValue<string>; hint?: string}) {
+  return <Message error={field.errors[0]?.message} hint={hint} />;
+}
+
+/** The form's errors that belong to no field, such as when the server is down, or else the hint. */
+function FormMessage({hint}: {hint?: string}) {
   const form = useFormContext();
   return (
     <form.Subscribe selector={state => state.errors}>
-      {errors =>
-        errors.map(error => (
-          <Text key={error.message} accessibilityLiveRegion="polite" className="text-destructive">
-            {error.message}
-          </Text>
-        ))
-      }
+      {errors => <Message error={errors[0]?.message} hint={hint} />}
     </form.Subscribe>
   );
 }
 
-// biome-ignore-start lint/style/useNamingConvention: the keys name components, as `<form.FormError>`
+// biome-ignore-start lint/style/useNamingConvention: the keys name components, as `<form.FormMessage>`
 const formHook = createFormHook({
-  fieldComponents: {TextField: fieldComponent.strict(FormTextField, 'field')},
-  formComponents: {FormError},
+  fieldComponents: {
+    TextInput: fieldComponent.strict(FormTextInput, 'field'),
+    Message: fieldComponent.strict(FieldMessage, 'field'),
+  },
+  formComponents: {FormMessage},
 });
 // biome-ignore-end lint/style/useNamingConvention: the keys name components
 
 const {useFormContext} = formHook;
 
 /**
- * Returns the form for the options, which draws its fields and buttons with this app's components:
- * `<field.TextField>` and `<form.FormError>`.
+ * Returns the form for the options, which draws its fields and messages with this app's
+ * components: `<field.TextInput>`, `<field.Message>` and `<form.FormMessage>`.
  */
 export const useAppForm = formHook.useAppForm;

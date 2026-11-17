@@ -1,8 +1,6 @@
 import {useMutation} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {Text} from 'react-native';
-import {Button} from '@/components/button';
-import {Screen} from '@/components/screen';
+import {MessageScreen} from '@/components/message-screen';
 import {useRetrySession, useSessionStore} from '@/session';
 
 /**
@@ -16,25 +14,19 @@ export default function Unreachable() {
   const signOut = useMutation({mutationFn: () => sessionStore.signOut()});
 
   return (
-    <Screen>
-      <Text accessibilityRole="header" className="text-3xl font-semibold text-foreground">
-        {t($ => $.mobile.unreachable.title)}
-      </Text>
-      <Text className="text-base text-muted-foreground">
-        {t($ => $.mobile.unreachable.description)}
-      </Text>
-      <Button disabled={isRetrying} onPress={retry}>
-        {t($ => $.mobile.unreachable.tryAgain)}
-      </Button>
-      <Button
-        variant="outlined"
-        disabled={signOut.isPending}
-        onPress={() => {
-          signOut.mutate();
-        }}
-      >
-        {t($ => $.core.user.signOut)}
-      </Button>
-    </Screen>
+    <MessageScreen
+      title={t($ => $.mobile.unreachable.title)}
+      description={t($ => $.mobile.unreachable.description)}
+      actions={[
+        {label: t($ => $.mobile.unreachable.tryAgain), onPress: retry, disabled: isRetrying},
+        {
+          label: t($ => $.core.user.signOut),
+          onPress: () => {
+            signOut.mutate();
+          },
+          disabled: signOut.isPending,
+        },
+      ]}
+    />
   );
 }

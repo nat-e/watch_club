@@ -1,21 +1,26 @@
+import {FieldGroup, ListItem, Text, type TextInputRef} from '@expo/ui';
+import {useSelector} from '@tanstack/react-form';
 import {useSignInFormOptions} from '@watchclub/core/accounts/sign-in';
-import {type ComponentRef, useRef} from 'react';
+import {Stack} from 'expo-router';
+import {useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Text, type TextInput} from 'react-native';
-import {Button} from '@/components/button';
+import {useCSSVariable} from 'uniwind';
 import {useAppForm} from '@/components/form';
-import {Screen} from '@/components/screen';
+import {FormScreen} from '@/components/form-screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
-/** The form that signs the User in to their WatchClub: its address, username and password. */
+/**
+ * The form that signs the User in to their WatchClub: its address, username and password, each in
+ * its own section with its error under it.
+ */
 export default function SignIn() {
   const {t} = useTranslation(['mobile', 'core']);
   const {session} = useSession();
   const sessionStore = useSessionStore();
   // The keyboard's next key moves from one field to the next
-  const usernameInput = useRef<ComponentRef<typeof TextInput>>(null);
-  const passwordInput = useRef<ComponentRef<typeof TextInput>>(null);
+  const usernameInput = useRef<TextInputRef>(null);
+  const passwordInput = useRef<TextInputRef>(null);
   // The URL the credentials go to, which the address form's submission found a WatchClub at
   const destination = useRef<string | null>(null);
   const signInForm = useAppForm(
@@ -31,83 +36,108 @@ export default function SignIn() {
     destination.current = instanceUrl;
     await signInForm.handleSubmit();
   });
+  const isSubmitting = useSelector(instanceForm.atom, state => state.isSubmitting);
+  const [primary, mutedForeground] = useCSSVariable([
+    '--color-primary',
+    '--color-muted-foreground',
+  ]).map(value => String(value));
 
   function submit() {
     void instanceForm.handleSubmit();
   }
 
+  const address = t($ => $.mobile.signIn.address);
+  const username = t($ => $.core.user.username);
+  const password = t($ => $.core.user.password);
+
   return (
-    <Screen>
-      <Text accessibilityRole="header" className="text-3xl font-semibold text-foreground">
-        {t($ => $.core.signIn.title)}
-      </Text>
-      {session.instanceUrl === null && (
-        <Text className="text-base text-muted-foreground">
-          {t($ => $.mobile.signIn.description)}
-        </Text>
-      )}
-      <instanceForm.Field name="address">
-        {field => (
-          <field.TextField
-            label={t($ => $.mobile.signIn.address)}
-            placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus={session.instanceUrl === null}
-            inputMode="url"
-            returnKeyType="next"
-            submitBehavior="submit"
-            onSubmitEditing={() => {
-              usernameInput.current?.focus();
-            }}
-          />
-        )}
-      </instanceForm.Field>
-      <signInForm.AppForm>
-        <signInForm.Field name="username">
-          {field => (
-            <field.TextField
-              ref={usernameInput}
-              label={t($ => $.core.user.username)}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="username"
-              textContentType="username"
-              autoFocus={session.instanceUrl !== null}
-              returnKeyType="next"
-              submitBehavior="submit"
-              onSubmitEditing={() => {
-                passwordInput.current?.focus();
-              }}
-            />
-          )}
-        </signInForm.Field>
-        <signInForm.Field name="password">
-          {field => (
-            <field.TextField
-              ref={passwordInput}
-              label={t($ => $.core.user.password)}
-              onSubmitEditing={submit}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="current-password"
-              textContentType="password"
-              returnKeyType="go"
-            />
-          )}
-        </signInForm.Field>
-        <signInForm.FormError />
-      </signInForm.AppForm>
-      <instanceForm.Subscribe selector={state => state.isSubmitting}>
-        {isSubmitting => (
-          <Button disabled={isSubmitting} onPress={submit}>
-            {t($ => $.core.signIn.submit)}
-          </Button>
-        )}
-      </instanceForm.Subscribe>
-      <Text className="text-sm text-muted-foreground">{t($ => $.core.signIn.forgotPassword)}</Text>
-    </Screen>
+    <>
+      <Stack.Screen options={{headerShown: true, title: t($ => $.core.signIn.title)}} />
+      <FormScreen>
+        <FieldGroup.Section title={address}>
+          <instanceForm.Field name="address">
+            {field => (
+              <field.TextInput
+                accessibilityLabel={address}
+                placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="url"
+                autoFocus={session.instanceUrl === null}
+                inputMode="url"
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  usernameInput.current?.focus();
+                }}
+              />
+            )}
+          </instanceForm.Field>
+          <FieldGroup.SectionFooter>
+            <instanceForm.Field name="address">
+              {field => (
+                <field.Message
+                  hint={
+                    session.instanceUrl === null ? t($ => $.mobile.signIn.description) : undefined
+                  }
+                />
+              )}
+            </instanceForm.Field>
+          </FieldGroup.SectionFooter>
+        </FieldGroup.Section>
+        <FieldGroup.Section title={username}>
+          <signInForm.Field name="username">
+            {field => (
+              <field.TextInput
+                ref={usernameInput}
+                accessibilityLabel={username}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="username"
+                autoFocus={session.instanceUrl !== null}
+                returnKeyType="next"
+                onSubmitEditing={() => {
+                  passwordInput.current?.focus();
+                }}
+              />
+            )}
+          </signInForm.Field>
+          <FieldGroup.SectionFooter>
+            <signInForm.Field name="username">{field => <field.Message />}</signInForm.Field>
+          </FieldGroup.SectionFooter>
+        </FieldGroup.Section>
+        <FieldGroup.Section title={password}>
+          <signInForm.Field name="password">
+            {field => (
+              <field.TextInput
+                ref={passwordInput}
+                accessibilityLabel={password}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="current-password"
+                returnKeyType="go"
+                onSubmitEditing={submit}
+              />
+            )}
+          </signInForm.Field>
+          <FieldGroup.SectionFooter>
+            <signInForm.Field name="password">{field => <field.Message />}</signInForm.Field>
+          </FieldGroup.SectionFooter>
+        </FieldGroup.Section>
+        <FieldGroup.Section>
+          <ListItem onPress={isSubmitting ? undefined : submit}>
+            <Text textStyle={{color: isSubmitting ? mutedForeground : primary}}>
+              {t($ => $.core.signIn.submit)}
+            </Text>
+          </ListItem>
+          <FieldGroup.SectionFooter>
+            <signInForm.AppForm>
+              <signInForm.FormMessage hint={t($ => $.core.signIn.forgotPassword)} />
+            </signInForm.AppForm>
+          </FieldGroup.SectionFooter>
+        </FieldGroup.Section>
+      </FormScreen>
+    </>
   );
 }
 

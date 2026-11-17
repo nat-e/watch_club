@@ -1,11 +1,11 @@
-import {FieldGroup, Text} from '@expo/ui';
+import {FieldGroup} from '@expo/ui';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
-import {useCSSVariable} from 'uniwind';
 import {choiceRows} from '@/components/choice-rows';
 import {FormScreen} from '@/components/form-screen';
+import {Message} from '@/components/message';
 
 /** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
@@ -14,10 +14,6 @@ export default function Settings() {
   const user = useCurrentUser();
   const save = useSavePreferences();
   const language = t($ => $.core.settings.language);
-  const [mutedForeground, destructive] = useCSSVariable([
-    '--color-muted-foreground',
-    '--color-destructive',
-  ]).map(value => String(value));
 
   return (
     <FormScreen>
@@ -30,13 +26,10 @@ export default function Settings() {
           onChange: locale => save.mutateAsync({locale}),
         })}
         <FieldGroup.SectionFooter>
-          {save.isError ? (
-            <Text textStyle={{color: destructive}}>{t($ => $.core.errors.somethingWentWrong)}</Text>
-          ) : (
-            <Text textStyle={{color: mutedForeground}}>
-              {t($ => $.core.settings.preferencesDescription)}
-            </Text>
-          )}
+          <Message
+            error={save.isError ? t($ => $.core.errors.somethingWentWrong) : undefined}
+            hint={t($ => $.core.settings.preferencesDescription)}
+          />
         </FieldGroup.SectionFooter>
       </FieldGroup.Section>
     </FormScreen>
