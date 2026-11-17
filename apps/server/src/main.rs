@@ -15,16 +15,16 @@ use tokio_util::sync::CancellationToken;
 use watch_club::{config::Config, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
-    // Before the async runtime, as Sentry needs. Dropped after it, to send what's left
-    let observability = observability::start()?;
     let config = Config::from_env()?;
+    // Before the async runtime, as Sentry needs. Dropped after it, to send what's left
+    let _observability = observability::start(&config.observability)?;
     Runtime::new()
         .context("failed to start the async runtime")?
-        .block_on(serve(config, observability.web_sentry_dsn()))
+        .block_on(serve(config))
 }
 
 /// Serves the app and runs its jobs until Ctrl-C or `docker stop`.
-async fn serve(config: Config, web_sentry_dsn: Option<String>) -> anyhow::Result<()> {
+async fn serve(config: Config) -> anyhow::Result<()> {
     let db = watch_club::connect_database(config.database_url.expose_secret())
         .await
         .context("failed to connect to the database")?;
@@ -38,8 +38,11 @@ async fn serve(config: Config, web_sentry_dsn: Option<String>) -> anyhow::Result
 
     let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
     tracing::info!("listening on port {}", config.port);
-    let server = axum::serve(listener, watch_club::router(db.clone(), web_sentry_dsn))
-        .with_graceful_shutdown(shutdown.clone().cancelled_owned());
+    let server = axum::serve(
+        listener,
+        watch_club::router(db.clone(), config.observability.web_sentry_dsn),
+    )
+    .with_graceful_shutdown(shutdown.clone().cancelled_owned());
     // Whichever stops first stops the other, so the server exits when the runner fails
     let (serve_result, run_result) = tokio::join!(
         async {

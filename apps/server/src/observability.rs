@@ -1,13 +1,9 @@
-//! The server's logs on the console, and, when its host turns them on with environment variables,
-//! its traces, metrics and logs sent to an OTLP endpoint, and its errors sent to Sentry.
-//!
-//! OpenTelemetry follows its standard variables, such as `OTEL_EXPORTER_OTLP_ENDPOINT`, except that
-//! each signal stays off until `OTEL_{TRACES,METRICS,LOGS}_EXPORTER` is `otlp`. Sentry reports the
-//! server's errors to `SENTRY_DSN`, and the web app's to `SENTRY_WEB_DSN`.
+//! The server's logs on the console, and, when its host turns them on, its traces, metrics and logs
+//! sent to an OTLP endpoint, and its errors sent to Sentry.
 
-use std::{env, fmt};
+use std::fmt;
 
-use anyhow::{Context, bail};
+use anyhow::Context;
 use axum::{extract::Request, middleware};
 use opentelemetry::{
     InstrumentationScope, KeyValue, global,
@@ -31,7 +27,6 @@ use sentry::{
         tracing::{BreadcrumbLayer, ErrorLayer},
     },
     protocol::{Event, TraceContext},
-    types::Dsn,
 };
 use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
@@ -44,10 +39,10 @@ use tracing_subscriber::{
 };
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::error;
+use crate::{config::ObservabilityConfig, error};
 
-/// The name the server reports under, unless `OTEL_SERVICE_NAME` changes it
-const SERVICE: &str = "watch_club";
+/// The name of the server's own instrumentation, apart from the libraries'
+const SCOPE: &str = env!("CARGO_PKG_NAME");
 
 /// The name of the span `instrument` gives each request, for the console logs
 const REQUEST_SPAN: &str = "request";
@@ -63,14 +58,6 @@ pub struct Observability {
     meter_provider: Option<SdkMeterProvider>,
     logger_provider: Option<SdkLoggerProvider>,
     sentry: Option<sentry::ClientInitGuard>,
-    web_sentry_dsn: Option<String>,
-}
-
-impl Observability {
-    /// Returns the Sentry DSN the web app reports its errors to, if the host set one.
-    pub fn web_sentry_dsn(&self) -> Option<String> {
-        self.web_sentry_dsn.clone()
-    }
 }
 
 impl fmt::Debug for Observability {
@@ -80,7 +67,6 @@ impl fmt::Debug for Observability {
             .field("exports_metrics", &self.meter_provider.is_some())
             .field("exports_logs", &self.logger_provider.is_some())
             .field("reports_to_sentry", &self.sentry.is_some())
-            .field("web_reports_to_sentry", &self.web_sentry_dsn.is_some())
             .finish()
     }
 }
@@ -106,19 +92,14 @@ impl Drop for Observability {
     }
 }
 
-/// Starts the observability the environment variables turn on, and logs to the console. Call it
-/// before starting the async runtime, as Sentry needs, and before building the router.
-pub fn start() -> anyhow::Result<Observability> {
-    let disabled =
-        env::var("OTEL_SDK_DISABLED").is_ok_and(|value| value.eq_ignore_ascii_case("true"));
-    let exports_traces = !disabled && exports("TRACES")?;
-    let exports_metrics = !disabled && exports("METRICS")?;
-    let exports_logs = !disabled && exports("LOGS")?;
-    let server_sentry_dsn = sentry_dsn("SENTRY_DSN")?;
-    let web_sentry_dsn = sentry_dsn("SENTRY_WEB_DSN")?;
-
-    let resource = resource();
-    let tracer_provider = if exports_traces {
+/// Starts the observability the settings turn on, and logs to the console. Call it before starting
+/// the async runtime, as Sentry needs, and before building the router.
+pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
+    let resource = Resource::builder()
+        .with_service_name(config.service_name.clone())
+        .with_attribute(KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")))
+        .build();
+    let tracer_provider = if config.exports.traces {
         let exporter = SpanExporter::builder()
             .with_http()
             .build()
@@ -134,7 +115,7 @@ pub fn start() -> anyhow::Result<Observability> {
     } else {
         None
     };
-    let meter_provider = if exports_metrics {
+    let meter_provider = if config.exports.metrics {
         let exporter = MetricExporter::builder()
             .with_http()
             .build()
@@ -148,7 +129,7 @@ pub fn start() -> anyhow::Result<Observability> {
     } else {
         None
     };
-    let logger_provider = if exports_logs {
+    let logger_provider = if config.exports.logs {
         let exporter = LogExporter::builder()
             .with_http()
             .build()
@@ -162,21 +143,21 @@ pub fn start() -> anyhow::Result<Observability> {
         None
     };
 
-    let sentry = server_sentry_dsn.map(|dsn| {
-        sentry::init(
+    let sentry = config.sentry_dsn.clone().map(|dsn| {
+        sentry::init((
+            dsn,
             sentry::ClientOptions::new()
-                .dsn(&dsn)
                 .maybe_release(sentry::release_name!())
                 .before_send(|event| Some(link_to_trace(event))),
-        )
+        ))
     });
 
     tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with(EnvFilter::new(&config.log_filter))
         .with(tracing_subscriber::fmt::layer())
         .with(tracer_provider.as_ref().map(|provider| {
             tracing_opentelemetry::layer()
-                .with_tracer(provider.tracer(SERVICE))
+                .with_tracer(provider.tracer(SCOPE))
                 .with_filter(filter_fn(is_exported))
         }))
         .with(logger_provider.as_ref().map(|provider| {
@@ -195,7 +176,6 @@ pub fn start() -> anyhow::Result<Observability> {
         meter_provider,
         logger_provider,
         sentry,
-        web_sentry_dsn,
     })
 }
 
@@ -241,7 +221,7 @@ pub fn observe_pool(db: &PgPool) {
             options.get_database().unwrap_or_default(),
         ),
     );
-    let meter = global::meter_with_scope(InstrumentationScope::builder(SERVICE).build());
+    let meter = global::meter_with_scope(InstrumentationScope::builder(SCOPE).build());
 
     let pool = db.clone();
     let name = pool_name.clone();
@@ -271,41 +251,6 @@ pub fn observe_pool(db: &PgPool) {
         .with_description("The most connections the pool opens to the database.")
         .with_callback(move |observer| observer.observe(max, std::slice::from_ref(&pool_name)))
         .build();
-}
-
-/// Returns whether the host turned the signal on with `OTEL_{signal}_EXPORTER`. It's off by
-/// default, unlike the standard's `otlp`, so the server sends nothing unless asked.
-fn exports(signal: &str) -> anyhow::Result<bool> {
-    let variable = format!("OTEL_{signal}_EXPORTER");
-    match env::var(&variable).unwrap_or_default().as_str() {
-        "" | "none" => Ok(false),
-        "otlp" => Ok(true),
-        other => bail!("{variable} must be otlp or none, not {other}"),
-    }
-}
-
-/// Returns what every signal says about the server: its name, `watch_club` unless
-/// `OTEL_SERVICE_NAME` sets another, its version, and the attributes in `OTEL_RESOURCE_ATTRIBUTES`.
-fn resource() -> Resource {
-    let name = env::var("OTEL_SERVICE_NAME")
-        .ok()
-        .filter(|name| !name.is_empty())
-        .unwrap_or_else(|| SERVICE.to_owned());
-    Resource::builder()
-        .with_service_name(name)
-        .with_attribute(KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")))
-        .build()
-}
-
-/// Returns the Sentry DSN in the environment variable, or None when it's unset or empty.
-fn sentry_dsn(variable: &str) -> anyhow::Result<Option<String>> {
-    let dsn = env::var(variable).unwrap_or_default();
-    if dsn.is_empty() {
-        return Ok(None);
-    }
-    dsn.parse::<Dsn>()
-        .with_context(|| format!("{variable} isn't a Sentry DSN"))?;
-    Ok(Some(dsn))
 }
 
 /// Returns whether the OpenTelemetry layers export what the span or event describes: not what the
