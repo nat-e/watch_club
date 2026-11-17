@@ -403,3 +403,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "Not on %{name} yet"
 msgstr ""
+
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You"
+msgstr ""

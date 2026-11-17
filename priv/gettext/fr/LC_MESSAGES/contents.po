@@ -477,3 +477,9 @@ msgstr "T'a recommandé cette série"
 #, elixir-autogen, elixir-format
 msgid "Not on %{name} yet"
 msgstr "Pas encore sur %{name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You"
+msgstr "Toi"
