@@ -12,9 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as SignedOutRouteImport } from './routes/_signed-out'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
+import { Route as ShellAdminRouteImport } from './routes/_shell/_admin'
+import { Route as ShellBrowseRouteImport } from './routes/_shell/browse'
+import { Route as ShellInboxRouteImport } from './routes/_shell/inbox'
+import { Route as ShellMyRequestsRouteImport } from './routes/_shell/my-requests'
+import { Route as ShellPlaylistsRouteImport } from './routes/_shell/playlists'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as SignedOutSetupRouteImport } from './routes/_signed-out/setup'
 import { Route as SignedOutSignInRouteImport } from './routes/_signed-out/sign-in'
+import { Route as ShellAdminAdminProblemReportsRouteImport } from './routes/_shell/_admin/admin/problem-reports'
+import { Route as ShellAdminAdminSettingsRouteImport } from './routes/_shell/_admin/admin/settings'
+import { Route as ShellAdminAdminUsersRouteImport } from './routes/_shell/_admin/admin/users'
+import { Route as ShellAdminAdminMediaIndexRouteImport } from './routes/_shell/_admin/admin/media/index'
+import { Route as ShellAdminAdminMediaSourcesRouteImport } from './routes/_shell/_admin/admin/media/sources'
 
 const ShellRoute = ShellRouteImport.update({
   id: '/_shell',
@@ -27,6 +37,30 @@ const SignedOutRoute = SignedOutRouteImport.update({
 const ShellIndexRoute = ShellIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellAdminRoute = ShellAdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellBrowseRoute = ShellBrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellInboxRoute = ShellInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellMyRequestsRoute = ShellMyRequestsRouteImport.update({
+  id: '/my-requests',
+  path: '/my-requests',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellPlaylistsRoute = ShellPlaylistsRouteImport.update({
+  id: '/playlists',
+  path: '/playlists',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellSettingsRoute = ShellSettingsRouteImport.update({
@@ -44,41 +78,133 @@ const SignedOutSignInRoute = SignedOutSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => SignedOutRoute,
 } as any)
+const ShellAdminAdminProblemReportsRoute =
+  ShellAdminAdminProblemReportsRouteImport.update({
+    id: '/admin/problem-reports',
+    path: '/admin/problem-reports',
+    getParentRoute: () => ShellAdminRoute,
+  } as any)
+const ShellAdminAdminSettingsRoute = ShellAdminAdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => ShellAdminRoute,
+} as any)
+const ShellAdminAdminUsersRoute = ShellAdminAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => ShellAdminRoute,
+} as any)
+const ShellAdminAdminMediaIndexRoute =
+  ShellAdminAdminMediaIndexRouteImport.update({
+    id: '/admin/media/',
+    path: '/admin/media/',
+    getParentRoute: () => ShellAdminRoute,
+  } as any)
+const ShellAdminAdminMediaSourcesRoute =
+  ShellAdminAdminMediaSourcesRouteImport.update({
+    id: '/admin/media/sources',
+    path: '/admin/media/sources',
+    getParentRoute: () => ShellAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
+  '/browse': typeof ShellBrowseRoute
+  '/inbox': typeof ShellInboxRoute
+  '/my-requests': typeof ShellMyRequestsRoute
+  '/playlists': typeof ShellPlaylistsRoute
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
+  '/admin/settings': typeof ShellAdminAdminSettingsRoute
+  '/admin/users': typeof ShellAdminAdminUsersRoute
+  '/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
+  '/admin/media/': typeof ShellAdminAdminMediaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof ShellIndexRoute
+  '/browse': typeof ShellBrowseRoute
+  '/inbox': typeof ShellInboxRoute
+  '/my-requests': typeof ShellMyRequestsRoute
+  '/playlists': typeof ShellPlaylistsRoute
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
+  '/admin/settings': typeof ShellAdminAdminSettingsRoute
+  '/admin/users': typeof ShellAdminAdminUsersRoute
+  '/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
+  '/admin/media': typeof ShellAdminAdminMediaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteWithChildren
   '/_signed-out': typeof SignedOutRouteWithChildren
+  '/_shell/_admin': typeof ShellAdminRouteWithChildren
+  '/_shell/browse': typeof ShellBrowseRoute
+  '/_shell/inbox': typeof ShellInboxRoute
+  '/_shell/my-requests': typeof ShellMyRequestsRoute
+  '/_shell/playlists': typeof ShellPlaylistsRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_signed-out/setup': typeof SignedOutSetupRoute
   '/_signed-out/sign-in': typeof SignedOutSignInRoute
   '/_shell/': typeof ShellIndexRoute
+  '/_shell/_admin/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
+  '/_shell/_admin/admin/settings': typeof ShellAdminAdminSettingsRoute
+  '/_shell/_admin/admin/users': typeof ShellAdminAdminUsersRoute
+  '/_shell/_admin/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
+  '/_shell/_admin/admin/media/': typeof ShellAdminAdminMediaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/setup' | '/sign-in'
+  fullPaths:
+    | '/'
+    | '/browse'
+    | '/inbox'
+    | '/my-requests'
+    | '/playlists'
+    | '/settings'
+    | '/setup'
+    | '/sign-in'
+    | '/admin/problem-reports'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/media/sources'
+    | '/admin/media/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/setup' | '/sign-in'
+  to:
+    | '/'
+    | '/browse'
+    | '/inbox'
+    | '/my-requests'
+    | '/playlists'
+    | '/settings'
+    | '/setup'
+    | '/sign-in'
+    | '/admin/problem-reports'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/media/sources'
+    | '/admin/media'
   id:
     | '__root__'
     | '/_shell'
     | '/_signed-out'
+    | '/_shell/_admin'
+    | '/_shell/browse'
+    | '/_shell/inbox'
+    | '/_shell/my-requests'
+    | '/_shell/playlists'
     | '/_shell/settings'
     | '/_signed-out/setup'
     | '/_signed-out/sign-in'
     | '/_shell/'
+    | '/_shell/_admin/admin/problem-reports'
+    | '/_shell/_admin/admin/settings'
+    | '/_shell/_admin/admin/users'
+    | '/_shell/_admin/admin/media/sources'
+    | '/_shell/_admin/admin/media/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -109,6 +235,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/_admin': {
+      id: '/_shell/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellAdminRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/browse': {
+      id: '/_shell/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof ShellBrowseRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/inbox': {
+      id: '/_shell/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof ShellInboxRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/my-requests': {
+      id: '/_shell/my-requests'
+      path: '/my-requests'
+      fullPath: '/my-requests'
+      preLoaderRoute: typeof ShellMyRequestsRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/playlists': {
+      id: '/_shell/playlists'
+      path: '/playlists'
+      fullPath: '/playlists'
+      preLoaderRoute: typeof ShellPlaylistsRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/settings': {
       id: '/_shell/settings'
       path: '/settings'
@@ -130,15 +291,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignedOutSignInRouteImport
       parentRoute: typeof SignedOutRoute
     }
+    '/_shell/_admin/admin/problem-reports': {
+      id: '/_shell/_admin/admin/problem-reports'
+      path: '/admin/problem-reports'
+      fullPath: '/admin/problem-reports'
+      preLoaderRoute: typeof ShellAdminAdminProblemReportsRouteImport
+      parentRoute: typeof ShellAdminRoute
+    }
+    '/_shell/_admin/admin/settings': {
+      id: '/_shell/_admin/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof ShellAdminAdminSettingsRouteImport
+      parentRoute: typeof ShellAdminRoute
+    }
+    '/_shell/_admin/admin/users': {
+      id: '/_shell/_admin/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof ShellAdminAdminUsersRouteImport
+      parentRoute: typeof ShellAdminRoute
+    }
+    '/_shell/_admin/admin/media/': {
+      id: '/_shell/_admin/admin/media/'
+      path: '/admin/media'
+      fullPath: '/admin/media/'
+      preLoaderRoute: typeof ShellAdminAdminMediaIndexRouteImport
+      parentRoute: typeof ShellAdminRoute
+    }
+    '/_shell/_admin/admin/media/sources': {
+      id: '/_shell/_admin/admin/media/sources'
+      path: '/admin/media/sources'
+      fullPath: '/admin/media/sources'
+      preLoaderRoute: typeof ShellAdminAdminMediaSourcesRouteImport
+      parentRoute: typeof ShellAdminRoute
+    }
   }
 }
 
+interface ShellAdminRouteChildren {
+  ShellAdminAdminProblemReportsRoute: typeof ShellAdminAdminProblemReportsRoute
+  ShellAdminAdminSettingsRoute: typeof ShellAdminAdminSettingsRoute
+  ShellAdminAdminUsersRoute: typeof ShellAdminAdminUsersRoute
+  ShellAdminAdminMediaSourcesRoute: typeof ShellAdminAdminMediaSourcesRoute
+  ShellAdminAdminMediaIndexRoute: typeof ShellAdminAdminMediaIndexRoute
+}
+
+const ShellAdminRouteChildren: ShellAdminRouteChildren = {
+  ShellAdminAdminProblemReportsRoute: ShellAdminAdminProblemReportsRoute,
+  ShellAdminAdminSettingsRoute: ShellAdminAdminSettingsRoute,
+  ShellAdminAdminUsersRoute: ShellAdminAdminUsersRoute,
+  ShellAdminAdminMediaSourcesRoute: ShellAdminAdminMediaSourcesRoute,
+  ShellAdminAdminMediaIndexRoute: ShellAdminAdminMediaIndexRoute,
+}
+
+const ShellAdminRouteWithChildren = ShellAdminRoute._addFileChildren(
+  ShellAdminRouteChildren,
+)
+
 interface ShellRouteChildren {
+  ShellAdminRoute: typeof ShellAdminRouteWithChildren
+  ShellBrowseRoute: typeof ShellBrowseRoute
+  ShellInboxRoute: typeof ShellInboxRoute
+  ShellMyRequestsRoute: typeof ShellMyRequestsRoute
+  ShellPlaylistsRoute: typeof ShellPlaylistsRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
 }
 
 const ShellRouteChildren: ShellRouteChildren = {
+  ShellAdminRoute: ShellAdminRouteWithChildren,
+  ShellBrowseRoute: ShellBrowseRoute,
+  ShellInboxRoute: ShellInboxRoute,
+  ShellMyRequestsRoute: ShellMyRequestsRoute,
+  ShellPlaylistsRoute: ShellPlaylistsRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
 }

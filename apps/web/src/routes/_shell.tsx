@@ -2,14 +2,30 @@ import {useMutation, useQueryClient, useSuspenseQuery} from '@tanstack/react-que
 import {
   createFileRoute,
   Link,
+  type LinkProps,
   Outlet,
   redirect,
-  useLocation,
+  useMatchRoute,
   useRouter,
 } from '@tanstack/react-router';
 import {logoutMutation, type User} from '@watchclub/api';
 import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
-import {ChevronsUpDownIcon, HouseIcon, LogOutIcon, SettingsIcon} from 'lucide-react';
+import {
+  ChevronsUpDownIcon,
+  ClapperboardIcon,
+  DownloadIcon,
+  FilmIcon,
+  FlagIcon,
+  FolderInputIcon,
+  HouseIcon,
+  InboxIcon,
+  ListIcon,
+  LogOutIcon,
+  type LucideIcon,
+  Settings2Icon,
+  SettingsIcon,
+  UsersIcon,
+} from 'lucide-react';
 import {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -17,7 +33,9 @@ import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -33,13 +51,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 
 /**
  * The layout of the pages for signed-in Users, beside a sidebar with the navigation and their menu.
- * On phones, the sidebar slides in from a bar above the page.
+ * On phones, the sidebar slides in from each page's bar.
  */
 export const Route = createFileRoute('/_shell')({
   beforeLoad: async ({context, location}) => {
@@ -48,6 +65,8 @@ export const Route = createFileRoute('/_shell')({
       // biome-ignore lint/style/useNamingConvention: URL parameters are snake_case
       throw redirect({to: '/sign-in', search: {return_to: location.href}});
     }
+    // For the pages below that only some Users may open
+    return {user};
   },
   component: Shell,
 });
@@ -72,10 +91,7 @@ function Shell() {
     <SidebarProvider open>
       <AppSidebar user={user} />
       <SidebarInset>
-        <PhoneBar />
-        <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-6">
-          <Outlet />
-        </div>
+        <Outlet />
       </SidebarInset>
     </SidebarProvider>
   );
@@ -87,7 +103,6 @@ function Shell() {
  */
 function AppSidebar({user}: {user: User}) {
   const {t} = useTranslation(['web', 'core']);
-  const location = useLocation();
   const router = useRouter();
   const {setOpenMobile} = useSidebar();
   useEffect(
@@ -115,12 +130,23 @@ function AppSidebar({user}: {user: User}) {
           <SidebarGroupContent>
             <nav aria-label={t($ => $.web.shell.navigation)}>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton isActive={location.pathname === '/'} render={<Link to="/" />}>
-                    <HouseIcon />
-                    <span>{t($ => $.core.home.title)}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <SectionLink to="/" icon={HouseIcon} label={t($ => $.core.home.title)} />
+                <SectionLink
+                  to="/browse"
+                  icon={ClapperboardIcon}
+                  label={t($ => $.core.browse.title)}
+                />
+                <SectionLink
+                  to="/playlists"
+                  icon={ListIcon}
+                  label={t($ => $.core.playlists.title)}
+                />
+                <SectionLink to="/inbox" icon={InboxIcon} label={t($ => $.core.inbox.title)} />
+                <SectionLink
+                  to="/my-requests"
+                  icon={DownloadIcon}
+                  label={t($ => $.core.myRequests.navigationLabel)}
+                />
               </SidebarMenu>
             </nav>
           </SidebarGroupContent>
@@ -137,18 +163,33 @@ function AppSidebar({user}: {user: User}) {
   );
 }
 
-/** The bar above the page on phones, whose button slides the sidebar in. */
-function PhoneBar() {
+/** The link to one of the app's sections, highlighted on its page and the pages under it. */
+function SectionLink({
+  to,
+  icon: Icon,
+  label,
+}: {
+  to: LinkProps['to'];
+  icon: LucideIcon;
+  label: string;
+}) {
+  const matchRoute = useMatchRoute();
+  // Every path starts with Home's, though no page is under Home
+  const isActive = Boolean(matchRoute({to, fuzzy: to !== '/'}));
   return (
-    <header className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background px-3 md:hidden">
-      <SidebarTrigger />
-      {/* i18next-instrument-ignore: the name stays the same in every language */}
-      <span className="font-heading text-base font-semibold">WatchClub</span>
-    </header>
+    <SidebarMenuItem>
+      <SidebarMenuButton isActive={isActive} render={<Link to={to} />}>
+        <Icon />
+        <span>{label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
-/** The button that opens the User's menu, with their settings and signing out. */
+/**
+ * The button that opens the User's menu, with their settings, the administration pages for the
+ * Instance Administrator, and signing out.
+ */
 function UserMenu({user}: {user: User}) {
   const {t} = useTranslation(['web', 'core']);
   const queryClient = useQueryClient();
@@ -189,6 +230,34 @@ function UserMenu({user}: {user: User}) {
           <SettingsIcon />
           {t($ => $.core.settings.title)}
         </DropdownMenuItem>
+        {user.is_instance_administrator && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{t($ => $.web.shell.administration)}</DropdownMenuLabel>
+              <DropdownMenuItem render={<Link to="/admin/settings" />}>
+                <Settings2Icon />
+                {t($ => $.web.instanceSettings.title)}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/admin/users" />}>
+                <UsersIcon />
+                {t($ => $.web.users.title)}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/admin/media" />}>
+                <FilmIcon />
+                {t($ => $.web.mediaBrowser.title)}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/admin/media/sources" />}>
+                <FolderInputIcon />
+                {t($ => $.web.mediaSources.title)}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/admin/problem-reports" />}>
+                <FlagIcon />
+                {t($ => $.web.problemReports.title)}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={signOut.isPending}

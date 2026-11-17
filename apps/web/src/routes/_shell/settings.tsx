@@ -5,6 +5,7 @@ import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useId} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/form';
+import {Page} from '@/components/page';
 import {Field, FieldLabel} from '@/components/ui/field';
 import {
   Select,
@@ -38,11 +39,8 @@ function Settings() {
   const locales = LOCALES.map(value => ({value, label: localeNames[value]}));
 
   return (
-    <>
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold">{t($ => $.core.settings.title)}</h1>
-        <p className="text-muted-foreground">{t($ => $.core.settings.description)}</p>
-      </div>
+    <Page title={t($ => $.core.settings.title)}>
+      <p className="text-muted-foreground">{t($ => $.core.settings.description)}</p>
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="font-heading text-lg font-semibold">
@@ -86,6 +84,6 @@ function Settings() {
           </form.Form>
         </form.AppForm>
       </section>
-    </>
+    </Page>
   );
 }

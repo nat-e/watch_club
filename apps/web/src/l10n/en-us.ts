@@ -1,4 +1,16 @@
 export default {
+  instanceSettings: {
+    title: 'Instance settings',
+  },
+  mediaBrowser: {
+    title: 'Media browser',
+  },
+  mediaSources: {
+    title: 'Media sources',
+  },
+  problemReports: {
+    title: 'Problem reports',
+  },
   setup: {
     administratorAccount:
       "Create the administrator account. You'll use it to manage WatchClub and invite your friends.",
@@ -19,6 +31,7 @@ export default {
     close: 'Close',
   },
   shell: {
+    administration: 'Administration',
     navigation: 'Main navigation',
     signOutFailed: "We couldn't sign you out. Try again in a moment.",
   },
@@ -29,5 +42,8 @@ export default {
   },
   toaster: {
     notifications: 'Notifications',
+  },
+  users: {
+    title: 'Users',
   },
 } as const;
