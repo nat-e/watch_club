@@ -295,3 +295,27 @@ mod sign_out {
         );
     }
 }
+
+mod delete_expired_sessions {
+    use super::*;
+
+    #[sqlx::test]
+    async fn deletes_only_the_expired_sessions(db: PgPool) {
+        let ada = support::create_user(&db, "ada").await;
+        let bob = support::create_user(&db, "bob").await;
+        new_session(&db, &ada).await;
+        new_session(&db, &ada).await;
+        let bobs = new_session(&db, &bob).await;
+        support::expire_sessions(&db, ada.id).await;
+
+        let deleted = accounts::delete_expired_sessions(&db).await.unwrap();
+
+        assert_eq!(deleted, 2);
+        let left = sqlx::query_scalar!(r#"SELECT count(*) AS "count!" FROM sessions"#)
+            .fetch_one(&db)
+            .await
+            .unwrap();
+        assert_eq!(left, 1);
+        assert_eq!(accounts::session_user(&db, &bobs).await.unwrap(), Some(bob));
+    }
+}
