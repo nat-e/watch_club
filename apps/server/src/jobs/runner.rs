@@ -38,8 +38,8 @@ const SHUTDOWN_WAIT: Duration = Duration::from_secs(8);
 /// Runs the queued jobs until `shutdown` is cancelled, then waits up to 8 s for the running ones.
 /// Those still running then stay `executing` until they're rescued.
 pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), InternalError> {
-    let work = async {
-        schedules::sync(&db).await?;
+    let jobs = async {
+        schedules::sync_schedules(&db).await?;
         let queues = future::join_all(Queue::ALL.map(|queue| run_queue(&db, queue, &shutdown)));
         tokio::join!(queues, maintain(&db, &shutdown));
         Ok(())
@@ -49,8 +49,8 @@ pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), Internal
         time::sleep(SHUTDOWN_WAIT).await;
     };
     tokio::select! {
-        ran = work => ran,
-        // Drops the work, which stops the jobs still running
+        run_result = jobs => run_result,
+        // Drops the jobs future, which stops the jobs still running
         () = deadline => {
             tracing::warn!(
                 name: "jobs.shutdown.timed_out",
@@ -66,11 +66,11 @@ pub async fn run(db: PgPool, shutdown: CancellationToken) -> Result<(), Internal
 /// none is left.
 #[cfg(feature = "test-util")]
 pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
-    schedules::sync(db).await?;
+    schedules::sync_schedules(db).await?;
     run_maintenance(db).await?;
     for queue in Queue::ALL {
-        while let Some(job) = claim(db, queue, 1).await?.pop() {
-            run_claimed(db, job).await;
+        while let Some(job) = claim_jobs(db, queue, 1).await?.pop() {
+            run_job(db, job).await;
         }
     }
     Ok(())
@@ -79,46 +79,48 @@ pub async fn run_available(db: &PgPool) -> Result<(), InternalError> {
 /// Claims the queue's due jobs whenever it has room, and runs each in its own task, until
 /// `shutdown` is cancelled. Then waits for the running jobs.
 async fn run_queue(db: &PgPool, queue: Queue, shutdown: &CancellationToken) {
-    let mut running = JoinSet::new();
+    let mut running_jobs = JoinSet::new();
     loop {
-        while let Some(ended) = running.try_join_next() {
-            log_panic(ended);
+        while let Some(task_result) = running_jobs.try_join_next() {
+            log_panic(task_result);
         }
-        let room = queue.limit() - running.len();
-        let claimed = if room == 0 {
+        let free_slots = queue.limit() - running_jobs.len();
+        let claimed = if free_slots == 0 {
             Vec::new()
         } else {
-            claim(db, queue, room).await.unwrap_or_else(|error| {
-                tracing::error!(
-                    name: "jobs.claim.failed",
-                    ?queue,
-                    error = %format_args!("{error:#}"),
-                    "failed to claim jobs",
-                );
-                Vec::new()
-            })
+            claim_jobs(db, queue, free_slots)
+                .await
+                .unwrap_or_else(|error| {
+                    tracing::error!(
+                        name: "jobs.claim.failed",
+                        ?queue,
+                        error = %format_args!("{error:#}"),
+                        "failed to claim jobs",
+                    );
+                    Vec::new()
+                })
         };
-        // With room to spare, the queue has no other due job for now
-        let is_drained = claimed.len() < room;
+        // Free slots left over: the queue has no other due job for now
+        let queue_empty = claimed.len() < free_slots;
         for job in claimed {
             let db = db.clone();
-            running.spawn(async move { run_claimed(&db, job).await });
+            running_jobs.spawn(async move { run_job(&db, job).await });
         }
         tokio::select! {
             () = shutdown.cancelled() => break,
-            () = time::sleep(POLL_INTERVAL), if is_drained => {}
-            Some(ended) = running.join_next(), if !is_drained => log_panic(ended),
+            () = time::sleep(POLL_INTERVAL), if queue_empty => {}
+            Some(task_result) = running_jobs.join_next(), if !queue_empty => log_panic(task_result),
         }
     }
-    while let Some(ended) = running.join_next().await {
-        log_panic(ended);
+    while let Some(task_result) = running_jobs.join_next().await {
+        log_panic(task_result);
     }
 }
 
-/// Logs the panic of a job's task. `supervise` catches the job's own panics, so this one comes from
+/// Logs the panic of a job's task. `run_attempt` catches the job's own panics, so this one comes from
 /// the runner's code around the job, which then stays `executing` until it's rescued.
-fn log_panic(ended: Result<(), JoinError>) {
-    if let Err(error) = ended {
+fn log_panic(task_result: Result<(), JoinError>) {
+    if let Err(error) = task_result {
         tracing::error!(
             name: "jobs.task.panicked",
             %error,
@@ -138,7 +140,11 @@ struct ClaimedJob {
 
 /// Claims up to `limit` of the queue's due jobs, by priority and then by time. No other claim gets
 /// them, even from another server.
-async fn claim(db: &PgPool, queue: Queue, limit: usize) -> Result<Vec<ClaimedJob>, InternalError> {
+async fn claim_jobs(
+    db: &PgPool,
+    queue: Queue,
+    limit: usize,
+) -> Result<Vec<ClaimedJob>, InternalError> {
     let limit = i64::try_from(limit).expect("a queue's limit is small");
     let jobs = sqlx::query_as!(
         ClaimedJob,
@@ -164,22 +170,22 @@ async fn claim(db: &PgPool, queue: Queue, limit: usize) -> Result<Vec<ClaimedJob
     Ok(jobs)
 }
 
-/// Runs a claimed job, and records how its attempt ended. Arguments that don't read count as a
+/// Runs a claimed job, and saves how its attempt ended. Arguments that don't read count as a
 /// failed attempt.
-async fn run_claimed(db: &PgPool, mut job: ClaimedJob) {
+async fn run_job(db: &PgPool, mut job: ClaimedJob) {
     let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
     async {
-        let ended = match AnyJob::load(&job.kind, job.args.take()) {
+        let outcome = match AnyJob::from_row(&job.kind, job.args.take()) {
             Ok(any_job) => {
                 let timeout = any_job.settings().timeout;
-                supervise(timeout, any_job.run(db)).await
+                run_attempt(timeout, any_job.run(db)).await
             }
             Err(error) => {
                 let error = anyhow::Error::new(error).context("failed to read the job's arguments");
                 Err(error.into())
             }
         };
-        record(db, &job, ended).await;
+        save_outcome(db, &job, outcome).await;
     }
     .instrument(span)
     .await;
@@ -187,12 +193,12 @@ async fn run_claimed(db: &PgPool, mut job: ClaimedJob) {
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
 /// failed attempt.
-async fn supervise(
+async fn run_attempt(
     timeout: Duration,
     work: impl Future<Output = Result<(), JobError>>,
 ) -> Result<(), JobError> {
     match time::timeout(timeout, AssertUnwindSafe(work).catch_unwind()).await {
-        Ok(Ok(ended)) => ended,
+        Ok(Ok(outcome)) => outcome,
         Ok(Err(panic)) => Err(anyhow!("panicked: {}", panic_message(&*panic)).into()),
         Err(_) => Err(anyhow!("timed out after {timeout:?}").into()),
     }
@@ -207,11 +213,11 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
         .unwrap_or("no message")
 }
 
-/// Records how a job's attempt ended: completed, cancelled, failed, or back in its queue to try
+/// Saves how a job's attempt ended: completed, cancelled, failed, or back in its queue to try
 /// again after a backoff.
-async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
+async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
-    let state = match ended {
+    let state = match outcome {
         Ok(()) => JobState::Completed,
         Err(JobError::Cancel(reason)) => {
             tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
@@ -268,9 +274,9 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     .await;
     if let Err(error) = recorded {
         tracing::error!(
-            name: "jobs.record.failed",
+            name: "jobs.save_outcome.failed",
             %error,
-            "failed to record how the job ended",
+            "failed to save how the job ended",
         );
     }
 }
@@ -296,14 +302,14 @@ async fn maintain(db: &PgPool, shutdown: &CancellationToken) {
 
 /// Queues the due scheduled jobs, rescues the jobs left running and deletes the old ones.
 async fn run_maintenance(db: &PgPool) -> Result<(), InternalError> {
-    schedules::queue_due(db).await?;
-    rescue(db).await?;
-    prune(db).await
+    schedules::enqueue_due(db).await?;
+    rescue_jobs(db).await?;
+    delete_old_jobs(db).await
 }
 
 /// Puts the jobs `executing` for longer than `RESCUE_AFTER` back in their queue, or fails those
 /// with no attempts left.
-async fn rescue(db: &PgPool) -> Result<(), InternalError> {
+async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
     let rescued = sqlx::query!(
         r#"
         UPDATE jobs
@@ -341,7 +347,7 @@ async fn rescue(db: &PgPool) -> Result<(), InternalError> {
 }
 
 /// Deletes the jobs that finished more than `KEEP_FINISHED` ago.
-async fn prune(db: &PgPool) -> Result<(), InternalError> {
+async fn delete_old_jobs(db: &PgPool) -> Result<(), InternalError> {
     sqlx::query!(
         r#"
         DELETE FROM jobs
@@ -364,38 +370,38 @@ mod tests {
 
     const TIMEOUT: Duration = Duration::from_mins(1);
 
-    mod supervise {
+    mod run_attempt {
         use super::*;
 
         #[tokio::test]
         async fn returns_how_the_work_ended() {
-            let ended = supervise(TIMEOUT, async { Err(JobError::Cancel("done".to_owned())) });
+            let outcome = run_attempt(TIMEOUT, async { Err(JobError::Cancel("done".to_owned())) });
 
-            assert!(matches!(ended.await, Err(JobError::Cancel(reason)) if reason == "done"));
+            assert!(matches!(outcome.await, Err(JobError::Cancel(reason)) if reason == "done"));
         }
 
         #[tokio::test]
         async fn turns_a_panic_into_a_failed_attempt() {
-            let ended = supervise(TIMEOUT, async { panic!("the job broke") }).await;
+            let outcome = run_attempt(TIMEOUT, async { panic!("the job broke") }).await;
 
-            let Err(JobError::Internal(error)) = ended else {
-                panic!("expected a failed attempt, got {ended:?}");
+            let Err(JobError::Internal(error)) = outcome else {
+                panic!("expected a failed attempt, got {outcome:?}");
             };
             assert_eq!(error.to_string(), "panicked: the job broke");
         }
 
         #[tokio::test]
         async fn turns_a_timeout_into_a_failed_attempt() {
-            let ended = supervise(Duration::from_millis(10), future::pending()).await;
+            let outcome = run_attempt(Duration::from_millis(10), future::pending()).await;
 
-            let Err(JobError::Internal(error)) = ended else {
-                panic!("expected a failed attempt, got {ended:?}");
+            let Err(JobError::Internal(error)) = outcome else {
+                panic!("expected a failed attempt, got {outcome:?}");
             };
             assert_eq!(error.to_string(), "timed out after 10ms");
         }
     }
 
-    mod record {
+    mod save_outcome {
         use super::*;
 
         /// Inserts a job the runner claimed for its `attempt`th attempt out of `max_attempts`.
@@ -439,7 +445,7 @@ mod tests {
         async fn completes_a_job_that_succeeded(db: PgPool) {
             let job = claimed_job(&db, 1, 3).await;
 
-            record(&db, &job, Ok(())).await;
+            save_outcome(&db, &job, Ok(())).await;
 
             assert_eq!(job_state(&db, job.id).await, (JobState::Completed, None));
         }
@@ -448,7 +454,7 @@ mod tests {
         async fn retries_a_failed_attempt_after_a_backoff(db: PgPool) {
             let job = claimed_job(&db, 2, 3).await;
 
-            record(&db, &job, Err(anyhow!("down").into())).await;
+            save_outcome(&db, &job, Err(anyhow!("down").into())).await;
 
             let (state, wait) = job_state(&db, job.id).await;
             assert_eq!(state, JobState::Available);
@@ -461,7 +467,7 @@ mod tests {
         async fn fails_the_job_after_its_last_attempt(db: PgPool) {
             let job = claimed_job(&db, 3, 3).await;
 
-            record(&db, &job, Err(anyhow!("down").into())).await;
+            save_outcome(&db, &job, Err(anyhow!("down").into())).await;
 
             assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
@@ -470,7 +476,7 @@ mod tests {
         async fn fails_the_job_at_once_on_a_permanent_failure(db: PgPool) {
             let job = claimed_job(&db, 1, 3).await;
 
-            record(&db, &job, Err(JobError::Fail(anyhow!("never works")))).await;
+            save_outcome(&db, &job, Err(JobError::Fail(anyhow!("never works")))).await;
 
             assert_eq!(job_state(&db, job.id).await, (JobState::Failed, None));
         }
@@ -479,7 +485,7 @@ mod tests {
         async fn cancels_a_job_that_cancelled_itself(db: PgPool) {
             let job = claimed_job(&db, 1, 3).await;
 
-            record(&db, &job, Err(JobError::Cancel("nothing to do".to_owned()))).await;
+            save_outcome(&db, &job, Err(JobError::Cancel("nothing to do".to_owned()))).await;
 
             assert_eq!(job_state(&db, job.id).await, (JobState::Cancelled, None));
         }
@@ -495,7 +501,7 @@ mod tests {
             .await
             .unwrap();
 
-            record(&db, &job, Ok(())).await;
+            save_outcome(&db, &job, Ok(())).await;
 
             assert_eq!(job_state(&db, job.id).await.0, JobState::Executing);
         }

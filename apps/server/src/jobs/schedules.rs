@@ -32,7 +32,7 @@ fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
 
 /// Makes the database's schedules match `SCHEDULES`: adds the new ones, moves the next run of
 /// those whose cron expression changed, and deletes those that are gone.
-pub(super) async fn sync(db: &PgPool) -> Result<(), InternalError> {
+pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
     let now = sqlx::query_scalar!(r#"SELECT now() AS "now!""#)
         .fetch_one(db)
         .await
@@ -72,7 +72,7 @@ pub(super) async fn sync(db: &PgPool) -> Result<(), InternalError> {
 /// Queues the job of each schedule whose next run has come, and moves the schedule to its next
 /// run after now. The next run comes from the stored cron expression, which a server with newer
 /// code may have changed.
-pub(super) async fn queue_due(db: &PgPool) -> Result<(), InternalError> {
+pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     // Skips the schedules another server is queuing
     let due = sqlx::query!(

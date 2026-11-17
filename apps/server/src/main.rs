@@ -35,23 +35,24 @@ async fn main() -> anyhow::Result<()> {
 
     let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
     tracing::info!("listening on port {}", config.port);
-    let app = axum::serve(listener, watch_club::router(db.clone()))
+    let server = axum::serve(listener, watch_club::router(db.clone()))
         .with_graceful_shutdown(shutdown.clone().cancelled_owned());
     // Whichever stops first stops the other, so the server exits when the runner fails
-    let (served, ran) = tokio::join!(
+    let (serve_result, run_result) = tokio::join!(
         async {
-            let served = app.await;
+            let serve_result = server.await;
             shutdown.cancel();
-            served
+            serve_result
         },
         async {
-            let ran = runner.await;
+            let run_result = runner.await;
             shutdown.cancel();
-            ran
+            run_result
         },
     );
-    served.context("failed to serve")?;
-    ran.context("the job runner panicked")?
+    serve_result.context("failed to serve")?;
+    run_result
+        .context("the job runner panicked")?
         .context("the job runner failed")?;
     // Gives up on the connections that a stopped job's query still holds, to exit within the 10 s
     // `docker stop` waits

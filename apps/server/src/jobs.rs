@@ -135,7 +135,7 @@ impl AnyJob {
     }
 
     /// Reads a job from its stored kind and arguments.
-    fn load(kind: &str, args: Value) -> serde_json::Result<Self> {
+    fn from_row(kind: &str, args: Value) -> serde_json::Result<Self> {
         serde_json::from_value(Value::from_iter([
             ("kind", Value::from(kind)),
             ("args", args),
@@ -143,7 +143,7 @@ impl AnyJob {
     }
 
     /// Returns the job's kind and arguments, as the database stores them.
-    fn store(&self) -> anyhow::Result<(String, Value)> {
+    fn to_row(&self) -> anyhow::Result<(String, Value)> {
         let mut stored = serde_json::to_value(self).context("failed to serialize a job")?;
         let kind = stored["kind"].take();
         let kind = kind.as_str().expect("serde tags every job with its kind");
@@ -195,7 +195,7 @@ pub async fn enqueue(
 ) -> Result<JobId, InternalError> {
     let job = job.into();
     let settings = job.settings();
-    let (kind, args) = job.store()?;
+    let (kind, args) = job.to_row()?;
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO jobs (queue, kind, args, priority, max_attempts)
