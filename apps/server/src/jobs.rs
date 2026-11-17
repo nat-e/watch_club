@@ -27,14 +27,12 @@ use uuid::Uuid;
 use self::runner::RESCUE_AFTER;
 #[cfg(feature = "test-util")]
 pub use self::runner::run_available;
-pub use self::{
-    kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run, schedules::Schedule,
-};
+pub use self::{kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run};
 use crate::domain::InternalError;
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
-pub trait Job: Sized {
+pub trait Job {
     /// The queue the job runs in.
     const QUEUE: Queue = Queue::Default;
     /// The job's place in its queue, from 0, which runs first, to 9.
@@ -49,11 +47,9 @@ pub trait Job: Sized {
     /// own limit.
     const TIMEOUT: Duration = Duration::from_mins(10);
 
-    /// Returns the schedule on which the server queues this job by itself, or None for a job that
-    /// only runs when something queues it.
-    fn schedule() -> Option<Schedule<Self>> {
-        None
-    }
+    /// The cron expression, in UTC, on which the server queues this job by itself with its default
+    /// arguments, such as `0 3 * * SUN`. None for a job that only runs when something queues it.
+    const SCHEDULE: Option<&'static str> = None;
 
     /// Does the job's work.
     fn run(self, db: &PgPool) -> impl Future<Output = Result<(), JobError>> + Send;
@@ -146,11 +142,10 @@ impl AnyJob {
         }
     }
 
-    /// Returns the schedule of each kind of job that has one. List every kind here.
-    fn schedules() -> impl Iterator<Item = Schedule<Self>> {
-        [DeleteExpiredSessions::schedule().map(Schedule::into_any)]
-            .into_iter()
-            .flatten()
+    /// Returns the cron expression and job of each kind with a `SCHEDULE`. List each such kind
+    /// here.
+    fn schedules() -> impl Iterator<Item = (&'static str, Self)> {
+        [scheduled::<DeleteExpiredSessions>()].into_iter().flatten()
     }
 
     /// Reads a job from its stored kind and arguments.
@@ -168,6 +163,11 @@ impl AnyJob {
         let kind = kind.as_str().expect("serde tags every job with its kind");
         Ok((kind.to_owned(), stored["args"].take()))
     }
+}
+
+/// Returns the cron expression of the kind's `SCHEDULE`, with a job of that kind to queue on it.
+fn scheduled<J: Job + Default + Into<AnyJob>>() -> Option<(&'static str, AnyJob)> {
+    J::SCHEDULE.map(|cron| (cron, J::default().into()))
 }
 
 /// The settings of a job, from its `Job` implementation.

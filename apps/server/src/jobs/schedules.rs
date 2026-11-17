@@ -12,28 +12,11 @@ use sqlx::PgPool;
 use super::AnyJob;
 use crate::domain::InternalError;
 
-/// The runs on which the server queues a job by itself.
-#[derive(Debug)]
-pub struct Schedule<J> {
-    /// The cron expression of the runs, in UTC, such as `0 3 * * SUN`
-    pub cron: &'static str,
-    /// The job the server queues on each run
-    pub job: J,
-}
-
-impl<J: Into<AnyJob>> Schedule<J> {
-    pub(super) fn into_any(self) -> Schedule<AnyJob> {
-        Schedule {
-            cron: self.cron,
-            job: self.job.into(),
-        }
-    }
-}
-
-/// Returns each schedule by the name the database keeps its next run under: its job's kind.
-fn schedules_by_name() -> anyhow::Result<BTreeMap<String, Schedule<AnyJob>>> {
+/// Returns the cron expression and job of each schedule, by the name the database keeps its next
+/// run under: its job's kind.
+fn schedules_by_name() -> anyhow::Result<BTreeMap<String, (&'static str, AnyJob)>> {
     AnyJob::schedules()
-        .map(|schedule| Ok((schedule.job.to_row()?.0, schedule)))
+        .map(|(cron, job)| Ok((job.to_row()?.0, (cron, job))))
         .collect()
 }
 
@@ -60,11 +43,11 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
     let mut names = Vec::with_capacity(schedules.len());
     let mut crons = Vec::with_capacity(schedules.len());
     let mut next_runs = Vec::with_capacity(schedules.len());
-    for (name, schedule) in schedules {
-        let next_run = next_run_after(schedule.cron, now)
-            .with_context(|| format!("failed to schedule {name}"))?;
+    for (name, (cron, _)) in schedules {
+        let next_run =
+            next_run_after(cron, now).with_context(|| format!("failed to schedule {name}"))?;
         names.push(name);
-        crons.push(schedule.cron);
+        crons.push(cron);
         next_runs.push(jiff_sqlx::Timestamp::from(next_run));
     }
     sqlx::query!(
@@ -108,10 +91,10 @@ pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
     .context("failed to find the due job schedules")?;
     for row in due {
         // A server with newer code may have added it
-        let Some(schedule) = schedules.remove(&row.name) else {
+        let Some((_, job)) = schedules.remove(&row.name) else {
             continue;
         };
-        super::enqueue(&mut *transaction, schedule.job).await?;
+        super::enqueue(&mut *transaction, job).await?;
         let next_run = next_run_after(&row.cron, row.now.to_jiff())?;
         sqlx::query!(
             "UPDATE job_schedules SET next_run_at = $2 WHERE name = $1",
@@ -135,8 +118,8 @@ mod tests {
 
     #[test]
     fn every_schedule_has_a_valid_cron_expression() {
-        for (name, schedule) in schedules_by_name().unwrap() {
-            let next_run = next_run_after(schedule.cron, Timestamp::now());
+        for (name, (cron, _)) in schedules_by_name().unwrap() {
+            let next_run = next_run_after(cron, Timestamp::now());
 
             assert!(next_run.is_ok(), "{name}: {next_run:?}");
         }
