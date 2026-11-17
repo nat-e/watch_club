@@ -107,8 +107,8 @@ pub(crate) fn response(status: StatusCode, error: &(impl Serialize + Display)) -
     (status, Json(ErrorBody { error, message })).into_response()
 }
 
-/// Logs the cause of each 500 that `ApiError` sends. Inside `TraceLayer`, the log shows the
-/// request's method and path.
+/// Logs the cause of each 500 that `ApiError` sends. Inside `observability::instrument`, the log
+/// shows the request's method and path.
 pub(crate) async fn log_internal_errors(request: Request, next: Next) -> Response {
     let response = next.run(request).await;
     if let Some(error) = response.extensions().get::<Arc<InternalError>>() {

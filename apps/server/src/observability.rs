@@ -1,12 +1,12 @@
 //! The server's logs on the console, and, when its host turns them on, its traces, metrics and logs
 //! sent to an OTLP endpoint, and its errors sent to Sentry.
 
-use std::fmt;
+use std::fmt::{self, Display};
 
 use anyhow::Context;
-use axum::{extract::Request, middleware};
+use axum::extract::Request;
 use opentelemetry::{
-    InstrumentationScope, KeyValue, global,
+    KeyValue, global,
     trace::{TraceContextExt, TracerProvider},
 };
 use opentelemetry_appender_tracing::layer::{OpenTelemetryTracingBridge, TracingSpanAttributes};
@@ -17,10 +17,7 @@ use opentelemetry_sdk::{
     propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
 use opentelemetry_semantic_conventions::{
-    attribute::{
-        DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE, HTTP_REQUEST_METHOD, URL_PATH,
-    },
-    metric::{DB_CLIENT_CONNECTION_COUNT, DB_CLIENT_CONNECTION_MAX},
+    attribute::{HTTP_REQUEST_METHOD, URL_PATH},
     resource::SERVICE_VERSION,
 };
 use sentry::{
@@ -31,9 +28,8 @@ use sentry::{
     },
     protocol::{Event, TraceContext},
 };
-use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
-use tracing::{Instrument, Metadata};
+use tracing::Metadata;
 use tracing_subscriber::{
     Layer,
     filter::{LevelFilter, filter_fn},
@@ -41,32 +37,14 @@ use tracing_subscriber::{
     util::SubscriberInitExt,
 };
 use utoipa_axum::router::OpenApiRouter;
-use uuid::Uuid;
 
-use crate::{config::ObservabilityConfig, error};
+use crate::config::ObservabilityConfig;
 
 /// The name of the server's own instrumentation, apart from the libraries'
 const SCOPE: &str = env!("CARGO_PKG_NAME");
 
 /// The name of the span `instrument` gives each request, for the logs
 const REQUEST_SPAN: &str = "request";
-
-/// The fields of the span `instrument_job` gives each run of a job
-const JOB_KIND: &str = "job.kind";
-const JOB_ID: &str = "job.id";
-const JOB_ATTEMPT: &str = "job.attempt";
-const JOB_MAX_ATTEMPTS: &str = "job.max_attempts";
-
-/// The fields of the request's or job's span that the exported logs copy, as the console shows them
-/// before each line
-const LOGGED_SPAN_FIELDS: [&str; 6] = [
-    HTTP_REQUEST_METHOD,
-    URL_PATH,
-    JOB_KIND,
-    JOB_ID,
-    JOB_ATTEMPT,
-    JOB_MAX_ATTEMPTS,
-];
 
 /// The crates that send what OpenTelemetry exports. Exporting their own logs and spans would make
 /// each export start another one.
@@ -185,8 +163,9 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
                 }))
         }))
         .with(logger_provider.as_ref().map(|provider| {
+            // With the fields of the spans around them, as the console shows them before each line
             OpenTelemetryTracingBridge::builder(provider)
-                .with_tracing_span_attributes(TracingSpanAttributes::allowlist(LOGGED_SPAN_FIELDS))
+                .with_tracing_span_attributes(TracingSpanAttributes::all())
                 .build()
                 .with_filter(filter_fn(|metadata| !is_from_exporter(metadata)))
         }))
@@ -206,13 +185,13 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
     })
 }
 
-/// Adds what observes each request to the routes: its span, whose method and path its logs show, the
-/// log of its internal error, its trace and metrics, and its details on the errors Sentry gets.
+/// Adds what observes each request to the routes: its span, whose method and path its logs show, its
+/// trace and metrics, and its details on the errors Sentry gets. The layers the routes already have
+/// run inside the request's span.
 pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
     routes: OpenApiRouter<S>,
 ) -> OpenApiRouter<S> {
     routes
-        .layer(middleware::from_fn(error::log_internal_errors))
         // Shows the method and path on every log line written during a request
         .layer(
             TraceLayer::new_for_http()
@@ -226,7 +205,7 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
                         version = ?request.version(),
                     )
                 })
-                // `error::log_internal_errors` logs the 500s, with their cause
+                // The routes log the 500s themselves, with their cause
                 .on_failure(()),
         )
         // Names the spans after the route, such as `GET /api/me`, once the router has matched it
@@ -236,79 +215,22 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
         .layer(NewSentryLayer::new_from_top())
 }
 
-/// Observes a run of a job, which makes its `attempt`th attempt out of `max_attempts`: gives it a
-/// span, whose kind, ID and attempt its logs show, and a Sentry scope of its own, so that its errors
-/// name the job and carry only its breadcrumbs.
-pub(crate) fn instrument_job<F: Future>(
-    kind: &str,
-    id: Uuid,
-    attempt: i16,
-    max_attempts: i16,
-    run: F,
-) -> impl Future<Output = F::Output> {
-    // At error level, so that it holds every log of the attempt whatever `RUST_LOG` filters out
-    let span = tracing::error_span!(
-        "job",
-        { JOB_KIND } = %kind,
-        { JOB_ID } = %id,
-        { JOB_ATTEMPT } = attempt,
-        { JOB_MAX_ATTEMPTS } = max_attempts,
-    );
+/// Runs `task`, work apart from requests, with a Sentry scope of its own, as `instrument` gives each
+/// request: the errors it reports carry `tags` and only its own breadcrumbs, and Sentry groups them
+/// by their message and `group`.
+pub(crate) fn with_error_scope<F: Future>(
+    tags: &[(&str, &dyn Display)],
+    group: &str,
+    task: F,
+) -> impl Future<Output = F::Output> + use<F> {
     let hub = Hub::new_from_top(Hub::current());
     hub.configure_scope(|scope| {
-        scope.set_tag(JOB_KIND, kind);
-        scope.set_tag(JOB_ID, id);
-        scope.set_tag(JOB_ATTEMPT, attempt);
-        // An issue for each kind of job, rather than one for the failures of every kind
-        scope.set_fingerprint(Some(&["{{ default }}", kind]));
+        for (key, value) in tags {
+            scope.set_tag(key, value);
+        }
+        scope.set_fingerprint(Some(&["{{ default }}", group]));
     });
-    run.instrument(span).bind_hub(hub)
-}
-
-/// Reports the database's connections in metrics: how many are used and idle, and the most the
-/// pool opens.
-pub fn observe_pool(db: &PgPool) {
-    let options = db.connect_options();
-    // The name the conventions give a pool that has none
-    let pool_name = KeyValue::new(
-        DB_CLIENT_CONNECTION_POOL_NAME,
-        format!(
-            "{}:{}/{}",
-            options.get_host(),
-            options.get_port(),
-            options.get_database().unwrap_or_default(),
-        ),
-    );
-    let meter = global::meter_with_scope(InstrumentationScope::builder(SCOPE).build());
-
-    let pool = db.clone();
-    let name = pool_name.clone();
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_COUNT)
-        .with_unit("{connection}")
-        .with_description("The connections to the database, by state.")
-        .with_callback(move |observer| {
-            let size = i64::from(pool.size());
-            let idle = i64::try_from(pool.num_idle()).unwrap_or(i64::MAX).min(size);
-            for (state, count) in [("idle", idle), ("used", size - idle)] {
-                observer.observe(
-                    count,
-                    &[
-                        name.clone(),
-                        KeyValue::new(DB_CLIENT_CONNECTION_STATE, state),
-                    ],
-                );
-            }
-        })
-        .build();
-
-    let max = i64::from(db.options().get_max_connections());
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_MAX)
-        .with_unit("{connection}")
-        .with_description("The most connections the pool opens to the database.")
-        .with_callback(move |observer| observer.observe(max, std::slice::from_ref(&pool_name)))
-        .build();
+    task.bind_hub(hub)
 }
 
 /// Returns whether the span or event comes from the crates that export, which mustn't be exported.

@@ -13,6 +13,7 @@
 mod kinds {
     pub(super) mod delete_expired_sessions;
 }
+mod observability;
 mod runner;
 mod schedules;
 
@@ -197,6 +198,15 @@ impl NewJob {
         .with_context(|| format!("failed to queue a {} job", self.kind))?;
         Ok(id)
     }
+}
+
+/// A job the runner claimed, which is `executing` from then on.
+struct ClaimedJob {
+    id: JobId,
+    kind: String,
+    args: Value,
+    attempt: i16,
+    max_attempts: i16,
 }
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued

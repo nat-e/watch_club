@@ -12,7 +12,7 @@ use tokio::{
     time,
 };
 use tokio_util::sync::CancellationToken;
-use watch_club::{AppState, config::Config, jobs, observability};
+use watch_club::{AppState, config::Config, db, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
@@ -25,10 +25,9 @@ fn main() -> anyhow::Result<()> {
 
 /// Serves the app and runs its jobs until Ctrl-C or `docker stop`.
 async fn serve(config: Config) -> anyhow::Result<()> {
-    let db = watch_club::connect_database(config.database_url.expose_secret())
+    let db = db::connect(config.database_url.expose_secret())
         .await
         .context("failed to connect to the database")?;
-    observability::observe_pool(&db);
     // On every address, as containers need
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await

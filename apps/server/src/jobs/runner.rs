@@ -6,7 +6,6 @@ use std::{any::Any, panic::AssertUnwindSafe, time::Duration};
 
 use anyhow::{Context, anyhow};
 use futures_util::{FutureExt, future};
-use serde_json::Value;
 use sqlx::PgPool;
 use tokio::{
     task::{JoinError, JoinSet},
@@ -15,8 +14,8 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
 
-use super::{AnyJob, JobError, JobId, JobState, Queue, schedules};
-use crate::{domain::InternalError, observability};
+use super::{AnyJob, ClaimedJob, JobError, JobId, JobState, Queue, observability, schedules};
+use crate::domain::InternalError;
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
 /// that didn't wait for it, and runs again.
@@ -132,15 +131,6 @@ fn log_panic(task_result: Result<(), JoinError>) {
     }
 }
 
-/// A job the runner claimed, which is `executing` from then on.
-struct ClaimedJob {
-    id: JobId,
-    kind: String,
-    args: Value,
-    attempt: i16,
-    max_attempts: i16,
-}
-
 /// Claims up to `limit` of the queue's due jobs, by priority and then by time. No other claim gets
 /// them, even from another server.
 async fn claim_jobs(
@@ -187,7 +177,7 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
         };
         save_outcome(db, &job, outcome).await;
     };
-    observability::instrument_job(&job.kind, job.id.0, job.attempt, job.max_attempts, run).await;
+    observability::instrument(&job, run).await;
 }
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a

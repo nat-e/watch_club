@@ -46,7 +46,7 @@ The server reports as `watch_club`, with its version: `OTEL_SERVICE_NAME` change
   - `db.client.connection.count`, the database connections by state, `idle` or `used`, and `db.client.connection.max`, the most the server opens
 
   Prometheus-compatible backends replace dots with underscores and add unit suffixes, such as `http_server_request_duration_seconds`.
-- **Logs**: the lines the console shows, with the method and path of the request that wrote them, or the kind, ID and attempt of the job, as `http.request.method`, `url.path`, `job.kind`, `job.id`, `job.attempt` and `job.max_attempts`, and with its trace when traces are on.
+- **Logs**: the lines the console shows, with the fields of the request or job that wrote them, such as `http.request.method`, `url.path`, `job.kind` and `job.attempt`, and with its trace when traces are on.
 
 Traces include each request's path, query string and user agent. Query parameters that usually hold credentials, such as `sig`, show as `REDACTED`. Logs include error messages. Only send them to an endpoint you trust with this data.
 

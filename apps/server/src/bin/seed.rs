@@ -3,7 +3,7 @@
 
 use anyhow::Context;
 use secrecy::ExposeSecret;
-use watch_club::{config, domain::accounts::Locale};
+use watch_club::{config, db, domain::accounts::Locale};
 
 /// Every demo User's password
 const PASSWORD: &str = "passw0rd";
@@ -11,7 +11,7 @@ const PASSWORD: &str = "passw0rd";
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let url = config::database_url()?;
-    let db = watch_club::connect_database(url.expose_secret()).await?;
+    let db = db::connect(url.expose_secret()).await?;
 
     let has_users = sqlx::query_scalar!(r#"SELECT EXISTS (SELECT FROM users) AS "exists!""#)
         .fetch_one(&db)
