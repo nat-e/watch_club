@@ -1,27 +1,32 @@
 /**
- * The mobile app's forms, built with TanStack Form, whose fields the platform draws as the rows of a
- * `FieldGroup.Section`, with their errors under them.
+ * The mobile app's forms, built with TanStack Form, whose fields and buttons the platform draws.
  */
-import {FieldGroup, TextInput, type TextInputProps} from '@expo/ui';
+import {Button, Text} from '@expo/ui';
+import {fillMaxWidth} from '@expo/ui/jetpack-compose/modifiers';
+import {controlSize, frame} from '@expo/ui/swift-ui/modifiers';
 import {
-  type AnyFieldApi,
   createFormHook,
   type FieldWithValue,
   getFormHookHelpers,
+  useSelector,
 } from '@tanstack/react-form';
-import type {ComponentType, ReactNode} from 'react';
-import {SectionFeedback} from '@/components/forms/section-feedback';
+import {Feedback} from '@/components/forms/feedback';
+import {TextField, type TextFieldProps} from '@/components/forms/text-field';
 
 const {fieldComponent} = getFormHookHelpers();
 
-/** The props of a field's text input, besides those the field sets. */
-type FieldInputProps = Omit<TextInputProps, 'value' | 'defaultValue' | 'onChangeText' | 'onBlur'>;
-
-/** A form's field in the platform's text input, as a row of its section. */
-function FormTextInput({field, ...input}: {field: FieldWithValue<string>} & FieldInputProps) {
+/** A form's field in a text field, with the first of its errors, or else the hint. */
+function FormTextField({
+  field,
+  ...textField
+}: {field: FieldWithValue<string>} & Omit<
+  TextFieldProps,
+  'error' | 'defaultValue' | 'onChangeText' | 'onBlur'
+>) {
   return (
-    <TextInput
-      {...input}
+    <TextField
+      {...textField}
+      error={field.errors[0]?.message}
       defaultValue={field.value}
       onChangeText={text => {
         field.handleChange(text);
@@ -31,73 +36,47 @@ function FormTextInput({field, ...input}: {field: FieldWithValue<string>} & Fiel
   );
 }
 
-/** The first of a field's errors, or else the hint, under its section. */
-function FieldFeedback({field, hint}: {field: AnyFieldApi; hint?: string}) {
-  return <SectionFeedback error={field.errors[0]?.message} hint={hint} />;
-}
-
 /** The form's errors that belong to no field, such as when the server is down, or else the hint. */
 function FormFeedback({hint}: {hint?: string}) {
   const form = useFormContext();
   return (
     <form.Subscribe selector={state => state.errors}>
-      {errors => <SectionFeedback error={errors[0]?.message} hint={hint} />}
+      {errors => <Feedback error={errors[0]?.message} hint={hint} />}
     </form.Subscribe>
   );
 }
 
-// biome-ignore-start lint/style/useNamingConvention: the keys name components, as `<form.FormFeedback>`
+/** The button that submits the form, large and as wide as the form, and disabled meanwhile. */
+function SubmitButton({children}: {children: string}) {
+  const form = useFormContext();
+  const isSubmitting = useSelector(form.atom, state => state.isSubmitting);
+  return (
+    <Button
+      variant="filled"
+      disabled={isSubmitting}
+      onPress={() => {
+        void form.handleSubmit();
+      }}
+      // Each platform reads its own modifiers
+      modifiers={[fillMaxWidth(), controlSize('large')]}
+    >
+      {/* SwiftUI sizes a button to its label, so the label takes the whole width */}
+      <Text modifiers={[frame({maxWidth: Number.POSITIVE_INFINITY})]}>{children}</Text>
+    </Button>
+  );
+}
+
+// biome-ignore-start lint/style/useNamingConvention: the keys name components, as `<form.SubmitButton>`
 const formHook = createFormHook({
-  fieldComponents: {
-    TextInput: fieldComponent.strict(FormTextInput, 'field'),
-    Feedback: fieldComponent.loose(FieldFeedback, 'field'),
-  },
-  formComponents: {FormFeedback},
+  fieldComponents: {TextField: fieldComponent.strict(FormTextField, 'field')},
+  formComponents: {FormFeedback, SubmitButton},
 });
 // biome-ignore-end lint/style/useNamingConvention: the keys name components
 
 const {useFormContext} = formHook;
 
 /**
- * Returns the form for the options, which draws its fields with this app's components, such as in
- * `fieldSection` and `<form.FormFeedback>`.
+ * Returns the form for the options, which draws its fields and buttons with this app's
+ * components: `<field.TextField>`, `<form.SubmitButton>` and `<form.FormFeedback>`.
  */
 export const useAppForm = formHook.useAppForm;
-
-/** A field of one of this app's forms, with the components that draw it. */
-interface SectionField {
-  // biome-ignore-start lint/style/useNamingConvention: the keys name components
-  TextInput: ComponentType<FieldInputProps>;
-  Feedback: ComponentType<{hint?: string}>;
-  // biome-ignore-end lint/style/useNamingConvention: the keys name components
-}
-
-/**
- * Returns a `FieldGroup.Section` with the field's text input, titled with its label, and its error
- * or hint under it. `bind` renders the form's field: `render => <form.Field name="…">{render}</form.Field>`.
- * A function rather than a component, as Android only draws the sections and footers it's given
- * directly, so the field renders twice: once for the input, once for the error.
- */
-export function fieldSection({
-  label,
-  hint,
-  bind,
-  ...input
-}: {
-  label: string;
-  hint?: string;
-  bind: (render: (field: SectionField) => ReactNode) => ReactNode;
-} & FieldInputProps): ReactNode {
-  return (
-    <FieldGroup.Section title={label}>
-      {bind(field => (
-        <field.TextInput accessibilityLabel={label} {...input} />
-      ))}
-      <FieldGroup.SectionFooter>
-        {bind(field => (
-          <field.Feedback hint={hint} />
-        ))}
-      </FieldGroup.SectionFooter>
-    </FieldGroup.Section>
-  );
-}

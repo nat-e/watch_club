@@ -5,10 +5,10 @@ import {AccessibilityInfo} from 'react-native';
 import {useCSSVariable} from 'uniwind';
 
 /**
- * The text under a section's rows: the error, which screen readers announce, or else the hint, or
- * nothing.
+ * The text under a field or a section: the error, which screen readers announce, or else the hint,
+ * or nothing.
  */
-export function SectionFeedback({error, hint}: {error?: string; hint?: string}) {
+export function Feedback({error, hint}: {error?: string; hint?: string}) {
   const [mutedForeground, destructive] = useCSSVariable([
     '--color-muted-foreground',
     '--color-destructive',
@@ -26,8 +26,8 @@ export function SectionFeedback({error, hint}: {error?: string; hint?: string}) 
   }
   return (
     <Text
-      textStyle={{color: error === undefined ? mutedForeground : destructive}}
-      // iOS sizes it as its footers, with the User's text size
+      textStyle={{color: error === undefined ? mutedForeground : destructive, fontSize: 13}}
+      // iOS sizes it as its footnotes, with the User's text size
       modifiers={[font({textStyle: 'footnote'})]}
     >
       {text}

@@ -4,8 +4,8 @@ import {useSavePreferences} from '@watchclub/core/accounts/preferences';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
 import {choiceRows} from '@/components/forms/choice-rows';
-import {FormScreen} from '@/components/forms/form-screen';
-import {SectionFeedback} from '@/components/forms/section-feedback';
+import {Feedback} from '@/components/forms/feedback';
+import {ListScreen} from '@/components/list-screen';
 
 /** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
@@ -16,7 +16,7 @@ export default function Settings() {
   const language = t($ => $.core.settings.language);
 
   return (
-    <FormScreen>
+    <ListScreen>
       <FieldGroup.Section title={language}>
         {choiceRows({
           label: language,
@@ -26,12 +26,12 @@ export default function Settings() {
           onChange: locale => save.mutateAsync({locale}),
         })}
         <FieldGroup.SectionFooter>
-          <SectionFeedback
+          <Feedback
             error={save.isError ? t($ => $.core.errors.somethingWentWrong) : undefined}
             hint={t($ => $.core.settings.preferencesDescription)}
           />
         </FieldGroup.SectionFooter>
       </FieldGroup.Section>
-    </FormScreen>
+    </ListScreen>
   );
 }

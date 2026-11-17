@@ -5,7 +5,7 @@ import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
 import {Platform} from 'react-native';
 import {useCSSVariable} from 'uniwind';
-import {FormScreen} from '@/components/forms/form-screen';
+import {ListScreen} from '@/components/list-screen';
 import {useSessionStore} from '@/session';
 
 /** You: who the User is, the pages that have no tab, and signing out. */
@@ -24,7 +24,7 @@ export default function You() {
     Platform.OS === 'ios' ? <Icon name="chevron.right" size={14} color={mutedForeground} /> : null;
 
   return (
-    <FormScreen>
+    <ListScreen>
       <FieldGroup.Section>
         <ListItem
           supportingText={
@@ -65,6 +65,6 @@ export default function You() {
           <Text textStyle={{color: destructive}}>{t($ => $.core.user.signOut)}</Text>
         </ListItem>
       </FieldGroup.Section>
-    </FormScreen>
+    </ListScreen>
   );
 }
