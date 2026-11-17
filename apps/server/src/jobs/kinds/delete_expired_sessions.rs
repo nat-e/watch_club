@@ -3,8 +3,10 @@
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
-use super::{Job, JobError};
-use crate::domain::accounts;
+use crate::{
+    domain::accounts,
+    jobs::{Job, JobError},
+};
 
 /// The cleanup of the sessions whose lifetime has run out, which would otherwise pile up.
 #[derive(Debug, Serialize, Deserialize)]

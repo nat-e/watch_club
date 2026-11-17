@@ -134,8 +134,8 @@ struct ClaimedJob {
     id: JobId,
     kind: String,
     args: Value,
-    attempt: i32,
-    max_attempts: i32,
+    attempt: i16,
+    max_attempts: i16,
 }
 
 /// Claims up to `limit` of the queue's due jobs, by priority and then by time. No other claim gets
@@ -405,7 +405,7 @@ mod tests {
         use super::*;
 
         /// Inserts a job the runner claimed for its `attempt`th attempt out of `max_attempts`.
-        async fn claimed_job(db: &PgPool, attempt: i32, max_attempts: i32) -> ClaimedJob {
+        async fn claimed_job(db: &PgPool, attempt: i16, max_attempts: i16) -> ClaimedJob {
             sqlx::query_as!(
                 ClaimedJob,
                 r#"

@@ -104,7 +104,7 @@ mod run_available {
     }
 
     /// Makes the job look like an attempt that started this long ago and never ended.
-    async fn leave_running(db: &PgPool, id: JobId, attempt: i32, started_ago: &str) {
+    async fn leave_running(db: &PgPool, id: JobId, attempt: i16, started_ago: &str) {
         sqlx::query!(
             r#"
             UPDATE jobs

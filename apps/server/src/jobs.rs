@@ -1,15 +1,18 @@
 //! Background jobs: work the server runs outside requests, from a queue in the database.
 //!
-//! Each job has its file in `jobs/`: a struct with its arguments, whose `Job` implementation sets
-//! its settings and calls a function of the domain. List it in `AnyJob`, and in `SCHEDULES` when it
-//! recurs.
+//! Each kind of job has its file in `jobs/kinds/`, apart from the runner's code: a struct with its
+//! arguments, whose `Job` implementation sets its settings and calls a function of the domain. List
+//! it in `AnyJob`, and in `SCHEDULES` when it recurs.
 //!
 //! A job runs at least once: a crash can make it run again, so every job must be safe to repeat.
 //! The database stores its arguments as JSON until it runs, so change them in ways that still read
 //! the stored ones, such as adding an `Option` field, or rewrite the queued jobs in a migration.
 //! Pass IDs rather than whole records.
 
-mod delete_expired_sessions;
+// The kinds of jobs, one per file
+mod kinds {
+    pub(super) mod delete_expired_sessions;
+}
 mod runner;
 mod schedules;
 
@@ -23,7 +26,7 @@ use uuid::Uuid;
 
 #[cfg(feature = "test-util")]
 pub use self::runner::run_available;
-pub use self::{delete_expired_sessions::DeleteExpiredSessions, runner::run};
+pub use self::{kinds::delete_expired_sessions::DeleteExpiredSessions, runner::run};
 use self::{runner::RESCUE_AFTER, schedules::Schedule};
 use crate::domain::InternalError;
 

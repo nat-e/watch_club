@@ -30,7 +30,7 @@
       {
         "ordinal": 1,
         "name": "attempt",
-        "type_info": "Int4",
+        "type_info": "Int2",
         "origin": {
           "Table": {
             "table": "jobs",

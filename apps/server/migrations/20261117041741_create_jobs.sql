@@ -12,8 +12,8 @@ CREATE TABLE jobs (
     -- 0 runs first
     priority smallint NOT NULL DEFAULT 0 CHECK (priority BETWEEN 0 AND 9),
     -- The number of times the job started
-    attempt integer NOT NULL DEFAULT 0,
-    max_attempts integer NOT NULL CHECK (max_attempts > 0),
+    attempt smallint NOT NULL DEFAULT 0,
+    max_attempts smallint NOT NULL CHECK (max_attempts > 0),
     run_at timestamptz NOT NULL DEFAULT now(),
     -- The start of the latest attempt
     attempted_at timestamptz,

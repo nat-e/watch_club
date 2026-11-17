@@ -21,7 +21,7 @@
         "Text",
         "Jsonb",
         "Int2",
-        "Int4"
+        "Int2"
       ]
     },
     "nullable": [

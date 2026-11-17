@@ -12,7 +12,7 @@ use watch_club::{
 use crate::support::{self, PASSWORD};
 
 /// Returns the job's state, and the number of times it started.
-async fn job_state(db: &PgPool, id: JobId) -> (JobState, i32) {
+async fn job_state(db: &PgPool, id: JobId) -> (JobState, i16) {
     let job = sqlx::query!("SELECT state, attempt FROM jobs WHERE id = $1", id as JobId)
         .fetch_one(db)
         .await
