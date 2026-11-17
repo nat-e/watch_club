@@ -32,7 +32,7 @@ async function open(path: string, user: User | null): Promise<string> {
   const queryClient = new QueryClient();
   queryClient.setQueryData(currentUserQuery.queryKey, user);
   // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
-  const instance: Instance = {needs_setup: false, version: '0.1.0'};
+  const instance: Instance = {needs_setup: false, version: '0.1.0', web_sentry_dsn: null};
   queryClient.setQueryData(getInstanceOptions().queryKey, instance);
   const router = createRouter({
     routeTree,
