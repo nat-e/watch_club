@@ -13,6 +13,7 @@ use crate::{
 pub struct DeleteExpiredSessions {}
 
 impl Job for DeleteExpiredSessions {
+    const KIND: &'static str = "delete_expired_sessions";
     // Every Sunday at 03:00
     const SCHEDULE: Option<&'static str> = Some("0 3 * * SUN");
 

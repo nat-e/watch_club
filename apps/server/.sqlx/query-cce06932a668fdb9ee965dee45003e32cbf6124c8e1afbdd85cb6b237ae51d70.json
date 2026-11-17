@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        INSERT INTO jobs (queue, kind, args, priority, max_attempts)\n        VALUES ($1, $2, $3, $4, $5)\n        RETURNING id\n        ",
+  "query": "\n            INSERT INTO jobs (queue, kind, args, priority, max_attempts)\n            VALUES ($1, $2, $3, $4, $5)\n            RETURNING id\n            ",
   "describe": {
     "columns": [
       {
@@ -28,5 +28,5 @@
       false
     ]
   },
-  "hash": "4b2bd1d2a03e672ed8c787913e2db56b4b2174de2184804be49383d3a6a90294"
+  "hash": "cce06932a668fdb9ee965dee45003e32cbf6124c8e1afbdd85cb6b237ae51d70"
 }

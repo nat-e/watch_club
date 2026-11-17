@@ -176,14 +176,8 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
     let span = tracing::info_span!("job", kind = %job.kind, id = %job.id.0);
     async {
         let outcome = match AnyJob::from_row(&job.kind, job.args.take()) {
-            Ok(any_job) => {
-                let timeout = any_job.settings().timeout;
-                run_attempt(timeout, any_job.run(db)).await
-            }
-            Err(error) => {
-                let error = anyhow::Error::new(error).context("failed to read the job's arguments");
-                Err(error.into())
-            }
+            Ok(any_job) => run_attempt(any_job.timeout(), any_job.run(db)).await,
+            Err(error) => Err(error.context("failed to read the job").into()),
         };
         save_outcome(db, &job, outcome).await;
     }

@@ -9,15 +9,17 @@ use croner::Cron;
 use jiff::{Timestamp, tz::TimeZone};
 use sqlx::PgPool;
 
-use super::AnyJob;
+use super::NewJob;
 use crate::domain::InternalError;
 
 /// Returns the cron expression and job of each schedule, by the name the database keeps its next
 /// run under: its job's kind.
-fn schedules_by_name() -> anyhow::Result<BTreeMap<String, (&'static str, AnyJob)>> {
-    AnyJob::schedules()
-        .map(|(cron, job)| Ok((job.to_row()?.0, (cron, job))))
-        .collect()
+fn schedules_by_name() -> anyhow::Result<BTreeMap<&'static str, (&'static str, NewJob)>> {
+    let schedules = super::schedules().context("failed to serialize a scheduled job")?;
+    Ok(schedules
+        .into_iter()
+        .map(|(cron, job)| (job.kind, (cron, job)))
+        .collect())
 }
 
 /// Returns the first run of the cron expression after `time`.
@@ -52,7 +54,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
     // wrong: the next start syncs again
     sqlx::query!(
         "DELETE FROM job_schedules WHERE name <> ALL($1)",
-        &names as &[String],
+        &names as &[&str],
     )
     .execute(db)
     .await
@@ -65,7 +67,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
         SET cron = excluded.cron, next_run_at = excluded.next_run_at
         WHERE job_schedules.cron <> excluded.cron
         "#,
-        &names as &[String],
+        &names as &[&str],
         &crons as &[&str],
         &next_runs as &[jiff_sqlx::Timestamp],
     )
@@ -95,10 +97,10 @@ pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
     .context("failed to find the due job schedules")?;
     for row in due {
         // A server with newer code may have added it
-        let Some((_, job)) = schedules.remove(&row.name) else {
+        let Some((_, job)) = schedules.remove(row.name.as_str()) else {
             continue;
         };
-        super::enqueue(&mut *transaction, job).await?;
+        job.insert(&mut *transaction).await?;
         let next_run = next_run_after(&row.cron, row.now.to_jiff())?;
         sqlx::query!(
             "UPDATE job_schedules SET next_run_at = $2 WHERE name = $1",

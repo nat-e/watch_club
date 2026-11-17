@@ -18,8 +18,8 @@ mod schedules;
 
 use std::time::Duration;
 
-use anyhow::Context;
-use serde::{Deserialize, Serialize};
+use anyhow::{Context, bail};
+use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Value;
 use sqlx::{PgExecutor, PgPool};
 use uuid::Uuid;
@@ -32,7 +32,10 @@ use crate::domain::InternalError;
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
-pub trait Job {
+pub trait Job: Serialize + DeserializeOwned {
+    /// The name the database stores this kind of job under. Queued jobs keep it, so never change
+    /// it.
+    const KIND: &'static str;
     /// The queue the job runs in.
     const QUEUE: Queue = Queue::Default;
     /// The job's place in its queue, from 0, which runs first, to 9.
@@ -46,7 +49,6 @@ pub trait Job {
     /// job at an `.await`, so blocking work, such as `spawn_blocking` or a child process, needs its
     /// own limit.
     const TIMEOUT: Duration = Duration::from_mins(10);
-
     /// The cron expression, in UTC, on which the server queues this job by itself with its default
     /// arguments, such as `0 3 * * SUN`. None for a job that only runs when something queues it.
     const SCHEDULE: Option<&'static str> = None;
@@ -112,27 +114,28 @@ pub enum JobState {
 #[sqlx(transparent)]
 pub struct JobId(Uuid);
 
-/// Every job, stored as its `kind` and its `args`. Each kind is spelled out, so that renaming a
-/// type doesn't change what's stored.
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "args")]
-pub enum AnyJob {
-    #[serde(rename = "delete_expired_sessions")]
+/// Every kind of job, to run a stored one.
+#[derive(Debug)]
+enum AnyJob {
     DeleteExpiredSessions(DeleteExpiredSessions),
 }
 
 const _: () = check_timeout(DeleteExpiredSessions::TIMEOUT);
 
-impl From<DeleteExpiredSessions> for AnyJob {
-    fn from(job: DeleteExpiredSessions) -> Self {
-        Self::DeleteExpiredSessions(job)
-    }
-}
-
 impl AnyJob {
-    fn settings(&self) -> Settings {
+    /// Reads a stored job from its kind and arguments.
+    fn from_row(kind: &str, args: Value) -> anyhow::Result<Self> {
+        Ok(match kind {
+            DeleteExpiredSessions::KIND => {
+                Self::DeleteExpiredSessions(serde_json::from_value(args)?)
+            }
+            _ => bail!("unknown kind of job: {kind}"),
+        })
+    }
+
+    fn timeout(&self) -> Duration {
         match self {
-            Self::DeleteExpiredSessions(_) => Settings::of::<DeleteExpiredSessions>(),
+            Self::DeleteExpiredSessions(_) => DeleteExpiredSessions::TIMEOUT,
         }
     }
 
@@ -141,51 +144,60 @@ impl AnyJob {
             Self::DeleteExpiredSessions(job) => job.run(db).await,
         }
     }
-
-    /// Returns the cron expression and job of each kind with a `SCHEDULE`. List each such kind
-    /// here.
-    fn schedules() -> impl Iterator<Item = (&'static str, Self)> {
-        [scheduled::<DeleteExpiredSessions>()].into_iter().flatten()
-    }
-
-    /// Reads a job from its stored kind and arguments.
-    fn from_row(kind: &str, args: Value) -> serde_json::Result<Self> {
-        serde_json::from_value(Value::from_iter([
-            ("kind", Value::from(kind)),
-            ("args", args),
-        ]))
-    }
-
-    /// Returns the job's kind and arguments, as the database stores them.
-    fn to_row(&self) -> anyhow::Result<(String, Value)> {
-        let mut stored = serde_json::to_value(self).context("failed to serialize a job")?;
-        let kind = stored["kind"].take();
-        let kind = kind.as_str().expect("serde tags every job with its kind");
-        Ok((kind.to_owned(), stored["args"].take()))
-    }
 }
 
-/// Returns the cron expression of the kind's `SCHEDULE`, with a job of that kind to queue on it.
-fn scheduled<J: Job + Default + Into<AnyJob>>() -> Option<(&'static str, AnyJob)> {
-    J::SCHEDULE.map(|cron| (cron, J::default().into()))
+/// Returns the cron expression of each kind with a `SCHEDULE`, with the job to queue on it. List
+/// each such kind here.
+fn schedules() -> serde_json::Result<Vec<(&'static str, NewJob)>> {
+    [scheduled::<DeleteExpiredSessions>()]
+        .into_iter()
+        .flatten()
+        .collect()
 }
 
-/// The settings of a job, from its `Job` implementation.
-struct Settings {
+fn scheduled<J: Job + Default>() -> Option<serde_json::Result<(&'static str, NewJob)>> {
+    let cron = J::SCHEDULE?;
+    Some(NewJob::of(&J::default()).map(|job| (cron, job)))
+}
+
+/// A job to insert in the queue: its kind, its arguments and its settings.
+#[derive(Debug)]
+struct NewJob {
+    kind: &'static str,
+    args: Value,
     queue: Queue,
     priority: i16,
     max_attempts: i16,
-    timeout: Duration,
 }
 
-impl Settings {
-    const fn of<J: Job>() -> Self {
-        Self {
+impl NewJob {
+    fn of<J: Job>(job: &J) -> serde_json::Result<Self> {
+        Ok(Self {
+            kind: J::KIND,
+            args: serde_json::to_value(job)?,
             queue: J::QUEUE,
             priority: J::PRIORITY,
             max_attempts: J::MAX_ATTEMPTS,
-            timeout: J::TIMEOUT,
-        }
+        })
+    }
+
+    async fn insert(self, db: impl PgExecutor<'_>) -> Result<JobId, InternalError> {
+        let id = sqlx::query_scalar!(
+            r#"
+            INSERT INTO jobs (queue, kind, args, priority, max_attempts)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id
+            "#,
+            self.queue as Queue,
+            self.kind,
+            self.args,
+            self.priority,
+            self.max_attempts,
+        )
+        .fetch_one(db)
+        .await
+        .with_context(|| format!("failed to queue a {} job", self.kind))?;
+        Ok(id)
     }
 }
 
@@ -200,29 +212,9 @@ const fn check_timeout(timeout: Duration) {
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued
 /// if the transaction commits.
-pub async fn enqueue(
-    db: impl PgExecutor<'_>,
-    job: impl Into<AnyJob>,
-) -> Result<JobId, InternalError> {
-    let job = job.into();
-    let settings = job.settings();
-    let (kind, args) = job.to_row()?;
-    let id = sqlx::query_scalar!(
-        r#"
-        INSERT INTO jobs (queue, kind, args, priority, max_attempts)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id
-        "#,
-        settings.queue as Queue,
-        kind,
-        args,
-        settings.priority,
-        settings.max_attempts,
-    )
-    .fetch_one(db)
-    .await
-    .with_context(|| format!("failed to queue a {kind} job"))?;
-    Ok(id)
+pub async fn enqueue<J: Job>(db: impl PgExecutor<'_>, job: J) -> Result<JobId, InternalError> {
+    let new_job = NewJob::of(&job).context("failed to serialize a job")?;
+    new_job.insert(db).await
 }
 
 /// Cancels the job if it's waiting in its queue, for its first attempt or a retry, and returns
