@@ -8,6 +8,6 @@ pub use self::{
     user::{
         CreateInstanceAdministratorError, Password, PasswordError, SESSION_LIFETIME, SessionToken,
         User, UserId, Username, UsernameError, create_instance_administrator,
-        has_instance_administrator, session_user, sign_in, sign_out,
+        delete_expired_sessions, has_instance_administrator, session_user, sign_in, sign_out,
     },
 };

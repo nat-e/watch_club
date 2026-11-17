@@ -305,6 +305,15 @@ pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalE
     Ok(())
 }
 
+/// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
+pub async fn delete_expired_sessions(db: &PgPool) -> Result<u64, InternalError> {
+    let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
+        .execute(db)
+        .await
+        .context("failed to delete the expired sessions")?;
+    Ok(deleted.rows_affected())
+}
+
 /// Creates a session that keeps the User signed in on a new device for `SESSION_LIFETIME`, and
 /// returns its token.
 async fn create_session(

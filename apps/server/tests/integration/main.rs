@@ -11,6 +11,7 @@ mod domain {
         mod user;
     }
 }
+mod jobs;
 mod routes {
     mod auth {
         mod login;
