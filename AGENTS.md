@@ -42,7 +42,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - `src/components` holds the components that routes share:
   - `layouts/`: the frame of a page or screen, such as web's `Page` or mobile's `FormScreen`
   - `forms/`, `lists/`: generic controls, grouped by kind
-  - a folder per domain, named as in `CONTEXT.md`, such as `media/`, for the components that show it, such as a poster card
+  - a folder per domain, named as in `CONTEXT.md`, such as `contents/`, for the components that show it, such as a poster card
   - the root: the few components used everywhere, such as mobile's `Host`
   - `ui/` (web): shadcn's components, which its CLI writes
 - Business logic, such as fetching what a poster card shows and deciding what it shows, goes in `packages/core`, in its domain's folder. Each app only draws it
