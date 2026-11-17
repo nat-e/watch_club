@@ -10,6 +10,8 @@ set -euo pipefail
 # The worktrees share one catalog, so it comes from the primary worktree, whichever runs this
 cd "$(dirname "$(git -C "$(dirname "$0")" rev-parse --path-format=absolute --git-common-dir)")"
 media=$PWD/tmp/catalog
+# Written once a restore succeeds, so that start tries again after a failure
+restored=$media/.restored
 project=watch-club-rs-catalog
 apps=(radarr sonarr sportarr)
 
@@ -18,9 +20,8 @@ compose() {
     --file dev/catalog/docker-compose.yml "$@"
 }
 
-# Puts back the clips, and the apps' data from the snapshot: the Docker volumes
-# watch-club-rs-catalog-snapshot-*. The apps' volumes exist only once it succeeds, so that start
-# tries again after a failure.
+# Replaces the clips, and the apps' data with the snapshot's: the Docker volumes
+# watch-club-rs-catalog-snapshot-*
 restore() {
   for app in "${apps[@]}"; do
     if ! docker volume inspect "$project-snapshot-$app" >/dev/null 2>&1; then
@@ -29,6 +30,7 @@ restore() {
       exit 1
     fi
   done
+  compose down --volumes
 
   # Clones of the files in Git LFS's store, which the worktrees share, take no extra disk space on
   # APFS, Btrfs or XFS
@@ -44,30 +46,23 @@ restore() {
       "${clone[@]}" ".git/lfs/objects/${oid:0:2}/${oid:2:2}/$oid" "$target"
     done
 
-  trap 'compose down --volumes' EXIT
   for app in "${apps[@]}"; do
     compose run --rm --no-deps --no-TTY --volume "$project-snapshot-$app:/snapshot:ro" \
       --entrypoint cp "$app" -a /snapshot/. /config/
   done
-  trap - EXIT
-}
-
-start() {
-  # The apps have no volumes the first time, and after a reset
-  if [[ -z $(compose volumes --quiet) ]]; then
-    restore
-  fi
-  compose up --detach
+  touch "$restored"
 }
 
 case ${1:-} in
-  start) start ;;
-  reset)
-    compose down --volumes
-    start
+  start)
+    if [[ ! -e $restored ]]; then
+      restore
+    fi
     ;;
+  reset) restore ;;
   *)
     echo "Usage: $0 start|reset" >&2
     exit 1
     ;;
 esac
+compose up --detach
