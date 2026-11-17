@@ -171,7 +171,7 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
             dsn,
             sentry::ClientOptions::new()
                 .maybe_release(sentry::release_name!())
-                .before_send(|event| Some(link_to_trace(event))),
+                .before_send(|event| Some(link_to_trace(without_query(event)))),
         ))
     });
 
@@ -248,7 +248,6 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
                         REQUEST_SPAN,
                         { HTTP_REQUEST_METHOD } = %request.method(),
                         { URL_PATH } = %request.uri().path(),
-                        version = ?request.version(),
                     )
                 })
                 // The routes log the 500s themselves, with their cause
@@ -307,6 +306,17 @@ fn is_from_exporter(metadata: &Metadata<'_>) -> bool {
 /// Returns whether it's the span `instrument` gives each request.
 fn is_request_span(metadata: &Metadata<'_>) -> bool {
     metadata.is_span() && metadata.name() == REQUEST_SPAN && metadata.target() == module_path!()
+}
+
+/// Leaves the query string out of the Sentry event's request, where a token could be.
+fn without_query(mut event: Event<'static>) -> Event<'static> {
+    if let Some(request) = &mut event.request {
+        if let Some(url) = &mut request.url {
+            url.set_query(None);
+        }
+        request.query_string = None;
+    }
+    event
 }
 
 /// Points the Sentry event at the trace of the request that sent it, when the trace is exported.
