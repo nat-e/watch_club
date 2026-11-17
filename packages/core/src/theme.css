@@ -50,6 +50,11 @@
   --radius-3xl: 1.725rem;
   --radius-4xl: 1.95rem;
 
+  /* The heights of buttons, fields and other controls, by size */
+  --spacing-control-sm: 2rem;
+  --spacing-control-md: 2.5rem;
+  --spacing-control-lg: 3rem;
+
   /* The shadow of cards, which rest on the page */
   --shadow-card: 0 2px 6px rgb(0 0 0 / 20%);
 }
