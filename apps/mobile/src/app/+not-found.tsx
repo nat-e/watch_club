@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {MessageScreen} from '@/components/message-screen';
+import {StatusScreen} from '@/components/status-screen';
 
 /**
  * The screen in place of one that doesn't exist, as when a link to the app is wrong, with a way
@@ -11,7 +11,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <MessageScreen
+    <StatusScreen
       title={t($ => $.core.notFound.title)}
       description={t($ => $.core.notFound.description)}
       actions={[

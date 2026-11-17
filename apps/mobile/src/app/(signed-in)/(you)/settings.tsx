@@ -5,7 +5,7 @@ import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
 import {choiceRows} from '@/components/choice-rows';
 import {FormScreen} from '@/components/form-screen';
-import {Message} from '@/components/message';
+import {SectionFeedback} from '@/components/section-feedback';
 
 /** Settings, where Users choose their User Preferences. Picking a language saves it. */
 export default function Settings() {
@@ -26,7 +26,7 @@ export default function Settings() {
           onChange: locale => save.mutateAsync({locale}),
         })}
         <FieldGroup.SectionFooter>
-          <Message
+          <SectionFeedback
             error={save.isError ? t($ => $.core.errors.somethingWentWrong) : undefined}
             hint={t($ => $.core.settings.preferencesDescription)}
           />

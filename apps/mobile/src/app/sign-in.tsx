@@ -5,7 +5,7 @@ import {Stack} from 'expo-router';
 import {useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useCSSVariable} from 'uniwind';
-import {useAppForm} from '@/components/form';
+import {fieldSection, useAppForm} from '@/components/form';
 import {FormScreen} from '@/components/form-screen';
 import {checkInstance, type InstanceProblem} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
@@ -46,84 +46,49 @@ export default function SignIn() {
     void instanceForm.handleSubmit();
   }
 
-  const address = t($ => $.mobile.signIn.address);
-  const username = t($ => $.core.user.username);
-  const password = t($ => $.core.user.password);
-
   return (
     <>
       <Stack.Screen options={{headerShown: true, title: t($ => $.core.signIn.title)}} />
       <FormScreen>
-        <FieldGroup.Section title={address}>
-          <instanceForm.Field name="address">
-            {field => (
-              <field.TextInput
-                accessibilityLabel={address}
-                placeholder={t($ => $.mobile.signIn.addressPlaceholder)}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="url"
-                autoFocus={session.instanceUrl === null}
-                inputMode="url"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  usernameInput.current?.focus();
-                }}
-              />
-            )}
-          </instanceForm.Field>
-          <FieldGroup.SectionFooter>
-            <instanceForm.Field name="address">
-              {field => (
-                <field.Message
-                  hint={
-                    session.instanceUrl === null ? t($ => $.mobile.signIn.description) : undefined
-                  }
-                />
-              )}
-            </instanceForm.Field>
-          </FieldGroup.SectionFooter>
-        </FieldGroup.Section>
-        <FieldGroup.Section title={username}>
-          <signInForm.Field name="username">
-            {field => (
-              <field.TextInput
-                ref={usernameInput}
-                accessibilityLabel={username}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="username"
-                autoFocus={session.instanceUrl !== null}
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  passwordInput.current?.focus();
-                }}
-              />
-            )}
-          </signInForm.Field>
-          <FieldGroup.SectionFooter>
-            <signInForm.Field name="username">{field => <field.Message />}</signInForm.Field>
-          </FieldGroup.SectionFooter>
-        </FieldGroup.Section>
-        <FieldGroup.Section title={password}>
-          <signInForm.Field name="password">
-            {field => (
-              <field.TextInput
-                ref={passwordInput}
-                accessibilityLabel={password}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="current-password"
-                returnKeyType="go"
-                onSubmitEditing={submit}
-              />
-            )}
-          </signInForm.Field>
-          <FieldGroup.SectionFooter>
-            <signInForm.Field name="password">{field => <field.Message />}</signInForm.Field>
-          </FieldGroup.SectionFooter>
-        </FieldGroup.Section>
+        {fieldSection({
+          label: t($ => $.mobile.signIn.address),
+          hint: session.instanceUrl === null ? t($ => $.mobile.signIn.description) : undefined,
+          bind: render => <instanceForm.Field name="address">{render}</instanceForm.Field>,
+          placeholder: t($ => $.mobile.signIn.addressPlaceholder),
+          autoCapitalize: 'none',
+          autoCorrect: false,
+          autoComplete: 'url',
+          autoFocus: session.instanceUrl === null,
+          inputMode: 'url',
+          returnKeyType: 'next',
+          onSubmitEditing: () => {
+            usernameInput.current?.focus();
+          },
+        })}
+        {fieldSection({
+          label: t($ => $.core.user.username),
+          bind: render => <signInForm.Field name="username">{render}</signInForm.Field>,
+          ref: usernameInput,
+          autoCapitalize: 'none',
+          autoCorrect: false,
+          autoComplete: 'username',
+          autoFocus: session.instanceUrl !== null,
+          returnKeyType: 'next',
+          onSubmitEditing: () => {
+            passwordInput.current?.focus();
+          },
+        })}
+        {fieldSection({
+          label: t($ => $.core.user.password),
+          bind: render => <signInForm.Field name="password">{render}</signInForm.Field>,
+          ref: passwordInput,
+          secureTextEntry: true,
+          autoCapitalize: 'none',
+          autoCorrect: false,
+          autoComplete: 'current-password',
+          returnKeyType: 'go',
+          onSubmitEditing: submit,
+        })}
         <FieldGroup.Section>
           <ListItem onPress={isSubmitting ? undefined : submit}>
             <Text textStyle={{color: isSubmitting ? mutedForeground : primary}}>
@@ -132,7 +97,7 @@ export default function SignIn() {
           </ListItem>
           <FieldGroup.SectionFooter>
             <signInForm.AppForm>
-              <signInForm.FormMessage hint={t($ => $.core.signIn.forgotPassword)} />
+              <signInForm.FormFeedback hint={t($ => $.core.signIn.forgotPassword)} />
             </signInForm.AppForm>
           </FieldGroup.SectionFooter>
         </FieldGroup.Section>

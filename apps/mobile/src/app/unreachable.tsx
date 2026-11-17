@@ -1,6 +1,6 @@
 import {useMutation} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {MessageScreen} from '@/components/message-screen';
+import {StatusScreen} from '@/components/status-screen';
 import {useRetrySession, useSessionStore} from '@/session';
 
 /**
@@ -14,7 +14,7 @@ export default function Unreachable() {
   const signOut = useMutation({mutationFn: () => sessionStore.signOut()});
 
   return (
-    <MessageScreen
+    <StatusScreen
       title={t($ => $.mobile.unreachable.title)}
       description={t($ => $.mobile.unreachable.description)}
       actions={[
