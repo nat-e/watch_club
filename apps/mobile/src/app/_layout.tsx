@@ -1,10 +1,10 @@
 import '../global.css';
 import {focusManager, QueryClientProvider} from '@tanstack/react-query';
 import {createQueryClient} from '@watchclub/core/query-client';
-import {Stack} from 'expo-router';
+import {DarkTheme, Stack, type Theme, ThemeProvider} from 'expo-router';
 import * as splashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
-import {useEffect} from 'react';
+import {useEffect, useMemo} from 'react';
 import {AppState} from 'react-native';
 import {useCSSVariable} from 'uniwind';
 import {Localization} from '@/l10n';
@@ -43,25 +43,50 @@ export default function RootLayout() {
 /** The screens for where the User is: signing in, signed in, or unable to reach the Instance. */
 function Screens() {
   const {user, isInstanceUnreachable} = useSession();
-  const background = useCSSVariable('--color-background');
 
   useEffect(() => {
     splashScreen.hide();
   }, []);
 
   return (
-    <Stack
-      screenOptions={{headerShown: false, contentStyle: {backgroundColor: String(background)}}}
-    >
-      <Stack.Protected guard={isInstanceUnreachable}>
-        <Stack.Screen name="unreachable" />
-      </Stack.Protected>
-      <Stack.Protected guard={user === null && !isInstanceUnreachable}>
-        <Stack.Screen name="sign-in" />
-      </Stack.Protected>
-      <Stack.Protected guard={user !== null}>
-        <Stack.Screen name="(signed-in)" />
-      </Stack.Protected>
-    </Stack>
+    <ThemeProvider value={useNavigationTheme()}>
+      <Stack screenOptions={{headerShown: false}}>
+        <Stack.Protected guard={isInstanceUnreachable}>
+          <Stack.Screen name="unreachable" />
+        </Stack.Protected>
+        <Stack.Protected guard={user === null && !isInstanceUnreachable}>
+          <Stack.Screen name="sign-in" />
+        </Stack.Protected>
+        <Stack.Protected guard={user !== null}>
+          <Stack.Screen name="(signed-in)" />
+        </Stack.Protected>
+      </Stack>
+    </ThemeProvider>
+  );
+}
+
+/** The app's colors, which every navigator draws its headers, tab bar and screens with. */
+function useNavigationTheme(): Theme {
+  const [background, card, foreground, border, destructive] = useCSSVariable([
+    '--color-background',
+    '--color-card',
+    '--color-foreground',
+    '--color-border',
+    '--color-destructive',
+  ]);
+  return useMemo(
+    () => ({
+      ...DarkTheme,
+      colors: {
+        // The current tab and the back button stand out by their brightness, as in the web app
+        primary: String(foreground),
+        background: String(background),
+        card: String(card),
+        text: String(foreground),
+        border: String(border),
+        notification: String(destructive),
+      },
+    }),
+    [background, card, foreground, border, destructive],
   );
 }

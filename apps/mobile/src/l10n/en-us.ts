@@ -13,4 +13,7 @@ export default {
     title: "We can't reach your WatchClub",
     tryAgain: 'Try again',
   },
+  you: {
+    title: 'You',
+  },
 } as const;

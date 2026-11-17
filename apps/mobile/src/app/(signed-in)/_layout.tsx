@@ -1,25 +1,19 @@
 import {Stack} from 'expo-router';
 import {useTranslation} from 'react-i18next';
-import {useCSSVariable} from 'uniwind';
 
-/** The screens of signed-in Users, under a header with the screen's name. */
+// A link that opens another screen first opens the tabs below it, for the back button
+// biome-ignore lint/style/useNamingConvention: Expo Router reads this name
+export const unstable_settings = {anchor: '(tabs)'};
+
+/** The screens of signed-in Users: the tabs, and the pages that open over them. */
 export default function SignedInLayout() {
   const {t} = useTranslation('core');
-  const [background, card, foreground] = useCSSVariable([
-    '--color-background',
-    '--color-card',
-    '--color-foreground',
-  ]).map(value => String(value));
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {backgroundColor: card},
-        headerTintColor: foreground,
-        contentStyle: {backgroundColor: background},
-      }}
-    >
-      <Stack.Screen name="index" options={{title: t($ => $.core.home.title)}} />
+    // The tabs' title changes with the tab, so the back button shows none
+    <Stack screenOptions={{headerBackButtonDisplayMode: 'minimal'}}>
+      <Stack.Screen name="(tabs)" options={{headerShown: false}} />
+      <Stack.Screen name="my-requests" options={{title: t($ => $.core.myRequests.title)}} />
       <Stack.Screen name="settings" options={{title: t($ => $.core.settings.title)}} />
     </Stack>
   );

@@ -28,11 +28,13 @@
     "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.5",
     "i18next": "catalog:",
+    "lucide-react-native": "^1.70.0",
     "react": "catalog:",
     "react-i18next": "catalog:",
     "react-native": "npm:react-native-tvos@0.88-stable",
     "react-native-safe-area-context": "~5.11.1",
     "react-native-screens": "~4.30.1",
+    "react-native-svg": "15.16.0",
     "tailwindcss": "catalog:",
     "uniwind": "^1.13.2"
   },
