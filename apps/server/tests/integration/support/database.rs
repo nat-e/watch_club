@@ -6,12 +6,15 @@
 use std::{
     str::FromStr,
     sync::atomic::{AtomicU32, Ordering},
+    time::Duration,
 };
 
+use anyhow::Context;
 use sqlx::{
     AssertSqlSafe, Connection, Executor, PgConnection, PgPool,
     postgres::{PgConnectOptions, PgPoolOptions},
 };
+use tokio::time;
 
 /// A test's database, with the migrations.
 pub struct TestDatabase {
@@ -40,18 +43,16 @@ impl TestDatabase {
         // Postgres would cut a longer name, and give two tests the same database
         assert!(name.len() <= 63, "{name} is longer than 63 bytes");
 
-        execute(&server, format!(r#"CREATE DATABASE "{name}""#)).await;
-        let pool = PgPoolOptions::new()
-            // Leaves connections to the other tests and worktrees
-            .max_connections(5)
-            .connect_with(worktree.database(&name))
+        execute(&server, format!(r#"CREATE DATABASE "{name}""#))
             .await
-            .expect("connects to the test database");
-        sqlx::migrate!()
-            .run(&pool)
-            .await
-            .expect("runs the migrations");
-        Self { server, name, pool }
+            .unwrap_or_else(|error| panic!("failed to create the test database {name}: {error}"));
+        match migrated_pool(worktree.database(&name)).await {
+            Ok(pool) => Self { server, name, pool },
+            Err(error) => {
+                drop_database(&server, &name).await;
+                panic!("failed to set up the test database {name}: {error:#}");
+            }
+        }
     }
 
     pub fn pool(&self) -> PgPool {
@@ -60,21 +61,37 @@ impl TestDatabase {
 
     /// Drops the database, and the connections the test left open.
     pub async fn drop(self) {
-        execute(
-            &self.server,
-            format!(r#"DROP DATABASE "{}" WITH (FORCE)"#, self.name),
-        )
-        .await;
+        drop_database(&self.server, &self.name).await;
     }
 }
 
-async fn execute(server: &PgConnectOptions, sql: String) {
-    let mut connection = PgConnection::connect_with(server)
+async fn migrated_pool(database: PgConnectOptions) -> anyhow::Result<PgPool> {
+    let pool = PgPoolOptions::new()
+        // Leaves connections to the other tests and worktrees
+        .max_connections(5)
+        .connect_with(database)
         .await
-        .expect("connects to Postgres");
-    connection
-        .execute(AssertSqlSafe(sql))
+        .context("failed to connect")?;
+    sqlx::migrate!()
+        .run(&pool)
         .await
-        .expect("creates or drops the test database");
-    connection.close().await.expect("disconnects");
+        .context("failed to run the migrations")?;
+    Ok(pool)
+}
+
+/// Drops the database, or reports why it couldn't: the worktree's teardown drops what's left. Gives
+/// up after 10 seconds, so that a stuck Postgres can't hold back the test's own failure.
+async fn drop_database(server: &PgConnectOptions, name: &str) {
+    let sql = format!(r#"DROP DATABASE "{name}" WITH (FORCE)"#);
+    match time::timeout(Duration::from_secs(10), execute(server, sql)).await {
+        Ok(Ok(())) => {}
+        Ok(Err(error)) => eprintln!("Couldn't drop the test database {name}: {error}"),
+        Err(_) => eprintln!("Couldn't drop the test database {name}: timed out"),
+    }
+}
+
+async fn execute(server: &PgConnectOptions, sql: String) -> Result<(), sqlx::Error> {
+    let mut connection = PgConnection::connect_with(server).await?;
+    connection.execute(AssertSqlSafe(sql)).await?;
+    connection.close().await
 }
