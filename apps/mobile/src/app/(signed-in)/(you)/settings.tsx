@@ -1,5 +1,4 @@
 import {FieldGroup, Picker, Text} from '@expo/ui';
-import type {Locale} from '@watchclub/api';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {useSavePreferences} from '@watchclub/core/accounts/preferences';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
@@ -23,10 +22,13 @@ export default function Settings() {
     <FormScreen>
       <FieldGroup.Section title={language}>
         <Picker
+          // iOS keeps the language picked until the saved one changes: after a failed save, the
+          // picker starts again from the saved one
+          key={String(save.isError)}
           accessibilityLabel={language}
           selectedValue={user.locale}
           enabled={!save.isPending}
-          onValueChange={(locale: Locale) => {
+          onValueChange={locale => {
             save.mutate({locale});
           }}
         >

@@ -7,7 +7,10 @@ import {useCSSVariable} from 'uniwind';
  * The root of the platform's own controls from `@expo/ui`, drawn by Material 3 in the app's colors
  * rather than the device's: its pink for actions, its aubergine surfaces and text.
  */
-export function Host({children, ...props}: UniversalHostProps & {children: ReactNode}) {
+export function Host({
+  children,
+  ...props
+}: Omit<UniversalHostProps, 'colorScheme' | 'seedColor'> & {children: ReactNode}) {
   const [primary, primaryForeground, background, card, muted, foreground, mutedForeground, border] =
     useCSSVariable([
       '--color-primary',
