@@ -2,11 +2,11 @@
 
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx_otel::QueryAnnotateExt;
 use utoipa::ToSchema;
 
 use super::{User, UserId};
-use crate::domain::InternalError;
+use crate::{db::Pool, domain::InternalError};
 
 /// A language and country preference.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -21,11 +21,8 @@ pub enum Locale {
 }
 
 /// Changes the User's language and country, and returns the updated User.
-pub async fn change_locale(
-    db: &PgPool,
-    user: UserId,
-    locale: Locale,
-) -> Result<User, InternalError> {
+#[tracing::instrument(skip_all, fields(user.id = %user))]
+pub async fn change_locale(db: &Pool, user: UserId, locale: Locale) -> Result<User, InternalError> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -35,6 +32,7 @@ pub async fn change_locale(
         user as UserId,
         locale as Locale,
     )
+    .with_operation("UPDATE", "users")
     .fetch_one(db)
     .await
     .context("failed to change the User's locale")?;

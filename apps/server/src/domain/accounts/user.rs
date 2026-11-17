@@ -1,23 +1,33 @@
 //! Users: their usernames and passwords, Setup, and the sessions that keep them signed in.
 
+use std::fmt;
+
 use anyhow::Context;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use jiff::SignedDuration;
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use sqlx::{PgExecutor, PgPool};
+use sqlx::PgExecutor;
+use sqlx_otel::QueryAnnotateExt;
 use tokio::sync::Semaphore;
+use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::Locale;
-use crate::domain::InternalError;
+use crate::{db::Pool, domain::InternalError};
 
 /// The unique ID of a User.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, sqlx::Type, ToSchema)]
 #[sqlx(transparent)]
 pub struct UserId(Uuid);
+
+impl fmt::Display for UserId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 /// A person with a WatchClub account.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
@@ -117,10 +127,12 @@ pub enum PasswordError {
 }
 
 /// Returns `true` once Setup has created the Instance Administrator.
-pub async fn has_instance_administrator(db: &PgPool) -> Result<bool, InternalError> {
+#[tracing::instrument(skip_all)]
+pub async fn has_instance_administrator(db: &Pool) -> Result<bool, InternalError> {
     let exists = sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT FROM users WHERE is_instance_administrator) AS "exists!""#
     )
+    .with_operation("SELECT", "users")
     .fetch_one(db)
     .await
     .context("failed to check for the Instance Administrator")?;
@@ -143,8 +155,9 @@ impl From<InternalError> for CreateInstanceAdministratorError {
 }
 
 /// Creates the Instance Administrator and signs them in on a new device.
+#[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
-    db: &PgPool,
+    db: &Pool,
     username: Username,
     password: Password,
     locale: Locale,
@@ -152,6 +165,7 @@ pub async fn create_instance_administrator(
     let password_hash =
         hash_slowly(move || password_auth::generate_hash(password.0.expose_secret())).await;
 
+    let username = username.into_inner();
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     let created = sqlx::query_as!(
         User,
@@ -160,11 +174,12 @@ pub async fn create_instance_administrator(
         VALUES ($1, $2, $3, true)
         RETURNING id, username, locale, is_instance_administrator
         "#,
-        username.into_inner(),
+        &username,
         password_hash,
         locale as Locale,
     )
-    .fetch_one(&mut *transaction)
+    .with_operation("INSERT", "users")
+    .fetch_one(&mut transaction)
     .await;
     let user = match created {
         Ok(user) => user,
@@ -181,6 +196,12 @@ pub async fn create_instance_administrator(
                 sqlx::Error::Database(error) if error.is_unique_violation()
             );
             if is_unique_violation && has_instance_administrator(db).await? {
+                tracing::event!(
+                    name: "accounts.instance_administrator.refused",
+                    Level::WARN,
+                    user.name = username,
+                    "refused to create a second Instance Administrator",
+                );
                 return Err(CreateInstanceAdministratorError::AlreadyExists);
             }
             return Err(anyhow::Error::new(error)
@@ -188,11 +209,18 @@ pub async fn create_instance_administrator(
                 .into());
         }
     };
-    let token = create_session(&mut *transaction, user.id).await?;
+    let token = create_session(&mut transaction, user.id).await?;
     transaction
         .commit()
         .await
         .context("failed to create the Instance Administrator")?;
+    tracing::event!(
+        name: "accounts.instance_administrator.created",
+        Level::INFO,
+        user.id = %user.id,
+        user.name = user.username,
+        "created the Instance Administrator",
+    );
     Ok((user, token))
 }
 
@@ -233,19 +261,49 @@ impl SessionToken {
 /// Signs the User in on a new device, and returns them with their session token.
 ///
 /// Returns None if the username or password is wrong.
+#[tracing::instrument(skip_all)]
 pub async fn sign_in(
-    db: &PgPool,
+    db: &Pool,
     username: &str,
     password: SecretString,
 ) -> Result<Option<(User, SessionToken)>, InternalError> {
+    let username = username.trim();
+    let Some(user) = check_credentials(db, username, password).await? else {
+        tracing::event!(
+            name: "accounts.sign_in.failed",
+            Level::WARN,
+            user.name = username,
+            "wrong username or password",
+        );
+        return Ok(None);
+    };
+    let token = create_session(db, user.id).await?;
+    tracing::event!(
+        name: "accounts.sign_in.succeeded",
+        Level::INFO,
+        user.id = %user.id,
+        user.name = user.username,
+        "signed in",
+    );
+    Ok(Some((user, token)))
+}
+
+/// Returns the User whose username and password these are, or None. Takes about as long either
+/// way.
+async fn check_credentials(
+    db: &Pool,
+    username: &str,
+    password: SecretString,
+) -> Result<Option<User>, InternalError> {
     let Some(row) = sqlx::query!(
         r#"
         SELECT id, username, locale, is_instance_administrator, password_hash
         FROM users
         WHERE username = $1
         "#,
-        username.trim(),
+        username,
     )
+    .with_operation("SELECT", "users")
     .fetch_optional(db)
     .await
     .context("failed to find the User signing in")?
@@ -265,21 +323,17 @@ pub async fn sign_in(
         return Ok(None);
     }
 
-    let user = User {
+    Ok(Some(User {
         id: row.id,
         username: row.username,
         locale: row.locale,
         is_instance_administrator: row.is_instance_administrator,
-    };
-    let token = create_session(db, user.id).await?;
-    Ok(Some((user, token)))
+    }))
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
-pub async fn session_user(
-    db: &PgPool,
-    token: &SessionToken,
-) -> Result<Option<User>, InternalError> {
+#[tracing::instrument(skip_all)]
+pub async fn session_user(db: &Pool, token: &SessionToken) -> Result<Option<User>, InternalError> {
     let user = sqlx::query_as!(
         User,
         r#"
@@ -290,6 +344,7 @@ pub async fn session_user(
         "#,
         &token.hash(),
     )
+    .with_operation("SELECT", "sessions")
     .fetch_optional(db)
     .await
     .context("failed to find the session's User")?;
@@ -297,8 +352,10 @@ pub async fn session_user(
 }
 
 /// Signs out the device that the token keeps signed in.
-pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalError> {
+#[tracing::instrument(skip_all)]
+pub async fn sign_out(db: &Pool, token: &SessionToken) -> Result<(), InternalError> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
+        .with_operation("DELETE", "sessions")
         .execute(db)
         .await
         .context("failed to end a session")?;
@@ -306,8 +363,10 @@ pub async fn sign_out(db: &PgPool, token: &SessionToken) -> Result<(), InternalE
 }
 
 /// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
-pub async fn delete_expired_sessions(db: &PgPool) -> Result<u64, InternalError> {
+#[tracing::instrument(skip_all)]
+pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
     let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
+        .with_operation("DELETE", "sessions")
         .execute(db)
         .await
         .context("failed to delete the expired sessions")?;
@@ -345,14 +404,19 @@ static HASHING: Semaphore = Semaphore::const_new(4);
 /// Runs `work`, which hashes a password and is slow on purpose, off the async threads, waiting
 /// for one of the `HASHING` slots first.
 async fn hash_slowly<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> T {
+    // Two spans, so that traces tell a queue of sign-ins from slow hashing
     let slot = HASHING
         .acquire()
+        .instrument(tracing::info_span!("wait_for_hashing_slot"))
         .await
         .expect("the semaphore is never closed");
+    // Under the caller's span, and ended by the work rather than by the request, which may be
+    // dropped before
+    let hashing = tracing::info_span!("hash_password");
     tokio::task::spawn_blocking(move || {
         // Held until the work ends, even when the request is dropped before
         let _slot = slot;
-        work()
+        hashing.in_scope(work)
     })
     .await
     .expect("hashing a password doesn't panic")

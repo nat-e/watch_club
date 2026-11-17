@@ -2,13 +2,13 @@
 
 use axum::extract::State;
 use serde::Deserialize;
-use sqlx::PgPool;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppState,
     auth::CurrentUser,
+    db::Pool,
     domain::accounts::{self, Locale, User},
     error::ApiError,
     routes::Json,
@@ -40,7 +40,7 @@ async fn get_current_user(CurrentUser(user): CurrentUser) -> Json<User> {
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn update_preferences(
-    State(db): State<PgPool>,
+    State(db): State<Pool>,
     CurrentUser(user): CurrentUser,
     Json(preferences): Json<UpdatePreferencesRequest>,
 ) -> Result<Json<User>, ApiError> {

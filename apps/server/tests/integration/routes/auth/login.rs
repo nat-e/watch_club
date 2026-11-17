@@ -7,6 +7,7 @@ use crate::support::{self, Client, PASSWORD};
 
 #[database_test]
 async fn signs_the_browser_in_with_a_cookie_scripts_cannot_read(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
 
@@ -25,6 +26,7 @@ async fn signs_the_browser_in_with_a_cookie_scripts_cannot_read(db: PgPool) {
 
 #[database_test]
 async fn sends_the_cookie_only_over_https_behind_an_https_proxy(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.set_header("x-forwarded-proto", "https");
@@ -38,6 +40,7 @@ async fn sends_the_cookie_only_over_https_behind_an_https_proxy(db: PgPool) {
 
 #[database_test]
 async fn refuses_wrong_credentials(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     support::create_user(&db, "ada").await;
 
     for (username, password) in [("ada", "wrong password"), ("bob", PASSWORD), ("", "")] {

@@ -1,15 +1,24 @@
 //! The server's logs on the console, and, when its host turns them on, its traces, metrics and logs
 //! sent to an OTLP endpoint, and its errors sent to Sentry.
 
-use std::fmt;
+use std::{
+    fmt::{self, Display},
+    io::{self, IsTerminal},
+};
 
 use anyhow::Context;
-use axum::{extract::Request, middleware};
+use axum::{
+    extract::{MatchedPath, Request},
+    middleware::{self, Next},
+    response::Response,
+};
 use opentelemetry::{
-    InstrumentationScope, KeyValue, global,
+    KeyValue,
+    context::FutureExt as _,
+    global,
     trace::{TraceContextExt, TracerProvider},
 };
-use opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge;
+use opentelemetry_appender_tracing::layer::{OpenTelemetryTracingBridge, TracingSpanAttributes};
 use opentelemetry_instrumentation_tower::http::server as otel_http;
 use opentelemetry_otlp::{LogExporter, MetricExporter, SpanExporter};
 use opentelemetry_sdk::{
@@ -17,34 +26,33 @@ use opentelemetry_sdk::{
     propagation::TraceContextPropagator, trace::SdkTracerProvider,
 };
 use opentelemetry_semantic_conventions::{
-    attribute::{DB_CLIENT_CONNECTION_POOL_NAME, DB_CLIENT_CONNECTION_STATE},
-    metric::{DB_CLIENT_CONNECTION_COUNT, DB_CLIENT_CONNECTION_MAX},
+    attribute::{HTTP_REQUEST_METHOD, URL_PATH},
     resource::SERVICE_VERSION,
 };
 use sentry::{
+    Hub, Scope, SentryFutureExt,
     integrations::{
         tower::{NewSentryLayer, SentryHttpLayer},
         tracing::{BreadcrumbLayer, ErrorLayer},
     },
     protocol::{Event, TraceContext},
 };
-use sqlx::PgPool;
 use tower_http::trace::TraceLayer;
-use tracing::Metadata;
+use tracing::{Level, Metadata};
 use tracing_subscriber::{
     Layer,
-    filter::{LevelFilter, filter_fn},
+    filter::{FilterExt, LevelFilter, filter_fn},
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::{config::ObservabilityConfig, error};
+use crate::config::{LogFormat, ObservabilityConfig};
 
 /// The name of the server's own instrumentation, apart from the libraries'
 const SCOPE: &str = env!("CARGO_PKG_NAME");
 
-/// The name of the span `instrument` gives each request, for the console logs
+/// The name of the span `instrument` gives each request, for the logs
 const REQUEST_SPAN: &str = "request";
 
 /// The crates that send what OpenTelemetry exports. Exporting their own logs and spans would make
@@ -73,21 +81,38 @@ impl fmt::Debug for Observability {
 
 impl Drop for Observability {
     fn drop(&mut self) {
+        // Keeps the failures below on the console: the log export they'd go to is shut down
+        let _suppressed = opentelemetry::Context::enter_telemetry_suppressed_scope();
+        // In the order of OpenTelemetry's examples: the metrics last, as the log export may record
+        // some about itself while it shuts down
         let results = [
-            self.tracer_provider
-                .as_ref()
-                .map(SdkTracerProvider::shutdown),
-            self.meter_provider.as_ref().map(SdkMeterProvider::shutdown),
-            self.logger_provider
-                .as_ref()
-                .map(SdkLoggerProvider::shutdown),
+            (
+                "traces",
+                self.tracer_provider
+                    .as_ref()
+                    .map(SdkTracerProvider::shutdown),
+            ),
+            (
+                "logs",
+                self.logger_provider
+                    .as_ref()
+                    .map(SdkLoggerProvider::shutdown),
+            ),
+            (
+                "metrics",
+                self.meter_provider.as_ref().map(SdkMeterProvider::shutdown),
+            ),
         ];
-        for error in results.into_iter().flatten().filter_map(Result::err) {
-            tracing::warn!(
-                name: "observability.shutdown.failed",
-                %error,
-                "failed to send the last telemetry",
-            );
+        for (signal, result) in results {
+            if let Some(Err(error)) = result {
+                tracing::event!(
+                    name: "observability.shutdown.failed",
+                    Level::WARN,
+                    signal,
+                    exception.message = %format_args!("{error:#}"),
+                    "failed to send the last telemetry",
+                );
+            }
         }
     }
 }
@@ -148,28 +173,69 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
             dsn,
             sentry::ClientOptions::new()
                 .maybe_release(sentry::release_name!())
-                .before_send(|event| Some(link_to_trace(event))),
+                // As the apps' reports, which get it from `GET /api/instance`
+                .environment(config.sentry_environment.clone())
+                .before_send(|event| Some(link_to_trace(without_query(event)))),
         ))
     });
 
+    let console = match config.log_format {
+        // Colors only on a terminal: Docker and log collectors would keep their codes as text. On a
+        // terminal, the default also leaves them out when `NO_COLOR` is set
+        LogFormat::Text if !io::stdout().is_terminal() => {
+            tracing_subscriber::fmt::layer().with_ansi(false).boxed()
+        }
+        LogFormat::Text => tracing_subscriber::fmt::layer().boxed(),
+        // The event's fields beside its message, and the fields of each span around it, from the
+        // outermost
+        LogFormat::Json => tracing_subscriber::fmt::layer()
+            .json()
+            .flatten_event(true)
+            .with_current_span(false)
+            .with_span_list(true)
+            .boxed(),
+    };
+
     tracing_subscriber::registry()
         .with(config.log_filter.clone())
-        .with(tracing_subscriber::fmt::layer())
+        .with(console)
         .with(tracer_provider.as_ref().map(|provider| {
             tracing_opentelemetry::layer()
                 .with_tracer(provider.tracer(SCOPE))
-                .with_filter(filter_fn(is_exported))
+                // The request's span repeats the one `otel_http` exports
+                .with_filter(filter_fn(|metadata| {
+                    !is_from_exporter(metadata) && !is_request_span(metadata)
+                }))
         }))
         .with(logger_provider.as_ref().map(|provider| {
-            OpenTelemetryTracingBridge::new(provider).with_filter(filter_fn(is_exported))
+            // With the fields of the spans around them, as the console shows them before each line
+            OpenTelemetryTracingBridge::builder(provider)
+                .with_tracing_span_attributes(TracingSpanAttributes::all())
+                .build()
+                .with_filter(filter_fn(|metadata| !is_from_exporter(metadata)))
         }))
         .with(sentry.is_some().then(|| {
+            // Failures to send telemetry stay on the console: they're problems with the host's
+            // setup rather than bugs in the app, and would use up the Sentry quota while they last
+            let not_from_exporter = || filter_fn(|metadata| !is_from_exporter(metadata));
             ErrorLayer::new()
-                .with_filter(LevelFilter::ERROR)
-                .and_then(BreadcrumbLayer::new().with_filter(LevelFilter::INFO))
+                .with_filter(LevelFilter::ERROR.and(not_from_exporter()))
+                .and_then(
+                    BreadcrumbLayer::new().with_filter(LevelFilter::INFO.and(not_from_exporter())),
+                )
         }))
         .try_init()
         .context("failed to set up logging")?;
+    // Answers "is it even on?" when telemetry doesn't arrive
+    tracing::event!(
+        name: "observability.started",
+        Level::INFO,
+        otlp.traces = tracer_provider.is_some(),
+        otlp.metrics = meter_provider.is_some(),
+        otlp.logs = logger_provider.is_some(),
+        sentry = sentry.is_some(),
+        "set up the telemetry",
+    );
 
     Ok(Observability {
         tracer_provider,
@@ -179,90 +245,99 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
     })
 }
 
-/// Adds what observes each request to the routes: its span on the console logs, the log of its
-/// internal error, its trace and metrics, and its details on the errors Sentry gets.
+/// Adds what observes each request to the routes: its span, whose method and path its logs show, its
+/// trace and metrics, and its details and route on the errors Sentry gets. The layers the routes already have
+/// run inside the request's span.
 pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
     routes: OpenApiRouter<S>,
 ) -> OpenApiRouter<S> {
     routes
-        .layer(middleware::from_fn(error::log_internal_errors))
         // Shows the method and path on every log line written during a request
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request| {
-                    tracing::info_span!(
+                    // At error level, so that it holds every log of the request whatever
+                    // `LOG_LEVEL` filters out
+                    tracing::error_span!(
                         REQUEST_SPAN,
-                        method = %request.method(),
-                        uri = %request.uri(),
-                        version = ?request.version(),
+                        { HTTP_REQUEST_METHOD } = %request.method(),
+                        { URL_PATH } = %request.uri().path(),
                     )
                 })
-                // `error::log_internal_errors` logs the 500s, with their cause
+                // The routes log the 500s themselves, with their cause
                 .on_failure(()),
         )
         // Names the spans after the route, such as `GET /api/me`, once the router has matched it
         .layer(otel_http::Layer::new())
+        .layer(middleware::from_fn(name_errors_after_route))
         .layer(SentryHttpLayer::new())
         // Outside the other Sentry layer, which needs a Sentry hub of the request's own
         .layer(NewSentryLayer::new_from_top())
 }
 
-/// Reports the database's connections in metrics: how many are used and idle, and the most the
-/// pool opens.
-pub fn observe_pool(db: &PgPool) {
-    let options = db.connect_options();
-    // The name the conventions give a pool that has none
-    let pool_name = KeyValue::new(
-        DB_CLIENT_CONNECTION_POOL_NAME,
-        format!(
-            "{}:{}/{}",
-            options.get_host(),
-            options.get_port(),
-            options.get_database().unwrap_or_default(),
-        ),
-    );
-    let meter = global::meter_with_scope(InstrumentationScope::builder(SCOPE).build());
-
-    let pool = db.clone();
-    let name = pool_name.clone();
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_COUNT)
-        .with_unit("{connection}")
-        .with_description("The connections to the database, by state.")
-        .with_callback(move |observer| {
-            let size = i64::from(pool.size());
-            let idle = i64::try_from(pool.num_idle()).unwrap_or(i64::MAX).min(size);
-            for (state, count) in [("idle", idle), ("used", size - idle)] {
-                observer.observe(
-                    count,
-                    &[
-                        name.clone(),
-                        KeyValue::new(DB_CLIENT_CONNECTION_STATE, state),
-                    ],
-                );
-            }
-        })
-        .build();
-
-    let max = i64::from(db.options().get_max_connections());
-    meter
-        .i64_observable_up_down_counter(DB_CLIENT_CONNECTION_MAX)
-        .with_unit("{connection}")
-        .with_description("The most connections the pool opens to the database.")
-        .with_callback(move |observer| observer.observe(max, std::slice::from_ref(&pool_name)))
-        .build();
+/// Runs `task`, work apart from requests, with a Sentry scope of its own, as `instrument` gives each
+/// request: the errors it reports carry `tags` and only its own breadcrumbs, and are named after the
+/// work, such as a kind of job.
+pub(crate) fn with_error_scope<F: Future>(
+    tags: &[(&str, &dyn Display)],
+    work: &str,
+    task: F,
+) -> impl Future<Output = F::Output> + use<F> {
+    let hub = Hub::new_from_top(Hub::current());
+    hub.configure_scope(|scope| {
+        for (key, value) in tags {
+            scope.set_tag(key, value);
+        }
+        name_errors(scope, work);
+    });
+    task.bind_hub(hub)
 }
 
-/// Returns whether the OpenTelemetry layers export what the span or event describes: not what the
-/// exporters do themselves, nor the console's span for each request, which repeats the trace's.
-fn is_exported(metadata: &Metadata<'_>) -> bool {
+/// Runs `task` without exporting its spans or logs, for routine work that would bury the other
+/// traces, such as looking for due jobs every second. Its logs still show on the console, and its
+/// metrics still count.
+pub(crate) fn without_export<F: Future>(task: F) -> impl Future<Output = F::Output> {
+    task.with_context(opentelemetry::Context::current().with_telemetry_suppressed())
+}
+
+/// Names the request's Sentry scope after its route, such as `GET /api/me`.
+async fn name_errors_after_route(request: Request, next: Next) -> Response {
+    if let Some(route) = request.extensions().get::<MatchedPath>() {
+        let work = format!("{} {}", request.method(), route.as_str());
+        sentry::configure_scope(|scope| name_errors(scope, &work));
+    }
+    next.run(request).await
+}
+
+/// Names the work whose errors the Sentry scope reports: Sentry shows the name on their issues, and
+/// opens an issue for each work and message, since the messages say what failed rather than why.
+fn name_errors(scope: &mut Scope, work: &str) {
+    scope.set_transaction(Some(work));
+    scope.set_fingerprint(Some(&["{{ default }}", work]));
+}
+
+/// Returns whether the span or event comes from the crates that export, which mustn't be exported.
+fn is_from_exporter(metadata: &Metadata<'_>) -> bool {
     let target = metadata.target();
-    let from_exporter = EXPORTER_TARGETS
+    EXPORTER_TARGETS
         .iter()
-        .any(|prefix| target.starts_with(prefix));
-    let request_span =
-        metadata.is_span() && metadata.name() == REQUEST_SPAN && target == module_path!();
-    !from_exporter && !request_span
+        .any(|prefix| target.starts_with(prefix))
+}
+
+/// Returns whether it's the span `instrument` gives each request.
+fn is_request_span(metadata: &Metadata<'_>) -> bool {
+    metadata.is_span() && metadata.name() == REQUEST_SPAN && metadata.target() == module_path!()
+}
+
+/// Leaves the query string out of the Sentry event's request, where a token could be.
+fn without_query(mut event: Event<'static>) -> Event<'static> {
+    if let Some(request) = &mut event.request {
+        if let Some(url) = &mut request.url {
+            url.set_query(None);
+        }
+        request.query_string = None;
+    }
+    event
 }
 
 /// Points the Sentry event at the trace of the request that sent it, when the trace is exported.

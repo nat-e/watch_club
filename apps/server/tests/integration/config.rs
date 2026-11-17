@@ -45,10 +45,20 @@ fn starts_without_the_optional_settings() {
 }
 
 #[test]
-fn fails_when_the_log_filter_is_invalid() {
-    let errors = startup_error_with(&[("RUST_LOG", "watch_club=loud")]);
+fn fails_when_the_log_level_is_invalid() {
+    let errors = startup_error_with(&[("LOG_LEVEL", "watch_club=loud")]);
 
-    assert!(errors.contains("RUST_LOG isn't a log filter"), "{errors}");
+    assert!(errors.contains("LOG_LEVEL isn't a log level"), "{errors}");
+}
+
+#[test]
+fn fails_when_the_log_format_is_unknown() {
+    let errors = startup_error_with(&[("LOG_FORMAT", "logfmt")]);
+
+    assert!(
+        errors.contains("LOG_FORMAT must be text or json, not logfmt"),
+        "{errors}"
+    );
 }
 
 #[test]
@@ -70,6 +80,16 @@ fn ignores_the_exporters_when_opentelemetry_is_disabled() {
 
     assert!(
         errors.contains("failed to connect to the database"),
+        "{errors}"
+    );
+}
+
+#[test]
+fn fails_when_the_mobile_apps_sentry_dsn_is_invalid() {
+    let errors = startup_error_with(&[("SENTRY_MOBILE_DSN", "https://sentry.example.com")]);
+
+    assert!(
+        errors.contains("SENTRY_MOBILE_DSN isn't a Sentry DSN"),
         "{errors}"
     );
 }

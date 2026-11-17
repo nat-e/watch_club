@@ -7,6 +7,7 @@ use crate::support::Client;
 
 #[database_test]
 async fn says_the_server_works(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let response = Client::new(&db).get("/api/health").await;
 
     assert_eq!(response.status, StatusCode::OK);
@@ -15,6 +16,7 @@ async fn says_the_server_works(db: PgPool) {
 
 #[database_test]
 async fn says_the_server_cannot_reach_its_database(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let mut client = Client::new(&db);
     db.close().await;
 

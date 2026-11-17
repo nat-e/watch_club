@@ -20,6 +20,8 @@ export async function startSentry(queryClient: QueryClient): Promise<void> {
   init({
     dsn: instance.web_sentry_dsn,
     release: `watch_club@${instance.version}`,
+    // The server's, so that Sentry shows a deployment's reports together
+    environment: instance.sentry_environment,
     // Keeps the User's IP address from Sentry, which would store it otherwise
     dataCollection: {userInfo: false},
     beforeSend: (event, hint) => (isRequestFailure(hint.originalException) ? null : event),

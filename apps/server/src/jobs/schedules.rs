@@ -5,9 +5,9 @@
 use anyhow::Context;
 use croner::Cron;
 use jiff::{Timestamp, tz::TimeZone};
-use sqlx::PgPool;
+use sqlx_otel::QueryAnnotateExt;
 
-use crate::domain::InternalError;
+use crate::{db::Pool, domain::InternalError};
 
 /// Returns the first run of the cron expression after `time`.
 fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
@@ -22,7 +22,7 @@ fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
 
 /// Makes the database's schedules match the code's: adds the new ones, moves the next run of
 /// those whose cron expression changed, and deletes those that are gone.
-pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
+pub(super) async fn sync_schedules(db: &Pool) -> Result<(), InternalError> {
     // The server's clock, as other job queues use: with clocks out of sync, a run around the
     // server's start could be skipped or come early, and `enqueue_due` sets the next ones right
     let now = Timestamp::now();
@@ -43,6 +43,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
         "DELETE FROM job_schedules WHERE name <> ALL($1)",
         &names as &[&str],
     )
+    .with_operation("DELETE", "job_schedules")
     .execute(db)
     .await
     .context("failed to delete the job schedules gone from the code")?;
@@ -58,6 +59,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
         &crons as &[&str],
         &next_runs as &[jiff_sqlx::Timestamp],
     )
+    .with_operation("INSERT", "job_schedules")
     .execute(db)
     .await
     .context("failed to save the job schedules")?;
@@ -67,7 +69,7 @@ pub(super) async fn sync_schedules(db: &PgPool) -> Result<(), InternalError> {
 /// Queues the job of each schedule whose next run has come, and moves the schedule to its next
 /// run after now. The next run comes from the stored cron expression, which a server with newer
 /// code may have changed.
-pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
+pub(super) async fn enqueue_due(db: &Pool) -> Result<(), InternalError> {
     let mut schedules = super::schedules().context("failed to serialize a scheduled job")?;
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     // Skips the schedules another server is queuing
@@ -79,7 +81,8 @@ pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
         FOR UPDATE SKIP LOCKED
         "#
     )
-    .fetch_all(&mut *transaction)
+    .with_operation("SELECT", "job_schedules")
+    .fetch_all(&mut transaction)
     .await
     .context("failed to find the due job schedules")?;
     for row in due {
@@ -87,14 +90,15 @@ pub(super) async fn enqueue_due(db: &PgPool) -> Result<(), InternalError> {
         let Some((_, job)) = schedules.remove(row.name.as_str()) else {
             continue;
         };
-        job.insert(&mut *transaction).await?;
+        job.insert(&mut transaction).await?;
         let next_run = next_run_after(&row.cron, row.now.to_jiff())?;
         sqlx::query!(
             "UPDATE job_schedules SET next_run_at = $2 WHERE name = $1",
             row.name,
             jiff_sqlx::Timestamp::from(next_run),
         )
-        .execute(&mut *transaction)
+        .with_operation("UPDATE", "job_schedules")
+        .execute(&mut transaction)
         .await
         .context("failed to move a job schedule to its next run")?;
     }

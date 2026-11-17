@@ -12,7 +12,8 @@ use tokio::{
     time,
 };
 use tokio_util::sync::CancellationToken;
-use watch_club::{AppState, config::Config, jobs, observability};
+use tracing::Level;
+use watch_club::{AppState, AppsSentry, config::Config, db, jobs, observability};
 
 fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
@@ -25,10 +26,9 @@ fn main() -> anyhow::Result<()> {
 
 /// Serves the app and runs its jobs until Ctrl-C or `docker stop`.
 async fn serve(config: Config) -> anyhow::Result<()> {
-    let db = watch_club::connect_database(config.database_url.expose_secret())
+    let db = db::connect(config.database_url.expose_secret())
         .await
         .context("failed to connect to the database")?;
-    observability::observe_pool(&db);
     // On every address, as containers need
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
@@ -37,12 +37,22 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 
     let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
-    tracing::info!("listening on port {}", config.port);
+    tracing::event!(
+        name: "server.started",
+        Level::INFO,
+        service.version = %env!("CARGO_PKG_VERSION"),
+        server.port = config.port,
+        "listening for requests",
+    );
     let server = axum::serve(
         listener,
         watch_club::router(AppState {
             db: db.clone(),
-            web_sentry_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+            apps_sentry: AppsSentry {
+                web_dsn: config.observability.web_sentry_dsn.map(Arc::from),
+                mobile_dsn: config.observability.mobile_sentry_dsn.map(Arc::from),
+                environment: config.observability.sentry_environment.into(),
+            },
         }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());
@@ -66,6 +76,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     // Gives up on the connections that a stopped job's query still holds, to exit within the 10 s
     // `docker stop` waits
     let _ = time::timeout(Duration::from_secs(1), db.close()).await;
+    tracing::event!(name: "server.stopped", Level::INFO, "stopped");
     Ok(())
 }
 
@@ -74,10 +85,16 @@ fn cancel_on_signals(shutdown: CancellationToken) -> io::Result<()> {
     let mut interrupt = signal(SignalKind::interrupt())?;
     let mut terminate = signal(SignalKind::terminate())?;
     tokio::spawn(async move {
-        tokio::select! {
-            _ = interrupt.recv() => {},
-            _ = terminate.recv() => {},
-        }
+        let signal = tokio::select! {
+            _ = interrupt.recv() => "SIGINT",
+            _ = terminate.recv() => "SIGTERM",
+        };
+        tracing::event!(
+            name: "server.stopping",
+            Level::INFO,
+            signal = %signal,
+            "stopping once the requests and jobs in progress end",
+        );
         shutdown.cancel();
     });
     Ok(())

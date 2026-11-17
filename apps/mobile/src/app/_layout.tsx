@@ -9,15 +9,19 @@ import {useEffect, useMemo} from 'react';
 import {AppState} from 'react-native';
 import {useCSSVariable} from 'uniwind';
 import {Localization} from '@/l10n';
-import {startSentry} from '@/sentry';
+import {reportToInstance, startSentry} from '@/sentry';
 import {SessionProvider, useSession} from '@/session';
 import {SessionStore} from '@/session-store';
 
-startSentry();
+void startSentry();
 void splashScreen.preventAutoHideAsync();
 
 const queryClient = createQueryClient();
 const sessionStore = new SessionStore(queryClient);
+// Sentry reports to the Session's Instance, which changes when the User signs in to another one
+sessionStore.subscribe(() => {
+  void reportToInstance(sessionStore.getSession()?.instanceUrl ?? null);
+});
 void sessionStore.restore();
 
 // TanStack Query asks the API again when the app comes back to the foreground, as for a browser tab

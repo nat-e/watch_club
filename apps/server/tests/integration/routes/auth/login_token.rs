@@ -7,6 +7,7 @@ use crate::support::{self, Client, PASSWORD};
 
 #[database_test]
 async fn gives_the_app_a_token_that_signs_its_requests_in(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     let mut app = Client::new(&db);
 
@@ -19,6 +20,7 @@ async fn gives_the_app_a_token_that_signs_its_requests_in(db: PgPool) {
 
 #[database_test]
 async fn sets_no_cookie(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     support::create_user(&db, "ada").await;
 
     let credentials = json!({ "username": "ada", "password": PASSWORD });
@@ -32,6 +34,7 @@ async fn sets_no_cookie(db: PgPool) {
 
 #[database_test]
 async fn refuses_wrong_credentials(db: PgPool) {
+    let db = watch_club::db::instrument(db);
     support::create_user(&db, "ada").await;
 
     let credentials = json!({ "username": "ada", "password": "wrong password" });

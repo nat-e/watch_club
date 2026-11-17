@@ -1,9 +1,10 @@
 //! The job that deletes expired sessions, every week.
 
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use tracing::Level;
 
 use crate::{
+    db::Pool,
     domain::accounts,
     jobs::{Job, JobError},
 };
@@ -17,10 +18,11 @@ impl Job for DeleteExpiredSessions {
     // Every Sunday at 03:00
     const SCHEDULE: Option<&'static str> = Some("0 3 * * SUN");
 
-    async fn run(self, db: &PgPool) -> Result<(), JobError> {
+    async fn run(self, db: &Pool) -> Result<(), JobError> {
         let deleted = accounts::delete_expired_sessions(db).await?;
-        tracing::info!(
+        tracing::event!(
             name: "accounts.sessions.deleted",
+            Level::INFO,
             deleted,
             "deleted the expired sessions",
         );

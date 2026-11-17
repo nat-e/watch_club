@@ -1,6 +1,6 @@
 //! The server's settings, which it reads from environment variables when it starts. The
-//! OpenTelemetry and Sentry SDKs read the rest of their standard variables themselves, such as
-//! `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_RESOURCE_ATTRIBUTES` and `SENTRY_ENVIRONMENT`.
+//! OpenTelemetry SDK reads the rest of its standard variables itself, such as
+//! `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_RESOURCE_ATTRIBUTES`.
 
 use std::env;
 
@@ -23,8 +23,10 @@ pub struct Config {
 /// The settings of the server's logs, of its OpenTelemetry export, and of the Sentry reports.
 #[derive(Debug)]
 pub struct ObservabilityConfig {
-    /// The logs the server writes, from `RUST_LOG`: `info` by default
+    /// The logs the server writes, from `LOG_LEVEL`: `DEFAULT_LOG_LEVEL` when it's unset
     pub log_filter: EnvFilter,
+    /// The format of the console's logs, from `LOG_FORMAT`: text by default
+    pub log_format: LogFormat,
     /// The OpenTelemetry signals the server exports
     pub exports: Exports,
     /// The name the server reports its telemetry under, from `OTEL_SERVICE_NAME`: `watch_club` by
@@ -34,6 +36,31 @@ pub struct ObservabilityConfig {
     pub sentry_dsn: Option<Dsn>,
     /// The Sentry DSN of the web app's errors, from `SENTRY_WEB_DSN`, as the host wrote it
     pub web_sentry_dsn: Option<String>,
+    /// The Sentry DSN of the mobile apps' crashes and errors, from `SENTRY_MOBILE_DSN`, as the host
+    /// wrote it
+    pub mobile_sentry_dsn: Option<String>,
+    /// The environment that the server's and the apps' Sentry reports name, from
+    /// `SENTRY_ENVIRONMENT`: by default, Sentry's own, `production`, or `development` in debug builds
+    pub sentry_environment: String,
+}
+
+/// The format of the console's logs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogFormat {
+    /// Lines for people to read, from `LOG_FORMAT=text`
+    Text,
+    /// One JSON object per line, which log tools read without parsing rules, from `LOG_FORMAT=json`
+    Json,
+}
+
+impl LogFormat {
+    fn from_env() -> anyhow::Result<Self> {
+        match optional_var("LOG_FORMAT").as_deref() {
+            None | Some("text") => Ok(Self::Text),
+            Some("json") => Ok(Self::Json),
+            Some(other) => bail!("LOG_FORMAT must be text or json, not {other}"),
+        }
+    }
 }
 
 /// The OpenTelemetry signals the server exports: those whose `OTEL_{SIGNAL}_EXPORTER` is `otlp`,
@@ -63,23 +90,37 @@ impl Config {
     }
 }
 
+/// The logs the server writes when `LOG_LEVEL` is unset: `info`, without the notices Postgres sends
+/// on every start, such as the one saying the table `_sqlx_migrations` already exists.
+const DEFAULT_LOG_LEVEL: &str = "info,sqlx::postgres::notice=warn";
+
 impl ObservabilityConfig {
     fn from_env() -> anyhow::Result<Self> {
-        let log_filter = EnvFilter::try_new(optional_var("RUST_LOG").as_deref().unwrap_or("info"))
-            .context("RUST_LOG isn't a log filter")?;
-        let web_sentry_dsn = optional_var("SENTRY_WEB_DSN");
-        if let Some(dsn) = &web_sentry_dsn {
-            parse_dsn("SENTRY_WEB_DSN", dsn)?;
-        }
+        let log_filter = EnvFilter::try_new(
+            optional_var("LOG_LEVEL")
+                .as_deref()
+                .unwrap_or(DEFAULT_LOG_LEVEL),
+        )
+        .context("LOG_LEVEL isn't a log level")?;
         Ok(Self {
             log_filter,
+            log_format: LogFormat::from_env()?,
             exports: Exports::from_env()?,
             service_name: optional_var("OTEL_SERVICE_NAME")
                 .unwrap_or_else(|| "watch_club".to_owned()),
             sentry_dsn: optional_var("SENTRY_DSN")
                 .map(|dsn| parse_dsn("SENTRY_DSN", &dsn))
                 .transpose()?,
-            web_sentry_dsn,
+            web_sentry_dsn: app_dsn("SENTRY_WEB_DSN")?,
+            mobile_sentry_dsn: app_dsn("SENTRY_MOBILE_DSN")?,
+            sentry_environment: optional_var("SENTRY_ENVIRONMENT").unwrap_or_else(|| {
+                let default = if cfg!(debug_assertions) {
+                    "development"
+                } else {
+                    "production"
+                };
+                default.to_owned()
+            }),
         })
     }
 }
@@ -113,6 +154,16 @@ fn exports(signal: &str) -> anyhow::Result<bool> {
         Some("otlp") => Ok(true),
         Some(other) => bail!("{name} must be otlp or none, not {other}"),
     }
+}
+
+/// Returns the Sentry DSN that an app reports to, from the environment variable `name`, as the host
+/// wrote it, once it reads as one.
+fn app_dsn(name: &str) -> anyhow::Result<Option<String>> {
+    let dsn = optional_var(name);
+    if let Some(dsn) = &dsn {
+        parse_dsn(name, dsn)?;
+    }
+    Ok(dsn)
 }
 
 /// Parses the Sentry DSN that the environment variable `name` holds.

@@ -9,13 +9,19 @@ mod me;
 use axum::{
     extract::FromRequest,
     http::StatusCode,
+    middleware,
     response::{IntoResponse, Response},
     routing::{any, get},
 };
 use serde::Serialize;
+use tower_http::catch_panic::CatchPanicLayer;
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::{AppState, error::ApiError, observability, web};
+use crate::{
+    AppState,
+    error::{self, ApiError},
+    observability, web,
+};
 
 /// Returns the app's routes, with the descriptions of the API's endpoints.
 pub(crate) fn routes() -> OpenApiRouter<AppState> {
@@ -30,7 +36,14 @@ pub(crate) fn routes() -> OpenApiRouter<AppState> {
         // The fallback misses this path: axum nests it at `/api` and `/api/{*rest}`, and the
         // wildcard doesn't match an empty rest
         .route("/api/", any(StatusCode::NOT_FOUND))
-        .fallback_service(get(web::serve));
+        .fallback_service(get(web::serve))
+        // Answers a panicking handler with a 500, which the layers around it log and count as such.
+        // The server goes on, an exception to M-PANIC-CONTINUATION: handlers share no state that a
+        // panic could leave half-changed, and a restart would leave hosts without a restart policy
+        // down
+        .layer(CatchPanicLayer::custom(error::panic_response))
+        // Inside `instrument`'s request span, so the log shows the request's method and path
+        .layer(middleware::from_fn(error::log_internal_errors));
     observability::instrument(app)
         // After `instrument`, which leaves it out: Docker calls it every 30 seconds, and its traces
         // would bury the others

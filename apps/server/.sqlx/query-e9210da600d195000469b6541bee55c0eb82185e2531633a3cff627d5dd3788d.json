@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            queue AS \"queue: String\",\n            count(*) AS \"count!\",\n            extract(epoch FROM now() - min(run_at))::float8 AS \"oldest_age!\"\n        FROM jobs\n        WHERE state = 'available' AND run_at <= now()\n        GROUP BY queue\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "queue: String",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs",
+            "name": "queue"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "oldest_age!",
+        "type_info": "Float8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "e9210da600d195000469b6541bee55c0eb82185e2531633a3cff627d5dd3788d"
+}

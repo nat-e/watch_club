@@ -3,13 +3,13 @@
 use std::sync::Arc;
 
 use axum::{Router, extract::FromRef};
-use sqlx::{PgPool, postgres::PgPoolOptions};
 
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
 
 mod auth;
 pub mod config;
+pub mod db;
 pub mod domain;
 mod error;
 pub mod jobs;
@@ -21,20 +21,19 @@ mod web;
 /// The state the request handlers share, which `router` takes.
 #[derive(Clone, Debug, FromRef)]
 pub struct AppState {
-    pub db: PgPool,
-    /// The Sentry DSN the web app reports its errors to, if the host set one
-    pub web_sentry_dsn: Option<Arc<str>>,
+    pub db: db::Pool,
+    pub apps_sentry: AppsSentry,
 }
 
-/// Connects to the app's database, and runs its pending migrations.
-pub async fn connect_database(url: &str) -> Result<PgPool, sqlx::Error> {
-    let db = PgPoolOptions::new()
-        // Shared by the requests and the jobs, which hold one only while a query runs
-        .max_connections(10)
-        .connect(url)
-        .await?;
-    sqlx::migrate!().run(&db).await?;
-    Ok(db)
+/// The Sentry settings the apps report their errors with, which `GET /api/instance` gives them.
+#[derive(Clone, Debug)]
+pub struct AppsSentry {
+    /// The DSN of the web app's Sentry project, if the host set one
+    pub web_dsn: Option<Arc<str>>,
+    /// The DSN of the mobile apps' Sentry project, if the host set one
+    pub mobile_dsn: Option<Arc<str>>,
+    /// The environment their reports name, as the server's do
+    pub environment: Arc<str>,
 }
 
 /// Builds the app's router, with the routes in `routes`.

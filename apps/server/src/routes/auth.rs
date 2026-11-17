@@ -9,13 +9,13 @@ use axum::{
 use axum_extra::extract::CookieJar;
 use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppState,
     auth::SessionCookie,
+    db::Pool,
     domain::{
         InternalError,
         accounts::{self, SessionToken, User},
@@ -42,7 +42,7 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     ),
 )]
 async fn login(
-    State(db): State<PgPool>,
+    State(db): State<Pool>,
     cookie: SessionCookie,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(CookieJar, Json<User>), LoginRequestError> {
@@ -93,7 +93,7 @@ impl IntoResponse for LoginRequestError {
     ),
 )]
 async fn login_token(
-    State(db): State<PgPool>,
+    State(db): State<Pool>,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<LoginTokenResponse>), LoginRequestError> {
     let (user, token) = accounts::sign_in(&db, &credentials.username, credentials.password)
@@ -123,7 +123,7 @@ struct LoginTokenResponse {
     security((), ("session_cookie" = []), ("session_token" = [])),
 )]
 async fn logout(
-    State(db): State<PgPool>,
+    State(db): State<Pool>,
     token: Option<SessionToken>,
     cookie: SessionCookie,
 ) -> Result<(StatusCode, CookieJar), ApiError> {

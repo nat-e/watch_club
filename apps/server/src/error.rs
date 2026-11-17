@@ -1,6 +1,6 @@
 //! The errors any API request can fail with, and the body that every error response shares.
 
-use std::{fmt::Display, sync::Arc};
+use std::{any::Any, fmt::Display, sync::Arc};
 
 use axum::{
     Json,
@@ -11,6 +11,7 @@ use axum::{
 };
 use serde::Serialize;
 use serde_json::json;
+use tracing::Level;
 use utoipa::ToSchema;
 
 use crate::domain::InternalError;
@@ -107,12 +108,63 @@ pub(crate) fn response(status: StatusCode, error: &(impl Serialize + Display)) -
     (status, Json(ErrorBody { error, message })).into_response()
 }
 
-/// Logs the cause of each 500 that `ApiError` sends. Inside `TraceLayer`, the log shows the
-/// request's method and path.
+/// Logs the cause of each 500 that `ApiError` sends. Inside `observability::instrument`, the log
+/// shows the request's method and path.
 pub(crate) async fn log_internal_errors(request: Request, next: Next) -> Response {
     let response = next.run(request).await;
     if let Some(error) = response.extensions().get::<Arc<InternalError>>() {
-        tracing::error!("request failed: {error:#}");
+        tracing::event!(
+            name: "api.request.failed",
+            Level::ERROR,
+            exception.message = %format_args!("{error:#}"),
+            "request failed",
+        );
     }
     response
+}
+
+/// Answers a request whose handler panicked as any internal error: with a 500, which
+/// `log_internal_errors` logs with the panic's message.
+#[expect(
+    clippy::needless_pass_by_value,
+    reason = "`CatchPanicLayer` hands the panic over by value"
+)]
+pub(crate) fn panic_response(panic: Box<dyn Any + Send>) -> Response {
+    ApiError::Internal(InternalError::from_panic(&*panic)).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::{Router, body::Body, routing::get};
+    use http_body_util::BodyExt;
+    use serde_json::Value;
+    use tower::ServiceExt;
+    use tower_http::catch_panic::CatchPanicLayer;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn answers_a_panicking_handler_with_an_internal_error() {
+        async fn panics() -> StatusCode {
+            panic!("the handler broke")
+        }
+        let app = Router::new()
+            .route("/", get(panics))
+            .layer(CatchPanicLayer::custom(panic_response));
+
+        let response = app
+            .oneshot(Request::get("/").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let error = response.extensions().get::<Arc<InternalError>>().unwrap();
+        assert_eq!(error.to_string(), "panicked: the handler broke");
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let body: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(
+            body,
+            json!({ "code": "internal_error", "message": "internal error" })
+        );
+    }
 }

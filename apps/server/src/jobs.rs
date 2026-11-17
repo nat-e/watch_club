@@ -13,6 +13,7 @@
 mod kinds {
     pub(super) mod delete_expired_sessions;
 }
+mod observability;
 mod runner;
 mod schedules;
 
@@ -21,14 +22,14 @@ use std::{collections::BTreeMap, time::Duration};
 use anyhow::{Context, bail};
 use serde::{Serialize, de::DeserializeOwned};
 use serde_json::Value;
-use sqlx::{PgExecutor, PgPool};
+use sqlx::PgExecutor;
 use uuid::Uuid;
 
 pub use self::{
     kinds::delete_expired_sessions::DeleteExpiredSessions,
     runner::{run, run_available},
 };
-use crate::domain::InternalError;
+use crate::{db::Pool, domain::InternalError};
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
@@ -53,7 +54,7 @@ pub trait Job: Serialize + DeserializeOwned {
     const SCHEDULE: Option<&'static str> = None;
 
     /// Does the job's work.
-    fn run(self, db: &PgPool) -> impl Future<Output = Result<(), JobError>> + Send;
+    fn run(self, db: &Pool) -> impl Future<Output = Result<(), JobError>> + Send;
 }
 
 /// The reason a job didn't complete. A job with nothing left to do, such as when what it works on
@@ -90,6 +91,13 @@ impl Queue {
     const fn limit(self) -> usize {
         match self {
             Self::Default => 10,
+        }
+    }
+
+    /// Returns the queue's name, as the database stores it.
+    const fn name(self) -> &'static str {
+        match self {
+            Self::Default => "default",
         }
     }
 }
@@ -136,7 +144,7 @@ impl AnyJob {
         }
     }
 
-    async fn run(self, db: &PgPool) -> Result<(), JobError> {
+    async fn run(self, db: &Pool) -> Result<(), JobError> {
         match self {
             Self::DeleteExpiredSessions(job) => job.run(db).await,
         }
@@ -197,6 +205,16 @@ impl NewJob {
         .with_context(|| format!("failed to queue a {} job", self.kind))?;
         Ok(id)
     }
+}
+
+/// A job the runner claimed, which is `executing` from then on.
+struct ClaimedJob {
+    id: JobId,
+    kind: String,
+    queue: Queue,
+    args: Value,
+    attempt: i16,
+    max_attempts: i16,
 }
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued

@@ -7,11 +7,11 @@
     "PORT",
     "WEB_PORT",
     "RCT_METRO_PORT",
-    "RUST_LOG",
+    "LOG_LEVEL",
+    "LOG_FORMAT",
     "RUSTUP_TOOLCHAIN",
     "OTEL_*",
-    "SENTRY_*",
-    "EXPO_PUBLIC_SENTRY_DSN"
+    "SENTRY_*"
   ],
   "globalEnv": ["SQLX_OFFLINE"],
   "tasks": {
