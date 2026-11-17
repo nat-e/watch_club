@@ -18,12 +18,18 @@
   --color-secondary-foreground: hsl(256 80% 93.4%);
   --color-muted: hsl(256 29% 17.2%);
   --color-muted-foreground: hsl(256 34% 81.7%);
+  /* Text and icons quieter than muted, such as the icons of the sections not shown */
+  --color-subtle-foreground: hsl(256 24% 71.3%);
   --color-accent: hsl(256 29% 23.7%);
   --color-accent-foreground: hsl(256 80% 93.4%);
   --color-destructive: oklch(70.4% 0.191 22.216);
   --color-border: hsl(256 35% 31.3%);
   --color-input: hsl(256 20% 54.4%);
   --color-ring: hsl(267.7 88.8% 68.4%);
+  /* The solid halo around a focused control's border, the purple's 800 shade */
+  --color-focus-ring: hsl(273.3 79.9% 29.2%);
+  /* The border of cards and other surfaces that sit on the page */
+  --color-border-subtle: hsl(256 29% 23.7%);
   /* The current section in the navigation: lighter than the accent, its hover, so it reads purple */
   --color-selected: hsl(256 35% 31.3%);
 
@@ -43,4 +49,7 @@
   --radius-2xl: 1.5rem;
   --radius-3xl: 1.725rem;
   --radius-4xl: 1.95rem;
+
+  /* The shadow of cards, which rest on the page */
+  --shadow-card: 0 2px 6px rgb(0 0 0 / 20%);
 }

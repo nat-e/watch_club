@@ -21,9 +21,6 @@ catalogs:
     '@types/react-dom':
       specifier: ~19.3.0
       version: 19.3.0
-    '@typescript/native':
-      specifier: npm:typescript@^7.0.2
-      version: 7.0.2
     i18next:
       specifier: ^27.0.1
       version: 27.0.1
@@ -173,10 +170,10 @@ importers:
       '@fontsource-variable/fira-code':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/oxanium':
+      '@fontsource/oxanium':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource-variable/reddit-sans':
+      '@fontsource/reddit-sans':
         specifier: ^5.3.0
         version: 5.3.0
       '@sentry/react':
@@ -1056,11 +1053,11 @@ packages:
   '@fontsource-variable/fira-code@5.3.0':
     resolution: {integrity: sha512-ZhvHeknlicraKVSJBa1NrJnXDVByUkC407zwgELYfmnx3p9g8vwIPfQCxx8YD3K7dAeCdLuHJOHlpMfRsIcApQ==}
 
-  '@fontsource-variable/oxanium@5.3.0':
-    resolution: {integrity: sha512-oVOH5mHRMDLQsxG6h2XAOCxyD+uQL2w5zAjy1FgnAlqt183JDVGPxy9FWK7dDnhEO8huXfP6V2C3QJUj1Ac/Sw==}
+  '@fontsource/oxanium@5.3.0':
+    resolution: {integrity: sha512-MpTsBMyPvlorqKkMVoaN8zctjty1vwO7WSOkNYhUj+oE6EEzL9I/j2EoEHLEEWIgTIRYwdxGMNLegBcvnc4nbQ==}
 
-  '@fontsource-variable/reddit-sans@5.3.0':
-    resolution: {integrity: sha512-naTNvstQ0DWDc05RhlLncHLavIYcSwQHQtb6y2CezNxHtlRAQ7+dVTcfHhHUPc409PJdPOewAhdevlsV78YOXg==}
+  '@fontsource/reddit-sans@5.3.0':
+    resolution: {integrity: sha512-SdA8nHMxMVs8sGeVWQ4qw2Gt/JPYISj7GzseSfVq2ECpl3GyYLgBRBftzeHlP06cV7OZRjJraUCggXteVlQJgg==}
 
   '@formatjs/bigdecimal@0.2.10':
     resolution: {integrity: sha512-npIs6UARNOg5amJY5UOVsd6HUQQfzYjet0sa0SWIqzsnVhxLSpaIx2DjoIVrr/vqmjURjvroeW6dItjfy3Uf8A==}
@@ -6255,9 +6252,9 @@ snapshots:
 
   '@fontsource-variable/fira-code@5.3.0': {}
 
-  '@fontsource-variable/oxanium@5.3.0': {}
+  '@fontsource/oxanium@5.3.0': {}
 
-  '@fontsource-variable/reddit-sans@5.3.0': {}
+  '@fontsource/reddit-sans@5.3.0': {}
 
   '@formatjs/bigdecimal@0.2.10': {}
 

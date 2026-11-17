@@ -2,17 +2,29 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@watchclub/core/theme.css";
-@import "@fontsource-variable/reddit-sans";
-@import "@fontsource-variable/oxanium";
+/* The static weights, as Google Fonts serves them: the variable fonts draw each weight heavier */
+@import "@fontsource/reddit-sans/400.css";
+@import "@fontsource/reddit-sans/500.css";
+@import "@fontsource/reddit-sans/600.css";
+@import "@fontsource/reddit-sans/700.css";
+@import "@fontsource/oxanium/400.css";
+@import "@fontsource/oxanium/600.css";
 @import "@fontsource-variable/fira-code";
 
 /* WatchClub is dark only, so `<html>` always carries `dark` */
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Reddit Sans Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-heading: "Oxanium Variable", serif;
+  --font-sans: "Reddit Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Oxanium", serif;
   --font-mono: "Fira Code Variable", monospace;
+
+  /* A page's margins, which grow with the window */
+  --spacing-page: clamp(1rem, 3vw, 2rem);
+  --spacing-page-y: clamp(1.5rem, 4vw, 3rem);
+  /* The widest a page's content gets, and a line of text: 45–75 characters */
+  --container-panel: 56rem;
+  --container-readable: 34em;
 }
 
 @layer base {
@@ -20,6 +32,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background font-sans text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
   }
 }
