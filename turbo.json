@@ -7,7 +7,7 @@
     "PORT",
     "WEB_PORT",
     "RCT_METRO_PORT",
-    "RUST_LOG",
+    "LOG_LEVEL",
     "LOG_FORMAT",
     "RUSTUP_TOOLCHAIN",
     "OTEL_*",

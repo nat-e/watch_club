@@ -245,7 +245,7 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request| {
                     // At error level, so that it holds every log of the request whatever
-                    // `RUST_LOG` filters out
+                    // `LOG_LEVEL` filters out
                     tracing::error_span!(
                         REQUEST_SPAN,
                         { HTTP_REQUEST_METHOD } = %request.method(),

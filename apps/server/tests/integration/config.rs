@@ -45,10 +45,10 @@ fn starts_without_the_optional_settings() {
 }
 
 #[test]
-fn fails_when_the_log_filter_is_invalid() {
-    let errors = startup_error_with(&[("RUST_LOG", "watch_club=loud")]);
+fn fails_when_the_log_level_is_invalid() {
+    let errors = startup_error_with(&[("LOG_LEVEL", "watch_club=loud")]);
 
-    assert!(errors.contains("RUST_LOG isn't a log filter"), "{errors}");
+    assert!(errors.contains("LOG_LEVEL isn't a log level"), "{errors}");
 }
 
 #[test]

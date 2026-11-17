@@ -18,7 +18,7 @@ use crate::{db::Pool, domain::InternalError, observability};
 /// show. Its Sentry reports carry them as tags, with an issue for each kind of job. The metrics
 /// count it as executing while it runs, then record how long it took and how it ended.
 pub(super) async fn instrument(job: &ClaimedJob, run: impl Future<Output = AttemptEnd>) {
-    // At error level, so that it holds every log of the attempt whatever `RUST_LOG` filters out
+    // At error level, so that it holds every log of the attempt whatever `LOG_LEVEL` filters out
     let span = tracing::error_span!(
         "job",
         job.kind = %job.kind,

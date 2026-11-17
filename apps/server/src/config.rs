@@ -23,7 +23,7 @@ pub struct Config {
 /// The settings of the server's logs, of its OpenTelemetry export, and of the Sentry reports.
 #[derive(Debug)]
 pub struct ObservabilityConfig {
-    /// The logs the server writes, from `RUST_LOG`: `info` by default
+    /// The logs the server writes, from `LOG_LEVEL`: `info` by default
     pub log_filter: EnvFilter,
     /// The format of the console's logs, from `LOG_FORMAT`: text by default
     pub log_format: LogFormat,
@@ -86,8 +86,8 @@ impl Config {
 
 impl ObservabilityConfig {
     fn from_env() -> anyhow::Result<Self> {
-        let log_filter = EnvFilter::try_new(optional_var("RUST_LOG").as_deref().unwrap_or("info"))
-            .context("RUST_LOG isn't a log filter")?;
+        let log_filter = EnvFilter::try_new(optional_var("LOG_LEVEL").as_deref().unwrap_or("info"))
+            .context("LOG_LEVEL isn't a log level")?;
         let web_sentry_dsn = optional_var("SENTRY_WEB_DSN");
         if let Some(dsn) = &web_sentry_dsn {
             parse_dsn("SENTRY_WEB_DSN", dsn)?;
