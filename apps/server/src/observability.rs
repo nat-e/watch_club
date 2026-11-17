@@ -54,10 +54,19 @@ const REQUEST_SPAN: &str = "request";
 /// The fields of the span `instrument_job` gives each run of a job
 const JOB_KIND: &str = "job.kind";
 const JOB_ID: &str = "job.id";
+const JOB_ATTEMPT: &str = "job.attempt";
+const JOB_MAX_ATTEMPTS: &str = "job.max_attempts";
 
 /// The fields of the request's or job's span that the exported logs copy, as the console shows them
 /// before each line
-const LOGGED_SPAN_FIELDS: [&str; 4] = [HTTP_REQUEST_METHOD, URL_PATH, JOB_KIND, JOB_ID];
+const LOGGED_SPAN_FIELDS: [&str; 6] = [
+    HTTP_REQUEST_METHOD,
+    URL_PATH,
+    JOB_KIND,
+    JOB_ID,
+    JOB_ATTEMPT,
+    JOB_MAX_ATTEMPTS,
+];
 
 /// The crates that send what OpenTelemetry exports. Exporting their own logs and spans would make
 /// each export start another one.
@@ -208,7 +217,9 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request| {
-                    tracing::info_span!(
+                    // At error level, so that it holds every log of the request whatever
+                    // `RUST_LOG` filters out
+                    tracing::error_span!(
                         REQUEST_SPAN,
                         { HTTP_REQUEST_METHOD } = %request.method(),
                         { URL_PATH } = %request.uri().path(),
@@ -225,18 +236,29 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
         .layer(NewSentryLayer::new_from_top())
 }
 
-/// Observes a run of a job: gives it a span, whose kind and ID its logs show, and a Sentry scope of
-/// its own, so that its errors name the job and carry only its breadcrumbs.
+/// Observes a run of a job, which makes its `attempt`th attempt out of `max_attempts`: gives it a
+/// span, whose kind, ID and attempt its logs show, and a Sentry scope of its own, so that its errors
+/// name the job and carry only its breadcrumbs.
 pub(crate) fn instrument_job<F: Future>(
     kind: &str,
     id: Uuid,
+    attempt: i16,
+    max_attempts: i16,
     run: F,
 ) -> impl Future<Output = F::Output> {
-    let span = tracing::info_span!("job", { JOB_KIND } = %kind, { JOB_ID } = %id);
+    // At error level, so that it holds every log of the attempt whatever `RUST_LOG` filters out
+    let span = tracing::error_span!(
+        "job",
+        { JOB_KIND } = %kind,
+        { JOB_ID } = %id,
+        { JOB_ATTEMPT } = attempt,
+        { JOB_MAX_ATTEMPTS } = max_attempts,
+    );
     let hub = Hub::new_from_top(Hub::current());
     hub.configure_scope(|scope| {
         scope.set_tag(JOB_KIND, kind);
         scope.set_tag(JOB_ID, id);
+        scope.set_tag(JOB_ATTEMPT, attempt);
         // An issue for each kind of job, rather than one for the failures of every kind
         scope.set_fingerprint(Some(&["{{ default }}", kind]));
     });

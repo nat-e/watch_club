@@ -13,6 +13,7 @@ use tokio::{
     time::{self, MissedTickBehavior},
 };
 use tokio_util::sync::CancellationToken;
+use tracing::Level;
 
 use super::{AnyJob, JobError, JobId, JobState, Queue, schedules};
 use crate::{domain::InternalError, observability};
@@ -186,7 +187,7 @@ async fn run_job(db: &PgPool, mut job: ClaimedJob) {
         };
         save_outcome(db, &job, outcome).await;
     };
-    observability::instrument_job(&job.kind, job.id.0, run).await;
+    observability::instrument_job(&job.kind, job.id.0, job.attempt, job.max_attempts, run).await;
 }
 
 /// Runs a job's work under its timeout, and returns how it ended. A panic or a timeout counts as a
@@ -249,10 +250,10 @@ async fn save_outcome(db: &PgPool, job: &ClaimedJob, outcome: Result<(), JobErro
 fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) -> JobState {
     match outcome {
         Ok(()) => JobState::Completed,
+        // The job's span holds its kind, ID and attempt
         Err(JobError::NonRetryable(error)) => {
             tracing::error!(
                 name: "jobs.job.failed",
-                attempt,
                 error = %format_args!("{error:#}"),
                 "the job failed for good",
             );
@@ -261,8 +262,6 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
         Err(JobError::Retryable(error)) if attempt < max_attempts => {
             tracing::warn!(
                 name: "jobs.attempt.failed",
-                attempt,
-                max_attempts,
                 error = %format_args!("{error:#}"),
                 "the job's attempt failed, and will retry",
             );
@@ -271,7 +270,6 @@ fn next_state(attempt: i16, max_attempts: i16, outcome: Result<(), JobError>) ->
         Err(JobError::Retryable(error)) => {
             tracing::error!(
                 name: "jobs.job.failed",
-                attempt,
                 error = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
@@ -322,23 +320,26 @@ async fn rescue_jobs(db: &PgPool) -> Result<(), InternalError> {
     .fetch_all(db)
     .await
     .context("failed to rescue the jobs left running")?;
-    // No job's span holds these logs, so they carry its fields themselves
+    // No job's span holds these logs, so they carry its fields themselves. `event!` rather than
+    // `warn!` or `error!`, which can't take a dotted field first after `name:`
     for job in rescued {
         let (kind, id, attempt) = (job.kind, job.id.0, job.attempt);
         if job.will_retry {
-            tracing::warn!(
+            tracing::event!(
                 name: "jobs.job.rescued",
-                attempt,
+                Level::WARN,
                 job.kind = %kind,
                 job.id = %id,
+                job.attempt = attempt,
                 "the job's attempt never ended, and will retry",
             );
         } else {
-            tracing::error!(
+            tracing::event!(
                 name: "jobs.job.failed",
-                attempt,
+                Level::ERROR,
                 job.kind = %kind,
                 job.id = %id,
+                job.attempt = attempt,
                 "the job's last attempt never ended",
             );
         }
