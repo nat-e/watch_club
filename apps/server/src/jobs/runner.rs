@@ -211,11 +211,11 @@ fn panic_message(panic: &(dyn Any + Send)) -> &str {
 /// again after a backoff.
 async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
     let (attempt, max_attempts) = (job.attempt, job.max_attempts);
-    let recorded = match ended {
-        Ok(()) => finish(db, job, Finished::Completed).await,
+    let state = match ended {
+        Ok(()) => JobState::Completed,
         Err(JobError::Cancel(reason)) => {
             tracing::info!(name: "jobs.job.cancelled", reason, "the job cancelled itself");
-            finish(db, job, Finished::Cancelled).await
+            JobState::Cancelled
         }
         Err(JobError::Fail(error)) => {
             tracing::error!(
@@ -224,7 +224,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job failed for good",
             );
-            finish(db, job, Finished::Failed).await
+            JobState::Failed
         }
         Err(JobError::Internal(error)) if attempt < max_attempts => {
             tracing::warn!(
@@ -234,7 +234,7 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job's attempt failed, and will retry",
             );
-            retry(db, job).await
+            JobState::Available
         }
         Err(JobError::Internal(error)) => {
             tracing::error!(
@@ -243,72 +243,36 @@ async fn record(db: &PgPool, job: &ClaimedJob, ended: Result<(), JobError>) {
                 error = %format_args!("{error:#}"),
                 "the job's last attempt failed",
             );
-            finish(db, job, Finished::Failed).await
+            JobState::Failed
         }
     };
+    // A retry waits `attempt⁴ + 15` seconds, plus up to 10% at random so that jobs that failed
+    // together don't retry together. A job that's no longer this attempt's is left alone: after a
+    // rescue, it belongs to the next attempt.
+    let recorded = sqlx::query!(
+        r#"
+        UPDATE jobs
+        SET state = $3,
+            run_at = CASE WHEN $3 = 'available'::job_state
+                THEN now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))
+                ELSE run_at
+            END,
+            finished_at = CASE WHEN $3 = 'available'::job_state THEN NULL ELSE now() END
+        WHERE id = $1 AND attempt = $2 AND state = 'executing'
+        "#,
+        job.id as JobId,
+        attempt,
+        state as JobState,
+    )
+    .execute(db)
+    .await;
     if let Err(error) = recorded {
         tracing::error!(
             name: "jobs.record.failed",
-            error = %format_args!("{error:#}"),
+            %error,
             "failed to record how the job ended",
         );
     }
-}
-
-/// The states a job ends in.
-#[derive(Clone, Copy, Debug)]
-enum Finished {
-    Completed,
-    Failed,
-    Cancelled,
-}
-
-impl From<Finished> for JobState {
-    fn from(state: Finished) -> Self {
-        match state {
-            Finished::Completed => Self::Completed,
-            Finished::Failed => Self::Failed,
-            Finished::Cancelled => Self::Cancelled,
-        }
-    }
-}
-
-// `finish` and `retry` leave a job alone once it's no longer this attempt's: after a rescue, it
-// belongs to the next attempt.
-
-async fn finish(db: &PgPool, job: &ClaimedJob, state: Finished) -> Result<(), InternalError> {
-    sqlx::query!(
-        r#"
-        UPDATE jobs SET state = $3, finished_at = now()
-        WHERE id = $1 AND attempt = $2 AND state = 'executing'
-        "#,
-        job.id as JobId,
-        job.attempt,
-        JobState::from(state) as JobState,
-    )
-    .execute(db)
-    .await
-    .context("failed to finish a job")?;
-    Ok(())
-}
-
-/// Puts a job back in its queue to try again after `attempt⁴ + 15` seconds, plus up to 10% at
-/// random so that jobs that failed together don't retry together.
-async fn retry(db: &PgPool, job: &ClaimedJob) -> Result<(), InternalError> {
-    sqlx::query!(
-        r#"
-        UPDATE jobs
-        SET state = 'available',
-            run_at = now() + make_interval(secs => (power(attempt, 4) + 15) * (1 + random() / 10))
-        WHERE id = $1 AND attempt = $2 AND state = 'executing'
-        "#,
-        job.id as JobId,
-        job.attempt,
-    )
-    .execute(db)
-    .await
-    .context("failed to retry a job")?;
-    Ok(())
 }
 
 /// Runs the maintenance every minute, starting now, until `shutdown` is cancelled.
