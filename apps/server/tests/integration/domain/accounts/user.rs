@@ -5,8 +5,9 @@ use watch_club::{
         self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken,
         User, Username, UsernameError,
     },
-    testing::{database, database_with_one_connection},
+    testing::database_with_one_connection,
 };
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
@@ -76,9 +77,8 @@ mod password {
 mod has_instance_administrator {
     use super::*;
 
-    #[tokio::test]
-    async fn is_false_until_setup() {
-        let db = database().await;
+    #[database_test]
+    async fn is_false_until_setup(db: PgPool) {
         support::create_user(&db, "ada").await;
 
         let set_up = accounts::has_instance_administrator(&db).await.unwrap();
@@ -86,9 +86,8 @@ mod has_instance_administrator {
         assert!(!set_up);
     }
 
-    #[tokio::test]
-    async fn is_true_once_the_instance_administrator_exists() {
-        let db = database().await;
+    #[database_test]
+    async fn is_true_once_the_instance_administrator_exists(db: PgPool) {
         support::create_instance_administrator(&db).await;
 
         let set_up = accounts::has_instance_administrator(&db).await.unwrap();
@@ -100,9 +99,8 @@ mod has_instance_administrator {
 mod create_instance_administrator {
     use super::*;
 
-    #[tokio::test]
-    async fn creates_the_instance_administrator_and_signs_them_in() {
-        let db = database().await;
+    #[database_test]
+    async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
         let (admin, token) = accounts::create_instance_administrator(
             &db,
             Username::parse("ada").unwrap(),
@@ -123,9 +121,8 @@ mod create_instance_administrator {
         assert_eq!(signed_in, admin);
     }
 
-    #[tokio::test]
-    async fn fails_when_there_is_one_already() {
-        let db = database().await;
+    #[database_test]
+    async fn fails_when_there_is_one_already(db: PgPool) {
         support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(
@@ -142,9 +139,8 @@ mod create_instance_administrator {
         ));
     }
 
-    #[tokio::test]
-    async fn fails_when_there_is_one_already_with_the_same_username() {
-        let db = database().await;
+    #[database_test]
+    async fn fails_when_there_is_one_already_with_the_same_username(db: PgPool) {
         let admin = support::create_instance_administrator(&db).await;
 
         let created = accounts::create_instance_administrator(
@@ -184,9 +180,8 @@ mod create_instance_administrator {
 mod sign_in {
     use super::*;
 
-    #[tokio::test]
-    async fn signs_in_the_user_with_this_password() {
-        let db = database().await;
+    #[database_test]
+    async fn signs_in_the_user_with_this_password(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
 
         let (signed_in, token) = accounts::sign_in(&db, " ada ", PASSWORD.into())
@@ -199,9 +194,8 @@ mod sign_in {
         assert_eq!(session_user, Some(user));
     }
 
-    #[tokio::test]
-    async fn gives_each_device_its_own_token() {
-        let db = database().await;
+    #[database_test]
+    async fn gives_each_device_its_own_token(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
 
         let phone = new_session(&db, &user).await;
@@ -210,9 +204,8 @@ mod sign_in {
         assert_ne!(phone.encode(), laptop.encode());
     }
 
-    #[tokio::test]
-    async fn is_none_for_a_wrong_password() {
-        let db = database().await;
+    #[database_test]
+    async fn is_none_for_a_wrong_password(db: PgPool) {
         support::create_user(&db, "ada").await;
 
         let signed_in = accounts::sign_in(&db, "ada", "wrong password".into())
@@ -222,9 +215,8 @@ mod sign_in {
         assert!(signed_in.is_none());
     }
 
-    #[tokio::test]
-    async fn is_none_for_an_unknown_username() {
-        let db = database().await;
+    #[database_test]
+    async fn is_none_for_an_unknown_username(db: PgPool) {
         let signed_in = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap();
@@ -258,9 +250,8 @@ mod session_token {
 mod session_user {
     use super::*;
 
-    #[tokio::test]
-    async fn is_none_for_a_token_that_never_signed_in() {
-        let db = database().await;
+    #[database_test]
+    async fn is_none_for_a_token_that_never_signed_in(db: PgPool) {
         let token = SessionToken::decode(&"A".repeat(43)).unwrap();
 
         let signed_in = accounts::session_user(&db, &token).await.unwrap();
@@ -268,9 +259,8 @@ mod session_user {
         assert_eq!(signed_in, None);
     }
 
-    #[tokio::test]
-    async fn is_none_once_the_session_expired() {
-        let db = database().await;
+    #[database_test]
+    async fn is_none_once_the_session_expired(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let token = new_session(&db, &user).await;
         support::expire_sessions(&db, user.id).await;
@@ -284,9 +274,8 @@ mod session_user {
 mod sign_out {
     use super::*;
 
-    #[tokio::test]
-    async fn signs_out_this_device_only() {
-        let db = database().await;
+    #[database_test]
+    async fn signs_out_this_device_only(db: PgPool) {
         let user = support::create_user(&db, "ada").await;
         let phone = new_session(&db, &user).await;
         let laptop = new_session(&db, &user).await;
@@ -304,9 +293,8 @@ mod sign_out {
 mod delete_expired_sessions {
     use super::*;
 
-    #[tokio::test]
-    async fn deletes_only_the_expired_sessions() {
-        let db = database().await;
+    #[database_test]
+    async fn deletes_only_the_expired_sessions(db: PgPool) {
         let ada = support::create_user(&db, "ada").await;
         let bob = support::create_user(&db, "bob").await;
         new_session(&db, &ada).await;

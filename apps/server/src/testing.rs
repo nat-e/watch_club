@@ -1,6 +1,7 @@
 //! A database of its own for each test, on the Postgres server of `DATABASE_URL`, which the
-//! worktrees share. `#[sqlx::test]` names a test's database after the test alone, so the same test
-//! run in two worktrees at once would drop the other's database.
+//! worktrees share. `#[database_test]` gives one to a test. `#[sqlx::test]` names a test's database
+//! after the test alone, so the same test run in two worktrees at once would drop the other's
+//! database.
 
 use std::{
     io::{self, Write},

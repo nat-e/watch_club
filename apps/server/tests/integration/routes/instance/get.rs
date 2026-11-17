@@ -1,12 +1,12 @@
 use axum::http::StatusCode;
 use serde_json::Value;
-use watch_club::testing::database;
+use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client};
 
-#[tokio::test]
-async fn needs_setup_until_the_instance_administrator_exists() {
-    let db = database().await;
+#[database_test]
+async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.status, StatusCode::OK);
     assert_eq!(response.body["needs_setup"], true);
@@ -18,9 +18,8 @@ async fn needs_setup_until_the_instance_administrator_exists() {
     assert_eq!(response.body["version"], env!("CARGO_PKG_VERSION"));
 }
 
-#[tokio::test]
-async fn names_no_sentry_dsn_unless_the_host_sets_one() {
-    let db = database().await;
+#[database_test]
+async fn names_no_sentry_dsn_unless_the_host_sets_one(db: PgPool) {
     let response = Client::new(&db).get("/api/instance").await;
     assert_eq!(response.body["web_sentry_dsn"], Value::Null);
 

@@ -1,3 +1,23 @@
+# The server, and the crates only its tests use
+[workspace]
+members = ["test-macros"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# The crates only serve the server's binaries and tests, not other crates
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+# A long function can be the clearest way to say one thing
+too_many_lines = "allow"
+# A module with children lives in `name.rs` next to `name/`
+mod_module_files = "deny"
+# `expect` says which invariant broke. Tests may unwrap
+unwrap_used = "warn"
+
 [package]
 name = "watch_club"
 version = "0.1.0"
@@ -60,22 +80,10 @@ uuid = { version = "1.29.2", features = ["serde"] }
 http-body-util = "0.1.5"
 tower = { version = "0.5.3", features = ["util"] }
 watch_club = { path = ".", features = ["testing"] }
+watch_club_test_macros = { path = "test-macros" }
 
-[lints.rust]
-unsafe_code = "forbid"
-
-[lints.clippy]
-pedantic = { level = "warn", priority = -1 }
-# The crate only serves its binaries and tests, not other crates
-missing_errors_doc = "allow"
-missing_panics_doc = "allow"
-must_use_candidate = "allow"
-# A long function can be the clearest way to say one thing
-too_many_lines = "allow"
-# A module with children lives in `name.rs` next to `name/`
-mod_module_files = "deny"
-# `expect` says which invariant broke. Tests may unwrap
-unwrap_used = "warn"
+[lints]
+workspace = true
 
 # Speed up compilation while keeping file and line numbers in error backtraces.
 [profile.dev]

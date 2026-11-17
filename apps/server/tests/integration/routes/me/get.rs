@@ -1,12 +1,12 @@
 use axum::http::{StatusCode, header::WWW_AUTHENTICATE};
 use serde_json::json;
-use watch_club::testing::database;
+use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client};
 
-#[tokio::test]
-async fn returns_the_signed_in_user() {
-    let db = database().await;
+#[database_test]
+async fn returns_the_signed_in_user(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;
@@ -25,9 +25,8 @@ async fn returns_the_signed_in_user() {
     );
 }
 
-#[tokio::test]
-async fn refuses_requests_without_a_session() {
-    let db = database().await;
+#[database_test]
+async fn refuses_requests_without_a_session(db: PgPool) {
     let response = Client::new(&db).get("/api/me").await;
 
     assert_eq!(response.status, StatusCode::UNAUTHORIZED);
@@ -35,9 +34,8 @@ async fn refuses_requests_without_a_session() {
     assert_eq!(response.body["code"], "unauthorized");
 }
 
-#[tokio::test]
-async fn refuses_requests_once_the_session_expired() {
-    let db = database().await;
+#[database_test]
+async fn refuses_requests_once_the_session_expired(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;

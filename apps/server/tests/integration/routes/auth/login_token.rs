@@ -1,12 +1,12 @@
 use axum::http::{StatusCode, header::SET_COOKIE};
 use serde_json::json;
-use watch_club::testing::database;
+use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::{self, Client, PASSWORD};
 
-#[tokio::test]
-async fn gives_the_app_a_token_that_signs_its_requests_in() {
-    let db = database().await;
+#[database_test]
+async fn gives_the_app_a_token_that_signs_its_requests_in(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let mut app = Client::new(&db);
 
@@ -17,9 +17,8 @@ async fn gives_the_app_a_token_that_signs_its_requests_in() {
     assert_eq!(me.body["username"], "ada");
 }
 
-#[tokio::test]
-async fn sets_no_cookie() {
-    let db = database().await;
+#[database_test]
+async fn sets_no_cookie(db: PgPool) {
     support::create_user(&db, "ada").await;
 
     let credentials = json!({ "username": "ada", "password": PASSWORD });
@@ -31,9 +30,8 @@ async fn sets_no_cookie() {
     assert!(!response.headers.contains_key(SET_COOKIE));
 }
 
-#[tokio::test]
-async fn refuses_wrong_credentials() {
-    let db = database().await;
+#[database_test]
+async fn refuses_wrong_credentials(db: PgPool) {
     support::create_user(&db, "ada").await;
 
     let credentials = json!({ "username": "ada", "password": "wrong password" });

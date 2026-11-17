@@ -1,11 +1,11 @@
 use axum::http::StatusCode;
-use watch_club::testing::database;
+use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::Client;
 
-#[tokio::test]
-async fn unknown_paths_are_not_found_rather_than_the_web_app() {
-    let db = database().await;
+#[database_test]
+async fn unknown_paths_are_not_found_rather_than_the_web_app(db: PgPool) {
     let mut client = Client::new(&db);
     for path in ["/api", "/api/", "/api/nothing-here"] {
         let get = client.get(path).await;
@@ -16,9 +16,8 @@ async fn unknown_paths_are_not_found_rather_than_the_web_app() {
     }
 }
 
-#[tokio::test]
-async fn only_get_and_head_reach_the_web_app() {
-    let db = database().await;
+#[database_test]
+async fn only_get_and_head_reach_the_web_app(db: PgPool) {
     let response = Client::new(&db).post_without_body("/index.html").await;
 
     assert_eq!(response.status, StatusCode::METHOD_NOT_ALLOWED);

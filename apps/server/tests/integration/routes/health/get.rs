@@ -1,21 +1,20 @@
 use axum::http::StatusCode;
 use serde_json::Value;
-use watch_club::testing::database;
+use sqlx::PgPool;
+use watch_club_test_macros::database_test;
 
 use crate::support::Client;
 
-#[tokio::test]
-async fn says_the_server_works() {
-    let db = database().await;
+#[database_test]
+async fn says_the_server_works(db: PgPool) {
     let response = Client::new(&db).get("/api/health").await;
 
     assert_eq!(response.status, StatusCode::OK);
     assert_eq!(response.body, Value::Null);
 }
 
-#[tokio::test]
-async fn says_the_server_cannot_reach_its_database() {
-    let db = database().await;
+#[database_test]
+async fn says_the_server_cannot_reach_its_database(db: PgPool) {
     let mut client = Client::new(&db);
     db.close().await;
 
