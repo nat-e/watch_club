@@ -41,7 +41,7 @@ use tracing_subscriber::{
 };
 use utoipa_axum::router::OpenApiRouter;
 
-use crate::config::ObservabilityConfig;
+use crate::config::{LogFormat, ObservabilityConfig};
 
 /// The name of the server's own instrumentation, apart from the libraries'
 const SCOPE: &str = env!("CARGO_PKG_NAME");
@@ -154,13 +154,21 @@ pub fn start(config: &ObservabilityConfig) -> anyhow::Result<Observability> {
         ))
     });
 
-    let console = tracing_subscriber::fmt::layer();
-    // Colors only on a terminal: Docker and log collectors would keep their codes as text. On a
-    // terminal, the default also leaves them out when `NO_COLOR` is set
-    let console = if io::stdout().is_terminal() {
-        console
-    } else {
-        console.with_ansi(false)
+    let console = match config.log_format {
+        // Colors only on a terminal: Docker and log collectors would keep their codes as text. On a
+        // terminal, the default also leaves them out when `NO_COLOR` is set
+        LogFormat::Text if !io::stdout().is_terminal() => {
+            tracing_subscriber::fmt::layer().with_ansi(false).boxed()
+        }
+        LogFormat::Text => tracing_subscriber::fmt::layer().boxed(),
+        // The event's fields beside its message, and the fields of each span around it, from the
+        // outermost
+        LogFormat::Json => tracing_subscriber::fmt::layer()
+            .json()
+            .flatten_event(true)
+            .with_current_span(false)
+            .with_span_list(true)
+            .boxed(),
     };
 
     tracing_subscriber::registry()

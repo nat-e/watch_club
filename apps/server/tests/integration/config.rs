@@ -52,6 +52,16 @@ fn fails_when_the_log_filter_is_invalid() {
 }
 
 #[test]
+fn fails_when_the_log_format_is_unknown() {
+    let errors = startup_error_with(&[("LOG_FORMAT", "logfmt")]);
+
+    assert!(
+        errors.contains("LOG_FORMAT must be text or json, not logfmt"),
+        "{errors}"
+    );
+}
+
+#[test]
 fn fails_when_a_signal_has_another_exporter_than_otlp() {
     let errors = startup_error_with(&[("OTEL_TRACES_EXPORTER", "jaeger")]);
 

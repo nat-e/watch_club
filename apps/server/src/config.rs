@@ -25,6 +25,8 @@ pub struct Config {
 pub struct ObservabilityConfig {
     /// The logs the server writes, from `RUST_LOG`: `info` by default
     pub log_filter: EnvFilter,
+    /// The format of the console's logs, from `LOG_FORMAT`: text by default
+    pub log_format: LogFormat,
     /// The OpenTelemetry signals the server exports
     pub exports: Exports,
     /// The name the server reports its telemetry under, from `OTEL_SERVICE_NAME`: `watch_club` by
@@ -34,6 +36,25 @@ pub struct ObservabilityConfig {
     pub sentry_dsn: Option<Dsn>,
     /// The Sentry DSN of the web app's errors, from `SENTRY_WEB_DSN`, as the host wrote it
     pub web_sentry_dsn: Option<String>,
+}
+
+/// The format of the console's logs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogFormat {
+    /// Lines for people to read, from `LOG_FORMAT=text`
+    Text,
+    /// One JSON object per line, which log tools read without parsing rules, from `LOG_FORMAT=json`
+    Json,
+}
+
+impl LogFormat {
+    fn from_env() -> anyhow::Result<Self> {
+        match optional_var("LOG_FORMAT").as_deref() {
+            None | Some("text") => Ok(Self::Text),
+            Some("json") => Ok(Self::Json),
+            Some(other) => bail!("LOG_FORMAT must be text or json, not {other}"),
+        }
+    }
 }
 
 /// The OpenTelemetry signals the server exports: those whose `OTEL_{SIGNAL}_EXPORTER` is `otlp`,
@@ -73,6 +94,7 @@ impl ObservabilityConfig {
         }
         Ok(Self {
             log_filter,
+            log_format: LogFormat::from_env()?,
             exports: Exports::from_env()?,
             service_name: optional_var("OTEL_SERVICE_NAME")
                 .unwrap_or_else(|| "watch_club".to_owned()),

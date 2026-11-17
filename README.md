@@ -19,7 +19,7 @@ Database migrations run on start.
 
 ## Observability
 
-The server logs to the console, at the level `RUST_LOG` sets (`info` by default). It can also send its traces, metrics and logs to an OpenTelemetry (OTLP) endpoint, and report errors to Sentry. Both are off by default. `GET /api/health` answers 200 while the server reaches its database, and 503 otherwise.
+The server logs to the console, at the level `RUST_LOG` sets (`info` by default), as text, or as one JSON object per line with `LOG_FORMAT=json`, which log tools such as Loki or Datadog read without parsing rules. It can also send its traces, metrics and logs to an OpenTelemetry (OTLP) endpoint, and report errors to Sentry. Both are off by default. `GET /api/health` answers 200 while the server reaches its database, and 503 otherwise.
 
 ### OpenTelemetry
 
