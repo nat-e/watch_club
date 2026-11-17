@@ -2,7 +2,7 @@
  * The current User, who's signed in, as both apps read and change it.
  */
 import {hashKey, type QueryClient, queryOptions, useSuspenseQuery} from '@tanstack/react-query';
-import {getCurrentUser, getCurrentUserQueryKey, hasCode, type User} from '@watchclub/api';
+import {type CurrentUser, getCurrentUser, getCurrentUserQueryKey, hasCode} from '@watchclub/api';
 
 /**
  * The query for the signed-in User, which answers null when nobody is. Once the session of the User
@@ -11,12 +11,12 @@ import {getCurrentUser, getCurrentUserQueryKey, hasCode, type User} from '@watch
  */
 export const currentUserQuery = queryOptions({
   queryKey: getCurrentUserQueryKey(),
-  queryFn: async ({signal, client: queryClient, queryKey}): Promise<User | null> => {
+  queryFn: async ({signal, client: queryClient, queryKey}): Promise<CurrentUser | null> => {
     try {
       const {data} = await getCurrentUser({signal, throwOnError: true});
       return data;
     } catch (error) {
-      const shownUser = queryClient.getQueryData<User | null>(queryKey);
+      const shownUser = queryClient.getQueryData<CurrentUser | null>(queryKey);
       if (hasCode(error, 'unauthorized') && !shownUser) {
         return null;
       }
@@ -26,7 +26,7 @@ export const currentUserQuery = queryOptions({
 });
 
 /** Returns the signed-in User, for the screens that only Users see. */
-export function useCurrentUser(): User {
+export function useCurrentUser(): CurrentUser {
   const {data: user} = useSuspenseQuery(currentUserQuery);
   if (!user) {
     throw new Error('only signed-in screens can read the User');
@@ -35,7 +35,7 @@ export function useCurrentUser(): User {
 }
 
 /** Makes `user` the current User, so screens show them without asking the API again. */
-export async function setCurrentUser(queryClient: QueryClient, user: User): Promise<void> {
+export async function setCurrentUser(queryClient: QueryClient, user: CurrentUser): Promise<void> {
   // A request sent earlier would overwrite `user` with an older answer, such as that nobody is
   // signed in
   await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
@@ -46,7 +46,10 @@ export async function setCurrentUser(queryClient: QueryClient, user: User): Prom
  * Replaces the current User with a newer copy of them from the API, such as after they change
  * their User Preferences. Does nothing once they've signed out, as the answer can arrive later.
  */
-export async function updateCurrentUser(queryClient: QueryClient, user: User): Promise<void> {
+export async function updateCurrentUser(
+  queryClient: QueryClient,
+  user: CurrentUser,
+): Promise<void> {
   // A request sent earlier would overwrite `user` with an older answer
   await queryClient.cancelQueries({queryKey: currentUserQuery.queryKey, exact: true});
   queryClient.setQueryData(currentUserQuery.queryKey, current =>

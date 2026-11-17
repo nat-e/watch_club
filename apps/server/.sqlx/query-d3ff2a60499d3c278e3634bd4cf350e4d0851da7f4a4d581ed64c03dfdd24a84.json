@@ -1,0 +1,104 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE users\n        SET locale = $2,\n            audio_language = $3,\n            subtitle_language = $4,\n            languages_without_subtitles = $5\n        WHERE id = $1\n        RETURNING id, username, locale, audio_language, subtitle_language,\n            languages_without_subtitles, is_instance_administrator\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "username"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "locale",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "locale"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "audio_language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "audio_language"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "subtitle_language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "subtitle_language"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "languages_without_subtitles",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "languages_without_subtitles"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "is_instance_administrator",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "is_instance_administrator"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "d3ff2a60499d3c278e3634bd4cf350e4d0851da7f4a4d581ed64c03dfdd24a84"
+}

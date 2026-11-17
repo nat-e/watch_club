@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, username, locale, is_instance_administrator, password_hash\n        FROM users\n        WHERE username = $1\n        ",
+  "query": "\n        SELECT id, username, locale, audio_language, subtitle_language,\n            languages_without_subtitles, is_instance_administrator, password_hash\n        FROM users\n        WHERE username = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -38,6 +38,39 @@
       },
       {
         "ordinal": 3,
+        "name": "audio_language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "audio_language"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "subtitle_language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "subtitle_language"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "languages_without_subtitles",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "languages_without_subtitles"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
         "name": "is_instance_administrator",
         "type_info": "Bool",
         "origin": {
@@ -48,7 +81,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 7,
         "name": "password_hash",
         "type_info": "Text",
         "origin": {
@@ -69,8 +102,11 @@
       false,
       false,
       false,
+      true,
+      false,
+      false,
       false
     ]
   },
-  "hash": "cac540f436302d0b854f0400fe0a34ab6a2147e07eafef3f68b5c9493ef80d0e"
+  "hash": "518f1b21f42c2e243fd7501a078baf5a41e08bcb8aaa63128255e25614de3e04"
 }

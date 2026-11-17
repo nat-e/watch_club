@@ -8,6 +8,7 @@ use axum::{
     RequestPartsExt,
     extract::{FromRef, FromRequestParts, OptionalFromRequestParts},
     http::request::Parts,
+    response::{IntoResponse, Response},
 };
 use axum_extra::{
     extract::{
@@ -19,7 +20,7 @@ use axum_extra::{
 
 use crate::{
     db::Pool,
-    domain::accounts::{self, SESSION_LIFETIME, SessionToken, User},
+    domain::accounts::{self, CurrentUser, SESSION_LIFETIME, SessionToken},
     error::ApiError,
 };
 
@@ -44,24 +45,23 @@ impl<S: Send + Sync> OptionalFromRequestParts<S> for SessionToken {
     }
 }
 
-/// The signed-in User, for the endpoints that need one. Requests without a valid session fail
-/// with a 401.
-pub(crate) struct CurrentUser(pub User);
-
+/// Lets endpoints take a `CurrentUser` argument: the signed-in User, for the endpoints that need
+/// one. Requests without a valid session fail with a 401.
 impl<S: Send + Sync> FromRequestParts<S> for CurrentUser
 where
     Pool: FromRef<S>,
 {
-    type Rejection = ApiError;
+    // The response of an `ApiError`, which is private to the crate unlike `CurrentUser`
+    type Rejection = Response;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, ApiError> {
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Response> {
         let Ok(Some(token)) = parts.extract::<Option<SessionToken>>().await else {
-            return Err(ApiError::Unauthorized);
+            return Err(ApiError::Unauthorized.into_response());
         };
-        let user = accounts::session_user(&Pool::from_ref(state), &token)
-            .await?
-            .ok_or(ApiError::Unauthorized)?;
-        Ok(Self(user))
+        let current_user = accounts::session_user(&Pool::from_ref(state), &token)
+            .await
+            .map_err(|error| ApiError::from(error).into_response())?;
+        current_user.ok_or_else(|| ApiError::Unauthorized.into_response())
     }
 }
 

@@ -1,4 +1,11 @@
 export default {
+  editScreen: {
+    cancel: 'Cancel',
+    done: 'Done',
+  },
+  settings: {
+    noLanguages: 'None',
+  },
   signIn: {
     address: 'Address of your WatchClub',
     addressPlaceholder: 'watchclub.example.com',

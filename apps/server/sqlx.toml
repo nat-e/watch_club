@@ -10,6 +10,9 @@
 [macros.table-overrides.'users']
 'id' = "::watch_club::domain::accounts::UserId"
 'locale' = "::watch_club::domain::accounts::Locale"
+'audio_language' = "::watch_club::domain::accounts::AudioLanguage"
+'subtitle_language' = "::watch_club::domain::accounts::TrackLanguage"
+'languages_without_subtitles' = "Vec<::watch_club::domain::accounts::TrackLanguage>"
 
 [macros.table-overrides.'sessions']
 'user_id' = "::watch_club::domain::accounts::UserId"

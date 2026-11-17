@@ -6,8 +6,13 @@ mod database;
 
 use std::process::Command;
 
-use watch_club::db::Pool;
-use watch_club::domain::accounts::{Locale, User, UserId};
+use sqlx::postgres::PgBindIterExt;
+use watch_club::{
+    db::Pool,
+    domain::accounts::{
+        AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences,
+    },
+};
 
 pub use self::{client::Client, database::TestDatabase};
 
@@ -29,32 +34,44 @@ pub fn server_startup_error(vars: &[(&str, &str)]) -> String {
     String::from_utf8(output.stderr).unwrap()
 }
 
-/// Creates a User who signs in with `PASSWORD`.
-pub async fn create_user(db: &Pool, username: &str) -> User {
+/// Creates a User who signs in with `PASSWORD`, with a new User's preferences in English.
+pub async fn create_user(db: &Pool, username: &str) -> CurrentUser {
     insert_user(db, username, false).await
 }
 
 /// Creates the Instance Administrator, who signs in with `PASSWORD`.
-pub async fn create_instance_administrator(db: &Pool) -> User {
+pub async fn create_instance_administrator(db: &Pool) -> CurrentUser {
     insert_user(db, "admin", true).await
 }
 
-async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool) -> User {
-    sqlx::query_as!(
-        User,
+async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool) -> CurrentUser {
+    let preferences = UserPreferences::new(Locale::EnUs);
+    let id = sqlx::query_scalar!(
         r#"
-        INSERT INTO users (username, password_hash, locale, is_instance_administrator)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, username, locale, is_instance_administrator
+        INSERT INTO users (
+            username, password_hash, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
         "#,
         username,
         password_auth::generate_hash(PASSWORD),
-        Locale::EnUs as Locale,
+        preferences.locale as Locale,
+        preferences.audio_language as AudioLanguage,
+        preferences.subtitle_language as Option<TrackLanguage>,
+        preferences.languages_without_subtitles.iter().bind_iter() as _,
         is_instance_administrator,
     )
     .fetch_one(db)
     .await
-    .unwrap()
+    .unwrap();
+    CurrentUser {
+        id,
+        username: username.to_owned(),
+        is_instance_administrator,
+        preferences,
+    }
 }
 
 /// Ends the User's sessions as if their lifetime had run out.

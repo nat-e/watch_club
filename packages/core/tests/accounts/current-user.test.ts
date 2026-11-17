@@ -1,5 +1,5 @@
 import {QueryClient} from '@tanstack/react-query';
-import {client, type User} from '@watchclub/api';
+import {type CurrentUser, client} from '@watchclub/api';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {
   currentUserQuery,
@@ -9,15 +9,21 @@ import {
 } from '../../src/accounts/current-user';
 import {createQueryClient} from '../../src/query-client';
 
-const ALICE: User = {
+// biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
+const ALICE: CurrentUser = {
   id: '0190c0de-0000-7000-8000-000000000001',
-  // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
   is_instance_administrator: false,
-  locale: 'en-US',
+  preferences: {
+    locale: 'en-US',
+    audio_language: 'original',
+    subtitle_language: 'en',
+    languages_without_subtitles: ['en'],
+  },
   username: 'alice',
 };
+// biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
 
-const BOB: User = {...ALICE, id: '0190c0de-0000-7000-8000-000000000002', username: 'bob'};
+const BOB: CurrentUser = {...ALICE, id: '0190c0de-0000-7000-8000-000000000002', username: 'bob'};
 
 client.setConfig({baseUrl: 'https://watchclub.example.com'});
 
@@ -69,7 +75,10 @@ describe('updateCurrentUser', () => {
   it('replaces the User with their newer copy', async () => {
     const queryClient = new QueryClient();
     await setCurrentUser(queryClient, ALICE);
-    const frenchAlice: User = {...ALICE, locale: 'fr-FR'};
+    const frenchAlice: CurrentUser = {
+      ...ALICE,
+      preferences: {...ALICE.preferences, locale: 'fr-FR'},
+    };
 
     await updateCurrentUser(queryClient, frenchAlice);
 

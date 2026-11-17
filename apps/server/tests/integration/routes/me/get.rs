@@ -20,7 +20,12 @@ async fn returns_the_signed_in_user(db: PgPool) {
         json!({
             "id": user.id,
             "username": "ada",
-            "locale": "en-US",
+            "preferences": {
+                "locale": "en-US",
+                "audio_language": "original",
+                "subtitle_language": "en",
+                "languages_without_subtitles": ["en"],
+            },
             "is_instance_administrator": false,
         })
     );

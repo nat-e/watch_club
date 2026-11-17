@@ -18,10 +18,10 @@ use crate::{
     db::Pool,
     domain::{
         InternalError,
-        accounts::{self, SessionToken, User},
+        accounts::{self, SessionToken},
     },
     error::{self, ApiError, ErrorBody},
-    routes::Json,
+    routes::{Json, me::CurrentUserResponse},
 };
 
 pub(super) fn routes() -> OpenApiRouter<AppState> {
@@ -37,7 +37,7 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     path = "/auth/login",
     request_body = LoginRequest,
     responses(
-        (status = OK, body = User, description = "Signed in with the session cookie"),
+        (status = OK, body = CurrentUserResponse, description = "Signed in with the session cookie"),
         (status = UNPROCESSABLE_ENTITY, body = ErrorBody<LoginRequestError>, description = "Wrong username or password"),
     ),
 )]
@@ -45,11 +45,11 @@ async fn login(
     State(db): State<Pool>,
     cookie: SessionCookie,
     Json(credentials): Json<LoginRequest>,
-) -> Result<(CookieJar, Json<User>), LoginRequestError> {
+) -> Result<(CookieJar, Json<CurrentUserResponse>), LoginRequestError> {
     let (user, token) = accounts::sign_in(&db, &credentials.username, credentials.password)
         .await?
         .ok_or(LoginRequestError::WrongCredentials)?;
-    Ok((cookie.set(&token), Json(user)))
+    Ok((cookie.set(&token), Json(user.into())))
 }
 
 /// A username and password to sign in with.
@@ -101,7 +101,7 @@ async fn login_token(
         .ok_or(LoginRequestError::WrongCredentials)?;
     let session = LoginTokenResponse {
         token: token.encode(),
-        user,
+        user: user.into(),
     };
     Ok((StatusCode::CREATED, Json(session)))
 }
@@ -112,7 +112,7 @@ async fn login_token(
 struct LoginTokenResponse {
     /// The token to send as `Authorization: Bearer <token>`
     token: String,
-    user: User,
+    user: CurrentUserResponse,
 }
 
 /// Signs out the browser or app the request comes from. Succeeds when it's signed out already.

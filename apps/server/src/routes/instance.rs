@@ -21,12 +21,12 @@ use crate::{
     domain::{
         InternalError,
         accounts::{
-            self, CreateInstanceAdministratorError, Locale, Password, PasswordError, User,
-            Username, UsernameError,
+            self, CreateInstanceAdministratorError, Locale, Password, PasswordError, Username,
+            UsernameError,
         },
     },
     error::{self, ApiError, ErrorBody},
-    routes::Json,
+    routes::{Json, me::CurrentUserResponse},
 };
 
 pub(super) fn routes() -> OpenApiRouter<AppState> {
@@ -76,7 +76,7 @@ struct GetInstanceResponse {
     path = "/instance/administrator",
     request_body = CreateInstanceAdministratorRequest,
     responses(
-        (status = CREATED, body = User, description = "Created, and signed in with the session cookie"),
+        (status = CREATED, body = CurrentUserResponse, description = "Created, and signed in with the session cookie"),
         (status = CONFLICT, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "WatchClub already has its Instance Administrator"),
         (status = UNPROCESSABLE_ENTITY, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "The username or password breaks the rules"),
     ),
@@ -85,11 +85,14 @@ async fn create_instance_administrator(
     State(db): State<Pool>,
     cookie: SessionCookie,
     Json(request): Json<CreateInstanceAdministratorRequest>,
-) -> Result<(StatusCode, CookieJar, Json<User>), CreateInstanceAdministratorRequestError> {
+) -> Result<
+    (StatusCode, CookieJar, Json<CurrentUserResponse>),
+    CreateInstanceAdministratorRequestError,
+> {
     let (username, password, locale) = request.parse()?;
     let (user, token) =
         accounts::create_instance_administrator(&db, username, password, locale).await?;
-    Ok((StatusCode::CREATED, cookie.set(&token), Json(user)))
+    Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
 
 /// The Instance Administrator that Setup creates.

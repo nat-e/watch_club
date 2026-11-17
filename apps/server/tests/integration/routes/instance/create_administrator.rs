@@ -15,7 +15,7 @@ async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
 
     assert_eq!(response.status, StatusCode::CREATED, "{response:?}");
     assert_eq!(response.body["username"], "ada");
-    assert_eq!(response.body["locale"], "fr-FR");
+    assert_eq!(response.body["preferences"]["locale"], "fr-FR");
     assert_eq!(response.body["is_instance_administrator"], true);
     let me = browser.get("/api/me").await;
     assert_eq!(me.body["username"], "ada", "{me:?}");

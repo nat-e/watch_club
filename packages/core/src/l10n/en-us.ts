@@ -2,6 +2,9 @@ export default {
   browse: {
     title: 'Browse',
   },
+  controls: {
+    close: 'Close',
+  },
   errors: {
     somethingWentWrong: "We couldn't complete your request. Try again in a moment.",
   },
@@ -24,13 +27,25 @@ export default {
     title: 'Playlists',
   },
   settings: {
+    audio: 'Audio',
+    audioAndSubtitles: 'Audio and subtitles',
+    audioAndSubtitlesDescription:
+      'Choose the audio and subtitles videos start with. You can still change them while watching.',
+    audioAndSubtitlesSaved: 'Your audio and subtitle preferences are saved',
     description: 'Manage your account preferences.',
     englishUs: 'English (US)',
     french: 'French',
     language: 'Language',
+    languageSaved: 'Your language is saved',
+    languagesWithoutSubtitles: 'Languages without subtitles',
+    languagesWithoutSubtitlesDescription:
+      'When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language.',
+    originalLanguage: 'Original language',
     preferences: 'Preferences',
     preferencesDescription: 'Choose the language used across WatchClub.',
     save: 'Save',
+    subtitles: 'Subtitles',
+    subtitlesOff: 'Off',
     title: 'Settings',
   },
   signIn: {
@@ -40,6 +55,10 @@ export default {
     submit: 'Sign in',
     title: 'Welcome back!',
     wrongCredentials: 'Wrong username or password',
+  },
+  trackLanguages: {
+    en: 'English',
+    fr: 'French',
   },
   user: {
     instanceAdministrator: 'Instance administrator',

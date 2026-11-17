@@ -30,7 +30,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/CurrentUser"
                 }
               }
             }
@@ -338,7 +338,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/CurrentUser"
                 }
               }
             }
@@ -427,7 +427,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/CurrentUser"
                 }
               }
             }
@@ -497,7 +497,7 @@
     },
     "/api/me/preferences": {
       "put": {
-        "summary": "Saves the signed-in User's preferences, and returns the User with them.",
+        "summary": "Saves the signed-in User's preferences, and returns the User with the new preferences.",
         "operationId": "update_preferences",
         "requestBody": {
           "content": {
@@ -514,7 +514,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/CurrentUser"
                 }
               }
             }
@@ -624,9 +624,18 @@
             "description": "The token to send as `Authorization: Bearer <token>`"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/CurrentUser"
           }
         }
+      },
+      "AudioLanguage": {
+        "type": "string",
+        "description": "The language a User wants to hear: the Content's original language, or a Track Language.",
+        "enum": [
+          "original",
+          "en",
+          "fr"
+        ]
       },
       "CreateInstanceAdministratorRequestError": {
         "oneOf": [
@@ -677,6 +686,30 @@
         "properties": {
           "password": {
             "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "CurrentUser": {
+        "type": "object",
+        "description": "The signed-in User, including what only this User can see: the Instance Administrator status\nand the User Preferences.",
+        "required": [
+          "id",
+          "username",
+          "is_instance_administrator",
+          "preferences"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "is_instance_administrator": {
+            "type": "boolean"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/UserPreferences"
           },
           "username": {
             "type": "string"
@@ -900,30 +933,13 @@
         ],
         "description": "Potential errors when parsing Passwords"
       },
-      "User": {
-        "type": "object",
-        "description": "A person with a WatchClub account.",
-        "required": [
-          "id",
-          "username",
-          "locale",
-          "is_instance_administrator"
-        ],
-        "properties": {
-          "id": {
-            "$ref": "#/components/schemas/UserId"
-          },
-          "is_instance_administrator": {
-            "type": "boolean"
-          },
-          "locale": {
-            "$ref": "#/components/schemas/Locale",
-            "description": "The language and country WatchClub uses for them"
-          },
-          "username": {
-            "type": "string"
-          }
-        }
+      "TrackLanguage": {
+        "type": "string",
+        "description": "A language a User can choose for audio and subtitles, as its ISO 639-1 code.",
+        "enum": [
+          "en",
+          "fr"
+        ]
       },
       "UserId": {
         "type": "string",
@@ -934,11 +950,38 @@
         "type": "object",
         "description": "A User's personal choices that shape their WatchClub experience.",
         "required": [
-          "locale"
+          "locale",
+          "audio_language",
+          "subtitle_language",
+          "languages_without_subtitles"
         ],
         "properties": {
+          "audio_language": {
+            "$ref": "#/components/schemas/AudioLanguage",
+            "description": "The User's default language for video playback"
+          },
+          "languages_without_subtitles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackLanguage"
+            },
+            "description": "The audio languages in which the User watches videos without subtitles",
+            "uniqueItems": true
+          },
           "locale": {
-            "$ref": "#/components/schemas/Locale"
+            "$ref": "#/components/schemas/Locale",
+            "description": "The User's language and country for WatchClub's interface"
+          },
+          "subtitle_language": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TrackLanguage",
+                "description": "The User's default subtitle language for video playback, or none for no subtitles"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },

@@ -2,7 +2,7 @@
  * Gives the screens the app's SessionStore, and the Session and signed-in User it holds.
  */
 import {queryOptions, useQuery} from '@tanstack/react-query';
-import type {User} from '@watchclub/api';
+import type {CurrentUser} from '@watchclub/api';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {
   createContext,
@@ -24,7 +24,7 @@ const SESSION_USER_QUERY = queryOptions({...currentUserQuery, retry: false});
 interface SessionState {
   session: Session;
   /** The signed-in User, or null when signed out or when the app can't reach the Instance */
-  user: User | null;
+  user: CurrentUser | null;
   /** Whether the app has a session token, but can't reach the Instance to learn whose it is */
   isInstanceUnreachable: boolean;
 }

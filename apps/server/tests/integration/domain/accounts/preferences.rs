@@ -1,26 +1,34 @@
+use std::collections::BTreeSet;
+
 use sqlx::PgPool;
-use watch_club::domain::accounts::{self, Locale};
+use watch_club::domain::accounts::{self, AudioLanguage, Locale, TrackLanguage, UserPreferences};
 use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
-mod change_locale {
+mod save_preferences {
     use super::*;
 
     #[database_test]
-    async fn changes_the_users_locale(db: PgPool) {
+    async fn saves_the_users_preferences(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
+        let preferences = UserPreferences {
+            locale: Locale::FrFr,
+            audio_language: AudioLanguage::En,
+            subtitle_language: None,
+            languages_without_subtitles: BTreeSet::from([TrackLanguage::En, TrackLanguage::Fr]),
+        };
 
-        let changed = accounts::change_locale(&db, user.id, Locale::FrFr)
+        let saved = accounts::save_preferences(&db, user.id, &preferences)
             .await
             .unwrap();
 
-        assert_eq!(changed.locale, Locale::FrFr);
+        assert_eq!(saved.preferences, preferences);
         let (signed_in, _) = accounts::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap()
             .unwrap();
-        assert_eq!(signed_in, changed);
+        assert_eq!(signed_in, saved);
     }
 }

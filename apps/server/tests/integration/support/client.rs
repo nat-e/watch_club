@@ -14,7 +14,7 @@ use axum_extra::extract::cookie::Cookie;
 use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::ServiceExt;
-use watch_club::{AppState, AppsSentry, db::Pool, domain::accounts::User};
+use watch_club::{AppState, AppsSentry, db::Pool, domain::accounts::CurrentUser};
 
 use super::PASSWORD;
 
@@ -87,14 +87,14 @@ impl Client {
     }
 
     /// Signs the User in with `PASSWORD`, as the web app does.
-    pub async fn sign_in(&mut self, user: &User) {
+    pub async fn sign_in(&mut self, user: &CurrentUser) {
         let credentials = serde_json::json!({ "username": user.username, "password": PASSWORD });
         let response = self.post("/api/auth/login", credentials).await;
         assert_eq!(response.status, StatusCode::OK, "{response:?}");
     }
 
     /// Signs the User in with `PASSWORD`, as the mobile apps do, and sends the token from then on.
-    pub async fn sign_in_app(&mut self, user: &User) {
+    pub async fn sign_in_app(&mut self, user: &CurrentUser) {
         let credentials = serde_json::json!({ "username": user.username, "password": PASSWORD });
         let response = self.post("/api/auth/login/token", credentials).await;
         assert_eq!(response.status, StatusCode::CREATED, "{response:?}");
