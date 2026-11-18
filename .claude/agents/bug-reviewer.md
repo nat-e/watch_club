@@ -16,4 +16,7 @@ WatchClub is self-hosted and reachable from the internet, but invite-only. Its a
 
 Work out what the code should do from the task, the docs, the tests and the callers. Follow suspicious paths beyond the diff, through callers, callees, edge cases and error paths. For a vulnerability, trace the path from what the attacker controls through code they can reach to what they gain. Before you report a bug, try to disprove it: look for the guard, validation or framework protection that prevents it. Report a bug only if you can show an input or state that can happen, the path it takes and the wrong result. Run an existing test when it settles a doubt, and never claim a check you didn't run. Skip what the compiler, Clippy and CI catch, missing tests, general hardening, and defensive code that fixes no bug you can show.
 
-Give one finding per cause: the file and line, the trigger (for a vulnerability, the attacker and what they control), what should happen and what happens instead, and the fix. If none hold up, say "No bugs found."
+Give one finding per cause: the file and line, the trigger (for a vulnerability, the attacker and what they control), what should happen and what happens instead, and the fix.
+
+It is OK to not find anything. Don't try to make up finding or nitpick about something just to have something.
+Reply with LGTM when everything looks good.

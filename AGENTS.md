@@ -6,7 +6,6 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - Load the `typescript` skill before writing TypeScript
 - Load the `copywriting` skill before writing interface text, in components or in the translation files
 - Load the `database` skill before writing SQL, migrations or code that reads or writes the database
-- Review every meaningful change with `software-design-reviewer` and `bug-reviewer`, Rust changes with `rust-reviewer`, API changes with `openapi-reviewer`, TypeScript changes with `typescript-reviewer`, database changes with `database-reviewer` and interface text with `copywriting-reviewer`. Give each reviewer the change and the context it needs, but don't tell it what to report or skip, its own prompt sets its scope. Do not discard coding styles findings. When reviewer disagree, have them discuss until they agree.
 
 ## Layout
 
@@ -51,7 +50,6 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
   - `layouts/`: the frame of a page or screen, such as web's `Page` or mobile's `FormScreen`
   - `forms/`, `lists/`: generic controls, grouped by kind
   - a folder per domain, named as in `CONTEXT.md`, such as `contents/`, for the components that show it, such as a poster card
-  - the root: the few components used everywhere, such as mobile's `Host`
   - `ui/` (web): shadcn's components in its Vega style, as its CLI writes them. Change their look only through the theme, `packages/core/src/theme.css` and `apps/web/src/index.css`, or through classes where we use them. Edit their files only for what isn't style, such as translating their texts
 - Business logic, such as fetching what a poster card shows and deciding what it shows, goes in `packages/core`, in its domain's folder. Each app only draws it
 
@@ -68,6 +66,10 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 - Test TypeScript with Vitest, in `.test.ts` files in the package's `tests/` folder, beside `src/`, whose files mirror `src/`
 
 ## Naming
+
+## Docs
+
+Documentations for the project is in `docs`, organized per topic.
 
 ## Git
 
