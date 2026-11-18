@@ -32,7 +32,7 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 ### Metadata Providers
 
-- Each Metadata Provider has a gateway in `src/domain/contents/metadata_providers/`, written for what the domain needs rather than mirroring the service's API: it takes and returns domain types and errors, and keeps the service's JSON in a private `api` module. It calls the service through `integrations/http.rs`, which retries and traces the calls
+- Each Metadata Provider has a gateway in `src/domain/contents/metadata_providers/`, written for what the domain needs rather than mirroring the service's API: it takes and returns domain types and errors, and keeps the service's JSON in a private `api` module. It calls the service through `ApiClient`, in `src/api_client.rs`, which retries and traces the calls
 
 ### Logs
 

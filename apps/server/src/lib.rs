@@ -7,12 +7,12 @@ use axum::{Router, extract::FromRef};
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
 
+mod api_client;
 mod auth;
 pub mod config;
 pub mod db;
 pub mod domain;
 mod error;
-mod integrations;
 pub mod jobs;
 pub mod observability;
 pub mod openapi;

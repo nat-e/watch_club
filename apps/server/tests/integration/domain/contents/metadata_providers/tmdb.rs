@@ -235,10 +235,14 @@ async fn search_fails_with_what_tmdb_says_went_wrong() {
         .await
         .unwrap_err();
 
-    assert_eq!(
-        format!("{error:#}"),
-        "TMDB answered /search/multi with 401 Unauthorized: Invalid API key: You must be granted \
-         a valid key."
+    let error = format!("{error:#}");
+    assert!(
+        error.starts_with("127.0.0.1 answered GET /search/multi with 401 Unauthorized: {"),
+        "{error}"
+    );
+    assert!(
+        error.contains("Invalid API key: You must be granted a valid key."),
+        "{error}"
     );
 }
 
@@ -255,7 +259,7 @@ async fn search_fails_when_tmdb_has_no_search() {
 
     assert_eq!(
         format!("{error:#}"),
-        "TMDB answered /search/multi with 404 Not Found"
+        "TMDB answered GET /search/multi with 404 Not Found"
     );
 }
 

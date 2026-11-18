@@ -73,12 +73,6 @@ pub(super) struct TvShow {
     pub(super) name: String,
 }
 
-/// The body of TMDB's failures.
-#[derive(Debug, Deserialize)]
-pub(super) struct ErrorBody {
-    pub(super) status_message: String,
-}
-
 /// Reads a text that TMDB sends empty, or null, when it has none.
 fn optional_text<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
     let text = Option::<String>::deserialize(deserializer)?;

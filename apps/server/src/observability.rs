@@ -319,7 +319,7 @@ fn is_from_exporter(metadata: &Metadata<'_>) -> bool {
     let starts_with = |prefixes: &[&str]| prefixes.iter().any(|prefix| target.starts_with(prefix));
     // With the crates whose names start the same, such as `opentelemetry_sdk`
     starts_with(&["opentelemetry", "reqwest", "hyper", "h2", "rustls"])
-        // But not those that trace and retry the integrations' calls, which the exporter doesn't use
+        // But not those that trace and retry the calls to other services, which the exporter doesn't use
         && !starts_with(&["reqwest_tracing", "reqwest_retry"])
 }
 

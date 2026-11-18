@@ -8,24 +8,17 @@ use std::{
     str::FromStr,
 };
 
-use anyhow::{Context, bail};
+use anyhow::Context;
 use jiff::civil::Date;
-use reqwest::{
-    StatusCode, Url,
-    header::{AUTHORIZATION, HeaderMap, HeaderValue},
-};
-use reqwest_middleware::ClientWithMiddleware;
-use reqwest_tracing::OtelName;
-use secrecy::{ExposeSecret, SecretString};
-use serde::de::DeserializeOwned;
+use secrecy::SecretString;
 
 use crate::{
+    api_client::ApiClient,
     domain::{
         InternalError,
         accounts::Locale,
         contents::{Content, ContentId, LookUpError, SearchResult, SearchResults},
     },
-    integrations::http,
 };
 
 /// The address of TMDB's API
@@ -62,8 +55,7 @@ impl Display for TmdbId {
 /// TMDB, signed in with the API Read Access Token of the instance. Clones share their connections.
 #[derive(Clone, Debug)]
 pub struct Tmdb {
-    http: ClientWithMiddleware,
-    base_url: Url,
+    api: ApiClient,
 }
 
 impl Tmdb {
@@ -74,19 +66,8 @@ impl Tmdb {
 
     /// Returns a TMDB at another address, such as a fake one in tests.
     pub fn with_base_url(token: &SecretString, base_url: &str) -> anyhow::Result<Self> {
-        let base_url = Url::parse(base_url).context("TMDB's address isn't a URL")?;
-        anyhow::ensure!(
-            !base_url.cannot_be_a_base(),
-            "TMDB's address can't have paths"
-        );
-        let mut authorization = HeaderValue::try_from(format!("Bearer {}", token.expose_secret()))
-            .context("the TMDB token can't go in a header")?;
-        // Keeps it out of logs and debug output
-        authorization.set_sensitive(true);
-        let headers = HeaderMap::from_iter([(AUTHORIZATION, authorization)]);
         Ok(Self {
-            http: http::client(headers)?,
-            base_url,
+            api: ApiClient::new(base_url, token)?,
         })
     }
 
@@ -112,9 +93,10 @@ impl Tmdb {
                 ("language", locale.language_tag()),
             ];
             let found: api::SearchPage = self
-                .get("/search/multi", &["search", "multi"], &params)
+                .api
+                .get("/search/multi", &[], &params)
                 .await?
-                .context("TMDB answered /search/multi with 404 Not Found")?;
+                .context("TMDB answered GET /search/multi with 404 Not Found")?;
             let next_page = found.next_page();
             let results: Vec<_> = found
                 .results
@@ -134,9 +116,10 @@ impl Tmdb {
     /// Returns the Movie with this ID, with its title in the Locale's language.
     pub async fn look_up_movie(&self, id: TmdbId, locale: Locale) -> Result<Content, LookUpError> {
         let movie: api::Movie = self
+            .api
             .get(
                 "/movie/{id}",
-                &["movie", &id.to_string()],
+                &[&id.to_string()],
                 &[("language", locale.language_tag())],
             )
             .await?
@@ -154,9 +137,10 @@ impl Tmdb {
         locale: Locale,
     ) -> Result<Content, LookUpError> {
         let tv_show: api::TvShow = self
+            .api
             .get(
                 "/tv/{id}",
-                &["tv", &id.to_string()],
+                &[&id.to_string()],
                 &[("language", locale.language_tag())],
             )
             .await?
@@ -165,47 +149,6 @@ impl Tmdb {
             id: ContentId::TvShow(id),
             title: tv_show.name,
         })
-    }
-
-    /// Calls the API's `route` at the path of `segments`, which it escapes, and reads its JSON, or
-    /// None when TMDB has nothing at this path.
-    async fn get<T: DeserializeOwned>(
-        &self,
-        route: &'static str,
-        segments: &[&str],
-        params: &[(&str, &str)],
-    ) -> anyhow::Result<Option<T>> {
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("`with_base_url` checked that the URL can have paths")
-            .pop_if_empty()
-            .extend(segments);
-        let response = self
-            .http
-            .get(url)
-            .query(params)
-            .with_extension(OtelName(format!("GET {route}").into()))
-            .send()
-            .await
-            .with_context(|| format!("failed to call TMDB's {route}"))?;
-        let status = response.status();
-        let body = response
-            .bytes()
-            .await
-            .with_context(|| format!("failed to receive TMDB's answer to {route}"))?;
-        if status == StatusCode::NOT_FOUND {
-            return Ok(None);
-        }
-        if !status.is_success() {
-            // TMDB says what went wrong in its body
-            let message = serde_json::from_slice::<api::ErrorBody>(&body)
-                .map(|body| body.status_message)
-                .unwrap_or_default();
-            bail!("TMDB answered {route} with {status}: {message}");
-        }
-        let answer = serde_json::from_slice(&body)
-            .with_context(|| format!("failed to read TMDB's answer to {route}"))?;
-        Ok(Some(answer))
     }
 }
 
