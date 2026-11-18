@@ -55,10 +55,6 @@ const SCOPE: &str = env!("CARGO_PKG_NAME");
 /// The name of the span `instrument` gives each request, for the logs
 const REQUEST_SPAN: &str = "request";
 
-/// The crates that send what OpenTelemetry exports. Exporting their own logs and spans would make
-/// each export start another one.
-const EXPORTER_TARGETS: [&str; 5] = ["opentelemetry", "reqwest", "hyper", "h2", "rustls"];
-
 /// The observability the host turned on. Dropping it sends what's left, so keep it until the
 /// server stops.
 pub struct Observability {
@@ -316,12 +312,15 @@ fn name_errors(scope: &mut Scope, work: &str) {
     scope.set_fingerprint(Some(&["{{ default }}", work]));
 }
 
-/// Returns whether the span or event comes from the crates that export, which mustn't be exported.
+/// Returns whether the span or event comes from the crates that send what OpenTelemetry exports.
+/// Exporting their own logs and spans would make each export start another one.
 fn is_from_exporter(metadata: &Metadata<'_>) -> bool {
     let target = metadata.target();
-    EXPORTER_TARGETS
-        .iter()
-        .any(|prefix| target.starts_with(prefix))
+    let starts_with = |prefixes: &[&str]| prefixes.iter().any(|prefix| target.starts_with(prefix));
+    // With the crates whose names start the same, such as `opentelemetry_sdk`
+    starts_with(&["opentelemetry", "reqwest", "hyper", "h2", "rustls"])
+        // But not those that trace and retry the integrations' calls, which the exporter doesn't use
+        && !starts_with(&["reqwest_tracing", "reqwest_retry"])
 }
 
 /// Returns whether it's the span `instrument` gives each request.

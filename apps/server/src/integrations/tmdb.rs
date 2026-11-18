@@ -11,6 +11,8 @@ use reqwest::{
     StatusCode, Url,
     header::{AUTHORIZATION, HeaderMap, HeaderValue},
 };
+use reqwest_middleware::ClientWithMiddleware;
+use reqwest_tracing::OtelName;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 
@@ -40,7 +42,7 @@ const IMAGE_LANGUAGES: &str = "en,fr,null";
 /// their connections.
 #[derive(Clone, Debug)]
 pub struct Client {
-    http: reqwest::Client,
+    http: ClientWithMiddleware,
     base_url: Url,
 }
 
@@ -91,7 +93,7 @@ impl Client {
         authorization.set_sensitive(true);
         let headers = HeaderMap::from_iter([(AUTHORIZATION, authorization)]);
         Ok(Self {
-            http: http::client(&base_url, headers)?,
+            http: http::client(headers)?,
             base_url,
         })
     }
@@ -225,15 +227,19 @@ impl Client {
             .expect("`with_base_url` checked that the URL can have paths")
             .pop_if_empty()
             .extend(segments);
-        let request = self
+        let response = self
             .http
             .get(url)
             .query(params)
-            .build()
-            .with_context(|| format!("failed to make a request to TMDB's {route}"))?;
-        let http::Answer { status, body } = http::send(&self.http, request, route)
+            .with_extension(OtelName(format!("GET {route}").into()))
+            .send()
             .await
             .with_context(|| format!("failed to call TMDB's {route}"))?;
+        let status = response.status();
+        let body = response
+            .bytes()
+            .await
+            .with_context(|| format!("failed to receive TMDB's answer to {route}"))?;
         if status == StatusCode::NOT_FOUND {
             return Err(Error::NotFound);
         }

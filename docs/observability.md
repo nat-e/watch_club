@@ -57,7 +57,6 @@ Your telemetry shows up under the name `watch_club`. Set `OTEL_SERVICE_NAME` to 
 | `db.client.operation.duration`   | How long database queries take                                                  |
 | `db.client.connection.count`     | The database connections in use, and the idle ones                              |
 | `db.client.connection.wait_time` | How long the server waits for a free database connection                        |
-| `http.client.request.duration`   | How long calls to TMDB take, and their status or failure                        |
 | `jobs.attempt.duration`          | How long background jobs take, and whether they succeed, will retry or fail     |
 | `jobs.executing`                 | The background jobs running right now                                           |
 | `jobs.waiting`                   | The background jobs waiting to start                                            |
