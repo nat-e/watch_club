@@ -24,5 +24,6 @@ update = "git pull --ff-only && {{ primary_worktree_path }}/scripts/worktree/upd
 url = "{% if branch == 'rust' %}http://localhost:4101{% else %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ (branch | hash_port) + 20001 }}{% endif %}"
 
 [aliases]
-dev = "pnpm dev"
+# Starts the dev processes unless they run, then shows them. Quitting the view leaves them running
+dev = "pnpm dev && process-compose attach"
 open = "{{ primary_worktree_path }}/scripts/worktree/open.sh {{ worktree_path }}"
