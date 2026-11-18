@@ -34,12 +34,12 @@ const PAGE_SIZE: u32 = 20;
 /// translator or narrator. Hardcover's roles are free text, which some Books write otherwise
 const CREATOR_ROLES: [&str; 3] = ["Author", "Illustrator", "Illustrations"];
 
-/// The ID of a Book at Hardcover.
+/// The ID of a Book at Hardcover, a GraphQL `Int`: a signed 32-bit number.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-pub struct HardcoverId(u32);
+pub struct HardcoverId(i32);
 
 impl HardcoverId {
-    pub const fn new(id: u32) -> Self {
+    pub const fn new(id: i32) -> Self {
         Self(id)
     }
 }

@@ -147,7 +147,9 @@ fn content_id_reads_the_hardcover_id_of_a_book() {
         ContentId::parse(ContentType::Book, "442623"),
         Some(ContentId::Book(HardcoverId::new(442_623)))
     );
-    assert_eq!(ContentId::parse(ContentType::Book, "asterix"), None);
+    for text in ["asterix", "2147483648"] {
+        assert_eq!(ContentId::parse(ContentType::Book, text), None, "{text}");
+    }
 }
 
 #[test]

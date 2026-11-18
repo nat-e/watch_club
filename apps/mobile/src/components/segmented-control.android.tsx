@@ -1,4 +1,9 @@
-import {SegmentedButton, SingleChoiceSegmentedButtonRow, Text} from '@expo/ui/jetpack-compose';
+import {
+  SegmentedButton,
+  type SegmentedButtonColors,
+  SingleChoiceSegmentedButtonRow,
+  Text,
+} from '@expo/ui/jetpack-compose';
 import {semantics} from '@expo/ui/jetpack-compose/modifiers';
 import {useCSSVariable} from 'uniwind';
 import {Host} from '@/components/host';
@@ -21,8 +26,8 @@ export function SegmentedControl<T extends string>({
     '--color-primary-border',
     '--color-muted-foreground',
     '--color-input',
-  ]).map(String);
-  const colors = {
+  ]).map(color => String(color));
+  const colors: SegmentedButtonColors = {
     activeContainerColor: primarySubtle,
     activeContentColor: primary,
     activeBorderColor: primaryBorder,

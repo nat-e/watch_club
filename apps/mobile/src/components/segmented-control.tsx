@@ -5,7 +5,7 @@ import {Host} from '@/components/host';
 
 /** The options of a `SegmentedControl`, and the one picked. */
 export interface SegmentedControlProps<T extends string> {
-  /** What the options pick, which screen readers announce */
+  /** The purpose of the options, which screen readers announce */
   label: string;
   segments: ReadonlyArray<{value: T; label: string}>;
   value: T;
