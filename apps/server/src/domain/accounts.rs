@@ -4,10 +4,10 @@ mod preferences;
 mod user;
 
 pub use self::{
-    preferences::{Locale, change_locale},
+    preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences, save_preferences},
     user::{
-        CreateInstanceAdministratorError, Password, PasswordError, SESSION_LIFETIME, SessionToken,
-        User, UserId, Username, UsernameError, create_instance_administrator,
+        CreateInstanceAdministratorError, CurrentUser, Password, PasswordError, SESSION_LIFETIME,
+        SessionToken, UserId, Username, UsernameError, create_instance_administrator,
         delete_expired_sessions, has_instance_administrator, session_user, sign_in, sign_out,
     },
 };

@@ -28,6 +28,22 @@ _Avoid_: Language, region
 A user’s personal choices that shape their WatchClub experience.
 _Avoid_: User settings, account settings
 
+**Track Language**:
+A language a **User** can choose for audio and subtitles: English or French.
+_Avoid_: Locale
+
+**Preferred Audio Language**:
+The language a **User** wants to hear: the original language of the **Content**, or a **Track Language**.
+_Avoid_: Default audio, audio setting
+
+**Preferred Subtitle Language**:
+The **Track Language** a **User** wants subtitles in, or none.
+_Avoid_: Default subtitles, caption language
+
+**Languages Without Subtitles**:
+The audio languages a **User** watches without subtitles.
+_Avoid_: Hidden subtitle languages, understood languages
+
 ### Conversations
 
 **Recommend Content**:
@@ -71,6 +87,8 @@ _Avoid_: Show, series
 - A **User** has exactly one **Username**
 - **User Preferences** belong to one **User** and are managed only by that **User**
 - **User Preferences** include the user’s preferred **Locale**
+- **User Preferences** include the user’s **Preferred Audio Language**, **Preferred Subtitle Language** and **Languages Without Subtitles**
+- A new **User** gets subtitles in the language of their **Locale**, except when the audio is already in it
 - Every **User** can see every other **User**
 
 ### Conversations

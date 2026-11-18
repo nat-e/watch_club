@@ -1,4 +1,7 @@
 export default {
+  combobox: {
+    remove: 'Retirer',
+  },
   instanceSettings: {
     title: "Paramètres de l'instance",
   },
@@ -10,6 +13,10 @@ export default {
   },
   problemReports: {
     title: 'Signalements',
+  },
+  settings: {
+    addLanguage: 'Ajoute une langue',
+    noLanguageMatches: 'Aucune langue ne correspond',
   },
   setup: {
     administratorAccount:
@@ -26,9 +33,6 @@ export default {
     usernameCharacters: 'Utilise seulement des lettres minuscules, des chiffres et _',
     usernameTooLong: "Le nom d'utilisateur ne peut pas dépasser {{max}} caractères",
     usernameTooShort: "Le nom d'utilisateur doit contenir au moins {{min}} caractères",
-  },
-  sheet: {
-    close: 'Fermer',
   },
   shell: {
     administration: 'Administration',

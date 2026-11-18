@@ -1,18 +1,18 @@
-use std::time::Duration;
+use std::{collections::BTreeSet, time::Duration};
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use watch_club::db::Pool;
 use watch_club::domain::accounts::{
-    self, CreateInstanceAdministratorError, Locale, Password, PasswordError, SessionToken, User,
-    Username, UsernameError,
+    self, AudioLanguage, CreateInstanceAdministratorError, CurrentUser, Locale, Password,
+    PasswordError, SessionToken, TrackLanguage, UserPreferences, Username, UsernameError,
 };
 use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
 /// Signs the User in with `PASSWORD`, and returns the token of the session it starts.
-async fn new_session(db: &Pool, user: &User) -> SessionToken {
+async fn new_session(db: &Pool, user: &CurrentUser) -> SessionToken {
     let (_, token) = accounts::sign_in(db, &user.username, PASSWORD.into())
         .await
         .unwrap()
@@ -102,6 +102,29 @@ mod create_instance_administrator {
     use super::*;
 
     #[database_test]
+    async fn gives_them_subtitles_in_their_language_except_when_the_audio_is_in_it(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let (admin, _) = accounts::create_instance_administrator(
+            &db,
+            Username::parse("ada").unwrap(),
+            Password::parse("secret password".into()).unwrap(),
+            Locale::FrFr,
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            admin.preferences,
+            UserPreferences {
+                locale: Locale::FrFr,
+                audio_language: AudioLanguage::Original,
+                subtitle_language: Some(TrackLanguage::Fr),
+                languages_without_subtitles: BTreeSet::from([TrackLanguage::Fr]),
+            }
+        );
+    }
+
+    #[database_test]
     async fn creates_the_instance_administrator_and_signs_them_in(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let (admin, token) = accounts::create_instance_administrator(
@@ -114,7 +137,7 @@ mod create_instance_administrator {
         .unwrap();
 
         assert!(admin.is_instance_administrator);
-        assert_eq!(admin.locale, Locale::FrFr);
+        assert_eq!(admin.preferences.locale, Locale::FrFr);
         let session_user = accounts::session_user(&db, &token).await.unwrap();
         assert_eq!(session_user.as_ref(), Some(&admin));
         let (signed_in, _) = accounts::sign_in(&db, "ada", "secret password".into())

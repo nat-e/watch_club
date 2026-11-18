@@ -8,14 +8,14 @@ use jiff::SignedDuration;
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use sqlx::PgExecutor;
+use sqlx::{PgExecutor, postgres::PgBindIterExt};
 use sqlx_otel::QueryAnnotateExt;
 use tokio::sync::Semaphore;
 use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use super::Locale;
+use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences};
 use crate::{db::Pool, domain::InternalError};
 
 /// The unique ID of a User.
@@ -29,14 +29,41 @@ impl fmt::Display for UserId {
     }
 }
 
-/// A person with a WatchClub account.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
-pub struct User {
+/// The signed-in User, including what only this User can see: the Instance Administrator status
+/// and the User Preferences.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CurrentUser {
     pub id: UserId,
     pub username: String,
-    /// The language and country WatchClub uses for them
-    pub locale: Locale,
     pub is_instance_administrator: bool,
+    pub preferences: UserPreferences,
+}
+
+/// A User as `users` stores them, which queries select into to return the current User.
+pub(super) struct UserRow {
+    pub(super) id: UserId,
+    pub(super) username: String,
+    pub(super) locale: Locale,
+    pub(super) audio_language: AudioLanguage,
+    pub(super) subtitle_language: Option<TrackLanguage>,
+    pub(super) languages_without_subtitles: Vec<TrackLanguage>,
+    pub(super) is_instance_administrator: bool,
+}
+
+impl From<UserRow> for CurrentUser {
+    fn from(row: UserRow) -> Self {
+        Self {
+            id: row.id,
+            username: row.username,
+            is_instance_administrator: row.is_instance_administrator,
+            preferences: UserPreferences {
+                locale: row.locale,
+                audio_language: row.audio_language,
+                subtitle_language: row.subtitle_language,
+                languages_without_subtitles: row.languages_without_subtitles.into_iter().collect(),
+            },
+        }
+    }
 }
 
 /// A username that follows the rules: 3 to 30 lowercase letters, digits or underscores. Spaces
@@ -154,35 +181,44 @@ impl From<InternalError> for CreateInstanceAdministratorError {
     }
 }
 
-/// Creates the Instance Administrator and signs them in on a new device.
+/// Creates the Instance Administrator, with a new User's preferences for their Locale, signs them in
+/// on a new device and returns them as the current User.
 #[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
     db: &Pool,
     username: Username,
     password: Password,
     locale: Locale,
-) -> Result<(User, SessionToken), CreateInstanceAdministratorError> {
+) -> Result<(CurrentUser, SessionToken), CreateInstanceAdministratorError> {
     let password_hash =
         hash_slowly(move || password_auth::generate_hash(password.0.expose_secret())).await;
 
     let username = username.into_inner();
+    let preferences = UserPreferences::new(locale);
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     let created = sqlx::query_as!(
-        User,
+        UserRow,
         r#"
-        INSERT INTO users (username, password_hash, locale, is_instance_administrator)
-        VALUES ($1, $2, $3, true)
-        RETURNING id, username, locale, is_instance_administrator
+        INSERT INTO users (
+            username, password_hash, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, true)
+        RETURNING id, username, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator
         "#,
         &username,
         password_hash,
-        locale as Locale,
+        preferences.locale as Locale,
+        preferences.audio_language as AudioLanguage,
+        preferences.subtitle_language as Option<TrackLanguage>,
+        preferences.languages_without_subtitles.iter().bind_iter() as _,
     )
     .with_operation("INSERT", "users")
     .fetch_one(&mut transaction)
     .await;
-    let user = match created {
-        Ok(user) => user,
+    let admin: CurrentUser = match created {
+        Ok(row) => row.into(),
         Err(error) => {
             // Gives the connection back before the check below takes one from the pool
             transaction
@@ -209,7 +245,7 @@ pub async fn create_instance_administrator(
                 .into());
         }
     };
-    let token = create_session(&mut transaction, user.id).await?;
+    let token = create_session(&mut transaction, admin.id).await?;
     transaction
         .commit()
         .await
@@ -217,11 +253,11 @@ pub async fn create_instance_administrator(
     tracing::event!(
         name: "accounts.instance_administrator.created",
         Level::INFO,
-        user.id = %user.id,
-        user.name = user.username,
+        user.id = %admin.id,
+        user.name = admin.username,
         "created the Instance Administrator",
     );
-    Ok((user, token))
+    Ok((admin, token))
 }
 
 /// The time signing in keeps a User signed in on a device.
@@ -266,7 +302,7 @@ pub async fn sign_in(
     db: &Pool,
     username: &str,
     password: SecretString,
-) -> Result<Option<(User, SessionToken)>, InternalError> {
+) -> Result<Option<(CurrentUser, SessionToken)>, InternalError> {
     let username = username.trim();
     let Some(user) = check_credentials(db, username, password).await? else {
         tracing::event!(
@@ -294,10 +330,11 @@ async fn check_credentials(
     db: &Pool,
     username: &str,
     password: SecretString,
-) -> Result<Option<User>, InternalError> {
+) -> Result<Option<CurrentUser>, InternalError> {
     let Some(row) = sqlx::query!(
         r#"
-        SELECT id, username, locale, is_instance_administrator, password_hash
+        SELECT id, username, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator, password_hash
         FROM users
         WHERE username = $1
         "#,
@@ -323,21 +360,28 @@ async fn check_credentials(
         return Ok(None);
     }
 
-    Ok(Some(User {
+    Ok(Some(CurrentUser::from(UserRow {
         id: row.id,
         username: row.username,
         locale: row.locale,
+        audio_language: row.audio_language,
+        subtitle_language: row.subtitle_language,
+        languages_without_subtitles: row.languages_without_subtitles,
         is_instance_administrator: row.is_instance_administrator,
-    }))
+    })))
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
 #[tracing::instrument(skip_all)]
-pub async fn session_user(db: &Pool, token: &SessionToken) -> Result<Option<User>, InternalError> {
-    let user = sqlx::query_as!(
-        User,
+pub async fn session_user(
+    db: &Pool,
+    token: &SessionToken,
+) -> Result<Option<CurrentUser>, InternalError> {
+    let row = sqlx::query_as!(
+        UserRow,
         r#"
-        SELECT u.id, u.username, u.locale, u.is_instance_administrator
+        SELECT u.id, u.username, u.locale, u.audio_language, u.subtitle_language,
+            u.languages_without_subtitles, u.is_instance_administrator
         FROM sessions s
         JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = $1 AND s.expires_at > now()
@@ -348,7 +392,7 @@ pub async fn session_user(db: &Pool, token: &SessionToken) -> Result<Option<User
     .fetch_optional(db)
     .await
     .context("failed to find the session's User")?;
-    Ok(user)
+    Ok(row.map(CurrentUser::from))
 }
 
 /// Signs out the device that the token keeps signed in.

@@ -46,7 +46,7 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
-  const { t } = useTranslation("web")
+  const { t } = useTranslation("core")
 
   return (
     <SheetPortal>
@@ -74,7 +74,7 @@ function SheetContent({
           >
             <XIcon
             />
-            <span className="sr-only">{t(($) => $.web.sheet.close)}</span>
+            <span className="sr-only">{t(($) => $.core.controls.close)}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>

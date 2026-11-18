@@ -1,5 +1,5 @@
 import {QueryClient} from '@tanstack/react-query';
-import type {User} from '@watchclub/api';
+import type {CurrentUser} from '@watchclub/api';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {SessionStore} from '@/session-store';
@@ -27,13 +27,19 @@ const INSTANCE = 'https://watchclub.example.com';
 const OTHER_INSTANCE = 'https://other.example.com';
 const DEV_SERVER = 'http://192.168.1.10:34767';
 
-const ALICE: User = {
+// biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
+const ALICE: CurrentUser = {
   id: '0190c0de-0000-7000-8000-000000000001',
-  // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
   is_instance_administrator: false,
-  locale: 'en-US',
+  preferences: {
+    locale: 'en-US',
+    audio_language: 'original',
+    subtitle_language: 'en',
+    languages_without_subtitles: ['en'],
+  },
   username: 'alice',
 };
+// biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
 
 /** A request the API received: its URL and the session token it sent, if any. */
 interface Received {

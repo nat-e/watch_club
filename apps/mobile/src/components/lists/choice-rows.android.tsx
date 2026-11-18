@@ -9,17 +9,12 @@ import type {Choice} from '@/components/lists/choice-rows';
  * lists them: one row per option, with a radio button. A function rather than a component, as the
  * section only draws the rows it's given directly.
  */
-export function choiceRows<T extends string>({
-  options,
-  value,
-  onChange,
-  disabled = false,
-}: Choice<T>): ReactNode {
+export function choiceRows<T>({options, value, onChange, disabled = false}: Choice<T>): ReactNode {
   return options.map(option => {
     const selected = option.value === value;
     return (
       <ListItem
-        key={option.value}
+        key={option.label}
         leading={<RadioButton selected={selected} enabled={!disabled} />}
         // The whole row picks the option, and screen readers announce it as a radio button
         modifiers={

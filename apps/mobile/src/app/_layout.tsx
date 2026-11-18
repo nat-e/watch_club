@@ -7,7 +7,9 @@ import * as splashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
 import {useEffect, useMemo} from 'react';
 import {AppState} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {useCSSVariable} from 'uniwind';
+import {Toaster} from '@/components/toaster';
 import {Localization} from '@/l10n';
 import {reportToInstance, startSentry} from '@/sentry';
 import {SessionProvider, useSession} from '@/session';
@@ -38,14 +40,18 @@ export default sentry.wrap(RootLayout);
 
 function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionProvider store={sessionStore}>
-        <Localization>
-          <StatusBar style="light" />
-          <Screens />
-        </Localization>
-      </SessionProvider>
-    </QueryClientProvider>
+    // Gesture Handler's root lets the User swipe toasts away
+    <GestureHandlerRootView style={{flex: 1}}>
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider store={sessionStore}>
+          <Localization>
+            <StatusBar style="light" />
+            <Screens />
+            <Toaster />
+          </Localization>
+        </SessionProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
 

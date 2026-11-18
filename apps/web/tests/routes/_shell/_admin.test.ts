@@ -1,20 +1,26 @@
 import {QueryClient} from '@tanstack/react-query';
 import {createMemoryHistory, createRouter} from '@tanstack/react-router';
-import {getInstanceOptions, type Instance, type User} from '@watchclub/api';
+import {type CurrentUser, getInstanceOptions, type Instance} from '@watchclub/api';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {routeTree} from '@/routeTree.gen';
 
-const ALICE: User = {
+// biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
+const ALICE: CurrentUser = {
   id: '0190c0de-0000-7000-8000-000000000001',
-  // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
   is_instance_administrator: false,
-  locale: 'en-US',
+  preferences: {
+    locale: 'en-US',
+    audio_language: 'original',
+    subtitle_language: 'en',
+    languages_without_subtitles: ['en'],
+  },
   username: 'alice',
 };
+// biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
 
 // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
-const ADMIN: User = {...ALICE, is_instance_administrator: true, username: 'admin'};
+const ADMIN: CurrentUser = {...ALICE, is_instance_administrator: true, username: 'admin'};
 
 const ORIGIN = 'https://watchclub.example.com';
 
@@ -28,7 +34,7 @@ afterEach(() => {
 });
 
 /** Returns the address a visitor ends up at once they open `path`, signed in as `user`. */
-async function open(path: string, user: User | null): Promise<string> {
+async function open(path: string, user: CurrentUser | null): Promise<string> {
   const queryClient = new QueryClient();
   queryClient.setQueryData(currentUserQuery.queryKey, user);
   const instance: Instance = {

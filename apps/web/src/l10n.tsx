@@ -21,7 +21,7 @@ const MESSAGES: Messages = {'en-US': enUs, 'fr-FR': frFr};
 /** The translations into the User's Locale, for the pages inside it. */
 export function Localization({children}: {children: ReactNode}) {
   const {data: user} = useQuery(currentUserQuery);
-  const locale = user?.locale ?? negotiateLocale(navigator.languages);
+  const locale = user?.preferences.locale ?? negotiateLocale(navigator.languages);
   const i18n = useMemo(() => createI18n(locale, 'web', MESSAGES), [locale]);
 
   useEffect(() => {

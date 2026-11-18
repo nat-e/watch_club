@@ -1,4 +1,7 @@
 export default {
+  combobox: {
+    remove: 'Remove',
+  },
   instanceSettings: {
     title: 'Instance settings',
   },
@@ -10,6 +13,10 @@ export default {
   },
   problemReports: {
     title: 'Problem reports',
+  },
+  settings: {
+    addLanguage: 'Add a language',
+    noLanguageMatches: 'No language matches',
   },
   setup: {
     administratorAccount:
@@ -26,9 +33,6 @@ export default {
     usernameCharacters: 'Use only lowercase letters, numbers and _',
     usernameTooLong: 'Username cannot be longer than {{max}} characters',
     usernameTooShort: 'Username must be at least {{min}} characters',
-  },
-  sheet: {
-    close: 'Close',
   },
   shell: {
     administration: 'Administration',

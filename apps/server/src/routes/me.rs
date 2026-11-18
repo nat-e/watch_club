@@ -1,15 +1,18 @@
-//! The signed-in User, and their User Preferences.
+//! The signed-in User, and their User Preferences, with how the API sends and takes them.
+
+use std::collections::BTreeSet;
 
 use axum::extract::State;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppState,
-    auth::CurrentUser,
     db::Pool,
-    domain::accounts::{self, Locale, User},
+    domain::accounts::{
+        self, AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences,
+    },
     error::ApiError,
     routes::Json,
 };
@@ -24,33 +27,88 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
 #[utoipa::path(
     get,
     path = "/me",
-    responses((status = OK, body = User)),
+    responses((status = OK, body = CurrentUserResponse)),
     security(("session_cookie" = []), ("session_token" = [])),
 )]
-async fn get_current_user(CurrentUser(user): CurrentUser) -> Json<User> {
-    Json(user)
+async fn get_current_user(current_user: CurrentUser) -> Json<CurrentUserResponse> {
+    Json(current_user.into())
 }
 
-/// Saves the signed-in User's preferences, and returns the User with them.
+/// Saves the signed-in User's preferences, and returns the User with the new preferences.
 #[utoipa::path(
     put,
     path = "/me/preferences",
-    request_body = UpdatePreferencesRequest,
-    responses((status = OK, body = User)),
+    request_body = UserPreferencesBody,
+    responses((status = OK, body = CurrentUserResponse)),
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn update_preferences(
     State(db): State<Pool>,
-    CurrentUser(user): CurrentUser,
-    Json(preferences): Json<UpdatePreferencesRequest>,
-) -> Result<Json<User>, ApiError> {
-    let user = accounts::change_locale(&db, user.id, preferences.locale).await?;
-    Ok(Json(user))
+    current_user: CurrentUser,
+    Json(preferences): Json<UserPreferencesBody>,
+) -> Result<Json<CurrentUserResponse>, ApiError> {
+    let current_user =
+        accounts::save_preferences(&db, current_user.id, &preferences.into()).await?;
+    Ok(Json(current_user.into()))
+}
+
+/// The signed-in User, including what only this User can see: the Instance Administrator status
+/// and the User Preferences.
+#[derive(Serialize, ToSchema)]
+#[schema(as = CurrentUser)]
+pub(super) struct CurrentUserResponse {
+    id: UserId,
+    username: String,
+    is_instance_administrator: bool,
+    preferences: UserPreferencesBody,
+}
+
+impl From<CurrentUser> for CurrentUserResponse {
+    fn from(current_user: CurrentUser) -> Self {
+        Self {
+            id: current_user.id,
+            username: current_user.username,
+            is_instance_administrator: current_user.is_instance_administrator,
+            preferences: current_user.preferences.into(),
+        }
+    }
 }
 
 /// A User's personal choices that shape their WatchClub experience.
-#[derive(Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 #[schema(as = UserPreferences)]
-struct UpdatePreferencesRequest {
+struct UserPreferencesBody {
+    /// The User's language and country for WatchClub's interface
     locale: Locale,
+    /// The User's default language for video playback
+    audio_language: AudioLanguage,
+    /// The User's default subtitle language for video playback, or none for no subtitles
+    // Required even though it can be null, so that leaving it out doesn't turn subtitles off
+    #[serde(deserialize_with = "Option::deserialize")]
+    #[schema(required = true)]
+    subtitle_language: Option<TrackLanguage>,
+    /// The audio languages in which the User watches videos without subtitles
+    languages_without_subtitles: BTreeSet<TrackLanguage>,
+}
+
+impl From<UserPreferences> for UserPreferencesBody {
+    fn from(preferences: UserPreferences) -> Self {
+        Self {
+            locale: preferences.locale,
+            audio_language: preferences.audio_language,
+            subtitle_language: preferences.subtitle_language,
+            languages_without_subtitles: preferences.languages_without_subtitles,
+        }
+    }
+}
+
+impl From<UserPreferencesBody> for UserPreferences {
+    fn from(body: UserPreferencesBody) -> Self {
+        Self {
+            locale: body.locale,
+            audio_language: body.audio_language,
+            subtitle_language: body.subtitle_language,
+            languages_without_subtitles: body.languages_without_subtitles,
+        }
+    }
 }

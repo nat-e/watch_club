@@ -7,7 +7,7 @@ import {
   redirect,
   useRouter,
 } from '@tanstack/react-router';
-import {logoutMutation, type User} from '@watchclub/api';
+import {type CurrentUser, logoutMutation} from '@watchclub/api';
 import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
 import * as icons from 'lucide-react';
 import {useEffect} from 'react';
@@ -85,7 +85,7 @@ function Shell() {
  * The navigation and the User's menu. On phones, it slides in over the page, and hides once one of
  * its links opens a page.
  */
-function AppSidebar({user}: {user: User}) {
+function AppSidebar({user}: {user: CurrentUser}) {
   const {t} = useTranslation(['web', 'core']);
   const router = useRouter();
   const {setOpenMobile} = useSidebar();
@@ -188,7 +188,7 @@ function SectionLink({
  * The button that opens the User's menu, with their settings, the administration pages for the
  * Instance Administrator, and signing out.
  */
-function UserMenu({user}: {user: User}) {
+function UserMenu({user}: {user: CurrentUser}) {
   const {t} = useTranslation(['web', 'core']);
   const queryClient = useQueryClient();
   const signOut = useMutation({
