@@ -72,15 +72,6 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<tmdb::Error> for LookUpError {
-    fn from(error: tmdb::Error) -> Self {
-        match error {
-            tmdb::Error::NotFound => Self::NotFound,
-            tmdb::Error::Internal(error) => Self::Internal(error),
-        }
-    }
-}
-
 /// Returns a page of the Movies and TV Shows whose title matches the query, from TMDB, most
 /// relevant first, with their texts in the Locale's language. A blank query matches nothing.
 ///
@@ -100,7 +91,9 @@ pub async fn search(
     let mut page = page;
     let mut pages_read = 1;
     loop {
-        let found = tmdb.search_multi(query, page, locale).await?;
+        let found = tmdb
+            .search_multi(query, page, locale.language_tag())
+            .await?;
         let next_page = found.next_page();
         let results: Vec<_> = found.results.into_iter().filter_map(content).collect();
         match next_page {
@@ -147,9 +140,17 @@ pub async fn look_up(
     id: ContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
+    let language = locale.language_tag();
     let title = match id.content_type {
-        ContentType::Movie => tmdb.movie_details(id.tmdb_id, locale).await?.title,
-        ContentType::TvShow => tmdb.tv_show_details(id.tmdb_id, locale).await?.name,
+        ContentType::Movie => tmdb
+            .movie_details(id.tmdb_id, language)
+            .await?
+            .map(|movie| movie.title),
+        ContentType::TvShow => tmdb
+            .tv_show_details(id.tmdb_id, language)
+            .await?
+            .map(|tv_show| tv_show.name),
     };
+    let title = title.ok_or(LookUpError::NotFound)?;
     Ok(Content { id, title })
 }

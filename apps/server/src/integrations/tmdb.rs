@@ -6,7 +6,7 @@ mod search;
 
 use std::num::NonZeroU32;
 
-use anyhow::{Context, anyhow};
+use anyhow::{Context, bail};
 use reqwest::{
     StatusCode, Url,
     header::{AUTHORIZATION, HeaderMap, HeaderValue},
@@ -29,7 +29,6 @@ pub use self::{
     },
 };
 use super::http;
-use crate::domain::{InternalError, accounts::Locale};
 
 /// The address of TMDB's API
 const BASE_URL: &str = "https://api.themoviedb.org/3";
@@ -44,25 +43,6 @@ const IMAGE_LANGUAGES: &str = "en,fr,null";
 pub struct Client {
     http: ClientWithMiddleware,
     base_url: Url,
-}
-
-/// The failures of a call for something by its ID.
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// TMDB has nothing with this ID
-    #[error("TMDB has nothing with this ID")]
-    NotFound,
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
-impl From<Error> for InternalError {
-    fn from(error: Error) -> Self {
-        match error {
-            Error::NotFound => anyhow!(error).into(),
-            Error::Internal(error) => error.into(),
-        }
-    }
 }
 
 /// Another site's ID of a Movie, a TV Show or an episode, to find it on TMDB.
@@ -99,77 +79,79 @@ impl Client {
     }
 
     /// Returns a page of the Movies, TV Shows and people whose title or name matches the query,
-    /// most relevant first, in the Locale's language. It leaves out adult content.
+    /// most relevant first, in `language`, a language tag such as `fr-FR`. It leaves out adult
+    /// content.
     pub async fn search_multi(
         &self,
         query: &str,
         page: NonZeroU32,
-        locale: Locale,
-    ) -> Result<SearchPage<MultiSearchResult>, InternalError> {
+        language: &str,
+    ) -> anyhow::Result<SearchPage<MultiSearchResult>> {
         let page = page.to_string();
-        let params = search_params(query, &page, locale);
-        Ok(self
-            .get("/search/multi", &["search", "multi"], &params)
-            .await?)
+        let params = search_params(query, &page, language);
+        self.get("/search/multi", &["search", "multi"], &params)
+            .await
     }
 
-    /// Returns a page of the Movies whose title matches the query, most relevant first, in the
-    /// Locale's language, released in `year` if set. It leaves out adult content.
+    /// Returns a page of the Movies whose title matches the query, most relevant first, in
+    /// `language`, released in `year` if set. It leaves out adult content.
     pub async fn search_movies(
         &self,
         query: &str,
         year: Option<i16>,
         page: NonZeroU32,
-        locale: Locale,
-    ) -> Result<SearchPage<MovieSearchResult>, InternalError> {
+        language: &str,
+    ) -> anyhow::Result<SearchPage<MovieSearchResult>> {
         let page = page.to_string();
         let year = year.map(|year| year.to_string());
-        let mut params = search_params(query, &page, locale);
+        let mut params = search_params(query, &page, language);
         params.extend(year.as_deref().map(|year| ("primary_release_year", year)));
-        Ok(self
-            .get("/search/movie", &["search", "movie"], &params)
-            .await?)
+        self.get("/search/movie", &["search", "movie"], &params)
+            .await
     }
 
-    /// Returns a page of the TV Shows whose name matches the query, most relevant first, in the
-    /// Locale's language, first aired in `year` if set. It leaves out adult content.
+    /// Returns a page of the TV Shows whose name matches the query, most relevant first, in
+    /// `language`, first aired in `year` if set. It leaves out adult content.
     pub async fn search_tv_shows(
         &self,
         query: &str,
         year: Option<i16>,
         page: NonZeroU32,
-        locale: Locale,
-    ) -> Result<SearchPage<TvShowSearchResult>, InternalError> {
+        language: &str,
+    ) -> anyhow::Result<SearchPage<TvShowSearchResult>> {
         let page = page.to_string();
         let year = year.map(|year| year.to_string());
-        let mut params = search_params(query, &page, locale);
+        let mut params = search_params(query, &page, language);
         params.extend(year.as_deref().map(|year| ("first_air_date_year", year)));
-        Ok(self.get("/search/tv", &["search", "tv"], &params).await?)
+        self.get("/search/tv", &["search", "tv"], &params).await
     }
 
     /// Returns the Movies, TV Shows and episodes that another site knows by this ID, in English.
-    pub async fn find_by_external_id(&self, id: &ExternalId) -> Result<FindResults, InternalError> {
+    pub async fn find_by_external_id(&self, id: &ExternalId) -> anyhow::Result<FindResults> {
         let (id, source) = match id {
             ExternalId::Imdb(id) => (id.clone(), "imdb_id"),
             ExternalId::Tvdb(id) => (id.to_string(), "tvdb_id"),
         };
-        Ok(self
-            .get(
-                "/find/{external_id}",
-                &["find", &id],
-                &[("external_source", source)],
-            )
-            .await?)
+        self.get(
+            "/find/{external_id}",
+            &["find", &id],
+            &[("external_source", source)],
+        )
+        .await
     }
 
-    /// Returns the Movie's details in the Locale's language, with its translations, images, credits
-    /// and videos.
-    pub async fn movie_details(&self, id: u32, locale: Locale) -> Result<MovieDetails, Error> {
-        self.get(
+    /// Returns the Movie's details in `language`, a language tag such as `fr-FR`, with its
+    /// translations, images, credits and videos, or None when TMDB has no Movie with this ID.
+    pub async fn movie_details(
+        &self,
+        id: u32,
+        language: &str,
+    ) -> anyhow::Result<Option<MovieDetails>> {
+        self.get_optional(
             "/movie/{id}",
             &["movie", &id.to_string()],
             &[
-                ("language", locale.language_tag()),
+                ("language", language),
                 ("append_to_response", "translations,images,credits,videos"),
                 ("include_image_language", IMAGE_LANGUAGES),
             ],
@@ -177,14 +159,18 @@ impl Client {
         .await
     }
 
-    /// Returns the TV Show's details in the Locale's language, with its seasons, translations,
-    /// images, IDs on other sites, credits and videos.
-    pub async fn tv_show_details(&self, id: u32, locale: Locale) -> Result<TvShowDetails, Error> {
-        self.get(
+    /// Returns the TV Show's details in `language`, with its seasons, translations, images, IDs on
+    /// other sites, credits and videos, or None when TMDB has no TV Show with this ID.
+    pub async fn tv_show_details(
+        &self,
+        id: u32,
+        language: &str,
+    ) -> anyhow::Result<Option<TvShowDetails>> {
+        self.get_optional(
             "/tv/{id}",
             &["tv", &id.to_string()],
             &[
-                ("language", locale.language_tag()),
+                ("language", language),
                 (
                     "append_to_response",
                     "translations,images,external_ids,credits,videos",
@@ -195,14 +181,15 @@ impl Client {
         .await
     }
 
-    /// Returns a season of the TV Show in the Locale's language, with its episodes.
+    /// Returns a season of the TV Show in `language`, with its episodes, or None when TMDB has no
+    /// such TV Show or season.
     pub async fn season_details(
         &self,
         tv_show_id: u32,
         season_number: u32,
-        locale: Locale,
-    ) -> Result<SeasonDetails, Error> {
-        self.get(
+        language: &str,
+    ) -> anyhow::Result<Option<SeasonDetails>> {
+        self.get_optional(
             "/tv/{id}/season/{season_number}",
             &[
                 "tv",
@@ -210,18 +197,32 @@ impl Client {
                 "season",
                 &season_number.to_string(),
             ],
-            &[("language", locale.language_tag())],
+            &[("language", language)],
         )
         .await
     }
 
-    /// Calls the API's `route` at the path of `segments`, which it escapes, and reads its JSON.
+    /// Like `get_optional`, for the routes that always find something, such as searches: a 404 is a
+    /// failure.
     async fn get<T: DeserializeOwned>(
         &self,
         route: &'static str,
         segments: &[&str],
         params: &[(&str, &str)],
-    ) -> Result<T, Error> {
+    ) -> anyhow::Result<T> {
+        self.get_optional(route, segments, params)
+            .await?
+            .with_context(|| format!("TMDB answered {route} with 404 Not Found"))
+    }
+
+    /// Calls the API's `route` at the path of `segments`, which it escapes, and reads its JSON, or
+    /// None when TMDB has nothing at this path.
+    async fn get_optional<T: DeserializeOwned>(
+        &self,
+        route: &'static str,
+        segments: &[&str],
+        params: &[(&str, &str)],
+    ) -> anyhow::Result<Option<T>> {
         let mut url = self.base_url.clone();
         url.path_segments_mut()
             .expect("`with_base_url` checked that the URL can have paths")
@@ -241,28 +242,28 @@ impl Client {
             .await
             .with_context(|| format!("failed to receive TMDB's answer to {route}"))?;
         if status == StatusCode::NOT_FOUND {
-            return Err(Error::NotFound);
+            return Ok(None);
         }
         if !status.is_success() {
             // TMDB says what went wrong in its body
             let message = serde_json::from_slice::<ErrorBody>(&body)
                 .map(|body| body.status_message)
                 .unwrap_or_default();
-            return Err(anyhow!("TMDB answered {route} with {status}: {message}").into());
+            bail!("TMDB answered {route} with {status}: {message}");
         }
         let answer = serde_json::from_slice(&body)
             .with_context(|| format!("failed to read TMDB's answer to {route}"))?;
-        Ok(answer)
+        Ok(Some(answer))
     }
 }
 
 /// The parameters every search takes.
-fn search_params<'a>(query: &'a str, page: &'a str, locale: Locale) -> Vec<(&'a str, &'a str)> {
+fn search_params<'a>(query: &'a str, page: &'a str, language: &'a str) -> Vec<(&'a str, &'a str)> {
     vec![
         ("query", query),
         ("page", page),
         ("include_adult", "false"),
-        ("language", locale.language_tag()),
+        ("language", language),
     ]
 }
 

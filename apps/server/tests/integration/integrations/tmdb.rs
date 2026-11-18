@@ -2,10 +2,7 @@ use std::num::NonZeroU32;
 
 use jiff::civil::date;
 use serde_json::json;
-use watch_club::{
-    domain::accounts::Locale,
-    integrations::tmdb::{Error, ExternalId, KnownFor, MultiSearchResult},
-};
+use watch_club::integrations::tmdb::{ExternalId, KnownFor, MultiSearchResult};
 use wiremock::{
     Mock, ResponseTemplate,
     matchers::{header, method, path, query_param},
@@ -35,7 +32,7 @@ async fn searches_movies_tv_shows_and_people_in_the_locales_language() {
 
     let page = tmdb
         .client()
-        .search_multi("amélie poulain", PAGE_2, Locale::FrFr)
+        .search_multi("amélie poulain", PAGE_2, "fr-FR")
         .await
         .unwrap();
 
@@ -81,7 +78,7 @@ async fn searches_movies_released_in_a_year() {
 
     let page = tmdb
         .client()
-        .search_movies("amelie", Some(2001), NonZeroU32::MIN, Locale::FrFr)
+        .search_movies("amelie", Some(2001), NonZeroU32::MIN, "fr-FR")
         .await
         .unwrap();
 
@@ -104,7 +101,7 @@ async fn searches_tv_shows_first_aired_in_a_year() {
 
     let page = tmdb
         .client()
-        .search_tv_shows("the office", Some(2005), NonZeroU32::MIN, Locale::EnUs)
+        .search_tv_shows("the office", Some(2005), NonZeroU32::MIN, "en-US")
         .await
         .unwrap();
 
@@ -200,8 +197,9 @@ async fn returns_a_movies_details_with_its_translations_images_credits_and_video
 
     let movie = tmdb
         .client()
-        .movie_details(194, Locale::FrFr)
+        .movie_details(194, "fr-FR")
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(movie.title, "Le Fabuleux Destin d'Amélie Poulain");
@@ -248,8 +246,9 @@ async fn returns_a_tv_shows_details_with_its_seasons_and_ids_on_other_sites() {
 
     let tv_show = tmdb
         .client()
-        .tv_show_details(2316, Locale::EnUs)
+        .tv_show_details(2316, "en-US")
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(tv_show.name, "The Office");
@@ -282,8 +281,9 @@ async fn returns_a_season_with_its_episodes() {
 
     let season = tmdb
         .client()
-        .season_details(2316, 1, Locale::EnUs)
+        .season_details(2316, 1, "en-US")
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(season.name, "Season 1");
@@ -298,7 +298,7 @@ async fn returns_a_season_with_its_episodes() {
 }
 
 #[tokio::test]
-async fn fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
+async fn returns_none_when_tmdb_has_nothing_with_the_id() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/movie/999999999"))
@@ -310,13 +310,30 @@ async fn fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
         .mount(&tmdb.server)
         .await;
 
+    let movie = tmdb
+        .client()
+        .movie_details(999_999_999, "en-US")
+        .await
+        .unwrap();
+
+    assert!(movie.is_none());
+}
+
+#[tokio::test]
+async fn fails_when_tmdb_has_no_search() {
+    // The fake TMDB answers 404 to the routes no test mounts
+    let tmdb = FakeTmdb::start().await;
+
     let error = tmdb
         .client()
-        .movie_details(999_999_999, Locale::EnUs)
+        .search_multi("amelie", NonZeroU32::MIN, "en-US")
         .await
         .unwrap_err();
 
-    assert!(matches!(error, Error::NotFound), "{error:?}");
+    assert_eq!(
+        format!("{error:#}"),
+        "TMDB answered /search/multi with 404 Not Found"
+    );
 }
 
 #[tokio::test]
@@ -334,7 +351,7 @@ async fn fails_with_what_tmdb_says_went_wrong() {
 
     let error = tmdb
         .client()
-        .search_multi("amelie", NonZeroU32::MIN, Locale::EnUs)
+        .search_multi("amelie", NonZeroU32::MIN, "en-US")
         .await
         .unwrap_err();
 
@@ -360,7 +377,7 @@ async fn tries_again_when_tmdb_is_briefly_unavailable() {
 
     let page = tmdb
         .client()
-        .search_multi("amelie", NonZeroU32::MIN, Locale::EnUs)
+        .search_multi("amelie", NonZeroU32::MIN, "en-US")
         .await
         .unwrap();
 
@@ -379,7 +396,7 @@ async fn gives_up_after_two_more_tries() {
 
     let error = tmdb
         .client()
-        .search_multi("amelie", NonZeroU32::MIN, Locale::EnUs)
+        .search_multi("amelie", NonZeroU32::MIN, "en-US")
         .await
         .unwrap_err();
 
