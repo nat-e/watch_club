@@ -16,8 +16,9 @@ setup = "{{ primary_worktree_path }}/scripts/worktree/setup.sh {{ branch | sanit
 [[pre-remove]]
 teardown = "{{ primary_worktree_path }}/scripts/worktree/teardown.sh {{ branch | sanitize | replace('.', '-') }} {{ (branch | hash_port) + 20000 }} watch_club_{{ (branch | sanitize_db)[-30:] }}"
 
+# Pulls the merged commit first, so that update_primary.sh runs as merged
 [post-merge]
-update = "{{ primary_worktree_path }}/scripts/worktree/update_primary.sh"
+update = "git pull --ff-only && {{ primary_worktree_path }}/scripts/worktree/update_primary.sh"
 
 [list]
 url = "{% if branch == 'rust' %}http://localhost:4101{% else %}http://{{ branch | sanitize | replace('.', '-') }}.localhost:{{ (branch | hash_port) + 20001 }}{% endif %}"
