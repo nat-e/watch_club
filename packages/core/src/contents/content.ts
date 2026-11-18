@@ -17,15 +17,3 @@ export function useContentTypeNames(): Record<ContentType, string> {
   // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
   return {movie: t($ => $.core.contentTypes.movie), tv_show: t($ => $.core.contentTypes.tvShow)};
 }
-
-/** TMDB's widths of posters, in pixels */
-const POSTER_WIDTHS = [92, 154, 185, 342, 500, 780] as const;
-
-/**
- * Returns the URL of a poster on TMDB's image server, from its path, in the smallest size that
- * stays sharp at `width` points on screens of up to 3 pixels per point.
- */
-export function posterUrl(path: string, width: number): string {
-  const size = POSTER_WIDTHS.find(each => each >= width * 3);
-  return `https://image.tmdb.org/t/p/${size ? `w${size}` : 'original'}${path}`;
-}

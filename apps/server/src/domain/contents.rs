@@ -1,5 +1,6 @@
 //! Content: the Movies and TV Shows that Users search for, from the Metadata Providers.
 
+mod image;
 mod metadata_providers;
 
 use std::num::NonZeroU32;
@@ -10,7 +11,10 @@ use utoipa::{
     openapi::{RefOr, Schema},
 };
 
-pub use self::metadata_providers::{MetadataProviders, Tmdb, TmdbId};
+pub use self::{
+    image::{Image, ImageSource},
+    metadata_providers::{MetadataProviders, Tmdb, TmdbId},
+};
 use super::{InternalError, accounts::Locale};
 
 /// The type of a Content.
@@ -103,9 +107,8 @@ pub struct SearchResult {
     pub year: Option<i16>,
     #[schema(required = true)]
     pub overview: Option<String>,
-    /// The path of its poster on TMDB's image server
     #[schema(required = true)]
-    pub poster_path: Option<String>,
+    pub poster: Option<Image>,
 }
 
 /// A page of a search's results.

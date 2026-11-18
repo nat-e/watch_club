@@ -50,9 +50,17 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
                 matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a \
                 handsome stranger, will she find the courage to become the star of her very own \
                 love story?",
-            "poster_path": "/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
+            "poster": [
+                {"url": "https://image.tmdb.org/t/p/w92/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 92, "height": 138},
+                {"url": "https://image.tmdb.org/t/p/w154/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 154, "height": 231},
+                {"url": "https://image.tmdb.org/t/p/w185/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 185, "height": 278},
+                {"url": "https://image.tmdb.org/t/p/w342/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 342, "height": 513},
+                {"url": "https://image.tmdb.org/t/p/w500/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 500, "height": 750},
+                {"url": "https://image.tmdb.org/t/p/w780/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 780, "height": 1170},
+            ],
         })
     );
+    assert_eq!(results[2].get("poster"), Some(&json!(null)));
     assert_eq!(results[4]["content_type"], "tv_show");
 }
 

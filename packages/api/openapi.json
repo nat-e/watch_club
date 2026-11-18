@@ -1165,6 +1165,40 @@
         ],
         "description": "The failures of a request for a Content."
       },
+      "Image": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ImageSource"
+        },
+        "description": "A picture in each size its Metadata Provider has, from the narrowest, so that the apps can\ndownload the smallest one that stays sharp.",
+        "minItems": 1
+      },
+      "ImageSource": {
+        "type": "object",
+        "description": "One size of an Image.",
+        "required": [
+          "url",
+          "width",
+          "height"
+        ],
+        "properties": {
+          "height": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Its height, in pixels",
+            "minimum": 0
+          },
+          "url": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Its width, in pixels",
+            "minimum": 0
+          }
+        }
+      },
       "Instance": {
         "type": "object",
         "description": "The information apps need about the WatchClub instance before signing in.",
@@ -1301,7 +1335,7 @@
               "title",
               "year",
               "overview",
-              "poster_path"
+              "poster"
             ],
             "properties": {
               "overview": {
@@ -1310,12 +1344,15 @@
                   "null"
                 ]
               },
-              "poster_path": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "The path of its poster on TMDB's image server"
+              "poster": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Image"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "title": {
                 "type": "string"

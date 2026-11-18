@@ -1,12 +1,13 @@
-import {posterUrl} from '@watchclub/core/contents/content';
-import {Image} from 'expo-image';
+import type {Image} from '@watchclub/api';
+import {Image as ExpoImage} from 'expo-image';
 import {View} from 'react-native';
 
 /**
- * A Content's poster from TMDB, `width` points wide, or a placeholder when it has none. Screen
- * readers skip it, as the Content's title is always beside it.
+ * A Content's poster, `width` points wide, or a placeholder when it has none. Expo Image downloads
+ * the size closest to what the screen shows. Screen readers skip it, as the Content's title is
+ * always beside it.
  */
-export function Poster({path, width}: {path: string | null; width: number}) {
+export function Poster({image, width}: {image: Image | null; width: number}) {
   return (
     <View
       className="aspect-2/3 overflow-hidden rounded-md bg-accent"
@@ -14,9 +15,13 @@ export function Poster({path, width}: {path: string | null; width: number}) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      {path !== null && (
-        <Image
-          source={posterUrl(path, width)}
+      {image !== null && (
+        <ExpoImage
+          source={image.map(source => ({
+            uri: source.url,
+            width: source.width,
+            height: source.height,
+          }))}
           style={{flex: 1}}
           contentFit="cover"
           transition={150}

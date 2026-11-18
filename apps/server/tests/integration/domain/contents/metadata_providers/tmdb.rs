@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
-    contents::{Content, ContentId, LookUpError, SearchResult, TmdbId},
+    contents::{Content, ContentId, Image, ImageSource, LookUpError, SearchResult, TmdbId},
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -90,12 +90,30 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
                  love story?"
                     .to_owned()
             ),
-            poster_path: Some("/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg".to_owned()),
+            poster: Image::new(
+                [
+                    (92, 138),
+                    (154, 231),
+                    (185, 278),
+                    (342, 513),
+                    (500, 750),
+                    (780, 1170)
+                ]
+                .map(|(width, height)| ImageSource {
+                    url: format!(
+                        "https://image.tmdb.org/t/p/w{width}/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg"
+                    ),
+                    width,
+                    height,
+                })
+            ),
         }
     );
+    assert_eq!(found.results[2].poster, None);
     let tv_show = &found.results[4];
     assert_eq!(tv_show.id, ContentId::TvShow(TmdbId::new(239_212)));
     assert_eq!(tv_show.title, "Amélie and Company");
+    assert!(tv_show.poster.is_some());
     // The fixture is TMDB's first page of 43
     assert_eq!(found.next_page, NonZeroU32::new(2));
 }

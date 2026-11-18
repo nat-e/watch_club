@@ -15,7 +15,7 @@ function movie(externalId: number): SearchResult {
     title: `Movie ${externalId}`,
     year: 2001,
     overview: null,
-    poster_path: null,
+    poster: null,
     // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
   };
 }

@@ -1,17 +1,18 @@
-import {posterUrl} from '@watchclub/core/contents/content';
+import type {Image} from '@watchclub/api';
 import {cn} from 'cn';
 import {ImageIcon} from 'lucide-react';
 
 /**
- * A Content's poster from TMDB, `width` pixels wide, or a placeholder when it has none. Its text
- * alternative is empty, as the Content's title is always beside it.
+ * A Content's poster, `width` pixels wide, or a placeholder when it has none. The browser downloads
+ * the smallest size that stays sharp on the screen. Its text alternative is empty, as the Content's
+ * title is always beside it.
  */
 export function Poster({
-  path,
+  image,
   width,
   className,
 }: {
-  path: string | null;
+  image: Image | null;
   width: number;
   className?: string;
 }) {
@@ -23,9 +24,11 @@ export function Poster({
       )}
       style={{width}}
     >
-      {path ? (
+      {image ? (
         <img
-          src={posterUrl(path, width)}
+          src={image[0]?.url}
+          srcSet={image.map(source => `${source.url} ${source.width}w`).join(', ')}
+          sizes={`${width}px`}
           alt=""
           loading="lazy"
           className="absolute inset-0 size-full object-cover"

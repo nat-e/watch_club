@@ -17,12 +17,20 @@ use crate::{
     domain::{
         InternalError,
         accounts::Locale,
-        contents::{Content, ContentId, LookUpError, SearchResult, SearchResults},
+        contents::{
+            Content, ContentId, Image, ImageSource, LookUpError, SearchResult, SearchResults,
+        },
     },
 };
 
 /// The address of TMDB's API
 const BASE_URL: &str = "https://api.themoviedb.org/3";
+
+/// The address of TMDB's images, which a size and an image's path follow
+const IMAGES_URL: &str = "https://image.tmdb.org/t/p";
+
+/// The widths of TMDB's posters, in pixels. It also has the original, whose size it doesn't say.
+const POSTER_WIDTHS: [u32; 6] = [92, 154, 185, 342, 500, 780];
 
 /// The number of TMDB's pages a search reads at most to find some Content, as some only have people
 const MAX_PAGES_READ: u32 = 5;
@@ -163,15 +171,25 @@ fn search_result(result: api::SearchResult) -> Option<SearchResult> {
             title: movie.title,
             year: movie.release_date.map(Date::year),
             overview: movie.overview,
-            poster_path: movie.poster_path,
+            poster: movie.poster_path.as_deref().and_then(poster),
         }),
         api::SearchResult::TvShow(tv_show) => Some(SearchResult {
             id: ContentId::TvShow(TmdbId(tv_show.id)),
             title: tv_show.name,
             year: tv_show.first_air_date.map(Date::year),
             overview: tv_show.overview,
-            poster_path: tv_show.poster_path,
+            poster: tv_show.poster_path.as_deref().and_then(poster),
         }),
         api::SearchResult::Person => None,
     }
+}
+
+/// Returns the poster at this path on TMDB's image server, in each of its sizes.
+fn poster(path: &str) -> Option<Image> {
+    Image::new(POSTER_WIDTHS.map(|width| ImageSource {
+        url: format!("{IMAGES_URL}/w{width}{path}"),
+        width,
+        // TMDB doesn't say it: most posters are 2:3
+        height: (width * 3).div_ceil(2),
+    }))
 }
