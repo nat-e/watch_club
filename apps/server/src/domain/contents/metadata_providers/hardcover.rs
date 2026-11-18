@@ -132,7 +132,7 @@ fn search_result(book: api::BookDocument) -> SearchResult {
 
 /// Returns the names of a Book's creators, once each, most important first.
 fn creators(contributions: Vec<api::Contribution>) -> Vec<String> {
-    let mut creators: Vec<String> = Vec::new();
+    let mut creators = Vec::with_capacity(contributions.len());
     for contribution in contributions {
         // Counts a contribution without a role, which Hardcover's schema allows, as an author's
         let is_creator = contribution

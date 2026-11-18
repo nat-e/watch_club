@@ -5,6 +5,7 @@ import {useContentTypeNames} from '@watchclub/core/contents/content';
 import {
   SEARCH_SCOPES,
   type Search,
+  searchResultDetails,
   useSearchHint,
   useSearchScopeNames,
 } from '@watchclub/core/contents/search';
@@ -84,9 +85,7 @@ function SearchScopes({
 /** A search result's poster, title, type, year and creators, which opens its Content's screen. */
 function SearchResultRow({result}: {result: SearchResult}) {
   const contentTypeNames = useContentTypeNames();
-  const facts = [contentTypeNames[result.content_type], result.year, result.creators.join(', ')]
-    .filter(fact => fact !== null && fact !== '')
-    .join(' · ');
+  const facts = [contentTypeNames[result.content_type], ...searchResultDetails(result)].join(' · ');
   return (
     <Pressable
       accessibilityRole="button"

@@ -115,6 +115,21 @@ export function useSearchHint(scope: SearchScope): string {
 }
 
 /**
+ * Returns the facts a search result shows after its Content Type, when it has them: its year, then
+ * its creators.
+ */
+export function searchResultDetails(result: SearchResult): string[] {
+  const details: string[] = [];
+  if (result.year !== null) {
+    details.push(String(result.year));
+  }
+  if (result.creators.length > 0) {
+    details.push(result.creators.join(', '));
+  }
+  return details;
+}
+
+/**
  * Returns the text a User types into a search field, once they pause, so that a search doesn't
  * start on every key.
  */

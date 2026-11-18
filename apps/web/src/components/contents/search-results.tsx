@@ -4,6 +4,7 @@ import {
   isSearchScope,
   SEARCH_SCOPES,
   type SearchStatus as Status,
+  searchResultDetails,
   useSearchHint,
   useSearchScopeNames,
 } from '@watchclub/core/contents/search';
@@ -17,6 +18,7 @@ import {
   TriangleAlertIcon,
   TvIcon,
 } from 'lucide-react';
+import {Fragment} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Poster} from '@/components/contents/poster';
 import {Button} from '@/components/ui/button';
@@ -61,20 +63,13 @@ export function SearchResultSummary({
             <Icon className="size-4 text-subtle-foreground" />
             {contentTypeNames[result.content_type]}
           </span>
-          {result.year !== null && (
-            <>
+          {searchResultDetails(result).map(detail => (
+            <Fragment key={detail}>
               {/* i18next-instrument-ignore: a separator, the same in every language */}
               <span aria-hidden="true">·</span>
-              <span>{result.year}</span>
-            </>
-          )}
-          {result.creators.length > 0 && (
-            <>
-              {/* i18next-instrument-ignore: a separator, the same in every language */}
-              <span aria-hidden="true">·</span>
-              <span>{result.creators.join(', ')}</span>
-            </>
-          )}
+              <span>{detail}</span>
+            </Fragment>
+          ))}
         </span>
         {overview && result.overview && (
           <span className="line-clamp-2 max-w-readable text-sm text-subtle-foreground">
