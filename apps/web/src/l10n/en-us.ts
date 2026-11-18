@@ -14,6 +14,11 @@ export default {
   problemReports: {
     title: 'Problem reports',
   },
+  search: {
+    closeSearch: 'Close search',
+    inLibrary: 'On WatchClub',
+    seeAll: 'See all results for “{{query}}”',
+  },
   settings: {
     addLanguage: 'Add a language',
     noLanguageMatches: 'No language matches',

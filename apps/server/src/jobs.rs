@@ -29,7 +29,10 @@ pub use self::{
     kinds::delete_expired_sessions::DeleteExpiredSessions,
     runner::{run, run_available},
 };
-use crate::{db::Pool, domain::InternalError};
+use crate::{
+    db::Pool,
+    domain::{InternalError, contents::MetadataProviders},
+};
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
@@ -54,7 +57,15 @@ pub trait Job: Serialize + DeserializeOwned {
     const SCHEDULE: Option<&'static str> = None;
 
     /// Does the job's work.
-    fn run(self, db: &Pool) -> impl Future<Output = Result<(), JobError>> + Send;
+    fn run(self, context: &JobContext) -> impl Future<Output = Result<(), JobError>> + Send;
+}
+
+/// What jobs share: the database and the Metadata Providers, as the requests have them in
+/// `ApiContext`.
+#[derive(Clone, Debug)]
+pub struct JobContext {
+    pub db: Pool,
+    pub metadata_providers: MetadataProviders,
 }
 
 /// The reason a job didn't complete. A job with nothing left to do, such as when what it works on
@@ -144,9 +155,9 @@ impl AnyJob {
         }
     }
 
-    async fn run(self, db: &Pool) -> Result<(), JobError> {
+    async fn run(self, context: &JobContext) -> Result<(), JobError> {
         match self {
-            Self::DeleteExpiredSessions(job) => job.run(db).await,
+            Self::DeleteExpiredSessions(job) => job.run(context).await,
         }
     }
 }

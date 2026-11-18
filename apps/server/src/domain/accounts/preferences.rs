@@ -53,6 +53,16 @@ pub enum Locale {
     FrFr,
 }
 
+impl Locale {
+    /// Returns its BCP 47 language tag, such as `en-US`.
+    pub const fn language_tag(self) -> &'static str {
+        match self {
+            Self::EnUs => "en-US",
+            Self::FrFr => "fr-FR",
+        }
+    }
+}
+
 /// A language a User can choose for audio and subtitles, as its ISO 639-1 code.
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, sqlx::Type, ToSchema,

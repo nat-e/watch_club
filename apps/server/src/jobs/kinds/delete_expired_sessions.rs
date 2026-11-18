@@ -4,9 +4,8 @@ use serde::{Deserialize, Serialize};
 use tracing::Level;
 
 use crate::{
-    db::Pool,
     domain::accounts,
-    jobs::{Job, JobError},
+    jobs::{Job, JobContext, JobError},
 };
 
 /// The cleanup of the sessions whose lifetime has run out, which would otherwise pile up.
@@ -18,8 +17,8 @@ impl Job for DeleteExpiredSessions {
     // Every Sunday at 03:00
     const SCHEDULE: Option<&'static str> = Some("0 3 * * SUN");
 
-    async fn run(self, db: &Pool) -> Result<(), JobError> {
-        let deleted = accounts::delete_expired_sessions(db).await?;
+    async fn run(self, context: &JobContext) -> Result<(), JobError> {
+        let deleted = accounts::delete_expired_sessions(&context.db).await?;
         tracing::event!(
             name: "accounts.sessions.deleted",
             Level::INFO,

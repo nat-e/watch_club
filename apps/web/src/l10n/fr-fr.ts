@@ -14,6 +14,11 @@ export default {
   problemReports: {
     title: 'Signalements',
   },
+  search: {
+    closeSearch: 'Fermer la recherche',
+    inLibrary: 'Sur WatchClub',
+    seeAll: 'Voir tous les résultats pour « {{query}} »',
+  },
   settings: {
     addLanguage: 'Ajoute une langue',
     noLanguageMatches: 'Aucune langue ne correspond',

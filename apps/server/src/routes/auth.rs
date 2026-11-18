@@ -13,7 +13,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppState,
+    ApiContext,
     auth::SessionCookie,
     db::Pool,
     domain::{
@@ -24,7 +24,7 @@ use crate::{
     routes::{Json, me::CurrentUserResponse},
 };
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new()
         .routes(routes!(login))
         .routes(routes!(login_token))

@@ -80,6 +80,26 @@ _Avoid_: Film
 Content whose content type is TV show.
 _Avoid_: Show, series
 
+**Content Type**:
+The kind of content, such as movie, TV show, sports event, or book.
+_Avoid_: Media type, category
+
+**Metadata Provider**:
+A catalog where content metadata comes from, such as TMDB, sportarr.net (for **Sports Events**) or Hardcover.
+_Avoid_: External source, provider, integration, source
+
+**External ID**:
+The identifier of content within one metadata provider.
+_Avoid_: Provider ID, remote ID
+
+**Library**:
+All the **Content** that is available on the **Instance** and has **Media**.
+_Avoid_: Catalog, available content, server content
+
+**Browse**:
+The WatchClub interface where a **User** looks through the **Library**.
+_Avoid_: Discover
+
 ## Relationships
 
 ### Accounts
@@ -105,6 +125,12 @@ _Avoid_: Show, series
 - Only **Participants** can see a **Conversation**
 - A **Conversation** shows in the **Inbox** of each of its **Participants**
 - Deleting a **User** keeps their **Messages** and their place among the **Participants**, shown as a deleted **User**; their **Conversations** go on for the others
+
+### Contents
+
+- A **Content** is identified by its **Content Type**, **Metadata Provider** and **External ID**; different **Content Types** may share the same **External ID**
+- A **Content** has exactly one **Content Type**
+- A **User** can search for any **Movie** or **TV Show** on TMDB, in the **Library** or not
 
 ## Flagged ambiguities
 

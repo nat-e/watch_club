@@ -55,6 +55,12 @@ opentelemetry-otlp = { version = "0.33.1", default-features = false, features = 
 opentelemetry-semantic-conventions = { version = "0.33.1", features = ["semconv_experimental"] }
 opentelemetry_sdk = "0.33.1"
 password-auth = "2.0.0"
+# Calls TMDB. `query` builds query strings, `gzip` shrinks TMDB's large answers
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "http2", "query", "gzip"] }
+# Retry the calls to other services, and trace each attempt
+reqwest-middleware = { version = "0.5.2", features = ["query"] }
+reqwest-retry = "0.9.1"
+reqwest-tracing = "0.7.1"
 rust-embed = { version = "8.14.0", features = ["mime-guess"] }
 secrecy = { version = "0.10.3", features = ["serde"] }
 sentry = { version = "0.49.6", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls", "tracing", "tower-http"] }
@@ -83,6 +89,8 @@ uuid = { version = "1.29.2", features = ["serde"] }
 http-body-util = "0.1.5"
 tower = { version = "0.5.3", features = ["util"] }
 watch_club_test_macros = { path = "test-macros" }
+# Stands in for TMDB
+wiremock = "0.6.5"
 
 [lints]
 workspace = true

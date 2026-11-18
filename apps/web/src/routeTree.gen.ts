@@ -17,9 +17,12 @@ import { Route as ShellBrowseRouteImport } from './routes/_shell/browse'
 import { Route as ShellInboxRouteImport } from './routes/_shell/inbox'
 import { Route as ShellMyRequestsRouteImport } from './routes/_shell/my-requests'
 import { Route as ShellPlaylistsRouteImport } from './routes/_shell/playlists'
+import { Route as ShellSearchRouteImport } from './routes/_shell/search'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as SignedOutSetupRouteImport } from './routes/_signed-out/setup'
 import { Route as SignedOutSignInRouteImport } from './routes/_signed-out/sign-in'
+import { Route as ShellMoviesIdRouteImport } from './routes/_shell/movies/$id'
+import { Route as ShellShowsIdRouteImport } from './routes/_shell/shows/$id'
 import { Route as ShellAdminAdminProblemReportsRouteImport } from './routes/_shell/_admin/admin/problem-reports'
 import { Route as ShellAdminAdminSettingsRouteImport } from './routes/_shell/_admin/admin/settings'
 import { Route as ShellAdminAdminUsersRouteImport } from './routes/_shell/_admin/admin/users'
@@ -63,6 +66,11 @@ const ShellPlaylistsRoute = ShellPlaylistsRouteImport.update({
   path: '/playlists',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellSearchRoute = ShellSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellSettingsRoute = ShellSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -77,6 +85,16 @@ const SignedOutSignInRoute = SignedOutSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => SignedOutRoute,
+} as any)
+const ShellMoviesIdRoute = ShellMoviesIdRouteImport.update({
+  id: '/movies/$id',
+  path: '/movies/$id',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellShowsIdRoute = ShellShowsIdRouteImport.update({
+  id: '/shows/$id',
+  path: '/shows/$id',
+  getParentRoute: () => ShellRoute,
 } as any)
 const ShellAdminAdminProblemReportsRoute =
   ShellAdminAdminProblemReportsRouteImport.update({
@@ -113,9 +131,12 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof ShellInboxRoute
   '/my-requests': typeof ShellMyRequestsRoute
   '/playlists': typeof ShellPlaylistsRoute
+  '/search': typeof ShellSearchRoute
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/movies/$id': typeof ShellMoviesIdRoute
+  '/shows/$id': typeof ShellShowsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
@@ -128,9 +149,12 @@ export interface FileRoutesByTo {
   '/inbox': typeof ShellInboxRoute
   '/my-requests': typeof ShellMyRequestsRoute
   '/playlists': typeof ShellPlaylistsRoute
+  '/search': typeof ShellSearchRoute
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/movies/$id': typeof ShellMoviesIdRoute
+  '/shows/$id': typeof ShellShowsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
@@ -146,10 +170,13 @@ export interface FileRoutesById {
   '/_shell/inbox': typeof ShellInboxRoute
   '/_shell/my-requests': typeof ShellMyRequestsRoute
   '/_shell/playlists': typeof ShellPlaylistsRoute
+  '/_shell/search': typeof ShellSearchRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_signed-out/setup': typeof SignedOutSetupRoute
   '/_signed-out/sign-in': typeof SignedOutSignInRoute
   '/_shell/': typeof ShellIndexRoute
+  '/_shell/movies/$id': typeof ShellMoviesIdRoute
+  '/_shell/shows/$id': typeof ShellShowsIdRoute
   '/_shell/_admin/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/_shell/_admin/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/_shell/_admin/admin/users': typeof ShellAdminAdminUsersRoute
@@ -164,9 +191,12 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/my-requests'
     | '/playlists'
+    | '/search'
     | '/settings'
     | '/setup'
     | '/sign-in'
+    | '/movies/$id'
+    | '/shows/$id'
     | '/admin/problem-reports'
     | '/admin/settings'
     | '/admin/users'
@@ -179,9 +209,12 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/my-requests'
     | '/playlists'
+    | '/search'
     | '/settings'
     | '/setup'
     | '/sign-in'
+    | '/movies/$id'
+    | '/shows/$id'
     | '/admin/problem-reports'
     | '/admin/settings'
     | '/admin/users'
@@ -196,10 +229,13 @@ export interface FileRouteTypes {
     | '/_shell/inbox'
     | '/_shell/my-requests'
     | '/_shell/playlists'
+    | '/_shell/search'
     | '/_shell/settings'
     | '/_signed-out/setup'
     | '/_signed-out/sign-in'
     | '/_shell/'
+    | '/_shell/movies/$id'
+    | '/_shell/shows/$id'
     | '/_shell/_admin/admin/problem-reports'
     | '/_shell/_admin/admin/settings'
     | '/_shell/_admin/admin/users'
@@ -270,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellPlaylistsRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/search': {
+      id: '/_shell/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof ShellSearchRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/settings': {
       id: '/_shell/settings'
       path: '/settings'
@@ -290,6 +333,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignedOutSignInRouteImport
       parentRoute: typeof SignedOutRoute
+    }
+    '/_shell/movies/$id': {
+      id: '/_shell/movies/$id'
+      path: '/movies/$id'
+      fullPath: '/movies/$id'
+      preLoaderRoute: typeof ShellMoviesIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/shows/$id': {
+      id: '/_shell/shows/$id'
+      path: '/shows/$id'
+      fullPath: '/shows/$id'
+      preLoaderRoute: typeof ShellShowsIdRouteImport
+      parentRoute: typeof ShellRoute
     }
     '/_shell/_admin/admin/problem-reports': {
       id: '/_shell/_admin/admin/problem-reports'
@@ -355,8 +412,11 @@ interface ShellRouteChildren {
   ShellInboxRoute: typeof ShellInboxRoute
   ShellMyRequestsRoute: typeof ShellMyRequestsRoute
   ShellPlaylistsRoute: typeof ShellPlaylistsRoute
+  ShellSearchRoute: typeof ShellSearchRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
+  ShellMoviesIdRoute: typeof ShellMoviesIdRoute
+  ShellShowsIdRoute: typeof ShellShowsIdRoute
 }
 
 const ShellRouteChildren: ShellRouteChildren = {
@@ -365,8 +425,11 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellInboxRoute: ShellInboxRoute,
   ShellMyRequestsRoute: ShellMyRequestsRoute,
   ShellPlaylistsRoute: ShellPlaylistsRoute,
+  ShellSearchRoute: ShellSearchRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
+  ShellMoviesIdRoute: ShellMoviesIdRoute,
+  ShellShowsIdRoute: ShellShowsIdRoute,
 }
 
 const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)

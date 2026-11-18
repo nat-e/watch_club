@@ -3,9 +3,9 @@
 use axum::{extract::State, http::StatusCode};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{AppState, db::Pool};
+use crate::{ApiContext, db::Pool};
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new().routes(routes!(check_health))
 }
 

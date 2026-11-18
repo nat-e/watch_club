@@ -30,6 +30,10 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 
 - An operation returns its own `thiserror` enum when callers handle its failures, with an `Internal(#[from] anyhow::Error)` variant for the rest. Otherwise it returns `InternalError`. Use `.context(…)` to say what failed
 
+### Metadata Providers
+
+- Each Metadata Provider has a gateway in `src/domain/contents/metadata_providers/`, written for what the domain needs rather than mirroring the service's API: it takes and returns domain types and errors, and keeps the service's JSON in a private `api` module. It calls the service through `ApiClient`, in `src/api_client.rs`, which retries and traces the calls
+
 ### Logs
 
 - Name each event, and keep its message the same every time: put the values in fields, under OpenTelemetry's names where it has one, such as `server.port`. Put an error with its causes in `exception.message = %format_args!("{error:#}")`

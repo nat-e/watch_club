@@ -31,10 +31,6 @@ When it starts, the server logs its version and which of the telemetry below it 
 
 The server can send its telemetry to any tool that accepts OpenTelemetry (OTLP), such as Grafana, SigNoz, Jaeger or Sentry:
 
-- **Traces**: the steps of each request and background job, with their timings, down to each database query
-- **Metrics**: request times and counts, database usage, and background jobs
-- **Logs**: the same logs as the console
-
 Turn on the ones you want, and say where to send them:
 
 ```dotenv

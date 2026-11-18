@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppState,
+    ApiContext,
     db::Pool,
     domain::accounts::{
         self, AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences,
@@ -17,7 +17,7 @@ use crate::{
     routes::Json,
 };
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new()
         .routes(routes!(get_current_user))
         .routes(routes!(update_preferences))

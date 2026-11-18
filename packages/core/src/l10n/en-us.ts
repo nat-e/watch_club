@@ -2,8 +2,19 @@ export default {
   browse: {
     title: 'Browse',
   },
+  contents: {
+    loadFailed_movie: "We couldn't load this movie. Try again in a moment.",
+    loadFailed_tvShow: "We couldn't load this TV show. Try again in a moment.",
+    notFound_movie: "We couldn't find this movie.",
+    notFound_tvShow: "We couldn't find this TV show.",
+  },
+  contentTypes: {
+    movie: 'Movie',
+    tvShow: 'TV show',
+  },
   controls: {
     close: 'Close',
+    tryAgain: 'Try again',
   },
   errors: {
     somethingWentWrong: "We couldn't complete your request. Try again in a moment.",
@@ -25,6 +36,17 @@ export default {
   },
   playlists: {
     title: 'Playlists',
+  },
+  search: {
+    failed: "The search didn't work.",
+    hint: "Find any movie or TV show, even ones that aren't on WatchClub yet.",
+    noResults: 'No results',
+    nothingFound: "We didn't find anything for “{{query}}”.",
+    resultCount_one: '{{count}} result',
+    resultCount_other: '{{count}} results',
+    results: 'Search results',
+    search: 'Search',
+    searching: 'Searching…',
   },
   settings: {
     audio: 'Audio',

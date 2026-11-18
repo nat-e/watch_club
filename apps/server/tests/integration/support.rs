@@ -3,18 +3,21 @@
 
 mod client;
 mod database;
+pub mod fake_tmdb;
 
 use std::process::Command;
 
 use sqlx::postgres::PgBindIterExt;
 use watch_club::{
     db::Pool,
-    domain::accounts::{
-        AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences,
+    domain::{
+        accounts::{AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences},
+        contents::MetadataProviders,
     },
+    jobs::JobContext,
 };
 
-pub use self::{client::Client, database::TestDatabase};
+pub use self::{client::Client, database::TestDatabase, fake_tmdb::FakeTmdb};
 
 /// Every test User's password
 pub const PASSWORD: &str = "passw0rd";
@@ -32,6 +35,16 @@ pub fn server_startup_error(vars: &[(&str, &str)]) -> String {
         .unwrap();
     assert!(!output.status.success());
     String::from_utf8(output.stderr).unwrap()
+}
+
+/// Returns the context jobs run with: this database, and a TMDB that nothing answers.
+pub fn job_context(db: &Pool) -> JobContext {
+    JobContext {
+        db: db.clone(),
+        metadata_providers: MetadataProviders {
+            tmdb: fake_tmdb::unreachable(),
+        },
+    }
 }
 
 /// Creates a User who signs in with `PASSWORD`, with a new User's preferences in English.

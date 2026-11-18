@@ -13,7 +13,14 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
-use watch_club::{AppState, AppsSentry, config::Config, db, jobs, observability};
+use watch_club::{
+    ApiContext, AppsSentry,
+    config::Config,
+    db,
+    domain::contents::{MetadataProviders, Tmdb},
+    jobs::{self, JobContext},
+    observability,
+};
 
 fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
@@ -33,10 +40,17 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
         .with_context(|| format!("failed to listen on port {}", config.port))?;
+    let metadata_providers = MetadataProviders {
+        tmdb: Tmdb::new(&config.tmdb_api_token)?,
+    };
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 
-    let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
+    let jobs_context = JobContext {
+        db: db.clone(),
+        metadata_providers: metadata_providers.clone(),
+    };
+    let runner = tokio::spawn(jobs::run(jobs_context, shutdown.clone()));
     tracing::event!(
         name: "server.started",
         Level::INFO,
@@ -46,13 +60,14 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     );
     let server = axum::serve(
         listener,
-        watch_club::router(AppState {
+        watch_club::router(ApiContext {
             db: db.clone(),
             apps_sentry: AppsSentry {
                 web_dsn: config.observability.web_sentry_dsn.map(Arc::from),
                 mobile_dsn: config.observability.mobile_sentry_dsn.map(Arc::from),
                 environment: config.observability.sentry_environment.into(),
             },
+            metadata_providers,
         }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());

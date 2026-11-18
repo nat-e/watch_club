@@ -11,15 +11,15 @@ interface Action {
 }
 
 /**
- * A screen that only says how things stand, such as an error: its title, what to do, and the
- * buttons that do it, the first one filled.
+ * A screen that only says how things stand, such as an error: its title, if any, what to do, and
+ * the buttons that do it, the first one filled.
  */
 export function StatusScreen({
   title,
   description,
   actions,
 }: {
-  title: string;
+  title?: string;
   description: string;
   actions: readonly Action[];
 }) {
@@ -27,12 +27,14 @@ export function StatusScreen({
     // It scrolls when the User's text size makes it taller than the screen
     <ScrollView contentContainerClassName="grow justify-center gap-4 p-6">
       {/* React Native's text, as @expo/ui's can't be a heading for Android's screen readers */}
-      <ReactNativeText
-        accessibilityRole="header"
-        className="text-center text-3xl font-semibold text-foreground"
-      >
-        {title}
-      </ReactNativeText>
+      {title !== undefined && (
+        <ReactNativeText
+          accessibilityRole="header"
+          className="text-center text-3xl font-semibold text-foreground"
+        >
+          {title}
+        </ReactNativeText>
+      )}
       <Host matchContents={{vertical: true}}>
         <Column alignment="center" spacing={16} style={{width: '100%'}}>
           <Description centered>{description}</Description>

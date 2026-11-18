@@ -1,4 +1,4 @@
-import {MutationObserver, QueryClient} from '@tanstack/react-query';
+import {MutationObserver, QueryClient, QueryObserver} from '@tanstack/react-query';
 import {type CurrentUser, client, type UserPreferences} from '@watchclub/api';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {currentUserQuery, forgetCurrentUser, setCurrentUser} from '../../src/accounts/current-user';
@@ -58,6 +58,54 @@ describe('savePreferencesMutation', () => {
     const expected: UserPreferences = {...ALICE.preferences, subtitle_language: null};
     expect(received).toEqual([expected]);
     expect(queryClient.getQueryData(currentUserQuery.queryKey)?.preferences).toEqual(expected);
+  });
+
+  it('marks the answers in the old language as stale once the Locale changes', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    queryClient.setQueryData(['content'], 'Amélie');
+
+    await save(queryClient, {locale: 'fr-FR'});
+
+    expect(queryClient.getQueryState(['content'])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(currentUserQuery.queryKey)?.isInvalidated).toBe(false);
+  });
+
+  it('asks again for the answers on their way to a screen once the Locale changes', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    const answers: Array<(title: string) => void> = [];
+    const content = new QueryObserver(queryClient, {
+      queryKey: ['content'],
+      queryFn: () =>
+        new Promise<string>(resolve => {
+          answers.push(resolve);
+        }),
+    });
+    const unsubscribe = content.subscribe(() => undefined);
+
+    await save(queryClient, {locale: 'fr-FR'});
+    answers[0]?.('Amélie');
+    answers[1]?.("Le Fabuleux Destin d'Amélie Poulain");
+
+    await vi.waitFor(() => {
+      expect(content.getCurrentResult().data).toBe("Le Fabuleux Destin d'Amélie Poulain");
+    });
+    unsubscribe();
+  });
+
+  it('keeps the answers when the Locale stays the same', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    queryClient.setQueryData(['content'], 'Amélie');
+
+    // biome-ignore lint/style/useNamingConvention: the API's field
+    await save(queryClient, {audio_language: 'fr'});
+
+    expect(queryClient.getQueryState(['content'])?.isInvalidated).toBe(false);
   });
 
   it("keeps the changes of a save that hasn't ended when another starts", async () => {

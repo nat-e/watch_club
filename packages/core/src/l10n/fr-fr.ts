@@ -2,8 +2,19 @@ export default {
   browse: {
     title: 'Parcourir',
   },
+  contents: {
+    loadFailed_movie: "On n'a pas pu charger ce film. Réessaie dans un instant.",
+    loadFailed_tvShow: "On n'a pas pu charger cette série. Réessaie dans un instant.",
+    notFound_movie: "On n'a pas trouvé ce film.",
+    notFound_tvShow: "On n'a pas trouvé cette série.",
+  },
+  contentTypes: {
+    movie: 'Film',
+    tvShow: 'Série',
+  },
   controls: {
     close: 'Fermer',
+    tryAgain: 'Réessayer',
   },
   errors: {
     somethingWentWrong: "On n'a pas pu terminer ta demande. Réessaie dans un instant.",
@@ -26,6 +37,18 @@ export default {
   },
   playlists: {
     title: 'Playlists',
+  },
+  search: {
+    failed: "La recherche n'a pas fonctionné.",
+    hint: 'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur WatchClub.',
+    noResults: 'Aucun résultat',
+    nothingFound: "On n'a rien trouvé pour « {{query}} ».",
+    resultCount_one: '{{count}} résultat',
+    resultCount_many: '{{count}} résultats',
+    resultCount_other: '{{count}} résultats',
+    results: 'Résultats de recherche',
+    search: 'Rechercher',
+    searching: 'Recherche…',
   },
   settings: {
     audio: 'Audio',

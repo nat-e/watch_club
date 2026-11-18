@@ -104,6 +104,7 @@ jobs:
           docker run --detach --name watch_club --network host
           --env DATABASE_URL=postgres://postgres:postgres@localhost:5432/watch_club
           --env PORT=4000
+          --env TMDB_API_TOKEN=unused
           "$IMAGE"
 
       - name: Check that the app serves pages

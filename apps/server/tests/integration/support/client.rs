@@ -14,9 +14,16 @@ use axum_extra::extract::cookie::Cookie;
 use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::ServiceExt;
-use watch_club::{AppState, AppsSentry, db::Pool, domain::accounts::CurrentUser};
+use watch_club::{
+    ApiContext, AppsSentry,
+    db::Pool,
+    domain::{
+        accounts::CurrentUser,
+        contents::{MetadataProviders, Tmdb},
+    },
+};
 
-use super::PASSWORD;
+use super::{PASSWORD, fake_tmdb};
 
 /// A browser or app calling the API. Like a browser, it keeps the cookies the API sets; like an
 /// app, it can send a session token instead. A clone sends the same cookies and token, as if
@@ -38,28 +45,38 @@ pub struct Response {
 }
 
 impl Client {
+    /// Calls an app whose calls to TMDB fail, as nothing answers them.
     pub fn new(db: &Pool) -> Self {
-        Self::with_apps_sentry(
-            db,
-            AppsSentry {
+        Self::with_tmdb(db, fake_tmdb::unreachable())
+    }
+
+    /// Calls an app that calls this TMDB, such as a `FakeTmdb`.
+    pub fn with_tmdb(db: &Pool, tmdb: Tmdb) -> Self {
+        Self::with_context(ApiContext {
+            db: db.clone(),
+            apps_sentry: AppsSentry {
                 web_dsn: None,
                 mobile_dsn: None,
                 environment: "production".into(),
             },
-        )
+            metadata_providers: MetadataProviders { tmdb },
+        })
     }
 
     /// Calls an app whose host set these Sentry settings for the apps.
     pub fn with_apps_sentry(db: &Pool, apps_sentry: AppsSentry) -> Self {
-        Self::with_state(AppState {
+        Self::with_context(ApiContext {
             db: db.clone(),
             apps_sentry,
+            metadata_providers: MetadataProviders {
+                tmdb: fake_tmdb::unreachable(),
+            },
         })
     }
 
-    fn with_state(state: AppState) -> Self {
+    fn with_context(context: ApiContext) -> Self {
         Self {
-            router: watch_club::router(state),
+            router: watch_club::router(context),
             cookies: BTreeMap::new(),
             headers: HeaderMap::new(),
         }

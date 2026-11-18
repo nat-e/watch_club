@@ -7,6 +7,7 @@ use axum::{Router, extract::FromRef};
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
 
+mod api_client;
 mod auth;
 pub mod config;
 pub mod db;
@@ -18,11 +19,12 @@ pub mod openapi;
 pub mod routes;
 mod web;
 
-/// The state the request handlers share, which `router` takes.
+/// What the request handlers share, which `router` takes. Jobs have theirs, `jobs::JobContext`.
 #[derive(Clone, Debug, FromRef)]
-pub struct AppState {
+pub struct ApiContext {
     pub db: db::Pool,
     pub apps_sentry: AppsSentry,
+    pub metadata_providers: domain::contents::MetadataProviders,
 }
 
 /// The Sentry settings the apps report their errors with, which `GET /api/instance` gives them.
@@ -37,7 +39,7 @@ pub struct AppsSentry {
 }
 
 /// Builds the app's router, with the routes in `routes`.
-pub fn router(state: AppState) -> Router {
+pub fn router(context: ApiContext) -> Router {
     let (router, _) = routes::routes().split_for_parts();
-    router.with_state(state)
+    router.with_state(context)
 }

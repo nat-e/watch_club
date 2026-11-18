@@ -41,8 +41,9 @@ fn add_security_schemes(document: &mut openapi::OpenApi) {
 
 /// Adds the responses of `ApiError` to the endpoints that can send them.
 ///
-/// A 400 goes to those that take a body, a 401 to those that need a session, and a 500 to all of
-/// them, so that each `#[utoipa::path]` lists only the failures specific to its endpoint.
+/// A 400 goes to those that take a body or parameters, a 401 to those that need a session, and a
+/// 500 to all of them, so that each `#[utoipa::path]` lists only the failures specific to its
+/// endpoint.
 fn add_error_responses(document: &mut openapi::OpenApi) {
     for item in document.paths.paths.values_mut() {
         for operation in operations(item) {
@@ -52,7 +53,7 @@ fn add_error_responses(document: &mut openapi::OpenApi) {
             });
             let kinds = [
                 (
-                    operation.request_body.is_some(),
+                    operation.request_body.is_some() || operation.parameters.is_some(),
                     ApiErrorKind::InvalidRequest,
                 ),
                 (needs_session, ApiErrorKind::Unauthorized),

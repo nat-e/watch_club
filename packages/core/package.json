@@ -6,6 +6,8 @@
     "./accounts/preferences": "./src/accounts/preferences.ts",
     "./accounts/current-user": "./src/accounts/current-user.ts",
     "./accounts/sign-in": "./src/accounts/sign-in.ts",
+    "./contents/content": "./src/contents/content.ts",
+    "./contents/search": "./src/contents/search.ts",
     "./l10n": "./src/l10n.ts",
     "./query-client": "./src/query-client.ts",
     "./theme.css": "./src/theme.css"
