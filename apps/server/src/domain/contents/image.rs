@@ -24,8 +24,12 @@ impl Image {
     /// without any.
     pub fn new(sources: impl IntoIterator<Item = ImageSource>) -> Option<Self> {
         let mut sources: Vec<_> = sources.into_iter().collect();
+        if sources.is_empty() {
+            return None;
+        }
+
         sources.sort_by_key(|source| source.width);
         sources.dedup_by_key(|source| source.width);
-        (!sources.is_empty()).then_some(Self(sources))
+        Some(Self(sources))
     }
 }
