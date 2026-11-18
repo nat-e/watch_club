@@ -4,5 +4,3 @@ description: "Keep code easy to read and change, from its structure and interfac
 ---
 
 Read and apply `a-philosophy-of-software-design.md`.
-
-Prefer explicit, readable code to compact code, even when the compact form is idiomatic.
