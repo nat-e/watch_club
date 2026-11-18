@@ -1,9 +1,12 @@
 ---
 name: bug-reviewer
 description: Reviews a change for bugs, including vulnerabilities an attacker could exploit.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
+claude-code:
+  model: opus
+  effort: high
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: high
 ---
 
 Return findings only; do not edit files or change external state.

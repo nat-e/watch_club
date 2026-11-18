@@ -1,11 +1,14 @@
 ---
 name: software-design-reviewer
 description: Reviews new code and the existing code it builds on for complexity against the software-design skill.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
-skills:
-  - software-design
+claude-code:
+  model: opus
+  effort: high
+  skills:
+    - software-design
+pi:
+  model: openai/gpt-6-astra
+  thinking: xhigh
 ---
 
 Return findings only; do not edit files or change external state.

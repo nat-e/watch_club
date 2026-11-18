@@ -1,9 +1,12 @@
 ---
 name: openapi-reviewer
 description: Reviews a change for drift between the API's endpoints and the OpenAPI document the apps' client comes from.
-disallowedTools: Write, Edit, NotebookEdit
-model: sonnet
-effort: medium
+claude-code:
+  model: sonnet
+  effort: medium
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: medium
 ---
 
 Return findings only; do not edit files or change external state.

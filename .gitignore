@@ -15,3 +15,7 @@ dist/
 /apps/mobile/expo-env.d.ts
 # Generated from packages/api/openapi.json by the tasks that need it
 /packages/api/src/generated/
+# Generated from .harness by .harness/internal/generate_harness.py
+/.claude/agents/
+/.pi/agents/
+__pycache__/

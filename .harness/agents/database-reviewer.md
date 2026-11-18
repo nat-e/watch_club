@@ -1,11 +1,14 @@
 ---
 name: database-reviewer
 description: Reviews the queries, transactions, indexes and migrations in a change against the database skill.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
-skills:
-  - database
+claude-code:
+  model: opus
+  effort: high
+  skills:
+    - database
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: high
 ---
 
 Return findings only; do not edit files or change external state.

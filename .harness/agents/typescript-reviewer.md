@@ -1,11 +1,14 @@
 ---
 name: typescript-reviewer
 description: Reviews the TypeScript in a change against the typescript skill and the Google TypeScript Style Guide.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
-skills:
-  - typescript
+claude-code:
+  model: opus
+  effort: high
+  skills:
+    - typescript
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: high
 ---
 
 Return findings only; do not edit files or change external state.
