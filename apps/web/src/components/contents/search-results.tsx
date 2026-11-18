@@ -34,7 +34,7 @@ export function SearchResultSummary({
   const Icon = CONTENT_TYPE_ICONS[result.content_type];
   return (
     <>
-      <Poster path={result.poster_path} width={overview ? 64 : 48} />
+      <Poster image={result.poster} width={overview ? 64 : 48} />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate font-semibold">{result.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">

@@ -1,3 +1,4 @@
+mod image;
 mod metadata_providers {
     mod tmdb;
 }

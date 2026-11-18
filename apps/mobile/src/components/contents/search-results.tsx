@@ -55,7 +55,7 @@ function SearchResultRow({result}: {result: SearchResult}) {
       }}
       className="flex-row items-center gap-4 px-4 py-2 active:bg-pressed focus:bg-accent"
     >
-      <Poster path={result.poster_path} width={56} />
+      <Poster image={result.poster} width={56} />
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-foreground" numberOfLines={2}>
           {result.title}
