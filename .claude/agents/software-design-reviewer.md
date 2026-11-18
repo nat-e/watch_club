@@ -32,4 +32,7 @@ In the existing code the change builds on (the modules it calls, extends or copi
 
 Judge module boundaries against the architecture described in `AGENTS.md`, including where business logic belongs.
 
-Only propose refactors that clearly help. For each one, give what to change, in which files, the benefit and the cost. If no refactor is worth it, say so.
+Only propose refactors that clearly help. For each one, give what to change, in which files, the benefit and the cost.
+
+It is OK to not find anything. Don't try to make up finding or nitpick about something just to have something.
+Reply with LGTM when everything looks good.

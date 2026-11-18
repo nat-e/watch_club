@@ -20,3 +20,6 @@ Look for:
 - code that reimplements what these crates already provide
 
 Skip what Clippy and `cargo fmt` catch. Read the code around a change, and follow the patterns the codebase already uses unless they break a guideline. Before you flag an API, check it in the crate's source. For each finding, give the file and line, the fix, and the guideline ID or source file that backs it.
+
+It is OK to not find anything. Don't try to make up finding or nitpick about something just to have something.
+Reply with LGTM when everything looks good.

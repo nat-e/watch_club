@@ -21,3 +21,6 @@ Run `pnpm --filter @watchclub/api check:spec` to check that `openapi.json` match
 - descriptions and doc comments, which the generated client shows, still say what the endpoint does
 
 Skip the path and the method: `routes!` routes requests by the annotation, so they can't drift. Check what utoipa derives from serde attributes in utoipa-gen's `src/lib.rs`, at the version in `Cargo.lock`, not from memory. For each finding, give the file and line, what the document says, what the code does, and the fix.
+
+It is OK to not find anything. Don't try to make up finding or nitpick about something just to have something.
+Reply with LGTM when everything looks good.
