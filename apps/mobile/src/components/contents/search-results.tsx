@@ -1,5 +1,4 @@
 import {Button, Column} from '@expo/ui';
-import SegmentedControl from '@expo/ui/community/segmented-control';
 import type {SearchResult, SearchScope} from '@watchclub/api';
 import {useContentTypeNames} from '@watchclub/core/contents/content';
 import {
@@ -15,6 +14,7 @@ import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, FlatList, Pressable, Text, View} from 'react-native';
 import {Poster} from '@/components/contents/poster';
 import {Host} from '@/components/host';
+import {SegmentedControl} from '@/components/segmented-control';
 import {Description, useAnnouncement} from '@/components/text';
 
 /**
@@ -68,15 +68,10 @@ function SearchScopes({
   return (
     <View className="px-4 py-2">
       <SegmentedControl
-        values={SEARCH_SCOPES.map(option => scopeNames[option])}
-        selectedIndex={SEARCH_SCOPES.indexOf(scope)}
-        onChange={event => {
-          const picked = SEARCH_SCOPES[event.nativeEvent.selectedSegmentIndex];
-          if (picked !== undefined) {
-            onScopeChange(picked);
-          }
-        }}
-        accessibilityLabel={t($ => $.core.search.scope)}
+        label={t($ => $.core.search.scope)}
+        segments={SEARCH_SCOPES.map(option => ({value: option, label: scopeNames[option]}))}
+        value={scope}
+        onChange={onScopeChange}
       />
     </View>
   );
