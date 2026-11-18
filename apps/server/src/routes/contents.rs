@@ -44,10 +44,12 @@ async fn get_content(
     Path((content_type, external_id)): Path<(ContentType, String)>,
 ) -> Result<Json<Content>, GetContentRequestError> {
     // An ID that can't be one is as unknown as one the Metadata Provider doesn't have
-    let id =
-        ContentId::parse(content_type, &external_id).ok_or(GetContentRequestError::NotFound)?;
-    let content =
-        contents::look_up(&metadata_providers, id, current_user.preferences.locale).await?;
+    let Some(id) = ContentId::parse(content_type, &external_id) else {
+        return Err(GetContentRequestError::NotFound);
+    };
+
+    let locale = current_user.preferences.locale;
+    let content = contents::look_up(&metadata_providers, id, locale).await?;
     Ok(Json(content))
 }
 

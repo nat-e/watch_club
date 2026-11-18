@@ -79,10 +79,9 @@ impl Tmdb {
     pub async fn search(
         &self,
         query: &str,
-        page: NonZeroU32,
+        mut page: NonZeroU32,
         locale: Locale,
     ) -> Result<SearchResults, InternalError> {
-        let mut page = page;
         let mut pages_read = 1;
         loop {
             let page_number = page.to_string();
@@ -97,12 +96,14 @@ impl Tmdb {
                 .get("/search/multi", &[], &params)
                 .await?
                 .context("TMDB answered GET /search/multi with 404 Not Found")?;
+
             let next_page = found.next_page();
             let results: Vec<_> = found
                 .results
                 .into_iter()
                 .filter_map(search_result)
                 .collect();
+
             match next_page {
                 Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
                     page = next_page;
@@ -124,6 +125,7 @@ impl Tmdb {
             )
             .await?
             .ok_or(LookUpError::NotFound)?;
+
         Ok(Content {
             id: ContentId::Movie(id),
             title: movie.title,
@@ -145,6 +147,7 @@ impl Tmdb {
             )
             .await?
             .ok_or(LookUpError::NotFound)?;
+
         Ok(Content {
             id: ContentId::TvShow(id),
             title: tv_show.name,

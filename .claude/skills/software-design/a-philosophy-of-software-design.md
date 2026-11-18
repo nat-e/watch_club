@@ -269,6 +269,7 @@ Anti-patterns (MUST NOT):
 3. Prefer obvious code where a reader can infer behavior from local structure and names.
 4. Remove non-obvious behavior unless it is hidden behind a clear contract.
 5. When code surprises a reader, treat that as complexity even if the code is short.
+6. Use white space judiciously: separate the major blocks of a function with blank lines, like paragraphs, so the reader sees its steps, such as checks, work and result. Start a block with a short comment when its purpose isn't obvious.
 
 ---
 

@@ -36,13 +36,8 @@ async fn search(
     Query(params): Query<SearchParams>,
 ) -> Result<Json<SearchResults>, ApiError> {
     let page = params.page.unwrap_or(NonZeroU32::MIN);
-    let results = contents::search(
-        &metadata_providers,
-        &params.query,
-        page,
-        current_user.preferences.locale,
-    )
-    .await?;
+    let locale = current_user.preferences.locale;
+    let results = contents::search(&metadata_providers, &params.query, page, locale).await?;
     Ok(Json(results))
 }
 

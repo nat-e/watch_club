@@ -141,6 +141,7 @@ pub async fn search(
     if query.is_empty() {
         return Ok(SearchResults::default());
     }
+
     metadata_providers.tmdb.search(query, page, locale).await
 }
 
