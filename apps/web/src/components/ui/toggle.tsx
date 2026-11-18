@@ -9,8 +9,13 @@ const toggleVariants = cva(
       variant: {
         default: "bg-transparent",
         outline: "border border-input bg-transparent shadow-xs hover:bg-muted",
-        // A filter chip, as in the Phoenix app: a pill whose pressed state is pink
-        chip: "rounded-full border border-input bg-transparent px-3 font-semibold text-muted-foreground not-aria-pressed:hover:bg-accent not-aria-pressed:hover:text-foreground aria-pressed:border-primary-border aria-pressed:bg-primary-subtle aria-pressed:text-primary",
+        // A filter chip, as in the Phoenix app: a pill that's pink when pressed, or checked when
+        // it's a radio, such as a search's scopes
+        chip: [
+          "rounded-full border border-input bg-transparent px-3 font-semibold text-muted-foreground not-aria-pressed:not-aria-checked:hover:bg-accent not-aria-pressed:not-aria-checked:hover:text-foreground",
+          "aria-pressed:border-primary-border aria-pressed:bg-primary-subtle aria-pressed:text-primary",
+          "aria-checked:border-primary-border aria-checked:bg-primary-subtle aria-checked:text-primary",
+        ],
       },
       size: {
         default:

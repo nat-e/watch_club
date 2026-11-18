@@ -1,3 +1,5 @@
+import {Radio} from '@base-ui/react/radio';
+import {RadioGroup} from '@base-ui/react/radio-group';
 import type {ContentType, SearchResult, SearchScope} from '@watchclub/api';
 import {useContentTypeNames} from '@watchclub/core/contents/content';
 import {
@@ -7,6 +9,7 @@ import {
   useSearchHint,
   useSearchScopeNames,
 } from '@watchclub/core/contents/search';
+import {cn} from 'cn';
 import {
   BookIcon,
   ClapperboardIcon,
@@ -23,8 +26,7 @@ import {Poster} from '@/components/contents/poster';
 import {Button} from '@/components/ui/button';
 import {Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle} from '@/components/ui/empty';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Toggle} from '@/components/ui/toggle';
-import {ToggleGroup, ToggleGroupItem} from '@/components/ui/toggle-group';
+import {Toggle, toggleVariants} from '@/components/ui/toggle';
 
 const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {
   movie: FilmIcon,
@@ -189,28 +191,30 @@ export function SearchScopes({
   const scopeNames = useSearchScopeNames();
   return (
     <div className="flex flex-1 flex-wrap items-center gap-2">
-      <ToggleGroup
+      <RadioGroup
         aria-label={t($ => $.core.search.scope)}
-        variant="chip"
-        size="sm"
-        value={[scope]}
-        onValueChange={([pressed]) => {
-          // Pressing the scope that's on again presses none: it stays on
-          if (pressed !== undefined) {
-            onScopeChange(pressed);
-          }
+        value={scope}
+        onValueChange={newScope => {
+          onScopeChange(newScope);
         }}
+        className="flex items-center gap-2"
       >
         {SEARCH_SCOPES.map(option => {
           const Icon = SEARCH_SCOPE_ICONS[option];
           return (
-            <ToggleGroupItem key={option} value={option}>
+            // A chip, like the Library filter's toggle beside. `cn` lets the chip's classes
+            // replace the toggle's defaults, as `Toggle` does
+            <Radio.Root
+              key={option}
+              value={option}
+              className={cn(toggleVariants({variant: 'chip', size: 'sm'}))}
+            >
               <Icon />
               {scopeNames[option]}
-            </ToggleGroupItem>
+            </Radio.Root>
           );
         })}
-      </ToggleGroup>
+      </RadioGroup>
       <InLibraryFilter />
     </div>
   );
