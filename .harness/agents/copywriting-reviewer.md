@@ -1,11 +1,14 @@
 ---
 name: copywriting-reviewer
 description: Reviews the interface text in a change, in English and French, against the copywriting skill.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
-skills:
-  - copywriting
+claude-code:
+  model: opus
+  effort: high
+  skills:
+    - copywriting
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: high
 ---
 
 Return findings only; do not edit files or change external state.

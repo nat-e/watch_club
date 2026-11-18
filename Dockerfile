@@ -14,7 +14,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/
 COPY packages/api/package.json packages/api/
 COPY packages/core/package.json packages/core/
-RUN pnpm install --frozen-lockfile --filter web...
+# No dependency runs install scripts, see pnpm-workspace.yaml. The root's generates the harness files,
+# which the image doesn't need, with uv, which it lacks
+RUN pnpm install --frozen-lockfile --filter web... --ignore-scripts
 COPY tsconfig.base.json ./
 COPY packages packages
 COPY apps/web apps/web

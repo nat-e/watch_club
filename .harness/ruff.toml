@@ -1,0 +1,10 @@
+# Checks and formats the Python in .harness, in `pnpm check` and `pnpm fix`
+line-length = 100
+target-version = "py314"
+# The scripts import each other by module name
+src = ["internal"]
+# Leaves out the Markdown, which Ruff also formats
+include = ["*.py"]
+
+[lint]
+extend-select = ["B", "I", "SIM", "UP"]

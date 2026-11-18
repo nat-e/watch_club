@@ -5,6 +5,8 @@ set -euo pipefail
 
 mise install
 mise exec -- pnpm install
+# pnpm install runs it only when it installs something
+mise exec -- .harness/internal/generate_harness.py
 # Applies the changes to Postgres in docker-compose.dev.yml, and starts it if it's stopped
 mise exec -- pnpm dev:shared
 # Regenerate the uncommitted API client so the dev server picks up merged API changes

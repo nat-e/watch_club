@@ -1,0 +1,4 @@
+# Harness configuration
+
+# The harnesses to support
+harnesses = ["claude-code", "pi"]

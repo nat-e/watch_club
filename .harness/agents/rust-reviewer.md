@@ -1,11 +1,14 @@
 ---
 name: rust-reviewer
 description: Reviews the Rust in a change against the rust skill, the axum, utoipa and SQLx versions we use and the Pragmatic Rust Guidelines.
-disallowedTools: Write, Edit, NotebookEdit
-model: opus
-effort: high
-skills:
-  - rust
+claude-code:
+  model: opus
+  effort: high
+  skills:
+    - rust
+pi:
+  model: openai/gpt-6.1-sol
+  thinking: high
 ---
 
 Return findings only; do not edit files or change external state.
