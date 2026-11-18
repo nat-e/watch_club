@@ -6,6 +6,8 @@ use watch_club::db::Pool;
 use watch_club::jobs;
 use watch_club_test_macros::database_test;
 
+use crate::support;
+
 /// Returns the kinds of the jobs in the queue, finished or not.
 async fn job_kinds(db: &Pool) -> Vec<String> {
     sqlx::query_scalar!("SELECT kind FROM jobs")
@@ -54,7 +56,9 @@ mod run_available {
     #[database_test]
     async fn schedules_the_next_run_without_queuing_the_job(db: PgPool) {
         let db = watch_club::db::instrument(db);
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert!(runs_next_on_the_coming_sunday(&db).await);
         assert_eq!(job_kinds(&db).await, Vec::<String>::new());
@@ -63,10 +67,13 @@ mod run_available {
     #[database_test]
     async fn queues_the_job_once_when_its_run_comes(db: PgPool) {
         let db = watch_club::db::instrument(db);
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
         set_next_run_from_now(&db, "-1 minute").await;
 
-        let runs = tokio::join!(jobs::run_available(&db), jobs::run_available(&db));
+        let context = support::job_context(&db);
+        let runs = tokio::join!(jobs::run_available(&context), jobs::run_available(&context));
 
         runs.0.unwrap();
         runs.1.unwrap();
@@ -77,10 +84,14 @@ mod run_available {
     #[database_test]
     async fn queues_the_job_once_after_missing_several_runs(db: PgPool) {
         let db = watch_club::db::instrument(db);
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
         set_next_run_from_now(&db, "-3 weeks").await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_kinds(&db).await, ["delete_expired_sessions"]);
         assert!(runs_next_on_the_coming_sunday(&db).await);
@@ -89,7 +100,9 @@ mod run_available {
     #[database_test]
     async fn moves_the_next_run_when_the_cron_expression_changes(db: PgPool) {
         let db = watch_club::db::instrument(db);
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
         sqlx::query!(
             r#"
             UPDATE job_schedules
@@ -101,7 +114,9 @@ mod run_available {
         .await
         .unwrap();
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         let cron = sqlx::query_scalar!(
             "SELECT cron FROM job_schedules WHERE name = 'delete_expired_sessions'"
@@ -126,7 +141,9 @@ mod run_available {
         .await
         .unwrap();
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         let names = sqlx::query_scalar!("SELECT name FROM job_schedules")
             .fetch_all(&db)

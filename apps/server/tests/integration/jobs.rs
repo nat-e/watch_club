@@ -35,7 +35,9 @@ mod enqueue {
         support::expire_sessions(&db, user.id).await;
 
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Completed, 1));
         let sessions = sqlx::query_scalar!(r#"SELECT count(*) AS "count!" FROM sessions"#)
@@ -72,7 +74,9 @@ mod cancel {
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
 
         let cancelled = jobs::cancel(&db, id).await.unwrap();
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert!(cancelled);
         assert_eq!(job_state(&db, id).await, (JobState::Cancelled, 0));
@@ -82,7 +86,9 @@ mod cancel {
     async fn is_too_late_once_the_job_ran(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let id = jobs::enqueue(&db, DeleteExpiredSessions {}).await.unwrap();
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         let cancelled = jobs::cancel(&db, id).await.unwrap();
 

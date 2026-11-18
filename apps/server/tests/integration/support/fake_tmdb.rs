@@ -42,7 +42,7 @@ impl FakeTmdb {
     }
 
     /// Returns the Metadata Providers of an instance that finds Content in this TMDB.
-    pub fn providers(&self) -> MetadataProviders {
+    pub fn metadata_providers(&self) -> MetadataProviders {
         MetadataProviders {
             tmdb: self.client(),
         }

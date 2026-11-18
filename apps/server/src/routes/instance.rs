@@ -15,7 +15,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppState,
+    ApiContext,
     auth::SessionCookie,
     db::Pool,
     domain::{
@@ -29,7 +29,7 @@ use crate::{
     routes::{Json, me::CurrentUserResponse},
 };
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new()
         .routes(routes!(get_instance))
         .routes(routes!(create_instance_administrator))
@@ -38,15 +38,15 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
 /// Returns the information apps need about the WatchClub instance before signing in.
 #[utoipa::path(get, path = "/instance", responses((status = OK, body = GetInstanceResponse)))]
 async fn get_instance(
-    State(state): State<AppState>,
+    State(context): State<ApiContext>,
 ) -> Result<Json<GetInstanceResponse>, ApiError> {
-    let needs_setup = !accounts::has_instance_administrator(&state.db).await?;
+    let needs_setup = !accounts::has_instance_administrator(&context.db).await?;
     Ok(Json(GetInstanceResponse {
         version: env!("CARGO_PKG_VERSION"),
         needs_setup,
-        web_sentry_dsn: state.apps_sentry.web_dsn,
-        mobile_sentry_dsn: state.apps_sentry.mobile_dsn,
-        sentry_environment: state.apps_sentry.environment,
+        web_sentry_dsn: context.apps_sentry.web_dsn,
+        mobile_sentry_dsn: context.apps_sentry.mobile_dsn,
+        sentry_environment: context.apps_sentry.environment,
     }))
 }
 

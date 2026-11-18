@@ -8,7 +8,7 @@ use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppState,
+    ApiContext,
     domain::{
         accounts::CurrentUser,
         contents::{self, MetadataProviders, SearchResults},
@@ -17,7 +17,7 @@ use crate::{
     routes::{Json, Query},
 };
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new().routes(routes!(search))
 }
 
@@ -31,13 +31,13 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn search(
-    State(providers): State<MetadataProviders>,
+    State(metadata_providers): State<MetadataProviders>,
     current_user: CurrentUser,
     Query(params): Query<SearchParams>,
 ) -> Result<Json<SearchResults>, ApiError> {
     let page = params.page.unwrap_or(NonZeroU32::MIN);
     let results = contents::search(
-        &providers,
+        &metadata_providers,
         &params.query,
         page,
         current_user.preferences.locale,

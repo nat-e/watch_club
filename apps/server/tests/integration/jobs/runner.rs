@@ -7,6 +7,7 @@ use watch_club::jobs::{self, DeleteExpiredSessions, JobId, JobState};
 use watch_club_test_macros::database_test;
 
 use super::job_state;
+use crate::support;
 
 /// Queues a job that runs at once.
 async fn enqueue(db: &Pool) -> JobId {
@@ -34,7 +35,9 @@ mod run_available {
         .await
         .unwrap();
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         let order = sqlx::query_scalar!("SELECT id FROM jobs ORDER BY attempted_at")
             .fetch_all(&db)
@@ -55,7 +58,9 @@ mod run_available {
         .await
         .unwrap();
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Available, 0));
     }
@@ -67,11 +72,12 @@ mod run_available {
             enqueue(&db).await;
         }
 
+        let context = support::job_context(&db);
         let runs = tokio::join!(
-            jobs::run_available(&db),
-            jobs::run_available(&db),
-            jobs::run_available(&db),
-            jobs::run_available(&db),
+            jobs::run_available(&context),
+            jobs::run_available(&context),
+            jobs::run_available(&context),
+            jobs::run_available(&context),
         );
 
         runs.0.unwrap();
@@ -110,7 +116,9 @@ mod run_available {
         let db = watch_club::db::instrument(db);
         let id = enqueue_failing(&db, 3).await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Available, 1));
         let wait = sqlx::query_scalar!(
@@ -129,7 +137,9 @@ mod run_available {
         let db = watch_club::db::instrument(db);
         let id = enqueue_failing(&db, 1).await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Failed, 1));
     }
@@ -157,7 +167,9 @@ mod run_available {
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "61 minutes").await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Completed, 2));
     }
@@ -168,7 +180,9 @@ mod run_available {
         let id = enqueue(&db).await;
         leave_running(&db, id, 1, "59 minutes").await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Executing, 1));
     }
@@ -179,7 +193,9 @@ mod run_available {
         let id = enqueue(&db).await;
         leave_running(&db, id, 3, "61 minutes").await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         assert_eq!(job_state(&db, id).await, (JobState::Failed, 3));
     }
@@ -210,7 +226,9 @@ mod run_available {
         let recent = enqueue(&db).await;
         finish(&db, recent, JobState::Completed, "6 days").await;
 
-        jobs::run_available(&db).await.unwrap();
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
 
         let left = sqlx::query_scalar!("SELECT id FROM jobs")
             .fetch_all(&db)

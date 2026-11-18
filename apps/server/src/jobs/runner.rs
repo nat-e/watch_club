@@ -14,7 +14,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
 
-use super::{AnyJob, ClaimedJob, JobError, JobId, JobState, Queue, schedules};
+use super::{AnyJob, ClaimedJob, JobContext, JobError, JobId, JobState, Queue, schedules};
 use crate::{db::Pool, domain::InternalError, observability};
 
 /// The time after which a job still `executing` counts as left behind by a crash, or by a shutdown
@@ -40,11 +40,13 @@ const SHUTDOWN_WAIT: Duration = Duration::from_secs(8);
 
 /// Runs the queued jobs until `shutdown` is cancelled, then waits up to 8 s for the running ones.
 /// Those still running then stay `executing` until they're rescued.
-pub async fn run(db: Pool, shutdown: CancellationToken) -> Result<(), InternalError> {
+pub async fn run(context: JobContext, shutdown: CancellationToken) -> Result<(), InternalError> {
+    let db = &context.db;
     let jobs = async {
-        observability::without_export(schedules::sync_schedules(&db)).await?;
-        let queues = future::join_all(Queue::ALL.map(|queue| run_queue(&db, queue, &shutdown)));
-        tokio::join!(queues, maintain(&db, &shutdown));
+        observability::without_export(schedules::sync_schedules(db)).await?;
+        let queues =
+            future::join_all(Queue::ALL.map(|queue| run_queue(&context, queue, &shutdown)));
+        tokio::join!(queues, maintain(db, &shutdown));
         Ok(())
     };
     let deadline = async {
@@ -68,12 +70,13 @@ pub async fn run(db: Pool, shutdown: CancellationToken) -> Result<(), InternalEr
 /// Does at once what the runner does over time, for tests: syncs the schedules, runs the
 /// maintenance, then runs the due jobs one at a time, in the order the runner claims them, until
 /// none is left.
-pub async fn run_available(db: &Pool) -> Result<(), InternalError> {
+pub async fn run_available(context: &JobContext) -> Result<(), InternalError> {
+    let db = &context.db;
     schedules::sync_schedules(db).await?;
     run_maintenance(db).await?;
     for queue in Queue::ALL {
         while let Some(job) = claim_jobs(db, queue, 1).await?.pop() {
-            run_job(db, job).await;
+            run_job(context, job).await;
         }
     }
     Ok(())
@@ -81,7 +84,7 @@ pub async fn run_available(db: &Pool) -> Result<(), InternalError> {
 
 /// Claims the queue's due jobs whenever it has room, and runs each in its own task, until
 /// `shutdown` is cancelled. Then waits for the running jobs.
-async fn run_queue(db: &Pool, queue: Queue, shutdown: &CancellationToken) {
+async fn run_queue(context: &JobContext, queue: Queue, shutdown: &CancellationToken) {
     let mut running_jobs = JoinSet::new();
     loop {
         while let Some(task_result) = running_jobs.try_join_next() {
@@ -91,7 +94,7 @@ async fn run_queue(db: &Pool, queue: Queue, shutdown: &CancellationToken) {
         let claimed = if free_slots == 0 {
             Vec::new()
         } else {
-            observability::without_export(claim_jobs(db, queue, free_slots))
+            observability::without_export(claim_jobs(&context.db, queue, free_slots))
                 .await
                 .unwrap_or_else(|error| {
                     tracing::event!(
@@ -107,8 +110,8 @@ async fn run_queue(db: &Pool, queue: Queue, shutdown: &CancellationToken) {
         // Free slots left over: the queue has no other due job for now
         let queue_empty = claimed.len() < free_slots;
         for job in claimed {
-            let db = db.clone();
-            running_jobs.spawn(async move { run_job(&db, job).await });
+            let context = context.clone();
+            running_jobs.spawn(async move { run_job(&context, job).await });
         }
         tokio::select! {
             () = shutdown.cancelled() => break,
@@ -170,17 +173,17 @@ async fn claim_jobs(
 
 /// Runs a claimed job, and saves how its attempt ended. Arguments that don't read count as a
 /// failed attempt.
-async fn run_job(db: &Pool, mut job: ClaimedJob) {
+async fn run_job(context: &JobContext, mut job: ClaimedJob) {
     let args = job.args.take();
     let run = async {
         let outcome = match AnyJob::from_row(&job.kind, args) {
             Ok(any_job) => {
                 let timeout = any_job.timeout().min(MAX_TIMEOUT);
-                run_attempt(timeout, any_job.run(db)).await
+                run_attempt(timeout, any_job.run(context)).await
             }
             Err(error) => Err(error.context("failed to read the job").into()),
         };
-        save_outcome(db, &job, outcome).await
+        save_outcome(&context.db, &job, outcome).await
     };
     super::observability::instrument(&job, run).await;
 }

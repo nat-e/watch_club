@@ -14,11 +14,12 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
 use watch_club::{
-    AppState, AppsSentry,
+    ApiContext, AppsSentry,
     config::Config,
     db,
     domain::contents::{MetadataProviders, Tmdb},
-    jobs, observability,
+    jobs::{self, JobContext},
+    observability,
 };
 
 fn main() -> anyhow::Result<()> {
@@ -45,7 +46,11 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 
-    let runner = tokio::spawn(jobs::run(db.clone(), shutdown.clone()));
+    let jobs_context = JobContext {
+        db: db.clone(),
+        metadata_providers: metadata_providers.clone(),
+    };
+    let runner = tokio::spawn(jobs::run(jobs_context, shutdown.clone()));
     tracing::event!(
         name: "server.started",
         Level::INFO,
@@ -55,7 +60,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     );
     let server = axum::serve(
         listener,
-        watch_club::router(AppState {
+        watch_club::router(ApiContext {
             db: db.clone(),
             apps_sentry: AppsSentry {
                 web_dsn: config.observability.web_sentry_dsn.map(Arc::from),

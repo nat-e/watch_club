@@ -132,7 +132,7 @@ pub enum LookUpError {
 /// with their texts in the Locale's language. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.page = page))]
 pub async fn search(
-    providers: &MetadataProviders,
+    metadata_providers: &MetadataProviders,
     query: &str,
     page: NonZeroU32,
     locale: Locale,
@@ -141,7 +141,7 @@ pub async fn search(
     if query.is_empty() {
         return Ok(SearchResults::default());
     }
-    providers.tmdb.search(query, page, locale).await
+    metadata_providers.tmdb.search(query, page, locale).await
 }
 
 /// Returns the Content, with its title in the Locale's language.
@@ -150,12 +150,12 @@ pub async fn search(
     fields(content.type = ?id.content_type(), content.external_id = %id.external_id()),
 )]
 pub async fn look_up(
-    providers: &MetadataProviders,
+    metadata_providers: &MetadataProviders,
     id: ContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
     match id {
-        ContentId::Movie(id) => providers.tmdb.look_up_movie(id, locale).await,
-        ContentId::TvShow(id) => providers.tmdb.look_up_tv_show(id, locale).await,
+        ContentId::Movie(id) => metadata_providers.tmdb.look_up_movie(id, locale).await,
+        ContentId::TvShow(id) => metadata_providers.tmdb.look_up_tv_show(id, locale).await,
     }
 }

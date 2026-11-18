@@ -20,13 +20,13 @@ use tower_http::catch_panic::CatchPanicLayer;
 use utoipa_axum::router::OpenApiRouter;
 
 use crate::{
-    AppState,
+    ApiContext,
     error::{self, ApiError},
     observability, web,
 };
 
 /// Returns the app's routes, with the descriptions of the API's endpoints.
-pub(crate) fn routes() -> OpenApiRouter<AppState> {
+pub(crate) fn routes() -> OpenApiRouter<ApiContext> {
     let api = OpenApiRouter::new()
         .merge(instance::routes())
         .merge(auth::routes())

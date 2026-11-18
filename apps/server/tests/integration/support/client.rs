@@ -15,7 +15,7 @@ use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::ServiceExt;
 use watch_club::{
-    AppState, AppsSentry,
+    ApiContext, AppsSentry,
     db::Pool,
     domain::{
         accounts::CurrentUser,
@@ -52,7 +52,7 @@ impl Client {
 
     /// Calls an app that calls this TMDB, such as a `FakeTmdb`.
     pub fn with_tmdb(db: &Pool, tmdb: Tmdb) -> Self {
-        Self::with_state(AppState {
+        Self::with_context(ApiContext {
             db: db.clone(),
             apps_sentry: AppsSentry {
                 web_dsn: None,
@@ -65,7 +65,7 @@ impl Client {
 
     /// Calls an app whose host set these Sentry settings for the apps.
     pub fn with_apps_sentry(db: &Pool, apps_sentry: AppsSentry) -> Self {
-        Self::with_state(AppState {
+        Self::with_context(ApiContext {
             db: db.clone(),
             apps_sentry,
             metadata_providers: MetadataProviders {
@@ -74,9 +74,9 @@ impl Client {
         })
     }
 
-    fn with_state(state: AppState) -> Self {
+    fn with_context(context: ApiContext) -> Self {
         Self {
-            router: watch_club::router(state),
+            router: watch_club::router(context),
             cookies: BTreeMap::new(),
             headers: HeaderMap::new(),
         }

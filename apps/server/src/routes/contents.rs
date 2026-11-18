@@ -10,7 +10,7 @@ use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppState,
+    ApiContext,
     domain::{
         InternalError,
         accounts::CurrentUser,
@@ -20,7 +20,7 @@ use crate::{
     routes::{Json, Path},
 };
 
-pub(super) fn routes() -> OpenApiRouter<AppState> {
+pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new().routes(routes!(get_content))
 }
 
@@ -39,14 +39,15 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn get_content(
-    State(providers): State<MetadataProviders>,
+    State(metadata_providers): State<MetadataProviders>,
     current_user: CurrentUser,
     Path((content_type, external_id)): Path<(ContentType, String)>,
 ) -> Result<Json<Content>, GetContentRequestError> {
     // An ID that can't be one is as unknown as one the Metadata Provider doesn't have
     let id =
         ContentId::parse(content_type, &external_id).ok_or(GetContentRequestError::NotFound)?;
-    let content = contents::look_up(&providers, id, current_user.preferences.locale).await?;
+    let content =
+        contents::look_up(&metadata_providers, id, current_user.preferences.locale).await?;
     Ok(Json(content))
 }
 
