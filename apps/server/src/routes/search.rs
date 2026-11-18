@@ -4,25 +4,30 @@ use std::num::NonZeroU32;
 
 use axum::extract::State;
 use serde::Deserialize;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, OpenApi};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     ApiContext,
     domain::{
         accounts::CurrentUser,
-        contents::{self, MetadataProviders, SearchResults},
+        contents::{self, MetadataProviders, SearchResults, SearchScope},
     },
     error::ApiError,
     routes::{Json, Query},
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
-    OpenApiRouter::new().routes(routes!(search))
+    OpenApiRouter::with_openapi(SearchSchemas::openapi()).routes(routes!(search))
 }
 
-/// Returns a page of the Movies and TV Shows whose title matches the query, most relevant first,
-/// with their texts in the signed-in User's language.
+/// The schemas that the search's parameters refer to, which utoipa doesn't collect from them.
+#[derive(OpenApi)]
+#[openapi(components(schemas(SearchScope)))]
+struct SearchSchemas;
+
+/// Returns a page of the Content of the scope that matches the query, most relevant first, with
+/// their texts in the signed-in User's language when their Metadata Provider has them.
 #[utoipa::path(
     get,
     path = "/search",
@@ -37,7 +42,14 @@ async fn search(
 ) -> Result<Json<SearchResults>, ApiError> {
     let page = params.page.unwrap_or(NonZeroU32::MIN);
     let locale = current_user.preferences.locale;
-    let results = contents::search(&metadata_providers, &params.query, page, locale).await?;
+    let results = contents::search(
+        &metadata_providers,
+        &params.query,
+        params.scope,
+        page,
+        locale,
+    )
+    .await?;
     Ok(Json(results))
 }
 
@@ -45,8 +57,10 @@ async fn search(
 #[derive(Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 struct SearchParams {
-    /// The words to look for in titles. A blank query matches nothing
+    /// The words to look for, such as a title. A blank query matches nothing
     query: String,
+    /// The Content Types to look for
+    scope: SearchScope,
     /// The page to return, from 1, the default: the previous page's `next_page`
     #[param(value_type = Option<u32>, minimum = 1)]
     page: Option<NonZeroU32>,

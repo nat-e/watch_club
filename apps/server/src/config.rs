@@ -18,6 +18,8 @@ pub struct Config {
     pub port: u16,
     /// The API Read Access Token the server calls TMDB with, from `TMDB_API_TOKEN`
     pub tmdb_api_token: SecretString,
+    /// The API token the server calls Hardcover with, from `HARDCOVER_API_TOKEN`
+    pub hardcover_api_token: SecretString,
     /// The settings of the server's logs, telemetry and error reports
     pub observability: ObservabilityConfig,
 }
@@ -88,6 +90,7 @@ impl Config {
                 .parse()
                 .context("PORT isn't a port number")?,
             tmdb_api_token: required_var("TMDB_API_TOKEN")?.into(),
+            hardcover_api_token: required_var("HARDCOVER_API_TOKEN")?.into(),
             observability: ObservabilityConfig::from_env()?,
         })
     }

@@ -8,6 +8,7 @@
     "WEB_PORT",
     "RCT_METRO_PORT",
     "TMDB_API_TOKEN",
+    "HARDCOVER_API_TOKEN",
     "LOG_LEVEL",
     "LOG_FORMAT",
     "RUSTUP_TOOLCHAIN",

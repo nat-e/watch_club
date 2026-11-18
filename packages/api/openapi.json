@@ -237,7 +237,7 @@
     },
     "/api/contents/{content_type}/{external_id}": {
       "get": {
-        "summary": "Returns the Content, with its title in the signed-in User's language.",
+        "summary": "Returns the Content, with its title in the signed-in User's language when its Metadata Provider\nhas it.",
         "operationId": "get_content",
         "parameters": [
           {
@@ -743,16 +743,25 @@
     },
     "/api/search": {
       "get": {
-        "summary": "Returns a page of the Movies and TV Shows whose title matches the query, most relevant first,\nwith their texts in the signed-in User's language.",
+        "summary": "Returns a page of the Content of the scope that matches the query, most relevant first, with\ntheir texts in the signed-in User's language when their Metadata Provider has them.",
         "operationId": "search",
         "parameters": [
           {
             "name": "query",
             "in": "query",
-            "description": "The words to look for in titles. A blank query matches nothing",
+            "description": "The words to look for, such as a title. A blank query matches nothing",
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "The Content Types to look for",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SearchScope"
             }
           },
           {
@@ -912,7 +921,7 @@
             }
           }
         ],
-        "description": "A Content, with its title in the User's language."
+        "description": "A Content, with its title in the User's language when its Metadata Provider has it."
       },
       "ContentId": {
         "type": "object",
@@ -936,7 +945,8 @@
         "description": "The type of a Content.",
         "enum": [
           "movie",
-          "tv_show"
+          "tv_show",
+          "book"
         ]
       },
       "CreateInstanceAdministratorRequestError": {
@@ -1335,9 +1345,17 @@
               "title",
               "year",
               "overview",
-              "poster"
+              "poster",
+              "creators"
             ],
             "properties": {
+              "creators": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The people credited for making it, most important first, such as a Book's authors. None for\nMovies and TV Shows for now"
+              },
               "overview": {
                 "type": [
                   "string",
@@ -1363,12 +1381,12 @@
                   "null"
                 ],
                 "format": "int32",
-                "description": "The year of its release, or of its first episode, when TMDB knows it"
+                "description": "The year of its release, or of its first episode, when its Metadata Provider knows it"
               }
             }
           }
         ],
-        "description": "A Movie or a TV Show that matches a search, with its texts in the User's language."
+        "description": "A Content that matches a search, with its texts in the User's language when its Metadata\nProvider has them."
       },
       "SearchResults": {
         "type": "object",
@@ -1395,6 +1413,14 @@
             "description": "The results, most relevant first. Only the last page can have none, unless TMDB's pages\nin between have only people"
           }
         }
+      },
+      "SearchScope": {
+        "type": "string",
+        "description": "The Content Types a search looks for, each at the Metadata Provider of its types.",
+        "enum": [
+          "movies_and_tv_shows",
+          "books"
+        ]
       },
       "TrackLanguage": {
         "type": "string",

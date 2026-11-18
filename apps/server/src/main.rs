@@ -17,7 +17,7 @@ use watch_club::{
     ApiContext, AppsSentry,
     config::Config,
     db,
-    domain::contents::{MetadataProviders, Tmdb},
+    domain::contents::{Hardcover, MetadataProviders, Tmdb},
     jobs::{self, JobContext},
     observability,
 };
@@ -42,6 +42,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
         .with_context(|| format!("failed to listen on port {}", config.port))?;
     let metadata_providers = MetadataProviders {
         tmdb: Tmdb::new(&config.tmdb_api_token)?,
+        hardcover: Hardcover::new(&config.hardcover_api_token)?,
     };
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;

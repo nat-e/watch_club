@@ -1,5 +1,6 @@
 mod image;
 mod metadata_providers {
+    mod hardcover;
     mod tmdb;
 }
 
@@ -7,14 +8,16 @@ use std::num::NonZeroU32;
 
 use watch_club::domain::{
     accounts::Locale,
-    contents::{self, Content, ContentId, ContentType, SearchResults, TmdbId},
+    contents::{
+        self, Content, ContentId, ContentType, HardcoverId, SearchResults, SearchScope, TmdbId,
+    },
 };
 use wiremock::{
     Mock, ResponseTemplate,
     matchers::{method, path, query_param},
 };
 
-use crate::support::{FakeTmdb, fake_tmdb::fixture};
+use crate::support::{FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
 
 #[tokio::test]
 async fn search_finds_movies_and_tv_shows_on_tmdb_without_the_spaces_around_the_query() {
@@ -31,6 +34,7 @@ async fn search_finds_movies_and_tv_shows_on_tmdb_without_the_spaces_around_the_
     let found = contents::search(
         &tmdb.metadata_providers(),
         " amelie ",
+        SearchScope::MoviesAndTvShows,
         NonZeroU32::MIN,
         Locale::FrFr,
     )
@@ -41,12 +45,33 @@ async fn search_finds_movies_and_tv_shows_on_tmdb_without_the_spaces_around_the_
 }
 
 #[tokio::test]
+async fn search_finds_books_on_hardcover() {
+    let hardcover = FakeHardcover::start().await;
+    hardcover
+        .answer("SearchBooks", fake_hardcover::fixture("search_books"))
+        .await;
+
+    let found = contents::search(
+        &hardcover.metadata_providers(),
+        "asterix",
+        SearchScope::Books,
+        NonZeroU32::MIN,
+        Locale::FrFr,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(found.results[0].title, "Asterix the Gaul");
+}
+
+#[tokio::test]
 async fn search_matches_nothing_for_a_blank_query_without_asking_tmdb() {
     let tmdb = FakeTmdb::start().await;
 
     let found = contents::search(
         &tmdb.metadata_providers(),
         "  ",
+        SearchScope::MoviesAndTvShows,
         NonZeroU32::MIN,
         Locale::EnUs,
     )
@@ -89,6 +114,21 @@ async fn look_up_finds_a_tv_show_on_tmdb() {
     assert_eq!(content.title, "The Office");
 }
 
+#[tokio::test]
+async fn look_up_finds_a_book_on_hardcover() {
+    let hardcover = FakeHardcover::start().await;
+    hardcover
+        .answer("Book", fake_hardcover::fixture("book"))
+        .await;
+    let id = ContentId::Book(HardcoverId::new(442_623));
+
+    let content = contents::look_up(&hardcover.metadata_providers(), id, Locale::FrFr)
+        .await
+        .unwrap();
+
+    assert_eq!(content.title, "Asterix the Gaul");
+}
+
 #[test]
 fn content_id_reads_the_tmdb_id_of_a_movie_or_a_tv_show() {
     assert_eq!(
@@ -99,6 +139,15 @@ fn content_id_reads_the_tmdb_id_of_a_movie_or_a_tv_show() {
         ContentId::parse(ContentType::TvShow, "2316"),
         Some(ContentId::TvShow(TmdbId::new(2316)))
     );
+}
+
+#[test]
+fn content_id_reads_the_hardcover_id_of_a_book() {
+    assert_eq!(
+        ContentId::parse(ContentType::Book, "442623"),
+        Some(ContentId::Book(HardcoverId::new(442_623)))
+    );
+    assert_eq!(ContentId::parse(ContentType::Book, "asterix"), None);
 }
 
 #[test]

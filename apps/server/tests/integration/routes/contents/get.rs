@@ -3,7 +3,7 @@ use serde_json::json;
 use sqlx::PgPool;
 use watch_club_test_macros::database_test;
 
-use crate::support::{self, Client, FakeTmdb, fake_tmdb::fixture};
+use crate::support::{self, Client, FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
 
 #[database_test]
 async fn returns_a_movie(db: PgPool) {
@@ -11,7 +11,7 @@ async fn returns_a_movie(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/movie/194", fixture("movie_details")).await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
     let response = browser.get("/api/contents/movie/194").await;
@@ -33,7 +33,7 @@ async fn returns_a_tv_show(db: PgPool) {
     let user = support::create_user(&db, "ada").await;
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/tv/2316", fixture("tv_details")).await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
     let response = browser.get("/api/contents/tv_show/2316").await;
@@ -43,12 +43,36 @@ async fn returns_a_tv_show(db: PgPool) {
 }
 
 #[database_test]
+async fn returns_a_book(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let hardcover = FakeHardcover::start().await;
+    hardcover
+        .answer("Book", fake_hardcover::fixture("book"))
+        .await;
+    let mut browser = Client::with_metadata_providers(&db, hardcover.metadata_providers());
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/contents/book/442623").await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    assert_eq!(
+        response.body,
+        json!({
+            "content_type": "book",
+            "external_id": "442623",
+            "title": "Asterix the Gaul",
+        })
+    );
+}
+
+#[database_test]
 async fn fails_when_tmdb_has_no_such_content(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     // Answers 404 to every request
     let tmdb = FakeTmdb::start().await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
     let response = browser.get("/api/contents/movie/194").await;
@@ -65,7 +89,7 @@ async fn fails_when_the_id_cant_be_one_of_the_metadata_provider(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
     let tmdb = FakeTmdb::start().await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
     let response = browser.get("/api/contents/movie/amelie").await;
@@ -82,7 +106,7 @@ async fn refuses_an_unknown_type_of_content(db: PgPool) {
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/contents/book/194").await;
+    let response = browser.get("/api/contents/sports_event/194").await;
 
     assert_eq!(response.status, StatusCode::BAD_REQUEST);
     assert_eq!(response.body["code"], "invalid_request");

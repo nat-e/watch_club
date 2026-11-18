@@ -172,6 +172,7 @@ fn search_result(result: api::SearchResult) -> Option<SearchResult> {
             year: movie.release_date.map(Date::year),
             overview: movie.overview,
             poster: movie.poster_path.as_deref().and_then(poster),
+            creators: Vec::new(),
         }),
         api::SearchResult::TvShow(tv_show) => Some(SearchResult {
             id: ContentId::TvShow(TmdbId(tv_show.id)),
@@ -179,6 +180,7 @@ fn search_result(result: api::SearchResult) -> Option<SearchResult> {
             year: tv_show.first_air_date.map(Date::year),
             overview: tv_show.overview,
             poster: tv_show.poster_path.as_deref().and_then(poster),
+            creators: Vec::new(),
         }),
         api::SearchResult::Person => None,
     }

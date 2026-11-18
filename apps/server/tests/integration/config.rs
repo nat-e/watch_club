@@ -27,10 +27,11 @@ fn fails_when_the_port_is_not_a_number() {
 
 /// The settings the server needs, with a database URL it fails to connect to at once, once it gets
 /// past the other settings
-const REQUIRED: [(&str, &str); 3] = [
+const REQUIRED: [(&str, &str); 4] = [
     ("DATABASE_URL", "not a database URL"),
     ("PORT", "4000"),
     ("TMDB_API_TOKEN", "tmdb-token"),
+    ("HARDCOVER_API_TOKEN", "hardcover-token"),
 ];
 
 /// Returns what the server printed when it failed to start with the required settings and these.
@@ -44,6 +45,17 @@ fn fails_without_a_tmdb_token() {
         server_startup_error(&[("DATABASE_URL", UNREACHABLE_DATABASE_URL), ("PORT", "4000")]);
 
     assert!(errors.contains("TMDB_API_TOKEN isn't set"), "{errors}");
+}
+
+#[test]
+fn fails_without_a_hardcover_token() {
+    let errors = server_startup_error(&[
+        ("DATABASE_URL", UNREACHABLE_DATABASE_URL),
+        ("PORT", "4000"),
+        ("TMDB_API_TOKEN", "tmdb-token"),
+    ]);
+
+    assert!(errors.contains("HARDCOVER_API_TOKEN isn't set"), "{errors}");
 }
 
 #[test]
