@@ -20,7 +20,8 @@ const ToggleGroupContext = React.createContext<
   orientation: "horizontal",
 })
 
-function ToggleGroup({
+// Generic, unlike shadcn's, so that `value` and `onValueChange` keep the type of the items' values
+function ToggleGroup<Value extends string = string>({
   className,
   variant,
   size,
@@ -28,7 +29,7 @@ function ToggleGroup({
   orientation = "horizontal",
   children,
   ...props
-}: ToggleGroupPrimitive.Props &
+}: ToggleGroupPrimitive.Props<Value> &
   VariantProps<typeof toggleVariants> & {
     spacing?: number
     orientation?: "horizontal" | "vertical"

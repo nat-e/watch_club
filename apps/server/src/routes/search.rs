@@ -17,16 +17,15 @@ use crate::{
     routes::{Json, Query},
 };
 
+/// Returns the search's route, with the schemas its parameters use.
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::with_openapi(SearchSchemas::openapi()).routes(routes!(search))
 }
 
-/// The schemas that only the search's parameters use, such as `SearchScope`.
-///
-/// utoipa adds to the OpenAPI document the schemas that request bodies and responses use, but not
-/// those of parameters: without this, the `scope` parameter refers to a schema the document lacks,
-/// and the apps' client has no `SearchScope` type. Remove it once utoipa collects them:
-/// <https://github.com/juhaku/utoipa/issues/1165>
+/// The schemas that only the search's parameters use, such as `SearchScope`. Without them, the
+/// OpenAPI document refers to a `SearchScope` it lacks, and the apps' client has no such type.
+// TODO: remove once utoipa adds the schemas of parameters to the document, as it does those of
+// request bodies and responses: https://github.com/juhaku/utoipa/issues/1165
 #[derive(OpenApi)]
 #[openapi(components(schemas(SearchScope)))]
 struct SearchSchemas;

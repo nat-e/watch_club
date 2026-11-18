@@ -1,7 +1,6 @@
 import type {ContentType, SearchResult, SearchScope} from '@watchclub/api';
 import {useContentTypeNames} from '@watchclub/core/contents/content';
 import {
-  isSearchScope,
   SEARCH_SCOPES,
   type SearchStatus as Status,
   searchResultDetails,
@@ -113,6 +112,7 @@ export function SearchStatus({
   );
 }
 
+/** The hint, loading rows, error or no results that show in place of the results. */
 function StatusBody({
   status,
   scope,
@@ -195,8 +195,8 @@ export function SearchScopes({
         size="sm"
         value={[scope]}
         onValueChange={([pressed]) => {
-          // Pressing the scope that's on again leaves it on
-          if (isSearchScope(pressed)) {
+          // Pressing the scope that's on again presses none: it stays on
+          if (pressed !== undefined) {
             onScopeChange(pressed);
           }
         }}

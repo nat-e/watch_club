@@ -11,13 +11,12 @@ use crate::api_client::ApiClient;
 /// The route of Hardcover's GraphQL API, which takes every query
 const GRAPHQL_ROUTE: &str = "/graphql";
 
-/// Searches the Books whose title, ISBNs, series, authors or other titles match `$query`. It ranks
-/// them in three groups, from the best text matches, and the most read first within each.
+/// Searches the Books whose title, ISBNs, series, authors or other titles match `$query`: the closest
+/// matches first, and the most read first among equally close ones.
 ///
-/// Hardcover's default puts the best text matches first, and weighs titles above authors: a search
-/// for an author lists the summaries with their name in the title before their books. Ranking by
-/// popularity alone lifts popular Books that barely match, such as a translation's title with
-/// "d'une" for "dune", so the other titles weigh least
+/// Authors weigh as much as titles, so that searching an author finds their books before the
+/// summaries named after them. Other titles, such as translations, weigh least, so that popular
+/// Books that barely match stay behind
 pub(super) const SEARCH_BOOKS: &str = r#"
 query SearchBooks($query: String!, $page: Int!, $perPage: Int!) {
   search(
@@ -66,12 +65,14 @@ pub(super) async fn query<T: DeserializeOwned>(
         .context("Hardcover answered a query without data or errors")
 }
 
+/// A GraphQL query and its variables, as Hardcover takes them.
 #[derive(Serialize)]
 struct GraphQlRequest<V> {
     query: &'static str,
     variables: V,
 }
 
+/// Hardcover's answer to a GraphQL query: its data, or the errors that kept it from running.
 #[derive(Deserialize)]
 struct GraphQlResponse<T> {
     data: Option<T>,
@@ -79,6 +80,7 @@ struct GraphQlResponse<T> {
     errors: Vec<GraphQlError>,
 }
 
+/// An error that kept a GraphQL query from running.
 #[derive(Deserialize)]
 struct GraphQlError {
     message: String,
@@ -99,6 +101,7 @@ pub(super) struct SearchBooks {
     pub(super) search: Search,
 }
 
+/// The results of a search.
 #[derive(Debug, Deserialize)]
 pub(super) struct Search {
     /// The answer of Typesense, the search engine Hardcover uses
@@ -113,6 +116,7 @@ pub(super) struct SearchPage {
     pub(super) hits: Vec<SearchHit>,
 }
 
+/// A Book that matches a search.
 #[derive(Debug, Deserialize)]
 pub(super) struct SearchHit {
     pub(super) document: BookDocument,
@@ -151,6 +155,7 @@ pub(super) struct Contribution {
     pub(super) contribution: Option<String>,
 }
 
+/// A person credited for a Book.
 #[derive(Debug, Deserialize)]
 pub(super) struct Contributor {
     pub(super) name: String,
