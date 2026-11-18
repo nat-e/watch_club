@@ -27,26 +27,25 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
 /// Returns the Content, with its title in the signed-in User's language.
 #[utoipa::path(
     get,
-    path = "/contents/{content_type}/{tmdb_id}",
+    path = "/contents/{content_type}/{external_id}",
     params(
         ("content_type" = ContentType, Path, description = "The Content's type"),
-        ("tmdb_id" = u32, Path, description = "The Content's TMDB ID"),
+        ("external_id" = String, Path, description = "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"),
     ),
     responses(
         (status = OK, body = Content),
-        (status = NOT_FOUND, body = ErrorBody<GetContentRequestError>, description = "TMDB has no such Content"),
+        (status = NOT_FOUND, body = ErrorBody<GetContentRequestError>, description = "There's no such Content"),
     ),
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn get_content(
     State(providers): State<MetadataProviders>,
     current_user: CurrentUser,
-    Path((content_type, tmdb_id)): Path<(ContentType, u32)>,
+    Path((content_type, external_id)): Path<(ContentType, String)>,
 ) -> Result<Json<Content>, GetContentRequestError> {
-    let id = ContentId {
-        content_type,
-        tmdb_id,
-    };
+    // An ID that can't be one is as unknown as one the Metadata Provider doesn't have
+    let id =
+        ContentId::parse(content_type, &external_id).ok_or(GetContentRequestError::NotFound)?;
     let content = contents::look_up(&providers, id, current_user.preferences.locale).await?;
     Ok(Json(content))
 }
@@ -55,7 +54,7 @@ async fn get_content(
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
 enum GetContentRequestError {
-    #[error("TMDB has no such Content")]
+    #[error("no such Content")]
     NotFound,
     #[error(transparent)]
     #[serde(skip)]

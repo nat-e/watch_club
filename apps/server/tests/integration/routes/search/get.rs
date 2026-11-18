@@ -42,7 +42,7 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
         results[0],
         json!({
             "content_type": "movie",
-            "tmdb_id": 194,
+            "external_id": "194",
             "title": "Amélie",
             "year": 2001,
             "overview": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally \

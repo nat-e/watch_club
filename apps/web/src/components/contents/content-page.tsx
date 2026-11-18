@@ -1,12 +1,12 @@
 import {type QueryClient, useSuspenseQuery} from '@tanstack/react-query';
 import {linkOptions, notFound} from '@tanstack/react-router';
 import {type ContentId, type ContentType, hasCode} from '@watchclub/api';
-import {contentQuery, parseTmdbId} from '@watchclub/core/contents/content';
+import {contentQuery} from '@watchclub/core/contents/content';
 import {Page} from '@/components/layouts/page';
 
 /** Returns the options of a link to the Content's page. */
-export function contentLink({content_type, tmdb_id}: ContentId) {
-  const params = {id: String(tmdb_id)};
+export function contentLink({content_type, external_id}: ContentId) {
+  const params = {id: external_id};
   switch (content_type) {
     case 'movie':
       return linkOptions({to: '/movies/$id', params});
@@ -16,20 +16,16 @@ export function contentLink({content_type, tmdb_id}: ContentId) {
 }
 
 /**
- * Loads the Content of a page's URL, from its type and the TMDB ID in the URL, or shows that the
- * page doesn't exist when TMDB has no such Content.
+ * Loads the Content of a page's URL, from its type and the External ID in the URL, or shows that
+ * the page doesn't exist when there's no such Content.
  */
 export async function loadContent(
   queryClient: QueryClient,
   contentType: ContentType,
   idParam: string,
 ): Promise<ContentId> {
-  const tmdbId = parseTmdbId(idParam);
-  if (tmdbId === null) {
-    throw notFound();
-  }
   // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-  const id: ContentId = {content_type: contentType, tmdb_id: tmdbId};
+  const id: ContentId = {content_type: contentType, external_id: idParam};
   try {
     await queryClient.ensureQueryData(contentQuery(id));
   } catch (error) {

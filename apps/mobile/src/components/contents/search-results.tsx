@@ -18,7 +18,7 @@ export function SearchResults({search, query}: {search: Search; query: string}) 
   return (
     <FlatList
       data={search.results}
-      keyExtractor={result => `${result.content_type}/${result.tmdb_id}`}
+      keyExtractor={result => `${result.content_type}/${result.external_id}`}
       renderItem={({item}) => <SearchResultRow result={item} />}
       onEndReached={search.loadMore}
       // A screen ahead, so the next page is there before the User reaches the end
@@ -43,7 +43,7 @@ function SearchResultRow({result}: {result: SearchResult}) {
     <Pressable
       accessibilityRole="button"
       onPress={() => {
-        const params = {id: String(result.tmdb_id)};
+        const params = {id: result.external_id};
         switch (result.content_type) {
           case 'movie':
             router.push({pathname: '/movies/[id]', params});

@@ -6,13 +6,13 @@ import {createQueryClient} from '../../src/query-client';
 
 client.setConfig({baseUrl: 'https://watchclub.example.com'});
 
-/** Returns a search result for the Movie with this TMDB ID. */
-function movie(tmdbId: number): SearchResult {
+/** Returns a search result for the Movie with this External ID. */
+function movie(externalId: number): SearchResult {
   return {
     // biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
     content_type: 'movie',
-    tmdb_id: tmdbId,
-    title: `Movie ${tmdbId}`,
+    external_id: String(externalId),
+    title: `Movie ${externalId}`,
     year: 2001,
     overview: null,
     poster_path: null,

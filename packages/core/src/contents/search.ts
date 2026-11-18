@@ -99,7 +99,7 @@ export function useTypedQuery(text: string): string {
 function uniqueResults(results: SearchResult[]): SearchResult[] {
   const seen = new Set<string>();
   return results.filter(result => {
-    const key = `${result.content_type}/${result.tmdb_id}`;
+    const key = `${result.content_type}/${result.external_id}`;
     if (seen.has(key)) {
       return false;
     }

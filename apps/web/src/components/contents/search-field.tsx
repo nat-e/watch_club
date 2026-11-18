@@ -162,7 +162,7 @@ export function SearchField() {
                     </Autocomplete.Item>
                   ) : (
                     <Autocomplete.Item
-                      key={`${option.content_type}/${option.tmdb_id}`}
+                      key={`${option.content_type}/${option.external_id}`}
                       value={option}
                       render={<Link {...contentLink(option)} />}
                       className="flex items-center gap-4 rounded-md p-2 outline-none data-highlighted:bg-accent"

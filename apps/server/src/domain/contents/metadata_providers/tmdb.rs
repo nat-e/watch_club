@@ -2,7 +2,11 @@
 
 mod api;
 
-use std::num::NonZeroU32;
+use std::{
+    fmt::{self, Display, Formatter},
+    num::{NonZeroU32, ParseIntError},
+    str::FromStr,
+};
 
 use anyhow::{Context, bail};
 use jiff::civil::Date;
@@ -19,7 +23,7 @@ use crate::{
     domain::{
         InternalError,
         accounts::Locale,
-        contents::{Content, ContentId, ContentType, LookUpError, SearchResult, SearchResults},
+        contents::{Content, ContentId, LookUpError, SearchResult, SearchResults},
     },
     integrations::http,
 };
@@ -29,6 +33,31 @@ const BASE_URL: &str = "https://api.themoviedb.org/3";
 
 /// The number of TMDB's pages a search reads at most to find some Content, as some only have people
 const MAX_PAGES_READ: u32 = 5;
+
+/// The ID of a Movie or a TV Show at TMDB, which numbers Movies and TV Shows apart: a Movie and a TV
+/// Show can have the same.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TmdbId(u32);
+
+impl TmdbId {
+    pub const fn new(id: u32) -> Self {
+        Self(id)
+    }
+}
+
+impl FromStr for TmdbId {
+    type Err = ParseIntError;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        text.parse().map(Self)
+    }
+}
+
+impl Display for TmdbId {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
 
 /// TMDB, signed in with the API Read Access Token of the instance. Clones share their connections.
 #[derive(Clone, Debug)]
@@ -102,48 +131,38 @@ impl Tmdb {
         }
     }
 
-    /// Returns the Movie with this TMDB ID, with its title in the Locale's language.
-    pub async fn look_up_movie(
-        &self,
-        tmdb_id: u32,
-        locale: Locale,
-    ) -> Result<Content, LookUpError> {
+    /// Returns the Movie with this ID, with its title in the Locale's language.
+    pub async fn look_up_movie(&self, id: TmdbId, locale: Locale) -> Result<Content, LookUpError> {
         let movie: api::Movie = self
             .get(
                 "/movie/{id}",
-                &["movie", &tmdb_id.to_string()],
+                &["movie", &id.to_string()],
                 &[("language", locale.language_tag())],
             )
             .await?
             .ok_or(LookUpError::NotFound)?;
         Ok(Content {
-            id: ContentId {
-                content_type: ContentType::Movie,
-                tmdb_id,
-            },
+            id: ContentId::Movie(id),
             title: movie.title,
         })
     }
 
-    /// Returns the TV Show with this TMDB ID, with its title in the Locale's language.
+    /// Returns the TV Show with this ID, with its title in the Locale's language.
     pub async fn look_up_tv_show(
         &self,
-        tmdb_id: u32,
+        id: TmdbId,
         locale: Locale,
     ) -> Result<Content, LookUpError> {
         let tv_show: api::TvShow = self
             .get(
                 "/tv/{id}",
-                &["tv", &tmdb_id.to_string()],
+                &["tv", &id.to_string()],
                 &[("language", locale.language_tag())],
             )
             .await?
             .ok_or(LookUpError::NotFound)?;
         Ok(Content {
-            id: ContentId {
-                content_type: ContentType::TvShow,
-                tmdb_id,
-            },
+            id: ContentId::TvShow(id),
             title: tv_show.name,
         })
     }
@@ -194,20 +213,14 @@ impl Tmdb {
 fn search_result(result: api::SearchResult) -> Option<SearchResult> {
     match result {
         api::SearchResult::Movie(movie) => Some(SearchResult {
-            id: ContentId {
-                content_type: ContentType::Movie,
-                tmdb_id: movie.id,
-            },
+            id: ContentId::Movie(TmdbId(movie.id)),
             title: movie.title,
             year: movie.release_date.map(Date::year),
             overview: movie.overview,
             poster_path: movie.poster_path,
         }),
         api::SearchResult::TvShow(tv_show) => Some(SearchResult {
-            id: ContentId {
-                content_type: ContentType::TvShow,
-                tmdb_id: tv_show.id,
-            },
+            id: ContentId::TvShow(TmdbId(tv_show.id)),
             title: tv_show.name,
             year: tv_show.first_air_date.map(Date::year),
             overview: tv_show.overview,

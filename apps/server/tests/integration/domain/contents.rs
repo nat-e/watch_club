@@ -6,7 +6,7 @@ use std::num::NonZeroU32;
 
 use watch_club::domain::{
     accounts::Locale,
-    contents::{self, Content, ContentId, ContentType, SearchResults},
+    contents::{self, Content, ContentId, ContentType, SearchResults, TmdbId},
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -50,10 +50,7 @@ async fn search_matches_nothing_for_a_blank_query_without_asking_tmdb() {
 async fn look_up_finds_a_movie_on_tmdb() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/movie/194", fixture("movie_details")).await;
-    let id = ContentId {
-        content_type: ContentType::Movie,
-        tmdb_id: 194,
-    };
+    let id = ContentId::Movie(TmdbId::new(194));
 
     let content = contents::look_up(&tmdb.providers(), id, Locale::FrFr)
         .await
@@ -72,14 +69,40 @@ async fn look_up_finds_a_movie_on_tmdb() {
 async fn look_up_finds_a_tv_show_on_tmdb() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/tv/2316", fixture("tv_details")).await;
-    let id = ContentId {
-        content_type: ContentType::TvShow,
-        tmdb_id: 2316,
-    };
+    let id = ContentId::TvShow(TmdbId::new(2316));
 
     let content = contents::look_up(&tmdb.providers(), id, Locale::EnUs)
         .await
         .unwrap();
 
     assert_eq!(content.title, "The Office");
+}
+
+#[test]
+fn content_id_reads_the_tmdb_id_of_a_movie_or_a_tv_show() {
+    assert_eq!(
+        ContentId::parse(ContentType::Movie, "194"),
+        Some(ContentId::Movie(TmdbId::new(194)))
+    );
+    assert_eq!(
+        ContentId::parse(ContentType::TvShow, "2316"),
+        Some(ContentId::TvShow(TmdbId::new(2316)))
+    );
+}
+
+#[test]
+fn content_id_reads_nothing_from_text_that_cant_be_a_tmdb_id() {
+    for text in ["", "amelie", "-1", "1.5", "4294967296"] {
+        assert_eq!(ContentId::parse(ContentType::Movie, text), None, "{text}");
+    }
+}
+
+#[test]
+fn content_id_gives_its_type_and_external_id() {
+    let id = ContentId::TvShow(TmdbId::new(2316));
+
+    assert_eq!(
+        (id.content_type(), id.external_id()),
+        (ContentType::TvShow, "2316".to_owned())
+    );
 }

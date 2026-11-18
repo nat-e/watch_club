@@ -5,9 +5,12 @@ mod metadata_providers;
 use std::num::NonZeroU32;
 
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{
+    PartialSchema, ToSchema,
+    openapi::{RefOr, Schema},
+};
 
-pub use self::metadata_providers::{MetadataProviders, Tmdb};
+pub use self::metadata_providers::{MetadataProviders, Tmdb, TmdbId};
 use super::{InternalError, accounts::Locale};
 
 /// The type of a Content.
@@ -18,12 +21,67 @@ pub enum ContentType {
     TvShow,
 }
 
-/// The identity of a Content: its type and its TMDB ID. A Movie and a TV Show can have the same
-/// TMDB ID.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema)]
-pub struct ContentId {
-    pub content_type: ContentType,
-    pub tmdb_id: u32,
+/// The identity of a Content: its type, and its External ID at the Metadata Provider of its type.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(into = "ContentIdJson")]
+pub enum ContentId {
+    Movie(TmdbId),
+    TvShow(TmdbId),
+}
+
+impl ContentId {
+    /// Returns the ID of the Content of this type with this External ID, as the API and URLs carry
+    /// it, or None when the text can't be one.
+    pub fn parse(content_type: ContentType, external_id: &str) -> Option<Self> {
+        match content_type {
+            ContentType::Movie => external_id.parse().ok().map(Self::Movie),
+            ContentType::TvShow => external_id.parse().ok().map(Self::TvShow),
+        }
+    }
+
+    pub const fn content_type(self) -> ContentType {
+        match self {
+            Self::Movie(_) => ContentType::Movie,
+            Self::TvShow(_) => ContentType::TvShow,
+        }
+    }
+
+    /// Returns its External ID as text, as the API and URLs carry it.
+    pub fn external_id(self) -> String {
+        match self {
+            Self::Movie(id) | Self::TvShow(id) => id.to_string(),
+        }
+    }
+}
+
+/// The identity of a Content as the API sends it: its type, and its External ID at the Metadata
+/// Provider of its type, as text whatever the Metadata Provider.
+#[derive(Serialize, ToSchema)]
+struct ContentIdJson {
+    content_type: ContentType,
+    /// The Content's ID at the Metadata Provider of its type, such as its TMDB ID
+    external_id: String,
+}
+
+impl From<ContentId> for ContentIdJson {
+    fn from(id: ContentId) -> Self {
+        Self {
+            content_type: id.content_type(),
+            external_id: id.external_id(),
+        }
+    }
+}
+
+impl PartialSchema for ContentId {
+    fn schema() -> RefOr<Schema> {
+        ContentIdJson::schema()
+    }
+}
+
+impl ToSchema for ContentId {
+    fn schemas(schemas: &mut Vec<(String, RefOr<Schema>)>) {
+        ContentIdJson::schemas(schemas);
+    }
 }
 
 /// A Content, with its title in the User's language.
@@ -64,7 +122,7 @@ pub struct SearchResults {
 /// The failures of `look_up`.
 #[derive(Debug, thiserror::Error)]
 pub enum LookUpError {
-    #[error("TMDB has no such Content")]
+    #[error("no such Content")]
     NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
@@ -87,14 +145,17 @@ pub async fn search(
 }
 
 /// Returns the Content, with its title in the Locale's language.
-#[tracing::instrument(skip_all, fields(content.type = ?id.content_type, content.tmdb_id = id.tmdb_id))]
+#[tracing::instrument(
+    skip_all,
+    fields(content.type = ?id.content_type(), content.external_id = %id.external_id()),
+)]
 pub async fn look_up(
     providers: &MetadataProviders,
     id: ContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
-    match id.content_type {
-        ContentType::Movie => providers.tmdb.look_up_movie(id.tmdb_id, locale).await,
-        ContentType::TvShow => providers.tmdb.look_up_tv_show(id.tmdb_id, locale).await,
+    match id {
+        ContentId::Movie(id) => providers.tmdb.look_up_movie(id, locale).await,
+        ContentId::TvShow(id) => providers.tmdb.look_up_tv_show(id, locale).await,
     }
 }

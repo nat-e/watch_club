@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/api/contents/{content_type}/{tmdb_id}": {
+    "/api/contents/{content_type}/{external_id}": {
       "get": {
         "summary": "Returns the Content, with its title in the signed-in User's language.",
         "operationId": "get_content",
@@ -250,14 +250,12 @@
             }
           },
           {
-            "name": "tmdb_id",
+            "name": "external_id",
             "in": "path",
-            "description": "The Content's TMDB ID",
+            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32",
-              "minimum": 0
+              "type": "string"
             }
           }
         ],
@@ -324,7 +322,7 @@
             }
           },
           "404": {
-            "description": "TMDB has no such Content",
+            "description": "There's no such Content",
             "content": {
               "application/json": {
                 "schema": {
@@ -918,19 +916,18 @@
       },
       "ContentId": {
         "type": "object",
-        "description": "The identity of a Content: its type and its TMDB ID. A Movie and a TV Show can have the same\nTMDB ID.",
+        "description": "The identity of a Content as the API sends it: its type, and its External ID at the Metadata\nProvider of its type, as text whatever the Metadata Provider.",
         "required": [
           "content_type",
-          "tmdb_id"
+          "external_id"
         ],
         "properties": {
           "content_type": {
             "$ref": "#/components/schemas/ContentType"
           },
-          "tmdb_id": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+          "external_id": {
+            "type": "string",
+            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
           }
         }
       },

@@ -1,27 +1,23 @@
 import {useQuery} from '@tanstack/react-query';
 import {type ContentType, hasCode} from '@watchclub/api';
-import {contentQuery, parseTmdbId} from '@watchclub/core/contents/content';
+import {contentQuery} from '@watchclub/core/contents/content';
 import {Stack, useLocalSearchParams} from 'expo-router';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, View} from 'react-native';
 import {StatusScreen} from '@/components/layouts/status-screen';
 
 /**
- * The screen of the Content whose TMDB ID is the route's `id`, with its title in the header. For
- * now, it only shows the title, until the Content pages are ported.
+ * The screen of the Content whose External ID is the route's `id`, with its title in the header.
+ * For now, it only shows the title, until the Content pages are ported.
  */
 export function ContentScreen({contentType}: {contentType: ContentType}) {
   const {t} = useTranslation('core');
   const {id} = useLocalSearchParams<{id: string}>();
-  const tmdbId = parseTmdbId(id);
-  const content = useQuery({
-    // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-    ...contentQuery({content_type: contentType, tmdb_id: tmdbId ?? 0}),
-    enabled: tmdbId !== null,
-  });
+  // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
+  const content = useQuery(contentQuery({content_type: contentType, external_id: id}));
   const messages = useMessages(contentType);
 
-  if (tmdbId === null || hasCode(content.error, 'not_found')) {
+  if (hasCode(content.error, 'not_found')) {
     return <StatusScreen description={messages.notFound} actions={[]} />;
   }
   if (content.isError) {

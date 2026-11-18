@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
-    contents::{Content, ContentId, ContentType, LookUpError, SearchResult},
+    contents::{Content, ContentId, LookUpError, SearchResult, TmdbId},
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -79,10 +79,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
     assert_eq!(
         found.results[0],
         SearchResult {
-            id: ContentId {
-                content_type: ContentType::Movie,
-                tmdb_id: 194,
-            },
+            id: ContentId::Movie(TmdbId::new(194)),
             title: "Amélie".to_owned(),
             year: Some(2001),
             overview: Some(
@@ -97,10 +94,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
         }
     );
     let tv_show = &found.results[4];
-    assert_eq!(
-        (tv_show.id.content_type, tv_show.id.tmdb_id),
-        (ContentType::TvShow, 239_212)
-    );
+    assert_eq!(tv_show.id, ContentId::TvShow(TmdbId::new(239_212)));
     assert_eq!(tv_show.title, "Amélie and Company");
     // The fixture is TMDB's first page of 43
     assert_eq!(found.next_page, NonZeroU32::new(2));
@@ -323,17 +317,14 @@ async fn look_up_movie_returns_its_title_in_the_locales_language() {
 
     let content = tmdb
         .client()
-        .look_up_movie(194, Locale::FrFr)
+        .look_up_movie(TmdbId::new(194), Locale::FrFr)
         .await
         .unwrap();
 
     assert_eq!(
         content,
         Content {
-            id: ContentId {
-                content_type: ContentType::Movie,
-                tmdb_id: 194,
-            },
+            id: ContentId::Movie(TmdbId::new(194)),
             title: "Le Fabuleux Destin d'Amélie Poulain".to_owned(),
         }
     );
@@ -352,17 +343,14 @@ async fn look_up_tv_show_returns_its_title_in_the_locales_language() {
 
     let content = tmdb
         .client()
-        .look_up_tv_show(2316, Locale::EnUs)
+        .look_up_tv_show(TmdbId::new(2316), Locale::EnUs)
         .await
         .unwrap();
 
     assert_eq!(
         content,
         Content {
-            id: ContentId {
-                content_type: ContentType::TvShow,
-                tmdb_id: 2316,
-            },
+            id: ContentId::TvShow(TmdbId::new(2316)),
             title: "The Office".to_owned(),
         }
     );
@@ -383,7 +371,7 @@ async fn look_up_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
 
     let error = tmdb
         .client()
-        .look_up_tv_show(194, Locale::EnUs)
+        .look_up_tv_show(TmdbId::new(194), Locale::EnUs)
         .await
         .unwrap_err();
 

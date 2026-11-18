@@ -3,7 +3,7 @@
 
 mod tmdb;
 
-pub use self::tmdb::Tmdb;
+pub use self::tmdb::{Tmdb, TmdbId};
 
 /// The Metadata Providers that the instance finds Content in.
 #[derive(Clone, Debug)]

@@ -41,7 +41,7 @@ function SearchPage() {
         />
         <ul className="flex flex-col gap-1">
           {search.results.map(result => (
-            <li key={`${result.content_type}/${result.tmdb_id}`}>
+            <li key={`${result.content_type}/${result.external_id}`}>
               <Link
                 {...contentLink(result)}
                 className="flex items-center gap-4 rounded-md p-2 transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"

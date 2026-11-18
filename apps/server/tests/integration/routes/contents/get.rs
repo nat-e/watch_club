@@ -21,7 +21,7 @@ async fn returns_a_movie(db: PgPool) {
         response.body,
         json!({
             "content_type": "movie",
-            "tmdb_id": 194,
+            "external_id": "194",
             "title": "Le Fabuleux Destin d'Amélie Poulain",
         })
     );
@@ -56,8 +56,23 @@ async fn fails_when_tmdb_has_no_such_content(db: PgPool) {
     assert_eq!(response.status, StatusCode::NOT_FOUND);
     assert_eq!(
         response.body,
-        json!({"code": "not_found", "message": "TMDB has no such Content"})
+        json!({"code": "not_found", "message": "no such Content"})
     );
+}
+
+#[database_test]
+async fn fails_when_the_id_cant_be_one_of_the_metadata_provider(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let tmdb = FakeTmdb::start().await;
+    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/contents/movie/amelie").await;
+
+    assert_eq!(response.status, StatusCode::NOT_FOUND);
+    assert_eq!(response.body["code"], "not_found");
+    assert!(tmdb.server.received_requests().await.unwrap().is_empty());
 }
 
 #[database_test]
