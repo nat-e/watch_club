@@ -2,6 +2,10 @@ packages:
   - apps/*
   - packages/*
 
+# Runs the root's postinstall, which generates the harness files, even when the dependencies haven't
+# changed, as after a merge
+optimisticRepeatInstall: false
+
 # Only installs versions published at least a week ago (in minutes), so a hijacked release has
 # time to be found and pulled before it reaches us
 minimumReleaseAge: 10080
