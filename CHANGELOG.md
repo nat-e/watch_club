@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.14](https://github.com/nat-e/watch_club/compare/v0.1.13...v0.1.14) (2026-11-17)
+
+
+### Features
+
+* **contents:** show the User as You in Who watched it ([#142](https://github.com/nat-e/watch_club/issues/142)) ([a12b2dc](https://github.com/nat-e/watch_club/commit/a12b2dc7746b88eede80ee728d33d107c8c66cbb))
+
+
+### Bug Fixes
+
+* **home:** show the Content's backdrop in Continue Watching, never the episode still ([#141](https://github.com/nat-e/watch_club/issues/141)) ([b8626dd](https://github.com/nat-e/watch_club/commit/b8626dd0cd9f5ca15a435006a6d504ffc8913afa))
+
 ## [0.1.13](https://github.com/nat-e/watch_club/compare/v0.1.12...v0.1.13) (2026-11-16)
 
 
