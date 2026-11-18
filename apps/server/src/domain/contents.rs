@@ -12,6 +12,9 @@ use crate::integrations::tmdb::{self, MultiSearchResult};
 /// The last page of results TMDB serves
 const LAST_PAGE: u32 = 500;
 
+/// The number of TMDB's pages a search reads at most to find some Content, as some only have people
+const MAX_PAGES_READ: u32 = 5;
+
 /// The type of a Content.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
@@ -55,7 +58,8 @@ pub struct SearchResult {
 /// A page of a search's results.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, ToSchema)]
 pub struct SearchResults {
-    /// The results, most relevant first. A page can have none while later pages have some
+    /// The results, most relevant first. Only the last page can have none, unless TMDB's pages
+    /// in between have only people
     pub results: Vec<SearchResult>,
     /// The number of the next page, or null on the last one
     #[schema(value_type = Option<u32>, required = true, minimum = 2)]
@@ -82,6 +86,9 @@ impl From<tmdb::Error> for LookUpError {
 
 /// Returns a page of the Movies and TV Shows whose title matches the query, from TMDB, most
 /// relevant first, with their texts in the Locale's language. A blank query matches nothing.
+///
+/// TMDB's pages also list people, who aren't Content: when one has only people, the search reads
+/// the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that show nothing.
 #[tracing::instrument(skip_all, fields(search.page = page))]
 pub async fn search(
     tmdb: &tmdb::Client,
@@ -93,39 +100,49 @@ pub async fn search(
     if query.is_empty() {
         return Ok(SearchResults::default());
     }
-    let found = tmdb.search_multi(query, page, locale).await?;
-    let results = found
-        .results
-        .into_iter()
-        .filter_map(|result| match result {
-            MultiSearchResult::Movie(movie) => Some(SearchResult {
-                id: ContentId {
-                    content_type: ContentType::Movie,
-                    tmdb_id: movie.id,
-                },
-                title: movie.title,
-                year: movie.release_date.map(Date::year),
-                overview: movie.overview,
-                poster_path: movie.poster_path,
-            }),
-            MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
-                id: ContentId {
-                    content_type: ContentType::TvShow,
-                    tmdb_id: tv_show.id,
-                },
-                title: tv_show.name,
-                year: tv_show.first_air_date.map(Date::year),
-                overview: tv_show.overview,
-                poster_path: tv_show.poster_path,
-            }),
-            // People aren't Content
-            MultiSearchResult::Person(_) => None,
-        })
-        .collect();
-    let next_page = page
-        .checked_add(1)
-        .filter(|next| next.get() <= found.total_pages.min(LAST_PAGE));
-    Ok(SearchResults { results, next_page })
+    let mut page = page;
+    let mut pages_read = 1;
+    loop {
+        let found = tmdb.search_multi(query, page, locale).await?;
+        let results: Vec<_> = found.results.into_iter().filter_map(content).collect();
+        let next_page = page
+            .checked_add(1)
+            .filter(|next| next.get() <= found.total_pages.min(LAST_PAGE));
+        match next_page {
+            Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
+                page = next_page;
+                pages_read += 1;
+            }
+            _ => return Ok(SearchResults { results, next_page }),
+        }
+    }
+}
+
+/// Returns the Content a result of TMDB's search is, or None for a person.
+fn content(result: MultiSearchResult) -> Option<SearchResult> {
+    match result {
+        MultiSearchResult::Movie(movie) => Some(SearchResult {
+            id: ContentId {
+                content_type: ContentType::Movie,
+                tmdb_id: movie.id,
+            },
+            title: movie.title,
+            year: movie.release_date.map(Date::year),
+            overview: movie.overview,
+            poster_path: movie.poster_path,
+        }),
+        MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
+            id: ContentId {
+                content_type: ContentType::TvShow,
+                tmdb_id: tv_show.id,
+            },
+            title: tv_show.name,
+            year: tv_show.first_air_date.map(Date::year),
+            overview: tv_show.overview,
+            poster_path: tv_show.poster_path,
+        }),
+        MultiSearchResult::Person(_) => None,
+    }
 }
 
 /// Returns the Content, with its title in the Locale's language, from TMDB.

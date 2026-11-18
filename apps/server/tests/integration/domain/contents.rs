@@ -85,6 +85,76 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people() {
     assert_eq!(found.next_page, NonZeroU32::new(2));
 }
 
+/// Returns a TMDB search result for a person.
+fn person(id: u32) -> Value {
+    json!({
+        "media_type": "person",
+        "id": id,
+        "name": "Amélie",
+        "original_name": "Amélie",
+        "popularity": 1.0,
+        "known_for": [],
+        "adult": false,
+    })
+}
+
+#[tokio::test]
+async fn search_reads_the_next_page_when_one_has_only_people() {
+    let tmdb = FakeTmdb::start().await;
+    Mock::given(method("GET"))
+        .and(path("/search/multi"))
+        .and(query_param("page", "1"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
+            1,
+            3,
+            &json!([person(1)]),
+        )))
+        .expect(1)
+        .mount(&tmdb.server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/search/multi"))
+        .and(query_param("page", "2"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
+            2,
+            3,
+            &json!([person(2), movie(3, "Amélie")]),
+        )))
+        .expect(1)
+        .mount(&tmdb.server)
+        .await;
+
+    let found = contents::search(&tmdb.client(), "amélie", NonZeroU32::MIN, Locale::EnUs)
+        .await
+        .unwrap();
+
+    let titles: Vec<_> = found.results.iter().map(|result| &result.title).collect();
+    assert_eq!(titles, ["Amélie"]);
+    assert_eq!(found.next_page, NonZeroU32::new(3));
+}
+
+#[tokio::test]
+async fn search_reads_5_pages_at_most() {
+    let tmdb = FakeTmdb::start().await;
+    Mock::given(method("GET"))
+        .and(path("/search/multi"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
+            1,
+            10,
+            &json!([person(1)]),
+        )))
+        .expect(5)
+        .mount(&tmdb.server)
+        .await;
+
+    let found = contents::search(&tmdb.client(), "amélie", NonZeroU32::MIN, Locale::EnUs)
+        .await
+        .unwrap();
+
+    assert_eq!(found.results, []);
+    assert_eq!(found.next_page, NonZeroU32::new(6));
+}
+
 #[tokio::test]
 async fn search_leaves_out_the_overview_and_year_tmdb_sends_empty() {
     let tmdb = FakeTmdb::start().await;
