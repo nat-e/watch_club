@@ -16,6 +16,7 @@ function movie(externalId: number): SearchResult {
     year: 2001,
     overview: null,
     poster: null,
+    creators: [],
     // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
   };
 }
@@ -43,7 +44,10 @@ describe('searchQuery', () => {
       '2': {results: [movie(2), movie(3)], next_page: null},
     });
     // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
-    const observer = new InfiniteQueryObserver(createQueryClient(), searchQuery(' amélie '));
+    const observer = new InfiniteQueryObserver(
+      createQueryClient(),
+      searchQuery(' amélie ', 'books'),
+    );
     const unsubscribe = observer.subscribe(() => undefined);
 
     await vi.waitFor(() => {
@@ -55,10 +59,11 @@ describe('searchQuery', () => {
     expect(result.data).toEqual({results: [movie(1), movie(2), movie(3)], pages: 2});
     expect(result.hasNextPage).toBe(false);
     expect(urls.map(url => url.searchParams.get('query'))).toEqual(['amélie', 'amélie']);
+    expect(urls.map(url => url.searchParams.get('scope'))).toEqual(['books', 'books']);
     unsubscribe();
   });
 
   it("doesn't search for a blank query", () => {
-    expect(searchQuery('  ').enabled).toBe(false);
+    expect(searchQuery('  ', 'books').enabled).toBe(false);
   });
 });

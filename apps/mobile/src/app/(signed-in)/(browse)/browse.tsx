@@ -1,4 +1,4 @@
-import {useSearch, useTypedQuery} from '@watchclub/core/contents/search';
+import {DEFAULT_SEARCH_SCOPE, useSearch, useTypedQuery} from '@watchclub/core/contents/search';
 import {Stack} from 'expo-router';
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -11,8 +11,9 @@ import {SearchResults} from '@/components/contents/search-results';
 export default function Browse() {
   const {t} = useTranslation('core');
   const [text, setText] = useState('');
+  const [scope, setScope] = useState(DEFAULT_SEARCH_SCOPE);
   const query = useTypedQuery(text);
-  const search = useSearch(query);
+  const search = useSearch(query, scope);
 
   return (
     <>
@@ -26,7 +27,7 @@ export default function Browse() {
         }}
         hideWhenScrolling={false}
       />
-      <SearchResults search={search} query={query.trim()} />
+      <SearchResults search={search} query={query.trim()} scope={scope} onScopeChange={setScope} />
     </>
   );
 }

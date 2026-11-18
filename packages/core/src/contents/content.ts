@@ -1,5 +1,5 @@
 /**
- * Content: the Movies and TV Shows Users watch and talk about, as both apps show them.
+ * Content: the Movies, TV Shows and Books Users watch, read and talk about, as both apps show them.
  */
 import {queryOptions} from '@tanstack/react-query';
 import {type ContentId, type ContentType, getContentOptions} from '@watchclub/api';
@@ -14,6 +14,10 @@ export function contentQuery({content_type, external_id}: ContentId) {
 /** Returns the name of each type of Content in the app's language, such as "Movie". */
 export function useContentTypeNames(): Record<ContentType, string> {
   const {t} = useTranslation('core');
-  // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
-  return {movie: t($ => $.core.contentTypes.movie), tv_show: t($ => $.core.contentTypes.tvShow)};
+  return {
+    movie: t($ => $.core.contentTypes.movie),
+    // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
+    tv_show: t($ => $.core.contentTypes.tvShow),
+    book: t($ => $.core.contentTypes.book),
+  };
 }

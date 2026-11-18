@@ -12,6 +12,8 @@ export function contentLink({content_type, external_id}: ContentId) {
       return linkOptions({to: '/movies/$id', params});
     case 'tv_show':
       return linkOptions({to: '/shows/$id', params});
+    case 'book':
+      return linkOptions({to: '/books/$id', params});
   }
 }
 

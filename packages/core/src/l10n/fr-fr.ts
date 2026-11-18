@@ -3,12 +3,15 @@ export default {
     title: 'Parcourir',
   },
   contents: {
+    loadFailed_book: "On n'a pas pu charger ce livre. Réessaie dans un instant.",
     loadFailed_movie: "On n'a pas pu charger ce film. Réessaie dans un instant.",
     loadFailed_tvShow: "On n'a pas pu charger cette série. Réessaie dans un instant.",
+    notFound_book: "On n'a pas trouvé ce livre.",
     notFound_movie: "On n'a pas trouvé ce film.",
     notFound_tvShow: "On n'a pas trouvé cette série.",
   },
   contentTypes: {
+    book: 'Livre',
     movie: 'Film',
     tvShow: 'Série',
   },
@@ -40,13 +43,20 @@ export default {
   },
   search: {
     failed: "La recherche n'a pas fonctionné.",
-    hint: 'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur WatchClub.',
+    hint_books: 'Cherche parmi tous les livres.',
+    hint_moviesAndTvShows:
+      'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur WatchClub.',
     noResults: 'Aucun résultat',
     nothingFound: "On n'a rien trouvé pour « {{query}} ».",
     resultCount_one: '{{count}} résultat',
     resultCount_many: '{{count}} résultats',
     resultCount_other: '{{count}} résultats',
     results: 'Résultats de recherche',
+    scope: 'Rechercher dans',
+    scopes: {
+      books: 'Livres',
+      moviesAndTvShows: 'Films et séries',
+    },
     search: 'Rechercher',
     searching: 'Recherche…',
   },

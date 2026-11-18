@@ -1,40 +1,55 @@
-import {createFileRoute, Link} from '@tanstack/react-router';
-import {type Search, useSearch} from '@watchclub/core/contents/search';
+import {createFileRoute, Link, stripSearchParams} from '@tanstack/react-router';
+import type {SearchScope} from '@watchclub/api';
+import {
+  DEFAULT_SEARCH_SCOPE,
+  isSearchScope,
+  type Search,
+  useSearch,
+} from '@watchclub/core/contents/search';
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {contentLink} from '@/components/contents/content-page';
 import {SearchField} from '@/components/contents/search-field';
 import {
-  InLibraryFilter,
   SearchResultSummary,
+  SearchScopes,
   SearchStatus,
 } from '@/components/contents/search-results';
 import {Page} from '@/components/layouts/page';
 
 /**
- * Every result of a search, which loads more as the User scrolls. The search field opens it, and
- * stays in the bar to search again.
+ * Every result of a search in a scope, which loads more as the User scrolls. The search field opens
+ * it, and stays in the bar to search again. The URL leaves out the default scope.
  */
 export const Route = createFileRoute('/_shell/search')({
-  validateSearch: (search: Record<string, unknown>): {query: string} => ({
+  validateSearch: (search: Record<string, unknown>): {query: string; scope: SearchScope} => ({
     query: typeof search.query === 'string' ? search.query.trim() : '',
+    scope: isSearchScope(search.scope) ? search.scope : DEFAULT_SEARCH_SCOPE,
   }),
+  search: {middlewares: [stripSearchParams({scope: DEFAULT_SEARCH_SCOPE})]},
   component: SearchPage,
 });
 
 function SearchPage() {
   const {t} = useTranslation('core');
-  const {query} = Route.useSearch();
-  const search = useSearch(query);
+  const {query, scope} = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const search = useSearch(query, scope);
 
   return (
     <Page title={t($ => $.core.search.search)} actions={<SearchField />}>
       <div className="flex">
-        <InLibraryFilter />
+        <SearchScopes
+          scope={scope}
+          onScopeChange={newScope => {
+            void navigate({search: {query, scope: newScope}, replace: true});
+          }}
+        />
       </div>
       <div>
         <SearchStatus
           status={search.status}
+          scope={scope}
           query={query}
           count={search.results.length}
           retry={search.retry}
@@ -51,8 +66,8 @@ function SearchPage() {
             </li>
           ))}
         </ul>
-        {/* Anew for each query, whose first pages load as the previous one's did */}
-        {search.hasMore && <LoadMore key={query} search={search} />}
+        {/* Anew for each search, whose first pages load as the previous one's did */}
+        {search.hasMore && <LoadMore key={`${scope}/${query}`} search={search} />}
       </div>
     </Page>
   );
