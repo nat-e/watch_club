@@ -7,7 +7,7 @@ use watch_club::domain::contents::{
 };
 use wiremock::{
     Mock, ResponseTemplate,
-    matchers::{body_partial_json, header, method, path},
+    matchers::{body_partial_json, body_string_contains, header, method, path},
 };
 
 use crate::support::{
@@ -37,7 +37,7 @@ fn book(id: u32, title: &str) -> Value {
 }
 
 #[tokio::test]
-async fn search_returns_the_books_with_their_creators() {
+async fn search_returns_the_most_read_books_first_with_their_creators() {
     let hardcover = FakeHardcover::start().await;
     Mock::given(method("POST"))
         .and(path("/graphql"))
@@ -45,6 +45,7 @@ async fn search_returns_the_books_with_their_creators() {
         .and(body_partial_json(json!({
             "variables": {"query": "asterix", "page": 1, "perPage": 20},
         })))
+        .and(body_string_contains("users_count:desc,_text_match:desc"))
         .respond_with(ResponseTemplate::new(200).set_body_json(fixture("search_books")))
         .expect(1)
         .mount(&hardcover.server)

@@ -547,6 +547,47 @@
           },
           {
             "document": {
+              "id": "474606",
+              "title": "The Mansions of the Gods",
+              "subtitle": "Le Domaine des Dieux",
+              "slug": "the-mansions-of-the-gods",
+              "release_year": 1971,
+              "release_date": "1971-01-01",
+              "description": "They want to pave paradise and put up a housing development. That's why a multinational team of slave construction workers are clearing the forest just outside the Gaulish town. Will the Gauls be fast enough to stop them and prevent Roman upstarts from moving in?",
+              "author_names": ["René Goscinny", "Albert Uderzo"],
+              "contribution_types": ["Author", "Illustrator"],
+              "contributions": [
+                {
+                  "author": {
+                    "id": 137295,
+                    "name": "René Goscinny",
+                    "slug": "rene-goscinny"
+                  },
+                  "contribution": "Author"
+                },
+                {
+                  "author": {
+                    "id": 253600,
+                    "name": "Albert Uderzo",
+                    "slug": "albert-uderzo"
+                  },
+                  "contribution": "Illustrator"
+                }
+              ],
+              "image": {
+                "color": "#ececeb",
+                "color_name": "Beige",
+                "height": 417,
+                "id": 6001739,
+                "url": "https://assets.hardcover.app/edition/32224856/eae3471d-2984-4a0f-9bf5-2c76935c287a.jpg",
+                "width": 318
+              },
+              "users_count": 68,
+              "rating": 3.793103448275862
+            }
+          },
+          {
+            "document": {
               "id": "1004504",
               "title": "Asterix and the Roman Agent",
               "subtitle": "La Cizaña",
@@ -806,45 +847,12 @@
               "users_count": 61,
               "rating": 3.8125
             }
-          },
-          {
-            "document": {
-              "id": "2868798",
-              "title": "Asterix",
-              "subtitle": null,
-              "slug": "asterix-2016",
-              "release_year": 2016,
-              "release_date": "2016-09-06",
-              "description": null,
-              "author_names": ["Jörg Fündling"],
-              "contribution_types": ["Author"],
-              "contributions": [
-                {
-                  "author": {
-                    "id": 1480484,
-                    "name": "Jörg Fündling",
-                    "slug": "jorg-fundling"
-                  },
-                  "contribution": "Author"
-                }
-              ],
-              "image": {
-                "color": "#c00202",
-                "color_name": "Red",
-                "height": 500,
-                "id": 7818684,
-                "url": "https://assets.hardcover.app/external_data/4145252/b02b92904070cb0954b736c9929c41f9b2f2229c.jpeg",
-                "width": 336
-              },
-              "users_count": 0,
-              "rating": 0.0
-            }
           }
         ],
-        "out_of": 2693773,
+        "out_of": 2693758,
         "page": 1,
         "search_cutoff": false,
-        "search_time_ms": 10
+        "search_time_ms": 9
       }
     }
   }
