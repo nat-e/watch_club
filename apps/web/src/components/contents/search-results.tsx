@@ -191,7 +191,7 @@ export function SearchScopes({
     <div className="flex flex-1 flex-wrap items-center gap-2">
       <ToggleGroup
         aria-label={t($ => $.core.search.scope)}
-        variant="outline"
+        variant="chip"
         size="sm"
         value={[scope]}
         onValueChange={([pressed]) => {
@@ -220,7 +220,7 @@ export function SearchScopes({
 function InLibraryFilter() {
   const {t} = useTranslation('web');
   return (
-    <Toggle variant="outline" size="sm" disabled className="ml-auto">
+    <Toggle variant="chip" size="sm" disabled className="ml-auto">
       <LibraryIcon />
       {t($ => $.web.search.inLibrary)}
     </Toggle>
