@@ -235,6 +235,141 @@
         ]
       }
     },
+    "/api/contents/{content_type}/{tmdb_id}": {
+      "get": {
+        "summary": "Returns the Content, with its title in the signed-in User's language.",
+        "operationId": "get_content",
+        "parameters": [
+          {
+            "name": "content_type",
+            "in": "path",
+            "description": "The Content's type",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ContentType"
+            }
+          },
+          {
+            "name": "tmdb_id",
+            "in": "path",
+            "description": "The Content's TMDB ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Content"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TMDB has no such Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_GetContentError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": []
+          },
+          {
+            "session_token": []
+          }
+        ]
+      }
+    },
     "/api/health": {
       "get": {
         "summary": "Checks that the server reaches its database.",
@@ -607,6 +742,131 @@
           }
         ]
       }
+    },
+    "/api/search": {
+      "get": {
+        "summary": "Returns a page of the Movies and TV Shows whose title matches the query, most relevant first,\nwith their texts in the signed-in User's language.",
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "The words to look for in titles. A blank query matches nothing",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The page to return, from 1, the default: the previous page's `next_page`",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResults"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": []
+          },
+          {
+            "session_token": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -635,6 +895,51 @@
           "original",
           "en",
           "fr"
+        ]
+      },
+      "Content": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContentId"
+          },
+          {
+            "type": "object",
+            "required": [
+              "title"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "description": "A Content, with its title in the User's language."
+      },
+      "ContentId": {
+        "type": "object",
+        "description": "What identifies a Content: its type and its TMDB ID. A Movie and a TV Show can have the same\nTMDB ID.",
+        "required": [
+          "content_type",
+          "tmdb_id"
+        ],
+        "properties": {
+          "content_type": {
+            "$ref": "#/components/schemas/ContentType"
+          },
+          "tmdb_id": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "ContentType": {
+        "type": "string",
+        "description": "The type of a Content.",
+        "enum": [
+          "movie",
+          "tv_show"
         ]
       },
       "CreateInstanceAdministratorRequestError": {
@@ -772,6 +1077,42 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_GetContentError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request for a Content."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ErrorBody_LoginRequestError": {
         "allOf": [
           {
@@ -807,6 +1148,25 @@
           }
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "GetContentError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request for a Content."
       },
       "Instance": {
         "type": "object",
@@ -932,6 +1292,75 @@
           }
         ],
         "description": "Potential errors when parsing Passwords"
+      },
+      "SearchResult": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContentId"
+          },
+          {
+            "type": "object",
+            "required": [
+              "title",
+              "year",
+              "overview",
+              "poster_path"
+            ],
+            "properties": {
+              "overview": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "poster_path": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The path of its poster on TMDB's image server"
+              },
+              "title": {
+                "type": "string"
+              },
+              "year": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32",
+                "description": "The year of its release, or of its first episode, when TMDB knows it"
+              }
+            }
+          }
+        ],
+        "description": "A Movie or a TV Show that matches a search, with its texts in the User's language."
+      },
+      "SearchResults": {
+        "type": "object",
+        "description": "A page of a search's results.",
+        "required": [
+          "results",
+          "next_page"
+        ],
+        "properties": {
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The number of the next page, or null on the last one",
+            "minimum": 2
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            },
+            "description": "The results, most relevant first. A page can have none while later pages have some"
+          }
+        }
       },
       "TrackLanguage": {
         "type": "string",

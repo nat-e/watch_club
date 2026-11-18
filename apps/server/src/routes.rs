@@ -2,12 +2,14 @@
 //! on every other path.
 
 mod auth;
+mod contents;
 mod health;
 mod instance;
 mod me;
+mod search;
 
 use axum::{
-    extract::FromRequest,
+    extract::{FromRequest, FromRequestParts},
     http::StatusCode,
     middleware,
     response::{IntoResponse, Response},
@@ -29,6 +31,8 @@ pub(crate) fn routes() -> OpenApiRouter<AppState> {
         .merge(instance::routes())
         .merge(auth::routes())
         .merge(me::routes())
+        .merge(search::routes())
+        .merge(contents::routes())
         // Unknown API paths aren't found, rather than showing the web app
         .fallback(StatusCode::NOT_FOUND);
     let app = OpenApiRouter::new()
@@ -55,6 +59,17 @@ pub(crate) fn routes() -> OpenApiRouter<AppState> {
 #[derive(FromRequest)]
 #[from_request(via(axum::Json), rejection(ApiError))]
 struct Json<T>(T);
+
+/// Like axum's `Path`, but a path that isn't what the endpoint takes fails with the API's 400.
+#[derive(FromRequestParts)]
+#[from_request(via(axum::extract::Path), rejection(ApiError))]
+struct Path<T>(T);
+
+/// Like axum's `Query`, but a query string that isn't what the endpoint takes fails with the API's
+/// 400.
+#[derive(FromRequestParts)]
+#[from_request(via(axum::extract::Query), rejection(ApiError))]
+struct Query<T>(T);
 
 impl<T: Serialize> IntoResponse for Json<T> {
     fn into_response(self) -> Response {

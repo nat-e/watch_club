@@ -1,0 +1,342 @@
+{
+  "adult": false,
+  "backdrop_path": "/9vMzIrMIncPmtalcxh1MOrgcE6C.jpg",
+  "created_by": [
+    {
+      "id": 1216630,
+      "credit_id": "525730af760ee3776a344e95",
+      "name": "Greg Daniels",
+      "original_name": "Greg Daniels",
+      "gender": 2,
+      "profile_path": "/2lplV4pxfpEL7Rpdr7YFXmGx84x.jpg"
+    }
+  ],
+  "episode_run_time": [],
+  "first_air_date": "2005-03-24",
+  "genres": [
+    {
+      "id": 35,
+      "name": "Comedy"
+    }
+  ],
+  "homepage": "https://www.nbc.com/the-office",
+  "id": 2316,
+  "in_production": false,
+  "languages": ["en"],
+  "last_air_date": "2013-05-16",
+  "last_episode_to_air": {
+    "id": 170335,
+    "name": "Finale",
+    "overview": "One year later, Dunder Mifflin employees past and present reunite for a panel discussion about the documentary and to attend Dwight and Angela's wedding.",
+    "vote_average": 8.9,
+    "vote_count": 75,
+    "air_date": "2013-05-16",
+    "episode_number": 23,
+    "episode_type": "finale",
+    "production_code": "",
+    "runtime": 45,
+    "season_number": 9,
+    "show_id": 2316,
+    "still_path": "/1pJtFmAS3TJuWoCaUrY904pqNFE.jpg"
+  },
+  "name": "The Office",
+  "next_episode_to_air": null,
+  "networks": [
+    {
+      "id": 6,
+      "logo_path": "/cm111bsDVlYaC1foL0itvEI4yLG.png",
+      "name": "NBC",
+      "origin_country": "US"
+    }
+  ],
+  "number_of_episodes": 186,
+  "number_of_seasons": 9,
+  "origin_country": ["US"],
+  "original_language": "en",
+  "original_name": "The Office",
+  "overview": "The everyday lives of office employees in the Scranton, Pennsylvania branch of the fictional Dunder Mifflin Paper Company.",
+  "popularity": 1621.2133,
+  "poster_path": "/7DJKHzAi83BmQrWLrYYOqcoKfhR.jpg",
+  "production_companies": [
+    {
+      "id": 26727,
+      "logo_path": "/jeTxdjXhzgKZyLr3l9MllkTn3fy.png",
+      "name": "Universal Television",
+      "origin_country": "US"
+    },
+    {
+      "id": 59845,
+      "logo_path": null,
+      "name": "Deedle-Dee Productions",
+      "origin_country": "US"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "seasons": [
+    {
+      "air_date": "2006-07-13",
+      "episode_count": 106,
+      "id": 7246,
+      "name": "Specials",
+      "overview": "",
+      "poster_path": "/hL7duCNjfylgdKdVPMY4ggKzCjD.jpg",
+      "season_number": 0,
+      "vote_average": 0.0
+    },
+    {
+      "air_date": "2005-03-24",
+      "episode_count": 6,
+      "id": 7240,
+      "name": "Season 1",
+      "overview": "This season introduced the main characters, and established the general plot, which revolves around Michael Scott, regional manager of the Scranton branch office, trying to convince the filmmakers of the documentary that he presides over a happy, well-running office. Meanwhile, sales rep Jim Halpert finds methods to undermine his cube-mate, Dwight Schrute; receptionist Pam Beesly tries to deal with Michael's insensitivities and flubs; and temporary employee Ryan Howard is acting mostly as an observer of the insanity around him.",
+      "poster_path": "/d71JQWhX75ZE2D383DlIsHVH1In.jpg",
+      "season_number": 1,
+      "vote_average": 7.7
+    },
+    {
+      "air_date": "2005-09-20",
+      "episode_count": 22,
+      "id": 7241,
+      "name": "Season 2",
+      "overview": "Beginning with \"The Dundies\", the second season further developed into the plot of the fear of company downsizing, along with the introduction of new characters and developing some of the minor ones—especially that of Dwight Schrute. Michael Scott soon starts a relationship with his boss Jan Levenson and, Pam Beesley and Jim Halpert’s relationship become one of the focal points of the season. Their compatibility becomes more obvious as Jim’s feelings for Pam continue to grow, while she struggles with her relationship with the warehouse worker Roy Anderson.",
+      "poster_path": "/sAd3RhOjhTuaIBpyiI1QmB0YUq8.jpg",
+      "season_number": 2,
+      "vote_average": 8.2
+    }
+  ],
+  "softcore": false,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    }
+  ],
+  "status": "Ended",
+  "tagline": "A comedy for anyone whose boss is an idiot.",
+  "type": "Scripted",
+  "vote_average": 8.6,
+  "vote_count": 5728,
+  "translations": {
+    "translations": [
+      {
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "name": "English",
+        "english_name": "English",
+        "data": {
+          "name": "",
+          "overview": "The everyday lives of office employees in the Scranton, Pennsylvania branch of the fictional Dunder Mifflin Paper Company.",
+          "homepage": "",
+          "tagline": "A comedy for anyone whose boss is an idiot."
+        }
+      },
+      {
+        "iso_3166_1": "FR",
+        "iso_639_1": "fr",
+        "name": "Français",
+        "english_name": "French",
+        "data": {
+          "name": "",
+          "overview": "Le quotidien d'un groupe d'employés de bureau dans une fabrique de papier en Pennsylvanie. Michael Scott, le responsable régional, pense être le mec le plus drôle du bureau. Il ne se doute pas que ses employés le tolèrent uniquement parce que c'est lui qui signe les chèques. S'efforçant de paraître cool et apprécié de tous, Michael est en fait perçu comme étant pathétique…",
+          "homepage": "",
+          "tagline": ""
+        }
+      },
+      {
+        "iso_3166_1": "CA",
+        "iso_639_1": "fr",
+        "name": "Français",
+        "english_name": "French",
+        "data": {
+          "name": "",
+          "overview": "Cette comédie populaire décortique les mœurs des employés de l'entreprise de vente de papier Dunder Mifflin, avec en tête leur patron mégalo Michael Scott.",
+          "homepage": "",
+          "tagline": ""
+        }
+      }
+    ]
+  },
+  "images": {
+    "backdrops": [
+      {
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/9vMzIrMIncPmtalcxh1MOrgcE6C.jpg",
+        "vote_average": 6.2,
+        "vote_count": 10,
+        "width": 3840
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/bY2J2Jq8rSrKm5xCFtzYzqFh44o.jpg",
+        "vote_average": 6.0,
+        "vote_count": 19,
+        "width": 1920
+      },
+      {
+        "aspect_ratio": 1.778,
+        "height": 1080,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/mLyW3UTgi2lsMdtueYODcfAB9Ku.jpg",
+        "vote_average": 5.844,
+        "vote_count": 16,
+        "width": 1920
+      }
+    ],
+    "logos": [
+      {
+        "aspect_ratio": 6.123,
+        "height": 702,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/17TS3YFxsAFbhyt3pp2TmAa6LR0.png",
+        "vote_average": 3.334,
+        "vote_count": 3,
+        "width": 4298
+      }
+    ],
+    "posters": [
+      {
+        "aspect_ratio": 0.667,
+        "height": 3000,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/7DJKHzAi83BmQrWLrYYOqcoKfhR.jpg",
+        "vote_average": 5.928,
+        "vote_count": 28,
+        "width": 2000
+      },
+      {
+        "aspect_ratio": 0.667,
+        "height": 1500,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/dg9e5fPRRId8PoBE0F6jl5y85Eu.jpg",
+        "vote_average": 5.844,
+        "vote_count": 32,
+        "width": 1000
+      }
+    ]
+  },
+  "external_ids": {
+    "imdb_id": "tt0386676",
+    "freebase_mid": "/m/08jgk1",
+    "freebase_id": "/en/the_office",
+    "tvdb_id": 73244,
+    "tvrage_id": 6061,
+    "wikidata_id": "Q23831",
+    "facebook_id": "TheOfficeTV",
+    "instagram_id": "theoffice",
+    "twitter_id": "theofficetv"
+  },
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 11678,
+        "known_for_department": "Acting",
+        "name": "Rainn Wilson",
+        "original_name": "Rainn Wilson",
+        "popularity": 2.2763,
+        "profile_path": "/yRTElSeC3q9nBqBuleI6OODlDMS.jpg",
+        "character": "Dwight Schrute",
+        "credit_id": "525730a9760ee3776a34474f",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 17697,
+        "known_for_department": "Acting",
+        "name": "John Krasinski",
+        "original_name": "John Krasinski",
+        "popularity": 4.0368,
+        "profile_path": "/pmVGDb6Yl6OyFcHVGbu1EYNfyFK.jpg",
+        "character": "Jim Halpert",
+        "credit_id": "525730a9760ee3776a344785",
+        "order": 2
+      }
+    ],
+    "crew": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1225604,
+        "known_for_department": "Writing",
+        "name": "Warren Lieberstein",
+        "original_name": "Warren Lieberstein",
+        "popularity": 0.5057,
+        "profile_path": "/fyTumiVnzJzAdP6fbVMWqVf2DYK.jpg",
+        "credit_id": "69dd7d350b35bdec2a027fa1",
+        "department": "Production",
+        "job": "Consulting Producer"
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 1216619,
+        "known_for_department": "Writing",
+        "name": "Brent Forrester",
+        "original_name": "Brent Forrester",
+        "popularity": 0.4095,
+        "profile_path": null,
+        "credit_id": "69dd7dfb8334d7060c027cfd",
+        "department": "Production",
+        "job": "Executive Producer"
+      }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "The First 5 Minutes of The Office",
+        "key": "HLZyi24Z90A",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Clip",
+        "official": true,
+        "id": "6ac8276e7cc7facbcf4d73c8",
+        "published_at": "2023-04-29T14:00:08.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "i'll kill you",
+        "key": "96ix3P9WaRc",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Clip",
+        "official": true,
+        "id": "61fc2a4a8c0a48001c84e294",
+        "published_at": "2022-01-18T17:00:57.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "Intro",
+        "key": "523928401",
+        "site": "Vimeo",
+        "size": 720,
+        "type": "Opening Credits",
+        "official": false,
+        "id": "694f875325b7767cee8eb7d6",
+        "published_at": "2021-03-15T18:54:44.000Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "movie_results": [
+    {
+      "adult": false,
+      "backdrop_path": "/6n53UI4mX9QMfe2S0Pgt8mGebY1.jpg",
+      "genre_ids": [35, 10749],
+      "id": 194,
+      "title": "Amélie",
+      "original_language": "fr",
+      "original_title": "Le Fabuleux Destin d'Amélie Poulain",
+      "overview": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally discovers a gift for helping others. Soon Amelie is spending her days as a matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a handsome stranger, will she find the courage to become the star of her very own love story?",
+      "popularity": 13.1319,
+      "poster_path": "/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
+      "release_date": "2001-04-25",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.921,
+      "vote_count": 12840,
+      "media_type": "movie"
+    }
+  ],
+  "person_results": [],
+  "tv_results": [],
+  "tv_episode_results": [],
+  "tv_season_results": []
+}

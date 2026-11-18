@@ -16,6 +16,8 @@ pub struct Config {
     pub database_url: SecretString,
     /// The port the server listens on, from `PORT`
     pub port: u16,
+    /// The API Read Access Token the server calls TMDB with, from `TMDB_API_TOKEN`
+    pub tmdb_api_token: SecretString,
     /// The settings of the server's logs, telemetry and error reports
     pub observability: ObservabilityConfig,
 }
@@ -85,6 +87,7 @@ impl Config {
             port: required_var("PORT")?
                 .parse()
                 .context("PORT isn't a port number")?,
+            tmdb_api_token: required_var("TMDB_API_TOKEN")?.into(),
             observability: ObservabilityConfig::from_env()?,
         })
     }

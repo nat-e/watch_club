@@ -3,6 +3,7 @@
 
 mod client;
 mod database;
+pub mod fake_tmdb;
 
 use std::process::Command;
 
@@ -14,7 +15,7 @@ use watch_club::{
     },
 };
 
-pub use self::{client::Client, database::TestDatabase};
+pub use self::{client::Client, database::TestDatabase, fake_tmdb::FakeTmdb};
 
 /// Every test User's password
 pub const PASSWORD: &str = "passw0rd";

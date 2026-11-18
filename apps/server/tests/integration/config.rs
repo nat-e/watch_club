@@ -27,11 +27,23 @@ fn fails_when_the_port_is_not_a_number() {
 
 /// The settings the server needs, with a database URL it fails to connect to at once, once it gets
 /// past the other settings
-const REQUIRED: [(&str, &str); 2] = [("DATABASE_URL", "not a database URL"), ("PORT", "4000")];
+const REQUIRED: [(&str, &str); 3] = [
+    ("DATABASE_URL", "not a database URL"),
+    ("PORT", "4000"),
+    ("TMDB_API_TOKEN", "tmdb-token"),
+];
 
 /// Returns what the server printed when it failed to start with the required settings and these.
 fn startup_error_with(vars: &[(&'static str, &'static str)]) -> String {
     server_startup_error(&[&REQUIRED[..], vars].concat())
+}
+
+#[test]
+fn fails_without_a_tmdb_token() {
+    let errors =
+        server_startup_error(&[("DATABASE_URL", UNREACHABLE_DATABASE_URL), ("PORT", "4000")]);
+
+    assert!(errors.contains("TMDB_API_TOKEN isn't set"), "{errors}");
 }
 
 #[test]

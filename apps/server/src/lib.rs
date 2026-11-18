@@ -12,6 +12,7 @@ pub mod config;
 pub mod db;
 pub mod domain;
 mod error;
+pub mod integrations;
 pub mod jobs;
 pub mod observability;
 pub mod openapi;
@@ -23,6 +24,7 @@ mod web;
 pub struct AppState {
     pub db: db::Pool,
     pub apps_sentry: AppsSentry,
+    pub tmdb: integrations::tmdb::Client,
 }
 
 /// The Sentry settings the apps report their errors with, which `GET /api/instance` gives them.

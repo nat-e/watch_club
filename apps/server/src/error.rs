@@ -4,7 +4,10 @@ use std::{any::Any, fmt::Display, sync::Arc};
 
 use axum::{
     Json,
-    extract::{Request, rejection::JsonRejection},
+    extract::{
+        Request,
+        rejection::{JsonRejection, PathRejection, QueryRejection},
+    },
     http::{HeaderValue, StatusCode, header::WWW_AUTHENTICATE},
     middleware::Next,
     response::{IntoResponse, Response},
@@ -19,8 +22,9 @@ use crate::domain::InternalError;
 /// The failures any endpoint can send, named after their HTTP status.
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum ApiError {
-    #[error(transparent)]
-    InvalidRequest(#[from] JsonRejection),
+    /// A body, path or query string that isn't what the endpoint takes, with why
+    #[error("{0}")]
+    InvalidRequest(String),
     #[error("not signed in")]
     Unauthorized,
     #[error(transparent)]
@@ -54,6 +58,24 @@ impl ApiErrorKind {
     }
 }
 
+impl From<JsonRejection> for ApiError {
+    fn from(rejection: JsonRejection) -> Self {
+        Self::InvalidRequest(rejection.body_text())
+    }
+}
+
+impl From<PathRejection> for ApiError {
+    fn from(rejection: PathRejection) -> Self {
+        Self::InvalidRequest(rejection.body_text())
+    }
+}
+
+impl From<QueryRejection> for ApiError {
+    fn from(rejection: QueryRejection) -> Self {
+        Self::InvalidRequest(rejection.body_text())
+    }
+}
+
 impl ApiError {
     fn kind(&self) -> ApiErrorKind {
         match self {
@@ -68,8 +90,7 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let kind = self.kind();
         let message = match &self {
-            Self::InvalidRequest(rejection) => rejection.body_text(),
-            Self::Unauthorized => self.to_string(),
+            Self::InvalidRequest(_) | Self::Unauthorized => self.to_string(),
             // The cause stays in the logs
             Self::Internal(_) => "internal error".to_owned(),
         };

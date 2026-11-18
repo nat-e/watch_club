@@ -31,7 +31,7 @@ When it starts, the server logs its version and which of the telemetry below it 
 
 The server can send its telemetry to any tool that accepts OpenTelemetry (OTLP), such as Grafana, SigNoz, Jaeger or Sentry:
 
-- **Traces**: the steps of each request and background job, with their timings, down to each database query
+- **Traces**: the steps of each request and background job, with their timings, down to each database query and each call to TMDB
 - **Metrics**: request times and counts, database usage, and background jobs
 - **Logs**: the same logs as the console
 
@@ -57,6 +57,7 @@ Your telemetry shows up under the name `watch_club`. Set `OTEL_SERVICE_NAME` to 
 | `db.client.operation.duration`   | How long database queries take                                                  |
 | `db.client.connection.count`     | The database connections in use, and the idle ones                              |
 | `db.client.connection.wait_time` | How long the server waits for a free database connection                        |
+| `http.client.request.duration`   | How long calls to TMDB take, and their status or failure                        |
 | `jobs.attempt.duration`          | How long background jobs take, and whether they succeed, will retry or fail     |
 | `jobs.executing`                 | The background jobs running right now                                           |
 | `jobs.waiting`                   | The background jobs waiting to start                                            |

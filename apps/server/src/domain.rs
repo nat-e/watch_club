@@ -1,6 +1,7 @@
 //! The domain, which the API in `routes` uses.
 
 pub mod accounts;
+pub mod contents;
 
 use std::any::Any;
 

@@ -10,6 +10,10 @@ mod domain {
         mod preferences;
         mod user;
     }
+    mod contents;
+}
+mod integrations {
+    mod tmdb;
 }
 mod jobs;
 mod routes {
@@ -25,9 +29,15 @@ mod routes {
         mod create_administrator;
         mod get;
     }
+    mod contents {
+        mod get;
+    }
     mod me {
         mod get;
         mod update_preferences;
+    }
+    mod search {
+        mod get;
     }
 }
 mod support;
