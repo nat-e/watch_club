@@ -2,6 +2,10 @@ export default {
   browse: {
     title: 'Browse',
   },
+  contentTypes: {
+    movie: 'Movie',
+    tvShow: 'TV show',
+  },
   controls: {
     close: 'Close',
   },
@@ -25,6 +29,18 @@ export default {
   },
   playlists: {
     title: 'Playlists',
+  },
+  search: {
+    failed: "The search didn't work.",
+    hint: "Find any movie or TV show, even ones that aren't on WatchClub yet.",
+    noResults: 'No results',
+    nothingFound: "We didn't find anything for “{{query}}”.",
+    resultCount_one: '{{count}} result',
+    resultCount_other: '{{count}} results',
+    results: 'Search results',
+    search: 'Search',
+    searching: 'Searching…',
+    tryAgain: 'Try again',
   },
   settings: {
     audio: 'Audio',

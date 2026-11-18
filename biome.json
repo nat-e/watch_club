@@ -170,6 +170,29 @@
       }
     },
     {
+      "includes": ["**/src/l10n/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNamingConvention": {
+              "level": "error",
+              "options": {
+                "conventions": [
+                  {
+                    "selector": {
+                      "kind": "objectLiteralProperty"
+                    },
+                    "match": "(.+?)(?:_(?:zero|one|two|few|many|other))?",
+                    "formats": ["camelCase"]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.config.js"],
       "linter": {
         "rules": {

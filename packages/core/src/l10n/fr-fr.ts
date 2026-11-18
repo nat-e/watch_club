@@ -2,6 +2,10 @@ export default {
   browse: {
     title: 'Parcourir',
   },
+  contentTypes: {
+    movie: 'Film',
+    tvShow: 'Série',
+  },
   controls: {
     close: 'Fermer',
   },
@@ -26,6 +30,19 @@ export default {
   },
   playlists: {
     title: 'Playlists',
+  },
+  search: {
+    failed: "La recherche n'a pas fonctionné.",
+    hint: 'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur WatchClub.',
+    noResults: 'Aucun résultat',
+    nothingFound: "On n'a rien trouvé pour « {{query}} ».",
+    resultCount_one: '{{count}} résultat',
+    resultCount_many: '{{count}} de résultats',
+    resultCount_other: '{{count}} résultats',
+    results: 'Résultats de recherche',
+    search: 'Rechercher',
+    searching: 'Recherche…',
+    tryAgain: 'Réessayer',
   },
   settings: {
     audio: 'Audio',
