@@ -247,13 +247,10 @@ Anti-patterns (MUST NOT):
 
 ---
 
-## Design Alternatives and Comments-First Design
+## Design Alternatives
 
 1. For non-trivial design choices, compare at least two plausible designs before implementing the first one that works.
 2. Evaluate alternatives by interface simplicity, information hiding, special-case reduction, and future cognitive load.
-3. When an interface or abstraction is unclear, sketch the public contract and explanatory comments before committing to implementation.
-4. Use comments-first design to clarify abstraction boundaries, not to preserve vague or misleading code.
-5. Revise the abstraction when the comment needed to explain it becomes complicated.
 
 Anti-patterns (MUST NOT):
 - accepting the first design because it is locally convenient
