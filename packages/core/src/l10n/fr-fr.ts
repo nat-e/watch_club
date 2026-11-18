@@ -8,6 +8,7 @@ export default {
   },
   controls: {
     close: 'Fermer',
+    tryAgain: 'Réessayer',
   },
   errors: {
     somethingWentWrong: "On n'a pas pu terminer ta demande. Réessaie dans un instant.",
@@ -42,7 +43,6 @@ export default {
     results: 'Résultats de recherche',
     search: 'Rechercher',
     searching: 'Recherche…',
-    tryAgain: 'Réessayer',
   },
   settings: {
     audio: 'Audio',

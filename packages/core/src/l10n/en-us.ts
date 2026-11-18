@@ -8,6 +8,7 @@ export default {
   },
   controls: {
     close: 'Close',
+    tryAgain: 'Try again',
   },
   errors: {
     somethingWentWrong: "We couldn't complete your request. Try again in a moment.",
@@ -40,7 +41,6 @@ export default {
     results: 'Search results',
     search: 'Search',
     searching: 'Searching…',
-    tryAgain: 'Try again',
   },
   settings: {
     audio: 'Audio',

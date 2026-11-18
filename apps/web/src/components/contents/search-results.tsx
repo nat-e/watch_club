@@ -133,7 +133,7 @@ function StatusBody({
             <EmptyDescription>{t($ => $.core.search.failed)}</EmptyDescription>
           </EmptyHeader>
           <Button variant="secondary" size="sm" onClick={retry}>
-            {t($ => $.core.search.tryAgain)}
+            {t($ => $.core.controls.tryAgain)}
           </Button>
         </Empty>
       );

@@ -25,11 +25,10 @@ export function ContentScreen({contentType}: {contentType: ContentId['content_ty
       />
     ) : (
       <StatusScreen
-        title={t($ => $.core.search.failed)}
         description={t($ => $.core.errors.somethingWentWrong)}
         actions={[
           {
-            label: t($ => $.core.search.tryAgain),
+            label: t($ => $.core.controls.tryAgain),
             onPress: () => {
               void content.refetch();
             },

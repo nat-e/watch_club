@@ -35,7 +35,7 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     ),
     responses(
         (status = OK, body = Content),
-        (status = NOT_FOUND, body = ErrorBody<GetContentError>, description = "TMDB has no such Content"),
+        (status = NOT_FOUND, body = ErrorBody<GetContentRequestError>, description = "TMDB has no such Content"),
     ),
     security(("session_cookie" = []), ("session_token" = [])),
 )]
@@ -43,7 +43,7 @@ async fn get_content(
     State(tmdb): State<tmdb::Client>,
     current_user: CurrentUser,
     Path((content_type, tmdb_id)): Path<(ContentType, u32)>,
-) -> Result<Json<Content>, GetContentError> {
+) -> Result<Json<Content>, GetContentRequestError> {
     let id = ContentId {
         content_type,
         tmdb_id,
@@ -55,7 +55,7 @@ async fn get_content(
 /// The failures of a request for a Content.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
-enum GetContentError {
+enum GetContentRequestError {
     #[error("TMDB has no such Content")]
     NotFound,
     #[error(transparent)]
@@ -63,7 +63,7 @@ enum GetContentError {
     Internal(#[from] InternalError),
 }
 
-impl From<LookUpError> for GetContentError {
+impl From<LookUpError> for GetContentRequestError {
     fn from(error: LookUpError) -> Self {
         match error {
             LookUpError::NotFound => Self::NotFound,
@@ -72,7 +72,7 @@ impl From<LookUpError> for GetContentError {
     }
 }
 
-impl IntoResponse for GetContentError {
+impl IntoResponse for GetContentRequestError {
     fn into_response(self) -> Response {
         match self {
             Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),

@@ -328,7 +328,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_GetContentError"
+                  "$ref": "#/components/schemas/ErrorBody_GetContentRequestError"
                 }
               }
             }
@@ -1077,7 +1077,7 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
-      "ErrorBody_GetContentError": {
+      "ErrorBody_GetContentRequestError": {
         "allOf": [
           {
             "oneOf": [
@@ -1149,7 +1149,7 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
-      "GetContentError": {
+      "GetContentRequestError": {
         "oneOf": [
           {
             "type": "object",

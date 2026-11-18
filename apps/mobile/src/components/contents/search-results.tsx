@@ -86,7 +86,7 @@ function SearchStatus({search, query}: {search: Search; query: string}) {
         <Message text={failed}>
           <Button
             variant="outlined"
-            label={t($ => $.core.search.tryAgain)}
+            label={t($ => $.core.controls.tryAgain)}
             onPress={search.retry}
           />
         </Message>
