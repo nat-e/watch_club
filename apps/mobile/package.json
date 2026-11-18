@@ -3,8 +3,8 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "android": "expo run:android --no-bundler --port ${RCT_METRO_PORT:-8081}",
-    "ios": "expo run:ios --no-bundler --port ${RCT_METRO_PORT:-8081}",
+    "android": "scripts/run-native.sh android",
+    "ios": "scripts/run-native.sh ios",
     "prebuild": "expo prebuild --clean",
     "prebuild:tv": "EXPO_TV=1 expo prebuild --clean",
     "generate:routes": "expo customize tsconfig.json",

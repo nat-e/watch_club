@@ -33,7 +33,7 @@ Each worktree's web app runs at `http://<branch>.localhost:<port>`, and `wt list
 
 ### Mobile app
 
-The mobile app runs in a development build made with `expo-dev-client`, not in Expo Go: Expo Go ships its own, older native libraries, so the app would behave differently. One build serves every worktree: it lists their dev servers, and you can switch between them. To build it for Android, install Android Studio, and set `JAVA_HOME` to its Java (`/Applications/Android Studio.app/Contents/jbr/Contents/Home` on macOS) and `ANDROID_HOME` to its SDK (`~/Library/Android/sdk`). Then connect a phone or start an emulator, start Expo's dev server with `process-compose process start expo`, and run `turbo run android --filter=mobile`. Rebuild it only when native code changes.
+The mobile app runs in a development build made with `expo-dev-client`, not in Expo Go: Expo Go ships its own, older native libraries, so the app would behave differently. One build serves every worktree: it lists their dev servers, and you can switch between them. To build it for Android, install Android Studio, and set `JAVA_HOME` to its Java (`/Applications/Android Studio.app/Contents/jbr/Contents/Home` on macOS) and `ANDROID_HOME` to its SDK (`~/Library/Android/sdk`). Then connect a phone or start an emulator, and run `turbo run android --filter=mobile`: it starts Expo's dev server in process-compose first. Rebuild it only when native code changes.
 
 ## Dev catalog
 

@@ -21,7 +21,12 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::with_openapi(SearchSchemas::openapi()).routes(routes!(search))
 }
 
-/// The schemas that the search's parameters refer to, which utoipa doesn't collect from them.
+/// The schemas that only the search's parameters use, such as `SearchScope`.
+///
+/// utoipa adds to the OpenAPI document the schemas that request bodies and responses use, but not
+/// those of parameters: without this, the `scope` parameter refers to a schema the document lacks,
+/// and the apps' client has no `SearchScope` type. Remove it once utoipa collects them:
+/// <https://github.com/juhaku/utoipa/issues/1165>
 #[derive(OpenApi)]
 #[openapi(components(schemas(SearchScope)))]
 struct SearchSchemas;
