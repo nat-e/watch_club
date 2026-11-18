@@ -41,8 +41,9 @@ export const savePreferencesMutation = mutationOptions({
       // The API answers in the User's language, so the answers shown so far are in the old one
       const currentUserHash = hashKey(currentUserQuery.queryKey);
       const others = {predicate: (query: Query) => query.queryHash !== currentUserHash};
-      // Cancelled first, as an invalidated query whose first answer is on its way would keep it
-      await queryClient.cancelQueries(others);
+      // The screens' queries are cancelled first, as one whose first answer is on its way would
+      // keep it. A page that is loading keeps its answer, rather than failing to open
+      await queryClient.cancelQueries({...others, type: 'active'});
       void queryClient.invalidateQueries(others);
     }
     return saved;

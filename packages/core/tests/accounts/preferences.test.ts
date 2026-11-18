@@ -1,4 +1,4 @@
-import {MutationObserver, QueryClient} from '@tanstack/react-query';
+import {MutationObserver, QueryClient, QueryObserver} from '@tanstack/react-query';
 import {type CurrentUser, client, type UserPreferences} from '@watchclub/api';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {currentUserQuery, forgetCurrentUser, setCurrentUser} from '../../src/accounts/current-user';
@@ -72,24 +72,28 @@ describe('savePreferencesMutation', () => {
     expect(queryClient.getQueryState(currentUserQuery.queryKey)?.isInvalidated).toBe(false);
   });
 
-  it('drops the answers on their way in the old language once the Locale changes', async () => {
+  it('asks again for the answers on their way to a screen once the Locale changes', async () => {
     acceptPreferences();
     const queryClient = new QueryClient();
     await setCurrentUser(queryClient, ALICE);
-    let answer: (title: string) => void = () => undefined;
-    const content = queryClient.fetchQuery({
+    const answers: Array<(title: string) => void> = [];
+    const content = new QueryObserver(queryClient, {
       queryKey: ['content'],
       queryFn: () =>
         new Promise<string>(resolve => {
-          answer = resolve;
+          answers.push(resolve);
         }),
     });
+    const unsubscribe = content.subscribe(() => undefined);
 
     await save(queryClient, {locale: 'fr-FR'});
-    answer('Amélie');
+    answers[0]?.('Amélie');
+    answers[1]?.("Le Fabuleux Destin d'Amélie Poulain");
 
-    await expect(content).rejects.toThrow();
-    expect(queryClient.getQueryData(['content'])).toBeUndefined();
+    await vi.waitFor(() => {
+      expect(content.getCurrentResult().data).toBe("Le Fabuleux Destin d'Amélie Poulain");
+    });
+    unsubscribe();
   });
 
   it('keeps the answers when the Locale stays the same', async () => {
