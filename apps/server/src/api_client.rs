@@ -7,11 +7,11 @@ use reqwest::{
     StatusCode, Url,
     header::{AUTHORIZATION, HeaderMap, HeaderValue},
 };
-use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware, RequestBuilder};
 use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use reqwest_tracing::{OtelName, SpanBackendWithUrl, TracingMiddleware};
 use secrecy::{ExposeSecret, SecretString};
-use serde::de::DeserializeOwned;
+use serde::{Serialize, de::DeserializeOwned};
 
 /// The number of characters of a failed answer's body that its error shows
 const EXCERPT_LENGTH: usize = 300;
@@ -72,13 +72,34 @@ impl ApiClient {
         args: &[&str],
         params: &[(&str, &str)],
     ) -> anyhow::Result<Option<T>> {
-        let call = format!("GET {route}");
-        let host = self.base_url.host_str().unwrap_or_default();
+        let request = self.http.get(self.url(route, args)).query(params);
+        self.send(request, format!("GET {route}")).await
+    }
 
-        let response = self
-            .http
-            .get(self.url(route, args))
-            .query(params)
+    /// POSTs `body` as JSON to `route`, such as `/graphql`, and returns the JSON the service answers.
+    pub(crate) async fn post<T: DeserializeOwned>(
+        &self,
+        route: &'static str,
+        body: &impl Serialize,
+    ) -> anyhow::Result<T> {
+        let call = format!("POST {route}");
+        let request = self.http.post(self.url(route, &[])).json(body);
+        let host = self.host();
+        self.send(request, call.clone())
+            .await?
+            .with_context(|| format!("{host} answered {call} with 404 Not Found"))
+    }
+
+    /// Sends the request, which `call` names in traces and errors, such as `GET /movie/{id}`, and
+    /// returns the JSON the service answers, or None when it answers 404.
+    async fn send<T: DeserializeOwned>(
+        &self,
+        request: RequestBuilder,
+        call: String,
+    ) -> anyhow::Result<Option<T>> {
+        let host = self.host();
+
+        let response = request
             .with_extension(OtelName(call.clone().into()))
             .send()
             .await
@@ -100,6 +121,11 @@ impl ApiClient {
         let answer = serde_json::from_slice(&body)
             .with_context(|| format!("failed to read {host}'s answer to {call}"))?;
         Ok(Some(answer))
+    }
+
+    /// Returns the name of the service's host, for errors.
+    fn host(&self) -> &str {
+        self.base_url.host_str().unwrap_or_default()
     }
 
     /// Returns the URL of `route`, with `args` in its `{…}`.

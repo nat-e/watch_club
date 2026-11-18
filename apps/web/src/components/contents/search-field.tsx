@@ -1,14 +1,14 @@
 import {Autocomplete} from '@base-ui/react/autocomplete';
 import {Link, useMatch, useNavigate} from '@tanstack/react-router';
 import type {SearchResult} from '@watchclub/api';
-import {useSearch, useTypedQuery} from '@watchclub/core/contents/search';
+import {DEFAULT_SEARCH_SCOPE, useSearch, useTypedQuery} from '@watchclub/core/contents/search';
 import {ArrowLeftIcon, SearchIcon} from 'lucide-react';
 import {useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {contentLink} from '@/components/contents/content-page';
 import {
-  InLibraryFilter,
   SearchResultSummary,
+  SearchScopes,
   SearchStatus,
 } from '@/components/contents/search-results';
 import {
@@ -29,9 +29,9 @@ const SEE_ALL = 'seeAll';
 type Option = SearchResult | typeof SEE_ALL;
 
 /**
- * The search field of a page's bar. While the User types, a drop-down shows the first results, and
- * Enter opens the search page with all of them. Up and Down move through the results. On the search
- * page, the field shows the page's query.
+ * The search field of a page's bar. While the User types, a drop-down shows the first results in
+ * the scope it shows, and Enter opens the search page with all of them. Up and Down move through
+ * the results. On the search page, the field shows the page's query and scope.
  *
  * On phones, the drop-down fills the screen below the bar, and the field's search icon becomes a
  * back arrow, which closes it.
@@ -42,18 +42,21 @@ export function SearchField() {
   const isMobile = useIsMobile();
   const searchPage = useMatch({from: '/_shell/search', shouldThrow: false});
   const pageQuery = searchPage?.search.query ?? '';
+  const pageScope = searchPage?.search.scope ?? DEFAULT_SEARCH_SCOPE;
   const [text, setText] = useState(pageQuery);
-  // The field follows the search page's query when its URL changes, and keeps what the User types
-  // in between
-  const [shownPageQuery, setShownPageQuery] = useState(pageQuery);
-  if (pageQuery !== shownPageQuery) {
-    setShownPageQuery(pageQuery);
+  const [scope, setScope] = useState(pageScope);
+  // The field follows the search page's query and scope when its URL changes, and keeps what the
+  // User types and picks in between
+  const [shownPageSearch, setShownPageSearch] = useState({query: pageQuery, scope: pageScope});
+  if (pageQuery !== shownPageSearch.query || pageScope !== shownPageSearch.scope) {
+    setShownPageSearch({query: pageQuery, scope: pageScope});
     setText(pageQuery);
+    setScope(pageScope);
   }
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const query = useTypedQuery(text);
-  const search = useSearch(query);
+  const search = useSearch(query, scope);
   const preview = search.results.slice(0, PREVIEW_SIZE);
   const options: Option[] = preview.length > 0 ? [...preview, SEE_ALL] : [];
 
@@ -63,7 +66,7 @@ export function SearchField() {
       return;
     }
     setOpen(false);
-    void navigate({to: '/search', search: {query: typed}});
+    void navigate({to: '/search', search: {query: typed, scope}});
   }
 
   return (
@@ -136,11 +139,12 @@ export function SearchField() {
             className="flex w-[min(32rem,var(--available-width))] flex-col overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 max-md:size-full max-md:rounded-none max-md:bg-background max-md:shadow-none max-md:ring-0"
           >
             <div className="flex border-b border-border-subtle p-2 max-md:px-page">
-              <InLibraryFilter />
+              <SearchScopes scope={scope} onScopeChange={setScope} />
             </div>
             <div className="max-h-[min(32rem,calc(var(--available-height)-3.5rem))] overflow-y-auto overscroll-contain max-md:max-h-none max-md:flex-1">
               <SearchStatus
                 status={search.status}
+                scope={scope}
                 query={query.trim()}
                 count={preview.length}
                 retry={search.retry}

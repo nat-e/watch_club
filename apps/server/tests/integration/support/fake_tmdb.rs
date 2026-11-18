@@ -41,10 +41,12 @@ impl FakeTmdb {
         Tmdb::with_base_url(&SecretString::from(TOKEN), &self.server.uri()).unwrap()
     }
 
-    /// Returns the Metadata Providers of an instance that finds Content in this TMDB.
+    /// Returns the Metadata Providers of an instance that finds Movies and TV Shows in this TMDB,
+    /// and calls a Hardcover that nothing answers.
     pub fn metadata_providers(&self) -> MetadataProviders {
         MetadataProviders {
             tmdb: self.client(),
+            ..super::unreachable_metadata_providers()
         }
     }
 }

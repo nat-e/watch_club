@@ -21,6 +21,7 @@ import { Route as ShellSearchRouteImport } from './routes/_shell/search'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as SignedOutSetupRouteImport } from './routes/_signed-out/setup'
 import { Route as SignedOutSignInRouteImport } from './routes/_signed-out/sign-in'
+import { Route as ShellBooksIdRouteImport } from './routes/_shell/books/$id'
 import { Route as ShellMoviesIdRouteImport } from './routes/_shell/movies/$id'
 import { Route as ShellShowsIdRouteImport } from './routes/_shell/shows/$id'
 import { Route as ShellAdminAdminProblemReportsRouteImport } from './routes/_shell/_admin/admin/problem-reports'
@@ -86,6 +87,11 @@ const SignedOutSignInRoute = SignedOutSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => SignedOutRoute,
 } as any)
+const ShellBooksIdRoute = ShellBooksIdRouteImport.update({
+  id: '/books/$id',
+  path: '/books/$id',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellMoviesIdRoute = ShellMoviesIdRouteImport.update({
   id: '/movies/$id',
   path: '/movies/$id',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/books/$id': typeof ShellBooksIdRoute
   '/movies/$id': typeof ShellMoviesIdRoute
   '/shows/$id': typeof ShellShowsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/settings': typeof ShellSettingsRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
+  '/books/$id': typeof ShellBooksIdRoute
   '/movies/$id': typeof ShellMoviesIdRoute
   '/shows/$id': typeof ShellShowsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/_signed-out/setup': typeof SignedOutSetupRoute
   '/_signed-out/sign-in': typeof SignedOutSignInRoute
   '/_shell/': typeof ShellIndexRoute
+  '/_shell/books/$id': typeof ShellBooksIdRoute
   '/_shell/movies/$id': typeof ShellMoviesIdRoute
   '/_shell/shows/$id': typeof ShellShowsIdRoute
   '/_shell/_admin/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/sign-in'
+    | '/books/$id'
     | '/movies/$id'
     | '/shows/$id'
     | '/admin/problem-reports'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/setup'
     | '/sign-in'
+    | '/books/$id'
     | '/movies/$id'
     | '/shows/$id'
     | '/admin/problem-reports'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/_signed-out/setup'
     | '/_signed-out/sign-in'
     | '/_shell/'
+    | '/_shell/books/$id'
     | '/_shell/movies/$id'
     | '/_shell/shows/$id'
     | '/_shell/_admin/admin/problem-reports'
@@ -334,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignedOutSignInRouteImport
       parentRoute: typeof SignedOutRoute
     }
+    '/_shell/books/$id': {
+      id: '/_shell/books/$id'
+      path: '/books/$id'
+      fullPath: '/books/$id'
+      preLoaderRoute: typeof ShellBooksIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/movies/$id': {
       id: '/_shell/movies/$id'
       path: '/movies/$id'
@@ -415,6 +434,7 @@ interface ShellRouteChildren {
   ShellSearchRoute: typeof ShellSearchRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
+  ShellBooksIdRoute: typeof ShellBooksIdRoute
   ShellMoviesIdRoute: typeof ShellMoviesIdRoute
   ShellShowsIdRoute: typeof ShellShowsIdRoute
 }
@@ -428,6 +448,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellSearchRoute: ShellSearchRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
+  ShellBooksIdRoute: ShellBooksIdRoute,
   ShellMoviesIdRoute: ShellMoviesIdRoute,
   ShellShowsIdRoute: ShellShowsIdRoute,
 }

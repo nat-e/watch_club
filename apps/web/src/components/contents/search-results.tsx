@@ -1,7 +1,18 @@
-import type {ContentType, SearchResult} from '@watchclub/api';
+import {Radio} from '@base-ui/react/radio';
+import {RadioGroup} from '@base-ui/react/radio-group';
+import type {ContentType, SearchResult, SearchScope} from '@watchclub/api';
 import {useContentTypeNames} from '@watchclub/core/contents/content';
-import type {SearchStatus as Status} from '@watchclub/core/contents/search';
 import {
+  SEARCH_SCOPES,
+  type SearchStatus as Status,
+  searchResultDetails,
+  useSearchHint,
+  useSearchScopeNames,
+} from '@watchclub/core/contents/search';
+import {cn} from 'cn';
+import {
+  BookIcon,
+  ClapperboardIcon,
   FilmIcon,
   LibraryIcon,
   type LucideIcon,
@@ -9,19 +20,30 @@ import {
   TriangleAlertIcon,
   TvIcon,
 } from 'lucide-react';
+import {Fragment} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Poster} from '@/components/contents/poster';
 import {Button} from '@/components/ui/button';
 import {Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle} from '@/components/ui/empty';
 import {Skeleton} from '@/components/ui/skeleton';
-import {Toggle} from '@/components/ui/toggle';
+import {Toggle, toggleVariants} from '@/components/ui/toggle';
 
-// biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
-const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {movie: FilmIcon, tv_show: TvIcon};
+const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {
+  movie: FilmIcon,
+  // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
+  tv_show: TvIcon,
+  book: BookIcon,
+};
+
+const SEARCH_SCOPE_ICONS: Record<SearchScope, LucideIcon> = {
+  // biome-ignore lint/style/useNamingConvention: the API's search scopes are snake_case
+  movies_and_tv_shows: ClapperboardIcon,
+  books: BookIcon,
+};
 
 /**
- * A search result's poster, title, type and year, and its overview with `overview`, for a row to
- * wrap.
+ * A search result's poster, title, type, year and creators, and its overview with `overview`, for a
+ * row to wrap.
  */
 export function SearchResultSummary({
   result,
@@ -42,13 +64,13 @@ export function SearchResultSummary({
             <Icon className="size-4 text-subtle-foreground" />
             {contentTypeNames[result.content_type]}
           </span>
-          {result.year !== null && (
-            <>
+          {searchResultDetails(result).map(detail => (
+            <Fragment key={detail}>
               {/* i18next-instrument-ignore: a separator, the same in every language */}
               <span aria-hidden="true">·</span>
-              <span>{result.year}</span>
-            </>
-          )}
+              <span>{detail}</span>
+            </Fragment>
+          ))}
         </span>
         {overview && result.overview && (
           <span className="line-clamp-2 max-w-readable text-sm text-subtle-foreground">
@@ -67,11 +89,13 @@ export function SearchResultSummary({
  */
 export function SearchStatus({
   status,
+  scope,
   query,
   count,
   retry,
 }: {
   status: Status;
+  scope: SearchScope;
   query: string;
   /** The number of results shown */
   count: number;
@@ -85,30 +109,30 @@ export function SearchStatus({
         {status === 'failed' && t($ => $.core.search.failed)}
         {status === 'done' && t($ => $.core.search.resultCount, {count})}
       </p>
-      <StatusBody status={status} query={query} count={count} retry={retry} />
+      <StatusBody status={status} scope={scope} query={query} count={count} retry={retry} />
     </>
   );
 }
 
+/** The hint, loading rows, error or no results that show in place of the results. */
 function StatusBody({
   status,
+  scope,
   query,
   count,
   retry,
 }: {
   status: Status;
+  scope: SearchScope;
   query: string;
   count: number;
   retry: () => void;
 }) {
   const {t} = useTranslation('core');
+  const hint = useSearchHint(scope);
   switch (status) {
     case 'idle':
-      return (
-        <p className="p-6 text-center text-sm text-balance text-muted-foreground">
-          {t($ => $.core.search.hint)}
-        </p>
-      );
+      return <p className="p-6 text-center text-sm text-balance text-muted-foreground">{hint}</p>;
     case 'loading':
       return (
         <div className="flex flex-col" aria-hidden="true">
@@ -152,11 +176,55 @@ function StatusBody({
   }
 }
 
+/**
+ * The scopes a search can look in, one per Metadata Provider, as their results can't share one
+ * list. Then the filter that keeps only the Library's Content.
+ */
+export function SearchScopes({
+  scope,
+  onScopeChange,
+}: {
+  scope: SearchScope;
+  onScopeChange: (scope: SearchScope) => void;
+}) {
+  const {t} = useTranslation('core');
+  const scopeNames = useSearchScopeNames();
+  return (
+    <div className="flex flex-1 flex-wrap items-center gap-2">
+      <RadioGroup
+        aria-label={t($ => $.core.search.scope)}
+        value={scope}
+        onValueChange={newScope => {
+          onScopeChange(newScope);
+        }}
+        className="flex items-center gap-2"
+      >
+        {SEARCH_SCOPES.map(option => {
+          const Icon = SEARCH_SCOPE_ICONS[option];
+          return (
+            // A chip, like the Library filter's toggle beside. `cn` lets the chip's classes
+            // replace the toggle's defaults, as `Toggle` does
+            <Radio.Root
+              key={option}
+              value={option}
+              className={cn(toggleVariants({variant: 'chip', size: 'sm'}))}
+            >
+              <Icon />
+              {scopeNames[option]}
+            </Radio.Root>
+          );
+        })}
+      </RadioGroup>
+      <InLibraryFilter />
+    </div>
+  );
+}
+
 /** The filter that keeps only the Library's Content, disabled until search covers the Library. */
-export function InLibraryFilter() {
+function InLibraryFilter() {
   const {t} = useTranslation('web');
   return (
-    <Toggle variant="outline" size="sm" disabled>
+    <Toggle variant="chip" size="sm" disabled className="ml-auto">
       <LibraryIcon />
       {t($ => $.web.search.inLibrary)}
     </Toggle>

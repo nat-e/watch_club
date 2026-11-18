@@ -17,13 +17,10 @@ use tower::ServiceExt;
 use watch_club::{
     ApiContext, AppsSentry,
     db::Pool,
-    domain::{
-        accounts::CurrentUser,
-        contents::{MetadataProviders, Tmdb},
-    },
+    domain::{accounts::CurrentUser, contents::MetadataProviders},
 };
 
-use super::{PASSWORD, fake_tmdb};
+use super::{PASSWORD, unreachable_metadata_providers};
 
 /// A browser or app calling the API. Like a browser, it keeps the cookies the API sets; like an
 /// app, it can send a session token instead. A clone sends the same cookies and token, as if
@@ -45,13 +42,13 @@ pub struct Response {
 }
 
 impl Client {
-    /// Calls an app whose calls to TMDB fail, as nothing answers them.
+    /// Calls an app whose calls to the Metadata Providers fail, as nothing answers them.
     pub fn new(db: &Pool) -> Self {
-        Self::with_tmdb(db, fake_tmdb::unreachable())
+        Self::with_metadata_providers(db, unreachable_metadata_providers())
     }
 
-    /// Calls an app that calls this TMDB, such as a `FakeTmdb`.
-    pub fn with_tmdb(db: &Pool, tmdb: Tmdb) -> Self {
+    /// Calls an app that calls these Metadata Providers, such as a `FakeTmdb`'s.
+    pub fn with_metadata_providers(db: &Pool, metadata_providers: MetadataProviders) -> Self {
         Self::with_context(ApiContext {
             db: db.clone(),
             apps_sentry: AppsSentry {
@@ -59,7 +56,7 @@ impl Client {
                 mobile_dsn: None,
                 environment: "production".into(),
             },
-            metadata_providers: MetadataProviders { tmdb },
+            metadata_providers,
         })
     }
 
@@ -68,9 +65,7 @@ impl Client {
         Self::with_context(ApiContext {
             db: db.clone(),
             apps_sentry,
-            metadata_providers: MetadataProviders {
-                tmdb: fake_tmdb::unreachable(),
-            },
+            metadata_providers: unreachable_metadata_providers(),
         })
     }
 

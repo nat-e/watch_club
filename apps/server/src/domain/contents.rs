@@ -1,4 +1,4 @@
-//! Content: the Movies and TV Shows that Users search for, from the Metadata Providers.
+//! Content: the Movies, TV Shows and Books that Users search for, from the Metadata Providers.
 
 mod image;
 mod metadata_providers;
@@ -13,7 +13,7 @@ use utoipa::{
 
 pub use self::{
     image::{Image, ImageSource},
-    metadata_providers::{MetadataProviders, Tmdb, TmdbId},
+    metadata_providers::{Hardcover, HardcoverId, MetadataProviders, Tmdb, TmdbId},
 };
 use super::{InternalError, accounts::Locale};
 
@@ -23,6 +23,17 @@ use super::{InternalError, accounts::Locale};
 pub enum ContentType {
     Movie,
     TvShow,
+    Book,
+}
+
+/// The Content Types a search looks for, each at the Metadata Provider of its types.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SearchScope {
+    /// Movies and TV Shows, at TMDB
+    MoviesAndTvShows,
+    /// Books, at Hardcover
+    Books,
 }
 
 /// The identity of a Content: its type, and its External ID at the Metadata Provider of its type.
@@ -31,6 +42,7 @@ pub enum ContentType {
 pub enum ContentId {
     Movie(TmdbId),
     TvShow(TmdbId),
+    Book(HardcoverId),
 }
 
 impl ContentId {
@@ -40,6 +52,7 @@ impl ContentId {
         match content_type {
             ContentType::Movie => external_id.parse().ok().map(Self::Movie),
             ContentType::TvShow => external_id.parse().ok().map(Self::TvShow),
+            ContentType::Book => external_id.parse().ok().map(Self::Book),
         }
     }
 
@@ -47,6 +60,7 @@ impl ContentId {
         match self {
             Self::Movie(_) => ContentType::Movie,
             Self::TvShow(_) => ContentType::TvShow,
+            Self::Book(_) => ContentType::Book,
         }
     }
 
@@ -54,6 +68,7 @@ impl ContentId {
     pub fn external_id(self) -> String {
         match self {
             Self::Movie(id) | Self::TvShow(id) => id.to_string(),
+            Self::Book(id) => id.to_string(),
         }
     }
 }
@@ -88,7 +103,7 @@ impl ToSchema for ContentId {
     }
 }
 
-/// A Content, with its title in the User's language.
+/// A Content, with its title in the User's language when its Metadata Provider has it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct Content {
     #[serde(flatten)]
@@ -96,19 +111,23 @@ pub struct Content {
     pub title: String,
 }
 
-/// A Movie or a TV Show that matches a search, with its texts in the User's language.
+/// A Content that matches a search, with its texts in the User's language when its Metadata
+/// Provider has them.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct SearchResult {
     #[serde(flatten)]
     pub id: ContentId,
     pub title: String,
-    /// The year of its release, or of its first episode, when TMDB knows it
+    /// The year of its release, or of its first episode, when its Metadata Provider knows it
     #[schema(required = true)]
     pub year: Option<i16>,
     #[schema(required = true)]
     pub overview: Option<String>,
     #[schema(required = true)]
     pub poster: Option<Image>,
+    /// The people credited for making it, most important first, such as a Book's authors. None for
+    /// Movies and TV Shows for now
+    pub creators: Vec<String>,
 }
 
 /// A page of a search's results.
@@ -131,12 +150,14 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-/// Returns a page of the Movies and TV Shows whose title matches the query, most relevant first,
-/// with their texts in the Locale's language. A blank query matches nothing.
-#[tracing::instrument(skip_all, fields(search.page = page))]
+/// Returns a page of the Content of the scope that matches the query, most relevant first, with
+/// their texts in the Locale's language when their Metadata Provider has them. A blank query matches
+/// nothing.
+#[tracing::instrument(skip_all, fields(search.scope = ?scope, search.page = page))]
 pub async fn search(
     metadata_providers: &MetadataProviders,
     query: &str,
+    scope: SearchScope,
     page: NonZeroU32,
     locale: Locale,
 ) -> Result<SearchResults, InternalError> {
@@ -145,10 +166,13 @@ pub async fn search(
         return Ok(SearchResults::default());
     }
 
-    metadata_providers.tmdb.search(query, page, locale).await
+    match scope {
+        SearchScope::MoviesAndTvShows => metadata_providers.tmdb.search(query, page, locale).await,
+        SearchScope::Books => metadata_providers.hardcover.search(query, page).await,
+    }
 }
 
-/// Returns the Content, with its title in the Locale's language.
+/// Returns the Content, with its title in the Locale's language when its Metadata Provider has it.
 #[tracing::instrument(
     skip_all,
     fields(content.type = ?id.content_type(), content.external_id = %id.external_id()),
@@ -161,5 +185,6 @@ pub async fn look_up(
     match id {
         ContentId::Movie(id) => metadata_providers.tmdb.look_up_movie(id, locale).await,
         ContentId::TvShow(id) => metadata_providers.tmdb.look_up_tv_show(id, locale).await,
+        ContentId::Book(id) => metadata_providers.hardcover.look_up_book(id).await,
     }
 }

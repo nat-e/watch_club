@@ -24,7 +24,8 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new().routes(routes!(get_content))
 }
 
-/// Returns the Content, with its title in the signed-in User's language.
+/// Returns the Content, with its title in the signed-in User's language when its Metadata Provider
+/// has it.
 #[utoipa::path(
     get,
     path = "/contents/{content_type}/{external_id}",

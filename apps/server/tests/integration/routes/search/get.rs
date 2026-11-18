@@ -8,7 +8,7 @@ use wiremock::{
     matchers::{method, path, query_param},
 };
 
-use crate::support::{self, Client, FakeTmdb, fake_tmdb::fixture};
+use crate::support::{self, Client, FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
 
 #[database_test]
 async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool) {
@@ -29,10 +29,12 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
         .expect(1)
         .mount(&tmdb.server)
         .await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/search?query=am%C3%A9lie&page=2").await;
+    let response = browser
+        .get("/api/search?query=am%C3%A9lie&scope=movies_and_tv_shows&page=2")
+        .await;
 
     assert_eq!(response.status, StatusCode::OK, "{response:?}");
     assert_eq!(response.body["next_page"], 3);
@@ -58,10 +60,61 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
                 {"url": "https://image.tmdb.org/t/p/w500/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 500, "height": 750},
                 {"url": "https://image.tmdb.org/t/p/w780/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 780, "height": 1170},
             ],
+            "creators": [],
         })
     );
     assert_eq!(results[2].get("poster"), Some(&json!(null)));
     assert_eq!(results[4]["content_type"], "tv_show");
+}
+
+#[database_test]
+async fn returns_a_page_of_books(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let hardcover = FakeHardcover::start().await;
+    hardcover
+        .answer("SearchBooks", fake_hardcover::fixture("search_books"))
+        .await;
+    let mut browser = Client::with_metadata_providers(&db, hardcover.metadata_providers());
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/search?query=asterix&scope=books").await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    assert_eq!(response.body["next_page"], 2);
+    let results = response.body["results"].as_array().unwrap();
+    assert_eq!(results.len(), 20);
+    assert_eq!(
+        results[2],
+        json!({
+            "content_type": "book",
+            "external_id": "474596",
+            "title": "Asterix and the Goths",
+            "year": 1963,
+            "overview": "Des espions Goths ont infiltré la Gaule afin de capturer le meilleur druide \
+                lors de leur rencontre annuelle dans la forêt des Carnutes. C'est le druide \
+                Panoramix qui gagne. à partir de 6 ans.",
+            "poster": [{
+                "url": "https://assets.hardcover.app/edition/30395786/981ce12c58007da620399643b2e27e9014c33423.jpeg",
+                "width": 377,
+                "height": 500,
+            }],
+            "creators": ["René Goscinny", "Albert Uderzo"],
+        })
+    );
+}
+
+#[database_test]
+async fn refuses_a_search_without_a_scope(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let mut browser = Client::new(&db);
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/search?query=amelie").await;
+
+    assert_eq!(response.status, StatusCode::BAD_REQUEST);
+    assert_eq!(response.body["code"], "invalid_request");
 }
 
 #[database_test]
@@ -77,10 +130,12 @@ async fn returns_the_first_page_by_default(db: PgPool) {
         .expect(1)
         .mount(&tmdb.server)
         .await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/search?query=amelie").await;
+    let response = browser
+        .get("/api/search?query=amelie&scope=movies_and_tv_shows")
+        .await;
 
     assert_eq!(response.status, StatusCode::OK, "{response:?}");
     assert_eq!(response.body["next_page"], 2);
@@ -93,7 +148,9 @@ async fn refuses_a_page_below_1(db: PgPool) {
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/search?query=amelie&page=0").await;
+    let response = browser
+        .get("/api/search?query=amelie&scope=movies_and_tv_shows&page=0")
+        .await;
 
     assert_eq!(response.status, StatusCode::BAD_REQUEST);
     assert_eq!(response.body["code"], "invalid_request");
@@ -109,10 +166,12 @@ async fn fails_when_tmdb_does(db: PgPool) {
         .respond_with(ResponseTemplate::new(500))
         .mount(&tmdb.server)
         .await;
-    let mut browser = Client::with_tmdb(&db, tmdb.client());
+    let mut browser = Client::with_metadata_providers(&db, tmdb.metadata_providers());
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/search?query=amelie").await;
+    let response = browser
+        .get("/api/search?query=amelie&scope=movies_and_tv_shows")
+        .await;
 
     assert_eq!(response.status, StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(response.body["code"], "internal_error");
@@ -121,7 +180,9 @@ async fn fails_when_tmdb_does(db: PgPool) {
 #[database_test]
 async fn refuses_requests_without_a_session(db: PgPool) {
     let db = watch_club::db::instrument(db);
-    let response = Client::new(&db).get("/api/search?query=amelie").await;
+    let response = Client::new(&db)
+        .get("/api/search?query=amelie&scope=movies_and_tv_shows")
+        .await;
 
     assert_eq!(response.status, StatusCode::UNAUTHORIZED);
 }

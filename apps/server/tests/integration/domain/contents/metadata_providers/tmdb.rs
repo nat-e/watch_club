@@ -107,6 +107,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
                     height,
                 })
             ),
+            creators: Vec::new(),
         }
     );
     assert_eq!(found.results[2].poster, None);

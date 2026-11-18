@@ -57,3 +57,10 @@ processes:
     depends_on:
       generate:
         condition: process_completed_successfully
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: "${RCT_METRO_PORT}"
+        path: /status
+      period_seconds: 1
+      failure_threshold: 60

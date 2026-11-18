@@ -1,23 +1,35 @@
 /**
- * Content search: the Movies and TV Shows whose title matches what a User types, as both apps show
- * them.
+ * Content search: the Movies and TV Shows, or the Books, that match what a User types, as both apps
+ * show them.
  */
 import {infiniteQueryOptions, useInfiniteQuery} from '@tanstack/react-query';
-import {type SearchResult, searchInfiniteOptions} from '@watchclub/api';
+import {type SearchResult, type SearchScope, searchInfiniteOptions} from '@watchclub/api';
 import {useCallback, useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 /** The pause in typing after which a search starts, in milliseconds */
 const TYPING_PAUSE = 300;
 
+/** Every search scope, in the order the apps list them */
+export const SEARCH_SCOPES: readonly SearchScope[] = ['movies_and_tv_shows', 'books'];
+
+/** The scope a search starts with */
+export const DEFAULT_SEARCH_SCOPE: SearchScope = 'movies_and_tv_shows';
+
+/** Returns whether `value` is a search scope, such as one read from a URL. */
+export function isSearchScope(value: unknown): value is SearchScope {
+  return SEARCH_SCOPES.some(scope => scope === value);
+}
+
 /**
- * Returns the query of a search's results, loaded page by page, which every screen that shows them
- * shares. It doesn't run for a blank query. A result shows once, though TMDB can send it again on a
- * later page when its ranking changes in between.
+ * Returns the query of a search's results in a scope, loaded page by page, which every screen that
+ * shows them shares. It doesn't run for a blank query. A result shows once, though a Metadata
+ * Provider can send it again on a later page when its ranking changes in between.
  */
-export function searchQuery(query: string) {
+export function searchQuery(query: string, scope: SearchScope) {
   const trimmed = query.trim();
   return infiniteQueryOptions({
-    ...searchInfiniteOptions({query: {query: trimmed}}),
+    ...searchInfiniteOptions({query: {query: trimmed, scope}}),
     initialPageParam: 1,
     getNextPageParam: lastPage => lastPage.next_page,
     select: data => ({
@@ -56,9 +68,9 @@ export interface Search {
   retry: () => void;
 }
 
-/** Returns the search for `query`, such as the one of the search page's URL. */
-export function useSearch(query: string): Search {
-  const search = useInfiniteQuery(searchQuery(query));
+/** Returns the search for `query` in `scope`, such as the ones of the search page's URL. */
+export function useSearch(query: string, scope: SearchScope): Search {
+  const search = useInfiniteQuery(searchQuery(query, scope));
   const {fetchNextPage} = search;
   // Leaves a page that's loading as it is, rather than loading it again
   const loadMore = useCallback(() => {
@@ -76,6 +88,45 @@ export function useSearch(query: string): Search {
       void search.refetch();
     },
   };
+}
+
+/** Returns the name of each search scope in the app's language, such as "Books". */
+export function useSearchScopeNames(): Record<SearchScope, string> {
+  const {t} = useTranslation('core');
+  return {
+    // biome-ignore-start lint/style/useNamingConvention: the API's search scopes are snake_case
+    movies_and_tv_shows: t($ => $.core.search.scopes.moviesAndTvShows),
+    books: t($ => $.core.search.scopes.books),
+    // biome-ignore-end lint/style/useNamingConvention: the API's search scopes are snake_case
+  };
+}
+
+/**
+ * Returns the hint a search in `scope` shows before the User types, in the app's language.
+ */
+export function useSearchHint(scope: SearchScope): string {
+  const {t} = useTranslation('core');
+  switch (scope) {
+    case 'movies_and_tv_shows':
+      return t($ => $.core.search.hint, {context: 'moviesAndTvShows'});
+    case 'books':
+      return t($ => $.core.search.hint, {context: 'books'});
+  }
+}
+
+/**
+ * Returns the facts a search result shows after its Content Type, when it has them: its year, then
+ * its creators.
+ */
+export function searchResultDetails(result: SearchResult): string[] {
+  const details: string[] = [];
+  if (result.year !== null) {
+    details.push(String(result.year));
+  }
+  if (result.creators.length > 0) {
+    details.push(result.creators.join(', '));
+  }
+  return details;
 }
 
 /**
