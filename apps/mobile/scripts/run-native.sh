@@ -7,13 +7,17 @@ platform=$1
 shift
 port=${RCT_METRO_PORT:-8081}
 
-# `expo run` reuses this app's dev server when it already runs on the port, but starts its own,
-# outside process-compose, when it doesn't: so start process-compose's first, and wait until it's ready
+# Start Expo's dev server in process-compose, and wait until it's ready
 pnpm --workspace-root dev
 if ! process-compose process get expo --output json | grep -q '"is_running": true'; then
   process-compose process start expo
 fi
 process-compose project is-ready --wait
+
+# `expo run` reuses the dev server running this app on the port, but starts its own, outside
+# process-compose, when none answers: so stop before then.
+# TODO: run `expo run --no-bundler` instead, and drop this check, once Expo opens the app on
+# RCT_METRO_PORT rather than 8081 with it
 if ! curl --silent --fail "http://localhost:$port/status" >/dev/null; then
   echo "Expo's dev server doesn't answer on port $port: see process-compose process logs expo" >&2
   exit 1
