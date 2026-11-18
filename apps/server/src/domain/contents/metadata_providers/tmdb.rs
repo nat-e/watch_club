@@ -1,7 +1,5 @@
 //! TMDB, The Movie Database: the Metadata Provider of Movies and TV Shows.
 
-mod api;
-
 use std::{
     fmt::{self, Display, Formatter},
     num::{NonZeroU32, ParseIntError},
@@ -11,6 +9,7 @@ use std::{
 use anyhow::Context;
 use jiff::civil::Date;
 use secrecy::SecretString;
+use serde::{Deserialize, Deserializer};
 
 use crate::{
     api_client::ApiClient,
@@ -31,6 +30,9 @@ const IMAGES_URL: &str = "https://image.tmdb.org/t/p";
 
 /// The widths of TMDB's posters, in pixels. It also has the original, whose size it doesn't say.
 const POSTER_WIDTHS: [u32; 6] = [92, 154, 185, 342, 500, 780];
+
+/// The last page of results TMDB serves, whatever their number
+const LAST_PAGE: u32 = 500;
 
 /// The number of TMDB's pages a search reads at most to find some Content, as some only have people
 const MAX_PAGES_READ: u32 = 5;
@@ -99,7 +101,7 @@ impl Tmdb {
                 ("include_adult", "false"),
                 ("language", locale.language_tag()),
             ];
-            let found: api::SearchPage = self
+            let found: MultiSearchPage = self
                 .api
                 .get("/search/multi", &[], &params)
                 .await?
@@ -124,7 +126,7 @@ impl Tmdb {
 
     /// Returns the Movie with this ID, with its title in the Locale's language.
     pub async fn look_up_movie(&self, id: TmdbId, locale: Locale) -> Result<Content, LookUpError> {
-        let movie: api::Movie = self
+        let movie: MovieDetails = self
             .api
             .get(
                 "/movie/{id}",
@@ -146,7 +148,7 @@ impl Tmdb {
         id: TmdbId,
         locale: Locale,
     ) -> Result<Content, LookUpError> {
-        let tv_show: api::TvShow = self
+        let tv_show: TvShowDetails = self
             .api
             .get(
                 "/tv/{id}",
@@ -164,9 +166,9 @@ impl Tmdb {
 }
 
 /// Returns the Content a result of TMDB's search is, or None for a person.
-fn search_result(result: api::SearchResult) -> Option<SearchResult> {
+fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
     match result {
-        api::SearchResult::Movie(movie) => Some(SearchResult {
+        MultiSearchResult::Movie(movie) => Some(SearchResult {
             id: ContentId::Movie(TmdbId(movie.id)),
             title: movie.title,
             year: movie.release_date.map(Date::year),
@@ -174,7 +176,7 @@ fn search_result(result: api::SearchResult) -> Option<SearchResult> {
             poster: movie.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
         }),
-        api::SearchResult::TvShow(tv_show) => Some(SearchResult {
+        MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
             id: ContentId::TvShow(TmdbId(tv_show.id)),
             title: tv_show.name,
             year: tv_show.first_air_date.map(Date::year),
@@ -182,7 +184,7 @@ fn search_result(result: api::SearchResult) -> Option<SearchResult> {
             poster: tv_show.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
         }),
-        api::SearchResult::Person => None,
+        MultiSearchResult::Person => None,
     }
 }
 
@@ -194,4 +196,82 @@ fn poster(path: &str) -> Option<Image> {
         // TMDB doesn't say it: most posters are 2:3
         height: (width * 3).div_ceil(2),
     }))
+}
+
+/// A page of the results of a search for Movies, TV Shows and people.
+#[derive(Debug, Deserialize)]
+struct MultiSearchPage {
+    /// The page's number, from 1
+    page: u32,
+    results: Vec<MultiSearchResult>,
+    /// The number of pages, of which TMDB serves the first 500
+    total_pages: u32,
+}
+
+impl MultiSearchPage {
+    /// Returns the number of the next page TMDB serves, or None on the last one.
+    fn next_page(&self) -> Option<NonZeroU32> {
+        NonZeroU32::new(self.page)
+            .and_then(|page| page.checked_add(1))
+            .filter(|next| next.get() <= self.total_pages.min(LAST_PAGE))
+    }
+}
+
+/// A result of a search for Movies, TV Shows and people.
+#[derive(Debug, Deserialize)]
+#[serde(tag = "media_type", rename_all = "lowercase")]
+enum MultiSearchResult {
+    Movie(MovieResult),
+    #[serde(rename = "tv")]
+    TvShow(TvShowResult),
+    Person,
+}
+
+/// A Movie in search results, with its texts in the search's language.
+#[derive(Debug, Deserialize)]
+struct MovieResult {
+    id: u32,
+    title: String,
+    #[serde(default, deserialize_with = "optional_text")]
+    overview: Option<String>,
+    poster_path: Option<String>,
+    #[serde(default, deserialize_with = "optional_date")]
+    release_date: Option<Date>,
+}
+
+/// A TV Show in search results, with its texts in the search's language.
+#[derive(Debug, Deserialize)]
+struct TvShowResult {
+    id: u32,
+    name: String,
+    #[serde(default, deserialize_with = "optional_text")]
+    overview: Option<String>,
+    poster_path: Option<String>,
+    #[serde(default, deserialize_with = "optional_date")]
+    first_air_date: Option<Date>,
+}
+
+/// A Movie's details, with its texts in the details' language.
+#[derive(Debug, Deserialize)]
+struct MovieDetails {
+    title: String,
+}
+
+/// A TV Show's details, with its texts in the details' language.
+#[derive(Debug, Deserialize)]
+struct TvShowDetails {
+    name: String,
+}
+
+/// Reads a text that TMDB sends empty, or null, when it has none.
+fn optional_text<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
+    let text = Option::<String>::deserialize(deserializer)?;
+    Ok(text.filter(|text| !text.is_empty()))
+}
+
+/// Reads a date that TMDB sends as `YYYY-MM-DD`, or empty, or null, when it has none.
+fn optional_date<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<Date>, D::Error> {
+    optional_text(deserializer)?
+        .map(|date| date.parse().map_err(serde::de::Error::custom))
+        .transpose()
 }
