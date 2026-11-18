@@ -1,0 +1,218 @@
+//! TMDB, The Movie Database: the Metadata Provider of Movies and TV Shows.
+
+mod api;
+
+use std::num::NonZeroU32;
+
+use anyhow::{Context, bail};
+use jiff::civil::Date;
+use reqwest::{
+    StatusCode, Url,
+    header::{AUTHORIZATION, HeaderMap, HeaderValue},
+};
+use reqwest_middleware::ClientWithMiddleware;
+use reqwest_tracing::OtelName;
+use secrecy::{ExposeSecret, SecretString};
+use serde::de::DeserializeOwned;
+
+use crate::{
+    domain::{
+        InternalError,
+        accounts::Locale,
+        contents::{Content, ContentId, ContentType, LookUpError, SearchResult, SearchResults},
+    },
+    integrations::http,
+};
+
+/// The address of TMDB's API
+const BASE_URL: &str = "https://api.themoviedb.org/3";
+
+/// The number of TMDB's pages a search reads at most to find some Content, as some only have people
+const MAX_PAGES_READ: u32 = 5;
+
+/// TMDB, signed in with the API Read Access Token of the instance. Clones share their connections.
+#[derive(Clone, Debug)]
+pub struct Tmdb {
+    http: ClientWithMiddleware,
+    base_url: Url,
+}
+
+impl Tmdb {
+    /// Returns TMDB, signed in with `token`, the instance's API Read Access Token.
+    pub fn new(token: &SecretString) -> anyhow::Result<Self> {
+        Self::with_base_url(token, BASE_URL)
+    }
+
+    /// Returns a TMDB at another address, such as a fake one in tests.
+    pub fn with_base_url(token: &SecretString, base_url: &str) -> anyhow::Result<Self> {
+        let base_url = Url::parse(base_url).context("TMDB's address isn't a URL")?;
+        anyhow::ensure!(
+            !base_url.cannot_be_a_base(),
+            "TMDB's address can't have paths"
+        );
+        let mut authorization = HeaderValue::try_from(format!("Bearer {}", token.expose_secret()))
+            .context("the TMDB token can't go in a header")?;
+        // Keeps it out of logs and debug output
+        authorization.set_sensitive(true);
+        let headers = HeaderMap::from_iter([(AUTHORIZATION, authorization)]);
+        Ok(Self {
+            http: http::client(headers)?,
+            base_url,
+        })
+    }
+
+    /// Returns a page of the Movies and TV Shows whose title matches the query, most relevant
+    /// first, with their texts in the Locale's language. It leaves out adult content.
+    ///
+    /// TMDB's pages also list people, who aren't Content: when one has only people, the search reads
+    /// the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that show nothing.
+    pub async fn search(
+        &self,
+        query: &str,
+        page: NonZeroU32,
+        locale: Locale,
+    ) -> Result<SearchResults, InternalError> {
+        let mut page = page;
+        let mut pages_read = 1;
+        loop {
+            let page_number = page.to_string();
+            let params = [
+                ("query", query),
+                ("page", &page_number),
+                ("include_adult", "false"),
+                ("language", locale.language_tag()),
+            ];
+            let found: api::SearchPage = self
+                .get("/search/multi", &["search", "multi"], &params)
+                .await?
+                .context("TMDB answered /search/multi with 404 Not Found")?;
+            let next_page = found.next_page();
+            let results: Vec<_> = found
+                .results
+                .into_iter()
+                .filter_map(search_result)
+                .collect();
+            match next_page {
+                Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
+                    page = next_page;
+                    pages_read += 1;
+                }
+                _ => return Ok(SearchResults { results, next_page }),
+            }
+        }
+    }
+
+    /// Returns the Movie with this TMDB ID, with its title in the Locale's language.
+    pub async fn look_up_movie(
+        &self,
+        tmdb_id: u32,
+        locale: Locale,
+    ) -> Result<Content, LookUpError> {
+        let movie: api::Movie = self
+            .get(
+                "/movie/{id}",
+                &["movie", &tmdb_id.to_string()],
+                &[("language", locale.language_tag())],
+            )
+            .await?
+            .ok_or(LookUpError::NotFound)?;
+        Ok(Content {
+            id: ContentId {
+                content_type: ContentType::Movie,
+                tmdb_id,
+            },
+            title: movie.title,
+        })
+    }
+
+    /// Returns the TV Show with this TMDB ID, with its title in the Locale's language.
+    pub async fn look_up_tv_show(
+        &self,
+        tmdb_id: u32,
+        locale: Locale,
+    ) -> Result<Content, LookUpError> {
+        let tv_show: api::TvShow = self
+            .get(
+                "/tv/{id}",
+                &["tv", &tmdb_id.to_string()],
+                &[("language", locale.language_tag())],
+            )
+            .await?
+            .ok_or(LookUpError::NotFound)?;
+        Ok(Content {
+            id: ContentId {
+                content_type: ContentType::TvShow,
+                tmdb_id,
+            },
+            title: tv_show.name,
+        })
+    }
+
+    /// Calls the API's `route` at the path of `segments`, which it escapes, and reads its JSON, or
+    /// None when TMDB has nothing at this path.
+    async fn get<T: DeserializeOwned>(
+        &self,
+        route: &'static str,
+        segments: &[&str],
+        params: &[(&str, &str)],
+    ) -> anyhow::Result<Option<T>> {
+        let mut url = self.base_url.clone();
+        url.path_segments_mut()
+            .expect("`with_base_url` checked that the URL can have paths")
+            .pop_if_empty()
+            .extend(segments);
+        let response = self
+            .http
+            .get(url)
+            .query(params)
+            .with_extension(OtelName(format!("GET {route}").into()))
+            .send()
+            .await
+            .with_context(|| format!("failed to call TMDB's {route}"))?;
+        let status = response.status();
+        let body = response
+            .bytes()
+            .await
+            .with_context(|| format!("failed to receive TMDB's answer to {route}"))?;
+        if status == StatusCode::NOT_FOUND {
+            return Ok(None);
+        }
+        if !status.is_success() {
+            // TMDB says what went wrong in its body
+            let message = serde_json::from_slice::<api::ErrorBody>(&body)
+                .map(|body| body.status_message)
+                .unwrap_or_default();
+            bail!("TMDB answered {route} with {status}: {message}");
+        }
+        let answer = serde_json::from_slice(&body)
+            .with_context(|| format!("failed to read TMDB's answer to {route}"))?;
+        Ok(Some(answer))
+    }
+}
+
+/// Returns the Content a result of TMDB's search is, or None for a person.
+fn search_result(result: api::SearchResult) -> Option<SearchResult> {
+    match result {
+        api::SearchResult::Movie(movie) => Some(SearchResult {
+            id: ContentId {
+                content_type: ContentType::Movie,
+                tmdb_id: movie.id,
+            },
+            title: movie.title,
+            year: movie.release_date.map(Date::year),
+            overview: movie.overview,
+            poster_path: movie.poster_path,
+        }),
+        api::SearchResult::TvShow(tv_show) => Some(SearchResult {
+            id: ContentId {
+                content_type: ContentType::TvShow,
+                tmdb_id: tv_show.id,
+            },
+            title: tv_show.name,
+            year: tv_show.first_air_date.map(Date::year),
+            overview: tv_show.overview,
+            poster_path: tv_show.poster_path,
+        }),
+        api::SearchResult::Person => None,
+    }
+}

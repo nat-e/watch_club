@@ -11,10 +11,9 @@ use crate::{
     AppState,
     domain::{
         accounts::CurrentUser,
-        contents::{self, SearchResults},
+        contents::{self, MetadataProviders, SearchResults},
     },
     error::ApiError,
-    integrations::tmdb,
     routes::{Json, Query},
 };
 
@@ -32,13 +31,18 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn search(
-    State(tmdb): State<tmdb::Client>,
+    State(providers): State<MetadataProviders>,
     current_user: CurrentUser,
     Query(params): Query<SearchParams>,
 ) -> Result<Json<SearchResults>, ApiError> {
     let page = params.page.unwrap_or(NonZeroU32::MIN);
-    let results =
-        contents::search(&tmdb, &params.query, page, current_user.preferences.locale).await?;
+    let results = contents::search(
+        &providers,
+        &params.query,
+        page,
+        current_user.preferences.locale,
+    )
+    .await?;
     Ok(Json(results))
 }
 

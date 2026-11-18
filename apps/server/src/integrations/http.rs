@@ -1,4 +1,4 @@
-//! The HTTP client the integrations call other services with.
+//! The HTTP client WatchClub calls other services with.
 
 use std::time::Duration;
 
@@ -16,7 +16,7 @@ use reqwest_tracing::{SpanBackendWithUrl, TracingMiddleware};
 /// Each attempt is a span in the trace, as OpenTelemetry's HTTP conventions describe. Name a call's
 /// spans after its method and the template of its path, such as `GET /movie/{id}`, with the
 /// `reqwest_tracing::OtelName` extension.
-pub(super) fn client(headers: HeaderMap) -> anyhow::Result<ClientWithMiddleware> {
+pub(crate) fn client(headers: HeaderMap) -> anyhow::Result<ClientWithMiddleware> {
     let client = reqwest::Client::builder()
         .default_headers(headers)
         .user_agent(concat!(

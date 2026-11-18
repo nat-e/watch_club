@@ -1,16 +1,14 @@
-//! Content: the Movies and TV Shows that Users search for, from TMDB.
+//! Content: the Movies and TV Shows that Users search for, from the Metadata Providers.
+
+mod metadata_providers;
 
 use std::num::NonZeroU32;
 
-use jiff::civil::Date;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
+pub use self::metadata_providers::{MetadataProviders, Tmdb};
 use super::{InternalError, accounts::Locale};
-use crate::integrations::tmdb::{self, MultiSearchResult};
-
-/// The number of TMDB's pages a search reads at most to find some Content, as some only have people
-const MAX_PAGES_READ: u32 = 5;
 
 /// The type of a Content.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -72,14 +70,11 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-/// Returns a page of the Movies and TV Shows whose title matches the query, from TMDB, most
-/// relevant first, with their texts in the Locale's language. A blank query matches nothing.
-///
-/// TMDB's pages also list people, who aren't Content: when one has only people, the search reads
-/// the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that show nothing.
+/// Returns a page of the Movies and TV Shows whose title matches the query, most relevant first,
+/// with their texts in the Locale's language. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.page = page))]
 pub async fn search(
-    tmdb: &tmdb::Client,
+    providers: &MetadataProviders,
     query: &str,
     page: NonZeroU32,
     locale: Locale,
@@ -88,69 +83,18 @@ pub async fn search(
     if query.is_empty() {
         return Ok(SearchResults::default());
     }
-    let mut page = page;
-    let mut pages_read = 1;
-    loop {
-        let found = tmdb
-            .search_multi(query, page, locale.language_tag())
-            .await?;
-        let next_page = found.next_page();
-        let results: Vec<_> = found.results.into_iter().filter_map(content).collect();
-        match next_page {
-            Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
-                page = next_page;
-                pages_read += 1;
-            }
-            _ => return Ok(SearchResults { results, next_page }),
-        }
-    }
+    providers.tmdb.search(query, page, locale).await
 }
 
-/// Returns the Content a result of TMDB's search is, or None for a person.
-fn content(result: MultiSearchResult) -> Option<SearchResult> {
-    match result {
-        MultiSearchResult::Movie(movie) => Some(SearchResult {
-            id: ContentId {
-                content_type: ContentType::Movie,
-                tmdb_id: movie.id,
-            },
-            title: movie.title,
-            year: movie.release_date.map(Date::year),
-            overview: movie.overview,
-            poster_path: movie.poster_path,
-        }),
-        MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
-            id: ContentId {
-                content_type: ContentType::TvShow,
-                tmdb_id: tv_show.id,
-            },
-            title: tv_show.name,
-            year: tv_show.first_air_date.map(Date::year),
-            overview: tv_show.overview,
-            poster_path: tv_show.poster_path,
-        }),
-        MultiSearchResult::Person(_) => None,
-    }
-}
-
-/// Returns the Content, with its title in the Locale's language, from TMDB.
+/// Returns the Content, with its title in the Locale's language.
 #[tracing::instrument(skip_all, fields(content.type = ?id.content_type, content.tmdb_id = id.tmdb_id))]
 pub async fn look_up(
-    tmdb: &tmdb::Client,
+    providers: &MetadataProviders,
     id: ContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
-    let language = locale.language_tag();
-    let title = match id.content_type {
-        ContentType::Movie => tmdb
-            .movie_details(id.tmdb_id, language)
-            .await?
-            .map(|movie| movie.title),
-        ContentType::TvShow => tmdb
-            .tv_show_details(id.tmdb_id, language)
-            .await?
-            .map(|tv_show| tv_show.name),
-    };
-    let title = title.ok_or(LookUpError::NotFound)?;
-    Ok(Content { id, title })
+    match id.content_type {
+        ContentType::Movie => providers.tmdb.look_up_movie(id.tmdb_id, locale).await,
+        ContentType::TvShow => providers.tmdb.look_up_tv_show(id.tmdb_id, locale).await,
+    }
 }

@@ -14,10 +14,9 @@ use crate::{
     domain::{
         InternalError,
         accounts::CurrentUser,
-        contents::{self, Content, ContentId, ContentType, LookUpError},
+        contents::{self, Content, ContentId, ContentType, LookUpError, MetadataProviders},
     },
     error::{self, ApiError, ErrorBody},
-    integrations::tmdb,
     routes::{Json, Path},
 };
 
@@ -40,7 +39,7 @@ pub(super) fn routes() -> OpenApiRouter<AppState> {
     security(("session_cookie" = []), ("session_token" = [])),
 )]
 async fn get_content(
-    State(tmdb): State<tmdb::Client>,
+    State(providers): State<MetadataProviders>,
     current_user: CurrentUser,
     Path((content_type, tmdb_id)): Path<(ContentType, u32)>,
 ) -> Result<Json<Content>, GetContentRequestError> {
@@ -48,7 +47,7 @@ async fn get_content(
         content_type,
         tmdb_id,
     };
-    let content = contents::look_up(&tmdb, id, current_user.preferences.locale).await?;
+    let content = contents::look_up(&providers, id, current_user.preferences.locale).await?;
     Ok(Json(content))
 }
 

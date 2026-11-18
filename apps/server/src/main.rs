@@ -14,7 +14,11 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use tracing::Level;
 use watch_club::{
-    AppState, AppsSentry, config::Config, db, integrations::tmdb, jobs, observability,
+    AppState, AppsSentry,
+    config::Config,
+    db,
+    domain::contents::{MetadataProviders, Tmdb},
+    jobs, observability,
 };
 
 fn main() -> anyhow::Result<()> {
@@ -35,7 +39,9 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
         .with_context(|| format!("failed to listen on port {}", config.port))?;
-    let tmdb = tmdb::Client::new(&config.tmdb_api_token)?;
+    let metadata_providers = MetadataProviders {
+        tmdb: Tmdb::new(&config.tmdb_api_token)?,
+    };
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 
@@ -56,7 +62,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
                 mobile_dsn: config.observability.mobile_sentry_dsn.map(Arc::from),
                 environment: config.observability.sentry_environment.into(),
             },
-            tmdb,
+            metadata_providers,
         }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());

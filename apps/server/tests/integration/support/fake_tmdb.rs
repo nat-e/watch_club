@@ -5,7 +5,7 @@ use std::{fs, path::Path};
 
 use secrecy::SecretString;
 use serde_json::Value;
-use watch_club::integrations::tmdb;
+use watch_club::domain::contents::{MetadataProviders, Tmdb};
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
     matchers::{method, path},
@@ -37,14 +37,21 @@ impl FakeTmdb {
     }
 
     /// Returns a client of this TMDB.
-    pub fn client(&self) -> tmdb::Client {
-        tmdb::Client::with_base_url(&SecretString::from(TOKEN), &self.server.uri()).unwrap()
+    pub fn client(&self) -> Tmdb {
+        Tmdb::with_base_url(&SecretString::from(TOKEN), &self.server.uri()).unwrap()
+    }
+
+    /// Returns the Metadata Providers of an instance that finds Content in this TMDB.
+    pub fn providers(&self) -> MetadataProviders {
+        MetadataProviders {
+            tmdb: self.client(),
+        }
     }
 }
 
 /// Returns a client of a TMDB that nothing answers, for the tests that don't call it.
-pub fn unreachable() -> tmdb::Client {
-    tmdb::Client::with_base_url(&SecretString::from(TOKEN), "http://127.0.0.1:1").unwrap()
+pub fn unreachable() -> Tmdb {
+    Tmdb::with_base_url(&SecretString::from(TOKEN), "http://127.0.0.1:1").unwrap()
 }
 
 /// Returns a real answer of TMDB, from `fixtures/tmdb/{name}.json`.

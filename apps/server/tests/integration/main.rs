@@ -12,9 +12,6 @@ mod domain {
     }
     mod contents;
 }
-mod integrations {
-    mod tmdb;
-}
 mod jobs;
 mod routes {
     mod auth {

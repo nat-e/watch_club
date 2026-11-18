@@ -29,7 +29,10 @@ Rewrite of WatchClub (`~/dev/watch_club`) with an axum server in Rust, a React w
 ### Errors
 
 - An operation returns its own `thiserror` enum when callers handle its failures, with an `Internal(#[from] anyhow::Error)` variant for the rest. Otherwise it returns `InternalError`. Use `.context(…)` to say what failed
-- An integration's client returns `anyhow::Result`, with an `Option` for what it looks up by ID, such as a Movie that TMDB doesn't have. The domain decides which failures its callers handle
+
+### Metadata Providers
+
+- Each Metadata Provider has a gateway in `src/domain/contents/metadata_providers/`, written for what the domain needs rather than mirroring the service's API: it takes and returns domain types and errors, and keeps the service's JSON in a private `api` module. It calls the service through `integrations/http.rs`, which retries and traces the calls
 
 ### Logs
 

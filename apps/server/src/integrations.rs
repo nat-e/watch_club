@@ -1,4 +1,3 @@
-//! The other services WatchClub calls, such as TMDB, each with a client of its own.
+//! What WatchClub shares to call other services, such as the Metadata Providers.
 
-mod http;
-pub mod tmdb;
+pub(crate) mod http;

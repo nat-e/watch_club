@@ -15,7 +15,12 @@ use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::ServiceExt;
 use watch_club::{
-    AppState, AppsSentry, db::Pool, domain::accounts::CurrentUser, integrations::tmdb,
+    AppState, AppsSentry,
+    db::Pool,
+    domain::{
+        accounts::CurrentUser,
+        contents::{MetadataProviders, Tmdb},
+    },
 };
 
 use super::{PASSWORD, fake_tmdb};
@@ -46,7 +51,7 @@ impl Client {
     }
 
     /// Calls an app that calls this TMDB, such as a `FakeTmdb`.
-    pub fn with_tmdb(db: &Pool, tmdb: tmdb::Client) -> Self {
+    pub fn with_tmdb(db: &Pool, tmdb: Tmdb) -> Self {
         Self::with_state(AppState {
             db: db.clone(),
             apps_sentry: AppsSentry {
@@ -54,7 +59,7 @@ impl Client {
                 mobile_dsn: None,
                 environment: "production".into(),
             },
-            tmdb,
+            metadata_providers: MetadataProviders { tmdb },
         })
     }
 
@@ -63,7 +68,9 @@ impl Client {
         Self::with_state(AppState {
             db: db.clone(),
             apps_sentry,
-            tmdb: fake_tmdb::unreachable(),
+            metadata_providers: MetadataProviders {
+                tmdb: fake_tmdb::unreachable(),
+            },
         })
     }
 
