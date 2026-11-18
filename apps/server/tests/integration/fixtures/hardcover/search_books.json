@@ -547,47 +547,6 @@
           },
           {
             "document": {
-              "id": "474606",
-              "title": "The Mansions of the Gods",
-              "subtitle": "Le Domaine des Dieux",
-              "slug": "the-mansions-of-the-gods",
-              "release_year": 1971,
-              "release_date": "1971-01-01",
-              "description": "They want to pave paradise and put up a housing development. That's why a multinational team of slave construction workers are clearing the forest just outside the Gaulish town. Will the Gauls be fast enough to stop them and prevent Roman upstarts from moving in?",
-              "author_names": ["René Goscinny", "Albert Uderzo"],
-              "contribution_types": ["Author", "Illustrator"],
-              "contributions": [
-                {
-                  "author": {
-                    "id": 137295,
-                    "name": "René Goscinny",
-                    "slug": "rene-goscinny"
-                  },
-                  "contribution": "Author"
-                },
-                {
-                  "author": {
-                    "id": 253600,
-                    "name": "Albert Uderzo",
-                    "slug": "albert-uderzo"
-                  },
-                  "contribution": "Illustrator"
-                }
-              ],
-              "image": {
-                "color": "#ececeb",
-                "color_name": "Beige",
-                "height": 417,
-                "id": 6001739,
-                "url": "https://assets.hardcover.app/edition/32224856/eae3471d-2984-4a0f-9bf5-2c76935c287a.jpg",
-                "width": 318
-              },
-              "users_count": 68,
-              "rating": 3.793103448275862
-            }
-          },
-          {
-            "document": {
               "id": "1004504",
               "title": "Asterix and the Roman Agent",
               "subtitle": "La Cizaña",
@@ -847,12 +806,53 @@
               "users_count": 61,
               "rating": 3.8125
             }
+          },
+          {
+            "document": {
+              "id": "1188884",
+              "title": "Asterix and the Laurel Wreath",
+              "subtitle": "Los laureles del César",
+              "slug": "asterix-and-the-laurel-wreath",
+              "release_year": 1971,
+              "release_date": "1971-01-01",
+              "description": "When Chief Vitalstatistix invites his brother-in-law to dine on a stew seasoned with Caesar's laurel wreath, it's up to Asterix and Obelix to fetch it in Rome.",
+              "author_names": ["René Goscinny", "Albert Uderzo"],
+              "contribution_types": ["Author", "Illustrator"],
+              "contributions": [
+                {
+                  "author": {
+                    "id": 137295,
+                    "name": "René Goscinny",
+                    "slug": "rene-goscinny"
+                  },
+                  "contribution": "Author"
+                },
+                {
+                  "author": {
+                    "id": 253600,
+                    "name": "Albert Uderzo",
+                    "slug": "albert-uderzo"
+                  },
+                  "contribution": "Illustrator"
+                }
+              ],
+              "image": {
+                "color": "#e2dacf",
+                "color_name": "Beige",
+                "height": 500,
+                "id": 4824277,
+                "url": "https://assets.hardcover.app/edition/31213644/c0c11b31b60638e7795043ab9ecdd0113e6bf3c4.jpeg",
+                "width": 374
+              },
+              "users_count": 61,
+              "rating": 3.862068965517242
+            }
           }
         ],
-        "out_of": 2693758,
+        "out_of": 2693735,
         "page": 1,
         "search_cutoff": false,
-        "search_time_ms": 9
+        "search_time_ms": 12
       }
     }
   }

@@ -11,16 +11,21 @@ use crate::api_client::ApiClient;
 /// The route of Hardcover's GraphQL API, which takes every query
 const GRAPHQL_ROUTE: &str = "/graphql";
 
-/// Searches the Books whose title, series, authors or ISBNs match `$query`, the most read first.
+/// Searches the Books whose title, ISBNs, series, authors or other titles match `$query`. It ranks
+/// them in three groups, from the best text matches, and the most read first within each.
 ///
-/// Hardcover's default ranking puts the best text matches first, so a search for an author lists the
-/// summaries and box sets with their name in the title before their books
+/// Hardcover's default puts the best text matches first, and weighs titles above authors: a search
+/// for an author lists the summaries with their name in the title before their books. Ranking by
+/// popularity alone lifts popular Books that barely match, such as a translation's title with
+/// "d'une" for "dune", so the other titles weigh least
 pub(super) const SEARCH_BOOKS: &str = r#"
 query SearchBooks($query: String!, $page: Int!, $perPage: Int!) {
   search(
     query: $query
     query_type: "book"
-    sort: "users_count:desc,_text_match:desc"
+    fields: "title,isbns,series_names,author_names,alternative_titles"
+    weights: "5,5,3,5,1"
+    sort: "_text_match(buckets: 3):desc,users_count:desc"
     page: $page
     per_page: $perPage
   ) {

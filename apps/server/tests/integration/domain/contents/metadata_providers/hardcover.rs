@@ -37,7 +37,7 @@ fn book(id: u32, title: &str) -> Value {
 }
 
 #[tokio::test]
-async fn search_returns_the_most_read_books_first_with_their_creators() {
+async fn search_returns_the_best_matches_and_most_read_books_first_with_their_creators() {
     let hardcover = FakeHardcover::start().await;
     Mock::given(method("POST"))
         .and(path("/graphql"))
@@ -45,7 +45,9 @@ async fn search_returns_the_most_read_books_first_with_their_creators() {
         .and(body_partial_json(json!({
             "variables": {"query": "asterix", "page": 1, "perPage": 20},
         })))
-        .and(body_string_contains("users_count:desc,_text_match:desc"))
+        .and(body_string_contains(
+            "_text_match(buckets: 3):desc,users_count:desc",
+        ))
         .respond_with(ResponseTemplate::new(200).set_body_json(fixture("search_books")))
         .expect(1)
         .mount(&hardcover.server)

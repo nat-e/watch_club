@@ -80,8 +80,8 @@ impl Hardcover {
         })
     }
 
-    /// Returns a page of the Books whose title, series, authors or ISBN match the query, the most
-    /// read on Hardcover first.
+    /// Returns a page of the Books whose title, series, authors or ISBN match the query, the best
+    /// matches first, and the most read on Hardcover among similar matches.
     pub async fn search(
         &self,
         query: &str,
