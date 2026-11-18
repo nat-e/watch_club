@@ -231,17 +231,12 @@ impl Client {
             .query(params)
             .build()
             .with_context(|| format!("failed to make a request to TMDB's {route}"))?;
-        let response = http::send(&self.http, request, route)
+        let http::Answer { status, body } = http::send(&self.http, request, route)
             .await
             .with_context(|| format!("failed to call TMDB's {route}"))?;
-        let status = response.status();
         if status == StatusCode::NOT_FOUND {
             return Err(Error::NotFound);
         }
-        let body = response
-            .bytes()
-            .await
-            .with_context(|| format!("failed to read TMDB's answer to {route}"))?;
         if !status.is_success() {
             // TMDB says what went wrong in its body
             let message = serde_json::from_slice::<ErrorBody>(&body)

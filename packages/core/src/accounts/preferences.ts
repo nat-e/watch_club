@@ -2,7 +2,7 @@
  * User Preferences: the User's choices, such as their Locale and the audio and subtitles videos
  * start with.
  */
-import {mutationOptions} from '@tanstack/react-query';
+import {hashKey, mutationOptions} from '@tanstack/react-query';
 import {
   type AudioLanguage,
   type TrackLanguage,
@@ -37,6 +37,11 @@ export const savePreferencesMutation = mutationOptions({
       throwOnError: true,
     });
     await updateCurrentUser(queryClient, saved);
+    if (saved.preferences.locale !== current.preferences.locale) {
+      // The API answers in the User's language, so the answers shown so far are in the old one
+      const currentUserHash = hashKey(currentUserQuery.queryKey);
+      void queryClient.invalidateQueries({predicate: query => query.queryHash !== currentUserHash});
+    }
     return saved;
   },
   // One at a time, so that each save starts from the preferences the one before saved, rather than

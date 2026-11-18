@@ -9,9 +9,6 @@ use utoipa::ToSchema;
 use super::{InternalError, accounts::Locale};
 use crate::integrations::tmdb::{self, MultiSearchResult};
 
-/// The last page of results TMDB serves
-const LAST_PAGE: u32 = 500;
-
 /// The number of TMDB's pages a search reads at most to find some Content, as some only have people
 const MAX_PAGES_READ: u32 = 5;
 
@@ -23,7 +20,7 @@ pub enum ContentType {
     TvShow,
 }
 
-/// What identifies a Content: its type and its TMDB ID. A Movie and a TV Show can have the same
+/// The identity of a Content: its type and its TMDB ID. A Movie and a TV Show can have the same
 /// TMDB ID.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct ContentId {
@@ -104,10 +101,8 @@ pub async fn search(
     let mut pages_read = 1;
     loop {
         let found = tmdb.search_multi(query, page, locale).await?;
+        let next_page = found.next_page();
         let results: Vec<_> = found.results.into_iter().filter_map(content).collect();
-        let next_page = page
-            .checked_add(1)
-            .filter(|next| next.get() <= found.total_pages.min(LAST_PAGE));
         match next_page {
             Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
                 page = next_page;

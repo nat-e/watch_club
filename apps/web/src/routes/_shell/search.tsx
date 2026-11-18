@@ -3,6 +3,7 @@ import {type Search, useSearch} from '@watchclub/core/contents/search';
 import {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {contentLink} from '@/components/contents/content-page';
+import {SearchField} from '@/components/contents/search-field';
 import {
   InLibraryFilter,
   SearchResultSummary,
@@ -27,7 +28,7 @@ function SearchPage() {
   const search = useSearch(query);
 
   return (
-    <Page title={t($ => $.core.search.search)} search>
+    <Page title={t($ => $.core.search.search)} actions={<SearchField />}>
       <div className="flex">
         <InLibraryFilter />
       </div>
@@ -81,14 +82,14 @@ function LoadMore({search}: {search: Search}) {
     };
   }, []);
 
-  const {loadMore, results} = search;
-  // Again after each page, as the end may still be in view
-  // biome-ignore lint/correctness/useExhaustiveDependencies: each new result moves the end
+  const {loadMore, loadedPages} = search;
+  // Again after each page, as the end may still be in view, but not after a failure: the same
+  // number of pages stays loaded until the end scrolls back into view
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && loadedPages > 0) {
       loadMore();
     }
-  }, [isVisible, results.length]);
+  }, [isVisible, loadMore, loadedPages]);
 
   return <div ref={ref} />;
 }

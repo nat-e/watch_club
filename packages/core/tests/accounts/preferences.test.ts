@@ -60,6 +60,30 @@ describe('savePreferencesMutation', () => {
     expect(queryClient.getQueryData(currentUserQuery.queryKey)?.preferences).toEqual(expected);
   });
 
+  it('marks the answers in the old language as stale once the Locale changes', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    queryClient.setQueryData(['content'], 'Amélie');
+
+    await save(queryClient, {locale: 'fr-FR'});
+
+    expect(queryClient.getQueryState(['content'])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(currentUserQuery.queryKey)?.isInvalidated).toBe(false);
+  });
+
+  it('keeps the answers when the Locale stays the same', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    queryClient.setQueryData(['content'], 'Amélie');
+
+    // biome-ignore lint/style/useNamingConvention: the API's field
+    await save(queryClient, {audio_language: 'fr'});
+
+    expect(queryClient.getQueryState(['content'])?.isInvalidated).toBe(false);
+  });
+
   it("keeps the changes of a save that hasn't ended when another starts", async () => {
     const received = acceptPreferences();
     const queryClient = new QueryClient();

@@ -41,6 +41,8 @@ anyhow = "1.0.104"
 axum = { version = "0.8.9", features = ["macros"] }
 axum-extra = { version = "0.12.6", features = ["cookie", "typed-header"] }
 base64 = "0.23.1"
+# The bodies of the answers of other services
+bytes = "1.12.1"
 croner = { version = "4.0.3", default-features = false, features = ["jiff"] }
 # `catch_unwind`, which turns a panicking job into a failed attempt
 futures-util = { version = "0.3.34", default-features = false, features = ["std"] }

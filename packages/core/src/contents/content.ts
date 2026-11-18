@@ -5,6 +5,18 @@ import {queryOptions} from '@tanstack/react-query';
 import {type ContentId, type ContentType, getContentOptions} from '@watchclub/api';
 import {useTranslation} from 'react-i18next';
 
+/** The largest TMDB ID the API takes */
+const MAX_TMDB_ID = 2 ** 32 - 1;
+
+/**
+ * Returns the TMDB ID that a screen's URL holds, or null when it can't be one, so the screen shows
+ * that it doesn't exist.
+ */
+export function parseTmdbId(text: string): number | null {
+  const id = Number(text);
+  return /^\d+$/.test(text) && id <= MAX_TMDB_ID ? id : null;
+}
+
 /** Returns the query of a Content, with its title in the User's language. */
 export function contentQuery({content_type, tmdb_id}: ContentId) {
   // biome-ignore lint/style/useNamingConvention: the API's path parameters are snake_case

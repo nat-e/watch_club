@@ -18,12 +18,14 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
         .await
         .unwrap();
     let tmdb = FakeTmdb::start().await;
+    let mut page_2 = fixture("search_multi");
+    page_2["page"] = json!(2);
     Mock::given(method("GET"))
         .and(path("/search/multi"))
         .and(query_param("query", "amélie"))
         .and(query_param("page", "2"))
         .and(query_param("language", "fr-FR"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(fixture("search_multi")))
+        .respond_with(ResponseTemplate::new(200).set_body_json(page_2))
         .expect(1)
         .mount(&tmdb.server)
         .await;

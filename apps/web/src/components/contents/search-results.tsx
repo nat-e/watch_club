@@ -61,7 +61,7 @@ export function SearchResultSummary({
 }
 
 /**
- * What a search shows in place of its results: a hint before typing, loading rows, an error or no
+ * The hint before typing, loading rows, error or no results that a search shows in place of its
  * results, and nothing once it has results. It also tells screen readers how the search went, as
  * they can't see the results change.
  */

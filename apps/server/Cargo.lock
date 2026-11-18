@@ -3755,6 +3755,7 @@ dependencies = [
  "axum",
  "axum-extra",
  "base64 0.23.1",
+ "bytes",
  "croner",
  "futures-util",
  "getrandom 0.4.3",

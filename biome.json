@@ -182,7 +182,7 @@
                     "selector": {
                       "kind": "objectLiteralProperty"
                     },
-                    "match": "(.+?)(?:_(?:zero|one|two|few|many|other))?",
+                    "match": "([^_]+)(?:_.+)?",
                     "formats": ["camelCase"]
                   }
                 ]

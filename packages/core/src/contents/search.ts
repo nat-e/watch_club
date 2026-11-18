@@ -4,7 +4,7 @@
  */
 import {infiniteQueryOptions, useInfiniteQuery} from '@tanstack/react-query';
 import {type SearchResult, searchInfiniteOptions} from '@watchclub/api';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 /** The pause in typing after which a search starts, in milliseconds */
 const TYPING_PAUSE = 300;
@@ -20,12 +20,15 @@ export function searchQuery(query: string) {
     ...searchInfiniteOptions({query: {query: trimmed}}),
     initialPageParam: 1,
     getNextPageParam: lastPage => lastPage.next_page,
-    select: data => uniqueResults(data.pages.flatMap(page => page.results)),
+    select: data => ({
+      results: uniqueResults(data.pages.flatMap(page => page.results)),
+      pages: data.pages.length,
+    }),
     enabled: trimmed !== '',
   });
 }
 
-/** How a search is going. */
+/** The progress of a search. */
 export type SearchStatus =
   /** Nothing to search for, as the query is blank */
   | 'idle'
@@ -42,7 +45,12 @@ export interface Search {
   results: SearchResult[];
   /** Whether more pages of results are left to load */
   hasMore: boolean;
-  /** Loads the next page, unless one is loading */
+  /**
+   * The number of pages loaded so far, which grows with each page, even one without new results.
+   * Screens that load pages while the end of the list is in view watch it to load the next one
+   */
+  loadedPages: number;
+  /** Loads the next page, unless one is loading. The same function on every render */
   loadMore: () => void;
   /** Loads the first page again, after it failed */
   retry: () => void;
@@ -51,17 +59,19 @@ export interface Search {
 /** Returns the search for `query`, such as the one of the search page's URL. */
 export function useSearch(query: string): Search {
   const search = useInfiniteQuery(searchQuery(query));
+  const {fetchNextPage} = search;
+  // Leaves a page that's loading as it is, rather than loading it again
+  const loadMore = useCallback(() => {
+    void fetchNextPage({cancelRefetch: false});
+  }, [fetchNextPage]);
   const status: SearchStatus =
     query.trim() === '' ? 'idle' : search.data ? 'done' : search.isError ? 'failed' : 'loading';
   return {
     status,
-    results: search.data ?? [],
+    results: search.data?.results ?? [],
     hasMore: search.hasNextPage,
-    loadMore: () => {
-      if (!search.isFetchingNextPage) {
-        void search.fetchNextPage();
-      }
-    },
+    loadedPages: search.data?.pages ?? 0,
+    loadMore,
     retry: () => {
       void search.refetch();
     },

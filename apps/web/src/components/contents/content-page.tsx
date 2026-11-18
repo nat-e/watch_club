@@ -1,7 +1,7 @@
 import {type QueryClient, useSuspenseQuery} from '@tanstack/react-query';
 import {linkOptions, notFound} from '@tanstack/react-router';
-import {type ContentId, hasCode} from '@watchclub/api';
-import {contentQuery} from '@watchclub/core/contents/content';
+import {type ContentId, type ContentType, hasCode} from '@watchclub/api';
+import {contentQuery, parseTmdbId} from '@watchclub/core/contents/content';
 import {Page} from '@/components/layouts/page';
 
 /** Returns the options of a link to the Content's page. */
@@ -21,14 +21,15 @@ export function contentLink({content_type, tmdb_id}: ContentId) {
  */
 export async function loadContent(
   queryClient: QueryClient,
-  contentType: ContentId['content_type'],
-  tmdbId: string,
+  contentType: ContentType,
+  idParam: string,
 ): Promise<ContentId> {
-  // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-  const id: ContentId = {content_type: contentType, tmdb_id: Number(tmdbId)};
-  if (!/^\d+$/.test(tmdbId)) {
+  const tmdbId = parseTmdbId(idParam);
+  if (tmdbId === null) {
     throw notFound();
   }
+  // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
+  const id: ContentId = {content_type: contentType, tmdb_id: tmdbId};
   try {
     await queryClient.ensureQueryData(contentQuery(id));
   } catch (error) {

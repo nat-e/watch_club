@@ -8,6 +8,7 @@ use std::{
 };
 
 use anyhow::Context;
+use bytes::Bytes;
 use opentelemetry::{
     KeyValue, global,
     metrics::Histogram,
@@ -20,7 +21,7 @@ use opentelemetry_semantic_conventions::{
     },
     metric::HTTP_CLIENT_REQUEST_DURATION,
 };
-use reqwest::{Client, Method, Request, Response, StatusCode, Url, header::HeaderMap, retry};
+use reqwest::{Client, Method, Request, StatusCode, Url, header::HeaderMap, retry};
 
 /// The name of the server's own instrumentation, as in `observability`
 const SCOPE: &str = env!("CARGO_PKG_NAME");
@@ -66,14 +67,20 @@ pub(super) fn client(base_url: &Url, headers: HeaderMap) -> anyhow::Result<Clien
         .context("failed to set up an HTTP client")
 }
 
-/// Sends the request with the client, in a span named after its method and `route`, the template
-/// of its path, such as `/movie/{id}`. The span and the metric show the URL, the status, and the
-/// type of the failure, if any.
+/// A service's answer: its status and its body.
+pub(super) struct Answer {
+    pub status: StatusCode,
+    pub body: Bytes,
+}
+
+/// Sends the request with the client and reads the answer, in a span named after its method and
+/// `route`, the template of its path, such as `/movie/{id}`. The span shows the URL, and with the
+/// metric, the status and the type of the failure, if any.
 pub(super) async fn send(
     client: &Client,
     request: Request,
     route: &'static str,
-) -> reqwest::Result<Response> {
+) -> reqwest::Result<Answer> {
     let url = request.url();
     let mut attributes = vec![
         KeyValue::new(HTTP_REQUEST_METHOD, request.method().to_string()),
@@ -99,26 +106,34 @@ pub(super) async fn send(
         .start(&tracer);
 
     let started = Instant::now();
-    let result = client.execute(request).await;
+    // The status, once the answer starts, and the answer, once its body is read
+    let (status, result) = match client.execute(request).await {
+        Ok(response) => {
+            let status = response.status();
+            let body = response.bytes().await;
+            (Some(status), body.map(|body| Answer { status, body }))
+        }
+        Err(error) => (None, Err(error)),
+    };
     let duration = started.elapsed().as_secs_f64();
 
     let mut outcome = Vec::with_capacity(2);
-    match &result {
-        Ok(response) => {
-            let status = response.status();
-            outcome.push(KeyValue::new(
-                HTTP_RESPONSE_STATUS_CODE,
-                i64::from(status.as_u16()),
-            ));
-            if status.is_client_error() || status.is_server_error() {
-                outcome.push(KeyValue::new(ERROR_TYPE, status.as_str().to_owned()));
-                span.set_status(Status::error(status.to_string()));
-            }
-        }
-        Err(error) => {
+    if let Some(status) = status {
+        outcome.push(KeyValue::new(
+            HTTP_RESPONSE_STATUS_CODE,
+            i64::from(status.as_u16()),
+        ));
+    }
+    match (&result, status) {
+        (Err(error), _) => {
             outcome.push(KeyValue::new(ERROR_TYPE, error_type(error)));
             span.set_status(Status::error(format!("{error:#}")));
         }
+        (Ok(_), Some(status)) if status.is_client_error() || status.is_server_error() => {
+            outcome.push(KeyValue::new(ERROR_TYPE, status.as_str().to_owned()));
+            span.set_status(Status::error(status.to_string()));
+        }
+        (Ok(_), _) => {}
     }
     span.set_attributes(outcome.iter().cloned());
     span.end();
@@ -127,7 +142,7 @@ pub(super) async fn send(
     result
 }
 
-/// Returns the kind of a failure to get an answer, for `error.type`.
+/// Returns the kind of a failure to get an answer or read it, for `error.type`.
 fn error_type(error: &reqwest::Error) -> &'static str {
     if error.is_timeout() {
         "timeout"

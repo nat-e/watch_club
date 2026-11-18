@@ -47,12 +47,12 @@ describe('searchQuery', () => {
     const unsubscribe = observer.subscribe(() => undefined);
 
     await vi.waitFor(() => {
-      expect(observer.getCurrentResult().data).toEqual([movie(1), movie(2)]);
+      expect(observer.getCurrentResult().data).toEqual({results: [movie(1), movie(2)], pages: 1});
     });
     await observer.fetchNextPage();
 
     const result = observer.getCurrentResult();
-    expect(result.data).toEqual([movie(1), movie(2), movie(3)]);
+    expect(result.data).toEqual({results: [movie(1), movie(2), movie(3)], pages: 2});
     expect(result.hasNextPage).toBe(false);
     expect(urls.map(url => url.searchParams.get('query'))).toEqual(['amélie', 'amélie']);
     unsubscribe();

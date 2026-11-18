@@ -2,6 +2,12 @@ export default {
   browse: {
     title: 'Parcourir',
   },
+  contents: {
+    loadFailed_movie: "On n'a pas pu charger ce film. Réessaie dans un instant.",
+    loadFailed_tvShow: "On n'a pas pu charger cette série. Réessaie dans un instant.",
+    notFound_movie: "On n'a pas trouvé ce film.",
+    notFound_tvShow: "On n'a pas trouvé cette série.",
+  },
   contentTypes: {
     movie: 'Film',
     tvShow: 'Série',
@@ -38,7 +44,7 @@ export default {
     noResults: 'Aucun résultat',
     nothingFound: "On n'a rien trouvé pour « {{query}} ».",
     resultCount_one: '{{count}} résultat',
-    resultCount_many: '{{count}} de résultats',
+    resultCount_many: '{{count}} résultats',
     resultCount_other: '{{count}} résultats',
     results: 'Résultats de recherche',
     search: 'Rechercher',

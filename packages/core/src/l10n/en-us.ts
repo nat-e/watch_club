@@ -2,6 +2,12 @@ export default {
   browse: {
     title: 'Browse',
   },
+  contents: {
+    loadFailed_movie: "We couldn't load this movie. Try again in a moment.",
+    loadFailed_tvShow: "We couldn't load this TV show. Try again in a moment.",
+    notFound_movie: "We couldn't find this movie.",
+    notFound_tvShow: "We couldn't find this TV show.",
+  },
   contentTypes: {
     movie: 'Movie',
     tvShow: 'TV show',

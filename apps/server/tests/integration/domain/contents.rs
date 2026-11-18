@@ -136,16 +136,19 @@ async fn search_reads_the_next_page_when_one_has_only_people() {
 #[tokio::test]
 async fn search_reads_5_pages_at_most() {
     let tmdb = FakeTmdb::start().await;
-    Mock::given(method("GET"))
-        .and(path("/search/multi"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
-            1,
-            10,
-            &json!([person(1)]),
-        )))
-        .expect(5)
-        .mount(&tmdb.server)
-        .await;
+    for page in 1..=5 {
+        Mock::given(method("GET"))
+            .and(path("/search/multi"))
+            .and(query_param("page", page.to_string()))
+            .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
+                page,
+                10,
+                &json!([person(page)]),
+            )))
+            .expect(1)
+            .mount(&tmdb.server)
+            .await;
+    }
 
     let found = contents::search(&tmdb.client(), "amélie", NonZeroU32::MIN, Locale::EnUs)
         .await

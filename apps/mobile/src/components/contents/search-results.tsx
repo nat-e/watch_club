@@ -66,7 +66,7 @@ function SearchResultRow({result}: {result: SearchResult}) {
   );
 }
 
-/** What a search shows in place of results, and what screen readers announce of it. */
+/** The hint, spinner, error or no results that a search shows in place of its results. */
 function SearchStatus({search, query}: {search: Search; query: string}) {
   const {t} = useTranslation('core');
   const failed = t($ => $.core.search.failed);

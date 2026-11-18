@@ -1,9 +1,14 @@
 //! TMDB's answers to searches, and to finds by another site's ID.
 
+use std::num::NonZeroU32;
+
 use jiff::civil::Date;
 use serde::Deserialize;
 
 use super::{optional_date, optional_text};
+
+/// The last page of results TMDB serves, whatever their number
+const LAST_PAGE: u32 = 500;
 
 /// A page of a search's results.
 #[derive(Clone, Debug, Deserialize)]
@@ -14,6 +19,15 @@ pub struct SearchPage<T> {
     /// The number of pages, of which TMDB serves the first 500
     pub total_pages: u32,
     pub total_results: u32,
+}
+
+impl<T> SearchPage<T> {
+    /// Returns the number of the next page TMDB serves, or None on the last one.
+    pub fn next_page(&self) -> Option<NonZeroU32> {
+        NonZeroU32::new(self.page)
+            .and_then(|page| page.checked_add(1))
+            .filter(|next| next.get() <= self.total_pages.min(LAST_PAGE))
+    }
 }
 
 /// A result of a search for Movies, TV Shows and people.
@@ -102,7 +116,7 @@ pub enum KnownFor {
     TvShow(TvShowSearchResult),
 }
 
-/// What TMDB knows by another site's ID.
+/// The Movies, TV Shows and episodes that another site's ID points to.
 #[derive(Clone, Debug, Deserialize)]
 pub struct FindResults {
     #[serde(default)]

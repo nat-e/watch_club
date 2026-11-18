@@ -918,7 +918,7 @@
       },
       "ContentId": {
         "type": "object",
-        "description": "What identifies a Content: its type and its TMDB ID. A Movie and a TV Show can have the same\nTMDB ID.",
+        "description": "The identity of a Content: its type and its TMDB ID. A Movie and a TV Show can have the same\nTMDB ID.",
         "required": [
           "content_type",
           "tmdb_id"

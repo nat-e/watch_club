@@ -319,7 +319,7 @@ pub struct CastMember {
 pub struct CrewMember {
     pub id: u32,
     pub name: String,
-    /// What they did, such as `Director`
+    /// Their job on it, such as `Director`
     pub job: String,
     pub profile_path: Option<String>,
 }
@@ -401,7 +401,7 @@ pub struct Video {
     pub name: String,
     /// The site it's on, such as `YouTube` or `Vimeo`
     pub site: String,
-    /// What it is, such as `Trailer`, `Teaser` or `Clip`
+    /// Its kind, such as `Trailer`, `Teaser` or `Clip`
     #[serde(rename = "type")]
     pub kind: String,
     /// Whether the studio published it
