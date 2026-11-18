@@ -21,12 +21,6 @@
       "dependsOn": ["^build", "^generate:client"],
       "outputs": ["dist/**"]
     },
-    "dev": {
-      "description": "Runs an app's dev server, which reloads on changes",
-      "dependsOn": ["^generate:client"],
-      "cache": false,
-      "persistent": true
-    },
     "check": {
       "description": "Checks each package: TypeScript with tsc, Rust with rustfmt and Clippy",
       "dependsOn": ["transit", "^generate:client"]

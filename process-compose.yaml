@@ -1,0 +1,59 @@
+# This worktree's dev processes, which `pnpm dev` starts in the background. `process-compose` controls
+# them and `process-compose attach` shows them: both reach this worktree's through PC_SOCKET_PATH, set
+# in mise.toml. See docs/dev.md.
+version: "0.5"
+
+processes:
+  # The Postgres the worktrees share, in Docker: starts it unless it runs, and waits until it's ready
+  database:
+    command: pnpm dev:shared
+
+  # The API client and Expo Router's types, which Git ignores
+  generate:
+    command: turbo run generate:client generate:routes
+
+  server:
+    working_dir: apps/server
+    command: cargo run
+    depends_on:
+      database:
+        condition: process_completed_successfully
+    watch:
+      paths:
+        - path: src
+        - path: migrations
+        - path: Cargo.toml
+        - path: sqlx.toml
+    readiness_probe:
+      http_get:
+        host: 127.0.0.1
+        port: "${PORT}"
+        path: /api/health
+      period_seconds: 1
+      # A failed probe stops the server, and Cargo can take minutes to build it
+      failure_threshold: 600
+
+  web:
+    working_dir: apps/web
+    command: pnpm exec vite
+    depends_on:
+      generate:
+        condition: process_completed_successfully
+    readiness_probe:
+      http_get:
+        host: localhost
+        port: "${WEB_PORT}"
+        path: /
+      period_seconds: 1
+      failure_threshold: 60
+
+  # Expo's dev server, for the mobile app. Off by default to save resources: start it with
+  # `process-compose process start expo`. Not interactive, as `process-compose attach` can't show
+  # interactive processes
+  expo:
+    working_dir: apps/mobile
+    command: pnpm exec expo start
+    disabled: true
+    depends_on:
+      generate:
+        condition: process_completed_successfully

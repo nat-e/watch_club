@@ -2,9 +2,6 @@
   "$schema": "https://turborepo.dev/schema.json",
   "extends": ["//"],
   "tasks": {
-    "dev": {
-      "description": "Runs the server and restarts it on changes. `--project-origin .` keeps watchexec from reading the main checkout's .gitignore, which ignores the worktrees; `--wrap-process none` lets turbo stop the server with watchexec"
-    },
     "build": {
       "description": "Builds the server after the web app, which it embeds. Cargo caches the build itself",
       "dependsOn": ["web#build"],

@@ -4,6 +4,8 @@ dist/
 .turbo/
 # Local settings, see .env.example
 /.env
+# The socket and logs of the dev processes, see process-compose.yaml
+/.process-compose*
 # Worktrees, see .config/wt.toml
 /.wt/
 # The dev catalog's clips, see scripts/catalog.sh

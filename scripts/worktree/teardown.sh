@@ -11,7 +11,9 @@ port=$2
 # Worktrees set up before Postgres was shared don't pass it
 database=${3:-}
 
-# The server, and the web app's dev server on the next port
+# The dev processes. The hook runs in the worktree, whose mise.toml says where they are
+mise exec -- process-compose down 2>/dev/null || true
+# And a server or web app started outside them
 lsof -ti "tcp:$port,$((port + 1))" -sTCP:LISTEN | xargs kill 2>/dev/null || true
 
 # The worktree's database, and the test databases named after it that killed test runs left, see

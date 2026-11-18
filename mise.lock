@@ -136,6 +136,53 @@ url = "https://github.com/pnpm/pnpm/releases/download/v11.12.0/pnpm-win32-x64.zi
 url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/473790553"
 provenance = "github-attestations"
 
+[[tools.process-compose]]
+version = "1.124.0"
+backend = "aqua:F1bonacc1/process-compose"
+specifiers = ["1.124.0"]
+
+[tools.process-compose."platforms.linux-arm64"]
+checksum = "sha256:98e02400a05d1da74a6506a4ffb2682b1205b18f02ecfbfdea1005f9389fc52d"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841807"
+
+[tools.process-compose."platforms.linux-arm64-musl"]
+checksum = "sha256:98e02400a05d1da74a6506a4ffb2682b1205b18f02ecfbfdea1005f9389fc52d"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841807"
+
+[tools.process-compose."platforms.linux-x64"]
+checksum = "sha256:487ce011d5324b4578d3ec1860aaa1dd3a95bd4b2b433e03791f73a23d215fd3"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841813"
+
+[tools.process-compose."platforms.linux-x64-musl"]
+checksum = "sha256:487ce011d5324b4578d3ec1860aaa1dd3a95bd4b2b433e03791f73a23d215fd3"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841813"
+
+[tools.process-compose."platforms.macos-arm64"]
+checksum = "sha256:818e29bdb75ec5c5e1fa9af64773964f513c8d0fe995c2e48328b4eaa1ea4789"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841803"
+
+[tools.process-compose."platforms.macos-x64"]
+checksum = "sha256:45d5234095de27b23445041a56cce5e5f3a80d6b303fccbceba94db0cd13563d"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841797"
+
+[tools.process-compose."platforms.windows-x64"]
+checksum = "sha256:a77d51dcb34e3e8d2b88af372ada7ca8a62cb87f0c6af0f78834c0fd6c95e2a7"
+checksum_source = "mise-versions"
+url = "https://github.com/F1bonacc1/process-compose/releases/download/v1.124.0/process-compose_windows_amd64.zip"
+url_api = "https://api.github.com/repos/F1bonacc1/process-compose/releases/assets/679841804"
+
 [[tools.ruff]]
 version = "0.17.4"
 backend = "aqua:astral-sh/ruff"
@@ -237,49 +284,3 @@ checksum = "sha256:0cdc5b38fe5a8168ed6a25814f5ba43c21d313dd3187314fccb37b7cec46e
 url = "https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/704009796"
 provenance = "github-attestations"
-
-[[tools.watchexec]]
-version = "2.8.0"
-backend = "aqua:watchexec/watchexec"
-specifiers = ["2.8.0"]
-
-[tools.watchexec."platforms.linux-arm64"]
-checksum = "sha256:aaa5eb7e62e9ce99cad7f14260265aaa9df8884e195c0661ab011825a6d61634"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-aarch64-unknown-linux-gnu.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138796"
-
-[tools.watchexec."platforms.linux-arm64-musl"]
-checksum = "sha256:3961878b21e3c1729279322f4007dd5bbf0032110fbcb5e7b983946a9ceb3bf6"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-aarch64-unknown-linux-musl.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138804"
-
-[tools.watchexec."platforms.linux-x64"]
-checksum = "sha256:21839e9840ef592b4d571885ccbd692f54ae5bd4231f3caf29fcf31fa7723afe"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-x86_64-unknown-linux-gnu.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138794"
-
-[tools.watchexec."platforms.linux-x64-musl"]
-checksum = "sha256:35ea667cbe4bc96c23ba2a1f46c94c46bc385b67165e3bf621c0e7e4959aa99b"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-x86_64-unknown-linux-musl.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138798"
-
-[tools.watchexec."platforms.macos-arm64"]
-checksum = "sha256:8da8bdbfb8568138616a082c05a87224e08d5cb2994feb956426291cf0c6fe10"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-aarch64-apple-darwin.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138836"
-
-[tools.watchexec."platforms.macos-x64"]
-checksum = "sha256:b7f694ad19c1cf168388f3295a5e825425f7dac5cd27cffd2d89a51ed4ab0f22"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-x86_64-apple-darwin.tar.xz"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138831"
-
-[tools.watchexec."platforms.windows-x64"]
-checksum = "sha256:0c872fc18c8e801f21614c6daf2504a5826d5c705bb67f7a583d879f5410d9ea"
-checksum_source = "mise-versions"
-url = "https://github.com/watchexec/watchexec/releases/download/v2.8.0/watchexec-2.8.0-x86_64-pc-windows-msvc.zip"
-url_api = "https://api.github.com/repos/watchexec/watchexec/releases/assets/616138784"

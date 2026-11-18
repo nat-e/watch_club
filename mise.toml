@@ -4,7 +4,8 @@ node = "26.12.1"
 pnpm = "11.12.0"
 "cargo:sqlx-cli" = "0.9.0"
 "npm:turbo" = "2.11.10"
-watchexec = "2.8.0"
+# Runs the dev processes, see process-compose.yaml
+process-compose = "1.124.0"
 # Fetches the dev catalog's clips, see scripts/catalog.sh
 git-lfs = "3.8.1"
 # Run and check the Python in .harness
@@ -17,5 +18,8 @@ lockfile = true
 # The Git-ignored local settings: DATABASE_URL, PORT, WEB_PORT, RCT_METRO_PORT
 [env]
 _.file = ".env"
+# Where `pnpm dev` runs this worktree's dev processes, and where `process-compose` finds them
+PC_SOCKET_PATH = "{{config_root}}/.process-compose.sock"
+PC_LOG_FILE = "{{config_root}}/.process-compose.log"
 # turbo comes from mise rather than package.json, so it can't find a copy in the repository
 TURBO_GLOBAL_WARNING_DISABLED = "1"
