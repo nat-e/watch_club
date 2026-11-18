@@ -72,6 +72,26 @@ describe('savePreferencesMutation', () => {
     expect(queryClient.getQueryState(currentUserQuery.queryKey)?.isInvalidated).toBe(false);
   });
 
+  it('drops the answers on their way in the old language once the Locale changes', async () => {
+    acceptPreferences();
+    const queryClient = new QueryClient();
+    await setCurrentUser(queryClient, ALICE);
+    let answer: (title: string) => void = () => undefined;
+    const content = queryClient.fetchQuery({
+      queryKey: ['content'],
+      queryFn: () =>
+        new Promise<string>(resolve => {
+          answer = resolve;
+        }),
+    });
+
+    await save(queryClient, {locale: 'fr-FR'});
+    answer('Amélie');
+
+    await expect(content).rejects.toThrow();
+    expect(queryClient.getQueryData(['content'])).toBeUndefined();
+  });
+
   it('keeps the answers when the Locale stays the same', async () => {
     acceptPreferences();
     const queryClient = new QueryClient();

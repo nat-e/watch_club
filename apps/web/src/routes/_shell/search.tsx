@@ -51,7 +51,8 @@ function SearchPage() {
             </li>
           ))}
         </ul>
-        {search.hasMore && <LoadMore search={search} />}
+        {/* Anew for each query, whose first pages load as the previous one's did */}
+        {search.hasMore && <LoadMore key={query} search={search} />}
       </div>
     </Page>
   );
