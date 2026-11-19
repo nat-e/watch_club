@@ -4,7 +4,7 @@
  * them.
  */
 import type {QueryClient} from '@tanstack/react-query';
-import {type Credentials, client, loginToken, logout} from '@watchclub/api';
+import {type Credentials, client, getInstanceOptions, loginToken, logout} from '@watchclub/api';
 import {forgetCurrentUser, setCurrentUser} from '@watchclub/core/accounts/current-user';
 import {getBundleOrigin} from 'expo/internal/bundle-origin';
 import * as secureStore from 'expo-secure-store';
@@ -69,9 +69,11 @@ export class SessionStore {
     await secureStore.setItemAsync(INSTANCE_URL_KEY, instanceUrl);
     await secureStore.setItemAsync(tokenKey(instanceUrl), data.token);
     // The client before the User, as the screens that show the User ask the API again with its
-    // token, and the User before the listeners, so the app doesn't wait for the API
+    // token, and the User and the Instance before the listeners, so the app doesn't wait for the
+    // API. Tried once, as the app says at once when it can't reach the Instance
     configureClient(instanceUrl, data.token);
     await setCurrentUser(this.queryClient, data.user);
+    await this.queryClient.prefetchQuery({...getInstanceOptions(), retry: false});
     this.update(instanceUrl, data.token);
   }
 
