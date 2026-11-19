@@ -156,6 +156,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
     %MediaStructure{
       file_fingerprint: "fingerprint",
       keyframe_seconds: [0.0],
+      keyframe_interval_bytes: [1_000_000],
       container: "matroska",
       duration_seconds: 100.0,
       bit_rate: 5_000_000,

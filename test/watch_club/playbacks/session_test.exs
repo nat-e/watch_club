@@ -708,6 +708,7 @@ defmodule WatchClub.Playbacks.SessionTest do
       id: media.id,
       file_fingerprint: "fingerprint",
       keyframe_seconds: [0.0],
+      keyframe_interval_bytes: [1_000_000],
       duration_seconds: 60.0
     })
 

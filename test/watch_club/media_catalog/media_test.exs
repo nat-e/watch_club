@@ -79,6 +79,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
                      parts: [%{movie_id: movie.id, number: 1}],
                      file_fingerprint: "fingerprint",
                      keyframe_seconds: [0.0],
+                     keyframe_interval_bytes: [1_000_000],
                      duration_seconds: 7245.5,
                      container: "matroska",
                      bit_rate: 8_000_000,
@@ -283,6 +284,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
               parts: [%{movie_id: movie.id, number: 1}],
               file_fingerprint: "replaced fingerprint",
               keyframe_seconds: [0.0],
+              keyframe_interval_bytes: [1_000_000],
               container: "matroska",
               video_tracks: [%{stream_index: 0, codec: "av1", width: 3840, height: 2160}],
               audio_tracks: [
@@ -988,6 +990,7 @@ defmodule WatchClub.MediaCatalog.MediaTest do
         parts: parts,
         file_fingerprint: "fingerprint",
         keyframe_seconds: [0.0],
+        keyframe_interval_bytes: [1_000_000],
         video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
         audio_tracks: [
           %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}

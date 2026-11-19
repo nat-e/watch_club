@@ -219,10 +219,10 @@ defmodule WatchClub.MediaCatalog.Video do
     attribute :keyframe_interval_bytes, {:array, :integer} do
       description """
       The bytes of its Default Video Track from each keyframe to the next, or to the end of the
-      file. Nil for a Video imported before they were measured.
+      file.
       """
 
-      allow_nil? true
+      allow_nil? false
       public? true
       select_by_default? false
       constraints items: [min: 0]
