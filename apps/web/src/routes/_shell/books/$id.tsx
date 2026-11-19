@@ -8,5 +8,5 @@ export const Route = createFileRoute('/_shell/books/$id')({
 });
 
 function Book() {
-  return <ContentPage id={Route.useLoaderData()} />;
+  return <ContentPage externalContentId={Route.useLoaderData()} />;
 }

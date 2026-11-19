@@ -907,7 +907,7 @@
       "Content": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/ContentId"
+            "$ref": "#/components/schemas/ExternalContentId"
           },
           {
             "type": "object",
@@ -922,23 +922,6 @@
           }
         ],
         "description": "A Content, with its title in the User's language when its Metadata Provider has it."
-      },
-      "ContentId": {
-        "type": "object",
-        "description": "The identity of a Content as the API sends it: its type, and its External ID at the Metadata\nProvider of its type, as text whatever the Metadata Provider.",
-        "required": [
-          "content_type",
-          "external_id"
-        ],
-        "properties": {
-          "content_type": {
-            "$ref": "#/components/schemas/ContentType"
-          },
-          "external_id": {
-            "type": "string",
-            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
-          }
-        }
       },
       "ContentType": {
         "type": "string",
@@ -1157,6 +1140,23 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ExternalContentId": {
+        "type": "object",
+        "description": "An External Content ID as the API sends it: the Content's type, and its External ID at the\nMetadata Provider of its type, as text whatever the Metadata Provider.",
+        "required": [
+          "content_type",
+          "external_id"
+        ],
+        "properties": {
+          "content_type": {
+            "$ref": "#/components/schemas/ContentType"
+          },
+          "external_id": {
+            "type": "string",
+            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
+          }
+        }
+      },
       "GetContentRequestError": {
         "oneOf": [
           {
@@ -1343,7 +1343,7 @@
       "SearchResult": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/ContentId"
+            "$ref": "#/components/schemas/ExternalContentId"
           },
           {
             "type": "object",

@@ -4,7 +4,7 @@ use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
-    contents::{Content, ContentId, Image, ImageSource, LookUpError, SearchResult, TmdbId},
+    contents::{Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult, TmdbId},
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -88,7 +88,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
     assert_eq!(
         found.results[0],
         SearchResult {
-            id: ContentId::Movie(TmdbId::new(194)),
+            external_content_id: ExternalContentId::Movie(TmdbId::new(194)),
             title: "Amélie".to_owned(),
             date: Some(date(2001, 4, 25)),
             overview: Some(
@@ -121,7 +121,10 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
     );
     assert_eq!(found.results[2].poster, None);
     let tv_show = &found.results[4];
-    assert_eq!(tv_show.id, ContentId::TvShow(TmdbId::new(239_212)));
+    assert_eq!(
+        tv_show.external_content_id,
+        ExternalContentId::TvShow(TmdbId::new(239_212))
+    );
     assert_eq!(tv_show.title, "Amélie and Company");
     assert!(tv_show.poster.is_some());
     // The fixture is TMDB's first page of 43
@@ -382,7 +385,7 @@ async fn look_up_movie_returns_its_title_in_the_locales_language() {
     assert_eq!(
         content,
         Content {
-            id: ContentId::Movie(TmdbId::new(194)),
+            external_content_id: ExternalContentId::Movie(TmdbId::new(194)),
             title: "Le Fabuleux Destin d'Amélie Poulain".to_owned(),
         }
     );
@@ -408,7 +411,7 @@ async fn look_up_tv_show_returns_its_title_in_the_locales_language() {
     assert_eq!(
         content,
         Content {
-            id: ContentId::TvShow(TmdbId::new(2316)),
+            external_content_id: ExternalContentId::TvShow(TmdbId::new(2316)),
             title: "The Office".to_owned(),
         }
     );

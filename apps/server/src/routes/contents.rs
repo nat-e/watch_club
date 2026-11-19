@@ -14,7 +14,7 @@ use crate::{
     domain::{
         InternalError,
         accounts::CurrentUser,
-        contents::{self, Content, ContentId, ContentType, LookUpError, MetadataProviders},
+        contents::{self, Content, ContentType, ExternalContentId, LookUpError, MetadataProviders},
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
@@ -45,12 +45,12 @@ async fn get_content(
     Path((content_type, external_id)): Path<(ContentType, String)>,
 ) -> Result<Json<Content>, GetContentRequestError> {
     // An ID that can't be one is as unknown as one the Metadata Provider doesn't have
-    let Some(id) = ContentId::parse(content_type, &external_id) else {
+    let Some(external_content_id) = ExternalContentId::parse(content_type, &external_id) else {
         return Err(GetContentRequestError::NotFound);
     };
 
     let locale = current_user.preferences.locale;
-    let content = contents::look_up(&metadata_providers, id, locale).await?;
+    let content = contents::look_up(&metadata_providers, external_content_id, locale).await?;
     Ok(Json(content))
 }
 
