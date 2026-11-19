@@ -691,3 +691,9 @@ msgstr[1] "%{processed} sur %{total} fichiers"
 #, elixir-autogen, elixir-format
 msgid "See every unmatched file"
 msgstr "Voir tous les fichiers non associés"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
+#, elixir-autogen, elixir-format
+msgid "Every 15 minutes"
+msgstr "Toutes les 15 minutes"

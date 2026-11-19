@@ -9,6 +9,8 @@ defmodule WatchClub.MediaSources.Import do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
+  require Ash.Query
+
   alias WatchClub.MediaSources.Import.Changes
   alias WatchClub.MediaSources.Source
 
@@ -52,6 +54,32 @@ defmodule WatchClub.MediaSources.Import do
       change Changes.Schedule
     end
 
+    create :start_scheduled do
+      description "Starts a Media Import of the Media Source's new files, on schedule"
+      accept [:media_source_id]
+
+      change set_attribute(:triggered_manually?, false)
+      change Changes.Schedule
+    end
+
+    action :start_scheduled_imports do
+      description "Starts a scheduled Media Import of each Media Source with scheduled imports, unless one is already processing"
+
+      run fn _input, context ->
+        Source
+        |> Ash.Query.filter(scheduled_imports? and not exists(imports, status == :processing))
+        |> Ash.read!(scope: context)
+        |> Enum.each(fn %Source{id: id} ->
+          Ash.create!(__MODULE__, %{media_source_id: id},
+            action: :start_scheduled,
+            scope: context
+          )
+        end)
+
+        :ok
+      end
+    end
+
     update :complete do
       accept []
 
@@ -66,6 +94,17 @@ defmodule WatchClub.MediaSources.Import do
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
       change Changes.ReportFinish
+    end
+
+    destroy :forget_without_media do
+      description "Deletes the Media Import when it was scheduled and added no Media, so the history keeps the ones that caught files"
+
+      change filter(
+               expr(
+                 not triggered_manually? and matched_file_count == 0 and
+                   unmatched_file_count == 0
+               )
+             )
     end
 
     update :finish_scan do
@@ -134,7 +173,15 @@ defmodule WatchClub.MediaSources.Import do
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
-    policy action([:complete, :fail, :finish_scan, :count_file]) do
+    policy action([
+             :start_scheduled,
+             :start_scheduled_imports,
+             :complete,
+             :fail,
+             :forget_without_media,
+             :finish_scan,
+             :count_file
+           ]) do
       description "Only the system actor can process Media Imports in the background"
       authorize_if WatchClub.Checks.IsSystemActor
     end
@@ -146,6 +193,7 @@ defmodule WatchClub.MediaSources.Import do
 
     publish_all :create, ["media_sources", "admin"]
     publish_all :update, ["media_sources", "admin"]
+    publish_all :destroy, ["media_sources", "admin"]
   end
 
   preparations do

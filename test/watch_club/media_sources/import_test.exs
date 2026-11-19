@@ -5,6 +5,7 @@ defmodule WatchClub.MediaSources.ImportTest do
   import WatchClub.MediaSources
 
   alias WatchClub.Ffmpeg.ProbeMock
+  alias WatchClub.Integrations.Servarr.Client
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.{Candidate, ScannerMock}
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
@@ -203,6 +204,113 @@ defmodule WatchClub.MediaSources.ImportTest do
         _ -> false
       end)
     end
+  end
+
+  describe "start_scheduled_media_imports/*" do
+    test "starts a Media Import of New files only of each radarr, sonarr and sportarr Media Source" do
+      admin = generate(administrator())
+      generate(filesystem_media_source(actor: admin))
+
+      servarr_ids =
+        for flavor <- [:radarr, :sonarr, :sportarr],
+            do: generate(radarr_media_source(actor: admin, flavor: flavor)).id
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+
+      media_imports = list_media_imports!(actor: admin)
+
+      assert Enum.sort(Enum.map(media_imports, & &1.media_source_id)) == Enum.sort(servarr_ids)
+
+      assert Enum.all?(
+               media_imports,
+               &match?(%Import{files_to_process: :new, triggered_manually?: false}, &1)
+             )
+    end
+
+    test "skips a Media Source whose Media Import is processing" do
+      admin = generate(administrator())
+      media_source = generate(radarr_media_source(actor: admin))
+      media_import = start_media_import!(media_source.id, actor: admin)
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+
+      assert [%Import{id: id}] = list_media_imports!(actor: admin)
+      assert id == media_import.id
+    end
+
+    test "deletes a scheduled Media Import that adds no Media" do
+      admin = generate(administrator())
+      generate(radarr_media_source(actor: admin))
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+      Oban.drain_queue(queue: :media_source_scans)
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
+
+      assert list_media_imports!(actor: admin) == []
+    end
+
+    test "deletes a scheduled Media Import that fails without adding Media" do
+      admin = generate(administrator())
+      generate(radarr_media_source(actor: admin))
+      stub_servarr(fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+      Oban.drain_queue(queue: :media_source_scans)
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
+
+      assert list_media_imports!(actor: admin) == []
+    end
+
+    test "keeps a scheduled Media Import that adds Media" do
+      admin = generate(administrator())
+      root = Path.expand("tmp/media-imports/scheduled")
+      path = Path.join(root, "Star Wars (1977)/movie.mkv")
+      File.mkdir_p!(Path.dirname(path))
+      File.write!(path, "stub")
+      on_exit(fn -> File.rm_rf!(root) end)
+      generate(radarr_media_source(actor: admin, root_folder_path: root))
+      generate(movie(external_id: "11", metadata_refreshed_at: DateTime.utc_now()))
+
+      stub_servarr(fn %Plug.Conn{request_path: "/api/v3/movie"} = conn ->
+        Req.Test.json(conn, [
+          %{
+            "tmdbId" => 11,
+            "title" => "Star Wars",
+            "year" => 1977,
+            "hasFile" => true,
+            "qualityProfileId" => 1,
+            "rootFolderPath" => root,
+            "movieFile" => %{"path" => path}
+          }
+        ])
+      end)
+
+      stub(ProbeMock, :probe, fn _path -> {:ok, ffprobe_fixture("video_friends_s01e01")} end)
+
+      stub(ProbeMock, :keyframes, fn _path, _stream_index ->
+        {:ok, [{0.0, 250_000}, {2.002, 180_000}]}
+      end)
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+      Oban.drain_queue(queue: :media_source_scans)
+      Oban.drain_queue(queue: :media_candidate_ingestions, with_scheduled: true)
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
+
+      assert [%Import{status: :completed, matched_file_count: 1}] =
+               list_media_imports!(actor: admin)
+    end
+
+    test "rejects the Instance Administrator" do
+      start_scheduled_media_imports(actor: generate(administrator()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
+  defp stub_servarr(plug) do
+    previous = Application.get_env(:watch_club, :servarr_req_options)
+    Application.put_env(:watch_club, :servarr_req_options, plug: {Req.Test, Client})
+    on_exit(fn -> Application.put_env(:watch_club, :servarr_req_options, previous) end)
+    Req.Test.stub(Client, plug)
   end
 
   # A Media Source whose scan finds a new file, a matched Media and an Unmatched Media
