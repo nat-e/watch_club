@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router';
 import {type CurrentUser, logoutMutation} from '@watchclub/api';
 import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
+import {useInstanceName} from '@watchclub/core/instance';
 import * as icons from 'lucide-react';
 import {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -89,6 +90,7 @@ function AppSidebar({user}: {user: CurrentUser}) {
   const {t} = useTranslation(['web', 'core']);
   const router = useRouter();
   const {setOpenMobile} = useSidebar();
+  const instanceName = useInstanceName();
   useEffect(
     () =>
       router.subscribe('onResolved', () => {
@@ -104,8 +106,7 @@ function AppSidebar({user}: {user: CurrentUser}) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link to="/" />}>
-              {/* i18next-instrument-ignore: the name stays the same in every language */}
-              <span className="font-heading text-base font-semibold">WatchClub</span>
+              <span className="font-heading text-base font-semibold">{instanceName}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -231,10 +232,6 @@ function UserMenu({user}: {user: CurrentUser}) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuLabel>{t($ => $.web.shell.administration)}</DropdownMenuLabel>
-              <DropdownMenuItem render={<Link to="/admin/settings" />}>
-                <icons.Settings2Icon />
-                {t($ => $.web.instanceSettings.title)}
-              </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/users" />}>
                 <icons.UsersIcon />
                 {t($ => $.web.users.title)}

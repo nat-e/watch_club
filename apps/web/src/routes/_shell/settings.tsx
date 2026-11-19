@@ -5,6 +5,7 @@ import {
   savePreferencesMutation,
   useTrackLanguageOptions,
 } from '@watchclub/core/accounts/preferences';
+import {useInstanceName} from '@watchclub/core/instance';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -35,6 +36,7 @@ function Settings() {
 function LanguageSection() {
   const {t, i18n} = useTranslation('core');
   const localeNames = useLocaleNames();
+  const instanceName = useInstanceName();
   const user = useCurrentUser();
   const save = useMutation(savePreferencesMutation);
   const form = useAppForm({
@@ -55,7 +57,7 @@ function LanguageSection() {
   return (
     <SettingsSection
       title={t($ => $.core.settings.preferences)}
-      description={t($ => $.core.settings.preferencesDescription)}
+      description={t($ => $.core.settings.preferencesDescription, {name: instanceName})}
     >
       <form.AppForm>
         <form.Form className="flex flex-col items-start gap-6 sm:max-w-sm">

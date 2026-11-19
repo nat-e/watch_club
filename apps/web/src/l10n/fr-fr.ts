@@ -2,9 +2,6 @@ export default {
   combobox: {
     remove: 'Retirer',
   },
-  instanceSettings: {
-    title: "Paramètres de l'instance",
-  },
   mediaBrowser: {
     title: 'Explorateur de médias',
   },
@@ -16,7 +13,7 @@ export default {
   },
   search: {
     closeSearch: 'Fermer la recherche',
-    inLibrary: 'Sur WatchClub',
+    inLibrary: 'Sur {{name}}',
     seeAll: 'Voir tous les résultats pour « {{query}} »',
   },
   settings: {

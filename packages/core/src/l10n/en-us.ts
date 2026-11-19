@@ -43,7 +43,7 @@ export default {
   search: {
     failed: "The search didn't work.",
     hint_books: 'Find any book.',
-    hint_moviesAndTvShows: "Find any movie or TV show, even ones that aren't on WatchClub yet.",
+    hint_moviesAndTvShows: "Find any movie or TV show, even ones that aren't on {{name}} yet.",
     noResults: 'No results',
     nothingFound: "We didn't find anything for “{{query}}”.",
     resultCount_one: '{{count}} result',
@@ -73,7 +73,7 @@ export default {
       'When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language.',
     originalLanguage: 'Original language',
     preferences: 'Preferences',
-    preferencesDescription: 'Choose the language used across WatchClub.',
+    preferencesDescription: 'Choose the language used across {{name}}.',
     save: 'Save',
     subtitles: 'Subtitles',
     subtitlesOff: 'Off',

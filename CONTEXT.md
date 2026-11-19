@@ -16,6 +16,14 @@ _Avoid_: Account, profile
 A user’s unique public name in WatchClub.
 _Avoid_: Handle, display name
 
+**Instance**:
+One installation of WatchClub, which its host runs for a group of **Users**.
+_Avoid_: Server, site
+
+**Instance Name**:
+The name **Users** see for the **Instance**, which its host chooses.
+_Avoid_: Server name, site name
+
 **Instance Administrator**:
 The single user who administers the WatchClub instance.
 _Avoid_: Administrator, admin, owner

@@ -32,6 +32,21 @@ pub struct Client {
     headers: HeaderMap,
 }
 
+/// Returns the context of an app with the default settings, whose calls to the Metadata Providers
+/// fail.
+fn default_context(db: &Pool) -> ApiContext {
+    ApiContext {
+        db: db.clone(),
+        instance_name: "WatchClub".into(),
+        apps_sentry: AppsSentry {
+            web_dsn: None,
+            mobile_dsn: None,
+            environment: "production".into(),
+        },
+        metadata_providers: unreachable_metadata_providers(),
+    }
+}
+
 /// The API's answer to a request.
 #[derive(Debug)]
 pub struct Response {
@@ -44,28 +59,30 @@ pub struct Response {
 impl Client {
     /// Calls an app whose calls to the Metadata Providers fail, as nothing answers them.
     pub fn new(db: &Pool) -> Self {
-        Self::with_metadata_providers(db, unreachable_metadata_providers())
+        Self::with_context(default_context(db))
     }
 
     /// Calls an app that calls these Metadata Providers, such as a `FakeTmdb`'s.
     pub fn with_metadata_providers(db: &Pool, metadata_providers: MetadataProviders) -> Self {
         Self::with_context(ApiContext {
-            db: db.clone(),
-            apps_sentry: AppsSentry {
-                web_dsn: None,
-                mobile_dsn: None,
-                environment: "production".into(),
-            },
             metadata_providers,
+            ..default_context(db)
+        })
+    }
+
+    /// Calls an app whose host named the Instance.
+    pub fn with_instance_name(db: &Pool, instance_name: &str) -> Self {
+        Self::with_context(ApiContext {
+            instance_name: instance_name.into(),
+            ..default_context(db)
         })
     }
 
     /// Calls an app whose host set these Sentry settings for the apps.
     pub fn with_apps_sentry(db: &Pool, apps_sentry: AppsSentry) -> Self {
         Self::with_context(ApiContext {
-            db: db.clone(),
             apps_sentry,
-            metadata_providers: unreachable_metadata_providers(),
+            ..default_context(db)
         })
     }
 

@@ -21,6 +21,15 @@ async fn needs_setup_until_the_instance_administrator_exists(db: PgPool) {
 }
 
 #[database_test]
+async fn gives_the_instance_name_the_host_chose(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let response = Client::with_instance_name(&db, "Kflix")
+        .get("/api/instance")
+        .await;
+    assert_eq!(response.body["name"], "Kflix");
+}
+
+#[database_test]
 async fn names_no_sentry_dsn_unless_the_host_sets_one(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let response = Client::new(&db).get("/api/instance").await;
