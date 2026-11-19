@@ -179,7 +179,6 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             overview: movie.overview,
             poster: movie.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
-            league: None,
         }),
         MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
             id: ContentId::TvShow(TmdbId(tv_show.id)),
@@ -188,7 +187,6 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             overview: tv_show.overview,
             poster: tv_show.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
-            league: None,
         }),
         MultiSearchResult::Person => None,
     }

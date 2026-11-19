@@ -1347,8 +1347,7 @@
               "date",
               "overview",
               "poster",
-              "creators",
-              "league"
+              "creators"
             ],
             "properties": {
               "creators": {
@@ -1356,7 +1355,7 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "The people credited for making it, most important first, such as a Book's authors. None for\nMovies, TV Shows and Sports Events for now"
+                "description": "Who makes it, the most important first: a Book's authors and illustrators, or a Sports\nEvent's league, such as UFC or Formula 1. None for Movies and TV Shows, as TMDB's search\ndoesn't say who makes them"
               },
               "date": {
                 "type": [
@@ -1365,13 +1364,6 @@
                 ],
                 "format": "date",
                 "description": "The day it came out, first aired or takes place, when its Metadata Provider knows it. A Book\nwhose day Hardcover doesn't know comes out on January 1st of its year"
-              },
-              "league": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "The league or competition of a Sports Event, such as UFC or Formula 1, when sportarr.net\nknows it. Null for other Content"
               },
               "overview": {
                 "type": [

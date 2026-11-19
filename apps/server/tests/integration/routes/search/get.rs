@@ -64,7 +64,6 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
                 {"url": "https://image.tmdb.org/t/p/w780/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 780, "height": 1170},
             ],
             "creators": [],
-            "league": null,
         })
     );
     assert_eq!(results[2].get("poster"), Some(&json!(null)));
@@ -104,7 +103,6 @@ async fn returns_a_page_of_books(db: PgPool) {
                 "height": 500,
             }],
             "creators": ["René Goscinny", "Albert Uderzo"],
-            "league": null,
         })
     );
 }
@@ -146,8 +144,7 @@ async fn returns_the_sports_events_on_one_page(db: PgPool) {
                 "width": 680,
                 "height": 1000,
             }],
-            "creators": [],
-            "league": "Boxing",
+            "creators": ["Boxing"],
         })
     );
 }

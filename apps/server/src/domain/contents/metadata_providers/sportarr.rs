@@ -133,8 +133,7 @@ fn search_result(event: Event) -> SearchResult {
         date: event.date,
         overview: event.overview,
         poster: event.poster_url.and_then(poster),
-        creators: Vec::new(),
-        league: event.league,
+        creators: event.league.into_iter().collect(),
     }
 }
 

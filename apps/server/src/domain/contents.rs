@@ -138,13 +138,10 @@ pub struct SearchResult {
     pub overview: Option<String>,
     #[schema(required = true)]
     pub poster: Option<Image>,
-    /// The people credited for making it, most important first, such as a Book's authors. None for
-    /// Movies, TV Shows and Sports Events for now
+    /// Who makes it, the most important first: a Book's authors and illustrators, or a Sports
+    /// Event's league, such as UFC or Formula 1. None for Movies and TV Shows, as TMDB's search
+    /// doesn't say who makes them
     pub creators: Vec<String>,
-    /// The league or competition of a Sports Event, such as UFC or Formula 1, when sportarr.net
-    /// knows it. Null for other Content
-    #[schema(required = true)]
-    pub league: Option<String>,
 }
 
 /// A page of a search's results.

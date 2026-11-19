@@ -123,8 +123,8 @@ export function useSearchHint(scope: SearchScope): string {
 
 /**
  * Returns the facts a search result shows after its Content Type, when it has them: a Sports
- * Event's day, as `language`, such as `fr-FR`, writes it, or the year of other Content, then a
- * Sports Event's league, then the creators.
+ * Event's day, as `language`, such as `fr-FR`, writes it, or the year of other Content, then its
+ * creators, such as a Book's authors or a Sports Event's league.
  */
 export function searchResultDetails(result: SearchResult, language: string): string[] {
   const details: string[] = [];
@@ -137,9 +137,6 @@ export function searchResultDetails(result: SearchResult, language: string): str
         ? midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'})
         : String(midnight.getFullYear()),
     );
-  }
-  if (result.league !== null) {
-    details.push(result.league);
   }
   if (result.creators.length > 0) {
     details.push(result.creators.join(', '));

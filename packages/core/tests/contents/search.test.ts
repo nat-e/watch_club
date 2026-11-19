@@ -17,7 +17,6 @@ function movie(externalId: number): SearchResult {
     overview: null,
     poster: null,
     creators: [],
-    league: null,
     // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
   };
 }
@@ -82,13 +81,13 @@ describe('searchResultDetails', () => {
     expect(searchResultDetails(book, 'en-US')).toEqual(['1961', 'René Goscinny, Albert Uderzo']);
   });
 
-  it("gives a Sports Event's date in the language, then its league", () => {
+  it("gives a Sports Event's day in the language, then its league", () => {
     const sportsEvent: SearchResult = {
       ...movie(1),
       // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
       content_type: 'sports_event',
       date: '2024-09-15',
-      league: 'Boxing',
+      creators: ['Boxing'],
     };
 
     expect(searchResultDetails(sportsEvent, 'en-US')).toEqual(['Sep 15, 2024', 'Boxing']);

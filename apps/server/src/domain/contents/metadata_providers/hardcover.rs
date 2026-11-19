@@ -182,7 +182,6 @@ fn search_result(book: BookDocument) -> SearchResult {
         overview: book.description,
         poster: book.image.and_then(cover),
         creators: creators(book.contributions),
-        league: None,
     }
 }
 

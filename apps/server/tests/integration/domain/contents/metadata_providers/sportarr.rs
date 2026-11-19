@@ -56,8 +56,7 @@ async fn search_returns_the_events_with_the_querys_words_in_their_title_the_late
                 width: 680,
                 height: 1000,
             }]),
-            creators: Vec::new(),
-            league: Some("Boxing".to_owned()),
+            creators: vec!["Boxing".to_owned()],
         }
     );
     assert_eq!(found.next_page, None);
@@ -105,11 +104,11 @@ async fn search_leaves_out_what_sportarr_lacks() {
     assert_eq!(
         (
             result.date,
-            result.league.as_deref(),
             result.overview.as_deref(),
             &result.poster,
+            result.creators.as_slice(),
         ),
-        (None, None, None, &None)
+        (None, None, &None, [].as_slice())
     );
 }
 
