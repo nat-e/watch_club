@@ -21,7 +21,8 @@ import type {Session, SessionStore} from '@/session-store';
 const SESSION_USER_QUERY = queryOptions({...currentUserQuery, retry: false});
 
 /**
- * The query for the Instance, whose name the signed-in screens show, tried once like the User's.
+ * Returns the query for the Instance, whose name the signed-in screens show, tried once like the
+ * User's.
  * Its key holds the Instance's URL, so it's created once the API client has it.
  */
 function sessionInstanceQuery() {
