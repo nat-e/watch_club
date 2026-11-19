@@ -12,9 +12,9 @@ import {router} from 'expo-router';
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, FlatList, Pressable, Text, View} from 'react-native';
+import {ChoiceChips} from '@/components/choice-chips';
 import {Poster} from '@/components/contents/poster';
 import {Host} from '@/components/host';
-import {SegmentedControl} from '@/components/segmented-control';
 import {Description, useAnnouncement} from '@/components/text';
 
 /**
@@ -53,7 +53,7 @@ export function SearchResults({
 }
 
 /**
- * The control that picks the scope a search looks in, one per Metadata Provider, as their results
+ * The pills that pick the scope a search looks in, one per Metadata Provider, as their results
  * can't share one list.
  */
 function SearchScopes({
@@ -66,14 +66,12 @@ function SearchScopes({
   const {t} = useTranslation('core');
   const scopeNames = useSearchScopeNames();
   return (
-    <View className="px-4 py-2">
-      <SegmentedControl
-        label={t($ => $.core.search.scope)}
-        segments={SEARCH_SCOPES.map(option => ({value: option, label: scopeNames[option]}))}
-        value={scope}
-        onChange={onScopeChange}
-      />
-    </View>
+    <ChoiceChips
+      label={t($ => $.core.search.scope)}
+      options={SEARCH_SCOPES.map(option => ({value: option, label: scopeNames[option]}))}
+      value={scope}
+      onChange={onScopeChange}
+    />
   );
 }
 
