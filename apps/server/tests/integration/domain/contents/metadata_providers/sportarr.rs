@@ -3,7 +3,8 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult, SportarrId,
+    CreditKind, ExternalContentId, Image, ImageSource, LookUpError, MediaType, SearchResult,
+    SportarrId,
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -144,25 +145,44 @@ async fn search_fails_with_what_sportarr_says_went_wrong() {
 }
 
 #[tokio::test]
-async fn look_up_sports_event_returns_its_title() {
+async fn fetch_sports_event_returns_it_with_its_one_media() {
     let sportarr = FakeSportarr::start().await;
     sportarr
         .answer("/lookup/event/ev-575969", fixture("event"))
         .await;
 
-    let content = sportarr
+    let event = sportarr
         .client()
-        .look_up_sports_event(SportarrId::new("ev-575969"))
+        .fetch_sports_event(&SportarrId::new("ev-575969"))
         .await
         .unwrap();
 
     assert_eq!(
-        content,
-        Content {
-            external_content_id: ExternalContentId::SportsEvent(SportarrId::new("ev-575969")),
-            title: "Canelo Álvarez vs Edgar Berlanga".to_owned(),
-        }
+        event.id,
+        ExternalContentId::SportsEvent(SportarrId::new("ev-575969"))
     );
+    assert_eq!(event.original_title, "Canelo Álvarez vs Edgar Berlanga");
+    assert_eq!(event.release_date, Some(date(2024, 9, 15)));
+    assert_eq!(event.origin_country.as_deref(), Some("US"));
+    assert!(event.texts.overviews.original.is_some());
+    assert!(event.texts.posters.original.is_some());
+    assert_eq!(
+        event.backdrop.unwrap().sources(),
+        [ImageSource {
+            url: "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/backdrop_thesportsdb_3e52cef8a113.jpg?v=g1-3e52cef8a113".to_owned(),
+            width: 1280,
+            height: 720,
+        }]
+    );
+    let credits: Vec<_> = event
+        .credits
+        .iter()
+        .map(|credit| (credit.kind, credit.name.as_str()))
+        .collect();
+    assert_eq!(credits, [(CreditKind::League, "Boxing")]);
+    assert_eq!(event.media.len(), 1);
+    assert_eq!(event.media[0].media_type, MediaType::SportsEvent);
+    assert_eq!(event.media[0].release_date, Some(date(2024, 9, 15)));
 }
 
 #[tokio::test]
@@ -174,7 +194,7 @@ async fn look_up_fails_with_not_found_when_sportarr_doesnt_know_the_id() {
 
     let error = sportarr
         .client()
-        .look_up_sports_event(SportarrId::new("ev-0"))
+        .fetch_sports_event(&SportarrId::new("ev-0"))
         .await
         .unwrap_err();
 

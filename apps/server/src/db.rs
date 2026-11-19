@@ -9,6 +9,10 @@ use sqlx_otel::PoolBuilder;
 /// `sqlx_otel::QueryAnnotateExt`.
 pub type Pool = sqlx_otel::Pool<Postgres>;
 
+/// A transaction on the app's database, from `Pool::begin`, whose queries are traced like the
+/// pool's.
+pub type Transaction = sqlx_otel::Transaction<'static, Postgres>;
+
 /// Connects to the app's database, runs its pending migrations, and reports the pool's connections
 /// in metrics. Call it after `observability::start`, without which the spans and metrics go
 /// nowhere.

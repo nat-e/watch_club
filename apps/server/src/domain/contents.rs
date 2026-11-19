@@ -1,34 +1,149 @@
-//! Content: the Movies, TV Shows, Sports Events and Books that Users search for, from the Metadata
-//! Providers.
+//! Content: the Movies, TV Shows, Sports Events and Books that Users search for and open, from the
+//! Metadata Providers.
+//!
+//! The first view of a Content saves it, with its Media, and later views read what's saved. A view
+//! of a Content saved over a day ago queues a job that saves it again, so pages never wait for a
+//! Metadata Provider once their Content is saved.
 
 mod image;
+mod localizations;
 mod metadata_providers;
+mod store;
 
-use std::num::NonZeroU32;
+use std::{
+    fmt::{self, Display, Formatter},
+    num::NonZeroU32,
+};
 
-use jiff::civil::Date;
+use jiff::{SignedDuration, Timestamp, civil::Date};
 use serde::{Deserialize, Serialize};
+use tracing::Level;
 use utoipa::{
     PartialSchema, ToSchema,
     openapi::{RefOr, Schema},
 };
+use uuid::Uuid;
 
 pub use self::{
     image::{Image, ImageSource},
+    localizations::{ContentTranslations, Language, MediaTranslations, Translations},
     metadata_providers::{
-        Hardcover, HardcoverId, MetadataProviders, Sportarr, SportarrId, Tmdb, TmdbId,
+        ContentMetadata, CreditMetadata, ExternalIds, Hardcover, HardcoverId, MediaMetadata,
+        MetadataProviders, Sportarr, SportarrId, Tmdb, TmdbId,
     },
+    store::list_media,
 };
 use super::{InternalError, accounts::Locale};
+use crate::{
+    db::Pool,
+    jobs::{self, RefreshContent},
+};
+
+/// The time after which a view of a Content queues a job that saves it again
+const REFRESH_AFTER: SignedDuration = SignedDuration::from_hours(24);
+
+/// The unique ID of a Content in WatchClub. Actions take it rather than an External ID, which a
+/// Metadata Provider can change.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
+#[sqlx(transparent)]
+pub struct ContentId(Uuid);
+
+impl Display for ContentId {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
+/// The unique ID of a Media.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
+#[sqlx(transparent)]
+pub struct MediaId(Uuid);
 
 /// The type of a Content.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::Type, ToSchema)]
 #[serde(rename_all = "snake_case")]
+#[sqlx(type_name = "content_type", rename_all = "snake_case")]
 pub enum ContentType {
     Movie,
     TvShow,
     SportsEvent,
     Book,
+}
+
+impl ContentType {
+    /// Returns the Metadata Provider that Content of this type comes from.
+    pub const fn metadata_provider(self) -> MetadataProvider {
+        match self {
+            Self::Movie | Self::TvShow => MetadataProvider::Tmdb,
+            Self::SportsEvent => MetadataProvider::Sportarr,
+            Self::Book => MetadataProvider::Hardcover,
+        }
+    }
+}
+
+/// A catalog that Content metadata comes from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
+#[sqlx(type_name = "metadata_provider", rename_all = "snake_case")]
+pub enum MetadataProvider {
+    Tmdb,
+    Sportarr,
+    Hardcover,
+}
+
+/// The kind of a Media, which tells the Content Type it belongs to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
+#[sqlx(type_name = "media_type", rename_all = "snake_case")]
+pub enum MediaType {
+    Movie,
+    TvShowEpisode,
+    SportsEvent,
+}
+
+/// A kind of story a Movie or a TV Show tells.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, sqlx::Type, ToSchema)]
+#[serde(rename_all = "snake_case")]
+#[sqlx(type_name = "genre", rename_all = "snake_case")]
+pub enum Genre {
+    Action,
+    Adventure,
+    Animation,
+    Comedy,
+    Crime,
+    Documentary,
+    Drama,
+    Family,
+    Fantasy,
+    History,
+    Horror,
+    Kids,
+    Music,
+    Mystery,
+    News,
+    Politics,
+    Reality,
+    Romance,
+    ScienceFiction,
+    Soap,
+    Talk,
+    Thriller,
+    TvMovie,
+    War,
+    Western,
+}
+
+/// The part a person or an organization has in a Content.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, sqlx::Type, ToSchema)]
+#[serde(rename_all = "snake_case")]
+#[sqlx(type_name = "credit_kind", rename_all = "snake_case")]
+pub enum CreditKind {
+    Director,
+    Actor,
+    Author,
+    Illustrator,
+    Narrator,
+    Artist,
+    /// The league or competition a Sports Event is part of
+    League,
 }
 
 /// The Content Types a search looks for, each at the Metadata Provider of its types.
@@ -115,12 +230,76 @@ impl ToSchema for ExternalContentId {
     }
 }
 
-/// A Content, with its title in the User's language when its Metadata Provider has it.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+/// A Content as its page shows it, with its texts in one Locale.
+#[derive(Clone, Debug, PartialEq, Serialize, ToSchema)]
 pub struct Content {
+    pub id: ContentId,
     #[serde(flatten)]
     pub external_content_id: ExternalContentId,
     pub title: String,
+    /// Its title in its original language
+    pub original_title: String,
+    /// Its original language, as an ISO 639-1 code such as `fr`
+    #[schema(required = true)]
+    pub original_language: Option<String>,
+    #[schema(required = true)]
+    pub overview: Option<String>,
+    #[schema(required = true)]
+    pub poster: Option<Image>,
+    #[schema(required = true)]
+    pub backdrop: Option<Image>,
+    /// The day it came out, first aired or takes place
+    #[schema(value_type = Option<String>, format = Date, required = true)]
+    pub release_date: Option<Date>,
+    pub genres: Vec<Genre>,
+    /// The average of its votes out of 10, to one decimal, or null when too few people voted
+    #[schema(required = true)]
+    pub rating: Option<f32>,
+    /// The YouTube URL of its trailer
+    #[schema(required = true)]
+    pub trailer_url: Option<String>,
+    /// Who made it and who's in it, in display order
+    pub credits: Vec<Credit>,
+    /// The runtime of its Media, when it has only one, such as a Movie
+    #[schema(required = true)]
+    pub runtime_seconds: Option<i32>,
+    /// The number of groups its Media are in, such as a TV Show's seasons
+    pub media_group_count: i32,
+}
+
+/// A person or an organization who made a Content or is in it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+pub struct Credit {
+    pub kind: CreditKind,
+    pub name: String,
+    /// The character an actor plays
+    #[schema(required = true)]
+    pub character: Option<String>,
+    #[schema(required = true)]
+    pub photo: Option<Image>,
+}
+
+/// A Media of a Content, such as a TV Show Episode, with its texts in one Locale.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+pub struct Media {
+    pub id: MediaId,
+    /// The group it's in, such as a TV Show Episode's season
+    #[schema(required = true)]
+    pub group_number: Option<i32>,
+    /// Its number in its group, such as a TV Show Episode's
+    #[schema(required = true)]
+    pub number: Option<i32>,
+    #[schema(required = true)]
+    pub title: Option<String>,
+    #[schema(required = true)]
+    pub overview: Option<String>,
+    #[schema(required = true)]
+    pub image: Option<Image>,
+    /// The day it came out or aired, which tells whether it's out
+    #[schema(value_type = Option<String>, format = Date, required = true)]
+    pub release_date: Option<Date>,
+    #[schema(required = true)]
+    pub runtime_seconds: Option<i32>,
 }
 
 /// A Content that matches a search, with its texts in the User's language when its Metadata
@@ -152,13 +331,20 @@ pub struct SearchResults {
     pub next_page: Option<NonZeroU32>,
 }
 
-/// The failures of `look_up`.
+/// The failures of finding a Content by its External ID.
 #[derive(Debug, thiserror::Error)]
 pub enum LookUpError {
+    /// Its Metadata Provider has no such Content
     #[error("no such Content")]
     NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
+}
+
+impl From<InternalError> for LookUpError {
+    fn from(error: InternalError) -> Self {
+        Self::Internal(error.0)
+    }
 }
 
 /// Returns a page of the Content of the scope that matches the query, in their Metadata Provider's
@@ -183,7 +369,9 @@ pub async fn search(
     }
 }
 
-/// Returns the Content, with its title in the Locale's language when its Metadata Provider has it.
+/// Returns the Content in the Locale. The first time someone opens it, it's saved from its
+/// Metadata Provider first. When it was saved over a day ago, it's returned at once, and a job
+/// saves it again for the next views.
 #[tracing::instrument(
     skip_all,
     fields(
@@ -191,17 +379,55 @@ pub async fn search(
         content.external_id = %external_content_id.external_id(),
     ),
 )]
-pub async fn look_up(
+pub async fn get_by_external_id(
+    db: &Pool,
     metadata_providers: &MetadataProviders,
     external_content_id: ExternalContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
-    match external_content_id {
-        ExternalContentId::Movie(id) => metadata_providers.tmdb.look_up_movie(id, locale).await,
-        ExternalContentId::TvShow(id) => metadata_providers.tmdb.look_up_tv_show(id, locale).await,
-        ExternalContentId::SportsEvent(id) => {
-            metadata_providers.sportarr.look_up_sports_event(id).await
+    if let Some(saved) = store::find(db, &external_content_id, locale).await? {
+        if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
+            let content_id = saved.content.id;
+            jobs::enqueue(db, RefreshContent { content_id }).await?;
         }
-        ExternalContentId::Book(id) => metadata_providers.hardcover.look_up_book(id).await,
+        return Ok(saved.content);
     }
+
+    let metadata = metadata_providers.fetch(&external_content_id).await?;
+    store::save(db, &metadata).await?;
+    let saved = store::find(db, &external_content_id, locale)
+        .await?
+        .ok_or_else(|| anyhow::anyhow!("the Content just saved is missing"))?;
+    Ok(saved.content)
+}
+
+/// Saves the Content again, as its Metadata Provider has it now. When its Metadata Provider no
+/// longer knows it, such as after deleting a duplicate, the Content stays as it is. Does nothing
+/// when there's no such Content.
+#[tracing::instrument(skip_all, fields(content.id = %content_id))]
+pub async fn refresh(
+    db: &Pool,
+    metadata_providers: &MetadataProviders,
+    content_id: ContentId,
+) -> Result<(), InternalError> {
+    let Some(external_content_id) = store::external_content_id(db, content_id).await? else {
+        return Ok(());
+    };
+
+    match metadata_providers.fetch(&external_content_id).await {
+        Ok(metadata) => {
+            store::save(db, &metadata).await?;
+        }
+        Err(LookUpError::NotFound) => {
+            tracing::event!(
+                name: "contents.refresh.not_found",
+                Level::WARN,
+                content.type = ?external_content_id.content_type(),
+                content.external_id = %external_content_id.external_id(),
+                "its Metadata Provider no longer knows the Content, which stays as it is",
+            );
+        }
+        Err(LookUpError::Internal(error)) => return Err(error.into()),
+    }
+    Ok(())
 }

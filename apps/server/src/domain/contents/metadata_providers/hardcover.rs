@@ -17,8 +17,9 @@ use crate::{
     domain::{
         InternalError,
         contents::{
-            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
-            SearchResults,
+            ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
+            ExternalIds, Image, ImageSource, LookUpError, SearchResult, SearchResults,
+            Translations,
         },
     },
 };
@@ -127,14 +128,34 @@ impl Hardcover {
         Ok(SearchResults { results, next_page })
     }
 
-    /// Returns the Book with this ID.
-    pub async fn look_up_book(&self, id: HardcoverId) -> Result<Content, LookUpError> {
+    /// Returns the Book with this ID. Hardcover doesn't say which language its texts are in, so
+    /// they're its original ones. A Book has no Media yet.
+    pub async fn fetch_book(&self, id: HardcoverId) -> Result<ContentMetadata, LookUpError> {
         let data: BookData = self
             .query(
                 r"
                 query Book($id: Int!) {
                   books_by_pk(id: $id) {
                     title
+                    description
+                    release_date
+                    image {
+                      url
+                      width
+                      height
+                    }
+                    contributions {
+                      contribution
+                      author {
+                        id
+                        name
+                        image {
+                          url
+                          width
+                          height
+                        }
+                      }
+                    }
                   }
                 }",
                 json!({"id": id}),
@@ -142,9 +163,23 @@ impl Hardcover {
             .await?;
         let book = data.books_by_pk.ok_or(LookUpError::NotFound)?;
 
-        Ok(Content {
-            external_content_id: ExternalContentId::Book(id),
-            title: book.title,
+        Ok(ContentMetadata {
+            id: ExternalContentId::Book(id),
+            external_ids: ExternalIds::default(),
+            original_title: book.title,
+            original_language: None,
+            origin_country: None,
+            release_date: book.release_date,
+            genres: Vec::new(),
+            rating: None,
+            backdrop: None,
+            texts: ContentTranslations {
+                overviews: Translations::original(book.description),
+                posters: Translations::original(book.image.and_then(cover)),
+                ..ContentTranslations::default()
+            },
+            credits: credits(book.contributions),
+            media: Vec::new(),
         })
     }
 
@@ -202,7 +237,42 @@ fn creators(contributions: Vec<Contribution>) -> Vec<String> {
     creators
 }
 
-/// Returns a Book's cover, in the one size Hardcover has, or None when it has none.
+/// Returns the credits of a Book's authors, illustrators and narrators, once each, most important
+/// first, leaving out roles such as translator.
+fn credits(contributions: Vec<BookContribution>) -> Vec<CreditMetadata> {
+    let mut credits: Vec<CreditMetadata> = Vec::with_capacity(contributions.len());
+    for contribution in contributions {
+        // Counts a contribution without a role, which Hardcover's schema allows, as an author's
+        let kind = match contribution.contribution.as_deref() {
+            None | Some("Author") => CreditKind::Author,
+            Some("Illustrator" | "Illustrations") => CreditKind::Illustrator,
+            Some("Narrator") => CreditKind::Narrator,
+            Some(_) => continue,
+        };
+        let author_id = Some(contribution.author.id.to_string());
+        let is_listed = credits
+            .iter()
+            .any(|credit| credit.kind == kind && credit.external_ids.hardcover == author_id);
+        if is_listed {
+            continue;
+        }
+
+        credits.push(CreditMetadata {
+            kind,
+            name: contribution.author.name,
+            character: None,
+            photo: contribution.author.image.and_then(cover),
+            external_ids: ExternalIds {
+                hardcover: author_id,
+                ..ExternalIds::default()
+            },
+        });
+    }
+    credits
+}
+
+/// Returns a Book's cover, or a person's photo, in the one size Hardcover has, or None when it has
+/// none.
 fn cover(cover: Cover) -> Option<Image> {
     let (Some(url), Some(width), Some(height)) = (cover.url, cover.width, cover.height) else {
         return None;
@@ -310,6 +380,31 @@ struct BookData {
 #[derive(Debug, Deserialize)]
 struct Book {
     title: String,
+    #[serde(default, deserialize_with = "optional_text")]
+    description: Option<String>,
+    /// The day it came out, or January 1st of its year when Hardcover doesn't know the day
+    #[serde(default, deserialize_with = "optional_date")]
+    release_date: Option<Date>,
+    image: Option<Cover>,
+    /// The people credited for it, most important first
+    #[serde(default)]
+    contributions: Vec<BookContribution>,
+}
+
+/// A person credited for a Book, with their role, as a Book's details have them.
+#[derive(Debug, Deserialize)]
+struct BookContribution {
+    author: BookContributor,
+    /// Their role, such as `Author`, `Illustrator` or `Translator`
+    contribution: Option<String>,
+}
+
+/// A person credited for a Book, as a Book's details have them.
+#[derive(Debug, Deserialize)]
+struct BookContributor {
+    id: i32,
+    name: String,
+    image: Option<Cover>,
 }
 
 /// Reads an ID that Typesense sends as text, such as `"427578"`.

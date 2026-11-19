@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM content_credits WHERE content_id = $1 AND position >= $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "afb9d21070d1fdfee0289d6d2d66cb07e043d37e0d31df56aa5889fc7c9c6801"
+}

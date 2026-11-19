@@ -12,6 +12,7 @@
 // The kinds of jobs, one per file
 mod kinds {
     pub(super) mod delete_expired_sessions;
+    pub(super) mod refresh_content;
 }
 mod observability;
 mod runner;
@@ -26,7 +27,7 @@ use sqlx::PgExecutor;
 use uuid::Uuid;
 
 pub use self::{
-    kinds::delete_expired_sessions::DeleteExpiredSessions,
+    kinds::{delete_expired_sessions::DeleteExpiredSessions, refresh_content::RefreshContent},
     runner::{run, run_available},
 };
 use crate::{
@@ -136,6 +137,7 @@ pub struct JobId(Uuid);
 #[derive(Debug)]
 enum AnyJob {
     DeleteExpiredSessions(DeleteExpiredSessions),
+    RefreshContent(RefreshContent),
 }
 
 impl AnyJob {
@@ -145,6 +147,7 @@ impl AnyJob {
             DeleteExpiredSessions::KIND => {
                 Self::DeleteExpiredSessions(serde_json::from_value(args)?)
             }
+            RefreshContent::KIND => Self::RefreshContent(serde_json::from_value(args)?),
             _ => bail!("unknown kind of job: {kind}"),
         })
     }
@@ -152,12 +155,14 @@ impl AnyJob {
     fn timeout(&self) -> Duration {
         match self {
             Self::DeleteExpiredSessions(_) => DeleteExpiredSessions::TIMEOUT,
+            Self::RefreshContent(_) => RefreshContent::TIMEOUT,
         }
     }
 
     async fn run(self, context: &JobContext) -> Result<(), JobError> {
         match self {
             Self::DeleteExpiredSessions(job) => job.run(context).await,
+            Self::RefreshContent(job) => job.run(context).await,
         }
     }
 }

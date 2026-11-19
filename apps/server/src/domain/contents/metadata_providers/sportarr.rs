@@ -18,8 +18,9 @@ use crate::{
     domain::{
         InternalError,
         contents::{
-            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
-            SearchResults,
+            ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
+            ExternalIds, Image, ImageSource, LookUpError, MediaMetadata, MediaTranslations,
+            MediaType, SearchResult, SearchResults, Translations,
         },
     },
 };
@@ -33,6 +34,13 @@ const POSTER_WIDTH: u32 = 680;
 
 /// The height of sportarr.net's posters, in pixels
 const POSTER_HEIGHT: u32 = 1000;
+
+/// The width of sportarr.net's backdrops, in pixels. Like the posters, they come from TheSportsDB,
+/// whose backdrops are all 1280 by 720.
+const BACKDROP_WIDTH: u32 = 1280;
+
+/// The height of sportarr.net's backdrops, in pixels
+const BACKDROP_HEIGHT: u32 = 720;
 
 /// The ID of a Sports Event at sportarr.net, such as `ev-028133`.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
@@ -95,8 +103,12 @@ impl Sportarr {
         })
     }
 
-    /// Returns the Sports Event with this ID.
-    pub async fn look_up_sports_event(&self, id: SportarrId) -> Result<Content, LookUpError> {
+    /// Returns the Sports Event with this ID, with its one Media. sportarr.net doesn't say which
+    /// language its texts are in, so they're its original ones.
+    pub async fn fetch_sports_event(
+        &self,
+        id: &SportarrId,
+    ) -> Result<ContentMetadata, LookUpError> {
         let found: LookUpEventAnswer = self
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
@@ -105,9 +117,39 @@ impl Sportarr {
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
         let event = found.data.into_iter().next().ok_or(LookUpError::NotFound)?;
 
-        Ok(Content {
-            external_content_id: ExternalContentId::SportsEvent(id),
-            title: event.title,
+        let credits = event.league.map(|league| CreditMetadata {
+            kind: CreditKind::League,
+            name: league,
+            character: None,
+            photo: None,
+            external_ids: ExternalIds::default(),
+        });
+        let media = MediaMetadata {
+            media_type: MediaType::SportsEvent,
+            group_number: None,
+            number: None,
+            release_date: event.date,
+            runtime_seconds: None,
+            image: None,
+            texts: MediaTranslations::default(),
+        };
+        Ok(ContentMetadata {
+            id: ExternalContentId::SportsEvent(id.clone()),
+            external_ids: ExternalIds::default(),
+            original_title: event.title,
+            original_language: None,
+            origin_country: event.country,
+            release_date: event.date,
+            genres: Vec::new(),
+            rating: None,
+            backdrop: event.backdrop_url.and_then(backdrop),
+            texts: ContentTranslations {
+                overviews: Translations::original(event.description),
+                posters: Translations::original(event.poster_url.and_then(poster)),
+                ..ContentTranslations::default()
+            },
+            credits: credits.into_iter().collect(),
+            media: vec![media],
         })
     }
 }
@@ -148,6 +190,15 @@ fn poster(url: String) -> Option<Image> {
     }])
 }
 
+/// Returns the backdrop at this URL, in the one size sportarr.net has.
+fn backdrop(url: String) -> Option<Image> {
+    Image::new([ImageSource {
+        url,
+        width: BACKDROP_WIDTH,
+        height: BACKDROP_HEIGHT,
+    }])
+}
+
 /// sportarr.net's answer to a search.
 #[derive(Debug, Deserialize)]
 struct SearchEventsAnswer {
@@ -183,6 +234,17 @@ struct Event {
     date: Option<Date>,
     #[serde(rename = "strPoster", default, deserialize_with = "optional_text")]
     poster_url: Option<String>,
+    #[serde(rename = "strFanart", default, deserialize_with = "optional_text")]
+    backdrop_url: Option<String>,
+    /// The country it takes place in, such as `US`
+    #[serde(rename = "strCountry", default, deserialize_with = "optional_text")]
+    country: Option<String>,
+    #[serde(
+        rename = "strDescriptionEN",
+        default,
+        deserialize_with = "optional_text"
+    )]
+    description: Option<String>,
 }
 
 /// Reads a text that sportarr.net sends blank, or null, when it has none.

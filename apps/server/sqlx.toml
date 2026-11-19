@@ -3,9 +3,16 @@
 # `::watch_club` to work in the library, the binaries and the tests alike.
 
 [macros.type-overrides]
-# SQLx has no Jiff support, see jiff-sqlx. Also checks the parameters bound to `timestamptz`.
+# SQLx has no Jiff support, see jiff-sqlx. Also checks the parameters bound to `timestamptz` and
+# `date`.
 'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"
+'DATE' = "jiff_sqlx::Date"
 'job_state' = "::watch_club::jobs::JobState"
+'content_type' = "::watch_club::domain::contents::ContentType"
+'metadata_provider' = "::watch_club::domain::contents::MetadataProvider"
+'media_type' = "::watch_club::domain::contents::MediaType"
+'credit_kind' = "::watch_club::domain::contents::CreditKind"
+'genre' = "::watch_club::domain::contents::Genre"
 
 [macros.table-overrides.'users']
 'id' = "::watch_club::domain::accounts::UserId"
@@ -20,3 +27,28 @@
 [macros.table-overrides.'jobs']
 'id' = "::watch_club::jobs::JobId"
 'queue' = "::watch_club::jobs::Queue"
+
+[macros.table-overrides.'contents']
+'id' = "::watch_club::domain::contents::ContentId"
+'genres' = "Vec<::watch_club::domain::contents::Genre>"
+'backdrop' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
+'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::ExternalIds>"
+
+[macros.table-overrides.'content_localizations']
+'content_id' = "::watch_club::domain::contents::ContentId"
+'locale' = "::watch_club::domain::accounts::Locale"
+'poster' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
+
+[macros.table-overrides.'content_credits']
+'content_id' = "::watch_club::domain::contents::ContentId"
+'photo' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
+'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::ExternalIds>"
+
+[macros.table-overrides.'media']
+'id' = "::watch_club::domain::contents::MediaId"
+'content_id' = "::watch_club::domain::contents::ContentId"
+'image' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
+
+[macros.table-overrides.'media_localizations']
+'media_id' = "::watch_club::domain::contents::MediaId"
+'locale' = "::watch_club::domain::accounts::Locale"

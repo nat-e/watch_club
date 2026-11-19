@@ -5,14 +5,25 @@ use std::{fs, path::Path};
 
 use secrecy::SecretString;
 use serde_json::Value;
-use watch_club::domain::contents::{MetadataProviders, Tmdb};
+use watch_club::domain::{
+    accounts::Locale,
+    contents::{MetadataProviders, Tmdb},
+};
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
-    matchers::{method, path},
+    matchers::{method, path, query_param},
 };
 
 /// The API Read Access Token the clients of a fake TMDB send
 pub const TOKEN: &str = "tmdb-token";
+
+/// The TMDB ID of the Movie in `fixtures/tmdb/movie_details.json`, Amélie, whose original language
+/// is French
+pub const MOVIE_ID: u32 = 194;
+
+/// The TMDB ID of the TV Show in `fixtures/tmdb/tv_details.json`, Chernobyl, which has one season
+/// of 5 TV Show Episodes
+pub const TV_SHOW_ID: u32 = 87_108;
 
 /// A TMDB that answers each request with what a mock on its `server` sets, and with a 404 when none
 /// matches.
@@ -33,6 +44,28 @@ impl FakeTmdb {
             .and(path(url_path))
             .respond_with(ResponseTemplate::new(200).set_body_json(body))
             .mount(&self.server)
+            .await;
+    }
+
+    /// Answers the GETs of `url_path` in the Locale's language with `body`.
+    pub async fn answer_in(&self, url_path: &str, locale: Locale, body: Value) {
+        Mock::given(method("GET"))
+            .and(path(url_path))
+            .and(query_param("language", locale.language_tag()))
+            .respond_with(ResponseTemplate::new(200).set_body_json(body))
+            .mount(&self.server)
+            .await;
+    }
+
+    /// Answers the requests for the Movie and the TV Show of the fixtures, `MOVIE_ID` and
+    /// `TV_SHOW_ID`, as the real TMDB did.
+    pub async fn answer_fixtures(&self) {
+        self.answer(&format!("/movie/{MOVIE_ID}"), fixture("movie_details"))
+            .await;
+        let tv_show_path = format!("/tv/{TV_SHOW_ID}");
+        self.answer_in(&tv_show_path, Locale::EnUs, fixture("tv_details"))
+            .await;
+        self.answer_in(&tv_show_path, Locale::FrFr, fixture("tv_seasons_fr"))
             .await;
     }
 

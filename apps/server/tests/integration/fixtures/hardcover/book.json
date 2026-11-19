@@ -1,7 +1,36 @@
 {
   "data": {
     "books_by_pk": {
-      "title": "Asterix the Gaul"
+      "title": "Asterix the Gaul",
+      "description": "The year is 50BC, and all Gaul is occupied. Only one small village of indomitable Gauls still holds out against the invaders. But how much longer can Asterix, Obelix and their friends resist the mighty Roman legions of Julius Caesar? Anything is possible, with a little cunning plus the druid Getafix's magic potions! Their effects can be truly hair-raising...",
+      "release_date": "1961-09-01",
+      "image": {
+        "url": "https://assets.hardcover.app/edition/17733379/1b12f2204159c59a4c5f644014bc1ada55440d4e.jpeg",
+        "width": 377,
+        "height": 500
+      },
+      "contributions": [
+        {
+          "contribution": "Author",
+          "author": {
+            "id": 137295,
+            "name": "René Goscinny",
+            "image": {
+              "url": "https://assets.hardcover.app/authors/137295/10232732-L.jpg",
+              "width": 317,
+              "height": 500
+            }
+          }
+        },
+        {
+          "contribution": "Author",
+          "author": {
+            "id": 253600,
+            "name": "Albert Uderzo",
+            "image": null
+          }
+        }
+      ]
     }
   }
 }

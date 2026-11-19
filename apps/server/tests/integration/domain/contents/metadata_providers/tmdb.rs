@@ -4,7 +4,10 @@ use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
-    contents::{Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult, TmdbId},
+    contents::{
+        CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, LookUpError, MediaType,
+        SearchResult, TmdbId,
+    },
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -365,60 +368,240 @@ async fn search_gives_up_after_two_more_tries() {
 }
 
 #[tokio::test]
-async fn look_up_movie_returns_its_title_in_the_locales_language() {
+async fn fetch_movie_asks_for_everything_in_every_locales_language_at_once() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/movie/194"))
         .and(header("authorization", format!("Bearer {TOKEN}")))
-        .and(query_param("language", "fr-FR"))
+        .and(query_param("language", "en-US"))
+        .and(query_param(
+            "append_to_response",
+            "translations,images,videos,credits,external_ids",
+        ))
+        .and(query_param("include_image_language", "en,fr,null"))
+        .and(query_param("include_video_language", "en,fr"))
         .respond_with(ResponseTemplate::new(200).set_body_json(fixture("movie_details")))
         .expect(1)
         .mount(&tmdb.server)
         .await;
 
-    let content = tmdb
-        .client()
-        .look_up_movie(TmdbId::new(194), Locale::FrFr)
-        .await
-        .unwrap();
+    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
 
+    assert_eq!(movie.id, ExternalContentId::Movie(TmdbId::new(194)));
+}
+
+#[tokio::test]
+async fn fetch_movie_returns_its_metadata_with_its_one_media() {
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+
+    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+
+    assert_eq!(movie.original_title, "Le Fabuleux Destin d'Amélie Poulain");
+    assert_eq!(movie.original_language.as_deref(), Some("fr"));
+    assert_eq!(movie.origin_country.as_deref(), Some("FR"));
+    assert_eq!(movie.release_date, Some(date(2001, 4, 25)));
+    assert_eq!(movie.genres, [Genre::Comedy, Genre::Romance]);
+    assert_eq!(movie.rating, Some(7.9));
+    assert_eq!(movie.external_ids.imdb.as_deref(), Some("tt0211915"));
+    // The backdrop without text, rather than the most voted one
     assert_eq!(
-        content,
-        Content {
-            external_content_id: ExternalContentId::Movie(TmdbId::new(194)),
-            title: "Le Fabuleux Destin d'Amélie Poulain".to_owned(),
-        }
+        movie.backdrop.unwrap().sources()[0].url,
+        "https://image.tmdb.org/t/p/w300/6n53UI4mX9QMfe2S0Pgt8mGebY1.jpg"
+    );
+    assert_eq!(movie.media.len(), 1);
+    assert_eq!(movie.media[0].media_type, MediaType::Movie);
+    assert_eq!(movie.media[0].runtime_seconds, Some(122 * 60));
+}
+
+#[tokio::test]
+async fn fetch_movie_returns_its_director_then_its_actors_in_billing_order() {
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+
+    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+
+    let credits: Vec<_> = movie
+        .credits
+        .iter()
+        .map(|credit| {
+            (
+                credit.kind,
+                credit.name.as_str(),
+                credit.character.as_deref(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        credits,
+        [
+            (CreditKind::Director, "Jean-Pierre Jeunet", None),
+            (CreditKind::Actor, "Audrey Tautou", Some("Amélie Poulain")),
+            (
+                CreditKind::Actor,
+                "Mathieu Kassovitz",
+                Some("Nino Quincampoix")
+            ),
+            (CreditKind::Actor, "Rufus", Some("Raphaël Poulain")),
+            (CreditKind::Actor, "Serge Merlin", Some("Raymond Dufayel")),
+        ]
+    );
+    assert_eq!(movie.credits[0].external_ids.tmdb.as_deref(), Some("2419"));
+}
+
+#[tokio::test]
+async fn fetch_movie_titles_its_original_languages_translation_with_its_original_title() {
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+
+    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+
+    // TMDB leaves the title of the original language's translation empty
+    let french = Language::new("fr", Some("FR".to_owned()));
+    assert!(
+        movie
+            .texts
+            .titles
+            .translated
+            .contains(&(french, "Le Fabuleux Destin d'Amélie Poulain".to_owned())),
+        "{:?}",
+        movie.texts.titles
     );
 }
 
 #[tokio::test]
-async fn look_up_tv_show_returns_its_title_in_the_locales_language() {
+async fn fetch_movie_returns_its_youtube_trailers_by_language_the_best_first() {
     let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+
+    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+
+    // Leaves out the clips and featurettes, and puts the trailers before the teasers
+    let trailers: Vec<_> = movie
+        .texts
+        .trailer_urls
+        .translated
+        .iter()
+        .map(|(language, url)| (language.code.as_str(), url.as_str()))
+        .collect();
+    assert_eq!(
+        trailers,
+        [
+            ("fr", "https://www.youtube.com/watch?v=_cZyjM_R6-E"),
+            ("en", "https://www.youtube.com/watch?v=j0aotpJRPgc"),
+            ("en", "https://www.youtube.com/watch?v=NkvJh8cpVCE"),
+        ]
+    );
+}
+
+#[tokio::test]
+async fn fetch_tv_show_returns_its_episodes_with_their_texts_in_each_locale() {
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+
+    let tv_show = tmdb
+        .client()
+        .fetch_tv_show(TmdbId::new(87_108))
+        .await
+        .unwrap();
+
+    assert_eq!(tv_show.original_title, "Chernobyl");
+    assert_eq!(tv_show.external_ids.tvdb.as_deref(), Some("360893"));
+    assert_eq!(tv_show.media.len(), 5);
+    let episode = &tv_show.media[1];
+    assert_eq!(episode.media_type, MediaType::TvShowEpisode);
+    assert_eq!((episode.group_number, episode.number), (Some(1), Some(2)));
+    assert_eq!(episode.release_date, Some(date(2019, 5, 13)));
+    assert_eq!(episode.runtime_seconds, Some(66 * 60));
+    assert!(episode.image.is_some());
+    assert_eq!(
+        episode.texts.titles.translated,
+        [
+            (
+                Language::new("en", Some("US".to_owned())),
+                "Please Remain Calm".to_owned()
+            ),
+            (
+                Language::new("fr", Some("FR".to_owned())),
+                "Veuillez garder votre calme".to_owned()
+            ),
+        ]
+    );
+}
+
+#[tokio::test]
+async fn fetch_tv_show_asks_for_the_seasons_it_didnt_guess_20_at_a_time_in_each_locale() {
+    let tmdb = FakeTmdb::start().await;
+    // Season 0 holds the specials, which WatchClub leaves out
+    let first_seasons = season_appends(1..=15);
     Mock::given(method("GET"))
-        .and(path("/tv/2316"))
+        .and(path("/tv/456"))
         .and(query_param("language", "en-US"))
-        .respond_with(ResponseTemplate::new(200).set_body_json(fixture("tv_details")))
+        .and(query_param(
+            "append_to_response",
+            format!("translations,images,videos,credits,external_ids,{first_seasons}"),
+        ))
+        .respond_with(ResponseTemplate::new(200).set_body_json(tv_show(0..=37, 1..=15)))
         .expect(1)
         .mount(&tmdb.server)
         .await;
+    for (language, seasons) in [
+        ("en-US", 16..=35),
+        ("en-US", 36..=37),
+        ("fr-FR", 1..=20),
+        ("fr-FR", 21..=37),
+    ] {
+        Mock::given(method("GET"))
+            .and(path("/tv/456"))
+            .and(query_param("language", language))
+            .and(query_param(
+                "append_to_response",
+                season_appends(seasons.clone()),
+            ))
+            .respond_with(ResponseTemplate::new(200).set_body_json(appended_seasons(seasons)))
+            .expect(1)
+            .mount(&tmdb.server)
+            .await;
+    }
 
-    let content = tmdb
-        .client()
-        .look_up_tv_show(TmdbId::new(2316), Locale::EnUs)
-        .await
-        .unwrap();
+    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
 
+    let seasons: Vec<_> = tv_show
+        .media
+        .iter()
+        .filter_map(|episode| episode.group_number)
+        .collect();
+    assert_eq!(seasons, (1..=37).collect::<Vec<_>>());
+}
+
+#[tokio::test]
+async fn fetch_tv_show_leaves_out_the_titles_tmdb_makes_up_for_untranslated_episodes() {
+    let tmdb = FakeTmdb::start().await;
+    let mut details = tv_show(1..=1, 1..=1);
+    details["season/1"]["episodes"][0]["name"] = json!("Pilot");
+    details["season/1"]["episodes"][0]["overview"] = json!("Walter starts cooking.");
+    let mut french = appended_seasons(1..=1);
+    french["season/1"]["episodes"][0]["name"] = json!("Épisode 1");
+    french["season/1"]["episodes"][0]["overview"] = json!("");
+    tmdb.answer_in("/tv/456", Locale::EnUs, details).await;
+    tmdb.answer_in("/tv/456", Locale::FrFr, french).await;
+
+    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
+
+    let texts = &tv_show.media[0].texts;
+    let english = Language::new("en", Some("US".to_owned()));
     assert_eq!(
-        content,
-        Content {
-            external_content_id: ExternalContentId::TvShow(TmdbId::new(2316)),
-            title: "The Office".to_owned(),
-        }
+        texts.titles.translated,
+        [(english.clone(), "Pilot".to_owned())]
+    );
+    assert_eq!(
+        texts.overviews.translated,
+        [(english, "Walter starts cooking.".to_owned())]
     );
 }
 
 #[tokio::test]
-async fn look_up_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
+async fn fetch_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/tv/194"))
@@ -432,9 +615,58 @@ async fn look_up_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
 
     let error = tmdb
         .client()
-        .look_up_tv_show(TmdbId::new(194), Locale::EnUs)
+        .fetch_tv_show(TmdbId::new(194))
         .await
         .unwrap_err();
 
     assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+}
+
+/// Returns TMDB's `append_to_response` for these seasons, such as `season/1,season/2`.
+fn season_appends(seasons: impl IntoIterator<Item = i32>) -> String {
+    seasons
+        .into_iter()
+        .map(|season| format!("season/{season}"))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+/// Returns the details of a TV Show with these seasons, and nothing else, with the `appended`
+/// ones.
+fn tv_show(
+    seasons: impl IntoIterator<Item = i32>,
+    appended: impl IntoIterator<Item = i32>,
+) -> Value {
+    let mut details = json!({
+        "original_name": "The Simpsons",
+        "original_language": "en",
+        "seasons": seasons
+            .into_iter()
+            .map(|season| json!({"season_number": season}))
+            .collect::<Vec<_>>(),
+        "translations": {"translations": []},
+        "images": {"posters": [], "backdrops": []},
+        "videos": {"results": []},
+        "credits": {"cast": [], "crew": []},
+        "external_ids": {},
+    });
+    details
+        .as_object_mut()
+        .unwrap()
+        .extend(appended_seasons(appended).as_object().unwrap().clone());
+    details
+}
+
+/// Returns a TV Show's details with only these seasons, of one TV Show Episode each.
+fn appended_seasons(seasons: impl IntoIterator<Item = i32>) -> Value {
+    seasons
+        .into_iter()
+        .map(|season| {
+            let episode = json!({"episode_number": 1, "name": format!("Season {season} premiere")});
+            (
+                format!("season/{season}"),
+                json!({"season_number": season, "episodes": [episode]}),
+            )
+        })
+        .collect()
 }
