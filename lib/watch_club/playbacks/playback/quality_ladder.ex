@@ -87,27 +87,24 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   @max_original_bitrate 6_500_000
 
   @doc """
-  Needs the Video's `default_video_track` and `keyframe_interval_bytes` loaded, and its segments,
-  in order, with their `start_time`, `end_time`, `duration` and `video_bytes`.
+  Needs the Video's `default_video_track` loaded, and its segments, in order, with their
+  `start_time`, `end_time`, `duration` and `video_bytes`.
   """
   @spec build(Video.t(), [map()]) :: [Quality.t()]
   def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments) do
-    # A Matroska file may not give its video's bit rate
-    source_bit_rate = track.bit_rate || video.bit_rate || @default_source_bit_rate
-
     [
-      original(video, segments, source_bit_rate)
+      original(video, segments)
       | for(rung <- @encoded_rungs, rung.height < track.height, do: encoded(rung, track))
     ]
   end
 
-  defp original(%Video{default_video_track: track} = video, segments, source_bit_rate) do
+  defp original(%Video{default_video_track: track} = video, segments) do
     label = "Original (#{track.height}p)"
 
     case track do
       %VideoTrack{codec: "h264", profile: profile, level: level}
       when is_map_key(@h264_profiles, profile) and is_integer(level) ->
-        {peak_bit_rate, average_bit_rate} = copy_bit_rates(video, segments, source_bit_rate)
+        {peak_bit_rate, average_bit_rate} = copy_bit_rates(video, segments)
 
         %Quality{
           id: "original",
@@ -123,6 +120,9 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
         }
 
       _other ->
+        # A Matroska file may not give its video's bit rate
+        source_bit_rate = track.bit_rate || video.bit_rate || @default_source_bit_rate
+
         video_bitrate =
           (source_bit_rate * 2)
           |> max(@min_original_bitrate)
@@ -135,12 +135,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     end
   end
 
-  # The peak and average bit rates of the copy's video. A Video imported before its bytes were
-  # measured gets a guess: the source's average, and twice that.
-  defp copy_bit_rates(%Video{keyframe_interval_bytes: nil}, _segments, source_bit_rate),
-    do: {source_bit_rate * 2, source_bit_rate}
-
-  defp copy_bit_rates(video, segments, _source_bit_rate) do
+  # The peak and average bit rates of the copy's video
+  defp copy_bit_rates(video, segments) do
     target_duration = segments |> Enum.map(& &1.duration) |> Playlist.target_duration()
     video_bytes = segments |> Enum.map(& &1.video_bytes) |> Enum.sum()
     average_bit_rate = round(video_bytes * 8 / video.duration_seconds)
