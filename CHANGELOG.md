@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.15](https://github.com/nat-e/watch_club/compare/v0.1.14...v0.1.15) (2026-11-19)
+
+
+### Features
+
+* **player:** advertise Original's measured peak and average bit rates ([#156](https://github.com/nat-e/watch_club/issues/156)) ([0e1730c](https://github.com/nat-e/watch_club/commit/0e1730c9e816dd95e944464f8607086fb347af29))
+
+
+### Bug Fixes
+
+* **player:** stop the TV jumping back when the Remote reconnects ([#151](https://github.com/nat-e/watch_club/issues/151)) ([7886943](https://github.com/nat-e/watch_club/commit/7886943b901a9c5b82ccbc34ed8288f744ccaaba))
+
 ## [0.1.14](https://github.com/nat-e/watch_club/compare/v0.1.13...v0.1.14) (2026-11-17)
 
 
