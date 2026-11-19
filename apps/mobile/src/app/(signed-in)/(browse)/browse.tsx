@@ -1,33 +1,35 @@
-import {DEFAULT_SEARCH_SCOPE, useSearch, useTypedQuery} from '@watchclub/core/contents/search';
-import {Stack} from 'expo-router';
-import {useState} from 'react';
+import {router, Stack} from 'expo-router';
+import {SymbolView} from 'expo-symbols';
 import {useTranslation} from 'react-i18next';
-import {SearchResults} from '@/components/contents/search-results';
+import {Pressable} from 'react-native';
+import {useCSSVariable} from 'uniwind';
 
 /**
- * Browse, where Users look through the Library, and search for any Content from its header's search
- * bar. Only search for now.
+ * Browse, where Users look through the Library, with the button that opens search in its header.
+ * Only that button for now, until the Library is ported.
  */
 export default function Browse() {
-  const {t} = useTranslation('core');
-  const [text, setText] = useState('');
-  const [scope, setScope] = useState(DEFAULT_SEARCH_SCOPE);
-  const query = useTypedQuery(text);
-  const search = useSearch(query, scope);
+  return <Stack.Screen options={{headerRight: () => <SearchButton />}} />;
+}
 
+/** The magnifying glass that opens search. */
+function SearchButton() {
+  const {t} = useTranslation('core');
+  const foreground = useCSSVariable('--color-foreground');
   return (
-    <>
-      <Stack.SearchBar
-        placeholder={t($ => $.core.search.search)}
-        onChangeText={event => {
-          setText(event.nativeEvent.text);
-        }}
-        onCancelButtonPress={() => {
-          setText('');
-        }}
-        hideWhenScrolling={false}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t($ => $.core.search.search)}
+      hitSlop={12}
+      onPress={() => {
+        router.push('/search');
+      }}
+    >
+      <SymbolView
+        name={{ios: 'magnifyingglass', android: 'search'}}
+        tintColor={String(foreground)}
+        size={24}
       />
-      <SearchResults search={search} query={query.trim()} scope={scope} onScopeChange={setScope} />
-    </>
+    </Pressable>
   );
 }
