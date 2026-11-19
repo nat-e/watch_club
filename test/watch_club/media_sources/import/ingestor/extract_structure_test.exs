@@ -17,7 +17,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
   setup :verify_on_exit!
 
-  @keyframe_seconds [0.0, 2.002, 4.004]
+  @keyframes [{0.0, 250_000}, {2.002, 180_000}, {4.004, 210_000}]
 
   describe "apply/1 —movie" do
     @tag :tmp_dir
@@ -26,7 +26,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       stub_ffprobe(load_fixture("video_friends_s01e01"))
 
       candidate = Candidate.new(video_file!(tmp_dir), :movie)
-      keyframe_seconds = @keyframe_seconds
+      keyframe_seconds = [0.0, 2.002, 4.004]
 
       assert {:ok,
               %Candidate{
@@ -35,6 +35,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                   duration_seconds: 1369.312,
                   bit_rate: 3_030_460,
                   keyframe_seconds: ^keyframe_seconds,
+                  keyframe_interval_bytes: [250_000, 180_000, 210_000],
                   video_tracks: [
                     %VideoTrack{
                       codec: "hevc",
@@ -80,7 +81,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
       picture = %{video | "index" => 0, "disposition" => %{"default" => 0, "attached_pic" => 1}}
       streams = [picture | Enum.map(metadata["streams"], &%{&1 | "index" => &1["index"] + 1})]
       stub_ffprobe(%{metadata | "streams" => streams})
-      expect(ProbeMock, :keyframes, fn _path, 1 -> {:ok, @keyframe_seconds} end)
+      expect(ProbeMock, :keyframes, fn _path, 1 -> {:ok, @keyframes} end)
 
       candidate = Candidate.new(video_file!(tmp_dir), :movie)
 
@@ -304,7 +305,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
 
   defp stub_ffprobe(metadata) do
     stub(ProbeMock, :probe, fn _path -> {:ok, metadata} end)
-    stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, @keyframe_seconds} end)
+    stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, @keyframes} end)
   end
 
   defp load_fixture(name) do

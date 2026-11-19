@@ -15,7 +15,7 @@ defmodule WatchClub.Dev.Catalog do
   alias WatchClub.Dev.Catalog.{Servarrs, Snapshot}
 
   # Bump it when the seed changes what it creates, so that no older snapshot is restored
-  @version 2
+  @version 3
   @password "passw0rd"
 
   @doc """

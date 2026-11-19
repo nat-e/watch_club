@@ -24,6 +24,42 @@ defmodule WatchClub.FfmpegTest do
   # From the keyframe at 6 seconds to the one at 12
   @segment %{stream_index: 0, start_time: 6.0, end_time: 12.0}
 
+  describe "keyframes/2" do
+    test "reads the bytes from each keyframe to the next from every packet of the stream",
+         %{source_path: source_path} do
+      {:ok, keyframes} = Ffmpeg.keyframes(source_path, 0)
+
+      assert Enum.map(keyframes, &elem(&1, 0)) == [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0]
+      assert Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end)
+    end
+
+    test "estimates them from a Matroska file's Cues when the file states the stream's bit rate",
+         %{tmp_dir: tmp_dir, source_path: source_path} do
+      {:ok, scanned} = Ffmpeg.keyframes(source_path, 0)
+      bit_rate = round(Enum.sum(Enum.map(scanned, &elem(&1, 1))) * 8 / 13)
+      path = Path.join(tmp_dir, "stated_bit_rate.mkv")
+
+      {_output, 0} =
+        System.cmd(
+          "ffmpeg",
+          ~w(-hide_banner -loglevel error -i #{source_path} -map 0 -c copy
+             -metadata:s:v:0 BPS=#{bit_rate}) ++ [path],
+          stderr_to_stdout: true
+        )
+
+      {:ok, estimated} = Ffmpeg.keyframes(path, 0)
+
+      # Not the scan's exact bytes, but close to them
+      refute estimated == scanned
+
+      for {{time, scanned_bytes}, {estimated_time, estimated_bytes}} <-
+            Enum.zip(scanned, estimated) do
+        assert estimated_time == time
+        assert_in_delta estimated_bytes, scanned_bytes, scanned_bytes * 0.05
+      end
+    end
+  end
+
   describe "copy_video_segment/1" do
     test "keeps the frames from its keyframe to the next segment's",
          %{tmp_dir: tmp_dir, source_path: source_path} do

@@ -18,10 +18,11 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
   setup :verify_on_exit!
 
-  @keyframe_seconds [0.0, 2.002, 4.004]
-
   setup do
-    stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, @keyframe_seconds} end)
+    stub(ProbeMock, :keyframes, fn _path, _stream_index ->
+      {:ok, [{0.0, 250_000}, {2.002, 180_000}, {4.004, 210_000}]}
+    end)
+
     :ok
   end
 
@@ -96,13 +97,14 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       }
 
       assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
-      keyframe_seconds = @keyframe_seconds
+      keyframe_seconds = [0.0, 2.002, 4.004]
 
       assert %Media{
                type: :movie,
                video: %Video{
                  parts: [%Part{movie_id: movie_id}],
                  keyframe_seconds: ^keyframe_seconds,
+                 keyframe_interval_bytes: [250_000, 180_000, 210_000],
                  video_tracks: [%VideoTrack{codec: "hevc", profile: "Main", level: 120}]
                }
              } = load_media!(path)
@@ -260,7 +262,14 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
     Media
     |> Ash.Query.filter(path == ^Path.expand(path))
     |> Ash.Query.load(
-      video: [:keyframe_seconds, :parts, :video_tracks, :audio_tracks, :text_tracks]
+      video: [
+        :keyframe_seconds,
+        :keyframe_interval_bytes,
+        :parts,
+        :video_tracks,
+        :audio_tracks,
+        :text_tracks
+      ]
     )
     |> Ash.read_one!(authorize?: false)
   end
