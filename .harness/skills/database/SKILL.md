@@ -7,3 +7,4 @@ Write database code a seasoned Postgres developer would approve: correct transac
 
 - Keep indexes in line with queries: add the ones new queries need, and drop the ones no query uses.
 - A pull request may add several migrations, one per scope. Until it merges, change its own migrations rather than adding new ones for intermediate states. After you edit a migration, run `sqlx database reset -y --source apps/server/migrations && pnpm --filter server seed`: SQLx refuses to start on a database where an earlier version of the migration ran. Each worktree has its own database.
+- Prefer writing CTEs to complex nested queries
