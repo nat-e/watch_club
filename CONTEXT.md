@@ -727,6 +727,7 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** is started from one **Media Source**
 - A **Media Import** starts in the Processing status
 - A **Media Import** records whether it was triggered manually or by a schedule, but not which **Instance Administrator** triggered it
+- Every 15 minutes, WatchClub starts a **Media Import** of New files only for each `radarr`, `sonarr` and `sportarr` **Media Source** that has no Processing one, to catch the files of lost webhooks. It deletes such a scheduled **Media Import** when it ends Completed or Failed without adding **Media**
 - A past **Media Import** remains after its **Media Source** is deleted
 - A **Media Import** keeps a snapshot of the **Media Source** that ran
 - A **Media Import** processes New files only by default

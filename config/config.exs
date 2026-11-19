@@ -102,13 +102,19 @@ config :watch_club,
 config :watch_club, Oban,
   engine: Oban.Engines.Basic,
   repo: WatchClub.Repo,
-  cron: [crontab: [{"* * * * *", WatchClub.Playbacks.Workers.EndAbandonedSessions}]],
+  cron: [
+    crontab: [
+      {"* * * * *", WatchClub.Playbacks.Workers.EndAbandonedSessions},
+      {"*/15 * * * *", WatchClub.MediaSources.Import.Workers.StartScheduledImports}
+    ]
+  ],
   # Deletes jobs older than a week to avoid Oban table from growing indefinitely
   pruner: [max_age: {7, :days}],
   # Retries jobs left in `executing` by a crash or a deploy
   lifeline: [rescue_after: {2, :hours}],
   queues: [
     media_source_scans: 1,
+    scheduled_media_imports: 1,
     media_candidate_ingestions: 3,
     media_import_monitors: 5,
     playback_cache_maintenance: 1,

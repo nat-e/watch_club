@@ -26,6 +26,7 @@ defmodule WatchClub.MediaSources do
       define :list_media_imports, action: :read
       define :get_media_import_by_id, action: :read, get_by: [:id]
       define :start_media_import, action: :start, args: [:media_source_id]
+      define :start_scheduled_media_imports, action: :start_scheduled_imports
       define :cancel_media_import, action: :cancel
       define :finish_media_import_scan, action: :finish_scan, args: [:file_count]
       define :count_media_import_file, action: :count_file, args: [:outcome]
