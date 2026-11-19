@@ -140,7 +140,7 @@ _Avoid_: Discover
 
 ### Contents
 
-- A **Content** is identified by its **Content Type**, **Metadata Provider** and **External ID**; different **Content Types** may share the same **External ID**
+- A **Content** is found at the **Metadata Provider** of its **Content Type** by its **External ID**, which the **Metadata Provider** can change, such as when it deletes a duplicate; different **Content Types** may share the same **External ID**
 - A **Content** has exactly one **Content Type**
 - A **User** can search for any **Movie** or **TV Show** on TMDB, **Sports Event** on sportarr.net, or **Book** on Hardcover, in the **Library** or not
 - Searching for **Movies** leaves out what TMDB flags as videos rather than movies, such as filmed sports events, concerts and compilations: **Sports Events** come from sportarr.net

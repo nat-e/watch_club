@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    Content, ContentId, Image, ImageSource, LookUpError, SearchResult, SportarrId,
+    Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult, SportarrId,
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -40,7 +40,7 @@ async fn search_returns_the_events_with_the_querys_words_in_their_title_without_
     assert_eq!(
         found.results[3],
         SearchResult {
-            id: ContentId::SportsEvent(SportarrId::new("ev-575969")),
+            external_content_id: ExternalContentId::SportsEvent(SportarrId::new("ev-575969")),
             title: "Canelo Álvarez vs Edgar Berlanga".to_owned(),
             date: Some(date(2024, 9, 15)),
             overview: None,
@@ -159,7 +159,7 @@ async fn look_up_sports_event_returns_its_title() {
     assert_eq!(
         content,
         Content {
-            id: ContentId::SportsEvent(SportarrId::new("ev-575969")),
+            external_content_id: ExternalContentId::SportsEvent(SportarrId::new("ev-575969")),
             title: "Canelo Álvarez vs Edgar Berlanga".to_owned(),
         }
     );

@@ -10,8 +10,8 @@ use std::num::NonZeroU32;
 use watch_club::domain::{
     accounts::Locale,
     contents::{
-        self, Content, ContentId, ContentType, HardcoverId, SearchResults, SearchScope, SportarrId,
-        TmdbId,
+        self, Content, ContentType, ExternalContentId, HardcoverId, SearchResults, SearchScope,
+        SportarrId, TmdbId,
     },
 };
 use wiremock::{
@@ -113,16 +113,20 @@ async fn search_matches_nothing_for_a_blank_query_without_asking_tmdb() {
 async fn look_up_finds_a_movie_on_tmdb() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/movie/194", fixture("movie_details")).await;
-    let id = ContentId::Movie(TmdbId::new(194));
+    let external_content_id = ExternalContentId::Movie(TmdbId::new(194));
 
-    let content = contents::look_up(&tmdb.metadata_providers(), id.clone(), Locale::FrFr)
-        .await
-        .unwrap();
+    let content = contents::look_up(
+        &tmdb.metadata_providers(),
+        external_content_id.clone(),
+        Locale::FrFr,
+    )
+    .await
+    .unwrap();
 
     assert_eq!(
         content,
         Content {
-            id,
+            external_content_id,
             title: "Le Fabuleux Destin d'Amélie Poulain".to_owned(),
         }
     );
@@ -132,11 +136,15 @@ async fn look_up_finds_a_movie_on_tmdb() {
 async fn look_up_finds_a_tv_show_on_tmdb() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer("/tv/2316", fixture("tv_details")).await;
-    let id = ContentId::TvShow(TmdbId::new(2316));
+    let external_content_id = ExternalContentId::TvShow(TmdbId::new(2316));
 
-    let content = contents::look_up(&tmdb.metadata_providers(), id, Locale::EnUs)
-        .await
-        .unwrap();
+    let content = contents::look_up(
+        &tmdb.metadata_providers(),
+        external_content_id,
+        Locale::EnUs,
+    )
+    .await
+    .unwrap();
 
     assert_eq!(content.title, "The Office");
 }
@@ -147,11 +155,15 @@ async fn look_up_finds_a_sports_event_on_sportarr() {
     sportarr
         .answer("/lookup/event/ev-575969", fake_sportarr::fixture("event"))
         .await;
-    let id = ContentId::SportsEvent(SportarrId::new("ev-575969"));
+    let external_content_id = ExternalContentId::SportsEvent(SportarrId::new("ev-575969"));
 
-    let content = contents::look_up(&sportarr.metadata_providers(), id, Locale::FrFr)
-        .await
-        .unwrap();
+    let content = contents::look_up(
+        &sportarr.metadata_providers(),
+        external_content_id,
+        Locale::FrFr,
+    )
+    .await
+    .unwrap();
 
     assert_eq!(content.title, "Canelo Álvarez vs Edgar Berlanga");
 }
@@ -162,59 +174,74 @@ async fn look_up_finds_a_book_on_hardcover() {
     hardcover
         .answer("Book", fake_hardcover::fixture("book"))
         .await;
-    let id = ContentId::Book(HardcoverId::new(442_623));
+    let external_content_id = ExternalContentId::Book(HardcoverId::new(442_623));
 
-    let content = contents::look_up(&hardcover.metadata_providers(), id, Locale::FrFr)
-        .await
-        .unwrap();
+    let content = contents::look_up(
+        &hardcover.metadata_providers(),
+        external_content_id,
+        Locale::FrFr,
+    )
+    .await
+    .unwrap();
 
     assert_eq!(content.title, "Asterix the Gaul");
 }
 
 #[test]
-fn content_id_reads_the_tmdb_id_of_a_movie_or_a_tv_show() {
+fn external_content_id_reads_the_tmdb_id_of_a_movie_or_a_tv_show() {
     assert_eq!(
-        ContentId::parse(ContentType::Movie, "194"),
-        Some(ContentId::Movie(TmdbId::new(194)))
+        ExternalContentId::parse(ContentType::Movie, "194"),
+        Some(ExternalContentId::Movie(TmdbId::new(194)))
     );
     assert_eq!(
-        ContentId::parse(ContentType::TvShow, "2316"),
-        Some(ContentId::TvShow(TmdbId::new(2316)))
+        ExternalContentId::parse(ContentType::TvShow, "2316"),
+        Some(ExternalContentId::TvShow(TmdbId::new(2316)))
     );
 }
 
 #[test]
-fn content_id_reads_the_hardcover_id_of_a_book() {
+fn external_content_id_reads_the_hardcover_id_of_a_book() {
     assert_eq!(
-        ContentId::parse(ContentType::Book, "442623"),
-        Some(ContentId::Book(HardcoverId::new(442_623)))
+        ExternalContentId::parse(ContentType::Book, "442623"),
+        Some(ExternalContentId::Book(HardcoverId::new(442_623)))
     );
     for text in ["asterix", "2147483648"] {
-        assert_eq!(ContentId::parse(ContentType::Book, text), None, "{text}");
+        assert_eq!(
+            ExternalContentId::parse(ContentType::Book, text),
+            None,
+            "{text}"
+        );
     }
 }
 
 #[test]
-fn content_id_reads_the_sportarr_id_of_a_sports_event() {
+fn external_content_id_reads_the_sportarr_id_of_a_sports_event() {
     assert_eq!(
-        ContentId::parse(ContentType::SportsEvent, "ev-028133"),
-        Some(ContentId::SportsEvent(SportarrId::new("ev-028133")))
+        ExternalContentId::parse(ContentType::SportsEvent, "ev-028133"),
+        Some(ExternalContentId::SportsEvent(SportarrId::new("ev-028133")))
     );
 }
 
 #[test]
-fn content_id_reads_nothing_from_text_that_cant_be_a_tmdb_id() {
+fn external_content_id_reads_nothing_from_text_that_cant_be_a_tmdb_id() {
     for text in ["", "amelie", "-1", "1.5", "4294967296"] {
-        assert_eq!(ContentId::parse(ContentType::Movie, text), None, "{text}");
+        assert_eq!(
+            ExternalContentId::parse(ContentType::Movie, text),
+            None,
+            "{text}"
+        );
     }
 }
 
 #[test]
-fn content_id_gives_its_type_and_external_id() {
-    let id = ContentId::TvShow(TmdbId::new(2316));
+fn external_content_id_gives_its_type_and_external_id() {
+    let external_content_id = ExternalContentId::TvShow(TmdbId::new(2316));
 
     assert_eq!(
-        (id.content_type(), id.external_id()),
+        (
+            external_content_id.content_type(),
+            external_content_id.external_id()
+        ),
         (ContentType::TvShow, "2316".to_owned())
     );
 }

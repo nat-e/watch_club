@@ -1,11 +1,11 @@
 import {type QueryClient, useSuspenseQuery} from '@tanstack/react-query';
 import {linkOptions, notFound} from '@tanstack/react-router';
-import {type ContentId, type ContentType, hasCode} from '@watchclub/api';
+import {type ContentType, type ExternalContentId, hasCode} from '@watchclub/api';
 import {contentQuery} from '@watchclub/core/contents/content';
 import {Page} from '@/components/layouts/page';
 
 /** Returns the options of a link to the Content's page. */
-export function contentLink({content_type, external_id}: ContentId) {
+export function contentLink({content_type, external_id}: ExternalContentId) {
   const params = {id: external_id};
   switch (content_type) {
     case 'movie':
@@ -27,22 +27,22 @@ export async function loadContent(
   queryClient: QueryClient,
   contentType: ContentType,
   idParam: string,
-): Promise<ContentId> {
+): Promise<ExternalContentId> {
   // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-  const id: ContentId = {content_type: contentType, external_id: idParam};
+  const externalContentId: ExternalContentId = {content_type: contentType, external_id: idParam};
   try {
-    await queryClient.ensureQueryData(contentQuery(id));
+    await queryClient.ensureQueryData(contentQuery(externalContentId));
   } catch (error) {
     if (hasCode(error, 'not_found')) {
       throw notFound();
     }
     throw error;
   }
-  return id;
+  return externalContentId;
 }
 
 /** A Content's page. For now, it only shows its title, until the Content pages are ported. */
-export function ContentPage({id}: {id: ContentId}) {
-  const {data: content} = useSuspenseQuery(contentQuery(id));
+export function ContentPage({externalContentId}: {externalContentId: ExternalContentId}) {
+  const {data: content} = useSuspenseQuery(contentQuery(externalContentId));
   return <Page title={content.title} />;
 }

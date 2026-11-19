@@ -43,19 +43,20 @@ pub enum SearchScope {
     Books,
 }
 
-/// The identity of a Content: its type, and its External ID at the Metadata Provider of its type.
+/// The External ID of a Content at the Metadata Provider of its type, with the type, as TMDB numbers
+/// Movies and TV Shows apart. A Metadata Provider can change it, such as when it deletes a duplicate.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(into = "ContentIdJson")]
-pub enum ContentId {
+#[serde(into = "ExternalContentIdJson")]
+pub enum ExternalContentId {
     Movie(TmdbId),
     TvShow(TmdbId),
     SportsEvent(SportarrId),
     Book(HardcoverId),
 }
 
-impl ContentId {
-    /// Returns the ID of the Content of this type with this External ID, as the API and URLs carry
-    /// it, or None when the text can't be one.
+impl ExternalContentId {
+    /// Returns the External Content ID of a Content of this type, from its External ID as the API and
+    /// URLs carry it, or None when the text can't be one.
     pub fn parse(content_type: ContentType, external_id: &str) -> Option<Self> {
         match content_type {
             ContentType::Movie => external_id.parse().ok().map(Self::Movie),
@@ -84,33 +85,33 @@ impl ContentId {
     }
 }
 
-/// The identity of a Content as the API sends it: its type, and its External ID at the Metadata
-/// Provider of its type, as text whatever the Metadata Provider.
+/// An External Content ID as the API sends it: the Content's type, and its External ID at the
+/// Metadata Provider of its type, as text whatever the Metadata Provider.
 #[derive(Serialize, ToSchema)]
-struct ContentIdJson {
+struct ExternalContentIdJson {
     content_type: ContentType,
     /// The Content's ID at the Metadata Provider of its type, such as its TMDB ID
     external_id: String,
 }
 
-impl From<ContentId> for ContentIdJson {
-    fn from(id: ContentId) -> Self {
+impl From<ExternalContentId> for ExternalContentIdJson {
+    fn from(external_content_id: ExternalContentId) -> Self {
         Self {
-            content_type: id.content_type(),
-            external_id: id.external_id(),
+            content_type: external_content_id.content_type(),
+            external_id: external_content_id.external_id(),
         }
     }
 }
 
-impl PartialSchema for ContentId {
+impl PartialSchema for ExternalContentId {
     fn schema() -> RefOr<Schema> {
-        ContentIdJson::schema()
+        ExternalContentIdJson::schema()
     }
 }
 
-impl ToSchema for ContentId {
+impl ToSchema for ExternalContentId {
     fn schemas(schemas: &mut Vec<(String, RefOr<Schema>)>) {
-        ContentIdJson::schemas(schemas);
+        ExternalContentIdJson::schemas(schemas);
     }
 }
 
@@ -118,7 +119,7 @@ impl ToSchema for ContentId {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct Content {
     #[serde(flatten)]
-    pub id: ContentId,
+    pub external_content_id: ExternalContentId,
     pub title: String,
 }
 
@@ -127,7 +128,7 @@ pub struct Content {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct SearchResult {
     #[serde(flatten)]
-    pub id: ContentId,
+    pub external_content_id: ExternalContentId,
     pub title: String,
     /// The day it came out, first aired or takes place, when its Metadata Provider knows it
     #[schema(value_type = Option<String>, format = Date, required = true)]
@@ -185,17 +186,22 @@ pub async fn search(
 /// Returns the Content, with its title in the Locale's language when its Metadata Provider has it.
 #[tracing::instrument(
     skip_all,
-    fields(content.type = ?id.content_type(), content.external_id = %id.external_id()),
+    fields(
+        content.type = ?external_content_id.content_type(),
+        content.external_id = %external_content_id.external_id(),
+    ),
 )]
 pub async fn look_up(
     metadata_providers: &MetadataProviders,
-    id: ContentId,
+    external_content_id: ExternalContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
-    match id {
-        ContentId::Movie(id) => metadata_providers.tmdb.look_up_movie(id, locale).await,
-        ContentId::TvShow(id) => metadata_providers.tmdb.look_up_tv_show(id, locale).await,
-        ContentId::SportsEvent(id) => metadata_providers.sportarr.look_up_sports_event(id).await,
-        ContentId::Book(id) => metadata_providers.hardcover.look_up_book(id).await,
+    match external_content_id {
+        ExternalContentId::Movie(id) => metadata_providers.tmdb.look_up_movie(id, locale).await,
+        ExternalContentId::TvShow(id) => metadata_providers.tmdb.look_up_tv_show(id, locale).await,
+        ExternalContentId::SportsEvent(id) => {
+            metadata_providers.sportarr.look_up_sports_event(id).await
+        }
+        ExternalContentId::Book(id) => metadata_providers.hardcover.look_up_book(id).await,
     }
 }

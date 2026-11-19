@@ -18,7 +18,8 @@ use crate::{
     domain::{
         InternalError,
         contents::{
-            Content, ContentId, Image, ImageSource, LookUpError, SearchResult, SearchResults,
+            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
+            SearchResults,
         },
     },
 };
@@ -105,7 +106,7 @@ impl Sportarr {
         let event = found.data.into_iter().next().ok_or(LookUpError::NotFound)?;
 
         Ok(Content {
-            id: ContentId::SportsEvent(id),
+            external_content_id: ExternalContentId::SportsEvent(id),
             title: event.title,
         })
     }
@@ -128,7 +129,7 @@ fn title_pattern(query: &str) -> String {
 /// Returns the search result a Sports Event of sportarr.net's search is.
 fn search_result(event: Event) -> SearchResult {
     SearchResult {
-        id: ContentId::SportsEvent(event.id),
+        external_content_id: ExternalContentId::SportsEvent(event.id),
         title: event.title,
         date: event.date,
         // Leaves out the description, which is long, or only repeats the title, league and round

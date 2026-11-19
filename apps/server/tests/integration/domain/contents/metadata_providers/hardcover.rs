@@ -4,7 +4,8 @@ use jiff::civil::date;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    Content, ContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpError, SearchResult,
+    Content, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpError,
+    SearchResult,
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -65,7 +66,7 @@ async fn search_returns_the_best_matches_and_most_read_books_first_with_their_cr
     assert_eq!(
         found.results[1],
         SearchResult {
-            id: ContentId::Book(HardcoverId::new(474_594)),
+            external_content_id: ExternalContentId::Book(HardcoverId::new(474_594)),
             title: "Asterix and the Golden Sickle".to_owned(),
             date: Some(date(1961, 1, 1)),
             overview: Some(
@@ -241,7 +242,7 @@ async fn look_up_book_returns_its_title() {
     assert_eq!(
         content,
         Content {
-            id: ContentId::Book(HardcoverId::new(442_623)),
+            external_content_id: ExternalContentId::Book(HardcoverId::new(442_623)),
             title: "Asterix the Gaul".to_owned(),
         }
     );

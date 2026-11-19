@@ -17,7 +17,8 @@ use crate::{
         InternalError,
         accounts::Locale,
         contents::{
-            Content, ContentId, Image, ImageSource, LookUpError, SearchResult, SearchResults,
+            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
+            SearchResults,
         },
     },
 };
@@ -140,7 +141,7 @@ impl Tmdb {
             .ok_or(LookUpError::NotFound)?;
 
         Ok(Content {
-            id: ContentId::Movie(id),
+            external_content_id: ExternalContentId::Movie(id),
             title: movie.title,
         })
     }
@@ -162,7 +163,7 @@ impl Tmdb {
             .ok_or(LookUpError::NotFound)?;
 
         Ok(Content {
-            id: ContentId::TvShow(id),
+            external_content_id: ExternalContentId::TvShow(id),
             title: tv_show.name,
         })
     }
@@ -173,7 +174,7 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
     match result {
         MultiSearchResult::Movie(movie) if movie.video => None,
         MultiSearchResult::Movie(movie) => Some(SearchResult {
-            id: ContentId::Movie(TmdbId(movie.id)),
+            external_content_id: ExternalContentId::Movie(TmdbId(movie.id)),
             title: movie.title,
             date: movie.release_date,
             overview: movie.overview,
@@ -182,7 +183,7 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             creators: Vec::new(),
         }),
         MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
-            id: ContentId::TvShow(TmdbId(tv_show.id)),
+            external_content_id: ExternalContentId::TvShow(TmdbId(tv_show.id)),
             title: tv_show.name,
             date: tv_show.first_air_date,
             overview: tv_show.overview,

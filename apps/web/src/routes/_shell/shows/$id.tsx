@@ -8,5 +8,5 @@ export const Route = createFileRoute('/_shell/shows/$id')({
 });
 
 function TvShow() {
-  return <ContentPage id={Route.useLoaderData()} />;
+  return <ContentPage externalContentId={Route.useLoaderData()} />;
 }

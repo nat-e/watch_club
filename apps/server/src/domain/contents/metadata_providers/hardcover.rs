@@ -17,7 +17,8 @@ use crate::{
     domain::{
         InternalError,
         contents::{
-            Content, ContentId, Image, ImageSource, LookUpError, SearchResult, SearchResults,
+            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
+            SearchResults,
         },
     },
 };
@@ -142,7 +143,7 @@ impl Hardcover {
         let book = data.books_by_pk.ok_or(LookUpError::NotFound)?;
 
         Ok(Content {
-            id: ContentId::Book(id),
+            external_content_id: ExternalContentId::Book(id),
             title: book.title,
         })
     }
@@ -176,7 +177,7 @@ impl Hardcover {
 /// Returns the search result a Book of Hardcover's search is.
 fn search_result(book: BookDocument) -> SearchResult {
     SearchResult {
-        id: ContentId::Book(book.id),
+        external_content_id: ExternalContentId::Book(book.id),
         title: book.title,
         date: book.release_date,
         overview: book.description,
