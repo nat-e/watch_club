@@ -25,28 +25,24 @@ defmodule WatchClub.FfmpegTest do
   @segment %{stream_index: 0, start_time: 6.0, end_time: 12.0}
 
   describe "keyframes/2" do
-    test "reads the bytes from each keyframe to the next from every packet of the stream",
+    test "reads the stream's bytes from each keyframe to the next from every packet",
          %{source_path: source_path} do
       {:ok, keyframes} = Ffmpeg.keyframes(source_path, 0)
 
       assert Enum.map(keyframes, &elem(&1, 0)) == [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0]
-      assert Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end)
+      assert keyframes |> Enum.map(&elem(&1, 1)) |> Enum.sum() == stream_bytes(source_path, 0)
     end
 
-    test "estimates them from a Matroska file's Cues when the file states the stream's bit rate",
+    test "estimates them from a Matroska file's Cues when it states every stream's bit rate",
          %{tmp_dir: tmp_dir, source_path: source_path} do
-      {:ok, scanned} = Ffmpeg.keyframes(source_path, 0)
-      bit_rate = round(Enum.sum(Enum.map(scanned, &elem(&1, 1))) * 8 / 13)
-      path = Path.join(tmp_dir, "stated_bit_rate.mkv")
-
-      {_output, 0} =
-        System.cmd(
-          "ffmpeg",
-          ~w(-hide_banner -loglevel error -i #{source_path} -map 0 -c copy
-             -metadata:s:v:0 BPS=#{bit_rate}) ++ [path],
-          stderr_to_stdout: true
+      # A BPS tag in a language for the video, as some muxers write it
+      path =
+        state_bit_rates!(source_path, tmp_dir,
+          "BPS-eng": bit_rate(source_path, 0),
+          BPS: bit_rate(source_path, 1)
         )
 
+      {:ok, scanned} = Ffmpeg.keyframes(source_path, 0)
       {:ok, estimated} = Ffmpeg.keyframes(path, 0)
 
       # Not the scan's exact bytes, but close to them
@@ -57,6 +53,18 @@ defmodule WatchClub.FfmpegTest do
         assert estimated_time == time
         assert_in_delta estimated_bytes, scanned_bytes, scanned_bytes * 0.05
       end
+    end
+
+    test "reads every packet of a Matroska file whose stated bit rates don't add up to its own",
+         %{tmp_dir: tmp_dir, source_path: source_path} do
+      # ffmpeg keeps a stream's BPS tag when it re-encodes it
+      path =
+        state_bit_rates!(source_path, tmp_dir,
+          BPS: div(bit_rate(source_path, 0), 3),
+          BPS: bit_rate(source_path, 1)
+        )
+
+      assert Ffmpeg.keyframes(path, 0) == Ffmpeg.keyframes(source_path, 0)
     end
   end
 
@@ -117,6 +125,36 @@ defmodule WatchClub.FfmpegTest do
       assert segment.start == 5.994667
       assert_in_delta previous.start + previous.duration, segment.start, 0.000_001
     end
+  end
+
+  # A copy of the source whose video and audio state a bit rate each, in a tag of the given name
+  defp state_bit_rates!(source_path, tmp_dir, [{video_tag, video}, {audio_tag, audio}]) do
+    path = Path.join(tmp_dir, "stated_bit_rates.mkv")
+
+    {_output, 0} =
+      System.cmd(
+        "ffmpeg",
+        ~w(-hide_banner -loglevel error -i #{source_path} -map 0 -c copy
+           -metadata:s:v:0 #{video_tag}=#{video} -metadata:s:a:0 #{audio_tag}=#{audio}) ++
+          [path],
+        stderr_to_stdout: true
+      )
+
+    path
+  end
+
+  # Over the source's 13 seconds
+  defp bit_rate(path, stream_index), do: round(stream_bytes(path, stream_index) * 8 / 13)
+
+  defp stream_bytes(path, stream_index) do
+    {output, 0} =
+      System.cmd(
+        "ffprobe",
+        ~w(-v error -select_streams #{stream_index} -show_entries packet=size -of csv=p=0) ++
+          [path]
+      )
+
+    output |> String.split("\n", trim: true) |> Enum.map(&String.to_integer/1) |> Enum.sum()
   end
 
   defp frame_times(path) do

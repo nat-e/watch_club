@@ -45,6 +45,18 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
     end
 
     @tag :tmp_dir
+    test "returns an error when the last Cluster's size is unknown", %{tmp_dir: tmp_dir} do
+      path =
+        damage!(
+          tmp_dir,
+          <<0x1F, 0x43, 0xB6, 0x75, 0x55, 0x29>>,
+          <<0x1F, 0x43, 0xB6, 0x75, 0x7F, 0xFF>>
+        )
+
+      assert MatroskaCues.keyframes(path, 1) == :error
+    end
+
+    @tag :tmp_dir
     test "returns an error when the timestamp scale is zero", %{tmp_dir: tmp_dir} do
       path =
         damage!(

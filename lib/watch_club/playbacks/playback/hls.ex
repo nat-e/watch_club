@@ -81,7 +81,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   # Each holds the bytes of the Default Video Track from its keyframes, 0 for a Video imported
   # before they were measured.
   defp segments(%Video{keyframe_seconds: keyframes, duration_seconds: duration} = video) do
-    interval_bytes = video.keyframe_interval_bytes || Enum.map(keyframes, fn _keyframe -> 0 end)
+    interval_bytes = video.keyframe_interval_bytes || List.duplicate(0, length(keyframes))
 
     segments =
       keyframes

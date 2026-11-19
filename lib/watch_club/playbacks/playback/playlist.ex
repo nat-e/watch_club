@@ -73,7 +73,7 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   end
 
   @doc "The media playlists' `EXT-X-TARGETDURATION`: their longest segment's, rounded up."
-  @spec target_duration([float()]) :: pos_integer()
+  @spec target_duration([float()]) :: non_neg_integer()
   def target_duration(durations), do: durations |> Enum.max() |> Float.ceil() |> trunc()
 
   @spec pad_segment(integer()) :: String.t()

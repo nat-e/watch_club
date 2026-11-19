@@ -68,7 +68,10 @@ defmodule WatchClub.Ffmpeg.MatroskaCues do
         end)
 
       {_time, last_cluster, _relative} = List.last(cue_points)
-      ends = tl(positions) ++ [clusters_end(file, segment_start + last_cluster)]
+      # A truncated file ends inside its last Cluster
+      {:ok, file_size} = :file.position(file, :eof)
+      clusters_end = min(clusters_end(file, segment_start + last_cluster), file_size)
+      ends = tl(positions) ++ [clusters_end]
 
       keyframes =
         Enum.zip_with([cue_points, positions, ends], fn [{time, _cluster, _relative}, from, to] ->

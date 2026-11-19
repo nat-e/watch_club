@@ -9,7 +9,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   master playlist. The codecs tell a Screen whether it can decode the rung.
 
   A copy's bandwidth values are the peak and average bit rates of its segments, as RFC 8216
-  defines them, measured from the bytes of the file's video in each segment.
+  defines them, measured from the bytes of the file's video in each segment. Every rung's
+  include the MPEG-TS overhead and the audio.
   """
 
   alias WatchClub.MediaCatalog.{Video, VideoTrack}
@@ -117,8 +118,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
           video_bitrate: average_bit_rate,
           level: level,
           codecs: codecs(@h264_profiles[profile], level),
-          bandwidth: in_mpeg_ts(peak_bit_rate) + @audio_peak_bit_rate,
-          average_bandwidth: in_mpeg_ts(average_bit_rate) + @audio_average_bit_rate
+          bandwidth: in_mpeg_ts(peak_bit_rate, track) + @audio_peak_bit_rate,
+          average_bandwidth: in_mpeg_ts(average_bit_rate, track) + @audio_average_bit_rate
         }
 
       _other ->
@@ -139,10 +140,10 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   defp copy_bit_rates(%Video{keyframe_interval_bytes: nil}, _segments, source_bit_rate),
     do: {source_bit_rate * 2, source_bit_rate}
 
-  defp copy_bit_rates(_video, segments, _source_bit_rate) do
+  defp copy_bit_rates(video, segments, _source_bit_rate) do
     target_duration = segments |> Enum.map(& &1.duration) |> Playlist.target_duration()
     video_bytes = segments |> Enum.map(& &1.video_bytes) |> Enum.sum()
-    average_bit_rate = round(video_bytes * 8 / List.last(segments).end_time)
+    average_bit_rate = round(video_bytes * 8 / video.duration_seconds)
 
     # RFC 8216's peak: the highest bit rate over any run of consecutive segments that lasts from
     # half to one and a half target durations
@@ -167,9 +168,11 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     {peak_bit_rate, average_bit_rate}
   end
 
-  # MPEG-TS carries 184 bytes in each 188-byte packet, and adds about 50 kbit/s of tables and
-  # frame headers, as measured on copied segments
-  defp in_mpeg_ts(bit_rate), do: round(bit_rate * 188 / 184) + 50_000
+  # MPEG-TS carries 184 bytes in each 188-byte packet, and adds about 23 kbit/s of tables and
+  # 1.1 kbit/s for each frame per second, as measured on segments at 24 and 60 fps. An unknown
+  # frame rate counts as 60.
+  defp in_mpeg_ts(bit_rate, track),
+    do: round(bit_rate * 188 / 184 + 23_000 + (track.frame_rate || 60) * 1_100)
 
   defp encoded(rung, track) do
     width = scaled_width(rung.height, track.width, track.height)
@@ -192,8 +195,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
       level: level,
       # x264 marks its Constrained Baseline with the constraint flags 0 and 1
       codecs: codecs("42c0", level),
-      bandwidth: rung.video_bitrate + @audio_peak_bit_rate,
-      average_bandwidth: rung.video_bitrate + @audio_average_bit_rate
+      bandwidth: in_mpeg_ts(rung.video_bitrate, track) + @audio_peak_bit_rate,
+      average_bandwidth: in_mpeg_ts(rung.video_bitrate, track) + @audio_average_bit_rate
     }
   end
 
