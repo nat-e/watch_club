@@ -14,6 +14,9 @@
   "dependencies": {
     "@expo/material-symbols": "^0.1.1",
     "@expo/ui": "~58.0.28",
+    "@formatjs/intl-displaynames": "^8.0.3",
+    "@formatjs/intl-getcanonicallocales": "^3.3.1",
+    "@formatjs/intl-locale": "^5.4.3",
     "@formatjs/intl-pluralrules": "^7.0.2",
     "@sentry/react-native": "~8.28.0",
     "@tanstack/react-form": "catalog:",
