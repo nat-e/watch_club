@@ -7,9 +7,13 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   The ladder adds 720p / 480p / 360p rungs as long as the source is taller. Each rung carries
   its width, height, video bitrate, H.264 level, codecs, and the bandwidth values exposed in the
   master playlist. The codecs tell a Screen whether it can decode the rung.
+
+  A copy's bandwidth values are the peak and average bit rates of its segments, as RFC 8216
+  defines them, measured from the bytes of the file's video in each segment.
   """
 
   alias WatchClub.MediaCatalog.{Video, VideoTrack}
+  alias WatchClub.Playbacks.Playback.Playlist
 
   defmodule Quality do
     @moduledoc false
@@ -74,42 +78,47 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     %{id: "360p", label: "360p", height: 360, video_bitrate: 800_000}
   ]
 
-  @audio_bandwidth_overhead 192_000
-  @audio_average_bandwidth_overhead 160_000
+  # The peak and average bit rates of the audio segments, 160 kbit/s AAC in MPEG-TS, as measured
+  @audio_peak_bit_rate 250_000
+  @audio_average_bit_rate 245_000
   @default_source_bit_rate 2_500_000
   @min_original_bitrate 3_500_000
   @max_original_bitrate 6_500_000
 
-  @doc "Needs the Video's `default_video_track` loaded."
-  @spec build(Video.t()) :: [Quality.t()]
-  def build(%Video{default_video_track: %VideoTrack{} = track} = video) do
+  @doc """
+  Needs the Video's `default_video_track` and `keyframe_interval_bytes` loaded, and its segments,
+  in order, with their `start_time`, `end_time`, `duration` and `video_bytes`.
+  """
+  @spec build(Video.t(), [map()]) :: [Quality.t()]
+  def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments) do
     # A Matroska file may not give its video's bit rate
     source_bit_rate = track.bit_rate || video.bit_rate || @default_source_bit_rate
 
     [
-      original(track, source_bit_rate)
+      original(video, segments, source_bit_rate)
       | for(rung <- @encoded_rungs, rung.height < track.height, do: encoded(rung, track))
     ]
   end
 
-  defp original(track, source_bit_rate) do
+  defp original(%Video{default_video_track: track} = video, segments, source_bit_rate) do
     label = "Original (#{track.height}p)"
 
     case track do
-      # A copy's peak bit rate isn't known: twice its average
       %VideoTrack{codec: "h264", profile: profile, level: level}
       when is_map_key(@h264_profiles, profile) and is_integer(level) ->
+        {peak_bit_rate, average_bit_rate} = copy_bit_rates(video, segments, source_bit_rate)
+
         %Quality{
           id: "original",
           label: label,
           width: track.width,
           height: track.height,
           copy?: true,
-          video_bitrate: source_bit_rate,
+          video_bitrate: average_bit_rate,
           level: level,
           codecs: codecs(@h264_profiles[profile], level),
-          bandwidth: source_bit_rate * 2 + @audio_bandwidth_overhead,
-          average_bandwidth: source_bit_rate + @audio_average_bandwidth_overhead
+          bandwidth: in_mpeg_ts(peak_bit_rate) + @audio_peak_bit_rate,
+          average_bandwidth: in_mpeg_ts(average_bit_rate) + @audio_average_bit_rate
         }
 
       _other ->
@@ -124,6 +133,43 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
         )
     end
   end
+
+  # The peak and average bit rates of the copy's video. A Video imported before its bytes were
+  # measured gets a guess: the source's average, and twice that.
+  defp copy_bit_rates(%Video{keyframe_interval_bytes: nil}, _segments, source_bit_rate),
+    do: {source_bit_rate * 2, source_bit_rate}
+
+  defp copy_bit_rates(_video, segments, _source_bit_rate) do
+    target_duration = segments |> Enum.map(& &1.duration) |> Playlist.target_duration()
+    video_bytes = segments |> Enum.map(& &1.video_bytes) |> Enum.sum()
+    average_bit_rate = round(video_bytes * 8 / List.last(segments).end_time)
+
+    # RFC 8216's peak: the highest bit rate over any run of consecutive segments that lasts from
+    # half to one and a half target durations
+    peak_bit_rate =
+      segments
+      |> Stream.unfold(fn
+        [] -> nil
+        [_first | rest] = run -> {run, rest}
+      end)
+      |> Stream.flat_map(fn [first | _] = run ->
+        run
+        |> Stream.scan({0, 0.0}, fn segment, {bytes, _duration} ->
+          {bytes + segment.video_bytes, segment.end_time - first.start_time}
+        end)
+        |> Stream.take_while(fn {_bytes, duration} -> duration <= 1.5 * target_duration end)
+        |> Stream.filter(fn {_bytes, duration} -> duration >= 0.5 * target_duration end)
+        |> Stream.map(fn {bytes, duration} -> round(bytes * 8 / duration) end)
+      end)
+      # A Video shorter than half a second has no such run
+      |> Enum.max(fn -> average_bit_rate end)
+
+    {peak_bit_rate, average_bit_rate}
+  end
+
+  # MPEG-TS carries 184 bytes in each 188-byte packet, and adds about 50 kbit/s of tables and
+  # frame headers, as measured on copied segments
+  defp in_mpeg_ts(bit_rate), do: round(bit_rate * 188 / 184) + 50_000
 
   defp encoded(rung, track) do
     width = scaled_width(rung.height, track.width, track.height)
@@ -146,8 +192,8 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
       level: level,
       # x264 marks its Constrained Baseline with the constraint flags 0 and 1
       codecs: codecs("42c0", level),
-      bandwidth: rung.video_bitrate + @audio_bandwidth_overhead,
-      average_bandwidth: rung.video_bitrate + @audio_average_bandwidth_overhead
+      bandwidth: rung.video_bitrate + @audio_peak_bit_rate,
+      average_bandwidth: rung.video_bitrate + @audio_average_bit_rate
     }
   end
 

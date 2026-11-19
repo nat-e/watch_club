@@ -53,12 +53,10 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
   @doc "Segments keep the file's timestamps, so they form a single timeline."
   @spec segments([float()], String.t()) :: iodata()
   def segments(durations, query) do
-    target_duration = durations |> Enum.max() |> Float.ceil() |> trunc()
-
     %MediaPlaylist{
       info: %MediaPlaylistInfo{
         version: 6,
-        target_duration: target_duration,
+        target_duration: target_duration(durations),
         media_sequence: 0,
         playlist_type: :vod,
         independent_segments: true,
@@ -73,6 +71,10 @@ defmodule WatchClub.Playbacks.Playback.Playlist do
     }
     |> ExM3U8.serialize()
   end
+
+  @doc "The media playlists' `EXT-X-TARGETDURATION`: their longest segment's, rounded up."
+  @spec target_duration([float()]) :: pos_integer()
+  def target_duration(durations), do: durations |> Enum.max() |> Float.ceil() |> trunc()
 
   @spec pad_segment(integer()) :: String.t()
   def pad_segment(index), do: index |> Integer.to_string() |> String.pad_leading(5, "0")
