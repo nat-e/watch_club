@@ -1428,7 +1428,7 @@
             "items": {
               "$ref": "#/components/schemas/SearchResult"
             },
-            "description": "The results, most relevant first, or the latest first for Sports Events. Only the last page\ncan have none, unless TMDB's pages in between have only people"
+            "description": "The results, most relevant first, or the latest first for Sports Events. Only the last page\ncan have none, unless TMDB's pages in between have only people and videos"
           }
         }
       },

@@ -153,7 +153,7 @@ pub struct SearchResult {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, ToSchema)]
 pub struct SearchResults {
     /// The results, most relevant first, or the latest first for Sports Events. Only the last page
-    /// can have none, unless TMDB's pages in between have only people
+    /// can have none, unless TMDB's pages in between have only people and videos
     pub results: Vec<SearchResult>,
     /// The number of the next page, or null on the last one
     #[schema(value_type = Option<u32>, required = true, minimum = 2)]

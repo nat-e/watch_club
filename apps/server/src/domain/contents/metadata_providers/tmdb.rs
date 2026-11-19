@@ -82,10 +82,13 @@ impl Tmdb {
     }
 
     /// Returns a page of the Movies and TV Shows whose title matches the query, most relevant
-    /// first, with their texts in the Locale's language. It leaves out adult content.
+    /// first, with their texts in the Locale's language. It leaves out adult content, and the
+    /// videos: what TMDB lists as movies but flags as not truly ones, such as filmed sports events,
+    /// concerts and compilations. Sports Events come from sportarr.net instead.
     ///
-    /// TMDB's pages also list people, who aren't Content: when one has only people, the search reads
-    /// the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that show nothing.
+    /// TMDB's pages also list people, who aren't Content: when one has only people and videos, the
+    /// search reads the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that
+    /// show nothing.
     pub async fn search(
         &self,
         query: &str,
@@ -165,9 +168,10 @@ impl Tmdb {
     }
 }
 
-/// Returns the Content a result of TMDB's search is, or None for a person.
+/// Returns the Content a result of TMDB's search is, or None for a person or a video.
 fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
     match result {
+        MultiSearchResult::Movie(movie) if movie.video => None,
         MultiSearchResult::Movie(movie) => Some(SearchResult {
             id: ContentId::Movie(TmdbId(movie.id)),
             title: movie.title,
@@ -241,6 +245,10 @@ struct MovieResult {
     poster_path: Option<String>,
     #[serde(default, deserialize_with = "optional_date")]
     release_date: Option<Date>,
+    /// Whether TMDB flags it as a video rather than a movie, such as a filmed sports event, a
+    /// concert or a compilation
+    #[serde(default)]
+    video: bool,
 }
 
 /// A TV Show in search results, with its texts in the search's language.
