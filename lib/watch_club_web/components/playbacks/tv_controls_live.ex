@@ -265,7 +265,8 @@ defmodule WatchClubWeb.Components.Playbacks.TvControlsLive do
   attr :class, :any, default: nil
 
   # The time played and the time left under or beside it, which the hook fills. A transparent
-  # range input over the drawn bar seeks; stacked, it's a touch target high.
+  # range input over the drawn bar seeks; stacked, it's a touch target high. Its form isn't
+  # recovered on reconnect, which would seek back to the stale position left in the input.
   defp seek_bar(assigns) do
     ~H"""
     <div class={[
@@ -280,6 +281,7 @@ defmodule WatchClubWeb.Components.Playbacks.TvControlsLive do
         id={@id}
         layout="none"
         phx-change="seek"
+        phx-auto-recover="ignore"
         phx-target={@target}
         class={[
           "relative",
