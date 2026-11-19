@@ -34,10 +34,16 @@ mise exec -- turbo run generate:client generate:routes
 
 # Copies the primary worktree's database, then applies this branch's newer migrations. pg_dump
 # copies it while the primary worktree's server uses it, unlike CREATE DATABASE with a template
+in_postgres() {
+  docker compose --file "$primary/docker-compose.dev.yml" exec -T db "$@"
+}
 primary_database=$(sed -nE 's|^DATABASE_URL=.*/([^/?]+).*|\1|p' "$primary/.env")
-mise exec -- sqlx database create
-docker compose --file "$primary/docker-compose.dev.yml" exec -T db \
-  pg_dump -U postgres "$primary_database" |
-  docker compose --file "$primary/docker-compose.dev.yml" exec -T db \
-    psql -U postgres --quiet -v ON_ERROR_STOP=1 --dbname "$database" >/dev/null
+# Into an empty database, also when a setup that failed runs again
+in_postgres psql -U postgres --quiet -v ON_ERROR_STOP=1 -v database="$database" <<'SQL'
+SET client_min_messages = warning;
+DROP DATABASE IF EXISTS :"database";
+CREATE DATABASE :"database";
+SQL
+in_postgres pg_dump -U postgres "$primary_database" |
+  in_postgres psql -U postgres --quiet -v ON_ERROR_STOP=1 --dbname "$database" >/dev/null
 mise exec -- sqlx migrate run --source apps/server/migrations
