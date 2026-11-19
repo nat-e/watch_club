@@ -2,6 +2,7 @@ defmodule WatchClub.FfmpegTest do
   use ExUnit.Case, async: true
 
   alias WatchClub.Ffmpeg
+  alias WatchClub.Ffmpeg.MatroskaCues
 
   @moduletag :tmp_dir
 
@@ -25,12 +26,13 @@ defmodule WatchClub.FfmpegTest do
   @segment %{stream_index: 0, start_time: 6.0, end_time: 12.0}
 
   describe "keyframes/2" do
-    test "reads the stream's bytes from each keyframe to the next from every packet",
-         %{source_path: source_path} do
-      {:ok, keyframes} = Ffmpeg.keyframes(source_path, 0)
+    test "reads the stream's bytes from each keyframe to the next from every packet of a file that isn't Matroska",
+         %{tmp_dir: tmp_dir, source_path: source_path} do
+      path = mp4_video!(source_path, tmp_dir)
+      {:ok, keyframes} = Ffmpeg.keyframes(path, 0)
 
       assert Enum.map(keyframes, &elem(&1, 0)) == [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0]
-      assert keyframes |> Enum.map(&elem(&1, 1)) |> Enum.sum() == stream_bytes(source_path, 0)
+      assert keyframes |> Enum.map(&elem(&1, 1)) |> Enum.sum() == stream_bytes(path, 0)
     end
 
     test "estimates them from a Matroska file's Cues when it states every stream's bit rate",
@@ -42,7 +44,7 @@ defmodule WatchClub.FfmpegTest do
           BPS: bit_rate(source_path, 1)
         )
 
-      {:ok, scanned} = Ffmpeg.keyframes(source_path, 0)
+      {:ok, scanned} = Ffmpeg.keyframes(mp4_video!(source_path, tmp_dir), 0)
       {:ok, estimated} = Ffmpeg.keyframes(path, 0)
 
       # Not the scan's exact bytes, but close to them
@@ -55,7 +57,26 @@ defmodule WatchClub.FfmpegTest do
       end
     end
 
-    test "reads every packet of a Matroska file whose stated bit rates don't add up to its own",
+    test "counts every byte from a Matroska file's Cues as video when it doesn't state every stream's bit rate",
+         %{tmp_dir: tmp_dir, source_path: source_path} do
+      {:ok, scanned} = Ffmpeg.keyframes(mp4_video!(source_path, tmp_dir), 0)
+      {:ok, estimated} = Ffmpeg.keyframes(source_path, 0)
+
+      assert Enum.map(estimated, &elem(&1, 0)) == Enum.map(scanned, &elem(&1, 0))
+
+      for {{_time, scanned_bytes}, {_estimated_time, estimated_bytes}} <-
+            Enum.zip(scanned, estimated) do
+        assert estimated_bytes > scanned_bytes
+      end
+
+      file_bytes = stream_bytes(source_path, 0) + stream_bytes(source_path, 1)
+
+      assert_in_delta estimated |> Enum.map(&elem(&1, 1)) |> Enum.sum(),
+                      file_bytes,
+                      file_bytes * 0.05
+    end
+
+    test "counts every byte from a Matroska file's Cues as video when its stated bit rates don't add up to its own",
          %{tmp_dir: tmp_dir, source_path: source_path} do
       # ffmpeg keeps a stream's BPS tag when it re-encodes it
       path =
@@ -64,7 +85,10 @@ defmodule WatchClub.FfmpegTest do
           BPS: bit_rate(source_path, 1)
         )
 
-      assert Ffmpeg.keyframes(path, 0) == Ffmpeg.keyframes(source_path, 0)
+      {:ok, keyframes} = Ffmpeg.keyframes(path, 0)
+      {:ok, cues} = MatroskaCues.keyframes(path, 0)
+
+      assert Enum.map(keyframes, &elem(&1, 1)) == Enum.map(cues, &elem(&1, 1))
     end
   end
 
@@ -137,6 +161,20 @@ defmodule WatchClub.FfmpegTest do
         ~w(-hide_banner -loglevel error -i #{source_path} -map 0 -c copy
            -metadata:s:v:0 #{video_tag}=#{video} -metadata:s:a:0 #{audio_tag}=#{audio}) ++
           [path],
+        stderr_to_stdout: true
+      )
+
+    path
+  end
+
+  # A copy of the source's video in MP4, which has no Cues
+  defp mp4_video!(source_path, tmp_dir) do
+    path = Path.join(tmp_dir, "video.mp4")
+
+    {_output, 0} =
+      System.cmd(
+        "ffmpeg",
+        ~w(-hide_banner -loglevel error -y -i #{source_path} -map 0:v -c copy) ++ [path],
         stderr_to_stdout: true
       )
 

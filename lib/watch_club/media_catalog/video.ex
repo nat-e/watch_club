@@ -219,7 +219,7 @@ defmodule WatchClub.MediaCatalog.Video do
     attribute :keyframe_interval_bytes, {:array, :integer} do
       description """
       The bytes of its Default Video Track from each keyframe to the next, or to the end of the
-      file.
+      file. A Matroska file's are estimated from its Cues, and may count other tracks' bytes too.
       """
 
       allow_nil? false

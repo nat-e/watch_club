@@ -83,9 +83,9 @@ defmodule WatchClub.Ffmpeg do
   @doc """
   The keyframes of the video stream at `stream_index`, in order, each with its time in seconds
   from the file's start, as `-ss` counts them, and the bytes of the stream's frames from it to
-  the next keyframe. They come from the Cues of a Matroska file that states the bit rate of
-  every stream, and otherwise from every packet `ffprobe` reads in the whole file. Returns
-  `{:error, message}` when `ffprobe` fails or finds no keyframe.
+  the next keyframe. They come from the Cues of a Matroska file, and otherwise from every packet
+  `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe` fails or finds
+  no keyframe.
   """
   @impl true
   def keyframes(path, stream_index) when is_binary(path) do
@@ -164,15 +164,24 @@ defmodule WatchClub.Ffmpeg do
   end
 
   # The Cues give where each keyframe starts in the file, so the bytes from one keyframe to the
-  # next hold every stream's frames and the container's headers. Everything but the video is
-  # taken out at its average bit rate: the file's, from the Cues, minus the one it states for the
-  # video. The stated bit rates are trusted only when they add up to the file's: ffmpeg keeps
-  # them when it re-encodes a stream.
-  defp keyframes_from_cues(path, stream_index, %{bit_rates: bit_rates, end_time: end_time}) do
-    with true <- is_float(end_time) and Enum.all?(Map.values(bit_rates), &is_float/1),
-         {:ok, [{first_time, _bytes} | _] = keyframes} <-
-           MatroskaCues.keyframes(path, stream_index),
-         true <- end_time > first_time,
+  # next hold every stream's frames and the container's headers.
+  defp keyframes_from_cues(path, stream_index, file) do
+    with {:ok, keyframes} <- MatroskaCues.keyframes(path, stream_index) do
+      {:ok, without_other_streams(keyframes, stream_index, file) || keyframes}
+    end
+  end
+
+  # Takes everything but the video out at its average bit rate: the file's, from the Cues, minus
+  # the one it states for the video. Stated bit rates are trusted only when every stream has one
+  # and they add up to the file's: ffmpeg keeps them when it re-encodes a stream. nil otherwise,
+  # and every byte then counts as video: the import never reads the whole file.
+  defp without_other_streams(
+         [{first_time, _bytes} | _] = keyframes,
+         stream_index,
+         %{bit_rates: bit_rates, end_time: end_time}
+       ) do
+    with true <- is_float(end_time) and end_time > first_time,
+         true <- Enum.all?(Map.values(bit_rates), &is_float/1),
          {times, interval_bytes} = Enum.unzip(keyframes),
          stated_bit_rate = bit_rates |> Map.values() |> Enum.sum(),
          file_bit_rate = Enum.sum(interval_bytes) * 8 / (end_time - first_time),
@@ -186,11 +195,9 @@ defmodule WatchClub.Ffmpeg do
         end)
 
       # Every keyframe has bytes of its own
-      if Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end),
-        do: {:ok, keyframes},
-        else: :error
+      if Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end), do: keyframes
     else
-      _unusable -> :error
+      _untrusted -> nil
     end
   end
 
