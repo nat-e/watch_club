@@ -1,5 +1,6 @@
 use std::num::NonZeroU32;
 
+use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
@@ -89,7 +90,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
         SearchResult {
             id: ContentId::Movie(TmdbId::new(194)),
             title: "Amélie".to_owned(),
-            year: Some(2001),
+            date: Some(date(2001, 4, 25)),
             overview: Some(
                 "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally \
                  discovers a gift for helping others. Soon Amelie is spending her days as a \
@@ -116,7 +117,6 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
                 })
             ),
             creators: Vec::new(),
-            date: None,
             league: None,
         }
     );
@@ -220,7 +220,7 @@ async fn search_reads_5_pages_at_most() {
 }
 
 #[tokio::test]
-async fn search_leaves_out_the_overview_and_year_tmdb_sends_empty() {
+async fn search_leaves_out_the_overview_and_date_tmdb_sends_empty() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer(
         "/search/multi",
@@ -235,7 +235,7 @@ async fn search_leaves_out_the_overview_and_year_tmdb_sends_empty() {
         .unwrap();
 
     let result = &found.results[0];
-    assert_eq!((result.year, result.overview.as_deref()), (None, None));
+    assert_eq!((result.date, result.overview.as_deref()), (None, None));
 }
 
 #[tokio::test]

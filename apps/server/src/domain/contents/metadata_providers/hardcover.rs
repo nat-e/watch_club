@@ -7,6 +7,7 @@ use std::{
 };
 
 use anyhow::{Context, bail};
+use jiff::civil::Date;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::json;
@@ -177,11 +178,10 @@ fn search_result(book: BookDocument) -> SearchResult {
     SearchResult {
         id: ContentId::Book(book.id),
         title: book.title,
-        year: book.release_year,
+        date: book.release_date,
         overview: book.description,
         poster: book.image.and_then(cover),
         creators: creators(book.contributions),
-        date: None,
         league: None,
     }
 }
@@ -265,7 +265,9 @@ struct BookDocument {
     #[serde(deserialize_with = "id_text")]
     id: HardcoverId,
     title: String,
-    release_year: Option<i16>,
+    /// The day it came out, or January 1st of its year when Hardcover doesn't know the day
+    #[serde(default, deserialize_with = "optional_date")]
+    release_date: Option<Date>,
     #[serde(default, deserialize_with = "optional_text")]
     description: Option<String>,
     /// Its cover, whose fields are all null when it has none
@@ -322,4 +324,11 @@ fn optional_text<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<St
     Ok(text
         .map(|text| text.trim().to_owned())
         .filter(|text| !text.is_empty()))
+}
+
+/// Reads a date that Hardcover sends as `YYYY-MM-DD`, or blank, or null, when it has none.
+fn optional_date<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<Date>, D::Error> {
+    optional_text(deserializer)?
+        .map(|date| date.parse().map_err(serde::de::Error::custom))
+        .transpose()
 }

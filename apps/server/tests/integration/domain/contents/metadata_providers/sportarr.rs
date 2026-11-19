@@ -41,7 +41,7 @@ async fn search_returns_the_events_with_the_querys_words_in_their_title_the_late
         SearchResult {
             id: ContentId::SportsEvent(SportarrId::new("ev-575969")),
             title: "Canelo Álvarez vs Edgar Berlanga".to_owned(),
-            year: Some(2024),
+            date: Some(date(2024, 9, 15)),
             overview: Some(
                 "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo Alvarez \
                  (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super \
@@ -57,7 +57,6 @@ async fn search_returns_the_events_with_the_querys_words_in_their_title_the_late
                 height: 1000,
             }]),
             creators: Vec::new(),
-            date: Some(date(2024, 9, 15)),
             league: Some("Boxing".to_owned()),
         }
     );
@@ -105,13 +104,12 @@ async fn search_leaves_out_what_sportarr_lacks() {
     let result = &found.results[0];
     assert_eq!(
         (
-            result.year,
             result.date,
             result.league.as_deref(),
             result.overview.as_deref(),
             &result.poster,
         ),
-        (None, None, None, None, &None)
+        (None, None, None, &None)
     );
 }
 

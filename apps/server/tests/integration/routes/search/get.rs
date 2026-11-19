@@ -49,7 +49,7 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
             "content_type": "movie",
             "external_id": "194",
             "title": "Amélie",
-            "year": 2001,
+            "date": "2001-04-25",
             "overview": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally \
                 discovers a gift for helping others. Soon Amelie is spending her days as a \
                 matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a \
@@ -64,7 +64,6 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
                 {"url": "https://image.tmdb.org/t/p/w780/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 780, "height": 1170},
             ],
             "creators": [],
-            "date": null,
             "league": null,
         })
     );
@@ -95,7 +94,7 @@ async fn returns_a_page_of_books(db: PgPool) {
             "content_type": "book",
             "external_id": "474596",
             "title": "Asterix and the Goths",
-            "year": 1963,
+            "date": "1963-09-01",
             "overview": "Des espions Goths ont infiltré la Gaule afin de capturer le meilleur druide \
                 lors de leur rencontre annuelle dans la forêt des Carnutes. C'est le druide \
                 Panoramix qui gagne. à partir de 6 ans.",
@@ -105,7 +104,6 @@ async fn returns_a_page_of_books(db: PgPool) {
                 "height": 500,
             }],
             "creators": ["René Goscinny", "Albert Uderzo"],
-            "date": null,
             "league": null,
         })
     );
@@ -139,7 +137,7 @@ async fn returns_the_sports_events_on_one_page(db: PgPool) {
             "content_type": "sports_event",
             "external_id": "ev-575969",
             "title": "Canelo Álvarez vs Edgar Berlanga",
-            "year": 2024,
+            "date": "2024-09-15",
             "overview": "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo \
                 Alvarez (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super \
                 middleweight titles on the line, can he extend his reign at the divisions summit?",
@@ -149,7 +147,6 @@ async fn returns_the_sports_events_on_one_page(db: PgPool) {
                 "height": 1000,
             }],
             "creators": [],
-            "date": "2024-09-15",
             "league": "Boxing",
         })
     );

@@ -123,15 +123,20 @@ export function useSearchHint(scope: SearchScope): string {
 
 /**
  * Returns the facts a search result shows after its Content Type, when it has them: a Sports
- * Event's date, or the year of other Content, then a Sports Event's league, then the creators.
- * Dates are written as `language`, such as `fr-FR`, writes them.
+ * Event's day, as `language`, such as `fr-FR`, writes it, or the year of other Content, then a
+ * Sports Event's league, then the creators.
  */
 export function searchResultDetails(result: SearchResult, language: string): string[] {
   const details: string[] = [];
   if (result.date !== null) {
-    details.push(formatDate(result.date, language));
-  } else if (result.year !== null) {
-    details.push(String(result.year));
+    // A date and time without a time zone is in the device's, which formats it, so the day stays
+    const midnight = new Date(`${result.date}T00:00`);
+    // Only Sports Events need their day to tell them apart, and a Book's can be a guess
+    details.push(
+      result.content_type === 'sports_event'
+        ? midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'})
+        : String(midnight.getFullYear()),
+    );
   }
   if (result.league !== null) {
     details.push(result.league);
@@ -157,13 +162,6 @@ export function useTypedQuery(text: string): string {
     };
   }, [text]);
   return query;
-}
-
-/** Returns a day, such as `2024-09-15`, as `language` writes it, such as "Sep 15, 2024". */
-function formatDate(date: string, language: string): string {
-  // A date and time without a time zone is in the device's, which formats it, so the day stays
-  const midnight = new Date(`${date}T00:00`);
-  return midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'});
 }
 
 /** Returns the results without the ones already listed. */

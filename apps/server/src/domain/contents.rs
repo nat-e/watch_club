@@ -130,10 +130,10 @@ pub struct SearchResult {
     #[serde(flatten)]
     pub id: ContentId,
     pub title: String,
-    /// The year of its release, of its first episode, or of a Sports Event's date, when its Metadata
-    /// Provider knows it
-    #[schema(required = true)]
-    pub year: Option<i16>,
+    /// The day it came out, first aired or takes place, when its Metadata Provider knows it. A Book
+    /// whose day Hardcover doesn't know comes out on January 1st of its year
+    #[schema(value_type = Option<String>, format = Date, required = true)]
+    pub date: Option<Date>,
     #[schema(required = true)]
     pub overview: Option<String>,
     #[schema(required = true)]
@@ -141,9 +141,6 @@ pub struct SearchResult {
     /// The people credited for making it, most important first, such as a Book's authors. None for
     /// Movies, TV Shows and Sports Events for now
     pub creators: Vec<String>,
-    /// The day a Sports Event takes place, when sportarr.net knows it. Null for other Content
-    #[schema(value_type = Option<String>, format = Date, required = true)]
-    pub date: Option<Date>,
     /// The league or competition of a Sports Event, such as UFC or Formula 1, when sportarr.net
     /// knows it. Null for other Content
     #[schema(required = true)]

@@ -130,11 +130,10 @@ fn search_result(event: Event) -> SearchResult {
     SearchResult {
         id: ContentId::SportsEvent(event.id),
         title: event.title,
-        year: event.date.map(Date::year),
+        date: event.date,
         overview: event.overview,
         poster: event.poster_url.and_then(poster),
         creators: Vec::new(),
-        date: event.date,
         league: event.league,
     }
 }
