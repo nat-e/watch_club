@@ -272,10 +272,14 @@ async fn save_content_localizations(
 
     sqlx::query!(
         r#"
-        INSERT INTO content_localizations (
-            content_id, locale, title, overview, poster, trailer_url
+        WITH localization AS (
+            SELECT *
+            FROM UNNEST($2::locale[], $3::text[], $4::text[], $5::jsonb[], $6::text[])
+                AS localization (locale, title, overview, poster, trailer_url)
         )
-        SELECT $1, * FROM UNNEST($2::locale[], $3::text[], $4::text[], $5::jsonb[], $6::text[])
+        INSERT INTO content_localizations (content_id, locale, title, overview, poster, trailer_url)
+        SELECT $1, locale, title, overview, poster, trailer_url
+        FROM localization
         ON CONFLICT (content_id, locale) DO UPDATE
         SET title = EXCLUDED.title,
             overview = EXCLUDED.overview,
@@ -326,13 +330,16 @@ async fn save_credits(
 
     sqlx::query!(
         r#"
+        WITH credit AS (
+            SELECT (ordinality - 1)::integer AS position, kind, name, character, photo, external_ids
+            FROM UNNEST($2::credit_kind[], $3::text[], $4::text[], $5::jsonb[], $6::jsonb[])
+                WITH ORDINALITY AS credit (kind, name, character, photo, external_ids, ordinality)
+        )
         INSERT INTO content_credits (
             content_id, position, kind, name, character, photo, external_ids
         )
-        SELECT $1, (credit.ordinality - 1)::integer, credit.kind, credit.name, credit.character,
-            credit.photo, credit.external_ids
-        FROM UNNEST($2::credit_kind[], $3::text[], $4::text[], $5::jsonb[], $6::jsonb[])
-            WITH ORDINALITY AS credit (kind, name, character, photo, external_ids, ordinality)
+        SELECT $1, position, kind, name, character, photo, external_ids
+        FROM credit
         ON CONFLICT (content_id, position) DO UPDATE
         SET kind = EXCLUDED.kind,
             name = EXCLUDED.name,
@@ -419,14 +426,21 @@ async fn save_media(
         .collect();
     sqlx::query!(
         r#"
+        WITH listed AS (
+            SELECT *
+            FROM UNNEST(
+                $2::media_type[], $3::integer[], $4::integer[], $5::date[], $6::integer[],
+                $7::jsonb[]
+            ) AS listed (
+                media_type, group_number, number_in_group, release_date, runtime_seconds, image
+            )
+        )
         INSERT INTO media (
             content_id, media_type, group_number, number_in_group, release_date, runtime_seconds,
             image
         )
-        SELECT $1, *
-        FROM UNNEST(
-            $2::media_type[], $3::integer[], $4::integer[], $5::date[], $6::integer[], $7::jsonb[]
-        )
+        SELECT $1, media_type, group_number, number_in_group, release_date, runtime_seconds, image
+        FROM listed
         ON CONFLICT (content_id, media_type, group_number, number_in_group) DO UPDATE
         SET release_date = EXCLUDED.release_date,
             runtime_seconds = EXCLUDED.runtime_seconds,
@@ -484,11 +498,15 @@ async fn save_media(
         .collect();
     sqlx::query!(
         r#"
+        WITH localization AS (
+            SELECT *
+            FROM UNNEST(
+                $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]
+            ) AS localization (media_type, group_number, number_in_group, locale, title, overview)
+        )
         INSERT INTO media_localizations (media_id, locale, title, overview)
         SELECT media.id, localization.locale, localization.title, localization.overview
-        FROM UNNEST(
-            $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]
-        ) AS localization (media_type, group_number, number_in_group, locale, title, overview)
+        FROM localization
         JOIN media ON media.content_id = $1
             AND media.media_type = localization.media_type
             AND ARRAY[media.group_number, media.number_in_group]
