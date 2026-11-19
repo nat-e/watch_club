@@ -101,7 +101,8 @@ defmodule WatchClub.Ffmpeg do
 
   # The file's start and end, in seconds of its timestamps, and the bit rates it states for the
   # streams its frames hold, by index, nil for a stream that doesn't. mkvmerge and MakeMKV state
-  # them in BPS tags, which ffprobe suffixes with the tag's language when it has one.
+  # them in BPS tags, which ffprobe suffixes with the tag's language when it has one. Otherwise
+  # the decoder gives the bit rate of a constant bit rate codec, or of a stream's first frame.
   defp probe_stated_bit_rates(ffprobe, path) do
     args = [
       "-v",
@@ -126,12 +127,15 @@ defmodule WatchClub.Ffmpeg do
             stream["codec_type"] != "attachment",
             stream["disposition"]["attached_pic"] != 1,
             into: %{} do
-          bps =
-            Enum.find_value(stream["tags"] || %{}, fn {name, value} ->
-              if name == "BPS" or String.starts_with?(name, "BPS-"), do: value
-            end)
+          tags = stream["tags"] || %{}
 
-          {stream["index"], parse_number(stream["bit_rate"] || bps)}
+          bps =
+            tags["BPS"] ||
+              Enum.find_value(tags, fn {name, value} ->
+                if String.starts_with?(name, "BPS-"), do: value
+              end)
+
+          {stream["index"], parse_number(bps || stream["bit_rate"])}
         end
 
       {:ok,
@@ -160,9 +164,10 @@ defmodule WatchClub.Ffmpeg do
   end
 
   # The Cues give where each keyframe starts in the file, so the bytes from one keyframe to the
-  # next hold every stream's frames. The other streams' share is taken out at the bit rates the
-  # file states for them. Those are trusted only when they add up to the file's bit rate: ffmpeg
-  # keeps them when it re-encodes a stream.
+  # next hold every stream's frames and the container's headers. Everything but the video is
+  # taken out at its average bit rate: the file's, from the Cues, minus the one it states for the
+  # video. The stated bit rates are trusted only when they add up to the file's: ffmpeg keeps
+  # them when it re-encodes a stream.
   defp keyframes_from_cues(path, stream_index, %{bit_rates: bit_rates, end_time: end_time}) do
     with true <- is_float(end_time) and Enum.all?(Map.values(bit_rates), &is_float/1),
          {:ok, [{first_time, _bytes} | _] = keyframes} <-
@@ -172,7 +177,7 @@ defmodule WatchClub.Ffmpeg do
          stated_bit_rate = bit_rates |> Map.values() |> Enum.sum(),
          file_bit_rate = Enum.sum(interval_bytes) * 8 / (end_time - first_time),
          true <- abs(stated_bit_rate - file_bit_rate) <= file_bit_rate * 0.03 do
-      other_bytes_per_second = (stated_bit_rate - bit_rates[stream_index]) / 8
+      other_bytes_per_second = (file_bit_rate - bit_rates[stream_index]) / 8
       durations = Enum.zip_with(times, tl(times) ++ [end_time], &(&2 - &1))
 
       keyframes =
