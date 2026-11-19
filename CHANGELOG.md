@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.16](https://github.com/nat-e/watch_club/compare/v0.1.15...v0.1.16) (2026-11-19)
+
+
+### Bug Fixes
+
+* **media:** never read a whole Matroska file at import ([#161](https://github.com/nat-e/watch_club/issues/161)) ([9035094](https://github.com/nat-e/watch_club/commit/90350946a711b1962d691880667ee3006020f740))
+* **player:** make each player's next segments before it asks for them ([#157](https://github.com/nat-e/watch_club/issues/157)) ([a08f0cc](https://github.com/nat-e/watch_club/commit/a08f0cc0965cf5b7029acb534c012a25a34fc668))
+
 ## [0.1.15](https://github.com/nat-e/watch_club/compare/v0.1.14...v0.1.15) (2026-11-19)
 
 
