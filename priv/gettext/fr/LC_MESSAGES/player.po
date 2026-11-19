@@ -33,6 +33,7 @@ msgstr "Retour à l'accueil"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr "Qualité"
@@ -58,7 +59,7 @@ msgid "Skip recap"
 msgstr "Passer le récapitulatif"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Details (optional)"
 msgstr "Détails (facultatif)"
@@ -82,20 +83,22 @@ msgid "Player not working"
 msgstr "Le lecteur ne marche pas"
 
 # AI-translated (Claude)
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #: lib/watch_club_web/live/player/player_components.ex
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Report a problem"
 msgstr "Signaler un problème"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Send report"
 msgstr "Envoyer"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Paramètres"
@@ -107,13 +110,13 @@ msgid "Slow or buffering"
 msgstr "Lent ou saccadé"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What happened?"
 msgstr "Que s'est-il passé ?"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What's wrong?"
 msgstr "Quel est le problème ?"
@@ -123,12 +126,6 @@ msgstr "Quel est le problème ?"
 #, elixir-autogen, elixir-format
 msgid "Wrong video"
 msgstr "Mauvaise vidéo"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/remote_page.ex
-#, elixir-autogen, elixir-format
-msgid "Audio & subtitles"
-msgstr "Audio et sous-titres"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
@@ -290,12 +287,6 @@ msgstr "Ouvrir la télécommande"
 # AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
-msgid "This video has no other audio or subtitles."
-msgstr "Cette vidéo n'a pas d'autre audio ni de sous-titres."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/remote_page.ex
-#, elixir-autogen, elixir-format
 msgid "Remote sections"
 msgstr "Sections de la télécommande"
 
@@ -324,13 +315,14 @@ msgid "Report the problem so %{admin} can look into it."
 msgstr "Signale le problème pour que %{admin} puisse s'en occuper."
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Tell %{admin} what's wrong with this video."
 msgstr "Dis à %{admin} ce qui ne va pas avec cette vidéo."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thanks! We sent your report to %{admin}."
 msgstr "Merci ! On a envoyé ton signalement à %{admin}."
@@ -364,3 +356,9 @@ msgstr "%{language} (SME)"
 #, elixir-autogen, elixir-format
 msgid "%{language} (forced)"
 msgstr "%{language} (forcés)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Auto"
+msgstr "Auto"
