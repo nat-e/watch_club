@@ -3,12 +3,12 @@ import {describe, expect, it} from 'vitest';
 import {episodeCode, groupMedia} from '../../src/contents/media';
 
 /** Returns a TV Show Episode of this season and number, and nothing else. */
-function episode(season: number | null, number: number | null): Media {
+function episode(season: number | null, numberInGroup: number | null): Media {
   return {
     // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
-    id: `${season}-${number}`,
+    id: `${season}-${numberInGroup}`,
     group_number: season,
-    number,
+    number_in_group: numberInGroup,
     title: null,
     overview: null,
     image: null,

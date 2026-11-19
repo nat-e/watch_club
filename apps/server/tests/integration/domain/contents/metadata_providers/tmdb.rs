@@ -510,7 +510,10 @@ async fn fetch_tv_show_returns_its_episodes_with_their_texts_in_each_locale() {
     assert_eq!(tv_show.media.len(), 5);
     let episode = &tv_show.media[1];
     assert_eq!(episode.media_type, MediaType::TvShowEpisode);
-    assert_eq!((episode.group_number, episode.number), (Some(1), Some(2)));
+    assert_eq!(
+        (episode.group_number, episode.number_in_group),
+        (Some(1), Some(2))
+    );
     assert_eq!(episode.release_date, Some(date(2019, 5, 13)));
     assert_eq!(episode.runtime_seconds, Some(66 * 60));
     assert!(episode.image.is_some());

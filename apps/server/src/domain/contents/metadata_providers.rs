@@ -90,7 +90,7 @@ pub struct MediaMetadata {
     /// The group it's in, such as a TV Show Episode's season
     pub group_number: Option<i32>,
     /// Its number in its group, such as a TV Show Episode's
-    pub number: Option<i32>,
+    pub number_in_group: Option<i32>,
     /// The day it came out or aired
     pub release_date: Option<Date>,
     pub runtime_seconds: Option<i32>,

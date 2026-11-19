@@ -127,7 +127,7 @@ impl Sportarr {
         let media = MediaMetadata {
             media_type: MediaType::SportsEvent,
             group_number: None,
-            number: None,
+            number_in_group: None,
             release_date: event.date,
             runtime_seconds: None,
             image: None,

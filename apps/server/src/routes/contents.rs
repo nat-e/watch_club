@@ -62,7 +62,7 @@ async fn get_content_by_external_id(
     Ok(Json(content))
 }
 
-/// Returns the Content's Media in order, such as a TV Show's Episodes by season and number, with
+/// Returns the Content's Media in order, such as a TV Show's Episodes by season and episode, with
 /// their texts in the signed-in User's Locale. A Content that isn't saved has none.
 #[utoipa::path(
     get,

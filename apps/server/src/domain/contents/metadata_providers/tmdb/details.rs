@@ -62,7 +62,7 @@ impl Tmdb {
         let media = MediaMetadata {
             media_type: MediaType::Movie,
             group_number: None,
-            number: None,
+            number_in_group: None,
             release_date: movie.release_date,
             runtime_seconds: movie.runtime.and_then(minutes_to_seconds),
             image: None,
@@ -186,7 +186,7 @@ fn episodes(seasons_by_locale: Vec<(Locale, Vec<Season>)>) -> Vec<MediaMetadata>
                     .or_insert_with(|| MediaMetadata {
                         media_type: MediaType::TvShowEpisode,
                         group_number: Some(season.season_number),
-                        number: Some(episode.number),
+                        number_in_group: Some(episode.number),
                         release_date: episode.air_date,
                         runtime_seconds: episode.runtime.and_then(minutes_to_seconds),
                         image: episode.still_path.as_deref().and_then(still),

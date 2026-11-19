@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        INSERT INTO media_localizations (media_id, locale, title, overview)\n        SELECT media.id, localization.locale, localization.title, localization.overview\n        FROM UNNEST(\n            $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]\n        ) AS localization (media_type, group_number, number, locale, title, overview)\n        JOIN media ON media.content_id = $1\n            AND media.media_type = localization.media_type\n            AND ARRAY[media.group_number, media.number]\n                = ARRAY[localization.group_number, localization.number]\n        ON CONFLICT (media_id, locale) DO UPDATE\n        SET title = EXCLUDED.title,\n            overview = EXCLUDED.overview\n        WHERE (media_localizations.title, media_localizations.overview)\n            IS DISTINCT FROM (EXCLUDED.title, EXCLUDED.overview)\n        ",
+  "query": "\n        INSERT INTO media_localizations (media_id, locale, title, overview)\n        SELECT media.id, localization.locale, localization.title, localization.overview\n        FROM UNNEST(\n            $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]\n        ) AS localization (media_type, group_number, number_in_group, locale, title, overview)\n        JOIN media ON media.content_id = $1\n            AND media.media_type = localization.media_type\n            AND ARRAY[media.group_number, media.number_in_group]\n                = ARRAY[localization.group_number, localization.number_in_group]\n        ON CONFLICT (media_id, locale) DO UPDATE\n        SET title = EXCLUDED.title,\n            overview = EXCLUDED.overview\n        WHERE (media_localizations.title, media_localizations.overview)\n            IS DISTINCT FROM (EXCLUDED.title, EXCLUDED.overview)\n        ",
   "describe": {
     "columns": [],
     "parameters": {
@@ -51,5 +51,5 @@
     },
     "nullable": []
   },
-  "hash": "74faff8e801c7b5e1559cb46291306b38bb5e02129cc90f939a98f5552c0cfbe"
+  "hash": "2746fdebcaf2e0b416cf8bdcdf8d8648f9e0458dc500c30567fdd710047297ed"
 }

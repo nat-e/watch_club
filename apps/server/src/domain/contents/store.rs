@@ -131,7 +131,7 @@ pub(super) async fn find(
     }))
 }
 
-/// Returns the Content's Media in order, such as a TV Show's Episodes by season and number, with
+/// Returns the Content's Media in order, such as a TV Show's Episodes by season and episode, with
 /// their texts in the Locale. Returns none when there's no such Content.
 #[tracing::instrument(skip_all, fields(content.id = %content_id))]
 pub async fn list_media(
@@ -141,12 +141,12 @@ pub async fn list_media(
 ) -> Result<Vec<Media>, InternalError> {
     let media = sqlx::query!(
         r#"
-        SELECT m.id, m.group_number, m.number, l.title, l.overview, m.image, m.release_date,
-            m.runtime_seconds
+        SELECT m.id, m.group_number, m.number_in_group, l.title, l.overview, m.image,
+            m.release_date, m.runtime_seconds
         FROM media m
         JOIN media_localizations l ON l.media_id = m.id AND l.locale = $2
         WHERE m.content_id = $1
-        ORDER BY m.group_number, m.number
+        ORDER BY m.group_number, m.number_in_group
         "#,
         content_id as ContentId,
         locale as Locale,
@@ -161,7 +161,7 @@ pub async fn list_media(
         .map(|row| Media {
             id: row.id,
             group_number: row.group_number,
-            number: row.number,
+            number_in_group: row.number_in_group,
             title: row.title,
             overview: row.overview,
             image: row.image.map(|Json(image)| image),
@@ -372,7 +372,7 @@ async fn save_credits(
 }
 
 /// Deletes the Content's Media its Metadata Provider no longer lists, then inserts or updates the
-/// others, and their texts in each Locale. A Media is known by its type, group and number.
+/// others, and their texts in each Locale. A Media is known by its type, group and number in it.
 async fn save_media(
     transaction: &mut Transaction,
     content_id: ContentId,
@@ -381,7 +381,7 @@ async fn save_media(
     let media = &metadata.media;
     let media_types: Vec<_> = media.iter().map(|media| media.media_type).collect();
     let group_numbers: Vec<_> = media.iter().map(|media| media.group_number).collect();
-    let numbers: Vec<_> = media.iter().map(|media| media.number).collect();
+    let numbers_in_group: Vec<_> = media.iter().map(|media| media.number_in_group).collect();
 
     // Compares the numbers, which a Movie doesn't have, as arrays: their equality counts two nulls
     // as equal, and unlike IS NOT DISTINCT FROM, Postgres can hash it, rather than compare every
@@ -392,16 +392,16 @@ async fn save_media(
         WHERE content_id = $1
             AND NOT EXISTS (
                 SELECT FROM UNNEST($2::media_type[], $3::integer[], $4::integer[])
-                    AS listed (media_type, group_number, number)
+                    AS listed (media_type, group_number, number_in_group)
                 WHERE listed.media_type = media.media_type
-                    AND ARRAY[listed.group_number, listed.number]
-                        = ARRAY[media.group_number, media.number]
+                    AND ARRAY[listed.group_number, listed.number_in_group]
+                        = ARRAY[media.group_number, media.number_in_group]
             )
         "#,
         content_id as ContentId,
         &media_types as _,
         &group_numbers as &[Option<i32>],
-        &numbers as &[Option<i32>],
+        &numbers_in_group as &[Option<i32>],
     )
     .with_operation("DELETE", "media")
     .execute(&mut *transaction)
@@ -420,13 +420,14 @@ async fn save_media(
     sqlx::query!(
         r#"
         INSERT INTO media (
-            content_id, media_type, group_number, number, release_date, runtime_seconds, image
+            content_id, media_type, group_number, number_in_group, release_date, runtime_seconds,
+            image
         )
         SELECT $1, *
         FROM UNNEST(
             $2::media_type[], $3::integer[], $4::integer[], $5::date[], $6::integer[], $7::jsonb[]
         )
-        ON CONFLICT (content_id, media_type, group_number, number) DO UPDATE
+        ON CONFLICT (content_id, media_type, group_number, number_in_group) DO UPDATE
         SET release_date = EXCLUDED.release_date,
             runtime_seconds = EXCLUDED.runtime_seconds,
             image = EXCLUDED.image
@@ -436,7 +437,7 @@ async fn save_media(
         content_id as ContentId,
         &media_types as _,
         &group_numbers as &[Option<i32>],
-        &numbers as &[Option<i32>],
+        &numbers_in_group as &[Option<i32>],
         &release_dates as _,
         &runtimes as &[Option<i32>],
         &images as _,
@@ -446,8 +447,8 @@ async fn save_media(
     .await
     .context("failed to save a Content's Media")?;
 
-    // One row per Media and Locale, which finds its Media by type, group and number, as the Media
-    // that didn't change don't return their IDs. The numbers compare as arrays, as above
+    // One row per Media and Locale, which finds its Media by type, group and number in it, as the
+    // Media that didn't change don't return their IDs. The numbers compare as arrays, as above
     let localizations: Vec<_> = media
         .iter()
         .flat_map(|media| {
@@ -465,9 +466,9 @@ async fn save_media(
         .iter()
         .map(|(media, _)| media.group_number)
         .collect();
-    let localized_numbers: Vec<_> = localizations
+    let localized_numbers_in_group: Vec<_> = localizations
         .iter()
-        .map(|(media, _)| media.number)
+        .map(|(media, _)| media.number_in_group)
         .collect();
     let locales: Vec<_> = localizations
         .iter()
@@ -487,11 +488,11 @@ async fn save_media(
         SELECT media.id, localization.locale, localization.title, localization.overview
         FROM UNNEST(
             $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]
-        ) AS localization (media_type, group_number, number, locale, title, overview)
+        ) AS localization (media_type, group_number, number_in_group, locale, title, overview)
         JOIN media ON media.content_id = $1
             AND media.media_type = localization.media_type
-            AND ARRAY[media.group_number, media.number]
-                = ARRAY[localization.group_number, localization.number]
+            AND ARRAY[media.group_number, media.number_in_group]
+                = ARRAY[localization.group_number, localization.number_in_group]
         ON CONFLICT (media_id, locale) DO UPDATE
         SET title = EXCLUDED.title,
             overview = EXCLUDED.overview
@@ -501,7 +502,7 @@ async fn save_media(
         content_id as ContentId,
         &localized_media_types as _,
         &localized_group_numbers as &[Option<i32>],
-        &localized_numbers as &[Option<i32>],
+        &localized_numbers_in_group as &[Option<i32>],
         &locales as &[Locale],
         &titles as &[Option<&str>],
         &overviews as &[Option<&str>],

@@ -275,7 +275,7 @@ async fn list_media_lists_the_episodes_in_order_with_their_texts_in_the_locale(d
 
     let numbers: Vec<_> = episodes
         .iter()
-        .map(|episode| (episode.group_number, episode.number))
+        .map(|episode| (episode.group_number, episode.number_in_group))
         .collect();
     assert_eq!(
         numbers,

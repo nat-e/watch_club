@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        DELETE FROM media\n        WHERE content_id = $1\n            AND NOT EXISTS (\n                SELECT FROM UNNEST($2::media_type[], $3::integer[], $4::integer[])\n                    AS listed (media_type, group_number, number)\n                WHERE listed.media_type = media.media_type\n                    AND ARRAY[listed.group_number, listed.number]\n                        = ARRAY[media.group_number, media.number]\n            )\n        ",
+  "query": "\n        DELETE FROM media\n        WHERE content_id = $1\n            AND NOT EXISTS (\n                SELECT FROM UNNEST($2::media_type[], $3::integer[], $4::integer[])\n                    AS listed (media_type, group_number, number_in_group)\n                WHERE listed.media_type = media.media_type\n                    AND ARRAY[listed.group_number, listed.number_in_group]\n                        = ARRAY[media.group_number, media.number_in_group]\n            )\n        ",
   "describe": {
     "columns": [],
     "parameters": {
@@ -31,5 +31,5 @@
     },
     "nullable": []
   },
-  "hash": "af00cc476995b8a9f898e8e223d90bdd2d917b20f1e19eed95ddf8e9c8fe0b90"
+  "hash": "6eb3c540fd8f95ab1a943d188792f0579ddbb1514ef3c0df7421679359c63128"
 }

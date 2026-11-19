@@ -93,15 +93,15 @@ CREATE TABLE media (
     media_type media_type NOT NULL,
     -- A season, or null for a Movie or a Sports Event
     group_number integer,
-    -- An episode, or null for a Movie or a Sports Event
-    number integer,
+    -- Its number in its group, such as an episode's, or null for a Movie or a Sports Event
+    number_in_group integer,
     -- The day it came out, aired or takes place, which tells whether it's out
     release_date date,
     runtime_seconds integer CHECK (runtime_seconds > 0),
     image jsonb,
 
     -- Also lists a Content's Media, in order
-    UNIQUE NULLS NOT DISTINCT (content_id, media_type, group_number, number)
+    UNIQUE NULLS NOT DISTINCT (content_id, media_type, group_number, number_in_group)
 );
 
 -- A Media's texts in one Locale, filled like `content_localizations`. Null when no language has

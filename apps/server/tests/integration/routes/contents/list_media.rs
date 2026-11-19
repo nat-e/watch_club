@@ -33,7 +33,7 @@ async fn lists_the_episodes_of_a_tv_show_in_order(db: PgPool) {
         episode,
         json!({
             "group_number": 1,
-            "number": 1,
+            "number_in_group": 1,
             "title": "1:23:45",
             "release_date": "2019-05-06",
             "runtime_seconds": 3660,

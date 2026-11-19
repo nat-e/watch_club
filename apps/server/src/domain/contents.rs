@@ -288,7 +288,7 @@ pub struct Media {
     pub group_number: Option<i32>,
     /// Its number in its group, such as a TV Show Episode's
     #[schema(required = true)]
-    pub number: Option<i32>,
+    pub number_in_group: Option<i32>,
     #[schema(required = true)]
     pub title: Option<String>,
     #[schema(required = true)]

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT m.id, m.group_number, m.number, l.title, l.overview, m.image, m.release_date,\n            m.runtime_seconds\n        FROM media m\n        JOIN media_localizations l ON l.media_id = m.id AND l.locale = $2\n        WHERE m.content_id = $1\n        ORDER BY m.group_number, m.number\n        ",
+  "query": "\n        SELECT m.id, m.group_number, m.number_in_group, l.title, l.overview, m.image,\n            m.release_date, m.runtime_seconds\n        FROM media m\n        JOIN media_localizations l ON l.media_id = m.id AND l.locale = $2\n        WHERE m.content_id = $1\n        ORDER BY m.group_number, m.number_in_group\n        ",
   "describe": {
     "columns": [
       {
@@ -27,12 +27,12 @@
       },
       {
         "ordinal": 2,
-        "name": "number",
+        "name": "number_in_group",
         "type_info": "Int4",
         "origin": {
           "Table": {
             "table": "media",
-            "name": "number"
+            "name": "number_in_group"
           }
         }
       },
@@ -119,5 +119,5 @@
       true
     ]
   },
-  "hash": "a905378874b5f9b57f759f3f440263956b4141e6b06ae4ebeb22e59515a25126"
+  "hash": "88c3736142d6fe091d940edca66d0f06ad35a20b8626330dc73d95ef01d8df92"
 }

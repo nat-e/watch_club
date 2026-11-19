@@ -109,7 +109,7 @@ export function useEpisodeFacts(episode: Media): EpisodeFacts {
 /** Returns a TV Show Episode's season and number, such as "S01E02". */
 export function episodeCode(episode: Media): string {
   const twoDigits = (number: number | null) => String(number ?? 0).padStart(2, '0');
-  return `S${twoDigits(episode.group_number)}E${twoDigits(episode.number)}`;
+  return `S${twoDigits(episode.group_number)}E${twoDigits(episode.number_in_group)}`;
 }
 
 /** Returns a day as the API writes it, such as `2026-06-03`, in the device's time zone. */

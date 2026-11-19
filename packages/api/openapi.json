@@ -237,7 +237,7 @@
     },
     "/api/contents/{content_id}/media": {
       "get": {
-        "summary": "Returns the Content's Media in order, such as a TV Show's Episodes by season and number, with\ntheir texts in the signed-in User's Locale. A Content that isn't saved has none.",
+        "summary": "Returns the Content's Media in order, such as a TV Show's Episodes by season and episode, with\ntheir texts in the signed-in User's Locale. A Content that isn't saved has none.",
         "operationId": "list_media_of_content",
         "parameters": [
           {
@@ -1590,7 +1590,7 @@
         "required": [
           "id",
           "group_number",
-          "number",
+          "number_in_group",
           "title",
           "overview",
           "image",
@@ -1619,7 +1619,7 @@
               }
             ]
           },
-          "number": {
+          "number_in_group": {
             "type": [
               "integer",
               "null"
