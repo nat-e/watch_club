@@ -11,7 +11,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   frames. ffmpeg can't seek them to a keyframe, as they have no index, and counts their times from
   the start of the stream it reads rather than from the start of the file.
 
-  Segments are cached on disk at the Playback level.
+  Segments are cached on disk at the Playback level. `SegmentQueue` makes them, and makes the
+  `@segments_ahead` segments after each one a Screen asks for, of the same quality or audio track.
   """
 
   require Logger
@@ -20,9 +21,11 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   alias WatchClub.Ffmpeg
   alias WatchClub.MediaCatalog.{AudioTrack, TextTrack, Video}
   alias WatchClub.Playbacks.Playback
-  alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache}
+  alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache, SegmentQueue}
 
   @segment_duration 6.0
+  # About 30 s and more than 24 s, most of the Player's buffer
+  @segments_ahead 5
 
   @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
   def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query) do
@@ -52,16 +55,22 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   def video_segment(%Playback{} = playback, variant_id, segment_name) do
     with {:ok, quality} <- find_quality(playback.media.video, variant_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         {:ok, segment} <- find_segment(playback.media.video, index) do
-      ensure_video_segment(playback, quality, index, segment)
+         {:ok, [job | next_jobs]} <-
+           segment_jobs(
+             playback.media.video,
+             index,
+             &video_segment_job(playback, quality, &1, &2)
+           ) do
+      SegmentQueue.fetch({playback.id, :video}, job, next_jobs)
     end
   end
 
   def audio_segment(%Playback{} = playback, track_id, segment_name) do
     with {:ok, track} <- find_audio_track(playback.media.video, track_id),
          {:ok, index} <- parse_segment_name(segment_name),
-         {:ok, segment} <- find_segment(playback.media.video, index) do
-      ensure_audio_segment(playback, track, index, segment)
+         {:ok, [job | next_jobs]} <-
+           segment_jobs(playback.media.video, index, &audio_segment_job(playback, track, &1, &2)) do
+      SegmentQueue.fetch({playback.id, :audio}, job, next_jobs)
     end
   end
 
@@ -108,32 +117,36 @@ defmodule WatchClub.Playbacks.Playback.Hls do
     end)
   end
 
-  defp find_segment(%Video{} = video, index) do
-    case Enum.at(segments(video), index) do
-      nil -> {:error, :not_found}
-      segment -> {:ok, segment}
+  # The jobs of the segment at `index` and of the `@segments_ahead` next ones
+  defp segment_jobs(%Video{} = video, index, segment_job) do
+    case video |> segments() |> Enum.with_index() |> Enum.slice(index, @segments_ahead + 1) do
+      [] ->
+        {:error, :not_found}
+
+      segments ->
+        {:ok, Enum.map(segments, fn {segment, index} -> segment_job.(segment, index) end)}
     end
   end
 
-  defp ensure_video_segment(%Playback{} = playback, quality, index, segment) do
+  defp video_segment_job(%Playback{} = playback, quality, segment, index) do
     output_path = video_segment_path(playback, quality, index)
 
-    if cached?(output_path) do
-      {:ok, output_path}
-    else
-      job =
-        segment
-        |> Map.take([:start_time, :end_time])
-        |> Map.merge(%{
-          source_path: playback.media.path,
-          output_path: output_path,
-          stream_index: playback.media.video.default_video_track.stream_index
-        })
+    ffmpeg_job =
+      segment
+      |> Map.take([:start_time, :end_time])
+      |> Map.merge(%{
+        source_path: playback.media.path,
+        output_path: output_path,
+        stream_index: playback.media.video.default_video_track.stream_index
+      })
 
+    make = fn ->
       if quality.copy? do
         attributes = %{"watch_club.hls.segment_index": index}
 
-        trace_transcode("copy video segment", attributes, fn -> Ffmpeg.copy_video_segment(job) end)
+        trace_transcode("copy video segment", attributes, fn ->
+          Ffmpeg.copy_video_segment(ffmpeg_job)
+        end)
       else
         attributes = %{
           "watch_club.hls.quality": quality.id,
@@ -141,41 +154,45 @@ defmodule WatchClub.Playbacks.Playback.Hls do
         }
 
         trace_transcode("transcode video segment", attributes, fn ->
-          job
+          ffmpeg_job
           |> Map.merge(Map.take(quality, [:width, :height, :video_bitrate, :level]))
           |> Ffmpeg.transcode_video_segment()
         end)
       end
     end
+
+    %{output_path: output_path, make: make}
   end
 
-  defp ensure_audio_segment(%Playback{} = playback, %AudioTrack{} = track, index, segment) do
+  defp audio_segment_job(%Playback{} = playback, %AudioTrack{} = track, segment, index) do
     output_path = audio_segment_path(playback, track, index)
 
-    if cached?(output_path) do
-      {:ok, output_path}
-    else
-      attributes = %{
-        "watch_club.audio_track.stream_index": track.stream_index,
-        "watch_club.hls.segment_index": index
-      }
+    ffmpeg_job = %{
+      source_path: playback.media.path,
+      output_path: output_path,
+      start_time: segment.start_time,
+      end_time: segment.end_time,
+      stream_index: track.stream_index
+    }
 
+    attributes = %{
+      "watch_club.audio_track.stream_index": track.stream_index,
+      "watch_club.hls.segment_index": index
+    }
+
+    make = fn ->
       trace_transcode("transcode audio segment", attributes, fn ->
-        Ffmpeg.transcode_audio_segment(%{
-          source_path: playback.media.path,
-          output_path: output_path,
-          start_time: segment.start_time,
-          end_time: segment.end_time,
-          stream_index: track.stream_index
-        })
+        Ffmpeg.transcode_audio_segment(ffmpeg_job)
       end)
     end
+
+    %{output_path: output_path, make: make}
   end
 
   defp ensure_subtitle_file(%Playback{} = playback, %TextTrack{} = track) do
     output_path = subtitle_file_path(playback, track)
 
-    if cached?(output_path) do
+    if SegmentCache.cached?(output_path) do
       {:ok, output_path}
     else
       source = if track.sidecar_path, do: :sidecar, else: :embedded
@@ -284,12 +301,5 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
   defp subtitle_file_path(%Playback{} = playback, track) do
     Path.join([SegmentCache.playback_dir(playback.id), "subtitles", track.id, "#{track.id}.vtt"])
-  end
-
-  defp cached?(path) do
-    case File.stat(path) do
-      {:ok, %{size: size}} when size > 0 -> true
-      _other -> false
-    end
   end
 end

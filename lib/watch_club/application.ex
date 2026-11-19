@@ -19,6 +19,7 @@ defmodule WatchClub.Application do
       WatchClubWeb.Telemetry,
       {Task.Supervisor, name: WatchClub.Shared.Fs.TaskSupervisor},
       WatchClub.Contents.MetadataFetcher,
+      WatchClub.Playbacks.Playback.SegmentQueue,
       {Oban, Application.fetch_env!(:watch_club, Oban)},
       WatchClub.MediaSources.Import.OrphansCleanup,
       {Phoenix.PubSub, name: WatchClub.PubSub},
