@@ -130,7 +130,8 @@ pub struct SearchResult {
     #[serde(flatten)]
     pub id: ContentId,
     pub title: String,
-    /// The year of its release, or of its first episode, when its Metadata Provider knows it
+    /// The year of its release, of its first episode, or of a Sports Event's date, when its Metadata
+    /// Provider knows it
     #[schema(required = true)]
     pub year: Option<i16>,
     #[schema(required = true)]
@@ -169,9 +170,9 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-/// Returns a page of the Content of the scope that matches the query, most relevant first, with
-/// their texts in the Locale's language when their Metadata Provider has them. A blank query matches
-/// nothing.
+/// Returns a page of the Content of the scope that matches the query, most relevant first, or the
+/// latest first for Sports Events, with their texts in the Locale's language when their Metadata
+/// Provider has them. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.scope = ?scope, search.page = page))]
 pub async fn search(
     metadata_providers: &MetadataProviders,

@@ -743,7 +743,7 @@
     },
     "/api/search": {
       "get": {
-        "summary": "Returns a page of the Content of the scope that matches the query, most relevant first, with\ntheir texts in the signed-in User's language when their Metadata Provider has them.",
+        "summary": "Returns a page of the Content of the scope that matches the query, most relevant first, or the\nlatest first for Sports Events, with their texts in the signed-in User's language when their\nMetadata Provider has them.",
         "operationId": "search",
         "parameters": [
           {
@@ -1399,7 +1399,7 @@
                   "null"
                 ],
                 "format": "int32",
-                "description": "The year of its release, or of its first episode, when its Metadata Provider knows it"
+                "description": "The year of its release, of its first episode, or of a Sports Event's date, when its Metadata\nProvider knows it"
               }
             }
           }
