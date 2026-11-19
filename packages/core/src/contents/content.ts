@@ -3,13 +3,17 @@
  * apps show them.
  */
 import {queryOptions} from '@tanstack/react-query';
-import {type ContentType, type ExternalContentId, getContentOptions} from '@watchclub/api';
+import {
+  type ContentType,
+  type ExternalContentId,
+  getContentByExternalIdOptions,
+} from '@watchclub/api';
 import {useTranslation} from 'react-i18next';
 
 /** Returns the query of a Content, with its title in the User's language. */
 export function contentQuery({content_type, external_id}: ExternalContentId) {
   // biome-ignore lint/style/useNamingConvention: the API's path parameters are snake_case
-  return queryOptions(getContentOptions({path: {content_type, external_id}}));
+  return queryOptions(getContentByExternalIdOptions({path: {content_type, external_id}}));
 }
 
 /** Returns the name of each type of Content in the app's language, such as "Movie". */
