@@ -2,9 +2,6 @@ export default {
   combobox: {
     remove: 'Remove',
   },
-  instanceSettings: {
-    title: 'Instance settings',
-  },
   mediaBrowser: {
     title: 'Media browser',
   },
@@ -16,7 +13,7 @@ export default {
   },
   search: {
     closeSearch: 'Close search',
-    inLibrary: 'On WatchClub',
+    inLibrary: 'On {{name}}',
     seeAll: 'See all results for “{{query}}”',
   },
   settings: {

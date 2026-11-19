@@ -1,3 +1,5 @@
+import {usePrefetchQuery} from '@tanstack/react-query';
+import {getInstanceOptions} from '@watchclub/api';
 import {NativeTabs} from 'expo-router/native-tabs';
 import {useTranslation} from 'react-i18next';
 import {useCSSVariable} from 'uniwind';
@@ -9,6 +11,8 @@ import {useCSSVariable} from 'uniwind';
  */
 export default function SignedInLayout() {
   const {t} = useTranslation(['mobile', 'core']);
+  // Before a screen shows the Instance Name, so it doesn't show the app's name first
+  usePrefetchQuery(getInstanceOptions());
   const [card, foreground, mutedForeground, selected] = useCSSVariable([
     '--color-card',
     '--color-foreground',

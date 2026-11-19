@@ -6,6 +6,7 @@ import {infiniteQueryOptions, useInfiniteQuery} from '@tanstack/react-query';
 import {type SearchResult, type SearchScope, searchInfiniteOptions} from '@watchclub/api';
 import {useCallback, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useInstanceName} from '../instance';
 
 /** The pause in typing after which a search starts, in milliseconds */
 const TYPING_PAUSE = 300;
@@ -106,9 +107,10 @@ export function useSearchScopeNames(): Record<SearchScope, string> {
  */
 export function useSearchHint(scope: SearchScope): string {
   const {t} = useTranslation('core');
+  const instanceName = useInstanceName();
   switch (scope) {
     case 'movies_and_tv_shows':
-      return t($ => $.core.search.hint, {context: 'moviesAndTvShows'});
+      return t($ => $.core.search.hint, {context: 'moviesAndTvShows', name: instanceName});
     case 'books':
       return t($ => $.core.search.hint, {context: 'books'});
   }
