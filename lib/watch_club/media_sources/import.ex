@@ -44,8 +44,7 @@ defmodule WatchClub.MediaSources.Import do
   end
 
   actions do
-    # The ImportMonitor destroys a scheduled Media Import that added no Media
-    defaults [:read, :destroy]
+    defaults [:read]
 
     create :start do
       primary? true
@@ -95,6 +94,17 @@ defmodule WatchClub.MediaSources.Import do
       change set_attribute(:finished_at, &DateTime.utc_now/0)
       change transition_state(:failed)
       change Changes.ReportFinish
+    end
+
+    destroy :forget_without_media do
+      description "Deletes the Media Import when it was scheduled and added no Media, so the history keeps the ones that caught files"
+
+      change filter(
+               expr(
+                 not triggered_manually? and matched_file_count == 0 and
+                   unmatched_file_count == 0
+               )
+             )
     end
 
     update :finish_scan do
@@ -168,7 +178,7 @@ defmodule WatchClub.MediaSources.Import do
              :start_scheduled_imports,
              :complete,
              :fail,
-             :destroy,
+             :forget_without_media,
              :finish_scan,
              :count_file
            ]) do

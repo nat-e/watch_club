@@ -205,12 +205,17 @@ defmodule WatchClubWeb.Telemetry do
         tag_values: &%{"watch_club.metadata_request.served": &1.served}
       ),
 
-      # Each Media Import, from its start to its end, by its final status
+      # Each Media Import, from its start to its end, by its final status and trigger
       summary("watch_club.media_import.duration",
         event_name: [:watch_club, :media_import, :finish],
         unit: {:microsecond, :second},
-        tags: [:"watch_club.media_import.status"],
-        tag_values: &%{"watch_club.media_import.status": &1.status},
+        tags: [:"watch_club.media_import.status", :"watch_club.media_import.trigger"],
+        tag_values:
+          &%{
+            "watch_club.media_import.status": &1.status,
+            "watch_club.media_import.trigger":
+              if(&1.triggered_manually?, do: :manual, else: :scheduled)
+          },
         reporter_options: [buckets: @job_buckets]
       ),
 

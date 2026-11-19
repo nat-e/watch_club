@@ -12,8 +12,8 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
   Becomes a no-op if the Media Import has already reached a terminal
   state — `:cancel`, `:fail`, or a prior `:complete` got there first.
 
-  Destroys a scheduled Media Import that completes or fails without adding Media, so the
-  history only keeps the ones that caught files.
+  Once it completes or fails a Media Import, it deletes it when it was scheduled and added no
+  Media, see `Import`'s `:forget_without_media`.
   """
 
   use Oban.Worker,
@@ -88,7 +88,7 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
 
         media_import
         |> Ash.update!(%{}, action: :fail, actor: actor)
-        |> destroy_if_scheduled_without_media(actor)
+        |> forget_without_media(actor)
 
       Enum.any?(jobs, &(&1.state == "cancelled")) ->
         Logger.info("Marking import #{media_import.id} cancelled",
@@ -109,18 +109,17 @@ defmodule WatchClub.MediaSources.Import.Workers.ImportMonitor do
 
         media_import
         |> Ash.update!(%{}, action: :complete, actor: actor)
-        |> destroy_if_scheduled_without_media(actor)
+        |> forget_without_media(actor)
     end
   end
 
-  # Filters on the counts in the database: the updated Media Import keeps the counts it was read with
-  defp destroy_if_scheduled_without_media(%Import{id: id, triggered_manually?: false}, actor) do
+  # A bulk destroy, so the action's filter reads the counts in the database, which the updated
+  # Media Import doesn't return
+  defp forget_without_media(%Import{id: id}, actor) do
     Import
-    |> Ash.Query.filter(id == ^id and matched_file_count == 0 and unmatched_file_count == 0)
-    |> Ash.bulk_destroy!(:destroy, %{}, actor: actor, notify?: true)
+    |> Ash.Query.filter(id == ^id)
+    |> Ash.bulk_destroy!(:forget_without_media, %{}, actor: actor, notify?: true)
 
     :ok
   end
-
-  defp destroy_if_scheduled_without_media(%Import{}, _actor), do: :ok
 end

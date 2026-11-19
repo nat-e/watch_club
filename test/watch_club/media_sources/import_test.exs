@@ -249,6 +249,18 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert list_media_imports!(actor: admin) == []
     end
 
+    test "deletes a scheduled Media Import that fails without adding Media" do
+      admin = generate(administrator())
+      generate(radarr_media_source(actor: admin))
+      stub_servarr(fn conn -> Plug.Conn.send_resp(conn, 401, "nope") end)
+
+      start_scheduled_media_imports!(actor: SystemActor.actor())
+      Oban.drain_queue(queue: :media_source_scans)
+      Oban.drain_queue(queue: :media_import_monitors, with_scheduled: true)
+
+      assert list_media_imports!(actor: admin) == []
+    end
+
     test "keeps a scheduled Media Import that adds Media" do
       admin = generate(administrator())
       root = Path.expand("tmp/media-imports/scheduled")
@@ -259,17 +271,19 @@ defmodule WatchClub.MediaSources.ImportTest do
       generate(radarr_media_source(actor: admin, root_folder_path: root))
       generate(movie(external_id: "11", metadata_refreshed_at: DateTime.utc_now()))
 
-      stub_servarr_movies([
-        %{
-          "tmdbId" => 11,
-          "title" => "Star Wars",
-          "year" => 1977,
-          "hasFile" => true,
-          "qualityProfileId" => 1,
-          "rootFolderPath" => root,
-          "movieFile" => %{"path" => path}
-        }
-      ])
+      stub_servarr(fn %Plug.Conn{request_path: "/api/v3/movie"} = conn ->
+        Req.Test.json(conn, [
+          %{
+            "tmdbId" => 11,
+            "title" => "Star Wars",
+            "year" => 1977,
+            "hasFile" => true,
+            "qualityProfileId" => 1,
+            "rootFolderPath" => root,
+            "movieFile" => %{"path" => path}
+          }
+        ])
+      end)
 
       stub(ProbeMock, :probe, fn _path -> {:ok, ffprobe_fixture("video_friends_s01e01")} end)
 
@@ -292,14 +306,11 @@ defmodule WatchClub.MediaSources.ImportTest do
     end
   end
 
-  defp stub_servarr_movies(movies) do
+  defp stub_servarr(plug) do
     previous = Application.get_env(:watch_club, :servarr_req_options)
     Application.put_env(:watch_club, :servarr_req_options, plug: {Req.Test, Client})
     on_exit(fn -> Application.put_env(:watch_club, :servarr_req_options, previous) end)
-
-    Req.Test.stub(Client, fn %Plug.Conn{request_path: "/api/v3/movie"} = conn ->
-      Req.Test.json(conn, movies)
-    end)
+    Req.Test.stub(Client, plug)
   end
 
   # A Media Source whose scan finds a new file, a matched Media and an Unmatched Media

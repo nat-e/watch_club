@@ -1,7 +1,7 @@
 defmodule WatchClub.MediaSources.Import.Changes.ReportFinish do
   @moduledoc """
   Emits `[:watch_club, :media_import, :finish]` once a Media Import ends, with its duration in
-  microseconds and its final status.
+  microseconds, its final status and whether it was triggered manually.
   """
 
   use Ash.Resource.Change
@@ -15,7 +15,7 @@ defmodule WatchClub.MediaSources.Import.Changes.ReportFinish do
           duration:
             DateTime.diff(media_import.finished_at, media_import.inserted_at, :microsecond)
         },
-        %{status: media_import.status}
+        %{status: media_import.status, triggered_manually?: media_import.triggered_manually?}
       )
 
       {:ok, media_import}
