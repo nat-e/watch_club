@@ -14,8 +14,9 @@ use serde::{
 };
 
 use super::{
-    BASE_LOCALE, DETAILS_APPENDS, MAX_APPENDS, Tmdb, TmdbId, optional_date, optional_minutes,
-    optional_text, still,
+    Tmdb, TmdbId,
+    details::{BASE_LOCALE, DETAILS_APPENDS, MAX_APPENDS},
+    optional_date, optional_minutes, optional_text, still,
 };
 use crate::{
     domain::{
