@@ -89,8 +89,7 @@ impl ContentId {
 #[derive(Serialize, ToSchema)]
 struct ContentIdJson {
     content_type: ContentType,
-    /// The Content's ID at the Metadata Provider of its type, such as its TMDB ID, or `ev-028133` at
-    /// sportarr.net
+    /// The Content's ID at the Metadata Provider of its type, such as its TMDB ID
     external_id: String,
 }
 
@@ -130,25 +129,22 @@ pub struct SearchResult {
     #[serde(flatten)]
     pub id: ContentId,
     pub title: String,
-    /// The day it came out, first aired or takes place, when its Metadata Provider knows it. A Book
-    /// whose day Hardcover doesn't know comes out on January 1st of its year
+    /// The day it came out, first aired or takes place, when its Metadata Provider knows it
     #[schema(value_type = Option<String>, format = Date, required = true)]
     pub date: Option<Date>,
     #[schema(required = true)]
     pub overview: Option<String>,
     #[schema(required = true)]
     pub poster: Option<Image>,
-    /// The people or organizations that make it, the most important first: a Book's authors and
-    /// illustrators, or a Sports Event's league, such as UFC or Formula 1. None for Movies and TV
-    /// Shows, as TMDB's search doesn't say who makes them
+    /// The people or organizations that make it, the most important first, such as a Book's authors
+    /// or a Sports Event's league, when its Metadata Provider says
     pub creators: Vec<String>,
 }
 
 /// A page of a search's results.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, ToSchema)]
 pub struct SearchResults {
-    /// The results, most relevant first, or the latest first for Sports Events. Only the last page
-    /// can have none, unless TMDB's pages in between have only people and videos
+    /// The results, in their Metadata Provider's order. Pages before the last can have none
     pub results: Vec<SearchResult>,
     /// The number of the next page, or null on the last one
     #[schema(value_type = Option<u32>, required = true, minimum = 2)]
@@ -164,9 +160,8 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-/// Returns a page of the Content of the scope that matches the query, most relevant first, or the
-/// latest first for Sports Events, with their texts in the Locale's language when their Metadata
-/// Provider has them. A blank query matches nothing.
+/// Returns a page of the Content of the scope that matches the query, in their Metadata Provider's
+/// order, with their texts in the Locale's language when it has them. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.scope = ?scope, search.page = page))]
 pub async fn search(
     metadata_providers: &MetadataProviders,

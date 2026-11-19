@@ -84,7 +84,7 @@ impl Tmdb {
     /// Returns a page of the Movies and TV Shows whose title matches the query, most relevant
     /// first, with their texts in the Locale's language. It leaves out adult content, and the
     /// videos: what TMDB lists as movies but flags as not truly ones, such as filmed sports events,
-    /// concerts and compilations. Sports Events come from sportarr.net instead.
+    /// concerts and compilations.
     ///
     /// TMDB's pages also list people, who aren't Content: when one has only people and videos, the
     /// search reads the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that
@@ -178,6 +178,7 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             date: movie.release_date,
             overview: movie.overview,
             poster: movie.poster_path.as_deref().and_then(poster),
+            // TMDB's search doesn't say who makes them
             creators: Vec::new(),
         }),
         MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
@@ -186,6 +187,7 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             date: tv_show.first_air_date,
             overview: tv_show.overview,
             poster: tv_show.poster_path.as_deref().and_then(poster),
+            // TMDB's search doesn't say who makes them
             creators: Vec::new(),
         }),
         MultiSearchResult::Person => None,

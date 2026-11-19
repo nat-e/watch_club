@@ -133,7 +133,7 @@ export function searchResultDetails(result: SearchResult, language: string): str
   if (result.date !== null) {
     // A date and time without a time zone is in the device's, which formats it, so the day stays
     const midnight = new Date(`${result.date}T00:00`);
-    // Only Sports Events need their day to tell them apart, and a Book's can be a guess
+    // Only Sports Events need their day to tell them apart
     details.push(
       result.content_type === 'sports_event'
         ? midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'})
