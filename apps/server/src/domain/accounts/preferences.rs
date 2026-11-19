@@ -43,7 +43,7 @@ impl UserPreferences {
 
 /// A language and country preference.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::Type, ToSchema)]
-#[sqlx(type_name = "text")]
+#[sqlx(type_name = "locale")]
 pub enum Locale {
     #[serde(rename = "en-US")]
     #[sqlx(rename = "en-US")]

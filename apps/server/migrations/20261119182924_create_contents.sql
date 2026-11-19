@@ -61,7 +61,7 @@ CREATE TABLE contents (
 -- every Content has one row per Locale
 CREATE TABLE content_localizations (
     content_id uuid NOT NULL REFERENCES contents ON DELETE CASCADE,
-    locale text NOT NULL CHECK (locale IN ('en-US', 'fr-FR')),
+    locale locale NOT NULL,
     title text NOT NULL,
     overview text,
     poster jsonb,
@@ -108,7 +108,7 @@ CREATE TABLE media (
 -- them, such as a TV Show Episode that's announced without a title
 CREATE TABLE media_localizations (
     media_id uuid NOT NULL REFERENCES media ON DELETE CASCADE,
-    locale text NOT NULL CHECK (locale IN ('en-US', 'fr-FR')),
+    locale locale NOT NULL,
     title text,
     overview text,
     PRIMARY KEY (media_id, locale)

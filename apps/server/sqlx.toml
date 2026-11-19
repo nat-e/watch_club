@@ -8,6 +8,7 @@
 'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"
 'DATE' = "jiff_sqlx::Date"
 'job_state' = "::watch_club::jobs::JobState"
+'locale' = "::watch_club::domain::accounts::Locale"
 'content_type' = "::watch_club::domain::contents::ContentType"
 'metadata_provider' = "::watch_club::domain::contents::MetadataProvider"
 'media_type' = "::watch_club::domain::contents::MediaType"
@@ -16,7 +17,6 @@
 
 [macros.table-overrides.'users']
 'id' = "::watch_club::domain::accounts::UserId"
-'locale' = "::watch_club::domain::accounts::Locale"
 'audio_language' = "::watch_club::domain::accounts::AudioLanguage"
 'subtitle_language' = "::watch_club::domain::accounts::TrackLanguage"
 'languages_without_subtitles' = "Vec<::watch_club::domain::accounts::TrackLanguage>"
@@ -36,7 +36,6 @@
 
 [macros.table-overrides.'content_localizations']
 'content_id' = "::watch_club::domain::contents::ContentId"
-'locale' = "::watch_club::domain::accounts::Locale"
 'poster' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
 
 [macros.table-overrides.'content_credits']
@@ -51,4 +50,3 @@
 
 [macros.table-overrides.'media_localizations']
 'media_id' = "::watch_club::domain::contents::MediaId"
-'locale' = "::watch_club::domain::accounts::Locale"

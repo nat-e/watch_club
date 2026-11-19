@@ -95,7 +95,17 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Text"
+        {
+          "Custom": {
+            "name": "locale",
+            "kind": {
+              "Enum": [
+                "en-US",
+                "fr-FR"
+              ]
+            }
+          }
+        }
       ]
     },
     "nullable": [

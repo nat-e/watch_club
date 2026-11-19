@@ -222,7 +222,17 @@
           }
         },
         "Text",
-        "Text"
+        {
+          "Custom": {
+            "name": "locale",
+            "kind": {
+              "Enum": [
+                "en-US",
+                "fr-FR"
+              ]
+            }
+          }
+        }
       ]
     },
     "nullable": [

@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO content_localizations (\n            content_id, locale, title, overview, poster, trailer_url\n        )\n        SELECT $1, * FROM UNNEST($2::locale[], $3::text[], $4::text[], $5::jsonb[], $6::text[])\n        ON CONFLICT (content_id, locale) DO UPDATE\n        SET title = EXCLUDED.title,\n            overview = EXCLUDED.overview,\n            poster = EXCLUDED.poster,\n            trailer_url = EXCLUDED.trailer_url\n        WHERE (\n            content_localizations.title, content_localizations.overview,\n            content_localizations.poster, content_localizations.trailer_url\n        ) IS DISTINCT FROM (\n            EXCLUDED.title, EXCLUDED.overview, EXCLUDED.poster, EXCLUDED.trailer_url\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "locale[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "locale",
+                  "kind": {
+                    "Enum": [
+                      "en-US",
+                      "fr-FR"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "TextArray",
+        "TextArray",
+        "JsonbArray",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a372c1e209549c92d7bfe365b495a58bb4ecdd94c02f0cc33d0baf0a82a30b74"
+}

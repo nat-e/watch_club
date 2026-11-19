@@ -275,7 +275,7 @@ async fn save_content_localizations(
         INSERT INTO content_localizations (
             content_id, locale, title, overview, poster, trailer_url
         )
-        SELECT $1, * FROM UNNEST($2::text[], $3::text[], $4::text[], $5::jsonb[], $6::text[])
+        SELECT $1, * FROM UNNEST($2::locale[], $3::text[], $4::text[], $5::jsonb[], $6::text[])
         ON CONFLICT (content_id, locale) DO UPDATE
         SET title = EXCLUDED.title,
             overview = EXCLUDED.overview,
@@ -486,7 +486,7 @@ async fn save_media(
         INSERT INTO media_localizations (media_id, locale, title, overview)
         SELECT media.id, localization.locale, localization.title, localization.overview
         FROM UNNEST(
-            $2::media_type[], $3::integer[], $4::integer[], $5::text[], $6::text[], $7::text[]
+            $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]
         ) AS localization (media_type, group_number, number, locale, title, overview)
         JOIN media ON media.content_id = $1
             AND media.media_type = localization.media_type
