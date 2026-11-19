@@ -62,6 +62,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo-google-fonts/oxanium':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@expo/material-symbols':
         specifier: ^0.1.1
         version: 0.1.1
@@ -847,6 +850,9 @@ packages:
 
   '@expo-google-fonts/material-symbols@0.4.53':
     resolution: {integrity: sha512-SgCSm8rUYvwy+5ABvwlV/h7xbJkWAsenChSKlUwMLVyEw/QoUon055QixCOtGCjrSRWqFGDvR0ghVa5nA2OkIg==}
+
+  '@expo-google-fonts/oxanium@0.4.2':
+    resolution: {integrity: sha512-e7Dt1s34ZYHNM/jiuhanQ+KTxQUFFhJEV4v5uVM64dQXcThL6rQk2UL597Ml8FhmEmv2zvISAV6zrPMUzu1sKQ==}
 
   '@expo/cli@58.1.20':
     resolution: {integrity: sha512-VXXcqGuXBngzItcP97ERWON3aHJOeAwDxuRlkxgbYfW9m9DpGHM6umGgjOPWWy14xSArUvwGZpg+D5Ms+hnnkg==}
@@ -5955,6 +5961,8 @@ snapshots:
   '@dotenvx/primitives@0.8.0': {}
 
   '@expo-google-fonts/material-symbols@0.4.53': {}
+
+  '@expo-google-fonts/oxanium@0.4.2': {}
 
   '@expo/cli@58.1.20(@expo/dom-webview@58.0.2)(@expo/metro-runtime@58.0.17)(expo-constants@58.0.16)(expo-font@58.0.12)(expo-router@58.0.31)(expo@58.0.25)(react-dom@19.3.0(react@19.3.0))(react-native-tvos@0.88.1-0)(react@19.3.0)(typescript@7.0.2)':
     dependencies:

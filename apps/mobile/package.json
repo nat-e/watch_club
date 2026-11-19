@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@expo-google-fonts/oxanium": "^0.4.2",
     "@expo/material-symbols": "^0.1.1",
     "@expo/ui": "~58.0.28",
     "@formatjs/intl-displaynames": "^8.0.3",

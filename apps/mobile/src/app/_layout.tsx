@@ -1,7 +1,9 @@
 import '../global.css';
+import {Oxanium_600SemiBold} from '@expo-google-fonts/oxanium/600SemiBold';
 import * as sentry from '@sentry/react-native';
 import {focusManager, QueryClientProvider} from '@tanstack/react-query';
 import {createQueryClient} from '@watchclub/core/query-client';
+import {useFonts} from 'expo-font';
 import {DarkTheme, Stack, type Theme, ThemeProvider} from 'expo-router';
 import * as splashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
@@ -39,6 +41,14 @@ focusManager.setEventListener(setFocused => {
 export default sentry.wrap(RootLayout);
 
 function RootLayout() {
+  // The headings' font, as on the web app. The splash screen stays until it loads, and the
+  // headings fall back to the system's font if it fails
+  // biome-ignore lint/style/useNamingConvention: the font's name, which `font-heading` uses
+  const [isFontLoaded, fontError] = useFonts({Oxanium_600SemiBold});
+  if (!isFontLoaded && fontError === null) {
+    return null;
+  }
+
   return (
     // Gesture Handler's root lets the User swipe toasts away
     <GestureHandlerRootView style={{flex: 1}}>
