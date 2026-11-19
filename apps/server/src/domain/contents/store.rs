@@ -50,7 +50,7 @@ pub(super) async fn save(
 
 /// Returns the saved Content with this External ID, with its texts in the Locale, or None when
 /// nobody opened it yet.
-pub(super) async fn find(
+pub(super) async fn find_by_external_id(
     db: &Pool,
     external_content_id: &ExternalContentId,
     locale: Locale,

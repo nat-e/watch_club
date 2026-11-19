@@ -385,7 +385,7 @@ pub async fn get_by_external_id(
     external_content_id: ExternalContentId,
     locale: Locale,
 ) -> Result<Content, LookUpError> {
-    if let Some(saved) = store::find(db, &external_content_id, locale).await? {
+    if let Some(saved) = store::find_by_external_id(db, &external_content_id, locale).await? {
         if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
             let content_id = saved.content.id;
             jobs::enqueue(db, RefreshContent { content_id }).await?;
@@ -395,7 +395,7 @@ pub async fn get_by_external_id(
 
     let metadata = metadata_providers.fetch(&external_content_id).await?;
     store::save(db, &metadata).await?;
-    let saved = store::find(db, &external_content_id, locale)
+    let saved = store::find_by_external_id(db, &external_content_id, locale)
         .await?
         .ok_or_else(|| anyhow::anyhow!("the Content just saved is missing"))?;
     Ok(saved.content)
