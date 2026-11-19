@@ -75,15 +75,17 @@ impl<T> Translations<T> {
 
     /// Returns the value for the Locale: the Locale's, else English's, else the original's.
     fn pick(&self, locale: Locale) -> Option<&T> {
-        let find = |is_wanted: &dyn Fn(&Language) -> bool| {
-            self.translated
-                .iter()
-                .find(|(language, _)| is_wanted(language))
-                .map(|(_, value)| value)
-        };
-        find(&|language| language.suits(locale))
-            .or_else(|| find(&Language::is_english))
+        self.find_translated(|language| language.suits(locale))
+            .or_else(|| self.find_translated(Language::is_english))
             .or(self.original.as_ref())
+    }
+
+    /// Returns the best value in a language that `is_wanted` accepts.
+    fn find_translated(&self, is_wanted: impl Fn(&Language) -> bool) -> Option<&T> {
+        self.translated
+            .iter()
+            .find(|(language, _)| is_wanted(language))
+            .map(|(_, value)| value)
     }
 }
 
