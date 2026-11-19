@@ -136,9 +136,7 @@ async fn returns_the_sports_events_on_one_page(db: PgPool) {
             "external_id": "ev-575969",
             "title": "Canelo Álvarez vs Edgar Berlanga",
             "date": "2024-09-15",
-            "overview": "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo \
-                Alvarez (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super \
-                middleweight titles on the line, can he extend his reign at the divisions summit?",
+            "overview": null,
             "poster": [{
                 "url": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/poster_thesportsdb_b6a5111271d5.jpg?v=g1-b6a5111271d5",
                 "width": 680,

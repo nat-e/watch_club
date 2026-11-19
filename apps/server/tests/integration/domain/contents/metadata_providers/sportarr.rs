@@ -18,7 +18,8 @@ fn search_answer(events: &[Value]) -> Value {
 }
 
 #[tokio::test]
-async fn search_returns_the_events_with_the_querys_words_in_their_title_the_latest_first() {
+async fn search_returns_the_events_with_the_querys_words_in_their_title_without_their_description()
+{
     let sportarr = FakeSportarr::start().await;
     Mock::given(method("GET"))
         // `%` stands for any text, in place of the spaces and punctuation
@@ -42,12 +43,7 @@ async fn search_returns_the_events_with_the_querys_words_in_their_title_the_late
             id: ContentId::SportsEvent(SportarrId::new("ev-575969")),
             title: "Canelo Álvarez vs Edgar Berlanga".to_owned(),
             date: Some(date(2024, 9, 15)),
-            overview: Some(
-                "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo Alvarez \
-                 (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super \
-                 middleweight titles on the line, can he extend his reign at the divisions summit?"
-                    .to_owned()
-            ),
+            overview: None,
             poster: Image::new([ImageSource {
                 url: "https://sportarr.net/static/images/event/58/\
                       58ab0873-e360-4e8f-b6ea-eed1f9378de4/poster_thesportsdb_b6a5111271d5.jpg\
@@ -87,7 +83,6 @@ async fn search_leaves_out_what_sportarr_lacks() {
         "strEvent": "Untitled",
         "strLeague": "",
         "dateEvent": null,
-        "strDescriptionEN": " ",
         "strPoster": null,
     });
     sportarr
@@ -102,13 +97,8 @@ async fn search_leaves_out_what_sportarr_lacks() {
 
     let result = &found.results[0];
     assert_eq!(
-        (
-            result.date,
-            result.overview.as_deref(),
-            &result.poster,
-            result.creators.as_slice(),
-        ),
-        (None, None, &None, [].as_slice())
+        (result.date, &result.poster, result.creators.as_slice()),
+        (None, &None, [].as_slice())
     );
 }
 

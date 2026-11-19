@@ -131,7 +131,8 @@ fn search_result(event: Event) -> SearchResult {
         id: ContentId::SportsEvent(event.id),
         title: event.title,
         date: event.date,
-        overview: event.overview,
+        // Leaves out the description, which is long, or only repeats the title, league and round
+        overview: None,
         poster: event.poster_url.and_then(poster),
         creators: event.league.into_iter().collect(),
     }
@@ -179,12 +180,6 @@ struct Event {
     /// The day it takes place
     #[serde(rename = "dateEvent", default, deserialize_with = "optional_date")]
     date: Option<Date>,
-    #[serde(
-        rename = "strDescriptionEN",
-        default,
-        deserialize_with = "optional_text"
-    )]
-    overview: Option<String>,
     #[serde(rename = "strPoster", default, deserialize_with = "optional_text")]
     poster_url: Option<String>,
 }
