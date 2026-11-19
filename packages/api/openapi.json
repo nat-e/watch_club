@@ -1355,7 +1355,7 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "Who makes it, the most important first: a Book's authors and illustrators, or a Sports\nEvent's league, such as UFC or Formula 1. None for Movies and TV Shows, as TMDB's search\ndoesn't say who makes them"
+                "description": "The people or organizations that make it, the most important first: a Book's authors and\nillustrators, or a Sports Event's league, such as UFC or Formula 1. None for Movies and TV\nShows, as TMDB's search doesn't say who makes them"
               },
               "date": {
                 "type": [

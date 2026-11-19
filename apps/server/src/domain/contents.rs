@@ -138,9 +138,9 @@ pub struct SearchResult {
     pub overview: Option<String>,
     #[schema(required = true)]
     pub poster: Option<Image>,
-    /// Who makes it, the most important first: a Book's authors and illustrators, or a Sports
-    /// Event's league, such as UFC or Formula 1. None for Movies and TV Shows, as TMDB's search
-    /// doesn't say who makes them
+    /// The people or organizations that make it, the most important first: a Book's authors and
+    /// illustrators, or a Sports Event's league, such as UFC or Formula 1. None for Movies and TV
+    /// Shows, as TMDB's search doesn't say who makes them
     pub creators: Vec<String>,
 }
 
